@@ -26,17 +26,18 @@ describe('BottomNav', () => {
   it('각 링크가 올바른 href를 가진다', () => {
     render(<BottomNav />);
 
-    expect(screen.getByRole('link', { name: /홈/ })).toHaveAttribute('href', '/dashboard');
-    expect(screen.getByRole('link', { name: /영양/ })).toHaveAttribute('href', '/nutrition');
-    expect(screen.getByRole('link', { name: /운동/ })).toHaveAttribute('href', '/workout');
-    expect(screen.getByRole('link', { name: /리포트/ })).toHaveAttribute('href', '/reports');
+    // role="menuitem"으로 변경됨 (접근성 개선)
+    expect(screen.getByRole('menuitem', { name: /홈/ })).toHaveAttribute('href', '/dashboard');
+    expect(screen.getByRole('menuitem', { name: /영양/ })).toHaveAttribute('href', '/nutrition');
+    expect(screen.getByRole('menuitem', { name: /운동/ })).toHaveAttribute('href', '/workout');
+    expect(screen.getByRole('menuitem', { name: /리포트/ })).toHaveAttribute('href', '/reports');
   });
 
   it('현재 경로에 해당하는 링크가 활성화 스타일을 가진다', () => {
     render(<BottomNav />);
 
     // /dashboard 경로에서 홈 링크가 활성화됨
-    const homeLink = screen.getByRole('link', { name: /홈/ });
+    const homeLink = screen.getByRole('menuitem', { name: /홈/ });
     expect(homeLink).toHaveClass('text-primary');
   });
 });
@@ -48,8 +49,8 @@ describe('BottomNav 경로 매칭', () => {
 
     render(<BottomNav />);
 
-    // 영양 링크 확인
-    const nutritionLink = screen.getByRole('link', { name: /영양/ });
+    // 영양 링크 확인 (role="menuitem")
+    const nutritionLink = screen.getByRole('menuitem', { name: /영양/ });
     expect(nutritionLink).toHaveClass('text-primary');
   });
 
@@ -59,7 +60,7 @@ describe('BottomNav 경로 매칭', () => {
 
     render(<BottomNav />);
 
-    const workoutLink = screen.getByRole('link', { name: /운동/ });
+    const workoutLink = screen.getByRole('menuitem', { name: /운동/ });
     expect(workoutLink).toHaveClass('text-primary');
   });
 
@@ -69,7 +70,7 @@ describe('BottomNav 경로 매칭', () => {
 
     render(<BottomNav />);
 
-    const reportsLink = screen.getByRole('link', { name: /리포트/ });
+    const reportsLink = screen.getByRole('menuitem', { name: /리포트/ });
     expect(reportsLink).toHaveClass('text-primary');
   });
 });

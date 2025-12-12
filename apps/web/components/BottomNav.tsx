@@ -39,8 +39,10 @@ export function BottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border md:hidden"
       data-testid="bottom-nav"
+      aria-label="메인 네비게이션"
+      role="navigation"
     >
-      <div className="flex justify-around items-center h-16 px-2">
+      <div className="flex justify-around items-center h-16 px-2" role="menubar">
         {navItems.map((item) => {
           const active = isActive(item.href);
           const Icon = item.icon;
@@ -49,8 +51,12 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              role="menuitem"
+              aria-current={active ? 'page' : undefined}
+              aria-label={item.label}
               className={cn(
                 'flex flex-col items-center justify-center flex-1 py-2 transition-colors',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg',
                 active
                   ? 'text-primary'
                   : 'text-muted-foreground hover:text-foreground'
@@ -61,6 +67,7 @@ export function BottomNav() {
                   'h-6 w-6 mb-1',
                   active ? 'text-primary' : 'text-muted-foreground'
                 )}
+                aria-hidden="true"
               />
               <span className={cn('text-xs', active && 'font-medium')}>
                 {item.label}
