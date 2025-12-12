@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/schemas/mcp.schema.json",
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-server-filesystem", "/home/user/yiroom"],
+      "description": "프로젝트 파일 시스템 접근"
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "description": "GitHub 이슈/PR 관리"
+    },
+    "postgres": {
+      "command": "npx", 
+      "args": ["-y", "@anthropic-ai/mcp-server-postgres"],
+      "env": {
+        "POSTGRES_CONNECTION_STRING": "${DATABASE_URL}"
+      },
+      "description": "Supabase PostgreSQL 직접 접근"
+    }
+  },
+  "disabled": [
+    "github",
+    "postgres"
+  ],
+  "_comment": {
+    "설명": "MCP (Model Context Protocol) 설정 파일",
+    "활성화": "disabled 배열에서 제거하면 활성화",
+    "환경변수": "GITHUB_TOKEN, DATABASE_URL 설정 필요",
+    "문서": "https://docs.anthropic.com/en/docs/claude-code/mcp"
+  }
+}

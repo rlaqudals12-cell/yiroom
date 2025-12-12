@@ -1,0 +1,370 @@
+// 운동 카테고리
+export type ExerciseCategory = 'upper' | 'lower' | 'core' | 'cardio';
+
+// 운동 난이도
+export type ExerciseDifficulty = 'beginner' | 'intermediate' | 'advanced';
+
+// 운동 타입 (5가지)
+export type WorkoutType = 'toner' | 'builder' | 'burner' | 'mover' | 'flexer';
+
+// 운동 장소
+export type WorkoutLocation = 'home' | 'gym' | 'outdoor';
+
+// 부위 분류
+export type BodyPart =
+  | 'chest'      // 가슴
+  | 'back'       // 등
+  | 'shoulder'   // 어깨
+  | 'arm'        // 팔
+  | 'thigh'      // 허벅지
+  | 'calf'       // 종아리
+  | 'hip'        // 엉덩이
+  | 'abs'        // 복부
+  | 'waist';     // 허리
+
+// 개별 운동 정보
+export interface Exercise {
+  id: string;
+  name: string;
+  nameEn?: string;
+  category: ExerciseCategory;
+  bodyParts: BodyPart[];
+  equipment: string[];
+  difficulty: ExerciseDifficulty;
+  instructions: string[];
+  tips: string[];
+  caloriesPerMinute: number;
+  met: number; // Metabolic Equivalent of Task
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  suitableFor: {
+    bodyTypes?: string[];   // 적합한 체형
+    goals?: string[];       // 적합한 목표
+    injuries?: string[];    // 주의 부상 (이 부상이 있으면 피해야 함)
+  };
+}
+
+// C-1에서 가져오는 체형 데이터
+export interface BodyTypeData {
+  type: string;
+  proportions: {
+    shoulder: number;
+    waist: number;
+    hip: number;
+  };
+  height?: number; // cm
+  weight?: number; // kg
+}
+
+// 온보딩 입력 데이터 (Store와 동기화)
+export interface WorkoutInputData {
+  bodyTypeData: BodyTypeData | null;
+  goals: string[];
+  concerns: string[];
+  frequency: string;
+  location: string;
+  equipment: string[];
+  targetWeight?: number;
+  targetDate?: string;
+  injuries: string[];
+}
+
+// 주간 운동 계획 - 하루 단위
+export interface DayPlan {
+  day: 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+  dayLabel: string;
+  isRestDay: boolean;
+  focus?: BodyPart[];             // 집중 부위 (상세)
+  categories?: ExerciseCategory[]; // 집중 카테고리 (캘린더 표시용)
+  exercises: Exercise[];
+  estimatedMinutes: number;
+  estimatedCalories: number;
+}
+
+// 주간 운동 계획
+export interface WorkoutPlan {
+  id: string;
+  userId: string;
+  weekStartDate: string;    // ISO date string (월요일)
+  workoutType: WorkoutType;
+  frequency: string;
+  days: DayPlan[];
+  totalMinutes: number;
+  totalCalories: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 운동 세션 기록 (하루 운동 완료 기록)
+export interface WorkoutSession {
+  id: string;
+  planId: string;
+  userId: string;
+  date: string;             // ISO date string
+  completedExercises: {
+    exerciseId: string;
+    sets: number;
+    reps: number;
+    weight?: number;        // kg
+    duration?: number;      // minutes (유산소용)
+    completed: boolean;
+  }[];
+  totalMinutes: number;
+  totalCalories: number;
+  notes?: string;
+  createdAt: string;
+}
+
+// 연속 운동 기록 (Streak)
+export interface WorkoutStreak {
+  id: string;
+  userId: string;
+  currentStreak: number;    // 현재 연속일
+  longestStreak: number;    // 최장 연속일
+  lastWorkoutDate: string;  // 마지막 운동 날짜
+  streakStartDate: string;  // 현재 연속 시작일
+  milestones: number[];     // 달성한 마일스톤 (7, 14, 30, 60, 100...)
+  updatedAt: string;
+}
+
+// AI 분석 결과
+export interface WorkoutAnalysis {
+  id: string;
+  userId: string;
+  inputData: WorkoutInputData;
+  workoutType: WorkoutType;
+  workoutTypeReason: string;
+  recommendedExercises: Exercise[];
+  weeklyPlan: WorkoutPlan;
+  insights: {
+    bodyTypeAdvice: string;
+    goalAdvice: string;
+    cautionAdvice?: string; // 부상 관련 주의사항
+  };
+  createdAt: string;
+}
+
+// 7가지 운동 지표
+export interface WorkoutMetrics {
+  weeklyFrequency: {
+    current: number;
+    target: number;
+    percentage: number;
+  };
+  totalTime: {
+    current: number;  // minutes
+    target: number;
+  };
+  totalCalories: {
+    current: number;
+    target: number;
+  };
+  volume: {
+    current: number;  // sets x reps x weight
+    previousWeek: number;
+    changePercent: number;
+  };
+  bodyBalance: {
+    upper: number;    // percentage
+    lower: number;
+    core: number;
+  };
+  goalProgress: {
+    current: number;
+    target: number;
+    percentage: number;
+  };
+  streak: WorkoutStreak;
+}
+
+// 연예인 카테고리
+export type CelebrityCategory =
+  | 'pilates_yoga'    // 필라테스/요가
+  | 'weight'          // 웨이트/헬스
+  | 'dance'           // 댄스/활동적
+  | 'model'           // 모델/전체관리
+  | 'sports';         // 스포츠/기타
+
+// 루틴 타입
+export type RoutineType = 'PILATES' | 'WEIGHT' | 'CARDIO' | 'YOGA' | 'DANCE' | 'HOME';
+
+// 소스 타입
+export type SourceType = 'INTERVIEW' | 'YOUTUBE' | 'SNS' | 'NEWS';
+
+// 퍼스널 컬러 시즌
+export type PersonalColorSeason = 'Spring' | 'Summer' | 'Autumn' | 'Winter';
+
+// 체형 타입 (C-1 연동)
+export type BodyType = 'X' | 'A' | 'V' | 'H' | 'O' | 'I' | 'Y' | '8';
+
+// 연예인 루틴 개별 항목
+export interface CelebrityRoutineItem {
+  name: string;
+  type: RoutineType;
+  description: string;
+  exercises: {
+    name: string;
+    sets?: number;
+    reps?: number | string;  // "12-15" 같은 범위 표현 허용
+    duration?: number;       // 분 단위
+  }[];
+}
+
+// 연예인 데이터 (확장)
+export interface Celebrity {
+  id: string;
+  name: string;
+  nameEn: string;
+  group?: string;                   // 소속 그룹 (아이돌 등)
+  bodyType: BodyType;
+  personalColor: PersonalColorSeason;
+  gender: 'FEMALE' | 'MALE';
+  category: CelebrityCategory;
+  routines: CelebrityRoutineItem[];
+  sourceType: SourceType;
+  isActive: boolean;
+}
+
+// 연예인 루틴 데이터 (기존 호환)
+export interface CelebrityRoutine {
+  id: string;
+  name: string;
+  nameEn?: string;
+  bodyType: string;
+  personalColorSeason?: string;
+  workoutType: WorkoutType;
+  description: string;
+  imageUrl?: string;
+  routine: {
+    day: string;
+    focus: string;
+    exercises: string[];
+  }[];
+  source?: string;
+}
+
+// 연예인 매칭 타입
+export type CelebrityMatchType = 'exact' | 'bodyType' | 'personalColor';
+
+// 연예인 매칭 결과 (Task 4.4)
+export interface CelebrityMatchResult {
+  celebrity: Celebrity;
+  matchType: CelebrityMatchType;
+  matchScore: number;           // 100(정확), 70(체형), 50(PC)
+  matchReason: string;          // "같은 X자 체형 + Summer 타입"
+  recommendedRoutine: CelebrityRoutineItem | null;  // 추천 루틴 (첫 번째)
+}
+
+// 연예인 매칭 옵션
+export interface CelebrityMatchOptions {
+  limit?: number;                     // 최대 반환 개수 (기본: 5)
+  category?: CelebrityCategory;       // 카테고리 필터
+  routineType?: RoutineType;          // 루틴 타입 필터
+  includePartialMatch?: boolean;      // 부분 매칭 포함 (기본: true)
+}
+
+// =====================================================
+// Sprint 3: 운동 세션 타입
+// =====================================================
+
+// 세트 상태
+export type SetStatus = 'pending' | 'in_progress' | 'completed' | 'skipped';
+
+// 개별 세트 기록
+export interface SetRecord {
+  setNumber: number;
+  targetReps: number;
+  actualReps?: number;
+  targetWeight?: number;      // kg
+  actualWeight?: number;      // kg
+  status: SetStatus;
+  completedAt?: string;       // ISO date string
+}
+
+// 운동 세션 내 개별 운동 기록
+export interface ExerciseSessionRecord {
+  exerciseId: string;
+  exerciseName: string;
+  category: ExerciseCategory;
+  sets: SetRecord[];
+  restSeconds: number;        // 세트 간 휴식 시간
+  difficulty?: number;        // 1-5 체감 난이도
+  notes?: string;
+  startedAt?: string;
+  completedAt?: string;
+  isCompleted: boolean;
+}
+
+// 운동 세션 상태
+export type SessionStatus = 'not_started' | 'in_progress' | 'resting' | 'completed' | 'paused';
+
+// 운동 세션 (실시간 진행 상태)
+export interface WorkoutSessionState {
+  sessionId: string;
+  planId: string;
+  dayPlan: DayPlan;
+  userId: string;
+  workoutDate: string;        // ISO date string
+  status: SessionStatus;
+
+  // 진행 상태
+  currentExerciseIndex: number;
+  currentSetIndex: number;
+  exerciseRecords: ExerciseSessionRecord[];
+
+  // 휴식 타이머
+  restTimeRemaining?: number; // seconds
+  isResting: boolean;
+
+  // 통계
+  totalSetsCompleted: number;
+  totalSetsPlanned: number;
+  elapsedTime: number;        // seconds
+  estimatedCalories: number;
+
+  // 타임스탬프
+  startedAt?: string;
+  completedAt?: string;
+}
+
+// 휴식 타이머 설정
+export interface RestTimerSettings {
+  defaultSeconds: number;     // 기본 휴식 시간
+  minSeconds: number;         // 최소 (30초)
+  maxSeconds: number;         // 최대 (180초)
+  stepSeconds: number;        // 조절 단위 (10초)
+  autoStart: boolean;         // 자동 시작 여부
+  soundEnabled: boolean;      // 소리 알림
+  vibrationEnabled: boolean;  // 진동 알림
+}
+
+// 운동 타입별 기본 휴식 시간
+export const DEFAULT_REST_TIMES: Record<WorkoutType, number> = {
+  toner: 45,      // 토닝: 45초
+  builder: 90,    // 빌더: 90초
+  burner: 30,     // 버너: 30초
+  mover: 60,      // 무버: 60초
+  flexer: 30,     // 플렉서: 30초
+};
+
+// 운동 카테고리별 기본 휴식 시간
+export const CATEGORY_REST_TIMES: Record<ExerciseCategory, number> = {
+  upper: 60,
+  lower: 90,
+  core: 45,
+  cardio: 30,
+};
+
+// 세션 완료 결과
+export interface SessionCompletionResult {
+  sessionId: string;
+  totalExercises: number;
+  completedExercises: number;
+  totalSets: number;
+  completedSets: number;
+  totalVolume: number;        // sets x reps x weight
+  totalTime: number;          // seconds
+  caloriesBurned: number;
+  averageDifficulty: number;
+  isFullCompletion: boolean;  // 모든 운동 완료 여부
+}

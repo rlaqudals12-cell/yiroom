@@ -1,0 +1,55 @@
+---
+description: 이룸(Yiroom) 프로젝트 Cursor 전용 규칙
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+alwaysApply: true
+---
+
+# 이룸(Yiroom) Cursor 규칙
+
+## 🔒 핵심 가치 (절대 불변)
+- 앱 이름: 이룸 (Yiroom)
+- 슬로건: "온전한 나는?" / "Know yourself, wholly."
+- 핵심 철학: "사용자의 변화를 돕는 것", "온전한 나를 찾는 것"
+
+## 📌 프로젝트 개요
+- 이룸: 통합 웰니스 AI 플랫폼
+- 타겟: 10-30대 여성 (남성도 환영)
+- 현재 모듈: PC-1(퍼스널컬러), S-1(피부), C-1(체형)
+
+## 💻 기술 스택
+- Next.js 16.0.4 + TypeScript 5.3+ (strict)
+- Tailwind CSS v3.4 + shadcn/ui
+- Supabase + Clerk (clerk_user_id 기반)
+- Google Gemini 3 Pro API
+
+## ✍️ 코딩 규칙
+- 컴포넌트: PascalCase (예: PersonalColorCard.tsx)
+- 함수/변수: camelCase (예: handleSubmit)
+- 상수: UPPER_SNAKE_CASE (예: MAX_FILE_SIZE)
+- 주석: 한국어 필수 ("왜" 이렇게 했는지 설명)
+- 에러 메시지: 한국어 (사용자용)
+
+## 🎯 3대 핵심 원칙
+1. **Spec-First**: 스펙 없는 코드 작성 금지
+2. **Plan-Then-Execute**: 계획 없는 실행 금지
+3. **Verify-Loop**: 모든 결과는 테스트 통과 필수
+
+## 🌏 UI 텍스트 규칙
+- 신조어 금지: GMG, HMH, 홀리몰리 등 사용 안 함
+- 자연스럽고 정중한 톤 유지
+- 예: "분석이 완료되었습니다" (O) / "홀리몰리 완료!" (X)
+
+## 📚 필수 참조
+- @CLAUDE.md - 상세 개발 규칙
+- @docs/PROJECT-RULES.md - 프로젝트 기본 정보
+- @docs/SDD-WORKFLOW.md - Spec-Driven Development
+- @docs/AGENT-STRATEGY.md - Agent 활용 전략
+
+## ⚠️ Cursor 사용 시 주의
+- Claude Code 전용 명령어 (/compact, /clear, /rewind)는 Cursor에서 미지원
+- Thinking Mode (think, ultrathink)는 Claude API 기능
+- 상세 규칙은 CLAUDE.md 참조

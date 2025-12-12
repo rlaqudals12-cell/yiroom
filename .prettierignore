@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+.expo/
+
+# Coverage
+coverage/
+
+# Generated files
+*.min.js
+*.min.css
+package-lock.json
+pnpm-lock.yaml
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+
+# IDE
+.idea/
+.vscode/
+
+# Environment
+.env*
+!.env.example
+
+# Test snapshots
+__snapshots__/
+
+# Public assets
+public/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+*.woff
+*.woff2

@@ -1,0 +1,65 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build outputs
+.next
+out
+build
+dist
+
+# Testing
+coverage
+
+# Misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Editor
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# PWA 생성 파일 (Phase A-1)
+public/sw.js
+public/workbox-*.js
+public/sw.js.map
+public/workbox-*.js.map
+
+# Supabase
+.supabase
+
+# Turbo
+.turbo
+
+# Windows reserved filenames
+nul
+NUL
+con
+CON
+prn
+PRN
+aux
+AUX

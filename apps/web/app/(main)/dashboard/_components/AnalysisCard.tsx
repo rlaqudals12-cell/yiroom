@@ -1,0 +1,102 @@
+'use client';
+
+import Link from 'next/link';
+import { Palette, Sparkles, User, ChevronRight } from 'lucide-react';
+
+// 상대 시간 포맷팅 헬퍼 함수
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return '방금 전';
+  if (diffMins < 60) return `${diffMins}분 전`;
+  if (diffHours < 24) return `${diffHours}시간 전`;
+  if (diffDays < 7) return `${diffDays}일 전`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}주 전`;
+  return date.toLocaleDateString('ko-KR');
+}
+
+interface AnalysisSummary {
+  id: string;
+  type: 'personal-color' | 'skin' | 'body';
+  createdAt: Date;
+  summary: string;
+  seasonType?: string;
+  skinScore?: number;
+  bodyType?: string;
+}
+
+interface AnalysisCardProps {
+  analysis: AnalysisSummary;
+}
+
+// 분석 타입별 설정 (CSS 변수 기반 모듈 색상)
+const ANALYSIS_CONFIG = {
+  'personal-color': {
+    title: '퍼스널 컬러',
+    icon: Palette,
+    href: '/analysis/personal-color',
+    bgColor: 'bg-module-personal-color-light',
+    borderColor: 'border-module-personal-color/30',
+    iconColor: 'text-module-personal-color',
+  },
+  skin: {
+    title: '피부 분석',
+    icon: Sparkles,
+    href: '/analysis/skin',
+    bgColor: 'bg-module-skin-light',
+    borderColor: 'border-module-skin/30',
+    iconColor: 'text-module-skin',
+  },
+  body: {
+    title: '체형 분석',
+    icon: User,
+    href: '/analysis/body',
+    bgColor: 'bg-module-body-light',
+    borderColor: 'border-module-body/30',
+    iconColor: 'text-module-body',
+  },
+};
+
+export default function AnalysisCard({ analysis }: AnalysisCardProps) {
+  const config = ANALYSIS_CONFIG[analysis.type];
+  const Icon = config.icon;
+
+  // 시간 포맷팅 (한국어 상대 시간)
+  const timeAgo = formatRelativeTime(analysis.createdAt);
+
+  return (
+    <Link href={config.href}>
+      <div
+        className={`
+          ${config.bgColor} ${config.borderColor}
+          rounded-xl border p-5
+          hover:shadow-md transition-shadow cursor-pointer
+          group
+        `}
+      >
+        {/* 상단: 아이콘 + 타이틀 */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className={`p-2 rounded-lg bg-white/70 ${config.iconColor}`}>
+              <Icon className="w-5 h-5" />
+            </div>
+            <h3 className="font-semibold text-gray-900">{config.title}</h3>
+          </div>
+          <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+        </div>
+
+        {/* 결과 요약 */}
+        <p className="text-lg font-medium text-gray-800 mb-2">
+          {analysis.summary}
+        </p>
+
+        {/* 시간 정보 */}
+        <p className="text-sm text-gray-500">{timeAgo}</p>
+      </div>
+    </Link>
+  );
+}

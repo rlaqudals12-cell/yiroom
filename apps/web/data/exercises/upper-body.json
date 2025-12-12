@@ -1,0 +1,951 @@
+[
+  {
+    "id": "chest-001",
+    "name": "푸쉬업",
+    "nameEn": "Push-up",
+    "category": "upper",
+    "bodyParts": ["chest", "shoulder", "arm"],
+    "equipment": ["bodyweight"],
+    "difficulty": "beginner",
+    "instructions": [
+      "양손을 어깨너비보다 조금 넓게 바닥에 짚습니다",
+      "발끝과 손바닥으로 몸을 지탱하며 일직선을 유지합니다",
+      "팔꿈치를 굽혀 가슴이 바닥에 닿을 듯 내려갑니다",
+      "가슴과 삼두근에 힘을 주며 시작 자세로 돌아옵니다"
+    ],
+    "tips": ["내려갈 때 숨을 들이쉬고, 올라올 때 내쉽니다", "허리가 처지지 않도록 코어에 힘을 유지합니다"],
+    "caloriesPerMinute": 7,
+    "met": 3.8,
+    "suitableFor": { "bodyTypes": ["X", "H", "I"], "goals": ["strength", "endurance"] }
+  },
+  {
+    "id": "chest-002",
+    "name": "와이드 푸쉬업",
+    "nameEn": "Wide Push-up",
+    "category": "upper",
+    "bodyParts": ["chest"],
+    "equipment": ["bodyweight"],
+    "difficulty": "beginner",
+    "instructions": [
+      "양손을 어깨너비의 1.5배로 넓게 벌립니다",
+      "팔꿈치를 옆으로 굽히며 내려갑니다",
+      "가슴 근육의 수축을 느끼며 밀어올립니다"
+    ],
+    "tips": ["가슴 바깥쪽 자극에 집중합니다", "손목이 아프면 푸쉬업바를 사용하세요"],
+    "caloriesPerMinute": 7,
+    "met": 3.8,
+    "suitableFor": { "bodyTypes": ["X", "H"], "goals": ["strength"] }
+  },
+  {
+    "id": "chest-003",
+    "name": "다이아몬드 푸쉬업",
+    "nameEn": "Diamond Push-up",
+    "category": "upper",
+    "bodyParts": ["chest", "arm"],
+    "equipment": ["bodyweight"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "양손의 엄지와 검지로 다이아몬드 모양을 만듭니다",
+      "손을 가슴 아래에 위치시킵니다",
+      "팔꿈치를 몸에 붙이며 천천히 내려갑니다",
+      "삼두근에 힘을 주며 밀어올립니다"
+    ],
+    "tips": ["삼두근 자극이 강한 운동입니다", "손목 부담이 크므로 워밍업 필수"],
+    "caloriesPerMinute": 8,
+    "met": 4.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "chest-004",
+    "name": "인클라인 푸쉬업",
+    "nameEn": "Incline Push-up",
+    "category": "upper",
+    "bodyParts": ["chest"],
+    "equipment": ["bodyweight"],
+    "difficulty": "beginner",
+    "instructions": [
+      "의자나 벤치에 양손을 짚습니다",
+      "발은 바닥에 두고 몸을 일직선으로 유지합니다",
+      "팔을 굽혀 가슴을 벤치 쪽으로 내립니다",
+      "밀어올려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["초보자나 재활 시 좋은 운동입니다", "높이가 높을수록 쉬워집니다"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "bodyTypes": ["O", "A"], "goals": ["endurance"] }
+  },
+  {
+    "id": "chest-005",
+    "name": "디클라인 푸쉬업",
+    "nameEn": "Decline Push-up",
+    "category": "upper",
+    "bodyParts": ["chest", "shoulder"],
+    "equipment": ["bodyweight"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "발을 의자나 벤치 위에 올립니다",
+      "양손은 어깨너비로 바닥에 짚습니다",
+      "몸을 일직선으로 유지하며 내려갑니다",
+      "가슴 상부에 자극을 느끼며 밀어올립니다"
+    ],
+    "tips": ["윗가슴과 전면 삼각근 자극이 강합니다", "목에 무리가 가지 않도록 주의하세요"],
+    "caloriesPerMinute": 8,
+    "met": 4.2,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "chest-006",
+    "name": "덤벨 벤치프레스",
+    "nameEn": "Dumbbell Bench Press",
+    "category": "upper",
+    "bodyParts": ["chest", "arm"],
+    "equipment": ["dumbbell", "bench"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "벤치에 누워 발은 바닥에 고정합니다",
+      "덤벨을 가슴 위에서 잡고 팔을 편 상태로 시작합니다",
+      "팔꿈치를 굽히며 덤벨을 가슴 옆으로 내립니다",
+      "가슴에 힘을 주며 덤벨을 위로 밀어올립니다"
+    ],
+    "tips": ["덤벨이 흔들리지 않도록 코어에 힘을 줍니다", "어깨가 말리지 않도록 견갑골을 모아줍니다"],
+    "caloriesPerMinute": 6,
+    "met": 3.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "chest-007",
+    "name": "덤벨 플라이",
+    "nameEn": "Dumbbell Fly",
+    "category": "upper",
+    "bodyParts": ["chest"],
+    "equipment": ["dumbbell", "bench"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "벤치에 누워 덤벨을 가슴 위로 들어올립니다",
+      "팔꿈치를 살짝 굽힌 상태를 유지합니다",
+      "양팔을 옆으로 벌리며 덤벨을 내립니다",
+      "가슴 근육을 조이며 덤벨을 모아올립니다"
+    ],
+    "tips": ["팔꿈치를 너무 펴면 부상 위험이 있습니다", "가슴이 충분히 늘어나는 것을 느끼세요"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "chest-008",
+    "name": "케이블 크로스오버",
+    "nameEn": "Cable Crossover",
+    "category": "upper",
+    "bodyParts": ["chest"],
+    "equipment": ["machine"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "케이블 머신 중앙에 서서 양쪽 핸들을 잡습니다",
+      "한 발을 앞으로 내딛고 상체를 살짝 숙입니다",
+      "팔꿈치를 살짝 굽힌 채 양팔을 가슴 앞으로 모읍니다",
+      "천천히 팔을 벌려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["동작 끝에서 가슴을 쥐어짜듯 수축합니다", "무게보다 수축감에 집중하세요"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "chest-009",
+    "name": "체스트 프레스 머신",
+    "nameEn": "Chest Press Machine",
+    "category": "upper",
+    "bodyParts": ["chest", "arm"],
+    "equipment": ["machine"],
+    "difficulty": "beginner",
+    "instructions": [
+      "머신에 앉아 등을 등받이에 밀착합니다",
+      "핸들을 잡고 가슴 높이에 위치시킵니다",
+      "팔을 앞으로 밀어 핸들을 앞으로 뻗습니다",
+      "천천히 시작 자세로 돌아옵니다"
+    ],
+    "tips": ["초보자가 자세를 익히기 좋은 운동입니다", "어깨가 앞으로 말리지 않도록 주의하세요"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "bodyTypes": ["O", "A"], "goals": ["strength"] }
+  },
+  {
+    "id": "chest-010",
+    "name": "펙덱 플라이",
+    "nameEn": "Pec Deck Fly",
+    "category": "upper",
+    "bodyParts": ["chest"],
+    "equipment": ["machine"],
+    "difficulty": "beginner",
+    "instructions": [
+      "머신에 앉아 팔을 패드에 대고 핸들을 잡습니다",
+      "팔꿈치를 살짝 굽힌 상태를 유지합니다",
+      "양팔을 가슴 앞으로 모으며 수축합니다",
+      "천천히 팔을 벌려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["가슴 근육의 수축에 집중합니다", "무리한 무게는 어깨 부상을 유발할 수 있습니다"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "chest-011",
+    "name": "바벨 벤치프레스",
+    "nameEn": "Barbell Bench Press",
+    "category": "upper",
+    "bodyParts": ["chest", "arm", "shoulder"],
+    "equipment": ["barbell", "bench"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "벤치에 누워 바벨을 어깨너비보다 넓게 잡습니다",
+      "바벨을 랙에서 들어 가슴 위에 위치시킵니다",
+      "바벨을 천천히 가슴으로 내립니다",
+      "가슴과 삼두근에 힘을 주며 밀어올립니다"
+    ],
+    "tips": ["보조자와 함께 하는 것이 안전합니다", "손목이 꺾이지 않도록 주의하세요"],
+    "caloriesPerMinute": 7,
+    "met": 4.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "chest-012",
+    "name": "인클라인 덤벨 프레스",
+    "nameEn": "Incline Dumbbell Press",
+    "category": "upper",
+    "bodyParts": ["chest", "shoulder"],
+    "equipment": ["dumbbell", "bench"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "벤치를 30-45도로 세웁니다",
+      "덤벨을 어깨 위에 들고 시작합니다",
+      "덤벨을 위로 밀어올립니다",
+      "천천히 어깨 옆으로 내립니다"
+    ],
+    "tips": ["윗가슴 발달에 효과적입니다", "팔꿈치가 90도 이하로 내려가도록 합니다"],
+    "caloriesPerMinute": 6,
+    "met": 3.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "shoulder-001",
+    "name": "숄더 프레스",
+    "nameEn": "Shoulder Press",
+    "category": "upper",
+    "bodyParts": ["shoulder"],
+    "equipment": ["dumbbell"],
+    "difficulty": "beginner",
+    "instructions": [
+      "덤벨을 어깨 높이에서 잡고 섭니다",
+      "덤벨을 머리 위로 밀어올립니다",
+      "팔을 완전히 펴지 않고 약간 굽힌 상태에서 멈춥니다",
+      "천천히 어깨 높이로 내립니다"
+    ],
+    "tips": ["허리가 과하게 젖혀지지 않도록 코어에 힘을 줍니다", "목에 무리가 가지 않도록 턱을 살짝 당깁니다"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "bodyTypes": ["V", "I"], "goals": ["strength"] }
+  },
+  {
+    "id": "shoulder-002",
+    "name": "사이드 레터럴 레이즈",
+    "nameEn": "Side Lateral Raise",
+    "category": "upper",
+    "bodyParts": ["shoulder"],
+    "equipment": ["dumbbell"],
+    "difficulty": "beginner",
+    "instructions": [
+      "덤벨을 양손에 들고 몸 옆에 위치시킵니다",
+      "팔꿈치를 살짝 굽힌 상태로 유지합니다",
+      "양팔을 옆으로 들어 어깨 높이까지 올립니다",
+      "천천히 시작 자세로 내립니다"
+    ],
+    "tips": ["측면 삼각근을 타겟으로 합니다", "팔꿈치가 손목보다 높아야 합니다"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "shoulder-003",
+    "name": "프론트 레이즈",
+    "nameEn": "Front Raise",
+    "category": "upper",
+    "bodyParts": ["shoulder"],
+    "equipment": ["dumbbell"],
+    "difficulty": "beginner",
+    "instructions": [
+      "덤벨을 허벅지 앞에 들고 섭니다",
+      "팔꿈치를 살짝 굽힌 상태를 유지합니다",
+      "한 팔씩 또는 동시에 앞으로 들어올립니다",
+      "어깨 높이까지 올린 후 천천히 내립니다"
+    ],
+    "tips": ["전면 삼각근을 타겟으로 합니다", "반동을 사용하지 마세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "shoulder-004",
+    "name": "리어 델트 플라이",
+    "nameEn": "Rear Delt Fly",
+    "category": "upper",
+    "bodyParts": ["shoulder", "back"],
+    "equipment": ["dumbbell"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "상체를 앞으로 숙이고 덤벨을 아래로 늘어뜨립니다",
+      "팔꿈치를 살짝 굽힌 상태로 유지합니다",
+      "양팔을 옆으로 들어올립니다",
+      "후면 삼각근을 조이며 멈춘 후 내립니다"
+    ],
+    "tips": ["후면 삼각근과 승모근 중부를 타겟으로 합니다", "등이 굽지 않도록 주의하세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength", "posture"] }
+  },
+  {
+    "id": "shoulder-005",
+    "name": "아놀드 프레스",
+    "nameEn": "Arnold Press",
+    "category": "upper",
+    "bodyParts": ["shoulder"],
+    "equipment": ["dumbbell"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "덤벨을 얼굴 앞에 들고 손바닥이 몸을 향하게 합니다",
+      "덤벨을 위로 밀면서 손바닥을 바깥으로 회전시킵니다",
+      "팔을 완전히 펴고 잠시 멈춥니다",
+      "손바닥을 회전시키며 시작 자세로 돌아옵니다"
+    ],
+    "tips": ["삼각근 전체를 자극하는 복합 운동입니다", "회전 동작을 부드럽게 진행합니다"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "shoulder-006",
+    "name": "업라이트 로우",
+    "nameEn": "Upright Row",
+    "category": "upper",
+    "bodyParts": ["shoulder", "arm"],
+    "equipment": ["dumbbell"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "덤벨을 허벅지 앞에 들고 손바닥이 몸을 향하게 합니다",
+      "팔꿈치를 위로 당기며 덤벨을 턱 아래까지 올립니다",
+      "팔꿈치가 손목보다 높게 유지합니다",
+      "천천히 시작 자세로 내립니다"
+    ],
+    "tips": ["어깨 충돌 증후군이 있다면 피하세요", "팔꿈치를 너무 높이 올리지 마세요"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "goals": ["strength"], "injuries": ["shoulder"] }
+  },
+  {
+    "id": "shoulder-007",
+    "name": "숄더 슈러그",
+    "nameEn": "Shoulder Shrug",
+    "category": "upper",
+    "bodyParts": ["shoulder"],
+    "equipment": ["dumbbell"],
+    "difficulty": "beginner",
+    "instructions": [
+      "덤벨을 양손에 들고 몸 옆에 위치시킵니다",
+      "어깨를 귀 쪽으로 으쓱 올립니다",
+      "최고점에서 잠시 멈춥니다",
+      "천천히 어깨를 내립니다"
+    ],
+    "tips": ["승모근 상부를 타겟으로 합니다", "팔을 굽히지 않고 어깨만 움직입니다"],
+    "caloriesPerMinute": 3,
+    "met": 2.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "shoulder-008",
+    "name": "페이스 풀",
+    "nameEn": "Face Pull",
+    "category": "upper",
+    "bodyParts": ["shoulder", "back"],
+    "equipment": ["band", "machine"],
+    "difficulty": "beginner",
+    "instructions": [
+      "케이블이나 밴드를 얼굴 높이에 설정합니다",
+      "양손으로 로프를 잡고 한 발 뒤로 물러섭니다",
+      "팔꿈치를 옆으로 벌리며 얼굴 쪽으로 당깁니다",
+      "후면 삼각근과 승모근을 조이며 멈춥니다"
+    ],
+    "tips": ["자세 교정과 어깨 건강에 좋은 운동입니다", "무게보다 수축감에 집중하세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["posture", "strength"] }
+  },
+  {
+    "id": "shoulder-009",
+    "name": "밀리터리 프레스",
+    "nameEn": "Military Press",
+    "category": "upper",
+    "bodyParts": ["shoulder"],
+    "equipment": ["barbell"],
+    "difficulty": "advanced",
+    "instructions": [
+      "바벨을 쇄골 위에 올려 잡습니다",
+      "발을 어깨너비로 벌리고 코어에 힘을 줍니다",
+      "바벨을 머리 위로 밀어올립니다",
+      "천천히 쇄골 위치로 내립니다"
+    ],
+    "tips": ["전신 안정성이 필요한 복합 운동입니다", "허리가 젖혀지지 않도록 주의하세요"],
+    "caloriesPerMinute": 6,
+    "met": 3.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "shoulder-010",
+    "name": "케이블 레터럴 레이즈",
+    "nameEn": "Cable Lateral Raise",
+    "category": "upper",
+    "bodyParts": ["shoulder"],
+    "equipment": ["machine"],
+    "difficulty": "beginner",
+    "instructions": [
+      "케이블을 가장 낮은 위치에 설정합니다",
+      "케이블 반대편 손으로 핸들을 잡습니다",
+      "팔을 옆으로 들어 어깨 높이까지 올립니다",
+      "천천히 내려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["케이블이 지속적인 장력을 제공합니다", "몸을 기울이지 않고 똑바로 섭니다"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "shoulder-011",
+    "name": "파이크 푸쉬업",
+    "nameEn": "Pike Push-up",
+    "category": "upper",
+    "bodyParts": ["shoulder"],
+    "equipment": ["bodyweight"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "푸쉬업 자세에서 엉덩이를 높이 들어올립니다",
+      "몸이 역V자 모양이 되도록 합니다",
+      "머리를 바닥 쪽으로 내리며 팔을 굽힙니다",
+      "어깨에 힘을 주며 밀어올립니다"
+    ],
+    "tips": ["숄더 프레스의 맨몸 버전입니다", "물구나무 푸쉬업의 기초 동작입니다"],
+    "caloriesPerMinute": 6,
+    "met": 3.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "shoulder-012",
+    "name": "숄더 서클",
+    "nameEn": "Shoulder Circle",
+    "category": "upper",
+    "bodyParts": ["shoulder"],
+    "equipment": ["bodyweight"],
+    "difficulty": "beginner",
+    "instructions": [
+      "팔을 옆으로 펴고 섭니다",
+      "작은 원을 그리며 앞으로 회전합니다",
+      "점점 원을 크게 만듭니다",
+      "방향을 바꿔 뒤로도 회전합니다"
+    ],
+    "tips": ["워밍업이나 마무리 스트레칭으로 좋습니다", "어깨 가동성을 높여줍니다"],
+    "caloriesPerMinute": 2,
+    "met": 1.5,
+    "suitableFor": { "goals": ["posture", "endurance"] }
+  },
+  {
+    "id": "back-001",
+    "name": "턱걸이",
+    "nameEn": "Pull-up",
+    "category": "upper",
+    "bodyParts": ["back", "arm"],
+    "equipment": ["pullup_bar"],
+    "difficulty": "advanced",
+    "instructions": [
+      "바에 매달려 어깨너비보다 넓게 잡습니다",
+      "팔꿈치를 옆으로 당기며 몸을 끌어올립니다",
+      "턱이 바 위로 올라갈 때까지 당깁니다",
+      "천천히 팔을 펴며 내려옵니다"
+    ],
+    "tips": ["등근육으로 당기는 느낌에 집중합니다", "반동을 사용하지 마세요"],
+    "caloriesPerMinute": 8,
+    "met": 4.5,
+    "suitableFor": { "bodyTypes": ["V", "Y"], "goals": ["strength"] }
+  },
+  {
+    "id": "back-002",
+    "name": "친업",
+    "nameEn": "Chin-up",
+    "category": "upper",
+    "bodyParts": ["back", "arm"],
+    "equipment": ["pullup_bar"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "바에 매달려 어깨너비로 언더그립으로 잡습니다",
+      "이두와 등근육을 사용해 몸을 끌어올립니다",
+      "턱이 바 위로 올라갈 때까지 당깁니다",
+      "천천히 팔을 펴며 내려옵니다"
+    ],
+    "tips": ["턱걸이보다 이두 개입이 큽니다", "등 하부까지 수축을 느끼세요"],
+    "caloriesPerMinute": 8,
+    "met": 4.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "back-003",
+    "name": "랫풀다운",
+    "nameEn": "Lat Pulldown",
+    "category": "upper",
+    "bodyParts": ["back"],
+    "equipment": ["machine"],
+    "difficulty": "beginner",
+    "instructions": [
+      "머신에 앉아 허벅지를 패드 아래 고정합니다",
+      "바를 어깨너비보다 넓게 잡습니다",
+      "바를 쇄골 쪽으로 당깁니다",
+      "천천히 팔을 펴며 올려보냅니다"
+    ],
+    "tips": ["턱걸이 연습에 좋은 운동입니다", "등을 약간 젖히고 가슴을 펴세요"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "bodyTypes": ["O", "A"], "goals": ["strength"] }
+  },
+  {
+    "id": "back-004",
+    "name": "시티드 로우",
+    "nameEn": "Seated Row",
+    "category": "upper",
+    "bodyParts": ["back"],
+    "equipment": ["machine"],
+    "difficulty": "beginner",
+    "instructions": [
+      "머신에 앉아 발을 발판에 고정합니다",
+      "손잡이를 잡고 등을 곧게 세웁니다",
+      "팔꿈치를 뒤로 당기며 손잡이를 복부로 당깁니다",
+      "견갑골을 모으며 최대 수축 후 천천히 풀어줍니다"
+    ],
+    "tips": ["등 중앙부를 타겟으로 합니다", "몸을 앞뒤로 흔들지 마세요"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "goals": ["strength", "posture"] }
+  },
+  {
+    "id": "back-005",
+    "name": "원암 덤벨 로우",
+    "nameEn": "One-Arm Dumbbell Row",
+    "category": "upper",
+    "bodyParts": ["back"],
+    "equipment": ["dumbbell", "bench"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "한 손과 한 무릎을 벤치에 올립니다",
+      "반대 손으로 덤벨을 잡고 팔을 늘어뜨립니다",
+      "팔꿈치를 천장 쪽으로 당기며 덤벨을 올립니다",
+      "최대 수축 후 천천히 내립니다"
+    ],
+    "tips": ["광배근과 승모근 중부를 타겟으로 합니다", "등이 둥글게 말리지 않도록 주의하세요"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "back-006",
+    "name": "바벨 로우",
+    "nameEn": "Barbell Row",
+    "category": "upper",
+    "bodyParts": ["back"],
+    "equipment": ["barbell"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "바벨을 어깨너비로 잡고 상체를 앞으로 숙입니다",
+      "무릎을 살짝 굽히고 등을 일직선으로 유지합니다",
+      "바벨을 복부 쪽으로 당깁니다",
+      "천천히 내려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["허리 부상을 방지하려면 코어에 힘을 유지하세요", "등을 둥글게 말지 마세요"],
+    "caloriesPerMinute": 6,
+    "met": 3.5,
+    "suitableFor": { "goals": ["strength"], "injuries": ["back"] }
+  },
+  {
+    "id": "back-007",
+    "name": "인버티드 로우",
+    "nameEn": "Inverted Row",
+    "category": "upper",
+    "bodyParts": ["back"],
+    "equipment": ["bodyweight", "pullup_bar"],
+    "difficulty": "beginner",
+    "instructions": [
+      "바를 허리 높이에 설정합니다",
+      "바 아래에 누워 바를 잡습니다",
+      "발꿈치를 바닥에 두고 몸을 일직선으로 만듭니다",
+      "가슴을 바 쪽으로 당겨 올립니다"
+    ],
+    "tips": ["턱걸이 전 단계로 좋습니다", "몸이 일직선을 유지하도록 코어에 힘을 줍니다"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "back-008",
+    "name": "슈퍼맨",
+    "nameEn": "Superman",
+    "category": "upper",
+    "bodyParts": ["back"],
+    "equipment": ["bodyweight"],
+    "difficulty": "beginner",
+    "instructions": [
+      "바닥에 엎드려 팔과 다리를 뻗습니다",
+      "동시에 팔과 다리를 바닥에서 들어올립니다",
+      "2-3초간 유지합니다",
+      "천천히 내려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["척추기립근과 둔근을 강화합니다", "목이 과하게 젖혀지지 않도록 주의하세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["posture", "strength"] }
+  },
+  {
+    "id": "back-009",
+    "name": "데드리프트",
+    "nameEn": "Deadlift",
+    "category": "upper",
+    "bodyParts": ["back", "hip", "thigh"],
+    "equipment": ["barbell"],
+    "difficulty": "advanced",
+    "instructions": [
+      "바벨 앞에 서서 발을 어깨너비로 벌립니다",
+      "엉덩이를 뒤로 빼며 바벨을 잡습니다",
+      "등을 곧게 펴고 다리와 엉덩이 힘으로 일어섭니다",
+      "천천히 엉덩이를 뒤로 빼며 바벨을 내립니다"
+    ],
+    "tips": ["전신 운동의 왕으로 불립니다", "허리가 둥글게 말리면 부상 위험이 높습니다"],
+    "caloriesPerMinute": 8,
+    "met": 5.0,
+    "suitableFor": { "goals": ["strength"], "injuries": ["back"] }
+  },
+  {
+    "id": "back-010",
+    "name": "케이블 풀오버",
+    "nameEn": "Cable Pullover",
+    "category": "upper",
+    "bodyParts": ["back", "chest"],
+    "equipment": ["machine"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "케이블을 높은 위치에 설정합니다",
+      "바나 로프를 잡고 한 발 뒤로 물러섭니다",
+      "팔을 약간 굽힌 채 허벅지 쪽으로 당깁니다",
+      "천천히 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["광배근 하부를 효과적으로 자극합니다", "팔꿈치 각도를 유지하세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "back-011",
+    "name": "티바 로우",
+    "nameEn": "T-Bar Row",
+    "category": "upper",
+    "bodyParts": ["back"],
+    "equipment": ["barbell"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "T바 머신 또는 바벨 한쪽 끝을 고정합니다",
+      "V그립을 바벨에 끼워 잡습니다",
+      "상체를 45도로 숙이고 바를 복부로 당깁니다",
+      "천천히 내려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["등 중앙부와 하부를 타겟으로 합니다", "허리가 둥글게 말리지 않도록 주의하세요"],
+    "caloriesPerMinute": 6,
+    "met": 3.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "back-012",
+    "name": "리버스 플라이 머신",
+    "nameEn": "Reverse Fly Machine",
+    "category": "upper",
+    "bodyParts": ["back", "shoulder"],
+    "equipment": ["machine"],
+    "difficulty": "beginner",
+    "instructions": [
+      "머신에 앉아 가슴을 패드에 밀착합니다",
+      "핸들을 어깨 높이에서 잡습니다",
+      "팔을 뒤로 벌리며 견갑골을 모읍니다",
+      "천천히 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["후면 삼각근과 승모근을 강화합니다", "어깨를 으쓱하지 않도록 주의하세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["posture", "strength"] }
+  },
+  {
+    "id": "arm-001",
+    "name": "덤벨 컬",
+    "nameEn": "Dumbbell Curl",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["dumbbell"],
+    "difficulty": "beginner",
+    "instructions": [
+      "덤벨을 양손에 들고 팔을 몸 옆으로 내립니다",
+      "팔꿈치를 고정한 채 덤벨을 어깨 쪽으로 올립니다",
+      "이두근을 최대한 수축합니다",
+      "천천히 내려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["팔꿈치가 앞으로 나가지 않도록 고정합니다", "반동을 사용하지 마세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-002",
+    "name": "해머 컬",
+    "nameEn": "Hammer Curl",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["dumbbell"],
+    "difficulty": "beginner",
+    "instructions": [
+      "덤벨을 양손에 들고 손바닥이 서로 마주보게 합니다",
+      "팔꿈치를 고정한 채 덤벨을 어깨 쪽으로 올립니다",
+      "이두와 전완근을 수축합니다",
+      "천천히 내려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["이두근과 전완근을 동시에 자극합니다", "손목을 중립 위치로 유지하세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-003",
+    "name": "바벨 컬",
+    "nameEn": "Barbell Curl",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["barbell"],
+    "difficulty": "beginner",
+    "instructions": [
+      "바벨을 어깨너비로 잡고 팔을 내립니다",
+      "팔꿈치를 고정한 채 바벨을 어깨 쪽으로 올립니다",
+      "이두근을 최대한 수축합니다",
+      "천천히 내려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["덤벨 컬보다 무거운 무게로 가능합니다", "상체를 흔들지 마세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-004",
+    "name": "케이블 컬",
+    "nameEn": "Cable Curl",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["machine"],
+    "difficulty": "beginner",
+    "instructions": [
+      "케이블을 낮은 위치에 설정합니다",
+      "바 또는 핸들을 잡고 팔을 내립니다",
+      "팔꿈치를 고정한 채 케이블을 어깨 쪽으로 당깁니다",
+      "천천히 내려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["케이블이 지속적인 장력을 제공합니다", "마지막 수축에서 잠시 멈추세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-005",
+    "name": "트라이셉스 딥",
+    "nameEn": "Triceps Dip",
+    "category": "upper",
+    "bodyParts": ["arm", "chest"],
+    "equipment": ["bodyweight"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "평행봉이나 의자 손잡이를 잡고 몸을 띄웁니다",
+      "팔꿈치를 굽히며 몸을 내립니다",
+      "팔꿈치가 90도가 될 때까지 내립니다",
+      "삼두근에 힘을 주며 밀어올립니다"
+    ],
+    "tips": ["삼두근에 집중하려면 몸을 수직으로 유지하세요", "어깨 부상 주의가 필요합니다"],
+    "caloriesPerMinute": 6,
+    "met": 3.5,
+    "suitableFor": { "goals": ["strength"], "injuries": ["shoulder"] }
+  },
+  {
+    "id": "arm-006",
+    "name": "벤치 딥",
+    "nameEn": "Bench Dip",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["bodyweight"],
+    "difficulty": "beginner",
+    "instructions": [
+      "벤치에 등을 대고 손을 짚습니다",
+      "발은 앞으로 뻗거나 바닥에 둡니다",
+      "팔꿈치를 굽히며 엉덩이를 내립니다",
+      "삼두근에 힘을 주며 밀어올립니다"
+    ],
+    "tips": ["초보자도 쉽게 할 수 있는 삼두 운동입니다", "팔꿈치가 바깥으로 벌어지지 않게 하세요"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-007",
+    "name": "트라이셉스 푸쉬다운",
+    "nameEn": "Triceps Pushdown",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["machine"],
+    "difficulty": "beginner",
+    "instructions": [
+      "케이블을 높은 위치에 설정하고 바를 잡습니다",
+      "팔꿈치를 옆구리에 고정합니다",
+      "바를 아래로 밀어 팔을 완전히 폅니다",
+      "삼두근을 조인 후 천천히 올립니다"
+    ],
+    "tips": ["삼두근 고립 운동입니다", "팔꿈치 위치를 고정하세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-008",
+    "name": "오버헤드 트라이셉스 익스텐션",
+    "nameEn": "Overhead Triceps Extension",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["dumbbell"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "덤벨 하나를 양손으로 잡고 머리 위로 들어올립니다",
+      "팔꿈치를 귀 옆에 고정합니다",
+      "팔꿈치를 굽혀 덤벨을 머리 뒤로 내립니다",
+      "삼두근에 힘을 주며 팔을 다시 폅니다"
+    ],
+    "tips": ["삼두근 장두를 타겟으로 합니다", "허리가 젖혀지지 않도록 코어에 힘을 주세요"],
+    "caloriesPerMinute": 4,
+    "met": 2.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-009",
+    "name": "스컬크러셔",
+    "nameEn": "Skull Crusher",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["barbell", "bench"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "벤치에 누워 바벨을 좁게 잡고 팔을 폅니다",
+      "팔꿈치를 고정한 채 바벨을 이마 쪽으로 내립니다",
+      "삼두근에 힘을 주며 바벨을 밀어올립니다",
+      "팔을 완전히 펴고 삼두근을 조입니다"
+    ],
+    "tips": ["이름과 달리 바벨은 이마 위가 아닌 뒤로 내립니다", "무거운 무게는 보조자와 함께 하세요"],
+    "caloriesPerMinute": 5,
+    "met": 3.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-010",
+    "name": "킥백",
+    "nameEn": "Triceps Kickback",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["dumbbell"],
+    "difficulty": "beginner",
+    "instructions": [
+      "한 손과 무릎을 벤치에 올립니다",
+      "반대 손으로 덤벨을 잡고 팔꿈치를 90도로 굽힙니다",
+      "팔꿈치를 고정한 채 팔을 뒤로 뻗습니다",
+      "삼두근을 조인 후 천천히 원위치합니다"
+    ],
+    "tips": ["삼두근 수축에 집중하세요", "상완이 바닥과 평행을 유지해야 합니다"],
+    "caloriesPerMinute": 3,
+    "met": 2.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-011",
+    "name": "리스트 컬",
+    "nameEn": "Wrist Curl",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["dumbbell"],
+    "difficulty": "beginner",
+    "instructions": [
+      "벤치에 앉아 전완을 허벅지에 올립니다",
+      "손목만 벤치 밖으로 나오게 합니다",
+      "덤벨을 손목만 사용해 위로 올립니다",
+      "천천히 손목을 내려 원위치합니다"
+    ],
+    "tips": ["전완근 강화에 효과적입니다", "그립력 향상에도 도움이 됩니다"],
+    "caloriesPerMinute": 2,
+    "met": 1.5,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-012",
+    "name": "리버스 컬",
+    "nameEn": "Reverse Curl",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["barbell"],
+    "difficulty": "beginner",
+    "instructions": [
+      "바벨을 오버그립(손등이 위)으로 잡습니다",
+      "팔꿈치를 고정한 채 바벨을 어깨 쪽으로 올립니다",
+      "전완근과 이두를 수축합니다",
+      "천천히 내려 시작 자세로 돌아갑니다"
+    ],
+    "tips": ["전완근과 상완요골근을 타겟으로 합니다", "가벼운 무게로 시작하세요"],
+    "caloriesPerMinute": 3,
+    "met": 2.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-013",
+    "name": "컨센트레이션 컬",
+    "nameEn": "Concentration Curl",
+    "category": "upper",
+    "bodyParts": ["arm"],
+    "equipment": ["dumbbell"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "벤치에 앉아 다리를 벌립니다",
+      "덤벨을 든 팔의 팔꿈치를 허벅지 안쪽에 고정합니다",
+      "덤벨을 어깨 쪽으로 천천히 올립니다",
+      "이두근을 최대한 수축한 후 내립니다"
+    ],
+    "tips": ["이두근 피크를 만드는 데 효과적입니다", "반동 없이 순수 이두 힘으로 들어올리세요"],
+    "caloriesPerMinute": 3,
+    "met": 2.0,
+    "suitableFor": { "goals": ["strength"] }
+  },
+  {
+    "id": "arm-014",
+    "name": "클로즈그립 푸쉬업",
+    "nameEn": "Close-Grip Push-up",
+    "category": "upper",
+    "bodyParts": ["arm", "chest"],
+    "equipment": ["bodyweight"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "푸쉬업 자세에서 양손을 어깨너비보다 좁게 모읍니다",
+      "팔꿈치를 몸에 붙이며 내려갑니다",
+      "가슴이 손에 닿을 듯 내려갑니다",
+      "삼두근에 힘을 주며 밀어올립니다"
+    ],
+    "tips": ["삼두근에 더 많은 자극이 갑니다", "손목에 무리가 갈 수 있으니 주의하세요"],
+    "caloriesPerMinute": 7,
+    "met": 3.8,
+    "suitableFor": { "goals": ["strength"] }
+  }
+]

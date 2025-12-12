@@ -1,0 +1,663 @@
+[
+  {
+    "id": "celeb-001",
+    "name": "제니",
+    "nameEn": "Jennie",
+    "group": "BLACKPINK",
+    "bodyType": "X",
+    "personalColor": "Summer",
+    "gender": "FEMALE",
+    "category": "pilates_yoga",
+    "routines": [
+      {
+        "name": "제니의 필라테스 루틴",
+        "type": "PILATES",
+        "description": "코어 강화와 라인 정리에 집중하는 리포머 필라테스 위주의 루틴",
+        "exercises": [
+          { "name": "리포머 풋워크", "sets": 3, "reps": 15 },
+          { "name": "숄더 브릿지", "sets": 3, "reps": 12 },
+          { "name": "사이드 레그 시리즈", "sets": 2, "reps": 10 },
+          { "name": "플랭크 투 파이크", "sets": 3, "reps": 8 }
+        ]
+      },
+      {
+        "name": "제니의 웨이트 루틴",
+        "type": "WEIGHT",
+        "description": "탄탄한 바디라인을 위한 저중량 고반복 웨이트 트레이닝",
+        "exercises": [
+          { "name": "덤벨 스쿼트", "sets": 4, "reps": 15 },
+          { "name": "힙 쓰러스트", "sets": 3, "reps": 12 },
+          { "name": "레터럴 레이즈", "sets": 3, "reps": 15 },
+          { "name": "케이블 킥백", "sets": 3, "reps": 12 }
+        ]
+      }
+    ],
+    "sourceType": "INTERVIEW",
+    "isActive": true
+  },
+  {
+    "id": "celeb-002",
+    "name": "지수",
+    "nameEn": "Jisoo",
+    "group": "BLACKPINK",
+    "bodyType": "X",
+    "personalColor": "Summer",
+    "gender": "FEMALE",
+    "category": "pilates_yoga",
+    "routines": [
+      {
+        "name": "지수의 요가 루틴",
+        "type": "YOGA",
+        "description": "유연성과 심신 안정을 위한 빈야사 요가 중심 루틴",
+        "exercises": [
+          { "name": "태양 경배 시퀀스", "sets": 1, "reps": 5 },
+          { "name": "전사 자세", "sets": 1, "duration": 1 },
+          { "name": "나무 자세", "sets": 1, "duration": 1 },
+          { "name": "비둘기 자세", "sets": 1, "duration": 2 }
+        ]
+      }
+    ],
+    "sourceType": "SNS",
+    "isActive": true
+  },
+  {
+    "id": "celeb-003",
+    "name": "수지",
+    "nameEn": "Suzy",
+    "bodyType": "X",
+    "personalColor": "Spring",
+    "gender": "FEMALE",
+    "category": "pilates_yoga",
+    "routines": [
+      {
+        "name": "수지의 필라테스 루틴",
+        "type": "PILATES",
+        "description": "전신 균형과 코어 강화에 집중하는 매트 필라테스",
+        "exercises": [
+          { "name": "헌드레드", "sets": 1, "reps": 100 },
+          { "name": "롤업", "sets": 3, "reps": 10 },
+          { "name": "싱글 레그 서클", "sets": 2, "reps": 10 },
+          { "name": "스위밍", "sets": 3, "reps": 20 }
+        ]
+      },
+      {
+        "name": "수지의 댄스 워크아웃",
+        "type": "DANCE",
+        "description": "즐겁게 칼로리를 소모하는 K-POP 댄스 기반 운동",
+        "exercises": [
+          { "name": "워밍업 스트레칭", "duration": 5 },
+          { "name": "K-POP 안무 연습", "duration": 20 },
+          { "name": "프리스타일 댄스", "duration": 10 },
+          { "name": "쿨다운 스트레칭", "duration": 5 }
+        ]
+      }
+    ],
+    "sourceType": "INTERVIEW",
+    "isActive": true
+  },
+  {
+    "id": "celeb-004",
+    "name": "신세경",
+    "nameEn": "Shin Se-kyung",
+    "bodyType": "8",
+    "personalColor": "Summer",
+    "gender": "FEMALE",
+    "category": "pilates_yoga",
+    "routines": [
+      {
+        "name": "신세경의 필라테스 루틴",
+        "type": "PILATES",
+        "description": "S라인 유지를 위한 기구 필라테스 위주 운동",
+        "exercises": [
+          { "name": "캐딜락 레그 스프링", "sets": 3, "reps": 12 },
+          { "name": "리포머 런지", "sets": 3, "reps": 10 },
+          { "name": "체어 푸쉬다운", "sets": 3, "reps": 12 },
+          { "name": "배럴 사이드 스트레치", "sets": 2, "reps": 8 }
+        ]
+      }
+    ],
+    "sourceType": "INTERVIEW",
+    "isActive": true
+  },
+  {
+    "id": "celeb-005",
+    "name": "한예슬",
+    "nameEn": "Han Ye-seul",
+    "bodyType": "X",
+    "personalColor": "Summer",
+    "gender": "FEMALE",
+    "category": "pilates_yoga",
+    "routines": [
+      {
+        "name": "한예슬의 요가 루틴",
+        "type": "YOGA",
+        "description": "아침을 여는 활력 요가와 저녁 릴렉싱 요가 조합",
+        "exercises": [
+          { "name": "모닝 선라이즈 플로우", "duration": 15 },
+          { "name": "밸런스 시퀀스", "duration": 10 },
+          { "name": "코어 스트렝스 요가", "duration": 10 },
+          { "name": "릴렉싱 스트레치", "duration": 10 }
+        ]
+      },
+      {
+        "name": "한예슬의 필라테스 루틴",
+        "type": "PILATES",
+        "description": "탄탄한 바디라인을 위한 매트 필라테스",
+        "exercises": [
+          { "name": "클램쉘", "sets": 3, "reps": 15 },
+          { "name": "더블 레그 스트레치", "sets": 3, "reps": 12 },
+          { "name": "사이드 플랭크", "sets": 2, "duration": 1 },
+          { "name": "티저", "sets": 3, "reps": 8 }
+        ]
+      }
+    ],
+    "sourceType": "YOUTUBE",
+    "isActive": true
+  },
+  {
+    "id": "celeb-006",
+    "name": "손예진",
+    "nameEn": "Son Ye-jin",
+    "bodyType": "X",
+    "personalColor": "Autumn",
+    "gender": "FEMALE",
+    "category": "pilates_yoga",
+    "routines": [
+      {
+        "name": "손예진의 홈트 루틴",
+        "type": "HOME",
+        "description": "집에서 하는 전신 스트레칭과 코어 운동",
+        "exercises": [
+          { "name": "전신 스트레칭", "duration": 10 },
+          { "name": "플랭크", "sets": 3, "duration": 1 },
+          { "name": "브릿지", "sets": 3, "reps": 15 },
+          { "name": "마운틴 클라이머", "sets": 3, "reps": 20 }
+        ]
+      },
+      {
+        "name": "손예진의 필라테스 루틴",
+        "type": "PILATES",
+        "description": "우아한 바디라인을 위한 기구 필라테스",
+        "exercises": [
+          { "name": "리포머 스트레치", "sets": 1, "duration": 5 },
+          { "name": "레그 서클", "sets": 3, "reps": 10 },
+          { "name": "롱 스파인", "sets": 3, "reps": 8 },
+          { "name": "사이드 스플릿", "sets": 2, "reps": 10 }
+        ]
+      }
+    ],
+    "sourceType": "INTERVIEW",
+    "isActive": true
+  },
+  {
+    "id": "celeb-007",
+    "name": "이효리",
+    "nameEn": "Lee Hyori",
+    "bodyType": "8",
+    "personalColor": "Winter",
+    "gender": "FEMALE",
+    "category": "weight",
+    "routines": [
+      {
+        "name": "이효리의 웨이트 루틴",
+        "type": "WEIGHT",
+        "description": "건강한 글래머 바디를 위한 프리웨이트 중심 운동",
+        "exercises": [
+          { "name": "바벨 스쿼트", "sets": 4, "reps": 12 },
+          { "name": "데드리프트", "sets": 4, "reps": 10 },
+          { "name": "런지", "sets": 3, "reps": 12 },
+          { "name": "레그 프레스", "sets": 3, "reps": 15 }
+        ]
+      },
+      {
+        "name": "이효리의 요가 루틴",
+        "type": "YOGA",
+        "description": "마음 챙김과 유연성 향상을 위한 하타 요가",
+        "exercises": [
+          { "name": "호흡 명상", "duration": 5 },
+          { "name": "태양 경배 자세", "sets": 1, "reps": 10 },
+          { "name": "전사 시퀀스", "duration": 15 },
+          { "name": "마무리 명상", "duration": 10 }
+        ]
+      }
+    ],
+    "sourceType": "YOUTUBE",
+    "isActive": true
+  },
+  {
+    "id": "celeb-008",
+    "name": "제시",
+    "nameEn": "Jessi",
+    "bodyType": "8",
+    "personalColor": "Winter",
+    "gender": "FEMALE",
+    "category": "weight",
+    "routines": [
+      {
+        "name": "제시의 HIIT 루틴",
+        "type": "CARDIO",
+        "description": "폭발적인 에너지의 고강도 인터벌 트레이닝",
+        "exercises": [
+          { "name": "버피", "sets": 4, "reps": 10 },
+          { "name": "점프 스쿼트", "sets": 4, "reps": 15 },
+          { "name": "마운틴 클라이머", "sets": 4, "reps": 30 },
+          { "name": "하이니", "sets": 4, "duration": 1 }
+        ]
+      },
+      {
+        "name": "제시의 웨이트 루틴",
+        "type": "WEIGHT",
+        "description": "파워풀한 바디를 위한 고중량 트레이닝",
+        "exercises": [
+          { "name": "힙 쓰러스트", "sets": 4, "reps": 12 },
+          { "name": "케이블 킥백", "sets": 3, "reps": 15 },
+          { "name": "레그 컬", "sets": 3, "reps": 12 },
+          { "name": "글루트 브릿지", "sets": 3, "reps": 15 }
+        ]
+      }
+    ],
+    "sourceType": "YOUTUBE",
+    "isActive": true
+  },
+  {
+    "id": "celeb-009",
+    "name": "화사",
+    "nameEn": "Hwasa",
+    "group": "MAMAMOO",
+    "bodyType": "A",
+    "personalColor": "Autumn",
+    "gender": "FEMALE",
+    "category": "weight",
+    "routines": [
+      {
+        "name": "화사의 댄스 웨이트 루틴",
+        "type": "WEIGHT",
+        "description": "무대 위 퍼포먼스를 위한 하체 중심 웨이트",
+        "exercises": [
+          { "name": "고블릿 스쿼트", "sets": 4, "reps": 12 },
+          { "name": "스모 데드리프트", "sets": 3, "reps": 10 },
+          { "name": "케틀벨 스윙", "sets": 4, "reps": 15 },
+          { "name": "워킹 런지", "sets": 3, "reps": 12 }
+        ]
+      },
+      {
+        "name": "화사의 댄스 카디오",
+        "type": "DANCE",
+        "description": "무대 퍼포먼스 연습 겸 유산소 운동",
+        "exercises": [
+          { "name": "워밍업", "duration": 5 },
+          { "name": "안무 연습", "duration": 30 },
+          { "name": "프리스타일", "duration": 10 },
+          { "name": "쿨다운", "duration": 5 }
+        ]
+      }
+    ],
+    "sourceType": "INTERVIEW",
+    "isActive": true
+  },
+  {
+    "id": "celeb-010",
+    "name": "강소라",
+    "nameEn": "Kang So-ra",
+    "bodyType": "X",
+    "personalColor": "Summer",
+    "gender": "FEMALE",
+    "category": "weight",
+    "routines": [
+      {
+        "name": "강소라의 다이어트 루틴",
+        "type": "WEIGHT",
+        "description": "체중 감량과 근력 유지를 위한 서킷 트레이닝",
+        "exercises": [
+          { "name": "스쿼트", "sets": 4, "reps": 15 },
+          { "name": "푸쉬업", "sets": 3, "reps": 12 },
+          { "name": "플랭크", "sets": 3, "duration": 1 },
+          { "name": "버피", "sets": 3, "reps": 10 }
+        ]
+      },
+      {
+        "name": "강소라의 필라테스 루틴",
+        "type": "PILATES",
+        "description": "균형 잡힌 바디라인을 위한 필라테스",
+        "exercises": [
+          { "name": "헌드레드", "sets": 1, "reps": 100 },
+          { "name": "크리스크로스", "sets": 3, "reps": 20 },
+          { "name": "레그 풀", "sets": 3, "reps": 10 },
+          { "name": "티저", "sets": 3, "reps": 8 }
+        ]
+      }
+    ],
+    "sourceType": "INTERVIEW",
+    "isActive": true
+  },
+  {
+    "id": "celeb-011",
+    "name": "청하",
+    "nameEn": "Chungha",
+    "bodyType": "X",
+    "personalColor": "Winter",
+    "gender": "FEMALE",
+    "category": "dance",
+    "routines": [
+      {
+        "name": "청하의 댄스 카디오",
+        "type": "DANCE",
+        "description": "폭발적인 에너지의 퍼포먼스 댄스 트레이닝",
+        "exercises": [
+          { "name": "워밍업 스트레칭", "duration": 10 },
+          { "name": "아이솔레이션 연습", "duration": 10 },
+          { "name": "안무 연습", "duration": 40 },
+          { "name": "쿨다운", "duration": 10 }
+        ]
+      },
+      {
+        "name": "청하의 유산소 루틴",
+        "type": "CARDIO",
+        "description": "체력 향상을 위한 인터벌 카디오",
+        "exercises": [
+          { "name": "러닝", "duration": 20 },
+          { "name": "스텝업", "sets": 4, "reps": 15 },
+          { "name": "점프로프", "duration": 10 },
+          { "name": "버피", "sets": 3, "reps": 10 }
+        ]
+      }
+    ],
+    "sourceType": "YOUTUBE",
+    "isActive": true
+  },
+  {
+    "id": "celeb-012",
+    "name": "선미",
+    "nameEn": "Sunmi",
+    "bodyType": "I",
+    "personalColor": "Spring",
+    "gender": "FEMALE",
+    "category": "dance",
+    "routines": [
+      {
+        "name": "선미의 댄스 루틴",
+        "type": "DANCE",
+        "description": "표현력과 라인을 살리는 컨템포러리 댄스 기반 운동",
+        "exercises": [
+          { "name": "플로어 워크", "duration": 15 },
+          { "name": "웨이브 연습", "duration": 10 },
+          { "name": "안무 연습", "duration": 30 },
+          { "name": "스트레칭", "duration": 15 }
+        ]
+      }
+    ],
+    "sourceType": "SNS",
+    "isActive": true
+  },
+  {
+    "id": "celeb-013",
+    "name": "현아",
+    "nameEn": "HyunA",
+    "bodyType": "I",
+    "personalColor": "Spring",
+    "gender": "FEMALE",
+    "category": "dance",
+    "routines": [
+      {
+        "name": "현아의 섹시 댄스 루틴",
+        "type": "DANCE",
+        "description": "섹시하고 파워풀한 안무 기반 전신 운동",
+        "exercises": [
+          { "name": "힙 워밍업", "duration": 10 },
+          { "name": "웨이브 & 힙 무브먼트", "duration": 15 },
+          { "name": "안무 연습", "duration": 30 },
+          { "name": "플로어 워크", "duration": 10 }
+        ]
+      },
+      {
+        "name": "현아의 필라테스 루틴",
+        "type": "PILATES",
+        "description": "슬림한 바디라인 유지를 위한 매트 필라테스",
+        "exercises": [
+          { "name": "레그 서클", "sets": 2, "reps": 10 },
+          { "name": "싱글 레그 스트레치", "sets": 3, "reps": 10 },
+          { "name": "사이드 킥", "sets": 2, "reps": 15 },
+          { "name": "스완", "sets": 3, "reps": 8 }
+        ]
+      }
+    ],
+    "sourceType": "SNS",
+    "isActive": true
+  },
+  {
+    "id": "celeb-014",
+    "name": "리사",
+    "nameEn": "Lisa",
+    "group": "BLACKPINK",
+    "bodyType": "I",
+    "personalColor": "Winter",
+    "gender": "FEMALE",
+    "category": "dance",
+    "routines": [
+      {
+        "name": "리사의 댄스 트레이닝",
+        "type": "DANCE",
+        "description": "칼군무와 파워풀한 퍼포먼스를 위한 댄스 연습",
+        "exercises": [
+          { "name": "아이솔레이션", "duration": 10 },
+          { "name": "힙합 기초 동작", "duration": 15 },
+          { "name": "안무 연습", "duration": 40 },
+          { "name": "프리스타일", "duration": 15 }
+        ]
+      },
+      {
+        "name": "리사의 웨이트 루틴",
+        "type": "WEIGHT",
+        "description": "무대 체력을 위한 기본 근력 운동",
+        "exercises": [
+          { "name": "스쿼트", "sets": 4, "reps": 15 },
+          { "name": "런지", "sets": 3, "reps": 12 },
+          { "name": "플랭크", "sets": 3, "duration": 1 },
+          { "name": "레그 레이즈", "sets": 3, "reps": 15 }
+        ]
+      }
+    ],
+    "sourceType": "YOUTUBE",
+    "isActive": true
+  },
+  {
+    "id": "celeb-015",
+    "name": "한혜진",
+    "nameEn": "Han Hye-jin",
+    "bodyType": "H",
+    "personalColor": "Winter",
+    "gender": "FEMALE",
+    "category": "model",
+    "routines": [
+      {
+        "name": "한혜진의 모델 바디 루틴",
+        "type": "PILATES",
+        "description": "긴 라인과 자세 교정을 위한 기구 필라테스",
+        "exercises": [
+          { "name": "리포머 풋워크", "sets": 3, "reps": 15 },
+          { "name": "롱 스트레치", "sets": 3, "reps": 10 },
+          { "name": "엘리펀트", "sets": 3, "reps": 8 },
+          { "name": "사이드 스플릿", "sets": 2, "reps": 10 }
+        ]
+      },
+      {
+        "name": "한혜진의 요가 루틴",
+        "type": "YOGA",
+        "description": "유연성과 밸런스를 위한 아쉬탕가 요가",
+        "exercises": [
+          { "name": "태양 경배 A", "sets": 1, "reps": 5 },
+          { "name": "태양 경배 B", "sets": 1, "reps": 3 },
+          { "name": "스탠딩 시퀀스", "duration": 20 },
+          { "name": "마무리 시퀀스", "duration": 15 }
+        ]
+      }
+    ],
+    "sourceType": "INTERVIEW",
+    "isActive": true
+  },
+  {
+    "id": "celeb-016",
+    "name": "장윤주",
+    "nameEn": "Jang Yoon-ju",
+    "bodyType": "H",
+    "personalColor": "Winter",
+    "gender": "FEMALE",
+    "category": "model",
+    "routines": [
+      {
+        "name": "장윤주의 웨이트 루틴",
+        "type": "WEIGHT",
+        "description": "건강하고 탄탄한 모델 바디를 위한 웨이트 트레이닝",
+        "exercises": [
+          { "name": "데드리프트", "sets": 4, "reps": 10 },
+          { "name": "스쿼트", "sets": 4, "reps": 12 },
+          { "name": "랫풀다운", "sets": 3, "reps": 12 },
+          { "name": "숄더 프레스", "sets": 3, "reps": 12 }
+        ]
+      },
+      {
+        "name": "장윤주의 필라테스 루틴",
+        "type": "PILATES",
+        "description": "라인 정리와 코어 강화를 위한 필라테스",
+        "exercises": [
+          { "name": "헌드레드", "sets": 1, "reps": 100 },
+          { "name": "롤업", "sets": 3, "reps": 10 },
+          { "name": "스윔", "sets": 3, "reps": 20 },
+          { "name": "레그 풀", "sets": 3, "reps": 10 }
+        ]
+      }
+    ],
+    "sourceType": "YOUTUBE",
+    "isActive": true
+  },
+  {
+    "id": "celeb-017",
+    "name": "이하늬",
+    "nameEn": "Lee Ha-nui",
+    "bodyType": "X",
+    "personalColor": "Summer",
+    "gender": "FEMALE",
+    "category": "model",
+    "routines": [
+      {
+        "name": "이하늬의 필라테스 루틴",
+        "type": "PILATES",
+        "description": "우아하고 탄탄한 바디라인을 위한 전신 필라테스",
+        "exercises": [
+          { "name": "스파인 스트레치", "sets": 3, "reps": 10 },
+          { "name": "원 레그 서클", "sets": 2, "reps": 10 },
+          { "name": "사이드 킥 시리즈", "sets": 2, "reps": 12 },
+          { "name": "티저", "sets": 3, "reps": 8 }
+        ]
+      }
+    ],
+    "sourceType": "INTERVIEW",
+    "isActive": true
+  },
+  {
+    "id": "celeb-018",
+    "name": "아이린",
+    "nameEn": "Irene",
+    "group": "Red Velvet",
+    "bodyType": "X",
+    "personalColor": "Summer",
+    "gender": "FEMALE",
+    "category": "model",
+    "routines": [
+      {
+        "name": "아이린의 댄스 카디오",
+        "type": "DANCE",
+        "description": "무대 퍼포먼스와 체력 유지를 위한 댄스 트레이닝",
+        "exercises": [
+          { "name": "워밍업", "duration": 10 },
+          { "name": "안무 연습", "duration": 30 },
+          { "name": "포인트 동작 연습", "duration": 15 },
+          { "name": "쿨다운 스트레칭", "duration": 10 }
+        ]
+      },
+      {
+        "name": "아이린의 필라테스 루틴",
+        "type": "PILATES",
+        "description": "슬림하고 균형 잡힌 바디라인을 위한 매트 필라테스",
+        "exercises": [
+          { "name": "브리징", "sets": 3, "reps": 15 },
+          { "name": "클램쉘", "sets": 3, "reps": 15 },
+          { "name": "사이드 플랭크", "sets": 2, "duration": 1 },
+          { "name": "버드독", "sets": 3, "reps": 10 }
+        ]
+      }
+    ],
+    "sourceType": "SNS",
+    "isActive": true
+  },
+  {
+    "id": "celeb-019",
+    "name": "김연아",
+    "nameEn": "Kim Yuna",
+    "bodyType": "X",
+    "personalColor": "Winter",
+    "gender": "FEMALE",
+    "category": "sports",
+    "routines": [
+      {
+        "name": "김연아의 전신 운동 루틴",
+        "type": "CARDIO",
+        "description": "피겨 스케이팅 선수의 균형과 체력을 위한 전신 운동",
+        "exercises": [
+          { "name": "점프 스쿼트", "sets": 4, "reps": 15 },
+          { "name": "런지 점프", "sets": 3, "reps": 12 },
+          { "name": "싱글 레그 데드리프트", "sets": 3, "reps": 10 },
+          { "name": "코어 트위스트", "sets": 3, "reps": 20 }
+        ]
+      },
+      {
+        "name": "김연아의 유연성 루틴",
+        "type": "YOGA",
+        "description": "스케이터의 유연성과 균형을 위한 스트레칭",
+        "exercises": [
+          { "name": "스플릿 스트레치", "duration": 10 },
+          { "name": "아라베스크 자세", "sets": 2, "duration": 2 },
+          { "name": "스파이럴 스트레치", "duration": 5 },
+          { "name": "전신 스트레칭", "duration": 15 }
+        ]
+      }
+    ],
+    "sourceType": "INTERVIEW",
+    "isActive": true
+  },
+  {
+    "id": "celeb-020",
+    "name": "손연재",
+    "nameEn": "Son Yeon-jae",
+    "bodyType": "X",
+    "personalColor": "Summer",
+    "gender": "FEMALE",
+    "category": "sports",
+    "routines": [
+      {
+        "name": "손연재의 유연성 루틴",
+        "type": "YOGA",
+        "description": "리듬체조 선수의 극강 유연성을 위한 스트레칭",
+        "exercises": [
+          { "name": "스플릿 스트레칭", "duration": 10 },
+          { "name": "백벤드 연습", "sets": 3, "reps": 5 },
+          { "name": "턴아웃 스트레치", "duration": 10 },
+          { "name": "발레 바 스트레칭", "duration": 15 }
+        ]
+      },
+      {
+        "name": "손연재의 코어 루틴",
+        "type": "PILATES",
+        "description": "균형과 코어 강화를 위한 필라테스 기반 운동",
+        "exercises": [
+          { "name": "발레 플리에", "sets": 3, "reps": 15 },
+          { "name": "아라베스크 리프트", "sets": 3, "reps": 10 },
+          { "name": "플랭크 변형", "sets": 3, "duration": 1 },
+          { "name": "레그 서클", "sets": 2, "reps": 12 }
+        ]
+      }
+    ],
+    "sourceType": "INTERVIEW",
+    "isActive": true
+  }
+]

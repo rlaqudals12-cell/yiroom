@@ -1,0 +1,3990 @@
+{
+  "description": "영양제 시드 데이터 - 이룸 Product DB v1",
+  "version": "2.1",
+  "updated": "2025-12-05",
+  "total_count": 200,
+  "products": [
+    {
+      "name": "종근당건강 락토핏 생유산균 골드",
+      "brand": "종근당건강",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "유산균 혼합분말", "amount": 100, "unit": "mg"},
+        {"name": "프락토올리고당", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["소화불량", "장건강", "면역력"],
+      "price_krw": 25000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 50000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리원 비타민D 5000IU",
+      "brand": "뉴트리원",
+      "category": "vitamin",
+      "benefits": ["bone", "immunity"],
+      "main_ingredients": [
+        {"name": "비타민D3", "amount": 5000, "unit": "IU"}
+      ],
+      "target_concerns": ["뼈건강", "면역력", "피로"],
+      "price_krw": 18000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 12000,
+      "warnings": ["과다섭취 주의"]
+    },
+    {
+      "name": "센트룸 멀티비타민 포 우먼",
+      "brand": "센트룸",
+      "category": "vitamin",
+      "benefits": ["energy", "immunity", "skin"],
+      "main_ingredients": [
+        {"name": "비타민A", "amount": 3000, "unit": "IU"},
+        {"name": "비타민C", "amount": 60, "unit": "mg"},
+        {"name": "비타민E", "amount": 13.4, "unit": "mg"},
+        {"name": "철분", "amount": 18, "unit": "mg"}
+      ],
+      "target_concerns": ["피로", "면역력", "피부건강"],
+      "price_krw": 35000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 20000,
+      "warnings": ["임산부 전문가 상담 권장"]
+    },
+    {
+      "name": "얼라이브 원스데일리 포 우먼",
+      "brand": "얼라이브",
+      "category": "vitamin",
+      "benefits": ["energy", "immunity", "hair", "skin"],
+      "main_ingredients": [
+        {"name": "비타민B 복합체", "amount": 100, "unit": "mg"},
+        {"name": "비오틴", "amount": 300, "unit": "mcg"},
+        {"name": "철분", "amount": 18, "unit": "mg"}
+      ],
+      "target_concerns": ["피로", "탈모", "피부건강"],
+      "price_krw": 32000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "스윗스팟 저분자 콜라겐 펩타이드",
+      "brand": "스윗스팟",
+      "category": "collagen",
+      "benefits": ["skin", "hair"],
+      "main_ingredients": [
+        {"name": "저분자 피쉬콜라겐", "amount": 3000, "unit": "mg"},
+        {"name": "비타민C", "amount": 100, "unit": "mg"},
+        {"name": "히알루론산", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["피부탄력", "주름", "피부건조"],
+      "price_krw": 45000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 8000,
+      "warnings": ["어패류 알레르기 주의"]
+    },
+    {
+      "name": "닥터린 이너뷰티 콜라겐 부스터",
+      "brand": "닥터린",
+      "category": "collagen",
+      "benefits": ["skin"],
+      "main_ingredients": [
+        {"name": "피쉬콜라겐", "amount": 5000, "unit": "mg"},
+        {"name": "엘라스틴", "amount": 50, "unit": "mg"},
+        {"name": "세라마이드", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["피부탄력", "피부건조", "주름"],
+      "price_krw": 55000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 5000,
+      "warnings": ["어패류 알레르기 주의"]
+    },
+    {
+      "name": "오메가3 트리플 스트렝스",
+      "brand": "뉴트리원",
+      "category": "omega",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "EPA", "amount": 600, "unit": "mg"},
+        {"name": "DHA", "amount": 400, "unit": "mg"}
+      ],
+      "target_concerns": ["피부건조", "면역력", "눈건강"],
+      "price_krw": 38000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 10000,
+      "warnings": ["혈액 응고 장애 시 전문가 상담"]
+    },
+    {
+      "name": "나우푸드 오메가3 1000mg",
+      "brand": "나우푸드",
+      "category": "omega",
+      "benefits": ["immunity"],
+      "main_ingredients": [
+        {"name": "EPA", "amount": 180, "unit": "mg"},
+        {"name": "DHA", "amount": 120, "unit": "mg"}
+      ],
+      "target_concerns": ["면역력", "혈행개선"],
+      "price_krw": 25000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 30000,
+      "warnings": []
+    },
+    {
+      "name": "솔가 비오틴 10000mcg",
+      "brand": "솔가",
+      "category": "vitamin",
+      "benefits": ["hair", "skin"],
+      "main_ingredients": [
+        {"name": "비오틴", "amount": 10000, "unit": "mcg"}
+      ],
+      "target_concerns": ["탈모", "손톱건강", "피부건강"],
+      "price_krw": 28000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 120,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "닥터베스트 비오틴 5000mcg",
+      "brand": "닥터베스트",
+      "category": "vitamin",
+      "benefits": ["hair", "skin"],
+      "main_ingredients": [
+        {"name": "비오틴", "amount": 5000, "unit": "mcg"}
+      ],
+      "target_concerns": ["탈모", "피부건강"],
+      "price_krw": 18000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 120,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "GNM자연의품격 철분제",
+      "brand": "GNM자연의품격",
+      "category": "mineral",
+      "benefits": ["energy"],
+      "main_ingredients": [
+        {"name": "철분", "amount": 24, "unit": "mg"},
+        {"name": "비타민C", "amount": 70, "unit": "mg"}
+      ],
+      "target_concerns": ["빈혈", "피로", "어지러움"],
+      "price_krw": 15000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 8000,
+      "warnings": ["위장장애 가능성"]
+    },
+    {
+      "name": "종근당 아연 플러스",
+      "brand": "종근당",
+      "category": "mineral",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "아연", "amount": 15, "unit": "mg"},
+        {"name": "셀레늄", "amount": 55, "unit": "mcg"}
+      ],
+      "target_concerns": ["면역력", "피부건강", "모발건강"],
+      "price_krw": 12000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 6000,
+      "warnings": []
+    },
+    {
+      "name": "칼로바이트 식물성 단백질",
+      "brand": "칼로바이트",
+      "category": "protein",
+      "benefits": ["muscle", "energy"],
+      "main_ingredients": [
+        {"name": "완두콩 단백질", "amount": 20, "unit": "g"},
+        {"name": "현미 단백질", "amount": 5, "unit": "g"}
+      ],
+      "target_concerns": ["근육운동", "다이어트"],
+      "price_krw": 35000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 20,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.2,
+      "review_count": 3000,
+      "warnings": []
+    },
+    {
+      "name": "마이프로틴 임팩트 웨이",
+      "brand": "마이프로틴",
+      "category": "protein",
+      "benefits": ["muscle"],
+      "main_ingredients": [
+        {"name": "유청 단백질", "amount": 21, "unit": "g"}
+      ],
+      "target_concerns": ["근육운동", "운동후회복"],
+      "price_krw": 55000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 40,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 25000,
+      "warnings": ["유당불내증 주의"]
+    },
+    {
+      "name": "나우푸드 마그네슘 시트레이트",
+      "brand": "나우푸드",
+      "category": "mineral",
+      "benefits": ["sleep", "muscle"],
+      "main_ingredients": [
+        {"name": "마그네슘 시트레이트", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["수면장애", "근육경련", "스트레스"],
+      "price_krw": 22000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 120,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리코어 히알루론산",
+      "brand": "뉴트리코어",
+      "category": "other",
+      "benefits": ["skin"],
+      "main_ingredients": [
+        {"name": "히알루론산", "amount": 100, "unit": "mg"},
+        {"name": "비타민C", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["피부건조", "피부탄력"],
+      "price_krw": 38000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 5000,
+      "warnings": []
+    },
+    {
+      "name": "대웅제약 비타민C 1000",
+      "brand": "대웅제약",
+      "category": "vitamin",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "비타민C", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["면역력", "피부건강", "피로"],
+      "price_krw": 15000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "리포조말 비타민C",
+      "brand": "닥터머콜라",
+      "category": "vitamin",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "리포조말 비타민C", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["면역력", "피부건강", "항산화"],
+      "price_krw": 55000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 8000,
+      "warnings": []
+    },
+    {
+      "name": "솔가 비타민 B컴플렉스 100",
+      "brand": "솔가",
+      "category": "vitamin",
+      "benefits": ["energy"],
+      "main_ingredients": [
+        {"name": "비타민B1", "amount": 100, "unit": "mg"},
+        {"name": "비타민B2", "amount": 100, "unit": "mg"},
+        {"name": "비타민B6", "amount": 100, "unit": "mg"},
+        {"name": "비타민B12", "amount": 100, "unit": "mcg"}
+      ],
+      "target_concerns": ["피로", "스트레스", "에너지부족"],
+      "price_krw": 32000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리원 루테인 지아잔틴",
+      "brand": "뉴트리원",
+      "category": "other",
+      "benefits": [],
+      "main_ingredients": [
+        {"name": "루테인", "amount": 20, "unit": "mg"},
+        {"name": "지아잔틴", "amount": 4, "unit": "mg"}
+      ],
+      "target_concerns": ["눈건강", "눈피로"],
+      "price_krw": 28000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 10000,
+      "warnings": []
+    },
+    {
+      "name": "듀오락 프리미엄 프로바이오틱스",
+      "brand": "듀오락",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "프로바이오틱스 혼합", "amount": 50, "unit": "억CFU"},
+        {"name": "프리바이오틱스", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["장건강", "면역력", "소화불량"],
+      "price_krw": 45000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 35000,
+      "warnings": []
+    },
+    {
+      "name": "에버콜라겐 타임 비오틴",
+      "brand": "에버콜라겐",
+      "category": "collagen",
+      "benefits": ["skin", "hair"],
+      "main_ingredients": [
+        {"name": "저분자 피쉬콜라겐", "amount": 1500, "unit": "mg"},
+        {"name": "비오틴", "amount": 30, "unit": "mcg"},
+        {"name": "비타민C", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["피부탄력", "모발건강", "손톱건강"],
+      "price_krw": 42000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 28,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 22000,
+      "warnings": ["어패류 알레르기 주의"]
+    },
+    {
+      "name": "GNC 트리플 스트렝스 피쉬오일",
+      "brand": "GNC",
+      "category": "omega",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "EPA", "amount": 900, "unit": "mg"},
+        {"name": "DHA", "amount": 600, "unit": "mg"}
+      ],
+      "target_concerns": ["혈행개선", "피부건조", "면역력"],
+      "price_krw": 52000,
+      "dosage": "1일 1소프트젤",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": ["혈액응고 장애 시 전문가 상담"]
+    },
+    {
+      "name": "일동제약 지큐랩 GABA",
+      "brand": "일동제약",
+      "category": "other",
+      "benefits": ["sleep"],
+      "main_ingredients": [
+        {"name": "GABA", "amount": 300, "unit": "mg"},
+        {"name": "L-테아닌", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["수면장애", "스트레스", "불안감"],
+      "price_krw": 28000,
+      "dosage": "취침 전 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 12000,
+      "warnings": ["졸음 유발 가능"]
+    },
+    {
+      "name": "종근당 칼슘 마그네슘 비타민D",
+      "brand": "종근당",
+      "category": "mineral",
+      "benefits": ["bone"],
+      "main_ingredients": [
+        {"name": "칼슘", "amount": 500, "unit": "mg"},
+        {"name": "마그네슘", "amount": 250, "unit": "mg"},
+        {"name": "비타민D3", "amount": 400, "unit": "IU"}
+      ],
+      "target_concerns": ["뼈건강", "골다공증예방", "근육경련"],
+      "price_krw": 18000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 25000,
+      "warnings": []
+    },
+    {
+      "name": "네추럴라이즈 밀크씨슬",
+      "brand": "네추럴라이즈",
+      "category": "other",
+      "benefits": ["energy"],
+      "main_ingredients": [
+        {"name": "밀크씨슬 추출물", "amount": 130, "unit": "mg"},
+        {"name": "실리마린", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["간건강", "피로", "숙취해소"],
+      "price_krw": 25000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리코어 가르시니아 캄보지아",
+      "brand": "뉴트리코어",
+      "category": "other",
+      "benefits": ["energy"],
+      "main_ingredients": [
+        {"name": "가르시니아 캄보지아 추출물", "amount": 1000, "unit": "mg"},
+        {"name": "HCA", "amount": 600, "unit": "mg"}
+      ],
+      "target_concerns": ["다이어트", "체지방감소", "식욕억제"],
+      "price_krw": 32000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.2,
+      "review_count": 8000,
+      "warnings": ["임산부/수유부 섭취 금지"]
+    },
+    {
+      "name": "레모나 엽산 400",
+      "brand": "경남제약",
+      "category": "vitamin",
+      "benefits": ["energy"],
+      "main_ingredients": [
+        {"name": "엽산", "amount": 400, "unit": "mcg"},
+        {"name": "비타민B12", "amount": 2.4, "unit": "mcg"}
+      ],
+      "target_concerns": ["여성건강", "임신준비", "빈혈예방"],
+      "price_krw": 12000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 30000,
+      "warnings": []
+    },
+    {
+      "name": "관절엔 MSM 1500",
+      "brand": "대상웰라이프",
+      "category": "other",
+      "benefits": ["bone"],
+      "main_ingredients": [
+        {"name": "MSM", "amount": 1500, "unit": "mg"},
+        {"name": "글루코사민", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["관절건강", "연골건강", "관절통증"],
+      "price_krw": 35000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 10000,
+      "warnings": ["갑각류 알레르기 주의"]
+    },
+    {
+      "name": "써니데이 비타민B12 1000mcg",
+      "brand": "써니데이",
+      "category": "vitamin",
+      "benefits": ["energy"],
+      "main_ingredients": [
+        {"name": "메틸코발라민 (활성형 B12)", "amount": 1000, "unit": "mcg"}
+      ],
+      "target_concerns": ["피로", "빈혈", "채식주의자건강"],
+      "price_krw": 22000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 120,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 7000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리라이프 코엔자임Q10",
+      "brand": "뉴트리라이프",
+      "category": "other",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "코엔자임Q10", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["피로", "항산화", "심장건강"],
+      "price_krw": 35000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 8000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리코어 아르기닌",
+      "brand": "뉴트리코어",
+      "category": "other",
+      "benefits": ["energy", "muscle"],
+      "main_ingredients": [
+        {"name": "L-아르기닌", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["운동능력", "혈행개선", "피로회복"],
+      "price_krw": 28000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 6000,
+      "warnings": ["고혈압 환자 주의"]
+    },
+    {
+      "name": "일양약품 녹용홍삼",
+      "brand": "일양약품",
+      "category": "other",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "녹용 추출물", "amount": 500, "unit": "mg"},
+        {"name": "홍삼 추출물", "amount": 300, "unit": "mg"}
+      ],
+      "target_concerns": ["피로", "면역력", "기력회복"],
+      "price_krw": 65000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 10000,
+      "warnings": []
+    },
+    {
+      "name": "한독 레시틴 1200",
+      "brand": "한독",
+      "category": "other",
+      "benefits": ["energy"],
+      "main_ingredients": [
+        {"name": "대두레시틴", "amount": 1200, "unit": "mg"}
+      ],
+      "target_concerns": ["기억력", "집중력", "두뇌건강"],
+      "price_krw": 25000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 5000,
+      "warnings": ["대두 알레르기 주의"]
+    },
+    {
+      "name": "뉴트리디데이 비타민E 400IU",
+      "brand": "뉴트리디데이",
+      "category": "vitamin",
+      "benefits": ["skin", "immunity"],
+      "main_ingredients": [
+        {"name": "비타민E", "amount": 400, "unit": "IU"}
+      ],
+      "target_concerns": ["항산화", "피부건강", "노화방지"],
+      "price_krw": 18000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 9000,
+      "warnings": []
+    },
+    {
+      "name": "네이처메이드 비타민K2",
+      "brand": "네이처메이드",
+      "category": "vitamin",
+      "benefits": ["bone"],
+      "main_ingredients": [
+        {"name": "비타민K2 (MK-7)", "amount": 100, "unit": "mcg"}
+      ],
+      "target_concerns": ["뼈건강", "칼슘흡수"],
+      "price_krw": 32000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 7000,
+      "warnings": ["항응고제 복용 시 전문가 상담"]
+    },
+    {
+      "name": "올가닉스 스피루리나",
+      "brand": "올가닉스",
+      "category": "other",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "스피루리나", "amount": 3000, "unit": "mg"}
+      ],
+      "target_concerns": ["피로", "면역력", "영양보충"],
+      "price_krw": 28000,
+      "dosage": "1일 6정",
+      "serving_size": 6,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 8000,
+      "warnings": []
+    },
+    {
+      "name": "종근당 알티지 오메가3",
+      "brand": "종근당",
+      "category": "omega",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "rTG 오메가3", "amount": 1000, "unit": "mg"},
+        {"name": "EPA", "amount": 500, "unit": "mg"},
+        {"name": "DHA", "amount": 300, "unit": "mg"}
+      ],
+      "target_concerns": ["혈행개선", "면역력", "눈건강"],
+      "price_krw": 45000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "고려은단 비타민C 메가도스",
+      "brand": "고려은단",
+      "category": "vitamin",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "비타민C", "amount": 2000, "unit": "mg"}
+      ],
+      "target_concerns": ["면역력", "피부건강", "피로"],
+      "price_krw": 22000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 50,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 15000,
+      "warnings": ["위장장애 가능"]
+    },
+    {
+      "name": "뉴트라라이프 프로폴리스",
+      "brand": "뉴트라라이프",
+      "category": "other",
+      "benefits": ["immunity"],
+      "main_ingredients": [
+        {"name": "프로폴리스 추출물", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["면역력", "구강건강", "항균"],
+      "price_krw": 35000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 12000,
+      "warnings": ["벌 알레르기 주의"]
+    },
+    {
+      "name": "뷰티인사이드 글루타치온 500",
+      "brand": "뷰티인사이드",
+      "category": "other",
+      "benefits": ["skin"],
+      "main_ingredients": [
+        {"name": "L-글루타치온", "amount": 500, "unit": "mg"},
+        {"name": "비타민C", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["피부톤", "항산화", "미백"],
+      "price_krw": 55000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 6000,
+      "warnings": []
+    },
+    {
+      "name": "동국제약 테카놀 리버가드",
+      "brand": "동국제약",
+      "category": "other",
+      "benefits": ["energy"],
+      "main_ingredients": [
+        {"name": "밀크씨슬 추출물", "amount": 200, "unit": "mg"},
+        {"name": "브로콜리 추출물", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["간건강", "피로", "해독"],
+      "price_krw": 28000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 10000,
+      "warnings": []
+    },
+    {
+      "name": "올가닉스 클로렐라",
+      "brand": "올가닉스",
+      "category": "other",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "클로렐라", "amount": 2000, "unit": "mg"}
+      ],
+      "target_concerns": ["해독", "면역력", "영양보충"],
+      "price_krw": 25000,
+      "dosage": "1일 10정",
+      "serving_size": 10,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 7000,
+      "warnings": []
+    },
+    {
+      "name": "셀렉스 코어 프로바이오틱스",
+      "brand": "매일유업",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "프로바이오틱스", "amount": 100, "unit": "억CFU"},
+        {"name": "프리바이오틱스", "amount": 300, "unit": "mg"}
+      ],
+      "target_concerns": ["장건강", "면역력", "소화"],
+      "price_krw": 48000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 25000,
+      "warnings": []
+    },
+    {
+      "name": "하이뮨 프로틴 밸런스",
+      "brand": "하이뮨",
+      "category": "protein",
+      "benefits": ["muscle", "energy"],
+      "main_ingredients": [
+        {"name": "분리유청단백", "amount": 18, "unit": "g"},
+        {"name": "류신", "amount": 2.6, "unit": "g"}
+      ],
+      "target_concerns": ["근육건강", "단백질보충", "노년기건강"],
+      "price_krw": 42000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 28,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": ["유당불내증 주의"]
+    },
+    {
+      "name": "정관장 에브리타임",
+      "brand": "정관장",
+      "category": "other",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "홍삼 농축액", "amount": 10, "unit": "ml"}
+      ],
+      "target_concerns": ["피로", "면역력", "기력회복"],
+      "price_krw": 75000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.7,
+      "review_count": 50000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리원 크릴오일",
+      "brand": "뉴트리원",
+      "category": "omega",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "크릴오일", "amount": 1000, "unit": "mg"},
+        {"name": "아스타잔틴", "amount": 50, "unit": "mcg"}
+      ],
+      "target_concerns": ["혈행개선", "항산화", "관절건강"],
+      "price_krw": 48000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 12000,
+      "warnings": ["갑각류 알레르기 주의"]
+    },
+    {
+      "name": "락피도 베이비 유산균",
+      "brand": "락피도",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "비피더스균", "amount": 50, "unit": "억CFU"},
+        {"name": "락토바실러스", "amount": 25, "unit": "억CFU"}
+      ],
+      "target_concerns": ["장건강", "면역력", "성장발달"],
+      "price_krw": 35000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "GNM 아사이베리 분말",
+      "brand": "GNM자연의품격",
+      "category": "other",
+      "benefits": ["energy", "skin"],
+      "main_ingredients": [
+        {"name": "아사이베리 분말", "amount": 3000, "unit": "mg"}
+      ],
+      "target_concerns": ["항산화", "에너지", "피부건강"],
+      "price_krw": 28000,
+      "dosage": "1일 1스틱",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 8000,
+      "warnings": []
+    },
+    {
+      "name": "닥터베스트 글루코사민 콘드로이틴 MSM",
+      "brand": "닥터베스트",
+      "category": "joint",
+      "benefits": ["joint"],
+      "main_ingredients": [
+        {"name": "글루코사민", "amount": 1500, "unit": "mg"},
+        {"name": "콘드로이틴", "amount": 1200, "unit": "mg"},
+        {"name": "MSM", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["관절통", "연골건강", "관절유연성"],
+      "price_krw": 38000,
+      "dosage": "1일 3캡슐",
+      "serving_size": 3,
+      "total_servings": 40,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": ["갑각류 알레르기 주의"]
+    },
+    {
+      "name": "쏘팔메토 전립선 건강",
+      "brand": "나우푸드",
+      "category": "herbal",
+      "benefits": ["prostate"],
+      "main_ingredients": [
+        {"name": "쏘팔메토 추출물", "amount": 320, "unit": "mg"}
+      ],
+      "target_concerns": ["전립선건강", "배뇨개선", "남성건강"],
+      "price_krw": 25000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 8500,
+      "warnings": []
+    },
+    {
+      "name": "아이클리어 루테인 지아잔틴",
+      "brand": "한미약품",
+      "category": "eye",
+      "benefits": ["eye"],
+      "main_ingredients": [
+        {"name": "루테인", "amount": 20, "unit": "mg"},
+        {"name": "지아잔틴", "amount": 4, "unit": "mg"}
+      ],
+      "target_concerns": ["눈건강", "황반변성예방", "눈피로"],
+      "price_krw": 32000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 25000,
+      "warnings": []
+    },
+    {
+      "name": "플로라 글로 루테인 20",
+      "brand": "대웅제약",
+      "category": "eye",
+      "benefits": ["eye"],
+      "main_ingredients": [
+        {"name": "마리골드꽃 추출물 루테인", "amount": 20, "unit": "mg"},
+        {"name": "오메가3", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["눈건강", "시력보호", "디지털기기 피로"],
+      "price_krw": 28000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "솔가 마그네슘 시트레이트",
+      "brand": "솔가",
+      "category": "mineral",
+      "benefits": ["sleep", "muscle"],
+      "main_ingredients": [
+        {"name": "마그네슘 시트레이트", "amount": 420, "unit": "mg"}
+      ],
+      "target_concerns": ["숙면", "근육경련", "스트레스"],
+      "price_krw": 28000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "나우푸드 L-테아닌 200",
+      "brand": "나우푸드",
+      "category": "sleep",
+      "benefits": ["sleep", "stress"],
+      "main_ingredients": [
+        {"name": "L-테아닌", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["수면", "긴장완화", "집중력"],
+      "price_krw": 22000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 9000,
+      "warnings": []
+    },
+    {
+      "name": "닥터스베스트 보스웰리아",
+      "brand": "닥터스베스트",
+      "category": "joint",
+      "benefits": ["joint"],
+      "main_ingredients": [
+        {"name": "보스웰리아 추출물", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["관절염증", "관절통증", "관절건강"],
+      "price_krw": 32000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 10000,
+      "warnings": []
+    },
+    {
+      "name": "네이처스바운티 비오틴 10000mcg",
+      "brand": "네이처스바운티",
+      "category": "vitamin",
+      "benefits": ["hair", "skin", "nail"],
+      "main_ingredients": [
+        {"name": "비오틴", "amount": 10000, "unit": "mcg"}
+      ],
+      "target_concerns": ["탈모예방", "손톱건강", "피부건강"],
+      "price_krw": 25000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 120,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "한미 아연 15mg",
+      "brand": "한미약품",
+      "category": "mineral",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "아연", "amount": 15, "unit": "mg"}
+      ],
+      "target_concerns": ["면역력", "피부건강", "상처치유"],
+      "price_krw": 12000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 8000,
+      "warnings": []
+    },
+    {
+      "name": "센트룸 실버 포 우먼 50+",
+      "brand": "센트룸",
+      "category": "vitamin",
+      "benefits": ["energy", "bone", "immunity"],
+      "main_ingredients": [
+        {"name": "비타민D", "amount": 1000, "unit": "IU"},
+        {"name": "칼슘", "amount": 500, "unit": "mg"},
+        {"name": "비타민B12", "amount": 25, "unit": "mcg"}
+      ],
+      "target_concerns": ["갱년기", "뼈건강", "에너지"],
+      "price_krw": 38000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "유한양행 삐콤씨 에스",
+      "brand": "유한양행",
+      "category": "vitamin",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "비타민B1", "amount": 50, "unit": "mg"},
+        {"name": "비타민B6", "amount": 50, "unit": "mg"},
+        {"name": "비타민C", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["피로", "면역력", "활력"],
+      "price_krw": 18000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 35000,
+      "warnings": []
+    },
+    {
+      "name": "오쏘몰 이뮨 멀티비타민",
+      "brand": "오쏘몰",
+      "category": "vitamin",
+      "benefits": ["immunity", "energy"],
+      "main_ingredients": [
+        {"name": "비타민C", "amount": 950, "unit": "mg"},
+        {"name": "아연", "amount": 10, "unit": "mg"},
+        {"name": "셀레늄", "amount": 50, "unit": "mcg"}
+      ],
+      "target_concerns": ["면역력", "감기예방", "피로"],
+      "price_krw": 75000,
+      "dosage": "1일 1앰플+1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "네추럴플러스 감마리놀렌산",
+      "brand": "네추럴플러스",
+      "category": "omega",
+      "benefits": ["skin", "hormone"],
+      "main_ingredients": [
+        {"name": "감마리놀렌산(GLA)", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["피부건강", "호르몬균형", "생리통"],
+      "price_krw": 28000,
+      "dosage": "1일 3캡슐",
+      "serving_size": 3,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "라이프익스텐션 식물성 오메가3",
+      "brand": "라이프익스텐션",
+      "category": "omega",
+      "benefits": ["immunity", "brain"],
+      "main_ingredients": [
+        {"name": "조류 유래 DHA", "amount": 200, "unit": "mg"},
+        {"name": "EPA", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["비건 오메가", "두뇌건강", "혈행개선"],
+      "price_krw": 42000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 6000,
+      "warnings": []
+    },
+    {
+      "name": "에버콜라겐 타임 비오틴",
+      "brand": "에버콜라겐",
+      "category": "collagen",
+      "benefits": ["skin", "hair"],
+      "main_ingredients": [
+        {"name": "저분자 콜라겐 펩타이드", "amount": 1000, "unit": "mg"},
+        {"name": "비오틴", "amount": 500, "unit": "mcg"},
+        {"name": "세라마이드", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["피부탄력", "모발건강", "손톱강화"],
+      "price_krw": 48000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 22000,
+      "warnings": []
+    },
+    {
+      "name": "바이탈뷰티 메타그린",
+      "brand": "아모레퍼시픽",
+      "category": "other",
+      "benefits": ["weight", "metabolism"],
+      "main_ingredients": [
+        {"name": "녹차추출물 카테킨", "amount": 300, "unit": "mg"}
+      ],
+      "target_concerns": ["체지방감소", "대사증진", "항산화"],
+      "price_krw": 52000,
+      "dosage": "1일 4정",
+      "serving_size": 4,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 30000,
+      "warnings": ["카페인 민감자 주의"]
+    },
+    {
+      "name": "얼라이브 프리미엄 종합 비타민",
+      "brand": "네이처스웨이",
+      "category": "vitamin",
+      "benefits": ["energy", "immunity", "digestion"],
+      "main_ingredients": [
+        {"name": "26가지 과일 & 채소", "amount": 200, "unit": "mg"},
+        {"name": "비타민 미네랄 복합체", "amount": 150, "unit": "mg"},
+        {"name": "프로바이오틱스", "amount": 1, "unit": "억CFU"}
+      ],
+      "target_concerns": ["영양균형", "에너지", "장건강"],
+      "price_krw": 45000,
+      "dosage": "1일 3정",
+      "serving_size": 3,
+      "total_servings": 40,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 16000,
+      "warnings": []
+    },
+    {
+      "name": "JW중외제약 리얼메디 엽산",
+      "brand": "JW중외제약",
+      "category": "vitamin",
+      "benefits": ["pregnancy", "blood"],
+      "main_ingredients": [
+        {"name": "엽산", "amount": 800, "unit": "mcg"},
+        {"name": "비타민B12", "amount": 4, "unit": "mcg"}
+      ],
+      "target_concerns": ["임신준비", "빈혈예방", "세포분열"],
+      "price_krw": 15000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 25000,
+      "warnings": []
+    },
+    {
+      "name": "내츄럴플러스 빌베리 아이케어",
+      "brand": "네추럴플러스",
+      "category": "eye",
+      "benefits": ["eye"],
+      "main_ingredients": [
+        {"name": "빌베리 추출물", "amount": 160, "unit": "mg"},
+        {"name": "루테인", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["눈피로", "야간시력", "안구건조"],
+      "price_krw": 25000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 11000,
+      "warnings": []
+    },
+    {
+      "name": "익스트림 BCAA 파우더",
+      "brand": "머슬팜",
+      "category": "protein",
+      "benefits": ["muscle", "recovery"],
+      "main_ingredients": [
+        {"name": "L-류신", "amount": 3500, "unit": "mg"},
+        {"name": "L-이소류신", "amount": 1750, "unit": "mg"},
+        {"name": "L-발린", "amount": 1750, "unit": "mg"}
+      ],
+      "target_concerns": ["근육회복", "근손실방지", "운동후피로"],
+      "price_krw": 35000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 14000,
+      "warnings": []
+    },
+    {
+      "name": "옵티멈뉴트리션 골드스탠다드 웨이",
+      "brand": "옵티멈뉴트리션",
+      "category": "protein",
+      "benefits": ["muscle", "recovery"],
+      "main_ingredients": [
+        {"name": "분리유청단백", "amount": 24, "unit": "g"},
+        {"name": "BCAA", "amount": 5.5, "unit": "g"}
+      ],
+      "target_concerns": ["근육합성", "단백질보충", "운동후회복"],
+      "price_krw": 85000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 74,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.7,
+      "review_count": 50000,
+      "warnings": ["유당불내증 주의"]
+    },
+    {
+      "name": "카제인 단백질 슬로우릴리즈",
+      "brand": "마이프로틴",
+      "category": "protein",
+      "benefits": ["muscle", "recovery"],
+      "main_ingredients": [
+        {"name": "미셀라 카제인", "amount": 23, "unit": "g"}
+      ],
+      "target_concerns": ["야간근육합성", "서방형단백질", "포만감"],
+      "price_krw": 55000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 33,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 12000,
+      "warnings": ["유제품 알레르기 주의"]
+    },
+    {
+      "name": "뉴트리코스트 크레아틴 모노하이드레이트",
+      "brand": "뉴트리코스트",
+      "category": "protein",
+      "benefits": ["muscle", "energy"],
+      "main_ingredients": [
+        {"name": "크레아틴 모노하이드레이트", "amount": 5000, "unit": "mg"}
+      ],
+      "target_concerns": ["근력증가", "운동능력향상", "근지구력"],
+      "price_krw": 25000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 18000,
+      "warnings": ["충분한 수분섭취 필요"]
+    },
+    {
+      "name": "대상웰라이프 뉴케어 당플랜",
+      "brand": "대상웰라이프",
+      "category": "other",
+      "benefits": ["blood_sugar"],
+      "main_ingredients": [
+        {"name": "바나바잎 추출물", "amount": 100, "unit": "mg"},
+        {"name": "크롬", "amount": 200, "unit": "mcg"}
+      ],
+      "target_concerns": ["혈당관리", "당뇨예방", "대사건강"],
+      "price_krw": 45000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 9000,
+      "warnings": ["당뇨 환자 전문가 상담"]
+    },
+    {
+      "name": "애터미 헤모힘",
+      "brand": "애터미",
+      "category": "other",
+      "benefits": ["immunity", "energy"],
+      "main_ingredients": [
+        {"name": "헤모힘 복합추출물", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["면역력", "피로회복", "NK세포활성"],
+      "price_krw": 98000,
+      "dosage": "1일 2포",
+      "serving_size": 2,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 40000,
+      "warnings": []
+    },
+    {
+      "name": "닥터린 관절팔팔",
+      "brand": "닥터린",
+      "category": "joint",
+      "benefits": ["joint"],
+      "main_ingredients": [
+        {"name": "MSM", "amount": 1500, "unit": "mg"},
+        {"name": "비타민D", "amount": 800, "unit": "IU"},
+        {"name": "망간", "amount": 2, "unit": "mg"}
+      ],
+      "target_concerns": ["관절통증", "연골보호", "관절유연성"],
+      "price_krw": 35000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "GNC 트리플 스트렝스 피쉬오일",
+      "brand": "GNC",
+      "category": "omega",
+      "benefits": ["immunity", "brain"],
+      "main_ingredients": [
+        {"name": "EPA", "amount": 647, "unit": "mg"},
+        {"name": "DHA", "amount": 253, "unit": "mg"}
+      ],
+      "target_concerns": ["혈중중성지방", "두뇌건강", "심혈관"],
+      "price_krw": 52000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 120,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 22000,
+      "warnings": []
+    },
+    {
+      "name": "바이오가이아 프로텍티스",
+      "brand": "바이오가이아",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "L.로이테리 DSM 17938", "amount": 1, "unit": "억CFU"}
+      ],
+      "target_concerns": ["소화건강", "장내세균균형", "면역력"],
+      "price_krw": 28000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 16000,
+      "warnings": []
+    },
+    {
+      "name": "듀오락 골드",
+      "brand": "쎌바이오텍",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "19종 유산균", "amount": 50, "unit": "억CFU"},
+        {"name": "프리바이오틱스", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["장건강", "변비개선", "면역력"],
+      "price_krw": 42000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 28000,
+      "warnings": []
+    },
+    {
+      "name": "종근당 아이커",
+      "brand": "종근당",
+      "category": "other",
+      "benefits": ["growth"],
+      "main_ingredients": [
+        {"name": "황기추출물", "amount": 1, "unit": "g"},
+        {"name": "칼슘", "amount": 210, "unit": "mg"},
+        {"name": "비타민D", "amount": 200, "unit": "IU"}
+      ],
+      "target_concerns": ["성장발달", "뼈건강", "키성장"],
+      "price_krw": 58000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "일동후디스 산양유 단백질",
+      "brand": "일동후디스",
+      "category": "protein",
+      "benefits": ["muscle", "digestion"],
+      "main_ingredients": [
+        {"name": "산양유 단백질", "amount": 15, "unit": "g"},
+        {"name": "칼슘", "amount": 400, "unit": "mg"}
+      ],
+      "target_concerns": ["소화가편한단백질", "근육건강", "뼈건강"],
+      "price_krw": 48000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 28,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "내추럴메이드 철분 65mg",
+      "brand": "내추럴메이드",
+      "category": "mineral",
+      "benefits": ["blood", "energy"],
+      "main_ingredients": [
+        {"name": "철분", "amount": 65, "unit": "mg"}
+      ],
+      "target_concerns": ["빈혈", "피로", "철분부족"],
+      "price_krw": 15000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 180,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 14000,
+      "warnings": ["위장장애 가능"]
+    },
+    {
+      "name": "쏜리서치 메틸코발라민 B12",
+      "brand": "쏜리서치",
+      "category": "vitamin",
+      "benefits": ["energy", "nerve"],
+      "main_ingredients": [
+        {"name": "메틸코발라민", "amount": 1000, "unit": "mcg"}
+      ],
+      "target_concerns": ["피로", "신경건강", "빈혈"],
+      "price_krw": 28000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 8000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트라라이프 밀크씨슬 35000",
+      "brand": "뉴트라라이프",
+      "category": "herbal",
+      "benefits": ["liver"],
+      "main_ingredients": [
+        {"name": "밀크씨슬 추출물", "amount": 35000, "unit": "mg"}
+      ],
+      "target_concerns": ["간건강", "해독", "숙취"],
+      "price_krw": 38000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "오메가퀸 알티지 오메가3",
+      "brand": "오메가퀸",
+      "category": "omega",
+      "benefits": ["immunity", "brain", "skin"],
+      "main_ingredients": [
+        {"name": "rTG 오메가3", "amount": 1000, "unit": "mg"},
+        {"name": "비타민E", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["혈행", "두뇌건강", "피부"],
+      "price_krw": 35000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "레인보우라이트 프리나탈 원",
+      "brand": "레인보우라이트",
+      "category": "vitamin",
+      "benefits": ["pregnancy"],
+      "main_ingredients": [
+        {"name": "엽산", "amount": 800, "unit": "mcg"},
+        {"name": "철분", "amount": 18, "unit": "mg"},
+        {"name": "DHA", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["임신준비", "태아발달", "산모건강"],
+      "price_krw": 48000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "VitaFusion 멀티비타민 젤리",
+      "brand": "비타퓨전",
+      "category": "vitamin",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "12가지 비타민", "amount": 100, "unit": "%DV"},
+        {"name": "아연", "amount": 5, "unit": "mg"}
+      ],
+      "target_concerns": ["영양균형", "비타민섭취", "맛있는영양제"],
+      "price_krw": 22000,
+      "dosage": "1일 2구미",
+      "serving_size": 2,
+      "total_servings": 75,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 25000,
+      "warnings": ["당류 함유"]
+    },
+    {
+      "name": "칼로바이 퍼펙트 파워쉐이크",
+      "brand": "칼로바이",
+      "category": "protein",
+      "benefits": ["weight", "muscle"],
+      "main_ingredients": [
+        {"name": "대두단백", "amount": 20, "unit": "g"},
+        {"name": "식이섬유", "amount": 5, "unit": "g"}
+      ],
+      "target_concerns": ["다이어트", "단백질보충", "식사대용"],
+      "price_krw": 38000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 28,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.2,
+      "review_count": 15000,
+      "warnings": ["대두 알레르기 주의"]
+    },
+    {
+      "name": "아스트라제네카 칼디",
+      "brand": "아스트라제네카",
+      "category": "mineral",
+      "benefits": ["bone"],
+      "main_ingredients": [
+        {"name": "칼슘", "amount": 600, "unit": "mg"},
+        {"name": "비타민D", "amount": 200, "unit": "IU"}
+      ],
+      "target_concerns": ["뼈건강", "칼슘보충", "골다공증예방"],
+      "price_krw": 18000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "파마젠 포스파티딜세린",
+      "brand": "파마젠",
+      "category": "other",
+      "benefits": ["brain", "memory"],
+      "main_ingredients": [
+        {"name": "포스파티딜세린", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["기억력", "집중력", "두뇌건강"],
+      "price_krw": 45000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 8000,
+      "warnings": []
+    },
+    {
+      "name": "홀리데이즈 수면 멜라토닌",
+      "brand": "홀리데이즈",
+      "category": "sleep",
+      "benefits": ["sleep"],
+      "main_ingredients": [
+        {"name": "멜라토닌", "amount": 3, "unit": "mg"},
+        {"name": "L-테아닌", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["불면", "시차적응", "수면의질"],
+      "price_krw": 18000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 12000,
+      "warnings": ["운전 전 복용 금지"]
+    },
+    {
+      "name": "뉴트릭스 피부비타민",
+      "brand": "뉴트릭스",
+      "category": "vitamin",
+      "benefits": ["skin"],
+      "main_ingredients": [
+        {"name": "비타민A", "amount": 600, "unit": "mcg"},
+        {"name": "비타민C", "amount": 100, "unit": "mg"},
+        {"name": "비타민E", "amount": 12, "unit": "mg"},
+        {"name": "아연", "amount": 8, "unit": "mg"}
+      ],
+      "target_concerns": ["피부건강", "미백", "항산화"],
+      "price_krw": 28000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 10000,
+      "warnings": []
+    },
+    {
+      "name": "히알루론산 콜라겐 앰플",
+      "brand": "뉴트리디데이",
+      "category": "collagen",
+      "benefits": ["skin", "joint"],
+      "main_ingredients": [
+        {"name": "히알루론산", "amount": 100, "unit": "mg"},
+        {"name": "저분자 콜라겐", "amount": 2000, "unit": "mg"}
+      ],
+      "target_concerns": ["피부보습", "관절윤활", "피부탄력"],
+      "price_krw": 55000,
+      "dosage": "1일 1앰플",
+      "serving_size": 1,
+      "total_servings": 28,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 14000,
+      "warnings": []
+    },
+    {
+      "name": "가르시니아 캄보지아",
+      "brand": "나우푸드",
+      "category": "other",
+      "benefits": ["weight"],
+      "main_ingredients": [
+        {"name": "가르시니아 캄보지아 추출물 HCA", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["체중관리", "식욕억제", "지방합성억제"],
+      "price_krw": 25000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.2,
+      "review_count": 15000,
+      "warnings": ["당뇨 환자 주의"]
+    },
+    {
+      "name": "켈프 아이오딘",
+      "brand": "솔가",
+      "category": "mineral",
+      "benefits": ["thyroid", "metabolism"],
+      "main_ingredients": [
+        {"name": "요오드 (켈프 유래)", "amount": 225, "unit": "mcg"}
+      ],
+      "target_concerns": ["갑상선건강", "신진대사", "요오드보충"],
+      "price_krw": 18000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 250,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 6000,
+      "warnings": ["갑상선 질환자 전문가 상담"]
+    },
+    {
+      "name": "뉴트리라이트 키즈 츄어블",
+      "brand": "암웨이",
+      "category": "vitamin",
+      "benefits": ["immunity", "growth"],
+      "main_ingredients": [
+        {"name": "비타민C", "amount": 60, "unit": "mg"},
+        {"name": "비타민D", "amount": 10, "unit": "mcg"},
+        {"name": "아연", "amount": 3, "unit": "mg"}
+      ],
+      "target_concerns": ["어린이영양", "면역력", "성장발달"],
+      "price_krw": 38000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 120,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "종근당건강 활력비타민 B 플러스",
+      "brand": "종근당건강",
+      "category": "vitamin",
+      "benefits": ["energy", "nerve"],
+      "main_ingredients": [
+        {"name": "비타민B1", "amount": 100, "unit": "mg"},
+        {"name": "비타민B2", "amount": 100, "unit": "mg"},
+        {"name": "비타민B6", "amount": 100, "unit": "mg"},
+        {"name": "비타민B12", "amount": 1000, "unit": "mcg"}
+      ],
+      "target_concerns": ["피로회복", "신경건강", "에너지대사"],
+      "price_krw": 22000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 22000,
+      "warnings": []
+    },
+    {
+      "name": "피엔케이 아스타잔틴",
+      "brand": "피엔케이산업",
+      "category": "other",
+      "benefits": ["eye", "skin"],
+      "main_ingredients": [
+        {"name": "아스타잔틴", "amount": 12, "unit": "mg"}
+      ],
+      "target_concerns": ["눈건강", "피부항산화", "자외선방어"],
+      "price_krw": 38000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 9000,
+      "warnings": []
+    },
+    {
+      "name": "CMG제약 판시딘 판토텐산",
+      "brand": "CMG제약",
+      "category": "vitamin",
+      "benefits": ["hair", "stress"],
+      "main_ingredients": [
+        {"name": "판토텐산 칼슘", "amount": 300, "unit": "mg"},
+        {"name": "비오틴", "amount": 1000, "unit": "mcg"}
+      ],
+      "target_concerns": ["탈모예방", "스트레스", "피로"],
+      "price_krw": 28000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "헬스원 NAC 시스테인",
+      "brand": "헬스원",
+      "category": "other",
+      "benefits": ["liver", "immunity"],
+      "main_ingredients": [
+        {"name": "N-아세틸시스테인", "amount": 600, "unit": "mg"}
+      ],
+      "target_concerns": ["간해독", "항산화", "호흡기건강"],
+      "price_krw": 25000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 8000,
+      "warnings": []
+    },
+    {
+      "name": "동아제약 박카스D",
+      "brand": "동아제약",
+      "category": "other",
+      "benefits": ["energy"],
+      "main_ingredients": [
+        {"name": "타우린", "amount": 2000, "unit": "mg"},
+        {"name": "이노시톨", "amount": 50, "unit": "mg"}
+      ],
+      "target_concerns": ["피로", "활력", "자양강장"],
+      "price_krw": 12000,
+      "dosage": "1일 1병",
+      "serving_size": 1,
+      "total_servings": 20,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 80000,
+      "warnings": []
+    },
+    {
+      "name": "고려인삼공사 홍삼정 에브리타임 로얄",
+      "brand": "정관장",
+      "category": "other",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "6년근 홍삼 농축액", "amount": 3000, "unit": "mg"},
+        {"name": "진세노사이드", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["피로", "면역력", "항산화"],
+      "price_krw": 120000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.7,
+      "review_count": 35000,
+      "warnings": []
+    },
+    {
+      "name": "유니시티 매트릭스 콜라겐",
+      "brand": "유니시티",
+      "category": "collagen",
+      "benefits": ["skin", "joint"],
+      "main_ingredients": [
+        {"name": "가수분해 콜라겐 펩타이드", "amount": 5000, "unit": "mg"},
+        {"name": "비타민C", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["피부탄력", "관절건강", "노화방지"],
+      "price_krw": 65000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "한독 레디 Q10 플러스",
+      "brand": "한독",
+      "category": "other",
+      "benefits": ["energy", "heart"],
+      "main_ingredients": [
+        {"name": "코엔자임Q10", "amount": 100, "unit": "mg"},
+        {"name": "오메가3", "amount": 300, "unit": "mg"}
+      ],
+      "target_concerns": ["활력", "심장건강", "항산화"],
+      "price_krw": 42000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 10000,
+      "warnings": []
+    },
+    {
+      "name": "광동제약 경옥고",
+      "brand": "광동제약",
+      "category": "other",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "인삼", "amount": 1000, "unit": "mg"},
+        {"name": "지황", "amount": 1500, "unit": "mg"},
+        {"name": "복령", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["기력회복", "면역력", "원기충전"],
+      "price_krw": 85000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "세노비스 키즈 오메가3",
+      "brand": "세노비스",
+      "category": "omega",
+      "benefits": ["brain", "eye"],
+      "main_ingredients": [
+        {"name": "DHA", "amount": 200, "unit": "mg"},
+        {"name": "EPA", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["두뇌발달", "눈건강", "어린이 성장"],
+      "price_krw": 32000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 45,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "닥터지 히알루론산",
+      "brand": "닥터지",
+      "category": "other",
+      "benefits": ["skin", "joint"],
+      "main_ingredients": [
+        {"name": "히알루론산나트륨", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["피부보습", "관절윤활", "노화방지"],
+      "price_krw": 45000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 11000,
+      "warnings": []
+    },
+    {
+      "name": "천호엔케어 산수유",
+      "brand": "천호엔케어",
+      "category": "herbal",
+      "benefits": ["energy", "joint"],
+      "main_ingredients": [
+        {"name": "산수유 추출물", "amount": 1500, "unit": "mg"}
+      ],
+      "target_concerns": ["자양강장", "허리건강", "갱년기"],
+      "price_krw": 38000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 14000,
+      "warnings": []
+    },
+    {
+      "name": "자이르 셀레늄",
+      "brand": "자이르",
+      "category": "mineral",
+      "benefits": ["immunity", "thyroid"],
+      "main_ingredients": [
+        {"name": "셀레늄", "amount": 200, "unit": "mcg"}
+      ],
+      "target_concerns": ["면역력", "갑상선건강", "항산화"],
+      "price_krw": 18000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 7000,
+      "warnings": ["과다섭취 주의"]
+    },
+    {
+      "name": "쎌바이오텍 미니막스 유산균",
+      "brand": "쎌바이오텍",
+      "category": "probiotic",
+      "benefits": ["digestion"],
+      "main_ingredients": [
+        {"name": "4종 유산균", "amount": 10, "unit": "억CFU"}
+      ],
+      "target_concerns": ["어린이 장건강", "소화", "면역력"],
+      "price_krw": 28000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "바디닥터 MSM 1500",
+      "brand": "바디닥터",
+      "category": "joint",
+      "benefits": ["joint"],
+      "main_ingredients": [
+        {"name": "MSM", "amount": 1500, "unit": "mg"},
+        {"name": "비타민C", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["관절건강", "연골보호", "유연성"],
+      "price_krw": 25000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "리소좀 리포솜 비타민C",
+      "brand": "리소좀",
+      "category": "vitamin",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "리포솜 비타민C", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["면역력", "피부건강", "고흡수 비타민"],
+      "price_krw": 55000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 9000,
+      "warnings": []
+    },
+    {
+      "name": "닥터조스 슈퍼 프로바이오틱",
+      "brand": "닥터조스",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "12종 유산균", "amount": 200, "unit": "억CFU"},
+        {"name": "프리바이오틱스", "amount": 300, "unit": "mg"}
+      ],
+      "target_concerns": ["장건강", "변비개선", "면역력"],
+      "price_krw": 52000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 16000,
+      "warnings": []
+    },
+    {
+      "name": "파이토웨이 레스베라트롤",
+      "brand": "파이토웨이",
+      "category": "other",
+      "benefits": ["skin", "heart"],
+      "main_ingredients": [
+        {"name": "레스베라트롤", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["항산화", "심혈관건강", "노화방지"],
+      "price_krw": 48000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 7000,
+      "warnings": []
+    },
+    {
+      "name": "헬시원 식물성 철분",
+      "brand": "헬시원",
+      "category": "mineral",
+      "benefits": ["blood", "energy"],
+      "main_ingredients": [
+        {"name": "커리잎 추출물 철분", "amount": 25, "unit": "mg"},
+        {"name": "비타민C", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["빈혈", "피로", "비건 철분"],
+      "price_krw": 28000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 11000,
+      "warnings": []
+    },
+    {
+      "name": "세노비스 트리플러스 우먼",
+      "brand": "세노비스",
+      "category": "vitamin",
+      "benefits": ["energy", "bone", "immunity"],
+      "main_ingredients": [
+        {"name": "칼슘", "amount": 400, "unit": "mg"},
+        {"name": "마그네슘", "amount": 200, "unit": "mg"},
+        {"name": "비타민D", "amount": 400, "unit": "IU"}
+      ],
+      "target_concerns": ["뼈건강", "근육건강", "여성영양"],
+      "price_krw": 35000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "일동 아로나민 골드",
+      "brand": "일동제약",
+      "category": "vitamin",
+      "benefits": ["energy", "nerve"],
+      "main_ingredients": [
+        {"name": "푸르설티아민", "amount": 100, "unit": "mg"},
+        {"name": "비타민B6", "amount": 50, "unit": "mg"},
+        {"name": "비타민B12", "amount": 500, "unit": "mcg"}
+      ],
+      "target_concerns": ["피로", "신경통", "눈피로"],
+      "price_krw": 25000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 30000,
+      "warnings": []
+    },
+    {
+      "name": "닥터스베스트 큐텐 흡수형",
+      "brand": "닥터스베스트",
+      "category": "other",
+      "benefits": ["energy", "heart"],
+      "main_ingredients": [
+        {"name": "유비퀴놀(환원형 CoQ10)", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["에너지생성", "심장건강", "항산화"],
+      "price_krw": 55000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 9000,
+      "warnings": []
+    },
+    {
+      "name": "GNM 크릴오일 골드",
+      "brand": "GNM자연의품격",
+      "category": "omega",
+      "benefits": ["immunity", "brain"],
+      "main_ingredients": [
+        {"name": "남극 크릴오일", "amount": 1000, "unit": "mg"},
+        {"name": "인지질 결합 오메가3", "amount": 300, "unit": "mg"}
+      ],
+      "target_concerns": ["혈행개선", "두뇌건강", "간건강"],
+      "price_krw": 45000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 15000,
+      "warnings": ["갑각류 알레르기 주의"]
+    },
+    {
+      "name": "뉴트리디데이 프리미엄 유산균",
+      "brand": "뉴트리디데이",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "DUOLAC 유산균", "amount": 100, "unit": "억CFU"}
+      ],
+      "target_concerns": ["장건강", "면역력", "배변활동"],
+      "price_krw": 38000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 22000,
+      "warnings": []
+    },
+    {
+      "name": "테라사이언스 칼마그 디",
+      "brand": "테라사이언스",
+      "category": "mineral",
+      "benefits": ["bone", "muscle"],
+      "main_ingredients": [
+        {"name": "칼슘", "amount": 500, "unit": "mg"},
+        {"name": "마그네슘", "amount": 250, "unit": "mg"},
+        {"name": "비타민D3", "amount": 800, "unit": "IU"}
+      ],
+      "target_concerns": ["뼈건강", "근육경련", "골다공증예방"],
+      "price_krw": 28000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 14000,
+      "warnings": []
+    },
+    {
+      "name": "에스더포뮬러 여에스더 글루타치온",
+      "brand": "에스더포뮬러",
+      "category": "other",
+      "benefits": ["skin"],
+      "main_ingredients": [
+        {"name": "환원형 글루타치온", "amount": 500, "unit": "mg"},
+        {"name": "비타민C", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["피부톤", "항산화", "미백"],
+      "price_krw": 68000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "GC녹십자 비맥스 골드",
+      "brand": "GC녹십자",
+      "category": "vitamin",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "비타민B군", "amount": 100, "unit": "mg"},
+        {"name": "아연", "amount": 12, "unit": "mg"},
+        {"name": "셀레늄", "amount": 50, "unit": "mcg"}
+      ],
+      "target_concerns": ["피로회복", "면역력", "항산화"],
+      "price_krw": 32000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 25000,
+      "warnings": []
+    },
+    {
+      "name": "종근당건강 관절엔 콘드로이틴",
+      "brand": "종근당건강",
+      "category": "joint",
+      "benefits": ["joint"],
+      "main_ingredients": [
+        {"name": "상어연골 콘드로이틴", "amount": 1200, "unit": "mg"},
+        {"name": "글루코사민", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["관절통증", "연골건강", "관절유연성"],
+      "price_krw": 45000,
+      "dosage": "1일 3정",
+      "serving_size": 3,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 16000,
+      "warnings": ["갑각류 알레르기 주의"]
+    },
+    {
+      "name": "라이프익스텐션 슈퍼 K",
+      "brand": "라이프익스텐션",
+      "category": "vitamin",
+      "benefits": ["bone", "heart"],
+      "main_ingredients": [
+        {"name": "비타민K1", "amount": 1500, "unit": "mcg"},
+        {"name": "비타민K2 (MK-4)", "amount": 1000, "unit": "mcg"},
+        {"name": "비타민K2 (MK-7)", "amount": 100, "unit": "mcg"}
+      ],
+      "target_concerns": ["뼈건강", "혈관건강", "칼슘대사"],
+      "price_krw": 38000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 8000,
+      "warnings": ["항응고제 복용 시 전문가 상담"]
+    },
+    {
+      "name": "솔가 칼슘 마그네슘 with 비타민D",
+      "brand": "솔가",
+      "category": "mineral",
+      "benefits": ["bone", "muscle"],
+      "main_ingredients": [
+        {"name": "칼슘 시트레이트", "amount": 1000, "unit": "mg"},
+        {"name": "마그네슘 산화물", "amount": 400, "unit": "mg"},
+        {"name": "비타민D3", "amount": 600, "unit": "IU"}
+      ],
+      "target_concerns": ["뼈건강", "근육건강", "골밀도"],
+      "price_krw": 42000,
+      "dosage": "1일 3정",
+      "serving_size": 3,
+      "total_servings": 50,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "피토엔자임 소화효소",
+      "brand": "피토엔자임",
+      "category": "other",
+      "benefits": ["digestion"],
+      "main_ingredients": [
+        {"name": "아밀라아제", "amount": 10000, "unit": "FCC"},
+        {"name": "프로테아제", "amount": 30000, "unit": "HUT"},
+        {"name": "리파아제", "amount": 1000, "unit": "FIP"}
+      ],
+      "target_concerns": ["소화불량", "더부룩함", "영양흡수"],
+      "price_krw": 32000,
+      "dosage": "식전 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 10000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리코어 분지쇄아미노산 BCAA",
+      "brand": "뉴트리코어",
+      "category": "protein",
+      "benefits": ["muscle", "recovery"],
+      "main_ingredients": [
+        {"name": "L-류신", "amount": 2500, "unit": "mg"},
+        {"name": "L-이소류신", "amount": 1250, "unit": "mg"},
+        {"name": "L-발린", "amount": 1250, "unit": "mg"}
+      ],
+      "target_concerns": ["근육회복", "운동능력", "근손실방지"],
+      "price_krw": 28000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 40,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 11000,
+      "warnings": []
+    },
+    {
+      "name": "셀렉스 마그네슘 400",
+      "brand": "매일유업",
+      "category": "mineral",
+      "benefits": ["sleep", "muscle", "stress"],
+      "main_ingredients": [
+        {"name": "산화마그네슘", "amount": 400, "unit": "mg"},
+        {"name": "비타민B6", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["수면", "근육이완", "스트레스"],
+      "price_krw": 22000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 13000,
+      "warnings": []
+    },
+    {
+      "name": "한미양행 관절편한 칼라겐",
+      "brand": "한미양행",
+      "category": "collagen",
+      "benefits": ["joint"],
+      "main_ingredients": [
+        {"name": "UC-II 비변성 2형 콜라겐", "amount": 40, "unit": "mg"}
+      ],
+      "target_concerns": ["관절건강", "연골보호", "관절유연성"],
+      "price_krw": 48000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 14000,
+      "warnings": []
+    },
+    {
+      "name": "뷰티앤슬림 가르시니아 HCA",
+      "brand": "뷰티앤슬림",
+      "category": "other",
+      "benefits": ["weight"],
+      "main_ingredients": [
+        {"name": "가르시니아 HCA", "amount": 750, "unit": "mg"}
+      ],
+      "target_concerns": ["체중감량", "식욕억제", "지방연소"],
+      "price_krw": 28000,
+      "dosage": "1일 3정",
+      "serving_size": 3,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.2,
+      "review_count": 12000,
+      "warnings": ["당뇨 환자 주의"]
+    },
+    {
+      "name": "한국야쿠르트 쿠퍼스 윌",
+      "brand": "한국야쿠르트",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "HN019 유산균", "amount": 100, "unit": "억CFU"},
+        {"name": "LGG 유산균", "amount": 50, "unit": "억CFU"}
+      ],
+      "target_concerns": ["장건강", "면역력", "유해균억제"],
+      "price_krw": 45000,
+      "dosage": "1일 1병",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "닥터다이어트 CLA 공액리놀레산",
+      "brand": "닥터다이어트",
+      "category": "other",
+      "benefits": ["weight", "muscle"],
+      "main_ingredients": [
+        {"name": "공액리놀레산(CLA)", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["체지방감소", "근육유지", "체성분개선"],
+      "price_krw": 35000,
+      "dosage": "1일 3캡슐",
+      "serving_size": 3,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 10000,
+      "warnings": []
+    },
+    {
+      "name": "일양약품 아이리타임 루테인",
+      "brand": "일양약품",
+      "category": "eye",
+      "benefits": ["eye"],
+      "main_ingredients": [
+        {"name": "루테인", "amount": 20, "unit": "mg"},
+        {"name": "빌베리 추출물", "amount": 80, "unit": "mg"},
+        {"name": "베타카로틴", "amount": 3, "unit": "mg"}
+      ],
+      "target_concerns": ["눈건강", "황반보호", "눈피로"],
+      "price_krw": 35000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "라이프스트림 스피룰리나",
+      "brand": "라이프스트림",
+      "category": "other",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "유기농 스피룰리나", "amount": 1500, "unit": "mg"},
+        {"name": "피코시아닌", "amount": 150, "unit": "mg"}
+      ],
+      "target_concerns": ["피로", "면역력", "녹색영양소"],
+      "price_krw": 38000,
+      "dosage": "1일 3정",
+      "serving_size": 3,
+      "total_servings": 40,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 9000,
+      "warnings": []
+    },
+    {
+      "name": "세노비스 슈퍼바이오틱스",
+      "brand": "세노비스",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "프로바이오틱스 17종", "amount": 500, "unit": "억CFU"}
+      ],
+      "target_concerns": ["장건강", "면역력", "장내환경개선"],
+      "price_krw": 55000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 24000,
+      "warnings": []
+    },
+    {
+      "name": "에너씨슬 간건강",
+      "brand": "대웅제약",
+      "category": "herbal",
+      "benefits": ["liver"],
+      "main_ingredients": [
+        {"name": "밀크씨슬 실리마린", "amount": 130, "unit": "mg"}
+      ],
+      "target_concerns": ["간건강", "피로회복", "숙취해소"],
+      "price_krw": 32000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 25000,
+      "warnings": []
+    },
+    {
+      "name": "안국건강 눈편한 아스타잔틴",
+      "brand": "안국건강",
+      "category": "eye",
+      "benefits": ["eye"],
+      "main_ingredients": [
+        {"name": "아스타잔틴", "amount": 6, "unit": "mg"},
+        {"name": "루테인", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["눈건강", "눈피로", "시력보호"],
+      "price_krw": 42000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "엔젤슬림 모나콜린K 홍국",
+      "brand": "엔젤슬림",
+      "category": "other",
+      "benefits": ["heart"],
+      "main_ingredients": [
+        {"name": "홍국 모나콜린K", "amount": 4, "unit": "mg"}
+      ],
+      "target_concerns": ["콜레스테롤", "혈관건강", "심혈관"],
+      "price_krw": 35000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 11000,
+      "warnings": ["스타틴 복용 시 전문가 상담"]
+    },
+    {
+      "name": "종근당 아이클리어 오메가3 플러스",
+      "brand": "종근당",
+      "category": "omega",
+      "benefits": ["eye", "brain"],
+      "main_ingredients": [
+        {"name": "오메가3", "amount": 1000, "unit": "mg"},
+        {"name": "루테인", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["눈건강", "두뇌건강", "혈행개선"],
+      "price_krw": 48000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 14000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리라이트 더블엑스",
+      "brand": "암웨이",
+      "category": "vitamin",
+      "benefits": ["energy", "immunity", "skin"],
+      "main_ingredients": [
+        {"name": "21종 비타민 미네랄", "amount": 100, "unit": "%"},
+        {"name": "식물영양소 12종", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["종합영양", "면역력", "피로"],
+      "price_krw": 120000,
+      "dosage": "1일 3정",
+      "serving_size": 3,
+      "total_servings": 62,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 30000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리원 복합 아미노산",
+      "brand": "뉴트리원",
+      "category": "protein",
+      "benefits": ["muscle", "recovery"],
+      "main_ingredients": [
+        {"name": "필수 아미노산 9종", "amount": 5000, "unit": "mg"}
+      ],
+      "target_concerns": ["근육합성", "운동회복", "단백질보충"],
+      "price_krw": 38000,
+      "dosage": "1일 4정",
+      "serving_size": 4,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 9000,
+      "warnings": []
+    },
+    {
+      "name": "GC녹십자 하이본 칼슘D",
+      "brand": "GC녹십자",
+      "category": "mineral",
+      "benefits": ["bone"],
+      "main_ingredients": [
+        {"name": "해조칼슘", "amount": 600, "unit": "mg"},
+        {"name": "비타민D3", "amount": 800, "unit": "IU"},
+        {"name": "마그네슘", "amount": 150, "unit": "mg"}
+      ],
+      "target_concerns": ["뼈건강", "골밀도", "골다공증예방"],
+      "price_krw": 28000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 16000,
+      "warnings": []
+    },
+    {
+      "name": "한독 테라덤 세라마이드",
+      "brand": "한독",
+      "category": "other",
+      "benefits": ["skin"],
+      "main_ingredients": [
+        {"name": "쌀 세라마이드", "amount": 40, "unit": "mg"}
+      ],
+      "target_concerns": ["피부보습", "피부장벽", "건조피부"],
+      "price_krw": 35000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 11000,
+      "warnings": []
+    },
+    {
+      "name": "한미약품 테이크핏 밀크씨슬",
+      "brand": "한미약품",
+      "category": "herbal",
+      "benefits": ["liver"],
+      "main_ingredients": [
+        {"name": "밀크씨슬 추출물 실리마린", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["간건강", "피로", "해독"],
+      "price_krw": 25000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "유한양행 마그비 액티브",
+      "brand": "유한양행",
+      "category": "mineral",
+      "benefits": ["sleep", "muscle"],
+      "main_ingredients": [
+        {"name": "산화마그네슘", "amount": 350, "unit": "mg"},
+        {"name": "비타민B6", "amount": 15, "unit": "mg"}
+      ],
+      "target_concerns": ["숙면", "근육경련", "스트레스"],
+      "price_krw": 18000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 17000,
+      "warnings": []
+    },
+    {
+      "name": "일동제약 아이케어 루테인",
+      "brand": "일동제약",
+      "category": "eye",
+      "benefits": ["eye"],
+      "main_ingredients": [
+        {"name": "루테인", "amount": 20, "unit": "mg"},
+        {"name": "지아잔틴", "amount": 4, "unit": "mg"},
+        {"name": "비타민A", "amount": 700, "unit": "mcg"}
+      ],
+      "target_concerns": ["눈건강", "황반보호", "야맹증예방"],
+      "price_krw": 32000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 22000,
+      "warnings": []
+    },
+    {
+      "name": "고려은단 멀티비타민 올인원",
+      "brand": "고려은단",
+      "category": "vitamin",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "비타민 13종", "amount": 100, "unit": "%"},
+        {"name": "미네랄 8종", "amount": 100, "unit": "%"}
+      ],
+      "target_concerns": ["종합영양", "피로", "면역력"],
+      "price_krw": 28000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리디데이 식물성 오메가3",
+      "brand": "뉴트리디데이",
+      "category": "omega",
+      "benefits": ["brain", "immunity"],
+      "main_ingredients": [
+        {"name": "해조 유래 DHA", "amount": 250, "unit": "mg"},
+        {"name": "EPA", "amount": 125, "unit": "mg"}
+      ],
+      "target_concerns": ["비건오메가", "두뇌건강", "혈행개선"],
+      "price_krw": 38000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 10000,
+      "warnings": []
+    },
+    {
+      "name": "네이처메이드 칼슘 마그네슘 아연",
+      "brand": "네이처메이드",
+      "category": "mineral",
+      "benefits": ["bone", "muscle", "immunity"],
+      "main_ingredients": [
+        {"name": "칼슘", "amount": 333, "unit": "mg"},
+        {"name": "마그네슘", "amount": 133, "unit": "mg"},
+        {"name": "아연", "amount": 5, "unit": "mg"}
+      ],
+      "target_concerns": ["뼈건강", "근육건강", "면역력"],
+      "price_krw": 25000,
+      "dosage": "1일 3정",
+      "serving_size": 3,
+      "total_servings": 50,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "광동제약 쌍화골드",
+      "brand": "광동제약",
+      "category": "other",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "쌍화 추출물", "amount": 1500, "unit": "mg"},
+        {"name": "홍삼 추출물", "amount": 300, "unit": "mg"}
+      ],
+      "target_concerns": ["피로", "감기회복", "기력회복"],
+      "price_krw": 15000,
+      "dosage": "1일 1병",
+      "serving_size": 1,
+      "total_servings": 10,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 50000,
+      "warnings": []
+    },
+    {
+      "name": "삼진제약 게보린",
+      "brand": "삼진제약",
+      "category": "other",
+      "benefits": ["energy"],
+      "main_ingredients": [
+        {"name": "비타민B1", "amount": 50, "unit": "mg"},
+        {"name": "비타민B6", "amount": 50, "unit": "mg"},
+        {"name": "카페인", "amount": 30, "unit": "mg"}
+      ],
+      "target_concerns": ["두통", "피로", "신경통"],
+      "price_krw": 8000,
+      "dosage": "1일 3정",
+      "serving_size": 3,
+      "total_servings": 10,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 40000,
+      "warnings": ["카페인 함유"]
+    },
+    {
+      "name": "동화약품 비판텐 판토텐산",
+      "brand": "동화약품",
+      "category": "vitamin",
+      "benefits": ["hair", "skin"],
+      "main_ingredients": [
+        {"name": "판토텐산", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["탈모예방", "피부건강", "스트레스"],
+      "price_krw": 22000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "일양약품 모닝글로리",
+      "brand": "일양약품",
+      "category": "probiotic",
+      "benefits": ["digestion"],
+      "main_ingredients": [
+        {"name": "비피더스균", "amount": 100, "unit": "억CFU"},
+        {"name": "유산균", "amount": 50, "unit": "억CFU"}
+      ],
+      "target_concerns": ["장건강", "변비개선", "소화"],
+      "price_krw": 32000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "GNM자연의품격 유기농 발효 마카",
+      "brand": "GNM자연의품격",
+      "category": "herbal",
+      "benefits": ["energy", "hormone"],
+      "main_ingredients": [
+        {"name": "유기농 발효 마카", "amount": 1200, "unit": "mg"}
+      ],
+      "target_concerns": ["활력", "호르몬균형", "지구력"],
+      "price_krw": 35000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 11000,
+      "warnings": []
+    },
+    {
+      "name": "대웅제약 올티바 종합비타민",
+      "brand": "대웅제약",
+      "category": "vitamin",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "비타민C", "amount": 1000, "unit": "mg"},
+        {"name": "비타민B군", "amount": 100, "unit": "mg"},
+        {"name": "아연", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["피로회복", "면역력", "활력"],
+      "price_krw": 35000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 16000,
+      "warnings": []
+    },
+    {
+      "name": "헬스원 피쉬콜라겐 5000",
+      "brand": "헬스원",
+      "category": "collagen",
+      "benefits": ["skin", "joint"],
+      "main_ingredients": [
+        {"name": "저분자 피쉬콜라겐", "amount": 5000, "unit": "mg"},
+        {"name": "비타민C", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["피부탄력", "주름개선", "관절건강"],
+      "price_krw": 42000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 14000,
+      "warnings": []
+    },
+    {
+      "name": "풀무원 프로바이오",
+      "brand": "풀무원",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "19종 유산균", "amount": 100, "unit": "억CFU"},
+        {"name": "프리바이오틱스", "amount": 200, "unit": "mg"}
+      ],
+      "target_concerns": ["장건강", "면역력", "배변활동"],
+      "price_krw": 38000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "CKD건강기능식품 액티브 BCAA",
+      "brand": "CKD",
+      "category": "protein",
+      "benefits": ["muscle", "recovery"],
+      "main_ingredients": [
+        {"name": "BCAA 2:1:1", "amount": 3000, "unit": "mg"},
+        {"name": "글루타민", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["근육회복", "운동능력", "근손실방지"],
+      "price_krw": 32000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 10000,
+      "warnings": []
+    },
+    {
+      "name": "바이탈뷰티 슈퍼콜라겐",
+      "brand": "아모레퍼시픽",
+      "category": "collagen",
+      "benefits": ["skin"],
+      "main_ingredients": [
+        {"name": "초저분자 콜라겐펩타이드", "amount": 3000, "unit": "mg"},
+        {"name": "히알루론산", "amount": 20, "unit": "mg"},
+        {"name": "비타민C", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["피부탄력", "피부보습", "주름"],
+      "price_krw": 58000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 25000,
+      "warnings": []
+    },
+    {
+      "name": "네추럴플러스 징코빌로바",
+      "brand": "네추럴플러스",
+      "category": "herbal",
+      "benefits": ["brain", "energy"],
+      "main_ingredients": [
+        {"name": "은행잎 추출물", "amount": 120, "unit": "mg"}
+      ],
+      "target_concerns": ["기억력", "집중력", "혈액순환"],
+      "price_krw": 28000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 12000,
+      "warnings": ["항응고제 복용 시 주의"]
+    },
+    {
+      "name": "종근당건강 프로메가",
+      "brand": "종근당건강",
+      "category": "omega",
+      "benefits": ["immunity", "brain"],
+      "main_ingredients": [
+        {"name": "초임계 rTG 오메가3", "amount": 1200, "unit": "mg"},
+        {"name": "EPA", "amount": 600, "unit": "mg"},
+        {"name": "DHA", "amount": 400, "unit": "mg"}
+      ],
+      "target_concerns": ["혈행개선", "두뇌건강", "중성지방"],
+      "price_krw": 52000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 22000,
+      "warnings": []
+    },
+    {
+      "name": "일동제약 관절지킴이",
+      "brand": "일동제약",
+      "category": "joint",
+      "benefits": ["joint"],
+      "main_ingredients": [
+        {"name": "글루코사민", "amount": 1500, "unit": "mg"},
+        {"name": "상어연골 콘드로이틴", "amount": 400, "unit": "mg"}
+      ],
+      "target_concerns": ["관절건강", "연골보호", "관절통증"],
+      "price_krw": 38000,
+      "dosage": "1일 3정",
+      "serving_size": 3,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 15000,
+      "warnings": ["갑각류 알레르기 주의"]
+    },
+    {
+      "name": "천호엔케어 홍삼 담은 녹용",
+      "brand": "천호엔케어",
+      "category": "other",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "녹용 추출물", "amount": 800, "unit": "mg"},
+        {"name": "홍삼 추출물", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["기력회복", "면역력", "성장기영양"],
+      "price_krw": 75000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 14000,
+      "warnings": []
+    },
+    {
+      "name": "뉴트리라이프 비타민B 콤플렉스",
+      "brand": "뉴트리라이프",
+      "category": "vitamin",
+      "benefits": ["energy", "nerve"],
+      "main_ingredients": [
+        {"name": "비타민B1", "amount": 75, "unit": "mg"},
+        {"name": "비타민B2", "amount": 75, "unit": "mg"},
+        {"name": "비타민B6", "amount": 75, "unit": "mg"},
+        {"name": "비타민B12", "amount": 500, "unit": "mcg"},
+        {"name": "엽산", "amount": 400, "unit": "mcg"}
+      ],
+      "target_concerns": ["피로회복", "에너지대사", "신경건강"],
+      "price_krw": 25000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "닥터시큐어 아이오메가",
+      "brand": "닥터시큐어",
+      "category": "omega",
+      "benefits": ["eye", "brain"],
+      "main_ingredients": [
+        {"name": "오메가3", "amount": 1000, "unit": "mg"},
+        {"name": "루테인", "amount": 10, "unit": "mg"},
+        {"name": "아스타잔틴", "amount": 2, "unit": "mg"}
+      ],
+      "target_concerns": ["눈건강", "두뇌건강", "시력보호"],
+      "price_krw": 45000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "유니시티 바이오스 라이프 슬림",
+      "brand": "유니시티",
+      "category": "other",
+      "benefits": ["weight", "blood_sugar"],
+      "main_ingredients": [
+        {"name": "식이섬유 복합체", "amount": 5000, "unit": "mg"},
+        {"name": "크롬", "amount": 100, "unit": "mcg"}
+      ],
+      "target_concerns": ["체중관리", "혈당조절", "콜레스테롤"],
+      "price_krw": 85000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "한국콜마 뷰티콜라겐 젤리",
+      "brand": "한국콜마",
+      "category": "collagen",
+      "benefits": ["skin"],
+      "main_ingredients": [
+        {"name": "저분자 콜라겐", "amount": 3000, "unit": "mg"},
+        {"name": "비타민C", "amount": 100, "unit": "mg"},
+        {"name": "히알루론산", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["피부탄력", "피부보습", "맛있는 콜라겐"],
+      "price_krw": 38000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 15000,
+      "warnings": []
+    },
+    {
+      "name": "헬스원 칼슘 마그네슘 비타민D",
+      "brand": "헬스원",
+      "category": "mineral",
+      "benefits": ["bone"],
+      "main_ingredients": [
+        {"name": "칼슘", "amount": 400, "unit": "mg"},
+        {"name": "마그네슘", "amount": 200, "unit": "mg"},
+        {"name": "비타민D", "amount": 1000, "unit": "IU"}
+      ],
+      "target_concerns": ["뼈건강", "근육건강", "골밀도"],
+      "price_krw": 22000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 14000,
+      "warnings": []
+    },
+    {
+      "name": "JW중외제약 프리바이오틱스",
+      "brand": "JW중외제약",
+      "category": "probiotic",
+      "benefits": ["digestion"],
+      "main_ingredients": [
+        {"name": "프리바이오틱스(FOS)", "amount": 5000, "unit": "mg"}
+      ],
+      "target_concerns": ["장건강", "유익균 증식", "변비개선"],
+      "price_krw": 25000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 12000,
+      "warnings": []
+    },
+    {
+      "name": "에스더포뮬러 슈퍼비타민C 1000",
+      "brand": "에스더포뮬러",
+      "category": "vitamin",
+      "benefits": ["immunity", "skin"],
+      "main_ingredients": [
+        {"name": "비타민C", "amount": 1000, "unit": "mg"},
+        {"name": "아연", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["면역력", "피부건강", "항산화"],
+      "price_krw": 28000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "나우푸드 알파리포산 600",
+      "brand": "나우푸드",
+      "category": "other",
+      "benefits": ["energy", "skin"],
+      "main_ingredients": [
+        {"name": "알파리포산", "amount": 600, "unit": "mg"}
+      ],
+      "target_concerns": ["항산화", "에너지대사", "혈당관리"],
+      "price_krw": 38000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 10000,
+      "warnings": ["당뇨약 복용 시 전문가 상담"]
+    },
+    {
+      "name": "한미약품 프로핏 웨이프로틴",
+      "brand": "한미약품",
+      "category": "protein",
+      "benefits": ["muscle"],
+      "main_ingredients": [
+        {"name": "분리유청단백", "amount": 25, "unit": "g"},
+        {"name": "BCAA", "amount": 5, "unit": "g"}
+      ],
+      "target_concerns": ["근육합성", "단백질보충", "운동후회복"],
+      "price_krw": 55000,
+      "dosage": "1일 1스쿱",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 14000,
+      "warnings": ["유당불내증 주의"]
+    },
+    {
+      "name": "CMG제약 뉴로민 DHA",
+      "brand": "CMG제약",
+      "category": "omega",
+      "benefits": ["brain", "eye"],
+      "main_ingredients": [
+        {"name": "DHA", "amount": 300, "unit": "mg"},
+        {"name": "EPA", "amount": 150, "unit": "mg"}
+      ],
+      "target_concerns": ["두뇌발달", "기억력", "눈건강"],
+      "price_krw": 38000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 16000,
+      "warnings": []
+    },
+    {
+      "name": "보령 수면엔 멜라토닌",
+      "brand": "보령제약",
+      "category": "sleep",
+      "benefits": ["sleep"],
+      "main_ingredients": [
+        {"name": "멜라토닌", "amount": 2, "unit": "mg"},
+        {"name": "L-테아닌", "amount": 100, "unit": "mg"},
+        {"name": "마그네슘", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["불면", "수면의질", "시차적응"],
+      "price_krw": 22000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.3,
+      "review_count": 14000,
+      "warnings": ["운전 전 복용 금지"]
+    },
+    {
+      "name": "동아제약 비타500 젤리스틱",
+      "brand": "동아제약",
+      "category": "vitamin",
+      "benefits": ["immunity", "energy"],
+      "main_ingredients": [
+        {"name": "비타민C", "amount": 1000, "unit": "mg"},
+        {"name": "비타민B2", "amount": 10, "unit": "mg"}
+      ],
+      "target_concerns": ["면역력", "피로", "맛있는 비타민"],
+      "price_krw": 15000,
+      "dosage": "1일 1포",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 25000,
+      "warnings": []
+    },
+    {
+      "name": "닥터비건 비건 멀티비타민",
+      "brand": "닥터비건",
+      "category": "vitamin",
+      "benefits": ["energy", "immunity"],
+      "main_ingredients": [
+        {"name": "식물성 비타민 13종", "amount": 100, "unit": "%"},
+        {"name": "식물성 미네랄 8종", "amount": 100, "unit": "%"}
+      ],
+      "target_concerns": ["비건영양제", "종합영양", "면역력"],
+      "price_krw": 45000,
+      "dosage": "1일 2정",
+      "serving_size": 2,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 8000,
+      "warnings": []
+    },
+    {
+      "name": "메디포스트 제대혈 NMN",
+      "brand": "메디포스트",
+      "category": "other",
+      "benefits": ["energy", "skin"],
+      "main_ingredients": [
+        {"name": "NMN (니코틴아마이드 모노뉴클레오티드)", "amount": 250, "unit": "mg"}
+      ],
+      "target_concerns": ["항노화", "에너지", "세포활력"],
+      "price_krw": 120000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 6000,
+      "warnings": []
+    },
+    {
+      "name": "녹십자 비타트럼 어린이",
+      "brand": "GC녹십자",
+      "category": "vitamin",
+      "benefits": ["immunity", "growth"],
+      "main_ingredients": [
+        {"name": "비타민A", "amount": 500, "unit": "mcg"},
+        {"name": "비타민C", "amount": 50, "unit": "mg"},
+        {"name": "비타민D", "amount": 10, "unit": "mcg"},
+        {"name": "아연", "amount": 5, "unit": "mg"}
+      ],
+      "target_concerns": ["어린이영양", "면역력", "성장발달"],
+      "price_krw": 25000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 20000,
+      "warnings": []
+    },
+    {
+      "name": "종근당 노을엔 이소플라본",
+      "brand": "종근당",
+      "category": "herbal",
+      "benefits": ["hormone"],
+      "main_ingredients": [
+        {"name": "대두 이소플라본", "amount": 30, "unit": "mg"}
+      ],
+      "target_concerns": ["갱년기", "여성호르몬", "골밀도"],
+      "price_krw": 38000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 18000,
+      "warnings": ["에스트로겐 수용체 관련 질환자 전문가 상담"]
+    },
+    {
+      "name": "뉴트리디데이 글루코사민 1500",
+      "brand": "뉴트리디데이",
+      "category": "joint",
+      "benefits": ["joint"],
+      "main_ingredients": [
+        {"name": "글루코사민 황산염", "amount": 1500, "unit": "mg"},
+        {"name": "비타민D", "amount": 400, "unit": "IU"}
+      ],
+      "target_concerns": ["관절건강", "연골보호", "관절유연성"],
+      "price_krw": 28000,
+      "dosage": "1일 3정",
+      "serving_size": 3,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 15000,
+      "warnings": ["갑각류 알레르기 주의"]
+    },
+    {
+      "name": "CMG 리빙맘 철분",
+      "brand": "CMG제약",
+      "category": "mineral",
+      "benefits": ["blood", "energy"],
+      "main_ingredients": [
+        {"name": "헴철", "amount": 24, "unit": "mg"},
+        {"name": "비타민C", "amount": 50, "unit": "mg"},
+        {"name": "엽산", "amount": 400, "unit": "mcg"}
+      ],
+      "target_concerns": ["빈혈", "임산부 철분", "피로"],
+      "price_krw": 25000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 14000,
+      "warnings": []
+    },
+    {
+      "name": "GNM 자연의품격 품격있는 유산균",
+      "brand": "GNM자연의품격",
+      "category": "probiotic",
+      "benefits": ["digestion", "immunity"],
+      "main_ingredients": [
+        {"name": "8종 유산균", "amount": 100, "unit": "억CFU"},
+        {"name": "프락토올리고당", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["장건강", "면역력", "변비개선"],
+      "price_krw": 32000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 30,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 22000,
+      "warnings": []
+    },
+    {
+      "name": "솔가 코엔자임 Q10 100mg",
+      "brand": "솔가",
+      "category": "other",
+      "benefits": ["energy", "heart_health"],
+      "main_ingredients": [
+        {"name": "코엔자임Q10", "amount": 100, "unit": "mg"}
+      ],
+      "target_concerns": ["심장건강", "에너지", "항산화"],
+      "price_krw": 45000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.7,
+      "review_count": 8500,
+      "warnings": []
+    },
+    {
+      "name": "NOW Foods 아세틸 L-카르니틴 500mg",
+      "brand": "NOW Foods",
+      "category": "other",
+      "benefits": ["energy", "weight_loss"],
+      "main_ingredients": [
+        {"name": "아세틸 L-카르니틴", "amount": 500, "unit": "mg"}
+      ],
+      "target_concerns": ["체지방감소", "에너지", "뇌기능"],
+      "price_krw": 28000,
+      "dosage": "1일 1-2캡슐",
+      "serving_size": 1,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 6200,
+      "warnings": []
+    },
+    {
+      "name": "자로우 알파리포산 300mg",
+      "brand": "자로우",
+      "category": "other",
+      "benefits": ["antioxidant", "blood_sugar"],
+      "main_ingredients": [
+        {"name": "R-알파리포산", "amount": 300, "unit": "mg"}
+      ],
+      "target_concerns": ["항산화", "혈당관리", "신경건강"],
+      "price_krw": 35000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 4800,
+      "warnings": ["당뇨약 복용자 주의"]
+    },
+    {
+      "name": "닥터스베스트 글루코사민 콘드로이틴 MSM",
+      "brand": "닥터스베스트",
+      "category": "other",
+      "benefits": ["joint_health"],
+      "main_ingredients": [
+        {"name": "글루코사민", "amount": 1500, "unit": "mg"},
+        {"name": "콘드로이틴", "amount": 1200, "unit": "mg"},
+        {"name": "MSM", "amount": 1000, "unit": "mg"}
+      ],
+      "target_concerns": ["관절건강", "연골보호", "관절염"],
+      "price_krw": 38000,
+      "dosage": "1일 3캡슐",
+      "serving_size": 3,
+      "total_servings": 40,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 12000,
+      "warnings": ["갑각류 알레르기 주의"]
+    },
+    {
+      "name": "캘리포니아골드 EPA/DHA 오메가3",
+      "brand": "캘리포니아골드뉴트리션",
+      "category": "omega",
+      "benefits": ["heart_health", "brain_health"],
+      "main_ingredients": [
+        {"name": "EPA", "amount": 360, "unit": "mg"},
+        {"name": "DHA", "amount": 240, "unit": "mg"}
+      ],
+      "target_concerns": ["심혈관", "두뇌건강", "눈건강"],
+      "price_krw": 22000,
+      "dosage": "1일 2소프트젤",
+      "serving_size": 2,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 18000,
+      "warnings": []
+    },
+    {
+      "name": "네이처메이드 비타민K2 MK-7",
+      "brand": "네이처메이드",
+      "category": "vitamin",
+      "benefits": ["bone_health", "heart_health"],
+      "main_ingredients": [
+        {"name": "비타민K2 MK-7", "amount": 100, "unit": "mcg"}
+      ],
+      "target_concerns": ["뼈건강", "칼슘흡수", "혈관건강"],
+      "price_krw": 25000,
+      "dosage": "1일 1소프트젤",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 5600,
+      "warnings": ["항응고제 복용자 주의"]
+    },
+    {
+      "name": "쏜리서치 기초 비타민",
+      "brand": "쏜리서치",
+      "category": "vitamin",
+      "benefits": ["overall_health", "energy"],
+      "main_ingredients": [
+        {"name": "멀티비타민 종합", "amount": 100, "unit": "%DV"},
+        {"name": "메틸엽산", "amount": 400, "unit": "mcg"},
+        {"name": "메틸B12", "amount": 500, "unit": "mcg"}
+      ],
+      "target_concerns": ["종합영양", "에너지", "MTHFR"],
+      "price_krw": 55000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.8,
+      "review_count": 7800,
+      "warnings": []
+    },
+    {
+      "name": "가든오브라이프 비타민코드 여성용",
+      "brand": "가든오브라이프",
+      "category": "vitamin",
+      "benefits": ["women_health", "energy"],
+      "main_ingredients": [
+        {"name": "홀푸드 비타민C", "amount": 60, "unit": "mg"},
+        {"name": "홀푸드 철분", "amount": 8, "unit": "mg"},
+        {"name": "홀푸드 엽산", "amount": 400, "unit": "mcg"}
+      ],
+      "target_concerns": ["여성건강", "에너지", "면역력"],
+      "price_krw": 48000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.7,
+      "review_count": 9200,
+      "warnings": []
+    },
+    {
+      "name": "라이프익스텐션 슈퍼K",
+      "brand": "라이프익스텐션",
+      "category": "vitamin",
+      "benefits": ["bone_health", "heart_health"],
+      "main_ingredients": [
+        {"name": "비타민K1", "amount": 1500, "unit": "mcg"},
+        {"name": "비타민K2 MK-4", "amount": 1000, "unit": "mcg"},
+        {"name": "비타민K2 MK-7", "amount": 100, "unit": "mcg"}
+      ],
+      "target_concerns": ["뼈건강", "동맥석회화", "칼슘대사"],
+      "price_krw": 32000,
+      "dosage": "1일 1소프트젤",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.7,
+      "review_count": 4500,
+      "warnings": ["항응고제 복용자 주의"]
+    },
+    {
+      "name": "NOW Foods 셀레늄 200mcg",
+      "brand": "NOW Foods",
+      "category": "mineral",
+      "benefits": ["antioxidant", "thyroid_health"],
+      "main_ingredients": [
+        {"name": "셀레노메티오닌", "amount": 200, "unit": "mcg"}
+      ],
+      "target_concerns": ["항산화", "갑상선건강", "면역력"],
+      "price_krw": 12000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 180,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 8900,
+      "warnings": ["과량섭취 주의"]
+    },
+    {
+      "name": "솔가 크롬 피콜리네이트 500mcg",
+      "brand": "솔가",
+      "category": "mineral",
+      "benefits": ["blood_sugar", "metabolism"],
+      "main_ingredients": [
+        {"name": "크롬 피콜리네이트", "amount": 500, "unit": "mcg"}
+      ],
+      "target_concerns": ["혈당관리", "탄수화물대사", "다이어트"],
+      "price_krw": 18000,
+      "dosage": "1일 1정",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 3200,
+      "warnings": ["당뇨약 복용자 상담"]
+    },
+    {
+      "name": "뉴트리코스트 시트룰린 말레이트",
+      "brand": "뉴트리코스트",
+      "category": "other",
+      "benefits": ["exercise_performance", "circulation"],
+      "main_ingredients": [
+        {"name": "L-시트룰린 말레이트", "amount": 3000, "unit": "mg"}
+      ],
+      "target_concerns": ["운동능력", "혈류개선", "피로회복"],
+      "price_krw": 25000,
+      "dosage": "운동 30분전 1스쿱",
+      "serving_size": 1,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 5600,
+      "warnings": []
+    },
+    {
+      "name": "닥터스베스트 베타인 HCL 펩신",
+      "brand": "닥터스베스트",
+      "category": "other",
+      "benefits": ["digestion"],
+      "main_ingredients": [
+        {"name": "베타인 HCL", "amount": 648, "unit": "mg"},
+        {"name": "펩신", "amount": 130, "unit": "mg"}
+      ],
+      "target_concerns": ["소화불량", "단백질소화", "위산부족"],
+      "price_krw": 22000,
+      "dosage": "식사 시 1캡슐",
+      "serving_size": 1,
+      "total_servings": 120,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 4200,
+      "warnings": ["위궤양/역류성식도염 금기"]
+    },
+    {
+      "name": "자로우 보스웰리아 추출물",
+      "brand": "자로우",
+      "category": "other",
+      "benefits": ["joint_health", "anti_inflammatory"],
+      "main_ingredients": [
+        {"name": "보스웰리아 추출물", "amount": 350, "unit": "mg"}
+      ],
+      "target_concerns": ["관절염증", "관절건강", "소염"],
+      "price_krw": 28000,
+      "dosage": "1일 2캡슐",
+      "serving_size": 2,
+      "total_servings": 60,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.5,
+      "review_count": 3800,
+      "warnings": []
+    },
+    {
+      "name": "NOW Foods 아슈와간다 450mg",
+      "brand": "NOW Foods",
+      "category": "other",
+      "benefits": ["stress_relief", "energy"],
+      "main_ingredients": [
+        {"name": "아슈와간다 추출물", "amount": 450, "unit": "mg"}
+      ],
+      "target_concerns": ["스트레스", "피로", "수면"],
+      "price_krw": 18000,
+      "dosage": "1일 1-2캡슐",
+      "serving_size": 1,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 12000,
+      "warnings": ["임산부/수유부 주의"]
+    },
+    {
+      "name": "네이처스웨이 감마리놀렌산 달맞이꽃종자유",
+      "brand": "네이처스웨이",
+      "category": "omega",
+      "benefits": ["women_health", "skin_health"],
+      "main_ingredients": [
+        {"name": "감마리놀렌산(GLA)", "amount": 130, "unit": "mg"},
+        {"name": "달맞이꽃종자유", "amount": 1300, "unit": "mg"}
+      ],
+      "target_concerns": ["생리전증후군", "피부건강", "호르몬균형"],
+      "price_krw": 25000,
+      "dosage": "1일 2소프트젤",
+      "serving_size": 2,
+      "total_servings": 90,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.4,
+      "review_count": 7200,
+      "warnings": []
+    },
+    {
+      "name": "퓨어인캡슐레이션 비타민D3 1000IU",
+      "brand": "퓨어인캡슐레이션",
+      "category": "vitamin",
+      "benefits": ["bone_health", "immunity"],
+      "main_ingredients": [
+        {"name": "비타민D3", "amount": 1000, "unit": "IU"}
+      ],
+      "target_concerns": ["뼈건강", "면역력", "일조량부족"],
+      "price_krw": 28000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 120,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.8,
+      "review_count": 6500,
+      "warnings": []
+    },
+    {
+      "name": "NOW Foods NAC 600mg",
+      "brand": "NOW Foods",
+      "category": "other",
+      "benefits": ["antioxidant", "liver_health"],
+      "main_ingredients": [
+        {"name": "N-아세틸시스테인", "amount": 600, "unit": "mg"}
+      ],
+      "target_concerns": ["간건강", "해독", "항산화"],
+      "price_krw": 18000,
+      "dosage": "1일 1캡슐",
+      "serving_size": 1,
+      "total_servings": 100,
+      "image_url": null,
+      "purchase_url": null,
+      "rating": 4.6,
+      "review_count": 9800,
+      "warnings": []
+    }
+  ]
+}
