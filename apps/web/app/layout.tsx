@@ -97,17 +97,16 @@ export default function RootLayout({
               <BottomNav />
               <Toaster
                 position="top-center"
-                richColors
                 theme="system"
                 toastOptions={{
                   classNames: {
-                    toast: 'bg-card border-border text-foreground',
-                    title: 'text-foreground',
+                    toast: 'bg-card border border-border text-foreground shadow-lg',
+                    title: 'text-foreground font-medium',
                     description: 'text-muted-foreground',
-                    success: 'bg-status-success/10 border-status-success/30 text-status-success',
-                    error: 'bg-status-error/10 border-status-error/30 text-status-error',
-                    warning: 'bg-status-warning/10 border-status-warning/30 text-status-warning',
-                    info: 'bg-primary/10 border-primary/30 text-primary',
+                    success: '!bg-status-success/10 !border-status-success/30 !text-status-success',
+                    error: '!bg-status-error/10 !border-status-error/30 !text-status-error',
+                    warning: '!bg-status-warning/10 !border-status-warning/30 !text-status-warning',
+                    info: '!bg-primary/10 !border-primary/30 !text-primary',
                   },
                 }}
               />
