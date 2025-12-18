@@ -71,13 +71,15 @@ export async function getProductsByCategory(
     }
     case 'all':
     default: {
-      // 모든 카테고리에서 균등하게 조회
-      const perCategory = Math.ceil(limit / 5);
+      // 모든 카테고리에서 균등하게 조회 (화장품/영양제 중심)
+      const cosmeticLimit = Math.ceil(limit * 0.5); // 50%
+      const supplementLimit = Math.ceil(limit * 0.3); // 30%
+      const otherLimit = Math.ceil(limit * 0.1); // 각 10%
       const [cosmetics, supplements, equipment, healthFoods] = await Promise.all([
-        getCosmeticProducts(undefined, perCategory * 2),
-        getSupplementProducts(undefined, perCategory),
-        getWorkoutEquipment(undefined, perCategory),
-        getHealthFoods(undefined, perCategory),
+        getCosmeticProducts(undefined, cosmeticLimit + offset),
+        getSupplementProducts(undefined, supplementLimit + offset),
+        getWorkoutEquipment(undefined, otherLimit + offset),
+        getHealthFoods(undefined, otherLimit + offset),
       ]);
       const all = [...cosmetics, ...supplements, ...equipment, ...healthFoods];
       return applySortAndPaginate(all, options, offset, limit);

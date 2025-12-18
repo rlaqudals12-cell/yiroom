@@ -81,12 +81,12 @@ export function ProductsPageClient() {
 
       if (searchQuery.trim()) {
         // 검색어가 있으면 검색 API 사용
-        result = await searchProducts(searchQuery, category, 40);
+        result = await searchProducts(searchQuery, category, 100);
       } else {
         // 검색어가 없으면 카테고리별 조회
         result = await getProductsByCategory(category, {
           sortBy,
-          limit: 40,
+          limit: 100,
         });
       }
 
