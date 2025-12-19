@@ -202,12 +202,12 @@ describe('getBodyNutritionInsight', () => {
 
 describe('convertBodyAnalysisToData', () => {
   it('DB 결과를 BodyAnalysisData로 변환한다', () => {
+    // body_analyses 테이블 실제 컬럼: body_type, height, weight, created_at
     const dbResult = {
       body_type: 'A',
-      user_input: { height: 165, weight: 55 },
+      height: 165,
+      weight: 55,
       created_at: '2024-01-01T00:00:00Z',
-      bmi: 20.2,
-      body_fat_percentage: 22,
     };
 
     const result = convertBodyAnalysisToData(dbResult);
@@ -215,8 +215,8 @@ describe('convertBodyAnalysisToData', () => {
     expect(result?.bodyType).toBe('A');
     expect(result?.height).toBe(165);
     expect(result?.weight).toBe(55);
-    expect(result?.bmi).toBe(20.2);
-    expect(result?.bodyFatPercentage).toBe(22);
+    // BMI는 height/weight로 자동 계산: 55 / (1.65)^2 ≈ 20.2
+    expect(result?.bmi).toBeCloseTo(20.2, 1);
     expect(result?.analyzedAt).toBeInstanceOf(Date);
   });
 
@@ -226,10 +226,9 @@ describe('convertBodyAnalysisToData', () => {
     expect(result).toBeNull();
   });
 
-  it('user_input이 없어도 처리한다', () => {
+  it('height/weight가 없으면 0으로 처리한다', () => {
     const dbResult = {
       body_type: 'X',
-      user_input: {},
       created_at: '2024-01-01T00:00:00Z',
     };
 
