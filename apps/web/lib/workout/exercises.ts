@@ -2,11 +2,17 @@ import { Exercise } from '@/types/workout';
 import { workoutCache, createCacheKey } from '@/lib/cache';
 import upperBodyExercises from '@/data/exercises/upper-body.json';
 import lowerCoreCadioExercises from '@/data/exercises/lower-core-cardio.json';
+import pilatesExercises from '@/data/exercises/pilates.json';
+import yogaExercises from '@/data/exercises/yoga.json';
+import stretchingExercises from '@/data/exercises/stretching.json';
 
 // 모든 운동 데이터 합치기
 const allExercises: Exercise[] = [
   ...(upperBodyExercises as Exercise[]),
   ...(lowerCoreCadioExercises as Exercise[]),
+  ...(pilatesExercises as Exercise[]),
+  ...(yogaExercises as Exercise[]),
+  ...(stretchingExercises as Exercise[]),
 ];
 
 // 카테고리별 운동 캐시 (빌드 타임에 생성)

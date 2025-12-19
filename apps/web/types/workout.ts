@@ -1,6 +1,16 @@
 // 운동 카테고리
 export type ExerciseCategory = 'upper' | 'lower' | 'core' | 'cardio';
 
+// 운동 스타일 (방식) - 2차원 분류용
+export type ExerciseStyle =
+  | 'weight'       // 웨이트 트레이닝
+  | 'calisthenics' // 맨몸 운동
+  | 'pilates'      // 필라테스
+  | 'yoga'         // 요가
+  | 'stretching'   // 스트레칭
+  | 'hiit'         // 고강도 인터벌
+  | 'functional';  // 기능성 운동
+
 // 운동 난이도
 export type ExerciseDifficulty = 'beginner' | 'intermediate' | 'advanced';
 
@@ -38,10 +48,24 @@ export interface Exercise {
   videoUrl?: string;
   thumbnailUrl?: string;
   suitableFor: {
-    bodyTypes?: string[];   // 적합한 체형
-    goals?: string[];       // 적합한 목표
-    injuries?: string[];    // 주의 부상 (이 부상이 있으면 피해야 함)
+    bodyTypes?: string[];        // 적합한 체형
+    goals?: string[];            // 적합한 목표
+    injuries?: string[];         // 주의 부상 (이 부상이 있으면 피해야 함)
+    contraindications?: string[]; // 금기 조건 (임산부, 고혈압, 녹내장 등)
   };
+
+  // 운동 스타일 (2차원 분류)
+  style?: ExerciseStyle;
+
+  // 요가/필라테스 전용 필드
+  sanskritName?: string;        // 요가 산스크리트명
+  breathingGuide?: string;      // 호흡법
+  variations?: {                // 변형 동작
+    easier?: string;
+    harder?: string;
+  };
+  mentalEffects?: string[];     // 정신적 효과 (요가/명상)
+  physicalEffects?: string[];   // 신체적 효과 (유연성/근력 등)
 }
 
 // C-1에서 가져오는 체형 데이터

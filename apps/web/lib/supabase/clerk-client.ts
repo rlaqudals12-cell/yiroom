@@ -34,8 +34,15 @@ export function useClerkSupabaseClient() {
   const { getToken } = useAuth();
 
   const supabase = useMemo(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    // 빌드 시 환경 변수가 없을 수 있음 - 빈 클라이언트 반환 방지
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error(
+        "Supabase URL or Anon Key is missing. Please check your environment variables."
+      );
+    }
 
     return createClient(supabaseUrl, supabaseKey, {
       async accessToken() {

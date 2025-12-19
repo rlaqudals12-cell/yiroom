@@ -73,6 +73,8 @@ export interface CosmeticProduct {
   // 메타데이터
   imageUrl?: string;
   purchaseUrl?: string;
+  affiliateUrl?: string;
+  affiliateCommission?: number;
   rating?: number;
   reviewCount?: number;
   isActive?: boolean;
@@ -154,6 +156,8 @@ export interface SupplementProduct {
   totalServings?: number;    // 총 제공량
   imageUrl?: string;
   purchaseUrl?: string;
+  affiliateUrl?: string;
+  affiliateCommission?: number;
   rating?: number;
   reviewCount?: number;
 
@@ -201,6 +205,8 @@ export interface CosmeticProductRow {
   personal_color_seasons: string[] | null;
   image_url: string | null;
   purchase_url: string | null;
+  affiliate_url: string | null;
+  affiliate_commission: number | null;
   rating: number | null;
   review_count: number | null;
   is_active: boolean;
@@ -223,6 +229,8 @@ export interface SupplementProductRow {
   total_servings: number | null;
   image_url: string | null;
   purchase_url: string | null;
+  affiliate_url: string | null;
+  affiliate_commission: number | null;
   rating: number | null;
   review_count: number | null;
   warnings: string[] | null;
@@ -252,6 +260,8 @@ export function toCosmeticProduct(row: CosmeticProductRow): CosmeticProduct {
     personalColorSeasons: row.personal_color_seasons as PersonalColorSeason[] | undefined,
     imageUrl: row.image_url ?? undefined,
     purchaseUrl: row.purchase_url ?? undefined,
+    affiliateUrl: row.affiliate_url ?? undefined,
+    affiliateCommission: row.affiliate_commission ?? undefined,
     rating: row.rating ?? undefined,
     reviewCount: row.review_count ?? undefined,
     isActive: row.is_active,
@@ -276,6 +286,8 @@ export function toSupplementProduct(row: SupplementProductRow): SupplementProduc
     totalServings: row.total_servings ?? undefined,
     imageUrl: row.image_url ?? undefined,
     purchaseUrl: row.purchase_url ?? undefined,
+    affiliateUrl: row.affiliate_url ?? undefined,
+    affiliateCommission: row.affiliate_commission ?? undefined,
     rating: row.rating ?? undefined,
     reviewCount: row.review_count ?? undefined,
     warnings: row.warnings ?? undefined,
@@ -360,6 +372,7 @@ export interface WorkoutEquipment {
   imageUrl?: string;
   purchaseUrl?: string;
   affiliateUrl?: string;
+  affiliateCommission?: number;
   rating?: number;
   reviewCount?: number;
 
@@ -413,6 +426,7 @@ export interface WorkoutEquipmentRow {
   image_url: string | null;
   purchase_url: string | null;
   affiliate_url: string | null;
+  affiliate_commission: number | null;
   rating: number | null;
   review_count: number | null;
   features: string[] | null;
@@ -445,6 +459,7 @@ export function toWorkoutEquipment(row: WorkoutEquipmentRow): WorkoutEquipment {
     imageUrl: row.image_url ?? undefined,
     purchaseUrl: row.purchase_url ?? undefined,
     affiliateUrl: row.affiliate_url ?? undefined,
+    affiliateCommission: row.affiliate_commission ?? undefined,
     rating: row.rating ?? undefined,
     reviewCount: row.review_count ?? undefined,
     features: row.features ?? undefined,
@@ -550,6 +565,7 @@ export interface HealthFood {
   imageUrl?: string;
   purchaseUrl?: string;
   affiliateUrl?: string;
+  affiliateCommission?: number;
   rating?: number;
   reviewCount?: number;
 
@@ -610,6 +626,7 @@ export interface HealthFoodRow {
   image_url: string | null;
   purchase_url: string | null;
   affiliate_url: string | null;
+  affiliate_commission: number | null;
   rating: number | null;
   review_count: number | null;
   features: string[] | null;
@@ -649,6 +666,7 @@ export function toHealthFood(row: HealthFoodRow): HealthFood {
     imageUrl: row.image_url ?? undefined,
     purchaseUrl: row.purchase_url ?? undefined,
     affiliateUrl: row.affiliate_url ?? undefined,
+    affiliateCommission: row.affiliate_commission ?? undefined,
     rating: row.rating ?? undefined,
     reviewCount: row.review_count ?? undefined,
     features: row.features ?? undefined,

@@ -69,6 +69,36 @@ export {
 } from './services/search';
 
 // ================================================
+// 리뷰 서비스 (Reviews)
+// ================================================
+export {
+  getProductReviews,
+  getReviewSummary,
+  hasUserReviewed,
+  getUserReviews,
+  createReview,
+  updateReview,
+  deleteReview,
+  toggleReviewHelpful,
+  getRatingText,
+  getRatingColor,
+} from './services/reviews';
+
+// ================================================
+// 상호작용 서비스 (Interactions)
+// ================================================
+export {
+  getInteractionBetween,
+  getIngredientInteractions,
+  getInteractionsByType,
+  checkProductInteractions,
+  checkWishlistInteractions,
+  summarizeInteractions,
+  filterWarningsOnly,
+  filterSynergiesOnly,
+} from './services/interactions';
+
+// ================================================
 // 매칭 서비스 (Matching)
 // ================================================
 export {
@@ -77,3 +107,14 @@ export {
   addMatchInfoToProducts,
 } from './matching';
 export type { UserProfile, MatchResult } from './matching';
+
+// ================================================
+// 어필리에이트 서비스 (Affiliate)
+// ================================================
+export {
+  trackAffiliateClick,
+  openAffiliateLink,
+  getAffiliateStats,
+  getProductClickCount,
+  getTodayClickCount,
+} from './affiliate';

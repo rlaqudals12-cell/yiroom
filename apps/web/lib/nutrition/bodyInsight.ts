@@ -380,27 +380,32 @@ export function getBodyNutritionInsight(
 
 /**
  * 체형 분석 DB 결과를 BodyAnalysisData로 변환
+ * body_analyses 테이블 실제 컬럼: body_type, height, weight, created_at
  */
 export function convertBodyAnalysisToData(
   dbResult: {
     body_type: string;
-    user_input: { height?: number; weight?: number };
+    height?: number | null;
+    weight?: number | null;
     created_at: string;
-    bmi?: number;
-    body_fat_percentage?: number;
   } | null
 ): BodyAnalysisData | null {
   if (!dbResult) {
     return null;
   }
 
+  // BMI 계산 (height와 weight가 있는 경우)
+  let bmi: number | undefined;
+  if (dbResult.height && dbResult.weight) {
+    bmi = dbResult.weight / Math.pow(dbResult.height / 100, 2);
+  }
+
   return {
     bodyType: dbResult.body_type as BodyTypeId,
-    height: dbResult.user_input?.height || 0,
-    weight: dbResult.user_input?.weight || 0,
+    height: dbResult.height || 0,
+    weight: dbResult.weight || 0,
     analyzedAt: new Date(dbResult.created_at),
-    bmi: dbResult.bmi,
-    bodyFatPercentage: dbResult.body_fat_percentage,
+    bmi,
   };
 }
 
