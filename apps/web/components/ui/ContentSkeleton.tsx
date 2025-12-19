@@ -259,10 +259,12 @@ export function GridSkeleton({
 // 통합 Export
 // =====================================================
 
-export default {
+const ContentSkeleton = {
   Card: CardSkeleton,
   List: ListSkeleton,
   Profile: ProfileSkeleton,
   Text: TextSkeleton,
   Grid: GridSkeleton,
 };
+
+export default ContentSkeleton;

@@ -13,7 +13,6 @@ import type {
   ProductInteractionWarning,
   IngredientInteraction,
   InteractionType,
-  Severity,
 } from '@/types/interaction';
 import {
   getInteractionTypeLabel,

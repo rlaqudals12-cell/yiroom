@@ -52,7 +52,7 @@ export function ReviewForm({
         title: title.trim() || undefined,
         content: content.trim() || undefined,
       });
-    } catch (err) {
+    } catch {
       setError('리뷰 등록에 실패했습니다. 다시 시도해 주세요.');
     }
   };

@@ -29,7 +29,7 @@ export function InteractionWarning({
   }, [ingredients, type]);
 
   const hasWarnings = analysis.warnings.length > 0;
-  const hasSynergies = analysis.synergies.length > 0;
+  const _hasSynergies = analysis.synergies.length > 0;
 
   if (analysis.interactions.length === 0) {
     return null;

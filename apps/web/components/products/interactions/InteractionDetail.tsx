@@ -103,7 +103,7 @@ interface QuickInteractionCheckProps {
 }
 
 export function QuickInteractionCheck({
-  productName,
+  productName: _productName,
   interactions,
   className,
 }: QuickInteractionCheckProps) {

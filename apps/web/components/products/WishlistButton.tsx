@@ -92,7 +92,7 @@ export function WishlistButton({
     lg: 'h-6 w-6',
   }[size];
 
-  const buttonSize = {
+  const _buttonSize = {
     sm: 'h-8 w-8',
     md: 'h-9 w-9',
     lg: 'h-10 w-10',
