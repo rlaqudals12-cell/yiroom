@@ -59,13 +59,13 @@ export default function Questionnaire({ onComplete }: QuestionnaireProps) {
     <div className="space-y-6">
       {/* 진행률 바 */}
       <div className="space-y-2">
-        <div className="flex justify-between text-sm text-gray-500">
+        <div className="flex justify-between text-sm text-muted-foreground">
           <span>
             질문 {currentIndex + 1} / {totalQuestions}
           </span>
           <span>{Math.round(progress)}%</span>
         </div>
-        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-personal-color rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
@@ -74,14 +74,14 @@ export default function Questionnaire({ onComplete }: QuestionnaireProps) {
       </div>
 
       {/* 질문 카드 */}
-      <div className="bg-white rounded-xl border p-6 min-h-[400px] flex flex-col">
+      <div className="bg-card rounded-xl border p-6 min-h-[400px] flex flex-col">
         {/* 질문 */}
         <div className="mb-6">
           <span className="inline-block px-3 py-1 bg-module-personal-color/20 text-module-personal-color text-xs font-medium rounded-full mb-3">
             Q{currentQuestion.number}
             {currentQuestion.weight > 1 && ' (중요)'}
           </span>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-foreground">
             {currentQuestion.question}
           </h2>
         </div>
@@ -97,14 +97,14 @@ export default function Questionnaire({ onComplete }: QuestionnaireProps) {
                 className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
                   isSelected
                     ? 'border-module-personal-color bg-module-personal-color-light'
-                    : 'border-gray-200 hover:border-module-personal-color/50 hover:bg-gray-50'
+                    : 'border-border hover:border-module-personal-color/50 hover:bg-muted'
                 }`}
               >
                 <span
                   className={`text-base ${
                     isSelected
                       ? 'text-module-personal-color-dark font-medium'
-                      : 'text-gray-700'
+                      : 'text-foreground/80'
                   }`}
                 >
                   {option.text}
@@ -152,7 +152,7 @@ export default function Questionnaire({ onComplete }: QuestionnaireProps) {
                   ? 'w-6 bg-module-personal-color'
                   : hasAnswer
                     ? 'bg-module-personal-color/50'
-                    : 'bg-gray-200'
+                    : 'bg-muted'
               }`}
             />
           );

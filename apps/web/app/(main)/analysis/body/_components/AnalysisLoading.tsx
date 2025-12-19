@@ -10,7 +10,7 @@ interface AnalysisLoadingProps {
 // C-1 체형 분석 항목 목록
 function BodyAnalysisItems() {
   return (
-    <div className="grid grid-cols-3 gap-2 text-sm text-gray-600">
+    <div className="grid grid-cols-3 gap-2 text-sm text-muted-foreground">
       <span>• 어깨 너비</span>
       <span>• 허리 라인</span>
       <span>• 골반 너비</span>

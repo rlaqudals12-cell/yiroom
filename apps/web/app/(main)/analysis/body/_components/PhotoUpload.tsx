@@ -10,8 +10,8 @@ interface PhotoUploadProps {
 // C-1 체형 분석용 전신 가이드 오버레이
 function BodyGuideOverlay() {
   return (
-    <div className="w-32 h-72 border-2 border-gray-400 rounded-lg opacity-50 flex items-center justify-center">
-      <User className="w-20 h-20 text-gray-400 opacity-60" />
+    <div className="w-32 h-72 border-2 border-muted-foreground rounded-lg opacity-50 flex items-center justify-center">
+      <User className="w-20 h-20 text-muted-foreground opacity-60" />
     </div>
   );
 }

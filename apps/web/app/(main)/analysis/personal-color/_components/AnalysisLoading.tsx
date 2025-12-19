@@ -10,7 +10,7 @@ interface AnalysisLoadingProps {
 // PC-1 퍼스널 컬러 분석 항목 목록
 function PersonalColorAnalysisItems() {
   return (
-    <div className="grid grid-cols-3 gap-2 text-sm text-gray-600">
+    <div className="grid grid-cols-3 gap-2 text-sm text-muted-foreground">
       <span>• 피부톤</span>
       <span>• 혈관 색</span>
       <span>• 눈동자 색</span>

@@ -10,7 +10,7 @@ interface AnalysisLoadingProps {
 // S-1 피부 분석 항목 목록
 function SkinAnalysisItems() {
   return (
-    <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+    <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
       <span>• 수분도</span>
       <span>• 유분도</span>
       <span>• 모공</span>

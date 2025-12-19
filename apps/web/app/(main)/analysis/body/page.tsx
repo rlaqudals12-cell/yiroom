@@ -125,12 +125,12 @@ export default function BodyAnalysisPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-gray-50">
+    <main className="min-h-[calc(100vh-80px)] bg-muted">
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">체형 분석</h1>
-          <p className="text-gray-600 mt-2">{getSubtitle()}</p>
+          <h1 className="text-2xl font-bold text-foreground">체형 분석</h1>
+          <p className="text-muted-foreground mt-2">{getSubtitle()}</p>
         </header>
 
         {/* 에러 메시지 */}

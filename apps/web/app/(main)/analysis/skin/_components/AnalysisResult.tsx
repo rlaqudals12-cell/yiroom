@@ -33,13 +33,13 @@ export default function AnalysisResult({
   return (
     <div className="space-y-6">
       {/* 전체 점수 카드 */}
-      <section className="bg-white rounded-xl border p-6 text-center">
-        <p className="text-sm text-gray-500 mb-2">전체 피부 점수</p>
+      <section className="bg-card rounded-xl border p-6 text-center">
+        <p className="text-sm text-muted-foreground mb-2">전체 피부 점수</p>
         <div className="flex items-center justify-center gap-2">
           <span className={`text-5xl font-bold ${getScoreColor(overallScore)}`}>
             {overallScore}
           </span>
-          <span className="text-2xl text-gray-400">/100</span>
+          <span className="text-2xl text-muted-foreground">/100</span>
         </div>
         <div className="mt-3 flex justify-center">
           <span
@@ -55,15 +55,15 @@ export default function AnalysisResult({
       </section>
 
       {/* 7가지 지표 */}
-      <section className="bg-white rounded-xl border p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <section className="bg-card rounded-xl border p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
           7가지 피부 지표
         </h2>
         <div className="space-y-4">
           {metrics.map((metric) => (
             <div key={metric.id}>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-foreground/80">
                   {metric.name}
                 </span>
                 <div className="flex items-center gap-2">
@@ -83,7 +83,7 @@ export default function AnalysisResult({
                   </span>
                 </div>
               </div>
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${getScoreBgColor(metric.value)}`}
                   style={{ width: `${metric.value}%` }}
@@ -98,29 +98,29 @@ export default function AnalysisResult({
       <section className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200 p-6">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-5 h-5 text-purple-500" />
-          <h2 className="text-lg font-semibold text-gray-900">AI 인사이트</h2>
+          <h2 className="text-lg font-semibold text-foreground">AI 인사이트</h2>
         </div>
-        <p className="text-gray-700 leading-relaxed">{insight}</p>
+        <p className="text-foreground/80 leading-relaxed">{insight}</p>
       </section>
 
       {/* 추천 성분 (가변 보상) */}
-      <section className="bg-white rounded-xl border p-6">
+      <section className="bg-card rounded-xl border p-6">
         <div className="flex items-center gap-2 mb-4">
           <FlaskConical className="w-5 h-5 text-green-500" />
-          <h2 className="text-lg font-semibold text-gray-900">추천 성분</h2>
+          <h2 className="text-lg font-semibold text-foreground">추천 성분</h2>
         </div>
         <div className="space-y-3">
           {recommendedIngredients.map((ingredient, index) => (
             <div
               key={index}
-              className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
+              className="flex items-start gap-3 p-3 bg-muted rounded-lg"
             >
               <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-sm font-medium">
                 {index + 1}
               </span>
               <div>
-                <p className="font-medium text-gray-900">{ingredient.name}</p>
-                <p className="text-sm text-gray-600">{ingredient.reason}</p>
+                <p className="font-medium text-foreground">{ingredient.name}</p>
+                <p className="text-sm text-muted-foreground">{ingredient.reason}</p>
               </div>
             </div>
           ))}
@@ -129,10 +129,10 @@ export default function AnalysisResult({
 
       {/* 성분 경고 (화해 스타일) */}
       {ingredientWarnings && ingredientWarnings.length > 0 && (
-        <section className="bg-white rounded-xl border p-6">
+        <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle className="w-5 h-5 text-orange-500" />
-            <h2 className="text-lg font-semibold text-gray-900">주의 성분</h2>
+            <h2 className="text-lg font-semibold text-foreground">주의 성분</h2>
           </div>
           <div className="space-y-3">
             {ingredientWarnings.map((warning, index) => (
@@ -148,11 +148,11 @@ export default function AnalysisResult({
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-foreground">
                       {warning.ingredient}
                     </span>
                     {warning.ingredientEn && (
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         ({warning.ingredientEn})
                       </span>
                     )}
@@ -173,9 +173,9 @@ export default function AnalysisResult({
                         : '낮음'}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">{warning.reason}</p>
+                <p className="text-sm text-muted-foreground">{warning.reason}</p>
                 {warning.alternatives && warning.alternatives.length > 0 && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     대안: {warning.alternatives.join(', ')}
                   </p>
                 )}
@@ -187,10 +187,10 @@ export default function AnalysisResult({
 
       {/* 제품 추천 */}
       {productRecommendations && (
-        <section className="bg-white rounded-xl border p-6">
+        <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
             <ShoppingBag className="w-5 h-5 text-pink-500" />
-            <h2 className="text-lg font-semibold text-gray-900">맞춤 루틴</h2>
+            <h2 className="text-lg font-semibold text-foreground">맞춤 루틴</h2>
           </div>
 
           {/* 아침/저녁 루틴 */}
@@ -198,8 +198,8 @@ export default function AnalysisResult({
             <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
               <Sun className="w-4 h-4 text-amber-500 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-900">아침 루틴</p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm font-medium text-foreground">아침 루틴</p>
+                <p className="text-sm text-muted-foreground">
                   {productRecommendations.skincareRoutine.morning}
                 </p>
               </div>
@@ -207,8 +207,8 @@ export default function AnalysisResult({
             <div className="flex items-start gap-2 p-3 bg-indigo-50 rounded-lg">
               <Moon className="w-4 h-4 text-indigo-500 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-900">저녁 루틴</p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm font-medium text-foreground">저녁 루틴</p>
+                <p className="text-sm text-muted-foreground">
                   {productRecommendations.skincareRoutine.evening}
                 </p>
               </div>
@@ -218,20 +218,20 @@ export default function AnalysisResult({
           {/* 단계별 제품 추천 */}
           {productRecommendations.routine.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">추천 제품</p>
+              <p className="text-sm font-medium text-foreground/80">추천 제품</p>
               {productRecommendations.routine.slice(0, 5).map((step, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-2 p-2 bg-gray-50 rounded-lg"
+                  className="flex items-start gap-2 p-2 bg-muted rounded-lg"
                 >
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-xs font-medium">
                     {step.step}
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-foreground">
                       {step.category}
                     </p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-muted-foreground">
                       {step.products.join(', ')}
                     </p>
                   </div>
@@ -247,7 +247,7 @@ export default function AnalysisResult({
         <section className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200 p-6">
           <div className="flex items-center gap-2 mb-3">
             <Palette className="w-5 h-5 text-rose-500" />
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-foreground">
               파운데이션 추천
             </h2>
             {personalColorSeason && (
@@ -256,12 +256,12 @@ export default function AnalysisResult({
               </span>
             )}
           </div>
-          <p className="text-gray-700">{foundationRecommendation}</p>
+          <p className="text-foreground/80">{foundationRecommendation}</p>
         </section>
       )}
 
       {/* 분석 시간 */}
-      <p className="text-center text-sm text-gray-400">
+      <p className="text-center text-sm text-muted-foreground">
         분석 시간: {analyzedAt.toLocaleString('ko-KR')}
       </p>
 

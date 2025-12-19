@@ -12,9 +12,9 @@ function FaceGuideOverlay() {
   return (
     <div className="relative flex flex-col items-center justify-center">
       {/* 타원형 가이드 */}
-      <div className="w-48 h-64 border-2 border-gray-400 rounded-[50%] opacity-50" />
+      <div className="w-48 h-64 border-2 border-muted-foreground rounded-[50%] opacity-50" />
       {/* 가이드 아이콘 */}
-      <Camera className="absolute w-12 h-12 text-gray-400 opacity-40" />
+      <Camera className="absolute w-12 h-12 text-muted-foreground opacity-40" />
     </div>
   );
 }

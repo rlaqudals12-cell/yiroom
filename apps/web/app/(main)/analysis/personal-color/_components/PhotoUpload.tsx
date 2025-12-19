@@ -10,8 +10,8 @@ interface PhotoUploadProps {
 // PC-1 퍼스널 컬러 진단용 얼굴 가이드 오버레이
 function FaceGuideOverlay() {
   return (
-    <div className="w-40 h-48 border-2 border-gray-400 rounded-full opacity-50 flex items-center justify-center">
-      <User className="w-16 h-16 text-gray-400 opacity-60" />
+    <div className="w-40 h-48 border-2 border-muted-foreground rounded-full opacity-50 flex items-center justify-center">
+      <User className="w-16 h-16 text-muted-foreground opacity-60" />
     </div>
   );
 }

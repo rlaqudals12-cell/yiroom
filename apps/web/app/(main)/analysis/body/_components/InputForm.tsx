@@ -69,7 +69,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
     <div className="space-y-6">
       {/* 안내 문구 */}
       <div className="text-center">
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           정확한 체형 분석을 위해
           <br />
           기본 정보를 입력해주세요
@@ -82,7 +82,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
         <div>
           <label
             htmlFor="height"
-            className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+            className="flex items-center gap-2 text-sm font-medium text-foreground/80 mb-2"
           >
             <Ruler className="w-4 h-4" />
             키 (cm) <span className="text-red-500">*</span>
@@ -95,7 +95,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
             value={height}
             onChange={(e) => setHeight(e.target.value)}
             className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-module-body ${
-              errors.height ? 'border-red-500' : 'border-gray-300'
+              errors.height ? 'border-red-500' : 'border-border'
             }`}
             aria-describedby={errors.height ? 'height-error' : undefined}
             aria-invalid={!!errors.height}
@@ -111,7 +111,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
         <div>
           <label
             htmlFor="weight"
-            className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+            className="flex items-center gap-2 text-sm font-medium text-foreground/80 mb-2"
           >
             <Scale className="w-4 h-4" />
             몸무게 (kg) <span className="text-red-500">*</span>
@@ -124,7 +124,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-module-body ${
-              errors.weight ? 'border-red-500' : 'border-gray-300'
+              errors.weight ? 'border-red-500' : 'border-border'
             }`}
             aria-describedby={errors.weight ? 'weight-error' : undefined}
             aria-invalid={!!errors.weight}
@@ -140,10 +140,10 @@ export default function InputForm({ onSubmit }: InputFormProps) {
         <div>
           <label
             htmlFor="targetWeight"
-            className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+            className="flex items-center gap-2 text-sm font-medium text-foreground/80 mb-2"
           >
             <Scale className="w-4 h-4" />
-            목표 몸무게 (kg) <span className="text-gray-400">(선택)</span>
+            목표 몸무게 (kg) <span className="text-muted-foreground">(선택)</span>
           </label>
           <input
             id="targetWeight"
@@ -152,7 +152,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
             placeholder="예: 50"
             value={targetWeight}
             onChange={(e) => setTargetWeight(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-module-body"
+            className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-module-body"
           />
         </div>
       </div>
@@ -185,7 +185,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
       </Button>
 
       {/* 안내 */}
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-muted-foreground">
         입력하신 정보는 체형 분석에만 사용되며
         <br />
         다른 용도로 활용되지 않습니다
