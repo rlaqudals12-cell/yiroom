@@ -183,24 +183,24 @@ export default function NutritionHistoryPage() {
       <div className="space-y-6" data-testid="history-loading">
         {/* 헤더 스켈레톤 */}
         <div className="flex items-center justify-between">
-          <div className="w-8 h-8 bg-gray-200 animate-pulse rounded-full" />
-          <div className="w-32 h-6 bg-gray-200 animate-pulse rounded" />
+          <div className="w-8 h-8 bg-muted animate-pulse rounded-full" />
+          <div className="w-32 h-6 bg-muted animate-pulse rounded" />
           <div className="w-8 h-8" /> {/* 균형 맞추기 */}
         </div>
 
         {/* 날짜 스켈레톤 */}
         <div className="flex items-center justify-center gap-4">
-          <div className="w-8 h-8 bg-gray-200 animate-pulse rounded-full" />
-          <div className="w-40 h-8 bg-gray-200 animate-pulse rounded" />
-          <div className="w-8 h-8 bg-gray-200 animate-pulse rounded-full" />
+          <div className="w-8 h-8 bg-muted animate-pulse rounded-full" />
+          <div className="w-40 h-8 bg-muted animate-pulse rounded" />
+          <div className="w-8 h-8 bg-muted animate-pulse rounded-full" />
         </div>
 
         {/* 요약 스켈레톤 */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="w-32 h-10 bg-gray-200 animate-pulse rounded mx-auto mb-4" />
+        <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
+          <div className="w-32 h-10 bg-muted animate-pulse rounded mx-auto mb-4" />
           <div className="flex justify-around">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="w-16 h-12 bg-gray-200 animate-pulse rounded" />
+              <div key={i} className="w-16 h-12 bg-muted animate-pulse rounded" />
             ))}
           </div>
         </div>
@@ -210,13 +210,13 @@ export default function NutritionHistoryPage() {
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+              className="bg-card rounded-2xl p-4 shadow-sm border border-border/50"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
-                <div className="w-20 h-5 bg-gray-200 animate-pulse rounded" />
+                <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+                <div className="w-20 h-5 bg-muted animate-pulse rounded" />
               </div>
-              <div className="w-full h-12 bg-gray-100 animate-pulse rounded-xl" />
+              <div className="w-full h-12 bg-muted animate-pulse rounded-xl" />
             </div>
           ))}
         </div>
@@ -232,7 +232,7 @@ export default function NutritionHistoryPage() {
         <div className="flex items-center justify-between">
           <button
             onClick={handleBack}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-muted rounded-full transition-colors"
             aria-label="뒤로가기"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -265,7 +265,7 @@ export default function NutritionHistoryPage() {
       <div className="flex items-center justify-between">
         <button
           onClick={handleBack}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-2 hover:bg-muted rounded-full transition-colors"
           aria-label="뒤로가기"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -278,14 +278,14 @@ export default function NutritionHistoryPage() {
       <div className="flex items-center justify-center gap-2">
         <button
           onClick={handlePrevDate}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-2 hover:bg-muted rounded-full transition-colors"
           aria-label="이전 날짜"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
 
         <div
-          className="px-6 py-2 bg-gray-100 rounded-full font-medium min-w-[160px] text-center"
+          className="px-6 py-2 bg-muted rounded-full font-medium min-w-[160px] text-center"
           data-testid="selected-date"
         >
           {formatDisplayDate(formatDate(selectedDate))}
@@ -296,8 +296,8 @@ export default function NutritionHistoryPage() {
           className={cn(
             'p-2 rounded-full transition-colors',
             isToday
-              ? 'text-gray-300 cursor-not-allowed'
-              : 'hover:bg-gray-100'
+              ? 'text-muted-foreground/50 cursor-not-allowed'
+              : 'hover:bg-muted'
           )}
           aria-label="다음 날짜"
           disabled={isToday}
@@ -307,13 +307,13 @@ export default function NutritionHistoryPage() {
       </div>
 
       {/* 일일 요약 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
         <div className="text-center mb-4">
-          <div className="text-3xl font-bold text-gray-900">
+          <div className="text-3xl font-bold text-foreground">
             {data?.summary?.totalCalories?.toLocaleString() || 0}
-            <span className="text-lg font-normal text-gray-500 ml-1">kcal</span>
+            <span className="text-lg font-normal text-muted-foreground ml-1">kcal</span>
           </div>
-          <div className="text-sm text-gray-500 mt-1">
+          <div className="text-sm text-muted-foreground mt-1">
             {data?.summary?.mealCount || 0}끼 식사
           </div>
         </div>
@@ -321,20 +321,20 @@ export default function NutritionHistoryPage() {
         {/* 영양소 막대 */}
         <div className="grid grid-cols-3 gap-4 mt-4">
           <div className="text-center">
-            <div className="text-xs text-gray-500 mb-1">탄수화물</div>
-            <div className="font-semibold text-gray-900">
+            <div className="text-xs text-muted-foreground mb-1">탄수화물</div>
+            <div className="font-semibold text-foreground">
               {data?.summary?.totalCarbs || 0}g
             </div>
           </div>
           <div className="text-center">
-            <div className="text-xs text-gray-500 mb-1">단백질</div>
-            <div className="font-semibold text-gray-900">
+            <div className="text-xs text-muted-foreground mb-1">단백질</div>
+            <div className="font-semibold text-foreground">
               {data?.summary?.totalProtein || 0}g
             </div>
           </div>
           <div className="text-center">
-            <div className="text-xs text-gray-500 mb-1">지방</div>
-            <div className="font-semibold text-gray-900">
+            <div className="text-xs text-muted-foreground mb-1">지방</div>
+            <div className="font-semibold text-foreground">
               {data?.summary?.totalFat || 0}g
             </div>
           </div>
@@ -343,11 +343,11 @@ export default function NutritionHistoryPage() {
 
       {/* 기록이 없는 경우 */}
       {hasNoRecords ? (
-        <div className="bg-gray-50 rounded-2xl p-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-            <UtensilsCrossed className="w-8 h-8 text-gray-400" />
+        <div className="bg-muted rounded-2xl p-8 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-muted/80 rounded-full mb-4">
+            <UtensilsCrossed className="w-8 h-8 text-muted-foreground" />
           </div>
-          <p className="text-gray-500">이 날에는 기록이 없습니다.</p>
+          <p className="text-muted-foreground">이 날에는 기록이 없습니다.</p>
         </div>
       ) : (
         /* 식사별 기록 */
@@ -355,7 +355,7 @@ export default function NutritionHistoryPage() {
           {mealsWithRecords.map((meal) => (
             <div
               key={meal.type}
-              className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+              className="bg-card rounded-2xl p-4 shadow-sm border border-border/50"
             >
               {/* 식사 헤더 */}
               <div className="flex items-center justify-between mb-3">
@@ -363,7 +363,7 @@ export default function NutritionHistoryPage() {
                   <span className="text-xl">{meal.icon}</span>
                   <span className="font-medium">{meal.label}</span>
                 </div>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-muted-foreground">
                   {meal.subtotal.calories.toLocaleString()} kcal
                 </span>
               </div>
@@ -374,7 +374,7 @@ export default function NutritionHistoryPage() {
                   record.foods.map((food, idx) => (
                     <div
                       key={`${record.id}-${idx}`}
-                      className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
+                      className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                     >
                       <div className="flex items-center gap-2">
                         {food.traffic_light && (
@@ -387,9 +387,9 @@ export default function NutritionHistoryPage() {
                             )}
                           />
                         )}
-                        <span className="text-gray-900">{food.food_name}</span>
+                        <span className="text-foreground">{food.food_name}</span>
                       </div>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-muted-foreground">
                         {food.calories} kcal
                       </span>
                     </div>

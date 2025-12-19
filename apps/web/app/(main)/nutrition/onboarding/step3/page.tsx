@@ -46,8 +46,8 @@ export default function NutritionStep3Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">선호 식사 스타일</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">선호 식사 스타일</h2>
+        <p className="text-muted-foreground mt-1">
           평소 어떤 식사를 선호하세요?
         </p>
       </div>
@@ -68,7 +68,7 @@ export default function NutritionStep3Page() {
       </div>
 
       {/* 안내 */}
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-muted-foreground">
         선호하는 스타일에 맞는 식단을 추천해 드려요
       </p>
 

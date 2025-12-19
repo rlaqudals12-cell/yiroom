@@ -193,16 +193,16 @@ export default function NutritionDashboardPage() {
     return (
       <div
         data-testid="dashboard-loading"
-        className="min-h-screen bg-gray-50 p-4"
+        className="min-h-screen bg-muted p-4"
       >
         <div className="mx-auto max-w-md space-y-4">
           {/* 헤더 스켈레톤 */}
-          <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
+          <div className="h-12 bg-muted-foreground/20 rounded-lg animate-pulse" />
           {/* 카드 스켈레톤 */}
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-40 bg-gray-200 rounded-2xl animate-pulse"
+              className="h-40 bg-muted-foreground/20 rounded-2xl animate-pulse"
             />
           ))}
         </div>
@@ -215,7 +215,7 @@ export default function NutritionDashboardPage() {
     return (
       <div
         data-testid="nutrition-dashboard"
-        className="min-h-screen bg-gray-50 p-4"
+        className="min-h-screen bg-muted p-4"
       >
         <div className="mx-auto max-w-md">
           <div className="rounded-2xl bg-red-50 p-6 text-center">
@@ -239,16 +239,16 @@ export default function NutritionDashboardPage() {
   return (
     <div
       data-testid="nutrition-dashboard"
-      className="min-h-screen bg-gray-50"
+      className="min-h-screen bg-muted"
     >
       {/* 헤더 */}
-      <header className="sticky top-0 z-10 border-b bg-white px-4 py-3">
+      <header className="sticky top-0 z-10 border-b border-border bg-card px-4 py-3">
         <div className="mx-auto flex max-w-md items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
               aria-label="뒤로가기"
-              className="rounded-full p-2 hover:bg-gray-100"
+              className="rounded-full p-2 hover:bg-muted"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
@@ -257,9 +257,9 @@ export default function NutritionDashboardPage() {
           <button
             onClick={fetchDashboardData}
             aria-label="새로고침"
-            className="rounded-full p-2 hover:bg-gray-100"
+            className="rounded-full p-2 hover:bg-muted"
           >
-            <RefreshCw className="h-5 w-5 text-gray-500" />
+            <RefreshCw className="h-5 w-5 text-muted-foreground" />
           </button>
         </div>
       </header>
@@ -267,8 +267,8 @@ export default function NutritionDashboardPage() {
       {/* 콘텐츠 */}
       <main className="mx-auto max-w-md space-y-4 p-4">
         {/* 영양소 진행률 섹션 */}
-        <section className="rounded-2xl bg-white p-4 shadow-sm">
-          <h2 className="mb-4 flex items-center gap-2 font-semibold text-gray-900">
+        <section className="rounded-2xl bg-card p-4 shadow-sm">
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
             <span>📊</span> 오늘의 영양 분석
           </h2>
 
@@ -328,14 +328,14 @@ export default function NutritionDashboardPage() {
         {/* 음식 신호등 현황 */}
         <section
           data-testid="traffic-light-summary"
-          className="rounded-2xl bg-white p-4 shadow-sm"
+          className="rounded-2xl bg-card p-4 shadow-sm"
         >
-          <h2 className="mb-4 flex items-center gap-2 font-semibold text-gray-900">
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
             <span>🚦</span> 오늘의 음식 신호등
           </h2>
 
           {data?.trafficLight.total === 0 ? (
-            <p className="text-center text-gray-500 py-4">
+            <p className="text-center text-muted-foreground py-4">
               아직 기록된 음식이 없습니다
             </p>
           ) : (
@@ -376,22 +376,22 @@ export default function NutritionDashboardPage() {
               <div className="flex justify-around text-sm">
                 <div className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-full bg-green-500" />
-                  <span className="text-gray-700">
+                  <span className="text-foreground/80">
                     초록 {data?.trafficLight.green || 0}개
-                    <span className="ml-1 text-gray-500">
+                    <span className="ml-1 text-muted-foreground">
                       ({Math.round(((data?.trafficLight.green || 0) / (data?.trafficLight.total || 1)) * 100)}%)
                     </span>
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-full bg-yellow-400" />
-                  <span className="text-gray-700">
+                  <span className="text-foreground/80">
                     노랑 {data?.trafficLight.yellow || 0}개
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-full bg-red-500" />
-                  <span className="text-gray-700">
+                  <span className="text-foreground/80">
                     빨강 {data?.trafficLight.red || 0}개
                   </span>
                 </div>
@@ -403,9 +403,9 @@ export default function NutritionDashboardPage() {
         {/* 수분 섭취 현황 */}
         <section
           data-testid="water-intake-section"
-          className="rounded-2xl bg-white p-4 shadow-sm"
+          className="rounded-2xl bg-card p-4 shadow-sm"
         >
-          <h2 className="mb-4 flex items-center gap-2 font-semibold text-gray-900">
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
             <Droplets className="h-5 w-5 text-blue-500" />
             수분 섭취
           </h2>
@@ -432,9 +432,9 @@ export default function NutritionDashboardPage() {
           </div>
 
           {/* 수분 수치 */}
-          <p className="mb-4 text-center text-lg font-semibold text-gray-900">
+          <p className="mb-4 text-center text-lg font-semibold text-foreground">
             {(data?.water.current || 0).toLocaleString()}mL / {(data?.water.target || DEFAULT_TARGETS.water).toLocaleString()}mL
-            <span className="ml-2 text-sm font-normal text-gray-500">
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
               ({data?.water.percentage || 0}%)
             </span>
           </p>
@@ -470,7 +470,7 @@ export default function NutritionDashboardPage() {
             </button>
             <button
               onClick={() => router.push('/nutrition/water')}
-              className="flex items-center justify-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+              className="flex items-center justify-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-muted/80 transition-colors"
             >
               <Plus className="h-4 w-4" />
               직접 입력
@@ -523,11 +523,11 @@ function NutritionProgressBar({
   return (
     <div data-testid={testId}>
       <div className="mb-1 flex items-center justify-between">
-        <span id={`${testId}-label`} className="text-sm font-medium text-gray-700">
+        <span id={`${testId}-label`} className="text-sm font-medium text-foreground/80">
           {label}
           {warning && <span className="ml-1 text-amber-500" aria-label="부족">⚠️</span>}
         </span>
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted-foreground">
           {Math.round(current)}{unit} / {target}{unit} ({percentage}%)
         </span>
       </div>
@@ -537,7 +537,7 @@ function NutritionProgressBar({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-labelledby={`${testId}-label`}
-        className="h-2.5 w-full overflow-hidden rounded-full bg-gray-200"
+        className="h-2.5 w-full overflow-hidden rounded-full bg-muted"
       >
         <div
           className={`h-full rounded-full transition-all duration-300 ${colorClasses[color]}`}

@@ -91,8 +91,8 @@ export default function NutritionStep7Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">하루 식사 횟수</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">하루 식사 횟수</h2>
+        <p className="text-muted-foreground mt-1">
           하루에 몇 번 식사하시나요?
         </p>
       </div>
@@ -106,14 +106,14 @@ export default function NutritionStep7Page() {
             className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
               mealCount === option.count
                 ? 'border-green-500 bg-green-50'
-                : 'border-gray-200 hover:border-gray-300'
+                : 'border-border hover:border-border/80'
             }`}
           >
             <div className="flex items-center gap-4">
               <span className="text-xl">{option.icon}</span>
               <div>
-                <p className="font-bold text-gray-900">{option.title}</p>
-                <p className="text-sm text-gray-500">{option.desc}</p>
+                <p className="font-bold text-foreground">{option.title}</p>
+                <p className="text-sm text-muted-foreground">{option.desc}</p>
               </div>
             </div>
           </button>

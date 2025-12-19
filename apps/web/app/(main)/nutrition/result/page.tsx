@@ -193,19 +193,19 @@ export default function NutritionResultPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
               <Check className="w-8 h-8 text-green-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">설정 완료!</h1>
-            <p className="text-gray-500">맞춤 영양 목표가 준비되었어요</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">설정 완료!</h1>
+            <p className="text-muted-foreground">맞춤 영양 목표가 준비되었어요</p>
           </div>
         </FadeInUp>
 
         {/* 목표 표시 */}
         {goalInfo && (
           <FadeInUp delay={1}>
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{goalInfo.icon}</span>
                 <div>
-                  <p className="text-sm text-gray-500">나의 목표</p>
+                  <p className="text-sm text-muted-foreground">나의 목표</p>
                   <p className={`text-xl font-bold ${goalInfo.color}`}>
                     {goalInfo.label}
                   </p>
@@ -241,10 +241,10 @@ export default function NutritionResultPage() {
 
         {/* 영양소 목표 */}
         <FadeInUp delay={3}>
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
             <div className="flex items-center gap-2 mb-4">
-              <Utensils className="w-5 h-5 text-gray-600" />
-              <h2 className="font-bold text-gray-900">일일 영양소 목표</h2>
+              <Utensils className="w-5 h-5 text-muted-foreground" />
+              <h2 className="font-bold text-foreground">일일 영양소 목표</h2>
             </div>
             <div className="grid grid-cols-3 gap-4">
               {/* 탄수화물 */}
@@ -278,12 +278,12 @@ export default function NutritionResultPage() {
         {/* 한 끼당 칼로리 */}
         {inputData.mealCount > 0 && (
           <FadeInUp delay={4}>
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
               <div className="flex items-center gap-2 mb-3">
                 <Flame className="w-5 h-5 text-orange-500" />
-                <h2 className="font-bold text-gray-900">한 끼당 권장 칼로리</h2>
+                <h2 className="font-bold text-foreground">한 끼당 권장 칼로리</h2>
               </div>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 하루 <span className="font-bold">{inputData.mealCount}끼</span> 기준
               </p>
               <p className="text-3xl font-bold text-orange-600 mt-2">
@@ -296,12 +296,12 @@ export default function NutritionResultPage() {
 
         {/* 활동 수준 */}
         <FadeInUp delay={5}>
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
             <div className="flex items-center gap-2 mb-3">
               <Activity className="w-5 h-5 text-indigo-500" />
-              <h2 className="font-bold text-gray-900">활동 수준 반영</h2>
+              <h2 className="font-bold text-foreground">활동 수준 반영</h2>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               선택하신 활동 수준을 기반으로 일일 에너지 소비량(TDEE)을 계산했어요.
               운동량이 변하면 설정에서 수정할 수 있어요.
             </p>
@@ -327,7 +327,7 @@ export default function NutritionResultPage() {
             </button>
             <button
               onClick={handleRestart}
-              className="w-full py-3 text-gray-500 text-sm hover:text-gray-700 transition-colors"
+              className="w-full py-3 text-muted-foreground text-sm hover:text-foreground transition-colors"
             >
               다시 분석하기
             </button>
@@ -335,13 +335,13 @@ export default function NutritionResultPage() {
         </FadeInUp>
 
         {/* 안내 */}
-        <p className="text-center text-xs text-gray-400 pb-4">
+        <p className="text-center text-xs text-muted-foreground pb-4">
           계산된 값은 참고용이며, 개인의 건강 상태에 따라 다를 수 있습니다.
         </p>
       </div>
 
       {/* 공유 버튼 - 하단 고정 */}
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t border-gray-100 z-10">
+      <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
         <div className="max-w-md mx-auto">
           <ShareButton
             onShare={share}

@@ -193,12 +193,12 @@ export default function FoodResultPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={handleBack}
-            className="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
             aria-label="뒤로 가기"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">분석 결과</h1>
+          <h1 className="text-xl font-bold text-foreground">분석 결과</h1>
         </div>
 
         <div className="bg-yellow-50 rounded-2xl p-6 text-center">
@@ -222,16 +222,16 @@ export default function FoodResultPage() {
       <div className="flex items-center gap-4">
         <button
           onClick={handleBack}
-          className="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
           aria-label="뒤로 가기"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
+          <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
-        <h1 className="text-xl font-bold text-gray-900">{mealTypeLabel} 분석 결과</h1>
+        <h1 className="text-xl font-bold text-foreground">{mealTypeLabel} 분석 결과</h1>
       </div>
 
       {/* 촬영된 사진 */}
-      <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-gray-100">
+      <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-muted">
         <Image
           src={`data:image/jpeg;base64,${analysisData.imageBase64}`}
           alt="촬영된 음식 사진"
@@ -250,18 +250,18 @@ export default function FoodResultPage() {
           </div>
           <div className="h-8 w-px bg-purple-200" />
           <div className="text-center flex-1">
-            <p className="text-lg font-bold text-gray-700">{adjustedTotals.carbs}g</p>
-            <p className="text-xs text-gray-500">탄수화물</p>
+            <p className="text-lg font-bold text-foreground/80">{adjustedTotals.carbs}g</p>
+            <p className="text-xs text-muted-foreground">탄수화물</p>
           </div>
           <div className="h-8 w-px bg-purple-200" />
           <div className="text-center flex-1">
-            <p className="text-lg font-bold text-gray-700">{adjustedTotals.protein}g</p>
-            <p className="text-xs text-gray-500">단백질</p>
+            <p className="text-lg font-bold text-foreground/80">{adjustedTotals.protein}g</p>
+            <p className="text-xs text-muted-foreground">단백질</p>
           </div>
           <div className="h-8 w-px bg-purple-200" />
           <div className="text-center flex-1">
-            <p className="text-lg font-bold text-gray-700">{adjustedTotals.fat}g</p>
-            <p className="text-xs text-gray-500">지방</p>
+            <p className="text-lg font-bold text-foreground/80">{adjustedTotals.fat}g</p>
+            <p className="text-xs text-muted-foreground">지방</p>
           </div>
         </div>
       </div>
@@ -277,7 +277,7 @@ export default function FoodResultPage() {
 
       {/* 음식별 결과 카드 */}
       <div className="space-y-4">
-        <h2 className="text-sm font-medium text-gray-700">
+        <h2 className="text-sm font-medium text-foreground/80">
           🍜 인식된 음식 ({analysisData.result.foods.length}개)
         </h2>
         {analysisData.result.foods.map((food, index) => (

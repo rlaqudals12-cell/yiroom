@@ -23,17 +23,19 @@ import {
   QuickActionBar,
   FloatingCameraButton,
   WaterIntakeCard,
-  WaterInputSheet,
-  ManualFoodInputSheet,
-  FastingTimer,
-  SkinInsightCard,
-  WorkoutInsightCard,
-  BodyInsightCard,
   CalorieSurplusAlert,
   type DrinkType,
   type ManualFoodData,
   HYDRATION_FACTORS,
 } from '@/components/nutrition';
+import {
+  WaterInputSheetDynamic,
+  ManualFoodInputSheetDynamic,
+  FastingTimerDynamic,
+  SkinInsightCardDynamic,
+  WorkoutInsightCardDynamic,
+  BodyInsightCardDynamic,
+} from '@/components/nutrition/dynamic';
 import { Button } from '@/components/ui/button';
 import {
   convertSkinMetricsToSummary,
@@ -296,9 +298,10 @@ export default function NutritionPage() {
   const fetchBodyAnalysis = useCallback(async () => {
     setIsBodyLoading(true);
     try {
+      // body_analyses 테이블의 실제 컬럼만 조회
       const { data: bodyData, error } = await supabase
         .from('body_analyses')
-        .select('body_type, user_input, created_at, bmi, body_fat_percentage')
+        .select('body_type, height, weight, shoulder, waist, hip, created_at')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -314,16 +317,10 @@ export default function NutritionPage() {
       const analysisData = convertBodyAnalysisToData(bodyData);
       setBodyAnalysis(analysisData);
 
-      // 현재 체중 조회 (nutrition_settings 또는 최근 기록에서)
-      const { data: settingsData } = await supabase
-        .from('nutrition_settings')
-        .select('current_weight')
-        .single();
-
-      if (settingsData?.current_weight) {
-        setCurrentWeight(settingsData.current_weight);
+      // 체형 분석 시 입력한 체중을 현재 체중으로 사용
+      if (bodyData.weight) {
+        setCurrentWeight(bodyData.weight);
       } else {
-        // 설정이 없으면 분석 시 체중 사용
         setCurrentWeight(null);
       }
     } catch (err) {
@@ -564,13 +561,13 @@ export default function NutritionPage() {
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+              className="bg-card rounded-2xl p-4 shadow-sm border border-border/50"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
-                <div className="w-20 h-5 bg-gray-200 animate-pulse rounded" />
+                <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+                <div className="w-20 h-5 bg-muted animate-pulse rounded" />
               </div>
-              <div className="w-full h-12 bg-gray-100 animate-pulse rounded-xl" />
+              <div className="w-full h-12 bg-muted/50 animate-pulse rounded-xl" />
             </div>
           ))}
         </div>
@@ -591,24 +588,24 @@ export default function NutritionPage() {
         onCustomAdd={() => setIsWaterSheetOpen(true)}
       />
 
-      {/* 간헐적 단식 타이머 (Task 2.17) */}
-      <FastingTimer
+      {/* 간헐적 단식 타이머 (Task 2.17) - Dynamic Import */}
+      <FastingTimerDynamic
         enabled={fastingSettings.enabled}
         fastingType={fastingSettings.fastingType}
         fastingStartTime={fastingSettings.fastingStartTime}
         eatingWindowHours={fastingSettings.eatingWindowHours}
       />
 
-      {/* S-1 피부 연동 인사이트 (Task 3.7) */}
-      <SkinInsightCard
+      {/* S-1 피부 연동 인사이트 (Task 3.7) - Dynamic Import */}
+      <SkinInsightCardDynamic
         skinAnalysis={skinAnalysis}
         currentWaterMl={waterAmount}
         isLoading={isSkinLoading}
         onNavigateToSkinAnalysis={() => router.push('/analysis/skin')}
       />
 
-      {/* W-1 운동 연동 인사이트 (Task 3.8) */}
-      <WorkoutInsightCard
+      {/* W-1 운동 연동 인사이트 (Task 3.8) - Dynamic Import */}
+      <WorkoutInsightCardDynamic
         workoutSummary={workoutSummary}
         intakeCalories={data?.summary?.totalCalories || 0}
         targetCalories={DEFAULT_CALORIE_GOAL}
@@ -616,8 +613,8 @@ export default function NutritionPage() {
         onNavigateToWorkout={() => router.push('/workout')}
       />
 
-      {/* C-1 체형 연동 인사이트 (Task 3.9) */}
-      <BodyInsightCard
+      {/* C-1 체형 연동 인사이트 (Task 3.9) - Dynamic Import */}
+      <BodyInsightCardDynamic
         bodyAnalysis={bodyAnalysis}
         currentWeight={currentWeight}
         baseCalories={DEFAULT_CALORIE_GOAL}
@@ -638,7 +635,7 @@ export default function NutritionPage() {
             fetchBodyAnalysis();
           }}
           disabled={isLoading || isWaterLoading || isSkinLoading || isWorkoutLoading || isBodyLoading}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors"
           aria-label="식단 정보 새로고침"
           data-testid="refresh-button"
         >
@@ -659,16 +656,16 @@ export default function NutritionPage() {
       {/* 플로팅 카메라 버튼 */}
       <FloatingCameraButton onClick={handleCameraClick} />
 
-      {/* 수분 직접 입력 시트 (Task 2.9) */}
-      <WaterInputSheet
+      {/* 수분 직접 입력 시트 (Task 2.9) - Dynamic Import */}
+      <WaterInputSheetDynamic
         isOpen={isWaterSheetOpen}
         onClose={() => setIsWaterSheetOpen(false)}
         onAdd={handleWaterAdd}
         isSaving={isWaterSaving}
       />
 
-      {/* 음식 직접 입력 시트 (Task 2.11) */}
-      <ManualFoodInputSheet
+      {/* 음식 직접 입력 시트 (Task 2.11) - Dynamic Import */}
+      <ManualFoodInputSheetDynamic
         isOpen={isManualInputOpen}
         onClose={() => setIsManualInputOpen(false)}
         onSave={handleManualFoodSave}
@@ -695,10 +692,10 @@ function NutritionOnboardingPrompt() {
 
         {/* 텍스트 */}
         <div className="space-y-2">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-foreground">
             나만의 식단 관리
           </h2>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             목표에 맞는 맞춤 칼로리와 영양소를 설정해요
           </p>
         </div>
@@ -712,9 +709,9 @@ function NutritionOnboardingPrompt() {
         </Link>
 
         {/* 설명 */}
-        <div className="text-left bg-gray-50 rounded-xl p-4">
-          <p className="text-sm text-gray-600 font-medium mb-2">이런 기능을 사용할 수 있어요:</p>
-          <ul className="text-sm text-gray-500 space-y-1">
+        <div className="text-left bg-muted rounded-xl p-4">
+          <p className="text-sm text-muted-foreground font-medium mb-2">이런 기능을 사용할 수 있어요:</p>
+          <ul className="text-sm text-muted-foreground space-y-1">
             <li>✓ 내 목표에 맞는 칼로리 계산</li>
             <li>✓ AI 음식 인식 및 영양 분석</li>
             <li>✓ 수분 섭취 트래킹</li>

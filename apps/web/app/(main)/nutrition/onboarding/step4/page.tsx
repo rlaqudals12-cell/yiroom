@@ -64,8 +64,8 @@ export default function NutritionStep4Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">요리 실력</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">요리 실력</h2>
+        <p className="text-muted-foreground mt-1">
           평소 요리 실력은 어느 정도인가요?
         </p>
       </div>
@@ -86,7 +86,7 @@ export default function NutritionStep4Page() {
       </div>
 
       {/* 안내 */}
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-muted-foreground">
         요리 실력에 맞는 레시피를 추천해 드려요
       </p>
 

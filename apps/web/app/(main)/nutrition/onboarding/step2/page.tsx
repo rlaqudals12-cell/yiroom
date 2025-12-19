@@ -111,7 +111,7 @@ export default function NutritionStep2Page() {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Loader2 className="w-8 h-8 text-green-500 animate-spin mb-4" />
-        <p className="text-gray-500">정보를 불러오는 중...</p>
+        <p className="text-muted-foreground">정보를 불러오는 중...</p>
       </div>
     );
   }
@@ -123,8 +123,8 @@ export default function NutritionStep2Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">기본 정보</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">기본 정보</h2>
+        <p className="text-muted-foreground mt-1">
           칼로리 계산을 위한 정보를 입력해 주세요
         </p>
       </div>
@@ -141,7 +141,7 @@ export default function NutritionStep2Page() {
 
       {/* 성별 선택 */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-700">성별</label>
+        <label className="block text-sm font-medium text-foreground/80">성별</label>
         <div className="grid grid-cols-2 gap-3">
           {GENDER_OPTIONS.map((option) => (
             <button
@@ -150,11 +150,11 @@ export default function NutritionStep2Page() {
               className={`p-4 rounded-xl border-2 transition-all ${
                 gender === option.id
                   ? 'border-green-500 bg-green-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  : 'border-border hover:border-border/80'
               }`}
             >
               <span className="text-2xl">{option.icon}</span>
-              <p className="mt-1 font-medium text-gray-900">{option.title}</p>
+              <p className="mt-1 font-medium text-foreground">{option.title}</p>
             </button>
           ))}
         </div>
@@ -162,12 +162,12 @@ export default function NutritionStep2Page() {
 
       {/* 생년월일 */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">생년월일</label>
+        <label className="block text-sm font-medium text-foreground/80">생년월일</label>
         <input
           type="date"
           value={birthDate || ''}
           onChange={(e) => setBirthDate(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
           max={new Date().toISOString().split('T')[0]}
         />
       </div>
@@ -175,25 +175,25 @@ export default function NutritionStep2Page() {
       {/* 키/체중 */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">키 (cm)</label>
+          <label className="block text-sm font-medium text-foreground/80">키 (cm)</label>
           <input
             type="number"
             value={height || ''}
             onChange={(e) => setHeight(Number(e.target.value) || null)}
             placeholder="170"
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             min={100}
             max={250}
           />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">체중 (kg)</label>
+          <label className="block text-sm font-medium text-foreground/80">체중 (kg)</label>
           <input
             type="number"
             value={weight || ''}
             onChange={(e) => setWeight(Number(e.target.value) || null)}
             placeholder="65"
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             min={30}
             max={200}
           />
@@ -202,7 +202,7 @@ export default function NutritionStep2Page() {
 
       {/* 활동 수준 */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-700">활동 수준</label>
+        <label className="block text-sm font-medium text-foreground/80">활동 수준</label>
         <div className="space-y-2">
           {ACTIVITY_OPTIONS.map((option) => {
             const label = ACTIVITY_LEVEL_LABELS[option.id];

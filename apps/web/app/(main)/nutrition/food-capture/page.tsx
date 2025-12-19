@@ -172,12 +172,12 @@ export default function FoodCapturePage() {
       <div className="space-y-6">
         {/* 헤더 */}
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-gray-900">음식 분석 중</h1>
+          <h1 className="text-xl font-bold text-foreground">음식 분석 중</h1>
         </div>
 
         {/* 촬영된 사진 프리뷰 */}
         {previewImage && (
-          <div className="relative aspect-square w-full max-w-xs mx-auto rounded-2xl overflow-hidden bg-gray-100">
+          <div className="relative aspect-square w-full max-w-xs mx-auto rounded-2xl overflow-hidden bg-muted">
             <Image
               src={previewImage}
               alt="촬영된 음식 사진"
@@ -186,7 +186,7 @@ export default function FoodCapturePage() {
             />
             {/* 로딩 오버레이 */}
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <div className="bg-white/90 rounded-full p-4">
+              <div className="bg-card/90 rounded-full p-4">
                 <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
               </div>
             </div>
@@ -218,12 +218,12 @@ export default function FoodCapturePage() {
         <div className="flex items-center gap-4">
           <button
             onClick={handleBack}
-            className="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
             aria-label="뒤로 가기"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">음식 분석</h1>
+          <h1 className="text-xl font-bold text-foreground">음식 분석</h1>
         </div>
 
         {/* 에러 메시지 */}
@@ -262,17 +262,17 @@ export default function FoodCapturePage() {
       <div className="flex items-center gap-4">
         <button
           onClick={handleBack}
-          className="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
           aria-label="뒤로 가기"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
+          <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
-        <h1 className="text-xl font-bold text-gray-900">음식 사진 촬영</h1>
+        <h1 className="text-xl font-bold text-foreground">음식 사진 촬영</h1>
       </div>
 
       {/* 식사 타입 선택 */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <p className="text-sm text-gray-600 mb-3">식사 종류를 선택해주세요</p>
+      <div className="bg-card rounded-2xl p-4 shadow-sm border border-border/50">
+        <p className="text-sm text-muted-foreground mb-3">식사 종류를 선택해주세요</p>
         <div className="grid grid-cols-4 gap-2">
           {MEAL_TYPES.map((type) => (
             <button
@@ -281,7 +281,7 @@ export default function FoodCapturePage() {
               className={`flex flex-col items-center gap-1 p-3 rounded-xl transition-all ${
                 mealType === type.id
                   ? 'bg-green-100 border-2 border-green-500'
-                  : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                  : 'bg-muted border-2 border-transparent hover:bg-muted/80'
               }`}
               aria-pressed={mealType === type.id}
             >
@@ -290,7 +290,7 @@ export default function FoodCapturePage() {
               </span>
               <span
                 className={`text-xs font-medium ${
-                  mealType === type.id ? 'text-green-700' : 'text-gray-600'
+                  mealType === type.id ? 'text-green-700' : 'text-muted-foreground'
                 }`}
               >
                 {type.label}
@@ -304,7 +304,7 @@ export default function FoodCapturePage() {
       <FoodPhotoCapture onPhotoSelect={handlePhotoSelect} />
 
       {/* 안내 문구 */}
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-muted-foreground">
         AI가 음식을 인식하여 칼로리와 영양 정보를 분석해요
       </p>
     </div>

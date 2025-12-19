@@ -200,7 +200,7 @@ export default function FastingSettingsPage() {
         data-testid="fasting-loading"
         className="flex min-h-screen items-center justify-center"
       >
-        <div className="animate-pulse text-gray-500">로딩 중...</div>
+        <div className="animate-pulse text-muted-foreground">로딩 중...</div>
       </div>
     );
   }
@@ -210,7 +210,7 @@ export default function FastingSettingsPage() {
     return (
       <div
         data-testid="fasting-settings-page"
-        className="min-h-screen bg-gray-50 p-4"
+        className="min-h-screen bg-muted p-4"
       >
         <div className="mx-auto max-w-md">
           <div className="rounded-lg bg-red-50 p-6 text-center">
@@ -230,15 +230,15 @@ export default function FastingSettingsPage() {
   return (
     <div
       data-testid="fasting-settings-page"
-      className="min-h-screen bg-gray-50"
+      className="min-h-screen bg-muted"
     >
       {/* 헤더 */}
-      <header className="sticky top-0 z-10 border-b bg-white px-4 py-3">
+      <header className="sticky top-0 z-10 border-b bg-card px-4 py-3">
         <div className="mx-auto flex max-w-md items-center gap-3">
           <button
             onClick={() => router.back()}
             aria-label="뒤로가기"
-            className="rounded-full p-2 hover:bg-gray-100"
+            className="rounded-full p-2 hover:bg-muted"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -249,7 +249,7 @@ export default function FastingSettingsPage() {
       {/* 콘텐츠 */}
       <main className="mx-auto max-w-md p-4">
         {/* 단식 활성화 토글 */}
-        <div className="mb-6 rounded-xl bg-white p-4 shadow-sm">
+        <div className="mb-6 rounded-xl bg-card p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-purple-100 p-2">
@@ -257,7 +257,7 @@ export default function FastingSettingsPage() {
               </div>
               <div>
                 <p className="font-medium">간헐적 단식</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   단식 시간을 관리하세요
                 </p>
               </div>
@@ -266,7 +266,7 @@ export default function FastingSettingsPage() {
               data-testid="fasting-toggle"
               onClick={handleToggle}
               className={`relative h-7 w-12 rounded-full transition-colors ${
-                settings.fastingEnabled ? 'bg-green-500' : 'bg-gray-300'
+                settings.fastingEnabled ? 'bg-green-500' : 'bg-muted-foreground'
               }`}
             >
               <span
@@ -282,7 +282,7 @@ export default function FastingSettingsPage() {
         {settings.fastingEnabled && (
           <>
             {/* 단식 유형 선택 */}
-            <div className="mb-6 rounded-xl bg-white p-4 shadow-sm">
+            <div className="mb-6 rounded-xl bg-card p-4 shadow-sm">
               <h2 className="mb-4 font-medium">단식 유형</h2>
               <div className="grid grid-cols-2 gap-3">
                 {FASTING_TYPES.map((type) => (
@@ -292,14 +292,14 @@ export default function FastingSettingsPage() {
                     className={`relative rounded-lg border-2 p-3 text-left transition-all ${
                       settings.fastingType === type.id
                         ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-border hover:border-border/80'
                     }`}
                   >
                     {settings.fastingType === type.id && (
                       <Check className="absolute right-2 top-2 h-4 w-4 text-green-500" />
                     )}
                     <p className="font-semibold">{type.name}</p>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {type.id === 'custom'
                         ? '직접 설정'
                         : `${type.fastingHours}시간 단식, ${type.eatingHours}시간 식사`}
@@ -310,31 +310,31 @@ export default function FastingSettingsPage() {
             </div>
 
             {/* 단식 시작 시간 */}
-            <div className="mb-6 rounded-xl bg-white p-4 shadow-sm">
+            <div className="mb-6 rounded-xl bg-card p-4 shadow-sm">
               <label className="mb-3 block font-medium" htmlFor="fasting-start-time">
                 단식 시작 시간
               </label>
               <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-gray-400" />
+                <Clock className="h-5 w-5 text-muted-foreground" />
                 <input
                   type="time"
                   id="fasting-start-time"
                   aria-label="단식 시작 시간"
                   value={settings.fastingStartTime || '20:00'}
                   onChange={handleTimeChange}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                  className="flex-1 rounded-lg border border-border px-3 py-2 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
                 />
               </div>
             </div>
 
             {/* 커스텀일 때 식사 가능 시간 입력 */}
             {settings.fastingType === 'custom' && (
-              <div className="mb-6 rounded-xl bg-white p-4 shadow-sm">
+              <div className="mb-6 rounded-xl bg-card p-4 shadow-sm">
                 <label className="mb-3 block font-medium" htmlFor="eating-hours">
                   식사 가능 시간
                 </label>
                 <div className="flex items-center gap-3">
-                  <Sun className="h-5 w-5 text-gray-400" />
+                  <Sun className="h-5 w-5 text-muted-foreground" />
                   <input
                     type="number"
                     id="eating-hours"
@@ -343,9 +343,9 @@ export default function FastingSettingsPage() {
                     max={23}
                     value={settings.eatingWindowHours || 8}
                     onChange={handleEatingHoursChange}
-                    className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="w-20 rounded-lg border border-border px-3 py-2 text-center focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
                   />
-                  <span className="text-gray-500">시간</span>
+                  <span className="text-muted-foreground">시간</span>
                 </div>
               </div>
             )}
@@ -355,7 +355,7 @@ export default function FastingSettingsPage() {
               <div className="flex items-center gap-3">
                 <Sun className="h-6 w-6 text-green-600" />
                 <div>
-                  <p className="text-sm text-gray-600">식사 가능 시간</p>
+                  <p className="text-sm text-muted-foreground">식사 가능 시간</p>
                   <p className="text-xl font-bold text-green-700">
                     {calculateEatingWindow()}
                   </p>
@@ -369,7 +369,7 @@ export default function FastingSettingsPage() {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="w-full rounded-xl bg-green-500 py-3 font-semibold text-white transition-colors hover:bg-green-600 disabled:bg-gray-400"
+          className="w-full rounded-xl bg-green-500 py-3 font-semibold text-white transition-colors hover:bg-green-600 disabled:bg-muted"
         >
           {isSaving ? '저장 중...' : '저장'}
         </button>

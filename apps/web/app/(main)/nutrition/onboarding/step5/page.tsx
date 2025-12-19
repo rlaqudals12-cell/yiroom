@@ -64,8 +64,8 @@ export default function NutritionStep5Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">식비 예산</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">식비 예산</h2>
+        <p className="text-muted-foreground mt-1">
           한 끼 식사에 사용할 예산은 어느 정도인가요?
         </p>
       </div>
@@ -86,7 +86,7 @@ export default function NutritionStep5Page() {
       </div>
 
       {/* 안내 */}
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-muted-foreground">
         예산에 맞는 식재료와 레시피를 추천해 드려요
       </p>
 
