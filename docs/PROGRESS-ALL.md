@@ -1,7 +1,7 @@
 # 이룸 전체 진행 상황
 
 > **마지막 업데이트**: 2025-12-19
-> **총 테스트**: 2,571개 통과
+> **총 테스트**: 2,600+개 통과 (+56 Sprint 1-3)
 > **코드 품질**: SRP 95%, Repository 90%
 
 ---
@@ -18,6 +18,7 @@ Phase C (RAG/제품DB)    ██████████████████
 Phase D (앱 개선)       ████████████████████ 100% ✅
 Phase E (추가 개선)     ████████████████████ 100% ✅
 Phase F (운영 준비)     ████████████████░░░░  80% 🔄 (F-1~F-4 완료, F-5 테스트 중)
+Phase G (Product v3)    ████████████████████ 100% ✅ (Sprint 1-3 완료, 2025-12-19)
 ```
 
 ---
@@ -824,6 +825,135 @@ API 라우트:
 [x] 기능 점검 완료 (2025-12-19)
 [ ] Clerk 프로덕션 키 교체 (2026-01-20 이후)
 [ ] 피드백 수집 채널 설정
+```
+
+---
+
+## Phase G: Product DB v3 (Sprint 1-3) ✅ 완료
+
+> **목표**: 리뷰 시스템 + 성분 상호작용 + 어필리에이트
+> **완료일**: 2025-12-19
+> **테스트**: 56개 추가
+
+### 전체 진행률
+
+| Sprint | 내용 | Task | 상태 |
+|--------|------|------|------|
+| Sprint 1 | 리뷰 시스템 | 6개 | ✅ 완료 |
+| Sprint 2 | 성분 상호작용 | 5개 | ✅ 완료 |
+| Sprint 3 | 어필리에이트 | 4개 | ✅ 완료 |
+
+### Sprint 1: 리뷰 시스템 ✅ 완료
+
+```yaml
+타입 정의:
+  [x] types/review.ts
+      - ProductReview, Rating, ReviewSortBy
+      - CreateReviewInput, ReviewSummary
+      - ReviewRow, toProductReview 변환 함수
+
+서비스:
+  [x] lib/products/services/reviews.ts
+      - getRatingText, getRatingColor
+      - toProductReview, calculateReviewSummary
+
+컴포넌트:
+  [x] components/products/reviews/
+      - StarRating.tsx (별점 입력/표시)
+      - ReviewSummary.tsx (평점 요약)
+      - ReviewCard.tsx (개별 리뷰)
+      - ReviewList.tsx (목록 + 정렬)
+      - ReviewForm.tsx (작성 폼)
+      - ReviewSection.tsx (통합 섹션)
+
+DB 마이그레이션:
+  [x] supabase/migrations/20251219_product_reviews.sql
+      - product_reviews 테이블
+      - review_helpful 테이블
+      - RLS 정책 + 트리거
+
+테스트:
+  [x] tests/lib/products/services/reviews.test.ts (18개)
+```
+
+### Sprint 2: 성분 상호작용 ✅ 완료
+
+```yaml
+타입 정의:
+  [x] types/interaction.ts
+      - IngredientInteraction, InteractionType
+      - Severity, ProductInteractionWarning
+
+서비스:
+  [x] lib/products/services/interactions.ts
+      - toIngredientInteraction
+      - getInteractionTypeLabel/Color
+      - getSeverityLabel/Color
+      - summarizeInteractions
+      - filterWarningsOnly, filterSynergiesOnly
+
+컴포넌트:
+  [x] components/products/interactions/
+      - InteractionWarning.tsx (충돌 경고 배지)
+      - InteractionDetail.tsx (상세 모달)
+
+DB 마이그레이션:
+  [x] supabase/migrations/20251219_ingredient_interactions.sql
+      - ingredient_interactions 테이블
+      - 초기 시드 데이터 (금기/주의/시너지/시간분리)
+      - 공개 읽기 전용 RLS
+
+테스트:
+  [x] tests/lib/products/services/interactions.test.ts (26개)
+```
+
+### Sprint 3: 어필리에이트 ✅ 완료
+
+```yaml
+타입 정의:
+  [x] types/affiliate.ts
+      - AffiliateProductType, AffiliateClick
+      - DailyClickStats, AffiliateClickRow
+      - toAffiliateProductType, toAffiliateClick
+      - toDailyClickStats
+
+서비스:
+  [x] lib/products/affiliate.ts
+      - 클릭 추적 유틸리티
+      - 일일 통계 조회
+
+컴포넌트:
+  [x] components/products/PurchaseButton.tsx
+      - 구매 버튼 (클릭 추적)
+
+DB 마이그레이션:
+  [x] supabase/migrations/20251219_affiliate_system.sql
+      - affiliate_clicks 테이블
+      - 일일 통계 뷰
+
+테스트:
+  [x] tests/lib/products/affiliate.test.ts (12개)
+```
+
+### 추가 작업 (2025-12-19)
+
+```yaml
+운동 데이터:
+  [x] data/exercises/pilates.json (20개)
+  [x] data/exercises/stretching.json (22개)
+  [x] data/exercises/yoga.json (18개)
+
+UI 컴포넌트:
+  [x] components/ui/Breadcrumb.tsx
+  [x] components/ui/alert-dialog.tsx
+  [x] components/ui/collapsible.tsx
+  [x] components/ui/dropdown-menu.tsx
+  [x] components/ui/scroll-area.tsx
+
+코드 품질:
+  [x] ESLint 경고 수정 (12개 → 4개)
+  [x] 다크모드 개선 (100+ 파일)
+  [x] 접근성 개선 (ARIA)
 ```
 
 ---
