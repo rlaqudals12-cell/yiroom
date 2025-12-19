@@ -65,7 +65,7 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
           <CardTitle className="text-base font-medium">가격 히스토리</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-500 text-center py-8">
+          <p className="text-sm text-muted-foreground text-center py-8">
             아직 가격 기록이 없습니다.
           </p>
         </CardContent>
@@ -93,8 +93,8 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
             )}
             {stats.trend === 'stable' && (
               <>
-                <Minus className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-500">안정</span>
+                <Minus className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">안정</span>
               </>
             )}
           </div>
@@ -104,15 +104,15 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
         {/* 가격 통계 */}
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-xs text-gray-500">최저가</p>
+            <p className="text-xs text-muted-foreground">최저가</p>
             <p className="text-sm font-semibold text-green-600">{formatPrice(stats.min)}원</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500">평균가</p>
-            <p className="text-sm font-semibold text-gray-700">{formatPrice(stats.avg)}원</p>
+            <p className="text-xs text-muted-foreground">평균가</p>
+            <p className="text-sm font-semibold text-foreground/80">{formatPrice(stats.avg)}원</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500">최고가</p>
+            <p className="text-xs text-muted-foreground">최고가</p>
             <p className="text-sm font-semibold text-red-600">{formatPrice(stats.max)}원</p>
           </div>
         </div>
@@ -158,7 +158,7 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
 
         {/* 현재가 표시 */}
         {currentPrice !== stats.avg && (
-          <p className="text-xs text-center text-gray-500">
+          <p className="text-xs text-center text-muted-foreground">
             현재가 <span className="font-medium">{formatPrice(currentPrice)}원</span>
             {currentPrice <= stats.min && (
               <span className="text-green-600 ml-1">(역대 최저가)</span>

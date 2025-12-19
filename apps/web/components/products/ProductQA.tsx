@@ -106,7 +106,7 @@ export function ProductQA({ product, productType, userContext }: ProductQAProps)
   const confidenceColors = {
     high: 'bg-green-100 text-green-700',
     medium: 'bg-yellow-100 text-yellow-700',
-    low: 'bg-gray-100 text-gray-600',
+    low: 'bg-muted text-muted-foreground',
   };
 
   return (
@@ -125,14 +125,14 @@ export function ProductQA({ product, productType, userContext }: ProductQAProps)
         {/* FAQ 섹션 */}
         {showFAQ && messages.length === 0 && (
           <div className="space-y-2">
-            <p className="text-sm text-gray-500">자주 묻는 질문</p>
+            <p className="text-sm text-muted-foreground">자주 묻는 질문</p>
             <div className="flex flex-wrap gap-2">
               {faqQuestions.map((q, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleAsk(q)}
                   disabled={loading}
-                  className="px-3 py-1.5 text-xs bg-gray-50 hover:bg-pink-50 hover:text-pink-600 rounded-full border border-gray-200 hover:border-pink-200 transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 text-xs bg-muted/50 hover:bg-pink-50 hover:text-pink-600 rounded-full border border-border hover:border-pink-200 transition-colors disabled:opacity-50"
                 >
                   {q}
                 </button>
@@ -151,13 +151,13 @@ export function ProductQA({ product, productType, userContext }: ProductQAProps)
                   'rounded-lg p-3',
                   msg.type === 'question'
                     ? 'bg-pink-50 ml-8'
-                    : 'bg-gray-50 mr-8'
+                    : 'bg-muted/50 mr-8'
                 )}
               >
                 {msg.type === 'answer' && (
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="h-4 w-4 text-pink-500" />
-                    <span className="text-xs text-gray-500">AI 답변</span>
+                    <span className="text-xs text-muted-foreground">AI 답변</span>
                     {msg.confidence && (
                       <Badge
                         variant="secondary"
@@ -171,7 +171,7 @@ export function ProductQA({ product, productType, userContext }: ProductQAProps)
                   </div>
                 )}
 
-                <p className="text-sm text-gray-800">{msg.content}</p>
+                <p className="text-sm text-foreground">{msg.content}</p>
 
                 {/* 경고 */}
                 {msg.warning && (
@@ -199,9 +199,9 @@ export function ProductQA({ product, productType, userContext }: ProductQAProps)
             ))}
 
             {loading && (
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg mr-8">
+              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg mr-8">
                 <Loader2 className="h-4 w-4 animate-spin text-pink-500" />
-                <span className="text-sm text-gray-500">답변 생성 중...</span>
+                <span className="text-sm text-muted-foreground">답변 생성 중...</span>
               </div>
             )}
           </div>
@@ -211,7 +211,7 @@ export function ProductQA({ product, productType, userContext }: ProductQAProps)
         {messages.length > 0 && (
           <button
             onClick={() => setShowFAQ(!showFAQ)}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
           >
             <ChevronDown
               className={cn('h-4 w-4 transition-transform', showFAQ && 'rotate-180')}
@@ -228,7 +228,7 @@ export function ProductQA({ product, productType, userContext }: ProductQAProps)
                 key={idx}
                 onClick={() => handleAsk(q)}
                 disabled={loading}
-                className="px-3 py-1.5 text-xs bg-gray-50 hover:bg-pink-50 hover:text-pink-600 rounded-full border border-gray-200 hover:border-pink-200 transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 text-xs bg-muted/50 hover:bg-pink-50 hover:text-pink-600 rounded-full border border-border hover:border-pink-200 transition-colors disabled:opacity-50"
               >
                 {q}
               </button>
@@ -254,7 +254,7 @@ export function ProductQA({ product, productType, userContext }: ProductQAProps)
           </Button>
         </form>
 
-        <p className="text-xs text-gray-400 text-center">
+        <p className="text-xs text-muted-foreground text-center">
           AI 답변은 참고용입니다. 정확한 정보는 제조사나 전문가에게 문의하세요.
         </p>
       </CardContent>

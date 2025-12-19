@@ -55,8 +55,8 @@ const DRINK_TYPES = [
     type: 'other' as DrinkType,
     label: '기타',
     icon: HelpCircle,
-    color: 'bg-gray-100 text-gray-600 border-gray-200',
-    activeColor: 'bg-gray-500 text-white border-gray-500',
+    color: 'bg-muted text-muted-foreground border-border',
+    activeColor: 'bg-muted-foreground text-card border-muted-foreground',
   },
 ] as const;
 
@@ -140,7 +140,7 @@ export default function WaterInputSheet({
 
       {/* 바텀 시트 */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-xl transform transition-transform"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-xl transform transition-transform"
         role="dialog"
         aria-modal="true"
         aria-labelledby="water-input-title"
@@ -149,28 +149,28 @@ export default function WaterInputSheet({
         <div className="max-w-[480px] mx-auto">
           {/* 핸들 바 */}
           <div className="flex justify-center pt-3 pb-2">
-            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
           </div>
 
           {/* 헤더 */}
-          <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100">
-            <h2 id="water-input-title" className="text-lg font-bold text-gray-900">
+          <div className="flex items-center justify-between px-4 pb-3 border-b border-border/50">
+            <h2 id="water-input-title" className="text-lg font-bold text-foreground">
               수분 섭취 기록
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-full hover:bg-muted transition-colors"
               aria-label="닫기"
               data-testid="close-button"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
 
           <div className="p-4 space-y-5">
             {/* 음료 종류 선택 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 음료 종류
               </label>
               <div className="grid grid-cols-6 gap-2">
@@ -192,7 +192,7 @@ export default function WaterInputSheet({
               </div>
 
               {/* 수분 흡수율 안내 */}
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-muted-foreground">
                 {selectedType !== 'water' && (
                   <>
                     수분 흡수율: {Math.round(hydrationFactor * 100)}%
@@ -204,7 +204,7 @@ export default function WaterInputSheet({
 
             {/* 양 선택 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 섭취량
               </label>
               <div className="grid grid-cols-4 gap-2 mb-3">
@@ -216,7 +216,7 @@ export default function WaterInputSheet({
                       'py-2 px-3 rounded-xl border-2 transition-all text-sm font-medium',
                       !isCustom && selectedAmount === preset.amount
                         ? 'bg-cyan-500 text-white border-cyan-500'
-                        : 'bg-white text-gray-700 border-gray-200 hover:border-cyan-300'
+                        : 'bg-card text-foreground border-border hover:border-cyan-300'
                     )}
                     data-testid={`amount-preset-${preset.amount}`}
                   >
@@ -235,29 +235,29 @@ export default function WaterInputSheet({
                   value={customAmount}
                   onChange={(e) => handleCustomInput(e.target.value)}
                   className={cn(
-                    'w-full py-3 px-4 rounded-xl border-2 transition-all text-center text-lg font-medium',
+                    'w-full py-3 px-4 rounded-xl border-2 transition-all text-center text-lg font-medium bg-background',
                     isCustom && customAmount
-                      ? 'border-cyan-500 bg-cyan-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/30'
+                      : 'border-border hover:border-border/80'
                   )}
                   aria-label="직접 입력 (ml)"
                   data-testid="custom-amount-input"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                   ml
                 </span>
               </div>
             </div>
 
             {/* 요약 */}
-            <div className="bg-gray-50 rounded-xl p-4">
+            <div className="bg-muted/50 rounded-xl p-4">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">섭취량</span>
-                <span className="font-bold text-gray-900">{currentAmount} ml</span>
+                <span className="text-muted-foreground">섭취량</span>
+                <span className="font-bold text-foreground">{currentAmount} ml</span>
               </div>
               {hydrationFactor < 1 && currentAmount > 0 && (
                 <div className="flex justify-between items-center text-sm mt-1">
-                  <span className="text-gray-600">실제 수분</span>
+                  <span className="text-muted-foreground">실제 수분</span>
                   <span className="font-bold text-cyan-600">{effectiveMl} ml</span>
                 </div>
               )}
@@ -271,7 +271,7 @@ export default function WaterInputSheet({
                 'w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2',
                 currentAmount > 0 && !isSaving
                   ? 'bg-cyan-500 text-white hover:bg-cyan-600 active:bg-cyan-700'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
               )}
               data-testid="add-water-button"
             >

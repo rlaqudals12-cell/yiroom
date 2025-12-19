@@ -110,7 +110,7 @@ function StatusIcon({ status, icon }: { status: MetricStatus; icon: MetricItem['
     achieved: 'text-green-500',
     warning: 'text-yellow-500',
     progress: 'text-blue-500',
-    info: 'text-gray-500',
+    info: 'text-muted-foreground',
   }[status];
 
   switch (icon) {
@@ -240,11 +240,11 @@ export function WorkoutMetricsDashboard({
 
   return (
     <div
-      className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5"
+      className="bg-card rounded-2xl shadow-sm border border-border p-5"
       data-testid="workout-metrics-dashboard"
     >
       {/* 헤더 */}
-      <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+      <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
         <TrendingUp className="w-5 h-5 text-indigo-500" />
         이번 주 운동 지표
       </h3>
@@ -261,16 +261,16 @@ export function WorkoutMetricsDashboard({
                   ? 'bg-yellow-50'
                   : metric.status === 'progress'
                     ? 'bg-blue-50'
-                    : 'bg-gray-50'
+                    : 'bg-muted'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-600">{metric.label}</span>
+              <span className="text-xs text-muted-foreground">{metric.label}</span>
               <StatusIcon status={metric.status} icon={metric.icon} />
             </div>
-            <p className="text-lg font-bold text-gray-900">{metric.value}</p>
+            <p className="text-lg font-bold text-foreground">{metric.value}</p>
             {metric.subValue && (
-              <p className="text-xs text-gray-500">{metric.subValue}</p>
+              <p className="text-xs text-muted-foreground">{metric.subValue}</p>
             )}
           </div>
         ))}
@@ -288,19 +288,19 @@ export function WorkoutMetricsDashboard({
           }`}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 bg-card rounded-full flex items-center justify-center shadow-sm">
               <Flame className={`w-5 h-5 ${
                 metrics[6].status === 'achieved' ? 'text-orange-500' :
                 metrics[6].status === 'warning' ? 'text-yellow-500' : 'text-blue-500'
               }`} />
             </div>
             <div>
-              <span className="text-xs text-gray-600">{metrics[6].label}</span>
-              <p className="text-xl font-bold text-gray-900">{metrics[6].value}</p>
+              <span className="text-xs text-muted-foreground">{metrics[6].label}</span>
+              <p className="text-xl font-bold text-foreground">{metrics[6].value}</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-sm font-medium text-gray-700">{metrics[6].subValue}</p>
+            <p className="text-sm font-medium text-foreground/80">{metrics[6].subValue}</p>
             {currentStreak >= 7 && (
               <p className="text-xs text-orange-600">🎉 7일 달성!</p>
             )}
@@ -309,11 +309,11 @@ export function WorkoutMetricsDashboard({
       )}
 
       {/* 레이더 차트 영역 (향후 구현) */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <div className="flex items-center justify-center h-32 bg-gray-50 rounded-xl">
+      <div className="mt-4 pt-4 border-t border-border">
+        <div className="flex items-center justify-center h-32 bg-muted rounded-xl">
           <div className="text-center">
             <div className="text-3xl mb-2">📊</div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               운동 기록 후 상세 분석 차트가 표시됩니다
             </p>
           </div>

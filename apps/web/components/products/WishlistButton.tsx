@@ -108,7 +108,7 @@ export function WishlistButton({
           'rounded-full p-2 transition-all duration-200',
           'hover:bg-pink-50 focus:outline-none focus:ring-2 focus:ring-pink-300',
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          isWishlisted ? 'text-pink-500' : 'text-gray-400 hover:text-pink-400',
+          isWishlisted ? 'text-pink-500' : 'text-muted-foreground hover:text-pink-400',
           className
         )}
         aria-label={isWishlisted ? '위시리스트에서 제거' : '위시리스트에 추가'}

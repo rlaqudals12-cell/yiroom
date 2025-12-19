@@ -63,8 +63,8 @@ const PRIORITY_STYLES: Record<
   { label: string; className: string }
 > = {
   high: { label: '중요', className: 'bg-red-100 text-red-700' },
-  medium: { label: '참고', className: 'bg-gray-100 text-gray-600' },
-  low: { label: '팁', className: 'bg-gray-50 text-gray-500' },
+  medium: { label: '참고', className: 'bg-muted text-muted-foreground' },
+  low: { label: '팁', className: 'bg-muted/50 text-muted-foreground' },
 };
 
 export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps) {
@@ -76,14 +76,14 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
       className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl p-6 border border-indigo-100"
     >
       {/* 헤더 */}
-      <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 mb-4">
+      <h3 className="flex items-center gap-2 text-lg font-bold text-foreground mb-4">
         <Sparkles className="w-5 h-5 text-indigo-500" />
         AI 인사이트
       </h3>
 
       {/* 주간 하이라이트 */}
       {weeklyHighlight && (
-        <div className="bg-white/70 rounded-xl p-4 mb-4 border border-indigo-100">
+        <div className="bg-card/70 rounded-xl p-4 mb-4 border border-indigo-100">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <Star className="w-4 h-4 text-indigo-600" />
@@ -92,7 +92,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
               <p className="text-xs font-medium text-indigo-600 mb-1">
                 이번 주 하이라이트
               </p>
-              <p className="text-sm text-gray-800 font-medium">
+              <p className="text-sm text-foreground font-medium">
                 {weeklyHighlight}
               </p>
             </div>
@@ -116,7 +116,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
                 <div className="flex items-start gap-3">
                   {/* 아이콘 */}
                   <div
-                    className={`w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0 ${style.iconColor}`}
+                    className={`w-8 h-8 bg-card rounded-lg flex items-center justify-center flex-shrink-0 ${style.iconColor}`}
                   >
                     {style.icon}
                   </div>
@@ -132,11 +132,11 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-800">{insight.message}</p>
+                    <p className="text-sm text-foreground">{insight.message}</p>
 
                     {/* 추가 데이터 표시 */}
                     {insight.data && (
-                      <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                         {insight.data.trend && (
                           <span
                             className={`flex items-center gap-1 ${
@@ -144,7 +144,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
                                 ? 'text-green-600'
                                 : insight.data.trend === 'down'
                                   ? 'text-red-600'
-                                  : 'text-gray-500'
+                                  : 'text-muted-foreground'
                             }`}
                           >
                             {insight.data.trend === 'up' && '↑'}
@@ -155,7 +155,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
                           </span>
                         )}
                         {insight.data.targetArea && (
-                          <span className="text-gray-400">
+                          <span className="text-muted-foreground">
                             집중 부위: {insight.data.targetArea}
                           </span>
                         )}
@@ -180,7 +180,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
 
       {/* 인사이트가 없는 경우 */}
       {insightItems.length === 0 && !weeklyHighlight && !motivationalMessage && (
-        <div className="text-center py-6 text-gray-400">
+        <div className="text-center py-6 text-muted-foreground">
           <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">아직 인사이트가 없습니다</p>
           <p className="text-xs mt-1">운동 기록을 쌓으면 맞춤 인사이트를 제공해드려요</p>

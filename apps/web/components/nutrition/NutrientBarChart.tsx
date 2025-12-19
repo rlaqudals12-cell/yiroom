@@ -70,10 +70,10 @@ function LoadingSkeleton({ testId }: { testId: string }) {
       {[1, 2, 3].map((i) => (
         <div key={i} className="space-y-2">
           <div className="flex justify-between">
-            <div className="w-16 h-4 bg-gray-200 animate-pulse rounded" />
-            <div className="w-20 h-4 bg-gray-200 animate-pulse rounded" />
+            <div className="w-16 h-4 bg-muted animate-pulse rounded" />
+            <div className="w-20 h-4 bg-muted animate-pulse rounded" />
           </div>
-          <div className="w-full h-3 bg-gray-200 animate-pulse rounded-full" />
+          <div className="w-full h-3 bg-muted animate-pulse rounded-full" />
         </div>
       ))}
     </div>
@@ -102,7 +102,7 @@ export default function NutrientBarChart({
     return (
       <div
         data-testid={testId}
-        className="text-center text-gray-500 py-4"
+        className="text-center text-muted-foreground py-4"
       >
         영양소 데이터가 없습니다.
       </div>
@@ -112,7 +112,7 @@ export default function NutrientBarChart({
   return (
     <div data-testid={testId} className="space-y-4">
       {title && (
-        <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
       )}
       <div className="space-y-3">
         {data.map((nutrient, index) => (
@@ -174,7 +174,7 @@ export function NutrientBar({
   const textColor = useMemo(() => {
     if (isExceeded) return 'text-red-500';
     if (isWarning) return 'text-amber-500';
-    return 'text-gray-500';
+    return 'text-muted-foreground';
   }, [isExceeded, isWarning]);
 
   // 값 포맷팅
@@ -189,11 +189,11 @@ export function NutrientBar({
     <div className="space-y-1">
       {/* 레이블 행 */}
       <div className="flex justify-between items-center text-sm">
-        <span className="font-medium text-gray-700">{name}</span>
+        <span className="font-medium text-foreground">{name}</span>
         <div className="flex items-center gap-2">
-          <span className="text-gray-900">
+          <span className="text-foreground">
             {formatValue(current)}
-            <span className="text-gray-500">
+            <span className="text-muted-foreground">
               {' '}
               / {formatValue(target)}
               {unit}

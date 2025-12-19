@@ -95,15 +95,15 @@ export default function BodyTypeInsight({
 
   return (
     <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100">
-      <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 mb-3">
+      <h3 className="flex items-center gap-2 text-lg font-bold text-foreground mb-3">
         <Sparkles className="w-5 h-5 text-indigo-500" />
         체형 맞춤 인사이트
       </h3>
 
-      <p className="text-gray-700 leading-relaxed mb-4">{insight}</p>
+      <p className="text-foreground/80 leading-relaxed mb-4">{insight}</p>
 
       {concernTip && (
-        <div className="bg-white/60 rounded-xl p-4">
+        <div className="bg-card/60 rounded-xl p-4">
           <p className="text-sm text-indigo-700">
             <span className="font-medium">💡 Tip:</span> {concernTip}
           </p>

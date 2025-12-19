@@ -45,10 +45,10 @@ export function StreakProgress({
         {Array.from({ length: remainingDays }).map((_, i) => (
           <div
             key={`remaining-${i}`}
-            className="w-8 h-8 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center"
+            className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center"
             aria-label={`${completedDays + i + 1}일차 미완료`}
           >
-            <Circle className="w-4 h-4 text-gray-300" />
+            <Circle className="w-4 h-4 text-muted-foreground" />
           </div>
         ))}
       </div>
@@ -56,7 +56,7 @@ export function StreakProgress({
       {/* 라벨 */}
       {showLabels && (
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">
+          <span className="text-muted-foreground">
             {currentStreak}/{displayDays}일
           </span>
           {currentStreak >= displayDays && (

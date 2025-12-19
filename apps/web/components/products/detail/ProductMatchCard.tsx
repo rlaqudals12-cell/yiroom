@@ -24,7 +24,7 @@ function getScoreColor(score: number): string {
   if (score >= 80) return 'text-green-600';
   if (score >= 60) return 'text-blue-600';
   if (score >= 40) return 'text-yellow-600';
-  return 'text-gray-600';
+  return 'text-muted-foreground';
 }
 
 /**
@@ -34,7 +34,7 @@ function getProgressColor(score: number): string {
   if (score >= 80) return 'bg-green-500';
   if (score >= 60) return 'bg-blue-500';
   if (score >= 40) return 'bg-yellow-500';
-  return 'bg-gray-400';
+  return 'bg-muted-foreground';
 }
 
 /**

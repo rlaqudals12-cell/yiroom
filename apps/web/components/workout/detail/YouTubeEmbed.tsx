@@ -16,11 +16,11 @@ export default function YouTubeEmbed({ videoUrl, title = '운동 가이드' }: Y
   // 영상 URL이 없는 경우 플레이스홀더
   if (!videoUrl) {
     return (
-      <div className="bg-gray-100 rounded-2xl overflow-hidden">
-        <div className="aspect-video flex flex-col items-center justify-center text-gray-400">
-          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-3">
+      <div className="bg-muted rounded-2xl overflow-hidden">
+        <div className="aspect-video flex flex-col items-center justify-center text-muted-foreground">
+          <div className="w-16 h-16 bg-muted/80 rounded-full flex items-center justify-center mb-3">
             <svg
-              className="w-8 h-8 text-gray-400"
+              className="w-8 h-8 text-muted-foreground"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
@@ -39,8 +39,8 @@ export default function YouTubeEmbed({ videoUrl, title = '운동 가이드' }: Y
   // 유효하지 않은 URL인 경우
   if (!videoId) {
     return (
-      <div className="bg-gray-100 rounded-2xl overflow-hidden">
-        <div className="aspect-video flex flex-col items-center justify-center text-gray-400">
+      <div className="bg-muted rounded-2xl overflow-hidden">
+        <div className="aspect-video flex flex-col items-center justify-center text-muted-foreground">
           <p className="text-sm">영상을 불러올 수 없습니다</p>
         </div>
       </div>
@@ -48,7 +48,7 @@ export default function YouTubeEmbed({ videoUrl, title = '운동 가이드' }: Y
   }
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+    <div className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border">
       <div className="aspect-video">
         <iframe
           src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}

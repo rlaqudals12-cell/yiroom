@@ -73,12 +73,12 @@ function NoAnalysisCard({
     >
       <div className="flex items-center gap-2 mb-3">
         <Scale className="w-5 h-5 text-module-body" />
-        <h3 className="text-sm font-semibold text-gray-900">체형 연동 인사이트</h3>
+        <h3 className="text-sm font-semibold text-foreground">체형 연동 인사이트</h3>
       </div>
 
-      <div className="bg-white/60 rounded-xl p-4 text-center">
+      <div className="bg-card/60 rounded-xl p-4 text-center">
         <AlertCircle className="w-10 h-10 text-module-body/50 mx-auto mb-2" />
-        <p className="text-sm text-gray-600 mb-3">
+        <p className="text-sm text-muted-foreground mb-3">
           C-1 체형 분석을 완료하면
           <br />
           맞춤 칼로리 목표를 설정할 수 있어요!
@@ -113,7 +113,7 @@ export function WeightChangeSection({
     if (insight.weightChange > 0.5) {
       return <TrendingUp className="w-5 h-5 text-red-500" />;
     }
-    return <Minus className="w-5 h-5 text-gray-500" />;
+    return <Minus className="w-5 h-5 text-muted-foreground" />;
   };
 
   const getStatusColor = () => {
@@ -125,7 +125,7 @@ export function WeightChangeSection({
       case 'slight_gain':
         return 'bg-red-50 border-red-200';
       default:
-        return 'bg-gray-50 border-gray-200';
+        return 'bg-muted/50 border-border';
     }
   };
 
@@ -143,8 +143,8 @@ export function WeightChangeSection({
         <div className="flex items-center gap-2">
           {getTrendIcon()}
           <div>
-            <p className="text-sm font-medium text-gray-900">체중 변화</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm font-medium text-foreground">체중 변화</p>
+            <p className="text-xs text-muted-foreground">
               {insight.daysSinceAnalysis}일 전 분석 대비
             </p>
           </div>
@@ -153,15 +153,15 @@ export function WeightChangeSection({
           <p
             className={cn(
               'text-lg font-bold',
-              insight.weightChange < 0 ? 'text-green-600' : insight.weightChange > 0 ? 'text-red-600' : 'text-gray-600'
+              insight.weightChange < 0 ? 'text-green-600' : insight.weightChange > 0 ? 'text-red-600' : 'text-muted-foreground'
             )}
           >
             {formatWeight(insight.weightChange)}
           </p>
-          <p className="text-xs text-gray-500">({insight.changePercentage}%)</p>
+          <p className="text-xs text-muted-foreground">({insight.changePercentage}%)</p>
         </div>
       </div>
-      <p className="text-sm text-gray-600 mt-2">{insight.message}</p>
+      <p className="text-sm text-muted-foreground mt-2">{insight.message}</p>
     </div>
   );
 }
@@ -195,8 +195,8 @@ export function ReanalysisPromptSection({
           {prompt.icon}
         </span>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-gray-900">{prompt.title}</p>
-          <p className="text-xs text-gray-600 mt-1">{prompt.description}</p>
+          <p className="text-sm font-semibold text-foreground">{prompt.title}</p>
+          <p className="text-xs text-muted-foreground mt-1">{prompt.description}</p>
           {onReanalysisClick && (
             <button
               onClick={onReanalysisClick}
@@ -231,23 +231,23 @@ export function CalorieAdjustmentSection({
 
   return (
     <div
-      className="bg-white/60 rounded-xl p-3 border border-module-body/20"
+      className="bg-card/60 rounded-xl p-3 border border-module-body/20"
       data-testid="calorie-adjustment-section"
     >
       <div className="flex items-center justify-between mb-2">
-        <p className="text-sm font-medium text-gray-900">체형 맞춤 칼로리</p>
+        <p className="text-sm font-medium text-foreground">체형 맞춤 칼로리</p>
         <div className="text-right">
           <p className="text-lg font-bold text-module-body">
             {adjustment.adjustedCalories.toLocaleString()}kcal
           </p>
           {hasAdjustment && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               기본 {adjustment.baseCalories.toLocaleString()}kcal {diff > 0 ? `+${diff}` : diff}
             </p>
           )}
         </div>
       </div>
-      <p className="text-xs text-gray-600">{adjustment.bodyTypeMessage}</p>
+      <p className="text-xs text-muted-foreground">{adjustment.bodyTypeMessage}</p>
       {adjustment.adjustmentReason && (
         <p className="text-xs text-module-body mt-1">{adjustment.adjustmentReason}</p>
       )}
@@ -292,7 +292,7 @@ export default function BodyInsightCard({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Scale className="w-5 h-5 text-module-body" />
-          <h3 className="text-sm font-semibold text-gray-900">체형 연동 인사이트</h3>
+          <h3 className="text-sm font-semibold text-foreground">체형 연동 인사이트</h3>
         </div>
         <span className="text-xs text-module-body bg-module-body/20 px-2 py-0.5 rounded-full">
           C-1 연동
@@ -300,7 +300,7 @@ export default function BodyInsightCard({
       </div>
 
       {/* 요약 메시지 */}
-      <p className="text-xs text-gray-600 mb-3">{insight.summaryMessage}</p>
+      <p className="text-xs text-muted-foreground mb-3">{insight.summaryMessage}</p>
 
       {/* 체중 변화 섹션 */}
       {insight.weightChangeInsight && (

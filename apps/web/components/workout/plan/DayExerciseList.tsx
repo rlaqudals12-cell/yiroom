@@ -41,16 +41,16 @@ export function DayExerciseList({
   if (day.isRestDay) {
     return (
       <div
-        className="bg-gray-50 rounded-2xl p-6 text-center"
+        className="bg-muted rounded-2xl p-6 text-center"
         data-testid="day-exercise-list-rest"
       >
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Coffee className="w-8 h-8 text-gray-400" />
+        <div className="w-16 h-16 bg-muted/80 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Coffee className="w-8 h-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-bold text-gray-700 mb-2">
+        <h3 className="text-lg font-bold text-foreground mb-2">
           {day.dayLabel} - 휴식일
         </h3>
-        <p className="text-gray-500 text-sm">
+        <p className="text-muted-foreground text-sm">
           오늘은 충분한 휴식을 취하세요.<br />
           근육이 회복되는 중요한 시간이에요.
         </p>
@@ -60,20 +60,20 @@ export function DayExerciseList({
 
   return (
     <div
-      className="bg-white rounded-2xl shadow-sm border border-gray-100"
+      className="bg-card rounded-2xl shadow-sm border border-border"
       data-testid="day-exercise-list"
     >
       {/* 헤더 */}
-      <div className="px-5 py-4 border-b border-gray-100">
+      <div className="px-5 py-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-bold text-gray-900">{day.dayLabel} 운동</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="font-bold text-foreground">{day.dayLabel} 운동</h3>
+            <p className="text-sm text-muted-foreground">
               {day.focus?.map((p) => BODY_PART_LABELS[p] || p).join(', ') || '전신'} 집중
             </p>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1 text-gray-600">
+            <div className="flex items-center gap-1 text-muted-foreground">
               <Clock className="w-4 h-4" />
               <span>{day.estimatedMinutes}분</span>
             </div>
@@ -86,7 +86,7 @@ export function DayExerciseList({
       </div>
 
       {/* 운동 리스트 */}
-      <div className="divide-y divide-gray-50">
+      <div className="divide-y divide-border/50">
         {day.exercises.map((exercise, index) => {
           const details = calculateExerciseDetails(exercise, workoutType, userWeight);
           // 난이도가 없는 경우 기본값 처리
@@ -96,7 +96,7 @@ export function DayExerciseList({
             <button
               key={exercise.id}
               onClick={() => onExerciseClick?.(exercise.id)}
-              className="w-full px-5 py-4 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
+              className="w-full px-5 py-4 flex items-center gap-4 hover:bg-muted transition-colors text-left"
             >
               {/* 번호 */}
               <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -106,14 +106,14 @@ export function DayExerciseList({
               {/* 운동 정보 */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-medium text-gray-900 truncate">
+                  <h4 className="font-medium text-foreground truncate">
                     {exercise.name}
                   </h4>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${difficulty.color}`}>
                     {difficulty.label}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-500">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <span>{details.sets}세트</span>
                   <span>×</span>
                   <span>{details.reps}회</span>
@@ -131,7 +131,7 @@ export function DayExerciseList({
                 <span className="text-sm text-orange-500 font-medium">
                   {details.estimatedCalories}kcal
                 </span>
-                <ChevronRight className="w-5 h-5 text-gray-300" />
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </div>
             </button>
           );
@@ -140,7 +140,7 @@ export function DayExerciseList({
 
       {/* 운동이 없는 경우 */}
       {day.exercises.length === 0 && (
-        <div className="p-8 text-center text-gray-400">
+        <div className="p-8 text-center text-muted-foreground">
           <Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" />
           <p className="text-sm">이 날의 운동이 없습니다</p>
         </div>

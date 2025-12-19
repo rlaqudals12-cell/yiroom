@@ -212,16 +212,16 @@ export default function FastingTimer({
     return (
       <div
         data-testid="fasting-timer"
-        className="rounded-2xl bg-white p-4 shadow-sm border border-gray-100"
+        className="rounded-2xl bg-card p-4 shadow-sm border border-border/50"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-              <Moon className="w-5 h-5 text-gray-400" />
+            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+              <Moon className="w-5 h-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="font-medium text-gray-900">간헐적 단식</p>
-              <p className="text-sm text-gray-500">단식 타이머를 활성화하세요</p>
+              <p className="font-medium text-foreground">간헐적 단식</p>
+              <p className="text-sm text-muted-foreground">단식 타이머를 활성화하세요</p>
             </div>
           </div>
           <button
@@ -240,7 +240,7 @@ export default function FastingTimer({
     return (
       <div
         data-testid="fasting-timer-compact"
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow-sm border border-gray-100"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card shadow-sm border border-border/50"
       >
         <div
           data-testid="fasting-status-icon"
@@ -259,7 +259,7 @@ export default function FastingTimer({
         </span>
         <span
           data-testid="remaining-time"
-          className="text-sm text-gray-500"
+          className="text-sm text-muted-foreground"
         >
           {formatRemainingTime(remainingMinutes)}
         </span>
@@ -271,7 +271,7 @@ export default function FastingTimer({
   return (
     <div
       data-testid="fasting-timer"
-      className="rounded-2xl bg-white p-4 shadow-sm border border-gray-100"
+      className="rounded-2xl bg-card p-4 shadow-sm border border-border/50"
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
@@ -284,9 +284,9 @@ export default function FastingTimer({
         <button
           onClick={handleSettingsClick}
           aria-label="단식 설정"
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-full hover:bg-muted transition-colors"
         >
-          <Settings className="w-5 h-5 text-gray-500" />
+          <Settings className="w-5 h-5 text-muted-foreground" />
         </button>
       </div>
 
@@ -310,7 +310,7 @@ export default function FastingTimer({
           </p>
           <p
             data-testid="remaining-time"
-            className="text-sm text-gray-600 flex items-center gap-1"
+            className="text-sm text-muted-foreground flex items-center gap-1"
           >
             <Clock className="w-3 h-3" />
             남은 시간: {formatRemainingTime(remainingMinutes)}
@@ -323,7 +323,7 @@ export default function FastingTimer({
         data-testid="fasting-progress"
         className="mb-4"
       >
-        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-300 ${
               isFasting ? 'bg-purple-500' : 'bg-green-500'
@@ -335,13 +335,13 @@ export default function FastingTimer({
 
       {/* 시간 정보 */}
       <div className="grid grid-cols-2 gap-3 text-sm">
-        <div className="bg-gray-50 rounded-lg p-2">
-          <p className="text-gray-500 text-xs">단식 시작</p>
-          <p className="font-medium text-gray-900">{fastingStartTime}</p>
+        <div className="bg-muted/50 rounded-lg p-2">
+          <p className="text-muted-foreground text-xs">단식 시작</p>
+          <p className="font-medium text-foreground">{fastingStartTime}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2">
-          <p className="text-gray-500 text-xs">식사 가능 시간</p>
-          <p className="font-medium text-gray-900">
+        <div className="bg-muted/50 rounded-lg p-2">
+          <p className="text-muted-foreground text-xs">식사 가능 시간</p>
+          <p className="font-medium text-foreground">
             {formatTime(eatingStartHour, eatingStartMinute)} ~ {formatTime(eatingEndHour, eatingEndMinute)}
           </p>
         </div>

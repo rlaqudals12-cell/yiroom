@@ -54,11 +54,11 @@ const CelebrityRoutineCard = memo(function CelebrityRoutineCard({
         data-testid="celebrity-routine-card"
         className="bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 rounded-2xl p-6 border border-purple-100"
       >
-        <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 mb-4">
+        <h3 className="flex items-center gap-2 text-lg font-bold text-foreground mb-4">
           <Star className="w-5 h-5 text-purple-500" />
           연예인 루틴
         </h3>
-        <div className="text-center py-6 text-gray-400">
+        <div className="text-center py-6 text-muted-foreground">
           <User className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">아직 매칭된 연예인이 없습니다</p>
           <p className="text-xs mt-1">
@@ -75,7 +75,7 @@ const CelebrityRoutineCard = memo(function CelebrityRoutineCard({
       className="bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 rounded-2xl p-6 border border-purple-100"
     >
       {/* 헤더 */}
-      <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 mb-2">
+      <h3 className="flex items-center gap-2 text-lg font-bold text-foreground mb-2">
         <Star className="w-5 h-5 text-purple-500" />
         연예인 루틴
       </h3>
@@ -93,7 +93,7 @@ const CelebrityRoutineCard = memo(function CelebrityRoutineCard({
             <div
               key={result.celebrity.id}
               data-testid={`celebrity-item-${result.celebrity.id}`}
-              className="bg-white rounded-xl p-4 border border-purple-100 hover:border-purple-300 transition-colors"
+              className="bg-card rounded-xl p-4 border border-purple-100 hover:border-purple-300 transition-colors"
             >
               <div className="flex items-start gap-3">
                 {/* 아이콘 */}
@@ -105,11 +105,11 @@ const CelebrityRoutineCard = memo(function CelebrityRoutineCard({
                 <div className="flex-1 min-w-0">
                   {/* 이름 & 그룹 */}
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-gray-900">
+                    <span className="font-bold text-foreground">
                       {displayInfo.name}
                     </span>
                     {displayInfo.group && (
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-muted-foreground">
                         ({displayInfo.group})
                       </span>
                     )}
@@ -121,7 +121,7 @@ const CelebrityRoutineCard = memo(function CelebrityRoutineCard({
                   </div>
 
                   {/* 상세 정보 */}
-                  <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">
+                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-2">
                     <span>체형: {displayInfo.bodyType}</span>
                     <span>•</span>
                     <span>PC: {displayInfo.personalColor}</span>
@@ -132,7 +132,7 @@ const CelebrityRoutineCard = memo(function CelebrityRoutineCard({
                     {displayInfo.routineTypes.map((routineType) => (
                       <span
                         key={routineType}
-                        className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full"
+                        className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full"
                       >
                         {routineType}
                       </span>
@@ -159,17 +159,17 @@ const CelebrityRoutineCard = memo(function CelebrityRoutineCard({
 
               {/* 추천 루틴 정보 */}
               {result.recommendedRoutine && (
-                <div className="mt-3 pt-3 border-t border-gray-100">
+                <div className="mt-3 pt-3 border-t border-border/50">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-700">
+                      <p className="text-sm font-medium text-foreground/80">
                         {result.recommendedRoutine.name}
                       </p>
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                         {result.recommendedRoutine.description}
                       </p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
                 </div>
               )}
@@ -180,7 +180,7 @@ const CelebrityRoutineCard = memo(function CelebrityRoutineCard({
 
       {/* 더보기 안내 */}
       {matchResults.length > 0 && (
-        <p className="text-center text-xs text-gray-400 mt-4">
+        <p className="text-center text-xs text-muted-foreground mt-4">
           {matchResults[0].matchType === 'exact'
             ? `${matchResults.length}명의 연예인이 같은 체형+PC 타입이에요`
             : '비슷한 체형의 연예인 루틴을 추천해드려요'}

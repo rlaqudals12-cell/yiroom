@@ -30,20 +30,20 @@ export function SetTracker({
       return <Check className="w-4 h-4 text-status-success" />;
     }
     if (set.status === 'skipped') {
-      return <X className="w-4 h-4 text-gray-400" />;
+      return <X className="w-4 h-4 text-muted-foreground" />;
     }
     if (index === currentSetIndex) {
       return <Circle className="w-4 h-4 text-primary fill-primary" />;
     }
-    return <Circle className="w-4 h-4 text-gray-300" />;
+    return <Circle className="w-4 h-4 text-muted" />;
   };
 
   // 세트 배경색
   const getSetBgColor = (set: SetRecord, index: number) => {
     if (set.status === 'completed') return 'bg-status-success/10 border-status-success/30';
-    if (set.status === 'skipped') return 'bg-gray-50 border-gray-200';
+    if (set.status === 'skipped') return 'bg-muted/50 border-border';
     if (index === currentSetIndex) return 'bg-primary/10 border-primary/50';
-    return 'bg-white border-gray-200';
+    return 'bg-card border-border';
   };
 
   return (
@@ -57,10 +57,10 @@ export function SetTracker({
               set.status === 'completed'
                 ? 'bg-status-success'
                 : set.status === 'skipped'
-                  ? 'bg-gray-300'
+                  ? 'bg-muted-foreground'
                   : index === currentSetIndex
                     ? 'bg-primary'
-                    : 'bg-gray-200'
+                    : 'bg-muted'
             }`}
           />
         ))}
@@ -74,14 +74,14 @@ export function SetTracker({
             className={`flex items-center justify-between p-3 rounded-xl border transition-all ${getSetBgColor(set, index)}`}
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-white border flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-card border flex items-center justify-center">
                 {getSetIcon(set, index)}
               </div>
               <div>
-                <span className="font-medium text-gray-900">
+                <span className="font-medium text-foreground">
                   세트 {set.setNumber}
                 </span>
-                <span className="text-sm text-gray-500 ml-2">
+                <span className="text-sm text-muted-foreground ml-2">
                   {set.targetReps}회
                   {set.targetWeight && ` × ${set.targetWeight}kg`}
                 </span>
@@ -98,7 +98,7 @@ export function SetTracker({
 
             {/* 건너뛴 세트 */}
             {set.status === 'skipped' && (
-              <span className="text-sm text-gray-400">건너뜀</span>
+              <span className="text-sm text-muted-foreground">건너뜀</span>
             )}
           </div>
         ))}
@@ -109,7 +109,7 @@ export function SetTracker({
         <div className="flex gap-3 mt-4">
           <button
             onClick={onSkipSet}
-            className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1 py-3 px-4 rounded-xl border border-border text-muted-foreground font-medium hover:bg-muted transition-colors"
             aria-label={`세트 ${currentSet.setNumber} 건너뛰기`}
           >
             건너뛰기

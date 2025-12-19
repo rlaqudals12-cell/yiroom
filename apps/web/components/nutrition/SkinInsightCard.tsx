@@ -69,12 +69,12 @@ function NoAnalysisCard({
     >
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="w-5 h-5 text-module-skin" />
-        <h3 className="text-sm font-semibold text-gray-900">피부 연동 인사이트</h3>
+        <h3 className="text-sm font-semibold text-foreground">피부 연동 인사이트</h3>
       </div>
 
-      <div className="bg-white/60 rounded-xl p-4 text-center">
+      <div className="bg-card/60 rounded-xl p-4 text-center">
         <AlertCircle className="w-10 h-10 text-module-skin/50 mx-auto mb-2" />
-        <p className="text-sm text-gray-600 mb-3">
+        <p className="text-sm text-muted-foreground mb-3">
           S-1 피부 분석을 완료하면
           <br />
           맞춤 영양 추천을 받을 수 있어요!
@@ -124,21 +124,21 @@ function FoodRecommendationItem({
           {recommendation.icon}
         </span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900">{recommendation.title}</p>
-          <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
+          <p className="text-sm font-medium text-foreground">{recommendation.title}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
             {recommendation.description}
           </p>
           <div className="flex flex-wrap gap-1 mt-2">
             {recommendation.foods.slice(0, 4).map((food) => (
               <span
                 key={food}
-                className="inline-block px-2 py-0.5 bg-white rounded-full text-xs text-gray-700 border border-gray-200"
+                className="inline-block px-2 py-0.5 bg-card rounded-full text-xs text-foreground border border-border"
               >
                 {food}
               </span>
             ))}
             {recommendation.foods.length > 4 && (
-              <span className="inline-block px-2 py-0.5 text-xs text-gray-500">
+              <span className="inline-block px-2 py-0.5 text-xs text-muted-foreground">
                 +{recommendation.foods.length - 4}
               </span>
             )}
@@ -176,11 +176,11 @@ function HydrationInsightSection({
         <Droplets className="w-4 h-4 text-blue-500" />
         <span className="text-xs font-medium text-blue-700">수분 × 피부 연동</span>
       </div>
-      <p className="text-sm text-gray-700">{insight.message}</p>
+      <p className="text-sm text-foreground">{insight.message}</p>
 
       {insight.currentMl !== undefined && (
         <div className="mt-2">
-          <div className="flex justify-between text-xs text-gray-500 mb-1">
+          <div className="flex justify-between text-xs text-muted-foreground mb-1">
             <span>{insight.currentMl.toLocaleString()}ml</span>
             <span>{insight.targetMl.toLocaleString()}ml</span>
           </div>
@@ -240,12 +240,12 @@ export default function SkinInsightCard({
       >
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-5 h-5 text-module-skin" />
-          <h3 className="text-sm font-semibold text-gray-900">피부 연동 인사이트</h3>
+          <h3 className="text-sm font-semibold text-foreground">피부 연동 인사이트</h3>
         </div>
 
-        <div className="bg-white/60 rounded-xl p-4 text-center">
+        <div className="bg-card/60 rounded-xl p-4 text-center">
           <span className="text-3xl">✨</span>
-          <p className="text-sm text-gray-600 mt-2">{insight.summaryMessage}</p>
+          <p className="text-sm text-muted-foreground mt-2">{insight.summaryMessage}</p>
         </div>
 
         {insight.hydrationInsight && (
@@ -265,11 +265,11 @@ export default function SkinInsightCard({
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-2">
         <Sparkles className="w-5 h-5 text-module-skin" />
-        <h3 className="text-sm font-semibold text-gray-900">피부 연동 인사이트</h3>
+        <h3 className="text-sm font-semibold text-foreground">피부 연동 인사이트</h3>
       </div>
 
       {/* 요약 메시지 */}
-      <p className="text-xs text-gray-600 mb-3">{insight.summaryMessage}</p>
+      <p className="text-xs text-muted-foreground mb-3">{insight.summaryMessage}</p>
 
       {/* 음식 추천 목록 */}
       <div className="space-y-2">

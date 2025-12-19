@@ -7,7 +7,8 @@ import { CategoryTabs } from './CategoryTabs';
 import { ProductGrid } from './ProductGrid';
 import { ProductSort } from './ProductSort';
 import { ProductSearch } from './ProductSearch';
-import { ProductFilters, type ProductFilterState } from './ProductFilters';
+import type { ProductFilterState } from './ProductFilters';
+import { ProductFiltersDynamic } from './dynamic';
 import type { ProductCategory, AnyProduct, ProductSortBy, CosmeticProduct } from '@/types/product';
 import { getProductsByCategory, searchProducts } from '@/lib/products';
 
@@ -198,9 +199,9 @@ export function ProductsPageClient() {
       {/* 카테고리 탭 */}
       <CategoryTabs value={category} onValueChange={handleCategoryChange} />
 
-      {/* 필터 (화장품 관련 카테고리만) */}
+      {/* 필터 (화장품 관련 카테고리만) - Dynamic Import */}
       {isFilterableCategory && (
-        <ProductFilters
+        <ProductFiltersDynamic
           filters={filters}
           onFiltersChange={handleFiltersChange}
         />

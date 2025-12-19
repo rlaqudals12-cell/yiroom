@@ -26,20 +26,20 @@ const PRIORITY_STYLES = {
 function TipCard({ tip }: { tip: SkinCareTip }) {
   return (
     <div
-      className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100"
+      className="flex items-start gap-3 p-3 bg-card rounded-lg border border-border/50"
       data-testid="skin-tip-card"
     >
       <span className="text-xl flex-shrink-0">{tip.icon}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-medium text-gray-900 text-sm">{tip.title}</span>
+          <span className="font-medium text-foreground text-sm">{tip.title}</span>
           <span
             className={`text-xs px-1.5 py-0.5 rounded-full border ${PRIORITY_STYLES[tip.priority]}`}
           >
             {tip.priority === 'high' ? '중요' : tip.priority === 'medium' ? '권장' : '팁'}
           </span>
         </div>
-        <p className="text-xs text-gray-600 leading-relaxed">{tip.description}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">{tip.description}</p>
       </div>
     </div>
   );
@@ -78,7 +78,7 @@ export default function PostWorkoutSkinCareCard({
               <Droplets className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
+              <h3 className="font-bold text-foreground flex items-center gap-2">
                 {quickMessage.icon} {quickMessage.title}
                 {hasHighPriorityTips && (
                   <AlertTriangle className="w-4 h-4 text-amber-500" />
@@ -89,7 +89,7 @@ export default function PostWorkoutSkinCareCard({
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 rounded-lg hover:bg-white/50 transition-colors text-cyan-600"
+            className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-cyan-600"
             aria-label={isExpanded ? '접기' : '펼치기'}
           >
             {isExpanded ? (
@@ -109,7 +109,7 @@ export default function PostWorkoutSkinCareCard({
             <div data-testid="immediate-actions">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-4 h-4 text-cyan-500" />
-                <span className="text-sm font-medium text-gray-700">지금 바로</span>
+                <span className="text-sm font-medium text-foreground/80">지금 바로</span>
               </div>
               <div className="space-y-2">
                 {tips.immediateActions.map((tip, index) => (
@@ -124,7 +124,7 @@ export default function PostWorkoutSkinCareCard({
             <div data-testid="skin-metric-tips">
               <div className="flex items-center gap-2 mb-2">
                 <Droplets className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-foreground/80">
                   내 피부 맞춤 케어
                 </span>
               </div>
@@ -140,7 +140,7 @@ export default function PostWorkoutSkinCareCard({
           {tips.generalTips.length > 0 && (
             <div data-testid="general-tips">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-gray-500">추가 팁</span>
+                <span className="text-sm font-medium text-muted-foreground">추가 팁</span>
               </div>
               <div className="space-y-2">
                 {tips.generalTips.map((tip, index) => (
@@ -152,8 +152,8 @@ export default function PostWorkoutSkinCareCard({
 
           {/* S-1 분석 없을 때 안내 + 피부 분석 유도 */}
           {!skinAnalysis && (
-            <div className="text-center py-4 bg-white/50 rounded-lg" data-testid="skin-analysis-cta">
-              <p className="text-xs text-gray-500 mb-3">
+            <div className="text-center py-4 bg-muted/50 rounded-lg" data-testid="skin-analysis-cta">
+              <p className="text-xs text-muted-foreground mb-3">
                 피부 분석을 완료하면 더 맞춤화된 팁을 받을 수 있어요!
               </p>
               <Link

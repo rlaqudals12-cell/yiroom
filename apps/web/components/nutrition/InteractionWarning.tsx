@@ -62,7 +62,7 @@ export function InteractionWarning({
           </CardTitle>
           <ChevronDown
             className={cn(
-              'h-4 w-4 text-gray-500 transition-transform',
+              'h-4 w-4 text-muted-foreground transition-transform',
               expanded && 'rotate-180'
             )}
           />
@@ -70,10 +70,10 @@ export function InteractionWarning({
       </CardHeader>
 
       <CardContent className="pt-0">
-        <p className="text-xs text-gray-600 mb-2">{analysis.summary}</p>
+        <p className="text-xs text-muted-foreground mb-2">{analysis.summary}</p>
 
         {expanded && (
-          <div className="space-y-3 pt-2 border-t border-gray-200/50">
+          <div className="space-y-3 pt-2 border-t border-border/50">
             {/* 경고 목록 */}
             {analysis.warnings.map((interaction, idx) => (
               <InteractionItem key={`warning-${idx}`} interaction={interaction} />
@@ -143,7 +143,7 @@ function InteractionItem({ interaction }: InteractionItemProps) {
         <Icon className={cn('h-4 w-4 mt-0.5 flex-shrink-0', config.color)} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="font-medium text-sm text-gray-800">
+            <span className="font-medium text-sm text-foreground">
               {interaction.ingredients[0]} + {interaction.ingredients[1]}
             </span>
             <Badge variant="secondary" className={cn('text-xs', config.badgeColor)}>
@@ -155,8 +155,8 @@ function InteractionItem({ interaction }: InteractionItemProps) {
               </Badge>
             )}
           </div>
-          <p className="text-xs text-gray-600 mb-1">{interaction.description}</p>
-          <p className="text-xs text-gray-800 font-medium">
+          <p className="text-xs text-muted-foreground mb-1">{interaction.description}</p>
+          <p className="text-xs text-foreground font-medium">
             💡 {interaction.recommendation}
           </p>
         </div>

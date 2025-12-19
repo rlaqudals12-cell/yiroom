@@ -73,7 +73,7 @@ export default function QuickActionBar({
         fixed
           ? 'fixed bottom-0 left-0 right-0 z-20'
           : ''
-      } bg-white border-t border-gray-100 shadow-lg`}
+      } bg-card border-t border-border/50 shadow-lg`}
       data-testid="quick-action-bar"
     >
       <div className="max-w-[480px] mx-auto px-4 py-3">

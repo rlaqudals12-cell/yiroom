@@ -154,11 +154,11 @@ export default function CrossModuleAlert({
               <h3 className={cn('font-semibold text-sm', styles.text)}>
                 {alert.title}
               </h3>
-              <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+              <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                 {MODULE_LABELS[alert.sourceModule]} → {MODULE_LABELS[alert.targetModule]}
               </span>
             </div>
-            <p className="text-xs text-gray-600 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {alert.message}
             </p>
           </div>
@@ -171,7 +171,7 @@ export default function CrossModuleAlert({
             aria-label="알림 닫기"
             data-testid="cross-module-alert-dismiss"
           >
-            <X className="w-4 h-4 text-gray-500" />
+            <X className="w-4 h-4 text-muted-foreground" />
           </button>
         )}
       </div>
@@ -274,17 +274,17 @@ export function CrossModuleAlertList({
 export function CrossModuleAlertSkeleton() {
   return (
     <div
-      className="rounded-xl p-4 border border-gray-200 bg-gray-50 animate-pulse"
+      className="rounded-xl p-4 border border-border bg-muted animate-pulse"
       data-testid="cross-module-alert-skeleton"
     >
       <div className="flex items-start gap-2 mb-3">
-        <div className="w-5 h-5 rounded-full bg-gray-300" />
+        <div className="w-5 h-5 rounded-full bg-muted-foreground/30" />
         <div className="flex-1">
-          <div className="w-32 h-4 bg-gray-300 rounded mb-1" />
-          <div className="w-48 h-3 bg-gray-200 rounded" />
+          <div className="w-32 h-4 bg-muted-foreground/30 rounded mb-1" />
+          <div className="w-48 h-3 bg-muted-foreground/20 rounded" />
         </div>
       </div>
-      <div className="w-full h-12 bg-gray-300 rounded-lg" />
+      <div className="w-full h-12 bg-muted-foreground/30 rounded-lg" />
     </div>
   );
 }

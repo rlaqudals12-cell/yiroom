@@ -66,7 +66,7 @@ const RecommendedExerciseList = memo(function RecommendedExerciseList({
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               selectedCategory === filter.id
                 ? 'bg-indigo-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
             }`}
           >
             {filter.label} ({categoryCounts[filter.id] || 0})
@@ -86,7 +86,7 @@ const RecommendedExerciseList = memo(function RecommendedExerciseList({
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-400">
+        <div className="text-center py-8 text-muted-foreground">
           <p>해당 카테고리의 운동이 없습니다.</p>
         </div>
       )}
@@ -95,7 +95,7 @@ const RecommendedExerciseList = memo(function RecommendedExerciseList({
       {hasMore && (
         <button
           onClick={() => setShowAll(true)}
-          className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+          className="w-full py-3 bg-muted text-muted-foreground font-medium rounded-xl hover:bg-muted/80 transition-colors"
         >
           더보기 ({filteredExercises.length - 6}개 더)
         </button>
@@ -105,7 +105,7 @@ const RecommendedExerciseList = memo(function RecommendedExerciseList({
       {showAll && filteredExercises.length > 6 && (
         <button
           onClick={() => setShowAll(false)}
-          className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+          className="w-full py-3 bg-muted text-muted-foreground font-medium rounded-xl hover:bg-muted/80 transition-colors"
         >
           접기
         </button>

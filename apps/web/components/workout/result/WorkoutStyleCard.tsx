@@ -60,7 +60,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
 
   return (
     <div
-      className={`bg-white rounded-2xl shadow-sm border ${theme.border} overflow-hidden`}
+      className={`bg-card rounded-2xl shadow-sm border ${theme.border} overflow-hidden`}
       data-testid="workout-style-card"
     >
       {/* 헤더 */}
@@ -71,7 +71,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
               <Shirt className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900">운동복 스타일 가이드</h3>
+              <h3 className="font-bold text-foreground">운동복 스타일 가이드</h3>
               <p className={`text-sm ${theme.text}`}>
                 {emoji} {label} 맞춤 추천
               </p>
@@ -79,7 +79,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`p-2 rounded-lg hover:bg-white/50 transition-colors ${theme.text}`}
+            className={`p-2 rounded-lg hover:bg-muted/50 transition-colors ${theme.text}`}
             aria-label={isExpanded ? '접기' : '펼치기'}
           >
             {isExpanded ? (
@@ -92,31 +92,31 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
       </div>
 
       {/* 스타일 팁 (항상 표시) */}
-      <div className="p-4 border-b border-gray-100">
+      <div className="p-4 border-b border-border/50">
         <div className="flex items-start gap-2">
           <Sparkles className={`w-4 h-4 ${theme.text} mt-0.5 flex-shrink-0`} />
-          <p className="text-sm text-gray-700">{recommendation.styleTip}</p>
+          <p className="text-sm text-foreground/80">{recommendation.styleTip}</p>
         </div>
       </div>
 
       {/* 추천 색상 (항상 표시) */}
       <div className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Palette className="w-4 h-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">추천 색상</span>
+          <Palette className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground/80">추천 색상</span>
         </div>
         <div className="flex gap-2 flex-wrap" data-testid="recommended-colors">
           {recommendation.recommendedColors.map((color) => (
             <div
               key={color.hex}
-              className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full"
+              className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full"
             >
               <div
-                className="w-4 h-4 rounded-full border border-gray-200"
+                className="w-4 h-4 rounded-full border border-border"
                 style={{ backgroundColor: color.hex }}
                 aria-label={color.name}
               />
-              <span className="text-xs text-gray-600">{color.name}</span>
+              <span className="text-xs text-muted-foreground">{color.name}</span>
             </div>
           ))}
         </div>
@@ -124,24 +124,24 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
 
       {/* 확장 영역 */}
       {isExpanded && (
-        <div className="border-t border-gray-100">
+        <div className="border-t border-border/50">
           {/* 피해야 할 색상 */}
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-medium text-gray-700">피해야 할 색상</span>
+              <span className="text-sm font-medium text-foreground/80">피해야 할 색상</span>
             </div>
             <div className="flex gap-2 flex-wrap" data-testid="avoid-colors">
               {recommendation.avoidColors.map((color) => (
                 <div
                   key={color.hex}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-red-50 rounded-full"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-950/30 rounded-full"
                 >
                   <div
-                    className="w-4 h-4 rounded-full border border-gray-200"
+                    className="w-4 h-4 rounded-full border border-border"
                     style={{ backgroundColor: color.hex }}
                     aria-label={color.name}
                   />
-                  <span className="text-xs text-red-600">{color.name}</span>
+                  <span className="text-xs text-red-600 dark:text-red-400">{color.name}</span>
                 </div>
               ))}
             </div>
@@ -149,29 +149,29 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
 
           {/* 핏 추천 (체형이 있을 때만) */}
           {recommendation.fitRecommendation && (
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-4 border-b border-border/50">
               <div className="flex items-center gap-2 mb-3">
-                <Shirt className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">
+                <Shirt className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground/80">
                   {bodyType}자 체형 맞춤 핏
                 </span>
               </div>
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
-                  <span className="text-xs text-gray-500 w-12 flex-shrink-0">상의</span>
-                  <span className="text-sm text-gray-700">
+                  <span className="text-xs text-muted-foreground w-12 flex-shrink-0">상의</span>
+                  <span className="text-sm text-foreground/80">
                     {recommendation.fitRecommendation.top}
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-xs text-gray-500 w-12 flex-shrink-0">하의</span>
-                  <span className="text-sm text-gray-700">
+                  <span className="text-xs text-muted-foreground w-12 flex-shrink-0">하의</span>
+                  <span className="text-sm text-foreground/80">
                     {recommendation.fitRecommendation.bottom}
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-xs text-red-500 w-12 flex-shrink-0">피하기</span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-muted-foreground">
                     {recommendation.fitRecommendation.avoid.join(', ')}
                   </span>
                 </div>
@@ -180,26 +180,26 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
           )}
 
           {/* 운동 소품 추천 */}
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Package className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">운동 소품 색상</span>
+              <Package className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground/80">운동 소품 색상</span>
             </div>
             <div className="grid grid-cols-2 gap-2" data-testid="accessories">
               {recommendation.accessories.map((accessory) => (
                 <div
                   key={accessory.item}
-                  className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg"
+                  className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg"
                 >
                   <div
-                    className="w-6 h-6 rounded-full border border-gray-200"
+                    className="w-6 h-6 rounded-full border border-border"
                     style={{ backgroundColor: accessory.hex }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-700 truncate">
+                    <p className="text-xs font-medium text-foreground/80 truncate">
                       {accessory.item}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {accessory.colorName}
                     </p>
                   </div>
@@ -211,21 +211,21 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
           {/* 운동 분위기 */}
           <div className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">어울리는 운동 분위기</span>
+              <Sparkles className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground/80">어울리는 운동 분위기</span>
             </div>
             <div className={`p-3 rounded-xl ${theme.bgLight}`}>
               <p className={`text-sm font-medium ${theme.text} mb-2`}>
                 {recommendation.ambient.mood} 분위기
               </p>
-              <p className="text-xs text-gray-600 mb-2">
+              <p className="text-xs text-muted-foreground mb-2">
                 {recommendation.ambient.environment}
               </p>
               <div className="flex flex-wrap gap-1">
                 {recommendation.ambient.activities.map((activity) => (
                   <span
                     key={activity}
-                    className="text-xs px-2 py-0.5 bg-white rounded-full text-gray-600"
+                    className="text-xs px-2 py-0.5 bg-card rounded-full text-muted-foreground"
                   >
                     {activity}
                   </span>
@@ -235,10 +235,10 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
           </div>
 
           {/* 쇼핑 링크 */}
-          <div className="p-4 bg-gray-50" data-testid="shopping-section">
+          <div className="p-4 bg-muted/50" data-testid="shopping-section">
             <div className="flex items-center gap-2 mb-3">
-              <ShoppingBag className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">쇼핑몰에서 찾아보기</span>
+              <ShoppingBag className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground/80">쇼핑몰에서 찾아보기</span>
             </div>
 
             {/* 카테고리 선택 */}
@@ -254,7 +254,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
                   className={`px-3 py-1.5 text-xs rounded-full transition-colors ${
                     selectedCategory === cat.value
                       ? `${theme.bg} text-white`
-                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
+                      : 'bg-card text-muted-foreground border border-border hover:bg-muted'
                   }`}
                   aria-pressed={selectedCategory === cat.value}
                 >
@@ -269,22 +269,22 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
                 <button
                   key={link.platform}
                   onClick={() => handleShopClick(link.url)}
-                  className="w-full py-2.5 px-4 flex items-center justify-between bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all group"
+                  className="w-full py-2.5 px-4 flex items-center justify-between bg-card rounded-lg border border-border hover:border-border/80 hover:shadow-sm transition-all group"
                   data-testid={`shop-link-${link.platform}`}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{link.icon}</span>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-foreground/80">
                       {link.platformName}
                     </span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 </button>
               ))}
             </div>
 
             {/* 색상 힌트 */}
-            <p className="text-xs text-gray-400 mt-3 text-center">
+            <p className="text-xs text-muted-foreground mt-3 text-center">
               {emoji} {label} 타입에 어울리는 색상으로 검색됩니다
             </p>
           </div>

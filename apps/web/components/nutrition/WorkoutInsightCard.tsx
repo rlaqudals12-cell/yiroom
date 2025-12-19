@@ -102,21 +102,21 @@ function CalorieBalanceSection({
       {/* 칼로리 요약 */}
       <div className="grid grid-cols-3 gap-2 text-center mb-3">
         <div>
-          <p className="text-xs text-gray-500">섭취</p>
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-xs text-muted-foreground">섭취</p>
+          <p className="text-sm font-semibold text-foreground">
             {intake.toLocaleString()}
             <span className="text-xs font-normal">kcal</span>
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-500">소모</p>
+          <p className="text-xs text-muted-foreground">소모</p>
           <p className="text-sm font-semibold text-module-workout">
             -{burned.toLocaleString()}
             <span className="text-xs font-normal">kcal</span>
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-500">순 칼로리</p>
+          <p className="text-xs text-muted-foreground">순 칼로리</p>
           <p className={cn('text-sm font-semibold', colors.text)}>
             {net.toLocaleString()}
             <span className="text-xs font-normal">kcal</span>
@@ -126,11 +126,11 @@ function CalorieBalanceSection({
 
       {/* 진행률 바 */}
       <div className="mb-2">
-        <div className="flex justify-between text-xs text-gray-500 mb-1">
+        <div className="flex justify-between text-xs text-muted-foreground mb-1">
           <span>0</span>
           <span>목표 {target.toLocaleString()}kcal</span>
         </div>
-        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
           <div
             className={cn(
               'h-full rounded-full transition-all duration-500',
@@ -169,12 +169,12 @@ function WorkoutSummarySection({
   if (workoutCount === 0) {
     return (
       <div
-        className="flex items-center justify-between bg-gray-50 rounded-xl p-3 border border-gray-100"
+        className="flex items-center justify-between bg-muted/50 rounded-xl p-3 border border-border/50"
         data-testid="workout-summary-empty"
       >
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-500">오늘 운동 기록 없음</span>
+          <Activity className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">오늘 운동 기록 없음</span>
         </div>
       </div>
     );
@@ -190,10 +190,10 @@ function WorkoutSummarySection({
           <Dumbbell className="w-5 h-5 text-module-workout" />
         </div>
         <div>
-          <p className="text-sm font-medium text-gray-900">
+          <p className="text-sm font-medium text-foreground">
             오늘 {workoutCount}회 운동 완료!
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             {totalDuration}분 · {totalCaloriesBurned.toLocaleString()}kcal 소모
           </p>
         </div>
@@ -268,8 +268,8 @@ export default function WorkoutInsightCard({
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-3">
         <Scale className="w-5 h-5 text-module-workout" />
-        <h3 className="text-sm font-semibold text-gray-900">칼로리 밸런스</h3>
-        <span className="text-xs text-gray-500 ml-auto">W-1 연동</span>
+        <h3 className="text-sm font-semibold text-foreground">칼로리 밸런스</h3>
+        <span className="text-xs text-muted-foreground ml-auto">W-1 연동</span>
       </div>
 
       {/* 운동 요약 */}

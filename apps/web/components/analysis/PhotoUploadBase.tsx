@@ -70,14 +70,14 @@ export default function PhotoUploadBase({
   return (
     <div className="space-y-6">
       {/* 가이드 영역 */}
-      <div className="relative aspect-[3/4] bg-gray-100 rounded-2xl overflow-hidden border-2 border-dashed border-gray-300">
+      <div className="relative aspect-[3/4] bg-muted rounded-2xl overflow-hidden border-2 border-dashed border-border">
         {/* 커스텀 가이드 오버레이 */}
         <div className="absolute inset-0 flex items-center justify-center">
           {guideElement}
         </div>
 
         {/* 가이드 텍스트 */}
-        <div className="absolute inset-0 flex flex-col items-center justify-end pb-8 text-gray-500">
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-8 text-muted-foreground">
           <p className="text-sm">{guideText}</p>
           <p className="text-sm">{guideSubText}</p>
         </div>

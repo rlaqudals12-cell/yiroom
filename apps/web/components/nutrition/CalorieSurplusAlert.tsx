@@ -125,7 +125,7 @@ export default function CalorieSurplusAlert({
             <h3 className={cn('font-semibold text-sm', styles.text)}>
               {alertLevel === 'danger' ? '칼로리 초과 주의!' : '칼로리 초과'}
             </h3>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-muted-foreground">
               목표 대비 <span className="font-medium">{surplusCalories}kcal</span> 초과
             </p>
           </div>
@@ -137,21 +137,21 @@ export default function CalorieSurplusAlert({
           aria-label="알림 닫기"
           data-testid="calorie-surplus-alert-dismiss"
         >
-          <X className="w-4 h-4 text-gray-500" />
+          <X className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
 
       {/* 운동 추천 정보 */}
-      <div className="bg-white/60 rounded-lg p-3 mb-3">
+      <div className="bg-card/60 rounded-lg p-3 mb-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
             <Activity className="w-5 h-5 text-orange-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-foreground">
               {insight.recommendation.recommendedDuration}분 운동으로 균형 맞추기
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               약 {insight.recommendation.estimatedCalories}kcal 소모 예상
             </p>
           </div>
@@ -180,26 +180,26 @@ export default function CalorieSurplusAlert({
 export function CalorieSurplusAlertSkeleton() {
   return (
     <div
-      className="rounded-xl p-4 border border-gray-200 bg-gray-50 animate-pulse"
+      className="rounded-xl p-4 border border-border bg-muted/50 animate-pulse"
       data-testid="calorie-surplus-alert-skeleton"
     >
       <div className="flex items-start gap-2 mb-3">
-        <div className="w-5 h-5 rounded-full bg-gray-300" />
+        <div className="w-5 h-5 rounded-full bg-muted" />
         <div className="flex-1">
-          <div className="w-24 h-4 bg-gray-300 rounded mb-1" />
-          <div className="w-32 h-3 bg-gray-200 rounded" />
+          <div className="w-24 h-4 bg-muted rounded mb-1" />
+          <div className="w-32 h-3 bg-muted/70 rounded" />
         </div>
       </div>
-      <div className="bg-white/60 rounded-lg p-3 mb-3">
+      <div className="bg-card/60 rounded-lg p-3 mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gray-300" />
+          <div className="w-10 h-10 rounded-full bg-muted" />
           <div className="flex-1">
-            <div className="w-40 h-4 bg-gray-300 rounded mb-1" />
-            <div className="w-28 h-3 bg-gray-200 rounded" />
+            <div className="w-40 h-4 bg-muted rounded mb-1" />
+            <div className="w-28 h-3 bg-muted/70 rounded" />
           </div>
         </div>
       </div>
-      <div className="w-full h-12 bg-gray-300 rounded-lg" />
+      <div className="w-full h-12 bg-muted rounded-lg" />
     </div>
   );
 }

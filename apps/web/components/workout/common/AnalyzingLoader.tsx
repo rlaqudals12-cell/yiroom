@@ -84,8 +84,8 @@ export default function AnalyzingLoader({
 
       {/* 텍스트 */}
       <div className="text-center space-y-2">
-        <p className="text-lg font-semibold text-gray-900">{title}</p>
-        <p className="text-sm text-gray-500 transition-opacity duration-300">
+        <p className="text-lg font-semibold text-foreground">{title}</p>
+        <p className="text-sm text-muted-foreground transition-opacity duration-300">
           {displaySubtitle}
         </p>
       </div>
@@ -93,13 +93,13 @@ export default function AnalyzingLoader({
       {/* 프로그레스 바 (선택적) */}
       {showProgress && (
         <div className="w-64">
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="text-xs text-gray-400 text-center mt-2">
+          <p className="text-xs text-muted-foreground text-center mt-2">
             {Math.round(progress)}% 완료
           </p>
         </div>
@@ -140,7 +140,7 @@ export function ErrorState({
         </svg>
       </div>
       <div className="text-center space-y-2">
-        <p className="text-lg font-semibold text-gray-900">{message}</p>
+        <p className="text-lg font-semibold text-foreground">{message}</p>
       </div>
       {onRetry && (
         <button

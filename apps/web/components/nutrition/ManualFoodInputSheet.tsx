@@ -161,7 +161,7 @@ export default function ManualFoodInputSheet({
 
       {/* 바텀 시트 */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-xl transform transition-transform max-h-[90vh] overflow-y-auto"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-xl transform transition-transform max-h-[90vh] overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="manual-food-input-title"
@@ -169,25 +169,25 @@ export default function ManualFoodInputSheet({
       >
         <div className="max-w-[480px] mx-auto">
           {/* 핸들 바 */}
-          <div className="flex justify-center pt-3 pb-2 sticky top-0 bg-white">
-            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          <div className="flex justify-center pt-3 pb-2 sticky top-0 bg-card">
+            <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
           </div>
 
           {/* 헤더 */}
-          <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100 sticky top-6 bg-white">
+          <div className="flex items-center justify-between px-4 pb-3 border-b border-border/50 sticky top-6 bg-card">
             <h2
               id="manual-food-input-title"
-              className="text-lg font-bold text-gray-900"
+              className="text-lg font-bold text-foreground"
             >
               음식 직접 입력
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-full hover:bg-muted transition-colors"
               aria-label="닫기"
               data-testid="close-button"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
 
@@ -196,7 +196,7 @@ export default function ManualFoodInputSheet({
             <div>
               <label
                 htmlFor="food-name"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 음식명 <span className="text-red-500">*</span>
               </label>
@@ -206,7 +206,7 @@ export default function ManualFoodInputSheet({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="예: 김치찌개, 샐러드"
-                className="w-full py-3 px-4 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors"
+                className="w-full py-3 px-4 rounded-xl border-2 border-border focus:border-orange-500 focus:outline-none transition-colors bg-background"
                 aria-label="음식명"
                 data-testid="food-name-input"
               />
@@ -214,7 +214,7 @@ export default function ManualFoodInputSheet({
 
             {/* 식사 타입 선택 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 식사 타입
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -226,7 +226,7 @@ export default function ManualFoodInputSheet({
                       'flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all',
                       mealType === meal.type
                         ? 'bg-orange-500 text-white border-orange-500'
-                        : 'bg-white text-gray-700 border-gray-200 hover:border-orange-300'
+                        : 'bg-card text-foreground border-border hover:border-orange-300'
                     )}
                     aria-pressed={mealType === meal.type}
                     data-testid={`meal-type-${meal.type}`}
@@ -242,7 +242,7 @@ export default function ManualFoodInputSheet({
             <div>
               <label
                 htmlFor="calories"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 칼로리 (선택)
               </label>
@@ -254,10 +254,10 @@ export default function ManualFoodInputSheet({
                   value={calories}
                   onChange={(e) => setCalories(extractNumber(e.target.value))}
                   placeholder="0"
-                  className="w-full py-3 px-4 pr-16 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors"
+                  className="w-full py-3 px-4 pr-16 rounded-xl border-2 border-border focus:border-orange-500 focus:outline-none transition-colors bg-background"
                   data-testid="calories-input"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                   kcal
                 </span>
               </div>
@@ -265,7 +265,7 @@ export default function ManualFoodInputSheet({
 
             {/* 영양소 입력 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 영양소 (선택)
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -277,11 +277,11 @@ export default function ManualFoodInputSheet({
                     value={protein}
                     onChange={(e) => setProtein(extractNumber(e.target.value))}
                     placeholder="단백질"
-                    className="w-full py-2 px-3 pr-6 rounded-lg border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors text-sm"
+                    className="w-full py-2 px-3 pr-6 rounded-lg border-2 border-border focus:border-orange-500 focus:outline-none transition-colors text-sm bg-background"
                     aria-label="단백질"
                     data-testid="protein-input"
                   />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                     g
                   </span>
                 </div>
@@ -293,11 +293,11 @@ export default function ManualFoodInputSheet({
                     value={carbs}
                     onChange={(e) => setCarbs(extractNumber(e.target.value))}
                     placeholder="탄수화물"
-                    className="w-full py-2 px-3 pr-6 rounded-lg border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors text-sm"
+                    className="w-full py-2 px-3 pr-6 rounded-lg border-2 border-border focus:border-orange-500 focus:outline-none transition-colors text-sm bg-background"
                     aria-label="탄수화물"
                     data-testid="carbs-input"
                   />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                     g
                   </span>
                 </div>
@@ -309,18 +309,18 @@ export default function ManualFoodInputSheet({
                     value={fat}
                     onChange={(e) => setFat(extractNumber(e.target.value))}
                     placeholder="지방"
-                    className="w-full py-2 px-3 pr-6 rounded-lg border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors text-sm"
+                    className="w-full py-2 px-3 pr-6 rounded-lg border-2 border-border focus:border-orange-500 focus:outline-none transition-colors text-sm bg-background"
                     aria-label="지방"
                     data-testid="fat-input"
                   />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                     g
                   </span>
                 </div>
               </div>
               {/* 예상 칼로리 힌트 */}
               {estimatedCalories > 0 && (
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   예상 칼로리: 약 {estimatedCalories} kcal
                 </p>
               )}
@@ -330,7 +330,7 @@ export default function ManualFoodInputSheet({
             <div>
               <label
                 htmlFor="portion"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 섭취량
               </label>
@@ -340,14 +340,14 @@ export default function ManualFoodInputSheet({
                 value={portion}
                 onChange={(e) => setPortion(e.target.value)}
                 placeholder="1인분"
-                className="w-full py-3 px-4 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors"
+                className="w-full py-3 px-4 rounded-xl border-2 border-border focus:border-orange-500 focus:outline-none transition-colors bg-background"
                 data-testid="portion-input"
               />
             </div>
 
             {/* 신호등 색상 선택 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 음식 신호등
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -359,7 +359,7 @@ export default function ManualFoodInputSheet({
                       'flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all',
                       trafficLight === light.color
                         ? light.activeColor + ' border-transparent'
-                        : light.bgColor + ' border-gray-200 hover:border-gray-300'
+                        : light.bgColor + ' border-border hover:border-border/80'
                     )}
                     aria-pressed={trafficLight === light.color}
                     data-testid={`traffic-light-${light.color}`}
@@ -382,7 +382,7 @@ export default function ManualFoodInputSheet({
                         'text-[10px]',
                         trafficLight === light.color
                           ? 'text-white/80'
-                          : 'text-gray-500'
+                          : 'text-muted-foreground'
                       )}
                     >
                       {light.description}
@@ -393,18 +393,18 @@ export default function ManualFoodInputSheet({
             </div>
 
             {/* 자주 먹는 음식으로 저장 */}
-            <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+            <div className="flex items-center gap-3 bg-muted/50 rounded-xl p-3">
               <input
                 type="checkbox"
                 id="save-as-favorite"
                 checked={saveAsFavorite}
                 onChange={(e) => setSaveAsFavorite(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                className="w-5 h-5 rounded border-border text-orange-500 focus:ring-orange-500"
                 data-testid="save-as-favorite-checkbox"
               />
               <label
                 htmlFor="save-as-favorite"
-                className="text-sm text-gray-700 cursor-pointer"
+                className="text-sm text-foreground cursor-pointer"
               >
                 자주 먹는 음식으로 저장
               </label>
@@ -418,7 +418,7 @@ export default function ManualFoodInputSheet({
                 'w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2',
                 isValid && !isSaving
                   ? 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
               )}
               data-testid="save-food-button"
             >

@@ -64,15 +64,15 @@ export default function FoodResultCard({
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <TrafficLightIndicator color={food.trafficLight} size="lg" />
-              <h3 className="font-bold text-gray-900">{food.name}</h3>
+              <h3 className="font-bold text-foreground">{food.name}</h3>
             </div>
-            <p className="text-sm text-gray-500 mt-1">{food.portion}</p>
+            <p className="text-sm text-muted-foreground mt-1">{food.portion}</p>
           </div>
           <div className="text-right">
             <p className={`text-xl font-bold ${trafficLightStyle.textColor}`}>
               {adjustedCalories} kcal
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               {portionMultiplier !== 1 && `(${portionMultiplier}인분)`}
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function FoodResultCard({
 
         {/* 양 조절 버튼 */}
         <div className="mt-4">
-          <p className="text-xs text-gray-500 mb-2">양 조절</p>
+          <p className="text-xs text-muted-foreground mb-2">양 조절</p>
           <div className="flex gap-2">
             {PORTION_MULTIPLIERS.map((multiplier) => (
               <button
@@ -88,8 +88,8 @@ export default function FoodResultCard({
                 onClick={() => onPortionChange(multiplier)}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                   portionMultiplier === multiplier
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                    ? 'bg-foreground text-background'
+                    : 'bg-card border border-border text-foreground hover:bg-muted'
                 }`}
                 aria-pressed={portionMultiplier === multiplier}
               >
@@ -103,7 +103,7 @@ export default function FoodResultCard({
       {/* 상세 정보 토글 버튼 */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-center gap-1 py-2 bg-white/50 text-sm text-gray-600 hover:bg-white/80 transition-colors"
+        className="w-full flex items-center justify-center gap-1 py-2 bg-card/50 text-sm text-muted-foreground hover:bg-card/80 transition-colors"
         aria-expanded={isExpanded}
       >
         {isExpanded ? (
@@ -119,27 +119,27 @@ export default function FoodResultCard({
 
       {/* 상세 영양정보 */}
       {isExpanded && (
-        <div className="p-4 bg-white border-t border-gray-100">
+        <div className="p-4 bg-card border-t border-border">
           {/* 영양소 정보 */}
           <div className="grid grid-cols-3 gap-4 text-center mb-4">
             <div>
-              <p className="text-xs text-gray-500">탄수화물</p>
-              <p className="font-bold text-gray-900">{adjustedCarbs}g</p>
+              <p className="text-xs text-muted-foreground">탄수화물</p>
+              <p className="font-bold text-foreground">{adjustedCarbs}g</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">단백질</p>
-              <p className="font-bold text-gray-900">{adjustedProtein}g</p>
+              <p className="text-xs text-muted-foreground">단백질</p>
+              <p className="font-bold text-foreground">{adjustedProtein}g</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">지방</p>
-              <p className="font-bold text-gray-900">{adjustedFat}g</p>
+              <p className="text-xs text-muted-foreground">지방</p>
+              <p className="font-bold text-foreground">{adjustedFat}g</p>
             </div>
           </div>
 
           {/* 신뢰도 표시 */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-3 border-t border-border">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">📊 신뢰도:</span>
+              <span className="text-sm text-muted-foreground">📊 신뢰도:</span>
               <span className={`text-sm font-medium ${confidenceStyle.color}`}>
                 {confidenceStyle.label}
               </span>

@@ -37,13 +37,13 @@ export function WeeklyCalendar({
       case 'skipped':
         return 'bg-red-100 text-red-500 border border-red-200';
       case 'rest':
-        return 'bg-gray-100 text-gray-400';
+        return 'bg-muted text-muted-foreground';
       case 'today':
         return 'bg-indigo-500 text-white ring-2 ring-indigo-300';
       case 'planned':
         return 'bg-indigo-100 text-indigo-500';
       default:
-        return 'bg-gray-100 text-gray-400';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -71,11 +71,11 @@ export function WeeklyCalendar({
   }, [weekDays]);
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm" data-testid="weekly-calendar">
+    <div className="bg-card rounded-2xl p-6 shadow-sm" data-testid="weekly-calendar">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-gray-900">📅 {weekLabel}</span>
+          <span className="text-lg font-bold text-foreground">📅 {weekLabel}</span>
         </div>
         {currentStreak > 0 && (
           <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-full">
@@ -93,7 +93,7 @@ export function WeeklyCalendar({
         {dayLabels.map((label) => (
           <div
             key={label}
-            className="text-center text-xs font-medium text-gray-500 pb-2"
+            className="text-center text-xs font-medium text-muted-foreground pb-2"
           >
             {label}
           </div>
@@ -119,7 +119,7 @@ export function WeeklyCalendar({
         {weekDays.map((day) => (
           <div
             key={`label-${day.date}`}
-            className="text-center text-xs text-gray-500 truncate px-1"
+            className="text-center text-xs text-muted-foreground truncate px-1"
           >
             {day.label || (day.status === 'rest' ? '휴식' : '')}
           </div>
@@ -127,26 +127,26 @@ export function WeeklyCalendar({
       </div>
 
       {/* 범례 */}
-      <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-gray-100 flex-wrap">
+      <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-border flex-wrap">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-green-500" />
-          <span className="text-xs text-gray-500">완료</span>
+          <span className="text-xs text-muted-foreground">완료</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-gray-100 border border-gray-200" />
-          <span className="text-xs text-gray-500">휴식</span>
+          <div className="w-3 h-3 rounded bg-muted border border-border" />
+          <span className="text-xs text-muted-foreground">휴식</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-indigo-500" />
-          <span className="text-xs text-gray-500">오늘</span>
+          <span className="text-xs text-muted-foreground">오늘</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-indigo-100 border border-indigo-200" />
-          <span className="text-xs text-gray-500">예정</span>
+          <span className="text-xs text-muted-foreground">예정</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-red-100 border border-red-200" />
-          <span className="text-xs text-gray-500">미완료</span>
+          <span className="text-xs text-muted-foreground">미완료</span>
         </div>
       </div>
     </div>

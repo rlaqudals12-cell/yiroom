@@ -103,7 +103,7 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               selectedCategory === filter.id
                 ? 'bg-indigo-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
             }`}
             data-testid={`filter-${filter.id}`}
           >
@@ -170,7 +170,7 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
           </div>
         )
       ) : (
-        <div className="text-center py-8 text-gray-400">
+        <div className="text-center py-8 text-muted-foreground">
           <p>해당 카테고리의 운동이 없습니다.</p>
         </div>
       )}
@@ -194,14 +194,14 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
 
           {/* 더 불러올 항목이 있는지 표시 */}
           {hasMore && !isLoading && (
-            <div className="text-center text-sm text-gray-400 py-2">
+            <div className="text-center text-sm text-muted-foreground py-2">
               스크롤하여 더 보기 ({filteredExercises.length - displayedItems.length}개 더)
             </div>
           )}
 
           {/* 모두 로드됨 표시 */}
           {!hasMore && displayedItems.length > pageSize && (
-            <div className="text-center text-sm text-gray-400 py-2">
+            <div className="text-center text-sm text-muted-foreground py-2">
               모든 운동을 불러왔습니다
             </div>
           )}

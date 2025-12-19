@@ -55,19 +55,19 @@ const DEFAULT_GOAL: CalorieGoal = {
 function LoadingSkeleton() {
   return (
     <div
-      className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+      className="bg-card rounded-2xl p-6 shadow-sm border border-border"
       data-testid="daily-calorie-summary-loading"
     >
       <div className="flex flex-col items-center">
         {/* 원형 차트 스켈레톤 */}
-        <div className="w-40 h-40 rounded-full bg-gray-200 animate-pulse mb-4" />
+        <div className="w-40 h-40 rounded-full bg-muted animate-pulse mb-4" />
 
         {/* 영양소 바 스켈레톤 */}
         <div className="w-full flex justify-center gap-8 mt-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="flex flex-col items-center gap-1">
-              <div className="w-8 h-4 bg-gray-200 animate-pulse rounded" />
-              <div className="w-12 h-3 bg-gray-200 animate-pulse rounded" />
+              <div className="w-8 h-4 bg-muted animate-pulse rounded" />
+              <div className="w-12 h-3 bg-muted animate-pulse rounded" />
             </div>
           ))}
         </div>
@@ -100,11 +100,11 @@ export default function DailyCalorieSummary({
 
   return (
     <div
-      className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+      className="bg-card rounded-2xl p-6 shadow-sm border border-border"
       data-testid="daily-calorie-summary"
     >
       {/* 제목 */}
-      <h2 className="text-lg font-bold text-gray-900 text-center mb-4">
+      <h2 className="text-lg font-bold text-foreground text-center mb-4">
         🍽️ {title}
       </h2>
 
@@ -117,17 +117,17 @@ export default function DailyCalorieSummary({
         >
           {/* 중앙 텍스트 */}
           <span
-            className="text-3xl font-bold text-gray-900"
+            className="text-3xl font-bold text-foreground"
             data-testid="consumed-calories"
           >
             {summary.totalCalories.toLocaleString()}
           </span>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-muted-foreground">
             / {goal.calories.toLocaleString()} kcal
           </span>
           <span
             className={`text-sm font-medium mt-1 ${
-              caloriePercentage >= 100 ? 'text-red-500' : 'text-gray-600'
+              caloriePercentage >= 100 ? 'text-red-500' : 'text-muted-foreground'
             }`}
             data-testid="calorie-percentage"
           >
@@ -138,7 +138,7 @@ export default function DailyCalorieSummary({
 
       {/* 남은 칼로리 */}
       <p
-        className="text-center text-sm text-gray-600 mb-4"
+        className="text-center text-sm text-muted-foreground mb-4"
         data-testid="remaining-calories"
       >
         {caloriePercentage >= 100 ? (
@@ -197,7 +197,7 @@ function MacroItem({
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>
         {label.charAt(0)}
       </span>
-      <span className="text-sm font-semibold text-gray-900">
+      <span className="text-sm font-semibold text-foreground">
         {Math.round(value * 10) / 10}{unit}
       </span>
     </div>

@@ -21,7 +21,7 @@ function SkeletonBlock({ className }: SkeletonBaseProps) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded-md bg-gray-200',
+        'animate-pulse rounded-md bg-muted',
         className
       )}
       aria-hidden="true"
@@ -56,7 +56,7 @@ export function CardSkeleton({
 
   return (
     <div
-      className={cn('rounded-xl border border-gray-200 bg-white p-4', className)}
+      className={cn('rounded-xl border border-border bg-card p-4', className)}
       role="status"
       aria-label="콘텐츠 로딩 중"
     >
@@ -106,7 +106,7 @@ export function ListSkeleton({
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-3 p-3 rounded-lg border border-gray-100"
+          className="flex items-center gap-3 p-3 rounded-lg border border-border/50"
         >
           {hasAvatar && (
             <SkeletonBlock className="w-10 h-10 rounded-full shrink-0" />

@@ -23,7 +23,7 @@ export const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
       <div
         ref={ref}
         className={cn(
-          'bg-white rounded-2xl p-6 shadow-sm',
+          'bg-card rounded-2xl p-6 shadow-sm',
           className
         )}
         data-testid="shareable-card"
@@ -31,8 +31,8 @@ export const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
         {children}
 
         {showWatermark && (
-          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-center gap-2">
-            <span className="text-xs text-gray-400">
+          <div className="mt-4 pt-4 border-t border-border flex items-center justify-center gap-2">
+            <span className="text-xs text-muted-foreground">
               이룸에서 분석한 결과입니다
             </span>
             <span className="text-xs font-medium bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">

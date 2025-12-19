@@ -45,7 +45,7 @@ export function StreakBadge({
         <span>{badge.emoji}</span>
       </div>
       {showName && (
-        <span className="text-xs font-medium text-gray-600">{badge.name}</span>
+        <span className="text-xs font-medium text-muted-foreground">{badge.name}</span>
       )}
     </div>
   );

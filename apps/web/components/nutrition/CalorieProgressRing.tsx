@@ -101,7 +101,7 @@ export default function CalorieProgressRing({
         style={{ width: size, height: size }}
       >
         <div
-          className="rounded-full bg-gray-200 animate-pulse"
+          className="rounded-full bg-muted animate-pulse"
           style={{ width: size, height: size }}
         />
       </div>
@@ -178,17 +178,17 @@ export function CalorieProgressRingContent({
   return (
     <>
       <span
-        className="text-3xl font-bold text-gray-900"
+        className="text-3xl font-bold text-foreground"
         data-testid="progress-current"
       >
         {current.toLocaleString()}
       </span>
-      <span className="text-sm text-gray-500">
+      <span className="text-sm text-muted-foreground">
         / {target.toLocaleString()} {unit}
       </span>
       <span
         className={`text-sm font-medium mt-1 ${
-          percentage >= 100 ? 'text-red-500' : 'text-gray-600'
+          percentage >= 100 ? 'text-red-500' : 'text-muted-foreground'
         }`}
         data-testid="progress-percentage"
       >

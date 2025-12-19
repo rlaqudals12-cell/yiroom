@@ -71,9 +71,9 @@ export function WeeklyPlanCard({
     if (day.isRestDay) {
       return {
         icon: '⬜',
-        bgColor: 'bg-gray-100',
-        textColor: 'text-gray-400',
-        borderColor: isToday ? 'ring-2 ring-gray-300' : '',
+        bgColor: 'bg-muted',
+        textColor: 'text-muted-foreground',
+        borderColor: isToday ? 'ring-2 ring-muted-foreground' : '',
       };
     }
 
@@ -97,18 +97,18 @@ export function WeeklyPlanCard({
 
   return (
     <div
-      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+      className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
       data-testid="weekly-plan-card"
     >
       {/* 헤더 */}
       <div className={`px-5 py-4 ${typeInfo.bgColor}`}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 bg-card rounded-xl flex items-center justify-center shadow-sm">
             <Calendar className={`w-5 h-5 ${typeInfo.color}`} />
           </div>
           <div>
-            <h3 className="font-bold text-gray-900">{monthName} {weekNumber}주차</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-bold text-foreground">{monthName} {weekNumber}주차</h3>
+            <p className="text-sm text-muted-foreground">
               {typeInfo.label} 타입 주간 플랜
             </p>
           </div>
@@ -133,7 +133,7 @@ export function WeeklyPlanCard({
                   ${!day.isRestDay ? 'hover:scale-105 cursor-pointer' : 'cursor-default'}
                 `}
               >
-                <span className="text-xs font-medium text-gray-500 mb-1">
+                <span className="text-xs font-medium text-muted-foreground mb-1">
                   {DAY_LABELS[day.day]}
                 </span>
                 <span className="text-lg mb-1">{status.icon}</span>
@@ -148,7 +148,7 @@ export function WeeklyPlanCard({
 
       {/* 범례 */}
       <div className="px-4 pb-4">
-        <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <span>📋</span>
             <span>예정</span>

@@ -28,16 +28,16 @@ export default function ProgressIndicator({
     <div className="w-full">
       {/* 단계 텍스트 */}
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-gray-700">
+        <span className="text-sm font-medium text-foreground">
           {currentStep}/{totalSteps} 단계
         </span>
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted-foreground">
           {Math.round(percentage)}%
         </span>
       </div>
 
       {/* 프로그레스 바 */}
-      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
         <div
           role="progressbar"
           aria-valuenow={currentStep}

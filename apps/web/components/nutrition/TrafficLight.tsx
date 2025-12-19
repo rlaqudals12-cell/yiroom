@@ -92,7 +92,7 @@ export function TrafficLightIndicator({
       <span>{config.emoji}</span>
       {showLabel && <span className={config.textColor}>{config.label}</span>}
       {showDescription && (
-        <span className="text-gray-500 text-sm">({config.description})</span>
+        <span className="text-muted-foreground text-sm">({config.description})</span>
       )}
     </span>
   );
@@ -158,10 +158,10 @@ export function TrafficLightCard({
 
   return (
     <div
-      className="bg-white rounded-2xl p-4 border border-gray-200"
+      className="bg-card rounded-2xl p-4 border border-border"
       data-testid="traffic-light-card"
     >
-      <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+      <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
         🚦 {title}
       </h3>
 
@@ -204,7 +204,7 @@ export function TrafficLightCard({
       </div>
 
       {/* 균형 메시지 */}
-      <div className="mt-4 pt-3 border-t border-gray-100">
+      <div className="mt-4 pt-3 border-t border-border/50">
         {isBalanced ? (
           <p className="text-sm text-green-600">✅ 균형 잡힌 식단이에요!</p>
         ) : (
@@ -252,7 +252,7 @@ function TrafficLightRatioRow({
         <span className="font-medium">{ratio}%</span>
       </span>
       {showTarget && (
-        <span className={`text-xs ${isMet ? 'text-green-600' : 'text-gray-400'}`}>
+        <span className={`text-xs ${isMet ? 'text-green-600' : 'text-muted-foreground'}`}>
           ({targetLabel}) {isMet && '✓'}
         </span>
       )}

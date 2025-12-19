@@ -30,9 +30,9 @@ const OptimizedImage = memo(function OptimizedImage({
   src,
   alt,
   fallback,
-  fallbackBgClassName = 'bg-gradient-to-br from-gray-100 to-gray-200',
+  fallbackBgClassName = 'bg-gradient-to-br from-muted/50 to-muted',
   showLoadingState = true,
-  loadingClassName = 'animate-pulse bg-gray-200',
+  loadingClassName = 'animate-pulse bg-muted',
   containerClassName = '',
   className = '',
   ...props
@@ -166,7 +166,7 @@ export const ExerciseThumbnail = memo(function ExerciseThumbnail({
       className={`object-cover ${className}`}
       containerClassName={containerClassName}
       fallback={<span className="text-5xl">{fallbackEmoji}</span>}
-      fallbackBgClassName="bg-gradient-to-br from-gray-100 to-gray-200"
+      fallbackBgClassName="bg-gradient-to-br from-muted/50 to-muted"
     />
   );
 });

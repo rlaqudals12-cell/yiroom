@@ -37,10 +37,10 @@ export default function StepNavigation({
           type="button"
           onClick={onPrev}
           disabled={isLoading}
-          className={`flex-1 py-4 px-6 border border-gray-300 text-gray-700 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${
+          className={`flex-1 py-4 px-6 border border-border text-foreground font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${
             isLoading
               ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-gray-50'
+              : 'hover:bg-muted'
           }`}
           aria-label="이전 단계로 이동"
         >
@@ -56,7 +56,7 @@ export default function StepNavigation({
         disabled={isDisabled}
         className={`flex-1 py-4 px-6 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${
           isDisabled
-            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            ? 'bg-muted text-muted-foreground cursor-not-allowed'
             : 'bg-primary hover:bg-primary/90 text-white'
         } ${isFirstStep ? 'w-full' : ''}`}
         aria-label={isLastStep ? '분석 시작하기' : '다음 단계로 이동'}

@@ -11,8 +11,8 @@ export default function PostureGuide({ instructions, tips }: PostureGuideProps) 
   return (
     <div className="space-y-6">
       {/* 자세 가이드 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 mb-4">
+      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
+        <h3 className="flex items-center gap-2 text-lg font-bold text-foreground mb-4">
           <Info className="w-5 h-5 text-indigo-500" />
           자세 가이드
         </h3>
@@ -22,7 +22,7 @@ export default function PostureGuide({ instructions, tips }: PostureGuideProps) 
               <span className="flex-shrink-0 w-7 h-7 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-sm font-bold">
                 {index + 1}
               </span>
-              <p className="text-gray-700 leading-relaxed pt-0.5">{instruction}</p>
+              <p className="text-foreground leading-relaxed pt-0.5">{instruction}</p>
             </li>
           ))}
         </ol>

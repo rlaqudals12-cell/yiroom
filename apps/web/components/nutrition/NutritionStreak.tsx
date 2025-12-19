@@ -61,10 +61,10 @@ export function NutritionStreakProgress({
         {Array.from({ length: remainingDays }).map((_, i) => (
           <div
             key={`remaining-${i}`}
-            className="w-8 h-8 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center"
+            className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center"
             aria-label={`${completedDays + i + 1}일차 미완료`}
           >
-            <Circle className="w-4 h-4 text-gray-300" />
+            <Circle className="w-4 h-4 text-muted-foreground" />
           </div>
         ))}
       </div>
@@ -72,7 +72,7 @@ export function NutritionStreakProgress({
       {/* 라벨 */}
       {showLabels && (
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">
+          <span className="text-muted-foreground">
             {currentStreak}/{displayDays}일
           </span>
           {currentStreak >= displayDays && (
@@ -131,7 +131,7 @@ export function NutritionStreakBadge({
         <span>{badge.emoji}</span>
       </div>
       {showName && (
-        <span className="text-xs font-medium text-gray-600">{badge.name}</span>
+        <span className="text-xs font-medium text-muted-foreground">{badge.name}</span>
       )}
     </div>
   );
@@ -189,26 +189,26 @@ interface NutritionStreakCardProps {
 function LoadingSkeleton({ testId }: { testId: string }) {
   return (
     <div
-      className="bg-white rounded-2xl p-6 shadow-sm"
+      className="bg-card rounded-2xl p-6 shadow-sm"
       data-testid={`${testId}-loading`}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+          <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
           <div className="space-y-2">
-            <div className="w-16 h-4 bg-gray-200 animate-pulse rounded" />
-            <div className="w-20 h-3 bg-gray-200 animate-pulse rounded" />
+            <div className="w-16 h-4 bg-muted animate-pulse rounded" />
+            <div className="w-20 h-3 bg-muted animate-pulse rounded" />
           </div>
         </div>
-        <div className="w-12 h-8 bg-gray-200 animate-pulse rounded" />
+        <div className="w-12 h-8 bg-muted animate-pulse rounded" />
       </div>
       <div className="flex gap-1 mb-4">
         {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} className="w-8 h-8 rounded-lg bg-gray-200 animate-pulse" />
+          <div key={i} className="w-8 h-8 rounded-lg bg-muted animate-pulse" />
         ))}
       </div>
-      <div className="w-full h-4 bg-gray-200 animate-pulse rounded mb-2" />
-      <div className="w-3/4 h-4 bg-gray-200 animate-pulse rounded" />
+      <div className="w-full h-4 bg-muted animate-pulse rounded mb-2" />
+      <div className="w-3/4 h-4 bg-muted animate-pulse rounded" />
     </div>
   );
 }
@@ -243,7 +243,7 @@ export function NutritionStreakCard({
 
   return (
     <div
-      className="bg-white rounded-2xl p-6 shadow-sm"
+      className="bg-card rounded-2xl p-6 shadow-sm"
       data-testid={testId}
     >
       {/* 헤더 */}
@@ -253,8 +253,8 @@ export function NutritionStreakCard({
             <Utensils className="w-5 h-5 text-module-nutrition" />
           </div>
           <div>
-            <h3 className="font-bold text-gray-900">연속 기록</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="font-bold text-foreground">연속 기록</h3>
+            <p className="text-sm text-muted-foreground">
               {isActive ? '현재 진행 중' : '다시 시작해보세요'}
             </p>
           </div>
@@ -264,7 +264,7 @@ export function NutritionStreakCard({
         <div className="text-right">
           <p className="text-3xl font-bold text-module-nutrition">
             {currentStreak}
-            <span className="text-lg text-gray-400">일</span>
+            <span className="text-lg text-muted-foreground">일</span>
           </p>
         </div>
       </div>
@@ -281,7 +281,7 @@ export function NutritionStreakCard({
 
       {/* 메시지 */}
       <div className="mb-4">
-        <p className="text-gray-700">{message}</p>
+        <p className="text-foreground">{message}</p>
         {warningMessage && (
           <p className="text-amber-600 text-sm mt-1 font-medium">
             ⚡ {warningMessage}
@@ -304,7 +304,7 @@ export function NutritionStreakCard({
 
       {/* 최장 기록 */}
       {longestStreak > 0 && (
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
           <Trophy className="w-4 h-4" />
           <span>최장 기록: {longestStreak}일</span>
         </div>
@@ -313,7 +313,7 @@ export function NutritionStreakCard({
       {/* 획득한 배지 */}
       {badges.length > 0 && (
         <div className="mb-4">
-          <p className="text-sm text-gray-500 mb-2">획득한 배지</p>
+          <p className="text-sm text-muted-foreground mb-2">획득한 배지</p>
           <NutritionStreakBadgeList badges={badges} size="sm" />
         </div>
       )}

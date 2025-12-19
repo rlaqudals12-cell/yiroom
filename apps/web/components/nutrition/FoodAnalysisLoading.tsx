@@ -17,7 +17,7 @@ const LOADING_TIPS = [
 // N-1 음식 분석 항목 목록
 function FoodAnalysisItems() {
   return (
-    <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+    <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
       <span>• 음식 인식</span>
       <span>• 칼로리</span>
       <span>• 탄수화물</span>

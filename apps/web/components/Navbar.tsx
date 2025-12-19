@@ -3,6 +3,7 @@
 import { SignedOut, SignInButton, SignedIn, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import React from "react";
+import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -63,6 +64,13 @@ const Navbar = () => {
               제품
             </Link>
           </nav>
+          <Link
+            href="/wishlist"
+            className="p-2 rounded-full text-muted-foreground hover:text-pink-500 hover:bg-pink-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="위시리스트"
+          >
+            <Heart className="h-5 w-5" />
+          </Link>
           <ThemeToggle compact />
           <UserButton />
         </SignedIn>

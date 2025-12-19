@@ -23,11 +23,11 @@ const WorkoutTypeCard = memo(function WorkoutTypeCard({ type, reason }: WorkoutT
     >
       {/* 헤더 */}
       <div className="flex items-center gap-4 mb-4">
-        <div className="w-16 h-16 bg-white/50 rounded-2xl flex items-center justify-center text-4xl">
+        <div className="w-16 h-16 bg-card/50 rounded-2xl flex items-center justify-center text-4xl">
           {typeInfo.icon}
         </div>
         <div>
-          <p className="text-sm font-medium text-gray-500 mb-1">
+          <p className="text-sm font-medium text-muted-foreground mb-1">
             당신의 운동 타입
           </p>
           <h2 className={`text-2xl font-bold ${typeInfo.color}`}>
@@ -42,8 +42,8 @@ const WorkoutTypeCard = memo(function WorkoutTypeCard({ type, reason }: WorkoutT
       </p>
 
       {/* 분류 이유 */}
-      <div className="bg-white/50 rounded-xl p-4">
-        <p className="text-sm text-gray-600">{reason}</p>
+      <div className="bg-card/50 rounded-xl p-4">
+        <p className="text-sm text-muted-foreground">{reason}</p>
       </div>
     </div>
   );

@@ -77,22 +77,22 @@ export default function WaterIntakeCard({
   if (isLoading) {
     return (
       <div
-        className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+        className="bg-card rounded-2xl p-4 shadow-sm border border-border/50"
         data-testid="water-intake-card-loading"
       >
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-6 h-6 rounded-full bg-gray-200 animate-pulse" />
-          <div className="w-24 h-5 bg-gray-200 animate-pulse rounded" />
+          <div className="w-6 h-6 rounded-full bg-muted animate-pulse" />
+          <div className="w-24 h-5 bg-muted animate-pulse rounded" />
         </div>
         <div className="flex justify-center gap-1 mb-3">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="w-6 h-8 bg-gray-200 animate-pulse rounded" />
+            <div key={i} className="w-6 h-8 bg-muted animate-pulse rounded" />
           ))}
         </div>
-        <div className="w-32 h-4 bg-gray-200 animate-pulse rounded mx-auto mb-4" />
+        <div className="w-32 h-4 bg-muted animate-pulse rounded mx-auto mb-4" />
         <div className="grid grid-cols-4 gap-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-12 bg-gray-100 animate-pulse rounded-xl" />
+            <div key={i} className="h-12 bg-muted/50 animate-pulse rounded-xl" />
           ))}
         </div>
       </div>
@@ -101,13 +101,13 @@ export default function WaterIntakeCard({
 
   return (
     <div
-      className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+      className="bg-card rounded-2xl p-4 shadow-sm border border-border/50"
       data-testid="water-intake-card"
     >
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-3">
         <Droplets className="w-5 h-5 text-cyan-500" />
-        <h3 className="text-sm font-semibold text-gray-900">수분 섭취</h3>
+        <h3 className="text-sm font-semibold text-foreground">수분 섭취</h3>
       </div>
 
       {/* 물방울 진행률 시각화 */}
@@ -124,7 +124,7 @@ export default function WaterIntakeCard({
             key={i}
             className={cn(
               'w-6 h-6 transition-colors duration-300',
-              i < filledDroplets ? 'text-cyan-500' : 'text-gray-200'
+              i < filledDroplets ? 'text-cyan-500' : 'text-muted'
             )}
             data-testid={`droplet-${i}`}
             aria-hidden="true"
@@ -133,9 +133,9 @@ export default function WaterIntakeCard({
       </div>
 
       {/* 수치 표시 */}
-      <p className="text-center text-sm text-gray-600 mb-4">
+      <p className="text-center text-sm text-muted-foreground mb-4">
         <span className="font-bold text-cyan-600">{currentAmount.toLocaleString()}mL</span>
-        <span className="text-gray-400"> / </span>
+        <span className="text-muted-foreground/60"> / </span>
         <span>{goalAmount.toLocaleString()}mL</span>
         <span className="ml-2 text-cyan-500">({progress}%)</span>
       </p>
@@ -172,7 +172,7 @@ export default function WaterIntakeCard({
           onClick={onCustomAdd}
           className={cn(
             'flex flex-col items-center gap-1 p-2 rounded-xl transition-all',
-            'bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95'
+            'bg-muted text-muted-foreground hover:bg-muted/80 active:scale-95'
           )}
           aria-label="직접 입력"
           data-testid="custom-add-button"

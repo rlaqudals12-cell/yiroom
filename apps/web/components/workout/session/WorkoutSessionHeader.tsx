@@ -65,35 +65,35 @@ export function WorkoutSessionHeader({
   const progressPercent = totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
 
   return (
-    <div className="sticky top-0 z-40 bg-white border-b border-gray-100" data-testid="workout-session-header">
+    <div className="sticky top-0 z-40 bg-card border-b border-border" data-testid="workout-session-header">
       {/* 상단 바 */}
       <div className="flex items-center justify-between p-4">
         <button
           onClick={onExit}
-          className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 -ml-2 hover:bg-muted rounded-lg transition-colors"
           aria-label="운동 종료"
         >
-          <X className="w-6 h-6 text-gray-600" />
+          <X className="w-6 h-6 text-muted-foreground" />
         </button>
 
-        <h1 className="text-lg font-bold text-gray-900">{dayLabel} 운동</h1>
+        <h1 className="text-lg font-bold text-foreground">{dayLabel} 운동</h1>
 
         <button
           onClick={isPaused ? onResume : onPause}
-          className="p-2 -mr-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 -mr-2 hover:bg-muted rounded-lg transition-colors"
           aria-label={isPaused ? '운동 재개' : '운동 일시정지'}
         >
           {isPaused ? (
             <Play className="w-6 h-6 text-indigo-500" />
           ) : (
-            <Pause className="w-6 h-6 text-gray-600" />
+            <Pause className="w-6 h-6 text-muted-foreground" />
           )}
         </button>
       </div>
 
       {/* 진행률 바 */}
       <div className="px-4 pb-3">
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full bg-indigo-500 transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
@@ -109,8 +109,8 @@ export function WorkoutSessionHeader({
             <Clock className="w-4 h-4 text-blue-500" />
           </div>
           <div>
-            <p className="text-lg font-bold text-gray-900">{formatTime(localElapsedTime)}</p>
-            <p className="text-xs text-gray-500">경과 시간</p>
+            <p className="text-lg font-bold text-foreground">{formatTime(localElapsedTime)}</p>
+            <p className="text-xs text-muted-foreground">경과 시간</p>
           </div>
         </div>
 
@@ -120,8 +120,8 @@ export function WorkoutSessionHeader({
             <Flame className="w-4 h-4 text-orange-500" />
           </div>
           <div>
-            <p className="text-lg font-bold text-gray-900">{Math.round(estimatedCalories)}</p>
-            <p className="text-xs text-gray-500">kcal</p>
+            <p className="text-lg font-bold text-foreground">{Math.round(estimatedCalories)}</p>
+            <p className="text-xs text-muted-foreground">kcal</p>
           </div>
         </div>
 
@@ -131,21 +131,21 @@ export function WorkoutSessionHeader({
             <Target className="w-4 h-4 text-green-500" />
           </div>
           <div>
-            <p className="text-lg font-bold text-gray-900">
+            <p className="text-lg font-bold text-foreground">
               {completedExercises}/{totalExercises}
             </p>
-            <p className="text-xs text-gray-500">운동</p>
+            <p className="text-xs text-muted-foreground">운동</p>
           </div>
         </div>
       </div>
 
       {/* 일시정지 오버레이 */}
       {isPaused && (
-        <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center">
+        <div className="absolute inset-0 bg-card/90 flex flex-col items-center justify-center">
           <div className="text-center">
-            <Pause className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-lg font-bold text-gray-900 mb-2">일시정지됨</p>
-            <p className="text-sm text-gray-500 mb-6">
+            <Pause className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-lg font-bold text-foreground mb-2">일시정지됨</p>
+            <p className="text-sm text-muted-foreground mb-6">
               {formatTime(localElapsedTime)} 경과
             </p>
             <button

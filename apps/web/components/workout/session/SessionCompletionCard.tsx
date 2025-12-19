@@ -232,7 +232,7 @@ export function SessionCompletionCard({
         )}
         <button
           onClick={onGoHome}
-          className="w-full py-4 bg-white text-indigo-600 font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-4 bg-card text-indigo-600 font-bold rounded-xl hover:bg-muted transition-colors flex items-center justify-center gap-2"
         >
           <Home className="w-5 h-5" />
           홈으로 돌아가기

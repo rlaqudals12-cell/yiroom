@@ -67,15 +67,15 @@ export interface MealSectionProps {
 function LoadingSkeleton() {
   return (
     <div
-      className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+      className="bg-card rounded-2xl p-4 shadow-sm border border-border"
       data-testid="meal-section-loading"
     >
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
-        <div className="w-20 h-5 bg-gray-200 animate-pulse rounded" />
+        <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+        <div className="w-20 h-5 bg-muted animate-pulse rounded" />
       </div>
       <div className="space-y-2">
-        <div className="w-full h-12 bg-gray-100 animate-pulse rounded-xl" />
+        <div className="w-full h-12 bg-muted animate-pulse rounded-xl" />
       </div>
     </div>
   );
@@ -96,7 +96,7 @@ export default function MealSection({
 
   return (
     <div
-      className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+      className="bg-card rounded-2xl p-4 shadow-sm border border-border"
       data-testid={`meal-section-${meal.type}`}
     >
       {/* 헤더: 아이콘 + 라벨 + 칼로리 합계 */}
@@ -105,13 +105,13 @@ export default function MealSection({
           <span className="text-2xl" role="img" aria-hidden="true">
             {meal.icon}
           </span>
-          <span className="text-base font-semibold text-gray-900">
+          <span className="text-base font-semibold text-foreground">
             {meal.label}
           </span>
         </div>
         {hasRecords && (
           <span
-            className="text-sm font-medium text-gray-600"
+            className="text-sm font-medium text-muted-foreground"
             data-testid={`meal-calories-${meal.type}`}
           >
             {meal.subtotal.calories.toLocaleString()} kcal
@@ -129,7 +129,7 @@ export default function MealSection({
                 <button
                   key={`${record.id}-${idx}`}
                   onClick={() => onRecordClick?.(record)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-muted hover:bg-muted/80 transition-colors text-left"
                   data-testid={`food-item-${meal.type}-${idx}`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -141,19 +141,19 @@ export default function MealSection({
                       />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {food.food_name}
                       </p>
                       {food.portion && (
-                        <p className="text-xs text-gray-500">{food.portion}</p>
+                        <p className="text-xs text-muted-foreground">{food.portion}</p>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-muted-foreground">
                       {food.calories.toLocaleString()} kcal
                     </span>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
                 </button>
               ))}
@@ -163,7 +163,7 @@ export default function MealSection({
           {/* 추가 기록하기 버튼 */}
           <button
             onClick={() => onAddRecord?.(meal.type)}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             data-testid={`add-more-${meal.type}`}
           >
             <Plus className="w-4 h-4" />
@@ -174,7 +174,7 @@ export default function MealSection({
         /* 기록 없을 때: 기록하기 버튼 */
         <button
           onClick={() => onAddRecord?.(meal.type)}
-          className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-gray-50 border border-dashed border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+          className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-muted border border-dashed border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
           data-testid={`add-record-${meal.type}`}
         >
           <Plus className="w-5 h-5" />

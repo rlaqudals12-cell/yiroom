@@ -47,7 +47,7 @@ const ExerciseCard = memo(function ExerciseCard({
       <article
         role="article"
         onClick={onClick}
-        className={`flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 ${
+        className={`flex items-center gap-3 p-3 bg-card rounded-xl border border-border ${
           onClick ? 'cursor-pointer hover:border-indigo-200 hover:shadow-sm transition-all' : ''
         }`}
       >
@@ -66,8 +66,8 @@ const ExerciseCard = memo(function ExerciseCard({
 
         {/* 정보 */}
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-gray-900 truncate">{exercise.name}</h4>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
+          <h4 className="font-medium text-foreground truncate">{exercise.name}</h4>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>{exercise.bodyParts.map((p) => BODY_PART_LABELS[p] || p).join(', ')}</span>
           </div>
         </div>
@@ -84,7 +84,7 @@ const ExerciseCard = memo(function ExerciseCard({
     <article
       role="article"
       onClick={onClick}
-      className={`bg-white rounded-2xl border border-gray-100 overflow-hidden ${
+      className={`bg-card rounded-2xl border border-border overflow-hidden ${
         onClick ? 'cursor-pointer hover:border-indigo-200 hover:shadow-md transition-all' : ''
       }`}
     >
@@ -111,9 +111,9 @@ const ExerciseCard = memo(function ExerciseCard({
       {/* 정보 영역 */}
       <div className="p-4">
         {/* 운동 이름 */}
-        <h3 className="text-lg font-bold text-gray-900 mb-1">{exercise.name}</h3>
+        <h3 className="text-lg font-bold text-foreground mb-1">{exercise.name}</h3>
         {exercise.nameEn && (
-          <p className="text-sm text-gray-400 mb-3">{exercise.nameEn}</p>
+          <p className="text-sm text-muted-foreground mb-3">{exercise.nameEn}</p>
         )}
 
         {/* 타겟 부위 태그 */}
@@ -121,7 +121,7 @@ const ExerciseCard = memo(function ExerciseCard({
           {exercise.bodyParts.slice(0, 3).map((part) => (
             <span
               key={part}
-              className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
+              className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded-full"
             >
               {BODY_PART_LABELS[part] || part}
             </span>
@@ -129,7 +129,7 @@ const ExerciseCard = memo(function ExerciseCard({
         </div>
 
         {/* 메타 정보 */}
-        <div className="flex items-center gap-4 text-sm text-gray-500">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Flame className="w-4 h-4 text-orange-400" />
             <span>{exercise.caloriesPerMinute} kcal/min</span>
