@@ -68,10 +68,10 @@ async function seedCosmeticProducts() {
 
   console.log(`  총 ${products.length}개 제품 발견`);
 
-  // 배치 삽입
+  // 배치 삽입 (프로덕션 DB 스키마에 맞춤)
   const { data, error } = await supabase
     .from('cosmetic_products')
-    .upsert(
+    .insert(
       products.map((p) => ({
         name: p.name,
         brand: p.brand,
@@ -82,15 +82,13 @@ async function seedCosmeticProducts() {
         skin_types: p.skin_types,
         concerns: p.concerns,
         key_ingredients: p.key_ingredients,
-        avoid_ingredients: p.avoid_ingredients,
         personal_color_seasons: p.personal_color_seasons,
         image_url: p.image_url,
         purchase_url: p.purchase_url,
         rating: p.rating,
         review_count: p.review_count,
         is_active: true,
-      })),
-      { onConflict: 'name,brand' }
+      }))
     );
 
   if (error) {
@@ -111,10 +109,10 @@ async function seedSupplementProducts() {
 
   console.log(`  총 ${products.length}개 제품 발견`);
 
-  // 배치 삽입
+  // 배치 삽입 (프로덕션 DB 스키마에 맞춤)
   const { data, error } = await supabase
     .from('supplement_products')
-    .upsert(
+    .insert(
       products.map((p) => ({
         name: p.name,
         brand: p.brand,
@@ -123,17 +121,12 @@ async function seedSupplementProducts() {
         main_ingredients: p.main_ingredients,
         target_concerns: p.target_concerns,
         price_krw: p.price_krw,
-        dosage: p.dosage,
-        serving_size: p.serving_size,
-        total_servings: p.total_servings,
         image_url: p.image_url,
         purchase_url: p.purchase_url,
         rating: p.rating,
         review_count: p.review_count,
-        warnings: p.warnings,
         is_active: true,
-      })),
-      { onConflict: 'name,brand' }
+      }))
     );
 
   if (error) {

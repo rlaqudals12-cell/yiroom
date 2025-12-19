@@ -51,9 +51,9 @@ describe('WaterIntakeCard', () => {
       for (let i = 0; i < 5; i++) {
         expect(droplets[i]).toHaveClass('text-cyan-500');
       }
-      // 나머지 5개는 비어있는 상태
+      // 나머지 5개는 비어있는 상태 (text-muted로 마이그레이션됨)
       for (let i = 5; i < 10; i++) {
-        expect(droplets[i]).toHaveClass('text-gray-200');
+        expect(droplets[i]).toHaveClass('text-muted');
       }
     });
 
