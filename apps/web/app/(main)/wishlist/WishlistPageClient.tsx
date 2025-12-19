@@ -9,6 +9,7 @@ import {
   getSupplementProductById,
   getWorkoutEquipmentById,
   getHealthFoodById,
+  checkProductInteractions,
 } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,6 +18,11 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import type { ProductType, AnyProduct } from '@/types/product';
 import type { WishlistItem } from '@/lib/wishlist';
+import type { ProductInteractionWarning } from '@/types/interaction';
+import {
+  InteractionSummaryBanner,
+  InteractionDetailModal,
+} from '@/components/products/interactions';
 
 interface WishlistPageClientProps {
   clerkUserId: string;
@@ -35,6 +41,10 @@ export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
   const [products, setProducts] = useState<Map<string, AnyProduct>>(new Map());
   const [loading, setLoading] = useState(true);
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
+
+  // 성분 상호작용 경고
+  const [interactions, setInteractions] = useState<ProductInteractionWarning[]>([]);
+  const [showInteractionModal, setShowInteractionModal] = useState(false);
 
   // 위시리스트 로드
   const loadWishlist = useCallback(async () => {
@@ -75,6 +85,22 @@ export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
       );
 
       setProducts(productMap);
+
+      // 영양제/건강식품 간 상호작용 체크
+      const supplementsAndHealthFoods = Array.from(productMap.values()).filter(
+        (p) => 'mainIngredients' in p || 'additionalNutrients' in p
+      );
+
+      if (supplementsAndHealthFoods.length >= 2) {
+        try {
+          const warnings = await checkProductInteractions(supplementsAndHealthFoods);
+          setInteractions(warnings);
+        } catch (err) {
+          console.error('상호작용 체크 실패:', err);
+        }
+      } else {
+        setInteractions([]);
+      }
     } catch (error) {
       console.error('위시리스트 로드 실패:', error);
       toast.error('위시리스트를 불러오는데 실패했어요');
@@ -144,8 +170,8 @@ export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
         <div className="w-20 h-20 bg-pink-50 rounded-full flex items-center justify-center mb-6">
           <Heart className="h-10 w-10 text-pink-300" />
         </div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">위시리스트가 비어있어요</h2>
-        <p className="text-gray-500 text-center mb-6">
+        <h2 className="text-xl font-semibold text-foreground mb-2">위시리스트가 비어있어요</h2>
+        <p className="text-muted-foreground text-center mb-6">
           관심 있는 제품에 하트를 눌러 추가해 보세요
         </p>
         <Link href="/products">
@@ -160,12 +186,26 @@ export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
 
   return (
     <div className="px-4 py-6 pb-24">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <h1 className="text-2xl font-bold text-foreground mb-6">
         위시리스트
         <span className="text-pink-500 text-lg font-normal ml-2">
           {wishlists.length}개
         </span>
       </h1>
+
+      {/* 성분 상호작용 경고 배너 */}
+      <InteractionSummaryBanner
+        warnings={interactions}
+        onViewDetails={() => setShowInteractionModal(true)}
+        className="mb-6"
+      />
+
+      {/* 상호작용 상세 모달 */}
+      <InteractionDetailModal
+        open={showInteractionModal}
+        onOpenChange={setShowInteractionModal}
+        warnings={interactions}
+      />
 
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto mb-4">
@@ -236,7 +276,7 @@ function WishlistGrid({
           return (
             <Card key={item.id} className="opacity-50">
               <CardContent className="p-4">
-                <p className="text-gray-500">제품 정보를 불러올 수 없어요</p>
+                <p className="text-muted-foreground">제품 정보를 불러올 수 없어요</p>
               </CardContent>
             </Card>
           );
@@ -248,7 +288,7 @@ function WishlistGrid({
               <Link href={`/products/${item.productType}/${item.productId}`}>
                 <div className="flex gap-4">
                   {/* 제품 이미지 */}
-                  <div className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
+                  <div className="w-20 h-20 bg-muted rounded-lg flex-shrink-0 flex items-center justify-center">
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl}
@@ -256,14 +296,14 @@ function WishlistGrid({
                         className="w-full h-full object-cover rounded-lg"
                       />
                     ) : (
-                      <Package className="h-8 w-8 text-gray-300" />
+                      <Package className="h-8 w-8 text-muted-foreground" />
                     )}
                   </div>
 
                   {/* 제품 정보 */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 mb-1">{product.brand}</p>
-                    <p className="font-medium text-gray-900 line-clamp-2 text-sm mb-1">
+                    <p className="text-xs text-muted-foreground mb-1">{product.brand}</p>
+                    <p className="font-medium text-foreground line-clamp-2 text-sm mb-1">
                       {product.name}
                     </p>
                     <p className="text-pink-600 font-semibold">
@@ -274,13 +314,13 @@ function WishlistGrid({
               </Link>
 
               {/* 제거 버튼 */}
-              <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
+              <div className="flex justify-end mt-3 pt-3 border-t border-border">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => onRemove(item)}
                   disabled={isRemoving}
-                  className="text-gray-400 hover:text-red-500 gap-1"
+                  className="text-muted-foreground hover:text-red-500 gap-1"
                 >
                   {isRemoving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
