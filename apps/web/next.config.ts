@@ -57,13 +57,14 @@ const withAnalyzer = withBundleAnalyzer({
  * Sentry 설정
  * - 프로덕션에서만 소스맵 업로드
  * - 에러 트래킹 및 성능 모니터링
+ * - SENTRY_AUTH_TOKEN 없으면 소스맵 업로드 건너뜀
  */
 const sentryConfig = {
   // Sentry 조직/프로젝트 설정 (환경변수로 관리)
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
 
-  // 개발 환경에서는 소스맵 업로드 비활성화
+  // 개발 환경 또는 AUTH_TOKEN 없으면 소스맵 업로드 비활성화
   silent: !process.env.CI,
 
   // 소스맵 설정
@@ -78,9 +79,14 @@ const sentryConfig = {
 
   // 빌드 옵션
   automaticVercelMonitors: true,
+
+  // SENTRY_AUTH_TOKEN 없으면 소스맵 업로드 건너뜀 (빌드 실패 방지)
+  skipEnvironmentCheck: !process.env.SENTRY_AUTH_TOKEN,
 };
 
-export default withSentryConfig(
-  withAnalyzer(withPWA(nextConfig)),
-  sentryConfig
-);
+// Sentry 설정이 완전하면 withSentryConfig 사용, 아니면 기본 config 사용
+const hasSentryConfig = process.env.SENTRY_ORG && process.env.SENTRY_PROJECT;
+
+export default hasSentryConfig
+  ? withSentryConfig(withAnalyzer(withPWA(nextConfig)), sentryConfig)
+  : withAnalyzer(withPWA(nextConfig));

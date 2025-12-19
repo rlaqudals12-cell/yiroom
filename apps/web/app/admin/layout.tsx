@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import { isAdmin, getAdminInfo } from '@/lib/admin';
 import { AdminSidebar } from './_components/AdminSidebar';
 
+// Admin 페이지 전체를 dynamic으로 설정 - 빌드 시 prerendering 방지
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: '관리자 - 이룸',
   description: '이룸 관리자 대시보드',

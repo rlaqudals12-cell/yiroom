@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     description: 'AI 퍼스널 컬러, 피부, 체형 분석으로 나만의 맞춤 뷰티 솔루션',
     images: ['/og-image.png'],
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest', // PWA manifest - middleware에서 제외됨
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
@@ -78,6 +78,14 @@ export default function RootLayout({
   return (
     <ClerkProvider localization={koKR}>
       <html lang="ko" suppressHydrationWarning>
+        <head>
+          {/* Preconnect hints for external domains - Lighthouse Performance */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link rel="dns-prefetch" href="https://clerk.com" />
+          <link rel="dns-prefetch" href="https://img.clerk.com" />
+          <link rel="dns-prefetch" href="https://supabase.co" />
+        </head>
         <body
           className={`${inter.variable} ${notoSansKR.variable} antialiased font-sans bg-background text-foreground`}
           style={{ fontFamily: 'Inter, "Noto Sans KR", sans-serif' }}

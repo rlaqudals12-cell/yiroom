@@ -20,6 +20,9 @@ import {
   type PriceSource,
 } from '@/lib/crawler';
 
+// Dynamic route - 빌드 시 정적 생성 방지
+export const dynamic = 'force-dynamic';
+
 // 관리자 API 키 검증
 function validateAdminKey(request: NextRequest): boolean {
   const adminKey = process.env.ADMIN_API_KEY;

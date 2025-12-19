@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, getAllFeatureFlags, toggleFeatureFlag } from '@/lib/admin';
+import { requireAdminOrThrow, getAllFeatureFlags, toggleFeatureFlag } from '@/lib/admin';
 import type { FeatureFlagKey } from '@/lib/admin';
+
+// Dynamic route - 빌드 시 정적 생성 방지
+export const dynamic = 'force-dynamic';
 
 // GET: 모든 Feature Flags 조회
 export async function GET() {
   try {
-    await requireAdmin();
+    await requireAdminOrThrow();
     const flags = await getAllFeatureFlags();
     return NextResponse.json({ flags });
   } catch (error) {
@@ -23,7 +26,7 @@ export async function GET() {
 // PATCH: Feature Flag 토글
 export async function PATCH(request: NextRequest) {
   try {
-    await requireAdmin();
+    await requireAdminOrThrow();
 
     const body = await request.json();
     const { key, enabled } = body;
