@@ -40,8 +40,8 @@ export default function Step4Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">운동 빈도</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">운동 빈도</h2>
+        <p className="text-muted-foreground mt-1">
           일주일에 몇 번 운동하실 수 있나요?
         </p>
       </div>

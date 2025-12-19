@@ -175,29 +175,29 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted">
       {/* 헤더 */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <header className="bg-card border-b border-border sticky top-0 z-10">
         <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-muted rounded-lg transition-colors"
               aria-label="뒤로 가기"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </button>
-            <h1 className="text-lg font-bold text-gray-900">운동 기록</h1>
+            <h1 className="text-lg font-bold text-foreground">운동 기록</h1>
           </div>
 
           {/* 뷰 모드 토글 */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center bg-muted rounded-lg p-1">
             <button
               onClick={() => setViewMode('calendar')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'calendar'
-                  ? 'bg-white shadow-sm text-indigo-600'
-                  : 'text-gray-500'
+                  ? 'bg-card shadow-sm text-indigo-600'
+                  : 'text-muted-foreground'
               }`}
               aria-label="캘린더 보기"
             >
@@ -207,8 +207,8 @@ export default function HistoryPage() {
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-white shadow-sm text-indigo-600'
-                  : 'text-gray-500'
+                  ? 'bg-card shadow-sm text-indigo-600'
+                  : 'text-muted-foreground'
               }`}
               aria-label="리스트 보기"
             >
@@ -245,13 +245,13 @@ export default function HistoryPage() {
 
         {/* 기록 리스트 */}
         <div className="space-y-3">
-          <h2 className="text-lg font-bold text-gray-900 px-1">
+          <h2 className="text-lg font-bold text-foreground px-1">
             최근 기록
           </h2>
 
           {workoutLogs.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 text-center">
-              <p className="text-gray-500 mb-4">아직 운동 기록이 없어요</p>
+            <div className="bg-card rounded-2xl p-8 text-center">
+              <p className="text-muted-foreground mb-4">아직 운동 기록이 없어요</p>
               <button
                 onClick={() => router.push('/workout/session')}
                 className="px-6 py-3 bg-indigo-500 text-white font-medium rounded-xl hover:bg-indigo-600 transition-colors"

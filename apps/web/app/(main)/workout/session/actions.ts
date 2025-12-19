@@ -1,6 +1,6 @@
 'use server';
 
-import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { getNewBadges, STREAK_MILESTONES, getDaysDifference } from '@/lib/workout/streak';
 import type { WorkoutLog, WorkoutStreak, ExerciseLog } from '@/lib/api/workout';
 
@@ -10,7 +10,7 @@ import type { WorkoutLog, WorkoutStreak, ExerciseLog } from '@/lib/api/workout';
 export async function getWorkoutStreakAction(
   userId: string
 ): Promise<WorkoutStreak | null> {
-  const supabase = createClerkSupabaseClient();
+  const supabase = createServiceRoleClient();
 
   const { data, error } = await supabase
     .from('workout_streaks')
@@ -36,7 +36,7 @@ async function updateWorkoutStreakAction(
   userId: string,
   workoutDate: string
 ): Promise<WorkoutStreak | null> {
-  const supabase = createClerkSupabaseClient();
+  const supabase = createServiceRoleClient();
 
   const streak = await getWorkoutStreakAction(userId);
 
@@ -137,7 +137,7 @@ export async function saveWorkoutLogAction(
     perceivedEffort?: number;
   }
 ): Promise<WorkoutLog | null> {
-  const supabase = createClerkSupabaseClient();
+  const supabase = createServiceRoleClient();
 
   // 총 볼륨 계산 (세트 x 횟수 x 무게)
   const totalVolume = exerciseLogs.reduce((total, exercise) => {
@@ -146,11 +146,14 @@ export async function saveWorkoutLogAction(
     }, 0);
   }, 0);
 
+  // plan_id는 UUID 형식이 아니면 null로 설정
+  const isValidUUID = planId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId);
+
   const { data, error } = await supabase
     .from('workout_logs')
     .insert({
       user_id: userId,
-      plan_id: planId,
+      plan_id: isValidUUID ? planId : null,
       workout_date: workoutDate,
       completed_at: new Date().toISOString(),
       exercise_logs: exerciseLogs,
@@ -165,7 +168,17 @@ export async function saveWorkoutLogAction(
     .single();
 
   if (error) {
-    console.error('Error saving workout log:', error);
+    console.error('Error saving workout log:', {
+      error,
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      userId,
+      workoutDate,
+      totalVolume,
+      exerciseLogsCount: exerciseLogs?.length,
+    });
     return null;
   }
 

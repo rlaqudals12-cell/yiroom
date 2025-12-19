@@ -60,8 +60,8 @@ export default function Step7Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">부상/통증</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">부상/통증</h2>
+        <p className="text-muted-foreground mt-1">
           현재 불편한 부위가 있나요? (복수 선택 가능)
         </p>
       </div>

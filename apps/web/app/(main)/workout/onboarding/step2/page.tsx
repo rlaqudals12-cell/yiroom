@@ -54,8 +54,8 @@ export default function Step2Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">운동 목표</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">운동 목표</h2>
+        <p className="text-muted-foreground mt-1">
           원하는 목표를 선택해 주세요 (최대 {MAX_SELECTIONS}개)
         </p>
       </div>

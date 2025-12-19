@@ -126,8 +126,8 @@ export default function Step1Page() {
   if (isLoaded && !isSignedIn) {
     return (
       <div className="text-center py-12">
-        <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-600">로그인이 필요합니다.</p>
+        <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+        <p className="text-muted-foreground">로그인이 필요합니다.</p>
       </div>
     );
   }
@@ -137,7 +137,7 @@ export default function Step1Page() {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mb-4" />
-        <p className="text-gray-500">체형 정보를 불러오는 중...</p>
+        <p className="text-muted-foreground">체형 정보를 불러오는 중...</p>
       </div>
     );
   }
@@ -161,8 +161,8 @@ export default function Step1Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">내 체형 정보</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">내 체형 정보</h2>
+        <p className="text-muted-foreground mt-1">
           체형에 맞는 운동을 추천해 드릴게요
         </p>
       </div>
@@ -181,35 +181,35 @@ export default function Step1Page() {
       {bodyAnalysis && bodyTypeInfo ? (
         <div className="space-y-4">
           {/* 체형 타입 카드 */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center text-3xl">
                 {bodyTypeInfo.emoji}
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">
+                <h3 className="text-lg font-bold text-foreground">
                   {bodyTypeInfo.label}
                 </h3>
-                <p className="text-gray-500 text-sm">
+                <p className="text-muted-foreground text-sm">
                   {bodyTypeInfo.description}
                 </p>
               </div>
             </div>
 
             {/* 체형 특징 */}
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-foreground/80 text-sm mb-4">
               {bodyTypeInfo.characteristics}
             </p>
 
             {/* 주요 특징 3가지 */}
             {bodyAnalysis.strengths && bodyAnalysis.strengths.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-700">주요 특징</p>
+                <p className="text-sm font-medium text-foreground/80">주요 특징</p>
                 <ul className="space-y-2">
                   {bodyAnalysis.strengths.slice(0, 3).map((strength, index) => (
                     <li
                       key={index}
-                      className="flex items-center gap-2 text-sm text-gray-600"
+                      className="flex items-center gap-2 text-sm text-muted-foreground"
                     >
                       <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
                       {strength}
@@ -221,21 +221,21 @@ export default function Step1Page() {
 
             {/* 신체 정보 */}
             {(bodyAnalysis.height || bodyAnalysis.weight) && (
-              <div className="mt-4 pt-4 border-t border-gray-100 flex gap-4">
+              <div className="mt-4 pt-4 border-t border-border/50 flex gap-4">
                 {bodyAnalysis.height && (
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-2xl font-bold text-foreground">
                       {bodyAnalysis.height}
                     </p>
-                    <p className="text-xs text-gray-500">cm</p>
+                    <p className="text-xs text-muted-foreground">cm</p>
                   </div>
                 )}
                 {bodyAnalysis.weight && (
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-2xl font-bold text-foreground">
                       {bodyAnalysis.weight}
                     </p>
-                    <p className="text-xs text-gray-500">kg</p>
+                    <p className="text-xs text-muted-foreground">kg</p>
                   </div>
                 )}
               </div>
@@ -246,12 +246,12 @@ export default function Step1Page() {
           {pcAssessment && (
             <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-4 border border-pink-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                <div className="w-10 h-10 bg-card rounded-xl flex items-center justify-center shadow-sm">
                   <Palette className="w-5 h-5 text-pink-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">퍼스널 컬러</p>
-                  <p className="font-bold text-gray-900">
+                  <p className="text-sm text-muted-foreground">퍼스널 컬러</p>
+                  <p className="font-bold text-foreground">
                     {PC_SEASON_LABELS[pcAssessment.season]}
                   </p>
                 </div>
@@ -269,14 +269,14 @@ export default function Step1Page() {
         </div>
       ) : (
         /* C-1 데이터 없음: 분석 필요 안내 */
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-8 h-8 text-gray-400" />
+        <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50 text-center">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">
+          <h3 className="text-lg font-bold text-foreground mb-2">
             체형 분석이 필요합니다
           </h3>
-          <p className="text-gray-500 text-sm mb-6">
+          <p className="text-muted-foreground text-sm mb-6">
             맞춤 운동 추천을 위해 먼저 체형 분석을 진행해 주세요.
           </p>
           <Link

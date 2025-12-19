@@ -57,8 +57,8 @@ export default function Step3Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">신체 고민</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">신체 고민</h2>
+        <p className="text-muted-foreground mt-1">
           개선하고 싶은 부위를 선택해 주세요 (최대 {MAX_SELECTIONS}개)
         </p>
       </div>

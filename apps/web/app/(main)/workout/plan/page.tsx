@@ -139,17 +139,17 @@ export default function PlanPage() {
       <div className="flex items-center justify-between">
         <button
           onClick={handleBack}
-          className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 -ml-2 hover:bg-muted rounded-lg transition-colors"
         >
-          <ArrowLeft className="w-6 h-6 text-gray-600" />
+          <ArrowLeft className="w-6 h-6 text-muted-foreground" />
         </button>
-        <h1 className="text-xl font-bold text-gray-900">주간 운동 플랜</h1>
+        <h1 className="text-xl font-bold text-foreground">주간 운동 플랜</h1>
         <button
           onClick={handleRestart}
-          className="p-2 -mr-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 -mr-2 hover:bg-muted rounded-lg transition-colors"
           title="플랜 재생성"
         >
-          <RefreshCw className="w-5 h-5 text-gray-500" />
+          <RefreshCw className="w-5 h-5 text-muted-foreground" />
         </button>
       </div>
 

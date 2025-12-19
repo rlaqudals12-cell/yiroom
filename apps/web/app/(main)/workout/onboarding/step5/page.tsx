@@ -61,8 +61,8 @@ export default function Step5Page() {
       {/* 장소 선택 */}
       <div>
         <div className="text-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">운동 장소</h2>
-          <p className="text-gray-500 mt-1">주로 어디서 운동하시나요?</p>
+          <h2 className="text-xl font-bold text-foreground">운동 장소</h2>
+          <p className="text-muted-foreground mt-1">주로 어디서 운동하시나요?</p>
         </div>
         <div className="space-y-3">
           {LOCATIONS.map((loc) => (
@@ -80,13 +80,13 @@ export default function Step5Page() {
       </div>
 
       {/* 구분선 */}
-      <div className="border-t border-gray-200" />
+      <div className="border-t border-border" />
 
       {/* 장비 선택 */}
       <div>
         <div className="text-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">사용 가능한 장비</h2>
-          <p className="text-gray-500 mt-1">사용할 수 있는 장비를 모두 선택해 주세요</p>
+          <h2 className="text-xl font-bold text-foreground">사용 가능한 장비</h2>
+          <p className="text-muted-foreground mt-1">사용할 수 있는 장비를 모두 선택해 주세요</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {EQUIPMENT.map((eq) => (

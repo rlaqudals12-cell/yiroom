@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { useWorkoutInputStore, type PersonalColorSeason } from '@/lib/stores/workoutInputStore';
 import {
   classifyWorkoutType,
   WorkoutTypeResult,
 } from '@/lib/workout/classifyWorkoutType';
+import { saveWorkoutAnalysisAction } from '../actions';
 import { getRecommendedExercises } from '@/lib/workout/exercises';
 import { validateAllSteps } from '@/lib/utils/workoutValidation';
 import { matchCelebrityRoutines } from '@/lib/celebrityMatching';
@@ -30,6 +32,7 @@ import { FadeInUp, ScaleIn, Confetti } from '@/components/animations';
 
 export default function ResultPage() {
   const router = useRouter();
+  const { user, isLoaded: isUserLoaded } = useUser();
   const { getInputData, resetAll } = useWorkoutInputStore();
   const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-운동타입-결과');
 
@@ -44,7 +47,43 @@ export default function ResultPage() {
   const [skinAnalysis, setSkinAnalysis] = useState<SkinAnalysisSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Server Action을 통해 분석 결과를 DB에 저장하는 함수
+  const saveAnalysisToDatabase = useCallback(async (inputData: ReturnType<typeof getInputData>) => {
+    if (!user?.id) {
+      console.log('[W-1] User not logged in, skipping DB save');
+      return;
+    }
+
+    try {
+      console.log('[W-1] Saving analysis via Server Action...');
+      const result = await saveWorkoutAnalysisAction(user.id, {
+        bodyType: inputData.bodyTypeData?.type,
+        goals: inputData.goals || [],
+        concerns: inputData.concerns || [],
+        frequency: inputData.frequency || '3-4',
+        location: inputData.location || 'home',
+        equipment: inputData.equipment || [],
+        injuries: inputData.injuries || [],
+        targetWeight: inputData.targetWeight,
+        targetDate: inputData.targetDate,
+      });
+
+      if (result.success && result.data) {
+        console.log('[W-1] Analysis saved to database successfully:', result.data.id);
+      } else {
+        console.error('[W-1] Failed to save analysis:', result.error);
+      }
+    } catch (err) {
+      console.error('[W-1] Error saving analysis to database:', err);
+    }
+  }, [user?.id]);
+
   useEffect(() => {
+    // 사용자 로드 대기
+    if (!isUserLoaded) {
+      return;
+    }
+
     // 입력 데이터 가져오기
     const inputData = getInputData();
 
@@ -57,7 +96,7 @@ export default function ResultPage() {
     }
 
     // 분석 시뮬레이션 (실제로는 AI API 호출)
-    const analyzeTimer = setTimeout(() => {
+    const analyzeTimer = setTimeout(async () => {
       try {
         const typeResult = classifyWorkoutType(inputData);
         setResult(typeResult);
@@ -101,6 +140,9 @@ export default function ResultPage() {
           trouble: 'warning',
         };
         setSkinAnalysis(mockSkinAnalysis);
+
+        // DB에 분석 결과 저장 (비동기)
+        await saveAnalysisToDatabase(inputData);
       } catch (err) {
         console.error('Analysis error:', err);
         setError('분석 중 오류가 발생했습니다.');
@@ -112,7 +154,7 @@ export default function ResultPage() {
     }, 2000); // 2초 로딩 (UX용)
 
     return () => clearTimeout(analyzeTimer);
-  }, [getInputData]);
+  }, [getInputData, isUserLoaded, saveAnalysisToDatabase]);
 
   // 다시 시작
   const handleRestart = () => {
@@ -125,10 +167,9 @@ export default function ResultPage() {
     router.push('/workout/plan');
   };
 
-  // 운동 시작 (추후 구현)
+  // 운동 시작 - 플랜 페이지에서 운동 선택 후 시작
   const handleStartWorkout = () => {
-    // TODO: 오늘의 운동 페이지로 이동
-    alert('운동 시작 기능은 곧 추가됩니다!');
+    router.push('/workout/plan');
   };
 
   // 로딩 상태
@@ -166,10 +207,10 @@ export default function ResultPage() {
         {/* 헤더 */}
         <FadeInUp>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-foreground mb-2">
               분석 완료!
             </h1>
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               당신에게 맞는 운동 타입을 찾았어요
             </p>
           </div>
@@ -196,9 +237,9 @@ export default function ResultPage() {
               matchResults={celebrityMatches}
               bodyType={bodyType}
               personalColor={personalColor}
-              onFollowClick={(celebrityId, routineName) => {
-                // TODO: 연예인 루틴 따라하기 페이지로 이동
-                alert(`${routineName} 따라하기 기능은 곧 추가됩니다!`);
+              onFollowClick={() => {
+                // 주간 플랜에서 운동 진행
+                router.push('/workout/plan');
               }}
             />
           </FadeInUp>
@@ -237,8 +278,8 @@ export default function ResultPage() {
 
         {/* 추천 운동 섹션 */}
         <FadeInUp delay={7}>
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
+          <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
+            <h3 className="text-lg font-bold text-foreground mb-4">
               추천 운동
             </h3>
             {exercises.length > 0 ? (
@@ -247,7 +288,7 @@ export default function ResultPage() {
                 onExerciseClick={(id) => router.push(`/workout/exercise/${id}`)}
               />
             ) : (
-              <div className="flex items-center justify-center py-8 text-gray-400">
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
                 <div className="text-center">
                   <Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">추천 운동이 없습니다</p>
@@ -269,7 +310,7 @@ export default function ResultPage() {
             </button>
             <button
               onClick={handleStartWorkout}
-              className="w-full py-4 bg-white border-2 border-indigo-500 text-indigo-600 font-medium rounded-xl hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-4 bg-card border-2 border-indigo-500 text-indigo-600 font-medium rounded-xl hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2"
             >
               <Dumbbell className="w-5 h-5" />
               바로 운동 시작
@@ -281,7 +322,7 @@ export default function ResultPage() {
         <FadeInUp delay={8}>
           <button
             onClick={handleRestart}
-            className="w-full py-3 text-gray-500 text-sm hover:text-gray-700 transition-colors"
+            className="w-full py-3 text-muted-foreground text-sm hover:text-foreground transition-colors"
           >
             다시 분석하기
           </button>
@@ -289,7 +330,7 @@ export default function ResultPage() {
       </div>
 
       {/* 공유 버튼 - 하단 고정 */}
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t border-gray-100 z-10">
+      <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
         <div className="max-w-md mx-auto">
           <ShareButton
             onShare={share}

@@ -56,15 +56,15 @@ export default function Step6Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900">목표 설정</h2>
-        <p className="text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-foreground">목표 설정</h2>
+        <p className="text-muted-foreground mt-1">
           구체적인 목표를 설정해 보세요 (선택사항)
         </p>
       </div>
 
       {/* 목표 체중 */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <label htmlFor="target-weight" className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="bg-card rounded-xl border border-border p-4">
+        <label htmlFor="target-weight" className="block text-sm font-medium text-foreground/80 mb-2">
           목표 체중 (kg)
         </label>
         <div className="relative">
@@ -77,17 +77,17 @@ export default function Step6Page() {
             value={weightInput}
             onChange={(e) => handleWeightChange(e.target.value)}
             placeholder="예: 55.0"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
+            className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors bg-card"
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
             kg
           </span>
         </div>
       </div>
 
       {/* 목표 날짜 */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <label htmlFor="target-date" className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="bg-card rounded-xl border border-border p-4">
+        <label htmlFor="target-date" className="block text-sm font-medium text-foreground/80 mb-2">
           목표 달성 날짜
         </label>
         <input
@@ -96,7 +96,7 @@ export default function Step6Page() {
           min={today}
           value={dateInput}
           onChange={(e) => handleDateChange(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
+          className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors bg-card"
         />
       </div>
 

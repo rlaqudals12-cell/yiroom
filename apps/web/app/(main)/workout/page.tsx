@@ -42,14 +42,17 @@ export default function WorkoutPage() {
 
     const loadData = async () => {
       try {
+        console.log('[W-1 Page] Loading data for user:', user.id);
         const [analysisData, streakData] = await Promise.all([
           getLatestWorkoutAnalysisAction(user.id),
           getWorkoutStreakAction(user.id),
         ]);
+        console.log('[W-1 Page] Analysis data:', analysisData);
+        console.log('[W-1 Page] Streak data:', streakData);
         setAnalysis(analysisData);
         setStreak(streakData);
       } catch (error) {
-        console.error('Failed to load workout data:', error);
+        console.error('[W-1 Page] Failed to load workout data:', error);
       } finally {
         setIsLoading(false);
       }
@@ -127,7 +130,7 @@ export default function WorkoutPage() {
             <Button
               variant="secondary"
               size="lg"
-              className="bg-white text-indigo-600 hover:bg-indigo-50"
+              className="bg-card text-indigo-600 hover:bg-muted"
               onClick={() => router.push('/workout/session')}
             >
               <Play className="h-5 w-5 mr-1" />
@@ -221,10 +224,10 @@ function OnboardingPrompt() {
 
         {/* 텍스트 */}
         <div className="space-y-2">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-foreground">
             나만의 운동 플랜
           </h2>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             체형에 맞는 맞춤 운동을 추천해드려요
           </p>
         </div>
@@ -238,9 +241,9 @@ function OnboardingPrompt() {
         </Link>
 
         {/* 설명 */}
-        <div className="text-left bg-gray-50 rounded-xl p-4">
-          <p className="text-sm text-gray-600 font-medium mb-2">이런 분석을 받게 돼요:</p>
-          <ul className="text-sm text-gray-500 space-y-1">
+        <div className="text-left bg-muted rounded-xl p-4">
+          <p className="text-sm text-muted-foreground font-medium mb-2">이런 분석을 받게 돼요:</p>
+          <ul className="text-sm text-muted-foreground space-y-1">
             <li>✓ 내 체형에 맞는 운동 타입 분석</li>
             <li>✓ 목표에 맞는 주간 운동 플랜</li>
             <li>✓ 맞춤 운동 동작 추천</li>
@@ -265,10 +268,10 @@ function QuickActionCard({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+      className="flex items-center gap-3 p-4 bg-card border border-border rounded-xl hover:bg-muted transition-colors"
     >
       <div className="text-indigo-500">{icon}</div>
-      <span className="font-medium text-gray-900">{label}</span>
+      <span className="font-medium text-foreground">{label}</span>
     </Link>
   );
 }

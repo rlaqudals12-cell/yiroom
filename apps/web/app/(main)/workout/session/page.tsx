@@ -374,7 +374,7 @@ function SessionPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted">
       {/* 헤더 */}
       <WorkoutSessionHeader
         dayLabel={dayPlan.dayLabel}
@@ -393,11 +393,11 @@ function SessionPageContent() {
       {/* 운동 시작 안내 (시작 전) */}
       {status === 'not_started' && (
         <div className="p-6 text-center">
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <div className="bg-card rounded-2xl p-8 shadow-sm">
+            <h2 className="text-2xl font-bold text-foreground mb-4">
               오늘의 운동을 시작할까요?
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               {dayPlan.exercises.length}개 운동 / 약 {dayPlan.estimatedMinutes}분
             </p>
             <button
@@ -408,9 +408,9 @@ function SessionPageContent() {
             </button>
 
             {/* 면책 조항 (스펙 16.3: 운동 시작 전 표시) */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-xl text-left">
-              <p className="text-xs text-gray-500 leading-relaxed">
-                <span className="font-medium text-gray-600">안내</span>
+            <div className="mt-6 p-4 bg-muted rounded-xl text-left">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-medium text-foreground/70">안내</span>
                 <br />
                 본 서비스는 전문 의료 조언을 대체하지 않습니다.
                 <br />
@@ -477,17 +477,17 @@ function SessionPageContent() {
           aria-modal="true"
           aria-labelledby="exit-dialog-title"
         >
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
-            <h3 id="exit-dialog-title" className="text-lg font-bold text-gray-900 mb-2">
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm">
+            <h3 id="exit-dialog-title" className="text-lg font-bold text-foreground mb-2">
               운동을 종료할까요?
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               진행 중인 운동 기록이 저장되지 않습니다.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={handleExitCancel}
-                className="flex-1 py-3 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
+                className="flex-1 py-3 border border-border text-foreground/80 font-medium rounded-xl hover:bg-muted transition-colors"
               >
                 계속하기
               </button>
