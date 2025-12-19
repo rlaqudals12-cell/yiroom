@@ -42,7 +42,7 @@ const ANALYSIS_ITEMS = [
 export default function QuickActions({ hasPersonalColor }: QuickActionsProps) {
   return (
     <section>
-      <h2 className="text-xl font-bold text-gray-900 mb-4">분석 시작하기</h2>
+      <h2 className="text-xl font-bold text-foreground mb-4">분석 시작하기</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {ANALYSIS_ITEMS.map((item) => {

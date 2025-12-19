@@ -81,21 +81,21 @@ export default function AnalysisCard({ analysis }: AnalysisCardProps) {
         {/* 상단: 아이콘 + 타이틀 */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className={`p-2 rounded-lg bg-white/70 ${config.iconColor}`}>
+            <div className={`p-2 rounded-lg bg-card/70 ${config.iconColor}`}>
               <Icon className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-gray-900">{config.title}</h3>
+            <h3 className="font-semibold text-foreground">{config.title}</h3>
           </div>
-          <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
         </div>
 
         {/* 결과 요약 */}
-        <p className="text-lg font-medium text-gray-800 mb-2">
+        <p className="text-lg font-medium text-foreground mb-2">
           {analysis.summary}
         </p>
 
         {/* 시간 정보 */}
-        <p className="text-sm text-gray-500">{timeAgo}</p>
+        <p className="text-sm text-muted-foreground">{timeAgo}</p>
       </div>
     </Link>
   );

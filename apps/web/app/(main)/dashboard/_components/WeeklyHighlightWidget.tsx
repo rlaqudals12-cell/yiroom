@@ -66,7 +66,7 @@ export default function WeeklyHighlightWidget() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-6">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
@@ -126,7 +126,7 @@ export default function WeeklyHighlightWidget() {
             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-module-nutrition-light mb-2">
               <Flame className="h-5 w-5 text-module-nutrition" />
             </div>
-            <p className="text-lg font-bold text-gray-900">
+            <p className="text-lg font-bold text-foreground">
               {Math.round(nutrition.summary.avgCaloriesPerDay).toLocaleString()}
             </p>
             <p className="text-xs text-muted-foreground">평균 칼로리</p>
@@ -137,7 +137,7 @@ export default function WeeklyHighlightWidget() {
             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-status-info/20 mb-2">
               <Droplets className="h-5 w-5 text-status-info" />
             </div>
-            <p className="text-lg font-bold text-gray-900">
+            <p className="text-lg font-bold text-foreground">
               {(nutrition.summary.avgWaterPerDay / 1000).toFixed(1)}L
             </p>
             <p className="text-xs text-muted-foreground">평균 수분</p>
@@ -148,7 +148,7 @@ export default function WeeklyHighlightWidget() {
             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-module-workout-light mb-2">
               <Dumbbell className="h-5 w-5 text-module-workout" />
             </div>
-            <p className="text-lg font-bold text-gray-900">
+            <p className="text-lg font-bold text-foreground">
               {workout.summary.totalSessions}회
             </p>
             <p className="text-xs text-muted-foreground">운동 횟수</p>
@@ -157,7 +157,7 @@ export default function WeeklyHighlightWidget() {
 
         {/* 스트릭 정보 */}
         {(streak.nutrition.current > 0 || streak.workout.current > 0) && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-4 pt-4 border-t border-border">
             <div className="flex items-center justify-center gap-4 text-sm">
               {streak.nutrition.current > 0 && (
                 <span className="flex items-center gap-1 text-module-nutrition">

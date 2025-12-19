@@ -106,7 +106,7 @@ export default function DashboardPage() {
   if (!isUserLoaded || isLoading) {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
-        <div className="animate-pulse text-gray-500">로딩 중...</div>
+        <div className="animate-pulse text-muted-foreground">로딩 중...</div>
       </div>
     );
   }
@@ -116,10 +116,10 @@ export default function DashboardPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold text-foreground mb-2">
             로그인이 필요합니다
           </h2>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             분석 결과를 확인하려면 먼저 로그인해주세요
           </p>
         </div>
@@ -145,7 +145,7 @@ export default function DashboardPage() {
 
         {/* 분석 결과 섹션 */}
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">내 분석 결과</h2>
+          <h2 className="text-xl font-bold text-foreground mb-4">내 분석 결과</h2>
 
           {analyses.length === 0 ? (
             <EmptyState />

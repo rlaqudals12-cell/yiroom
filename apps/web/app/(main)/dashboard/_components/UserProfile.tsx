@@ -43,15 +43,15 @@ export default function UserProfile({
 
         {/* 사용자 정보 */}
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900">
+          <h1 className="text-xl font-bold text-foreground">
             안녕하세요, {name}님!
           </h1>
           {hasPersonalColor ? (
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               퍼스널 컬러 진단이 완료되었어요
             </p>
           ) : (
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               퍼스널 컬러를 진단하고 맞춤 추천을 받아보세요
             </p>
           )}

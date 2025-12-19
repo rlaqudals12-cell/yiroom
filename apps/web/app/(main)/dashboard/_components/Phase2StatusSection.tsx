@@ -51,19 +51,19 @@ export default function Phase2StatusSection() {
   useEffect(() => {
     async function fetchStatus() {
       try {
-        // 운동 분석 확인
+        // 운동 분석 확인 (maybeSingle: 데이터 없어도 오류 안 남)
         const { data: workoutData } = await supabase
           .from('workout_analyses')
           .select('workout_type')
           .order('created_at', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
-        // 영양 설정 확인
+        // 영양 설정 확인 (maybeSingle: 데이터 없어도 오류 안 남)
         const { data: nutritionData } = await supabase
           .from('nutrition_settings')
           .select('goal')
-          .single();
+          .maybeSingle();
 
         setStatus({
           workout: {
@@ -92,9 +92,9 @@ export default function Phase2StatusSection() {
   if (isLoading) {
     return (
       <section data-testid="phase2-status-loading">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">웰니스 관리</h2>
+        <h2 className="text-xl font-bold text-foreground mb-4">웰니스 관리</h2>
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       </section>
     );
@@ -104,7 +104,7 @@ export default function Phase2StatusSection() {
 
   return (
     <section data-testid="phase2-status-section">
-      <h2 className="text-xl font-bold text-gray-900 mb-4">웰니스 관리</h2>
+      <h2 className="text-xl font-bold text-foreground mb-4">웰니스 관리</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 운동 모듈 */}
         <StatusCard
@@ -180,27 +180,27 @@ function StatusCard({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg bg-white/70 ${iconColor}`}>
+            <div className={`p-2 rounded-lg bg-card/70 ${iconColor}`}>
               {icon}
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">{title}</h3>
+              <h3 className="font-semibold text-foreground">{title}</h3>
               <div className="flex items-center gap-1.5 mt-1">
                 {isCompleted ? (
                   <>
                     <CheckCircle2 className="w-4 h-4 text-status-success" />
-                    <span className="text-sm text-gray-600">{completedText}</span>
+                    <span className="text-sm text-muted-foreground">{completedText}</span>
                   </>
                 ) : (
                   <>
-                    <Circle className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-500">{pendingText}</span>
+                    <Circle className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">{pendingText}</span>
                   </>
                 )}
               </div>
             </div>
           </div>
-          <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
         </div>
       </div>
     </Link>
