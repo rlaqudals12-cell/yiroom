@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **앱 이름**: 이룸 (Yiroom)
 - **슬로건**: "온전한 나는?" / "Know yourself, wholly."
 - **핵심 철학**: 사용자의 변화를 돕는 통합 웰니스 AI 플랫폼
-- **타겟**: 10대 후반~30대 초반 (여성 중심)
+- **타겟**: 10대 후반~30대 초반 (성별 무관)
 
 ## 3대 개발 원칙
 
@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | 원칙 | 적용도 | 상태 |
 |------|--------|------|
-| **TDD** | 95% | ✅ 2,535개 테스트 유지 |
+| **TDD** | 95% | ✅ 2,571개 테스트 유지 |
 | **SRP** | 95% | ✅ lib/products/ Repository 분리 완료 |
 | **OCP** | 60% | ⏳ 제품 타입 추가 시 고려 |
 | **LSP** | 90% | ✅ AnyProduct 타입 계층 유지 |
@@ -87,7 +87,10 @@ lib/
 │   │   ├── healthfood.ts   # 건강식품 (~190줄)
 │   │   └── price-history.ts # 가격 (~130줄)
 │   ├── services/
-│   │   └── search.ts       # 통합 검색 (~240줄)
+│   │   ├── search.ts       # 통합 검색 (~240줄)
+│   │   ├── reviews.ts      # 리뷰 서비스
+│   │   └── interactions.ts # 성분 상호작용
+│   ├── affiliate.ts    # 어필리에이트 클릭 트래킹
 │   └── matching.ts     # 매칭 로직 (~420줄)
 ├── products.ts         # re-export (기존 import 호환)
 └── ...
@@ -232,6 +235,31 @@ import { useWorkoutInputStore } from '@/lib/stores/workoutInputStore';
 const { goals, setGoals } = useWorkoutInputStore();
 ```
 
+### Dynamic Import 패턴
+
+무거운 컴포넌트(차트, 모달, 인사이트 카드 등)는 `next/dynamic`으로 지연 로딩:
+
+| 파일 | 컴포넌트 | 용도 |
+|------|----------|------|
+| `components/reports/dynamic.tsx` | CalorieTrendChartDynamic, WeeklyComparisonChartDynamic | recharts 차트 |
+| `components/nutrition/dynamic.tsx` | ManualFoodInputSheetDynamic, WaterInputSheetDynamic, FastingTimerDynamic, *InsightCardDynamic | Sheet/인사이트 |
+| `components/products/dynamic.tsx` | ProductFiltersDynamic | 필터 시트 |
+| `components/products/detail/dynamic.tsx` | PriceHistoryChartDynamic | recharts 차트 |
+
+```typescript
+// default export 컴포넌트
+export const ManualFoodInputSheetDynamic = dynamic(
+  () => import('./ManualFoodInputSheet'),
+  { ssr: false, loading: () => null }
+);
+
+// named export 컴포넌트
+export const ProductFiltersDynamic = dynamic(
+  () => import('./ProductFilters').then(mod => ({ default: mod.ProductFilters })),
+  { ssr: false, loading: () => null }
+);
+```
+
 ### 데이터베이스 스키마 (clerk_user_id 연결)
 
 **Phase 1 테이블:**
@@ -265,6 +293,10 @@ const { goals, setGoals } = useWorkoutInputStore();
 - `workout_equipment` → 운동 기구 DB (50개)
 - `health_foods` → 건강식품 DB (100개)
 - `product_price_history` → 가격 변동 히스토리
+- `product_reviews` → 제품 리뷰 (clerk_user_id 기반)
+- `review_helpful` → 리뷰 도움됨 표시
+- `ingredient_interactions` → 성분 상호작용 경고 (24개 시드)
+- `affiliate_clicks` → 어필리에이트 클릭 트래킹
 
 ## 코드 스타일
 
@@ -350,4 +382,4 @@ components/workout/
 - Lucide React 아이콘 사용
 
 ---
-**Version**: 7.2 (Repository 패턴 리팩토링 완료) | **Updated**: 2025-12-09
+**Version**: 7.3 (테스트 2,571개 + 타겟 중립화) | **Updated**: 2025-12-17
