@@ -1,7 +1,7 @@
-# 🗄️ Database 스키마 v4.2 (Product DB v2 포함)
+# 🗄️ Database 스키마 v4.3 (Admin + Wishlist 포함)
 
-**버전**: v4.2 (Product DB v2 + Repository 패턴 반영)
-**업데이트**: 2025년 12월 9일
+**버전**: v4.3 (Product DB v2 + Admin + Wishlist)
+**업데이트**: 2025년 12월 19일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB 통합
@@ -27,10 +27,17 @@
     8. health_foods                 # 건강식품 (100개)
     9. product_price_history        # 가격 추적
 
+  사용자 기능:
+    10. wishlist                    # 위시리스트 (2025-12-11)
+
+  관리자:
+    11. feature_flags               # 기능 플래그 (2025-12-11)
+    12. admin_logs                  # 관리자 활동 로그 (2025-12-11)
+
   Phase 2 (영양):
-    10. foods                       # 음식 DB
-    11. nutrition_settings          # 영양 설정
-    12. meal_records                # 식단 기록
+    13. foods                       # 음식 DB
+    14. nutrition_settings          # 영양 설정
+    15. meal_records                # 식단 기록
 
 관계도:
   users (1) ━━━━━ (N) personal_color_assessments
@@ -1101,6 +1108,80 @@ CREATE TABLE water_records (
 
 ---
 
-**버전**: v4.2 (N-1 영양 모듈 추가)
-**최종 업데이트**: 2025년 12월 4일
-**상태**: Phase 1 + Phase 2 N-1 DB 완료 ✅
+## 11. user_wishlists 테이블 (위시리스트)
+
+```sql
+CREATE TABLE user_wishlists (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  product_type TEXT NOT NULL CHECK (product_type IN ('cosmetic', 'supplement', 'workout_equipment', 'health_food')),
+  product_id UUID NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- 중복 방지
+  UNIQUE(clerk_user_id, product_type, product_id)
+);
+
+-- RLS: 본인 데이터만 접근 가능
+CREATE POLICY "Users can view own wishlists" ON user_wishlists FOR SELECT
+  USING (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+CREATE POLICY "Users can insert own wishlists" ON user_wishlists FOR INSERT
+  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+CREATE POLICY "Users can delete own wishlists" ON user_wishlists FOR DELETE
+  USING (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+```
+
+> 마이그레이션: `supabase/migrations/20251211_wishlist.sql`
+
+---
+
+## 12. feature_flags 테이블 (기능 플래그)
+
+```sql
+CREATE TABLE feature_flags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  key TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  description TEXT,
+  enabled BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 초기 플래그 (12개)
+-- analysis_personal_color, analysis_skin, analysis_body
+-- workout_module, nutrition_module, reports_module
+-- product_recommendations, product_wishlist, ai_qa
+-- ingredient_warning, price_crawler, share_results
+
+-- RLS: 모든 사용자 읽기 가능, 관리자만 수정
+CREATE POLICY "Anyone can read feature flags" ON feature_flags FOR SELECT USING (true);
+CREATE POLICY "Service role can manage" ON feature_flags FOR ALL USING (auth.role() = 'service_role');
+```
+
+---
+
+## 13. admin_logs 테이블 (관리자 로그)
+
+```sql
+CREATE TABLE admin_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  action TEXT NOT NULL,          -- 'product.create', 'feature.toggle' 등
+  target_type TEXT,              -- 'product', 'feature', 'user'
+  target_id TEXT,
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS: Service Role만 접근
+CREATE POLICY "Service role only" ON admin_logs FOR ALL USING (auth.role() = 'service_role');
+```
+
+> 마이그레이션: `supabase/migrations/20251211_admin_features.sql`
+
+---
+
+**버전**: v4.3 (Admin + Wishlist 추가)
+**최종 업데이트**: 2025년 12월 19일
+**상태**: Phase 1 + Phase 2 + Admin 완료 ✅

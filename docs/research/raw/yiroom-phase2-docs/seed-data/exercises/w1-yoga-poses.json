@@ -1,0 +1,869 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "module": "W-1",
+    "category": "yoga",
+    "total_poses": 20,
+    "created_at": "2025-12-17",
+    "app": "Yiroom"
+  },
+  "ashtanga_overview": [
+    { "step": 1, "sanskrit": "Yama", "english": "Restraints", "korean": "금계", "description": "도덕적 규율 (비폭력, 진실, 불탐 등)" },
+    { "step": 2, "sanskrit": "Niyama", "english": "Observances", "korean": "권계", "description": "자기 수양 (청결, 만족, 열정 등)" },
+    { "step": 3, "sanskrit": "Asana", "english": "Postures", "korean": "체위법", "description": "요가 자세" },
+    { "step": 4, "sanskrit": "Pranayama", "english": "Breath Control", "korean": "호흡법", "description": "생명 에너지 조절" },
+    { "step": 5, "sanskrit": "Pratyahara", "english": "Sense Withdrawal", "korean": "제감", "description": "감각 철수" },
+    { "step": 6, "sanskrit": "Dharana", "english": "Concentration", "korean": "응념", "description": "집중" },
+    { "step": 7, "sanskrit": "Dhyana", "english": "Meditation", "korean": "선정", "description": "명상" },
+    { "step": 8, "sanskrit": "Samadhi", "english": "Absorption", "korean": "삼매", "description": "완전한 합일" }
+  ],
+  "met_reference": {
+    "restorative_yin": { "met": 2.0, "calories_per_hour_70kg": 140, "description": "이완, 회복 중심" },
+    "hatha": { "met_range": [2.3, 2.5], "calories_per_hour_70kg": [160, 175], "description": "기본 자세, 느린 템포" },
+    "vinyasa": { "met_range": [2.7, 3.5], "calories_per_hour_70kg": [190, 245], "description": "호흡 연결, 연속 동작" },
+    "hot_yoga": { "met_range": [3.0, 5.0], "calories_per_hour_70kg": [210, 350], "description": "고온 환경 (38-40°C)" },
+    "power": { "met_range": [4.0, 6.0], "calories_per_hour_70kg": [280, 420], "description": "근력 중심, 빠른 템포" },
+    "surya_namaskar": { "met_range": [3.5, 3.7], "calories_per_hour_70kg": [245, 260], "description": "태양경배 시퀀스" },
+    "ashtanga": { "met_range": [4.0, 5.5], "calories_per_hour_70kg": [280, 385], "description": "전통 시퀀스, 고강도" }
+  },
+  "poses": [
+    {
+      "id": "YOG-001",
+      "name_kr": "산 자세",
+      "name_en": "Mountain Pose",
+      "sanskrit": "Tadasana",
+      "pronunciation": "타다아사나",
+      "category": "standing",
+      "level": "beginner",
+      "difficulty": 1,
+      "met": 2.0,
+      "target_primary": ["전신 정렬", "코어", "다리"],
+      "target_secondary": ["발목", "척추"],
+      "steps": [
+        "발을 모으고 선다",
+        "체중을 균등하게 분배한다",
+        "척추를 길게 늘린다",
+        "어깨를 뒤로 내린다",
+        "팔을 옆에 자연스럽게 둔다"
+      ],
+      "breathing": {
+        "pattern": "자연스러운 복식호흡",
+        "inhale_action": null,
+        "exhale_action": null
+      },
+      "benefits": {
+        "physical": ["자세 개선", "균형감 향상", "척추 정렬"],
+        "mental": ["집중력 향상", "안정감"]
+      },
+      "contraindications": ["현기증", "저혈압(장시간 유지 시)"],
+      "variations": {
+        "easier": null,
+        "harder": "Urdhva Hastasana (팔 위로)"
+      },
+      "hold_time": "30-60초",
+      "breath_count": "5-10회",
+      "image_key": "yoga_mountain"
+    },
+    {
+      "id": "YOG-002",
+      "name_kr": "전사 자세 1",
+      "name_en": "Warrior I",
+      "sanskrit": "Virabhadrasana I",
+      "pronunciation": "비라바드라아사나 I",
+      "category": "standing",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 3.0,
+      "target_primary": ["대퇴사두근", "둔근", "코어"],
+      "target_secondary": ["어깨", "고관절 굴곡근"],
+      "steps": [
+        "런지 자세로 시작한다",
+        "뒷발을 45도 회전시킨다",
+        "골반이 정면을 향하게 한다",
+        "양팔을 머리 위로 올린다",
+        "앞무릎을 90도로 유지한다"
+      ],
+      "breathing": {
+        "pattern": "동작 연동 호흡",
+        "inhale_action": "팔 올리기",
+        "exhale_action": "더 깊이 런지"
+      },
+      "benefits": {
+        "physical": ["하체 강화", "고관절 유연성", "가슴 열림"],
+        "mental": ["자신감 증가", "집중력 향상"]
+      },
+      "contraindications": ["고관절 통증", "무릎 부상", "고혈압"],
+      "variations": {
+        "easier": "손 엉덩이에",
+        "harder": "Humble Warrior"
+      },
+      "hold_time": "30-60초",
+      "breath_count": "5-8회",
+      "image_key": "yoga_warrior1"
+    },
+    {
+      "id": "YOG-003",
+      "name_kr": "전사 자세 2",
+      "name_en": "Warrior II",
+      "sanskrit": "Virabhadrasana II",
+      "pronunciation": "비라바드라아사나 II",
+      "category": "standing",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 3.0,
+      "target_primary": ["대퇴사두근", "둔근", "내전근"],
+      "target_secondary": ["코어", "어깨"],
+      "steps": [
+        "다리를 넓게 벌린다",
+        "앞발 90도, 뒷발 약간 안쪽",
+        "앞무릎을 구부린다",
+        "팔을 T자로 펼친다",
+        "시선을 앞손가락으로"
+      ],
+      "breathing": {
+        "pattern": "균일한 호흡 유지",
+        "inhale_action": null,
+        "exhale_action": "더 깊이"
+      },
+      "benefits": {
+        "physical": ["하체 근력", "고관절 열림", "지구력 향상"],
+        "mental": ["용기", "결단력", "집중력"]
+      },
+      "contraindications": ["무릎 부상", "고관절 골관절염"],
+      "variations": {
+        "easier": "스탠스 좁히기",
+        "harder": "Extended Side Angle"
+      },
+      "hold_time": "30-60초",
+      "breath_count": "5-8회",
+      "image_key": "yoga_warrior2"
+    },
+    {
+      "id": "YOG-004",
+      "name_kr": "삼각 자세",
+      "name_en": "Triangle Pose",
+      "sanskrit": "Trikonasana",
+      "pronunciation": "트리코나아사나",
+      "category": "standing",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.5,
+      "target_primary": ["햄스트링", "고관절", "옆구리"],
+      "target_secondary": ["척추", "어깨"],
+      "steps": [
+        "다리를 넓게 벌린다",
+        "앞발을 90도 회전시킨다",
+        "팔을 T자로 펼친다",
+        "옆으로 기울이며 앞손을 바닥/정강이에",
+        "위팔을 천장으로 올린다"
+      ],
+      "breathing": {
+        "pattern": "동작 연동 호흡",
+        "inhale_action": "옆구리 길게",
+        "exhale_action": "회전하며 열기"
+      },
+      "benefits": {
+        "physical": ["햄스트링/내전근 스트레칭", "척추 유연성", "소화 촉진"],
+        "mental": ["스트레스 해소", "안정감"]
+      },
+      "contraindications": ["편두통", "설사", "저/고혈압", "목/허리 부상"],
+      "variations": {
+        "easier": "블록 사용",
+        "harder": "Revolved Triangle"
+      },
+      "hold_time": "30-60초",
+      "breath_count": "5-8회",
+      "image_key": "yoga_triangle"
+    },
+    {
+      "id": "YOG-005",
+      "name_kr": "나무 자세",
+      "name_en": "Tree Pose",
+      "sanskrit": "Vrksasana",
+      "pronunciation": "브륵샤아사나",
+      "category": "standing",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.5,
+      "target_primary": ["대퇴사두근", "햄스트링", "종아리"],
+      "target_secondary": ["코어", "고관절"],
+      "steps": [
+        "한 발로 선다",
+        "반대 발바닥을 허벅지 안쪽에 둔다",
+        "손을 합장 또는 위로 올린다",
+        "시선을 고정한다",
+        "균형을 유지한다"
+      ],
+      "breathing": {
+        "pattern": "안정적인 호흡으로 균형 유지",
+        "inhale_action": null,
+        "exhale_action": null
+      },
+      "benefits": {
+        "physical": ["균형감 향상", "하체 강화", "고관절 열림"],
+        "mental": ["집중력", "안정감", "자신감"]
+      },
+      "contraindications": ["무릎/발목 부상", "어지러움"],
+      "variations": {
+        "easier": "발을 종아리/발목에",
+        "harder": "눈 감기"
+      },
+      "hold_time": "30-60초",
+      "breath_count": "5-8회",
+      "image_key": "yoga_tree"
+    },
+    {
+      "id": "YOG-006",
+      "name_kr": "의자 자세",
+      "name_en": "Chair Pose",
+      "sanskrit": "Utkatasana",
+      "pronunciation": "우트카타아사나",
+      "category": "standing",
+      "level": "beginner",
+      "difficulty": 2.5,
+      "met": 3.0,
+      "target_primary": ["대퇴사두근", "둔근", "코어"],
+      "target_secondary": ["어깨", "발목"],
+      "steps": [
+        "발을 모으고 선다",
+        "무릎을 구부리며 뒤로 앉는다",
+        "체중을 발뒤꿈치로 이동",
+        "팔을 귀 옆으로 올린다",
+        "척추를 길게 유지한다"
+      ],
+      "breathing": {
+        "pattern": "동작 연동 호흡",
+        "inhale_action": "팔 올리기",
+        "exhale_action": "더 깊이 앉기"
+      },
+      "benefits": {
+        "physical": ["하체 근력 강화", "발목 안정성", "자세 개선"],
+        "mental": ["의지력", "집중력"]
+      },
+      "contraindications": ["무릎 부상", "불면증", "저혈압"],
+      "variations": {
+        "easier": "손 합장",
+        "harder": "발뒤꿈치 들기"
+      },
+      "hold_time": "30-60초",
+      "breath_count": "5-8회",
+      "image_key": "yoga_chair"
+    },
+    {
+      "id": "YOG-007",
+      "name_kr": "반달 자세",
+      "name_en": "Half Moon Pose",
+      "sanskrit": "Ardha Chandrasana",
+      "pronunciation": "아르다 찬드라아사나",
+      "category": "standing",
+      "level": "intermediate",
+      "difficulty": 3.5,
+      "met": 3.5,
+      "target_primary": ["둔근", "햄스트링", "코어"],
+      "target_secondary": ["발목", "고관절"],
+      "steps": [
+        "삼각 자세에서 시작한다",
+        "앞손을 바닥에 둔다",
+        "뒷다리를 들어올린다",
+        "엉덩이를 열어준다",
+        "위팔을 천장으로 올린다"
+      ],
+      "breathing": {
+        "pattern": "균일한 호흡",
+        "inhale_action": null,
+        "exhale_action": "더 열기"
+      },
+      "benefits": {
+        "physical": ["균형감", "고관절 열림", "하체 강화", "척추 안정화"],
+        "mental": ["집중력", "자신감"]
+      },
+      "contraindications": ["저혈압", "편두통", "설사", "불면증"],
+      "variations": {
+        "easier": "블록 사용",
+        "harder": "바인드 추가"
+      },
+      "hold_time": "20-30초",
+      "breath_count": "3-5회",
+      "image_key": "yoga_half_moon"
+    },
+    {
+      "id": "YOG-008",
+      "name_kr": "편안한 자세",
+      "name_en": "Easy Pose",
+      "sanskrit": "Sukhasana",
+      "pronunciation": "수카아사나",
+      "category": "seated",
+      "level": "beginner",
+      "difficulty": 1,
+      "met": 1.5,
+      "target_primary": ["고관절", "척추", "무릎"],
+      "target_secondary": [],
+      "steps": [
+        "바닥에 앉는다",
+        "다리를 교차한다",
+        "척추를 세운다",
+        "손을 무릎에 둔다",
+        "어깨를 이완한다"
+      ],
+      "breathing": {
+        "pattern": "깊고 느린 복식호흡",
+        "inhale_action": null,
+        "exhale_action": null
+      },
+      "benefits": {
+        "physical": ["고관절 열림", "척추 정렬"],
+        "mental": ["마음 진정", "명상 준비", "스트레스 해소"]
+      },
+      "contraindications": ["무릎 통증", "고관절 부상"],
+      "variations": {
+        "easier": "쿠션 위에 앉기, 벽에 등 기대기",
+        "harder": null
+      },
+      "hold_time": "1-5분",
+      "breath_count": "자유",
+      "image_key": "yoga_easy_pose"
+    },
+    {
+      "id": "YOG-009",
+      "name_kr": "앉아서 전굴 자세",
+      "name_en": "Seated Forward Bend",
+      "sanskrit": "Paschimottanasana",
+      "pronunciation": "파쉬모타나아사나",
+      "category": "seated",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.0,
+      "target_primary": ["햄스트링", "척추", "종아리"],
+      "target_secondary": ["엉덩이"],
+      "steps": [
+        "다리를 펴고 앉는다",
+        "척추를 세운다",
+        "들숨에 팔을 올린다",
+        "날숨에 앞으로 접는다",
+        "손으로 발을 잡는다"
+      ],
+      "breathing": {
+        "pattern": "동작 연동 호흡",
+        "inhale_action": "척추 길게",
+        "exhale_action": "더 깊이 접기"
+      },
+      "benefits": {
+        "physical": ["햄스트링/척추 스트레칭", "소화 촉진", "내장 마사지"],
+        "mental": ["스트레스 해소", "마음 진정", "불안 감소"]
+      },
+      "contraindications": ["추간판 탈출증", "좌골신경통", "허리 부상", "임신"],
+      "variations": {
+        "easier": "무릎 구부리기, 스트랩 사용",
+        "harder": "Head-to-Knee"
+      },
+      "hold_time": "1-3분",
+      "breath_count": "10-20회",
+      "image_key": "yoga_seated_forward"
+    },
+    {
+      "id": "YOG-010",
+      "name_kr": "나비 자세",
+      "name_en": "Butterfly Pose",
+      "sanskrit": "Baddha Konasana",
+      "pronunciation": "바다 코나아사나",
+      "category": "seated",
+      "level": "beginner",
+      "difficulty": 1.5,
+      "met": 2.0,
+      "target_primary": ["고관절", "내전근", "사타구니"],
+      "target_secondary": ["무릎"],
+      "steps": [
+        "앉아서 발바닥을 붙인다",
+        "발뒤꿈치를 골반 쪽으로 당긴다",
+        "무릎을 바닥 향해 내린다",
+        "척추를 세운다",
+        "발을 잡고 유지한다"
+      ],
+      "breathing": {
+        "pattern": "깊은 호흡",
+        "inhale_action": null,
+        "exhale_action": "무릎 더 내리기"
+      },
+      "benefits": {
+        "physical": ["고관절/사타구니 열림", "생식기관 자극", "혈액순환"],
+        "mental": ["진정", "피로 해소"]
+      },
+      "contraindications": ["사타구니/무릎 부상"],
+      "variations": {
+        "easier": "쿠션 위에 앉기",
+        "harder": "앞으로 접기, 누운 나비 자세"
+      },
+      "hold_time": "1-3분",
+      "breath_count": "10-20회",
+      "image_key": "yoga_butterfly"
+    },
+    {
+      "id": "YOG-011",
+      "name_kr": "반 척추 비틀기 자세",
+      "name_en": "Half Lord of the Fishes Pose",
+      "sanskrit": "Ardha Matsyendrasana",
+      "pronunciation": "아르다 맛첸드라아사나",
+      "category": "seated",
+      "level": "intermediate",
+      "difficulty": 2.5,
+      "met": 2.5,
+      "target_primary": ["척추", "복사근", "고관절"],
+      "target_secondary": ["어깨", "목"],
+      "steps": [
+        "한 다리를 구부려 세운다",
+        "반대 다리는 아래로",
+        "세운 다리를 반대쪽으로 넘긴다",
+        "상체를 비튼다",
+        "팔로 무릎을 감싼다"
+      ],
+      "breathing": {
+        "pattern": "동작 연동 호흡",
+        "inhale_action": "척추 길게",
+        "exhale_action": "더 비틀기"
+      },
+      "benefits": {
+        "physical": ["척추 유연성", "소화 촉진", "내장 마사지"],
+        "mental": ["에너지 흐름 개선", "긴장 해소"]
+      },
+      "contraindications": ["척추 부상", "임신", "생리 중(깊은 비틀기 피함)"],
+      "variations": {
+        "easier": "간단한 비틀기",
+        "harder": "바인드 추가"
+      },
+      "hold_time": "30-60초",
+      "breath_count": "5-10회",
+      "image_key": "yoga_half_lord_fishes"
+    },
+    {
+      "id": "YOG-012",
+      "name_kr": "머리-무릎 자세",
+      "name_en": "Head-to-Knee Forward Bend",
+      "sanskrit": "Janu Sirsasana",
+      "pronunciation": "자누 시르사아사나",
+      "category": "seated",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.0,
+      "target_primary": ["햄스트링", "사타구니", "척추"],
+      "target_secondary": ["어깨"],
+      "steps": [
+        "한 다리를 펴고 앉는다",
+        "반대 무릎을 구부려 허벅지에 둔다",
+        "몸을 펴진 다리 쪽으로 회전한다",
+        "앞으로 접는다",
+        "손으로 발을 잡는다"
+      ],
+      "breathing": {
+        "pattern": "동작 연동 호흡",
+        "inhale_action": "길게",
+        "exhale_action": "접기"
+      },
+      "benefits": {
+        "physical": ["햄스트링 스트레칭", "소화 촉진", "간/신장 자극"],
+        "mental": ["불안 해소", "마음 진정"]
+      },
+      "contraindications": ["무릎 부상", "설사", "천식"],
+      "variations": {
+        "easier": "스트랩 사용",
+        "harder": "비틀기 추가"
+      },
+      "hold_time": "1-3분",
+      "breath_count": "10-20회",
+      "image_key": "yoga_head_to_knee"
+    },
+    {
+      "id": "YOG-013",
+      "name_kr": "시체 자세",
+      "name_en": "Corpse Pose",
+      "sanskrit": "Savasana",
+      "pronunciation": "샤바아사나",
+      "category": "supine",
+      "level": "beginner",
+      "difficulty": 1,
+      "met": 1.0,
+      "target_primary": ["전신 이완"],
+      "target_secondary": [],
+      "steps": [
+        "등을 대고 눕는다",
+        "다리를 어깨 너비로 벌린다",
+        "팔을 옆에, 손바닥을 위로",
+        "눈을 감는다",
+        "완전히 이완한다"
+      ],
+      "breathing": {
+        "pattern": "자연스러운 호흡, 점점 깊게",
+        "inhale_action": null,
+        "exhale_action": null
+      },
+      "benefits": {
+        "physical": ["혈압 감소", "근육 이완", "피로 회복"],
+        "mental": ["스트레스 해소", "명상 상태", "숙면 유도"]
+      },
+      "contraindications": ["임신 후기(옆으로 눕기 권장)", "우울증(장시간 피함)"],
+      "variations": {
+        "easier": "무릎 아래 베개, 눈 위 안대",
+        "harder": null
+      },
+      "hold_time": "5-15분",
+      "breath_count": "자유",
+      "image_key": "yoga_corpse"
+    },
+    {
+      "id": "YOG-014",
+      "name_kr": "누운 비틀기 자세",
+      "name_en": "Supine Spinal Twist",
+      "sanskrit": "Supta Matsyendrasana",
+      "pronunciation": "수프타 맛첸드라아사나",
+      "category": "supine",
+      "level": "beginner",
+      "difficulty": 1.5,
+      "met": 2.0,
+      "target_primary": ["척추", "복사근", "둔근"],
+      "target_secondary": ["고관절", "가슴"],
+      "steps": [
+        "등을 대고 눕는다",
+        "한쪽 무릎을 가슴으로 당긴다",
+        "반대편으로 무릎을 넘긴다",
+        "반대쪽 손으로 무릎을 누른다",
+        "시선은 열린 팔 방향"
+      ],
+      "breathing": {
+        "pattern": "깊은 호흡",
+        "inhale_action": null,
+        "exhale_action": "더 깊이 비틀기"
+      },
+      "benefits": {
+        "physical": ["척추 유연성", "소화 촉진", "허리 긴장 완화"],
+        "mental": ["이완", "스트레스 해소"]
+      },
+      "contraindications": ["척추 부상", "허리 통증"],
+      "variations": {
+        "easier": "무릎 아래 베개",
+        "harder": "양다리 모아서 비틀기"
+      },
+      "hold_time": "1-3분",
+      "breath_count": "10-20회",
+      "image_key": "yoga_supine_twist"
+    },
+    {
+      "id": "YOG-015",
+      "name_kr": "다리 벽에 올리기",
+      "name_en": "Legs Up the Wall",
+      "sanskrit": "Viparita Karani",
+      "pronunciation": "비파리타 카라니",
+      "category": "supine",
+      "level": "beginner",
+      "difficulty": 1,
+      "met": 1.5,
+      "target_primary": ["햄스트링", "하체 순환"],
+      "target_secondary": ["허리", "골반"],
+      "steps": [
+        "벽 옆에 엉덩이를 붙이고 눕는다",
+        "다리를 벽 위로 올린다",
+        "팔을 옆에 편안히 둔다",
+        "눈을 감고 이완한다"
+      ],
+      "breathing": {
+        "pattern": "깊고 느린 호흡",
+        "inhale_action": null,
+        "exhale_action": null
+      },
+      "benefits": {
+        "physical": ["하체 부종 완화", "피로 회복", "혈액순환 개선"],
+        "mental": ["깊은 이완", "불안 감소"]
+      },
+      "contraindications": ["고혈압", "녹내장", "생리 중"],
+      "variations": {
+        "easier": "엉덩이 아래 쿠션",
+        "harder": "다리 벌리기(나비)"
+      },
+      "hold_time": "5-15분",
+      "breath_count": "자유",
+      "image_key": "yoga_legs_wall"
+    },
+    {
+      "id": "YOG-016",
+      "name_kr": "행복한 아기 자세",
+      "name_en": "Happy Baby Pose",
+      "sanskrit": "Ananda Balasana",
+      "pronunciation": "아난다 발라아사나",
+      "category": "supine",
+      "level": "beginner",
+      "difficulty": 1.5,
+      "met": 2.0,
+      "target_primary": ["고관절", "사타구니", "허리"],
+      "target_secondary": ["내전근"],
+      "steps": [
+        "등을 대고 눕는다",
+        "무릎을 가슴 쪽으로 당긴다",
+        "발바닥이 천장을 향하게 한다",
+        "손으로 발 바깥쪽을 잡는다",
+        "무릎을 겨드랑이 쪽으로 당긴다"
+      ],
+      "breathing": {
+        "pattern": "깊은 호흡",
+        "inhale_action": null,
+        "exhale_action": "더 당기기"
+      },
+      "benefits": {
+        "physical": ["고관절 열림", "허리 긴장 완화", "내전근 스트레칭"],
+        "mental": ["이완", "스트레스 해소"]
+      },
+      "contraindications": ["목 부상", "무릎 부상", "임신 후기"],
+      "variations": {
+        "easier": "스트랩 사용",
+        "harder": "좌우로 롤링"
+      },
+      "hold_time": "1-3분",
+      "breath_count": "10-20회",
+      "image_key": "yoga_happy_baby"
+    },
+    {
+      "id": "YOG-017",
+      "name_kr": "다리 교차 자세",
+      "name_en": "Bridge Pose",
+      "sanskrit": "Setu Bandhasana",
+      "pronunciation": "세투 반다아사나",
+      "category": "supine",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.5,
+      "target_primary": ["둔근", "햄스트링", "척추"],
+      "target_secondary": ["가슴", "목"],
+      "steps": [
+        "등을 대고 눕는다",
+        "무릎을 구부리고 발을 바닥에 둔다",
+        "팔을 옆에 둔다",
+        "골반을 들어올린다",
+        "어깨-엉덩이-무릎 일직선"
+      ],
+      "breathing": {
+        "pattern": "동작 연동 호흡",
+        "inhale_action": "준비",
+        "exhale_action": "들어올리기"
+      },
+      "benefits": {
+        "physical": ["척추 유연성", "가슴 열림", "둔근 강화"],
+        "mental": ["피로 회복", "불안 감소"]
+      },
+      "contraindications": ["목 부상", "허리 부상"],
+      "variations": {
+        "easier": "가동범위 줄이기",
+        "harder": "한 다리 들기"
+      },
+      "hold_time": "30-60초",
+      "breath_count": "5-10회",
+      "image_key": "yoga_bridge"
+    },
+    {
+      "id": "YOG-018",
+      "name_kr": "플랭크 자세",
+      "name_en": "Plank Pose",
+      "sanskrit": "Phalakasana",
+      "pronunciation": "팔라카아사나",
+      "category": "prone",
+      "level": "beginner",
+      "difficulty": 2.5,
+      "met": 4.0,
+      "target_primary": ["코어", "어깨", "팔"],
+      "target_secondary": ["둔근", "대퇴사두근"],
+      "steps": [
+        "손과 발끝으로 몸을 지지한다",
+        "손은 어깨 바로 아래",
+        "몸을 일직선으로 유지한다",
+        "코어를 단단히 조인다"
+      ],
+      "breathing": {
+        "pattern": "자연스러운 호흡 유지",
+        "inhale_action": null,
+        "exhale_action": null
+      },
+      "benefits": {
+        "physical": ["코어 강화", "전신 근력", "자세 개선"],
+        "mental": ["정신력 강화", "집중력"]
+      },
+      "contraindications": ["손목 부상", "어깨 부상"],
+      "variations": {
+        "easier": "무릎 대고 플랭크",
+        "harder": "한 팔/다리 들기"
+      },
+      "hold_time": "30-60초",
+      "breath_count": "5-10회",
+      "image_key": "yoga_plank"
+    },
+    {
+      "id": "YOG-019",
+      "name_kr": "코브라 자세",
+      "name_en": "Cobra Pose",
+      "sanskrit": "Bhujangasana",
+      "pronunciation": "부장가아사나",
+      "category": "prone",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.5,
+      "target_primary": ["척추 신전근", "가슴"],
+      "target_secondary": ["어깨", "복근"],
+      "steps": [
+        "엎드려 손을 어깨 옆에 둔다",
+        "다리를 모으고 발등을 바닥에 둔다",
+        "들숨에 가슴을 들어올린다",
+        "팔꿈치를 약간 구부린다",
+        "어깨를 뒤로 내린다"
+      ],
+      "breathing": {
+        "pattern": "동작 연동 호흡",
+        "inhale_action": "들어올리기",
+        "exhale_action": "내려오기"
+      },
+      "benefits": {
+        "physical": ["척추 유연성", "가슴 열림", "복부 스트레칭"],
+        "mental": ["에너지 증가", "스트레스 해소"]
+      },
+      "contraindications": ["허리 부상", "임신", "손목 터널 증후군"],
+      "variations": {
+        "easier": "Baby Cobra (낮게)",
+        "harder": "Upward Dog"
+      },
+      "hold_time": "15-30초",
+      "breath_count": "3-5회",
+      "image_key": "yoga_cobra"
+    },
+    {
+      "id": "YOG-020",
+      "name_kr": "하향견 자세",
+      "name_en": "Downward-Facing Dog",
+      "sanskrit": "Adho Mukha Svanasana",
+      "pronunciation": "아도 무카 스바나아사나",
+      "category": "inversion",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 3.0,
+      "target_primary": ["햄스트링", "종아리", "어깨"],
+      "target_secondary": ["척추", "코어"],
+      "steps": [
+        "네발기기에서 시작한다",
+        "손으로 밀어 엉덩이를 위로 올린다",
+        "역V자 모양을 만든다",
+        "발뒤꿈치를 바닥으로 누른다",
+        "목을 이완하고 시선은 배꼽"
+      ],
+      "breathing": {
+        "pattern": "깊은 호흡 유지",
+        "inhale_action": "척추 길게",
+        "exhale_action": "발뒤꿈치 내리기"
+      },
+      "benefits": {
+        "physical": ["전신 스트레칭", "어깨/햄스트링 유연성", "혈액순환 개선"],
+        "mental": ["마음 진정", "에너지 회복"]
+      },
+      "contraindications": ["손목 터널 증후군", "고혈압", "임신 후기"],
+      "variations": {
+        "easier": "무릎 구부리기",
+        "harder": "한 다리 들기"
+      },
+      "hold_time": "1-3분",
+      "breath_count": "10-20회",
+      "image_key": "yoga_downward_dog"
+    }
+  ],
+  "sequences": {
+    "surya_namaskar_a": {
+      "name_kr": "태양경배 A",
+      "name_en": "Sun Salutation A",
+      "total_steps": 12,
+      "met": 3.5,
+      "duration_per_round": "2-3분",
+      "steps": [
+        { "step": 1, "sanskrit": "Pranamasana", "korean": "합장 자세", "breath": "exhale" },
+        { "step": 2, "sanskrit": "Hasta Uttanasana", "korean": "팔 올린 자세", "breath": "inhale" },
+        { "step": 3, "sanskrit": "Uttanasana", "korean": "서서 전굴", "breath": "exhale" },
+        { "step": 4, "sanskrit": "Ashwa Sanchalanasana", "korean": "기마 자세", "breath": "inhale" },
+        { "step": 5, "sanskrit": "Phalakasana", "korean": "판자 자세", "breath": "hold" },
+        { "step": 6, "sanskrit": "Ashtanga Namaskara", "korean": "8점 경배", "breath": "exhale" },
+        { "step": 7, "sanskrit": "Bhujangasana", "korean": "코브라 자세", "breath": "inhale" },
+        { "step": 8, "sanskrit": "Adho Mukha Svanasana", "korean": "하향견 자세", "breath": "exhale" },
+        { "step": 9, "sanskrit": "Ashwa Sanchalanasana", "korean": "기마 자세", "breath": "inhale" },
+        { "step": 10, "sanskrit": "Uttanasana", "korean": "서서 전굴", "breath": "exhale" },
+        { "step": 11, "sanskrit": "Hasta Uttanasana", "korean": "팔 올린 자세", "breath": "inhale" },
+        { "step": 12, "sanskrit": "Pranamasana", "korean": "합장 자세", "breath": "exhale" }
+      ]
+    },
+    "surya_namaskar_b": {
+      "name_kr": "태양경배 B",
+      "name_en": "Sun Salutation B",
+      "total_steps": 19,
+      "met": 4.5,
+      "duration_per_round": "3-4분",
+      "notes": "Warrior I 포함, Ashtanga 전통 시퀀스"
+    }
+  },
+  "routines": {
+    "morning_15min": {
+      "name_kr": "모닝 요가",
+      "duration_minutes": 15,
+      "focus": "에너지 각성",
+      "poses": ["YOG-001", "YOG-002", "YOG-003", "YOG-004", "YOG-005", "YOG-020"]
+    },
+    "stress_relief_20min": {
+      "name_kr": "스트레스 해소",
+      "duration_minutes": 20,
+      "focus": "이완",
+      "poses": ["YOG-008", "YOG-009", "YOG-010", "YOG-011", "YOG-013", "YOG-014", "YOG-015"]
+    },
+    "bedtime_10min": {
+      "name_kr": "취침 전 요가",
+      "duration_minutes": 10,
+      "focus": "숙면 유도",
+      "poses": ["YOG-008", "YOG-009", "YOG-012", "YOG-014", "YOG-015", "YOG-016", "YOG-013"]
+    },
+    "energy_boost_15min": {
+      "name_kr": "에너지 충전",
+      "duration_minutes": 15,
+      "focus": "활력 증진",
+      "poses": ["YOG-001", "YOG-006", "YOG-002", "YOG-003", "YOG-018", "YOG-019", "YOG-020"]
+    },
+    "hip_opener_20min": {
+      "name_kr": "고관절 열기",
+      "duration_minutes": 20,
+      "focus": "고관절 유연성",
+      "poses": ["YOG-008", "YOG-010", "YOG-012", "YOG-016", "YOG-014", "YOG-013"]
+    }
+  },
+  "body_type_recommendations": {
+    "X": {
+      "name_kr": "모래시계형",
+      "goal": "균형 유지",
+      "recommended_ids": ["YOG-001", "YOG-002", "YOG-003", "YOG-004", "YOG-005", "YOG-009", "YOG-020"],
+      "recommended_sequence": "surya_namaskar_a",
+      "notes": "특정 부위 과발달 피하기"
+    },
+    "A": {
+      "name_kr": "하체 발달형",
+      "goal": "상체 강화",
+      "recommended_ids": ["YOG-020", "YOG-018", "YOG-007", "YOG-019"],
+      "recommended_sequence": "surya_namaskar_b",
+      "notes": "하체 과도한 근력 운동 제한"
+    },
+    "Y": {
+      "name_kr": "역삼각형",
+      "goal": "하체 강화",
+      "recommended_ids": ["YOG-006", "YOG-002", "YOG-003", "YOG-005", "YOG-017", "YOG-010"],
+      "recommended_sequence": "standing_focus",
+      "notes": "상체 운동 과다 피함"
+    },
+    "H": {
+      "name_kr": "일자형",
+      "goal": "곡선 만들기",
+      "recommended_ids": ["YOG-004", "YOG-007", "YOG-011"],
+      "recommended_sequence": "twist_sequence",
+      "notes": "측면/회전 동작 강조"
+    },
+    "O": {
+      "name_kr": "복부 비만형",
+      "goal": "코어 집중",
+      "recommended_ids": ["YOG-006", "YOG-018", "YOG-020", "YOG-002", "YOG-003"],
+      "recommended_sequence": "surya_namaskar_a",
+      "notes": "점진적 강도 증가, 호흡 중심"
+    }
+  }
+}

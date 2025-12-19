@@ -1,0 +1,2516 @@
+{
+  "metadata": {
+    "version": "2.0.0",
+    "module": "N-1",
+    "category": "korean_food_complete",
+    "total_items": 80,
+    "id_range": "KF-001 to KF-080",
+    "created_at": "2025-12-17",
+    "app": "Yiroom",
+    "data_sources": [
+      "식품의약품안전처 식품영양성분DB",
+      "농촌진흥청 국가표준식품성분표",
+      "한국영양학회"
+    ]
+  },
+  "serving_info": {
+    "standard_serving_note": "1인분 기준 (표준 제공량)",
+    "measurement_units": {
+      "weight": "g",
+      "volume": "ml",
+      "energy": "kcal",
+      "macros": "g",
+      "sodium": "mg"
+    }
+  },
+  "food_categories": [
+    {
+      "id": "rice",
+      "name_kr": "밥류",
+      "name_en": "Rice Dishes"
+    },
+    {
+      "id": "soup",
+      "name_kr": "국/찌개류",
+      "name_en": "Soups & Stews"
+    },
+    {
+      "id": "side",
+      "name_kr": "반찬류",
+      "name_en": "Side Dishes"
+    },
+    {
+      "id": "noodle",
+      "name_kr": "면류",
+      "name_en": "Noodles"
+    },
+    {
+      "id": "meat",
+      "name_kr": "고기류",
+      "name_en": "Meat Dishes"
+    },
+    {
+      "id": "seafood",
+      "name_kr": "해산물류",
+      "name_en": "Seafood"
+    },
+    {
+      "id": "street",
+      "name_kr": "분식/길거리음식",
+      "name_en": "Street Food"
+    },
+    {
+      "id": "healthy",
+      "name_kr": "건강식",
+      "name_en": "Health Food"
+    },
+    {
+      "id": "beverage",
+      "name_kr": "음료류",
+      "name_en": "Beverages"
+    },
+    {
+      "id": "snack",
+      "name_kr": "간식류",
+      "name_en": "Snacks"
+    },
+    {
+      "id": "fermented",
+      "name_kr": "발효식품",
+      "name_en": "Fermented Foods"
+    },
+    {
+      "id": "traditional",
+      "name_kr": "전통음식",
+      "name_en": "Traditional Dishes"
+    }
+  ],
+  "foods": [
+    {
+      "id": "KF-001",
+      "name_kr": "흰쌀밥",
+      "name_en": "White Rice",
+      "category": "rice",
+      "serving_size": 210,
+      "serving_unit": "g",
+      "serving_description": "1공기",
+      "calories": 313,
+      "nutrients": {
+        "carbohydrates": 68.5,
+        "protein": 5.5,
+        "fat": 0.6,
+        "fiber": 0.8,
+        "sodium": 2
+      },
+      "glycemic_index": 73,
+      "glycemic_load": 50,
+      "tags": [
+        "staple",
+        "high_gi"
+      ],
+      "health_notes": "혈당 관리가 필요한 경우 잡곡밥으로 대체 권장",
+      "personal_color_pairing": {
+        "spring": "밝은 색 반찬과 함께",
+        "summer": "차가운 느낌의 반찬과 조화",
+        "autumn": "따뜻한 색 반찬과 매칭",
+        "winter": "깊은 색 반찬과 어울림"
+      }
+    },
+    {
+      "id": "KF-002",
+      "name_kr": "잡곡밥",
+      "name_en": "Mixed Grain Rice",
+      "category": "rice",
+      "serving_size": 210,
+      "serving_unit": "g",
+      "serving_description": "1공기",
+      "calories": 295,
+      "nutrients": {
+        "carbohydrates": 62.0,
+        "protein": 7.2,
+        "fat": 1.8,
+        "fiber": 4.2,
+        "sodium": 5
+      },
+      "glycemic_index": 55,
+      "glycemic_load": 34,
+      "tags": [
+        "staple",
+        "low_gi",
+        "high_fiber"
+      ],
+      "health_notes": "혈당 조절에 좋고 포만감 오래 유지",
+      "personal_color_pairing": {
+        "autumn": "특히 잘 어울림 - 풍성한 자연색",
+        "winter": "깊은 톤과 조화"
+      }
+    },
+    {
+      "id": "KF-003",
+      "name_kr": "현미밥",
+      "name_en": "Brown Rice",
+      "category": "rice",
+      "serving_size": 210,
+      "serving_unit": "g",
+      "serving_description": "1공기",
+      "calories": 280,
+      "nutrients": {
+        "carbohydrates": 58.5,
+        "protein": 6.8,
+        "fat": 2.4,
+        "fiber": 3.8,
+        "sodium": 3
+      },
+      "glycemic_index": 50,
+      "glycemic_load": 29,
+      "tags": [
+        "staple",
+        "low_gi",
+        "whole_grain"
+      ],
+      "health_notes": "비타민B, 마그네슘 풍부"
+    },
+    {
+      "id": "KF-004",
+      "name_kr": "비빔밥",
+      "name_en": "Bibimbap",
+      "category": "rice",
+      "serving_size": 450,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 580,
+      "nutrients": {
+        "carbohydrates": 85.0,
+        "protein": 22.0,
+        "fat": 15.0,
+        "fiber": 6.5,
+        "sodium": 850
+      },
+      "glycemic_index": 60,
+      "glycemic_load": 51,
+      "tags": [
+        "complete_meal",
+        "colorful",
+        "balanced"
+      ],
+      "health_notes": "오색 채소로 영양 균형 우수, 고추장 양 조절로 나트륨 관리",
+      "personal_color_pairing": {
+        "spring": "화사한 오색 나물과 완벽 매칭",
+        "summer": "선명한 색감의 재료 강조",
+        "autumn": "따뜻한 색 나물 중심으로",
+        "winter": "깊은 색 나물과 고추장 강조"
+      }
+    },
+    {
+      "id": "KF-005",
+      "name_kr": "김치볶음밥",
+      "name_en": "Kimchi Fried Rice",
+      "category": "rice",
+      "serving_size": 350,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 520,
+      "nutrients": {
+        "carbohydrates": 72.0,
+        "protein": 15.0,
+        "fat": 18.0,
+        "fiber": 3.5,
+        "sodium": 1200
+      },
+      "glycemic_index": 65,
+      "glycemic_load": 47,
+      "tags": [
+        "fermented",
+        "high_sodium"
+      ],
+      "health_notes": "나트륨 높음, 계란 추가로 단백질 보충 권장"
+    },
+    {
+      "id": "KF-006",
+      "name_kr": "된장찌개",
+      "name_en": "Doenjang Jjigae",
+      "category": "soup",
+      "serving_size": 300,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 150,
+      "nutrients": {
+        "carbohydrates": 12.0,
+        "protein": 10.5,
+        "fat": 6.5,
+        "fiber": 3.2,
+        "sodium": 980
+      },
+      "glycemic_index": 35,
+      "glycemic_load": 4,
+      "tags": [
+        "fermented",
+        "probiotic",
+        "traditional"
+      ],
+      "health_notes": "발효식품의 프로바이오틱스, 두부로 식물성 단백질 보충"
+    },
+    {
+      "id": "KF-007",
+      "name_kr": "김치찌개",
+      "name_en": "Kimchi Jjigae",
+      "category": "soup",
+      "serving_size": 350,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 280,
+      "nutrients": {
+        "carbohydrates": 15.0,
+        "protein": 18.0,
+        "fat": 16.0,
+        "fiber": 4.0,
+        "sodium": 1350
+      },
+      "glycemic_index": 30,
+      "glycemic_load": 5,
+      "tags": [
+        "fermented",
+        "spicy",
+        "high_sodium"
+      ],
+      "health_notes": "나트륨 주의, 국물 섭취 줄이면 염분 감소"
+    },
+    {
+      "id": "KF-008",
+      "name_kr": "순두부찌개",
+      "name_en": "Sundubu Jjigae",
+      "category": "soup",
+      "serving_size": 400,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 320,
+      "nutrients": {
+        "carbohydrates": 12.0,
+        "protein": 22.0,
+        "fat": 20.0,
+        "fiber": 2.5,
+        "sodium": 1100
+      },
+      "glycemic_index": 25,
+      "glycemic_load": 3,
+      "tags": [
+        "high_protein",
+        "soft_texture"
+      ],
+      "health_notes": "고단백 저탄수화물, 계란 추가 시 영양 UP"
+    },
+    {
+      "id": "KF-009",
+      "name_kr": "미역국",
+      "name_en": "Seaweed Soup",
+      "category": "soup",
+      "serving_size": 300,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 85,
+      "nutrients": {
+        "carbohydrates": 4.0,
+        "protein": 8.5,
+        "fat": 4.0,
+        "fiber": 2.0,
+        "sodium": 780,
+        "iodine": 120,
+        "calcium": 150
+      },
+      "glycemic_index": 15,
+      "glycemic_load": 1,
+      "tags": [
+        "low_calorie",
+        "mineral_rich",
+        "postpartum"
+      ],
+      "health_notes": "요오드, 칼슘 풍부, 갑상선 건강에 좋음"
+    },
+    {
+      "id": "KF-010",
+      "name_kr": "삼계탕",
+      "name_en": "Samgyetang",
+      "category": "soup",
+      "serving_size": 800,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 580,
+      "nutrients": {
+        "carbohydrates": 35.0,
+        "protein": 45.0,
+        "fat": 28.0,
+        "fiber": 2.0,
+        "sodium": 950
+      },
+      "glycemic_index": 50,
+      "glycemic_load": 18,
+      "tags": [
+        "restorative",
+        "high_protein",
+        "traditional"
+      ],
+      "health_notes": "인삼, 대추 등 보양 재료, 피로 회복에 좋음"
+    },
+    {
+      "id": "KF-011",
+      "name_kr": "배추김치",
+      "name_en": "Baechu Kimchi",
+      "category": "side",
+      "serving_size": 40,
+      "serving_unit": "g",
+      "serving_description": "1회 제공량",
+      "calories": 15,
+      "nutrients": {
+        "carbohydrates": 2.5,
+        "protein": 1.0,
+        "fat": 0.3,
+        "fiber": 1.5,
+        "sodium": 350,
+        "vitamin_c": 12
+      },
+      "glycemic_index": 15,
+      "glycemic_load": 0,
+      "tags": [
+        "fermented",
+        "probiotic",
+        "low_calorie",
+        "essential"
+      ],
+      "health_notes": "유산균 풍부, 면역력 강화, 비타민C 함유"
+    },
+    {
+      "id": "KF-012",
+      "name_kr": "시금치나물",
+      "name_en": "Spinach Namul",
+      "category": "side",
+      "serving_size": 70,
+      "serving_unit": "g",
+      "serving_description": "1회 제공량",
+      "calories": 35,
+      "nutrients": {
+        "carbohydrates": 2.5,
+        "protein": 3.0,
+        "fat": 1.8,
+        "fiber": 2.5,
+        "sodium": 280,
+        "iron": 2.5,
+        "vitamin_a": 450
+      },
+      "glycemic_index": 15,
+      "glycemic_load": 0,
+      "tags": [
+        "vegetable",
+        "iron_rich",
+        "low_calorie"
+      ],
+      "health_notes": "철분, 비타민A 풍부, 빈혈 예방에 좋음"
+    },
+    {
+      "id": "KF-013",
+      "name_kr": "콩나물무침",
+      "name_en": "Bean Sprout Namul",
+      "category": "side",
+      "serving_size": 70,
+      "serving_unit": "g",
+      "serving_description": "1회 제공량",
+      "calories": 28,
+      "nutrients": {
+        "carbohydrates": 3.0,
+        "protein": 2.8,
+        "fat": 1.0,
+        "fiber": 1.8,
+        "sodium": 220,
+        "vitamin_c": 8
+      },
+      "glycemic_index": 15,
+      "glycemic_load": 0,
+      "tags": [
+        "vegetable",
+        "low_calorie",
+        "budget_friendly"
+      ],
+      "health_notes": "아스파라긴산으로 숙취 해소에 효과적"
+    },
+    {
+      "id": "KF-014",
+      "name_kr": "계란찜",
+      "name_en": "Steamed Egg",
+      "category": "side",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 145,
+      "nutrients": {
+        "carbohydrates": 2.0,
+        "protein": 12.0,
+        "fat": 10.0,
+        "fiber": 0,
+        "sodium": 380
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "high_protein",
+        "soft_texture",
+        "complete_protein"
+      ],
+      "health_notes": "완전 단백질, 소화 흡수 좋음"
+    },
+    {
+      "id": "KF-015",
+      "name_kr": "멸치볶음",
+      "name_en": "Stir-fried Anchovies",
+      "category": "side",
+      "serving_size": 30,
+      "serving_unit": "g",
+      "serving_description": "1회 제공량",
+      "calories": 85,
+      "nutrients": {
+        "carbohydrates": 8.0,
+        "protein": 8.0,
+        "fat": 3.5,
+        "fiber": 0.5,
+        "sodium": 450,
+        "calcium": 280
+      },
+      "glycemic_index": 25,
+      "glycemic_load": 2,
+      "tags": [
+        "calcium_rich",
+        "protein"
+      ],
+      "health_notes": "칼슘 보충에 좋음, 뼈 건강에 도움"
+    },
+    {
+      "id": "KF-016",
+      "name_kr": "잡채",
+      "name_en": "Japchae",
+      "category": "side",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 380,
+      "nutrients": {
+        "carbohydrates": 52.0,
+        "protein": 8.0,
+        "fat": 15.0,
+        "fiber": 4.0,
+        "sodium": 680
+      },
+      "glycemic_index": 55,
+      "glycemic_load": 29,
+      "tags": [
+        "festive",
+        "colorful",
+        "noodle"
+      ],
+      "health_notes": "당면은 GI가 낮지 않음, 채소 비율 높이면 좋음"
+    },
+    {
+      "id": "KF-017",
+      "name_kr": "두부조림",
+      "name_en": "Braised Tofu",
+      "category": "side",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 165,
+      "nutrients": {
+        "carbohydrates": 8.0,
+        "protein": 14.0,
+        "fat": 9.0,
+        "fiber": 1.5,
+        "sodium": 520
+      },
+      "glycemic_index": 15,
+      "glycemic_load": 1,
+      "tags": [
+        "plant_protein",
+        "low_gi"
+      ],
+      "health_notes": "식물성 단백질, 이소플라본 함유"
+    },
+    {
+      "id": "KF-018",
+      "name_kr": "냉면",
+      "name_en": "Naengmyeon",
+      "category": "noodle",
+      "serving_size": 500,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 480,
+      "nutrients": {
+        "carbohydrates": 95.0,
+        "protein": 15.0,
+        "fat": 3.0,
+        "fiber": 4.5,
+        "sodium": 1400
+      },
+      "glycemic_index": 55,
+      "glycemic_load": 52,
+      "tags": [
+        "cold",
+        "summer",
+        "buckwheat"
+      ],
+      "health_notes": "메밀면은 혈관 건강에 좋음, 여름철 인기"
+    },
+    {
+      "id": "KF-019",
+      "name_kr": "비빔냉면",
+      "name_en": "Bibim Naengmyeon",
+      "category": "noodle",
+      "serving_size": 450,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 520,
+      "nutrients": {
+        "carbohydrates": 88.0,
+        "protein": 14.0,
+        "fat": 12.0,
+        "fiber": 4.0,
+        "sodium": 1100
+      },
+      "glycemic_index": 58,
+      "glycemic_load": 51,
+      "tags": [
+        "spicy",
+        "cold",
+        "summer"
+      ],
+      "health_notes": "매운맛으로 식욕 자극, 여름 보양식"
+    },
+    {
+      "id": "KF-020",
+      "name_kr": "칼국수",
+      "name_en": "Kalguksu",
+      "category": "noodle",
+      "serving_size": 500,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 450,
+      "nutrients": {
+        "carbohydrates": 78.0,
+        "protein": 18.0,
+        "fat": 6.0,
+        "fiber": 3.0,
+        "sodium": 1250
+      },
+      "glycemic_index": 62,
+      "glycemic_load": 48,
+      "tags": [
+        "comfort_food",
+        "handmade"
+      ],
+      "health_notes": "밀가루 면, 해물 버전은 단백질 UP"
+    },
+    {
+      "id": "KF-021",
+      "name_kr": "잔치국수",
+      "name_en": "Janchi Guksu",
+      "category": "noodle",
+      "serving_size": 400,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 380,
+      "nutrients": {
+        "carbohydrates": 72.0,
+        "protein": 12.0,
+        "fat": 4.0,
+        "fiber": 2.5,
+        "sodium": 1100
+      },
+      "glycemic_index": 65,
+      "glycemic_load": 47,
+      "tags": [
+        "festive",
+        "warm"
+      ],
+      "health_notes": "잔칫날 음식, 담백한 맛"
+    },
+    {
+      "id": "KF-022",
+      "name_kr": "짜장면",
+      "name_en": "Jjajangmyeon",
+      "category": "noodle",
+      "serving_size": 550,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 680,
+      "nutrients": {
+        "carbohydrates": 98.0,
+        "protein": 18.0,
+        "fat": 22.0,
+        "fiber": 4.0,
+        "sodium": 1350
+      },
+      "glycemic_index": 60,
+      "glycemic_load": 59,
+      "tags": [
+        "chinese_korean",
+        "comfort_food"
+      ],
+      "health_notes": "고열량, 가끔 섭취 권장"
+    },
+    {
+      "id": "KF-023",
+      "name_kr": "삼겹살 (구이)",
+      "name_en": "Grilled Pork Belly",
+      "category": "meat",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 580,
+      "nutrients": {
+        "carbohydrates": 0,
+        "protein": 28.0,
+        "fat": 52.0,
+        "fiber": 0,
+        "sodium": 85
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "high_fat",
+        "grilled",
+        "popular"
+      ],
+      "health_notes": "포화지방 많음, 상추/마늘과 함께 섭취 권장"
+    },
+    {
+      "id": "KF-024",
+      "name_kr": "불고기",
+      "name_en": "Bulgogi",
+      "category": "meat",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 320,
+      "nutrients": {
+        "carbohydrates": 15.0,
+        "protein": 32.0,
+        "fat": 14.0,
+        "fiber": 1.0,
+        "sodium": 680
+      },
+      "glycemic_index": 25,
+      "glycemic_load": 4,
+      "tags": [
+        "high_protein",
+        "sweet_savory"
+      ],
+      "health_notes": "양념에 설탕 포함, 양 조절 필요"
+    },
+    {
+      "id": "KF-025",
+      "name_kr": "갈비찜",
+      "name_en": "Braised Short Ribs",
+      "category": "meat",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 450,
+      "nutrients": {
+        "carbohydrates": 20.0,
+        "protein": 35.0,
+        "fat": 25.0,
+        "fiber": 2.0,
+        "sodium": 720
+      },
+      "glycemic_index": 30,
+      "glycemic_load": 6,
+      "tags": [
+        "festive",
+        "braised"
+      ],
+      "health_notes": "콜라겐 풍부, 명절 음식"
+    },
+    {
+      "id": "KF-026",
+      "name_kr": "닭갈비",
+      "name_en": "Dak-galbi",
+      "category": "meat",
+      "serving_size": 250,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 380,
+      "nutrients": {
+        "carbohydrates": 25.0,
+        "protein": 35.0,
+        "fat": 15.0,
+        "fiber": 4.0,
+        "sodium": 950
+      },
+      "glycemic_index": 35,
+      "glycemic_load": 9,
+      "tags": [
+        "spicy",
+        "high_protein"
+      ],
+      "health_notes": "닭가슴살로 대체 시 지방 감소"
+    },
+    {
+      "id": "KF-027",
+      "name_kr": "족발",
+      "name_en": "Jokbal",
+      "category": "meat",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 320,
+      "nutrients": {
+        "carbohydrates": 2.0,
+        "protein": 30.0,
+        "fat": 20.0,
+        "fiber": 0,
+        "sodium": 580
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "collagen",
+        "braised"
+      ],
+      "health_notes": "콜라겐 풍부, 피부 건강에 좋음"
+    },
+    {
+      "id": "KF-028",
+      "name_kr": "제육볶음",
+      "name_en": "Spicy Stir-fried Pork",
+      "category": "meat",
+      "serving_size": 180,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 380,
+      "nutrients": {
+        "carbohydrates": 12.0,
+        "protein": 28.0,
+        "fat": 24.0,
+        "fiber": 2.0,
+        "sodium": 750
+      },
+      "glycemic_index": 25,
+      "glycemic_load": 3,
+      "tags": [
+        "spicy",
+        "popular"
+      ],
+      "health_notes": "고추장 양념, 밥도둑 메뉴"
+    },
+    {
+      "id": "KF-029",
+      "name_kr": "고등어구이",
+      "name_en": "Grilled Mackerel",
+      "category": "seafood",
+      "serving_size": 120,
+      "serving_unit": "g",
+      "serving_description": "1토막",
+      "calories": 220,
+      "nutrients": {
+        "carbohydrates": 0,
+        "protein": 22.0,
+        "fat": 14.0,
+        "fiber": 0,
+        "sodium": 320,
+        "omega3": 2.5
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "omega3",
+        "brain_health"
+      ],
+      "health_notes": "오메가3 풍부, 심혈관 건강에 좋음"
+    },
+    {
+      "id": "KF-030",
+      "name_kr": "삼치구이",
+      "name_en": "Grilled Spanish Mackerel",
+      "category": "seafood",
+      "serving_size": 100,
+      "serving_unit": "g",
+      "serving_description": "1토막",
+      "calories": 180,
+      "nutrients": {
+        "carbohydrates": 0,
+        "protein": 20.0,
+        "fat": 10.0,
+        "fiber": 0,
+        "sodium": 280,
+        "omega3": 1.8
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "omega3",
+        "low_mercury"
+      ],
+      "health_notes": "담백한 맛, 노인/어린이에게 좋음"
+    },
+    {
+      "id": "KF-031",
+      "name_kr": "해물파전",
+      "name_en": "Seafood Pancake",
+      "category": "seafood",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 320,
+      "nutrients": {
+        "carbohydrates": 35.0,
+        "protein": 15.0,
+        "fat": 14.0,
+        "fiber": 2.5,
+        "sodium": 680
+      },
+      "glycemic_index": 55,
+      "glycemic_load": 19,
+      "tags": [
+        "rainy_day",
+        "popular"
+      ],
+      "health_notes": "비 오는 날 인기, 기름 사용 주의"
+    },
+    {
+      "id": "KF-032",
+      "name_kr": "낙지볶음",
+      "name_en": "Spicy Stir-fried Octopus",
+      "category": "seafood",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 280,
+      "nutrients": {
+        "carbohydrates": 18.0,
+        "protein": 28.0,
+        "fat": 10.0,
+        "fiber": 3.0,
+        "sodium": 850
+      },
+      "glycemic_index": 30,
+      "glycemic_load": 5,
+      "tags": [
+        "spicy",
+        "high_protein",
+        "taurine"
+      ],
+      "health_notes": "타우린 풍부, 피로 회복에 좋음"
+    },
+    {
+      "id": "KF-033",
+      "name_kr": "회덮밥",
+      "name_en": "Raw Fish Rice Bowl",
+      "category": "seafood",
+      "serving_size": 400,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 450,
+      "nutrients": {
+        "carbohydrates": 65.0,
+        "protein": 28.0,
+        "fat": 8.0,
+        "fiber": 4.0,
+        "sodium": 680
+      },
+      "glycemic_index": 55,
+      "glycemic_load": 36,
+      "tags": [
+        "fresh",
+        "balanced"
+      ],
+      "health_notes": "신선한 회와 채소, 영양 균형 좋음"
+    },
+    {
+      "id": "KF-034",
+      "name_kr": "떡볶이",
+      "name_en": "Tteokbokki",
+      "category": "street",
+      "serving_size": 300,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 480,
+      "nutrients": {
+        "carbohydrates": 95.0,
+        "protein": 8.0,
+        "fat": 8.0,
+        "fiber": 2.0,
+        "sodium": 1200
+      },
+      "glycemic_index": 75,
+      "glycemic_load": 71,
+      "tags": [
+        "high_gi",
+        "spicy",
+        "popular"
+      ],
+      "health_notes": "고GI 식품, 혈당 급상승 주의"
+    },
+    {
+      "id": "KF-035",
+      "name_kr": "순대",
+      "name_en": "Sundae",
+      "category": "street",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 280,
+      "nutrients": {
+        "carbohydrates": 25.0,
+        "protein": 15.0,
+        "fat": 14.0,
+        "fiber": 1.5,
+        "sodium": 580,
+        "iron": 8.5
+      },
+      "glycemic_index": 50,
+      "glycemic_load": 13,
+      "tags": [
+        "iron_rich",
+        "traditional"
+      ],
+      "health_notes": "철분 풍부, 빈혈 예방에 좋음"
+    },
+    {
+      "id": "KF-036",
+      "name_kr": "김밥",
+      "name_en": "Kimbap",
+      "category": "street",
+      "serving_size": 250,
+      "serving_unit": "g",
+      "serving_description": "1줄",
+      "calories": 380,
+      "nutrients": {
+        "carbohydrates": 62.0,
+        "protein": 12.0,
+        "fat": 10.0,
+        "fiber": 3.0,
+        "sodium": 720
+      },
+      "glycemic_index": 62,
+      "glycemic_load": 38,
+      "tags": [
+        "portable",
+        "balanced"
+      ],
+      "health_notes": "한 끼 식사 대용, 채소 다양하게 포함"
+    },
+    {
+      "id": "KF-037",
+      "name_kr": "튀김 (모듬)",
+      "name_en": "Assorted Fried Foods",
+      "category": "street",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 420,
+      "nutrients": {
+        "carbohydrates": 40.0,
+        "protein": 10.0,
+        "fat": 25.0,
+        "fiber": 2.0,
+        "sodium": 580
+      },
+      "glycemic_index": 60,
+      "glycemic_load": 24,
+      "tags": [
+        "fried",
+        "indulgent"
+      ],
+      "health_notes": "기름 섭취 주의, 가끔 즐기는 음식"
+    },
+    {
+      "id": "KF-038",
+      "name_kr": "호떡",
+      "name_en": "Hotteok",
+      "category": "street",
+      "serving_size": 80,
+      "serving_unit": "g",
+      "serving_description": "1개",
+      "calories": 280,
+      "nutrients": {
+        "carbohydrates": 45.0,
+        "protein": 4.0,
+        "fat": 10.0,
+        "fiber": 1.0,
+        "sodium": 180
+      },
+      "glycemic_index": 70,
+      "glycemic_load": 32,
+      "tags": [
+        "sweet",
+        "winter"
+      ],
+      "health_notes": "설탕 많음, 간식으로 적당량만"
+    },
+    {
+      "id": "KF-039",
+      "name_kr": "붕어빵",
+      "name_en": "Fish-shaped Bread",
+      "category": "street",
+      "serving_size": 60,
+      "serving_unit": "g",
+      "serving_description": "1개",
+      "calories": 180,
+      "nutrients": {
+        "carbohydrates": 32.0,
+        "protein": 4.0,
+        "fat": 4.0,
+        "fiber": 2.0,
+        "sodium": 120
+      },
+      "glycemic_index": 65,
+      "glycemic_load": 21,
+      "tags": [
+        "sweet",
+        "winter",
+        "red_bean"
+      ],
+      "health_notes": "팥소로 식이섬유 보충"
+    },
+    {
+      "id": "KF-040",
+      "name_kr": "닭가슴살 샐러드",
+      "name_en": "Chicken Breast Salad",
+      "category": "healthy",
+      "serving_size": 250,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 220,
+      "nutrients": {
+        "carbohydrates": 12.0,
+        "protein": 32.0,
+        "fat": 6.0,
+        "fiber": 4.5,
+        "sodium": 450
+      },
+      "glycemic_index": 20,
+      "glycemic_load": 2,
+      "tags": [
+        "high_protein",
+        "low_calorie",
+        "diet"
+      ],
+      "health_notes": "다이어트 식단에 적합"
+    },
+    {
+      "id": "KF-041",
+      "name_kr": "두부 샐러드",
+      "name_en": "Tofu Salad",
+      "category": "healthy",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 150,
+      "nutrients": {
+        "carbohydrates": 10.0,
+        "protein": 12.0,
+        "fat": 8.0,
+        "fiber": 4.0,
+        "sodium": 320
+      },
+      "glycemic_index": 15,
+      "glycemic_load": 2,
+      "tags": [
+        "plant_protein",
+        "low_calorie",
+        "vegan"
+      ],
+      "health_notes": "비건 단백질 보충에 좋음"
+    },
+    {
+      "id": "KF-042",
+      "name_kr": "곤약볶음밥",
+      "name_en": "Konjac Fried Rice",
+      "category": "healthy",
+      "serving_size": 300,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 180,
+      "nutrients": {
+        "carbohydrates": 25.0,
+        "protein": 8.0,
+        "fat": 5.0,
+        "fiber": 8.0,
+        "sodium": 520
+      },
+      "glycemic_index": 25,
+      "glycemic_load": 6,
+      "tags": [
+        "low_calorie",
+        "high_fiber",
+        "diet"
+      ],
+      "health_notes": "일반 볶음밥의 1/3 칼로리"
+    },
+    {
+      "id": "KF-043",
+      "name_kr": "오트밀죽",
+      "name_en": "Oatmeal Porridge",
+      "category": "healthy",
+      "serving_size": 250,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 180,
+      "nutrients": {
+        "carbohydrates": 32.0,
+        "protein": 6.0,
+        "fat": 3.5,
+        "fiber": 4.0,
+        "sodium": 150
+      },
+      "glycemic_index": 55,
+      "glycemic_load": 18,
+      "tags": [
+        "whole_grain",
+        "breakfast",
+        "heart_healthy"
+      ],
+      "health_notes": "베타글루칸으로 콜레스테롤 관리"
+    },
+    {
+      "id": "KF-044",
+      "name_kr": "그릭요거트 볼",
+      "name_en": "Greek Yogurt Bowl",
+      "category": "healthy",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 180,
+      "nutrients": {
+        "carbohydrates": 15.0,
+        "protein": 18.0,
+        "fat": 5.0,
+        "fiber": 2.0,
+        "sodium": 80,
+        "calcium": 200
+      },
+      "glycemic_index": 25,
+      "glycemic_load": 4,
+      "tags": [
+        "probiotic",
+        "high_protein",
+        "breakfast"
+      ],
+      "health_notes": "프로바이오틱스, 고단백"
+    },
+    {
+      "id": "KF-045",
+      "name_kr": "닭가슴살 구이",
+      "name_en": "Grilled Chicken Breast",
+      "category": "healthy",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 165,
+      "nutrients": {
+        "carbohydrates": 0,
+        "protein": 36.0,
+        "fat": 3.5,
+        "fiber": 0,
+        "sodium": 280
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "high_protein",
+        "low_fat",
+        "muscle_building"
+      ],
+      "health_notes": "근육 합성에 최적"
+    },
+    {
+      "id": "KF-046",
+      "name_kr": "연어 스테이크",
+      "name_en": "Salmon Steak",
+      "category": "healthy",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 280,
+      "nutrients": {
+        "carbohydrates": 0,
+        "protein": 30.0,
+        "fat": 18.0,
+        "fiber": 0,
+        "sodium": 180,
+        "omega3": 2.8
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "omega3",
+        "high_protein",
+        "brain_health"
+      ],
+      "health_notes": "오메가3 최고 공급원"
+    },
+    {
+      "id": "KF-047",
+      "name_kr": "아보카도 토스트",
+      "name_en": "Avocado Toast",
+      "category": "healthy",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 280,
+      "nutrients": {
+        "carbohydrates": 28.0,
+        "protein": 8.0,
+        "fat": 16.0,
+        "fiber": 7.0,
+        "sodium": 320
+      },
+      "glycemic_index": 35,
+      "glycemic_load": 10,
+      "tags": [
+        "healthy_fat",
+        "trendy",
+        "breakfast"
+      ],
+      "health_notes": "불포화지방산 풍부"
+    },
+    {
+      "id": "KF-048",
+      "name_kr": "퀴노아 샐러드",
+      "name_en": "Quinoa Salad",
+      "category": "healthy",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 220,
+      "nutrients": {
+        "carbohydrates": 35.0,
+        "protein": 10.0,
+        "fat": 5.0,
+        "fiber": 5.0,
+        "sodium": 280
+      },
+      "glycemic_index": 53,
+      "glycemic_load": 19,
+      "tags": [
+        "complete_protein",
+        "gluten_free",
+        "superfood"
+      ],
+      "health_notes": "완전 단백질, 글루텐프리"
+    },
+    {
+      "id": "KF-049",
+      "name_kr": "채소 스무디",
+      "name_en": "Green Smoothie",
+      "category": "healthy",
+      "serving_size": 300,
+      "serving_unit": "ml",
+      "serving_description": "1잔",
+      "calories": 150,
+      "nutrients": {
+        "carbohydrates": 28.0,
+        "protein": 4.0,
+        "fat": 2.0,
+        "fiber": 5.0,
+        "sodium": 80,
+        "vitamin_c": 45
+      },
+      "glycemic_index": 40,
+      "glycemic_load": 11,
+      "tags": [
+        "detox",
+        "vitamin_rich",
+        "breakfast"
+      ],
+      "health_notes": "비타민/미네랄 보충에 좋음"
+    },
+    {
+      "id": "KF-050",
+      "name_kr": "견과류 믹스",
+      "name_en": "Mixed Nuts",
+      "category": "healthy",
+      "serving_size": 30,
+      "serving_unit": "g",
+      "serving_description": "한 줌",
+      "calories": 180,
+      "nutrients": {
+        "carbohydrates": 6.0,
+        "protein": 5.0,
+        "fat": 16.0,
+        "fiber": 2.5,
+        "sodium": 5
+      },
+      "glycemic_index": 15,
+      "glycemic_load": 1,
+      "tags": [
+        "healthy_fat",
+        "snack",
+        "energy"
+      ],
+      "health_notes": "건강한 간식, 포만감 지속"
+    },
+    {
+      "id": "KF-051",
+      "name_kr": "식혜",
+      "name_en": "Sikhye (Sweet Rice Drink)",
+      "category": "beverage",
+      "serving_size": 200,
+      "serving_unit": "ml",
+      "serving_description": "1컵",
+      "calories": 112,
+      "nutrients": {
+        "carbohydrates": 27.0,
+        "protein": 0.8,
+        "fat": 0.1,
+        "fiber": 0.2,
+        "sodium": 15
+      },
+      "glycemic_index": 65,
+      "glycemic_load": 18,
+      "tags": [
+        "traditional",
+        "sweet",
+        "digestive"
+      ],
+      "health_notes": "소화 촉진에 좋으나 당분 함량 높음",
+      "personal_color_pairing": {
+        "spring": "밝고 청량한 이미지와 잘 어울림",
+        "summer": "시원한 음료로 여름 톤과 조화"
+      }
+    },
+    {
+      "id": "KF-052",
+      "name_kr": "수정과",
+      "name_en": "Sujeonggwa (Cinnamon Punch)",
+      "category": "beverage",
+      "serving_size": 200,
+      "serving_unit": "ml",
+      "serving_description": "1컵",
+      "calories": 98,
+      "nutrients": {
+        "carbohydrates": 24.5,
+        "protein": 0.3,
+        "fat": 0.0,
+        "fiber": 0.5,
+        "sodium": 8
+      },
+      "glycemic_index": 55,
+      "glycemic_load": 14,
+      "tags": [
+        "traditional",
+        "warming",
+        "antioxidant"
+      ],
+      "health_notes": "계피의 혈당 조절 효과, 생강의 소화 촉진 작용",
+      "personal_color_pairing": {
+        "autumn": "따뜻한 갈색 톤과 완벽한 조화",
+        "winter": "깊은 색감과 잘 어울림"
+      }
+    },
+    {
+      "id": "KF-053",
+      "name_kr": "매실차",
+      "name_en": "Plum Tea",
+      "category": "beverage",
+      "serving_size": 200,
+      "serving_unit": "ml",
+      "serving_description": "1컵",
+      "calories": 45,
+      "nutrients": {
+        "carbohydrates": 11.0,
+        "protein": 0.2,
+        "fat": 0.0,
+        "fiber": 0.1,
+        "sodium": 5
+      },
+      "glycemic_index": 35,
+      "glycemic_load": 4,
+      "tags": [
+        "digestive",
+        "detox",
+        "low_calorie"
+      ],
+      "health_notes": "피로 회복, 식욕 증진, 해독 작용",
+      "personal_color_pairing": {
+        "spring": "연한 녹색 톤과 잘 어울림",
+        "summer": "상큼한 이미지로 여름 톤과 조화"
+      }
+    },
+    {
+      "id": "KF-054",
+      "name_kr": "율무차",
+      "name_en": "Job's Tears Tea",
+      "category": "beverage",
+      "serving_size": 200,
+      "serving_unit": "ml",
+      "serving_description": "1컵",
+      "calories": 52,
+      "nutrients": {
+        "carbohydrates": 12.5,
+        "protein": 1.2,
+        "fat": 0.3,
+        "fiber": 0.8,
+        "sodium": 3
+      },
+      "glycemic_index": 40,
+      "glycemic_load": 5,
+      "tags": [
+        "skin_health",
+        "detox",
+        "low_gi"
+      ],
+      "health_notes": "부종 완화, 피부 미용에 좋음",
+      "personal_color_pairing": {
+        "summer": "피부 투명함과 연결되는 이미지",
+        "autumn": "고소한 느낌으로 가을 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-055",
+      "name_kr": "오미자차",
+      "name_en": "Omija Tea (Five Flavor Berry)",
+      "category": "beverage",
+      "serving_size": 200,
+      "serving_unit": "ml",
+      "serving_description": "1컵",
+      "calories": 38,
+      "nutrients": {
+        "carbohydrates": 9.0,
+        "protein": 0.3,
+        "fat": 0.1,
+        "fiber": 0.2,
+        "sodium": 2
+      },
+      "glycemic_index": 30,
+      "glycemic_load": 3,
+      "tags": [
+        "antioxidant",
+        "energy",
+        "traditional"
+      ],
+      "health_notes": "간 기능 보호, 피로 회복, 기관지 건강",
+      "personal_color_pairing": {
+        "summer": "선명한 빨간색으로 쿨톤과 조화",
+        "winter": "깊고 선명한 색감과 어울림"
+      }
+    },
+    {
+      "id": "KF-056",
+      "name_kr": "호떡",
+      "name_en": "Hotteok (Sweet Pancake)",
+      "category": "snack",
+      "serving_size": 80,
+      "serving_unit": "g",
+      "serving_description": "1개",
+      "calories": 285,
+      "nutrients": {
+        "carbohydrates": 45.0,
+        "protein": 4.5,
+        "fat": 10.5,
+        "fiber": 1.2,
+        "sodium": 180
+      },
+      "glycemic_index": 70,
+      "glycemic_load": 32,
+      "tags": [
+        "street_food",
+        "high_calorie",
+        "winter_snack"
+      ],
+      "health_notes": "고열량 간식으로 간헐적 섭취 권장",
+      "personal_color_pairing": {
+        "autumn": "따뜻한 갈색빛과 잘 어울림",
+        "winter": "겨울 간식으로 깊은 톤과 조화"
+      }
+    },
+    {
+      "id": "KF-057",
+      "name_kr": "붕어빵",
+      "name_en": "Bungeoppang (Fish-shaped Bread)",
+      "category": "snack",
+      "serving_size": 70,
+      "serving_unit": "g",
+      "serving_description": "1개",
+      "calories": 195,
+      "nutrients": {
+        "carbohydrates": 38.0,
+        "protein": 5.2,
+        "fat": 2.8,
+        "fiber": 2.5,
+        "sodium": 145
+      },
+      "glycemic_index": 65,
+      "glycemic_load": 25,
+      "tags": [
+        "street_food",
+        "winter_snack",
+        "moderate_calorie"
+      ],
+      "health_notes": "팥의 식이섬유와 사포닌 함유",
+      "personal_color_pairing": {
+        "autumn": "황금빛 색감과 조화",
+        "winter": "겨울 대표 간식으로 딥톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-058",
+      "name_kr": "약과",
+      "name_en": "Yakgwa (Honey Cookie)",
+      "category": "snack",
+      "serving_size": 40,
+      "serving_unit": "g",
+      "serving_description": "1개",
+      "calories": 175,
+      "nutrients": {
+        "carbohydrates": 28.0,
+        "protein": 2.0,
+        "fat": 6.5,
+        "fiber": 0.5,
+        "sodium": 85
+      },
+      "glycemic_index": 68,
+      "glycemic_load": 19,
+      "tags": [
+        "traditional",
+        "sweet",
+        "festive"
+      ],
+      "health_notes": "꿀과 참기름의 영양, 고열량으로 소량 섭취 권장",
+      "personal_color_pairing": {
+        "autumn": "황금빛 갈색으로 가을 톤과 완벽 매칭",
+        "winter": "전통 명절 음식으로 깊은 색과 어울림"
+      }
+    },
+    {
+      "id": "KF-059",
+      "name_kr": "강정",
+      "name_en": "Gangjeong (Puffed Rice Snack)",
+      "category": "snack",
+      "serving_size": 30,
+      "serving_unit": "g",
+      "serving_description": "5-6조각",
+      "calories": 125,
+      "nutrients": {
+        "carbohydrates": 22.0,
+        "protein": 1.8,
+        "fat": 3.5,
+        "fiber": 0.3,
+        "sodium": 45
+      },
+      "glycemic_index": 72,
+      "glycemic_load": 16,
+      "tags": [
+        "traditional",
+        "crispy",
+        "festive"
+      ],
+      "health_notes": "고GI 식품으로 소량 섭취 권장",
+      "personal_color_pairing": {
+        "spring": "밝은 색상의 강정으로 봄 톤과 조화",
+        "autumn": "견과류 토핑 강정은 가을 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-060",
+      "name_kr": "백설기",
+      "name_en": "Baekseolgi (White Rice Cake)",
+      "category": "snack",
+      "serving_size": 100,
+      "serving_unit": "g",
+      "serving_description": "1조각",
+      "calories": 180,
+      "nutrients": {
+        "carbohydrates": 42.0,
+        "protein": 3.5,
+        "fat": 0.3,
+        "fiber": 0.8,
+        "sodium": 65
+      },
+      "glycemic_index": 70,
+      "glycemic_load": 29,
+      "tags": [
+        "traditional",
+        "steamed",
+        "celebration"
+      ],
+      "health_notes": "부드럽고 소화가 잘됨, 첫돌/백일 음식",
+      "personal_color_pairing": {
+        "summer": "순백색으로 여름 톤과 청량한 조화",
+        "winter": "깨끗한 흰색으로 겨울 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-061",
+      "name_kr": "김치",
+      "name_en": "Kimchi (Fermented Cabbage)",
+      "category": "fermented",
+      "serving_size": 50,
+      "serving_unit": "g",
+      "serving_description": "1회분",
+      "calories": 15,
+      "nutrients": {
+        "carbohydrates": 2.4,
+        "protein": 1.1,
+        "fat": 0.3,
+        "fiber": 1.6,
+        "sodium": 580,
+        "vitamin_c": 12,
+        "probiotics": "lactobacillus"
+      },
+      "glycemic_index": 15,
+      "glycemic_load": 0.4,
+      "tags": [
+        "probiotic",
+        "low_calorie",
+        "high_sodium",
+        "superfood"
+      ],
+      "health_notes": "유산균 풍부, 나트륨 함량 주의, 면역력 강화",
+      "personal_color_pairing": {
+        "autumn": "붉은빛으로 가을 톤과 자연스러운 조화",
+        "winter": "선명한 빨강으로 겨울 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-062",
+      "name_kr": "깍두기",
+      "name_en": "Kkakdugi (Cubed Radish Kimchi)",
+      "category": "fermented",
+      "serving_size": 50,
+      "serving_unit": "g",
+      "serving_description": "1회분",
+      "calories": 18,
+      "nutrients": {
+        "carbohydrates": 3.2,
+        "protein": 0.9,
+        "fat": 0.2,
+        "fiber": 1.4,
+        "sodium": 520,
+        "vitamin_c": 8,
+        "probiotics": "lactobacillus"
+      },
+      "glycemic_index": 15,
+      "glycemic_load": 0.5,
+      "tags": [
+        "probiotic",
+        "low_calorie",
+        "crunchy"
+      ],
+      "health_notes": "무의 소화효소 함유, 설렁탕/곰탕과 궁합",
+      "personal_color_pairing": {
+        "spring": "연한 색상으로 봄 톤과 상쾌한 조화",
+        "autumn": "익으면 붉은빛으로 가을 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-063",
+      "name_kr": "동치미",
+      "name_en": "Dongchimi (Radish Water Kimchi)",
+      "category": "fermented",
+      "serving_size": 150,
+      "serving_unit": "ml",
+      "serving_description": "국물 포함 1회분",
+      "calories": 12,
+      "nutrients": {
+        "carbohydrates": 2.5,
+        "protein": 0.5,
+        "fat": 0.1,
+        "fiber": 0.8,
+        "sodium": 380,
+        "vitamin_c": 15,
+        "probiotics": "lactobacillus"
+      },
+      "glycemic_index": 10,
+      "glycemic_load": 0.3,
+      "tags": [
+        "probiotic",
+        "refreshing",
+        "low_sodium_kimchi"
+      ],
+      "health_notes": "다른 김치류 대비 나트륨 낮음, 냉면 육수로 활용",
+      "personal_color_pairing": {
+        "summer": "맑고 시원한 느낌으로 여름 톤과 청량한 조화",
+        "winter": "투명한 국물로 겨울 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-064",
+      "name_kr": "청국장",
+      "name_en": "Cheonggukjang (Fast-fermented Soybean Paste)",
+      "category": "fermented",
+      "serving_size": 30,
+      "serving_unit": "g",
+      "serving_description": "1큰술",
+      "calories": 55,
+      "nutrients": {
+        "carbohydrates": 5.8,
+        "protein": 5.2,
+        "fat": 2.1,
+        "fiber": 2.5,
+        "sodium": 420,
+        "isoflavones": 35,
+        "probiotics": "bacillus subtilis"
+      },
+      "glycemic_index": 20,
+      "glycemic_load": 1.2,
+      "tags": [
+        "probiotic",
+        "high_protein",
+        "strong_smell"
+      ],
+      "health_notes": "혈전 용해 효소(나토키나제), 장 건강에 탁월",
+      "personal_color_pairing": {
+        "autumn": "깊은 갈색으로 가을 톤과 자연스러운 매칭"
+      }
+    },
+    {
+      "id": "KF-065",
+      "name_kr": "젓갈 (새우젓)",
+      "name_en": "Saeujeot (Salted Fermented Shrimp)",
+      "category": "fermented",
+      "serving_size": 10,
+      "serving_unit": "g",
+      "serving_description": "1작은술",
+      "calories": 12,
+      "nutrients": {
+        "carbohydrates": 0.5,
+        "protein": 2.2,
+        "fat": 0.3,
+        "fiber": 0,
+        "sodium": 1200,
+        "calcium": 85
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "condiment",
+        "umami",
+        "very_high_sodium"
+      ],
+      "health_notes": "극소량 사용 권장, 칼슘 풍부, 김치 담글 때 필수",
+      "personal_color_pairing": {
+        "autumn": "깊은 풍미로 가을 식탁과 어울림"
+      }
+    },
+    {
+      "id": "KF-066",
+      "name_kr": "잡채",
+      "name_en": "Japchae (Glass Noodles)",
+      "category": "traditional",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 385,
+      "nutrients": {
+        "carbohydrates": 58.0,
+        "protein": 8.5,
+        "fat": 14.0,
+        "fiber": 3.2,
+        "sodium": 720
+      },
+      "glycemic_index": 45,
+      "glycemic_load": 26,
+      "tags": [
+        "festive",
+        "colorful",
+        "balanced"
+      ],
+      "health_notes": "당면의 낮은 GI, 다양한 채소로 영양 균형",
+      "personal_color_pairing": {
+        "spring": "다채로운 색감으로 봄 톤과 화사한 조화",
+        "autumn": "따뜻한 색의 채소들로 가을 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-067",
+      "name_kr": "갈비찜",
+      "name_en": "Galbijjim (Braised Short Ribs)",
+      "category": "traditional",
+      "serving_size": 250,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 520,
+      "nutrients": {
+        "carbohydrates": 22.0,
+        "protein": 32.0,
+        "fat": 35.0,
+        "fiber": 2.5,
+        "sodium": 850,
+        "iron": 3.5,
+        "zinc": 6.2
+      },
+      "glycemic_index": 35,
+      "glycemic_load": 8,
+      "tags": [
+        "festive",
+        "high_protein",
+        "celebration"
+      ],
+      "health_notes": "철분, 아연 풍부, 명절 대표 음식",
+      "personal_color_pairing": {
+        "autumn": "깊은 갈색 양념으로 가을 톤과 완벽 매칭",
+        "winter": "진한 색감으로 겨울 톤과 고급스러운 조화"
+      }
+    },
+    {
+      "id": "KF-068",
+      "name_kr": "전복죽",
+      "name_en": "Jeonbokjuk (Abalone Porridge)",
+      "category": "traditional",
+      "serving_size": 300,
+      "serving_unit": "g",
+      "serving_description": "1그릇",
+      "calories": 185,
+      "nutrients": {
+        "carbohydrates": 32.0,
+        "protein": 9.5,
+        "fat": 2.5,
+        "fiber": 0.5,
+        "sodium": 420,
+        "taurine": 150,
+        "iron": 2.8
+      },
+      "glycemic_index": 55,
+      "glycemic_load": 18,
+      "tags": [
+        "healing",
+        "premium",
+        "easy_digest"
+      ],
+      "health_notes": "환자 회복식, 타우린으로 피로 회복",
+      "personal_color_pairing": {
+        "summer": "연한 녹색빛으로 여름 톤과 청량한 조화",
+        "winter": "고급스러운 색감으로 겨울 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-069",
+      "name_kr": "육개장",
+      "name_en": "Yukgaejang (Spicy Beef Soup)",
+      "category": "soup",
+      "serving_size": 400,
+      "serving_unit": "ml",
+      "serving_description": "1그릇",
+      "calories": 285,
+      "nutrients": {
+        "carbohydrates": 12.0,
+        "protein": 22.0,
+        "fat": 18.0,
+        "fiber": 3.5,
+        "sodium": 1450,
+        "capsaicin": 8
+      },
+      "glycemic_index": 25,
+      "glycemic_load": 3,
+      "tags": [
+        "spicy",
+        "warming",
+        "high_protein"
+      ],
+      "health_notes": "고단백 보양식, 나트륨 높음, 해장에 좋음",
+      "personal_color_pairing": {
+        "autumn": "붉은빛 국물로 가을 톤과 따뜻한 조화",
+        "winter": "진한 색감으로 겨울 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-070",
+      "name_kr": "곰탕",
+      "name_en": "Gomtang (Beef Bone Soup)",
+      "category": "soup",
+      "serving_size": 400,
+      "serving_unit": "ml",
+      "serving_description": "1그릇",
+      "calories": 245,
+      "nutrients": {
+        "carbohydrates": 2.0,
+        "protein": 18.0,
+        "fat": 18.5,
+        "fiber": 0,
+        "sodium": 580,
+        "collagen": "high"
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "healing",
+        "low_carb",
+        "collagen"
+      ],
+      "health_notes": "콜라겐 풍부, 관절/피부 건강에 좋음",
+      "personal_color_pairing": {
+        "summer": "맑은 흰색 국물로 여름 톤과 깔끔한 조화",
+        "winter": "뽀얀 국물로 겨울 톤과 따뜻한 매칭"
+      }
+    },
+    {
+      "id": "KF-071",
+      "name_kr": "해물파전",
+      "name_en": "Haemul Pajeon (Seafood Pancake)",
+      "category": "side",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1/4판",
+      "calories": 285,
+      "nutrients": {
+        "carbohydrates": 28.0,
+        "protein": 12.5,
+        "fat": 14.0,
+        "fiber": 1.8,
+        "sodium": 680,
+        "omega3": 0.5
+      },
+      "glycemic_index": 55,
+      "glycemic_load": 15,
+      "tags": [
+        "rainy_day",
+        "sharing",
+        "savory"
+      ],
+      "health_notes": "해산물의 오메가3, 파의 알리신 효과",
+      "personal_color_pairing": {
+        "spring": "연두빛 파로 봄 톤과 신선한 조화",
+        "autumn": "노릇한 색감으로 가을 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-072",
+      "name_kr": "오이소박이",
+      "name_en": "Oisobagi (Stuffed Cucumber Kimchi)",
+      "category": "fermented",
+      "serving_size": 50,
+      "serving_unit": "g",
+      "serving_description": "1회분",
+      "calories": 14,
+      "nutrients": {
+        "carbohydrates": 2.8,
+        "protein": 0.8,
+        "fat": 0.2,
+        "fiber": 1.0,
+        "sodium": 450,
+        "vitamin_k": 18
+      },
+      "glycemic_index": 15,
+      "glycemic_load": 0.4,
+      "tags": [
+        "summer_kimchi",
+        "refreshing",
+        "crunchy"
+      ],
+      "health_notes": "오이의 수분감과 칼륨, 여름 별미 김치",
+      "personal_color_pairing": {
+        "spring": "연두색으로 봄 톤과 청량한 조화",
+        "summer": "시원한 초록색으로 여름 톤과 완벽 매칭"
+      }
+    },
+    {
+      "id": "KF-073",
+      "name_kr": "순두부찌개",
+      "name_en": "Sundubu-jjigae (Soft Tofu Stew)",
+      "category": "soup",
+      "serving_size": 350,
+      "serving_unit": "g",
+      "serving_description": "1뚝배기",
+      "calories": 210,
+      "nutrients": {
+        "carbohydrates": 8.0,
+        "protein": 15.0,
+        "fat": 14.0,
+        "fiber": 2.0,
+        "sodium": 980,
+        "calcium": 185,
+        "isoflavones": 45
+      },
+      "glycemic_index": 20,
+      "glycemic_load": 1.6,
+      "tags": [
+        "spicy",
+        "high_protein",
+        "comfort_food"
+      ],
+      "health_notes": "식물성 단백질과 이소플라본 풍부",
+      "personal_color_pairing": {
+        "autumn": "붉은 국물로 가을 톤과 따뜻한 조화",
+        "winter": "뜨거운 국물요리로 겨울 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-074",
+      "name_kr": "북어국",
+      "name_en": "Bugeoguk (Dried Pollack Soup)",
+      "category": "soup",
+      "serving_size": 350,
+      "serving_unit": "ml",
+      "serving_description": "1그릇",
+      "calories": 125,
+      "nutrients": {
+        "carbohydrates": 3.5,
+        "protein": 18.0,
+        "fat": 4.5,
+        "fiber": 0.5,
+        "sodium": 720,
+        "methionine": "high"
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "hangover",
+        "low_calorie",
+        "high_protein"
+      ],
+      "health_notes": "메티오닌으로 간 해독, 대표적 해장국",
+      "personal_color_pairing": {
+        "summer": "맑은 국물로 여름 톤과 깔끔한 조화",
+        "winter": "따뜻한 국물로 겨울 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-075",
+      "name_kr": "도토리묵",
+      "name_en": "Dotorimuk (Acorn Jelly)",
+      "category": "side",
+      "serving_size": 150,
+      "serving_unit": "g",
+      "serving_description": "1접시",
+      "calories": 55,
+      "nutrients": {
+        "carbohydrates": 13.0,
+        "protein": 0.8,
+        "fat": 0.2,
+        "fiber": 1.5,
+        "sodium": 280,
+        "tannin": "moderate"
+      },
+      "glycemic_index": 35,
+      "glycemic_load": 5,
+      "tags": [
+        "diet",
+        "low_calorie",
+        "traditional"
+      ],
+      "health_notes": "탄닌의 해독 작용, 다이어트에 적합",
+      "personal_color_pairing": {
+        "autumn": "갈색빛으로 가을 톤과 자연스러운 매칭",
+        "summer": "시원하게 먹어 여름 톤과도 어울림"
+      }
+    },
+    {
+      "id": "KF-076",
+      "name_kr": "콩나물국밥",
+      "name_en": "Kongnamul Gukbap (Bean Sprout Soup Rice)",
+      "category": "rice",
+      "serving_size": 450,
+      "serving_unit": "g",
+      "serving_description": "1그릇 (밥+국)",
+      "calories": 385,
+      "nutrients": {
+        "carbohydrates": 52.0,
+        "protein": 15.0,
+        "fat": 12.0,
+        "fiber": 3.5,
+        "sodium": 1250,
+        "asparagine": "high"
+      },
+      "glycemic_index": 55,
+      "glycemic_load": 29,
+      "tags": [
+        "hangover",
+        "warming",
+        "jeonju_specialty"
+      ],
+      "health_notes": "아스파라긴으로 숙취 해소, 전주 향토음식",
+      "personal_color_pairing": {
+        "spring": "노란 콩나물로 봄 톤과 밝은 조화",
+        "autumn": "따뜻한 국물로 가을 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-077",
+      "name_kr": "보쌈",
+      "name_en": "Bossam (Boiled Pork Wraps)",
+      "category": "meat",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "고기 1인분",
+      "calories": 420,
+      "nutrients": {
+        "carbohydrates": 2.0,
+        "protein": 28.0,
+        "fat": 34.0,
+        "fiber": 0,
+        "sodium": 380,
+        "vitamin_b1": 0.85,
+        "collagen": "moderate"
+      },
+      "glycemic_index": 0,
+      "glycemic_load": 0,
+      "tags": [
+        "sharing",
+        "low_carb",
+        "party"
+      ],
+      "health_notes": "삶아서 기름기 제거, 비타민B1 풍부",
+      "personal_color_pairing": {
+        "autumn": "쌈채소와 함께 가을 톤과 조화",
+        "winter": "김장철 음식으로 겨울 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-078",
+      "name_kr": "낙지볶음",
+      "name_en": "Nakji Bokkeum (Spicy Stir-fried Octopus)",
+      "category": "seafood",
+      "serving_size": 200,
+      "serving_unit": "g",
+      "serving_description": "1인분",
+      "calories": 245,
+      "nutrients": {
+        "carbohydrates": 12.0,
+        "protein": 24.0,
+        "fat": 11.0,
+        "fiber": 2.0,
+        "sodium": 1050,
+        "taurine": 280,
+        "iron": 3.5
+      },
+      "glycemic_index": 20,
+      "glycemic_load": 2.4,
+      "tags": [
+        "spicy",
+        "high_protein",
+        "stamina"
+      ],
+      "health_notes": "타우린으로 피로 회복, 철분 풍부한 스태미나 음식",
+      "personal_color_pairing": {
+        "autumn": "붉은 양념으로 가을 톤과 강렬한 조화",
+        "winter": "진한 색감으로 겨울 톤과 어울림"
+      }
+    },
+    {
+      "id": "KF-079",
+      "name_kr": "멸치볶음",
+      "name_en": "Myeolchi Bokkeum (Stir-fried Anchovies)",
+      "category": "side",
+      "serving_size": 30,
+      "serving_unit": "g",
+      "serving_description": "1회분",
+      "calories": 95,
+      "nutrients": {
+        "carbohydrates": 8.5,
+        "protein": 6.2,
+        "fat": 4.0,
+        "fiber": 0.2,
+        "sodium": 380,
+        "calcium": 285,
+        "omega3": 0.8
+      },
+      "glycemic_index": 25,
+      "glycemic_load": 2,
+      "tags": [
+        "calcium",
+        "kids",
+        "lunchbox"
+      ],
+      "health_notes": "뼈째 먹어 칼슘 최고, 성장기 어린이에게 좋음",
+      "personal_color_pairing": {
+        "autumn": "갈색빛 볶음으로 가을 톤과 어울림",
+        "spring": "밝은 색 견과류와 함께 봄 톤과 조화"
+      }
+    },
+    {
+      "id": "KF-080",
+      "name_kr": "물냉면",
+      "name_en": "Mul Naengmyeon (Cold Buckwheat Noodles)",
+      "category": "noodle",
+      "serving_size": 500,
+      "serving_unit": "g",
+      "serving_description": "1그릇",
+      "calories": 480,
+      "nutrients": {
+        "carbohydrates": 92.0,
+        "protein": 12.0,
+        "fat": 4.5,
+        "fiber": 3.8,
+        "sodium": 1850,
+        "rutin": "moderate"
+      },
+      "glycemic_index": 50,
+      "glycemic_load": 46,
+      "tags": [
+        "summer",
+        "cold",
+        "buckwheat"
+      ],
+      "health_notes": "메밀의 루틴으로 혈관 건강, 여름 대표 음식",
+      "personal_color_pairing": {
+        "summer": "차가운 육수로 여름 톤과 완벽 매칭",
+        "winter": "겨울 냉면으로 클리어한 겨울 톤과도 어울림"
+      }
+    }
+  ],
+  "personal_color_food_guide": {
+    "spring": {
+      "recommended_colors": [
+        "밝은 녹색",
+        "노란색",
+        "주황색",
+        "연한 빨강"
+      ],
+      "food_examples": [
+        "샐러드",
+        "과일",
+        "가벼운 요리"
+      ],
+      "dining_tip": "화사한 색감의 음식으로 식탁을 밝게"
+    },
+    "summer": {
+      "recommended_colors": [
+        "연보라",
+        "연분홍",
+        "옅은 파랑",
+        "회색빛 녹색"
+      ],
+      "food_examples": [
+        "해산물",
+        "냉면",
+        "담백한 요리"
+      ],
+      "dining_tip": "차갑고 시원한 느낌의 음식 선호"
+    },
+    "autumn": {
+      "recommended_colors": [
+        "갈색",
+        "오렌지",
+        "황금색",
+        "올리브"
+      ],
+      "food_examples": [
+        "찜요리",
+        "구이",
+        "따뜻한 색 나물"
+      ],
+      "dining_tip": "따뜻하고 풍성한 느낌의 음식"
+    },
+    "winter": {
+      "recommended_colors": [
+        "진한 빨강",
+        "검정",
+        "흰색",
+        "보라"
+      ],
+      "food_examples": [
+        "고기구이",
+        "찌개",
+        "깊은 맛 요리"
+      ],
+      "dining_tip": "대비가 강한 색감의 음식으로 임팩트"
+    }
+  },
+  "body_type_nutrition_guide": {
+    "X": {
+      "goal": "균형 유지",
+      "calorie_strategy": "유지 칼로리",
+      "macro_ratio": {
+        "carbs": 50,
+        "protein": 25,
+        "fat": 25
+      },
+      "recommended_foods": [
+        "균형 잡힌 한식",
+        "다양한 반찬"
+      ]
+    },
+    "A": {
+      "goal": "상체 근육 증가, 하체 관리",
+      "calorie_strategy": "약간의 칼로리 잉여",
+      "macro_ratio": {
+        "carbs": 45,
+        "protein": 30,
+        "fat": 25
+      },
+      "recommended_foods": [
+        "고단백 음식",
+        "닭가슴살",
+        "생선"
+      ]
+    },
+    "Y": {
+      "goal": "하체 근육 증가",
+      "calorie_strategy": "약간의 칼로리 잉여",
+      "macro_ratio": {
+        "carbs": 45,
+        "protein": 30,
+        "fat": 25
+      },
+      "recommended_foods": [
+        "고단백 음식",
+        "복합 탄수화물"
+      ]
+    },
+    "H": {
+      "goal": "곡선 만들기 (근육 증가)",
+      "calorie_strategy": "약간의 칼로리 잉여",
+      "macro_ratio": {
+        "carbs": 45,
+        "protein": 30,
+        "fat": 25
+      },
+      "recommended_foods": [
+        "단백질 위주",
+        "건강한 지방"
+      ]
+    },
+    "O": {
+      "goal": "체지방 감소",
+      "calorie_strategy": "칼로리 적자 (10-20%)",
+      "macro_ratio": {
+        "carbs": 40,
+        "protein": 35,
+        "fat": 25
+      },
+      "recommended_foods": [
+        "저GI 식품",
+        "고단백 저칼로리"
+      ]
+    }
+  },
+  "body_type_recommendations_extended": {
+    "X_type": {
+      "body_type_kr": "모래시계형",
+      "recommended_foods": [
+        "KF-053",
+        "KF-054",
+        "KF-061",
+        "KF-066",
+        "KF-068",
+        "KF-070",
+        "KF-075"
+      ],
+      "avoid_foods": [
+        "KF-056",
+        "KF-067"
+      ],
+      "notes": "균형 잡힌 체형 유지를 위해 전통 발효식품과 저칼로리 음식 권장"
+    },
+    "A_type": {
+      "body_type_kr": "삼각형(하체형)",
+      "recommended_foods": [
+        "KF-053",
+        "KF-055",
+        "KF-063",
+        "KF-074",
+        "KF-075",
+        "KF-078"
+      ],
+      "avoid_foods": [
+        "KF-056",
+        "KF-057",
+        "KF-080"
+      ],
+      "notes": "하체 부종 관리를 위해 이뇨 작용 음식과 저나트륨 식품 권장"
+    },
+    "Y_type": {
+      "body_type_kr": "역삼각형(상체형)",
+      "recommended_foods": [
+        "KF-061",
+        "KF-064",
+        "KF-068",
+        "KF-073",
+        "KF-077"
+      ],
+      "avoid_foods": [
+        "KF-065"
+      ],
+      "notes": "상체 근육 유지와 전체 균형을 위한 단백질 식품 권장"
+    },
+    "H_type": {
+      "body_type_kr": "직사각형(일자형)",
+      "recommended_foods": [
+        "KF-066",
+        "KF-067",
+        "KF-071",
+        "KF-077",
+        "KF-078"
+      ],
+      "avoid_foods": [
+        "KF-059",
+        "KF-060"
+      ],
+      "notes": "체형 윤곽을 위한 적절한 단백질과 건강한 지방 섭취 권장"
+    },
+    "O_type": {
+      "body_type_kr": "원형(복부형)",
+      "recommended_foods": [
+        "KF-053",
+        "KF-054",
+        "KF-055",
+        "KF-061",
+        "KF-063",
+        "KF-074",
+        "KF-075"
+      ],
+      "avoid_foods": [
+        "KF-056",
+        "KF-057",
+        "KF-058",
+        "KF-067",
+        "KF-080"
+      ],
+      "notes": "복부 지방 관리를 위해 저GI, 저칼로리, 해독 음식 집중 권장"
+    }
+  },
+  "seasonal_food_guide": {
+    "spring": {
+      "season_kr": "봄",
+      "recommended_ids": [
+        "KF-053",
+        "KF-059",
+        "KF-062",
+        "KF-066",
+        "KF-071",
+        "KF-072",
+        "KF-076"
+      ],
+      "theme": "새싹처럼 싱그러운 음식, 해독과 활력"
+    },
+    "summer": {
+      "season_kr": "여름",
+      "recommended_ids": [
+        "KF-051",
+        "KF-053",
+        "KF-055",
+        "KF-060",
+        "KF-063",
+        "KF-072",
+        "KF-074",
+        "KF-080"
+      ],
+      "theme": "시원하고 청량한 음식, 수분 보충"
+    },
+    "autumn": {
+      "season_kr": "가을",
+      "recommended_ids": [
+        "KF-052",
+        "KF-054",
+        "KF-058",
+        "KF-064",
+        "KF-066",
+        "KF-067",
+        "KF-069",
+        "KF-075"
+      ],
+      "theme": "따뜻하고 풍성한 음식, 면역력 강화"
+    },
+    "winter": {
+      "season_kr": "겨울",
+      "recommended_ids": [
+        "KF-052",
+        "KF-056",
+        "KF-057",
+        "KF-067",
+        "KF-068",
+        "KF-069",
+        "KF-070",
+        "KF-073",
+        "KF-077"
+      ],
+      "theme": "뜨겁고 영양가 높은 음식, 체온 유지"
+    }
+  }
+}

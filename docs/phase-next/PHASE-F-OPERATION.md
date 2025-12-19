@@ -178,8 +178,8 @@ export async function requireAdmin() {
   accent: oklch(0.75 0.15 85)      # 이룸 골드
 
 폰트:
-  heading: "Pretendard", sans-serif
-  body: "Pretendard", sans-serif
+  heading: "Inter", "Noto Sans KR", sans-serif
+  body: "Inter", "Noto Sans KR", sans-serif
 
 간격:
   mobile: 16px padding

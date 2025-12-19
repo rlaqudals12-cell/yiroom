@@ -478,6 +478,20 @@ v2 새 기능:
 
 ---
 
+## 디자인 작업 가이드
+
+> **상세 문서**: [docs/DESIGN-WORKFLOW.md](DESIGN-WORKFLOW.md)
+
+기능 점검 완료 후 디자인 수정 시 Cursor Visual Editor + Gemini 3를 활용한 워크플로우를 적용합니다.
+
+| 도구 | 역할 |
+|------|------|
+| Cursor Visual Editor | UI 시각적 조작 (드래그 앤 드롭, 스타일 컨트롤) |
+| Gemini 3 Pro | 디자인 AI (Point-and-Prompt) |
+| Claude Code | 로직 검증, 테스트, 스펙 문서 |
+
+---
+
 ## 의존성 및 리스크
 
 | 항목 | 리스크 | 대응 | 상태 |
@@ -491,4 +505,4 @@ v2 새 기능:
 
 ---
 
-**Version**: 1.2 | **Updated**: 2025-12-11
+**Version**: 1.3 | **Updated**: 2025-12-13

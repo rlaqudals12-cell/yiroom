@@ -1,7 +1,7 @@
 # 다음 진행 작업 목록
 
 > **작성일**: 2025-12-11
-> **현재 상태**: F-1~F-4 완료, F-5 배포 대기, **3단계 완료**
+> **현재 상태**: F-1~F-4 완료, F-5 배포 대기, **4단계 완료 (Dynamic Import 적용)**
 
 ---
 
@@ -58,9 +58,9 @@
 
 | # | 작업 | 예상 시간 | 파일 | 상태 |
 |---|------|----------|------|------|
-| 3.1 | 동적 import (코드 분할) | 2시간 | 대형 컴포넌트들 | ⏳ |
+| 3.1 | 동적 import (코드 분할) | 2시간 | 대형 컴포넌트들 | ✅ 완료 |
 | 3.2 | EmptyState 다크모드 | 1.5시간 | `components/common/EmptyStateCard.tsx` | ✅ 완료 |
-| 3.3 | 브레드크럼 컴포넌트 | 1.5시간 | `components/ui/Breadcrumb.tsx` | ⏳ |
+| 3.3 | 브레드크럼 컴포넌트 | 1.5시간 | `components/ui/Breadcrumb.tsx` | ✅ 완료 |
 
 ### Tier 4: 추가 개선 (선택)
 
@@ -68,7 +68,7 @@
 |---|------|----------|------|------|
 | 4.1 | Toast 스타일링 개선 | 1시간 | `app/layout.tsx` (Toaster 설정) | ✅ 완료 |
 | 4.2 | 다크모드 모듈 색상 | 1시간 | `globals.css` | ✅ 완료 |
-| 4.3 | 나머지 gray 색상 마이그레이션 | 2시간 | ~15개 컴포넌트 | ⏳ |
+| 4.3 | 나머지 gray 색상 마이그레이션 | 2시간 | ~15개 컴포넌트 | ✅ 완료 |
 
 ---
 
@@ -101,10 +101,18 @@
 ├── 2.2 에러 페이지 통일 ✅
 └── 4.1 Toast 스타일링 ✅
 
-4단계: 성능/추가 (선택) ⭐ ← 다음
-├── 3.3 브레드크럼 (1.5시간) - 새 컴포넌트
-├── 3.1 동적 import (2시간) - 가장 위험
-└── 4.3 나머지 gray 마이그레이션 (2시간) - ~15개 컴포넌트
+4단계: 성능/추가 (선택)
+├── 3.3 브레드크럼 ✅ 완료 (2025-12-12)
+│   - components/ui/Breadcrumb.tsx 생성
+│   - 15개 테스트 통과
+├── 3.1 동적 import ✅ 완료 (2025-12-19)
+│   - nutrition/dynamic.tsx: Sheet + 인사이트 카드 6개
+│   - products/dynamic.tsx: ProductFilters, ProductDetailTabs
+│   - products/detail/dynamic.tsx: PriceHistoryChart
+│   - 예상 번들 감소: ~300KB
+└── 4.3 나머지 gray 마이그레이션 ✅ 완료 (2025-12-12)
+    - gray-[0-9] 패턴 전체 마이그레이션 완료
+    - bg-white → bg-card 마이그레이션 (16개 파일)
 ```
 
 ### 의존성 다이어그램
@@ -434,14 +442,407 @@ git checkout HEAD~1 -- path/to/file.tsx
 
 ---
 
-## F-5 배포 체크리스트 (사용자 진행)
+## F-5 배포 체크리스트
 
-- [ ] Vercel 프로젝트 설정
-- [ ] 환경변수 설정 (Sentry DSN 등)
-- [ ] 프로덕션 배포
-- [ ] 시크릿 교체 (보안)
-- [ ] 피드백 수집 채널 설정
+> **배포 완료일**: 2025-12-13
+> **현재 단계**: ✅ 기능 점검 완료 (2025-12-19)
+> **런칭 예정일**: 📅 2026-01-20 이후
 
 ---
 
-**다음 세션 시작 시**: 이 문서를 읽고 Tier 1부터 순차 진행
+## Part A: 테스트 단계 (현재)
+
+### 1. Vercel 환경변수 (필수)
+
+Vercel Dashboard → Settings → Environment Variables에서 확인:
+
+| 변수명 | 용도 | 테스트 단계 | 확인 |
+|--------|------|-------------|------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk 공개 키 | `pk_test_...` ✅ | [ ] |
+| `CLERK_SECRET_KEY` | Clerk 비밀 키 | `sk_test_...` ✅ | [ ] |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase URL | 설정됨 | [ ] |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Anon Key | 설정됨 | [ ] |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Service Role | 설정됨 | [ ] |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini AI API Key | 설정됨 | [ ] |
+
+### 2. Vercel 환경변수 (선택)
+
+| 변수명 | 용도 | 확인 |
+|--------|------|------|
+| `NEXT_PUBLIC_SENTRY_DSN` | Sentry 에러 추적 | [ ] |
+| `SENTRY_DSN` | Sentry 서버사이드 | [ ] |
+| `SENTRY_ORG` | Sentry 조직명 | [ ] |
+| `SENTRY_PROJECT` | Sentry 프로젝트명 | [ ] |
+| `SENTRY_AUTH_TOKEN` | Sentry 인증 토큰 | [ ] |
+| `NEXT_PUBLIC_SITE_URL` | 프로덕션 URL | [ ] |
+
+> **참고**: `CRON_SECRET`은 Vercel에서 자동 처리 (설정 불필요)
+
+### 3. 기능 점검 체크리스트
+
+#### 인증 (Clerk)
+- [x] 회원가입 정상 동작
+- [x] 로그인 정상 동작
+- [x] 로그아웃 정상 동작
+- [x] 소셜 로그인 (Google 등)
+
+#### Phase 1 분석 모듈
+- [x] PC-1 퍼스널컬러 분석 플로우
+- [x] S-1 피부 분석 플로우
+- [x] C-1 체형 분석 플로우
+- [x] 이미지 업로드 정상 동작
+- [x] AI 분석 결과 표시
+
+#### Phase 2 운동 모듈 (W-1)
+- [x] 온보딩 7단계 완료
+- [x] 운동 분석 결과 표시
+- [x] 운동 플랜 생성
+- [x] 운동 세션 기록
+- [x] 스트릭 표시
+
+#### Phase 2 영양 모듈 (N-1)
+- [x] 온보딩 7단계 완료
+- [x] 음식 촬영/분석
+- [x] 식단 기록
+- [x] 칼로리 대시보드
+- [x] 수분 섭취 기록
+- [x] 간헐적 단식 타이머
+
+#### 공통 기능
+- [x] 대시보드 로드
+- [x] 다크모드 전환
+- [x] 제품 추천 표시
+- [x] 위시리스트 저장/삭제
+- [x] 공유 기능
+
+### 4. Supabase 프로덕션 확인
+
+- [ ] 프로덕션 Supabase 프로젝트 사용 확인 (개발용 X)
+- [ ] RLS 정책 활성화 확인 (모든 테이블)
+- [ ] 마이그레이션 적용 완료 확인
+- [ ] Storage 버킷 권한 설정 확인
+
+```bash
+# Supabase Dashboard에서 확인
+# Authentication → Policies → 각 테이블 RLS 활성화 여부
+# Database → Tables → clerk_user_id 기반 정책 확인
+```
+
+### 5. Cron Job 확인
+
+```bash
+# Vercel Cron 설정 확인 (vercel.json)
+{
+  "crons": [{
+    "path": "/api/cron/update-prices",
+    "schedule": "0 3 * * *"  # 매일 새벽 3시
+  }]
+}
+```
+
+- [ ] Vercel Dashboard → Cron Jobs 탭에서 등록 확인
+- [ ] 수동 테스트 (Vercel Logs에서 결과 확인)
+
+### 6. SEO & 도메인 확인
+
+#### SEO
+- [ ] `/robots.txt` 접근 확인 (크롤링 허용)
+- [ ] `/sitemap.xml` 접근 확인 (페이지 목록)
+- [ ] Open Graph 메타 태그 확인 (링크 공유 시 미리보기)
+
+#### 커스텀 도메인 (선택)
+- [ ] Vercel Dashboard → Domains에서 도메인 추가
+- [ ] DNS 레코드 설정 (A/CNAME)
+- [ ] SSL 인증서 자동 발급 확인
+- [ ] `NEXT_PUBLIC_SITE_URL` 환경변수 업데이트
+
+### 7. 배포 후 작업
+
+- [ ] 프로덕션 URL 접속 확인
+- [ ] HTTPS 연결 확인 (자물쇠 아이콘)
+- [ ] 모바일 반응형 확인
+- [ ] PWA 설치 테스트 (Add to Home Screen)
+- [ ] Lighthouse 성능 점수 확인 (목표: 90+)
+- [ ] 에러 로그 모니터링 (Sentry 또는 Vercel Logs)
+
+### 8. 보안 확인 (선택)
+
+- [ ] Vercel 보안 헤더 확인 (X-Frame-Options, CSP 등)
+- [ ] API 엔드포인트 인증 확인 (Clerk 미들웨어)
+- [ ] 민감 정보 노출 확인 (환경변수 클라이언트 노출 X)
+
+### 9. 피드백 채널 설정
+
+- [ ] 피드백 수집 방법 결정 (이메일/폼/Discord 등)
+- [ ] 버그 리포트 채널 설정
+- [ ] 사용자 문의 대응 프로세스
+
+---
+
+## Part B: 런칭 단계 (2026-01-20 이후)
+
+> ⏳ 사업자 등록 완료 후 진행
+
+### 1. Clerk 프로덕션 키 교체
+
+| 항목 | 테스트용 | 프로덕션용 | 확인 |
+|------|----------|------------|------|
+| Clerk 공개 키 | `pk_test_...` | `pk_live_...` | [ ] |
+| Clerk 비밀 키 | `sk_test_...` | `sk_live_...` | [ ] |
+
+**교체 방법:**
+1. Clerk Dashboard → API Keys → Production 키 복사
+2. Vercel Dashboard → Environment Variables → 값 업데이트
+3. Vercel에서 Redeploy 실행
+
+### 2. 최종 점검
+
+- [ ] 프로덕션 키로 로그인 테스트
+- [ ] 실제 이메일 인증 동작 확인
+- [ ] 테스트 데이터 정리 (필요시)
+- [ ] Google AI 쿼터 확인 및 조정
+
+### 3. 런칭
+
+- [ ] 공식 URL 공개
+- [ ] 사용자 안내 (SNS, 커뮤니티 등)
+- [ ] 모니터링 강화 (첫 24시간)
+
+---
+
+## Part C: 기능 확장 계획 (2025-12-17 결정)
+
+> **결정일**: 2025-12-17
+> **목표**: 운동 DB 확장 + 브랜딩 중립화
+
+---
+
+### 1. 운동 DB 확장
+
+#### 현재 상태 (2025-12-18 업데이트)
+
+| 카테고리 | 운동 수 | 파일 | 상태 |
+|---------|---------|------|------|
+| 상체 | ~50개 | `data/exercises/upper-body.json` | ✅ 기존 |
+| 하체/코어/유산소 | ~50개 | `data/exercises/lower-core-cardio.json` | ✅ 기존 |
+| **필라테스** | 25개 | `data/exercises/pilates.json` | ✅ 완료 |
+| **요가** | 20개 | `data/exercises/yoga.json` | ✅ 완료 |
+| **스트레칭** | 25개 | `data/exercises/stretching.json` | ✅ 완료 |
+
+**총 운동 데이터: 170개**
+
+#### 추가 계획 (완료)
+
+| 파일 | 운동 수 | 운동 타입 | 상태 |
+|------|---------|----------|------|
+| `data/exercises/pilates.json` | 25개 | toner, flexer | ✅ 완료 |
+| `data/exercises/yoga.json` | 20개 | flexer | ✅ 완료 |
+| `data/exercises/stretching.json` | 25개 | flexer | ✅ 완료 |
+
+#### 운동 타입 매핑 (변경 없음)
+
+| 타입 | 의미 | 해당 운동 |
+|------|------|----------|
+| toner | 토닝/탄력 | 필라테스, 저중량 |
+| builder | 근육 성장 | 웨이트, 고중량 |
+| burner | 지방 연소 | HIIT, 유산소 |
+| mover | 활동성 | 크로스핏 |
+| flexer | 유연성 | **요가, 스트레칭, 필라테스 일부** |
+
+---
+
+### 2. 브랜딩 중립화
+
+#### 현재 문제점
+
+| 항목 | 현재 상태 | 문제 |
+|------|----------|------|
+| 로고 심볼 | 꽃 아이콘 | 여성 타겟 연상 |
+| 로고 색상 | 핑크/라벤더 그라데이션 | 여성 타겟 연상 |
+| 타겟 | 모든 연령대 | 브랜딩과 불일치 |
+
+#### 결정 사항
+
+- **방향**: 처음부터 중립적 (리브랜딩 비용 회피)
+- **제작 방식**: 직접 제작 (Figma)
+- **색상 기반**: 이룸 블루 (#2e5afa) 유지
+- **심볼**: 성장/균형/웰니스 상징 (꽃 대체)
+
+#### 진행 상태
+
+| 단계 | 설명 | 상태 |
+|------|------|------|
+| 1. 레퍼런스 리서치 | 성별 중립 웰니스 앱 사례 | ✅ 완료 |
+| 2. 심볼 후보 선정 | 3~5개 후보 | ✅ 완료 |
+| 3. Figma 제작 | 로고 + 앱 아이콘 | ⏳ 대기 |
+| 4. 적용 | `public/logo.png`, `icons/` | ⏳ 대기 |
+
+> **리서치 결과**: `docs/research/reviewed/branding-specification.md`
+> **권장 심볼**: 나선/스파이럴 (성장, 진화) 또는 동심원 (완전함, 균형)
+
+---
+
+### 3. 리서치 자료 관리
+
+#### 폴더 구조
+
+```
+docs/research/
+├── raw/           # 원본 리서치 (검토 전)
+├── reviewed/      # 사용할 자료 (검토 완료)
+├── archive/       # 불필요 (삭제 대기)
+└── README.md      # 사용 가이드
+```
+
+#### 리서치 주제 목록
+
+| 주제 | 파일명 | 깊이 | 상태 |
+|------|--------|------|------|
+| 필라테스 운동 | `pilates-exercises.md` | 심층 | ✅ 완료 (JSON 변환됨) |
+| 요가 포즈 | `yoga-poses.md` | 심층 | ✅ 완료 (JSON 변환됨) |
+| 스트레칭 루틴 | `stretching-routines.md` | 표면 | ✅ 완료 (JSON 변환됨) |
+| 성별 중립 브랜딩 | `branding-specification.md` | 심층 | ✅ 완료 (2025-12-19) |
+| 로고 트렌드 | `branding-specification.md` | 표면 | ✅ 완료 (통합됨) |
+
+#### 워크플로우
+
+```
+1. Claude.ai 딥 리서치 → raw/ 저장
+2. Claude Code 검토 → reviewed/ 이동
+3. JSON 변환 → data/exercises/*.json
+4. 코드 연동 → 타입/컴포넌트 수정
+```
+
+---
+
+### 4. 기능 점검 범위
+
+#### 핵심 점검 (현재)
+
+- [ ] 로그인/회원가입
+- [ ] 대시보드 접근
+- [ ] 분석 1개 (퍼스널컬러 또는 체형)
+- [ ] 운동 온보딩 → 결과
+- [ ] 영양 기본 흐름
+
+#### 전체 점검 (기능 추가 후)
+
+- Part A 체크리스트 전체 (3. 기능 점검 체크리스트)
+
+---
+
+### 5. 기술 의존성 (2차원 분류 설계)
+
+> **결정일**: 2025-12-17
+> **설계 원칙**: 기존 호환성 유지 + 미래 확장성 확보
+
+#### 문제 정의
+
+```
+현재: ExerciseCategory = '부위 기반' (upper, lower, core, cardio)
+추가: 필라테스/요가/스트레칭 = '방식 기반'
+
+→ 분류 체계 불일치 문제
+```
+
+#### 해결책: 2차원 분류
+
+```typescript
+// 차원 1: 부위 (기존 유지)
+type ExerciseCategory = 'upper' | 'lower' | 'core' | 'cardio';
+
+// 차원 2: 방식 (신규 추가)
+type ExerciseStyle =
+  | 'weight'       // 웨이트 트레이닝
+  | 'calisthenics' // 맨몸 운동
+  | 'pilates'      // 필라테스
+  | 'yoga'         // 요가
+  | 'stretching'   // 스트레칭
+  | 'hiit'         // 고강도 인터벌
+  | 'functional';  // 기능성 운동
+```
+
+#### 데이터 예시
+
+```json
+{
+  "name": "필라테스 헌드레드",
+  "category": "core",
+  "style": "pilates"
+}
+{
+  "name": "요가 전사자세 I",
+  "category": "lower",
+  "style": "yoga"
+}
+```
+
+#### 수정 필요 파일
+
+| 파일 | 변경 내용 | 시점 |
+|------|----------|------|
+| `types/workout.ts` | `ExerciseStyle` 타입 추가 | JSON 변환 전 |
+| `types/workout.ts` | `Exercise.style?` 필드 추가 | JSON 변환 전 |
+| `types/workout.ts` | `suitableFor.contraindications?` 필드 추가 | JSON 변환 전 |
+| `lib/workout/exercises.ts` | 새 JSON import 추가 | JSON 생성 후 |
+| 기존 JSON 파일 | `style` 필드 추가 (선택적) | 선택 |
+
+#### Exercise 타입 확장
+
+```typescript
+interface Exercise {
+  // 기존 필드 유지
+  id: string;
+  name: string;
+  category: ExerciseCategory;
+  // ...
+
+  // 기존 suitableFor 확장 (법적 대비)
+  suitableFor: {
+    bodyTypes?: string[];
+    goals?: string[];
+    injuries?: string[];         // 부상: 허리 통증, 무릎 부상 등 (기존)
+    contraindications?: string[]; // 금기 조건: 임산부, 고혈압, 녹내장 등 (신규)
+  };
+
+  // 신규 필드 (선택적)
+  style?: ExerciseStyle;        // 운동 방식
+  sanskritName?: string;        // 요가 산스크리트명
+  breathingGuide?: string;      // 호흡법
+  variations?: {                // 변형 동작
+    easier?: string;
+    harder?: string;
+  };
+  mentalEffects?: string[];     // 정신적 효과 (요가/명상)
+  physicalEffects?: string[];   // 신체적 효과 (유연성/근력 등)
+}
+```
+
+#### 필터링 시나리오
+
+| 사용자 요청 | 쿼리 |
+|------------|------|
+| "필라테스만" | `style === 'pilates'` |
+| "상체 운동" | `category === 'upper'` |
+| "코어 요가" | `category === 'core' && style === 'yoga'` |
+
+#### 작업 순서 (2025-12-18 완료)
+
+> **참조**: 위 "Exercise 타입 확장" 섹션의 타입 정의를 `types/workout.ts` 구현 시 참조
+
+```
+1. ✅ types/workout.ts 수정 (ExerciseStyle + contraindications 추가)
+2. ✅ 리서치 자료 기반 JSON 생성 (style, contraindications 필드 포함)
+   - pilates.json (25개)
+   - yoga.json (20개)
+   - stretching.json (25개)
+3. ✅ lib/workout/exercises.ts에 import 추가
+4. ⏸️ (선택) 기존 JSON에 style 추가 - 추후 진행
+5. ✅ 테스트 실행 (2,571개 통과)
+```
+
+---
+
+**테스트 단계**: Part A 체크리스트 진행
+**런칭 단계**: Part B 체크리스트 진행 (2026-01-20 이후)
+**기능 확장**: Part C - 운동 DB 확장 완료, 브랜딩 중립화 대기

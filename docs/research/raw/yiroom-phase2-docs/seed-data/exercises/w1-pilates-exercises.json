@@ -1,0 +1,859 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "module": "W-1",
+    "category": "pilates",
+    "total_exercises": 25,
+    "created_at": "2025-12-17",
+    "app": "Yiroom"
+  },
+  "principles": [
+    {
+      "id": 1,
+      "name_en": "Concentration",
+      "name_kr": "집중",
+      "definition": "신체와 정신을 완전히 연결하여 각 동작에 전적인 주의를 기울이는 것",
+      "application": ["외부 자극 차단", "활성화 근육 인식", "신체 피드백 반응"]
+    },
+    {
+      "id": 2,
+      "name_en": "Control",
+      "name_kr": "조절",
+      "definition": "의식적이고 신중한 근육 조절로 모든 동작 수행",
+      "application": ["관성 의존 없이 근육 힘으로 동작", "모든 단계 의식적 조절"]
+    },
+    {
+      "id": 3,
+      "name_en": "Centering",
+      "name_kr": "중심화",
+      "definition": "파워하우스에서 모든 움직임 시작",
+      "application": ["코어에서 시작하여 사지로 확장", "배꼽을 척추 쪽으로"]
+    },
+    {
+      "id": 4,
+      "name_en": "Flow",
+      "name_kr": "흐름",
+      "definition": "운동이 부드럽고 유려하게 연결",
+      "application": ["동작 사이 멈춤 없이 전환", "호흡 리듬에 맞춤"]
+    },
+    {
+      "id": 5,
+      "name_en": "Precision",
+      "name_kr": "정확성",
+      "definition": "올바른 배치, 정렬, 궤적에 지속적 주의",
+      "application": ["반복 횟수보다 품질 집중", "세부사항까지 주의"]
+    },
+    {
+      "id": 6,
+      "name_en": "Breathing",
+      "name_kr": "호흡",
+      "definition": "측면 호흡으로 코어 활성화 유지하며 깊은 호흡",
+      "application": ["들숨-갈비뼈 확장", "날숨-복부 수축", "노력 동작 시 내쉬기"]
+    }
+  ],
+  "met_reference": {
+    "beginner": { "range": [2.0, 2.5], "calories_per_hour_70kg": [100, 130] },
+    "intermediate": { "range": [2.5, 4.0], "calories_per_hour_70kg": [130, 210] },
+    "advanced": { "range": [4.0, 6.0], "calories_per_hour_70kg": [210, 350] }
+  },
+  "exercises": [
+    {
+      "id": "PIL-001",
+      "name_en": "The Hundred",
+      "name_kr": "헌드레드",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.5,
+      "duration_seconds": 120,
+      "target_primary": ["복직근", "횡복근", "고관절굴곡근"],
+      "target_secondary": ["어깨안정근", "내측허벅지", "둔근"],
+      "steps": [
+        "누워 팔을 옆에 둔다",
+        "무릎을 가슴으로 당기며 C커브 형성",
+        "다리를 45도로 뻗는다",
+        "팔 펌핑 시작",
+        "100회 펌핑 완료"
+      ],
+      "breathing": {
+        "inhale": "5회 펌핑",
+        "exhale": "5회 펌핑",
+        "pattern": "10세트 반복"
+      },
+      "contraindications": ["목디스크", "임신1분기이후", "골반저근문제"],
+      "variations": {
+        "easier": "무릎 테이블탑 유지, 머리 매트에 내려놓기",
+        "harder": "다리 매트 가깝게 낮추기"
+      },
+      "repetitions": { "min": 50, "max": 100, "unit": "펌프" },
+      "tips": ["목에 힘이 들어가면 머리를 내려놓는다", "복부가 볼록해지지 않도록 주의"],
+      "image_key": "pilates_hundred"
+    },
+    {
+      "id": "PIL-002",
+      "name_en": "Roll Up",
+      "name_kr": "롤업",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.5,
+      "duration_seconds": 90,
+      "target_primary": ["복직근", "심부횡복근", "고관절굴곡근"],
+      "target_secondary": ["척추기립근", "햄스트링"],
+      "steps": [
+        "다리를 곧게 펴고 팔은 머리 위로",
+        "팔을 호(弧)를 그리며 앞으로",
+        "C커브를 유지하며 말아 올리기",
+        "발끝을 향해 뻗기",
+        "역순으로 내려오기"
+      ],
+      "breathing": {
+        "inhale": "팔 가져오기",
+        "exhale": "올라가기",
+        "pattern": "들숨-유지, 날숨-내려오기"
+      },
+      "contraindications": ["급성디스크", "골다공증"],
+      "variations": {
+        "easier": "무릎 구부리기, 밴드 사용",
+        "harder": "홀드 추가, 웨이트 추가"
+      },
+      "repetitions": { "min": 3, "max": 8, "unit": "회" },
+      "tips": ["반동을 사용하지 않는다", "척추를 한 마디씩 움직인다"],
+      "image_key": "pilates_rollup"
+    },
+    {
+      "id": "PIL-003",
+      "name_en": "Single Leg Circles",
+      "name_kr": "싱글레그서클",
+      "level": "beginner",
+      "difficulty": 1,
+      "met": 2.0,
+      "duration_seconds": 120,
+      "target_primary": ["복근", "고관절굴곡근"],
+      "target_secondary": ["대퇴사두근", "햄스트링", "내전근", "둔근"],
+      "steps": [
+        "누워 팔을 옆에 둔다",
+        "한 다리를 천장으로 뻗는다",
+        "몸 중심선을 가로질러 원을 그린다",
+        "아래-바깥-위로 원 완성",
+        "각 방향 5회 실시"
+      ],
+      "breathing": {
+        "exhale": "원 시작",
+        "inhale": "원 완성"
+      },
+      "contraindications": ["좌골신경통", "급성허리통증"],
+      "variations": {
+        "easier": "바닥 다리 무릎 구부리기, 원 크기 줄이기",
+        "harder": "원 크기 늘리기, 저항 밴드 사용"
+      },
+      "repetitions": { "min": 5, "max": 10, "unit": "회(각 방향)" },
+      "tips": ["골반이 흔들리지 않도록 안정화", "작은 원부터 시작"],
+      "image_key": "pilates_single_leg_circles"
+    },
+    {
+      "id": "PIL-004",
+      "name_en": "Rolling Like a Ball",
+      "name_kr": "롤링라이크어볼",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.5,
+      "duration_seconds": 90,
+      "target_primary": ["복근", "심부코어"],
+      "target_secondary": ["척추굴곡근", "고관절굴곡근"],
+      "steps": [
+        "앉아서 무릎을 가슴으로 당긴다",
+        "C커브를 형성하고 발을 들어올린다",
+        "균형을 잡는다",
+        "어깨뼈까지 뒤로 구른다",
+        "코어를 사용해 돌아온다"
+      ],
+      "breathing": {
+        "inhale": "뒤로 구르기",
+        "exhale": "앞으로 돌아오기"
+      },
+      "contraindications": ["골다공증", "추간판탈출증", "척추부상"],
+      "variations": {
+        "easier": "가동범위 줄이기, 허벅지 뒤쪽 잡기",
+        "harder": "Open Leg Rocker로 진행"
+      },
+      "repetitions": { "min": 6, "max": 10, "unit": "회" },
+      "tips": ["머리나 목으로 구르지 않는다", "복부 힘으로 제어"],
+      "image_key": "pilates_rolling_like_ball"
+    },
+    {
+      "id": "PIL-005",
+      "name_en": "Single Leg Stretch",
+      "name_kr": "싱글레그스트레치",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.5,
+      "duration_seconds": 90,
+      "target_primary": ["복직근", "횡복근", "고관절굴곡근"],
+      "target_secondary": ["사두근", "둔근", "척추기립근"],
+      "steps": [
+        "누워서 무릎을 가슴으로 당긴다",
+        "머리를 들어올린다",
+        "한 다리를 45도로 뻗는다",
+        "구부린 다리의 정강이를 잡는다",
+        "교대로 반복"
+      ],
+      "breathing": {
+        "exhale": "다리 당기기",
+        "inhale": "교체"
+      },
+      "contraindications": ["목긴장", "골다공증", "허리/엉덩이부상"],
+      "variations": {
+        "easier": "머리 바닥에, 다리 더 높이",
+        "harder": "다리 매트 가깝게, 매직 서클 사용"
+      },
+      "repetitions": { "min": 5, "max": 10, "unit": "세트(양쪽)" },
+      "tips": ["목이 아프면 머리를 내려놓는다", "허리가 뜨지 않도록 주의"],
+      "image_key": "pilates_single_leg_stretch"
+    },
+    {
+      "id": "PIL-006",
+      "name_en": "Double Leg Stretch",
+      "name_kr": "더블레그스트레치",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.5,
+      "duration_seconds": 90,
+      "target_primary": ["복직근", "횡복근", "심부안정화근육"],
+      "target_secondary": ["고관절굴곡근", "어깨", "사두근"],
+      "steps": [
+        "누워서 무릎을 가슴으로 당긴다",
+        "손을 정강이에 둔다",
+        "팔은 머리 위, 다리는 45도로 동시에 뻗는다",
+        "원을 그리며 당겨온다",
+        "반복"
+      ],
+      "breathing": {
+        "inhale": "뻗기",
+        "exhale": "당기기"
+      },
+      "contraindications": ["허리/엉덩이/목부상", "골다공증"],
+      "variations": {
+        "easier": "팔/다리 따로 연습",
+        "harder": "다리 낮추기, 매직 서클"
+      },
+      "repetitions": { "min": 5, "max": 10, "unit": "회" },
+      "tips": ["허리가 바닥에서 떨어지지 않도록", "동작을 천천히 제어"],
+      "image_key": "pilates_double_leg_stretch"
+    },
+    {
+      "id": "PIL-007",
+      "name_en": "Spine Stretch Forward",
+      "name_kr": "스파인스트레치포워드",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.0,
+      "duration_seconds": 90,
+      "target_primary": ["척추신전근", "복근", "햄스트링"],
+      "target_secondary": ["어깨", "등상부"],
+      "steps": [
+        "다리를 어깨 너비로 벌리고 앉는다",
+        "팔을 앞으로 뻗는다",
+        "척추를 길게 세운다",
+        "C커브를 만들며 앞으로 굽힌다",
+        "척추를 펴며 올라온다"
+      ],
+      "breathing": {
+        "inhale": "길게 앉기",
+        "exhale": "앞으로 굽히기"
+      },
+      "contraindications": ["골다공증", "급성허리문제"],
+      "variations": {
+        "easier": "무릎 구부리기, 블록 위에 앉기",
+        "harder": "팔 머리 위로 유지"
+      },
+      "repetitions": { "min": 3, "max": 5, "unit": "회" },
+      "tips": ["허리가 아닌 상부 척추부터 굽힌다", "어깨가 올라가지 않도록"],
+      "image_key": "pilates_spine_stretch"
+    },
+    {
+      "id": "PIL-008",
+      "name_en": "The Saw",
+      "name_kr": "쏘우",
+      "level": "beginner",
+      "difficulty": 2,
+      "met": 2.5,
+      "duration_seconds": 120,
+      "target_primary": ["복사근", "척추회전근", "복직근"],
+      "target_secondary": ["척추기립근", "햄스트링", "어깨안정근"],
+      "steps": [
+        "다리를 넓게 벌려 앉는다",
+        "팔을 T자로 벌린다",
+        "상체를 한쪽으로 회전한다",
+        "반대 손으로 새끼발가락을 향해 뻗는다",
+        "중앙으로 복귀 후 반대쪽 실시"
+      ],
+      "breathing": {
+        "inhale": "중앙",
+        "exhale": "회전하며 굽히기"
+      },
+      "contraindications": ["골다공증", "천장관절/허리문제"],
+      "variations": {
+        "easier": "무릎 살짝 구부리기",
+        "harder": "가동범위 늘리기"
+      },
+      "repetitions": { "min": 3, "max": 5, "unit": "세트(양쪽)" },
+      "tips": ["양쪽 좌골이 바닥에서 떨어지지 않도록", "회전 시 골반 고정"],
+      "image_key": "pilates_saw"
+    },
+    {
+      "id": "PIL-009",
+      "name_en": "Swimming Prep",
+      "name_kr": "스위밍프렙",
+      "level": "beginner",
+      "difficulty": 1,
+      "met": 2.0,
+      "duration_seconds": 60,
+      "target_primary": ["척추기립근", "둔근", "다열근"],
+      "target_secondary": ["햄스트링", "후면삼각근", "능형근"],
+      "steps": [
+        "엎드려 이마를 매트에 댄다",
+        "치골을 매트에 누른다",
+        "목 근육을 활성화한다",
+        "머리/가슴/팔을 들어올린다",
+        "천천히 내려온다"
+      ],
+      "breathing": {
+        "inhale": "준비",
+        "exhale": "들어올리기"
+      },
+      "contraindications": ["임신후기", "급성허리/목부상"],
+      "variations": {
+        "easier": "앉거나 무릎 꿇은 자세",
+        "harder": "Swimming 전체 동작"
+      },
+      "repetitions": { "min": 3, "max": 5, "unit": "회" },
+      "tips": ["목을 과도하게 젖히지 않는다", "둔근을 조여 허리 보호"],
+      "image_key": "pilates_swimming_prep"
+    },
+    {
+      "id": "PIL-010",
+      "name_en": "Pelvic Curl / Bridge",
+      "name_kr": "펠빅컬/브릿지",
+      "level": "beginner",
+      "difficulty": 1,
+      "met": 2.0,
+      "duration_seconds": 90,
+      "target_primary": ["둔근", "햄스트링", "횡복근"],
+      "target_secondary": ["척추기립근", "대퇴사두근", "골반저근"],
+      "steps": [
+        "누워서 무릎을 구부린다",
+        "팔을 옆에 둔다",
+        "꼬리뼈부터 척추를 들어올린다",
+        "어깨까지 일직선이 되도록",
+        "흉추부터 내려온다"
+      ],
+      "breathing": {
+        "exhale": "들어올리기",
+        "inhale": "유지",
+        "pattern": "날숨-내려오기"
+      },
+      "contraindications": ["목에체중금지", "척추굴곡금기"],
+      "variations": {
+        "easier": "가동범위 줄이기",
+        "harder": "Single Leg Bridge"
+      },
+      "repetitions": { "min": 5, "max": 8, "unit": "회" },
+      "tips": ["목에 체중이 실리지 않도록", "한 마디씩 척추를 움직인다"],
+      "image_key": "pilates_bridge"
+    },
+    {
+      "id": "PIL-011",
+      "name_en": "Criss Cross",
+      "name_kr": "크리스크로스",
+      "level": "intermediate",
+      "difficulty": 3,
+      "met": 3.5,
+      "duration_seconds": 120,
+      "target_primary": ["내복사근", "외복사근", "복직근"],
+      "target_secondary": ["복횡근", "고관절굴곡근", "목굴근"],
+      "steps": [
+        "누워서 손을 머리 뒤에 둔다",
+        "다리는 테이블탑",
+        "상체를 들어올린다",
+        "팔꿈치를 반대 무릎을 향해 비튼다",
+        "교차 반복"
+      ],
+      "breathing": {
+        "exhale": "비틀 때"
+      },
+      "contraindications": ["목당기지않기", "허리통증시다리높이유지"],
+      "variations": {
+        "easier": "상체 바닥, 다리만 움직이기",
+        "harder": "3초 홀드 추가"
+      },
+      "repetitions": { "min": 5, "max": 10, "unit": "세트(양쪽)" },
+      "tips": ["목을 당기지 않는다", "팔꿈치가 아닌 갈비뼈로 회전"],
+      "image_key": "pilates_criss_cross"
+    },
+    {
+      "id": "PIL-012",
+      "name_en": "Open Leg Rocker",
+      "name_kr": "오픈레그로커",
+      "level": "intermediate",
+      "difficulty": 3.5,
+      "met": 3.5,
+      "duration_seconds": 90,
+      "target_primary": ["복근", "척추굴곡근", "장요근"],
+      "target_secondary": ["햄스트링", "둔근", "등근육"],
+      "steps": [
+        "앉아서 발목을 잡는다",
+        "V자 균형을 잡는다",
+        "C커브를 유지한다",
+        "어깨뼈까지 롤백",
+        "복근으로 롤업"
+      ],
+      "breathing": {
+        "inhale": "롤백",
+        "exhale": "롤업"
+      },
+      "contraindications": ["목/등체중금지", "골다공증"],
+      "variations": {
+        "easier": "무릎 구부린 상태",
+        "harder": "다리 열고 닫기 추가"
+      },
+      "repetitions": { "min": 6, "max": 10, "unit": "회" },
+      "tips": ["머리로 구르지 않는다", "햄스트링 유연성 필요"],
+      "image_key": "pilates_open_leg_rocker"
+    },
+    {
+      "id": "PIL-013",
+      "name_en": "Corkscrew",
+      "name_kr": "코르크스크류",
+      "level": "intermediate",
+      "difficulty": 3.5,
+      "met": 3.5,
+      "duration_seconds": 90,
+      "target_primary": ["복사근", "복직근", "복횡근"],
+      "target_secondary": ["척추신전근", "어깨안정근", "내전근"],
+      "steps": [
+        "누워서 팔을 옆에 둔다",
+        "양다리를 90도로 들어올린다",
+        "오른쪽으로 기울인다",
+        "아래-왼쪽-위로 원을 완성",
+        "반대 방향 실시"
+      ],
+      "breathing": {
+        "inhale": "옆으로",
+        "exhale": "원 완성"
+      },
+      "contraindications": ["골다공증", "허리/목/어깨통증"],
+      "variations": {
+        "easier": "골반 고정, 작은 원",
+        "harder": "숄더스탠드에서 큰 원"
+      },
+      "repetitions": { "min": 3, "max": 5, "unit": "회(각 방향)" },
+      "tips": ["어깨가 바닥에서 떨어지지 않도록", "코어로 다리 제어"],
+      "image_key": "pilates_corkscrew"
+    },
+    {
+      "id": "PIL-014",
+      "name_en": "Side Kick Series",
+      "name_kr": "사이드킥시리즈",
+      "level": "intermediate",
+      "difficulty": 2.5,
+      "met": 3.0,
+      "duration_seconds": 180,
+      "target_primary": ["둔근", "복사근", "고관절외전근"],
+      "target_secondary": ["복횡근", "요방형근", "대퇴사두근"],
+      "steps": [
+        "옆으로 눕는다",
+        "다리를 앞으로 30-45도 위치",
+        "위쪽 다리를 골반 높이로 든다",
+        "앞으로 더블 펄스",
+        "뒤로 더블 펄스"
+      ],
+      "breathing": {
+        "inhale": "앞으로",
+        "exhale": "뒤로"
+      },
+      "contraindications": ["골반/상체흔들림주의", "고관절문제"],
+      "variations": {
+        "easier": "아래 무릎 구부리기",
+        "harder": "Side Kick Kneeling"
+      },
+      "repetitions": { "min": 5, "max": 10, "unit": "회(각 방향)" },
+      "tips": ["골반이 흔들리지 않도록", "상체 안정 유지"],
+      "image_key": "pilates_side_kick"
+    },
+    {
+      "id": "PIL-015",
+      "name_en": "Teaser Prep",
+      "name_kr": "티저프렙",
+      "level": "intermediate",
+      "difficulty": 3,
+      "met": 3.5,
+      "duration_seconds": 90,
+      "target_primary": ["복직근", "복횡근", "장요근"],
+      "target_secondary": ["척추굴곡근", "대퇴사두근"],
+      "steps": [
+        "누워서 무릎을 구부린다",
+        "코어를 활성화한다",
+        "머리/목/어깨를 든다",
+        "팔을 무릎 방향으로 뻗으며 올라온다",
+        "천천히 내려온다"
+      ],
+      "breathing": {
+        "exhale": "올라올 때"
+      },
+      "contraindications": ["허리매트유지", "반동금지"],
+      "variations": {
+        "easier": "허벅지 뒤 잡고 보조",
+        "harder": "Single Leg Teaser"
+      },
+      "repetitions": { "min": 3, "max": 5, "unit": "회" },
+      "tips": ["반동을 사용하지 않는다", "허리가 바닥에서 뜨지 않도록"],
+      "image_key": "pilates_teaser_prep"
+    },
+    {
+      "id": "PIL-016",
+      "name_en": "Swan Dive Prep",
+      "name_kr": "스완다이브프렙",
+      "level": "intermediate",
+      "difficulty": 3,
+      "met": 3.0,
+      "duration_seconds": 90,
+      "target_primary": ["척추신전근", "다열근", "둔근"],
+      "target_secondary": ["햄스트링", "삼두근", "승모근", "능형근"],
+      "steps": [
+        "엎드려 손을 어깨 옆에 둔다",
+        "복근을 활성화한다",
+        "손으로 눌러 가슴을 들어올린다",
+        "천천히 내려온다"
+      ],
+      "breathing": {
+        "inhale": "들어올리기",
+        "exhale": "내려오기"
+      },
+      "contraindications": ["척추관협착증", "골다공증", "임신"],
+      "variations": {
+        "easier": "Mini Cobra, Cat Cow",
+        "harder": "Swan Dive 전체"
+      },
+      "repetitions": { "min": 3, "max": 5, "unit": "회" },
+      "tips": ["목을 과도하게 젖히지 않는다", "어깨가 귀에 붙지 않도록"],
+      "image_key": "pilates_swan_prep"
+    },
+    {
+      "id": "PIL-017",
+      "name_en": "Single Leg Kick",
+      "name_kr": "싱글레그킥",
+      "level": "intermediate",
+      "difficulty": 2.5,
+      "met": 3.0,
+      "duration_seconds": 120,
+      "target_primary": ["햄스트링", "둔근", "척추신전근"],
+      "target_secondary": ["복근", "삼두근", "어깨안정근"],
+      "steps": [
+        "엎드려 팔꿈치를 어깨 아래에(스핑크스)",
+        "척추를 길게 뻗는다",
+        "한 발로 엉덩이 쪽 더블 킥",
+        "다리 교대"
+      ],
+      "breathing": {
+        "inhale": "다리 펼 때",
+        "exhale": "더블 킥"
+      },
+      "contraindications": ["어깨기대기금지", "골반흔들림주의"],
+      "variations": {
+        "easier": "상체 매트에 두기",
+        "harder": "뻗은 다리 들고 유지"
+      },
+      "repetitions": { "min": 5, "max": 10, "unit": "세트(양쪽)" },
+      "tips": ["어깨에 기대지 않는다", "골반이 흔들리지 않도록"],
+      "image_key": "pilates_single_leg_kick"
+    },
+    {
+      "id": "PIL-018",
+      "name_en": "Double Leg Kick",
+      "name_kr": "더블레그킥",
+      "level": "intermediate",
+      "difficulty": 3.5,
+      "met": 3.5,
+      "duration_seconds": 90,
+      "target_primary": ["햄스트링", "둔근", "척추신전근", "능형근"],
+      "target_secondary": ["승모근", "삼두근", "복근"],
+      "steps": [
+        "엎드려 볼을 매트에, 허리 뒤 깍지",
+        "양다리 3회 킥",
+        "다리 뻗으며 가슴 들어올리기",
+        "팔은 발 쪽으로",
+        "머리 반대로 돌려 반복"
+      ],
+      "breathing": {
+        "exhale": "킥",
+        "inhale": "들어올리기"
+      },
+      "contraindications": ["어깨부상", "척추문제"],
+      "variations": {
+        "easier": "팔 옆에, 킥 횟수 줄이기",
+        "harder": "홀드 시간 늘리기"
+      },
+      "repetitions": { "min": 3, "max": 5, "unit": "세트(양쪽)" },
+      "tips": ["목이 과도하게 젖혀지지 않도록", "둔근을 조여 허리 보호"],
+      "image_key": "pilates_double_leg_kick"
+    },
+    {
+      "id": "PIL-019",
+      "name_en": "Shoulder Bridge",
+      "name_kr": "숄더브릿지",
+      "level": "intermediate",
+      "difficulty": 3,
+      "met": 3.0,
+      "duration_seconds": 90,
+      "target_primary": ["둔근", "햄스트링", "고관절신전근"],
+      "target_secondary": ["복횡근", "척추기립근", "대퇴사두근"],
+      "steps": [
+        "Bridge 자세로 올라간다",
+        "골반 안정 확인",
+        "한 다리를 천장으로 뻗는다",
+        "다리를 내렸다 올린다",
+        "반대쪽 실시"
+      ],
+      "breathing": {
+        "exhale": "다리 내리기",
+        "inhale": "다리 올리기"
+      },
+      "contraindications": ["허리통증", "목에체중금지"],
+      "variations": {
+        "easier": "마칭(무릎 들기만)",
+        "harder": "다리 바닥까지 내리기"
+      },
+      "repetitions": { "min": 3, "max": 5, "unit": "회(각 다리)" },
+      "tips": ["골반이 기울어지지 않도록", "코어 긴장 유지"],
+      "image_key": "pilates_shoulder_bridge"
+    },
+    {
+      "id": "PIL-020",
+      "name_en": "Plank Series",
+      "name_kr": "플랭크시리즈",
+      "level": "intermediate",
+      "difficulty": 3.5,
+      "met": 4.0,
+      "duration_seconds": 120,
+      "target_primary": ["복횡근", "복직근", "어깨안정근"],
+      "target_secondary": ["둔근", "대퇴사두근", "삼두근"],
+      "steps": [
+        "손과 발끝으로 몸을 지지한다",
+        "머리-어깨-골반-발목 일직선",
+        "코어를 단단히 조인다",
+        "30-60초 유지"
+      ],
+      "breathing": {
+        "pattern": "자연스러운 호흡 유지"
+      },
+      "contraindications": ["손목부상", "어깨문제"],
+      "variations": {
+        "easier": "무릎 대고 플랭크",
+        "harder": "Leg Pull Front (한 다리 들기)"
+      },
+      "repetitions": { "min": 30, "max": 60, "unit": "초" },
+      "tips": ["허리가 처지지 않도록", "목이 떨어지지 않도록"],
+      "image_key": "pilates_plank"
+    },
+    {
+      "id": "PIL-021",
+      "name_en": "Teaser Full",
+      "name_kr": "티저",
+      "level": "advanced",
+      "difficulty": 4,
+      "met": 4.5,
+      "duration_seconds": 120,
+      "target_primary": ["복직근", "복횡근", "장요근"],
+      "target_secondary": ["척추굴곡근", "대퇴사두근", "고관절굴곡근"],
+      "steps": [
+        "누워서 팔을 머리 위로, 다리는 45도",
+        "동시에 V자로 올라온다",
+        "손끝이 발끝을 향하도록",
+        "천천히 내려온다"
+      ],
+      "breathing": {
+        "exhale": "올라올 때",
+        "inhale": "유지 또는 내려올 때"
+      },
+      "contraindications": ["허리부상", "목부상"],
+      "variations": {
+        "easier": "Teaser Prep",
+        "harder": "Teaser 3 (다리 내리고 올리기)"
+      },
+      "repetitions": { "min": 3, "max": 5, "unit": "회" },
+      "tips": ["복부 힘으로 올라온다", "반동 사용 금지"],
+      "image_key": "pilates_teaser"
+    },
+    {
+      "id": "PIL-022",
+      "name_en": "Swimming Full",
+      "name_kr": "스위밍",
+      "level": "advanced",
+      "difficulty": 4,
+      "met": 4.5,
+      "duration_seconds": 90,
+      "target_primary": ["척추기립근", "둔근", "다열근"],
+      "target_secondary": ["햄스트링", "삼각근", "승모근"],
+      "steps": [
+        "엎드려 팔다리를 길게 뻗는다",
+        "반대쪽 팔-다리를 들어올린다",
+        "빠르게 교차하며 움직인다",
+        "수영하듯 팔다리 펄럭이기"
+      ],
+      "breathing": {
+        "inhale": "5카운트",
+        "exhale": "5카운트"
+      },
+      "contraindications": ["허리통증", "목부상"],
+      "variations": {
+        "easier": "Swimming Prep",
+        "harder": "더 빠르게, 더 높이"
+      },
+      "repetitions": { "min": 20, "max": 50, "unit": "카운트" },
+      "tips": ["목이 과도하게 젖혀지지 않도록", "둔근을 조여 허리 보호"],
+      "image_key": "pilates_swimming"
+    },
+    {
+      "id": "PIL-023",
+      "name_en": "Control Balance",
+      "name_kr": "컨트롤밸런스",
+      "level": "advanced",
+      "difficulty": 4.5,
+      "met": 5.0,
+      "duration_seconds": 90,
+      "target_primary": ["복근", "햄스트링", "척추굴곡근"],
+      "target_secondary": ["어깨안정근", "둔근", "고관절굴곡근"],
+      "steps": [
+        "Roll Over 자세에서 시작",
+        "양손으로 한 발목을 잡는다",
+        "반대 다리를 천장으로 뻗는다",
+        "다리를 교체한다"
+      ],
+      "breathing": {
+        "exhale": "다리 교체 시"
+      },
+      "contraindications": ["목부상", "어깨문제", "고혈압"],
+      "variations": {
+        "easier": "Roll Over만 실시",
+        "harder": "더 빠른 교체"
+      },
+      "repetitions": { "min": 3, "max": 5, "unit": "세트(양쪽)" },
+      "tips": ["목에 체중이 실리지 않도록", "코어로 제어"],
+      "image_key": "pilates_control_balance"
+    },
+    {
+      "id": "PIL-024",
+      "name_en": "Scissors / Bicycle",
+      "name_kr": "시저/바이시클",
+      "level": "advanced",
+      "difficulty": 4,
+      "met": 4.5,
+      "duration_seconds": 120,
+      "target_primary": ["복근", "고관절굴곡근", "햄스트링"],
+      "target_secondary": ["둔근", "척추기립근", "어깨안정근"],
+      "steps": [
+        "숄더스탠드에서 골반을 손으로 지지",
+        "다리를 가위처럼 앞뒤로 벌린다",
+        "교차하며 반복",
+        "바이시클: 무릎을 구부려 페달링"
+      ],
+      "breathing": {
+        "pattern": "리드미컬한 호흡"
+      },
+      "contraindications": ["목부상", "고혈압", "생리중"],
+      "variations": {
+        "easier": "누워서 Scissors",
+        "harder": "더 큰 가동범위"
+      },
+      "repetitions": { "min": 5, "max": 10, "unit": "세트(양쪽)" },
+      "tips": ["목에 무게가 실리지 않도록", "골반 안정 유지"],
+      "image_key": "pilates_scissors"
+    },
+    {
+      "id": "PIL-025",
+      "name_en": "Rocking",
+      "name_kr": "로킹",
+      "level": "advanced",
+      "difficulty": 4.5,
+      "met": 5.0,
+      "duration_seconds": 60,
+      "target_primary": ["척추신전근", "대퇴사두근", "어깨굴곡근"],
+      "target_secondary": ["복근", "둔근", "고관절굴곡근"],
+      "steps": [
+        "엎드려 무릎을 구부린다",
+        "손으로 발목을 잡는다 (활 자세)",
+        "들숨에 가슴과 허벅지 들기",
+        "앞뒤로 로킹"
+      ],
+      "breathing": {
+        "inhale": "앞으로 로킹",
+        "exhale": "뒤로 로킹"
+      },
+      "contraindications": ["어깨/등/목/무릎부상", "척추문제"],
+      "variations": {
+        "easier": "로킹 없이 자세 유지만",
+        "harder": "과장된 로킹 동작"
+      },
+      "repetitions": { "min": 5, "max": 10, "unit": "회" },
+      "tips": ["목을 과도하게 젖히지 않는다", "어깨 긴장 주의"],
+      "image_key": "pilates_rocking"
+    }
+  ],
+  "routines": {
+    "15min_beginner": {
+      "name_kr": "초급 15분 루틴",
+      "duration_minutes": 15,
+      "met_average": 2.3,
+      "warmup": ["pelvic_tilt", "bridge_prep", "cat_cow"],
+      "main": ["PIL-001", "PIL-002", "PIL-003", "PIL-005", "PIL-007", "PIL-014"],
+      "cooldown": ["seal", "spine_stretch"]
+    },
+    "30min_intermediate": {
+      "name_kr": "초중급 30분 루틴",
+      "duration_minutes": 30,
+      "met_average": 3.0,
+      "warmup": ["imprint_release", "pelvic_tilt", "PIL-010", "cat_cow", "shoulder_rolls"],
+      "main": ["PIL-001", "PIL-002", "PIL-003", "PIL-004", "PIL-005", "PIL-006", "PIL-011", "PIL-007", "PIL-008", "PIL-016", "PIL-014"],
+      "cooldown": ["PIL-015", "seal", "mermaid_stretch"]
+    },
+    "45min_advanced": {
+      "name_kr": "중고급 45분 루틴",
+      "duration_minutes": 45,
+      "met_average": 4.0,
+      "warmup": ["imprint_release", "pelvic_tilt", "shoulder_bridge_prep", "cat_cow", "spine_twist_prep", "bird_dog", "arm_circles"],
+      "main": ["PIL-001", "PIL-002", "PIL-003", "PIL-004", "PIL-005", "PIL-006", "PIL-011", "PIL-013", "PIL-021", "PIL-007", "PIL-012", "PIL-008", "PIL-016", "PIL-017", "PIL-018", "PIL-014", "PIL-020", "PIL-019"],
+      "cooldown": ["hip_circles", "leg_pull_front", "mermaid_stretch", "seal", "final_breath"]
+    }
+  },
+  "body_type_recommendations": {
+    "X": {
+      "name_kr": "모래시계형",
+      "goal": "균형 유지",
+      "recommended_ids": ["PIL-001", "PIL-002", "PIL-009", "PIL-014", "PIL-015", "PIL-010", "PIL-007"],
+      "notes": "특정 부위 과발달 주의, 균형 있는 운동 배분"
+    },
+    "A": {
+      "name_kr": "하체 발달형",
+      "goal": "상체 강화",
+      "recommended_ids": ["PIL-001", "PIL-020", "PIL-016", "PIL-005", "PIL-014"],
+      "notes": "하체 과발달 운동 제한, 길게 늘이는 동작 선호"
+    },
+    "Y": {
+      "name_kr": "역삼각형",
+      "goal": "하체 강화",
+      "recommended_ids": ["PIL-010", "PIL-019", "PIL-014", "PIL-018"],
+      "notes": "상체 운동 과다 피함, 하체 저항 운동 강화"
+    },
+    "H": {
+      "name_kr": "일자형",
+      "goal": "곡선 만들기",
+      "recommended_ids": ["PIL-011", "PIL-008", "PIL-014", "PIL-010", "PIL-013"],
+      "notes": "측면 운동 강조, 회전/측면 굽힘 동작 추가"
+    },
+    "O": {
+      "name_kr": "복부 비만형",
+      "goal": "코어 집중",
+      "recommended_ids": ["PIL-001", "PIL-005", "PIL-006", "PIL-011", "PIL-002", "PIL-020", "PIL-007"],
+      "notes": "점진적 강도 증가, 수정 버전으로 시작, 호흡 중심"
+    }
+  }
+}

@@ -1,0 +1,783 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "module": "W-1",
+    "category": "stretching",
+    "total_exercises": 25,
+    "created_at": "2025-12-17",
+    "app": "Yiroom"
+  },
+  "stretching_types": [
+    {
+      "type": "static",
+      "name_kr": "정적 스트레칭",
+      "definition": "근육을 늘린 상태에서 움직임 없이 유지",
+      "hold_time": { "beginner": "20-30초", "advanced": "30-60초" },
+      "timing": ["운동 후", "취침 전"],
+      "effects": ["유연성 향상", "근육 이완"]
+    },
+    {
+      "type": "dynamic",
+      "name_kr": "동적 스트레칭",
+      "definition": "움직임을 통해 점진적으로 가동 범위 확장",
+      "repetitions": "10-15회",
+      "timing": ["운동 전 워밍업"],
+      "effects": ["근육 온도 상승", "신경근 활성화", "부상 예방"]
+    },
+    {
+      "type": "pnf",
+      "name_kr": "PNF 스트레칭",
+      "definition": "수축-이완 기법을 활용한 고급 스트레칭",
+      "method": ["6-10초 등척성 수축(75%)", "2-3초 이완", "더 깊은 스트레칭"],
+      "effects": ["가장 빠른 유연성 향상"],
+      "target": "숙련자, 재활 환자"
+    }
+  ],
+  "met_reference": {
+    "light_static": { "met": 2.3, "intensity": "저강도" },
+    "general": { "met": 2.5, "intensity": "저강도" },
+    "yoga_style": { "met_range": [2.5, 3.0], "intensity": "저-중강도" },
+    "dynamic": { "met_range": [3.0, 3.5], "intensity": "중강도" },
+    "pnf": { "met_range": [3.5, 4.0], "intensity": "중강도" },
+    "power": { "met_range": [4.0, 4.5], "intensity": "중강도" }
+  },
+  "age_guidelines": {
+    "teen": {
+      "age_range": "10대",
+      "hold_time": "15-20초",
+      "intensity": "낮음",
+      "cautions": ["성장판 보호", "과도한 스트레칭 피하기", "경쟁적 스트레칭 금지"],
+      "forbidden": ["극단적인 백벤드", "무리한 스플릿", "무거운 하중 동반 스트레칭"]
+    },
+    "young_adult": {
+      "age_range": "20-30대",
+      "hold_time": "20-30초",
+      "intensity": "중간",
+      "pnf_allowed": true,
+      "focus": ["목/어깨(PC 작업)", "고관절(장시간 앉기)"],
+      "frequency": "주 5-7회"
+    },
+    "middle_age": {
+      "age_range": "40-50대",
+      "hold_time": "30-45초",
+      "intensity": "중-저",
+      "warmup_required": "7-10분",
+      "focus": "관절 가동성 유지"
+    },
+    "senior": {
+      "age_range": "60대 이상",
+      "hold_time": "30-60초",
+      "intensity": "낮음",
+      "warmup_required": "10분 이상",
+      "cautions": ["의자/벽 지지 활용", "낙상 주의", "점진적 접근"]
+    }
+  },
+  "exercises": [
+    {
+      "id": "ST-N01",
+      "name_kr": "상부 승모근 스트레칭",
+      "name_en": "Upper Trapezius Stretch",
+      "region": "neck",
+      "target_muscles": ["상부 승모근", "목 측면 근육"],
+      "met": 2.3,
+      "difficulty": 1,
+      "hold_time": "20-30초",
+      "steps": [
+        "편안하게 앉거나 선다",
+        "오른손을 등 뒤나 의자 옆에 고정",
+        "왼손으로 머리 오른쪽을 잡음",
+        "왼쪽 귀를 왼쪽 어깨 방향으로 천천히 당김",
+        "오른쪽 목과 어깨 위 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "자연스럽게 호흡 유지",
+      "contraindications": ["경추 디스크", "급성 목 통증", "어지러움"],
+      "variations": {
+        "teen": "손 없이 머리 무게만으로 실시",
+        "senior": "의자에 앉아 등받이 지지, 15초 유지",
+        "harder": "반대 손으로 의자를 잡아 어깨 고정 강화"
+      },
+      "body_type_emphasis": { "Y": "높음", "default": "보통" },
+      "tags": ["office", "beginner", "neck_pain", "posture"]
+    },
+    {
+      "id": "ST-N02",
+      "name_kr": "견갑거근 스트레칭",
+      "name_en": "Levator Scapulae Stretch",
+      "region": "neck",
+      "target_muscles": ["견갑거근", "승모근 상부"],
+      "met": 2.3,
+      "difficulty": 2,
+      "hold_time": "20-30초",
+      "steps": [
+        "편안하게 앉아 오른손을 등 뒤 어깨뼈 위에 올림",
+        "고개를 왼쪽 45도 방향으로 돌림",
+        "턱을 가슴 쪽(왼쪽 겨드랑이 방향)으로 당김",
+        "왼손으로 머리 뒤를 살짝 눌러 스트레칭 강화",
+        "오른쪽 목과 어깨 뒤 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "자연스럽게 호흡 유지",
+      "contraindications": ["심한 두통", "경추 협착증", "어깨 부상"],
+      "variations": {
+        "teen": "손 보조 없이 머리 무게만 활용",
+        "senior": "팔 올리기 어려우면 생략, 고개 회전만 실시"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["office", "beginner", "neck_pain", "desk_work"]
+    },
+    {
+      "id": "ST-N03",
+      "name_kr": "턱 당기기",
+      "name_en": "Chin Tuck",
+      "region": "neck",
+      "target_muscles": ["심부 경추 굴곡근", "후두하근"],
+      "met": 2.0,
+      "difficulty": 1,
+      "repetitions": 10,
+      "hold_time": "5-10초",
+      "steps": [
+        "등을 벽에 기대고 서거나 의자에 똑바로 앉음",
+        "시선은 정면 유지",
+        "턱을 목 쪽으로 당김 (이중턱 만들기)",
+        "뒷목이 길어지는 느낌",
+        "5-10초 유지, 10회 반복"
+      ],
+      "breathing": "호흡 유지",
+      "contraindications": ["TMJ(턱관절) 장애", "급성 목 통증"],
+      "variations": {
+        "teen": "벽 없이 자유롭게 실시",
+        "senior": "벽 지지 필수, 편안한 범위에서"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["posture", "turtle_neck", "beginner"]
+    },
+    {
+      "id": "ST-S01",
+      "name_kr": "크로스 바디 숄더 스트레칭",
+      "name_en": "Cross-Body Shoulder Stretch",
+      "region": "shoulder",
+      "target_muscles": ["후면 삼각근", "극하근", "소원근"],
+      "met": 2.3,
+      "difficulty": 1,
+      "hold_time": "20-30초",
+      "steps": [
+        "오른팔을 가슴 높이에서 왼쪽으로 뻗음",
+        "왼손으로 오른팔 팔꿈치 위를 잡음",
+        "왼쪽으로 부드럽게 당김",
+        "오른쪽 어깨 뒤쪽 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "자연스럽게 호흡",
+      "contraindications": ["어깨 탈구 이력", "급성 어깨 통증", "오십견 급성기"],
+      "variations": {
+        "senior": "문틀 활용, 팔꿈치를 문틀에 걸고 몸 회전"
+      },
+      "body_type_emphasis": { "A": "높음" },
+      "tags": ["shoulder", "beginner", "office"]
+    },
+    {
+      "id": "ST-S02",
+      "name_kr": "등 뒤 손깍지 스트레칭",
+      "name_en": "Behind Back Clasp Stretch",
+      "region": "shoulder",
+      "target_muscles": ["전면 삼각근", "대흉근", "이두근"],
+      "met": 2.3,
+      "difficulty": 2,
+      "hold_time": "20-30초",
+      "steps": [
+        "등 뒤에서 양손 깍지 낌",
+        "어깨를 뒤로 젖히며 가슴 열기",
+        "팔을 살짝 들어올림 (무리하지 않게)",
+        "가슴과 어깨 앞쪽 스트레칭 느낌",
+        "20-30초 유지"
+      ],
+      "breathing": "깊은 호흡으로 가슴 확장",
+      "contraindications": ["어깨 충돌 증후군", "회전근개 손상"],
+      "variations": {
+        "senior": "수건이나 밴드를 등 뒤에서 잡고 실시"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["posture", "round_shoulder", "chest_opening"]
+    },
+    {
+      "id": "ST-S03",
+      "name_kr": "이글 암 스트레칭",
+      "name_en": "Eagle Arms Stretch",
+      "region": "shoulder",
+      "target_muscles": ["능형근", "승모근 중부", "후면 삼각근"],
+      "met": 2.5,
+      "difficulty": 2,
+      "hold_time": "20-30초",
+      "steps": [
+        "팔을 앞으로 나란히 뻗음",
+        "오른팔을 왼팔 아래로 교차",
+        "팔꿈치를 구부려 손바닥이 마주보게",
+        "팔꿈치를 살짝 들어올려 어깨 높이로",
+        "견갑골 사이 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "호흡 유지",
+      "contraindications": ["팔꿈치 부상", "손목 터널 증후군"],
+      "variations": {
+        "senior": "손바닥 맞추기 어려우면 손목 교차까지만"
+      },
+      "body_type_emphasis": { "Y": "높음" },
+      "tags": ["upper_back", "shoulder", "desk_work"]
+    },
+    {
+      "id": "ST-C01",
+      "name_kr": "도어웨이 스트레칭",
+      "name_en": "Doorway Pec Stretch",
+      "region": "chest",
+      "target_muscles": ["대흉근", "소흉근", "전면 삼각근"],
+      "met": 2.5,
+      "difficulty": 1,
+      "hold_time": "20-30초",
+      "steps": [
+        "문틀에 서서 팔꿈치를 90도로 굽힘",
+        "전완을 문틀 양쪽에 댐 (팔꿈치 어깨 높이)",
+        "한 발을 앞으로 내딛으며 가슴을 문틀 사이로 밀기",
+        "가슴과 어깨 앞쪽 스트레칭 느낌",
+        "20-30초 유지"
+      ],
+      "breathing": "깊은 호흡",
+      "contraindications": ["어깨 불안정성", "급성 가슴 통증"],
+      "variations": {
+        "arm_low": "팔 높이 낮춤 - 대흉근 상부 타겟",
+        "arm_high": "팔 높이 높임 - 대흉근 하부 타겟",
+        "senior": "작은 보폭으로 부드럽게, 벽 모서리 활용"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["chest", "posture", "round_shoulder", "essential"]
+    },
+    {
+      "id": "ST-C02",
+      "name_kr": "흉추 회전 스트레칭",
+      "name_en": "Thoracic Rotation Stretch",
+      "region": "chest",
+      "target_muscles": ["흉추 회전근", "늑간근", "복사근"],
+      "met": 2.5,
+      "difficulty": 2,
+      "hold_time": "20-30초",
+      "steps": [
+        "옆으로 누워 무릎을 90도로 굽힘",
+        "양팔을 앞으로 뻗어 손바닥 맞댐",
+        "위쪽 팔을 천천히 반대편으로 열며 회전",
+        "가능한 만큼 뒤쪽 바닥을 향해 열기",
+        "시선은 열리는 손 방향",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "날숨에 더 열기",
+      "contraindications": ["급성 허리 통증", "늑골 골절"],
+      "variations": {
+        "senior": "베개로 머리 지지, 작은 범위에서 시작"
+      },
+      "body_type_emphasis": { "H": "높음" },
+      "tags": ["thoracic", "rotation", "flexibility"]
+    },
+    {
+      "id": "ST-C03",
+      "name_kr": "스레드 더 니들",
+      "name_en": "Thread the Needle",
+      "region": "chest",
+      "target_muscles": ["흉추", "능형근", "광배근"],
+      "met": 2.5,
+      "difficulty": 2,
+      "hold_time": "20-30초",
+      "steps": [
+        "네발기기 자세",
+        "오른손을 왼팔 아래로 통과시킴",
+        "오른쪽 어깨와 귀를 바닥에 닿게",
+        "왼손은 앞으로 뻗거나 천장으로 올림",
+        "흉추 회전과 어깨 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "자연스럽게 호흡",
+      "contraindications": ["어깨 부상", "목 문제"],
+      "variations": {
+        "senior": "이불이나 쿠션으로 어깨 아래 지지"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["thoracic", "upper_back", "relaxation"]
+    },
+    {
+      "id": "ST-L01",
+      "name_kr": "무릎 가슴 당기기",
+      "name_en": "Knee to Chest Stretch",
+      "region": "lower_back",
+      "target_muscles": ["둔근", "요추 기립근", "이상근"],
+      "met": 2.3,
+      "difficulty": 1,
+      "hold_time": "20-30초",
+      "steps": [
+        "등을 대고 누워 다리 펴기",
+        "오른쪽 무릎을 굽혀 양손으로 잡음",
+        "무릎을 가슴 쪽으로 부드럽게 당김",
+        "허리가 바닥에서 떨어지지 않도록",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "깊은 호흡",
+      "contraindications": ["고관절 치환술 직후", "급성 허리 통증"],
+      "variations": {
+        "senior": "수건으로 허벅지 뒤 잡기",
+        "both_legs": "양쪽 무릎 동시에 당기기"
+      },
+      "body_type_emphasis": { "O": "높음" },
+      "tags": ["lower_back", "beginner", "relaxation"]
+    },
+    {
+      "id": "ST-L02",
+      "name_kr": "고양이-소 스트레칭",
+      "name_en": "Cat-Cow Stretch",
+      "region": "lower_back",
+      "target_muscles": ["척추 전체", "복근", "척추 기립근"],
+      "met": 2.5,
+      "difficulty": 1,
+      "repetitions": 10,
+      "steps": [
+        "네발기기 자세 (손은 어깨 아래, 무릎은 골반 아래)",
+        "들숨: 배를 아래로 내리고 고개 들기 (Cow)",
+        "날숨: 등을 둥글게 말고 턱 당기기 (Cat)",
+        "호흡에 맞춰 천천히 10회 반복"
+      ],
+      "breathing": "들숨-Cow, 날숨-Cat",
+      "contraindications": ["손목 통증 시 주먹 쥐고 실시"],
+      "variations": {
+        "senior": "움직임 범위 줄이기, 의자에 앉아 실시"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["spine", "warmup", "essential", "beginner"]
+    },
+    {
+      "id": "ST-L03",
+      "name_kr": "아이 자세",
+      "name_en": "Child's Pose",
+      "region": "lower_back",
+      "target_muscles": ["요추 기립근", "광배근", "둔근"],
+      "met": 2.0,
+      "difficulty": 1,
+      "hold_time": "30-60초",
+      "steps": [
+        "무릎 꿇고 앉기",
+        "엉덩이를 발뒤꿈치에 내리기",
+        "상체를 앞으로 접어 이마를 바닥에",
+        "팔을 앞으로 뻗거나 옆에 두기",
+        "30-60초 유지"
+      ],
+      "breathing": "깊고 느린 호흡",
+      "contraindications": ["무릎 부상", "임신 후기"],
+      "variations": {
+        "senior": "쿠션을 가슴 아래 두기",
+        "wide_knees": "무릎 벌리기 - 복부 공간 확보"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["rest", "relaxation", "lower_back", "essential"]
+    },
+    {
+      "id": "ST-H01",
+      "name_kr": "스탠딩 햄스트링 스트레칭",
+      "name_en": "Standing Hamstring Stretch",
+      "region": "hip",
+      "target_muscles": ["햄스트링", "비복근"],
+      "met": 2.3,
+      "difficulty": 1,
+      "hold_time": "20-30초",
+      "steps": [
+        "한 발을 앞으로 내밀고 발끝 세우기",
+        "뒷다리 무릎 살짝 구부리기",
+        "상체를 곧게 유지하며 엉덩이를 뒤로 밀기",
+        "허벅지 뒤쪽 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "자연스럽게 호흡",
+      "contraindications": ["좌골신경통 악화 시", "급성 허리 통증"],
+      "variations": {
+        "senior": "의자나 벽 잡고 실시"
+      },
+      "body_type_emphasis": { "A": "높음" },
+      "tags": ["hamstring", "standing", "beginner"]
+    },
+    {
+      "id": "ST-H02",
+      "name_kr": "런지 스트레칭",
+      "name_en": "Low Lunge Hip Flexor Stretch",
+      "region": "hip",
+      "target_muscles": ["고관절 굴곡근", "장요근", "대퇴직근"],
+      "met": 2.5,
+      "difficulty": 2,
+      "hold_time": "20-30초",
+      "steps": [
+        "런지 자세 취하기 (앞무릎 90도)",
+        "뒷무릎을 바닥에 내리기",
+        "상체 세우고 골반을 앞으로 밀기",
+        "뒷다리 앞쪽 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "깊은 호흡",
+      "contraindications": ["무릎 부상", "고관절 치환술 직후"],
+      "variations": {
+        "senior": "쿠션으로 뒷무릎 지지",
+        "harder": "뒷발 잡고 대퇴사두근 추가 스트레칭"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["hip_flexor", "essential", "desk_work"]
+    },
+    {
+      "id": "ST-H03",
+      "name_kr": "피겨4 스트레칭",
+      "name_en": "Figure Four Stretch",
+      "region": "hip",
+      "target_muscles": ["이상근", "둔근", "고관절 외회전근"],
+      "met": 2.5,
+      "difficulty": 2,
+      "hold_time": "30-45초",
+      "steps": [
+        "등을 대고 누워 무릎 구부리기",
+        "오른쪽 발목을 왼쪽 무릎 위에 올리기 (4자 모양)",
+        "양손으로 왼쪽 허벅지 뒤를 잡음",
+        "왼쪽 다리를 가슴 쪽으로 당김",
+        "오른쪽 엉덩이 깊숙이 스트레칭 느낌",
+        "30-45초 유지 후 반대편 실시"
+      ],
+      "breathing": "깊은 호흡",
+      "contraindications": ["무릎 내측 인대 부상", "고관절 수술 직후"],
+      "variations": {
+        "senior": "벽 활용 - 발을 벽에 대고 실시",
+        "harder": "앉아서 실시"
+      },
+      "body_type_emphasis": { "O": "높음" },
+      "tags": ["piriformis", "glutes", "sciatica_relief"]
+    },
+    {
+      "id": "ST-T01",
+      "name_kr": "스탠딩 쿼드 스트레칭",
+      "name_en": "Standing Quad Stretch",
+      "region": "thigh",
+      "target_muscles": ["대퇴사두근", "고관절 굴곡근"],
+      "met": 2.3,
+      "difficulty": 1,
+      "hold_time": "20-30초",
+      "steps": [
+        "한 발로 서기 (필요시 벽 잡기)",
+        "반대쪽 발목을 손으로 잡음",
+        "발뒤꿈치를 엉덩이 쪽으로 당김",
+        "무릎은 모으고 골반은 중립",
+        "허벅지 앞쪽 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "자연스럽게 호흡",
+      "contraindications": ["무릎 부상", "균형 문제(지지물 사용)"],
+      "variations": {
+        "senior": "옆으로 누워 실시",
+        "harder": "무릎을 더 뒤로 보내기"
+      },
+      "body_type_emphasis": { "Y": "높음" },
+      "tags": ["quad", "standing", "beginner"]
+    },
+    {
+      "id": "ST-T02",
+      "name_kr": "스탠딩 내전근 스트레칭",
+      "name_en": "Standing Adductor Stretch",
+      "region": "thigh",
+      "target_muscles": ["내전근", "치골근", "박근"],
+      "met": 2.5,
+      "difficulty": 2,
+      "hold_time": "20-30초",
+      "steps": [
+        "다리를 넓게 벌리고 서기",
+        "한쪽 무릎을 구부리며 옆으로 이동",
+        "반대 다리는 곧게 유지",
+        "상체는 곧게 세우기",
+        "곧은 다리 안쪽 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "자연스럽게 호흡",
+      "contraindications": ["사타구니 부상", "무릎 내측 인대 손상"],
+      "variations": {
+        "senior": "의자 잡고 실시, 범위 줄이기"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["adductor", "inner_thigh", "flexibility"]
+    },
+    {
+      "id": "ST-T03",
+      "name_kr": "IT밴드 스트레칭",
+      "name_en": "IT Band Stretch",
+      "region": "thigh",
+      "target_muscles": ["장경인대", "대퇴근막장근", "둔근"],
+      "met": 2.5,
+      "difficulty": 2,
+      "hold_time": "20-30초",
+      "steps": [
+        "벽 옆에 서기",
+        "안쪽 다리를 바깥 다리 뒤로 교차",
+        "바깥쪽 엉덩이를 벽 쪽으로 밀기",
+        "안쪽 팔을 머리 위로 뻗어 추가 스트레칭",
+        "바깥쪽 허벅지 옆 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "자연스럽게 호흡",
+      "contraindications": ["허리 통증", "균형 문제"],
+      "variations": {
+        "senior": "의자 뒤에서 실시"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["it_band", "runner", "outer_thigh"]
+    },
+    {
+      "id": "ST-A01",
+      "name_kr": "종아리 스트레칭",
+      "name_en": "Calf Stretch",
+      "region": "ankle",
+      "target_muscles": ["비복근", "가자미근"],
+      "met": 2.3,
+      "difficulty": 1,
+      "hold_time": "20-30초",
+      "steps": [
+        "벽을 마주보고 양손을 벽에 대기",
+        "한 발을 뒤로 크게 물러나기",
+        "뒷발 뒤꿈치는 바닥에 붙이고 다리 곧게",
+        "앞 무릎을 구부리며 벽 쪽으로 몸 기울이기",
+        "뒷다리 종아리 스트레칭 느낌",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "자연스럽게 호흡",
+      "contraindications": ["아킬레스건 파열 회복 중"],
+      "variations": {
+        "senior": "계단 활용, 발뒤꿈치 내리기",
+        "soleus": "뒷무릎 구부려 가자미근 타겟"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["calf", "running", "standing", "beginner"]
+    },
+    {
+      "id": "ST-A02",
+      "name_kr": "발목 돌리기",
+      "name_en": "Ankle Circles",
+      "region": "ankle",
+      "target_muscles": ["발목 주변 근육", "경골근", "비골근"],
+      "met": 2.0,
+      "difficulty": 1,
+      "repetitions": 10,
+      "steps": [
+        "앉거나 서서 한 발을 바닥에서 들기",
+        "발목으로 큰 원을 그리듯 돌리기",
+        "시계 방향 10회",
+        "반시계 방향 10회",
+        "반대발 실시"
+      ],
+      "breathing": "자연스럽게 호흡",
+      "contraindications": ["급성 발목 염좌"],
+      "variations": {
+        "senior": "앉아서 실시"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["ankle", "warmup", "mobility", "beginner"]
+    },
+    {
+      "id": "ST-A03",
+      "name_kr": "발바닥 스트레칭",
+      "name_en": "Plantar Fascia Stretch",
+      "region": "ankle",
+      "target_muscles": ["족저근막", "발가락 굴곡근"],
+      "met": 2.0,
+      "difficulty": 1,
+      "hold_time": "30초",
+      "steps": [
+        "앉아서 한쪽 발을 반대쪽 무릎 위에 올리기",
+        "손으로 발가락을 잡고 위로 젖히기",
+        "발바닥 아치 스트레칭 느낌",
+        "30초 유지 후 반대편 실시"
+      ],
+      "breathing": "자연스럽게 호흡",
+      "contraindications": ["급성 족저근막염"],
+      "variations": {
+        "standing": "벽에 발가락 대고 서서 실시",
+        "ball_massage": "골프공으로 발바닥 롤링"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["plantar_fascia", "foot_pain", "morning_stretch"]
+    },
+    {
+      "id": "ST-FB01",
+      "name_kr": "전신 스트레칭 - 위로 뻗기",
+      "name_en": "Full Body Reach Up",
+      "region": "full_body",
+      "target_muscles": ["전신", "척추", "어깨", "옆구리"],
+      "met": 2.5,
+      "difficulty": 1,
+      "hold_time": "15-20초",
+      "steps": [
+        "발을 어깨 너비로 벌리고 서기",
+        "양팔을 머리 위로 길게 뻗기",
+        "손가락 깍지 끼고 손바닥 천장으로",
+        "발끝으로 서서 최대한 위로 뻗기",
+        "옆구리가 길어지는 느낌",
+        "15-20초 유지"
+      ],
+      "breathing": "들숨에 더 길게",
+      "contraindications": ["균형 문제", "어지러움"],
+      "variations": {
+        "senior": "발끝 들기 생략",
+        "side_bend": "좌우로 기울여 옆구리 추가 스트레칭"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["full_body", "morning", "energizing"]
+    },
+    {
+      "id": "ST-FB02",
+      "name_kr": "세계에서 가장 위대한 스트레칭",
+      "name_en": "World's Greatest Stretch",
+      "region": "full_body",
+      "target_muscles": ["고관절 굴곡근", "햄스트링", "흉추", "둔근", "내전근"],
+      "met": 3.5,
+      "difficulty": 3,
+      "repetitions": 5,
+      "steps": [
+        "런지 자세로 시작 (오른발 앞)",
+        "왼손을 오른발 안쪽 바닥에 댐",
+        "오른팔을 천장으로 뻗으며 상체 회전",
+        "오른손을 바닥에 내리고",
+        "엉덩이를 뒤로 보내며 앞다리 펴기 (햄스트링 스트레칭)",
+        "다시 런지로 돌아오기",
+        "5회 반복 후 반대편 실시"
+      ],
+      "breathing": "회전 시 날숨",
+      "contraindications": ["심한 허리 통증", "균형 문제"],
+      "variations": {
+        "senior": "손을 블록 위에",
+        "simpler": "회전 생략"
+      },
+      "body_type_emphasis": { "default": "높음" },
+      "tags": ["full_body", "warmup", "dynamic", "athletic"]
+    },
+    {
+      "id": "ST-FB03",
+      "name_kr": "다운워드 독 투 코브라",
+      "name_en": "Downward Dog to Cobra Flow",
+      "region": "full_body",
+      "target_muscles": ["햄스트링", "종아리", "어깨", "척추", "복근", "가슴"],
+      "met": 3.0,
+      "difficulty": 2,
+      "repetitions": 8,
+      "steps": [
+        "하향견 자세 (역V자)",
+        "상체를 앞으로 이동하며 플랭크",
+        "엉덩이를 낮추며 코브라 자세",
+        "다시 엉덩이를 위로 밀어 하향견",
+        "호흡에 맞춰 8회 반복"
+      ],
+      "breathing": "코브라-들숨, 하향견-날숨",
+      "contraindications": ["손목 통증", "허리 통증 악화 시"],
+      "variations": {
+        "senior": "무릎 대고 실시",
+        "easier": "Puppy Pose로 대체"
+      },
+      "body_type_emphasis": { "default": "보통" },
+      "tags": ["full_body", "flow", "yoga_based", "spine"]
+    },
+    {
+      "id": "ST-FB04",
+      "name_kr": "전신 트위스트",
+      "name_en": "Full Body Twist",
+      "region": "full_body",
+      "target_muscles": ["척추 회전근", "복사근", "둔근", "흉추"],
+      "met": 2.5,
+      "difficulty": 2,
+      "hold_time": "20-30초",
+      "steps": [
+        "등을 대고 눕기",
+        "양팔을 T자로 벌리기",
+        "양무릎을 구부려 올리기",
+        "양무릎을 오른쪽으로 내리기",
+        "고개는 왼쪽으로",
+        "20-30초 유지 후 반대편 실시"
+      ],
+      "breathing": "깊은 호흡으로 이완",
+      "contraindications": ["척추 부상", "급성 허리 통증"],
+      "variations": {
+        "senior": "무릎 아래 베개",
+        "deeper": "위쪽 손으로 무릎 눌러 더 깊이"
+      },
+      "body_type_emphasis": { "H": "높음" },
+      "tags": ["full_body", "twist", "relaxation", "bedtime"]
+    }
+  ],
+  "routines": {
+    "morning_5min": {
+      "name_kr": "모닝 스트레칭",
+      "duration_minutes": 5,
+      "met_average": 2.5,
+      "exercises": ["ST-FB01", "ST-N01", "ST-L02", "ST-H02", "ST-A01"],
+      "focus": "에너지 각성, 전신 깨우기"
+    },
+    "office_10min": {
+      "name_kr": "오피스 스트레칭",
+      "duration_minutes": 10,
+      "met_average": 2.3,
+      "exercises": ["ST-N01", "ST-N03", "ST-S01", "ST-L03", "ST-H02", "ST-N02", "ST-C01", "ST-T01", "ST-A02"],
+      "focus": "목/어깨 긴장 완화, 요통 예방"
+    },
+    "pre_workout_10min": {
+      "name_kr": "운동 전 동적 스트레칭",
+      "duration_minutes": 10,
+      "met_average": 3.0,
+      "exercises": ["ST-FB02", "ST-L02", "ST-H02", "ST-T01", "ST-A01", "ST-FB03"],
+      "focus": "근육 활성화, 부상 예방"
+    },
+    "post_workout_15min": {
+      "name_kr": "운동 후 정적 스트레칭",
+      "duration_minutes": 15,
+      "met_average": 2.5,
+      "exercises": ["ST-H01", "ST-H03", "ST-T01", "ST-T02", "ST-A01", "ST-L01", "ST-L03"],
+      "focus": "근육 이완, 회복 촉진"
+    },
+    "bedtime_10min": {
+      "name_kr": "취침 전 스트레칭",
+      "duration_minutes": 10,
+      "met_average": 2.0,
+      "exercises": ["ST-N01", "ST-N02", "ST-L01", "ST-L03", "ST-H03", "ST-FB04"],
+      "focus": "긴장 해소, 숙면 유도"
+    },
+    "full_body_30min": {
+      "name_kr": "전신 스트레칭",
+      "duration_minutes": 30,
+      "met_average": 2.5,
+      "exercises": ["ST-FB01", "ST-N01", "ST-N02", "ST-N03", "ST-S01", "ST-S02", "ST-C01", "ST-C02", "ST-L01", "ST-L02", "ST-L03", "ST-H01", "ST-H02", "ST-H03", "ST-T01", "ST-T02", "ST-A01", "ST-FB04"],
+      "focus": "전체 유연성 향상"
+    }
+  },
+  "body_type_recommendations": {
+    "X": {
+      "name_kr": "모래시계형",
+      "goal": "균형 유지",
+      "recommended_ids": ["ST-FB01", "ST-L02", "ST-C01", "ST-H01", "ST-FB03"],
+      "notes": "전신 균형 유지, 특정 부위 과도한 스트레칭 피하기"
+    },
+    "A": {
+      "name_kr": "하체 발달형",
+      "goal": "상체 유연성 강화",
+      "recommended_ids": ["ST-S01", "ST-S02", "ST-C01", "ST-N01", "ST-H01"],
+      "notes": "상체 열기, 어깨/가슴 스트레칭 강조"
+    },
+    "Y": {
+      "name_kr": "역삼각형",
+      "goal": "하체 유연성 강화",
+      "recommended_ids": ["ST-N01", "ST-S03", "ST-H02", "ST-H03", "ST-T01"],
+      "notes": "긴장된 승모근 완화, 하체 스트레칭 강화"
+    },
+    "H": {
+      "name_kr": "일자형",
+      "goal": "측면 유연성, 곡선 만들기",
+      "recommended_ids": ["ST-C02", "ST-FB01", "ST-FB04", "ST-C03"],
+      "notes": "측면 스트레칭, 회전 동작 강조"
+    },
+    "O": {
+      "name_kr": "복부 비만형",
+      "goal": "코어 관련 유연성",
+      "recommended_ids": ["ST-L01", "ST-L03", "ST-H03", "ST-FB02"],
+      "notes": "점진적 접근, 호흡 중심, 관절 부담 최소화"
+    }
+  }
+}

@@ -422,10 +422,36 @@ const styles = StyleSheet.create({
 
 ---
 
+## 예정된 변경사항
+
+### 브랜딩 중립화 (대기 중)
+
+> **참고**: [branding-specification.md](research/reviewed/branding-specification.md)
+
+현재 브랜드 그라디언트가 핑크→퍼플로 설정되어 있으나, 성별 중립적 브랜딩을 위해 이룸 블루 기반으로 변경 예정:
+
+```css
+/* 현재 (핑크 → 퍼플) */
+--gradient-brand: linear-gradient(135deg, oklch(0.70 0.18 340), oklch(0.60 0.20 300));
+
+/* 변경 예정 (블루 → 인디고) - 로고 디자인 완료 후 */
+--gradient-brand: linear-gradient(135deg, oklch(0.53 0.23 262), oklch(0.45 0.20 270));
+```
+
+**영향 받는 컴포넌트**:
+- Navbar 로고 텍스트 (`text-gradient-brand`)
+- 홈페이지 CTA 버튼 (`bg-gradient-brand`)
+- 대시보드 EmptyState, UserProfile 버튼
+
+**진행 상태**: Figma 로고 디자인 완료 후 일괄 적용
+
+---
+
 ## 변경 이력
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
+| v2.1 | 2025-12-19 | 브랜딩 중립화 계획 문서화, manifest theme_color 수정 |
 | v2.0 | 2025-12-11 | OKLch 색상 체계, 모듈 색상, 그라디언트, 애니메이션, 다크모드, RN 가이드 추가 |
 | v1.1 | 2025-12-04 | Noto Sans KR 폰트 업데이트 |
 | v1.0 | 2025-12-04 | 초기 버전 (Stitch 익스포트 기반) |
