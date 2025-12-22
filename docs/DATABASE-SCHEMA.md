@@ -1,6 +1,6 @@
-# 🗄️ Database 스키마 v4.4 (Phase G 포함)
+# 🗄️ Database 스키마 v4.5 (체크인 추가)
 
-**버전**: v4.4 (Product DB v2 + Admin + Phase G)
+**버전**: v4.5 (Product DB v2 + Admin + Phase G + Checkin)
 **업데이트**: 2025년 12월 22일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
@@ -29,6 +29,7 @@
 
   사용자 기능:
     10. user_wishlists              # 위시리스트 (2025-12-11)
+    20. daily_checkins              # 일일 체크인 (2025-12-22)
 
   관리자:
     11. feature_flags               # 기능 플래그 (2025-12-11)
@@ -1346,6 +1347,58 @@ CREATE TABLE affiliate_clicks (
 
 ---
 
-**버전**: v4.4 (Phase G 테이블 추가)
+## 18. daily_checkins 테이블 (일일 체크인)
+
+일일 체크인 - "오늘의 나" 기분/에너지/피부 상태 기록
+
+### SQL 생성문
+```sql
+CREATE TABLE daily_checkins (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
+
+    -- 체크인 데이터
+    mood TEXT NOT NULL CHECK (mood IN ('great', 'okay', 'bad')),
+    energy TEXT NOT NULL CHECK (energy IN ('high', 'medium', 'low')),
+    skin_condition TEXT NOT NULL CHECK (skin_condition IN ('great', 'okay', 'bad')),
+
+    -- 추가 메모 (선택적)
+    notes TEXT,
+
+    -- 체크인 시간
+    checked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    check_date DATE NOT NULL DEFAULT CURRENT_DATE,
+
+    -- 메타데이터
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+
+    -- 하루에 하나의 체크인만 허용
+    UNIQUE(clerk_user_id, check_date)
+);
+```
+
+### 필드 설명
+```yaml
+mood:
+  - great: 좋아요 😊
+  - okay: 보통이에요 😐
+  - bad: 안 좋아요 😔
+
+energy:
+  - high: 활력 넘쳐요 ⚡
+  - medium: 적당해요 🔋
+  - low: 피곤해요 🪫
+
+skin_condition:
+  - great: 촉촉해요 ✨
+  - okay: 괜찮아요 👌
+  - bad: 건조/트러블 😣
+```
+
+> 마이그레이션: `supabase/migrations/202512220200_daily_checkins.sql`
+
+---
+
+**버전**: v4.5 (일일 체크인 테이블 추가)
 **최종 업데이트**: 2025년 12월 22일
-**상태**: Phase 1 + Phase 2 + Admin + Phase G 완료 ✅
+**상태**: Phase 1 + Phase 2 + Admin + Phase G + Checkin 완료 ✅
