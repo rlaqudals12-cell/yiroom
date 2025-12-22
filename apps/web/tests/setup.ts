@@ -71,6 +71,14 @@ vi.mock('lucide-react', () => ({
   Clock: createIconMock('Clock'),
   Zap: createIconMock('Zap'),
 
+  // Mood & Energy
+  Smile: createIconMock('Smile'),
+  Meh: createIconMock('Meh'),
+  Frown: createIconMock('Frown'),
+  Battery: createIconMock('Battery'),
+  BatteryLow: createIconMock('BatteryLow'),
+  Bot: createIconMock('Bot'),
+
   // Nutrition & Health
   Utensils: createIconMock('Utensils'),
   UtensilsCrossed: createIconMock('UtensilsCrossed'),

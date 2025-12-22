@@ -22,7 +22,7 @@ export { PriceHistoryChart } from './detail/PriceHistoryChart';
 export { WishlistButton } from './WishlistButton';
 
 // Q&A
-export { ProductQA } from './ProductQA';
+export { ProductQASection } from './ProductQASection';
 
 // 페이지 클라이언트
 export { ProductsPageClient } from './ProductsPageClient';

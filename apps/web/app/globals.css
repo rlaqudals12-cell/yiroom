@@ -288,6 +288,10 @@
 .animation-delay-600 { animation-delay: 600ms; }
 .animation-delay-700 { animation-delay: 700ms; }
 .animation-delay-800 { animation-delay: 800ms; }
+.animation-delay-900 { animation-delay: 900ms; }
+.animation-delay-1000 { animation-delay: 1000ms; }
+.animation-delay-1100 { animation-delay: 1100ms; }
+.animation-delay-1200 { animation-delay: 1200ms; }
 
 /* 애니메이션 비활성화 (접근성) */
 @media (prefers-reduced-motion: reduce) {

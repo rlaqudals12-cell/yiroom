@@ -341,6 +341,8 @@ export const ProductFiltersDynamic = dynamic(
 | `docs/TECH-STACK.md` | 기술 스택 상세 |
 | `docs/HOOK-MODEL.md` | 사용자 리텐션 모델 |
 | `docs/PROGRESS-PHASE2.md` | Phase 2 개발 진행 상황 |
+| `docs/TOOL-INTEGRATION-PLAN.md` | AI 도구 통합 계획 (2025-12) |
+| `docs/DESIGN-WORKFLOW.md` | 디자인 작업 워크플로우 |
 | `.claude/agents/*.md` | 전문 Agent 설정 |
 
 **Phase 2 스펙 문서:**
@@ -382,4 +384,4 @@ components/workout/
 - Lucide React 아이콘 사용
 
 ---
-**Version**: 7.3 (테스트 2,571개 + 타겟 중립화) | **Updated**: 2025-12-17
+**Version**: 7.4 (도구 통합 계획 추가) | **Updated**: 2025-12-22

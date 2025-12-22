@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { WishlistButton } from '@/components/products/WishlistButton';
 import { PurchaseButton } from '@/components/products/PurchaseButton';
 import { ReviewSection } from '@/components/products/reviews';
+import { ProductQASection } from '@/components/products/ProductQASection';
 import { getProductById, pathToProductType } from '@/lib/products';
 import type { ProductType, CosmeticProduct, SupplementProduct } from '@/types/product';
 import type { ReviewProductType } from '@/types/review';
@@ -284,6 +285,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             className="w-full"
           />
         </div>
+
+        {/* Q&A 섹션 */}
+        <ProductQASection
+          product={product}
+          productType={productType}
+        />
 
         {/* 리뷰 섹션 */}
         <ReviewSection

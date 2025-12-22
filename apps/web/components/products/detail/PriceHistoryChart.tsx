@@ -142,7 +142,7 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
                   borderRadius: '8px',
                   fontSize: '12px',
                 }}
-                formatter={(value: number) => [`${formatPrice(value)}원`, '가격']}
+                formatter={(value: number | undefined) => [value !== undefined ? `${formatPrice(value)}원` : '-', '가격']}
               />
               <Line
                 type="monotone"

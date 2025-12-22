@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 interface FadeInUpProps {
   /** 자식 요소 */
   children: ReactNode;
-  /** 애니메이션 딜레이 (100ms 단위, 0-8) */
-  delay?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  /** 애니메이션 딜레이 (100ms 단위, 0-12) */
+  delay?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
   /** 추가 className */
   className?: string;
   /** 애니메이션 지속 시간 (기본: 0.5s) */
@@ -24,6 +24,10 @@ const delayClasses: Record<number, string> = {
   6: 'animation-delay-600',
   7: 'animation-delay-700',
   8: 'animation-delay-800',
+  9: 'animation-delay-900',
+  10: 'animation-delay-1000',
+  11: 'animation-delay-1100',
+  12: 'animation-delay-1200',
 };
 
 const durationClasses: Record<string, string> = {
