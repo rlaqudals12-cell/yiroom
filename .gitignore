@@ -50,6 +50,9 @@ public/workbox-*.js.map
 
 # Supabase
 .supabase
+**/supabase/.branches/
+**/supabase/.temp/
+*.sql.bak
 
 # Turbo
 .turbo
