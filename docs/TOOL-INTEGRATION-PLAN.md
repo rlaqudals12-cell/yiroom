@@ -317,20 +317,21 @@ Structured Outputs:
 ### 1순위: 배포 준비 (즉시)
 
 ```yaml
-[ ] F-6 보안 체크리스트 완료
-    - npm audit 실행 및 취약점 수정
-    - HTTPS 강제 확인
-    - CORS 설정 검토
+[x] F-6 보안 체크리스트 완료 (2025-12-22)
+    - npm audit 실행: 6 moderate (dev only)
+    - HTTPS 강제: Vercel 자동 처리
+    - CORS 설정: 내부 API만 (설정 불필요)
+    - 보안 헤더 5개 추가 (vercel.json)
 
 [ ] 프로덕션 환경변수 점검
     - Clerk 프로덕션 키 교체 (2026/01 배포 전)
     - Sentry DSN 설정
     - Supabase 프로덕션 URL 확인
 
-[ ] Gemini 3 Flash 전환 (권장)
-    - 무료 티어 제공 (AI Studio)
-    - 2.5 Flash 무료 티어 축소됨 (일 20회)
-    - lib/gemini.ts 모델 ID 변경: gemini-3-flash-preview
+[x] Gemini 3 Flash 전환 완료 (2025-12-22)
+    - lib/gemini.ts 모델 ID 변경
+    - lib/rag/product-qa.ts 모델 ID 변경
+    - 무료 티어 (AI Studio) 활용
 ```
 
 ### 2순위: 개발 효율화 (배포 후 1주)

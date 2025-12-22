@@ -1021,6 +1021,31 @@ AI 업그레이드:
 기타:
   [x] 애니메이션 딜레이 클래스 확장 (900-1200ms)
   [x] Switch UI 컴포넌트 추가 (@radix-ui/react-switch)
+
+보안 (F-6):
+  [x] vercel.json 보안 헤더 5개 추가
+      - X-Frame-Options: DENY
+      - X-Content-Type-Options: nosniff
+      - Referrer-Policy: strict-origin-when-cross-origin
+      - X-XSS-Protection
+      - Permissions-Policy (카메라 self만)
+  [x] npm audit 확인: 6 moderate (dev only)
+
+신규 기능 모듈:
+  [x] products/qa - 제품 Q&A 채팅 페이지 (RAG 기반)
+  [x] settings - 설정 페이지
+  [x] notifications - 브라우저 푸시 알림 시스템
+  [x] checkin - 일일 체크인 모달 (기분/에너지/피부)
+  [x] ProductQASection - 제품 상세 Q&A 섹션
+  [x] lib/rag/product-qa.ts - AI Q&A 답변 생성
+
+데이터베이스:
+  [x] daily_checkins 테이블 마이그레이션
+  [x] DATABASE-SCHEMA.md v4.5 업데이트
+
+정리:
+  [x] Supabase 임시 파일 gitignore 추가
+  [x] N1_combined_migration.sql.bak 삭제
 ```
 
 ---
