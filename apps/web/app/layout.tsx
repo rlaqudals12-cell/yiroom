@@ -58,6 +58,9 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   manifest: '/manifest.webmanifest', // PWA manifest - middleware에서 제외됨
+  other: {
+    'theme-color': '#2e5afa', // 이룸 블루 - manifest와 동일
+  },
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
