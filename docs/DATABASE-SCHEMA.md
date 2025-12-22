@@ -28,7 +28,7 @@
     9. product_price_history        # 가격 추적
 
   사용자 기능:
-    10. wishlist                    # 위시리스트 (2025-12-11)
+    10. user_wishlists              # 위시리스트 (2025-12-11)
 
   관리자:
     11. feature_flags               # 기능 플래그 (2025-12-11)
