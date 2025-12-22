@@ -1,8 +1,8 @@
 # 이룸 디자인 워크플로우
 
-> **작성일**: 2025-12-13
+> **작성일**: 2025-12-13 | **최종 업데이트**: 2025-12-22
 > **적용 시점**: 기능 점검 완료 후
-> **목적**: Cursor Visual Editor + Gemini 3를 활용한 디자인-코드 통합 워크플로우
+> **목적**: Cursor Visual Editor + Figma MCP + Gemini 3 Flash를 활용한 디자인-코드 통합 워크플로우
 
 ---
 
@@ -15,9 +15,9 @@
 Figma 디자인 → 수동 코드 변환 → 검토 → 수정 반복
 ```
 
-새로운 워크플로우:
+새로운 워크플로우 (2025-12):
 ```
-Cursor Visual Editor → AI 자동 코드 생성 → 검증 → 배포
+Figma MCP → 초기 코드 생성 → Cursor Visual Editor → Claude 검증 → 배포
 ```
 
 ### 이룸 프로젝트 호환성
@@ -33,7 +33,7 @@ Cursor Visual Editor → AI 자동 코드 생성 → 검증 → 배포
 
 ## 2. 도구 스택
 
-### 2.1 Cursor Visual Editor
+### 2.1 Cursor Visual Editor (v2.2)
 
 **출시일**: 2025-12-11 (Cursor 2.2)
 
@@ -45,6 +45,9 @@ Cursor Visual Editor → AI 자동 코드 생성 → 검증 → 배포
 | **Point-and-Prompt** | 클릭 후 자연어 명령 | "이 버튼 더 크게" |
 | **병렬 프롬프트** | 여러 요소 동시 수정 | 3개 카드 색상 한번에 변경 |
 | **디자인 토큰 연동** | CSS 변수 자동 인식 | `--primary`, `--module-workout` |
+| **Background Agents** | 최대 8개 에이전트 병렬 실행 | 대규모 UI 리팩토링 |
+| **Debug Mode** | 코드 자동 계측 + 버그 분석 | 렌더링 버그 원인 추적 |
+| **Multi-Agent Judging** | 병렬 에이전트 결과 비교 | 최적 솔루션 자동 선택 |
 
 #### 병렬 프롬프트 활용
 
@@ -65,30 +68,49 @@ Visual Editor의 강력한 기능 중 하나는 **여러 프롬프트 동시 실
 - 여러 컴포넌트 동시 비교 가능
 - 변경 사항 한번에 커밋 가능
 
-### 2.2 Gemini 3 Pro
+### 2.2 Gemini 3 Flash
 
-**출시일**: 2025-11 (Google)
+**출시일**: 2025-12 (Google) - 최신 모델
 
-| 벤치마크 | 점수 | 의미 |
-|----------|------|------|
-| LMArena | 1501 Elo | 1위 |
-| HumanEval | 84.8% | 코드 생성 우수 |
-| 프론트엔드/비주얼 | 상위권 | **디자인 작업 강점** |
+| 특징 | 내용 |
+|------|------|
+| **비용** | $0.50/1M 입력, $3/1M 출력 (2.0 대비 75% 절감) |
+| **성능** | 3 Pro와 동등한 멀티모달/코딩/에이전트 성능 |
+| **컨텍스트** | 1M 토큰 |
 
-**강점**:
-- 비주얼 태스크 (UI/UX) 우수
-- React/Tailwind 코드 생성 정확도 높음
-- Cursor Visual Editor 내장 통합
+**이룸 활용**:
+- PC-1/S-1/C-1 이미지 분석
+- N-1 음식 인식
+- RAG 응답 생성
 
-### 2.3 Claude Code
+> **참고**: 기존 Gemini 2.0 Flash에서 3 Flash로 업그레이드 권장
+
+### 2.3 Figma MCP Server (Beta)
+
+**출시일**: 2025-12 (Figma Config 2025)
+
+| 기능 | 설명 |
+|------|------|
+| **디자인 파일 연결** | Figma → Cursor/Claude Code 직접 연결 |
+| **Code Connect** | 컴포넌트 ↔ React 코드 매핑 |
+| **디자인 토큰 추출** | 스타일 → CSS 변수 자동 변환 |
+
+**예상 효과**: 초기 개발 시간 **50-70% 단축**
+
+### 2.4 Claude Code (Opus 4.5 / Sonnet 4.5)
 
 **역할**: 비즈니스 로직 검증, 테스트, 스펙 문서
 
-| 강점 | 활용 |
-|------|------|
-| 복잡한 추론 | 비즈니스 로직 구현 |
-| 긴 컨텍스트 | 전체 코드베이스 이해 |
-| SDD 워크플로우 | 스펙 기반 개발 |
+| 모델 | 용도 | 비용 |
+|------|------|------|
+| **Sonnet 4.5** | 빠른 코딩, 테스트 작성 | $3/$15 per 1M |
+| **Opus 4.5** | 복잡한 리팩토링, 아키텍처 | $5/$25 per 1M |
+
+**신기능**:
+- Checkpoints (진행 저장/롤백)
+- Plugins 시스템
+- MCP project 스코프 (.mcp.json 팀 공유)
+- .claude/rules/ 프로젝트 규칙
 
 ---
 
@@ -418,17 +440,21 @@ git merge design/dashboard-update
 ### 공식 문서
 
 - [Cursor Visual Editor Blog](https://cursor.com/blog/browser-visual-editor)
-- [Gemini 3 개발자 가이드](https://blog.google/technology/developers/gemini-3-developers/)
 - [Cursor Changelog](https://cursor.com/changelog)
+- [Gemini 3 Flash 개발자 가이드](https://blog.google/technology/developers/build-with-gemini-3-flash/)
+- [Figma Dev Mode MCP](https://www.figma.com/blog/design-systems-ai-mcp/)
+- [Claude Code Plugins](https://www.anthropic.com/news/claude-code-plugins)
+- [Claude Opus 4.5](https://www.anthropic.com/news/claude-opus-4-5)
 
 ### 이룸 프로젝트 문서
 
 | 문서 | 내용 |
 |------|------|
+| [TOOL-INTEGRATION-PLAN.md](TOOL-INTEGRATION-PLAN.md) | 도구 통합 계획 (2025-12) |
 | [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) | 색상, 폰트, 토큰 정의 |
 | [ROADMAP-PHASE-NEXT.md](ROADMAP-PHASE-NEXT.md) | 전체 개발 로드맵 |
 | [CLAUDE.md](../CLAUDE.md) | 프로젝트 개발 가이드 |
 
 ---
 
-**Version**: 1.1 | **Updated**: 2025-12-13
+**Version**: 2.0 | **Updated**: 2025-12-22

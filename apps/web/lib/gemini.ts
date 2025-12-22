@@ -43,8 +43,9 @@ const safetySettings = [
 ];
 
 // 모델 설정 (환경변수로 오버라이드 가능)
+// 2025-12-22: Gemini 3 Flash로 업그레이드 (무료 티어 + 성능 향상)
 const modelConfig = {
-  model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+  model: process.env.GEMINI_MODEL || "gemini-3-flash-preview",
   safetySettings,
 };
 
