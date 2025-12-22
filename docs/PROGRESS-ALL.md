@@ -989,6 +989,40 @@ UI 컴포넌트:
   [x] 접근성 개선 (ARIA)
 ```
 
+### 추가 작업 (2025-12-22)
+
+```yaml
+AI 업그레이드:
+  [x] Gemini 2.5 Flash → 3 Flash 업그레이드
+      - 무료 티어 (AI Studio)
+      - lib/gemini.ts 모델 ID 변경
+  [x] TOOL-INTEGRATION-PLAN.md 문서 추가
+
+제품 매칭 개선:
+  [x] 리뷰 평점 기반 매칭 보너스 추가
+      - 평점 4.5+ & 리뷰 100개+: +10점
+      - 평점 4.0+ & 리뷰 50개+: +7점
+      - 평점 3.5+ & 리뷰 20개+: +4점
+  [x] MatchReasonType에 'rating' 타입 추가
+
+분석 UI 개선:
+  [x] 체형/피부 분석 결과에 공유 기능 추가
+  [x] 분석 완료 시 축하 효과 (Confetti)
+
+운동 모듈 확장:
+  [x] RecommendedEquipmentCard - 운동 기구 추천
+  [x] RecommendedSupplementCard - 영양제 추천
+  [x] 운동 결과 페이지에 추천 섹션 통합
+
+대시보드 개선:
+  [x] CombinedStreakWidget - 운동/영양 스트릭 통합 위젯
+  [x] 테스트 12개 추가
+
+기타:
+  [x] 애니메이션 딜레이 클래스 확장 (900-1200ms)
+  [x] Switch UI 컴포넌트 추가 (@radix-ui/react-switch)
+```
+
 ---
 
 ## Hook Model (사용자 리텐션)
