@@ -20,6 +20,8 @@ import {
   WorkoutStyleCard,
   PostWorkoutSkinCareCard,
   PostWorkoutNutritionCard,
+  RecommendedEquipmentCard,
+  RecommendedSupplementCard,
 } from '@/components/workout/result';
 import type { SkinAnalysisSummary } from '@/lib/workout/skinTips';
 import type { WorkoutType } from '@/lib/workout/nutritionTips';
@@ -41,6 +43,8 @@ export default function ResultPage() {
   const [result, setResult] = useState<WorkoutTypeResult | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [concerns, setConcerns] = useState<string[]>([]);
+  const [goals, setGoals] = useState<string[]>([]);
+  const [location, setLocation] = useState<'home' | 'gym' | 'outdoor'>('home');
   const [bodyType, setBodyType] = useState<BodyType | null>(null);
   const [personalColor, setPersonalColor] = useState<PersonalColorSeason | null>(null);
   const [celebrityMatches, setCelebrityMatches] = useState<CelebrityMatchResult[]>([]);
@@ -109,6 +113,8 @@ export default function ResultPage() {
         );
         setExercises(recommendedExercises);
         setConcerns(inputData.concerns || []);
+        setGoals(inputData.goals || []);
+        setLocation((inputData.location as 'home' | 'gym' | 'outdoor') || 'home');
 
         // 체형 및 퍼스널 컬러 저장
         const userBodyType = inputData.bodyTypeData?.type as BodyType | undefined;
@@ -276,8 +282,24 @@ export default function ResultPage() {
           </FadeInUp>
         )}
 
-        {/* 추천 운동 섹션 */}
+        {/* 운동 기구 추천 */}
         <FadeInUp delay={7}>
+          <RecommendedEquipmentCard
+            skillLevel="beginner"
+            useLocation={location === 'gym' ? 'gym' : location === 'outdoor' ? 'outdoor' : 'home'}
+          />
+        </FadeInUp>
+
+        {/* 영양제 추천 */}
+        <FadeInUp delay={8}>
+          <RecommendedSupplementCard
+            workoutGoals={goals}
+            concerns={concerns}
+          />
+        </FadeInUp>
+
+        {/* 추천 운동 섹션 */}
+        <FadeInUp delay={9}>
           <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
             <h3 className="text-lg font-bold text-foreground mb-4">
               추천 운동
@@ -299,7 +321,7 @@ export default function ResultPage() {
         </FadeInUp>
 
         {/* 액션 버튼 */}
-        <FadeInUp delay={8}>
+        <FadeInUp delay={10}>
           <div className="space-y-3">
             <button
               onClick={handleViewPlan}
@@ -319,7 +341,7 @@ export default function ResultPage() {
         </FadeInUp>
 
         {/* 다시 분석하기 */}
-        <FadeInUp delay={8}>
+        <FadeInUp delay={10}>
           <button
             onClick={handleRestart}
             className="w-full py-3 text-muted-foreground text-sm hover:text-foreground transition-colors"

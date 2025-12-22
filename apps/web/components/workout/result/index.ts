@@ -7,3 +7,5 @@ export { default as CelebrityRoutineCard } from './CelebrityRoutineCard';
 export { default as WorkoutStyleCard } from './WorkoutStyleCard';
 export { default as PostWorkoutSkinCareCard } from './PostWorkoutSkinCareCard';
 export { default as PostWorkoutNutritionCard } from './PostWorkoutNutritionCard';
+export { default as RecommendedEquipmentCard } from './RecommendedEquipmentCard';
+export { default as RecommendedSupplementCard } from './RecommendedSupplementCard';
