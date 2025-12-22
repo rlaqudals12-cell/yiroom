@@ -147,10 +147,10 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
               <Line
                 type="monotone"
                 dataKey="price"
-                stroke="#ec4899"
+                stroke="#2e5afa"
                 strokeWidth={2}
-                dot={{ fill: '#ec4899', strokeWidth: 0, r: 3 }}
-                activeDot={{ r: 5, fill: '#ec4899' }}
+                dot={{ fill: '#2e5afa', strokeWidth: 0, r: 3 }}
+                activeDot={{ r: 5, fill: '#2e5afa' }}
               />
             </LineChart>
           </ResponsiveContainer>
