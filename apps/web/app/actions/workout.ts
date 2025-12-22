@@ -142,7 +142,7 @@ async function getInternalUserId(): Promise<string | null> {
   const { data, error } = await supabase
     .from('users')
     .select('id')
-    .eq('clerk_id', userId)
+    .eq('clerk_user_id', userId)
     .single();
 
   if (error || !data) {

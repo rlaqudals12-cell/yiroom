@@ -827,6 +827,33 @@ API 라우트:
 [ ] 피드백 수집 채널 설정
 ```
 
+### F-6: 프로덕션 보안 체크리스트 (2026/01 배포 전)
+
+```yaml
+DB 보안 (RLS):
+  [ ] Phase 1 테이블 RLS 활성화
+      - personal_color_assessments
+      - skin_analyses
+      - body_analyses
+  [ ] users 테이블 RLS 정책 추가
+  [ ] 마이그레이션 파일 생성: 202601XX_production_rls.sql
+
+인증 보안:
+  [ ] Clerk 프로덕션 키 교체
+  [ ] JWT 시크릿 검증
+  [ ] API Rate Limiting 설정
+
+환경 변수:
+  [ ] 프로덕션 Supabase URL/Key 설정
+  [ ] Sentry DSN 프로덕션용 설정
+  [ ] 민감정보 .env 검토
+
+최종 검토:
+  [ ] 보안 스캔 (npm audit)
+  [ ] HTTPS 강제 확인
+  [ ] CORS 설정 검토
+```
+
 ---
 
 ## Phase G: Product DB v3 (Sprint 1-3) ✅ 완료

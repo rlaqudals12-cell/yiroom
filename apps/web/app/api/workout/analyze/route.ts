@@ -118,7 +118,7 @@ export async function POST(req: Request) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
-      .eq('clerk_id', userId)
+      .eq('clerk_user_id', userId)
       .single();
 
     if (userError || !userData) {
@@ -229,7 +229,7 @@ export async function GET() {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
-      .eq('clerk_id', userId)
+      .eq('clerk_user_id', userId)
       .single();
 
     if (userError || !userData) {
