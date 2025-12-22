@@ -127,8 +127,9 @@ export async function askProductQuestion(request: ProductQARequest): Promise<Pro
   }
 
   try {
+    // 2025-12-22: Gemini 3 Flash로 통일 (무료 티어 + 성능 향상)
     const model = genAI.getGenerativeModel({
-      model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+      model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
       safetySettings,
     });
 
