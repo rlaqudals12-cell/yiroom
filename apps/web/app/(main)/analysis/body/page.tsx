@@ -10,6 +10,9 @@ import InputForm from './_components/InputForm';
 import PhotoUpload from './_components/PhotoUpload';
 import AnalysisLoading from './_components/AnalysisLoading';
 import AnalysisResult from './_components/AnalysisResult';
+import { useShare } from '@/hooks/useShare';
+import { ShareButton } from '@/components/share';
+import { Confetti } from '@/components/animations';
 
 type AnalysisStep = 'input' | 'upload' | 'loading' | 'result';
 
@@ -21,7 +24,9 @@ export default function BodyAnalysisPage() {
   const [result, setResult] = useState<BodyAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
   const analysisStartedRef = useRef(false);
+  const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-체형분석-결과');
 
   // 기본 정보 입력 완료 시 사진 업로드 단계로 전환
   const handleInputSubmit = useCallback((data: UserBodyInput) => {
@@ -85,6 +90,8 @@ export default function BodyAnalysisPage() {
         colorTips: data.colorTips,
       });
       setStep('result');
+      // 분석 완료 시 축하 효과
+      setShowConfetti(true);
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err instanceof Error ? err.message : 'Analysis failed');
@@ -106,6 +113,7 @@ export default function BodyAnalysisPage() {
     setResult(null);
     setStep('input');
     setError(null);
+    setShowConfetti(false);
     analysisStartedRef.current = false;
   }, []);
 
@@ -125,34 +133,52 @@ export default function BodyAnalysisPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-muted">
-      <div className="max-w-lg mx-auto px-4 py-8">
-        {/* 헤더 */}
-        <header className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground">체형 분석</h1>
-          <p className="text-muted-foreground mt-2">{getSubtitle()}</p>
-        </header>
+    <>
+      {/* 축하 Confetti 효과 */}
+      <Confetti trigger={showConfetti} />
 
-        {/* 에러 메시지 */}
-        {error && step === 'upload' && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-            {error}. 다시 시도해주세요.
+      <main className="min-h-[calc(100vh-80px)] bg-muted">
+        <div className="max-w-lg mx-auto px-4 py-8">
+          {/* 헤더 */}
+          <header className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-foreground">체형 분석</h1>
+            <p className="text-muted-foreground mt-2">{getSubtitle()}</p>
+          </header>
+
+          {/* 에러 메시지 */}
+          {error && step === 'upload' && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+              {error}. 다시 시도해주세요.
+            </div>
+          )}
+
+          {/* Step별 컴포넌트 렌더링 */}
+          {step === 'input' && <InputForm onSubmit={handleInputSubmit} />}
+
+          {step === 'upload' && <PhotoUpload onPhotoSelect={handlePhotoSelect} />}
+
+          {step === 'loading' && (
+            <AnalysisLoading onComplete={handleAnalysisComplete} />
+          )}
+
+          {step === 'result' && result && (
+            <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />
+          )}
+        </div>
+      </main>
+
+      {/* 공유 버튼 - 결과 화면에서만 하단 고정 */}
+      {step === 'result' && result && (
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
+          <div className="max-w-md mx-auto">
+            <ShareButton
+              onShare={share}
+              loading={shareLoading}
+              variant="outline"
+            />
           </div>
-        )}
-
-        {/* Step별 컴포넌트 렌더링 */}
-        {step === 'input' && <InputForm onSubmit={handleInputSubmit} />}
-
-        {step === 'upload' && <PhotoUpload onPhotoSelect={handlePhotoSelect} />}
-
-        {step === 'loading' && (
-          <AnalysisLoading onComplete={handleAnalysisComplete} />
-        )}
-
-        {step === 'result' && result && (
-          <AnalysisResult result={result} onRetry={handleRetry} />
-        )}
-      </div>
-    </main>
+        </div>
+      )}
+    </>
   );
 }
