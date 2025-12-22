@@ -470,6 +470,10 @@ color_recommendations:
 
 ## 🔐 Row Level Security (RLS)
 
+> **마이그레이션**: `supabase/migrations/202512220100_phase1_rls_policies.sql`
+
+### Phase 1 테이블 RLS 정책
+
 ```sql
 -- RLS 활성화
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -477,42 +481,75 @@ ALTER TABLE personal_color_assessments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skin_analyses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE body_analyses ENABLE ROW LEVEL SECURITY;
 
--- users 정책
+-- users 정책 (SELECT, UPDATE, INSERT)
 CREATE POLICY "Users can view own profile"
   ON users FOR SELECT
-  USING (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 CREATE POLICY "Users can update own profile"
   ON users FOR UPDATE
-  USING (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
--- personal_color_assessments 정책
+CREATE POLICY "Users can insert own profile"
+  ON users FOR INSERT
+  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+-- personal_color_assessments 정책 (SELECT, INSERT, UPDATE, DELETE)
 CREATE POLICY "Users can view own PC assessments"
   ON personal_color_assessments FOR SELECT
-  USING (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 CREATE POLICY "Users can insert own PC assessments"
   ON personal_color_assessments FOR INSERT
-  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
--- skin_analyses 정책
+CREATE POLICY "Users can update own PC assessments"
+  ON personal_color_assessments FOR UPDATE
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+CREATE POLICY "Users can delete own PC assessments"
+  ON personal_color_assessments FOR DELETE
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+-- skin_analyses 정책 (SELECT, INSERT, UPDATE, DELETE)
 CREATE POLICY "Users can view own skin analyses"
   ON skin_analyses FOR SELECT
-  USING (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 CREATE POLICY "Users can insert own skin analyses"
   ON skin_analyses FOR INSERT
-  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
--- body_analyses 정책
+CREATE POLICY "Users can update own skin analyses"
+  ON skin_analyses FOR UPDATE
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+CREATE POLICY "Users can delete own skin analyses"
+  ON skin_analyses FOR DELETE
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+-- body_analyses 정책 (SELECT, INSERT, UPDATE, DELETE)
 CREATE POLICY "Users can view own body analyses"
   ON body_analyses FOR SELECT
-  USING (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 CREATE POLICY "Users can insert own body analyses"
   ON body_analyses FOR INSERT
-  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims')::json->>'sub');
+  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+CREATE POLICY "Users can update own body analyses"
+  ON body_analyses FOR UPDATE
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+CREATE POLICY "Users can delete own body analyses"
+  ON body_analyses FOR DELETE
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 ```
+
+### 참고: current_setting 파라미터
+
+- `current_setting('request.jwt.claims', true)`: 두 번째 파라미터 `true`는 설정이 없을 때 NULL 반환
+- Clerk JWT의 `sub` 클레임에서 `clerk_user_id` 추출
 
 ---
 
