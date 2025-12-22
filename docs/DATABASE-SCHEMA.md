@@ -1,10 +1,10 @@
-# 🗄️ Database 스키마 v4.3 (Admin + Wishlist 포함)
+# 🗄️ Database 스키마 v4.4 (Phase G 포함)
 
-**버전**: v4.3 (Product DB v2 + Admin + Wishlist)
-**업데이트**: 2025년 12월 19일
+**버전**: v4.4 (Product DB v2 + Admin + Phase G)
+**업데이트**: 2025년 12월 22일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
-**차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB 통합
+**차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템
 
 ---
 
@@ -38,6 +38,12 @@
     13. foods                       # 음식 DB
     14. nutrition_settings          # 영양 설정
     15. meal_records                # 식단 기록
+
+  Phase G (리뷰/어필리에이트):
+    16. product_reviews             # 제품 리뷰 (2025-12-19)
+    17. review_helpful              # 리뷰 도움됨 (2025-12-19)
+    18. ingredient_interactions     # 성분 상호작용 (2025-12-19)
+    19. affiliate_clicks            # 어필리에이트 클릭 (2025-12-19)
 
 관계도:
   users (1) ━━━━━ (N) personal_color_assessments
@@ -1182,6 +1188,127 @@ CREATE POLICY "Service role only" ON admin_logs FOR ALL USING (auth.role() = 'se
 
 ---
 
-**버전**: v4.3 (Admin + Wishlist 추가)
-**최종 업데이트**: 2025년 12월 19일
-**상태**: Phase 1 + Phase 2 + Admin 완료 ✅
+## 14. product_reviews 테이블 (Phase G - Sprint 1)
+
+```sql
+CREATE TABLE product_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+
+  -- 제품 참조 (다형성)
+  product_type TEXT NOT NULL CHECK (product_type IN ('cosmetic', 'supplement', 'equipment', 'healthfood')),
+  product_id UUID NOT NULL,
+
+  -- 리뷰 내용
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  title TEXT,
+  content TEXT,
+
+  -- 메타데이터
+  helpful_count INTEGER DEFAULT 0,
+  verified_purchase BOOLEAN DEFAULT false,
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- 사용자당 제품별 1개 리뷰 제한
+  UNIQUE(clerk_user_id, product_type, product_id)
+);
+
+-- RLS: 공개 읽기, 인증된 사용자 작성, 본인만 수정/삭제
+```
+
+> 마이그레이션: `supabase/migrations/202512190300_product_reviews.sql`
+
+---
+
+## 15. review_helpful 테이블 (Phase G - Sprint 1)
+
+```sql
+CREATE TABLE review_helpful (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  review_id UUID NOT NULL REFERENCES product_reviews(id) ON DELETE CASCADE,
+  clerk_user_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- 사용자당 리뷰별 1번만 도움됨 표시
+  UNIQUE(review_id, clerk_user_id)
+);
+
+-- RLS: 공개 읽기, 인증된 사용자 작성, 본인만 삭제
+-- 트리거: helpful_count 자동 갱신
+```
+
+---
+
+## 16. ingredient_interactions 테이블 (Phase G - Sprint 2)
+
+```sql
+CREATE TABLE ingredient_interactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- 성분 쌍
+  ingredient_a TEXT NOT NULL,
+  ingredient_b TEXT NOT NULL,
+
+  -- 상호작용 유형
+  interaction_type TEXT NOT NULL CHECK (interaction_type IN (
+    'contraindication',  -- 금기 (절대 같이 복용 X)
+    'caution',           -- 주의 (의사 상담 권장)
+    'synergy',           -- 시너지 (같이 먹으면 좋음)
+    'timing'             -- 시간 분리 필요
+  )),
+
+  -- 심각도
+  severity TEXT CHECK (severity IN ('high', 'medium', 'low')),
+
+  -- 상세 정보
+  description TEXT NOT NULL,
+  recommendation TEXT,
+  source TEXT,           -- 출처 (논문, FDA 등)
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE(ingredient_a, ingredient_b, interaction_type)
+);
+
+-- RLS: 공개 읽기 전용 (service_role만 수정)
+-- 초기 시드: 24개 상호작용 데이터
+```
+
+> 마이그레이션: `supabase/migrations/202512190200_ingredient_interactions.sql`
+
+---
+
+## 17. affiliate_clicks 테이블 (Phase G - Sprint 3)
+
+```sql
+CREATE TABLE affiliate_clicks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- 사용자 (비로그인도 가능)
+  clerk_user_id TEXT,
+
+  -- 제품 정보
+  product_type TEXT NOT NULL CHECK (product_type IN ('cosmetic', 'supplement', 'equipment', 'healthfood')),
+  product_id UUID NOT NULL,
+
+  -- 트래킹 정보
+  referrer TEXT,
+  user_agent TEXT,
+  ip_hash TEXT,  -- 개인정보 보호를 위해 해시
+
+  clicked_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS: 모든 사용자 삽입 가능, 읽기는 service_role만
+-- 뷰: affiliate_daily_stats (일별 통계)
+```
+
+> 마이그레이션: `supabase/migrations/202512190100_affiliate_system.sql`
+
+---
+
+**버전**: v4.4 (Phase G 테이블 추가)
+**최종 업데이트**: 2025년 12월 22일
+**상태**: Phase 1 + Phase 2 + Admin + Phase G 완료 ✅
