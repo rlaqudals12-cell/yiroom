@@ -6,7 +6,7 @@
 -- Step 1: daily_nutrition_summary 테이블 생성
 CREATE TABLE IF NOT EXISTS public.daily_nutrition_summary (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_id) ON DELETE CASCADE,
+    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
 
     -- 날짜 (사용자당 하루에 하나)
     summary_date DATE NOT NULL DEFAULT CURRENT_DATE,

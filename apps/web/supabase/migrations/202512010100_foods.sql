@@ -3,6 +3,9 @@
 -- Date: 2025-12-01
 -- Version: v2.6
 
+-- Step 0: pg_trgm 확장 설치 (gin_trgm_ops 인덱스용)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- Step 1: foods 테이블 생성
 CREATE TABLE IF NOT EXISTS public.foods (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

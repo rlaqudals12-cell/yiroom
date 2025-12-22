@@ -6,7 +6,7 @@
 -- Step 1: meal_records 테이블 생성
 CREATE TABLE IF NOT EXISTS public.meal_records (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_id) ON DELETE CASCADE,
+    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
 
     -- 식사 정보
     meal_type TEXT NOT NULL CHECK (meal_type IN ('breakfast', 'lunch', 'dinner', 'snack')),

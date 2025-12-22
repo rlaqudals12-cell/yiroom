@@ -6,7 +6,7 @@
 -- Step 1: nutrition_settings 테이블 생성
 CREATE TABLE IF NOT EXISTS public.nutrition_settings (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_id) ON DELETE CASCADE,
+    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
 
     -- Step 1: 목표
     goal TEXT NOT NULL CHECK (goal IN ('weight_loss', 'maintain', 'muscle', 'skin', 'health')),

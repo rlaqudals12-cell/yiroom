@@ -6,7 +6,7 @@
 -- Step 1: favorite_foods 테이블 생성
 CREATE TABLE IF NOT EXISTS public.favorite_foods (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_id) ON DELETE CASCADE,
+    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
 
     -- 음식 참조
     food_id UUID REFERENCES foods(id) ON DELETE CASCADE,

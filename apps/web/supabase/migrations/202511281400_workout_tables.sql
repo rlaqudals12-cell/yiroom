@@ -216,76 +216,76 @@ ALTER TABLE public.workout_analyses ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view own workout analyses"
     ON public.workout_analyses FOR SELECT
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can insert own workout analyses"
     ON public.workout_analyses FOR INSERT
-    WITH CHECK (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    WITH CHECK (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can update own workout analyses"
     ON public.workout_analyses FOR UPDATE
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can delete own workout analyses"
     ON public.workout_analyses FOR DELETE
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 -- workout_plans RLS
 ALTER TABLE public.workout_plans ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view own workout plans"
     ON public.workout_plans FOR SELECT
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can insert own workout plans"
     ON public.workout_plans FOR INSERT
-    WITH CHECK (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    WITH CHECK (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can update own workout plans"
     ON public.workout_plans FOR UPDATE
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can delete own workout plans"
     ON public.workout_plans FOR DELETE
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 -- workout_logs RLS
 ALTER TABLE public.workout_logs ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view own workout logs"
     ON public.workout_logs FOR SELECT
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can insert own workout logs"
     ON public.workout_logs FOR INSERT
-    WITH CHECK (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    WITH CHECK (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can update own workout logs"
     ON public.workout_logs FOR UPDATE
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can delete own workout logs"
     ON public.workout_logs FOR DELETE
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 -- workout_streaks RLS
 ALTER TABLE public.workout_streaks ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view own workout streaks"
     ON public.workout_streaks FOR SELECT
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can insert own workout streaks"
     ON public.workout_streaks FOR INSERT
-    WITH CHECK (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    WITH CHECK (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can update own workout streaks"
     ON public.workout_streaks FOR UPDATE
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 CREATE POLICY "Users can delete own workout streaks"
     ON public.workout_streaks FOR DELETE
-    USING (auth.uid()::text = (SELECT clerk_id FROM public.users WHERE id = user_id));
+    USING (auth.uid()::text = (SELECT clerk_user_id FROM public.users WHERE id = user_id));
 
 -- =====================================================
 -- 권한 부여

@@ -6,7 +6,7 @@
 -- Step 1: water_records 테이블 생성
 CREATE TABLE IF NOT EXISTS public.water_records (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_id) ON DELETE CASCADE,
+    clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
 
     -- 수분 섭취 정보
     record_date DATE NOT NULL DEFAULT CURRENT_DATE,
