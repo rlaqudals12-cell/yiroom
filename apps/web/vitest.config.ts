@@ -13,6 +13,17 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./tests/setup.ts'],
     include: ['**/*.test.{ts,tsx}'],
+    // 메모리 최적화 설정
+    pool: 'forks', // threads보다 메모리 효율적
+    poolOptions: {
+      forks: {
+        maxForks: 4, // 동시 워커 수 제한
+        minForks: 1,
+      },
+    },
+    maxConcurrency: 10, // 동시 테스트 수 제한
+    testTimeout: 30000, // 30초 타임아웃
+    hookTimeout: 30000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
