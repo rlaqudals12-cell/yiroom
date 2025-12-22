@@ -9,6 +9,7 @@ import EmptyState from './_components/EmptyState';
 import QuickActions from './_components/QuickActions';
 import WeeklyHighlightWidget from './_components/WeeklyHighlightWidget';
 import Phase2StatusSection from './_components/Phase2StatusSection';
+import CombinedStreakWidget from './_components/CombinedStreakWidget';
 
 // 분석 결과 타입 정의
 interface AnalysisSummary {
@@ -139,6 +140,9 @@ export default function DashboardPage() {
 
         {/* 주간 하이라이트 위젯 */}
         <WeeklyHighlightWidget />
+
+        {/* 통합 Streak 위젯 + 체크인 */}
+        <CombinedStreakWidget userId={user.id} />
 
         {/* Phase 2 모듈 상태 (운동/영양) */}
         <Phase2StatusSection />
