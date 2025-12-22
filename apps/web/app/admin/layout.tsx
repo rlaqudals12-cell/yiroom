@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import Image from 'next/image';
 import { isAdmin, getAdminInfo } from '@/lib/admin';
 import { AdminSidebar } from './_components/AdminSidebar';
 
@@ -35,10 +36,13 @@ export default async function AdminLayout({
           <h1 className="text-xl font-semibold text-gray-800">관리자 대시보드</h1>
           <div className="flex items-center gap-3">
             {adminInfo?.imageUrl && (
-              <img
+              <Image
                 src={adminInfo.imageUrl}
                 alt={adminInfo.name || '관리자'}
+                width={32}
+                height={32}
                 className="w-8 h-8 rounded-full"
+                unoptimized
               />
             )}
             <div className="text-sm">

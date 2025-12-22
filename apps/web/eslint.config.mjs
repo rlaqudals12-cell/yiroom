@@ -17,6 +17,7 @@ const eslintConfig = [
       "node_modules/**",
       "public/**",
       "scripts/**",
+      "coverage/**",
       "*.config.js",
       "*.config.mjs",
       "*.config.ts",
@@ -37,6 +38,7 @@ const eslintConfig = [
     files: ["tests/**", "e2e/**", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
     rules: {
       "@typescript-eslint/no-unused-vars": "off",
+      "@next/next/no-img-element": "off",
     },
   },
 ];

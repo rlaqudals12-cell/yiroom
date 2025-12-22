@@ -11,7 +11,7 @@ import OptimizedImage, {
 } from '@/components/ui/optimized-image';
 
 // next/image 모킹 (테스트용 - img 사용 필수)
-/* eslint-disable @next/next/no-img-element */
+ 
 vi.mock('next/image', () => ({
   default: vi.fn(({ src, alt, onLoad, onError, className, ...props }) => {
     return (
@@ -27,7 +27,7 @@ vi.mock('next/image', () => ({
     );
   }),
 }));
-/* eslint-enable @next/next/no-img-element */
+ 
 
 describe('OptimizedImage', () => {
   beforeEach(() => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { Heart, Package, Sparkles, Pill, Dumbbell, Leaf, Loader2, Trash2 } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { getUserWishlist, removeFromWishlist } from '@/lib/wishlist';
@@ -290,10 +291,13 @@ function WishlistGrid({
                   {/* 제품 이미지 */}
                   <div className="w-20 h-20 bg-muted rounded-lg flex-shrink-0 flex items-center justify-center">
                     {product.imageUrl ? (
-                      <img
+                      <Image
                         src={product.imageUrl}
                         alt={product.name}
+                        width={80}
+                        height={80}
                         className="w-full h-full object-cover rounded-lg"
+                        unoptimized
                       />
                     ) : (
                       <Package className="h-8 w-8 text-muted-foreground" />
