@@ -321,6 +321,53 @@ function calculateHealthFoodMatchScore(
 }
 
 // ================================================
+// 리뷰 평점 보너스
+// ================================================
+
+/**
+ * 리뷰 평점 기반 보너스 점수 계산
+ * - 평점 4.5+ & 리뷰 100개+: 10점
+ * - 평점 4.0+ & 리뷰 50개+: 7점
+ * - 평점 3.5+ & 리뷰 20개+: 4점
+ * - 그 외: 0점
+ */
+function calculateRatingBonus(product: AnyProduct): { score: number; reason: MatchReason | null } {
+  const rating = product.rating;
+  const reviewCount = product.reviewCount || 0;
+
+  if (!rating || rating < 3.5 || reviewCount < 20) {
+    return { score: 0, reason: null };
+  }
+
+  let bonus = 0;
+  let label = '';
+
+  if (rating >= 4.5 && reviewCount >= 100) {
+    bonus = 10;
+    label = `인기 제품 ★${rating.toFixed(1)}`;
+  } else if (rating >= 4.0 && reviewCount >= 50) {
+    bonus = 7;
+    label = `높은 평점 ★${rating.toFixed(1)}`;
+  } else if (rating >= 3.5 && reviewCount >= 20) {
+    bonus = 4;
+    label = `좋은 리뷰 ★${rating.toFixed(1)}`;
+  }
+
+  if (bonus > 0) {
+    return {
+      score: bonus,
+      reason: {
+        type: 'rating',
+        label,
+        matched: true,
+      },
+    };
+  }
+
+  return { score: 0, reason: null };
+}
+
+// ================================================
 // 통합 매칭 함수
 // ================================================
 
@@ -336,18 +383,33 @@ export function calculateMatchScore(
 ): MatchResult {
   const productType = getProductType(product);
 
+  let result: MatchResult;
+
   switch (productType) {
     case 'cosmetic':
-      return calculateCosmeticMatchScore(product as CosmeticProduct, profile);
+      result = calculateCosmeticMatchScore(product as CosmeticProduct, profile);
+      break;
     case 'supplement':
-      return calculateSupplementMatchScore(product as SupplementProduct, profile);
+      result = calculateSupplementMatchScore(product as SupplementProduct, profile);
+      break;
     case 'workout_equipment':
-      return calculateEquipmentMatchScore(product as WorkoutEquipment, profile);
+      result = calculateEquipmentMatchScore(product as WorkoutEquipment, profile);
+      break;
     case 'health_food':
-      return calculateHealthFoodMatchScore(product as HealthFood, profile);
+      result = calculateHealthFoodMatchScore(product as HealthFood, profile);
+      break;
     default:
-      return { score: 50, reasons: [] };
+      result = { score: 50, reasons: [] };
   }
+
+  // 리뷰 평점 보너스 추가
+  const ratingBonus = calculateRatingBonus(product);
+  if (ratingBonus.score > 0 && ratingBonus.reason) {
+    result.score = Math.min(100, result.score + ratingBonus.score);
+    result.reasons.push(ratingBonus.reason);
+  }
+
+  return result;
 }
 
 /**

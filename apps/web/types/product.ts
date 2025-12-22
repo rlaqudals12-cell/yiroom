@@ -708,7 +708,7 @@ export interface ProductPriceHistoryInput {
 // ================================================
 
 /** 매칭 사유 타입 */
-export type MatchReasonType = 'skinType' | 'concern' | 'personalColor' | 'goal';
+export type MatchReasonType = 'skinType' | 'concern' | 'personalColor' | 'goal' | 'rating';
 
 /** 매칭 사유 */
 export interface MatchReason {

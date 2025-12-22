@@ -219,3 +219,67 @@ describe('addMatchInfoToProducts', () => {
     expect(result[0].matchScore).toBeGreaterThanOrEqual(result[1].matchScore);
   });
 });
+
+describe('리뷰 평점 보너스', () => {
+  it('높은 평점 + 많은 리뷰 시 보너스 점수 추가', () => {
+    const highRatedProduct: CosmeticProduct = {
+      ...mockCosmeticProduct,
+      rating: 4.6,
+      reviewCount: 150,
+    };
+
+    const profile: UserProfile = {
+      skinType: 'dry',
+    };
+
+    const result = calculateMatchScore(highRatedProduct, profile);
+
+    // 인기 제품 보너스 (+10) 포함
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'rating', matched: true })
+    );
+    expect(result.reasons.find(r => r.type === 'rating')?.label).toContain('인기 제품');
+  });
+
+  it('적당한 평점 + 적당한 리뷰 시 중간 보너스', () => {
+    const mediumRatedProduct: CosmeticProduct = {
+      ...mockCosmeticProduct,
+      rating: 4.2,
+      reviewCount: 60,
+    };
+
+    const profile: UserProfile = {};
+
+    const result = calculateMatchScore(mediumRatedProduct, profile);
+
+    expect(result.reasons.find(r => r.type === 'rating')?.label).toContain('높은 평점');
+  });
+
+  it('낮은 평점 시 보너스 없음', () => {
+    const lowRatedProduct: CosmeticProduct = {
+      ...mockCosmeticProduct,
+      rating: 3.0,
+      reviewCount: 50,
+    };
+
+    const profile: UserProfile = {};
+
+    const result = calculateMatchScore(lowRatedProduct, profile);
+
+    expect(result.reasons.find(r => r.type === 'rating')).toBeUndefined();
+  });
+
+  it('리뷰 수 적을 시 보너스 없음', () => {
+    const fewReviewsProduct: CosmeticProduct = {
+      ...mockCosmeticProduct,
+      rating: 4.8,
+      reviewCount: 5,
+    };
+
+    const profile: UserProfile = {};
+
+    const result = calculateMatchScore(fewReviewsProduct, profile);
+
+    expect(result.reasons.find(r => r.type === 'rating')).toBeUndefined();
+  });
+});
