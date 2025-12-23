@@ -1069,6 +1069,21 @@ Supabase 마이그레이션:
       - 모듈 카드 (운동/영양)
   [x] 47개 파일 커밋 (기존 스켈레톤 포함)
   [x] typecheck 통과
+  [x] API 연동 (Supabase 훅)
+      - useUserAnalyses: PC/피부/체형 분석 조회
+      - useWorkoutData: 운동 분석/스트릭/플랜 조회
+      - useNutritionData: 영양 설정/요약/스트릭 조회
+  [x] 화면 구현 확장
+      - 운동 탭: 운동 타입 카드, 실시간 스트릭
+      - 식단 탭: 칼로리 진행률, 수분 시각화
+      - 프로필 탭: 분석 완료 상태, 네비게이션
+  [x] 타입 안전성 수정
+      - snake_case → camelCase 통일
+      - 존재하지 않는 경로 수정
+  [x] 성능/메모리 최적화
+      - Supabase 클라이언트 재생성 방지 (useRef 패턴)
+      - useEffect cleanup 함수 추가
+      - useCallback 의존성 배열 최적화
 
 접근성 개선:
   [x] DialogContent 접근성 경고 수정
