@@ -1,7 +1,7 @@
 # 이룸 전체 진행 상황
 
 > **마지막 업데이트**: 2025-12-23
-> **총 테스트**: 2,686개 통과 (메모리 최적화 완료)
+> **총 테스트**: 2,776개 통과 (메모리 최적화 완료)
 > **코드 품질**: SRP 95%, Repository 90%
 
 ---
@@ -1089,6 +1089,16 @@ Supabase 마이그레이션:
   [x] DialogContent 접근성 경고 수정
       - ProductQASection.tsx
       - InteractionDetail.tsx
+
+웹 테스트 개선:
+  [x] 신규 컴포넌트 테스트 추가 (90개)
+      - RecommendedEquipmentCard.test.tsx (19개)
+      - RecommendedSupplementCard.test.tsx (20개)
+      - ReviewCard.test.tsx (24개)
+      - ReviewForm.test.tsx (27개)
+  [x] 에러 핸들링/로딩/롤백 테스트 보강
+  [x] setup.ts lucide-react 아이콘 모킹 확장
+  [x] 총 테스트: 2,686 → 2,776개 (+90)
 ```
 
 ---

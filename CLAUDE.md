@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | 원칙 | 적용도 | 상태 |
 |------|--------|------|
-| **TDD** | 95% | ✅ 2,686개 테스트 유지 |
+| **TDD** | 95% | ✅ 2,776개 테스트 유지 |
 | **SRP** | 95% | ✅ lib/products/ Repository 분리 완료 |
 | **OCP** | 60% | ⏳ 제품 타입 추가 시 고려 |
 | **LSP** | 90% | ✅ AnyProduct 타입 계층 유지 |
