@@ -1099,6 +1099,22 @@ Supabase 마이그레이션:
   [x] 에러 핸들링/로딩/롤백 테스트 보강
   [x] setup.ts lucide-react 아이콘 모킹 확장
   [x] 총 테스트: 2,686 → 2,776개 (+90)
+
+코드 품질 개선 (오후):
+  [x] 7개 페이지 코드 품질 및 접근성 개선 (3825e11)
+      - nutrition/page.tsx, products/recommended/page.tsx: .single() → .maybeSingle() 버그 수정
+      - settings, notifications, reports, wishlist: aria-label, aria-hidden 추가
+      - products/[type]/[id]/page.tsx: 접근성 개선
+      - analysis/body,skin: role="region" aria-label 추가
+  [x] 컴포넌트 추출 + 스켈레톤 + aria-live (7af28fb)
+      - QuickActionCard.tsx: workout/page.tsx에서 추출
+      - ContentSkeleton.tsx: HeaderSkeleton, SearchSkeleton 추가
+      - products/loading.tsx, wishlist/loading.tsx 스켈레톤 적용
+      - analysis/body,skin: 에러 메시지 aria-live 추가
+  [x] aria-label + next/image 개선 (a834773)
+      - QuickActionCard: "(으)로" → "페이지로" 자연스러운 표현
+      - RecommendedEquipmentCard, RecommendedSupplementCard: <img> → <Image>
+  [x] 접근성 점수 WCAG 2.1 AA 기준 충족
 ```
 
 ---
