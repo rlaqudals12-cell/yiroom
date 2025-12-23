@@ -424,3 +424,47 @@ tests/components/challenges/
 **Status**: 설계 완료
 **Version**: 1.0
 **Updated**: 2025-12-24
+
+---
+
+## 구현 현황 (2024-12-24 업데이트)
+
+### 완료된 기능
+
+#### DB 마이그레이션
+- ✅ `challenges` 테이블 생성
+- ✅ `user_challenges` 테이블 생성
+- ✅ RLS 정책 설정
+- ✅ 초기 챌린지 시드 데이터 (5개)
+
+#### 라이브러리 함수
+- ✅ `lib/challenges/constants.ts` - 타입 변환, 진행률 계산
+- ✅ `lib/challenges/queries.ts` - 챌린지 조회
+- ✅ `lib/challenges/mutations.ts` - 챌린지 참여/완료/포기
+- ✅ `lib/challenges/integration.ts` - 운동/영양 자동 업데이트
+
+#### UI 컴포넌트
+- ✅ `ChallengeCard` - 챌린지 카드
+- ✅ `ChallengeList` - 챌린지 목록
+- ✅ `ChallengeProgress` - 진행률 표시
+
+#### 페이지
+- ✅ `/challenges` - 챌린지 목록 페이지
+- ✅ `/challenges/[id]` - 챌린지 상세 페이지
+- ✅ 대시보드 위젯 (`ChallengeWidget`)
+
+#### 통합
+- ✅ 운동 완료 시 자동 업데이트
+- ✅ 영양 기록 시 자동 업데이트
+- ✅ Combined 챌린지 지원 (운동+영양)
+
+### 테스트
+- ✅ 28개 테스트 통과
+  - constants.test.ts (19개)
+  - integration.test.ts (9개)
+
+### 미완료 (Phase H Sprint 2+)
+- 친구 챌린지 기능
+- 리더보드
+- 챌린지 알림 (푸시 알림)
+- 챌린지 템플릿 추가 (10개+)
