@@ -61,6 +61,9 @@ vi.mock('lucide-react', () => ({
   Trash2: createIconMock('Trash2'),
   ExternalLink: createIconMock('ExternalLink'),
   Send: createIconMock('Send'),
+  ThumbsUp: createIconMock('ThumbsUp'),
+  MoreVertical: createIconMock('MoreVertical'),
+  Edit2: createIconMock('Edit2'),
 
   // Workout & Activity
   Dumbbell: createIconMock('Dumbbell'),
