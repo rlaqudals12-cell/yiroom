@@ -4,12 +4,9 @@ import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useEffect, useState } from 'react';
 import UserProfile from './_components/UserProfile';
-import AnalysisCard from './_components/AnalysisCard';
-import EmptyState from './_components/EmptyState';
-import QuickActions from './_components/QuickActions';
-import WeeklyHighlightWidget from './_components/WeeklyHighlightWidget';
-import Phase2StatusSection from './_components/Phase2StatusSection';
-import CombinedStreakWidget from './_components/CombinedStreakWidget';
+import TodayFocusWidget from './_components/TodayFocusWidget';
+import WeeklyProgressSection from './_components/WeeklyProgressSection';
+import AnalysisSection from './_components/AnalysisSection';
 
 // 분석 결과 타입 정의
 interface AnalysisSummary {
@@ -130,40 +127,31 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-[calc(100vh-80px)] px-4 py-8">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* 사용자 프로필 섹션 */}
-        <UserProfile
-          name={user.fullName || user.username || '사용자'}
-          imageUrl={user.imageUrl}
-          hasPersonalColor={hasPersonalColor}
-        />
+      <div className="max-w-4xl mx-auto">
+        {/* Zone 1: Hero Section */}
+        <section className="space-y-4 mb-10">
+          {/* 사용자 프로필 (축소) */}
+          <UserProfile
+            name={user.fullName || user.username || '사용자'}
+            imageUrl={user.imageUrl}
+          />
 
-        {/* 주간 하이라이트 위젯 */}
-        <WeeklyHighlightWidget />
-
-        {/* 통합 Streak 위젯 + 체크인 */}
-        <CombinedStreakWidget userId={user.id} />
-
-        {/* Phase 2 모듈 상태 (운동/영양) */}
-        <Phase2StatusSection />
-
-        {/* 분석 결과 섹션 */}
-        <section>
-          <h2 className="text-xl font-bold text-foreground mb-4">내 분석 결과</h2>
-
-          {analyses.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {analyses.map((analysis) => (
-                <AnalysisCard key={analysis.id} analysis={analysis} />
-              ))}
-            </div>
-          )}
+          {/* 오늘의 포커스 (스트릭 + 체크인 + 주간 요약) */}
+          <TodayFocusWidget userId={user.id} />
         </section>
 
-        {/* 빠른 분석 시작 */}
-        <QuickActions hasPersonalColor={hasPersonalColor} />
+        {/* Zone 2: Activity Hub */}
+        <section className="mb-10">
+          <WeeklyProgressSection />
+        </section>
+
+        {/* Zone 3: Analysis Archive (Collapsible) */}
+        <section>
+          <AnalysisSection
+            analyses={analyses}
+            hasPersonalColor={hasPersonalColor}
+          />
+        </section>
       </div>
     </main>
   );
