@@ -1,7 +1,7 @@
 # 이룸 전체 진행 상황
 
-> **마지막 업데이트**: 2025-12-23
-> **총 테스트**: 2,776개 통과 (메모리 최적화 완료)
+> **마지막 업데이트**: 2025-12-24
+> **총 테스트**: 2,946개 통과 (+170 Phase H)
 > **코드 품질**: SRP 95%, Repository 90%
 
 ---
@@ -19,6 +19,7 @@ Phase D (앱 개선)       █████████████████�
 Phase E (추가 개선)     ████████████████████ 100% ✅
 Phase F (운영 준비)     ████████████████████  95% 🔄 (F-6 보안 완료, 배포 전 항목 대기)
 Phase G (Product v3)    ████████████████████ 100% ✅ (Sprint 1-3 완료, 2025-12-19)
+Phase H (게이미피케이션) ██████████░░░░░░░░░░  50% 🔄 (Sprint 1 완료, Sprint 2 계획 중)
 ```
 
 ---
@@ -1119,6 +1120,121 @@ Supabase 마이그레이션:
 
 ---
 
+## Phase H: 게이미피케이션 🔄 진행 중
+
+> **목표**: 배지 시스템 + 레벨 시스템 + 챌린지 시스템
+> **시작일**: 2025-12-24
+> **테스트**: 170개 추가
+
+### 전체 진행률
+
+| Sprint | 내용 | Task | 상태 |
+|--------|------|------|------|
+| Sprint 1 | 게이미피케이션 + 챌린지 | 7개 | ✅ 완료 |
+| Sprint 2 | 소셜/리더보드 | - | 📋 계획 중 |
+
+### Sprint 1: 게이미피케이션 + 챌린지 ✅ 완료
+
+```yaml
+DB 마이그레이션:
+  [x] badges 테이블 (202512240100_gamification_badges.sql)
+      - 23개 배지 (streak 10, workout 4, nutrition 3, analysis 4, special 2)
+      - 희귀도: common, rare, epic, legendary
+  [x] user_badges 테이블 (사용자 배지 획득)
+  [x] user_levels 테이블 (레벨 + XP 시스템)
+  [x] challenges 테이블 (202512240200_challenges.sql)
+      - 12개 챌린지 (workout 5, nutrition 5, combined 2)
+      - 난이도: easy, medium, hard
+  [x] user_challenges 테이블 (사용자 챌린지 참여)
+  [x] RLS 정책 + 인덱스
+
+타입 정의:
+  [x] types/gamification.ts
+      - Badge, UserBadge, UserLevel, LevelInfo
+      - BadgeCategory, BadgeRarity, LevelTier
+      - BadgeAwardResult, LevelUpResult
+  [x] types/challenges.ts
+      - Challenge, UserChallenge, ChallengeProgress
+      - ChallengeDomain, ChallengeStatus, ChallengeDifficulty
+
+라이브러리:
+  [x] lib/gamification/
+      - constants.ts: XP/레벨 계산, 티어 결정, 색상 상수
+      - badges.ts: 배지 조회/부여 (getAllBadges, awardBadge)
+      - levels.ts: 레벨 조회/XP 추가 (getUserLevel, addXp)
+      - streak-integration.ts: 스트릭 → 배지 연동
+      - index.ts: 통합 export
+  [x] lib/challenges/
+      - constants.ts: 챌린지 상수, 진행률 계산
+      - api.ts: 챌린지 CRUD
+      - integration.ts: 운동/영양 기록 연동
+      - index.ts: 통합 export
+
+컴포넌트:
+  [x] components/gamification/
+      - BadgeCard.tsx: 개별 배지 표시
+      - BadgeGrid.tsx: 배지 그리드 (카테고리별)
+      - LevelProgress.tsx: 레벨 프로그레스 바
+      - LevelUpModal.tsx: 레벨업 축하 모달
+      - BadgeToast.tsx: 배지 획득 Toast
+  [x] components/challenges/
+      - ChallengeCard.tsx: 챌린지 카드
+      - ChallengeList.tsx: 챌린지 목록
+      - ChallengeProgress.tsx: 진행률 표시
+
+페이지:
+  [x] app/(main)/challenges/page.tsx: 챌린지 목록
+  [x] app/(main)/challenges/[id]/page.tsx: 챌린지 상세
+  [x] app/(main)/profile/page.tsx: 프로필 페이지 (레벨 + 배지)
+  [x] app/(main)/profile/badges/page.tsx: 전체 배지 컬렉션
+
+대시보드 위젯:
+  [x] dashboard/_components/GamificationWidget.tsx
+      - 레벨 프로그레스 + 최근 배지 표시
+  [x] dashboard/_components/ChallengeWidget.tsx
+      - 진행 중인 챌린지 표시
+
+테스트:
+  [x] 게이미피케이션 테스트 (89개)
+      - constants.test.ts (34개)
+      - badges.test.ts (9개)
+      - levels.test.ts (9개)
+      - BadgeCard.test.tsx (15개)
+      - LevelProgress.test.tsx (16개)
+      - BadgeToast.test.tsx (6개)
+  [x] 챌린지 테스트 (81개)
+      - constants.test.ts (19개)
+      - integration.test.ts (9개)
+      - ChallengeCard.test.tsx (21개)
+      - ChallengeList.test.tsx (17개)
+      - ChallengeProgress.test.tsx (15개)
+
+E2E 테스트:
+  [x] e2e/gamification/profile.spec.ts: 프로필 페이지
+  [x] e2e/challenges/challenges.spec.ts: 챌린지 페이지
+  [x] e2e/smoke.spec.ts: 새 페이지 smoke 테스트
+```
+
+### Sprint 2: 소셜/리더보드 📋 계획 중
+
+```yaml
+계획된 기능:
+  [ ] 리더보드 페이지 (레벨/XP 기준)
+  [ ] 친구 시스템 (팔로우/팔로잉)
+  [ ] 챌린지 공유 기능
+  [ ] 배지 비교 기능
+  [ ] 주간 랭킹 시스템
+```
+
+### 참조 문서
+
+| 문서 | 설명 |
+|------|------|
+| [GAMIFICATION-SPEC.md](phase-next/GAMIFICATION-SPEC.md) | 게이미피케이션 시스템 스펙 |
+| [CHALLENGE-SYSTEM-DESIGN.md](phase-next/CHALLENGE-SYSTEM-DESIGN.md) | 챌린지 시스템 설계 |
+
+---
+
 ## Hook Model (사용자 리텐션)
 
 > **프레임워크**: Nir Eyal's Hook Model
@@ -1289,6 +1405,16 @@ Phase 3 연동:
 | health_foods | 건강식품/스포츠 영양 DB |
 | product_price_history | 제품 가격 히스토리 |
 
+### Phase H 게이미피케이션 (5개)
+
+| 테이블 | 설명 |
+|--------|------|
+| badges | 배지 마스터 (23개 배지) |
+| user_badges | 사용자 배지 획득 |
+| user_levels | 사용자 레벨 + XP |
+| challenges | 챌린지 마스터 (12개 챌린지) |
+| user_challenges | 사용자 챌린지 참여 |
+
 ---
 
 ## 파일 구조
@@ -1325,6 +1451,8 @@ components/
 ├── workout/                # W-1 컴포넌트
 ├── nutrition/              # N-1 컴포넌트
 ├── reports/                # R-1 컴포넌트
+├── gamification/           # H-1 게이미피케이션 컴포넌트
+├── challenges/             # H-1 챌린지 컴포넌트
 └── common/                 # 공통 컴포넌트
 
 lib/
@@ -1333,6 +1461,8 @@ lib/
 ├── workout/                # W-1 로직
 ├── nutrition/              # N-1 로직
 ├── reports/                # R-1 로직
+├── gamification/           # H-1 게이미피케이션 로직
+├── challenges/             # H-1 챌린지 로직
 ├── stores/                 # Zustand 스토어
 ├── mock/                   # Mock 데이터
 ├── products.ts             # re-export (기존 API 호환)
@@ -1346,6 +1476,8 @@ types/
 ├── workout.ts              # W-1 타입
 ├── nutrition.ts            # N-1 타입
 ├── report.ts               # R-1 타입
+├── gamification.ts         # H-1 게이미피케이션 타입
+├── challenges.ts           # H-1 챌린지 타입
 └── product.ts              # Product DB 타입 (A-2)
 
 data/
@@ -1371,6 +1503,8 @@ data/
 | [HOOK-MODEL.md](HOOK-MODEL.md) | 사용자 리텐션 모델 |
 | [phase-next/FEATURE-SPEC-PRODUCT-UI.md](phase-next/FEATURE-SPEC-PRODUCT-UI.md) | Step 5 Product UI 기능 스펙 |
 | [phase-next/SPRINT-BACKLOG-PRODUCT-UI.md](phase-next/SPRINT-BACKLOG-PRODUCT-UI.md) | Step 5 Product UI 스프린트 백로그 |
+| [phase-next/GAMIFICATION-SPEC.md](phase-next/GAMIFICATION-SPEC.md) | Phase H 게이미피케이션 시스템 스펙 |
+| [phase-next/CHALLENGE-SYSTEM-DESIGN.md](phase-next/CHALLENGE-SYSTEM-DESIGN.md) | Phase H 챌린지 시스템 설계 |
 
 ---
 
