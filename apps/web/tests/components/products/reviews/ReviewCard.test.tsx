@@ -193,6 +193,35 @@ describe('ReviewCard', () => {
 
       expect(onHelpful).toHaveBeenCalledWith('review-1', false);
     });
+
+    it('도움됨 API 실패 시 낙관적 업데이트 롤백', async () => {
+      const onHelpful = vi.fn().mockRejectedValue(new Error('API Error'));
+
+      render(
+        <ReviewCard
+          review={mockReview}
+          currentUserId="other-user"
+          onHelpful={onHelpful}
+        />
+      );
+
+      const helpfulButton = screen.getByRole('button', { name: /도움됨/ });
+
+      // 초기 카운트 확인
+      expect(screen.getByText('(12)')).toBeInTheDocument();
+
+      fireEvent.click(helpfulButton);
+
+      // 낙관적으로 증가
+      await waitFor(() => {
+        expect(screen.getByText('(13)')).toBeInTheDocument();
+      });
+
+      // 실패 후 롤백
+      await waitFor(() => {
+        expect(screen.getByText('(12)')).toBeInTheDocument();
+      });
+    });
   });
 
   describe('더보기 메뉴 (본인 리뷰)', () => {

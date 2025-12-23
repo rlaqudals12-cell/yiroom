@@ -272,4 +272,48 @@ describe('RecommendedEquipmentCard', () => {
       });
     });
   });
+
+  describe('에러 처리', () => {
+    it('API 실패 시 에러 로깅 후 컴포넌트 미렌더링', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockedGetRecommendedEquipment.mockRejectedValue(new Error('API Error'));
+
+      const { container } = render(<RecommendedEquipmentCard />);
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith('운동 기구 조회 실패:', expect.any(Error));
+      });
+
+      // 에러 후 빈 배열 → 컴포넌트 미렌더링
+      await waitFor(() => {
+        expect(container.firstChild).toBeNull();
+      });
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('로딩 상태', () => {
+    it('데이터 로딩 중 로딩 텍스트 표시', async () => {
+      render(<RecommendedEquipmentCard />);
+
+      // 초기 로딩 상태
+      expect(screen.getByText('불러오는 중...')).toBeInTheDocument();
+
+      await waitFor(() => {
+        expect(screen.getByText('2개 추천')).toBeInTheDocument();
+      });
+    });
+
+    it('로딩 중에는 펼치기 버튼 비활성화', async () => {
+      render(<RecommendedEquipmentCard />);
+
+      const expandButton = screen.getByRole('button', { name: /펼치기/i });
+      expect(expandButton).toBeDisabled();
+
+      await waitFor(() => {
+        expect(expandButton).not.toBeDisabled();
+      });
+    });
+  });
 });
