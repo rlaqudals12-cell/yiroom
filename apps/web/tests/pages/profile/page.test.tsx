@@ -64,7 +64,7 @@ describe('ProfilePage', () => {
         user: null,
         isLoaded: false,
         isSignedIn: false,
-      } as ReturnType<typeof useUser>);
+      } as unknown as ReturnType<typeof useUser>);
 
       vi.mocked(useClerkSupabaseClient).mockReturnValue(createMockSupabase() as any);
 
@@ -80,7 +80,7 @@ describe('ProfilePage', () => {
         user: null,
         isLoaded: true,
         isSignedIn: false,
-      } as ReturnType<typeof useUser>);
+      } as unknown as ReturnType<typeof useUser>);
 
       vi.mocked(useClerkSupabaseClient).mockReturnValue(createMockSupabase() as any);
 
@@ -106,7 +106,7 @@ describe('ProfilePage', () => {
         user: mockUser,
         isLoaded: true,
         isSignedIn: true,
-      } as ReturnType<typeof useUser>);
+      } as unknown as ReturnType<typeof useUser>);
 
       vi.mocked(useClerkSupabaseClient).mockReturnValue(createMockSupabase() as any);
 
@@ -115,12 +115,10 @@ describe('ProfilePage', () => {
         level: 5,
         currentXp: 150,
         totalXp: 450,
-        xpForCurrentLevel: 100,
         xpForNextLevel: 200,
         xpProgress: 50,
         tier: 'beginner',
         tierName: '비기너',
-        tierColor: '#4ade80',
       });
 
       vi.mocked(getUserBadges).mockResolvedValue([]);
@@ -227,7 +225,7 @@ describe('ProfilePage', () => {
         user: mockUser,
         isLoaded: true,
         isSignedIn: true,
-      } as ReturnType<typeof useUser>);
+      } as unknown as ReturnType<typeof useUser>);
 
       vi.mocked(useClerkSupabaseClient).mockReturnValue(createMockSupabase() as any);
 
@@ -269,7 +267,7 @@ describe('ProfilePage', () => {
         user: mockUser,
         isLoaded: true,
         isSignedIn: true,
-      } as ReturnType<typeof useUser>);
+      } as unknown as ReturnType<typeof useUser>);
 
       vi.mocked(useClerkSupabaseClient).mockReturnValue(createMockSupabase() as any);
 
@@ -305,11 +303,13 @@ describe('ProfilePage', () => {
             code: 'first_workout',
             name: '첫 운동',
             description: '첫 운동 완료',
+            icon: '🎯',
             category: 'workout',
             rarity: 'common',
-            iconUrl: null,
+            requirement: { type: 'count', domain: 'workout', sessions: 1 },
             xpReward: 10,
             sortOrder: 1,
+            createdAt: new Date(),
           },
         },
       ]);
@@ -348,7 +348,7 @@ describe('ProfilePage', () => {
         },
         isLoaded: true,
         isSignedIn: true,
-      } as ReturnType<typeof useUser>);
+      } as unknown as ReturnType<typeof useUser>);
 
       render(<ProfilePage />);
 
@@ -371,7 +371,7 @@ describe('ProfilePage', () => {
         },
         isLoaded: true,
         isSignedIn: true,
-      } as ReturnType<typeof useUser>);
+      } as unknown as ReturnType<typeof useUser>);
 
       render(<ProfilePage />);
 

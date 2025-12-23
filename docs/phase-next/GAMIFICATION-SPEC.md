@@ -129,14 +129,15 @@ addXp(supabase, userId, amount): Promise<LevelUpResult>
 
 ```sql
 CREATE TABLE badges (
-  id UUID PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
-  category badge_category NOT NULL,
-  rarity badge_rarity DEFAULT 'common',
-  icon_url TEXT,
-  xp_reward INTEGER DEFAULT 0,
+  icon TEXT NOT NULL,  -- 이모지 또는 아이콘 이름
+  category TEXT NOT NULL CHECK (category IN ('streak', 'workout', 'nutrition', 'analysis', 'special')),
+  rarity TEXT DEFAULT 'common' CHECK (rarity IN ('common', 'rare', 'epic', 'legendary')),
+  requirement JSONB NOT NULL DEFAULT '{}',
+  xp_reward INTEGER DEFAULT 10,
   sort_order INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -146,9 +147,9 @@ CREATE TABLE badges (
 
 ```sql
 CREATE TABLE user_badges (
-  id UUID PRIMARY KEY,
-  clerk_user_id TEXT NOT NULL,
-  badge_id UUID REFERENCES badges(id),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
+  badge_id UUID NOT NULL REFERENCES badges(id) ON DELETE CASCADE,
   earned_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(clerk_user_id, badge_id)
 );
@@ -158,25 +159,44 @@ CREATE TABLE user_badges (
 
 ```sql
 CREATE TABLE user_levels (
-  id UUID PRIMARY KEY,
-  clerk_user_id TEXT UNIQUE NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT UNIQUE NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
   level INTEGER DEFAULT 1,
   current_xp INTEGER DEFAULT 0,
   total_xp INTEGER DEFAULT 0,
-  tier level_tier DEFAULT 'beginner',
+  tier TEXT DEFAULT 'beginner' CHECK (tier IN ('beginner', 'practitioner', 'expert', 'master')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
 ## 테스트
 
+### 게이미피케이션 테스트
+
 | 테스트 파일 | 테스트 수 |
 |-------------|-----------|
-| constants.test.ts | 15 |
-| badges.test.ts | 8 |
-| levels.test.ts | 9 |
-| **합계** | **32** |
+| lib/gamification/constants.test.ts | 34 |
+| lib/gamification/badges.test.ts | 9 |
+| lib/gamification/levels.test.ts | 9 |
+| components/gamification/BadgeCard.test.tsx | 15 |
+| components/gamification/LevelProgress.test.tsx | 16 |
+| components/gamification/BadgeToast.test.tsx | 6 |
+| **소계** | **89** |
+
+### 챌린지 테스트
+
+| 테스트 파일 | 테스트 수 |
+|-------------|-----------|
+| lib/challenges/constants.test.ts | 19 |
+| lib/challenges/integration.test.ts | 9 |
+| components/challenges/ChallengeCard.test.tsx | 21 |
+| components/challenges/ChallengeList.test.tsx | 17 |
+| components/challenges/ChallengeProgress.test.tsx | 15 |
+| **소계** | **81** |
+
+### **총 테스트: 170개**
 
 ---
 
-*Phase H Sprint 1 완료: 2024-12-24*
+*Phase H Sprint 1 완료: 2025-12-24*

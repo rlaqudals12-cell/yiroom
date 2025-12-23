@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS challenges (
 -- 2. user_challenges 테이블 (사용자 챌린지 참여)
 CREATE TABLE IF NOT EXISTS user_challenges (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clerk_user_id TEXT NOT NULL,
+  clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
   challenge_id UUID REFERENCES challenges(id) ON DELETE CASCADE,
 
   -- 상태
@@ -77,15 +77,16 @@ ALTER TABLE user_challenges ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view own challenges"
   ON user_challenges FOR SELECT
-  USING (clerk_user_id = auth.jwt() ->> 'sub');
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 CREATE POLICY "Users can insert own challenges"
   ON user_challenges FOR INSERT
-  WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
+  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 CREATE POLICY "Users can update own challenges"
   ON user_challenges FOR UPDATE
-  USING (clerk_user_id = auth.jwt() ->> 'sub');
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub')
+  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- ============================================================
 -- 인덱스
