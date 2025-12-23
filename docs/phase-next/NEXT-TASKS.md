@@ -882,26 +882,56 @@ interface Exercise {
 - [x] 챌린지 시스템 설계 문서 (`docs/phase-next/CHALLENGE-SYSTEM-DESIGN.md`)
 - [x] 테스트: 15개 케이스 추가 (총 98개)
 
-### TODO: 챌린지 시스템 구현 (Sprint 4)
+### 완료된 작업 (Sprint 4 - 챌린지 시스템)
 
-> **설계 문서**: `docs/phase-next/CHALLENGE-SYSTEM-DESIGN.md`
+- [x] challenges, user_challenges DB 마이그레이션
+- [x] TypeScript 타입 정의 (`types/challenges.ts`)
+- [x] 라이브러리 함수 (`lib/challenges/`)
+- [x] UI 컴포넌트 (`components/challenges/`)
+- [x] 챌린지 목록/상세 페이지
+- [x] 참여/완료/포기 기능
+- [x] 진행 상황 자동 업데이트 (운동/영양 연동)
+- [x] 대시보드 위젯 (`ChallengeWidget`)
+- [x] 프로필 페이지 (`/profile`, `/profile/badges`)
+- [x] E2E 테스트 추가
+- [x] 테스트: 28개 케이스 통과
 
-#### 구현 일정
+---
+
+## Phase H Sprint 2 계획
+
+> **계획 문서**: `docs/phase-next/PHASE-H-SPRINT2-PLAN.md`
+> **상태**: 계획 완료, 구현 대기
+
+### 핵심 기능
+
+| 우선순위 | 기능 | 설명 |
+|---------|------|------|
+| P0 | 통합 웰니스 스코어 | 종합 건강 점수 (0-100) |
+| P1 | 친구 기능 | 친구 추가/목록/검색 |
+| P2 | 리더보드 | 주간/월간 랭킹 |
+| P3 | 챌린지 확장 | 템플릿 10개 추가 |
+
+### 구현 순서
 
 ```yaml
-Sprint 4 (다음):
-  - challenges, user_challenges DB 마이그레이션
-  - TypeScript 타입 정의 (types/challenges.ts)
-  - 라이브러리 함수 (lib/challenges/)
-  - UI 컴포넌트 (components/challenges/)
+Week 1:
+  - 웰니스 스코어 DB + 타입
+  - 점수 계산 로직
+  - UI 컴포넌트 + 대시보드 위젯
+  - 테스트 30개
 
-Sprint 5:
-  - 챌린지 목록/상세 페이지
-  - 참여/포기 기능
-  - 진행 상황 자동 업데이트
-  - 완료 보상 처리 (XP + 배지)
-  - 대시보드 위젯
-  - 테스트 50개 이상
+Week 2:
+  - 친구 기능 (DB + 라이브러리 + UI)
+  - 리더보드 (DB + Cron + UI)
+  - 챌린지 템플릿 10개 추가
+  - E2E + 통합 테스트
 ```
+
+### 추가 기능 (Sprint 3+)
+
+- 챌린지 알림 (푸시 알림)
+- AI 코칭 메시지
+- 친구와 함께 챌린지 참여
 
 ---

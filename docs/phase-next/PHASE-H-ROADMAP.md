@@ -285,6 +285,40 @@ CREATE TABLE wellness_scores (
 
 ---
 
-**Status**: 기획 완료, 프로덕션 배포 후 진행 예정
-**Version**: 1.0
-**Updated**: 2025-12-23
+---
+
+## 구현 현황 (2025-12-24 업데이트)
+
+### Sprint 1 완료: 게이미피케이션
+
+- 배지 시스템 (23개 배지, 5개 카테고리)
+- 레벨 시스템 (4개 티어, XP 자동 부여)
+- 프로필/배지 페이지 (`/profile`, `/profile/badges`)
+- 대시보드 위젯 (GamificationWidget)
+- 배지 알림 Toast + 레벨업 모달
+- 테스트: 83개 통과
+
+### Sprint 4 완료: 챌린지 시스템
+
+- 챌린지 DB + 시드 데이터 (5개)
+- 라이브러리 함수 (lib/challenges/)
+- UI 컴포넌트 (components/challenges/)
+- 챌린지 목록/상세 페이지
+- 자동 진행 업데이트 (운동/영양 연동)
+- E2E 테스트 추가
+- 테스트: 28개 통과
+
+### Sprint 2 계획 완료
+
+> 상세: `docs/phase-next/PHASE-H-SPRINT2-PLAN.md`
+
+- 통합 웰니스 스코어
+- 친구 기능
+- 리더보드
+- 챌린지 템플릿 확장
+
+---
+
+**Status**: Sprint 1, 4 완료 / Sprint 2 계획 완료
+**Version**: 1.1
+**Updated**: 2025-12-24
