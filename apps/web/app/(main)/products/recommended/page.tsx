@@ -42,28 +42,28 @@ export default async function RecommendedProductsPage() {
         .eq('clerk_user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single(),
+        .maybeSingle(),
       supabase
         .from('personal_color_assessments')
         .select('season')
         .eq('clerk_user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single(),
+        .maybeSingle(),
       supabase
         .from('workout_analyses')
         .select('workout_type')
         .eq('clerk_user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single(),
+        .maybeSingle(),
       supabase
         .from('nutrition_settings')
         .select('goal')
         .eq('clerk_user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single(),
+        .maybeSingle(),
     ]);
 
   // 사용자 프로필 구성

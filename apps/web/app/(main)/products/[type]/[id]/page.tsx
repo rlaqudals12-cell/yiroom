@@ -119,8 +119,9 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <Link
             href="/products"
             className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            aria-label="제품 목록으로 돌아가기"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             <span>목록</span>
           </Link>
           <WishlistButton
@@ -161,9 +162,9 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
           {/* 평점 */}
           {product.rating && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" aria-label={`평점 ${product.rating.toFixed(1)}점`}>
               <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
                 <span className="font-semibold">{product.rating.toFixed(1)}</span>
               </div>
               {product.reviewCount && (

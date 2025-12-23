@@ -17,12 +17,13 @@ export default function SettingsPage() {
           <Link
             href="/dashboard"
             className="p-2 -ml-2 hover:bg-muted rounded-lg transition-colors"
+            aria-label="대시보드로 돌아가기"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5" aria-hidden="true" />
           </Link>
           <div className="flex-1">
             <h1 className="font-bold text-foreground flex items-center gap-2">
-              <Settings className="w-5 h-5" />
+              <Settings className="w-5 h-5" aria-hidden="true" />
               설정
             </h1>
           </div>

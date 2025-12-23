@@ -241,7 +241,7 @@ export default function NutritionPage() {
         .select('metrics')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error || !skinData) {
         // 피부 분석 없음
@@ -304,7 +304,7 @@ export default function NutritionPage() {
         .select('body_type, height, weight, shoulder, waist, hip, created_at')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error || !bodyData) {
         // 체형 분석 없음

@@ -153,7 +153,7 @@ export function NotificationSettings() {
         {/* 알림 활성화 토글 */}
         <div className="flex items-center justify-between py-3 border-b">
           <div className="flex items-center gap-3">
-            <Bell className="w-5 h-5 text-muted-foreground" />
+            <Bell className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
             <div>
               <p className="font-medium">알림 활성화</p>
               <p className="text-sm text-muted-foreground">리마인더 알림 받기</p>
@@ -170,7 +170,7 @@ export function NotificationSettings() {
         {/* 리마인더 시간 */}
         <div className="flex items-center justify-between py-3 border-b">
           <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-muted-foreground" />
+            <Clock className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
             <div>
               <p className="font-medium">리마인더 시간</p>
               <p className="text-sm text-muted-foreground">매일 알림 받을 시간</p>
@@ -197,7 +197,7 @@ export function NotificationSettings() {
         {/* 운동 리마인더 */}
         <div className="flex items-center justify-between py-3 border-b">
           <div className="flex items-center gap-3">
-            <Dumbbell className="w-5 h-5 text-blue-500" />
+            <Dumbbell className="w-5 h-5 text-blue-500" aria-hidden="true" />
             <div>
               <p className="font-medium">운동 리마인더</p>
               <p className="text-sm text-muted-foreground">운동 기록 알림</p>
@@ -214,7 +214,7 @@ export function NotificationSettings() {
         {/* 식단 리마인더 */}
         <div className="flex items-center justify-between py-3 border-b">
           <div className="flex items-center gap-3">
-            <Utensils className="w-5 h-5 text-green-500" />
+            <Utensils className="w-5 h-5 text-green-500" aria-hidden="true" />
             <div>
               <p className="font-medium">식단 리마인더</p>
               <p className="text-sm text-muted-foreground">식단 기록 알림</p>
@@ -231,7 +231,7 @@ export function NotificationSettings() {
         {/* Streak 경고 */}
         <div className="flex items-center justify-between py-3">
           <div className="flex items-center gap-3">
-            <Flame className="w-5 h-5 text-orange-500" />
+            <Flame className="w-5 h-5 text-orange-500" aria-hidden="true" />
             <div>
               <p className="font-medium">Streak 끊김 경고</p>
               <p className="text-sm text-muted-foreground">연속 기록이 끊길 위험 시 알림</p>

@@ -53,11 +53,15 @@ export default function ReportsPage() {
         <Card
           className="cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={() => router.push(`/reports/weekly/${currentWeekStart}`)}
+          role="button"
+          tabIndex={0}
+          aria-label="이번 주 리포트 보기"
+          onKeyDown={(e) => e.key === 'Enter' && router.push(`/reports/weekly/${currentWeekStart}`)}
         >
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Calendar className="h-5 w-5 text-primary" />
+                <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
               </div>
               <div>
                 <div className="font-medium">이번 주 리포트</div>
@@ -66,7 +70,7 @@ export default function ReportsPage() {
                 </div>
               </div>
             </div>
-            <ArrowRight className="h-5 w-5 text-muted-foreground" />
+            <ArrowRight className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           </CardContent>
         </Card>
 
@@ -74,11 +78,15 @@ export default function ReportsPage() {
         <Card
           className="cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={() => router.push(`/reports/monthly/${currentMonth}`)}
+          role="button"
+          tabIndex={0}
+          aria-label="이번 달 리포트 보기"
+          onKeyDown={(e) => e.key === 'Enter' && router.push(`/reports/monthly/${currentMonth}`)}
         >
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-500/10 rounded-lg">
-                <Sparkles className="h-5 w-5 text-orange-500" />
+                <Sparkles className="h-5 w-5 text-orange-500" aria-hidden="true" />
               </div>
               <div>
                 <div className="font-medium">이번 달 리포트</div>
@@ -87,7 +95,7 @@ export default function ReportsPage() {
                 </div>
               </div>
             </div>
-            <ArrowRight className="h-5 w-5 text-muted-foreground" />
+            <ArrowRight className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           </CardContent>
         </Card>
       </div>

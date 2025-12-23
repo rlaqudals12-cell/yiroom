@@ -42,7 +42,7 @@ export default function AnalysisResult({
   const typeInfo = BODY_TYPES[bodyType];
 
   return (
-    <div ref={shareRef} className="space-y-6">
+    <div ref={shareRef} className="space-y-6" role="region" aria-label="체형 분석 결과">
       {/* 기본 정보 (사용자 입력) */}
       {userInput && (
         <FadeInUp>

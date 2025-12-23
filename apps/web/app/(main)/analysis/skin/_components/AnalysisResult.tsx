@@ -34,7 +34,7 @@ export default function AnalysisResult({
   } = result;
 
   return (
-    <div ref={shareRef} className="space-y-6">
+    <div ref={shareRef} className="space-y-6" role="region" aria-label="피부 분석 결과">
       {/* 전체 점수 카드 - ScaleIn으로 강조 */}
       <ScaleIn>
         <section className="bg-card rounded-xl border p-6 text-center">

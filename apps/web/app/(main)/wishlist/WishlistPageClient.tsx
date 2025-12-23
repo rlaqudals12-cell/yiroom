@@ -325,11 +325,13 @@ function WishlistGrid({
                   onClick={() => onRemove(item)}
                   disabled={isRemoving}
                   className="text-muted-foreground hover:text-red-500 gap-1"
+                  aria-label={`${product.name} 위시리스트에서 제거`}
+                  aria-busy={isRemoving}
                 >
                   {isRemoving ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                   ) : (
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                   )}
                   제거
                 </Button>
