@@ -8,9 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { askProductQuestion, FAQ_TEMPLATES, type ProductQAResponse } from '@/lib/rag/product-qa';
 import type { AnyProduct, ProductType } from '@/types/product';
 
@@ -120,6 +122,11 @@ export function ProductQASection({ product, productType }: ProductQASectionProps
               <MessageCircle className="w-5 h-5 text-violet-500" />
               {product.name}
             </DialogTitle>
+            <VisuallyHidden asChild>
+              <DialogDescription>
+                {product.name}에 대해 AI에게 질문하세요
+              </DialogDescription>
+            </VisuallyHidden>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto space-y-4 py-4">

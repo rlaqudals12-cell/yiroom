@@ -5,9 +5,11 @@ import { AlertTriangle, Sparkles } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { ProductInteractionWarning } from '@/types/interaction';
@@ -33,6 +35,11 @@ export function InteractionDetailModal({
       <DialogContent className="max-w-2xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>성분 상호작용 분석</DialogTitle>
+          <VisuallyHidden asChild>
+            <DialogDescription>
+              제품 성분 간의 상호작용 경고와 시너지 효과 분석
+            </DialogDescription>
+          </VisuallyHidden>
         </DialogHeader>
 
         <Tabs defaultValue="warnings" className="mt-4">
