@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Palette, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Palette } from 'lucide-react';
 import {
   Collapsible,
   CollapsibleContent,
@@ -51,10 +51,13 @@ export default function AnalysisSection({
       >
         {/* 섹션 헤더 (Collapsible Trigger) */}
         <CollapsibleTrigger asChild>
-          <button className="w-full px-5 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+          <button
+            className="w-full px-5 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            aria-label={isOpen ? '분석 프로필 섹션 접기' : '분석 프로필 섹션 펼치기'}
+          >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-module-personal-color-light flex items-center justify-center">
-                <Palette className="w-4 h-4 text-module-personal-color" />
+                <Palette className="w-4 h-4 text-module-personal-color" aria-hidden="true" />
               </div>
               <div className="text-left">
                 <h2 className="text-lg font-semibold text-foreground">내 분석 프로필</h2>
@@ -74,9 +77,9 @@ export default function AnalysisSection({
                 </div>
               )}
               {isOpen ? (
-                <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                <ChevronUp className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                <ChevronDown className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
               )}
             </div>
           </button>

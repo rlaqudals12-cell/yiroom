@@ -46,10 +46,10 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
       }
 
       try {
-        // 스트릭 데이터 조회
+        // 스트릭 데이터 조회 (maybeSingle: 데이터 없어도 에러 안남)
         const [workoutResult, nutritionResult] = await Promise.all([
-          supabase.from('workout_streaks').select('*').single(),
-          supabase.from('nutrition_streaks').select('*').single(),
+          supabase.from('workout_streaks').select('*').maybeSingle(),
+          supabase.from('nutrition_streaks').select('*').maybeSingle(),
         ]);
 
         const workoutSummary = getWorkoutStreakSummary(workoutResult.data);
@@ -155,9 +155,9 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
             <Link
               href="/settings"
               className="p-2 hover:bg-amber-100 rounded-lg transition-colors"
-              title="알림 설정"
+              aria-label="알림 설정으로 이동"
             >
-              <Settings className="w-4 h-4 text-amber-600" />
+              <Settings className="w-4 h-4 text-amber-600" aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -214,8 +214,9 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
           <button
             onClick={() => setIsCheckinOpen(true)}
             className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all flex items-center justify-center gap-2"
+            aria-label="오늘의 체크인 시작하기"
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-4 h-4" aria-hidden="true" />
             오늘의 나 체크인하기
           </button>
         </div>
@@ -247,9 +248,10 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
               <Link
                 href="/reports"
                 className="text-xs text-amber-600 hover:text-amber-700 flex items-center gap-0.5"
+                aria-label="주간 리포트 상세 보기"
               >
                 상세
-                <ChevronRight className="w-3 h-3" />
+                <ChevronRight className="w-3 h-3" aria-hidden="true" />
               </Link>
             </div>
           </div>
