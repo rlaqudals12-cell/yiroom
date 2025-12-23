@@ -147,7 +147,11 @@ export default function BodyAnalysisPage() {
 
           {/* 에러 메시지 */}
           {error && step === 'upload' && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+            <div
+              className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
+              role="alert"
+              aria-live="polite"
+            >
               {error}. 다시 시도해주세요.
             </div>
           )}

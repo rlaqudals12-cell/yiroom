@@ -208,6 +208,66 @@ export function TextSkeleton({
 }
 
 // =====================================================
+// HeaderSkeleton - 헤더 스켈레톤
+// =====================================================
+
+interface HeaderSkeletonProps extends SkeletonBaseProps {
+  /** 뒤로가기 버튼 포함 여부 */
+  hasBackButton?: boolean;
+  /** 서브타이틀 포함 여부 */
+  hasSubtitle?: boolean;
+}
+
+export function HeaderSkeleton({
+  className,
+  hasBackButton = true,
+  hasSubtitle = false,
+}: HeaderSkeletonProps) {
+  return (
+    <div
+      className={cn('flex items-center gap-3 py-3', className)}
+      role="status"
+      aria-label="헤더 로딩 중"
+    >
+      {hasBackButton && (
+        <SkeletonBlock className="w-10 h-10 rounded-lg shrink-0" />
+      )}
+      <div className="flex-1 space-y-2">
+        <SkeletonBlock className="h-6 w-32" />
+        {hasSubtitle && <SkeletonBlock className="h-4 w-48" />}
+      </div>
+    </div>
+  );
+}
+
+// =====================================================
+// SearchSkeleton - 검색바 스켈레톤
+// =====================================================
+
+interface SearchSkeletonProps extends SkeletonBaseProps {
+  /** 필터 버튼 포함 여부 */
+  hasFilter?: boolean;
+}
+
+export function SearchSkeleton({
+  className,
+  hasFilter = true,
+}: SearchSkeletonProps) {
+  return (
+    <div
+      className={cn('flex items-center gap-2', className)}
+      role="status"
+      aria-label="검색바 로딩 중"
+    >
+      <SkeletonBlock className="flex-1 h-10 rounded-lg" />
+      {hasFilter && (
+        <SkeletonBlock className="w-10 h-10 rounded-lg shrink-0" />
+      )}
+    </div>
+  );
+}
+
+// =====================================================
 // GridSkeleton - 그리드 스켈레톤
 // =====================================================
 
@@ -264,6 +324,8 @@ const ContentSkeleton = {
   List: ListSkeleton,
   Profile: ProfileSkeleton,
   Text: TextSkeleton,
+  Header: HeaderSkeleton,
+  Search: SearchSkeleton,
   Grid: GridSkeleton,
 };
 

@@ -19,6 +19,7 @@ import type { WorkoutAnalysis, WorkoutStreak } from '@/lib/api/workout';
 import { WORKOUT_TYPE_INFO } from '@/lib/workout/classifyWorkoutType';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { QuickActionCard } from '@/components/workout/common';
 
 /**
  * 운동 메인 페이지
@@ -252,26 +253,5 @@ function OnboardingPrompt() {
         </div>
       </div>
     </div>
-  );
-}
-
-// 빠른 액션 카드 컴포넌트
-function QuickActionCard({
-  icon,
-  label,
-  href,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 p-4 bg-card border border-border rounded-xl hover:bg-muted transition-colors"
-    >
-      <div className="text-indigo-500">{icon}</div>
-      <span className="font-medium text-foreground">{label}</span>
-    </Link>
   );
 }
