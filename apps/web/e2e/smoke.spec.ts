@@ -59,6 +59,30 @@ test.describe('Smoke Test - 페이지 접근', () => {
     const url = page.url();
     expect(url).toMatch(/report|sign-in/);
   });
+
+  test('프로필 페이지가 정상적으로 로드된다', async ({ page }) => {
+    await page.goto(ROUTES.PROFILE);
+    await waitForLoadingToFinish(page);
+
+    const url = page.url();
+    expect(url).toMatch(/profile|sign-in/);
+  });
+
+  test('배지 컬렉션 페이지가 정상적으로 로드된다', async ({ page }) => {
+    await page.goto(ROUTES.PROFILE_BADGES);
+    await waitForLoadingToFinish(page);
+
+    const url = page.url();
+    expect(url).toMatch(/badges|sign-in/);
+  });
+
+  test('챌린지 페이지가 정상적으로 로드된다', async ({ page }) => {
+    await page.goto(ROUTES.CHALLENGES);
+    await waitForLoadingToFinish(page);
+
+    const url = page.url();
+    expect(url).toMatch(/challenges|sign-in/);
+  });
 });
 
 test.describe('Smoke Test - 네비게이션', () => {

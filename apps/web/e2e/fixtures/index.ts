@@ -62,4 +62,8 @@ export const ROUTES = {
   ADMIN_PRODUCTS: '/admin/products',
   ADMIN_FEATURES: '/admin/system/features',
   ADMIN_CRAWLER: '/admin/system/crawler',
+  // Phase H: 게이미피케이션 & 챌린지
+  PROFILE: '/profile',
+  PROFILE_BADGES: '/profile/badges',
+  CHALLENGES: '/challenges',
 } as const;
