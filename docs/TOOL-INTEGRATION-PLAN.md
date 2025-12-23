@@ -341,9 +341,10 @@ Structured Outputs:
     - 다크모드 색상 미세 조정
     - 브랜딩 중립화 UI 작업
 
-[ ] .claude/rules/ 생성
+[x] .claude/rules/ 생성 (2025-12-23)
     - coding-standards.md 작성
-    - 프로젝트 컨벤션 문서화
+    - project-structure.md 작성
+    - ai-integration.md 작성
 
 [ ] Figma MCP 테스트 (로컬 개발)
     - 리모트 MCP 연결: https://mcp.figma.com/mcp

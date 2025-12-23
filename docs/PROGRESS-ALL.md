@@ -1,7 +1,7 @@
 # 이룸 전체 진행 상황
 
-> **마지막 업데이트**: 2025-12-22
-> **총 테스트**: 2,620개 통과 (메모리 최적화 완료)
+> **마지막 업데이트**: 2025-12-23
+> **총 테스트**: 2,686개 통과 (메모리 최적화 완료)
 > **코드 품질**: SRP 95%, Repository 90%
 
 ---
@@ -1046,6 +1046,34 @@ AI 업그레이드:
 정리:
   [x] Supabase 임시 파일 gitignore 추가
   [x] N1_combined_migration.sql.bak 삭제
+```
+
+### 추가 작업 (2025-12-23)
+
+```yaml
+개발 효율화:
+  [x] .claude/rules/ 코딩 표준 문서 생성
+      - coding-standards.md: 코드 스타일, 네이밍, 테스트 규칙
+      - project-structure.md: 디렉토리 구조 가이드
+      - ai-integration.md: Gemini AI 사용 패턴
+
+Supabase 마이그레이션:
+  [x] 로컬 DB reset으로 28개 마이그레이션 적용
+  [x] daily_checkins 테이블 로컬 적용 확인
+
+모바일 앱 (Phase B):
+  [x] 홈 화면 대시보드 스타일 개선
+      - 사용자 인사말 + Clerk 연동
+      - 오늘의 요약 카드 (운동/식단/체크인)
+      - 퀵 액션 버튼 (PC/피부/체형 분석)
+      - 모듈 카드 (운동/영양)
+  [x] 47개 파일 커밋 (기존 스켈레톤 포함)
+  [x] typecheck 통과
+
+접근성 개선:
+  [x] DialogContent 접근성 경고 수정
+      - ProductQASection.tsx
+      - InteractionDetail.tsx
 ```
 
 ---
