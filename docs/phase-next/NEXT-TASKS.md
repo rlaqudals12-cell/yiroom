@@ -846,3 +846,62 @@ interface Exercise {
 **테스트 단계**: Part A 체크리스트 진행
 **런칭 단계**: Part B 체크리스트 진행 (2026-01-20 이후)
 **기능 확장**: Part C - 운동 DB 확장 완료, 브랜딩 중립화 대기
+
+---
+
+## Part D: Phase H 게이미피케이션 (2025-12-24)
+
+> **현재 상태**: Sprint 3 완료
+> **참조**: `docs/phase-next/PHASE-H-ROADMAP.md`
+
+### 완료된 작업 (Sprint 1)
+
+- [x] DB 마이그레이션: badges, user_badges, user_levels 테이블
+- [x] TypeScript 타입: `types/gamification.ts`
+- [x] 라이브러리 함수: `lib/gamification/` (constants, badges, levels, streak-integration)
+- [x] UI 컴포넌트: `components/gamification/` (BadgeCard, BadgeGrid, LevelProgress, LevelUpModal, BadgeNotification)
+- [x] 대시보드 위젯: GamificationWidget
+- [x] 프로필 배지 페이지: `/profile/badges`
+- [x] 테스트: 83개 케이스 통과
+
+### 완료된 작업 (Sprint 2)
+
+- [x] 운동 스트릭 → 배지 시스템 연동 (`lib/api/workout.ts`)
+- [x] 영양 스트릭 → 배지 시스템 연동 (`app/api/nutrition/meals/route.ts`)
+- [x] XP 자동 부여 (운동 5XP, 식단 2XP, 분석 10XP)
+- [x] 분석 완료 시 배지 부여 (PC-1, S-1, C-1, 전체 완료)
+- [x] 운동 횟수 배지 (10회, 50회, 100회)
+- [x] 첫 운동/첫 식단 배지
+
+### 완료된 작업 (Sprint 3)
+
+- [x] 배지 획득 알림 Toast 통합 (`components/gamification/BadgeToast.tsx`)
+- [x] 레벨업 축하 모달 연동 (`components/gamification/GamificationProvider.tsx`)
+- [x] 게이미피케이션 알림 Hook (`hooks/useGamificationNotification.tsx`)
+- [x] 앱 레이아웃에 GamificationProvider 통합 (`app/layout.tsx`)
+- [x] 챌린지 시스템 설계 문서 (`docs/phase-next/CHALLENGE-SYSTEM-DESIGN.md`)
+- [x] 테스트: 15개 케이스 추가 (총 98개)
+
+### TODO: 챌린지 시스템 구현 (Sprint 4)
+
+> **설계 문서**: `docs/phase-next/CHALLENGE-SYSTEM-DESIGN.md`
+
+#### 구현 일정
+
+```yaml
+Sprint 4 (다음):
+  - challenges, user_challenges DB 마이그레이션
+  - TypeScript 타입 정의 (types/challenges.ts)
+  - 라이브러리 함수 (lib/challenges/)
+  - UI 컴포넌트 (components/challenges/)
+
+Sprint 5:
+  - 챌린지 목록/상세 페이지
+  - 참여/포기 기능
+  - 진행 상황 자동 업데이트
+  - 완료 보상 처리 (XP + 배지)
+  - 대시보드 위젯
+  - 테스트 50개 이상
+```
+
+---

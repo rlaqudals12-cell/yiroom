@@ -11,6 +11,15 @@ import {
   generateColorRecommendations,
   getColorTipsForBodyType,
 } from "@/lib/color-recommendations";
+import {
+  awardAnalysisBadge,
+  checkAndAwardAllAnalysisBadge,
+  addXp,
+  type BadgeAwardResult,
+} from "@/lib/gamification";
+
+// XP 보상 상수
+const XP_ANALYSIS_COMPLETE = 10;
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === "true";
@@ -196,6 +205,35 @@ export async function POST(req: Request) {
     // 체형 정보 보완 (BODY_TYPES에서 가져오기)
     const bodyTypeInfo = BODY_TYPES[result.bodyType as BodyType];
 
+    // 게이미피케이션 연동
+    const gamificationResult: {
+      badgeResults: BadgeAwardResult[];
+      xpAwarded: number;
+    } = {
+      badgeResults: [],
+      xpAwarded: 0,
+    };
+
+    try {
+      // XP 추가 (분석 완료 시 10 XP)
+      await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
+      gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
+
+      // 체형 분석 완료 배지
+      const bodyBadge = await awardAnalysisBadge(supabase, userId, "body");
+      if (bodyBadge) {
+        gamificationResult.badgeResults.push(bodyBadge);
+      }
+
+      // 모든 분석 완료 여부 체크
+      const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
+      if (allBadge) {
+        gamificationResult.badgeResults.push(allBadge);
+      }
+    } catch (gamificationError) {
+      console.error("[C-1] Gamification error:", gamificationError);
+    }
+
     return NextResponse.json({
       success: true,
       data: data,
@@ -212,6 +250,7 @@ export async function POST(req: Request) {
       colorRecommendations,
       colorTips,
       usedMock,
+      gamification: gamificationResult,
     });
   } catch (error) {
     console.error("Body analysis error:", error);

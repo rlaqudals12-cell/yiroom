@@ -1,6 +1,21 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import {
+  checkFirstNutritionBadge,
+  checkAndAwardStreakBadges,
+  addXp,
+  type BadgeAwardResult,
+  type LevelUpResult,
+} from '@/lib/gamification';
+import { getDaysDifference } from '@/lib/nutrition/streak';
+import {
+  updateChallengesOnNutrition,
+  type ChallengeUpdateResult,
+} from '@/lib/challenges';
+
+// XP 보상 상수
+const XP_MEAL_RECORD = 2;
 
 // 식사 타입별 정보 (N-1 스펙 5.1 메인 대시보드 기준)
 const MEAL_TYPE_INFO = {
@@ -276,9 +291,54 @@ export async function POST(req: Request) {
       );
     }
 
+    // 게이미피케이션 연동
+    const gamificationResult: {
+      badgeResults: BadgeAwardResult[];
+      xpResult: LevelUpResult | null;
+    } = {
+      badgeResults: [],
+      xpResult: null,
+    };
+
+    try {
+      // XP 추가 (식단 기록 시 2 XP)
+      const xpResult = await addXp(supabase, userId, XP_MEAL_RECORD);
+      gamificationResult.xpResult = xpResult;
+
+      // 오늘 식단 기록 횟수 확인 (첫 식단 배지 체크)
+      const { count: todayMealCount } = await supabase
+        .from('meal_records')
+        .select('*', { count: 'exact', head: true })
+        .eq('clerk_user_id', userId);
+
+      // 첫 식단 기록 배지
+      if (todayMealCount === 1) {
+        const firstBadge = await checkFirstNutritionBadge(supabase, userId, 1);
+        if (firstBadge) {
+          gamificationResult.badgeResults.push(firstBadge);
+        }
+      }
+
+      // 영양 스트릭 업데이트 및 배지 체크
+      const targetDateValue = mealDate || new Date().toISOString().split('T')[0];
+      const streakResult = await updateNutritionStreakWithGamification(
+        supabase,
+        userId,
+        targetDateValue
+      );
+
+      if (streakResult.badgeResults.length > 0) {
+        gamificationResult.badgeResults.push(...streakResult.badgeResults);
+      }
+    } catch (gamificationError) {
+      console.error('[N-1] Gamification error:', gamificationError);
+      // 게이미피케이션 오류는 식단 기록 성공에 영향을 주지 않음
+    }
+
     return NextResponse.json({
       success: true,
       record: data,
+      gamification: gamificationResult,
     });
   } catch (error) {
     console.error('[N-1] Meal save error:', error);
@@ -287,4 +347,106 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+}
+
+// =====================================================
+// 영양 스트릭 업데이트 (게이미피케이션 연동)
+// =====================================================
+
+interface NutritionStreakGamificationResult {
+  badgeResults: BadgeAwardResult[];
+  challengeResult?: ChallengeUpdateResult;
+}
+
+async function updateNutritionStreakWithGamification(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  userId: string,
+  recordDate: string
+): Promise<NutritionStreakGamificationResult> {
+  const result: NutritionStreakGamificationResult = { badgeResults: [] };
+
+  try {
+    // 기존 스트릭 조회
+    const { data: existingStreak, error: fetchError } = await supabase
+      .from('nutrition_streaks')
+      .select('*')
+      .eq('clerk_user_id', userId)
+      .single();
+
+    const today = new Date(recordDate);
+    const todayStr = today.toISOString().split('T')[0];
+
+    if (fetchError && fetchError.code === 'PGRST116') {
+      // 첫 기록 - 스트릭 생성
+      await supabase
+        .from('nutrition_streaks')
+        .insert({
+          clerk_user_id: userId,
+          current_streak: 1,
+          longest_streak: 1,
+          last_record_date: todayStr,
+          badges_earned: [],
+        });
+
+      return result;
+    }
+
+    if (!existingStreak) return result;
+
+    // 스트릭 계산
+    const lastRecordDate = existingStreak.last_record_date
+      ? new Date(existingStreak.last_record_date)
+      : null;
+
+    let newCurrentStreak = existingStreak.current_streak || 0;
+    const previousStreak = newCurrentStreak;
+
+    if (lastRecordDate) {
+      const daysDiff = getDaysDifference(lastRecordDate, today);
+
+      if (daysDiff === 0) {
+        // 같은 날 - 변경 없음
+        return result;
+      } else if (daysDiff === 1) {
+        // 연속 - 스트릭 증가
+        newCurrentStreak += 1;
+      } else {
+        // 끊김 - 리셋
+        newCurrentStreak = 1;
+      }
+    } else {
+      newCurrentStreak = 1;
+    }
+
+    const newLongestStreak = Math.max(existingStreak.longest_streak || 0, newCurrentStreak);
+
+    // DB 업데이트
+    await supabase
+      .from('nutrition_streaks')
+      .update({
+        current_streak: newCurrentStreak,
+        longest_streak: newLongestStreak,
+        last_record_date: todayStr,
+      })
+      .eq('clerk_user_id', userId);
+
+    // 게이미피케이션: 스트릭 배지 체크
+    const streakBadges = await checkAndAwardStreakBadges(
+      supabase,
+      userId,
+      'nutrition',
+      newCurrentStreak,
+      previousStreak
+    );
+    result.badgeResults.push(...streakBadges);
+
+    // 챌린지 진행 업데이트
+    const challengeResult = await updateChallengesOnNutrition(supabase, userId, todayStr);
+    result.challengeResult = challengeResult;
+
+  } catch (err) {
+    console.error('[N-1] Nutrition streak update error:', err);
+  }
+
+  return result;
 }

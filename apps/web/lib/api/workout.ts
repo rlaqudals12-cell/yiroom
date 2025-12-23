@@ -1,6 +1,20 @@
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { WorkoutInputData, WorkoutType } from '@/types/workout';
 import { getNewBadges, STREAK_MILESTONES, getDaysDifference } from '@/lib/workout/streak';
+import {
+  checkAndAwardStreakBadges,
+  checkWorkoutCountBadges,
+  addXp,
+  type BadgeAwardResult,
+  type LevelUpResult,
+} from '@/lib/gamification';
+import {
+  updateChallengesOnWorkout,
+  type ChallengeUpdateResult,
+} from '@/lib/challenges';
+
+// XP 보상 상수
+const XP_WORKOUT_COMPLETE = 5;
 
 // =====================================================
 // 타입 정의
@@ -101,6 +115,13 @@ export interface WorkoutStreak {
   milestones_reached: number[];
   created_at: string;
   updated_at: string;
+}
+
+// 게이미피케이션 연동 결과
+export interface WorkoutGamificationResult {
+  badgeResults: BadgeAwardResult[];
+  xpResult: LevelUpResult | null;
+  challengeResult?: ChallengeUpdateResult;
 }
 
 // =====================================================
@@ -256,7 +277,18 @@ export async function getCurrentWeekPlan(
 // =====================================================
 
 /**
+ * 운동 기록 저장 결과
+ */
+export interface SaveWorkoutLogResult {
+  log: WorkoutLog | null;
+  gamification: WorkoutGamificationResult;
+}
+
+/**
  * 운동 기록 저장
+ * - 운동 기록 DB 저장
+ * - 스트릭 업데이트
+ * - 게이미피케이션 연동 (XP + 배지)
  */
 export async function saveWorkoutLog(
   userId: string,
@@ -270,7 +302,7 @@ export async function saveWorkoutLog(
     mood?: string;
     perceivedEffort?: number;
   }
-): Promise<WorkoutLog | null> {
+): Promise<SaveWorkoutLogResult> {
   const supabase = createClerkSupabaseClient();
 
   // 총 볼륨 계산 (세트 x 횟수 x 무게)
@@ -300,13 +332,19 @@ export async function saveWorkoutLog(
 
   if (error) {
     console.error('Error saving workout log:', error);
-    return null;
+    return {
+      log: null,
+      gamification: { badgeResults: [], xpResult: null },
+    };
   }
 
-  // Streak 업데이트
-  await updateWorkoutStreak(userId, workoutDate);
+  // Streak 업데이트 + 게이미피케이션
+  const { gamification } = await updateWorkoutStreak(userId, workoutDate);
 
-  return data as WorkoutLog;
+  return {
+    log: data as WorkoutLog,
+    gamification,
+  };
 }
 
 /**
@@ -394,12 +432,18 @@ export async function getWorkoutStreak(
 
 /**
  * Streak 업데이트 (운동 완료 시 호출)
+ * - 기존 JSONB badges_earned 유지 (하위 호환)
+ * - 새로운 user_badges 테이블에도 동기화
  */
 export async function updateWorkoutStreak(
   userId: string,
   workoutDate: string
-): Promise<WorkoutStreak | null> {
+): Promise<{ streak: WorkoutStreak | null; gamification: WorkoutGamificationResult }> {
   const supabase = createClerkSupabaseClient();
+  const gamificationResult: WorkoutGamificationResult = {
+    badgeResults: [],
+    xpResult: null,
+  };
 
   // 기존 streak 조회
   const streak = await getWorkoutStreak(userId);
@@ -425,10 +469,22 @@ export async function updateWorkoutStreak(
 
     if (error) {
       console.error('Error creating workout streak:', error);
-      return null;
+      return { streak: null, gamification: gamificationResult };
     }
 
-    return data as WorkoutStreak;
+    // 게이미피케이션: 첫 운동 XP 추가
+    try {
+      const xpResult = await addXp(supabase, userId, XP_WORKOUT_COMPLETE);
+      gamificationResult.xpResult = xpResult;
+
+      // 첫 운동 배지 체크
+      const countBadges = await checkWorkoutCountBadges(supabase, userId, 1);
+      gamificationResult.badgeResults.push(...countBadges);
+    } catch (err) {
+      console.error('[Gamification] First workout error:', err);
+    }
+
+    return { streak: data as WorkoutStreak, gamification: gamificationResult };
   }
 
   // 기존 streak 업데이트
@@ -438,6 +494,7 @@ export async function updateWorkoutStreak(
 
   let newCurrentStreak = streak.current_streak;
   let newStreakStart = streak.streak_start_date;
+  const previousStreak = streak.current_streak;
 
   if (lastWorkout) {
     // getDaysDifference로 일관된 날짜 계산
@@ -445,7 +502,7 @@ export async function updateWorkoutStreak(
 
     if (daysDiff === 0) {
       // 같은 날 - 변경 없음
-      return streak;
+      return { streak, gamification: gamificationResult };
     } else if (daysDiff === 1) {
       // 연속 - streak 증가
       newCurrentStreak += 1;
@@ -466,7 +523,7 @@ export async function updateWorkoutStreak(
     }
   }
 
-  // 배지 체크
+  // 배지 체크 (기존 JSONB 방식)
   const existingBadges = streak.badges_earned || [];
   const newBadges = getNewBadges(newCurrentStreak, existingBadges);
   const updatedBadges = [...existingBadges, ...newBadges];
@@ -487,8 +544,42 @@ export async function updateWorkoutStreak(
 
   if (error) {
     console.error('Error updating workout streak:', error);
-    return null;
+    return { streak: null, gamification: gamificationResult };
   }
 
-  return data as WorkoutStreak;
+  // 게이미피케이션 동기화
+  try {
+    // XP 추가 (운동 완료 시 5 XP)
+    const xpResult = await addXp(supabase, userId, XP_WORKOUT_COMPLETE);
+    gamificationResult.xpResult = xpResult;
+
+    // 스트릭 배지 체크 및 user_badges 테이블에 동기화
+    const streakBadges = await checkAndAwardStreakBadges(
+      supabase,
+      userId,
+      'workout',
+      newCurrentStreak,
+      previousStreak
+    );
+    gamificationResult.badgeResults.push(...streakBadges);
+
+    // 운동 횟수 배지 체크 (10회, 50회, 100회)
+    const { count } = await supabase
+      .from('workout_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    if (count) {
+      const countBadges = await checkWorkoutCountBadges(supabase, userId, count);
+      gamificationResult.badgeResults.push(...countBadges);
+    }
+
+    // 챌린지 진행 업데이트
+    const challengeResult = await updateChallengesOnWorkout(supabase, userId, todayStr);
+    gamificationResult.challengeResult = challengeResult;
+  } catch (err) {
+    console.error('[Gamification] Workout streak sync error:', err);
+  }
+
+  return { streak: data as WorkoutStreak, gamification: gamificationResult };
 }

@@ -10,6 +10,7 @@ import Navbar from "@/components/Navbar";
 import { BottomNav } from "@/components/BottomNav";
 import { SyncUserProvider } from "@/components/providers/sync-user-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { GamificationProvider } from "@/components/gamification";
 import "./globals.css";
 
 const inter = Inter({
@@ -101,11 +102,13 @@ export default function RootLayout({
               본문으로 건너뛰기
             </a>
             <SyncUserProvider>
-              <Navbar />
-              <main id="main-content" className="pb-16 md:pb-0">
-                {children}
-              </main>
-              <BottomNav />
+              <GamificationProvider>
+                <Navbar />
+                <main id="main-content" className="pb-16 md:pb-0">
+                  {children}
+                </main>
+                <BottomNav />
+              </GamificationProvider>
               <Toaster
                 position="top-center"
                 theme="system"

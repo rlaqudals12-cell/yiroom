@@ -6,6 +6,15 @@ import {
   type GeminiPersonalColorResult,
 } from "@/lib/gemini";
 import { generateMockPersonalColorResult } from "@/lib/mock/personal-color";
+import {
+  awardAnalysisBadge,
+  checkAndAwardAllAnalysisBadge,
+  addXp,
+  type BadgeAwardResult,
+} from "@/lib/gamification";
+
+// XP 보상 상수
+const XP_ANALYSIS_COMPLETE = 10;
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === "true";
@@ -185,6 +194,35 @@ export async function POST(req: Request) {
       );
     }
 
+    // 게이미피케이션 연동
+    const gamificationResult: {
+      badgeResults: BadgeAwardResult[];
+      xpAwarded: number;
+    } = {
+      badgeResults: [],
+      xpAwarded: 0,
+    };
+
+    try {
+      // XP 추가 (분석 완료 시 10 XP)
+      await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
+      gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
+
+      // 퍼스널 컬러 분석 완료 배지
+      const pcBadge = await awardAnalysisBadge(supabase, userId, "personal-color");
+      if (pcBadge) {
+        gamificationResult.badgeResults.push(pcBadge);
+      }
+
+      // 모든 분석 완료 여부 체크
+      const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
+      if (allBadge) {
+        gamificationResult.badgeResults.push(allBadge);
+      }
+    } catch (gamificationError) {
+      console.error("[PC-1] Gamification error:", gamificationError);
+    }
+
     return NextResponse.json({
       success: true,
       data: data,
@@ -193,6 +231,7 @@ export async function POST(req: Request) {
         analyzedAt: new Date().toISOString(),
       },
       usedMock,
+      gamification: gamificationResult,
     });
   } catch (error) {
     console.error("Personal color analysis error:", error);

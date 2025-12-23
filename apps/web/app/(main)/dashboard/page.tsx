@@ -5,6 +5,8 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useEffect, useState } from 'react';
 import UserProfile from './_components/UserProfile';
 import TodayFocusWidget from './_components/TodayFocusWidget';
+import GamificationWidget from './_components/GamificationWidget';
+import ChallengeWidget from './_components/ChallengeWidget';
 import WeeklyProgressSection from './_components/WeeklyProgressSection';
 import AnalysisSection from './_components/AnalysisSection';
 
@@ -138,6 +140,12 @@ export default function DashboardPage() {
 
           {/* 오늘의 포커스 (스트릭 + 체크인 + 주간 요약) */}
           <TodayFocusWidget userId={user.id} />
+
+          {/* 게이미피케이션 (레벨 + 배지) */}
+          <GamificationWidget userId={user.id} />
+
+          {/* 챌린지 (진행 중인 챌린지) */}
+          <ChallengeWidget userId={user.id} />
         </section>
 
         {/* Zone 2: Activity Hub */}
