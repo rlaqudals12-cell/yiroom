@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Dumbbell, ChevronDown, ChevronUp, Star, ExternalLink, Loader2 } from 'lucide-react';
 import { getRecommendedEquipment } from '@/lib/products/repositories/equipment';
 import type { WorkoutEquipment, TargetMuscle, SkillLevel, UseLocation } from '@/types/product';
@@ -26,12 +27,14 @@ function EquipmentItem({ equipment }: { equipment: WorkoutEquipment }) {
       data-testid="equipment-item"
     >
       {/* 이미지 또는 기본 아이콘 */}
-      <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+      <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
         {equipment.imageUrl ? (
-          <img
+          <Image
             src={equipment.imageUrl}
             alt={equipment.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="64px"
           />
         ) : (
           <Dumbbell className="w-6 h-6 text-muted-foreground" />

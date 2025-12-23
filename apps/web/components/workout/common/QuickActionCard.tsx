@@ -24,7 +24,7 @@ export default function QuickActionCard({
     <Link
       href={href}
       className={`flex items-center gap-3 p-4 bg-card border border-border rounded-xl hover:bg-muted transition-colors ${className}`}
-      aria-label={`${label}(으)로 이동`}
+      aria-label={`${label} 페이지로 이동`}
     >
       <div className="text-indigo-500" aria-hidden="true">
         {icon}

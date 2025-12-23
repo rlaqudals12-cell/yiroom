@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Pill, ChevronDown, ChevronUp, Star, ExternalLink, Loader2 } from 'lucide-react';
 import { getRecommendedSupplements } from '@/lib/products/repositories/supplement';
 import type { SupplementProduct, SupplementBenefit } from '@/types/product';
@@ -34,12 +35,14 @@ function SupplementItem({ supplement }: { supplement: SupplementProduct }) {
       data-testid="supplement-item"
     >
       {/* 이미지 또는 기본 아이콘 */}
-      <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+      <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
         {supplement.imageUrl ? (
-          <img
+          <Image
             src={supplement.imageUrl}
             alt={supplement.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="64px"
           />
         ) : (
           <Pill className="w-6 h-6 text-muted-foreground" />
