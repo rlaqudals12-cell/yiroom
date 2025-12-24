@@ -1378,6 +1378,44 @@ Phase 3 연동:
 
 ---
 
+## 런칭 준비 🔄 진행 중
+
+> **목표일**: 2025-01-20 | **진행률**: 80%
+
+### Week 1 ✅ 완료 (2025-12-24)
+
+```yaml
+온보딩 튜토리얼:
+  [x] 6단계 튜토리얼 구현 (환영/분석/운동/영양/제품/완료)
+  [x] data-tutorial 속성 추가 (BottomNav, AnalysisSection)
+  [x] useOnboardingTutorial 훅
+  [x] TutorialStep 컴포넌트
+
+도움말 센터:
+  [x] FAQ 10개 작성
+  [x] 구독 카테고리 제거 (무료 모델 반영)
+  [x] FAQAccordion 컴포넌트
+
+푸시 알림:
+  [x] 27개 템플릿 완성 (운동/영양/소셜/성취/시스템)
+  [x] 변수 치환 함수
+  [x] 카테고리별 그룹화
+
+파일 정리:
+  [x] 프리미엄/구독 파일 삭제
+  [x] 115파일 커밋 (+16,889줄)
+```
+
+### Week 2-4 예정
+
+| 주차 | 작업 | 우선순위 |
+|------|------|----------|
+| Week 2 | AI 웰니스 코치, 소셜 피드 | 중간 |
+| Week 3 | 리더보드 확장, 어필리에이트 연동 | 높음 |
+| Week 4 | QA, 버그 수정, 배포 | 높음 |
+
+---
+
 ## 기술 스택 현황
 
 ### 프레임워크 & 라이브러리
@@ -1571,6 +1609,7 @@ data/
 | [phase-next/SPRINT-BACKLOG-PRODUCT-UI.md](phase-next/SPRINT-BACKLOG-PRODUCT-UI.md) | Step 5 Product UI 스프린트 백로그 |
 | [phase-next/GAMIFICATION-SPEC.md](phase-next/GAMIFICATION-SPEC.md) | Phase H 게이미피케이션 시스템 스펙 |
 | [phase-next/CHALLENGE-SYSTEM-DESIGN.md](phase-next/CHALLENGE-SYSTEM-DESIGN.md) | Phase H 챌린지 시스템 설계 |
+| [ROADMAP-LAUNCH.md](ROADMAP-LAUNCH.md) | 런칭 로드맵 (2025-01-20 목표) |
 
 ---
 
