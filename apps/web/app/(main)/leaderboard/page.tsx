@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
-import { calculateXpLeaderboard, calculateLevelLeaderboard, getMyRanking } from '@/lib/leaderboard';
+import { calculateXpLeaderboard, calculateLevelLeaderboard } from '@/lib/leaderboard';
 import { LeaderboardList } from '@/components/leaderboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

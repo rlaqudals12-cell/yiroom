@@ -261,3 +261,174 @@ export const STATUS_NAMES: Record<ChallengeStatus, string> = {
   failed: '실패',
   abandoned: '포기',
 };
+
+// ============================================================
+// 팀 챌린지 타입 (Sprint C Day 7)
+// ============================================================
+
+/** 챌린지 참여 모드 */
+export type ChallengeMode = 'solo' | 'team';
+
+/** 팀 챌린지 역할 */
+export type TeamRole = 'leader' | 'member';
+
+/** 팀 멤버 상태 */
+export type TeamMemberStatus = 'pending' | 'accepted' | 'declined';
+
+/** 팀 챌린지 팀 */
+export interface ChallengeTeam {
+  id: string;
+  challengeId: string;
+  name: string;
+  leaderId: string;
+  maxMembers: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** 팀 멤버 */
+export interface TeamMember {
+  id: string;
+  teamId: string;
+  clerkUserId: string;
+  role: TeamRole;
+  status: TeamMemberStatus;
+  joinedAt: Date | null;
+  progress: ChallengeProgress;
+  /** 조인 시 포함 */
+  userName?: string;
+  userAvatar?: string | null;
+}
+
+/** 팀 챌린지 상세 (팀 + 멤버) */
+export interface TeamChallengeDetail {
+  team: ChallengeTeam;
+  members: TeamMember[];
+  challenge: Challenge;
+  /** 팀 전체 진행률 (멤버 평균) */
+  teamProgress: number;
+  /** 팀 완료 멤버 수 */
+  completedCount: number;
+}
+
+/** 챌린지 초대 */
+export interface ChallengeInvite {
+  id: string;
+  teamId: string;
+  inviterId: string;
+  inviteeId: string;
+  status: TeamMemberStatus;
+  createdAt: Date;
+  expiresAt: Date;
+  /** 조인 시 포함 */
+  inviterName?: string;
+  challengeName?: string;
+  teamName?: string;
+}
+
+// ============================================================
+// 팀 챌린지 DB Row 타입
+// ============================================================
+
+/** challenge_teams 테이블 Row */
+export interface ChallengeTeamRow {
+  id: string;
+  challenge_id: string;
+  name: string;
+  leader_id: string;
+  max_members: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** team_members 테이블 Row */
+export interface TeamMemberRow {
+  id: string;
+  team_id: string;
+  clerk_user_id: string;
+  role: string;
+  status: string;
+  joined_at: string | null;
+  progress: Record<string, unknown>;
+  /** 조인 시 포함 */
+  users?: {
+    full_name: string;
+    avatar_url: string | null;
+  };
+}
+
+/** challenge_invites 테이블 Row */
+export interface ChallengeInviteRow {
+  id: string;
+  team_id: string;
+  inviter_id: string;
+  invitee_id: string;
+  status: string;
+  created_at: string;
+  expires_at: string;
+  /** 조인 시 포함 */
+  inviter?: {
+    full_name: string;
+  };
+  challenge_teams?: {
+    name: string;
+    challenges?: {
+      name: string;
+    };
+  };
+}
+
+// ============================================================
+// 팀 챌린지 API 응답 타입
+// ============================================================
+
+/** 팀 생성 결과 */
+export interface CreateTeamResult {
+  success: boolean;
+  team?: ChallengeTeam;
+  error?: string;
+}
+
+/** 팀 참여 결과 */
+export interface JoinTeamResult {
+  success: boolean;
+  member?: TeamMember;
+  error?: string;
+}
+
+/** 초대 전송 결과 */
+export interface SendInviteResult {
+  success: boolean;
+  invite?: ChallengeInvite;
+  error?: string;
+}
+
+/** 초대 응답 결과 */
+export interface RespondInviteResult {
+  success: boolean;
+  accepted: boolean;
+  error?: string;
+}
+
+// ============================================================
+// 팀 챌린지 UI 상수
+// ============================================================
+
+/** 모드별 이름 */
+export const MODE_NAMES: Record<ChallengeMode, string> = {
+  solo: '개인',
+  team: '팀',
+};
+
+/** 역할별 이름 */
+export const ROLE_NAMES: Record<TeamRole, string> = {
+  leader: '팀장',
+  member: '팀원',
+};
+
+/** 팀 멤버 상태별 이름 */
+export const MEMBER_STATUS_NAMES: Record<TeamMemberStatus, string> = {
+  pending: '대기 중',
+  accepted: '참여 중',
+  declined: '거절됨',
+};

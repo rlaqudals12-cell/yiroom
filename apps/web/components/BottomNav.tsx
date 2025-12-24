@@ -9,14 +9,15 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  tutorialId?: string; // 온보딩 튜토리얼용 ID
 }
 
 const navItems: NavItem[] = [
   { href: '/dashboard', icon: Home, label: '홈' },
-  { href: '/nutrition', icon: Utensils, label: '영양' },
-  { href: '/workout', icon: Dumbbell, label: '운동' },
+  { href: '/nutrition', icon: Utensils, label: '영양', tutorialId: 'nutrition' },
+  { href: '/workout', icon: Dumbbell, label: '운동', tutorialId: 'workout' },
   { href: '/reports', icon: BarChart3, label: '리포트' },
-  { href: '/products', icon: ShoppingBag, label: '제품' },
+  { href: '/products', icon: ShoppingBag, label: '제품', tutorialId: 'products' },
 ];
 
 /**
@@ -54,6 +55,7 @@ export function BottomNav() {
               role="menuitem"
               aria-current={active ? 'page' : undefined}
               aria-label={item.label}
+              data-tutorial={item.tutorialId}
               className={cn(
                 'flex flex-col items-center justify-center flex-1 py-2 transition-colors',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg',

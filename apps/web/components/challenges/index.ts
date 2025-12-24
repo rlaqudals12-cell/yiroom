@@ -5,3 +5,5 @@
 export { ChallengeCard } from './ChallengeCard';
 export { ChallengeProgress } from './ChallengeProgress';
 export { ChallengeList } from './ChallengeList';
+export { TeamChallengeCard } from './TeamChallengeCard';
+export { InviteFriendSheet } from './InviteFriendSheet';

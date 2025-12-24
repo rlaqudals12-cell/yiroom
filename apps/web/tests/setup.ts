@@ -133,6 +133,9 @@ vi.mock('lucide-react', () => ({
   UserPlus: createIconMock('UserPlus'),
   Trophy: createIconMock('Trophy'),
   Award: createIconMock('Award'),
+  Medal: createIconMock('Medal'),
+  Crown: createIconMock('Crown'),
+  Percent: createIconMock('Percent'),
 
   // Admin & System
   LayoutDashboard: createIconMock('LayoutDashboard'),

@@ -2,12 +2,33 @@
 
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { FileBarChart, Dumbbell, UtensilsCrossed, Sparkles, type LucideIcon } from 'lucide-react';
+import {
+  FileBarChart,
+  Dumbbell,
+  UtensilsCrossed,
+  Sparkles,
+  Users,
+  Trophy,
+  Heart,
+  Target,
+  HelpCircle,
+  type LucideIcon,
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 // 빈 상태 타입별 프리셋
-type EmptyStatePreset = 'nutrition' | 'workout' | 'report' | 'analysis' | 'custom';
+type EmptyStatePreset =
+  | 'nutrition'
+  | 'workout'
+  | 'report'
+  | 'analysis'
+  | 'friends'
+  | 'leaderboard'
+  | 'wellness'
+  | 'challenges'
+  | 'custom';
 
 interface EmptyStatePresetConfig {
   icon: LucideIcon;
@@ -56,6 +77,42 @@ const presetConfigs: Record<Exclude<EmptyStatePreset, 'custom'>, EmptyStatePrese
     actionLabel: '분석 시작하기',
     actionHref: '/analysis/personal-color',
   },
+  friends: {
+    icon: Users,
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    iconBgColor: 'bg-blue-100 dark:bg-blue-900/30',
+    title: '아직 친구가 없어요',
+    description: '친구를 추가하고 함께 건강한 습관을 만들어가요.',
+    actionLabel: '친구 찾기',
+    actionHref: '/friends/search',
+  },
+  leaderboard: {
+    icon: Trophy,
+    iconColor: 'text-yellow-600 dark:text-yellow-400',
+    iconBgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
+    title: '순위 정보가 없어요',
+    description: '활동을 기록하면 리더보드에 순위가 표시돼요.',
+    actionLabel: '활동 시작하기',
+    actionHref: '/workout',
+  },
+  wellness: {
+    icon: Heart,
+    iconColor: 'text-rose-600 dark:text-rose-400',
+    iconBgColor: 'bg-rose-100 dark:bg-rose-900/30',
+    title: '웰니스 점수가 없어요',
+    description: '운동과 식단을 기록하면 웰니스 점수가 계산돼요.',
+    actionLabel: '기록 시작하기',
+    actionHref: '/dashboard',
+  },
+  challenges: {
+    icon: Target,
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    iconBgColor: 'bg-purple-100 dark:bg-purple-900/30',
+    title: '참여 중인 챌린지가 없어요',
+    description: '챌린지에 참여하고 목표를 달성해보세요.',
+    actionLabel: '챌린지 둘러보기',
+    actionHref: '/challenges',
+  },
 };
 
 interface EmptyStateCardProps {
@@ -77,12 +134,17 @@ interface EmptyStateCardProps {
   children?: ReactNode;
   className?: string;
   'data-testid'?: string;
+  // 애니메이션 및 UX 옵션
+  animate?: boolean; // 아이콘 바운스 애니메이션 (기본: true)
+  showHelpHint?: boolean; // 도움말 힌트 표시
+  onHelpClick?: () => void; // 도움말 클릭 콜백
 }
 
 /**
  * 통합 빈 상태 UI 컴포넌트
  * - 프리셋으로 빠르게 사용 가능
  * - 커스텀 설정으로 유연하게 변경 가능
+ * - 애니메이션 및 온보딩 힌트 지원
  */
 export function EmptyStateCard({
   preset = 'custom',
@@ -100,6 +162,9 @@ export function EmptyStateCard({
   children,
   className = '',
   'data-testid': testId,
+  animate = true,
+  showHelpHint = false,
+  onHelpClick,
 }: EmptyStateCardProps) {
   // 프리셋 설정 가져오기
   const config = preset !== 'custom' ? presetConfigs[preset] : null;
@@ -117,11 +182,30 @@ export function EmptyStateCard({
   const hasSecondaryAction = secondaryActionLabel && (secondaryActionHref || onSecondaryAction);
 
   return (
-    <Card className={className} data-testid={testId || 'empty-state-card'}>
+    <Card
+      className={cn(
+        'animate-in fade-in-0 duration-300',
+        className
+      )}
+      data-testid={testId || 'empty-state-card'}
+    >
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
         {/* 아이콘 */}
-        <div className={`w-16 h-16 rounded-full ${iconBgColor} flex items-center justify-center mb-4`}>
-          <Icon className={`h-8 w-8 ${iconColor}`} />
+        <div
+          className={cn(
+            'w-16 h-16 rounded-full flex items-center justify-center mb-4',
+            iconBgColor,
+            animate && 'animate-in zoom-in-50 duration-500'
+          )}
+        >
+          <Icon
+            className={cn(
+              'h-8 w-8',
+              iconColor,
+              animate && 'animate-bounce'
+            )}
+            style={animate ? { animationDuration: '2s', animationIterationCount: 3 } : undefined}
+          />
         </div>
 
         {/* 제목 */}
@@ -162,6 +246,18 @@ export function EmptyStateCard({
               )
             )}
           </div>
+        )}
+
+        {/* 도움말 힌트 */}
+        {showHelpHint && (
+          <button
+            onClick={onHelpClick}
+            className="mt-4 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+            data-testid="empty-state-help-hint"
+          >
+            <HelpCircle className="h-3 w-3" />
+            <span>처음이신가요? 둘러보기</span>
+          </button>
         )}
       </CardContent>
     </Card>

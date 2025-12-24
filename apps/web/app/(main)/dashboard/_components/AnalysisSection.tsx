@@ -48,6 +48,7 @@ export default function AnalysisSection({
       <section
         className="bg-muted/30 rounded-xl border border-border/50 overflow-hidden"
         data-testid="analysis-section"
+        data-tutorial="analysis"
       >
         {/* 섹션 헤더 (Collapsible Trigger) */}
         <CollapsibleTrigger asChild>

@@ -76,4 +76,44 @@ export {
   DIFFICULTY_NAMES,
   DIFFICULTY_COLORS,
   STATUS_NAMES,
+  MODE_NAMES,
+  ROLE_NAMES,
+  MEMBER_STATUS_NAMES,
+} from '@/types/challenges';
+
+// 팀 챌린지 함수 (Sprint C Day 7)
+export {
+  toChallengeTeam,
+  toTeamMember,
+  toChallengeInvite,
+  calculateTeamProgress,
+  countCompletedMembers,
+  isInviteExpired,
+  canInvite,
+  canJoinTeam,
+  isTeamLeader,
+  isTeamMember,
+  generateTeamName,
+  createInviteExpiry,
+  sortTeamMembers,
+  getTeamMemberCountText,
+  getTeamProgressText,
+} from './team';
+
+// 팀 챌린지 타입 re-export
+export type {
+  ChallengeMode,
+  TeamRole,
+  TeamMemberStatus,
+  ChallengeTeam,
+  TeamMember,
+  TeamChallengeDetail,
+  ChallengeInvite,
+  ChallengeTeamRow,
+  TeamMemberRow,
+  ChallengeInviteRow,
+  CreateTeamResult,
+  JoinTeamResult,
+  SendInviteResult,
+  RespondInviteResult,
 } from '@/types/challenges';

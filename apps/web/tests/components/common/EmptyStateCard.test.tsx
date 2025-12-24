@@ -57,6 +57,44 @@ describe('EmptyStateCard', () => {
         screen.getByText('퍼스널 컬러 진단부터 시작해보세요.')
       ).toBeInTheDocument();
     });
+
+    it('friends 프리셋 - 기본 텍스트 표시', () => {
+      render(<EmptyStateCard preset="friends" />);
+
+      expect(screen.getByText('아직 친구가 없어요')).toBeInTheDocument();
+      expect(
+        screen.getByText('친구를 추가하고 함께 건강한 습관을 만들어가요.')
+      ).toBeInTheDocument();
+      expect(screen.getByText('친구 찾기')).toBeInTheDocument();
+    });
+
+    it('leaderboard 프리셋 - 기본 텍스트 표시', () => {
+      render(<EmptyStateCard preset="leaderboard" />);
+
+      expect(screen.getByText('순위 정보가 없어요')).toBeInTheDocument();
+      expect(
+        screen.getByText('활동을 기록하면 리더보드에 순위가 표시돼요.')
+      ).toBeInTheDocument();
+    });
+
+    it('wellness 프리셋 - 기본 텍스트 표시', () => {
+      render(<EmptyStateCard preset="wellness" />);
+
+      expect(screen.getByText('웰니스 점수가 없어요')).toBeInTheDocument();
+      expect(
+        screen.getByText('운동과 식단을 기록하면 웰니스 점수가 계산돼요.')
+      ).toBeInTheDocument();
+    });
+
+    it('challenges 프리셋 - 기본 텍스트 표시', () => {
+      render(<EmptyStateCard preset="challenges" />);
+
+      expect(screen.getByText('참여 중인 챌린지가 없어요')).toBeInTheDocument();
+      expect(
+        screen.getByText('챌린지에 참여하고 목표를 달성해보세요.')
+      ).toBeInTheDocument();
+      expect(screen.getByText('챌린지 둘러보기')).toBeInTheDocument();
+    });
   });
 
   describe('커스텀 props', () => {
@@ -173,6 +211,56 @@ describe('EmptyStateCard', () => {
 
       expect(screen.getByTestId('custom-content')).toBeInTheDocument();
       expect(screen.getByText('커스텀 콘텐츠')).toBeInTheDocument();
+    });
+  });
+
+  describe('애니메이션', () => {
+    it('animate=true (기본값) - 애니메이션 클래스 적용', () => {
+      const { container } = render(<EmptyStateCard preset="nutrition" />);
+
+      // Card에 fade-in 애니메이션 클래스 확인
+      const card = screen.getByTestId('empty-state-card');
+      expect(card).toHaveClass('animate-in');
+      expect(card).toHaveClass('fade-in-0');
+
+      // 아이콘에 bounce 애니메이션 클래스 확인
+      const icon = container.querySelector('.animate-bounce');
+      expect(icon).toBeInTheDocument();
+    });
+
+    it('animate=false - 애니메이션 클래스 미적용', () => {
+      const { container } = render(
+        <EmptyStateCard preset="nutrition" animate={false} />
+      );
+
+      // 아이콘에 bounce 애니메이션 클래스 없음
+      const icon = container.querySelector('.animate-bounce');
+      expect(icon).not.toBeInTheDocument();
+    });
+  });
+
+  describe('도움말 힌트', () => {
+    it('showHelpHint=true - 도움말 힌트 표시', () => {
+      render(<EmptyStateCard preset="nutrition" showHelpHint />);
+
+      expect(screen.getByTestId('empty-state-help-hint')).toBeInTheDocument();
+      expect(screen.getByText('처음이신가요? 둘러보기')).toBeInTheDocument();
+    });
+
+    it('showHelpHint=false (기본값) - 도움말 힌트 숨김', () => {
+      render(<EmptyStateCard preset="nutrition" />);
+
+      expect(screen.queryByTestId('empty-state-help-hint')).not.toBeInTheDocument();
+    });
+
+    it('도움말 힌트 클릭 시 onHelpClick 호출', () => {
+      const onHelpClick = vi.fn();
+      render(
+        <EmptyStateCard preset="nutrition" showHelpHint onHelpClick={onHelpClick} />
+      );
+
+      fireEvent.click(screen.getByTestId('empty-state-help-hint'));
+      expect(onHelpClick).toHaveBeenCalled();
     });
   });
 });
