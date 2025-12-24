@@ -131,7 +131,8 @@ export const ChartDynamic = dynamic(
 | Phase 3 | 앱 고도화 | E2E 테스트, 크로스 모듈 | ✅ 완료 |
 | Phase A | Product DB | 850+ 제품, 리뷰, RAG | ✅ 완료 |
 | Phase B | React Native | 모노레포, Expo 앱 | 🔄 진행 중 |
-| Phase H | 소셜 | 웰니스 스코어, 친구, 리더보드 | 🔄 진행 중 |
+| Phase H | 소셜 | 웰니스 스코어, 친구, 리더보드 | ✅ 완료 |
+| Launch | 출시 준비 | 온보딩, 도움말, 알림 | 🔄 진행 중 |
 
 ## Route Groups
 
@@ -143,8 +144,11 @@ app/(main)/
 ├── nutrition/          # N-1 영양
 ├── products/           # 제품 추천
 ├── dashboard/          # 대시보드
-├── friends/            # 친구
-└── leaderboard/        # 리더보드
+├── friends/            # 친구 (requests, search)
+├── leaderboard/        # 리더보드 (nutrition, workout)
+├── help/               # 도움말 (faq, feedback)
+├── announcements/      # 공지사항
+└── feed/               # 소셜 피드
 ```
 
 ## 데이터베이스
@@ -155,7 +159,10 @@ app/(main)/
 - `workout_analyses`, `workout_plans`, `workout_logs` → W-1
 - `meal_records`, `water_records`, `daily_nutrition_summary` → N-1
 - `cosmetic_products`, `supplement_products`, `workout_equipment`, `health_foods` → 제품 DB
-- `user_levels`, `wellness_scores` → Phase H
+- `user_levels`, `user_badges`, `wellness_scores` → Phase H 게이미피케이션
+- `friendships`, `leaderboard_cache` → Phase H 소셜
+- `challenges`, `challenge_participations`, `challenge_teams` → 챌린지
+- `announcements`, `faqs`, `feedback` → 운영 (Launch)
 
 ## 슬래시 명령어
 

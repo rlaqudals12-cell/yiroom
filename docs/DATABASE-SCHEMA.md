@@ -1,7 +1,7 @@
-# 🗄️ Database 스키마 v4.5 (체크인 추가)
+# 🗄️ Database 스키마 v5.0 (Phase H + Launch)
 
-**버전**: v4.5 (Product DB v2 + Admin + Phase G + Checkin)
-**업데이트**: 2025년 12월 22일
+**버전**: v5.0 (Phase H 게이미피케이션 + Launch 운영)
+**업데이트**: 2025년 12월 24일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템
@@ -45,6 +45,24 @@
     17. review_helpful              # 리뷰 도움됨 (2025-12-19)
     18. ingredient_interactions     # 성분 상호작용 (2025-12-19)
     19. affiliate_clicks            # 어필리에이트 클릭 (2025-12-19)
+
+  Phase H (게이미피케이션):
+    21. user_levels                 # 사용자 레벨/XP (2025-12-24)
+    22. user_badges                 # 사용자 뱃지 (2025-12-24)
+    23. challenges                  # 챌린지 템플릿 (2025-12-24)
+    24. challenge_participations    # 챌린지 참여 (2025-12-24)
+    25. challenge_teams             # 팀 챌린지 (2025-12-26)
+    26. team_members                # 팀 멤버 (2025-12-26)
+    27. challenge_invites           # 챌린지 초대 (2025-12-26)
+    28. wellness_scores             # 웰니스 점수 (2025-12-25)
+    29. friendships                 # 친구 관계 (2025-12-25)
+    30. leaderboard_cache           # 리더보드 캐시 (2025-12-25)
+
+  Launch (운영):
+    31. announcements               # 공지사항 (2025-12-26)
+    32. announcement_reads          # 공지 읽음 표시 (2025-12-26)
+    33. faqs                        # FAQ (2025-12-26)
+    34. feedback                    # 사용자 피드백 (2025-12-26)
 
 관계도:
   users (1) ━━━━━ (N) personal_color_assessments
