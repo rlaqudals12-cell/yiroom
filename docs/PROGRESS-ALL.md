@@ -1397,7 +1397,7 @@ Phase 3 연동:
   [x] FAQAccordion 컴포넌트
 
 푸시 알림:
-  [x] 27개 템플릿 완성 (운동/영양/소셜/성취/시스템)
+  [x] 18개 템플릿 완성 (운동/영양/소셜/성취/시스템)
   [x] 변수 치환 함수
   [x] 카테고리별 그룹화
 
@@ -1602,7 +1602,7 @@ data/
 | [phase3/PROGRESS-PHASE3.md](phase3/PROGRESS-PHASE3.md) | Phase 3 상세 |
 | [ROADMAP-PHASE-NEXT.md](ROADMAP-PHASE-NEXT.md) | Phase A/B/C 로드맵 |
 | [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) | Stitch 디자인 토큰 |
-| [DATABASE-SCHEMA.md](DATABASE-SCHEMA.md) | DB 스키마 v4.2 (Product DB v2 포함) |
+| [DATABASE-SCHEMA.md](DATABASE-SCHEMA.md) | DB 스키마 v5.0 (Phase H + Launch) |
 | [PRODUCT-DATA-GUIDE.md](PRODUCT-DATA-GUIDE.md) | Product DB 데이터 입력 가이드 |
 | [HOOK-MODEL.md](HOOK-MODEL.md) | 사용자 리텐션 모델 |
 | [phase-next/FEATURE-SPEC-PRODUCT-UI.md](phase-next/FEATURE-SPEC-PRODUCT-UI.md) | Step 5 Product UI 기능 스펙 |
