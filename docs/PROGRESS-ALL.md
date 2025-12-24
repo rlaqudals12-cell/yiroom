@@ -1392,7 +1392,7 @@ Phase 3 연동:
   [x] TutorialStep 컴포넌트
 
 도움말 센터:
-  [x] FAQ 10개 작성
+  [x] FAQ 14개 작성
   [x] 구독 카테고리 제거 (무료 모델 반영)
   [x] FAQAccordion 컴포넌트
 
