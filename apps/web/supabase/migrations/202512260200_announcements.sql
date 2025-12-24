@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS announcement_reads (
 CREATE TABLE IF NOT EXISTS faqs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   category VARCHAR(50) NOT NULL DEFAULT 'general'
-    CHECK (category IN ('general', 'account', 'workout', 'nutrition', 'subscription', 'technical')),
+    CHECK (category IN ('general', 'account', 'workout', 'nutrition', 'technical')),
   question TEXT NOT NULL,
   answer TEXT NOT NULL,
   sort_order INTEGER NOT NULL DEFAULT 0,
@@ -146,7 +146,7 @@ CREATE TRIGGER trigger_faqs_updated_at
 INSERT INTO faqs (category, question, answer, sort_order) VALUES
 -- 일반
 ('general', '이룸은 어떤 앱인가요?', '이룸은 운동, 영양, 피부, 체형 분석을 통합적으로 관리할 수 있는 웰니스 플랫폼입니다. AI 기반 분석과 맞춤형 추천을 제공합니다.', 1),
-('general', '이룸 사용에 비용이 드나요?', '기본 기능은 무료로 제공됩니다. 프리미엄 기능을 사용하시려면 구독이 필요합니다.', 2),
+('general', '이룸 사용에 비용이 드나요?', '이룸의 모든 기능은 무료로 제공됩니다. 앱 사용 중 광고가 표시될 수 있으며, 추천 제품 구매 시 제휴 링크를 통해 앱 운영을 지원해주실 수 있습니다.', 2),
 ('general', '데이터는 어디에 저장되나요?', '모든 데이터는 안전하게 암호화되어 클라우드 서버에 저장됩니다. 개인정보는 철저히 보호됩니다.', 3),
 
 -- 계정
@@ -163,10 +163,6 @@ INSERT INTO faqs (category, question, answer, sort_order) VALUES
 ('nutrition', '음식 기록은 어떻게 하나요?', '영양 탭에서 "식사 기록" 버튼을 누르고, 음식을 검색하거나 사진으로 인식할 수 있습니다.', 1),
 ('nutrition', '칼로리 목표는 어떻게 설정하나요?', '설정 > 영양 설정에서 목표 칼로리, 단백질, 탄수화물, 지방 목표를 설정할 수 있습니다.', 2),
 ('nutrition', '물 섭취는 왜 중요한가요?', '충분한 수분 섭취는 신진대사, 피부 건강, 운동 성능에 모두 중요합니다. 하루 2L를 목표로 하세요.', 3),
-
--- 구독
-('subscription', '프리미엄에서 제공되는 기능은?', '상세 분석 리포트, AI 맞춤 추천, 무제한 제품 매칭, 광고 제거 등이 포함됩니다.', 1),
-('subscription', '구독을 취소하면 어떻게 되나요?', '결제 주기가 끝날 때까지 프리미엄 기능을 사용할 수 있습니다. 이후 무료 버전으로 전환됩니다.', 2),
 
 -- 기술
 ('technical', '앱이 제대로 작동하지 않아요.', '앱을 완전히 종료하고 다시 시작해보세요. 문제가 지속되면 피드백을 보내주세요.', 1),
@@ -186,5 +182,5 @@ COMMENT ON COLUMN announcements.category IS 'general: 일반, update: 업데이�
 COMMENT ON COLUMN announcements.priority IS '높을수록 상단 표시';
 COMMENT ON COLUMN announcements.is_pinned IS '상단 고정 여부';
 
-COMMENT ON COLUMN faqs.category IS 'general: 일반, account: 계정, workout: 운동, nutrition: 영양, subscription: 구독, technical: 기술';
+COMMENT ON COLUMN faqs.category IS 'general: 일반, account: 계정, workout: 운동, nutrition: 영양, technical: 기술 지원';
 COMMENT ON COLUMN faqs.helpful_count IS '도움됨 횟수';

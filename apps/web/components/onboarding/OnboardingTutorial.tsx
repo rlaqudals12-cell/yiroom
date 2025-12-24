@@ -24,7 +24,7 @@ interface OnboardingTutorialProps {
  * 온보딩 튜토리얼 컴포넌트
  * - 첫 방문 사용자에게 앱 기능 안내
  * - localStorage로 완료 여부 저장
- * - 5단계 진행 (환영 → 대시보드 → 운동 → 영양 → 완료)
+ * - 6단계 진행 (환영 → 분석 → 운동 → 영양 → 제품 → 완료)
  *
  * @example
  * ```tsx
