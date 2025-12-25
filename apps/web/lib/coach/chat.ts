@@ -1,0 +1,383 @@
+/**
+ * AI 웰니스 코치 채팅 로직
+ * @description Gemini 기반 맞춤 웰니스 조언 채팅 + RAG 연동
+ */
+
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import type { UserContext } from './context';
+import { buildCoachSystemPrompt, getQuestionHint } from './prompts';
+
+// API 키 검증
+const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+
+// 안전 설정
+const safetySettings = [
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+];
+
+/**
+ * 채팅 메시지 타입
+ */
+export interface CoachMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+/**
+ * 채팅 요청 타입
+ */
+export interface CoachChatRequest {
+  message: string;
+  userContext: UserContext | null;
+  chatHistory?: CoachMessage[];
+}
+
+/**
+ * 채팅 응답 타입
+ */
+export interface CoachChatResponse {
+  message: string;
+  suggestedQuestions?: string[];
+}
+
+/**
+ * Fallback 응답 (AI 실패 시)
+ */
+const FALLBACK_RESPONSES: Record<string, string> = {
+  workout: '운동에 관해 궁금하시군요! 일반적으로 주 3-4회 30분 이상의 운동을 권장해요. 구체적인 조언을 위해 운동 분석을 진행해보시는 건 어떨까요?',
+  nutrition: '영양에 대한 질문이시네요! 균형 잡힌 식단과 충분한 수분 섭취가 중요해요. 더 맞춤화된 조언을 위해 영양 목표를 설정해보세요.',
+  skin: '피부 관련 질문이시군요! 기본적으로 클렌징, 보습, 자외선 차단이 중요해요. 피부 분석 결과를 바탕으로 더 상세한 조언을 드릴 수 있어요.',
+  default: '좋은 질문이에요! 정확한 답변을 드리기 어려운 상황이에요. 잠시 후 다시 시도해주시거나, 더 구체적인 질문을 해주시면 도움이 될 거예요.',
+};
+
+/**
+ * 질문 카테고리 감지
+ */
+function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'skin' | 'default' {
+  const lowerQ = question.toLowerCase();
+
+  if (lowerQ.includes('운동') || lowerQ.includes('헬스') || lowerQ.includes('근육') || lowerQ.includes('스트레칭')) {
+    return 'workout';
+  }
+  if (lowerQ.includes('먹') || lowerQ.includes('음식') || lowerQ.includes('칼로리') || lowerQ.includes('다이어트') || lowerQ.includes('단백질')) {
+    return 'nutrition';
+  }
+  if (lowerQ.includes('피부') || lowerQ.includes('화장품') || lowerQ.includes('스킨케어') || lowerQ.includes('보습')) {
+    return 'skin';
+  }
+
+  return 'default';
+}
+
+/**
+ * 제품 추천이 필요한 질문인지 확인
+ */
+function needsProductRecommendation(question: string): 'cosmetic' | 'supplement' | 'equipment' | null {
+  const lowerQ = question.toLowerCase();
+
+  // 화장품/스킨케어 추천
+  if (
+    (lowerQ.includes('추천') || lowerQ.includes('어떤') || lowerQ.includes('뭐가 좋')) &&
+    (lowerQ.includes('화장품') || lowerQ.includes('스킨케어') || lowerQ.includes('세럼') ||
+     lowerQ.includes('크림') || lowerQ.includes('토너') || lowerQ.includes('로션'))
+  ) {
+    return 'cosmetic';
+  }
+
+  // 영양제/건강식품 추천
+  if (
+    (lowerQ.includes('추천') || lowerQ.includes('어떤') || lowerQ.includes('뭐가 좋')) &&
+    (lowerQ.includes('영양제') || lowerQ.includes('비타민') || lowerQ.includes('보충제') ||
+     lowerQ.includes('유산균') || lowerQ.includes('오메가'))
+  ) {
+    return 'supplement';
+  }
+
+  // 운동기구 추천
+  if (
+    (lowerQ.includes('추천') || lowerQ.includes('어떤') || lowerQ.includes('뭐가 좋')) &&
+    (lowerQ.includes('운동기구') || lowerQ.includes('덤벨') || lowerQ.includes('매트') ||
+     lowerQ.includes('홈트') || lowerQ.includes('기구'))
+  ) {
+    return 'equipment';
+  }
+
+  return null;
+}
+
+/**
+ * RAG: 제품 DB에서 관련 제품 검색
+ */
+async function searchRelatedProducts(
+  productType: 'cosmetic' | 'supplement' | 'equipment',
+  userContext: UserContext | null,
+  limit = 3
+): Promise<string> {
+  try {
+    const supabase = createClerkSupabaseClient();
+    let contextStr = '';
+
+    if (productType === 'cosmetic') {
+      // 사용자 피부 타입/고민에 맞는 화장품 검색
+      let query = supabase
+        .from('cosmetic_products')
+        .select('name, brand, category, key_ingredients, skin_types, concerns, price_krw')
+        .eq('is_active', true)
+        .limit(limit);
+
+      // 피부 타입 필터
+      if (userContext?.skinAnalysis?.skinType) {
+        query = query.contains('skin_types', [userContext.skinAnalysis.skinType]);
+      }
+
+      const { data } = await query;
+      if (data && data.length > 0) {
+        contextStr = '\n\n## 추천 제품 정보\n';
+        data.forEach((p, i) => {
+          contextStr += `${i + 1}. ${p.brand} ${p.name} (${p.category})\n`;
+          contextStr += `   - 주요 성분: ${(p.key_ingredients as string[] | null)?.slice(0, 3).join(', ') || '정보 없음'}\n`;
+          contextStr += `   - 가격: ${p.price_krw?.toLocaleString() || '미정'}원\n`;
+        });
+      }
+    } else if (productType === 'supplement') {
+      const { data } = await supabase
+        .from('supplement_products')
+        .select('name, brand, category, main_ingredients, benefits, price_krw')
+        .eq('is_active', true)
+        .limit(limit);
+
+      if (data && data.length > 0) {
+        contextStr = '\n\n## 추천 영양제 정보\n';
+        data.forEach((p, i) => {
+          const ingredients = p.main_ingredients as Array<{ name: string }> | null;
+          contextStr += `${i + 1}. ${p.brand} ${p.name}\n`;
+          contextStr += `   - 주요 성분: ${ingredients?.slice(0, 3).map((ing) => ing.name).join(', ') || '정보 없음'}\n`;
+          contextStr += `   - 효능: ${(p.benefits as string[] | null)?.slice(0, 2).join(', ') || '정보 없음'}\n`;
+        });
+      }
+    } else if (productType === 'equipment') {
+      const { data } = await supabase
+        .from('workout_equipment')
+        .select('name, brand, category, target_muscles, difficulty_level, price_krw')
+        .eq('is_active', true)
+        .limit(limit);
+
+      if (data && data.length > 0) {
+        contextStr = '\n\n## 추천 운동기구 정보\n';
+        data.forEach((p, i) => {
+          contextStr += `${i + 1}. ${p.brand} ${p.name} (${p.category})\n`;
+          contextStr += `   - 타겟 부위: ${(p.target_muscles as string[] | null)?.join(', ') || '정보 없음'}\n`;
+          contextStr += `   - 난이도: ${p.difficulty_level || '정보 없음'}\n`;
+        });
+      }
+    }
+
+    return contextStr;
+  } catch (error) {
+    console.error('[Coach] RAG search error:', error);
+    return '';
+  }
+}
+
+/**
+ * 채팅 히스토리를 프롬프트 형식으로 변환
+ */
+function formatChatHistory(history: CoachMessage[]): string {
+  if (!history || history.length === 0) return '';
+
+  // 최근 5개 대화만 사용 (컨텍스트 길이 제한)
+  const recentHistory = history.slice(-5);
+
+  const formatted = recentHistory
+    .map((msg) => {
+      const role = msg.role === 'user' ? '사용자' : '코치';
+      return `${role}: ${msg.content}`;
+    })
+    .join('\n');
+
+  return `\n\n## 대화 기록\n${formatted}\n`;
+}
+
+/**
+ * AI 코치 응답 생성
+ */
+export async function generateCoachResponse(request: CoachChatRequest): Promise<CoachChatResponse> {
+  const { message, userContext, chatHistory } = request;
+
+  // AI 서비스 사용 불가 시 Fallback
+  if (!genAI) {
+    console.warn('[Coach] Gemini API key not configured, using fallback');
+    const category = detectQuestionCategory(message);
+    return {
+      message: FALLBACK_RESPONSES[category],
+      suggestedQuestions: ['오늘 운동 뭐하면 좋을까요?', '다이어트 간식 추천해줘', '물 얼마나 마셔야 해요?'],
+    };
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({
+      model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
+      safetySettings,
+    });
+
+    // 시스템 프롬프트 구성
+    const systemPrompt = buildCoachSystemPrompt(userContext);
+    const questionHint = getQuestionHint(message);
+    const historySection = formatChatHistory(chatHistory || []);
+
+    // RAG: 제품 추천이 필요한 경우 관련 제품 검색
+    let ragContext = '';
+    const productType = needsProductRecommendation(message);
+    if (productType) {
+      ragContext = await searchRelatedProducts(productType, userContext);
+    }
+
+    const fullPrompt = `${systemPrompt}${historySection}${ragContext}
+
+${questionHint ? `참고: ${questionHint}\n` : ''}
+## 사용자 질문
+"${message}"
+
+위 질문에 대해 200자 이내로 친근하고 간결하게 답변해주세요.${ragContext ? ' 추천 제품 정보가 있다면 활용해서 구체적으로 추천해주세요.' : ''}`;
+
+    // Gemini 호출 (타임아웃 3초)
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 3000);
+    });
+
+    const resultPromise = model.generateContent(fullPrompt);
+    const result = await Promise.race([resultPromise, timeoutPromise]);
+
+    const response = await result.response;
+    const text = response.text();
+
+    // 응답 정제 (이모지 개수 제한, 길이 제한)
+    const cleanedResponse = cleanResponse(text);
+
+    // 추천 질문 생성
+    const suggestedQuestions = generateSuggestedQuestions(message, userContext);
+
+    return {
+      message: cleanedResponse,
+      suggestedQuestions,
+    };
+  } catch (error) {
+    console.error('[Coach] Gemini error, falling back to mock:', error);
+    const category = detectQuestionCategory(message);
+    return {
+      message: FALLBACK_RESPONSES[category],
+      suggestedQuestions: ['오늘 운동 뭐하면 좋을까요?', '다이어트 간식 추천해줘', '물 얼마나 마셔야 해요?'],
+    };
+  }
+}
+
+/**
+ * 응답 정제 (이모지 제한, 길이 제한)
+ */
+function cleanResponse(text: string): string {
+  let cleaned = text.trim();
+
+  // 300자 초과 시 자르기
+  if (cleaned.length > 300) {
+    cleaned = cleaned.slice(0, 297) + '...';
+  }
+
+  // 이모지 개수 세기 및 제한 (2개 초과 시 제거)
+  const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+  const emojis = cleaned.match(emojiRegex) || [];
+
+  if (emojis.length > 2) {
+    // 처음 2개만 유지
+    let emojiCount = 0;
+    cleaned = cleaned.replace(emojiRegex, (match) => {
+      emojiCount++;
+      return emojiCount <= 2 ? match : '';
+    });
+  }
+
+  return cleaned;
+}
+
+/**
+ * 추천 질문 생성
+ */
+function generateSuggestedQuestions(currentQuestion: string, userContext: UserContext | null): string[] {
+  const suggestions: string[] = [];
+  const category = detectQuestionCategory(currentQuestion);
+
+  // 카테고리별 추천 질문
+  if (category === 'workout') {
+    suggestions.push('운동 후에 뭘 먹으면 좋아요?');
+    if (userContext?.workout?.streak) {
+      suggestions.push('연속 운동 기록을 유지하려면 어떻게 해요?');
+    }
+  } else if (category === 'nutrition') {
+    suggestions.push('하루에 물 얼마나 마셔야 해요?');
+    if (userContext?.nutrition?.targetCalories) {
+      suggestions.push(`${userContext.nutrition.targetCalories}kcal 맞추려면 뭘 먹어야 해요?`);
+    }
+  } else if (category === 'skin') {
+    suggestions.push('스킨케어 루틴 추천해줘');
+    if (userContext?.skinAnalysis?.concerns?.length) {
+      const concern = userContext.skinAnalysis.concerns[0];
+      suggestions.push(`${concern} 개선하려면 어떻게 해요?`);
+    }
+  }
+
+  // 기본 추천 질문 추가
+  if (suggestions.length < 3) {
+    const defaults = [
+      '오늘 운동 뭐하면 좋을까요?',
+      '건강한 간식 추천해줘',
+      '수면의 질을 높이려면?',
+    ];
+    for (const q of defaults) {
+      if (!suggestions.includes(q) && suggestions.length < 3) {
+        suggestions.push(q);
+      }
+    }
+  }
+
+  return suggestions.slice(0, 3);
+}
+
+/**
+ * 스트리밍 응답 생성 (향후 확장용)
+ */
+export async function* generateCoachResponseStream(
+  request: CoachChatRequest
+): AsyncGenerator<string, void, unknown> {
+  if (!genAI) {
+    yield FALLBACK_RESPONSES[detectQuestionCategory(request.message)];
+    return;
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({
+      model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
+      safetySettings,
+    });
+
+    const systemPrompt = buildCoachSystemPrompt(request.userContext);
+    const fullPrompt = `${systemPrompt}\n\n## 사용자 질문\n"${request.message}"\n\n위 질문에 대해 200자 이내로 친근하고 간결하게 답변해주세요.`;
+
+    const result = await model.generateContentStream(fullPrompt);
+
+    for await (const chunk of result.stream) {
+      const text = chunk.text();
+      if (text) {
+        yield text;
+      }
+    }
+  } catch (error) {
+    console.error('[Coach] Streaming error:', error);
+    yield FALLBACK_RESPONSES[detectQuestionCategory(request.message)];
+  }
+}

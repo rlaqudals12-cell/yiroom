@@ -17,7 +17,7 @@ export default function TermsOfServicePage() {
 
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <p className="text-muted-foreground">
-            최종 업데이트: 2025년 12월 4일
+            최종 업데이트: 2025년 1월 20일
           </p>
 
           <section className="mt-8">
@@ -59,6 +59,9 @@ export default function TermsOfServicePage() {
               <li>운동/피트니스 관리 서비스 (W-1)</li>
               <li>영양/식단 관리 서비스 (N-1)</li>
               <li>통합 리포트 서비스 (R-1)</li>
+              <li>AI 웰니스 코치 서비스</li>
+              <li>소셜 기능 (친구, 활동 피드, 리더보드, 챌린지)</li>
+              <li>제품 추천 및 제휴 서비스</li>
               <li>기타 회사가 추가 개발하거나 제휴를 통해 제공하는 서비스</li>
             </ul>
           </section>
@@ -84,6 +87,8 @@ export default function TermsOfServicePage() {
               <li>회사 및 기타 제3자의 명예를 손상시키거나 업무를 방해하는 행위</li>
               <li>외설 또는 폭력적인 메시지, 화상, 음성, 기타 공서양속에 반하는 정보를 서비스에 공개 또는 게시하는 행위</li>
               <li>타인의 얼굴/신체 사진을 무단으로 업로드하는 행위</li>
+              <li>소셜 기능(활동 피드, 댓글, 챌린지)에서 타 이용자를 비방하거나 괴롭히는 행위</li>
+              <li>허위 정보 또는 스팸성 게시물을 작성하는 행위</li>
             </ul>
           </section>
 
@@ -94,7 +99,18 @@ export default function TermsOfServicePage() {
               <li>피부 분석 결과는 전문 피부과 의사의 진단을 대체하지 않습니다.</li>
               <li>체형 분석 및 운동 추천은 전문 트레이너의 지도를 대체하지 않습니다.</li>
               <li>영양 분석 및 식단 추천은 전문 영양사의 상담을 대체하지 않습니다.</li>
+              <li>AI 웰니스 코치의 조언은 일반적인 정보 제공 목적이며, 개인의 특수한 건강 상태를 고려하지 않습니다.</li>
               <li>이용자는 건강 관련 중요한 결정을 내리기 전에 반드시 전문가와 상담해야 합니다.</li>
+            </ul>
+          </section>
+
+          <section className="mt-8">
+            <h2 className="text-xl font-semibold mb-4">제7조의2 (제휴 서비스)</h2>
+            <ul className="list-decimal pl-6 space-y-2">
+              <li>회사는 제품 추천 시 제휴 파트너(쿠팡 파트너스 등)의 링크를 제공할 수 있습니다.</li>
+              <li>제휴 링크를 통한 구매는 해당 외부 서비스의 이용약관이 적용됩니다.</li>
+              <li>회사는 외부 서비스에서의 거래, 배송, 환불 등에 대해 책임지지 않습니다.</li>
+              <li>제휴 링크 이용으로 인해 회사에 수수료가 발생할 수 있으며, 이는 서비스 운영에 사용됩니다.</li>
             </ul>
           </section>
 
@@ -128,7 +144,10 @@ export default function TermsOfServicePage() {
 
           <section className="mt-8">
             <h2 className="text-xl font-semibold mb-4">부칙</h2>
-            <p>본 약관은 2025년 12월 4일부터 시행됩니다.</p>
+            <p>본 약관은 2025년 1월 20일부터 시행됩니다.</p>
+            <ul className="list-disc pl-6 mt-2 space-y-1 text-sm text-muted-foreground">
+              <li>2025년 12월 4일 ~ 2025년 1월 19일 적용 버전</li>
+            </ul>
           </section>
         </div>
 

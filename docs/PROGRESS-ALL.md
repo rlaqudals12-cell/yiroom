@@ -1,6 +1,6 @@
 # 이룸 전체 진행 상황
 
-> **마지막 업데이트**: 2025-12-24
+> **마지막 업데이트**: 2025-12-25
 > **총 테스트**: 2,994개 통과 (+218 Phase H Sprint 1-2)
 > **코드 품질**: SRP 95%, Repository 90%
 
@@ -1406,12 +1406,56 @@ Phase 3 연동:
   [x] 115파일 커밋 (+16,889줄)
 ```
 
-### Week 2-4 예정
+### Week 2 ✅ 완료 (2025-12-25)
+
+```yaml
+AI 웰니스 코치:
+  [x] lib/coach/ (chat, context, prompts)
+  [x] components/coach/ (ChatInterface, MessageBubble, QuickQuestions, CoachHeader)
+  [x] app/(main)/coach/page.tsx
+  [x] app/api/coach/chat/route.ts
+  [x] RAG 연동 (제품 DB 검색)
+  [x] Mock Fallback (AI 실패 시)
+
+소셜 피드 완성:
+  [x] social_activities 테이블 (DB 마이그레이션)
+  [x] activity_likes, activity_comments 테이블
+  [x] 활동 수집 트리거 (운동/뱃지/레벨업/챌린지/스트릭)
+  [x] app/api/social/activities/ API (GET/POST)
+  [x] 좋아요/댓글 API ([id]/like, [id]/comments)
+  [x] components/social/CommentSection, CommentCard
+  [x] 피드 페이지 실제 API 연동
+
+2025 연말 리뷰:
+  [x] lib/reports/yearlyAggregator.ts (연간 통계 집계)
+  [x] components/yearly-review/ (YearlyReviewCard, YearlyStats, TopAchievements, WellnessJourney)
+  [x] app/(main)/yearly-review/page.tsx
+  [x] app/api/reports/yearly/route.ts
+  [x] Confetti 축하 효과
+  [x] 공유 기능 (ShareButton)
+```
+
+### Week 3 ✅ 완료 (2025-12-25)
+
+```yaml
+리더보드 확장:
+  [x] calculateWellnessLeaderboard 함수 (웰니스 스코어 기준)
+  [x] calculateWorkoutLeaderboard 함수 (주간 운동 시간 기준)
+  [x] calculateNutritionLeaderboard 함수 (주간 목표 달성 일수 기준)
+  [x] formatScore 함수 확장 (카테고리별 단위)
+  [x] 리더보드 페이지 UI 업데이트 (5개 탭: XP/레벨/웰니스/운동/영양)
+  [x] 모바일 반응형 탭 디자인
+
+어필리에이트 연동:
+  [x] PurchaseButton → 클릭 트래킹 연동 확인
+  [x] affiliate_clicks 테이블 + 트래킹 함수
+  [x] 관리자 대시보드 (일별 클릭 추이, 제품별 순위)
+```
+
+### Week 4 예정
 
 | 주차 | 작업 | 우선순위 |
 |------|------|----------|
-| Week 2 | AI 웰니스 코치, 소셜 피드 | 중간 |
-| Week 3 | 리더보드 확장, 어필리에이트 연동 | 높음 |
 | Week 4 | QA, 버그 수정, 배포 | 높음 |
 
 ---

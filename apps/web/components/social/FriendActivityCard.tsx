@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Heart, MessageCircle, Share2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -10,12 +11,14 @@ import {
   getActivityConfig,
   formatRelativeTime,
 } from '@/lib/social/activity';
+import { CommentSection } from './CommentSection';
 
 interface FriendActivityCardProps {
   activity: Activity;
   onLike?: (activityId: string) => void;
   onComment?: (activityId: string) => void;
   onShare?: (activityId: string) => void;
+  showComments?: boolean;
   className?: string;
   'data-testid'?: string;
 }
@@ -31,9 +34,11 @@ export function FriendActivityCard({
   onLike,
   onComment,
   onShare,
+  showComments = true,
   className,
   'data-testid': testId,
 }: FriendActivityCardProps) {
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const config = getActivityConfig(activity.type);
   const relativeTime = formatRelativeTime(activity.createdAt);
   const userInitial = activity.userName.charAt(0).toUpperCase();
@@ -43,6 +48,9 @@ export function FriendActivityCard({
   };
 
   const handleComment = () => {
+    if (showComments) {
+      setIsCommentsOpen(!isCommentsOpen);
+    }
     onComment?.(activity.id);
   };
 
@@ -165,6 +173,14 @@ export function FriendActivityCard({
           </Button>
         </div>
       </CardContent>
+
+      {/* 댓글 섹션 */}
+      {showComments && isCommentsOpen && (
+        <CommentSection
+          activityId={activity.id}
+          commentsCount={activity.commentsCount}
+        />
+      )}
     </Card>
   );
 }

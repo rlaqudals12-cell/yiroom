@@ -94,8 +94,16 @@ describe('리더보드 상수', () => {
       expect(formatScore(25, 'level')).toBe('Lv.25');
     });
 
-    it('일반 카테고리 포맷팅', () => {
-      expect(formatScore(1234, 'workout')).toBe('1,234');
+    it('웰니스 카테고리 포맷팅', () => {
+      expect(formatScore(85, 'wellness')).toBe('85점');
+    });
+
+    it('운동 카테고리 포맷팅 (분 단위)', () => {
+      expect(formatScore(120, 'workout')).toBe('120분');
+    });
+
+    it('영양 카테고리 포맷팅 (일 단위)', () => {
+      expect(formatScore(5, 'nutrition')).toBe('5일');
     });
   });
 });

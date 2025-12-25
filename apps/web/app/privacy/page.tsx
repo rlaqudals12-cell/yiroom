@@ -17,7 +17,7 @@ export default function PrivacyPolicyPage() {
 
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <p className="text-muted-foreground">
-            최종 업데이트: 2025년 12월 4일
+            최종 업데이트: 2025년 1월 20일
           </p>
 
           <section className="mt-8">
@@ -31,6 +31,9 @@ export default function PrivacyPolicyPage() {
               <li>회원 가입 및 관리: 회원 가입의사 확인, 회원제 서비스 제공에 따른 본인 식별·인증</li>
               <li>서비스 제공: 퍼스널 컬러 진단, 피부 분석, 체형 분석, 운동/영양 관리 서비스 제공</li>
               <li>AI 분석: 사용자가 업로드한 이미지를 기반으로 한 AI 분석 서비스 제공</li>
+              <li>AI 코치: 사용자 맞춤형 웰니스 조언을 위한 AI 코칭 서비스 제공</li>
+              <li>소셜 기능: 친구 연결, 활동 피드, 리더보드, 챌린지 참여 기능 제공</li>
+              <li>제품 추천: 사용자 분석 결과 기반 맞춤형 제품 추천 및 제휴 서비스 제공</li>
               <li>서비스 개선: 서비스 이용 기록 분석, 서비스 개선 및 신규 서비스 개발</li>
             </ul>
           </section>
@@ -41,8 +44,9 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc pl-6 mt-2 space-y-2">
               <li><strong>필수 항목:</strong> 이메일 주소, 비밀번호, 닉네임</li>
               <li><strong>선택 항목:</strong> 프로필 사진, 키, 체중, 생년월일, 성별</li>
-              <li><strong>서비스 이용 시 수집:</strong> 얼굴/체형 이미지, 운동 기록, 식단 기록</li>
-              <li><strong>자동 수집:</strong> 서비스 이용 기록, 접속 로그, 기기 정보</li>
+              <li><strong>서비스 이용 시 수집:</strong> 얼굴/체형 이미지, 운동 기록, 식단 기록, AI 코치 대화 내용</li>
+              <li><strong>소셜 기능 이용 시:</strong> 친구 목록, 활동 피드 게시물, 댓글, 좋아요 기록</li>
+              <li><strong>자동 수집:</strong> 서비스 이용 기록, 접속 로그, 기기 정보, 제휴 링크 클릭 기록</li>
             </ul>
           </section>
 
@@ -55,6 +59,8 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc pl-6 mt-2 space-y-2">
               <li>회원 정보: 회원 탈퇴 시까지 (탈퇴 후 30일 이내 파기)</li>
               <li>분석 이미지: 분석 완료 후 즉시 삭제 (서버에 저장하지 않음)</li>
+              <li>AI 코치 대화: 세션 종료 시 삭제 (대화 내용은 서버에 영구 저장하지 않음)</li>
+              <li>소셜 활동 기록: 회원 탈퇴 시까지 (탈퇴 후 30일 이내 파기)</li>
               <li>서비스 이용 기록: 3년</li>
             </ul>
           </section>
@@ -73,6 +79,14 @@ export default function PrivacyPolicyPage() {
                   주소불명 등으로 사전 동의를 받을 수 없는 경우로서 명백히 정보주체 또는
                   제3자의 급박한 생명, 신체, 재산의 이익을 위하여 필요하다고 인정되는 경우</li>
             </ul>
+            <div className="mt-4 p-4 bg-muted rounded-lg">
+              <p className="font-medium">제휴 서비스 이용 시 안내</p>
+              <p className="mt-2 text-sm">
+                서비스 내 제품 추천 링크를 통해 외부 쇼핑몰(쿠팡 등)로 이동하는 경우,
+                해당 외부 서비스의 개인정보처리방침이 적용됩니다. 이룸은 제휴 링크 클릭 여부만
+                익명으로 집계하며, 외부 서비스에서의 구매 정보는 수집하지 않습니다.
+              </p>
+            </div>
           </section>
 
           <section className="mt-8">
@@ -114,9 +128,12 @@ export default function PrivacyPolicyPage() {
           <section className="mt-8">
             <h2 className="text-xl font-semibold mb-4">8. 개인정보처리방침의 변경</h2>
             <p>
-              이 개인정보처리방침은 2025년 12월 4일부터 적용됩니다.
+              이 개인정보처리방침은 2025년 1월 20일부터 적용됩니다.
               이전의 개인정보처리방침은 아래에서 확인하실 수 있습니다.
             </p>
+            <ul className="list-disc pl-6 mt-2 space-y-1 text-sm text-muted-foreground">
+              <li>2025년 12월 4일 ~ 2025년 1월 19일 적용 버전</li>
+            </ul>
           </section>
         </div>
 

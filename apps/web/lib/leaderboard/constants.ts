@@ -106,11 +106,18 @@ export function formatRank(rank: number): string {
 
 // 점수 포맷팅
 export function formatScore(score: number, category: LeaderboardCategory): string {
-  if (category === 'level') {
-    return `Lv.${score}`;
+  switch (category) {
+    case 'level':
+      return `Lv.${score}`;
+    case 'xp':
+      return `${score.toLocaleString()} XP`;
+    case 'wellness':
+      return `${score}점`;
+    case 'workout':
+      return `${score}분`;
+    case 'nutrition':
+      return `${score}일`;
+    default:
+      return score.toLocaleString();
   }
-  if (category === 'xp') {
-    return `${score.toLocaleString()} XP`;
-  }
-  return score.toLocaleString();
 }
