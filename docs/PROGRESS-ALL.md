@@ -1,7 +1,7 @@
 # 이룸 전체 진행 상황
 
-> **마지막 업데이트**: 2025-12-25
-> **총 테스트**: 2,994개 통과 (+218 Phase H Sprint 1-2)
+> **마지막 업데이트**: 2025-12-28
+> **총 테스트**: 3,040개 통과 (+46 Hybrid UX API 테스트)
 > **코드 품질**: SRP 95%, Repository 90%
 
 ---
@@ -58,10 +58,12 @@ S-1 피부 분석:
 
 C-1 체형 분석:
   [x] 키/체중 입력 + 이미지 분석
-  [x] 8가지 체형 분류 (Rectangle, Triangle 등)
+  [x] 3타입 체형 분류 (스트레이트/웨이브/내추럴) - 2025-12-26
+  [x] 8타입 → 3타입 매핑 (하위 호환성)
   [x] BMI 계산 및 표시
   [x] 퍼스널 컬러 연동 색상 추천
   [x] 체형별 핏/실루엣 추천
+  [x] 체형+퍼스널컬러 코디 예시 (24개 조합) - 2025-12-26
 ```
 
 ---
@@ -1122,9 +1124,9 @@ Supabase 마이그레이션:
 
 ## Phase H: 게이미피케이션 ✅ 완료
 
-> **목표**: 배지 시스템 + 레벨 시스템 + 챌린지 시스템 + 소셜 기능
-> **완료일**: 2025-12-24
-> **테스트**: 218개 추가
+> **목표**: 배지 시스템 + 레벨 시스템 + 챌린지 시스템 + 소셜 기능 + Hybrid UX
+> **완료일**: 2025-12-28 (Sprint 3)
+> **테스트**: 264개 추가 (Sprint 1-2: 218개, Sprint 3: 46개)
 
 ### 전체 진행률
 
@@ -1132,6 +1134,7 @@ Supabase 마이그레이션:
 |--------|------|------|------|
 | Sprint 1 | 게이미피케이션 + 챌린지 | 7개 | ✅ 완료 |
 | Sprint 2 | 소셜/리더보드/웰니스 | 8개 | ✅ 완료 |
+| Sprint 3 | Hybrid UX 개선 | 3개 | ✅ 완료 |
 
 ### Sprint 1: 게이미피케이션 + 챌린지 ✅ 완료
 
@@ -1278,6 +1281,33 @@ DB 마이그레이션:
       - WellnessScoreCard.test.tsx (10개)
   [x] 리더보드 테스트 (13개)
       - constants.test.ts (13개)
+```
+
+### Sprint 3: Hybrid UX 개선 ✅ 완료 (2025-12-28)
+
+```yaml
+API 테스트 추가 (46개):
+  [x] tests/api/lookbook/route.test.ts (14개)
+      - GET: 피드 조회, hasMore 페이지네이션, 빈 피드, DB 에러
+      - POST: 인증, 포스트 생성, 필수값 검증, 체형/퍼스널컬러 검증
+      - DELETE: 인증, 삭제, ID 필수
+  [x] tests/api/favorites/route.test.ts (15개)
+      - GET: 인증, 즐겨찾기/기피 목록, 빈 목록, DB 에러
+      - POST: 인증, Beauty 성분, Style 소재, 도메인/타입/이름 검증
+      - DELETE: 인증, ID로 삭제, 파라미터 필수
+  [x] tests/api/routines/route.test.ts (17개)
+      - GET: 인증, 루틴 목록, 빈 목록, DB 에러
+      - POST: 인증, Beauty/Style 루틴, 도메인/타입/items 검증
+      - PUT: 인증, ID 필수
+      - DELETE: 인증, 삭제, ID 필수
+
+접근성 개선:
+  [x] IngredientFavoriteFilter: aria-hidden 10개 아이콘
+  [x] MaterialFavoriteFilter: aria-hidden 10개 아이콘
+
+Lint 수정:
+  [x] search/page.tsx: unescaped entities (&quot;)
+  [x] supplementInsight.ts: prefer-const
 ```
 
 ### 참조 문서
@@ -1452,11 +1482,64 @@ AI 웰니스 코치:
   [x] 관리자 대시보드 (일별 클릭 추이, 제품별 순위)
 ```
 
-### Week 4 예정
+### Week 4 ✅ 진행 중 (2025-12-26)
 
-| 주차 | 작업 | 우선순위 |
-|------|------|----------|
-| Week 4 | QA, 버그 수정, 배포 | 높음 |
+```yaml
+C-1 체형 분석 UX 개선:
+  [x] 8타입 → 3타입 시스템 변경 (스트레이트/웨이브/내추럴)
+      - 골격진단 기반 직관적 분류 (카카오스타일/일본 골격진단 참고)
+      - 8타입 매핑 테이블로 하위 호환성 유지
+      - BODY_TYPES_3 상수 + mapBodyTypeTo3Type() 함수
+  [x] 체형+퍼스널컬러 코디 예시 추가 (24개 조합)
+      - 3 체형 × 4 시즌 × 2 코디 = 24개 조합
+      - OUTFIT_EXAMPLES + getOutfitExamples() 함수
+      - AnalysisResult.tsx에 맞춤 코디 예시 섹션 추가
+  [x] 연예인 비교 제거 (저작권 이슈)
+
+제품 추천 대중화:
+  [x] 가격 접근성 보너스 (calculatePriceAccessibilityBonus)
+      - budget: +15점, mid: +8점, premium: 0점
+  [x] 대중 브랜드 보너스 (calculatePopularBrandBonus)
+      - 올리브영/화해 인기 브랜드: +12점
+      - POPULAR_BRANDS 상수 (skincare 24개, supplement 12개, equipment 6개, healthfood 10개)
+  [x] 리뷰 인기도 보너스 (calculateReviewPopularityBonus)
+      - 10000+ 리뷰: +15점, 5000+: +12점, 1000+: +8점, 500+: +5점, 100+: +3점
+  [x] MatchReasonType 확장 (price, brand, popularity)
+
+의류 추천 개선:
+  [x] 3타입 체형별 의류 추천 (BODY_TYPE_3_CLOTHING)
+      - S: 슬림핏, 스트레이트핏, V넥 등 I라인 아이템
+      - W: 페플럼, 하이웨이스트, A라인 등 X라인 아이템
+      - N: 오버사이즈, 와이드핏, 레이어드 아이템
+  [x] 에이블리 쇼핑 링크 추가 (무신사, 에이블리, 쿠팡)
+  [x] 8타입 하위 호환성 (BODY_TYPE_CLOTHING 매핑)
+
+코드 품질:
+  [x] typecheck 통과 (4 successful)
+  [x] lint 통과 (24 warnings - 기존 이슈)
+  [x] FadeInUp delay 범위 수정 (13 → 12)
+  [x] getPriceRange() 함수 추가 (SupplementProduct priceKrw → priceRange 변환)
+
+플랫폼 수익화 전략 수립:
+  [x] 경쟁사 조사 (당근, 화해, 룩핀)
+      - 당근: 동네생활 커뮤니티, 비즈프로필 광고
+      - 화해: 뷰티 리뷰 커뮤니티, 자체 브랜드 (비플레인)
+      - 룩핀: 남성 코디 앱, CPS 수수료
+  [x] 수수료율 벤치마크
+      - 에이블리 6.96%, 지그재그 8.5%, 무신사 9.4%
+      - 어필리에이트: 쿠팡 3%, 올리브영 3-7%, 화해 5%
+  [x] 저위험 수익 모델 확정
+      - Phase 0-1: 어필리에이트 (3-7%)
+      - Phase 2-3: 입점 CPS 수수료 (3%)
+  [x] 광고/프로모션 제외 결정
+      - 상위 노출 (CPC) 제외 → 사용자 신뢰
+      - 프로모션 배너 제외 → 추천 객관성
+      - 자체 브랜드 제외 → 재고 리스크 방지
+  [x] docs/ROADMAP-PLATFORM.md 작성
+      - Phase별 로드맵
+      - 성공 지표
+      - Chicken-Egg 해결 전략
+```
 
 ---
 
