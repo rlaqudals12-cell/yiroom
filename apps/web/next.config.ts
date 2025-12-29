@@ -72,6 +72,25 @@ const nextConfig: NextConfig = {
   // Turbopack 설정 (Next.js 16 필수 - PWA 플러그인 webpack 호환)
   turbopack: {},
 
+  // 프로덕션 컴파일러 최적화
+  compiler: {
+    // 프로덕션에서 console.log 제거 (console.error, console.warn 유지)
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? { exclude: ["error", "warn"] }
+        : false,
+  },
+
+  // 실험적 기능: 패키지 최적화 (tree-shaking 개선)
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "date-fns",
+      "recharts",
+      "@radix-ui/react-icons",
+    ],
+  },
+
   // UX 리스트럭처링 리다이렉트 (기존 라우트 → 신규 라우트)
   async redirects() {
     return [
