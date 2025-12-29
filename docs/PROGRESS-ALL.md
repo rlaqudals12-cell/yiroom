@@ -1615,7 +1615,7 @@ E2E 테스트 확장:
   [x] E2E 테스트: 47개 → 84개 (+37개)
 
 코드 정리:
-  [x] 미사용 파일 9개 삭제 (-2,025줄)
+  [x] 미사용 파일 17개 삭제 (-3,877줄)
       - lib/supabase.ts (레거시)
       - lib/rag.ts, types/rag.ts (미사용 RAG)
       - components/common/LanguageSwitcher.tsx
@@ -1624,6 +1624,17 @@ E2E 테스트 확장:
       - lib/nutrition/ingredient-interaction.ts
       - lib/skincare/routine-builder.ts
       - hooks/useNotifications.ts
+      - components/ui/checkbox.tsx, form.tsx
+      - app/actions/workout.ts
+      - app/.../ColorComparison.tsx, Questionnaire.tsx
+      - app/.../AnalysisBentoGrid.tsx
+      - components/smart-matching/SizeFeedbackModal.tsx
+      - lib/inventory/storage.ts
+
+SEO 메타데이터:
+  [x] 5개 핵심 페이지 layout.tsx 추가
+      - home, personal-color, skin, body, beauty
+      - title, description, keywords, Open Graph
 
 Lighthouse 측정:
   [x] Accessibility: 94 ✅
