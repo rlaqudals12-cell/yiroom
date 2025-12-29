@@ -78,6 +78,42 @@ export {
 } from './musinsa';
 export type { MusinsaSearchOptions, MusinsaCategory } from './musinsa';
 
+// Stats (Dashboard)
+export {
+  getDashboardSummary,
+  getPartnerRevenues,
+  getDailyRevenueTrend,
+  getTopProducts,
+  getDateRange,
+} from './stats';
+export type {
+  PartnerRevenue,
+  DailyRevenueTrend,
+  DashboardSummary,
+  TopProduct,
+} from './stats';
+
+// A/B Testing
+export {
+  getExperiments,
+  getExperiment,
+  assignVariant,
+  getAssignmentFromCookie,
+  setAssignmentCookie,
+  getChannelOrder,
+  trackABEvent,
+  flushEvents,
+  getMockResults,
+  calculateSignificance,
+} from './ab-test';
+export type {
+  ABExperiment,
+  ABVariant,
+  ABResult,
+  ABEvent,
+  UserAssignment,
+} from './ab-test';
+
 // Types re-export (convenience)
 export type {
   AffiliatePartner,
