@@ -1597,10 +1597,11 @@ UI 개선:
   [x] next.config.ts placehold.co 도메인 허용
 
 Phase L 출시 최적화:
-  [x] L-2: 다국어 지원 (next-intl)
-      - ko.json, en.json 메시지 파일
+  [x] L-2: 다국어 지원 (next-intl) - 4개 언어 지원
+      - ko.json (한국어), en.json (영어)
+      - ja.json (日本語), zh.json (中文) 추가
       - I18nProvider, LanguageSwitcher 컴포넌트
-      - 77개 테스트 추가
+      - 139개 테스트 (77 → 139, +62개)
   [x] L-3: 성능 최적화 검토 (기존 구현 확인)
   [x] L-4: 오프라인 지원 검토 (PWA 기존 구현)
   [ ] L-1: Web Push 알림 (VAPID 키 필요)
@@ -2135,7 +2136,7 @@ data/
 | 모듈 | 설명 | 상태 | 테스트 |
 |------|------|------|--------|
 | L-1 | Web Push 알림 | ⏳ 대기 | - |
-| L-2 | 다국어 지원 (i18n) | ✅ 완료 | 77개 |
+| L-2 | 다국어 지원 (i18n) - 4언어 | ✅ 완료 | 139개 |
 | L-3 | 성능 최적화 | ✅ 완료 | - |
 | L-4 | 오프라인 지원 | ✅ 완료 | - |
 | E2E | 테스트 확장 | ✅ 완료 | 37개 추가 |
@@ -2161,18 +2162,21 @@ data/
 ```yaml
 기능:
   [x] next-intl 설치 및 설정
-  [x] i18n.config.ts - 언어 설정 (ko, en)
+  [x] i18n.config.ts - 언어 설정 (ko, en, ja, zh)
   [x] messages/ko.json - 한국어 메시지
   [x] messages/en.json - 영어 메시지
+  [x] messages/ja.json - 일본어 메시지 (2025-12-30)
+  [x] messages/zh.json - 중국어 메시지 (2025-12-30)
 
 컴포넌트:
   [x] I18nProvider - 국제화 Provider
-  [x] LanguageSwitcher - 언어 전환 UI
+  [x] LanguageSwitcher - 언어 전환 UI (4개 언어)
 
 테스트:
-  [x] 77개 테스트 작성
+  [x] 139개 테스트 작성 (77 → 139, +62개)
   [x] 메시지 로드/렌더링 테스트
   [x] 언어 전환 테스트
+  [x] 4개 언어 일관성 테스트
 ```
 
 ### L-3: 성능 최적화 ✅ 완료
