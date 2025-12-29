@@ -23,6 +23,7 @@ Phase H (게이미피케이션) ████████████████
 Phase I (어필리에이트)  ████████████████████ 100% ✅ (Phase 1-5 완료, 2025-12-29)
 Phase J (스마트 매칭)  ████████████████████ 100% ✅ (J-1~J-6 완료, 2025-12-29)
 Phase K (사용자 경험)   ████████████████████ 100% ✅ (Analytics + AI Chat, 2025-12-29)
+Phase L (출시 최적화)   ████████████████░░░░  80% 🔄 (i18n ✅, E2E ✅, Web Push 대기)
 ```
 
 ---
@@ -1594,6 +1595,23 @@ UI 개선:
   [x] ProductCard 플레이스홀더 이미지 추가 (카테고리별 색상)
   [x] style/page.tsx 룩북 플레이스홀더 교체
   [x] next.config.ts placehold.co 도메인 허용
+
+Phase L 출시 최적화:
+  [x] L-2: 다국어 지원 (next-intl)
+      - ko.json, en.json 메시지 파일
+      - I18nProvider, LanguageSwitcher 컴포넌트
+      - 77개 테스트 추가
+  [x] L-3: 성능 최적화 검토 (기존 구현 확인)
+  [x] L-4: 오프라인 지원 검토 (PWA 기존 구현)
+  [ ] L-1: Web Push 알림 (VAPID 키 필요)
+
+E2E 테스트 확장:
+  [x] e2e/analysis/analysis.spec.ts (퍼스널컬러/피부/체형)
+  [x] e2e/social/social.spec.ts (친구/리더보드/피드/웰니스)
+  [x] e2e/closet/closet.spec.ts (옷장/코디)
+  [x] e2e/help/help.spec.ts (FAQ/공지/코치/채팅)
+  [x] fixtures/index.ts에 17개 신규 라우트 추가
+  [x] E2E 테스트: 47개 → 84개 (+37개)
 ```
 
 ---
@@ -1624,7 +1642,7 @@ UI 개선:
 |------|------|----------|
 | Vitest | 단위/통합 테스트 | 2,491개 |
 | React Testing Library | 컴포넌트 테스트 | - |
-| Playwright | E2E 테스트 | 47개 |
+| Playwright | E2E 테스트 | 84개 |
 
 ---
 
@@ -2105,6 +2123,109 @@ data/
 |------|------|
 | [SPEC-ANALYTICS.md](SPEC-ANALYTICS.md) | 사용자 행동 분석 스펙 |
 | [SPEC-AI-CHAT.md](SPEC-AI-CHAT.md) | AI 상담 채팅 스펙 |
+
+---
+
+## Phase L: 출시 최적화 🔄 진행 중
+
+> **시작일**: 2025-12-30 | **진행률**: 80%
+
+### 모듈별 상태
+
+| 모듈 | 설명 | 상태 | 테스트 |
+|------|------|------|--------|
+| L-1 | Web Push 알림 | ⏳ 대기 | - |
+| L-2 | 다국어 지원 (i18n) | ✅ 완료 | 77개 |
+| L-3 | 성능 최적화 | ✅ 완료 | - |
+| L-4 | 오프라인 지원 | ✅ 완료 | - |
+| E2E | 테스트 확장 | ✅ 완료 | 37개 추가 |
+
+### L-1: Web Push 알림 ⏳ 대기
+
+```yaml
+상태: VAPID 키 발급 대기
+준비 완료:
+  - 구조 설계 완료
+  - API 엔드포인트 설계 (/api/notifications/subscribe)
+  - 서비스 워커 통합 계획
+
+필요 사항:
+  [ ] VAPID 키 발급 (web-push generate-vapid-keys)
+  [ ] .env에 NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY 설정
+  [ ] notifications_subscriptions 테이블 생성
+  [ ] 실제 구현
+```
+
+### L-2: 다국어 지원 (i18n) ✅ 완료
+
+```yaml
+기능:
+  [x] next-intl 설치 및 설정
+  [x] i18n.config.ts - 언어 설정 (ko, en)
+  [x] messages/ko.json - 한국어 메시지
+  [x] messages/en.json - 영어 메시지
+
+컴포넌트:
+  [x] I18nProvider - 국제화 Provider
+  [x] LanguageSwitcher - 언어 전환 UI
+
+테스트:
+  [x] 77개 테스트 작성
+  [x] 메시지 로드/렌더링 테스트
+  [x] 언어 전환 테스트
+```
+
+### L-3: 성능 최적화 ✅ 완료
+
+```yaml
+기존 구현 확인:
+  [x] next/dynamic 지연 로딩 (차트, 모달)
+  [x] Turbopack 개발 서버
+  [x] 이미지 최적화 (next/image)
+  [x] 번들 분석 (ANALYZE=true)
+```
+
+### L-4: 오프라인 지원 ✅ 완료
+
+```yaml
+기존 PWA 구현 확인:
+  [x] next-pwa 설정
+  [x] manifest.json
+  [x] 서비스 워커 캐싱
+  [x] 오프라인 fallback 페이지
+```
+
+### E2E 테스트 확장 ✅ 완료
+
+```yaml
+신규 테스트 파일:
+  [x] e2e/analysis/analysis.spec.ts
+      - 퍼스널컬러, 피부, 체형 분석 페이지
+      - 분석 시작 버튼, 업로드 영역, 가이드 확인
+      - JS 에러 체크
+
+  [x] e2e/social/social.spec.ts
+      - 친구 목록/검색/요청 페이지
+      - 리더보드 탭, 내 순위 카드
+      - 피드, 웰니스 페이지
+      - JS 에러 체크
+
+  [x] e2e/closet/closet.spec.ts
+      - 옷장 메인/추가/코디 페이지
+      - 카테고리 필터, 아이템 추가
+      - 오늘의 코디, 새 코디 만들기
+      - JS 에러 체크
+
+  [x] e2e/help/help.spec.ts
+      - FAQ 아코디언
+      - 공지사항 목록
+      - 코치/채팅 입력, 추천 질문
+      - JS 에러 체크
+
+  [x] fixtures/index.ts 라우트 추가 (17개)
+
+결과: E2E 테스트 47개 → 84개 (+37개)
+```
 
 ---
 
