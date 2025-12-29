@@ -1,6 +1,6 @@
 'use client';
 
-import { RefreshCw, Sparkles, Palette, Shirt, Heart, Star, XCircle } from 'lucide-react';
+import { RefreshCw, Sparkles, Palette, Shirt, Heart, Star, XCircle, Brush, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   type PersonalColorResult,
@@ -31,7 +31,7 @@ export default function AnalysisResult({
     worstColors,
     lipstickRecommendations,
     clothingRecommendations,
-    celebrityMatch,
+    styleDescription,
     insight,
     analyzedAt,
   } = result;
@@ -120,27 +120,62 @@ export default function AnalysisResult({
         </section>
       </FadeInUp>
 
-      {/* 연예인 매칭 (가변 보상) */}
+      {/* 스타일 키워드 */}
       <FadeInUp delay={4}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Star className="w-5 h-5 text-yellow-500" />
-            <h2 className="text-lg font-semibold text-foreground">닮은 연예인</h2>
+            <Tag className="w-5 h-5 text-purple-500" />
+            <h2 className="text-lg font-semibold text-foreground">나의 스타일 키워드</h2>
           </div>
-          <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center text-2xl">
-              {info.emoji}
-            </div>
-            <div>
-              <p className="font-semibold text-foreground">{celebrityMatch.name}</p>
-              <p className="text-sm text-muted-foreground">{celebrityMatch.reason}</p>
-            </div>
+          <div className="flex flex-wrap gap-2">
+            {styleDescription.imageKeywords.map((keyword, index) => (
+              <span
+                key={index}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium ${getSeasonLightBgColor(seasonType)} ${getSeasonColor(seasonType)} border ${getSeasonBorderColor(seasonType)}`}
+              >
+                {keyword}
+              </span>
+            ))}
+          </div>
+        </section>
+      </FadeInUp>
+
+      {/* 메이크업 & 패션 스타일 가이드 */}
+      <FadeInUp delay={5}>
+        <section className="bg-card rounded-xl border p-6 space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Brush className="w-5 h-5 text-pink-500" />
+            <h2 className="text-lg font-semibold text-foreground">스타일 가이드</h2>
+          </div>
+
+          {/* 메이크업 */}
+          <div className="p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg">
+            <p className="text-sm font-medium text-pink-700 dark:text-pink-300 mb-2">메이크업</p>
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              {styleDescription.makeupStyle}
+            </p>
+          </div>
+
+          {/* 패션 */}
+          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">패션</p>
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              {styleDescription.fashionStyle}
+            </p>
+          </div>
+
+          {/* 액세서리 */}
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300 mb-2">액세서리</p>
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              {styleDescription.accessories}
+            </p>
           </div>
         </section>
       </FadeInUp>
 
       {/* 립스틱 추천 */}
-      <FadeInUp delay={5}>
+      <FadeInUp delay={6}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
             <Heart className="w-5 h-5 text-red-400" />
@@ -169,7 +204,7 @@ export default function AnalysisResult({
       </FadeInUp>
 
       {/* 의류 추천 */}
-      <FadeInUp delay={6}>
+      <FadeInUp delay={7}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
             <Shirt className="w-5 h-5 text-blue-500" />
@@ -197,7 +232,7 @@ export default function AnalysisResult({
       </FadeInUp>
 
       {/* 통계 정보 */}
-      <FadeInUp delay={7}>
+      <FadeInUp delay={8}>
         <section className="bg-muted rounded-xl border p-4 text-center">
           <p className="text-sm text-muted-foreground">
             전체 사용자 중 <span className={`font-semibold ${getSeasonColor(seasonType)}`}>{info.percentage}%</span>가 {seasonLabel}이에요
@@ -211,7 +246,7 @@ export default function AnalysisResult({
       </p>
 
       {/* 다시 분석하기 버튼 */}
-      <FadeInUp delay={8}>
+      <FadeInUp delay={9}>
         <Button
           onClick={onRetry}
           variant="outline"
@@ -223,7 +258,7 @@ export default function AnalysisResult({
       </FadeInUp>
 
       {/* 공유 버튼 */}
-      <FadeInUp delay={8}>
+      <FadeInUp delay={9}>
         <ShareButton
           onShare={share}
           loading={shareLoading}

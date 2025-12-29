@@ -1,15 +1,26 @@
 'use client';
 
-import { RefreshCw, Sparkles, ShoppingBag, Zap, Ruler, Scale, Target, Palette, Shirt, Ban } from 'lucide-react';
+import { RefreshCw, Sparkles, ShoppingBag, Zap, Ruler, Scale, Target, Palette, Shirt, Ban, AlertTriangle, Users, Lightbulb, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   type BodyAnalysisResult,
+  type BodyType3,
   BODY_TYPES,
+  BODY_TYPES_3,
   getBodyTypeColor,
   getBodyTypeBgColor,
+  getBodyType3Color,
+  getBodyType3BgColor,
+  mapBodyTypeTo3Type,
 } from '@/lib/mock/body-analysis';
 import { FadeInUp, ScaleIn, CountUp } from '@/components/animations';
 import { RecommendedClothingCard } from '@/components/analysis/body';
+import { getOutfitExamples } from '@/lib/color-recommendations';
+
+// 3타입인지 확인
+function isBodyType3(type: string): type is BodyType3 {
+  return type === 'S' || type === 'W' || type === 'N';
+}
 
 interface AnalysisResultProps {
   result: BodyAnalysisResult;
@@ -39,7 +50,25 @@ export default function AnalysisResult({
     colorTips,
   } = result;
 
-  const typeInfo = BODY_TYPES[bodyType];
+  // 3타입 시스템 지원
+  const is3Type = isBodyType3(bodyType);
+  const type3 = is3Type ? bodyType : mapBodyTypeTo3Type(bodyType as import('@/lib/mock/body-analysis').BodyType);
+  const typeInfo3 = BODY_TYPES_3[type3];
+  const _typeInfoLegacy = !is3Type ? BODY_TYPES[bodyType as import('@/lib/mock/body-analysis').BodyType] : null;
+
+  // 색상 헬퍼
+  const getColor = () => is3Type ? getBodyType3Color(type3) : getBodyTypeColor(bodyType as import('@/lib/mock/body-analysis').BodyType);
+  const getBgColor = () => is3Type ? getBodyType3BgColor(type3) : getBodyTypeBgColor(bodyType as import('@/lib/mock/body-analysis').BodyType);
+
+  // 키워드 (3타입이면 typeInfo3에서, 아니면 레거시 변환)
+  const keywords = (result as { keywords?: string[] }).keywords || typeInfo3.keywords;
+  // 피해야 할 스타일
+  const avoidStyles = (result as { avoidStyles?: string[] }).avoidStyles || typeInfo3.avoidStyles;
+  // 특징
+  const _characteristics = (result as { characteristics?: string }).characteristics || typeInfo3.characteristics;
+
+  // 체형 + 퍼스널 컬러 조합 코디 예시
+  const outfitExamples = getOutfitExamples(type3, personalColorSeason || null);
 
   return (
     <div ref={shareRef} className="space-y-6" role="region" aria-label="체형 분석 결과">
@@ -104,18 +133,84 @@ export default function AnalysisResult({
         <section className="bg-card rounded-xl border p-6 text-center">
           <p className="text-sm text-muted-foreground mb-2">체형 타입</p>
           <div className="flex items-center justify-center gap-2">
-            <span className={`text-4xl font-bold ${getBodyTypeColor(bodyType)}`}>
-              {bodyTypeLabel}
+            <span className="text-2xl">{typeInfo3.emoji}</span>
+            <span className={`text-4xl font-bold ${getColor()}`}>
+              {is3Type ? typeInfo3.label : bodyTypeLabel}
             </span>
-            <span className="text-2xl">{typeInfo.emoji}</span>
           </div>
+          {is3Type && (
+            <p className="text-sm text-muted-foreground mt-1">
+              ({typeInfo3.labelEn})
+            </p>
+          )}
           <p className="mt-2 text-muted-foreground">{bodyTypeDescription}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{typeInfo.characteristics}</p>
+
+          {/* 초보자용 한 줄 설명 */}
+          {typeInfo3.simpleExplanation && (
+            <div className={`mt-3 px-4 py-2 rounded-lg ${getBgColor()} inline-block`}>
+              <p className={`text-sm font-medium ${getColor()}`}>
+                {typeInfo3.simpleExplanation}
+              </p>
+            </div>
+          )}
+
+          {/* 키워드 태그 */}
+          <div className="flex flex-wrap justify-center gap-2 mt-4">
+            {keywords.map((keyword) => (
+              <span
+                key={keyword}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  is3Type
+                    ? type3 === 'S' ? 'bg-blue-100 text-blue-700'
+                    : type3 === 'W' ? 'bg-pink-100 text-pink-700'
+                    : 'bg-green-100 text-green-700'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {keyword}
+              </span>
+            ))}
+          </div>
+
+          {/* 대표 연예인 예시 */}
+          {typeInfo3.celebrities && typeInfo3.celebrities.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <div className="flex items-center justify-center gap-1 text-muted-foreground mb-2">
+                <Users className="w-4 h-4" />
+                <span className="text-xs">대표 연예인</span>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {typeInfo3.celebrities.map((celeb) => (
+                  <span
+                    key={celeb}
+                    className="px-2 py-1 bg-muted rounded-md text-sm text-foreground/80"
+                  >
+                    {celeb}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       </ScaleIn>
 
+      {/* 자가 진단 팁 */}
+      {typeInfo3.selfCheckTip && (
+        <FadeInUp delay={2}>
+          <section className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4">
+            <div className="flex items-start gap-3">
+              <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-amber-800 mb-1">알고 계셨나요?</p>
+                <p className="text-sm text-amber-700 leading-relaxed">{typeInfo3.selfCheckTip}</p>
+              </div>
+            </div>
+          </section>
+        </FadeInUp>
+      )}
+
       {/* 비율 분석 */}
-      <FadeInUp delay={2}>
+      <FadeInUp delay={3}>
         <section className="bg-card rounded-xl border p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">비율 분석</h2>
           <div className="space-y-4">
@@ -125,13 +220,13 @@ export default function AnalysisResult({
                   <span className="text-sm font-medium text-foreground/80">
                     {measurement.name}
                   </span>
-                  <span className={`text-sm font-semibold ${getBodyTypeColor(bodyType)}`}>
+                  <span className={`text-sm font-semibold ${getColor()}`}>
                     {measurement.value}
                   </span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${getBodyTypeBgColor(bodyType)}`}
+                    className={`h-full rounded-full transition-all ${getBgColor()}`}
                     style={{ width: `${measurement.value}%` }}
                   />
                 </div>
@@ -143,7 +238,7 @@ export default function AnalysisResult({
       </FadeInUp>
 
       {/* 강점 */}
-      <FadeInUp delay={3}>
+      <FadeInUp delay={4}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
             <Zap className="w-5 h-5 text-yellow-500" />
@@ -160,8 +255,33 @@ export default function AnalysisResult({
         </section>
       </FadeInUp>
 
+      {/* 피해야 할 스타일 */}
+      {avoidStyles && avoidStyles.length > 0 && (
+        <FadeInUp delay={5}>
+          <section className="bg-card rounded-xl border p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="w-5 h-5 text-orange-500" />
+              <h2 className="text-lg font-semibold text-foreground">피해야 할 스타일</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {avoidStyles.map((style, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1.5 bg-orange-50 text-orange-700 rounded-lg text-sm border border-orange-200"
+                >
+                  {style}
+                </span>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              위 스타일은 체형의 장점을 살리기 어려울 수 있어요
+            </p>
+          </section>
+        </FadeInUp>
+      )}
+
       {/* AI 스타일 인사이트 (가변 보상) */}
-      <FadeInUp delay={4}>
+      <FadeInUp delay={6}>
         <section className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-6">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-5 h-5 text-purple-500" />
@@ -173,7 +293,7 @@ export default function AnalysisResult({
 
       {/* 퍼스널 컬러 기반 색상 추천 */}
       {colorRecommendations && (
-        <FadeInUp delay={5}>
+        <FadeInUp delay={7}>
           <section className="bg-card rounded-xl border p-6">
             <div className="flex items-center gap-2 mb-4">
               <Palette className="w-5 h-5 text-violet-500" />
@@ -282,7 +402,7 @@ export default function AnalysisResult({
 
       {/* 색상 팁 */}
       {colorTips && colorTips.length > 0 && (
-        <FadeInUp delay={6}>
+        <FadeInUp delay={8}>
           <section className="bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-6">
             <div className="flex items-center gap-2 mb-3">
               <Palette className="w-5 h-5 text-violet-500" />
@@ -300,8 +420,53 @@ export default function AnalysisResult({
         </FadeInUp>
       )}
 
+      {/* 맞춤 코디 예시 (체형 + 퍼스널 컬러 조합) */}
+      {outfitExamples.length > 0 && (
+        <FadeInUp delay={9}>
+          <section className="bg-card rounded-xl border p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Bookmark className="w-5 h-5 text-rose-500" />
+              <h2 className="text-lg font-semibold text-foreground">맞춤 코디 예시</h2>
+              {personalColorSeason && (
+                <span className="ml-auto text-xs bg-rose-100 text-rose-700 px-2 py-1 rounded-full">
+                  {typeInfo3.label} + {personalColorSeason}
+                </span>
+              )}
+            </div>
+            <div className="space-y-4">
+              {outfitExamples.map((outfit, index) => (
+                <div
+                  key={index}
+                  className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-lg border border-rose-100"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-foreground">{outfit.title}</h3>
+                    <span className="text-xs bg-white px-2 py-0.5 rounded-full text-rose-600 border border-rose-200">
+                      {outfit.occasion}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {outfit.items.map((item, itemIndex) => (
+                      <span
+                        key={itemIndex}
+                        className="px-3 py-1.5 bg-white rounded-lg text-sm text-foreground/80 border border-rose-100"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-4 text-center">
+              체형과 퍼스널 컬러를 고려한 맞춤 코디예요
+            </p>
+          </section>
+        </FadeInUp>
+      )}
+
       {/* 추천 아이템 (가변 보상) */}
-      <FadeInUp delay={7}>
+      <FadeInUp delay={10}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
             <ShoppingBag className="w-5 h-5 text-pink-500" />
@@ -327,7 +492,7 @@ export default function AnalysisResult({
       </FadeInUp>
 
       {/* 맞춤 의류 쇼핑 추천 */}
-      <FadeInUp delay={8}>
+      <FadeInUp delay={11}>
         <RecommendedClothingCard
           bodyType={bodyType}
           styleRecommendations={styleRecommendations}
@@ -337,14 +502,14 @@ export default function AnalysisResult({
       </FadeInUp>
 
       {/* 분석 시간 */}
-      <FadeInUp delay={9}>
+      <FadeInUp delay={12}>
         <p className="text-center text-sm text-muted-foreground">
           분석 시간: {analyzedAt.toLocaleString('ko-KR')}
         </p>
       </FadeInUp>
 
       {/* 다시 분석하기 버튼 */}
-      <FadeInUp delay={9}>
+      <FadeInUp delay={12}>
         <Button
           onClick={onRetry}
           variant="outline"

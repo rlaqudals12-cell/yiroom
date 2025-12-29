@@ -2,6 +2,136 @@
 
 export type MetricStatus = 'good' | 'normal' | 'warning';
 
+// 피부 타입 정의
+export type SkinTypeId = 'dry' | 'oily' | 'combination' | 'normal' | 'sensitive';
+
+export interface SkinTypeInfo {
+  id: SkinTypeId;
+  label: string;
+  emoji: string;
+  description: string;
+  characteristics: string[];
+}
+
+// 피부 타입 상세 정보
+export const SKIN_TYPES: SkinTypeInfo[] = [
+  {
+    id: 'dry',
+    label: '건성',
+    emoji: '🏜️',
+    description: '피부가 건조하고 당기는 느낌이 있어요',
+    characteristics: ['세안 후 피부 당김', '각질이 자주 일어남', '피부가 거칠거칠함'],
+  },
+  {
+    id: 'oily',
+    label: '지성',
+    emoji: '✨',
+    description: '유분이 많고 번들거리는 느낌이 있어요',
+    characteristics: ['피지 분비가 많음', 'T존에 유분이 많음', '모공이 눈에 띔'],
+  },
+  {
+    id: 'combination',
+    label: '복합성',
+    emoji: '⚖️',
+    description: 'T존은 기름지고 볼은 건조해요',
+    characteristics: ['T존만 번들거림', '볼은 건조함', '부위별 케어 필요'],
+  },
+  {
+    id: 'normal',
+    label: '중성',
+    emoji: '😊',
+    description: '수분과 유분의 밸런스가 좋아요',
+    characteristics: ['피부 트러블이 적음', '수분/유분 균형', '전반적으로 건강함'],
+  },
+  {
+    id: 'sensitive',
+    label: '민감성',
+    emoji: '🌸',
+    description: '자극에 쉽게 반응하고 트러블이 생겨요',
+    characteristics: ['쉽게 붉어짐', '자극에 민감', '트러블이 자주 발생'],
+  },
+];
+
+// 피부 고민 정의
+export type SkinConcernId = 'acne' | 'wrinkles' | 'pigmentation' | 'pores' | 'dryness' | 'redness' | 'dullness';
+
+export interface SkinConcernInfo {
+  id: SkinConcernId;
+  label: string;
+  emoji: string;
+  description: string;
+}
+
+// 피부 고민 상세 정보
+export const SKIN_CONCERNS: SkinConcernInfo[] = [
+  {
+    id: 'acne',
+    label: '여드름/트러블',
+    emoji: '😣',
+    description: '여드름, 뾰루지가 자주 생겨요',
+  },
+  {
+    id: 'wrinkles',
+    label: '주름/탄력',
+    emoji: '📉',
+    description: '잔주름이나 탄력 저하가 고민이에요',
+  },
+  {
+    id: 'pigmentation',
+    label: '색소침착',
+    emoji: '🔵',
+    description: '기미, 잡티, 다크스팟이 있어요',
+  },
+  {
+    id: 'pores',
+    label: '모공',
+    emoji: '🔍',
+    description: '모공이 눈에 띄고 넓어 보여요',
+  },
+  {
+    id: 'dryness',
+    label: '건조함',
+    emoji: '💧',
+    description: '피부가 건조하고 각질이 일어나요',
+  },
+  {
+    id: 'redness',
+    label: '홍조/붉음',
+    emoji: '🔴',
+    description: '피부가 쉽게 붉어지고 열감이 있어요',
+  },
+  {
+    id: 'dullness',
+    label: '칙칙함',
+    emoji: '☁️',
+    description: '피부 톤이 어둡고 생기가 없어요',
+  },
+];
+
+// 피부 촬영 가이드 팁
+export const SKIN_PHOTO_GUIDE_TIPS = [
+  {
+    icon: 'sun',
+    title: '밝은 실내',
+    description: '조명이 얼굴을 고르게 비추는 밝은 곳에서 촬영해주세요',
+  },
+  {
+    icon: 'face',
+    title: '맨 얼굴 권장',
+    description: '메이크업 없이 본연의 피부가 보이면 더 정확해요',
+  },
+  {
+    icon: 'shadow',
+    title: '플래시 OFF',
+    description: '플래시는 피부 상태를 왜곡시켜요. 꺼주세요',
+  },
+  {
+    icon: 'position',
+    title: '정면 촬영',
+    description: '얼굴 전체가 잘 보이도록 정면을 바라봐주세요',
+  },
+];
+
 export interface SkinMetric {
   id: string;
   name: string;

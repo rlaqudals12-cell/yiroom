@@ -7,6 +7,152 @@ export type SeasonType = 'spring' | 'summer' | 'autumn' | 'winter';
 export type ToneType = 'warm' | 'cool';
 export type DepthType = 'light' | 'deep';
 
+// 12톤 서브타입 (세분화된 퍼스널 컬러)
+export type PersonalColorSubtype =
+  // 봄 웜
+  | 'spring-light' | 'spring-bright' | 'spring-true'
+  // 여름 쿨
+  | 'summer-light' | 'summer-mute' | 'summer-true'
+  // 가을 웜
+  | 'autumn-mute' | 'autumn-deep' | 'autumn-true'
+  // 겨울 쿨
+  | 'winter-deep' | 'winter-bright' | 'winter-true';
+
+// 서브타입 정보
+export interface PersonalColorSubtypeInfo {
+  id: PersonalColorSubtype;
+  season: SeasonType;
+  label: string;
+  shortLabel: string; // 라이트, 브라이트 등
+  description: string;
+  tone: ToneType;
+  depth: DepthType;
+}
+
+// 12톤 서브타입 상세 정보
+export const PERSONAL_COLOR_SUBTYPES: PersonalColorSubtypeInfo[] = [
+  // 봄 웜톤
+  {
+    id: 'spring-light',
+    season: 'spring',
+    label: '봄 웜 라이트',
+    shortLabel: '라이트',
+    description: '밝고 맑은 파스텔 톤이 잘 어울려요',
+    tone: 'warm',
+    depth: 'light',
+  },
+  {
+    id: 'spring-bright',
+    season: 'spring',
+    label: '봄 웜 브라이트',
+    shortLabel: '브라이트',
+    description: '선명하고 생기있는 컬러가 잘 어울려요',
+    tone: 'warm',
+    depth: 'light',
+  },
+  {
+    id: 'spring-true',
+    season: 'spring',
+    label: '봄 웜 트루',
+    shortLabel: '트루',
+    description: '따뜻하고 화사한 웜톤의 정석이에요',
+    tone: 'warm',
+    depth: 'light',
+  },
+  // 여름 쿨톤
+  {
+    id: 'summer-light',
+    season: 'summer',
+    label: '여름 쿨 라이트',
+    shortLabel: '라이트',
+    description: '밝고 부드러운 파스텔 톤이 잘 어울려요',
+    tone: 'cool',
+    depth: 'light',
+  },
+  {
+    id: 'summer-mute',
+    season: 'summer',
+    label: '여름 쿨 뮤트',
+    shortLabel: '뮤트',
+    description: '차분하고 뮤트한 컬러가 잘 어울려요',
+    tone: 'cool',
+    depth: 'light',
+  },
+  {
+    id: 'summer-true',
+    season: 'summer',
+    label: '여름 쿨 트루',
+    shortLabel: '트루',
+    description: '시원하고 우아한 쿨톤의 정석이에요',
+    tone: 'cool',
+    depth: 'light',
+  },
+  // 가을 웜톤
+  {
+    id: 'autumn-mute',
+    season: 'autumn',
+    label: '가을 웜 뮤트',
+    shortLabel: '뮤트',
+    description: '차분하고 뮤트한 어스톤이 잘 어울려요',
+    tone: 'warm',
+    depth: 'deep',
+  },
+  {
+    id: 'autumn-deep',
+    season: 'autumn',
+    label: '가을 웜 딥',
+    shortLabel: '딥',
+    description: '깊고 풍부한 컬러가 잘 어울려요',
+    tone: 'warm',
+    depth: 'deep',
+  },
+  {
+    id: 'autumn-true',
+    season: 'autumn',
+    label: '가을 웜 트루',
+    shortLabel: '트루',
+    description: '따뜻하고 깊은 웜톤의 정석이에요',
+    tone: 'warm',
+    depth: 'deep',
+  },
+  // 겨울 쿨톤
+  {
+    id: 'winter-deep',
+    season: 'winter',
+    label: '겨울 쿨 딥',
+    shortLabel: '딥',
+    description: '깊고 강렬한 컬러가 잘 어울려요',
+    tone: 'cool',
+    depth: 'deep',
+  },
+  {
+    id: 'winter-bright',
+    season: 'winter',
+    label: '겨울 쿨 브라이트',
+    shortLabel: '브라이트',
+    description: '선명하고 비비드한 컬러가 잘 어울려요',
+    tone: 'cool',
+    depth: 'deep',
+  },
+  {
+    id: 'winter-true',
+    season: 'winter',
+    label: '겨울 쿨 트루',
+    shortLabel: '트루',
+    description: '시크하고 강렬한 쿨톤의 정석이에요',
+    tone: 'cool',
+    depth: 'deep',
+  },
+];
+
+// 시즌별 서브타입 그룹화
+export const SUBTYPES_BY_SEASON: Record<SeasonType, PersonalColorSubtypeInfo[]> = {
+  spring: PERSONAL_COLOR_SUBTYPES.filter(s => s.season === 'spring'),
+  summer: PERSONAL_COLOR_SUBTYPES.filter(s => s.season === 'summer'),
+  autumn: PERSONAL_COLOR_SUBTYPES.filter(s => s.season === 'autumn'),
+  winter: PERSONAL_COLOR_SUBTYPES.filter(s => s.season === 'winter'),
+};
+
 // 문진 질문 옵션
 export interface QuestionOption {
   id: string;
@@ -51,10 +197,12 @@ export interface ClothingRecommendation {
   reason: string;
 }
 
-// 연예인 비교
-export interface CelebrityMatch {
-  name: string;
-  reason: string;
+// 스타일 설명 (연예인 매칭 대체 - 법적 리스크 회피)
+export interface StyleDescription {
+  imageKeywords: string[]; // 이미지 키워드 (예: "청순한", "시크한")
+  makeupStyle: string; // 메이크업 스타일 설명
+  fashionStyle: string; // 패션 스타일 설명
+  accessories: string; // 어울리는 액세서리
 }
 
 // 퍼스널 컬러 결과
@@ -69,7 +217,7 @@ export interface PersonalColorResult {
   worstColors: ColorInfo[];
   lipstickRecommendations: LipstickRecommendation[];
   clothingRecommendations: ClothingRecommendation[];
-  celebrityMatch: CelebrityMatch;
+  styleDescription: StyleDescription; // 연예인 매칭 대체
   insight: string;
   analyzedAt: Date;
 }
@@ -223,28 +371,32 @@ export const LIPSTICK_RECOMMENDATIONS: Record<SeasonType, LipstickRecommendation
   ],
 };
 
-// 계절별 연예인 매칭
-export const CELEBRITY_MATCHES: Record<SeasonType, CelebrityMatch[]> = {
-  spring: [
-    { name: '아이유', reason: '밝고 화사한 이미지, 맑은 피부톤' },
-    { name: '수지', reason: '따뜻하고 생기있는 분위기' },
-    { name: '윤아', reason: '청순하고 밝은 느낌' },
-  ],
-  summer: [
-    { name: '김태희', reason: '우아하고 부드러운 분위기' },
-    { name: '손예진', reason: '청량하고 시원한 느낌' },
-    { name: '송혜교', reason: '차분하고 고급스러운 이미지' },
-  ],
-  autumn: [
-    { name: '전지현', reason: '세련되고 시크한 느낌' },
-    { name: '고소영', reason: '깊이있고 성숙한 분위기' },
-    { name: '한가인', reason: '따뜻하고 포근한 이미지' },
-  ],
-  winter: [
-    { name: '김연아', reason: '선명하고 시크한 이미지' },
-    { name: '신민아', reason: '차갑고 도회적인 느낌' },
-    { name: '이영애', reason: '고급스럽고 우아한 분위기' },
-  ],
+// 계절별 스타일 설명 (연예인 매칭 대체)
+export const STYLE_DESCRIPTIONS: Record<SeasonType, StyleDescription> = {
+  spring: {
+    imageKeywords: ['청순한', '화사한', '생기있는', '밝은', '사랑스러운'],
+    makeupStyle: '코랄, 피치 계열의 자연스러운 메이크업이 잘 어울려요. 블러셔는 복숭아빛으로, 립은 촉촉한 코랄 틴트가 찰떡이에요.',
+    fashionStyle: '밝고 화사한 파스텔 톤, 아이보리, 베이지 계열의 부드러운 스타일이 잘 어울려요. 플라워 패턴이나 러블리한 디테일도 좋아요.',
+    accessories: '로즈골드, 옐로우골드 액세서리가 피부를 더욱 화사하게 만들어줘요. 진주 액세서리도 잘 어울려요.',
+  },
+  summer: {
+    imageKeywords: ['우아한', '청량한', '부드러운', '세련된', '시원한'],
+    makeupStyle: '로즈 핑크, 라벤더 계열의 소프트한 메이크업이 잘 어울려요. 뮤트한 톤으로 은은하게 연출하면 우아해 보여요.',
+    fashionStyle: '파스텔 블루, 라벤더, 민트 등 시원하고 부드러운 색상이 잘 어울려요. 쉬폰이나 린넨 같은 가벼운 소재도 좋아요.',
+    accessories: '실버, 화이트골드 액세서리가 쿨한 피부톤과 조화를 이뤄요. 블루 계열 보석도 추천해요.',
+  },
+  autumn: {
+    imageKeywords: ['시크한', '성숙한', '따뜻한', '고급스러운', '깊이있는'],
+    makeupStyle: '테라코타, 브릭 레드 계열의 깊이있는 메이크업이 잘 어울려요. 브론저로 건강한 윤기를 더하면 더욱 좋아요.',
+    fashionStyle: '카멜, 브라운, 올리브, 머스타드 같은 어스톤이 잘 어울려요. 가죽, 스웨이드 같은 텍스처감 있는 소재가 좋아요.',
+    accessories: '골드, 앤틱골드 액세서리가 따뜻한 피부톤을 돋보이게 해요. 호피나 터틀쉘 패턴도 잘 어울려요.',
+  },
+  winter: {
+    imageKeywords: ['도회적인', '시크한', '선명한', '강렬한', '모던한'],
+    makeupStyle: '버건디, 와인, 트루레드 같은 선명한 컬러가 잘 어울려요. 깔끔한 아이라인과 볼드한 립으로 강렬함을 연출해보세요.',
+    fashionStyle: '블랙, 화이트, 네이비 같은 모노톤이 잘 어울려요. 샤프한 실루엣과 미니멀한 디자인으로 시크하게 연출해보세요.',
+    accessories: '실버, 플래티넘 액세서리가 쿨한 피부톤과 잘 맞아요. 다이아몬드나 크리스탈처럼 빛나는 소재도 추천해요.',
+  },
 };
 
 // 10개 문진 질문
@@ -522,7 +674,6 @@ export const generateMockPersonalColorResult = (
   }
 
   const info = SEASON_INFO[seasonType];
-  const celebrities = CELEBRITY_MATCHES[seasonType];
   const insights = INSIGHTS[seasonType];
 
   return {
@@ -536,7 +687,7 @@ export const generateMockPersonalColorResult = (
     worstColors: WORST_COLORS[seasonType],
     lipstickRecommendations: LIPSTICK_RECOMMENDATIONS[seasonType],
     clothingRecommendations: generateClothingRecommendations(seasonType),
-    celebrityMatch: celebrities[Math.floor(Math.random() * celebrities.length)],
+    styleDescription: STYLE_DESCRIPTIONS[seasonType],
     insight: insights[Math.floor(Math.random() * insights.length)],
     analyzedAt: new Date(),
   };
@@ -582,3 +733,204 @@ export const getSeasonBorderColor = (seasonType: SeasonType): string => {
   };
   return colors[seasonType];
 };
+
+// ============================================
+// 배경색 비교 (가상 드레이핑) 관련 타입 및 상수
+// ============================================
+
+// 배경색 비교 옵션
+export interface ColorComparisonOption {
+  id: string;
+  label: string;
+  backgroundColor: string; // Tailwind 클래스 또는 hex
+  hex: string; // 실제 색상 값
+}
+
+// 배경색 비교 세트
+export interface ColorComparisonSet {
+  id: string;
+  question: string;
+  description: string;
+  options: [ColorComparisonOption, ColorComparisonOption]; // 항상 2개 옵션
+  determinesType: 'tone' | 'saturation' | 'depth'; // 결정하는 요소
+}
+
+// 사용자 선택 결과
+export interface ColorComparisonAnswer {
+  setId: string;
+  selectedOptionId: string;
+}
+
+// 배경색 비교 세트 정의
+export const COLOR_COMPARISON_SETS: ColorComparisonSet[] = [
+  {
+    id: 'warm_cool',
+    question: '어떤 쪽이 더 화사해 보이나요?',
+    description: '피부가 더 밝고 건강해 보이는 쪽을 선택해주세요',
+    determinesType: 'tone',
+    options: [
+      {
+        id: 'warm',
+        label: 'A',
+        backgroundColor: 'bg-amber-200',
+        hex: '#FDE68A', // 골드/웜톤 배경
+      },
+      {
+        id: 'cool',
+        label: 'B',
+        backgroundColor: 'bg-slate-200',
+        hex: '#E2E8F0', // 실버/쿨톤 배경
+      },
+    ],
+  },
+  {
+    id: 'vivid_mute',
+    question: '어떤 쪽이 더 조화로워 보이나요?',
+    description: '얼굴과 배경이 자연스럽게 어울리는 쪽을 선택해주세요',
+    determinesType: 'saturation',
+    options: [
+      {
+        id: 'vivid',
+        label: 'A',
+        backgroundColor: 'bg-rose-400',
+        hex: '#FB7185', // 선명한 색
+      },
+      {
+        id: 'mute',
+        label: 'B',
+        backgroundColor: 'bg-rose-200',
+        hex: '#FECDD3', // 뮤트한 색
+      },
+    ],
+  },
+  {
+    id: 'light_deep',
+    question: '어떤 쪽에서 피부가 더 좋아 보이나요?',
+    description: '피부톤이 더 균일하고 맑아 보이는 쪽을 선택해주세요',
+    determinesType: 'depth',
+    options: [
+      {
+        id: 'light',
+        label: 'A',
+        backgroundColor: 'bg-sky-100',
+        hex: '#E0F2FE', // 밝은 색
+      },
+      {
+        id: 'deep',
+        label: 'B',
+        backgroundColor: 'bg-indigo-800',
+        hex: '#3730A3', // 깊은 색
+      },
+    ],
+  },
+];
+
+// 배경색 비교 결과로 시즌 타입 계산
+export const calculateSeasonFromComparison = (
+  answers: ColorComparisonAnswer[]
+): { seasonType: SeasonType; tone: ToneType; depth: DepthType; confidence: number } => {
+  let tone: ToneType = 'warm';
+  let depth: DepthType = 'light';
+
+  answers.forEach((answer) => {
+    const set = COLOR_COMPARISON_SETS.find((s) => s.id === answer.setId);
+    if (!set) return;
+
+    if (set.determinesType === 'tone') {
+      tone = answer.selectedOptionId === 'warm' ? 'warm' : 'cool';
+    } else if (set.determinesType === 'saturation') {
+      // 비비드 선호 = winter/spring, 뮤트 선호 = summer/autumn
+      // saturation은 보조 지표로 사용
+    } else if (set.determinesType === 'depth') {
+      depth = answer.selectedOptionId === 'light' ? 'light' : 'deep';
+    }
+  });
+
+  // 계절 결정 - 룩업 테이블 사용으로 타입 안전성 보장
+  const seasonMap: Record<`${ToneType}-${DepthType}`, SeasonType> = {
+    'warm-light': 'spring',
+    'cool-light': 'summer',
+    'warm-deep': 'autumn',
+    'cool-deep': 'winter',
+  };
+  const seasonType = seasonMap[`${tone}-${depth}`];
+
+  // 신뢰도: 배경색 비교는 AI 분석과 결합하여 높은 신뢰도 제공
+  const confidence = 88 + Math.floor(Math.random() * 7); // 88~94%
+
+  return { seasonType, tone, depth, confidence };
+};
+
+// ============================================
+// 조명 검증 관련 타입 및 상수
+// ============================================
+
+// 조명 상태 타입
+export type LightingStatus = 'optimal' | 'acceptable' | 'poor';
+
+// 조명 검증 결과
+export interface LightingValidation {
+  status: LightingStatus;
+  isAcceptable: boolean;
+  issues: string[];
+  suggestion: string;
+}
+
+// 조명 검증 기준 메시지
+export const LIGHTING_MESSAGES = {
+  optimal: {
+    title: '완벽한 조명이에요!',
+    description: '밝은 실내에서 촬영되어 정확한 분석이 가능해요.',
+  },
+  acceptable: {
+    title: '분석 가능한 조명이에요',
+    description: '조금 더 밝은 곳에서 촬영하면 더 정확한 결과를 받을 수 있어요.',
+  },
+  poor: {
+    title: '조명이 적합하지 않아요',
+    description: '밝은 실내에서 다시 촬영해주시면 더 정확한 진단이 가능해요.',
+  },
+};
+
+// 촬영 가이드 팁
+export const PHOTO_GUIDE_TIPS = [
+  {
+    icon: 'sun',
+    title: '밝은 실내',
+    description: '조명이 얼굴을 고르게 비추는 밝은 곳에서 촬영해주세요',
+  },
+  {
+    icon: 'face',
+    title: '맨 얼굴 권장',
+    description: '메이크업 없이 본연의 피부색이 보이면 더 정확해요',
+  },
+  {
+    icon: 'shadow',
+    title: '플래시 OFF',
+    description: '플래시는 피부색을 왜곡시켜요. 꺼주세요',
+  },
+  {
+    icon: 'position',
+    title: '정면 촬영',
+    description: '얼굴 전체가 잘 보이도록 정면을 바라봐주세요',
+  },
+];
+
+// 손목 촬영 가이드 팁
+export const WRIST_PHOTO_TIPS = [
+  {
+    icon: 'sun',
+    title: '밝은 실내',
+    description: '혈관 색이 잘 보이는 밝은 곳에서 촬영해주세요',
+  },
+  {
+    icon: 'hand',
+    title: '손목 안쪽',
+    description: '손목 안쪽의 혈관이 잘 보이도록 촬영해주세요',
+  },
+  {
+    icon: 'shadow',
+    title: '그림자 없이',
+    description: '손목에 그림자가 지지 않도록 해주세요',
+  },
+];

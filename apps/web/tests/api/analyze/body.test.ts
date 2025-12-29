@@ -21,12 +21,11 @@ vi.mock('@/lib/gemini', () => ({
 }));
 
 vi.mock('@/lib/mock/body-analysis', () => ({
-  generateMockBodyAnalysis: vi.fn(),
-  BODY_TYPES: {
-    rectangle: { label: '직사각형', description: '어깨와 골반이 비슷한 직선 실루엣' },
-    hourglass: { label: '모래시계', description: '어깨와 골반이 비슷하고 허리가 가는 체형' },
-    triangle: { label: '삼각형', description: '골반이 어깨보다 넓은 체형' },
-    inverted_triangle: { label: '역삼각형', description: '어깨가 골반보다 넓은 체형' },
+  generateMockBodyAnalysis3: vi.fn(),
+  BODY_TYPES_3: {
+    S: { label: '스트레이트', labelEn: 'Straight', description: '입체적이고 탄탄한 실루엣', characteristics: '상체에 볼륨감이 있고 근육이 잘 붙는 체형', keywords: ['심플', '베이직', 'I라인'], avoidStyles: ['프릴', '오버핏'] },
+    W: { label: '웨이브', labelEn: 'Wave', description: '부드럽고 여성스러운 실루엣', characteristics: '하체에 볼륨감이 있고 곡선미가 돋보이는 체형', keywords: ['페미닌', 'X라인'], avoidStyles: ['오버핏', '박시핏'] },
+    N: { label: '내추럴', labelEn: 'Natural', description: '자연스럽고 골격감 있는 실루엣', characteristics: '뼈대가 크고 관절이 두드러지는 체형', keywords: ['캐주얼', '오버핏'], avoidStyles: ['타이트핏', '미니기장'] },
   },
 }));
 
@@ -39,7 +38,7 @@ import { GET, POST } from '@/app/api/analyze/body/route';
 import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzeBody } from '@/lib/gemini';
-import { generateMockBodyAnalysis } from '@/lib/mock/body-analysis';
+import { generateMockBodyAnalysis3 } from '@/lib/mock/body-analysis';
 import { generateColorRecommendations, getColorTipsForBodyType } from '@/lib/color-recommendations';
 
 // Mock 요청 헬퍼
@@ -50,21 +49,25 @@ function createMockPostRequest(body: unknown): Request {
   } as Request;
 }
 
-// Mock 데이터
+// Mock 데이터 (3타입 시스템)
 const mockBodyAnalysisResult = {
-  bodyType: 'X' as const,
-  bodyTypeLabel: '모래시계',
-  bodyTypeDescription: '어깨와 골반이 비슷하고 허리가 가는 체형',
+  bodyType: 'S' as const,
+  bodyTypeLabel: '스트레이트',
+  bodyTypeLabelEn: 'Straight',
+  bodyTypeDescription: '입체적이고 탄탄한 실루엣',
+  characteristics: '상체에 볼륨감이 있고 근육이 잘 붙는 체형',
+  keywords: ['심플', '베이직', 'I라인', '깔끔'],
   measurements: [
-    { name: '어깨', value: 40, description: '어깨 너비' },
-    { name: '허리', value: 65, description: '허리 둘레' },
-    { name: '골반', value: 95, description: '골반 둘레' },
+    { name: '어깨', value: 85, description: '상체 넓이 지수' },
+    { name: '허리', value: 70, description: '허리 라인 지수' },
+    { name: '골반', value: 75, description: '하체 넓이 지수' },
   ],
-  strengths: ['균형 잡힌 체형', '허리 라인 강조 가능'],
-  insight: '모래시계 체형으로 허리 라인을 강조하는 스타일이 어울립니다.',
+  strengths: ['상체가 탄탄해요', '옷이 잘 떨어져요', '정장이 잘 어울려요'],
+  avoidStyles: ['프릴', '오버핏', '루즈핏'],
+  insight: '심플하고 베이직한 스타일이 가장 잘 어울려요!',
   styleRecommendations: [
-    { item: '벨트', reason: '허리 강조' },
-    { item: '피트앤플레어', reason: '실루엣 강조' },
+    { item: '테일러드 재킷', reason: '탄탄한 상체를 살려줘요' },
+    { item: '스트레이트 팬츠', reason: 'I라인으로 깔끔하게' },
   ],
   analyzedAt: new Date(),
 };
@@ -106,7 +109,7 @@ describe('POST /api/analyze/body', () => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<ReturnType<typeof auth>>);
     vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
-    vi.mocked(generateMockBodyAnalysis).mockReturnValue(mockBodyAnalysisResult);
+    vi.mocked(generateMockBodyAnalysis3).mockReturnValue(mockBodyAnalysisResult);
     vi.mocked(generateColorRecommendations).mockReturnValue(mockColorRecommendations);
     vi.mocked(getColorTipsForBodyType).mockReturnValue(mockColorTips);
     mockStorageUpload.mockResolvedValue({ data: { path: 'user_test123/123.jpg' }, error: null });
@@ -167,7 +170,7 @@ describe('POST /api/analyze/body', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(true);
-      expect(generateMockBodyAnalysis).toHaveBeenCalled();
+      expect(generateMockBodyAnalysis3).toHaveBeenCalled();
     });
 
     it('사용자 입력(키/체중)과 함께 분석이 가능하다', async () => {

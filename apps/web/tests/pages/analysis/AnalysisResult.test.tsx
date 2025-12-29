@@ -40,9 +40,11 @@ describe('AnalysisResult', () => {
       { item: '블라우스', colorSuggestion: '아이보리', reason: '얼굴이 환하게 보여요' },
       { item: '니트', colorSuggestion: '코랄', reason: '혈색이 좋아 보여요' },
     ],
-    celebrityMatch: {
-      name: '아이유',
-      reason: '밝고 화사한 봄 웜톤 대표 연예인',
+    styleDescription: {
+      imageKeywords: ['화사한', '생기있는', '밝은', '청순한', '발랄한'],
+      makeupStyle: '코랄, 피치 계열의 따뜻한 컬러 메이크업이 잘 어울립니다.',
+      fashionStyle: '아이보리, 크림색, 연한 오렌지 톤의 밝고 따뜻한 색상이 어울립니다.',
+      accessories: '골드 주얼리, 베이지톤 가방이 잘 어울립니다.',
     },
     insight: '당신은 밝고 따뜻한 색상이 잘 어울리는 봄 웜톤입니다. 코랄, 피치 계열의 색상으로 스타일링하면 더욱 화사해 보여요!',
     analyzedAt: new Date('2025-12-09T10:00:00'),
@@ -117,23 +119,30 @@ describe('AnalysisResult', () => {
     });
   });
 
-  describe('연예인 매칭', () => {
-    it('닮은 연예인 섹션을 표시한다', () => {
+  describe('스타일 가이드', () => {
+    it('스타일 키워드 섹션을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('닮은 연예인')).toBeInTheDocument();
+      expect(screen.getByText('나의 스타일 키워드')).toBeInTheDocument();
     });
 
-    it('연예인 이름을 표시한다', () => {
+    it('스타일 키워드를 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('아이유')).toBeInTheDocument();
+      expect(screen.getByText('화사한')).toBeInTheDocument();
+      expect(screen.getByText('생기있는')).toBeInTheDocument();
     });
 
-    it('매칭 이유를 표시한다', () => {
+    it('스타일 가이드 섹션을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('밝고 화사한 봄 웜톤 대표 연예인')).toBeInTheDocument();
+      expect(screen.getByText('스타일 가이드')).toBeInTheDocument();
+    });
+
+    it('메이크업 스타일을 표시한다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.getByText(/코랄, 피치 계열의 따뜻한 컬러 메이크업/)).toBeInTheDocument();
     });
   });
 

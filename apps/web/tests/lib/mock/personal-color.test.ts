@@ -10,7 +10,7 @@ import {
   BEST_COLORS,
   WORST_COLORS,
   LIPSTICK_RECOMMENDATIONS,
-  CELEBRITY_MATCHES,
+  STYLE_DESCRIPTIONS,
   ONBOARDING_QUESTIONS,
   getSeasonColor,
   getSeasonBgColor,
@@ -77,11 +77,13 @@ describe('PC-1 퍼스널 컬러 Mock', () => {
       });
     });
 
-    it('연예인 매칭을 반환한다', () => {
+    it('스타일 설명을 반환한다', () => {
       const result = generateMockPersonalColorResult();
-      expect(result.celebrityMatch).toBeDefined();
-      expect(result.celebrityMatch.name).toBeDefined();
-      expect(result.celebrityMatch.reason).toBeDefined();
+      expect(result.styleDescription).toBeDefined();
+      expect(result.styleDescription.imageKeywords).toBeDefined();
+      expect(result.styleDescription.makeupStyle).toBeDefined();
+      expect(result.styleDescription.fashionStyle).toBeDefined();
+      expect(result.styleDescription.accessories).toBeDefined();
     });
 
     it('인사이트를 반환한다', () => {
@@ -209,10 +211,14 @@ describe('PC-1 퍼스널 컬러 Mock', () => {
       });
     });
 
-    it('CELEBRITY_MATCHES에 4계절 모두 3명씩 연예인이 있다', () => {
+    it('STYLE_DESCRIPTIONS에 4계절 모두 스타일 설명이 있다', () => {
       const seasons: SeasonType[] = ['spring', 'summer', 'autumn', 'winter'];
       seasons.forEach((season) => {
-        expect(CELEBRITY_MATCHES[season]).toHaveLength(3);
+        expect(STYLE_DESCRIPTIONS[season]).toBeDefined();
+        expect(STYLE_DESCRIPTIONS[season].imageKeywords.length).toBeGreaterThan(0);
+        expect(STYLE_DESCRIPTIONS[season].makeupStyle).toBeDefined();
+        expect(STYLE_DESCRIPTIONS[season].fashionStyle).toBeDefined();
+        expect(STYLE_DESCRIPTIONS[season].accessories).toBeDefined();
       });
     });
 

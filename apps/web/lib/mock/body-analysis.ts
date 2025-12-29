@@ -1,13 +1,22 @@
 /**
  * C-1 체형 분석 Mock 데이터
  *
- * 8가지 체형 타입: X자, A자, V자, H자, O자, I자, Y자, 8자
+ * 3타입 체형 시스템 (골격진단 기반):
+ * - S (스트레이트): 상체 볼륨, 입체적, 직선적
+ * - W (웨이브): 하체 볼륨, 곡선적, 부드러운
+ * - N (내추럴): 골격감, 프레임 큼, 자연스러운
+ *
+ * 레거시 8타입 (하위 호환): X, A, V, H, O, I, Y, 8
  *
  * Hook Model 적용:
  * - Action: 전신 사진 1장 업로드
  * - Reward: 고정(체형 타입, 비율) + 가변(스타일 인사이트)
  */
 
+// 새로운 3타입 체형 시스템
+export type BodyType3 = "S" | "W" | "N";
+
+// 레거시 8타입 (하위 호환)
 export type BodyType = "X" | "A" | "V" | "H" | "O" | "I" | "Y" | "8";
 
 export interface BodyMeasurement {
@@ -407,3 +416,301 @@ export function generateMockBodyAnalysis(
     bmiCategory,
   };
 }
+
+// ============================================================
+// 3타입 체형 시스템 (골격진단 기반)
+// ============================================================
+
+/**
+ * 3타입 체형 상세 정보
+ */
+export interface BodyType3Info {
+  id: BodyType3;
+  label: string;
+  labelEn: string;
+  emoji: string;
+  description: string;
+  characteristics: string;
+  keywords: string[];
+  strengths: string[];
+  avoidStyles: string[];
+  recommendations: StyleRecommendation[];
+  insights: string[];
+  // 초보자를 위한 추가 정보
+  celebrities: string[]; // 대표 연예인 예시
+  simpleExplanation: string; // 한 줄 쉬운 설명
+  selfCheckTip: string; // 자가 진단 팁
+}
+
+/**
+ * 3타입 체형 정보 (골격진단 기반)
+ */
+export const BODY_TYPES_3: Record<BodyType3, BodyType3Info> = {
+  S: {
+    id: "S",
+    label: "스트레이트",
+    labelEn: "Straight",
+    emoji: "📐",
+    description: "입체적이고 탄탄한 실루엣",
+    characteristics: "상체에 볼륨감이 있고 근육이 잘 붙는 체형. 어깨선이 직선적이고 허리 위치가 높은 편이에요.",
+    keywords: ["심플", "베이직", "I라인", "깔끔", "정장"],
+    strengths: [
+      "상체가 탄탄해요",
+      "옷이 잘 떨어져요",
+      "정장이 잘 어울려요",
+      "깔끔한 스타일이 잘 받아요",
+    ],
+    avoidStyles: ["프릴", "오버핏", "루즈핏", "과한 레이어드"],
+    recommendations: [
+      { item: "테일러드 재킷", reason: "탄탄한 상체를 살려줘요" },
+      { item: "스트레이트 팬츠", reason: "I라인으로 깔끔하게" },
+      { item: "V넥 니트", reason: "세로 라인을 강조해요" },
+      { item: "펜슬 스커트", reason: "깔끔한 실루엣을 완성해요" },
+    ],
+    insights: [
+      "심플하고 베이직한 스타일이 가장 잘 어울려요!",
+      "I라인 실루엣으로 깔끔하게 연출해보세요",
+      "정장 스타일이 특히 잘 어울리는 체형이에요",
+      "오버핏보다는 핏한 아이템이 더 좋아요",
+    ],
+    // 초보자용 정보
+    celebrities: [], // 저작권 이슈로 연예인 예시 제외
+    simpleExplanation: "딱 맞는 정사이즈 옷이 가장 잘 어울리는 타입이에요",
+    selfCheckTip: "정장이나 셔츠를 입었을 때 '깔끔하다'는 말을 자주 듣나요? 스트레이트일 확률이 높아요!",
+  },
+  W: {
+    id: "W",
+    label: "웨이브",
+    labelEn: "Wave",
+    emoji: "🌊",
+    description: "부드럽고 여성스러운 실루엣",
+    characteristics: "하체에 볼륨감이 있고 곡선미가 돋보이는 체형. 어깨선이 둥글고 허리가 잘록한 편이에요.",
+    keywords: ["페미닌", "X라인", "하이웨이스트", "프릴", "플레어"],
+    strengths: [
+      "여성스러운 곡선미가 있어요",
+      "하이웨이스트가 잘 어울려요",
+      "장신구가 잘 어울려요",
+      "부드러운 소재가 잘 받아요",
+    ],
+    avoidStyles: ["오버핏", "박시핏", "롱기장", "직선적 실루엣"],
+    recommendations: [
+      { item: "페플럼 블라우스", reason: "허리 라인을 강조해요" },
+      { item: "하이웨이스트 팬츠", reason: "비율을 좋게 만들어요" },
+      { item: "A라인 스커트", reason: "곡선미를 살려줘요" },
+      { item: "크롭 가디건", reason: "허리선을 높여줘요" },
+    ],
+    insights: [
+      "X라인 실루엣으로 곡선미를 살려보세요!",
+      "하이웨이스트 아이템이 비율을 좋게 만들어요",
+      "부드러운 소재와 디테일이 잘 어울려요",
+      "허리를 강조하는 스타일이 포인트예요",
+    ],
+    // 초보자용 정보
+    celebrities: [], // 저작권 이슈로 연예인 예시 제외
+    simpleExplanation: "프릴, 리본 같은 장식과 하이웨이스트가 잘 어울리는 타입이에요",
+    selfCheckTip: "원피스나 하이웨이스트 스커트를 입으면 '여성스럽다'는 말을 듣나요? 웨이브일 확률이 높아요!",
+  },
+  N: {
+    id: "N",
+    label: "내추럴",
+    labelEn: "Natural",
+    emoji: "🌿",
+    description: "자연스럽고 골격감 있는 실루엣",
+    characteristics: "뼈대가 크고 관절이 두드러지는 체형. 어깨가 넓고 프레임이 큰 편이에요.",
+    keywords: ["캐주얼", "오버핏", "레이어드", "자연스러움", "편안함"],
+    strengths: [
+      "어떤 옷이든 소화해요",
+      "레이어드가 잘 어울려요",
+      "캐주얼이 잘 어울려요",
+      "긴 기장도 잘 받아요",
+    ],
+    avoidStyles: ["타이트핏", "미니기장", "과한 장식", "딱 붙는 옷"],
+    recommendations: [
+      { item: "오버사이즈 셔츠", reason: "자연스러운 느낌을 줘요" },
+      { item: "와이드 팬츠", reason: "편안하면서 세련되게" },
+      { item: "롱 코트", reason: "프레임을 살려줘요" },
+      { item: "데님 재킷", reason: "캐주얼하게 연출해요" },
+    ],
+    insights: [
+      "자연스럽고 편안한 스타일이 가장 잘 어울려요!",
+      "레이어드 스타일링으로 멋을 내보세요",
+      "오버핏과 긴 기장이 잘 어울리는 체형이에요",
+      "무조건 핏한 것보다 여유로운 실루엣이 좋아요",
+    ],
+    // 초보자용 정보
+    celebrities: [], // 저작권 이슈로 연예인 예시 제외
+    simpleExplanation: "오버핏과 레이어드 스타일이 가장 잘 어울리는 타입이에요",
+    selfCheckTip: "오버사이즈 옷이나 맨투맨을 입으면 '멋있다'는 말을 듣나요? 내추럴일 확률이 높아요!",
+  },
+};
+
+/**
+ * 8타입 → 3타입 매핑
+ * - 스트레이트(S): X, V, Y (상체 발달, 직선적)
+ * - 웨이브(W): A, 8, O (하체 발달, 곡선적)
+ * - 내추럴(N): H, I (골격감, 직선형)
+ */
+export function mapBodyTypeTo3Type(bodyType: BodyType): BodyType3 {
+  const mapping: Record<BodyType, BodyType3> = {
+    X: "S",
+    V: "S",
+    Y: "S",
+    A: "W",
+    "8": "W",
+    O: "W",
+    H: "N",
+    I: "N",
+  };
+  return mapping[bodyType];
+}
+
+/**
+ * 3타입 결과 타입
+ */
+export interface BodyAnalysisResult3 {
+  bodyType: BodyType3;
+  bodyTypeLabel: string;
+  bodyTypeLabelEn: string;
+  bodyTypeDescription: string;
+  characteristics: string;
+  keywords: string[];
+  measurements: BodyMeasurement[];
+  strengths: string[];
+  avoidStyles: string[];
+  insight: string;
+  styleRecommendations: StyleRecommendation[];
+  analyzedAt: Date;
+  userInput?: UserBodyInput;
+  bmi?: number;
+  bmiCategory?: string;
+  personalColorSeason?: string | null;
+  colorRecommendations?: ColorRecommendations | null;
+  colorTips?: string[];
+}
+
+/**
+ * Mock 체형 분석 결과 생성 (3타입)
+ */
+export function generateMockBodyAnalysis3(
+  userInput?: UserBodyInput
+): BodyAnalysisResult3 {
+  // 랜덤 체형 선택 (3가지)
+  const bodyTypes: BodyType3[] = ["S", "W", "N"];
+  const bodyType = getRandomItem(bodyTypes);
+  const typeInfo = BODY_TYPES_3[bodyType];
+
+  // 체형별 측정값 범위 설정
+  const measurementRanges: Record<
+    BodyType3,
+    { shoulder: [number, number]; waist: [number, number]; hip: [number, number] }
+  > = {
+    S: { shoulder: [80, 90], waist: [65, 75], hip: [70, 80] }, // 상체 볼륨
+    W: { shoulder: [65, 75], waist: [60, 70], hip: [80, 90] }, // 하체 볼륨
+    N: { shoulder: [75, 85], waist: [70, 80], hip: [72, 82] }, // 골격감
+  };
+
+  const ranges = measurementRanges[bodyType];
+
+  // 측정값 생성
+  const measurements: BodyMeasurement[] = [
+    {
+      name: "어깨",
+      value: getRandomInRange(...ranges.shoulder),
+      description: "상체 넓이 지수",
+    },
+    {
+      name: "허리",
+      value: getRandomInRange(...ranges.waist),
+      description: "허리 라인 지수",
+    },
+    {
+      name: "골반",
+      value: getRandomInRange(...ranges.hip),
+      description: "하체 넓이 지수",
+    },
+  ];
+
+  // 가변 보상: 랜덤 인사이트 선택
+  const insight = getRandomItem(typeInfo.insights);
+
+  // BMI 계산 (사용자 입력이 있는 경우)
+  let bmi: number | undefined;
+  let bmiCategory: string | undefined;
+
+  if (userInput) {
+    bmi = userInput.weight / ((userInput.height / 100) ** 2);
+    bmiCategory = getBmiCategory(bmi);
+  }
+
+  return {
+    bodyType,
+    bodyTypeLabel: typeInfo.label,
+    bodyTypeLabelEn: typeInfo.labelEn,
+    bodyTypeDescription: typeInfo.description,
+    characteristics: typeInfo.characteristics,
+    keywords: typeInfo.keywords,
+    measurements,
+    strengths: typeInfo.strengths,
+    avoidStyles: typeInfo.avoidStyles,
+    insight,
+    styleRecommendations: typeInfo.recommendations,
+    analyzedAt: new Date(),
+    userInput,
+    bmi,
+    bmiCategory,
+  };
+}
+
+/**
+ * 3타입 체형별 컬러 클래스
+ */
+export function getBodyType3Color(type: BodyType3): string {
+  const colors: Record<BodyType3, string> = {
+    S: "text-blue-500",
+    W: "text-pink-500",
+    N: "text-green-500",
+  };
+  return colors[type];
+}
+
+/**
+ * 3타입 체형별 배경 컬러 클래스
+ */
+export function getBodyType3BgColor(type: BodyType3): string {
+  const colors: Record<BodyType3, string> = {
+    S: "bg-blue-500",
+    W: "bg-pink-500",
+    N: "bg-green-500",
+  };
+  return colors[type];
+}
+
+// ============================================================
+// 사진 촬영 가이드
+// ============================================================
+
+/**
+ * 체형 분석 사진 촬영 가이드 팁
+ */
+export const BODY_PHOTO_GUIDE_TIPS = [
+  {
+    icon: "sun" as const,
+    title: "밝은 조명",
+    description: "전신이 잘 보이는 밝은 곳에서 촬영해주세요",
+  },
+  {
+    icon: "shirt" as const,
+    title: "몸에 붙는 옷",
+    description: "체형이 잘 드러나는 옷을 입어주세요 (레깅스, 타이트 티셔츠 등)",
+  },
+  {
+    icon: "user" as const,
+    title: "바른 자세",
+    description: "정면을 바라보고 팔을 살짝 벌려 자연스럽게 서주세요",
+  },
+  {
+    icon: "ruler" as const,
+    title: "전신 포함",
+    description: "머리부터 발끝까지 모두 프레임에 들어오게 해주세요",
+  },
+];

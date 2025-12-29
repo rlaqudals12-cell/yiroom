@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ShoppingBag, ChevronDown, ChevronUp, ExternalLink, Palette, Shirt } from 'lucide-react';
-import type { BodyType } from '@/lib/mock/body-analysis';
+import type { BodyType, BodyType3 } from '@/lib/mock/body-analysis';
 import type { ColorRecommendations } from '@/lib/mock/body-analysis';
 
 interface ClothingItem {
@@ -14,71 +14,60 @@ interface ClothingItem {
 }
 
 interface RecommendedClothingCardProps {
-  bodyType: BodyType;
+  bodyType: BodyType | BodyType3 | string;
   styleRecommendations: Array<{ item: string; reason: string }>;
   colorRecommendations?: ColorRecommendations | null;
   personalColorSeason?: string | null;
 }
 
-// 체형별 상세 의류 추천 (쇼핑 검색어 포함)
-const BODY_TYPE_CLOTHING: Record<BodyType, ClothingItem[]> = {
-  X: [
-    { name: '핏티드 니트', category: '상의', reason: '허리 라인 강조', searchKeyword: '슬림핏 니트', icon: '👕' },
-    { name: '하이웨이스트 팬츠', category: '하의', reason: '균형잡힌 실루엣', searchKeyword: '하이웨이스트 와이드팬츠', icon: '👖' },
-    { name: 'A라인 스커트', category: '하의', reason: '여성스러운 라인', searchKeyword: 'A라인 미디스커트', icon: '👗' },
-    { name: '벨트', category: '악세서리', reason: '허리 강조 포인트', searchKeyword: '가죽 벨트 여성', icon: '🎀' },
+// 3타입 체형별 상세 의류 추천 (쇼핑 검색어 포함) - 대중적인 아이템 위주
+const BODY_TYPE_3_CLOTHING: Record<BodyType3, ClothingItem[]> = {
+  // 스트레이트: 심플하고 베이직한 I라인 아이템
+  S: [
+    { name: '슬림핏 티셔츠', category: '상의', reason: '깔끔한 실루엣', searchKeyword: '슬림핏 반팔티', icon: '👕' },
+    { name: '스트레이트 슬랙스', category: '하의', reason: 'I라인 연출', searchKeyword: '스트레이트 슬랙스', icon: '👖' },
+    { name: 'V넥 니트', category: '상의', reason: '세련된 느낌', searchKeyword: 'V넥 니트 베이직', icon: '🧶' },
+    { name: '테일러드 재킷', category: '아우터', reason: '정장 스타일', searchKeyword: '여성 블레이저', icon: '🧥' },
+    { name: '펜슬 스커트', category: '하의', reason: '깔끔한 라인', searchKeyword: '펜슬 스커트 오피스', icon: '👗' },
   ],
-  A: [
-    { name: '보트넥 상의', category: '상의', reason: '어깨 라인 확장', searchKeyword: '보트넥 티셔츠', icon: '👕' },
-    { name: '스트레이트 팬츠', category: '하의', reason: '하체 슬림 효과', searchKeyword: '스트레이트 슬랙스', icon: '👖' },
-    { name: 'A라인 원피스', category: '원피스', reason: '전체 균형', searchKeyword: 'A라인 미디원피스', icon: '👗' },
-    { name: '숄더 패드 블라우스', category: '상의', reason: '어깨 볼륨 추가', searchKeyword: '숄더패드 블라우스', icon: '👚' },
+  // 웨이브: 여성스럽고 X라인, 하이웨이스트 아이템
+  W: [
+    { name: '페플럼 블라우스', category: '상의', reason: '여성스러운 라인', searchKeyword: '페플럼 블라우스', icon: '👚' },
+    { name: '하이웨이스트 팬츠', category: '하의', reason: '다리 길어보이게', searchKeyword: '하이웨이스트 와이드팬츠', icon: '👖' },
+    { name: 'A라인 스커트', category: '하의', reason: 'X라인 연출', searchKeyword: 'A라인 미디스커트', icon: '👗' },
+    { name: '크롭 가디건', category: '아우터', reason: '허리선 강조', searchKeyword: '크롭 가디건', icon: '🧥' },
+    { name: '프릴 원피스', category: '원피스', reason: '여성스러움', searchKeyword: '프릴 원피스', icon: '👗' },
   ],
-  V: [
-    { name: 'V넥 상의', category: '상의', reason: '시선 집중 + 세로 라인', searchKeyword: 'V넥 니트', icon: '👕' },
-    { name: '와이드 팬츠', category: '하의', reason: '하체 볼륨감', searchKeyword: '와이드 팬츠 여성', icon: '👖' },
-    { name: '플레어 스커트', category: '하의', reason: '균형있는 실루엣', searchKeyword: '플레어 롱스커트', icon: '👗' },
-    { name: '심플 탑', category: '상의', reason: '어깨 자연스럽게', searchKeyword: '심플 민소매', icon: '👚' },
-  ],
-  H: [
-    { name: '벨트 원피스', category: '원피스', reason: '허리 라인 생성', searchKeyword: '벨트 셔츠원피스', icon: '👗' },
-    { name: '페플럼 상의', category: '상의', reason: '곡선미 추가', searchKeyword: '페플럼 블라우스', icon: '👚' },
-    { name: '랩 스타일 상의', category: '상의', reason: '여성스러운 라인', searchKeyword: '랩 블라우스', icon: '👕' },
-    { name: '플리츠 스커트', category: '하의', reason: '볼륨감 연출', searchKeyword: '플리츠 미디스커트', icon: '👗' },
-  ],
-  O: [
-    { name: 'V넥 니트', category: '상의', reason: '상체 길어보이게', searchKeyword: 'V넥 니트 여성', icon: '👕' },
-    { name: 'A라인 코트', category: '아우터', reason: '슬림한 실루엣', searchKeyword: 'A라인 롱코트', icon: '🧥' },
-    { name: '세로 스트라이프', category: '상의', reason: '세로 라인 강조', searchKeyword: '스트라이프 셔츠', icon: '👔' },
-    { name: '부츠컷 팬츠', category: '하의', reason: '날씬해 보이는 효과', searchKeyword: '부츠컷 슬랙스', icon: '👖' },
-  ],
-  I: [
-    { name: '볼륨 슬리브', category: '상의', reason: '입체감 추가', searchKeyword: '퍼프슬리브 블라우스', icon: '👚' },
-    { name: '레이어드 아이템', category: '상의', reason: '볼륨감 연출', searchKeyword: '레이어드 니트', icon: '👕' },
-    { name: '러플 원피스', category: '원피스', reason: '부드러운 곡선', searchKeyword: '러플 미디원피스', icon: '👗' },
-    { name: '크롭 재킷', category: '아우터', reason: '비율 조절', searchKeyword: '크롭 트위드 자켓', icon: '🧥' },
-  ],
-  Y: [
-    { name: '심플 탑', category: '상의', reason: '어깨 자연스럽게', searchKeyword: '기본 라운드 티', icon: '👕' },
-    { name: '와이드 팬츠', category: '하의', reason: '하체 볼륨감', searchKeyword: '와이드 슬랙스', icon: '👖' },
-    { name: 'A라인 스커트', category: '하의', reason: '전체 균형', searchKeyword: 'A라인 롱스커트', icon: '👗' },
-    { name: '다크톤 상의', category: '상의', reason: '상체 시각적 축소', searchKeyword: '블랙 니트', icon: '🖤' },
-  ],
-  '8': [
-    { name: '바디콘 원피스', category: '원피스', reason: '곡선미 강조', searchKeyword: '바디콘 미디원피스', icon: '👗' },
-    { name: '하이웨이스트', category: '하의', reason: '허리 라인 강조', searchKeyword: '하이웨이스트 스커트', icon: '👖' },
-    { name: '랩 상의', category: '상의', reason: '가슴 라인 정돈', searchKeyword: '랩 블라우스', icon: '👚' },
-    { name: '펜슬 스커트', category: '하의', reason: '곡선 실루엣', searchKeyword: '펜슬 미디스커트', icon: '👗' },
+  // 내추럴: 오버핏, 캐주얼, 레이어드 아이템
+  N: [
+    { name: '오버사이즈 셔츠', category: '상의', reason: '자연스러운 핏', searchKeyword: '오버핏 셔츠', icon: '👕' },
+    { name: '와이드 팬츠', category: '하의', reason: '편안한 실루엣', searchKeyword: '와이드 슬랙스', icon: '👖' },
+    { name: '롱 코트', category: '아우터', reason: '레이어드 연출', searchKeyword: '롱코트 여성', icon: '🧥' },
+    { name: '맨투맨', category: '상의', reason: '캐주얼 스타일', searchKeyword: '오버핏 맨투맨', icon: '👕' },
+    { name: '데님 재킷', category: '아우터', reason: '자연스러운 멋', searchKeyword: '청자켓 여성', icon: '🧥' },
   ],
 };
 
-// 쇼핑몰 링크 생성
+// 레거시 8타입 체형별 의류 추천 (하위 호환성)
+const BODY_TYPE_CLOTHING: Record<BodyType, ClothingItem[]> = {
+  X: BODY_TYPE_3_CLOTHING.S,
+  V: BODY_TYPE_3_CLOTHING.S,
+  Y: BODY_TYPE_3_CLOTHING.S,
+  A: BODY_TYPE_3_CLOTHING.W,
+  '8': BODY_TYPE_3_CLOTHING.W,
+  O: BODY_TYPE_3_CLOTHING.W,
+  H: BODY_TYPE_3_CLOTHING.N,
+  I: BODY_TYPE_3_CLOTHING.N,
+};
+
+// 대중적인 쇼핑몰 링크 생성
 function generateShoppingLinks(keyword: string, color?: string) {
   const searchTerm = color ? `${color} ${keyword}` : keyword;
   const encodedKeyword = encodeURIComponent(searchTerm);
 
   return {
     musinsa: `https://www.musinsa.com/search/musinsa/integration?q=${encodedKeyword}`,
+    ably: `https://m.a-bly.com/search?keyword=${encodedKeyword}`,
     coupang: `https://www.coupang.com/np/search?component=&q=${encodedKeyword}`,
   };
 }
@@ -126,8 +115,8 @@ function ClothingItemCard({
             </div>
           )}
 
-          {/* 쇼핑 링크 */}
-          <div className="flex items-center gap-2">
+          {/* 쇼핑 링크 - 대중적인 플랫폼 */}
+          <div className="flex flex-wrap items-center gap-2">
             <a
               href={links.musinsa}
               target="_blank"
@@ -136,6 +125,16 @@ function ClothingItemCard({
               data-testid="musinsa-link"
             >
               무신사
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            <a
+              href={links.ably}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-[#ff4081] text-white rounded hover:bg-[#e91e63] transition-colors"
+              data-testid="ably-link"
+            >
+              에이블리
               <ExternalLink className="w-3 h-3" />
             </a>
             <a
@@ -166,7 +165,21 @@ export default function RecommendedClothingCard({
 }: RecommendedClothingCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const clothingItems = BODY_TYPE_CLOTHING[bodyType] || [];
+  // 3타입이면 직접 사용, 8타입이면 매핑, 그 외는 스트레이트 기본값
+  const getClothingItems = (): ClothingItem[] => {
+    if (bodyType === 'S' || bodyType === 'W' || bodyType === 'N') {
+      return BODY_TYPE_3_CLOTHING[bodyType];
+    }
+    // 8타입 체크
+    const validBodyTypes: BodyType[] = ['X', 'V', 'Y', 'A', '8', 'O', 'H', 'I'];
+    if (validBodyTypes.includes(bodyType as BodyType)) {
+      return BODY_TYPE_CLOTHING[bodyType as BodyType];
+    }
+    // 기본값: 스트레이트
+    return BODY_TYPE_3_CLOTHING.S;
+  };
+
+  const clothingItems = getClothingItems();
 
   // 색상 추천이 있으면 카테고리별로 색상 배정
   const getRecommendedColor = (category: string): string | undefined => {

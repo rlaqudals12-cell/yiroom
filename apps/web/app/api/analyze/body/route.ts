@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { analyzeBody, type GeminiBodyAnalysisResult } from "@/lib/gemini";
 import {
-  generateMockBodyAnalysis,
-  BODY_TYPES,
-  type BodyType,
+  generateMockBodyAnalysis3,
+  BODY_TYPES_3,
+  type BodyType3,
 } from "@/lib/mock/body-analysis";
 import {
   generateColorRecommendations,
@@ -66,35 +66,43 @@ export async function POST(req: Request) {
     let usedMock = false;
 
     if (FORCE_MOCK || useMock) {
-      // Mock 모드
-      const mockResult = generateMockBodyAnalysis(userInput);
+      // Mock 모드 (3타입 시스템)
+      const mockResult = generateMockBodyAnalysis3(userInput);
       result = {
         bodyType: mockResult.bodyType,
         bodyTypeLabel: mockResult.bodyTypeLabel,
+        bodyTypeLabelEn: mockResult.bodyTypeLabelEn,
         bodyTypeDescription: mockResult.bodyTypeDescription,
+        characteristics: mockResult.characteristics,
+        keywords: mockResult.keywords,
         measurements: mockResult.measurements,
         strengths: mockResult.strengths,
+        avoidStyles: mockResult.avoidStyles,
         insight: mockResult.insight,
         styleRecommendations: mockResult.styleRecommendations,
       };
       usedMock = true;
-      console.log("[C-1] Using mock analysis");
+      console.log("[C-1] Using mock analysis (3-type system)");
     } else {
       // Real AI 분석
       try {
-        console.log("[C-1] Starting Gemini analysis...");
+        console.log("[C-1] Starting Gemini analysis (3-type system)...");
         result = await analyzeBody(imageBase64);
         console.log("[C-1] Gemini analysis completed");
       } catch (aiError) {
-        // AI 실패 시 Mock으로 폴백
+        // AI 실패 시 Mock으로 폴백 (3타입 시스템)
         console.error("[C-1] Gemini error, falling back to mock:", aiError);
-        const mockResult = generateMockBodyAnalysis(userInput);
+        const mockResult = generateMockBodyAnalysis3(userInput);
         result = {
           bodyType: mockResult.bodyType,
           bodyTypeLabel: mockResult.bodyTypeLabel,
+          bodyTypeLabelEn: mockResult.bodyTypeLabelEn,
           bodyTypeDescription: mockResult.bodyTypeDescription,
+          characteristics: mockResult.characteristics,
+          keywords: mockResult.keywords,
           measurements: mockResult.measurements,
           strengths: mockResult.strengths,
+          avoidStyles: mockResult.avoidStyles,
           insight: mockResult.insight,
           styleRecommendations: mockResult.styleRecommendations,
         };
@@ -202,8 +210,8 @@ export async function POST(req: Request) {
       else bmiCategory = "비만";
     }
 
-    // 체형 정보 보완 (BODY_TYPES에서 가져오기)
-    const bodyTypeInfo = BODY_TYPES[result.bodyType as BodyType];
+    // 체형 정보 보완 (BODY_TYPES_3에서 가져오기 - 3타입 시스템)
+    const bodyTypeInfo = BODY_TYPES_3[result.bodyType as BodyType3];
 
     // 게이미피케이션 연동
     const gamificationResult: {
@@ -240,7 +248,11 @@ export async function POST(req: Request) {
       result: {
         ...result,
         bodyTypeLabel: result.bodyTypeLabel || bodyTypeInfo?.label,
+        bodyTypeLabelEn: result.bodyTypeLabelEn || bodyTypeInfo?.labelEn,
         bodyTypeDescription: result.bodyTypeDescription || bodyTypeInfo?.description,
+        characteristics: result.characteristics || bodyTypeInfo?.characteristics,
+        keywords: result.keywords || bodyTypeInfo?.keywords,
+        avoidStyles: result.avoidStyles || bodyTypeInfo?.avoidStyles,
         userInput,
         bmi,
         bmiCategory,

@@ -70,7 +70,12 @@ const mockPersonalColorResult = {
     { item: '아이보리 블라우스', colorSuggestion: '아이보리', reason: '밝고 따뜻한 이미지 강조' },
     { item: '베이지 카디건', colorSuggestion: '베이지', reason: '자연스러운 피부톤 연출' },
   ],
-  celebrityMatch: { name: '아이유', reason: '밝은 이미지' },
+  styleDescription: {
+    imageKeywords: ['화사한', '생기있는', '밝은'],
+    makeupStyle: '코랄, 피치 계열의 따뜻한 컬러 메이크업이 잘 어울립니다.',
+    fashionStyle: '아이보리, 크림색, 연한 오렌지 톤의 밝고 따뜻한 색상이 어울립니다.',
+    accessories: '골드 주얼리, 베이지톤 가방이 잘 어울립니다.',
+  },
   insight: '밝은 색상과 따뜻한 톤이 잘 어울립니다.',
   analyzedAt: new Date(),
 };

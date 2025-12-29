@@ -5,7 +5,11 @@ import {
   analyzePersonalColor,
   type GeminiPersonalColorResult,
 } from "@/lib/gemini";
-import { generateMockPersonalColorResult } from "@/lib/mock/personal-color";
+import {
+  generateMockPersonalColorResult,
+  STYLE_DESCRIPTIONS,
+  type SeasonType,
+} from "@/lib/mock/personal-color";
 import {
   awardAnalysisBadge,
   checkAndAwardAllAnalysisBadge,
@@ -25,7 +29,7 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === "true";
  * POST /api/analyze/personal-color
  * Body: {
  *   imageBase64: string,                    // 얼굴 이미지 (필수)
- *   questionnaireAnswers?: Record<string, string>,  // 문진 응답 (선택)
+ *   wristImageBase64?: string,              // 손목 이미지 (선택 - 웜/쿨 판단 정확도 향상)
  *   useMock?: boolean                       // Mock 모드 강제 (선택)
  * }
  *
@@ -46,7 +50,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { imageBase64, questionnaireAnswers, useMock = false } = body;
+    const { imageBase64, wristImageBase64, useMock = false } = body;
 
     if (!imageBase64) {
       return NextResponse.json(
@@ -56,13 +60,13 @@ export async function POST(req: Request) {
     }
 
     // AI 분석 실행 (Real AI 또는 Mock)
-    let result: GeminiPersonalColorResult;
+    let aiResult: GeminiPersonalColorResult;
     let usedMock = false;
 
     if (FORCE_MOCK || useMock) {
       // Mock 모드
       const mockResult = generateMockPersonalColorResult();
-      result = {
+      aiResult = {
         seasonType: mockResult.seasonType,
         seasonLabel: mockResult.seasonLabel,
         seasonDescription: mockResult.seasonDescription,
@@ -73,7 +77,7 @@ export async function POST(req: Request) {
         worstColors: mockResult.worstColors,
         lipstickRecommendations: mockResult.lipstickRecommendations,
         clothingRecommendations: mockResult.clothingRecommendations,
-        celebrityMatch: mockResult.celebrityMatch,
+        styleDescription: mockResult.styleDescription,
         insight: mockResult.insight,
       };
       usedMock = true;
@@ -82,13 +86,13 @@ export async function POST(req: Request) {
       // Real AI 분석
       try {
         console.log("[PC-1] Starting Gemini analysis...");
-        result = await analyzePersonalColor(imageBase64, questionnaireAnswers);
+        aiResult = await analyzePersonalColor(imageBase64, wristImageBase64);
         console.log("[PC-1] Gemini analysis completed");
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error("[PC-1] Gemini error, falling back to mock:", aiError);
         const mockResult = generateMockPersonalColorResult();
-        result = {
+        aiResult = {
           seasonType: mockResult.seasonType,
           seasonLabel: mockResult.seasonLabel,
           seasonDescription: mockResult.seasonDescription,
@@ -99,12 +103,18 @@ export async function POST(req: Request) {
           worstColors: mockResult.worstColors,
           lipstickRecommendations: mockResult.lipstickRecommendations,
           clothingRecommendations: mockResult.clothingRecommendations,
-          celebrityMatch: mockResult.celebrityMatch,
+          styleDescription: mockResult.styleDescription,
           insight: mockResult.insight,
         };
         usedMock = true;
       }
     }
+
+    // AI 결과에 styleDescription이 없는 경우 기본값 사용
+    const result = {
+      ...aiResult,
+      styleDescription: aiResult.styleDescription || STYLE_DESCRIPTIONS[aiResult.seasonType as SeasonType],
+    };
 
     const supabase = createServiceRoleClient();
 
@@ -153,7 +163,7 @@ export async function POST(req: Request) {
       .from("personal_color_assessments")
       .insert({
         clerk_user_id: userId,
-        questionnaire_answers: questionnaireAnswers || {},
+        questionnaire_answers: {}, // 문진 응답 (현재 미사용)
         face_image_url: faceImageUrl,
         season: season,
         undertone: undertone,
@@ -170,17 +180,18 @@ export async function POST(req: Request) {
           tone: result.tone,
           depth: result.depth,
           insight: result.insight,
-          celebrityMatch: result.celebrityMatch,
+          styleDescription: result.styleDescription, // 연예인 매칭 대체
         },
         best_colors: result.bestColors,
         worst_colors: result.worstColors,
         makeup_recommendations: {
           lipstick: result.lipstickRecommendations,
           insight: result.insight,
+          styleDescription: result.styleDescription,
         },
         fashion_recommendations: {
           clothing: result.clothingRecommendations,
-          celebrityMatch: result.celebrityMatch,
+          styleDescription: result.styleDescription,
         },
       })
       .select()
