@@ -371,7 +371,7 @@ describe('WorkoutMetricsDashboard', () => {
         />
       );
 
-      expect(screen.getByText('🎉 7일 달성!')).toBeInTheDocument();
+      expect(screen.getByText('7일 달성!')).toBeInTheDocument();
     });
 
     it('7일 미만 연속 기록 시 축하 메시지가 표시되지 않는다', () => {
@@ -386,7 +386,7 @@ describe('WorkoutMetricsDashboard', () => {
         />
       );
 
-      expect(screen.queryByText('🎉 7일 달성!')).not.toBeInTheDocument();
+      expect(screen.queryByText('7일 달성!')).not.toBeInTheDocument();
     });
   });
 
