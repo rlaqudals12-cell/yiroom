@@ -15,7 +15,7 @@ import { CollageView } from '@/components/inventory';
 import {
   suggestOutfitFromCloset,
   type OutfitSuggestion,
-} from '@/lib/inventory';
+} from '@/lib/inventory/client';
 import type { InventoryItem } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
 

@@ -19,8 +19,8 @@ import {
   resizeImage,
   removeBackgroundClient,
   blobToDataUrl,
-} from '@/lib/inventory';
-import type { ClothingClassificationResult } from '@/lib/inventory';
+  type ClothingClassificationResult,
+} from '@/lib/inventory/imageProcessing';
 
 type ProcessingStep =
   | 'idle'

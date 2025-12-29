@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { getRecommendationSummary } from '@/lib/inventory';
+import { getRecommendationSummary } from '@/lib/inventory/client';
 import type { InventoryItem } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
 
