@@ -81,4 +81,23 @@ export const ROUTES = {
   ONBOARDING: '/onboarding',
   YEAR_REVIEW: '/year-review',
   FEED: '/feed',
+  // 분석 플로우
+  ANALYSIS_PERSONAL_COLOR: '/analysis/personal-color',
+  ANALYSIS_SKIN: '/analysis/skin',
+  ANALYSIS_BODY: '/analysis/body',
+  // 옷장/인벤토리
+  CLOSET: '/closet',
+  CLOSET_ADD: '/closet/add',
+  CLOSET_OUTFITS: '/closet/outfits',
+  // 소셜
+  FRIENDS: '/friends',
+  FRIENDS_SEARCH: '/friends/search',
+  FRIENDS_REQUESTS: '/friends/requests',
+  LEADERBOARD: '/leaderboard',
+  // 기타
+  COACH: '/coach',
+  CHAT: '/chat',
+  WELLNESS: '/wellness',
+  HELP_FAQ: '/help/faq',
+  ANNOUNCEMENTS: '/announcements',
 } as const;
