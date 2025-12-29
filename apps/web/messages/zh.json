@@ -1,0 +1,124 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "发生错误",
+    "retry": "重试",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "search": "搜索",
+    "noData": "暂无数据",
+    "seeMore": "查看更多",
+    "showAll": "查看全部"
+  },
+  "nav": {
+    "home": "首页",
+    "beauty": "美容",
+    "style": "穿搭",
+    "record": "记录",
+    "profile": "我的"
+  },
+  "auth": {
+    "signIn": "登录",
+    "signOut": "退出",
+    "signUp": "注册",
+    "myPage": "个人中心"
+  },
+  "home": {
+    "greeting": "你好！",
+    "todayRecord": "今日记录",
+    "quickActions": "快捷菜单",
+    "recentActivity": "最近动态"
+  },
+  "beauty": {
+    "title": "美容",
+    "personalColor": "个人色彩",
+    "skinAnalysis": "肤质分析",
+    "recommendations": "推荐产品",
+    "cosmetics": "化妆品",
+    "supplements": "营养品"
+  },
+  "style": {
+    "title": "穿搭",
+    "bodyAnalysis": "体型分析",
+    "closet": "衣橱",
+    "outfitSuggestion": "穿搭推荐",
+    "lookbook": "穿搭手册"
+  },
+  "record": {
+    "title": "记录",
+    "workout": "运动",
+    "nutrition": "营养",
+    "report": "报告",
+    "history": "历史"
+  },
+  "workout": {
+    "title": "运动",
+    "todayWorkout": "今日运动",
+    "workoutPlan": "训练计划",
+    "exercises": "运动列表",
+    "sets": "组数",
+    "reps": "次数",
+    "duration": "时长",
+    "calories": "卡路里",
+    "complete": "完成训练"
+  },
+  "nutrition": {
+    "title": "营养",
+    "meal": "餐食",
+    "breakfast": "早餐",
+    "lunch": "午餐",
+    "dinner": "晚餐",
+    "snack": "零食",
+    "water": "饮水",
+    "calories": "卡路里",
+    "protein": "蛋白质",
+    "carbs": "碳水化合物",
+    "fat": "脂肪"
+  },
+  "profile": {
+    "title": "我的",
+    "settings": "设置",
+    "notifications": "通知",
+    "language": "语言",
+    "theme": "主题",
+    "friends": "好友",
+    "achievements": "成就"
+  },
+  "social": {
+    "friends": "好友",
+    "addFriend": "添加好友",
+    "friendRequests": "好友请求",
+    "leaderboard": "排行榜",
+    "challenges": "挑战"
+  },
+  "analysis": {
+    "analyzing": "分析中...",
+    "result": "分析结果",
+    "retake": "重新拍摄",
+    "share": "分享"
+  },
+  "errors": {
+    "networkError": "网络错误",
+    "serverError": "服务器错误",
+    "notFound": "页面不存在",
+    "unauthorized": "请先登录",
+    "forbidden": "无访问权限"
+  },
+  "time": {
+    "today": "今天",
+    "yesterday": "昨天",
+    "thisWeek": "本周",
+    "thisMonth": "本月",
+    "daysAgo": "{count}天前",
+    "hoursAgo": "{count}小时前",
+    "minutesAgo": "{count}分钟前",
+    "justNow": "刚刚"
+  }
+}

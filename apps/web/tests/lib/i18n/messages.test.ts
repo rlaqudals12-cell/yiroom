@@ -8,10 +8,14 @@ import { locales } from '@/i18n/config';
 // 메시지 파일 로드
 let koMessages: Record<string, unknown>;
 let enMessages: Record<string, unknown>;
+let jaMessages: Record<string, unknown>;
+let zhMessages: Record<string, unknown>;
 
 beforeAll(async () => {
   koMessages = (await import('@/messages/ko.json')).default;
   enMessages = (await import('@/messages/en.json')).default;
+  jaMessages = (await import('@/messages/ja.json')).default;
+  zhMessages = (await import('@/messages/zh.json')).default;
 });
 
 describe('i18n messages', () => {
@@ -24,6 +28,16 @@ describe('i18n messages', () => {
     it('영어 메시지 파일이 존재해야 함', () => {
       expect(enMessages).toBeDefined();
       expect(typeof enMessages).toBe('object');
+    });
+
+    it('일본어 메시지 파일이 존재해야 함', () => {
+      expect(jaMessages).toBeDefined();
+      expect(typeof jaMessages).toBe('object');
+    });
+
+    it('중국어 메시지 파일이 존재해야 함', () => {
+      expect(zhMessages).toBeDefined();
+      expect(typeof zhMessages).toBe('object');
     });
   });
 
@@ -54,6 +68,16 @@ describe('i18n messages', () => {
       expect(enMessages[namespace]).toBeDefined();
       expect(typeof enMessages[namespace]).toBe('object');
     });
+
+    it.each(requiredNamespaces)('일본어 메시지에 "%s" 네임스페이스가 존재해야 함', (namespace) => {
+      expect(jaMessages[namespace]).toBeDefined();
+      expect(typeof jaMessages[namespace]).toBe('object');
+    });
+
+    it.each(requiredNamespaces)('중국어 메시지에 "%s" 네임스페이스가 존재해야 함', (namespace) => {
+      expect(zhMessages[namespace]).toBeDefined();
+      expect(typeof zhMessages[namespace]).toBe('object');
+    });
   });
 
   describe('common 네임스페이스', () => {
@@ -78,6 +102,14 @@ describe('i18n messages', () => {
     it.each(commonKeys)('영어 common에 "%s" 키가 존재해야 함', (key) => {
       expect((enMessages.common as Record<string, unknown>)[key]).toBeDefined();
     });
+
+    it.each(commonKeys)('일본어 common에 "%s" 키가 존재해야 함', (key) => {
+      expect((jaMessages.common as Record<string, unknown>)[key]).toBeDefined();
+    });
+
+    it.each(commonKeys)('중국어 common에 "%s" 키가 존재해야 함', (key) => {
+      expect((zhMessages.common as Record<string, unknown>)[key]).toBeDefined();
+    });
   });
 
   describe('nav 네임스페이스', () => {
@@ -90,25 +122,45 @@ describe('i18n messages', () => {
     it.each(navKeys)('영어 nav에 "%s" 키가 존재해야 함', (key) => {
       expect((enMessages.nav as Record<string, unknown>)[key]).toBeDefined();
     });
+
+    it.each(navKeys)('일본어 nav에 "%s" 키가 존재해야 함', (key) => {
+      expect((jaMessages.nav as Record<string, unknown>)[key]).toBeDefined();
+    });
+
+    it.each(navKeys)('중국어 nav에 "%s" 키가 존재해야 함', (key) => {
+      expect((zhMessages.nav as Record<string, unknown>)[key]).toBeDefined();
+    });
   });
 
   describe('메시지 일관성', () => {
-    it('한국어와 영어 메시지의 네임스페이스가 동일해야 함', () => {
+    it('모든 언어의 네임스페이스가 동일해야 함', () => {
       const koNamespaces = Object.keys(koMessages).sort();
       const enNamespaces = Object.keys(enMessages).sort();
+      const jaNamespaces = Object.keys(jaMessages).sort();
+      const zhNamespaces = Object.keys(zhMessages).sort();
       expect(koNamespaces).toEqual(enNamespaces);
+      expect(koNamespaces).toEqual(jaNamespaces);
+      expect(koNamespaces).toEqual(zhNamespaces);
     });
 
     it('common 네임스페이스의 키가 동일해야 함', () => {
       const koKeys = Object.keys(koMessages.common as object).sort();
       const enKeys = Object.keys(enMessages.common as object).sort();
+      const jaKeys = Object.keys(jaMessages.common as object).sort();
+      const zhKeys = Object.keys(zhMessages.common as object).sort();
       expect(koKeys).toEqual(enKeys);
+      expect(koKeys).toEqual(jaKeys);
+      expect(koKeys).toEqual(zhKeys);
     });
 
     it('nav 네임스페이스의 키가 동일해야 함', () => {
       const koKeys = Object.keys(koMessages.nav as object).sort();
       const enKeys = Object.keys(enMessages.nav as object).sort();
+      const jaKeys = Object.keys(jaMessages.nav as object).sort();
+      const zhKeys = Object.keys(zhMessages.nav as object).sort();
       expect(koKeys).toEqual(enKeys);
+      expect(koKeys).toEqual(jaKeys);
+      expect(koKeys).toEqual(zhKeys);
     });
   });
 
@@ -127,6 +179,8 @@ describe('i18n messages', () => {
 
       checkStringValues(koMessages);
       checkStringValues(enMessages);
+      checkStringValues(jaMessages);
+      checkStringValues(zhMessages);
     });
 
     it('메시지에 빈 문자열이 없어야 함', () => {
@@ -143,6 +197,8 @@ describe('i18n messages', () => {
 
       checkNonEmptyStrings(koMessages);
       checkNonEmptyStrings(enMessages);
+      checkNonEmptyStrings(jaMessages);
+      checkNonEmptyStrings(zhMessages);
     });
   });
 });

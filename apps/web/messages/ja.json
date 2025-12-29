@@ -1,0 +1,124 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "retry": "再試行",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "close": "閉じる",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "search": "検索",
+    "noData": "データがありません",
+    "seeMore": "もっと見る",
+    "showAll": "すべて表示"
+  },
+  "nav": {
+    "home": "ホーム",
+    "beauty": "ビューティー",
+    "style": "スタイル",
+    "record": "記録",
+    "profile": "プロフィール"
+  },
+  "auth": {
+    "signIn": "ログイン",
+    "signOut": "ログアウト",
+    "signUp": "新規登録",
+    "myPage": "マイページ"
+  },
+  "home": {
+    "greeting": "こんにちは！",
+    "todayRecord": "今日の記録",
+    "quickActions": "クイックメニュー",
+    "recentActivity": "最近のアクティビティ"
+  },
+  "beauty": {
+    "title": "ビューティー",
+    "personalColor": "パーソナルカラー",
+    "skinAnalysis": "肌分析",
+    "recommendations": "おすすめ商品",
+    "cosmetics": "コスメ",
+    "supplements": "サプリメント"
+  },
+  "style": {
+    "title": "スタイル",
+    "bodyAnalysis": "体型分析",
+    "closet": "クローゼット",
+    "outfitSuggestion": "コーデ提案",
+    "lookbook": "ルックブック"
+  },
+  "record": {
+    "title": "記録",
+    "workout": "ワークアウト",
+    "nutrition": "栄養",
+    "report": "レポート",
+    "history": "履歴"
+  },
+  "workout": {
+    "title": "ワークアウト",
+    "todayWorkout": "今日のワークアウト",
+    "workoutPlan": "トレーニング計画",
+    "exercises": "エクササイズ一覧",
+    "sets": "セット",
+    "reps": "回",
+    "duration": "時間",
+    "calories": "カロリー",
+    "complete": "トレーニング完了"
+  },
+  "nutrition": {
+    "title": "栄養",
+    "meal": "食事",
+    "breakfast": "朝食",
+    "lunch": "昼食",
+    "dinner": "夕食",
+    "snack": "間食",
+    "water": "水分",
+    "calories": "カロリー",
+    "protein": "タンパク質",
+    "carbs": "炭水化物",
+    "fat": "脂質"
+  },
+  "profile": {
+    "title": "プロフィール",
+    "settings": "設定",
+    "notifications": "通知",
+    "language": "言語",
+    "theme": "テーマ",
+    "friends": "友達",
+    "achievements": "実績"
+  },
+  "social": {
+    "friends": "友達",
+    "addFriend": "友達追加",
+    "friendRequests": "友達リクエスト",
+    "leaderboard": "ランキング",
+    "challenges": "チャレンジ"
+  },
+  "analysis": {
+    "analyzing": "分析中...",
+    "result": "分析結果",
+    "retake": "再撮影",
+    "share": "シェア"
+  },
+  "errors": {
+    "networkError": "ネットワークエラーが発生しました",
+    "serverError": "サーバーエラーが発生しました",
+    "notFound": "ページが見つかりません",
+    "unauthorized": "ログインが必要です",
+    "forbidden": "アクセス権限がありません"
+  },
+  "time": {
+    "today": "今日",
+    "yesterday": "昨日",
+    "thisWeek": "今週",
+    "thisMonth": "今月",
+    "daysAgo": "{count}日前",
+    "hoursAgo": "{count}時間前",
+    "minutesAgo": "{count}分前",
+    "justNow": "たった今"
+  }
+}
