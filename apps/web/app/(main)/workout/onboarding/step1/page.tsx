@@ -8,6 +8,7 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useWorkoutInputStore, type PersonalColorSeason } from '@/lib/stores/workoutInputStore';
 import { ProgressIndicator, StepNavigation } from '@/components/workout/common';
 import { BODY_TYPES, type BodyType } from '@/lib/mock/body-analysis';
+import { workoutFunnel, durationTrackers } from '@/lib/analytics';
 import { Loader2, AlertCircle, CheckCircle2, Palette } from 'lucide-react';
 
 // body_analyses 테이블 데이터 타입
@@ -48,6 +49,16 @@ export default function Step1Page() {
   const [pcAssessment, setPcAssessment] = useState<PersonalColorAssessment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 퍼널 트래킹: 온보딩 시작 + 체류 시간 측정
+  useEffect(() => {
+    workoutFunnel.onboardingStart();
+    durationTrackers.workoutOnboarding.start();
+
+    return () => {
+      durationTrackers.workoutOnboarding.stop();
+    };
+  }, []);
 
   // C-1 및 PC-1 데이터 조회
   useEffect(() => {

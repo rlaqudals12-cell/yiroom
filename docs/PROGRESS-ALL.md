@@ -1642,6 +1642,19 @@ Lighthouse 측정:
   [x] Performance: 68 (로그인 페이지, Clerk 로딩 영향)
   [x] SEO: 58 (로그인 페이지, 의도적 noindex)
   * 참고: 실제 앱 페이지는 root layout metadata 상속
+
+SEO 확장 (추가):
+  [x] 15개 페이지 layout.tsx 메타데이터
+      - record, style, chat, closet, challenges, profile
+      - feed, announcements, help, year-review
+  [x] sitemap.ts 19개 페이지로 확장
+  [x] robots.ts 해당 경로 allow 추가
+
+Analytics 데이터 수집 강화:
+  [x] funnel.ts: 5개 퍼널 분석 (onboarding, analysis, workout, product, social)
+  [x] duration.ts: 기능별 사용 시간 트래킹
+  [x] beforeunload sendBeacon 지원
+  [x] 13개 사전 정의 트래커 (분석/운동/영양/제품/소셜)
 ```
 
 ---

@@ -4,6 +4,7 @@ import { useAuth } from '@clerk/nextjs';
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { openAffiliateLink } from '@/lib/products/affiliate';
+import { productFunnel } from '@/lib/analytics';
 import { toAffiliateProductType } from '@/types/affiliate';
 import type { ProductType } from '@/types/product';
 
@@ -34,6 +35,10 @@ export function PurchaseButton({
 
   const handleClick = () => {
     if (!targetUrl) return;
+
+    // 퍼널 트래킹: 어필리에이트 클릭
+    const partnerId = affiliateUrl ? 'affiliate' : 'direct';
+    productFunnel.clickAffiliate(productId, partnerId);
 
     // 어필리에이트 링크 열기 + 트래킹
     openAffiliateLink(
