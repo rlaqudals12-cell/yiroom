@@ -20,6 +20,8 @@ Phase E (추가 개선)     █████████████████�
 Phase F (운영 준비)     ████████████████████  95% 🔄 (F-6 보안 완료, 배포 전 항목 대기)
 Phase G (Product v3)    ████████████████████ 100% ✅ (Sprint 1-3 완료, 2025-12-19)
 Phase H (게이미피케이션) ████████████████████ 100% ✅ (Sprint 1-2 완료)
+Phase I (어필리에이트)  ████████████████░░░░  80% 🔄 (Phase 1-4 + 무신사 완료, 2025-12-29)
+Phase J (스마트 매칭)  ████████████████████ 100% ✅ (J-1~J-6 완료, 2025-12-29)
 ```
 
 ---
@@ -1671,6 +1673,238 @@ C-1 체형 분석 UX 개선:
 
 ---
 
+## Phase I: 어필리에이트 시스템 🔄 진행 중
+
+> **시작일**: 2025-12-29 | **목표**: 제휴 마케팅 수익화
+
+### 개요
+
+어필리에이트 파트너사(iHerb, 쿠팡, 무신사)와 연동하여:
+- 제품 이미지/데이터 자동 수집
+- 클릭 트래킹 및 전환 추적
+- 수수료 수익 창출
+
+### 파트너사
+
+| 파트너사 | 카테고리 | 수수료율 | 우선순위 | 상태 |
+|---------|---------|---------|---------|------|
+| 쿠팡 파트너스 | 영양제, 화장품, 생활용품 | 1~3% | P0 | ⏳ 다음 |
+| iHerb | 영양제, 건강식품 | 5~20% | P0 | ⏳ 대기 |
+| 무신사 큐레이터 | 패션, 의류 | ~10% | P1 | ⏳ 대기 |
+
+> **전략**: 동일 제품을 여러 파트너에서 제공하여 사용자 선택권 부여
+> - 빠른 배송 → 쿠팡 / 저렴한 가격 → iHerb / 포인트 → 네이버
+
+### 구현 현황
+
+```yaml
+Phase 1 기반 구축 (1주): ✅ 완료 (2025-12-29)
+  [x] DB 마이그레이션 (affiliate_* 테이블 4개)
+  [x] 타입 정의 (types/affiliate.ts)
+  [x] Repository 패턴 구현 (lib/affiliate/)
+  [x] 클릭 트래킹 API (POST /api/affiliate/click)
+  [x] 제품 조회 API (GET /api/affiliate/products)
+
+Phase 2 쿠팡 연동 (1주): ✅ 완료 (2025-12-29)
+  # 한국 사용자 우선 - 빠른 배송, 익숙한 플랫폼
+  [x] 쿠팡 API 클라이언트 (lib/affiliate/coupang.ts)
+  [x] HMAC 서명 기반 인증
+  [x] 제품 검색 API (GET /api/affiliate/coupang/search)
+  [x] 제품 동기화 API (POST /api/affiliate/coupang/sync)
+  [x] 딥링크 통합 (lib/affiliate/deeplink.ts)
+  [x] 딥링크 API (POST /api/affiliate/deeplink)
+  [x] Mock 모드 지원 (환경변수 미설정 시)
+  [x] 테스트 44개 통과
+  [ ] 쿠팡 파트너스 가입 및 승인 (외부 작업)
+
+Phase 3 UI 통합 (1주): ✅ 완료 (2025-12-29)
+  # 다중 채널 구매 옵션
+  [x] MultiChannelProductCard 컴포넌트
+  [x] ChannelComparisonTable (가격/배송 비교)
+  [x] AffiliateDisclosure (법적 고지 컴포넌트)
+  [x] 테스트 37개 통과
+
+Phase 4 iHerb 연동 (1주): 🔄 Mock 완료 (2025-12-29)
+  # 글로벌/가격민감 사용자
+  [x] iHerb API 클라이언트 (lib/affiliate/iherb.ts)
+  [x] Mock 모드 지원 (환경변수 미설정 시)
+  [x] iHerb 검색 API (GET /api/affiliate/iherb/search)
+  [x] iHerb 동기화 API (POST /api/affiliate/iherb/sync)
+  [x] 테스트 22개 통과
+  [ ] Partnerize 가입 및 승인 (외부 작업)
+  [ ] CSV 피드 파서 구현 (실제 연동 시)
+
+Phase 4.5 무신사 연동: ✅ Mock 완료 (2025-12-29)
+  # 패션 카테고리 확장
+  [x] 무신사 API 클라이언트 (lib/affiliate/musinsa.ts)
+  [x] Mock 모드 지원 (환경변수 미설정 시)
+  [x] 무신사 검색 API (GET /api/affiliate/musinsa/search)
+  [x] 무신사 동기화 API (POST /api/affiliate/musinsa/sync)
+  [x] 테스트 23개 통과
+  [ ] 무신사 큐레이터 가입 및 승인 (외부 작업)
+
+Phase 5 모니터링 (1주): ⏳ 대기
+  [ ] 수익 대시보드
+  [ ] A/B 테스트 (채널 순서)
+```
+
+### 주요 파일
+
+```
+lib/affiliate/
+├── index.ts           # 통합 export
+├── partners.ts        # 파트너 Repository
+├── products.ts        # 제품 Repository (필터/매칭)
+├── clicks.ts          # 클릭 트래킹/통계
+├── coupang.ts         # 쿠팡 API 클라이언트 (Phase 2)
+├── iherb.ts           # iHerb API 클라이언트 (Phase 4)
+├── musinsa.ts         # 무신사 API 클라이언트 (Phase 4.5)
+└── deeplink.ts        # 딥링크 통합 생성 (Phase 2)
+
+components/affiliate/   # Phase 3 UI 컴포넌트
+├── index.ts                    # 통합 export
+├── MultiChannelProductCard.tsx # 다중 채널 제품 카드
+├── ChannelComparisonTable.tsx  # 가격/배송 비교 테이블
+└── AffiliateDisclosure.tsx     # 법적 고지 컴포넌트
+
+app/api/affiliate/
+├── click/route.ts     # POST 클릭 기록
+├── products/route.ts  # GET 제품 조회
+├── coupang/
+│   ├── search/route.ts  # GET 쿠팡 검색
+│   └── sync/route.ts    # POST 동기화
+├── iherb/
+│   ├── search/route.ts  # GET iHerb 검색 (Phase 4)
+│   └── sync/route.ts    # POST 동기화 (Phase 4)
+├── musinsa/
+│   ├── search/route.ts  # GET 무신사 검색 (Phase 4.5)
+│   └── sync/route.ts    # POST 동기화 (Phase 4.5)
+└── deeplink/route.ts    # POST 딥링크 생성
+
+supabase/migrations/
+└── 202512290200_affiliate_system.sql  # 4개 테이블
+```
+
+### DB 테이블
+
+| 테이블 | 설명 |
+|--------|------|
+| affiliate_partners | 파트너 설정 (iHerb, 쿠팡, 무신사) |
+| affiliate_products | 어필리에이트 제품 (매칭 정보 포함) |
+| affiliate_clicks | 클릭 추적 (IP 익명화) |
+| affiliate_daily_stats | 일별 통계 |
+
+---
+
+## Phase J: 스마트 매칭 시스템 ✅ 완료
+
+> **완료일**: 2025-12-29 | **테스트**: 약 300개 | **코드 품질**: TypeCheck ✅, Lint ✅
+
+### 개요
+
+제품 추천의 정확도와 사용자 경험을 극대화하는 스마트 매칭 시스템:
+- 사용자 신체 치수 기반 사이즈 추천
+- 가격 모니터링 및 비교
+- 운동기구 개인화 추천
+- 바코드 스캔 기반 제품 인식
+
+### 모듈별 상태
+
+| 모듈 | 설명 | 상태 | 주요 파일 |
+|------|------|------|----------|
+| J-1 | 사용자 Preferences | ✅ 완료 | `preferences.ts`, `measurements.ts` |
+| J-2 | 사이즈 추천 | ✅ 완료 | `size-recommend.ts`, `size-charts.ts` |
+| J-3 | 가격 모니터링 | ✅ 완료 | `price-watches.ts`, `price-compare.ts` |
+| J-4 | 바코드 인식 | ✅ 완료 | `barcodes.ts`, `BarcodeScanner` |
+| J-5 | 제품 매칭 v2 | ✅ 완료 | `product-matching.ts` |
+| J-6 | 운동기구 매칭 | ✅ 완료 | `equipment-recommend.ts` |
+
+### 구현 현황
+
+```yaml
+J-1 사용자 Preferences:
+  [x] 신체 치수 저장/조회 (measurements.ts)
+  [x] 알림 선호도, 가격 민감도 설정 (preferences.ts)
+  [x] Supabase RLS 정책 적용
+
+J-2 사이즈 추천:
+  [x] 3단계 추론 로직 (구매기록 → 브랜드차트 → 일반추론)
+  [x] 브랜드별 사이즈 차트 (size-charts.ts)
+  [x] 구매 이력 기반 학습 (size-history.ts)
+  [x] SizeRecommendationCard UI 컴포넌트
+
+J-3 가격 모니터링:
+  [x] 가격 알림 등록/조회 (price-watches.ts)
+  [x] 플랫폼별 가격 비교 (price-compare.ts)
+  [x] 가격 트렌드 분석
+  [x] PriceWatchButton, PriceComparisonCard UI
+
+J-4 바코드 인식:
+  [x] 바코드 DB 조회/등록 (barcodes.ts)
+  [x] html5-qrcode 연동
+  [x] 제품 자동 연결
+
+J-5 제품 매칭 v2:
+  [x] 사용자 분석 결과 통합 (퍼스널컬러, 피부, 체형)
+  [x] 제품 점수화 알고리즘 (calculateProductMatchScore)
+  [x] 제품-사용자 매칭 상세 이유 생성
+
+J-6 운동기구 매칭:
+  [x] 운동 목표별 기구 추천 (getEquipmentRecommendation)
+  [x] 홈짐 구성 플랜 (getHomeGymSetup)
+  [x] 단계별 구매 계획 생성
+  [x] EquipmentRecommendationCard, HomeGymSetupCard UI
+```
+
+### 주요 파일
+
+```
+lib/smart-matching/
+├── index.ts               # 통합 export
+├── preferences.ts         # 사용자 선호도
+├── measurements.ts        # 신체 치수
+├── size-recommend.ts      # 사이즈 추천 (3단계 추론)
+├── size-history.ts        # 구매 이력
+├── size-charts.ts         # 브랜드 사이즈 차트
+├── price-watches.ts       # 가격 알림
+├── price-compare.ts       # 가격 비교
+├── barcodes.ts            # 바코드 관리
+├── product-matching.ts    # 제품 매칭 v2
+└── equipment-recommend.ts # 운동기구 추천
+
+components/smart-matching/
+├── SizeRecommendationCard.tsx
+├── PriceWatchButton.tsx
+├── PriceComparisonCard.tsx
+├── EquipmentRecommendationCard.tsx
+└── HomeGymSetupCard.tsx
+
+app/api/smart-matching/
+├── preferences/route.ts
+├── size-recommend/route.ts
+├── price-watch/route.ts
+├── price-compare/route.ts
+├── barcode/route.ts
+├── product-match/route.ts
+└── equipment-recommend/route.ts
+
+supabase/migrations/
+└── 202512290300_smart_matching.sql  # 6개 테이블
+```
+
+### DB 테이블
+
+| 테이블 | 설명 |
+|--------|------|
+| user_preferences | 사용자 선호도 (알림, 가격 민감도) |
+| user_body_measurements | 신체 치수 (키, 몸무게, 가슴, 허리 등) |
+| brand_size_charts | 브랜드별 사이즈 차트 |
+| user_size_history | 구매/착용 이력 |
+| price_watches | 가격 알림 설정 |
+| product_barcodes | 바코드-제품 매핑 |
+
+---
+
 ## 파일 구조
 
 ```
@@ -1710,6 +1944,7 @@ components/
 ├── wellness/               # H-2 웰니스 스코어 컴포넌트
 ├── friends/                # H-2 친구 시스템 컴포넌트
 ├── leaderboard/            # H-2 리더보드 컴포넌트
+├── smart-matching/         # Phase J 스마트 매칭 컴포넌트
 └── common/                 # 공통 컴포넌트
 
 lib/
@@ -1726,11 +1961,24 @@ lib/
 ├── stores/                 # Zustand 스토어
 ├── mock/                   # Mock 데이터
 ├── products.ts             # re-export (기존 API 호환)
-└── products/               # Product DB Repository (v3.0)
+├── products/               # Product DB Repository (v3.0)
+│   ├── index.ts            # 통합 export
+│   ├── repositories/       # 도메인별 CRUD
+│   ├── services/           # 통합 검색
+│   └── matching.ts         # 매칭 로직
+├── affiliate/              # Phase I 어필리에이트 시스템
+│   ├── index.ts            # 통합 export
+│   ├── partners.ts         # 파트너 Repository
+│   ├── products.ts         # 제품 Repository
+│   └── clicks.ts           # 클릭 트래킹/통계
+└── smart-matching/         # Phase J 스마트 매칭
     ├── index.ts            # 통합 export
-    ├── repositories/       # 도메인별 CRUD
-    ├── services/           # 통합 검색
-    └── matching.ts         # 매칭 로직
+    ├── preferences.ts      # 사용자 선호도
+    ├── measurements.ts     # 신체 치수
+    ├── size-recommend.ts   # 사이즈 추천
+    ├── price-watches.ts    # 가격 알림
+    ├── barcodes.ts         # 바코드 관리
+    └── equipment-recommend.ts # 운동기구 추천
 
 types/
 ├── workout.ts              # W-1 타입
@@ -1741,7 +1989,9 @@ types/
 ├── wellness.ts             # H-2 웰니스 스코어 타입
 ├── friends.ts              # H-2 친구 시스템 타입
 ├── leaderboard.ts          # H-2 리더보드 타입
-└── product.ts              # Product DB 타입 (A-2)
+├── product.ts              # Product DB 타입 (A-2)
+├── affiliate.ts            # Phase I 어필리에이트 타입
+└── smart-matching.ts       # Phase J 스마트 매칭 타입
 
 data/
 ├── exercises/              # 운동 DB (100개)
@@ -1769,6 +2019,8 @@ data/
 | [phase-next/GAMIFICATION-SPEC.md](phase-next/GAMIFICATION-SPEC.md) | Phase H 게이미피케이션 시스템 스펙 |
 | [phase-next/CHALLENGE-SYSTEM-DESIGN.md](phase-next/CHALLENGE-SYSTEM-DESIGN.md) | Phase H 챌린지 시스템 설계 |
 | [ROADMAP-LAUNCH.md](ROADMAP-LAUNCH.md) | 런칭 로드맵 (2025-01-20 목표) |
+| [SPEC-AFFILIATE-SYSTEM.md](SPEC-AFFILIATE-SYSTEM.md) | Phase I 어필리에이트 시스템 스펙 |
+| [SPEC-SMART-MATCHING-SYSTEM.md](SPEC-SMART-MATCHING-SYSTEM.md) | Phase J 스마트 매칭 시스템 스펙 |
 
 ---
 
