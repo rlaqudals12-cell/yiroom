@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { koKR } from "@clerk/localizations";
+import { koKR, enUS } from "@clerk/localizations";
 import { Inter, Noto_Sans_KR } from "next/font/google";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { getLocale, getMessages } from "next-intl/server";
 
 import Navbar from "@/components/Navbar";
 import { BottomNav } from "@/components/BottomNav";
@@ -12,7 +13,14 @@ import { OfflineBanner } from "@/components/OfflineBanner";
 import { SyncUserProvider } from "@/components/providers/sync-user-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { GamificationProvider } from "@/components/gamification";
+import { I18nProvider } from "@/components/providers/i18n-provider";
 import "./globals.css";
+
+// Clerk 로컬라이제이션 맵
+const clerkLocalizations = {
+  ko: koKR,
+  en: enUS,
+} as const;
 
 const inter = Inter({
   variable: "--font-inter",
@@ -75,14 +83,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+  const clerkLocalization = clerkLocalizations[locale as keyof typeof clerkLocalizations] || koKR;
+
   return (
-    <ClerkProvider localization={koKR}>
-      <html lang="ko" suppressHydrationWarning>
+    <ClerkProvider localization={clerkLocalization}>
+      <html lang={locale} suppressHydrationWarning>
         <head>
           {/* Preconnect hints for external domains - Lighthouse Performance */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -96,21 +108,22 @@ export default function RootLayout({
           style={{ fontFamily: 'Inter, "Noto Sans KR", sans-serif' }}
         >
           <ThemeProvider defaultTheme="system">
-            <OfflineBanner />
-            <a
-              href="#main-content"
-              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-white px-4 py-2 rounded-lg z-50"
-            >
-              본문으로 건너뛰기
-            </a>
-            <SyncUserProvider>
-              <GamificationProvider>
-                <Navbar />
-                <main id="main-content" className="pb-16 md:pb-0">
-                  {children}
-                </main>
-                <BottomNav />
-              </GamificationProvider>
+            <I18nProvider locale={locale} messages={messages}>
+              <OfflineBanner />
+              <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-white px-4 py-2 rounded-lg z-50"
+              >
+                {locale === 'ko' ? '본문으로 건너뛰기' : 'Skip to main content'}
+              </a>
+              <SyncUserProvider>
+                <GamificationProvider>
+                  <Navbar />
+                  <main id="main-content" className="pb-16 md:pb-0">
+                    {children}
+                  </main>
+                  <BottomNav />
+                </GamificationProvider>
               <Toaster
                 position="top-center"
                 theme="system"
@@ -127,6 +140,7 @@ export default function RootLayout({
                 }}
               />
             </SyncUserProvider>
+            </I18nProvider>
             <Analytics />
             <SpeedInsights />
           </ThemeProvider>

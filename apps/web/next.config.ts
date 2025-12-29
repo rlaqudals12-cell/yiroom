@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 import withPWAInit from "@ducanh2912/next-pwa";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import { withSentryConfig } from "@sentry/nextjs";
+import createNextIntlPlugin from "next-intl/plugin";
+
+// i18n 플러그인 (서버 컴포넌트에서 메시지 로드)
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 /**
  * PWA 설정 (오프라인 지원 활성화)
@@ -177,6 +181,9 @@ const sentryConfig = {
 // Sentry 설정이 완전하면 withSentryConfig 사용, 아니면 기본 config 사용
 const hasSentryConfig = process.env.SENTRY_ORG && process.env.SENTRY_PROJECT;
 
+// 플러그인 체인: i18n → PWA → Analyzer → (Sentry)
+const baseConfig = withNextIntl(withAnalyzer(withPWA(nextConfig)));
+
 export default hasSentryConfig
-  ? withSentryConfig(withAnalyzer(withPWA(nextConfig)), sentryConfig)
-  : withAnalyzer(withPWA(nextConfig));
+  ? withSentryConfig(baseConfig, sentryConfig)
+  : baseConfig;

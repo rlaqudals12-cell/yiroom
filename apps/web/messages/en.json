@@ -1,0 +1,124 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "noData": "No data available",
+    "seeMore": "See more",
+    "showAll": "Show all"
+  },
+  "nav": {
+    "home": "Home",
+    "beauty": "Beauty",
+    "style": "Style",
+    "record": "Record",
+    "profile": "Profile"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "signUp": "Sign Up",
+    "myPage": "My Page"
+  },
+  "home": {
+    "greeting": "Hello!",
+    "todayRecord": "Today's Record",
+    "quickActions": "Quick Menu",
+    "recentActivity": "Recent Activity"
+  },
+  "beauty": {
+    "title": "Beauty",
+    "personalColor": "Personal Color",
+    "skinAnalysis": "Skin Analysis",
+    "recommendations": "Recommendations",
+    "cosmetics": "Cosmetics",
+    "supplements": "Supplements"
+  },
+  "style": {
+    "title": "Style",
+    "bodyAnalysis": "Body Analysis",
+    "closet": "Closet",
+    "outfitSuggestion": "Outfit Suggestions",
+    "lookbook": "Lookbook"
+  },
+  "record": {
+    "title": "Record",
+    "workout": "Workout",
+    "nutrition": "Nutrition",
+    "report": "Report",
+    "history": "History"
+  },
+  "workout": {
+    "title": "Workout",
+    "todayWorkout": "Today's Workout",
+    "workoutPlan": "Workout Plan",
+    "exercises": "Exercises",
+    "sets": "Sets",
+    "reps": "Reps",
+    "duration": "Duration",
+    "calories": "Calories",
+    "complete": "Complete Workout"
+  },
+  "nutrition": {
+    "title": "Nutrition",
+    "meal": "Meal",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "snack": "Snack",
+    "water": "Water",
+    "calories": "Calories",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat"
+  },
+  "profile": {
+    "title": "Profile",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "language": "Language",
+    "theme": "Theme",
+    "friends": "Friends",
+    "achievements": "Achievements"
+  },
+  "social": {
+    "friends": "Friends",
+    "addFriend": "Add Friend",
+    "friendRequests": "Friend Requests",
+    "leaderboard": "Leaderboard",
+    "challenges": "Challenges"
+  },
+  "analysis": {
+    "analyzing": "Analyzing...",
+    "result": "Analysis Result",
+    "retake": "Retake Photo",
+    "share": "Share"
+  },
+  "errors": {
+    "networkError": "Network error occurred",
+    "serverError": "Server error occurred",
+    "notFound": "Page not found",
+    "unauthorized": "Login required",
+    "forbidden": "Access denied"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "daysAgo": "{count} days ago",
+    "hoursAgo": "{count} hours ago",
+    "minutesAgo": "{count} minutes ago",
+    "justNow": "Just now"
+  }
+}

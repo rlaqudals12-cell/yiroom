@@ -1,0 +1,124 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "retry": "다시 시도",
+    "cancel": "취소",
+    "confirm": "확인",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "search": "검색",
+    "noData": "데이터가 없습니다",
+    "seeMore": "더 보기",
+    "showAll": "전체 보기"
+  },
+  "nav": {
+    "home": "홈",
+    "beauty": "뷰티",
+    "style": "스타일",
+    "record": "기록",
+    "profile": "프로필"
+  },
+  "auth": {
+    "signIn": "로그인",
+    "signOut": "로그아웃",
+    "signUp": "회원가입",
+    "myPage": "마이페이지"
+  },
+  "home": {
+    "greeting": "안녕하세요!",
+    "todayRecord": "오늘의 기록",
+    "quickActions": "빠른 메뉴",
+    "recentActivity": "최근 활동"
+  },
+  "beauty": {
+    "title": "뷰티",
+    "personalColor": "퍼스널 컬러",
+    "skinAnalysis": "피부 분석",
+    "recommendations": "추천 제품",
+    "cosmetics": "화장품",
+    "supplements": "영양제"
+  },
+  "style": {
+    "title": "스타일",
+    "bodyAnalysis": "체형 분석",
+    "closet": "옷장",
+    "outfitSuggestion": "코디 추천",
+    "lookbook": "룩북"
+  },
+  "record": {
+    "title": "기록",
+    "workout": "운동",
+    "nutrition": "영양",
+    "report": "리포트",
+    "history": "히스토리"
+  },
+  "workout": {
+    "title": "운동",
+    "todayWorkout": "오늘의 운동",
+    "workoutPlan": "운동 계획",
+    "exercises": "운동 목록",
+    "sets": "세트",
+    "reps": "횟수",
+    "duration": "시간",
+    "calories": "칼로리",
+    "complete": "운동 완료"
+  },
+  "nutrition": {
+    "title": "영양",
+    "meal": "식사",
+    "breakfast": "아침",
+    "lunch": "점심",
+    "dinner": "저녁",
+    "snack": "간식",
+    "water": "물",
+    "calories": "칼로리",
+    "protein": "단백질",
+    "carbs": "탄수화물",
+    "fat": "지방"
+  },
+  "profile": {
+    "title": "프로필",
+    "settings": "설정",
+    "notifications": "알림",
+    "language": "언어",
+    "theme": "테마",
+    "friends": "친구",
+    "achievements": "업적"
+  },
+  "social": {
+    "friends": "친구",
+    "addFriend": "친구 추가",
+    "friendRequests": "친구 요청",
+    "leaderboard": "리더보드",
+    "challenges": "챌린지"
+  },
+  "analysis": {
+    "analyzing": "분석 중...",
+    "result": "분석 결과",
+    "retake": "다시 촬영",
+    "share": "공유하기"
+  },
+  "errors": {
+    "networkError": "네트워크 오류가 발생했습니다",
+    "serverError": "서버 오류가 발생했습니다",
+    "notFound": "페이지를 찾을 수 없습니다",
+    "unauthorized": "로그인이 필요합니다",
+    "forbidden": "접근 권한이 없습니다"
+  },
+  "time": {
+    "today": "오늘",
+    "yesterday": "어제",
+    "thisWeek": "이번 주",
+    "thisMonth": "이번 달",
+    "daysAgo": "{count}일 전",
+    "hoursAgo": "{count}시간 전",
+    "minutesAgo": "{count}분 전",
+    "justNow": "방금"
+  }
+}
