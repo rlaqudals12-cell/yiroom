@@ -4,7 +4,6 @@
 
 // 사이즈 추천
 export { SizeRecommendationCard } from './SizeRecommendationCard';
-export { SizeFeedbackModal } from './SizeFeedbackModal';
 
 // 가격 비교
 export { PriceComparisonCard } from './PriceComparisonCard';

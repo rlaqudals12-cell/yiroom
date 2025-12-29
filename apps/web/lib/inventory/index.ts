@@ -37,16 +37,6 @@ export {
   type ClothingClassificationResult,
 } from './imageProcessing';
 
-// Storage
-export {
-  uploadInventoryImage,
-  deleteInventoryImage,
-  deleteAllUserImages,
-  extractStoragePath,
-  createUploadSignedUrl,
-  downloadInventoryImage,
-} from './storage';
-
 // Closet Matcher (퍼스널컬러/체형/날씨 기반 추천)
 export {
   calculateMatchScore,
