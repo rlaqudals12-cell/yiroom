@@ -302,7 +302,7 @@ export function WorkoutMetricsDashboard({
           <div className="text-right">
             <p className="text-sm font-medium text-foreground/80">{metrics[6].subValue}</p>
             {currentStreak >= 7 && (
-              <p className="text-xs text-orange-600">🎉 7일 달성!</p>
+              <p className="text-xs text-orange-600">7일 달성!</p>
             )}
           </div>
         </div>
@@ -312,7 +312,7 @@ export function WorkoutMetricsDashboard({
       <div className="mt-4 pt-4 border-t border-border">
         <div className="flex items-center justify-center h-32 bg-muted rounded-xl">
           <div className="text-center">
-            <div className="text-3xl mb-2">📊</div>
+            <TrendingUp className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
               운동 기록 후 상세 분석 차트가 표시됩니다
             </p>
@@ -322,9 +322,9 @@ export function WorkoutMetricsDashboard({
 
       {/* 안내 메시지 */}
       {completedDays === 0 && (
-        <div className="mt-4 p-3 bg-indigo-50 rounded-lg">
-          <p className="text-sm text-indigo-700">
-            💡 운동을 시작하면 실시간으로 지표가 업데이트됩니다!
+        <div className="mt-4 p-3 bg-primary/10 rounded-lg">
+          <p className="text-sm text-primary">
+            운동을 시작하면 실시간으로 지표가 업데이트됩니다!
           </p>
         </div>
       )}

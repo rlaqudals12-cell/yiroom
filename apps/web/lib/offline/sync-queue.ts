@@ -48,7 +48,7 @@ export interface SyncResult {
 
 const STORAGE_KEY = 'yiroom_sync_queue';
 const MAX_RETRY_COUNT = 3;
-const RETRY_DELAY_MS = 5000;
+const _RETRY_DELAY_MS = 5000;
 
 // ============================================================
 // 유틸리티 함수
@@ -327,7 +327,7 @@ export function stopAutoSync(): void {
 // Export
 // ============================================================
 
-export default {
+const syncQueueModule = {
   addToSyncQueue,
   getSyncQueue,
   getPendingCount,
@@ -338,3 +338,5 @@ export default {
   startAutoSync,
   stopAutoSync,
 };
+
+export default syncQueueModule;

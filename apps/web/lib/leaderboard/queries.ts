@@ -30,22 +30,22 @@ export async function getLeaderboard(
   date?: Date
 ): Promise<Leaderboard | null> {
   let startDate: string;
-  let endDate: string;
+  let _endDate: string;
 
   const targetDate = date ?? new Date();
 
   switch (period) {
     case 'weekly':
       startDate = getWeekStartDate(targetDate);
-      endDate = getWeekEndDate(targetDate);
+      _endDate = getWeekEndDate(targetDate);
       break;
     case 'monthly':
       startDate = getMonthStartDate(targetDate);
-      endDate = getMonthEndDate(targetDate);
+      _endDate = getMonthEndDate(targetDate);
       break;
     case 'all_time':
       startDate = '2024-01-01';
-      endDate = '2099-12-31';
+      _endDate = '2099-12-31';
       break;
   }
 

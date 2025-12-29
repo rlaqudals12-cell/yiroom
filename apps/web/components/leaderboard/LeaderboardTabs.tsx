@@ -2,7 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { LeaderboardPeriod, LeaderboardCategory } from '@/types/leaderboard';
-import { getPeriodLabel, getCategoryLabel, getCategoryIcon } from '@/types/leaderboard';
+import { getPeriodLabel, getCategoryLabel } from '@/types/leaderboard';
 import { Calendar, Trophy, TrendingUp, Dumbbell, Utensils, Sparkles, Star } from 'lucide-react';
 
 interface LeaderboardTabsProps {

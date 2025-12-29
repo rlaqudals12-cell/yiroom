@@ -60,7 +60,7 @@ export function StreakProgress({
             {currentStreak}/{displayDays}일
           </span>
           {currentStreak >= displayDays && (
-            <span className="text-status-success font-medium">🎉 목표 달성!</span>
+            <span className="text-status-success font-medium">목표 달성!</span>
           )}
         </div>
       )}

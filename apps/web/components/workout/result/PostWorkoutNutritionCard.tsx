@@ -68,25 +68,25 @@ export default function PostWorkoutNutritionCard({
   return (
     <div
       data-testid="post-workout-nutrition-card"
-      className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-2xl border border-orange-100 overflow-hidden"
+      className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden"
     >
       {/* 헤더 */}
       <div className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center">
-              <Utensils className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+              <Utensils className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground flex items-center gap-2">
-                {quickMessage.icon} {quickMessage.title}
+              <h3 className="font-bold text-foreground">
+                {quickMessage.title}
               </h3>
-              <p className="text-sm text-orange-600">{quickMessage.message}</p>
+              <p className="text-sm text-primary">{quickMessage.message}</p>
             </div>
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-orange-600"
+            className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-primary"
             aria-label={isExpanded ? '접기' : '펼치기'}
           >
             {isExpanded ? (
@@ -123,8 +123,8 @@ export default function PostWorkoutNutritionCard({
             data-testid="protein-recommendation"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-foreground">🥩 단백질 권장량</span>
-              <span className="text-lg font-bold text-orange-600">
+              <span className="text-sm font-medium text-foreground">단백질 권장량</span>
+              <span className="text-lg font-bold text-primary">
                 {proteinRec.min}-{proteinRec.max}{proteinRec.unit}
               </span>
             </div>
@@ -137,7 +137,7 @@ export default function PostWorkoutNutritionCard({
           {tips.proteinTips.length > 0 && (
             <div data-testid="protein-tips">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-foreground/80">💪 단백질 보충</span>
+                <span className="text-sm font-medium text-foreground/80">단백질 보충</span>
               </div>
               <div className="space-y-2">
                 {tips.proteinTips.map((tip, index) => (
@@ -151,7 +151,7 @@ export default function PostWorkoutNutritionCard({
           {tips.mealTips.length > 0 && (
             <div data-testid="meal-tips">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-foreground/80">🍽️ 식사 추천</span>
+                <span className="text-sm font-medium text-foreground/80">식사 추천</span>
               </div>
               <div className="space-y-2">
                 {tips.mealTips.map((tip, index) => (
@@ -177,7 +177,7 @@ export default function PostWorkoutNutritionCard({
             </p>
             <Link
               href="/nutrition"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-foreground hover:bg-foreground/90 text-background text-sm font-medium rounded-lg transition-colors"
             >
               식단 분석 받기
               <ArrowRight className="w-4 h-4" />

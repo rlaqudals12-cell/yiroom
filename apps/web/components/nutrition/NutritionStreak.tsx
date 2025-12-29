@@ -76,7 +76,7 @@ export function NutritionStreakProgress({
             {currentStreak}/{displayDays}일
           </span>
           {currentStreak >= displayDays && (
-            <span className="text-module-nutrition font-medium">🎉 목표 달성!</span>
+            <span className="text-module-nutrition font-medium">목표 달성!</span>
           )}
         </div>
       )}
@@ -284,7 +284,7 @@ export function NutritionStreakCard({
         <p className="text-foreground">{message}</p>
         {warningMessage && (
           <p className="text-amber-600 text-sm mt-1 font-medium">
-            ⚡ {warningMessage}
+            {warningMessage}
           </p>
         )}
       </div>

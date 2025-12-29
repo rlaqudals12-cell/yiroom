@@ -321,8 +321,189 @@ function calculateHealthFoodMatchScore(
 }
 
 // ================================================
-// 리뷰 평점 보너스
+// 대중성 관련 보너스 (가격, 브랜드, 리뷰)
 // ================================================
+
+/**
+ * 올리브영/화해에서 쉽게 구할 수 있는 대중 브랜드 목록
+ */
+const POPULAR_BRANDS: Record<string, string[]> = {
+  // 스킨케어 - 올리브영 어워즈 수상 브랜드
+  skincare: [
+    '라운드랩', '아누아', '토리든', '달바', '닥터지', '클레어스',
+    '비플레인', '구달', '메디힐', '웰라쥬', '코스알엑스', '이니스프리',
+    '미샤', '넘버즈인', '에스네이처', '메디큐브', '마녀공장', '아이소이',
+    '피지오겔', '라로슈포제', '세타필', '더마비', '에뛰드', '클리오',
+  ],
+  // 영양제 - 대중적 브랜드
+  supplement: [
+    '종근당건강', '뉴트리원', '센트룸', '얼라이브', '솔가', '나우푸드',
+    '닥터스베스트', '네이처메이드', '일양약품', 'GNC', '뉴트리라이트',
+  ],
+  // 운동기구 - 인지도 있는 브랜드
+  equipment: [
+    '하이퍼', '핏번', '나이키', '아디다스', '스포틱', '반석스포츠',
+  ],
+  // 건강식품 - 대중적 브랜드
+  healthfood: [
+    '마이프로틴', '옵티멈 뉴트리션', 'BSN', '신타6', '머슬팜',
+    '랩노쉬', '하이뮨', '일동후디스',
+  ],
+};
+
+/**
+ * 가격대 판단 (priceKrw 기반)
+ */
+function getPriceRange(product: AnyProduct): 'budget' | 'mid' | 'premium' | null {
+  // CosmeticProduct는 priceRange 필드 사용
+  const cosmetic = product as CosmeticProduct;
+  if (cosmetic.priceRange) {
+    return cosmetic.priceRange;
+  }
+
+  // 다른 제품은 가격으로 판단
+  const priceKrw = (product as SupplementProduct).priceKrw ||
+                   (product as WorkoutEquipment).priceKrw ||
+                   (product as HealthFood).priceKrw;
+
+  if (!priceKrw) return null;
+
+  if (priceKrw < 30000) return 'budget';
+  if (priceKrw < 60000) return 'mid';
+  return 'premium';
+}
+
+/**
+ * 가격대별 접근성 보너스 (저렴할수록 높은 점수)
+ * - budget (저가): +15점
+ * - mid (중가): +8점
+ * - premium (고가): +0점
+ */
+function calculatePriceAccessibilityBonus(product: AnyProduct): { score: number; reason: MatchReason | null } {
+  const priceRange = getPriceRange(product);
+
+  if (!priceRange) return { score: 0, reason: null };
+
+  let bonus = 0;
+  let label = '';
+
+  switch (priceRange) {
+    case 'budget':
+      bonus = 15;
+      label = '가성비 좋음';
+      break;
+    case 'mid':
+      bonus = 8;
+      label = '합리적 가격';
+      break;
+    case 'premium':
+      bonus = 0;
+      break;
+  }
+
+  if (bonus > 0) {
+    return {
+      score: bonus,
+      reason: {
+        type: 'price',
+        label,
+        matched: true,
+      },
+    };
+  }
+
+  return { score: 0, reason: null };
+}
+
+/**
+ * 대중 브랜드 보너스 (구하기 쉬운 브랜드)
+ * - 올리브영/쿠팡에서 쉽게 구할 수 있는 브랜드: +12점
+ */
+function calculatePopularBrandBonus(product: AnyProduct): { score: number; reason: MatchReason | null } {
+  const brand = product.brand;
+  if (!brand) return { score: 0, reason: null };
+
+  const productType = getProductType(product);
+  let brandList: string[] = [];
+
+  switch (productType) {
+    case 'cosmetic':
+      brandList = POPULAR_BRANDS.skincare;
+      break;
+    case 'supplement':
+      brandList = POPULAR_BRANDS.supplement;
+      break;
+    case 'workout_equipment':
+      brandList = POPULAR_BRANDS.equipment;
+      break;
+    case 'health_food':
+      brandList = POPULAR_BRANDS.healthfood;
+      break;
+  }
+
+  const isPopular = brandList.some(
+    (b) => brand.toLowerCase().includes(b.toLowerCase()) ||
+           b.toLowerCase().includes(brand.toLowerCase())
+  );
+
+  if (isPopular) {
+    return {
+      score: 12,
+      reason: {
+        type: 'brand',
+        label: '인기 브랜드',
+        matched: true,
+      },
+    };
+  }
+
+  return { score: 0, reason: null };
+}
+
+/**
+ * 리뷰 인기도 보너스 (많이 구매/리뷰된 제품 = 대중적)
+ * - 리뷰 10000개+: +15점 (베스트셀러)
+ * - 리뷰 5000개+: +12점 (인기 제품)
+ * - 리뷰 1000개+: +8점 (검증된 제품)
+ * - 리뷰 500개+: +5점
+ * - 리뷰 100개+: +3점
+ */
+function calculateReviewPopularityBonus(product: AnyProduct): { score: number; reason: MatchReason | null } {
+  const reviewCount = product.reviewCount || 0;
+
+  let bonus = 0;
+  let label = '';
+
+  if (reviewCount >= 10000) {
+    bonus = 15;
+    label = `베스트셀러 (${Math.floor(reviewCount / 1000)}천+ 리뷰)`;
+  } else if (reviewCount >= 5000) {
+    bonus = 12;
+    label = `인기 제품 (${Math.floor(reviewCount / 1000)}천+ 리뷰)`;
+  } else if (reviewCount >= 1000) {
+    bonus = 8;
+    label = `검증된 제품 (${Math.floor(reviewCount / 1000)}천+ 리뷰)`;
+  } else if (reviewCount >= 500) {
+    bonus = 5;
+    label = `${reviewCount}개 리뷰`;
+  } else if (reviewCount >= 100) {
+    bonus = 3;
+    label = `${reviewCount}개 리뷰`;
+  }
+
+  if (bonus > 0) {
+    return {
+      score: bonus,
+      reason: {
+        type: 'popularity',
+        label,
+        matched: true,
+      },
+    };
+  }
+
+  return { score: 0, reason: null };
+}
 
 /**
  * 리뷰 평점 기반 보너스 점수 계산
@@ -344,13 +525,13 @@ function calculateRatingBonus(product: AnyProduct): { score: number; reason: Mat
 
   if (rating >= 4.5 && reviewCount >= 100) {
     bonus = 10;
-    label = `인기 제품 ★${rating.toFixed(1)}`;
+    label = `★${rating.toFixed(1)} 높은 평점`;
   } else if (rating >= 4.0 && reviewCount >= 50) {
     bonus = 7;
-    label = `높은 평점 ★${rating.toFixed(1)}`;
+    label = `★${rating.toFixed(1)} 좋은 평점`;
   } else if (rating >= 3.5 && reviewCount >= 20) {
     bonus = 4;
-    label = `좋은 리뷰 ★${rating.toFixed(1)}`;
+    label = `★${rating.toFixed(1)}`;
   }
 
   if (bonus > 0) {
@@ -376,6 +557,12 @@ function calculateRatingBonus(product: AnyProduct): { score: number; reason: Mat
  * @param product 제품
  * @param profile 사용자 프로필
  * @returns 매칭 점수 (0-100) 및 매칭 이유
+ *
+ * 대중성 우선 정책:
+ * - 저렴한 가격대 우선 (budget +15, mid +8)
+ * - 올리브영/화해 인기 브랜드 우선 (+12)
+ * - 리뷰 많은 제품 우선 (최대 +15)
+ * - 높은 평점 우선 (최대 +10)
  */
 export function calculateMatchScore(
   product: AnyProduct,
@@ -402,12 +589,38 @@ export function calculateMatchScore(
       result = { score: 50, reasons: [] };
   }
 
-  // 리뷰 평점 보너스 추가
+  // === 대중성 보너스 추가 ===
+
+  // 1. 가격 접근성 보너스 (저렴할수록 높은 점수)
+  const priceBonus = calculatePriceAccessibilityBonus(product);
+  if (priceBonus.score > 0 && priceBonus.reason) {
+    result.score += priceBonus.score;
+    result.reasons.push(priceBonus.reason);
+  }
+
+  // 2. 대중 브랜드 보너스 (올리브영 등에서 구하기 쉬운 브랜드)
+  const brandBonus = calculatePopularBrandBonus(product);
+  if (brandBonus.score > 0 && brandBonus.reason) {
+    result.score += brandBonus.score;
+    result.reasons.push(brandBonus.reason);
+  }
+
+  // 3. 리뷰 인기도 보너스 (많이 구매된 제품)
+  const popularityBonus = calculateReviewPopularityBonus(product);
+  if (popularityBonus.score > 0 && popularityBonus.reason) {
+    result.score += popularityBonus.score;
+    result.reasons.push(popularityBonus.reason);
+  }
+
+  // 4. 리뷰 평점 보너스
   const ratingBonus = calculateRatingBonus(product);
   if (ratingBonus.score > 0 && ratingBonus.reason) {
-    result.score = Math.min(100, result.score + ratingBonus.score);
+    result.score += ratingBonus.score;
     result.reasons.push(ratingBonus.reason);
   }
+
+  // 점수 상한 (100점)
+  result.score = Math.min(100, result.score);
 
   return result;
 }

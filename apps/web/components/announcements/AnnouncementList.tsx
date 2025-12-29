@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { Bell, Filter } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,

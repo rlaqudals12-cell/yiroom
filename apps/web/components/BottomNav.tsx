@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Utensils, Dumbbell, BarChart3, ShoppingBag } from 'lucide-react';
+import { Home, Sparkles, Shirt, ClipboardList, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -12,12 +12,20 @@ interface NavItem {
   tutorialId?: string; // 온보딩 튜토리얼용 ID
 }
 
+/**
+ * UX 리스트럭처링 5탭 구성
+ * - 홈: 대시보드 + 오늘의 추천 + 미션
+ * - 뷰티: 화해 스타일 제품 피드 (피부 분석 기반)
+ * - 스타일: 룩핀 스타일 코디 피드 (체형 분석 기반)
+ * - 기록: 운동 + 영양 통합 (세그먼트 토글)
+ * - 나: 프로필 + 소셜 (친구, 리더보드, 챌린지, 배지)
+ */
 const navItems: NavItem[] = [
-  { href: '/dashboard', icon: Home, label: '홈' },
-  { href: '/nutrition', icon: Utensils, label: '영양', tutorialId: 'nutrition' },
-  { href: '/workout', icon: Dumbbell, label: '운동', tutorialId: 'workout' },
-  { href: '/reports', icon: BarChart3, label: '리포트' },
-  { href: '/products', icon: ShoppingBag, label: '제품', tutorialId: 'products' },
+  { href: '/home', icon: Home, label: '홈' },
+  { href: '/beauty', icon: Sparkles, label: '뷰티', tutorialId: 'beauty' },
+  { href: '/style', icon: Shirt, label: '스타일', tutorialId: 'style' },
+  { href: '/record', icon: ClipboardList, label: '기록', tutorialId: 'record' },
+  { href: '/profile', icon: User, label: '나', tutorialId: 'profile' },
 ];
 
 /**
@@ -30,8 +38,8 @@ export function BottomNav() {
 
   // 현재 경로가 navItem의 href로 시작하는지 확인
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === '/dashboard';
+    if (href === '/home') {
+      return pathname === '/home' || pathname === '/';
     }
     return pathname.startsWith(href);
   };

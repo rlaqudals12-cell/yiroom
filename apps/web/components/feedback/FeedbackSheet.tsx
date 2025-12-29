@@ -109,7 +109,7 @@ export function FeedbackSheet({
       } else {
         setErrors(['피드백 전송에 실패했습니다. 다시 시도해주세요.']);
       }
-    } catch (error) {
+    } catch {
       setErrors(['피드백 전송 중 오류가 발생했습니다.']);
     } finally {
       setIsSubmitting(false);

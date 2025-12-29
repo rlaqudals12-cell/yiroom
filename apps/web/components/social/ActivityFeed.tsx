@@ -85,6 +85,7 @@ export function ActivityFeed({
     return () => {
       observer.disconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMore, loadingMore, isLoading, onLoadMore]);
 
   // 더 불러오기

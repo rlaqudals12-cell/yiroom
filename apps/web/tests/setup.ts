@@ -73,6 +73,7 @@ vi.mock('lucide-react', () => ({
   Timer: createIconMock('Timer'),
   Clock: createIconMock('Clock'),
   Zap: createIconMock('Zap'),
+  ZapOff: createIconMock('ZapOff'),
 
   // Mood & Energy
   Smile: createIconMock('Smile'),
@@ -82,9 +83,16 @@ vi.mock('lucide-react', () => ({
   BatteryLow: createIconMock('BatteryLow'),
   Bot: createIconMock('Bot'),
 
+  // Weather & Temperature
+  Thermometer: createIconMock('Thermometer'),
+  Cloud: createIconMock('Cloud'),
+  CloudRain: createIconMock('CloudRain'),
+  CloudSun: createIconMock('CloudSun'),
+
   // Nutrition & Health
   Utensils: createIconMock('Utensils'),
   UtensilsCrossed: createIconMock('UtensilsCrossed'),
+  ChefHat: createIconMock('ChefHat'),
   Droplets: createIconMock('Droplets'),
   GlassWater: createIconMock('GlassWater'),
   Coffee: createIconMock('Coffee'),
@@ -118,6 +126,8 @@ vi.mock('lucide-react', () => ({
   Palette: createIconMock('Palette'),
   Shirt: createIconMock('Shirt'),
   FlaskConical: createIconMock('FlaskConical'),
+  Tag: createIconMock('Tag'),
+  Brush: createIconMock('Brush'),
 
   // Media & Input
   Camera: createIconMock('Camera'),
@@ -153,6 +163,9 @@ vi.mock('lucide-react', () => ({
   Circle: createIconMock('Circle'),
   SlidersHorizontal: createIconMock('SlidersHorizontal'),
   Apple: createIconMock('Apple'),
+  Hand: createIconMock('Hand'),
+  FileText: createIconMock('FileText'),
+  Move: createIconMock('Move'),
 
   // UI Components (Icon 접미사 버전)
   XIcon: createIconMock('XIcon'),
@@ -171,6 +184,11 @@ vi.mock('next/navigation', () => ({
   }),
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
+}))
+
+// Mock @imgly/background-removal (optional peer dependency)
+vi.mock('@imgly/background-removal', () => ({
+  removeBackground: vi.fn().mockResolvedValue(new Blob()),
 }))
 
 // Mock Clerk

@@ -139,7 +139,7 @@ export default function FoodResultCard({
           {/* 신뢰도 표시 */}
           <div className="flex items-center justify-between pt-3 border-t border-border">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">📊 신뢰도:</span>
+              <span className="text-sm text-muted-foreground">신뢰도:</span>
               <span className={`text-sm font-medium ${confidenceStyle.color}`}>
                 {confidenceStyle.label}
               </span>
@@ -147,9 +147,9 @@ export default function FoodResultCard({
             {onEdit && (
               <button
                 onClick={onEdit}
-                className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                className="text-sm text-primary hover:text-primary/80 font-medium"
               >
-                ✏️ 수정
+                수정
               </button>
             )}
           </div>

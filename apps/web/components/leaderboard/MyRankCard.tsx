@@ -2,10 +2,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import type { MyRanking, LeaderboardCategory, LeaderboardPeriod } from '@/types/leaderboard';
+import type { MyRanking } from '@/types/leaderboard';
 import { getCategoryLabel, getPeriodLabel, formatChange, getChangeColor } from '@/types/leaderboard';
 import { formatScore } from '@/lib/leaderboard/constants';
-import { TrendingUp, Medal, Percent, BarChart3 } from 'lucide-react';
+import { TrendingUp, Medal, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MyRankCardProps {

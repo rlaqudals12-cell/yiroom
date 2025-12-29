@@ -57,3 +57,21 @@ export const BodyInsightCardDynamic = dynamic(
     loading: () => null,
   }
 );
+
+// 영양제 추천 카드 (스크롤 아래에 위치)
+export const SupplementRecommendationCardDynamic = dynamic(
+  () => import('./SupplementRecommendationCard'),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
+
+// "오늘 뭐 먹지?" 식단 추천 카드
+export const MealSuggestionCardDynamic = dynamic(
+  () => import('./MealSuggestionCard'),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);

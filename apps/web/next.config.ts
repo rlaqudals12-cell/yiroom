@@ -4,15 +4,59 @@ import withBundleAnalyzer from "@next/bundle-analyzer";
 import { withSentryConfig } from "@sentry/nextjs";
 
 /**
- * PWA 설정 (Lite PWA - 홈 화면 추가만 지원)
+ * PWA 설정 (오프라인 지원 활성화)
  * Phase A-1: 2025-12-04
+ * Task 6: 오프라인 지원 추가
  */
 const withPWA = withPWAInit({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
   register: true,
-  // Lite PWA: 오프라인 캐싱 비활성화
-  cacheOnFrontEndNav: false,
+  // 오프라인 캐싱 활성화
+  cacheOnFrontEndNav: true,
+  // 런타임 캐싱 설정
+  workboxOptions: {
+    // 오프라인 폴백 페이지
+    runtimeCaching: [
+      // 정적 자산 캐싱 (이미지, 폰트)
+      {
+        urlPattern: /^https:\/\/.*\.(png|jpg|jpeg|webp|svg|gif|ico|woff|woff2)$/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "static-assets",
+          expiration: {
+            maxEntries: 100,
+            maxAgeSeconds: 60 * 60 * 24 * 30, // 30일
+          },
+        },
+      },
+      // API 요청 캐싱 (네트워크 우선, 실패시 캐시)
+      {
+        urlPattern: /^\/api\/.*/i,
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "api-cache",
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 60 * 5, // 5분
+          },
+          networkTimeoutSeconds: 10,
+        },
+      },
+      // 페이지 캐싱
+      {
+        urlPattern: /^\/(home|beauty|style|record|search)$/i,
+        handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "pages-cache",
+          expiration: {
+            maxEntries: 20,
+            maxAgeSeconds: 60 * 60 * 24, // 24시간
+          },
+        },
+      },
+    ],
+  },
 });
 
 /**
@@ -23,6 +67,50 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   // Turbopack 설정 (Next.js 16 필수 - PWA 플러그인 webpack 호환)
   turbopack: {},
+
+  // UX 리스트럭처링 리다이렉트 (기존 라우트 → 신규 라우트)
+  async redirects() {
+    return [
+      // 대시보드 → 홈
+      {
+        source: '/dashboard',
+        destination: '/home',
+        permanent: true,
+      },
+      // 설정 → 프로필/설정
+      {
+        source: '/settings',
+        destination: '/profile/settings',
+        permanent: true,
+      },
+      // 루트 → 홈
+      {
+        source: '/',
+        destination: '/home',
+        permanent: false,
+      },
+      // 제품 → 뷰티 (기본값)
+      {
+        source: '/products',
+        destination: '/beauty',
+        permanent: true,
+      },
+      // 제품 상세 → 뷰티 상세
+      {
+        source: '/products/:id',
+        destination: '/beauty/:id',
+        permanent: true,
+      },
+      // 리포트 → 기록/리포트
+      {
+        source: '/reports',
+        destination: '/record/report',
+        permanent: true,
+      },
+      // 친구 검색은 기존 경로 유지 (/friends/search, /friends/requests)
+    ];
+  },
+
   images: {
     remotePatterns: [
       // Clerk 프로필 이미지

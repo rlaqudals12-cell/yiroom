@@ -11,7 +11,6 @@ import type {
   UserSearchResult,
   FriendshipRow,
 } from '@/types/friends';
-import { toFriendship } from '@/types/friends';
 
 // 친구 목록 조회
 export async function getFriends(

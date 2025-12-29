@@ -5,7 +5,6 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type {
-  WellnessScore,
   ScoreBreakdown,
   WellnessInsight,
 } from '@/types/wellness';

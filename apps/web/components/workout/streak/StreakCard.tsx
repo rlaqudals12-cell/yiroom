@@ -71,7 +71,7 @@ export function StreakCard({ summary, onStartWorkout }: StreakCardProps) {
         <p className="text-foreground">{message}</p>
         {warningMessage && (
           <p className="text-module-workout-dark text-sm mt-1 font-medium">
-            ⚡ {warningMessage}
+            {warningMessage}
           </p>
         )}
       </div>

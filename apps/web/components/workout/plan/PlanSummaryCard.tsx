@@ -55,7 +55,6 @@ export function PlanSummaryCard({
         {/* 휴식일 */}
         <div className="bg-muted rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm">☕</span>
             <span className="text-sm text-muted-foreground">휴식일</span>
           </div>
           <p className="text-2xl font-bold text-muted-foreground">

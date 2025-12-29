@@ -105,7 +105,7 @@ export default function DailyCalorieSummary({
     >
       {/* 제목 */}
       <h2 className="text-lg font-bold text-foreground text-center mb-4">
-        🍽️ {title}
+        {title}
       </h2>
 
       {/* 원형 진행률 차트 (Task 3.3: CalorieProgressRing 사용) */}

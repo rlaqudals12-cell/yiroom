@@ -146,7 +146,7 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
             <div>
               <p className="font-bold text-foreground">체크인 완료!</p>
               <p className="text-sm text-muted-foreground">
-                오늘도 나를 돌봐주셨네요 💪
+                오늘도 나를 돌봐주셨네요
               </p>
             </div>
           </div>

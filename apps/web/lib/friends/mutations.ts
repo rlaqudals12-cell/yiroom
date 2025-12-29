@@ -4,7 +4,6 @@
 // ============================================================
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { FriendshipStatus } from '@/types/friends';
 
 // 친구 요청 보내기
 export async function sendFriendRequest(

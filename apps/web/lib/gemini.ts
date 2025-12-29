@@ -69,18 +69,25 @@ export interface GeminiSkinAnalysisResult {
 }
 
 /**
- * C-1 체형 분석 결과 타입
+ * C-1 체형 분석 결과 타입 (3타입 골격진단 시스템)
+ * - S: 스트레이트 (Straight) - 상체 볼륨, 입체적, 직선적
+ * - W: 웨이브 (Wave) - 하체 볼륨, 곡선적, 부드러운
+ * - N: 내추럴 (Natural) - 골격감, 프레임 큼, 자연스러운
  */
 export interface GeminiBodyAnalysisResult {
-  bodyType: "X" | "A" | "V" | "H" | "O" | "I" | "Y" | "8";
+  bodyType: "S" | "W" | "N";
   bodyTypeLabel: string;
+  bodyTypeLabelEn: string;
   bodyTypeDescription: string;
+  characteristics: string;
+  keywords: string[];
   measurements: Array<{
     name: string;
     value: number;
     description: string;
   }>;
   strengths: string[];
+  avoidStyles: string[];
   insight: string;
   styleRecommendations: Array<{
     item: string;
@@ -191,9 +198,11 @@ export interface GeminiPersonalColorResult {
     colorSuggestion: string;
     reason: string;
   }>;
-  celebrityMatch: {
-    name: string;
-    reason: string;
+  styleDescription: {
+    imageKeywords: string[];
+    makeupStyle: string;
+    fashionStyle: string;
+    accessories: string;
   };
   insight: string;
 }
@@ -260,37 +269,63 @@ const SKIN_ANALYSIS_PROMPT = `당신은 전문 피부 분석 AI입니다. 업로
 추천 성분은 피부 상태에 맞는 2-3개를 선택해주세요.`;
 
 /**
- * C-1 체형 분석 프롬프트
+ * C-1 체형 분석 프롬프트 (3타입 골격진단 시스템)
+ * 일본 골격진단/카카오스타일 기반 3타입 분류
  */
-const BODY_ANALYSIS_PROMPT = `당신은 전문 체형 분석 AI입니다. 업로드된 전신 이미지를 분석하여 체형을 평가해주세요.
+const BODY_ANALYSIS_PROMPT = `당신은 전문 체형 분석 AI입니다. 업로드된 전신 이미지를 분석하여 골격 타입을 진단해주세요.
 
-8가지 체형 타입:
-- X: X자형 - 균형 잡힌 실루엣 (어깨와 골반이 비슷하고 허리가 잘록)
-- A: A자형 - 하체 볼륨형 (골반이 어깨보다 넓고 하체가 발달)
-- V: V자형 - 상체 볼륨형 (어깨가 넓고 상체가 발달)
-- H: H자형 - 일자형 실루엣 (어깨, 허리, 골반이 비슷한 직선형)
-- O: O자형 - 풍만한 실루엣 (전체적으로 둥근 곡선)
-- I: I자형 - 슬림 직선형 (전체적으로 가늘고 긴 직선형)
-- Y: Y자형 - 어깨 강조형 (어깨가 넓고 하체가 가는 역삼각형)
-- 8: 8자형 - 글래머러스 곡선형 (가슴과 골반이 풍만하고 허리가 매우 잘록)
+3가지 골격 체형 타입 (골격진단 기반):
+
+S (스트레이트/Straight) - 입체적이고 탄탄한 실루엣
+- 상체에 볼륨감이 있고 근육이 잘 붙는 체형
+- 어깨선이 직선적이고 허리 위치가 높음
+- 목이 짧은 편, 쇄골이 잘 안 보임
+- 손목과 발목이 굵은 편
+- 어울리는 스타일: 심플, 베이직, I라인, 정장
+
+W (웨이브/Wave) - 부드럽고 여성스러운 실루엣
+- 하체에 볼륨감이 있고 곡선미가 돋보이는 체형
+- 어깨선이 둥글고 허리가 잘록함
+- 목이 긴 편, 쇄골이 가늘게 보임
+- 손목과 발목이 가는 편
+- 어울리는 스타일: 페미닌, X라인, 하이웨이스트, 프릴
+
+N (내추럴/Natural) - 자연스럽고 골격감 있는 실루엣
+- 뼈대가 크고 관절이 두드러지는 체형
+- 어깨가 넓고 프레임이 큰 편
+- 쇄골이 굵게 보임
+- 손목, 손가락 관절이 두드러짐
+- 어울리는 스타일: 캐주얼, 오버핏, 레이어드
+
+판단 기준:
+1. 상체/하체 볼륨 비율
+2. 어깨선의 형태 (직선/둥근/넓은)
+3. 쇄골과 관절의 두드러짐
+4. 전체적인 골격 프레임 크기
+5. 근육과 지방의 붙는 위치
 
 다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
 
 {
-  "bodyType": "[X|A|V|H|O|I|Y|8]",
-  "bodyTypeLabel": "[X자형|A자형|V자형|H자형|O자형|I자형|Y자형|8자형]",
-  "bodyTypeDescription": "[체형 설명]",
+  "bodyType": "[S|W|N]",
+  "bodyTypeLabel": "[스트레이트|웨이브|내추럴]",
+  "bodyTypeLabelEn": "[Straight|Wave|Natural]",
+  "bodyTypeDescription": "[체형 한줄 설명]",
+  "characteristics": "[체형의 구체적인 특징 설명 2-3문장]",
+  "keywords": ["키워드1", "키워드2", "키워드3", "키워드4", "키워드5"],
   "measurements": [
     {"name": "어깨", "value": [0-100 상대적 넓이 지수], "description": "[어깨 라인 설명]"},
     {"name": "허리", "value": [0-100 상대적 넓이 지수], "description": "[허리 라인 설명]"},
     {"name": "골반", "value": [0-100 상대적 넓이 지수], "description": "[골반 라인 설명]"}
   ],
-  "strengths": ["[강점1]", "[강점2]", "[강점3]"],
+  "strengths": ["[강점1]", "[강점2]", "[강점3]", "[강점4]"],
+  "avoidStyles": ["[피해야 할 스타일1]", "[피해야 할 스타일2]", "[피해야 할 스타일3]"],
   "insight": "[체형에 맞는 스타일링 인사이트 1-2문장]",
   "styleRecommendations": [
     {"item": "[추천 아이템1]", "reason": "[추천 이유]"},
     {"item": "[추천 아이템2]", "reason": "[추천 이유]"},
-    {"item": "[추천 아이템3]", "reason": "[추천 이유]"}
+    {"item": "[추천 아이템3]", "reason": "[추천 이유]"},
+    {"item": "[추천 아이템4]", "reason": "[추천 이유]"}
   ]
 }
 
@@ -298,9 +333,9 @@ const BODY_ANALYSIS_PROMPT = `당신은 전문 체형 분석 AI입니다. 업로
 
 /**
  * PC-1 퍼스널 컬러 분석 프롬프트
- * 문진 응답과 이미지를 통합 분석
+ * 얼굴 이미지와 손목 이미지를 통합 분석
  */
-const PERSONAL_COLOR_ANALYSIS_PROMPT = `당신은 전문 퍼스널 컬러 분석 AI입니다. 업로드된 얼굴 이미지와 문진 응답을 종합 분석하여 퍼스널 컬러를 진단해주세요.
+const PERSONAL_COLOR_ANALYSIS_PROMPT = `당신은 전문 퍼스널 컬러 분석 AI입니다. 업로드된 이미지를 분석하여 퍼스널 컬러를 진단해주세요.
 
 4가지 계절 타입:
 - spring (봄 웜톤): 밝고 화사한 웜톤. 피부에 황금빛 광채, 밝고 맑은 컬러가 어울림
@@ -313,6 +348,12 @@ const PERSONAL_COLOR_ANALYSIS_PROMPT = `당신은 전문 퍼스널 컬러 분석
 2. 입술 본연의 색상
 3. 눈동자 색상
 4. 피부의 광택과 깊이감
+5. 손목 혈관색 (제공된 경우): 파란색/보라색 = 쿨톤, 녹색 = 웜톤
+
+웜/쿨 판단 기준 (우선순위):
+1. 손목 혈관 색상 (가장 객관적)
+2. 피부 언더톤 (황톤 vs 핑크톤)
+3. 입술과 눈동자 색상
 
 다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
 
@@ -352,18 +393,21 @@ const PERSONAL_COLOR_ANALYSIS_PROMPT = `당신은 전문 퍼스널 컬러 분석
     {"item": "[의류 아이템]", "colorSuggestion": "[추천 컬러]", "reason": "[추천 이유]"},
     {"item": "[의류 아이템]", "colorSuggestion": "[추천 컬러]", "reason": "[추천 이유]"}
   ],
-  "celebrityMatch": {
-    "name": "[같은 퍼스널 컬러의 한국 연예인]",
-    "reason": "[선정 이유]"
+  "styleDescription": {
+    "imageKeywords": ["[이미지 키워드1]", "[이미지 키워드2]", "[이미지 키워드3]", "[이미지 키워드4]", "[이미지 키워드5]"],
+    "makeupStyle": "[해당 시즌에 어울리는 메이크업 스타일 설명]",
+    "fashionStyle": "[해당 시즌에 어울리는 패션 스타일 설명]",
+    "accessories": "[해당 시즌에 어울리는 액세서리 설명]"
   },
   "insight": "[이 분석 결과에 대한 맞춤 인사이트 1-2문장]"
 }
 
 주의사항:
-- 신뢰도(confidence)는 이미지 품질과 문진 응답의 일관성을 고려해 85-95% 사이로 설정
+- 신뢰도(confidence)는 이미지 품질을 고려해 85-95% 사이로 설정
+- 손목 이미지가 제공된 경우 신뢰도를 5% 높게 설정
 - 베스트 컬러는 10개, 워스트 컬러는 5개를 제공
 - 립스틱과 의류 추천은 각각 3개씩
-- 연예인 매칭은 해당 계절 타입의 대표적인 한국 연예인으로
+- 스타일 키워드는 5개 제공 (예: 화사한, 생기있는, 청순한, 밝은, 발랄한)
 - 한국어로 자연스럽게 작성`;
 
 /**
@@ -557,31 +601,37 @@ export async function analyzeBody(
 /**
  * PC-1 퍼스널 컬러 분석 실행
  *
- * @param imageBase64 - Base64 인코딩된 얼굴 이미지
- * @param questionnaireAnswers - 문진 응답 (선택적)
+ * @param faceImageBase64 - Base64 인코딩된 얼굴 이미지
+ * @param wristImageBase64 - Base64 인코딩된 손목 이미지 (선택적 - 웜/쿨 판단 정확도 향상)
  * @returns 퍼스널 컬러 분석 결과
  */
 export async function analyzePersonalColor(
-  imageBase64: string,
-  questionnaireAnswers?: Record<string, string>
+  faceImageBase64: string,
+  wristImageBase64?: string
 ): Promise<GeminiPersonalColorResult> {
   if (!genAI) {
     throw new Error("Gemini API key is not configured");
   }
 
   const model = genAI.getGenerativeModel(modelConfig);
-  const imagePart = formatImageForGemini(imageBase64);
+  const faceImagePart = formatImageForGemini(faceImageBase64);
 
-  // 문진 응답이 있으면 프롬프트에 추가
+  // 프롬프트 구성
   let prompt = PERSONAL_COLOR_ANALYSIS_PROMPT;
-  if (questionnaireAnswers && Object.keys(questionnaireAnswers).length > 0) {
-    const answersText = Object.entries(questionnaireAnswers)
-      .map(([questionId, optionId]) => `- ${questionId}: ${optionId}`)
-      .join("\n");
-    prompt += `\n\n사용자 문진 응답:\n${answersText}\n\n이미지 분석과 문진 응답을 종합적으로 고려하여 결과를 도출해주세요. 문진 응답은 참고용이며, 이미지 분석 결과와 상충될 경우 이미지 기반 분석을 우선시하되 신뢰도를 낮춰주세요.`;
+
+  // 이미지 배열 구성
+  const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [prompt, faceImagePart];
+
+  // 손목 이미지가 있으면 추가
+  if (wristImageBase64) {
+    const wristImagePart = formatImageForGemini(wristImageBase64);
+    contentParts.push(wristImagePart);
+    // 프롬프트에 손목 이미지 분석 안내 추가
+    prompt += `\n\n첨부된 두 번째 이미지는 손목 안쪽 사진입니다. 혈관 색상을 분석하여 웜톤/쿨톤 판단에 활용해주세요. 파란색/보라색 혈관은 쿨톤, 녹색 혈관은 웜톤을 나타냅니다.`;
+    contentParts[0] = prompt;
   }
 
-  const result = await model.generateContent([prompt, imagePart]);
+  const result = await model.generateContent(contentParts);
   const response = await result.response;
   const text = response.text();
 
@@ -1153,6 +1203,7 @@ export interface FoodAnalysisInput {
 
 /**
  * N-1 식단 추천 입력 타입
+ * 피부/체형 연동으로 통합 추천 지원
  */
 export interface MealSuggestionInput {
   goal: "weight_loss" | "maintain" | "muscle" | "skin" | "health";
@@ -1165,6 +1216,17 @@ export interface MealSuggestionInput {
   budget: "economy" | "moderate" | "premium" | "any";
   mealType: "breakfast" | "lunch" | "dinner" | "snack";
   preferences?: string[];
+  // S-1 피부 분석 연동 (선택)
+  skinContext?: {
+    concerns: string[];      // 피부 고민 (수분 부족, 트러블 등)
+    recommendedFoods: string[]; // 피부에 좋은 음식
+  };
+  // C-1 체형 분석 연동 (선택)
+  bodyContext?: {
+    bodyType: string;        // 체형 (S/W/N 또는 8타입)
+    targetWeight?: number;   // 목표 체중
+    currentWeight?: number;  // 현재 체중
+  };
 }
 
 /**
@@ -1232,7 +1294,39 @@ function buildMealSuggestionPrompt(input: MealSuggestionInput): string {
   const allergiesText = input.allergies.length > 0 ? input.allergies.join(", ") : "없음";
   const dislikedText = input.dislikedFoods.length > 0 ? input.dislikedFoods.join(", ") : "없음";
 
+  // 피부/체형 컨텍스트 빌드 (통합 추천용)
+  let integratedContext = "";
+
+  if (input.skinContext?.concerns.length) {
+    integratedContext += `\n## 피부 상태 연동 (S-1)\n`;
+    integratedContext += `- 피부 고민: ${input.skinContext.concerns.join(", ")}\n`;
+    if (input.skinContext.recommendedFoods.length) {
+      integratedContext += `- 피부에 좋은 음식: ${input.skinContext.recommendedFoods.join(", ")}\n`;
+    }
+    integratedContext += `→ 피부 개선에 도움되는 음식을 우선 추천해주세요.\n`;
+  }
+
+  if (input.bodyContext?.bodyType) {
+    const bodyTypeLabels: Record<string, string> = {
+      S: "스트레이트 (상체 볼륨, I라인)",
+      W: "웨이브 (하체 볼륨, X라인)",
+      N: "내추럴 (골격감, 레이어드)",
+    };
+    const bodyLabel = bodyTypeLabels[input.bodyContext.bodyType] || input.bodyContext.bodyType;
+    integratedContext += `\n## 체형 상태 연동 (C-1)\n`;
+    integratedContext += `- 체형: ${bodyLabel}\n`;
+    if (input.bodyContext.currentWeight && input.bodyContext.targetWeight) {
+      const diff = input.bodyContext.currentWeight - input.bodyContext.targetWeight;
+      if (diff > 0) {
+        integratedContext += `- 목표: ${diff.toFixed(1)}kg 감량 (현재 ${input.bodyContext.currentWeight}kg → 목표 ${input.bodyContext.targetWeight}kg)\n`;
+      } else if (diff < 0) {
+        integratedContext += `- 목표: ${Math.abs(diff).toFixed(1)}kg 증량 (현재 ${input.bodyContext.currentWeight}kg → 목표 ${input.bodyContext.targetWeight}kg)\n`;
+      }
+    }
+  }
+
   return `당신은 전문 영양사이자 식단 설계 전문가입니다. 사용자의 조건에 맞는 ${mealTypeText} 식사를 추천해주세요.
+${integratedContext ? `\n**통합 분석 데이터가 있으므로, 피부/체형 상태를 함께 고려해주세요.**` : ""}
 
 ## 사용자 정보
 
@@ -1244,7 +1338,7 @@ function buildMealSuggestionPrompt(input: MealSuggestionInput): string {
 - 예산: ${budgetText}
 - 알레르기: ${allergiesText}
 - 기피 음식: ${dislikedText}
-${input.preferences?.length ? `- 선호 사항: ${input.preferences.join(", ")}` : ""}
+${input.preferences?.length ? `- 선호 사항: ${input.preferences.join(", ")}` : ""}${integratedContext}
 
 ## 식사 타입별 칼로리 배분 가이드
 

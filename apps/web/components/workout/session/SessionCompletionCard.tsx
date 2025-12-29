@@ -174,7 +174,7 @@ export function SessionCompletionCard({
               </div>
               <div className="flex-1">
                 <p className="text-white font-medium text-sm">
-                  💧 땀을 많이 흘렸으니 세안 후 수분 보충 추천!
+                  땀을 많이 흘렸으니 세안 후 수분 보충 추천!
                 </p>
                 <Link
                   href="/analysis/skin"

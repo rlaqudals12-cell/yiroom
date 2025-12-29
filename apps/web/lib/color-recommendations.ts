@@ -7,7 +7,7 @@
  * - 악세서리 추천
  */
 
-import type { BodyType } from "./mock/body-analysis";
+import type { BodyType, BodyType3 } from "./mock/body-analysis";
 
 /**
  * 퍼스널 컬러 시즌 타입
@@ -69,7 +69,7 @@ const COLOR_PALETTES: Record<PersonalColorSeason, {
 };
 
 /**
- * 체형별 권장 색상 배치 전략
+ * 체형별 권장 색상 배치 전략 (8타입 - 레거시)
  */
 const BODY_TYPE_COLOR_STRATEGY: Record<BodyType, {
   topPriority: "light" | "dark" | "balanced";
@@ -115,6 +115,202 @@ const BODY_TYPE_COLOR_STRATEGY: Record<BodyType, {
     topPriority: "balanced",
     bottomPriority: "balanced",
     tips: ["단색 코디로 실루엣을 강조해요", "허리 벨트로 포인트"],
+  },
+};
+
+/**
+ * 3타입 체형별 권장 색상 배치 전략
+ */
+const BODY_TYPE_3_COLOR_STRATEGY: Record<BodyType3, {
+  topPriority: "light" | "dark" | "balanced";
+  bottomPriority: "light" | "dark" | "balanced";
+  tips: string[];
+}> = {
+  S: {
+    topPriority: "balanced",
+    bottomPriority: "balanced",
+    tips: [
+      "I라인 실루엣을 위해 상하의 톤을 맞춰보세요",
+      "단색 코디가 깔끔해요",
+    ],
+  },
+  W: {
+    topPriority: "light",
+    bottomPriority: "dark",
+    tips: [
+      "상의는 밝게, 하의는 어둡게 해서 X라인을 강조해요",
+      "허리에 포인트 컬러를 줘보세요",
+    ],
+  },
+  N: {
+    topPriority: "balanced",
+    bottomPriority: "balanced",
+    tips: [
+      "자연스러운 어스톤 계열이 잘 어울려요",
+      "레이어드로 색상을 다양하게 활용해보세요",
+    ],
+  },
+};
+
+/**
+ * 체형 + 퍼스널 컬러 조합별 코디 예시
+ */
+export interface OutfitExample {
+  title: string; // 코디 이름
+  items: string[]; // 아이템 목록
+  occasion: string; // 상황 (출근룩, 데일리룩 등)
+}
+
+export const OUTFIT_EXAMPLES: Record<BodyType3, Record<PersonalColorSeason, OutfitExample[]>> = {
+  S: {
+    Spring: [
+      {
+        title: "깔끔한 오피스룩",
+        items: ["아이보리 V넥 니트", "베이지 스트레이트 슬랙스", "코랄 포인트 스카프"],
+        occasion: "출근룩",
+      },
+      {
+        title: "세련된 데일리룩",
+        items: ["피치 셔츠", "크림 와이드 팬츠", "골드 체인 목걸이"],
+        occasion: "일상",
+      },
+    ],
+    Summer: [
+      {
+        title: "시원한 오피스룩",
+        items: ["라벤더 블라우스", "라이트 그레이 슬랙스", "실버 이어링"],
+        occasion: "출근룩",
+      },
+      {
+        title: "로맨틱 데일리룩",
+        items: ["로즈핑크 니트", "소프트 네이비 팬츠", "진주 귀걸이"],
+        occasion: "일상",
+      },
+    ],
+    Autumn: [
+      {
+        title: "클래식 오피스룩",
+        items: ["캐멀 테일러드 재킷", "다크 브라운 팬츠", "골드 버클 벨트"],
+        occasion: "출근룩",
+      },
+      {
+        title: "따뜻한 가을룩",
+        items: ["버건디 터틀넥", "올리브 치노 팬츠", "브라운 가죽 시계"],
+        occasion: "일상",
+      },
+    ],
+    Winter: [
+      {
+        title: "시크한 오피스룩",
+        items: ["블랙 테일러드 재킷", "차콜 슬랙스", "실버 커프스"],
+        occasion: "출근룩",
+      },
+      {
+        title: "모던 데일리룩",
+        items: ["퓨어 화이트 셔츠", "다크 네이비 팬츠", "블랙 가죽 벨트"],
+        occasion: "일상",
+      },
+    ],
+  },
+  W: {
+    Spring: [
+      {
+        title: "여성스러운 오피스룩",
+        items: ["코랄 페플럼 블라우스", "크림 하이웨이스트 팬츠", "골드 팔찌"],
+        occasion: "출근룩",
+      },
+      {
+        title: "화사한 데이트룩",
+        items: ["피치 프릴 블라우스", "베이지 A라인 스커트", "코랄 립스틱"],
+        occasion: "데이트",
+      },
+    ],
+    Summer: [
+      {
+        title: "로맨틱 오피스룩",
+        items: ["라벤더 셔링 블라우스", "로즈베이지 플레어 스커트", "진주 목걸이"],
+        occasion: "출근룩",
+      },
+      {
+        title: "상큼한 데일리룩",
+        items: ["민트 크롭 가디건", "라이트 그레이 하이웨이스트 팬츠", "실버 귀걸이"],
+        occasion: "일상",
+      },
+    ],
+    Autumn: [
+      {
+        title: "우아한 오피스룩",
+        items: ["테라코타 랩 블라우스", "버건디 플레어 스커트", "골드 귀걸이"],
+        occasion: "출근룩",
+      },
+      {
+        title: "가을 데이트룩",
+        items: ["머스타드 카디건", "다크 브라운 하이웨이스트 팬츠", "브라운 벨트"],
+        occasion: "데이트",
+      },
+    ],
+    Winter: [
+      {
+        title: "세련된 오피스룩",
+        items: ["로얄 블루 랩 블라우스", "블랙 하이웨이스트 스커트", "실버 브로치"],
+        occasion: "출근룩",
+      },
+      {
+        title: "시크한 데이트룩",
+        items: ["핫핑크 니트", "다크 네이비 A라인 스커트", "화이트 진주 귀걸이"],
+        occasion: "데이트",
+      },
+    ],
+  },
+  N: {
+    Spring: [
+      {
+        title: "캐주얼 오피스룩",
+        items: ["아이보리 오버사이즈 셔츠", "카키 와이드 팬츠", "베이지 토트백"],
+        occasion: "출근룩",
+      },
+      {
+        title: "편안한 주말룩",
+        items: ["코랄 맨투맨", "라이트 브라운 조거 팬츠", "골드 링 귀걸이"],
+        occasion: "주말",
+      },
+    ],
+    Summer: [
+      {
+        title: "시원한 캐주얼룩",
+        items: ["스카이블루 오버핏 셔츠", "라이트 그레이 린넨 팬츠", "실버 뱅글"],
+        occasion: "출근룩",
+      },
+      {
+        title: "레이어드 데일리룩",
+        items: ["민트 카디건", "소프트 화이트 티", "라벤더 와이드 팬츠"],
+        occasion: "일상",
+      },
+    ],
+    Autumn: [
+      {
+        title: "내추럴 오피스룩",
+        items: ["올리브 오버사이즈 재킷", "다크 브라운 와이드 팬츠", "거북이 무늬 선글라스"],
+        occasion: "출근룩",
+      },
+      {
+        title: "따뜻한 레이어드룩",
+        items: ["캐멀 롱 코트", "테라코타 니트", "카키 조거 팬츠"],
+        occasion: "일상",
+      },
+    ],
+    Winter: [
+      {
+        title: "모던 캐주얼룩",
+        items: ["블랙 오버사이즈 코트", "차콜 와이드 팬츠", "퓨어 화이트 터틀넥"],
+        occasion: "출근룩",
+      },
+      {
+        title: "시크한 주말룩",
+        items: ["다크 네이비 롱 패딩", "에메랄드 니트", "블랙 스트레이트 진"],
+        occasion: "주말",
+      },
+    ],
   },
 };
 
@@ -217,9 +413,40 @@ export function generateColorRecommendations(
 }
 
 /**
- * 체형별 색상 팁 조회
+ * 체형별 색상 팁 조회 (8타입 + 3타입 지원)
  */
-export function getColorTipsForBodyType(bodyType: BodyType | string): string[] {
+export function getColorTipsForBodyType(bodyType: BodyType | BodyType3 | string): string[] {
+  // 3타입인지 확인
+  if (bodyType === "S" || bodyType === "W" || bodyType === "N") {
+    return BODY_TYPE_3_COLOR_STRATEGY[bodyType as BodyType3]?.tips || [];
+  }
   const strategy = BODY_TYPE_COLOR_STRATEGY[bodyType as BodyType];
   return strategy?.tips || [];
+}
+
+/**
+ * 체형 + 퍼스널 컬러 조합별 코디 예시 조회
+ */
+export function getOutfitExamples(
+  bodyType: BodyType3 | string,
+  season: PersonalColorSeason | string | null
+): OutfitExample[] {
+  if (!season) return [];
+
+  // 3타입으로 변환 (8타입인 경우)
+  let type3: BodyType3;
+  if (bodyType === "S" || bodyType === "W" || bodyType === "N") {
+    type3 = bodyType as BodyType3;
+  } else {
+    // 8타입 → 3타입 매핑
+    const mapping: Record<string, BodyType3> = {
+      X: "S", V: "S", Y: "S",
+      A: "W", "8": "W", O: "W",
+      H: "N", I: "N",
+    };
+    type3 = mapping[bodyType] || "S";
+  }
+
+  const seasonKey = season as PersonalColorSeason;
+  return OUTFIT_EXAMPLES[type3]?.[seasonKey] || [];
 }
