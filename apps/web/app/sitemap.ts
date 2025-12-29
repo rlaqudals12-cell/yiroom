@@ -74,6 +74,57 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.8,
     },
+    // 기록/스타일
+    {
+      url: `${siteUrl}/record`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/style`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    // 기능 페이지
+    {
+      url: `${siteUrl}/chat`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${siteUrl}/closet`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.7,
+    },
+    {
+      url: `${siteUrl}/challenges`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    // 소셜
+    {
+      url: `${siteUrl}/friends`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    },
+    {
+      url: `${siteUrl}/leaderboard`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.6,
+    },
+    {
+      url: `${siteUrl}/wellness`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.7,
+    },
   ];
 
   return staticPages;
