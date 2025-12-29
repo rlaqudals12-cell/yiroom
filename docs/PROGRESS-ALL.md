@@ -1613,6 +1613,24 @@ E2E 테스트 확장:
   [x] e2e/help/help.spec.ts (FAQ/공지/코치/채팅)
   [x] fixtures/index.ts에 17개 신규 라우트 추가
   [x] E2E 테스트: 47개 → 84개 (+37개)
+
+코드 정리:
+  [x] 미사용 파일 9개 삭제 (-2,025줄)
+      - lib/supabase.ts (레거시)
+      - lib/rag.ts, types/rag.ts (미사용 RAG)
+      - components/common/LanguageSwitcher.tsx
+      - components/products/ProductQA.tsx
+      - components/nutrition/InteractionWarning.tsx
+      - lib/nutrition/ingredient-interaction.ts
+      - lib/skincare/routine-builder.ts
+      - hooks/useNotifications.ts
+
+Lighthouse 측정:
+  [x] Accessibility: 94 ✅
+  [x] Best Practices: 93 ✅
+  [x] Performance: 68 (로그인 페이지, Clerk 로딩 영향)
+  [x] SEO: 58 (로그인 페이지, 의도적 noindex)
+  * 참고: 실제 앱 페이지는 root layout metadata 상속
 ```
 
 ---
@@ -2139,6 +2157,7 @@ data/
 | L-2 | 다국어 지원 (i18n) - 4언어 | ✅ 완료 | 139개 |
 | L-3 | 성능 최적화 | ✅ 완료 | - |
 | L-4 | 오프라인 지원 | ✅ 완료 | - |
+| L-5 | Lighthouse 측정 | ✅ 완료 | A11y 94, BP 93 |
 | E2E | 테스트 확장 | ✅ 완료 | 37개 추가 |
 
 ### L-1: Web Push 알림 ⏳ 대기
@@ -2197,6 +2216,27 @@ data/
   [x] manifest.json
   [x] 서비스 워커 캐싱
   [x] 오프라인 fallback 페이지
+```
+
+### L-5: Lighthouse 측정 ✅ 완료
+
+```yaml
+측정 결과 (2025-12-30):
+  [x] Accessibility: 94 ✅ (목표 90+)
+  [x] Best Practices: 93 ✅ (목표 90+)
+  [x] Performance: 68 (로그인 페이지, Clerk 영향)
+  [x] SEO: 58 (로그인 페이지, 의도적 noindex)
+
+주요 메트릭:
+  - TBT: 110ms ✅ (목표 < 200ms)
+  - CLS: 0 ✅ (목표 < 0.1)
+  - FCP: 2.9s (Clerk 로딩 영향)
+  - LCP: 6.9s (Clerk 로딩 영향)
+
+참고:
+  - 로그인 페이지는 Clerk 인증 스크립트 로딩 필요
+  - 실제 앱 페이지는 root layout의 SEO metadata 상속
+  - robots.txt에서 /sign-in/, /sign-up/ 의도적 차단
 ```
 
 ### E2E 테스트 확장 ✅ 완료
