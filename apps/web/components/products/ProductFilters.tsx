@@ -5,6 +5,7 @@ import { SlidersHorizontal, X, RotateCcw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { trackCustomEvent } from '@/lib/analytics';
 import {
   Sheet,
   SheetContent,
@@ -123,6 +124,15 @@ export function ProductFilters({
 
   // 필터 적용
   const handleApply = () => {
+    // 필터 사용 트래킹
+    const filterSummary = {
+      priceRange: localFilters.priceRange?.length || 0,
+      skinTypes: localFilters.skinTypes?.length || 0,
+      skinConcerns: localFilters.skinConcerns?.length || 0,
+      personalColorSeasons: localFilters.personalColorSeasons?.length || 0,
+    };
+    trackCustomEvent('feature_use', 'Product Filter Applied', filterSummary);
+
     onFiltersChange(localFilters);
     setIsOpen(false);
   };
@@ -130,6 +140,13 @@ export function ProductFilters({
   // 내 분석 결과 적용
   const handleApplyUserAnalysis = () => {
     if (!userAnalysis) return;
+
+    // 분석 결과 적용 트래킹
+    trackCustomEvent('feature_use', 'Apply User Analysis to Filter', {
+      hasSkinType: !!userAnalysis.skinType,
+      hasSkinConcerns: !!userAnalysis.skinConcerns?.length,
+      hasPersonalColor: !!userAnalysis.personalColorSeason,
+    });
 
     const newFilters: ProductFilterState = {};
 
