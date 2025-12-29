@@ -70,12 +70,12 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
   if (isLoading) {
     return (
       <div
-        className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 rounded-2xl p-6 animate-pulse"
+        className="bg-white border border-border rounded-2xl p-6 animate-pulse shadow-sm"
         data-testid="gamification-widget-loading"
       >
-        <div className="h-6 bg-purple-100 rounded w-1/3 mb-4" />
-        <div className="h-12 bg-purple-100 rounded mb-4" />
-        <div className="h-16 bg-purple-100 rounded" />
+        <div className="h-6 bg-muted rounded w-1/3 mb-4" />
+        <div className="h-12 bg-muted rounded mb-4" />
+        <div className="h-16 bg-muted rounded" />
       </div>
     );
   }
@@ -87,19 +87,19 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
 
   return (
     <div
-      className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 rounded-2xl border border-purple-100 overflow-hidden"
+      className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden"
       data-testid="gamification-widget"
     >
       {/* 헤더 */}
-      <div className="p-4 border-b border-purple-100">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center">
-              <Trophy className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+              <Trophy className="w-5 h-5 text-primary" />
             </div>
             <div>
               <h3 className="font-bold text-foreground">나의 성장</h3>
-              <p className="text-sm text-purple-600">
+              <p className="text-sm text-primary">
                 레벨 {levelInfo?.level || 1} · {levelInfo?.tierName || '비기너'}
               </p>
             </div>
@@ -108,7 +108,7 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
           {/* 배지 통계 */}
           <div className="text-right">
             <p className="text-sm text-muted-foreground">획득 배지</p>
-            <p className="text-xl font-bold text-purple-600">
+            <p className="text-xl font-bold text-primary">
               {earnedCount}
               <span className="text-sm text-muted-foreground">/{totalBadges}</span>
             </p>
@@ -117,7 +117,7 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
       </div>
 
       {/* 레벨 프로그레스 */}
-      <div className="p-4 bg-white/40">
+      <div className="p-4 bg-secondary/30">
         {levelInfo ? (
           <LevelProgress levelInfo={levelInfo} size="md" showDetails={true} />
         ) : (
@@ -131,12 +131,12 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Award className="w-4 h-4 text-purple-500" />
+            <Award className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-foreground">최근 획득 배지</span>
           </div>
           <Link
             href="/profile/badges"
-            className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700 transition-colors"
+            className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
           >
             전체 보기
             <ChevronRight className="w-4 h-4" />
@@ -159,7 +159,7 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
             )}
           </div>
         ) : (
-          <div className="text-center py-4 bg-white/60 rounded-xl">
+          <div className="text-center py-4 bg-secondary/50 rounded-xl">
             <p className="text-sm text-muted-foreground">
               아직 획득한 배지가 없어요
             </p>
@@ -172,9 +172,9 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
 
       {/* XP 획득 팁 */}
       {levelInfo && levelInfo.level < 5 && (
-        <div className="mx-4 mb-4 bg-purple-100 rounded-lg p-3">
-          <p className="text-xs text-purple-700">
-            💡 <span className="font-medium">팁:</span> 운동 기록 시 5 XP, 식단 기록 시 2 XP를 획득해요!
+        <div className="mx-4 mb-4 bg-primary/10 rounded-lg p-3">
+          <p className="text-xs text-primary">
+            <span className="font-medium">팁:</span> 운동 기록 시 5 XP, 식단 기록 시 2 XP를 획득해요!
           </p>
         </div>
       )}

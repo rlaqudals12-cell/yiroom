@@ -708,7 +708,15 @@ export interface ProductPriceHistoryInput {
 // ================================================
 
 /** 매칭 사유 타입 */
-export type MatchReasonType = 'skinType' | 'concern' | 'personalColor' | 'goal' | 'rating';
+export type MatchReasonType =
+  | 'skinType'
+  | 'concern'
+  | 'personalColor'
+  | 'goal'
+  | 'rating'
+  | 'price'      // 가격 접근성
+  | 'brand'      // 대중 브랜드
+  | 'popularity'; // 리뷰 인기도
 
 /** 매칭 사유 */
 export interface MatchReason {

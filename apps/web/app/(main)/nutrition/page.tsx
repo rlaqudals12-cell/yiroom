@@ -35,7 +35,9 @@ import {
   SkinInsightCardDynamic,
   WorkoutInsightCardDynamic,
   BodyInsightCardDynamic,
+  MealSuggestionCardDynamic,
 } from '@/components/nutrition/dynamic';
+import type { NutritionGoal } from '@/types/nutrition';
 import { Button } from '@/components/ui/button';
 import {
   convertSkinMetricsToSummary,
@@ -152,6 +154,9 @@ export default function NutritionPage() {
   const [currentWeight, setCurrentWeight] = useState<number | null>(null);
   const [isBodyLoading, setIsBodyLoading] = useState(false);
 
+  // 영양 목표 상태 (오늘 뭐 먹지? 연동용)
+  const [nutritionGoal, setNutritionGoal] = useState<NutritionGoal>('health');
+
   const supabase = useClerkSupabaseClient();
 
   // 오늘의 식단 데이터 로드
@@ -216,6 +221,10 @@ export default function NutritionPage() {
             fastingStartTime: data.fasting_start_time ?? null,
             eatingWindowHours: data.eating_window_hours ?? null,
           });
+          // 영양 목표 설정 (오늘 뭐 먹지? 연동용)
+          if (data.goal) {
+            setNutritionGoal(data.goal as NutritionGoal);
+          }
         } else {
           // 설정이 없음 (온보딩 미완료)
           setHasSettings(false);
@@ -477,8 +486,8 @@ export default function NutritionPage() {
           setIsManualInputOpen(true);
           break;
         case 'barcode':
-          // 향후 바코드 스캔 페이지로 이동
-          console.log('[Nutrition Page] Barcode action');
+          // 바코드 스캔 페이지로 이동
+          router.push('/nutrition/barcode');
           break;
         case 'water':
           // 물 빠른 추가 (250ml)
@@ -552,6 +561,17 @@ export default function NutritionPage() {
         targetCalories={DEFAULT_CALORIE_GOAL}
         onNavigateToWorkout={() => router.push('/workout')}
         isLoading={isLoading || isWorkoutLoading}
+      />
+
+      {/* 오늘 뭐 먹지? AI 식단 추천 */}
+      <MealSuggestionCardDynamic
+        goal={nutritionGoal}
+        consumedCalories={data?.summary?.totalCalories || 0}
+        targetCalories={DEFAULT_CALORIE_GOAL}
+        skinConcerns={skinAnalysis ? Object.entries(skinAnalysis)
+          .filter(([, status]) => status === 'warning')
+          .map(([key]) => key) : []}
+        bodyType={bodyAnalysis?.bodyType}
       />
 
       {/* 식사별 기록 섹션 */}

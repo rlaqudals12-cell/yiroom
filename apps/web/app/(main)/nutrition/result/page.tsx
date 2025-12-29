@@ -9,6 +9,8 @@ import { Check, ChevronRight, Utensils, Flame, Activity, Target } from 'lucide-r
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { FadeInUp, ScaleIn, Confetti } from '@/components/animations';
+import { SupplementRecommendationCardDynamic } from '@/components/nutrition/dynamic';
+import type { NutritionGoal } from '@/types/nutrition';
 
 // 목표 레이블
 const GOAL_LABELS: Record<string, { label: string; icon: string; color: string }> = {
@@ -308,8 +310,18 @@ export default function NutritionResultPage() {
           </div>
         </FadeInUp>
 
+        {/* 영양제 추천 (목표 기반) */}
+        {inputData.goal && (
+          <FadeInUp delay={6}>
+            <SupplementRecommendationCardDynamic
+              goal={inputData.goal as NutritionGoal}
+              defaultExpanded={false}
+            />
+          </FadeInUp>
+        )}
+
         {/* 액션 버튼 */}
-        <FadeInUp delay={6}>
+        <FadeInUp delay={7}>
           <div className="space-y-3 pt-4">
             <button
               onClick={handleSaveAndContinue}

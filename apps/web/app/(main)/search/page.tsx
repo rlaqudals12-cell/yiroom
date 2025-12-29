@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Search, X, TrendingUp, Clock, Sparkles, Loader2, SearchX } from 'lucide-react';
+import { ArrowLeft, Search, X, TrendingUp, Clock, Sparkles, SearchX } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
@@ -196,7 +196,9 @@ export default function SearchPage() {
               autoFocus
               aria-label="검색어 입력"
               aria-autocomplete="list"
+              role="combobox"
               aria-expanded={showSuggestions && suggestions.length > 0}
+              aria-controls="search-suggestions"
             />
             {query && (
               <button
@@ -210,7 +212,7 @@ export default function SearchPage() {
 
             {/* 자동완성 드롭다운 */}
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-1 bg-card border rounded-xl shadow-lg z-50 overflow-hidden">
+              <div id="search-suggestions" role="listbox" className="absolute left-0 right-0 top-full mt-1 bg-card border rounded-xl shadow-lg z-50 overflow-hidden">
                 {suggestions.map((suggestion, index) => (
                   <button
                     key={suggestion}

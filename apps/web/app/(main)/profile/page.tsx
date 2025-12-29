@@ -1,12 +1,14 @@
 'use client';
 
 /**
- * 프로필 메인 페이지
- * - 사용자 정보
- * - 레벨/XP 현황
- * - 배지 요약
- * - 챌린지 통계
- * - 스트릭 현황
+ * 나 탭 - UX 리스트럭처링
+ * - 사용자 정보 + 웰니스 스코어
+ * - 내 분석 결과
+ * - 친구
+ * - 리더보드
+ * - 챌린지
+ * - 배지
+ * - 설정/공지사항/도움말
  */
 
 import { useState, useEffect } from 'react';
@@ -14,15 +16,25 @@ import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  ArrowLeft,
   Trophy,
   Target,
-  Flame,
   ChevronRight,
   Award,
-  Calendar,
   TrendingUp,
+  Users,
+  Settings,
+  Megaphone,
+  HelpCircle,
+  MessageSquare,
+  LogOut,
+  Palette,
+  FlaskConical,
+  User,
+  Flame,
+  Calendar,
 } from 'lucide-react';
+import { BottomNav } from '@/components/BottomNav';
+import { FadeInUp } from '@/components/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { LevelProgress, BadgeCard } from '@/components/gamification';
 import {
@@ -143,57 +155,168 @@ export default function ProfilePage() {
     );
   }
 
-  return (
-    <main className="min-h-screen px-4 py-8">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* 헤더 */}
-        <header className="flex items-center gap-4">
-          <Link
-            href="/dashboard"
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            aria-label="대시보드로 돌아가기"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <h1 className="text-xl font-bold">내 프로필</h1>
-        </header>
+  // TODO: 실제 데이터 연동
+  const wellnessScore = 85;
+  const personalColor = '봄 웜톤';
+  const skinType = '복합성/민감성';
+  const bodyType = '웨이브';
+  const friendCount = 12;
+  const friendRequests = 3;
+  const weeklyRank = 127;
+  const rankChange = 23;
 
+  return (
+    <div className="min-h-screen bg-background pb-20" data-testid="profile-page">
+      <main className="px-4 py-6 space-y-4">
         {/* 프로필 카드 */}
-        <section className="bg-card rounded-2xl border p-6">
-          <div className="flex items-center gap-4">
-            {user.imageUrl ? (
-              <Image
-                src={user.imageUrl}
-                alt={user.fullName || '프로필'}
-                width={80}
-                height={80}
-                className="rounded-full"
-              />
-            ) : (
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center">
-                <span className="text-2xl font-bold text-white">
-                  {(user.fullName || user.username || 'U')[0].toUpperCase()}
-                </span>
-              </div>
-            )}
-            <div className="flex-1">
-              <h2 className="text-xl font-bold">
-                {user.fullName || user.username || '사용자'}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {user.primaryEmailAddress?.emailAddress}
-              </p>
-              {profileData?.levelInfo && (
-                <div className="mt-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
-                    <TrendingUp className="w-3 h-3" />
-                    Lv.{profileData.levelInfo.level} {profileData.levelInfo.tierName}
+        <FadeInUp>
+          <section className="bg-card rounded-2xl border p-6">
+            <div className="flex items-center gap-4">
+              {user.imageUrl ? (
+                <Image
+                  src={user.imageUrl}
+                  alt={user.fullName || '프로필'}
+                  width={80}
+                  height={80}
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center">
+                  <span className="text-2xl font-bold text-white">
+                    {(user.fullName || user.username || 'U')[0].toUpperCase()}
                   </span>
                 </div>
               )}
+              <div className="flex-1">
+                <h2 className="text-xl font-bold">
+                  {user.fullName || user.username || '사용자'}님
+                </h2>
+                {profileData?.levelInfo && (
+                  <p className="text-sm text-muted-foreground">
+                    Lv.{profileData.levelInfo.level} {profileData.levelInfo.tierName}
+                  </p>
+                )}
+                <div className="mt-2 flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-yellow-500" />
+                  <span className="text-sm font-medium">
+                    웰니스 스코어: {wellnessScore}점
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </FadeInUp>
+
+        {/* 내 분석 결과 */}
+        <FadeInUp delay={1}>
+          <section className="bg-card rounded-2xl border p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-foreground">📊 내 분석 결과</h3>
+              <Link
+                href="/profile/analysis"
+                className="text-xs text-primary hover:underline"
+              >
+                분석 다시하기
+              </Link>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
+                <Palette className="w-4 h-4 text-rose-500" />
+                <span className="text-sm text-muted-foreground">퍼스널 컬러:</span>
+                <span className="text-sm font-medium">{personalColor}</span>
+              </div>
+              <div className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
+                <FlaskConical className="w-4 h-4 text-pink-500" />
+                <span className="text-sm text-muted-foreground">피부:</span>
+                <span className="text-sm font-medium">{skinType}</span>
+              </div>
+              <div className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
+                <User className="w-4 h-4 text-blue-500" />
+                <span className="text-sm text-muted-foreground">체형:</span>
+                <span className="text-sm font-medium">{bodyType}</span>
+              </div>
+            </div>
+          </section>
+        </FadeInUp>
+
+        {/* 친구 */}
+        <FadeInUp delay={2}>
+          <section className="bg-card rounded-2xl border p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-500" />
+                친구 ({friendCount}명)
+              </h3>
+              <Link
+                href="/profile/friends"
+                className="text-sm text-primary flex items-center gap-1 hover:underline"
+              >
+                전체보기 <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="flex gap-2 mb-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="w-12 h-12 bg-muted rounded-full flex items-center justify-center text-muted-foreground"
+                >
+                  👤
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Link
+                href="/friends/search"
+                className="flex-1 py-2 bg-muted rounded-lg text-center text-sm font-medium hover:bg-muted/80"
+              >
+                친구 추가
+              </Link>
+              <Link
+                href="/friends/requests"
+                className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-center text-sm font-medium hover:bg-primary/90"
+              >
+                친구 요청 ({friendRequests})
+              </Link>
+            </div>
+          </section>
+        </FadeInUp>
+
+        {/* 리더보드 */}
+        <FadeInUp delay={3}>
+          <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-amber-500" />
+                  리더보드
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  이번 주 {weeklyRank}위 (+{rankChange}↑)
+                </p>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Link
+                  href="/leaderboard"
+                  className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded hover:bg-amber-200"
+                >
+                  전체 순위
+                </Link>
+                <Link
+                  href="/leaderboard/nutrition"
+                  className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded hover:bg-amber-200"
+                >
+                  영양 순위
+                </Link>
+                <Link
+                  href="/leaderboard/workout"
+                  className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded hover:bg-amber-200"
+                >
+                  운동 순위
+                </Link>
+              </div>
+            </div>
+          </section>
+        </FadeInUp>
 
         {/* 레벨 & XP */}
         {profileData?.levelInfo && (
@@ -368,14 +491,65 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* 설정 링크 */}
-        <Link
-          href="/settings"
-          className="block w-full p-4 bg-card rounded-2xl border text-center hover:bg-muted/50 transition-colors"
-        >
-          설정
-        </Link>
-      </div>
-    </main>
+        {/* 설정/도움말 링크들 */}
+        <FadeInUp delay={6}>
+          <section className="bg-card rounded-2xl border overflow-hidden">
+            <Link
+              href="/profile/settings"
+              className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors border-b"
+            >
+              <div className="flex items-center gap-3">
+                <Settings className="w-5 h-5 text-gray-500" />
+                <span>설정</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </Link>
+            <Link
+              href="/announcements"
+              className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors border-b"
+            >
+              <div className="flex items-center gap-3">
+                <Megaphone className="w-5 h-5 text-gray-500" />
+                <span>공지사항</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </Link>
+            <Link
+              href="/help"
+              className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors border-b"
+            >
+              <div className="flex items-center gap-3">
+                <HelpCircle className="w-5 h-5 text-gray-500" />
+                <span>도움말/FAQ</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </Link>
+            <Link
+              href="/help/feedback"
+              className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors border-b"
+            >
+              <div className="flex items-center gap-3">
+                <MessageSquare className="w-5 h-5 text-gray-500" />
+                <span>피드백 보내기</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </Link>
+            <button
+              onClick={() => {
+                // TODO: 로그아웃 처리
+              }}
+              className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors text-left"
+            >
+              <div className="flex items-center gap-3 text-red-500">
+                <LogOut className="w-5 h-5" />
+                <span>로그아웃</span>
+              </div>
+            </button>
+          </section>
+        </FadeInUp>
+      </main>
+
+      <BottomNav />
+    </div>
   );
 }

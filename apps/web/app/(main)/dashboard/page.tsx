@@ -9,6 +9,7 @@ import GamificationWidget from './_components/GamificationWidget';
 import ChallengeWidget from './_components/ChallengeWidget';
 import WeeklyProgressSection from './_components/WeeklyProgressSection';
 import AnalysisSection from './_components/AnalysisSection';
+import ClosetWidget from './_components/ClosetWidget';
 
 // 분석 결과 타입 정의
 interface AnalysisSummary {
@@ -153,7 +154,16 @@ export default function DashboardPage() {
           <WeeklyProgressSection />
         </section>
 
-        {/* Zone 3: Analysis Archive (Collapsible) */}
+        {/* Zone 3: Closet & Style */}
+        <section className="mb-10">
+          <ClosetWidget
+            userId={user.id}
+            personalColor={analyses.find((a) => a.type === 'personal-color')?.seasonType}
+            bodyType={analyses.find((a) => a.type === 'body')?.bodyType}
+          />
+        </section>
+
+        {/* Zone 4: Analysis Archive (Collapsible) */}
         <section>
           <AnalysisSection
             analyses={analyses}

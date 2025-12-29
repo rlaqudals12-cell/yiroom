@@ -58,12 +58,12 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
   if (isLoading) {
     return (
       <div
-        className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-2xl p-6 animate-pulse"
+        className="bg-white border border-border rounded-2xl p-6 animate-pulse shadow-sm"
         data-testid="challenge-widget-loading"
       >
-        <div className="h-6 bg-orange-100 rounded w-1/3 mb-4" />
-        <div className="h-12 bg-orange-100 rounded mb-4" />
-        <div className="h-16 bg-orange-100 rounded" />
+        <div className="h-6 bg-muted rounded w-1/3 mb-4" />
+        <div className="h-12 bg-muted rounded mb-4" />
+        <div className="h-16 bg-muted rounded" />
       </div>
     );
   }
@@ -75,19 +75,19 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
 
   return (
     <div
-      className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-2xl border border-orange-100 overflow-hidden"
+      className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden"
       data-testid="challenge-widget"
     >
       {/* 헤더 */}
-      <div className="p-4 border-b border-orange-100">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
-              <Target className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+              <Target className="w-5 h-5 text-primary" />
             </div>
             <div>
               <h3 className="font-bold text-foreground">챌린지</h3>
-              <p className="text-sm text-orange-600">
+              <p className="text-sm text-primary">
                 {stats?.inProgress || 0}개 진행 중
               </p>
             </div>
@@ -96,7 +96,7 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
           {/* 챌린지 통계 */}
           <div className="flex gap-3">
             <div className="text-center">
-              <p className="text-lg font-bold text-orange-600">
+              <p className="text-lg font-bold text-primary">
                 {stats?.completed || 0}
               </p>
               <p className="text-xs text-muted-foreground">완료</p>
@@ -124,9 +124,9 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
                 <Link
                   key={uc.id}
                   href={`/challenges/${uc.challengeId}`}
-                  className="flex items-center gap-3 p-3 bg-white/60 hover:bg-white/80 rounded-xl transition-colors"
+                  className="flex items-center gap-3 p-3 bg-secondary/50 hover:bg-secondary rounded-xl transition-all duration-200 hover:-translate-y-0.5 group"
                 >
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-lg">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-lg">
                     {uc.challenge?.icon || '🎯'}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -140,20 +140,20 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
                       </span>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
                 </Link>
               );
             })}
           </div>
         ) : (
-          <div className="text-center py-6 bg-white/60 rounded-xl">
-            <Flame className="w-8 h-8 text-orange-300 mx-auto mb-2" />
+          <div className="text-center py-6 bg-secondary/50 rounded-xl">
+            <Flame className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
               진행 중인 챌린지가 없어요
             </p>
             <Link
               href="/challenges"
-              className="inline-block mt-3 px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 transition-colors"
+              className="inline-block mt-3 px-4 py-2 bg-foreground text-background text-sm rounded-lg hover:bg-foreground/90 transition-all duration-200 hover:-translate-y-0.5"
             >
               챌린지 시작하기
             </Link>
@@ -166,7 +166,7 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
         <div className="px-4 pb-4">
           <Link
             href="/challenges"
-            className="flex items-center justify-center gap-1 w-full py-2 text-sm text-orange-600 hover:text-orange-700 bg-white/60 hover:bg-white/80 rounded-lg transition-colors"
+            className="flex items-center justify-center gap-1 w-full py-2 text-sm text-primary hover:text-primary/80 bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
           >
             전체 챌린지 보기
             <ChevronRight className="w-4 h-4" />
@@ -176,8 +176,8 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
 
       {/* 완료 팁 */}
       {stats && stats.completed > 0 && stats.completed < 3 && (
-        <div className="mx-4 mb-4 bg-orange-100 rounded-lg p-3">
-          <p className="text-xs text-orange-700">
+        <div className="mx-4 mb-4 bg-primary/10 rounded-lg p-3">
+          <p className="text-xs text-primary">
             <Trophy className="w-3 h-3 inline mr-1" />
             <span className="font-medium">대단해요!</span> {stats.completed}개의 챌린지를 완료했어요!
           </p>

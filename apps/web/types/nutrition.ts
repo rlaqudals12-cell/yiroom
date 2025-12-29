@@ -109,6 +109,9 @@ export interface NutritionSettings {
   proteinTarget?: number;         // 단백질 목표 (g)
   carbsTarget?: number;           // 탄수화물 목표 (g)
   fatTarget?: number;             // 지방 목표 (g)
+  // 목표 체중 설정 (Diet AI 연동)
+  currentWeight?: number;         // 현재 체중 (kg)
+  targetWeight?: number;          // 목표 체중 (kg)
   // 간헐적 단식 설정 (Task 2.16)
   fastingEnabled?: boolean;       // 간헐적 단식 활성화 여부
   fastingType?: FastingType | null; // 단식 유형 (16:8, 18:6, 20:4, custom)
@@ -473,4 +476,66 @@ export interface WaterRecordsResponse {
   totalMl: number;
   targetMl: number;
   error?: string;
+}
+
+// ============================================
+// Phase I: 바코드 스캔 타입
+// ============================================
+
+// 바코드 식품 데이터
+export interface BarcodeFood {
+  id: string;
+  barcode: string;
+  name: string;
+  brand?: string;
+  servingSize: number;
+  servingUnit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  sodium?: number;
+  sugar?: number;
+  allergens?: string[];
+  category?: string;
+  imageUrl?: string;
+  source: 'manual' | 'api' | 'crowdsourced';
+  verified: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// 바코드 조회 응답
+export interface BarcodeSearchResponse {
+  found: boolean;
+  food?: BarcodeFood;
+  barcode?: string;
+  message?: string;
+}
+
+// 바코드 등록 요청
+export interface BarcodeRegisterRequest {
+  barcode: string;
+  name: string;
+  brand?: string;
+  servingSize: number;
+  servingUnit?: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  sodium?: number;
+  sugar?: number;
+  allergens?: string[];
+  category?: string;
+  imageUrl?: string;
+}
+
+// 바코드 스캔 이력
+export interface BarcodeHistory {
+  id: string;
+  barcodeFood: BarcodeFood;
+  scannedAt: string;
 }
