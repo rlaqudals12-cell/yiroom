@@ -60,6 +60,28 @@ export {
   generateMockDailyTrend,
 } from './mock';
 
+// Funnel (퍼널 분석)
+export {
+  trackFunnelStep,
+  onboardingFunnel,
+  analysisFunnel,
+  workoutFunnel,
+  productFunnel,
+  socialFunnel,
+  calculateFunnelConversion,
+} from './funnel';
+export type { FunnelType, FunnelStep } from './funnel';
+
+// Duration (사용 시간 트래킹)
+export {
+  startDurationTracking,
+  stopDurationTracking,
+  stopAllTimers,
+  createPageDurationTracker,
+  createFeatureDurationTracker,
+  durationTrackers,
+} from './duration';
+
 // Types re-export
 export type {
   AnalyticsEventType,
