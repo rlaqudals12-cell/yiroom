@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 
 import { ProductsPageClient } from '@/components/products/ProductsPageClient';
 import { ProductGridSkeleton } from '@/components/products/ProductCardSkeleton';
+import { RecentlyViewed } from '@/components/products/RecentlyViewed';
 
 export const metadata: Metadata = {
   title: '제품 | 이룸',
@@ -25,6 +26,9 @@ export default function ProductsPage() {
           이룸이 추천하는 제품을 만나보세요
         </p>
       </div>
+
+      {/* 최근 본 제품 */}
+      <RecentlyViewed className="mb-6" />
 
       {/* 메인 컨텐츠 */}
       <Suspense fallback={<ProductGridSkeleton count={8} />}>

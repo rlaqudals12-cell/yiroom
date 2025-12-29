@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { WishlistButton } from '@/components/products/WishlistButton';
 import { PurchaseButton } from '@/components/products/PurchaseButton';
+import { CompareButton } from '@/components/products/CompareButton';
+import { ProductViewTracker } from '@/components/products/ProductViewTracker';
 import { ReviewSection } from '@/components/products/reviews';
 import { ProductQASection } from '@/components/products/ProductQASection';
 import { getProductById, pathToProductType } from '@/lib/products';
@@ -111,8 +113,34 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const cosmetic = productType === 'cosmetic' ? (product as CosmeticProduct) : null;
   const supplement = productType === 'supplement' ? (product as SupplementProduct) : null;
 
+  // 비교 버튼용 데이터
+  const compareItem = {
+    productId: product.id,
+    productType,
+    name: product.name,
+    brand: product.brand,
+    imageUrl: product.imageUrl,
+    priceKrw: product.priceKrw,
+    rating: product.rating,
+    skinTypes: cosmetic?.skinTypes,
+    concerns: cosmetic?.concerns,
+    keyIngredients: cosmetic?.keyIngredients,
+    benefits: supplement?.benefits,
+    mainIngredients: supplement?.mainIngredients,
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* 조회 트래킹 */}
+      <ProductViewTracker
+        productId={product.id}
+        productType={productType}
+        name={product.name}
+        brand={product.brand}
+        imageUrl={product.imageUrl}
+        priceKrw={product.priceKrw}
+      />
+
       {/* 헤더 */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -124,12 +152,15 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             <span>목록</span>
           </Link>
-          <WishlistButton
-            productType={productType}
-            productId={product.id}
-            size="md"
-            variant="icon"
-          />
+          <div className="flex items-center gap-2">
+            <CompareButton product={compareItem} size="md" />
+            <WishlistButton
+              productType={productType}
+              productId={product.id}
+              size="md"
+              variant="icon"
+            />
+          </div>
         </div>
       </div>
 

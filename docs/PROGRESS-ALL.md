@@ -1655,6 +1655,31 @@ Analytics 데이터 수집 강화:
   [x] duration.ts: 기능별 사용 시간 트래킹
   [x] beforeunload sendBeacon 지원
   [x] 13개 사전 정의 트래커 (분석/운동/영양/제품/소셜)
+  [x] lib/error/context.ts: Sentry 에러 컨텍스트 유틸리티
+
+제품 UX 개선:
+  [x] RecentlyViewed: 최근 본 제품 (localStorage, 최대 20개)
+  [x] ProductCompare: 제품 비교 기능 (최대 3개, 플로팅 버튼)
+  [x] CompareButton: 비교 추가/제거 버튼
+  [x] ProductViewTracker: 제품 상세 조회 트래킹
+  [x] ActionToast: 피드백 토스트 (찜/비교/성공)
+  [x] ProductDetailSkeleton: 로딩 스켈레톤
+  [x] ProductFilters: 필터 사용 트래킹 추가
+
+스토어 (Zustand + persist):
+  [x] recentlyViewedStore: 최근 본 제품 관리
+  [x] productCompareStore: 비교 제품 관리
+
+페이지 통합:
+  [x] (main)/layout.tsx: ProductCompare 플로팅 버튼
+  [x] products/page.tsx: RecentlyViewed 섹션
+  [x] products/[type]/[id]/page.tsx: 조회 트래킹 + 비교 버튼
+
+테스트 추가:
+  [x] funnel.test.ts (15개)
+  [x] duration.test.ts (15개)
+  [x] recentlyViewedStore.test.ts (7개)
+  [x] productCompareStore.test.ts (12개)
 ```
 
 ---
