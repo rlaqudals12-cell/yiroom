@@ -3,9 +3,10 @@
 /**
  * 관리자 어필리에이트 대시보드
  * Sprint E Day 10: 수익화 준비
+ * Phase 5: 수익 분석 탭 추가
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import {
   TrendingUp,
@@ -14,11 +15,13 @@ import {
   Users,
   Calendar,
   RefreshCw,
+  BarChart3,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -34,8 +37,22 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  RevenueSummaryCard,
+  PartnerRevenueChart,
+  DailyRevenueChart,
+  TopProductsTable,
+} from '@/components/affiliate/dashboard';
 import type { AffiliateStats } from '@/types/affiliate';
 import type { StatsPeriod, DashboardStats } from '@/lib/admin/affiliate-stats';
+import {
+  getDashboardSummary,
+  getPartnerRevenues,
+  getDailyRevenueTrend,
+  getTopProducts,
+  getDateRange,
+} from '@/lib/affiliate/stats';
+import type { DashboardSummary, PartnerRevenue, DailyRevenueTrend, TopProduct } from '@/lib/affiliate/stats';
 
 // 차트 동적 로딩
 const AffiliateChartDynamic = dynamic(
@@ -53,16 +70,29 @@ const PRODUCT_TYPE_NAMES: Record<string, string> = {
 
 export default function AdminAffiliatePage() {
   const [period, setPeriod] = useState<StatsPeriod>('week');
+  const [activeTab, setActiveTab] = useState<'clicks' | 'revenue'>('clicks');
   const [stats, setStats] = useState<AffiliateStats | null>(null);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 통계 로드
-  useEffect(() => {
-    loadStats();
+  // Phase 5 수익 분석 데이터
+  const [revenueSummary, setRevenueSummary] = useState<DashboardSummary | null>(null);
+  const [partnerRevenues, setPartnerRevenues] = useState<PartnerRevenue[]>([]);
+  const [dailyTrend, setDailyTrend] = useState<DailyRevenueTrend[]>([]);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+
+  // 기간을 Phase 5 형식으로 변환
+  const getPeriodForStats = useCallback(() => {
+    switch (period) {
+      case 'today': return 'today';
+      case 'week': return 'week';
+      case 'month': return 'month';
+      default: return 'quarter';
+    }
   }, [period]);
 
-  const loadStats = async () => {
+  // 통계 로드 함수
+  const loadStats = useCallback(async () => {
     setIsLoading(true);
 
     // Mock 데이터 (실제로는 서버 액션 호출)
@@ -105,8 +135,29 @@ export default function AdminAffiliatePage() {
       byDate: mockByDate,
     });
 
+    // Phase 5 수익 분석 데이터 로드
+    const statsPeriod = getPeriodForStats();
+    const dateRange = getDateRange(statsPeriod);
+
+    const [summary, partners, trend, products] = await Promise.all([
+      getDashboardSummary(dateRange.start, dateRange.end),
+      getPartnerRevenues(dateRange.start, dateRange.end),
+      getDailyRevenueTrend(dateRange.start, dateRange.end),
+      getTopProducts(10),
+    ]);
+
+    setRevenueSummary(summary);
+    setPartnerRevenues(partners);
+    setDailyTrend(trend);
+    setTopProducts(products);
+
     setIsLoading(false);
-  };
+  }, [getPeriodForStats]);
+
+  // 통계 로드
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
 
   return (
     <div className="container mx-auto py-8 px-4" data-testid="admin-affiliate-page">
@@ -148,84 +199,116 @@ export default function AdminAffiliatePage() {
         </div>
       </div>
 
-      {/* 요약 카드 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              오늘 클릭
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {dashboardStats?.todayClicks ?? '-'}
-            </div>
-          </CardContent>
-        </Card>
+      {/* 탭 */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'clicks' | 'revenue')} className="mb-8">
+        <TabsList className="grid w-full max-w-[400px] grid-cols-2">
+          <TabsTrigger value="clicks" className="flex items-center gap-2">
+            <MousePointerClick className="h-4 w-4" />
+            클릭 통계
+          </TabsTrigger>
+          <TabsTrigger value="revenue" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            수익 분석
+          </TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              주간 클릭
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold">
-                {dashboardStats?.weekClicks ?? '-'}
-              </span>
-              {dashboardStats && (
-                <Badge
-                  variant={dashboardStats.weeklyGrowth >= 0 ? 'default' : 'destructive'}
-                  className="flex items-center gap-1"
-                >
-                  {dashboardStats.weeklyGrowth >= 0 ? (
-                    <TrendingUp className="h-3 w-3" />
-                  ) : (
-                    <TrendingDown className="h-3 w-3" />
+        {/* 클릭 통계 탭 */}
+        <TabsContent value="clicks" className="space-y-8 mt-6">
+          {/* 요약 카드 */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  오늘 클릭
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {dashboardStats?.todayClicks ?? '-'}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  주간 클릭
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold">
+                    {dashboardStats?.weekClicks ?? '-'}
+                  </span>
+                  {dashboardStats && (
+                    <Badge
+                      variant={dashboardStats.weeklyGrowth >= 0 ? 'default' : 'destructive'}
+                      className="flex items-center gap-1"
+                    >
+                      {dashboardStats.weeklyGrowth >= 0 ? (
+                        <TrendingUp className="h-3 w-3" />
+                      ) : (
+                        <TrendingDown className="h-3 w-3" />
+                      )}
+                      {Math.abs(dashboardStats.weeklyGrowth)}%
+                    </Badge>
                   )}
-                  {Math.abs(dashboardStats.weeklyGrowth)}%
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              월간 클릭
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {dashboardStats?.monthClicks ?? '-'}
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  월간 클릭
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {dashboardStats?.monthClicks ?? '-'}
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              고유 사용자
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.uniqueUsers ?? '-'}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  고유 사용자
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {stats?.uniqueUsers ?? '-'}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* 차트 */}
-      <div className="mb-8">
-        <AffiliateChartDynamic
-          data={stats?.byDate ?? []}
-          title="일별 클릭 추이"
-        />
-      </div>
+          {/* 차트 */}
+          <AffiliateChartDynamic
+            data={stats?.byDate ?? []}
+            title="일별 클릭 추이"
+          />
+        </TabsContent>
+
+        {/* 수익 분석 탭 (Phase 5) */}
+        <TabsContent value="revenue" className="space-y-8 mt-6">
+          {/* 수익 요약 */}
+          {revenueSummary && (
+            <RevenueSummaryCard summary={revenueSummary} isLoading={isLoading} />
+          )}
+
+          {/* 차트 영역 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <DailyRevenueChart trend={dailyTrend} isLoading={isLoading} />
+            <PartnerRevenueChart partners={partnerRevenues} isLoading={isLoading} />
+          </div>
+
+          {/* 인기 제품 */}
+          <TopProductsTable products={topProducts} isLoading={isLoading} />
+        </TabsContent>
+      </Tabs>
 
       {/* 제품별 순위 */}
       <Card data-testid="product-ranking">
