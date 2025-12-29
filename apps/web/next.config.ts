@@ -123,6 +123,8 @@ const nextConfig: NextConfig = {
       { hostname: "**.supabase.co" },
       // Unsplash 이미지 (홈페이지)
       { hostname: "images.unsplash.com" },
+      // 플레이스홀더 이미지 (제품 이미지 없을 때)
+      { hostname: "placehold.co" },
     ],
     // 이미지 포맷 최적화 (WebP, AVIF)
     formats: ["image/avif", "image/webp"],

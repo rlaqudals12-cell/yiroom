@@ -66,7 +66,7 @@ export default function StylePage() {
     {
       id: '1',
       clerkUserId: 'user1',
-      imageUrl: '/images/lookbook/look-1.jpg',
+      imageUrl: 'https://placehold.co/400x600/fff8e7/d4a574?text=Spring+Look',
       bodyType: 'W',
       personalColor: 'Spring',
       caption: '봄 웜톤에 어울리는 데일리 코디',
@@ -82,7 +82,7 @@ export default function StylePage() {
     {
       id: '2',
       clerkUserId: 'user2',
-      imageUrl: '/images/lookbook/look-2.jpg',
+      imageUrl: 'https://placehold.co/400x600/ffb4a2/d4a574?text=Office+Look',
       bodyType: 'W',
       personalColor: 'Spring',
       caption: '웨이브 체형 출근룩',
@@ -98,7 +98,7 @@ export default function StylePage() {
     {
       id: '3',
       clerkUserId: 'user3',
-      imageUrl: '/images/lookbook/look-3.jpg',
+      imageUrl: 'https://placehold.co/400x600/e8eef8/808080?text=Minimal+Look',
       bodyType: 'S',
       personalColor: 'Summer',
       caption: '미니멀 오피스룩',

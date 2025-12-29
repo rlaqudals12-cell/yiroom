@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, Package } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -37,8 +37,14 @@ export function ProductCard({ product, matchScore, className }: ProductCardProps
   const rating = 'rating' in product ? product.rating : undefined;
   const reviewCount = 'reviewCount' in product ? product.reviewCount : undefined;
 
-  // 이미지 URL
-  const imageUrl = 'imageUrl' in product ? product.imageUrl : undefined;
+  // 이미지 URL (없으면 플레이스홀더 사용)
+  const rawImageUrl = 'imageUrl' in product ? product.imageUrl : undefined;
+  // 제품 카테고리에 따른 플레이스홀더 색상
+  const placeholderColor = 'skinTypes' in product ? 'f8e8ee' :
+                           'benefits' in product ? 'e8f8ee' :
+                           'targetMuscles' in product ? 'e8eef8' : 'f0f0f0';
+  const placeholderUrl = `https://placehold.co/400x400/${placeholderColor}/888?text=${encodeURIComponent(product.brand.slice(0, 3))}`;
+  const imageUrl = rawImageUrl || placeholderUrl;
 
   return (
     <Link href={href} className={cn('block', className)}>
@@ -48,19 +54,13 @@ export function ProductCard({ product, matchScore, className }: ProductCardProps
       >
         {/* 이미지 영역 */}
         <div className="relative aspect-square overflow-hidden bg-muted">
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              className="object-cover transition-transform group-hover:scale-105"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <Package className="h-12 w-12 text-muted-foreground/50" />
-            </div>
-          )}
+          <Image
+            src={imageUrl}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            className="object-cover transition-transform group-hover:scale-105"
+          />
 
           {/* 매칭도 배지 */}
           {matchScore !== undefined && matchScore > 0 && (

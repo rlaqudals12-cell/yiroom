@@ -96,6 +96,10 @@ lib/
 ├── products/           # 제품 Repository
 │   ├── repositories/   # 도메인별 CRUD
 │   └── services/       # 비즈니스 서비스
+├── affiliate/          # 어필리에이트 시스템 (Phase I)
+│   ├── partners.ts     # 파트너 Repository
+│   ├── products.ts     # 제품 Repository
+│   └── clicks.ts       # 클릭 트래킹
 └── gemini.ts           # AI 분석 (3초 타임아웃 + 2회 재시도)
 ```
 
@@ -132,6 +136,7 @@ export const ChartDynamic = dynamic(
 | Phase A | Product DB | 850+ 제품, 리뷰, RAG | ✅ 완료 |
 | Phase B | React Native | 모노레포, Expo 앱 | 🔄 진행 중 |
 | Phase H | 소셜 | 웰니스 스코어, 친구, 리더보드 | ✅ 완료 |
+| Phase I | 어필리에이트 | iHerb, 쿠팡, 무신사 연동 | 🔄 진행 중 |
 | Launch | 출시 준비 | 온보딩, 도움말, 알림 | 🔄 진행 중 |
 
 ## Route Groups
@@ -162,6 +167,7 @@ app/(main)/
 - `user_levels`, `user_badges`, `wellness_scores` → Phase H 게이미피케이션
 - `friendships`, `leaderboard_cache` → Phase H 소셜
 - `challenges`, `challenge_participations`, `challenge_teams` → 챌린지
+- `affiliate_partners`, `affiliate_products`, `affiliate_clicks`, `affiliate_daily_stats` → Phase I 어필리에이트
 - `announcements`, `faqs`, `feedback` → 운영 (Launch)
 
 ## 슬래시 명령어
