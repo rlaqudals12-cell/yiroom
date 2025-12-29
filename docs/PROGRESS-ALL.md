@@ -1,8 +1,8 @@
 # 이룸 전체 진행 상황
 
-> **마지막 업데이트**: 2025-12-28
-> **총 테스트**: 3,040개 통과 (+46 Hybrid UX API 테스트)
-> **코드 품질**: SRP 95%, Repository 90%
+> **마지막 업데이트**: 2025-12-29
+> **총 테스트**: 4,149개 통과 (전체 4,206개, 98.6% 통과율)
+> **코드 품질**: TypeCheck ✅, Lint 0 warnings, SRP 95%, Repository 90%
 
 ---
 
@@ -1308,6 +1308,38 @@ API 테스트 추가 (46개):
 Lint 수정:
   [x] search/page.tsx: unescaped entities (&quot;)
   [x] supplementInsight.ts: prefer-const
+```
+
+### 코드 품질 개선 (2025-12-29)
+
+```yaml
+Lint 경고 정리 (43개 → 0개):
+  API 라우트:
+    [x] api/analysis/history/route.ts: PERIOD_DAYS 미사용 타입 제거
+    [x] api/social/activities/[id]/comments/route.ts: params → _params
+    [x] api/style/recommend/route.ts: auth 미사용 import 제거
+
+  컴포넌트:
+    [x] RecommendedClothingCard.tsx: mapBodyTypeTo3Type 미사용 제거
+    [x] AnnouncementList.tsx: Button 미사용 import 제거
+    [x] InviteFriendSheet.tsx: useCallback, useEffect 미사용 제거
+    [x] FeedbackSheet.tsx: catch 빈 파라미터
+    [x] FAQAccordion.tsx: ChevronDown, cn 미사용 제거
+    [x] year-review/page.tsx: Download, Award 미사용 제거
+
+  접근성 개선:
+    [x] search/page.tsx: role="combobox" + aria-controls 추가
+    [x] ColorComparison.tsx: img eslint-disable 추가
+    [x] barcode/page.tsx: img eslint-disable 추가
+
+  테스트 정리:
+    [x] InventoryGrid.test.tsx, ItemCard.test.tsx, ItemDetailSheet.test.tsx
+    [x] imgly-background-removal mock: 이름 있는 export로 변경
+    [x] sync-queue.ts: 이름 있는 default export
+
+TypeScript 및 테스트:
+  [x] TypeCheck: 0 errors
+  [x] 테스트: 4,149/4,206 통과 (98.6%)
 ```
 
 ### 참조 문서
