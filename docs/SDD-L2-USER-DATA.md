@@ -500,26 +500,26 @@ describe('DeleteAccountDialog', () => {
 
 ### 구현 전
 - [x] 스펙 문서 작성
-- [ ] 사용자 검토/승인
+- [x] 사용자 검토/승인
 
 ### 구현
-- [ ] 타입 정의 (`types/user-data.ts`)
-- [ ] 내보내기 API (`/api/user/export`)
-- [ ] 삭제 API (`/api/user/account`)
-- [ ] 내보내기 버튼 컴포넌트
-- [ ] 삭제 확인 다이얼로그
-- [ ] 설정 페이지 연동
+- [x] 타입 정의 (`types/user-data.ts`)
+- [x] 내보내기 API (`/api/user/export`)
+- [x] 삭제 API (`/api/user/account`)
+- [x] 내보내기 버튼 컴포넌트
+- [x] 삭제 확인 다이얼로그
+- [x] 설정 페이지 연동
 
 ### 검증
-- [ ] API 단위 테스트
-- [ ] UI 컴포넌트 테스트
+- [x] API 단위 테스트
+- [x] UI 컴포넌트 테스트
 - [ ] E2E 테스트 (실제 삭제 제외)
-- [ ] 보안 검토
+- [x] 보안 검토
 
 ### 완료
-- [ ] typecheck 통과
-- [ ] lint 통과
-- [ ] 커밋
+- [x] typecheck 통과
+- [x] lint 통과
+- [x] 커밋 (df6c276)
 
 ---
 

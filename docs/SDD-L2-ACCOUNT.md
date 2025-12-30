@@ -309,24 +309,24 @@ describe('Profile edit', () => {
 
 ### 구현 전
 - [x] 스펙 문서 작성
-- [ ] 사용자 검토/승인
+- [x] 사용자 검토/승인
 
 ### 구현
-- [ ] settings/page.tsx에 useClerk import 추가
-- [ ] 로그아웃 버튼 signOut() 연동
-- [ ] 프로필 편집 openUserProfile() 연동
-- [ ] 비밀번호/보안 openUserProfile() 연동
-- [ ] 불필요한 라우트 푸시 코드 삭제
+- [x] settings/page.tsx에 useClerk import 추가
+- [x] 로그아웃 버튼 signOut() 연동
+- [x] 프로필 편집 openUserProfile() 연동
+- [x] 비밀번호/보안 openUserProfile() 연동
+- [x] 불필요한 라우트 푸시 코드 삭제
 
 ### 검증
-- [ ] 로그아웃 동작 확인
-- [ ] Clerk 모달 열림 확인
-- [ ] 404 페이지 발생 없음 확인
+- [x] 로그아웃 동작 확인
+- [x] Clerk 모달 열림 확인
+- [x] 404 페이지 발생 없음 확인
 
 ### 완료
-- [ ] typecheck 통과
-- [ ] lint 통과
-- [ ] 커밋
+- [x] typecheck 통과
+- [x] lint 통과
+- [x] 커밋 (df6c276)
 
 ---
 
