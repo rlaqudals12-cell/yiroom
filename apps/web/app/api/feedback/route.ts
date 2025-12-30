@@ -2,14 +2,32 @@
  * 피드백 API
  * POST /api/feedback
  * - 사용자 피드백을 저장
+ * - DB 스키마: feedback (clerk_user_id, type, title, content, contact_email, status)
  */
 
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
+
+// 프론트엔드 타입 → DB 타입 매핑
+const TYPE_MAP: Record<string, string> = {
+  bug: 'bug',
+  feature: 'suggestion', // feature → suggestion
+  general: 'question', // general → question
+  other: 'other',
+};
+
+// 타입별 기본 제목
+const DEFAULT_TITLES: Record<string, string> = {
+  bug: '버그 신고',
+  suggestion: '기능 제안',
+  question: '일반 문의',
+  other: '기타 문의',
+};
 
 interface FeedbackRequest {
   type: 'bug' | 'feature' | 'general' | 'other';
+  title?: string;
   content: string;
   email?: string;
 }
@@ -34,18 +52,23 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = createClerkSupabaseClient();
+    // DB 타입으로 매핑
+    const dbType = TYPE_MAP[body.type] || 'other';
+    const title = body.title || DEFAULT_TITLES[dbType] || '피드백';
 
-    // 피드백 저장
+    // 익명 피드백을 위해 service role 클라이언트 사용 (RLS 우회)
+    const supabase = createServiceRoleClient();
+
+    // 피드백 저장 (DB 스키마에 맞게)
     const { data, error } = await supabase
       .from('feedback')
       .insert({
-        clerk_user_id: userId || null,
-        type: body.type,
+        clerk_user_id: userId || 'anonymous',
+        type: dbType,
+        title: title,
         content: body.content,
-        email: body.email || null,
+        contact_email: body.email || null,
         status: 'pending',
-        user_agent: request.headers.get('user-agent') || null,
       })
       .select()
       .single();

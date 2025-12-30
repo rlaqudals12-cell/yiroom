@@ -6,6 +6,7 @@ import { ArrowLeft, Send, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -174,13 +175,12 @@ export default function FeedbackPage() {
       {/* 이메일 (선택) */}
       <div className="space-y-2">
         <Label htmlFor="email">이메일 (선택)</Label>
-        <input
+        <Input
           id="email"
           type="email"
           placeholder="답변을 받으실 이메일"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
         <p className="text-xs text-muted-foreground">
           이메일을 입력하시면 답변을 드릴 수 있어요
