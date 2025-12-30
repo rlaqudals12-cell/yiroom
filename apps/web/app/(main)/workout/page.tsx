@@ -12,7 +12,6 @@ import {
   Flame,
   Trophy,
   ChevronRight,
-  Loader2,
 } from 'lucide-react';
 import { getLatestWorkoutAnalysisAction, getWorkoutStreakAction } from './actions';
 import type { WorkoutAnalysis, WorkoutStreak } from '@/lib/api/workout';
