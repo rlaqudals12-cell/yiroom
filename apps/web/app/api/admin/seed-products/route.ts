@@ -12,11 +12,13 @@ import supplementData from '@/data/seeds/supplement-products.json';
 
 export async function POST(request: Request) {
   try {
-    // 간단한 인증 (쿼리 파라미터로 시크릿 체크)
+    // 인증: SEED_SECRET 환경변수 필수
     const { searchParams } = new URL(request.url);
     const secret = searchParams.get('secret');
+    const envSecret = process.env.SEED_SECRET;
 
-    if (secret !== process.env.SEED_SECRET && secret !== 'yiroom-seed-2024') {
+    // 환경변수가 설정되지 않았거나 시크릿이 일치하지 않으면 거부
+    if (!envSecret || secret !== envSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
