@@ -46,6 +46,7 @@ export default function BarcodeScanPage() {
   const [state, setState] = useState<PageState>('idle');
   const [scannedBarcode, setScannedBarcode] = useState<string>('');
   const [food, setFood] = useState<BarcodeFood | null>(null);
+  const [foodSource, setFoodSource] = useState<string>('');
   const [servings, setServings] = useState(1);
   const [mealType, setMealType] = useState<MealType>('lunch');
   const [error, setError] = useState<string>('');
@@ -77,6 +78,7 @@ export default function BarcodeScanPage() {
 
       if (data.found && data.food) {
         setFood(data.food);
+        setFoodSource(data.source || 'local');
         setState('found');
       } else {
         setState('not-found');
@@ -178,6 +180,7 @@ export default function BarcodeScanPage() {
   // 다시 스캔
   const handleRescan = () => {
     setFood(null);
+    setFoodSource('');
     setScannedBarcode('');
     setError('');
     setServings(1);
@@ -282,6 +285,20 @@ export default function BarcodeScanPage() {
                   <p className="text-sm text-muted-foreground mt-1">
                     {food.servingSize}{food.servingUnit} 기준
                   </p>
+                  {foodSource && (
+                    <span
+                      className={cn(
+                        'inline-block mt-2 px-2 py-0.5 text-xs rounded-full',
+                        foodSource === 'local' && 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+                        foodSource === 'openfoodfacts' && 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+                        foodSource === 'foodsafetykorea' && 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+                      )}
+                    >
+                      {foodSource === 'local' && '로컬 DB'}
+                      {foodSource === 'openfoodfacts' && 'Open Food Facts'}
+                      {foodSource === 'foodsafetykorea' && '식품안전나라'}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
