@@ -120,6 +120,9 @@ vi.mock('lucide-react', () => ({
   ShoppingCart: createIconMock('ShoppingCart'),
   Star: createIconMock('Star'),
   Heart: createIconMock('Heart'),
+  GitCompare: createIconMock('GitCompare'),
+  Droplet: createIconMock('Droplet'),
+  Bell: createIconMock('Bell'),
 
   // Style & Beauty
   Sparkles: createIconMock('Sparkles'),

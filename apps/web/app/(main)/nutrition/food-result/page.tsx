@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Loader2, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import FoodResultCard from '@/components/nutrition/FoodResultCard';
+import { FoodResultSkeleton } from '@/components/nutrition/FoodResultSkeleton';
 import type { AnalyzedFoodItem } from '@/lib/gemini/prompts/foodAnalysis';
 
 // 식사 타입 라벨
@@ -179,11 +180,7 @@ export default function FoodResultPage() {
 
   // 로딩 상태
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-      </div>
-    );
+    return <FoodResultSkeleton />;
   }
 
   // 데이터 없음

@@ -20,6 +20,7 @@ import { WORKOUT_TYPE_INFO } from '@/lib/workout/classifyWorkoutType';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { QuickActionCard } from '@/components/workout/common';
+import { WorkoutPageSkeleton } from '@/components/workout/WorkoutPageSkeleton';
 
 /**
  * 운동 메인 페이지
@@ -64,11 +65,7 @@ export default function WorkoutPage() {
 
   // 로딩 상태
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-      </div>
-    );
+    return <WorkoutPageSkeleton />;
   }
 
   // 분석 데이터가 없으면 온보딩 유도

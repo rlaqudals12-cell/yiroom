@@ -6,6 +6,7 @@ import { Star } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { CompareButton } from '@/components/products/CompareButton';
 import { cn } from '@/lib/utils';
 import type { AnyProduct } from '@/types/product';
 import { getProductType, productTypeToPath } from '@/lib/products';
@@ -46,6 +47,16 @@ export function ProductCard({ product, matchScore, className }: ProductCardProps
   const placeholderUrl = `https://placehold.co/400x400/${placeholderColor}/888?text=${encodeURIComponent(product.brand.slice(0, 3))}`;
   const imageUrl = rawImageUrl || placeholderUrl;
 
+  // 비교 버튼용 데이터
+  const compareItem = {
+    productId: product.id,
+    productType,
+    name: product.name,
+    brand: product.brand,
+    imageUrl: rawImageUrl,
+    priceKrw: price,
+  };
+
   return (
     <Link href={href} className={cn('block', className)}>
       <Card
@@ -61,6 +72,19 @@ export function ProductCard({ product, matchScore, className }: ProductCardProps
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className="object-cover transition-transform group-hover:scale-105"
           />
+
+          {/* 비교 버튼 */}
+          <div
+            className="absolute left-2 top-2 z-10 opacity-0 transition-opacity group-hover:opacity-100"
+            onClick={(e) => e.preventDefault()}
+          >
+            <CompareButton
+              product={compareItem}
+              variant="icon"
+              size="sm"
+              className="bg-background/80 backdrop-blur-sm hover:bg-background"
+            />
+          </div>
 
           {/* 매칭도 배지 */}
           {matchScore !== undefined && matchScore > 0 && (

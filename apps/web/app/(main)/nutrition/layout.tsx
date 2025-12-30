@@ -1,50 +1,23 @@
-'use client';
+import type { Metadata } from 'next';
+import NutritionLayoutClient from './NutritionLayoutClient';
 
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+export const metadata: Metadata = {
+  title: '영양 관리 | 이룸',
+  description: 'AI 음식 인식으로 칼로리와 영양소를 자동 기록하세요. 목표에 맞는 식단 관리를 도와드립니다.',
+  openGraph: {
+    title: '영양 관리 | 이룸',
+    description: 'AI 음식 인식으로 칼로리와 영양소를 자동 기록하세요.',
+  },
+};
 
 interface NutritionLayoutProps {
   children: React.ReactNode;
 }
 
 /**
- * N-1 영양/식단 모듈 레이아웃
- * - W-1과 동일한 구조
- * - max-width: 480px
- * - 배경색 #FAFAFA
+ * N-1 영양/식단 모듈 레이아웃 (서버)
+ * - SEO 메타데이터 포함
  */
 export default function NutritionLayout({ children }: NutritionLayoutProps) {
-  const router = useRouter();
-
-  const handleBack = () => {
-    router.back();
-  };
-
-  return (
-    <main
-      className="min-h-[calc(100vh-80px)] bg-[#FAFAFA]"
-      role="main"
-    >
-      {/* 상단 헤더 */}
-      <header className="sticky top-0 z-10 bg-card border-b border-border/50">
-        <div className="max-w-[480px] mx-auto px-4 h-14 flex items-center">
-          <button
-            onClick={handleBack}
-            className="p-2 -ml-2 hover:bg-muted rounded-full transition-colors"
-            aria-label="뒤로 가기"
-          >
-            <ArrowLeft className="w-5 h-5 text-foreground/80" />
-          </button>
-          <h1 className="ml-2 text-lg font-semibold text-foreground">
-            영양 관리
-          </h1>
-        </div>
-      </header>
-
-      {/* 콘텐츠 영역 - 하단 여백 80px (하단 네비게이션 공간) */}
-      <div className="max-w-[480px] mx-auto px-4 py-6 pb-20">
-        {children}
-      </div>
-    </main>
-  );
+  return <NutritionLayoutClient>{children}</NutritionLayoutClient>;
 }

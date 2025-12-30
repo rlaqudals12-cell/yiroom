@@ -10,6 +10,7 @@ import ChallengeWidget from './_components/ChallengeWidget';
 import WeeklyProgressSection from './_components/WeeklyProgressSection';
 import AnalysisSection from './_components/AnalysisSection';
 import ClosetWidget from './_components/ClosetWidget';
+import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 
 // 분석 결과 타입 정의
 interface AnalysisSummary {
@@ -105,11 +106,7 @@ export default function DashboardPage() {
 
   // 로딩 상태
   if (!isUserLoaded || isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">로딩 중...</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   // 비로그인 상태

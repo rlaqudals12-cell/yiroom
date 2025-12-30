@@ -17,6 +17,7 @@ import {
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { HomeSkeleton } from '@/components/skeletons';
+import { RecentlyViewed } from '@/components/products/RecentlyViewed';
 
 /**
  * 홈 탭 - UX 리스트럭처링 메인
@@ -171,6 +172,11 @@ export default function HomePage() {
               </div>
             </div>
           </section>
+        </FadeInUp>
+
+        {/* 최근 본 제품 */}
+        <FadeInUp delay={3}>
+          <RecentlyViewed limit={6} />
         </FadeInUp>
       </main>
 
