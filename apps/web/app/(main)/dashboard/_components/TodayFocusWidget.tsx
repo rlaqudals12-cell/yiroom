@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { DailyCheckin } from '@/components/checkin';
+import { InfoTooltip } from '@/components/common';
 import { getStreakSummary as getWorkoutStreakSummary, type StreakSummary } from '@/lib/workout/streak';
 import { getStreakSummary as getNutritionStreakSummary, type StreakSummary as NutritionStreakSummary } from '@/lib/nutrition/streak';
 import { loadNotificationSettings, showStreakWarning } from '@/lib/notifications';
@@ -166,10 +167,17 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
         <div className="px-5 pb-4">
           <div className="flex items-end justify-between mb-4">
             <div>
-              <p className="text-4xl font-bold text-amber-600">
-                {totalStreak}
-                <span className="text-xl text-amber-500 ml-1">일</span>
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-4xl font-bold text-amber-600">
+                  {totalStreak}
+                  <span className="text-xl text-amber-500 ml-1">일</span>
+                </p>
+                <InfoTooltip
+                  content="매일 운동이나 식단을 기록하면 연속 기록이 쌓여요! 연속 기록을 유지하면 특별한 보상을 받을 수 있어요."
+                  variant="help"
+                  size="md"
+                />
+              </div>
               <p className="text-sm text-amber-600/80 mt-1">
                 {isAnyActive ? '연속 기록 중' : '새로운 기록을 시작해보세요'}
               </p>
@@ -198,13 +206,19 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
             </div>
           </div>
 
-          {/* 마일스톤 알림 */}
+          {/* 마일스톤 알림 - 펄스 애니메이션 */}
           {(workoutStreak?.daysToNextMilestone === 1 || nutritionStreak?.daysToNextMilestone === 1) && (
-            <div className="bg-amber-100 rounded-lg p-2.5 mb-4">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-amber-600" />
+            <div className="relative bg-amber-100 rounded-lg p-2.5 mb-4 overflow-hidden animate-fade-in-up">
+              {/* 배경 펄스 효과 */}
+              <div className="absolute inset-0 bg-amber-200/50 animate-pulse" />
+              <div className="relative flex items-center gap-2">
+                <div className="relative">
+                  <TrendingUp className="w-4 h-4 text-amber-600" />
+                  {/* 아이콘 글로우 */}
+                  <div className="absolute inset-0 bg-amber-400 rounded-full blur-md opacity-30 animate-ping" />
+                </div>
                 <span className="text-sm font-medium text-amber-700">
-                  내일이면 마일스톤 달성!
+                  내일이면 마일스톤 달성! 🎯
                 </span>
               </div>
             </div>

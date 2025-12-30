@@ -91,23 +91,30 @@ export default function FeedbackPage() {
     }
   };
 
-  // 제출 완료 화면
+  // 제출 완료 화면 - 성공 애니메이션
   if (isSubmitted) {
     return (
       <div
         className="container max-w-lg py-6 min-h-[80vh] flex flex-col items-center justify-center"
         data-testid="feedback-success"
       >
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+        {/* 체크 아이콘 - 바운스 애니메이션 */}
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-success-bounce">
           <CheckCircle className="w-8 h-8 text-green-600" />
         </div>
-        <h2 className="text-xl font-bold mb-2">감사합니다!</h2>
-        <p className="text-muted-foreground text-center mb-6">
-          소중한 의견을 보내주셔서 감사합니다.
-          <br />
-          더 나은 이룸을 만드는 데 참고하겠습니다.
-        </p>
-        <Button onClick={() => router.push('/dashboard')}>홈으로 돌아가기</Button>
+        {/* 텍스트 - 페이드인 애니메이션 */}
+        <div className="animate-fade-in-up animation-delay-200">
+          <h2 className="text-xl font-bold mb-2 text-center">감사합니다!</h2>
+          <p className="text-muted-foreground text-center mb-6">
+            소중한 의견을 보내주셔서 감사합니다.
+            <br />
+            더 나은 이룸을 만드는 데 참고하겠습니다.
+          </p>
+        </div>
+        {/* 버튼 - 지연 등장 */}
+        <div className="opacity-0 animate-fade-in-up animation-delay-400">
+          <Button onClick={() => router.push('/dashboard')}>홈으로 돌아가기</Button>
+        </div>
       </div>
     );
   }

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { toast } from 'sonner';
+import { getRandomMessage, CHECKIN_MESSAGES } from '@/lib/messages';
 
 // 기분 옵션
 const MOOD_OPTIONS = [
@@ -59,6 +60,12 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
   const [skinCondition, setSkinCondition] = useState<SkinCondition | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [completionMessage, setCompletionMessage] = useState('');
+
+  // 슬라이드 방향 추적 (true = 오른쪽에서, false = 왼쪽에서)
+  const [slideDirection, setSlideDirection] = useState<'right' | 'left'>('right');
+  // 애니메이션 키 (리렌더링용)
+  const [animKey, setAnimKey] = useState(0);
 
   // 리셋
   const handleReset = () => {
@@ -67,6 +74,9 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
     setEnergy(null);
     setSkinCondition(null);
     setIsComplete(false);
+    setCompletionMessage('');
+    setSlideDirection('right');
+    setAnimKey(0);
   };
 
   // 닫기
@@ -95,8 +105,11 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
         console.warn('체크인 저장 실패 (테이블 미존재 가능):', error);
       }
 
+      // 랜덤 격려 메시지 선택
+      const message = getRandomMessage(CHECKIN_MESSAGES);
+      setCompletionMessage(message);
       setIsComplete(true);
-      toast.success('오늘의 체크인 완료!');
+      toast.success(message);
       onComplete?.();
 
       // 2초 후 자동 닫기
@@ -113,15 +126,30 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
 
   // 다음 단계
   const handleNext = () => {
-    if (step === 1 && mood) setStep(2);
-    else if (step === 2 && energy) setStep(3);
-    else if (step === 3 && skinCondition) handleSubmit();
+    if (step === 1 && mood) {
+      setSlideDirection('right');
+      setAnimKey((k) => k + 1);
+      setStep(2);
+    } else if (step === 2 && energy) {
+      setSlideDirection('right');
+      setAnimKey((k) => k + 1);
+      setStep(3);
+    } else if (step === 3 && skinCondition) {
+      handleSubmit();
+    }
   };
 
   // 이전 단계
   const handlePrev = () => {
-    if (step === 2) setStep(1);
-    else if (step === 3) setStep(2);
+    if (step === 2) {
+      setSlideDirection('left');
+      setAnimKey((k) => k + 1);
+      setStep(1);
+    } else if (step === 3) {
+      setSlideDirection('left');
+      setAnimKey((k) => k + 1);
+      setStep(2);
+    }
   };
 
   return (
@@ -137,16 +165,16 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
           </DialogDescription>
         </DialogHeader>
 
-        {/* 완료 상태 */}
+        {/* 완료 상태 - 성공 애니메이션 */}
         {isComplete ? (
-          <div className="py-8 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+          <div className="py-8 text-center space-y-4 animate-scale-in">
+            <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center animate-success-bounce">
               <Check className="w-8 h-8 text-green-600" />
             </div>
-            <div>
-              <p className="font-bold text-foreground">체크인 완료!</p>
-              <p className="text-sm text-muted-foreground">
-                오늘도 나를 돌봐주셨네요
+            <div className="animate-fade-in-up animation-delay-200">
+              <p className="font-bold text-foreground text-lg">체크인 완료!</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {completionMessage || '오늘도 나를 돌봐주셨네요 💝'}
               </p>
             </div>
           </div>
@@ -166,7 +194,11 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
 
             {/* Step 1: 기분 */}
             {step === 1 && (
-              <div className="space-y-4" data-testid="step-mood">
+              <div
+                key={`mood-${animKey}`}
+                className={`space-y-4 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`}
+                data-testid="step-mood"
+              >
                 <p className="text-center font-medium text-foreground">
                   오늘 기분이 어때요?
                 </p>
@@ -175,10 +207,10 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
                     <button
                       key={option.id}
                       onClick={() => setMood(option.id)}
-                      className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 hover:scale-105 active:scale-95 ${
                         mood === option.id
-                          ? 'border-amber-500 bg-amber-50'
-                          : 'border-border hover:border-amber-200'
+                          ? 'border-amber-500 bg-amber-50 shadow-md'
+                          : 'border-border hover:border-amber-200 hover:shadow-sm'
                       }`}
                     >
                       <span className="text-3xl">{option.emoji}</span>
@@ -191,7 +223,11 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
 
             {/* Step 2: 에너지 */}
             {step === 2 && (
-              <div className="space-y-4" data-testid="step-energy">
+              <div
+                key={`energy-${animKey}`}
+                className={`space-y-4 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`}
+                data-testid="step-energy"
+              >
                 <p className="text-center font-medium text-foreground">
                   에너지 레벨은요?
                 </p>
@@ -200,10 +236,10 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
                     <button
                       key={option.id}
                       onClick={() => setEnergy(option.id)}
-                      className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 hover:scale-105 active:scale-95 ${
                         energy === option.id
-                          ? 'border-amber-500 bg-amber-50'
-                          : 'border-border hover:border-amber-200'
+                          ? 'border-amber-500 bg-amber-50 shadow-md'
+                          : 'border-border hover:border-amber-200 hover:shadow-sm'
                       }`}
                     >
                       <span className="text-3xl">{option.emoji}</span>
@@ -216,7 +252,11 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
 
             {/* Step 3: 피부 상태 */}
             {step === 3 && (
-              <div className="space-y-4" data-testid="step-skin">
+              <div
+                key={`skin-${animKey}`}
+                className={`space-y-4 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`}
+                data-testid="step-skin"
+              >
                 <p className="text-center font-medium text-foreground">
                   피부 상태는 어때요?
                 </p>
@@ -225,10 +265,10 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
                     <button
                       key={option.id}
                       onClick={() => setSkinCondition(option.id)}
-                      className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 hover:scale-105 active:scale-95 ${
                         skinCondition === option.id
-                          ? 'border-amber-500 bg-amber-50'
-                          : 'border-border hover:border-amber-200'
+                          ? 'border-amber-500 bg-amber-50 shadow-md'
+                          : 'border-border hover:border-amber-200 hover:shadow-sm'
                       }`}
                     >
                       <span className="text-3xl">{option.emoji}</span>

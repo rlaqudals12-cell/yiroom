@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { Award, ChevronRight, Trophy } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { LevelProgress, BadgeCard } from '@/components/gamification';
+import { InfoTooltip } from '@/components/common';
 import {
   getUserLevelInfo,
   getRecentBadges,
@@ -98,7 +99,14 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
               <Trophy className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground">나의 성장</h3>
+              <div className="flex items-center gap-1.5">
+                <h3 className="font-bold text-foreground">나의 성장</h3>
+                <InfoTooltip
+                  content="운동과 식단 기록으로 XP를 모아 레벨업하세요! 레벨이 오르면 새로운 배지와 혜택을 얻을 수 있어요."
+                  variant="help"
+                  size="sm"
+                />
+              </div>
               <p className="text-sm text-primary">
                 레벨 {levelInfo?.level || 1} · {levelInfo?.tierName || '비기너'}
               </p>
@@ -107,7 +115,14 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
 
           {/* 배지 통계 */}
           <div className="text-right">
-            <p className="text-sm text-muted-foreground">획득 배지</p>
+            <div className="flex items-center justify-end gap-1">
+              <p className="text-sm text-muted-foreground">획득 배지</p>
+              <InfoTooltip
+                content="다양한 활동을 통해 배지를 모아보세요! 연속 기록, 목표 달성 등 특별한 업적을 달성하면 배지를 획득할 수 있어요."
+                variant="help"
+                size="sm"
+              />
+            </div>
             <p className="text-xl font-bold text-primary">
               {earnedCount}
               <span className="text-sm text-muted-foreground">/{totalBadges}</span>

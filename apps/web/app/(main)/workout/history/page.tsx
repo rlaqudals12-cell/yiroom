@@ -11,6 +11,7 @@ import {
 } from '@/components/workout/history';
 import { StreakCard } from '@/components/workout/streak';
 import { AnalyzingLoader, ErrorState } from '@/components/workout/common';
+import { EmptyState } from '@/components/common';
 import { getStreakSummary } from '@/lib/workout/streak';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import type { WorkoutLog, WorkoutStreak } from '@/lib/api/workout';
@@ -250,15 +251,13 @@ export default function HistoryPage() {
           </h2>
 
           {workoutLogs.length === 0 ? (
-            <div className="bg-card rounded-2xl p-8 text-center">
-              <p className="text-muted-foreground mb-4">아직 운동 기록이 없어요</p>
-              <button
-                onClick={() => router.push('/workout/session')}
-                className="px-6 py-3 bg-indigo-500 text-white font-medium rounded-xl hover:bg-indigo-600 transition-colors"
-              >
-                첫 운동 시작하기
-              </button>
-            </div>
+            <EmptyState
+              type="workout"
+              title="아직 운동 기록이 없어요"
+              description="오늘 첫 운동을 시작해보세요! 꾸준한 운동이 건강한 습관을 만들어요."
+              ctaText="첫 운동 시작하기"
+              onCtaClick={() => router.push('/workout/session')}
+            />
           ) : (
             workoutLogs.map((log) => (
               <WorkoutHistoryCard

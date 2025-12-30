@@ -128,31 +128,39 @@ export default function DashboardPage() {
   return (
     <main className="min-h-[calc(100vh-80px)] px-4 py-8" data-testid="dashboard-page">
       <div className="max-w-4xl mx-auto">
-        {/* Zone 1: Hero Section */}
+        {/* Zone 1: Hero Section - 순차 입장 애니메이션 */}
         <section className="space-y-4 mb-10">
           {/* 사용자 프로필 (축소) */}
-          <UserProfile
-            name={user.fullName || user.username || '사용자'}
-            imageUrl={user.imageUrl}
-          />
+          <div className="opacity-0 animate-fade-in-up">
+            <UserProfile
+              name={user.fullName || user.username || '사용자'}
+              imageUrl={user.imageUrl}
+            />
+          </div>
 
           {/* 오늘의 포커스 (스트릭 + 체크인 + 주간 요약) */}
-          <TodayFocusWidget userId={user.id} />
+          <div className="opacity-0 animate-fade-in-up animation-delay-100">
+            <TodayFocusWidget userId={user.id} />
+          </div>
 
           {/* 게이미피케이션 (레벨 + 배지) */}
-          <GamificationWidget userId={user.id} />
+          <div className="opacity-0 animate-fade-in-up animation-delay-200">
+            <GamificationWidget userId={user.id} />
+          </div>
 
           {/* 챌린지 (진행 중인 챌린지) */}
-          <ChallengeWidget userId={user.id} />
+          <div className="opacity-0 animate-fade-in-up animation-delay-300">
+            <ChallengeWidget userId={user.id} />
+          </div>
         </section>
 
         {/* Zone 2: Activity Hub */}
-        <section className="mb-10">
+        <section className="mb-10 opacity-0 animate-fade-in-up animation-delay-400">
           <WeeklyProgressSection />
         </section>
 
         {/* Zone 3: Closet & Style */}
-        <section className="mb-10">
+        <section className="mb-10 opacity-0 animate-fade-in-up animation-delay-500">
           <ClosetWidget
             userId={user.id}
             personalColor={analyses.find((a) => a.type === 'personal-color')?.seasonType}
@@ -161,7 +169,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Zone 4: Analysis Archive (Collapsible) */}
-        <section>
+        <section className="opacity-0 animate-fade-in-up animation-delay-600">
           <AnalysisSection
             analyses={analyses}
             hasPersonalColor={hasPersonalColor}

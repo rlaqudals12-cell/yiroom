@@ -61,7 +61,7 @@ export function ProductCard({ product, matchScore, className, priority = false }
   return (
     <Link href={href} className={cn('block', className)}>
       <Card
-        className="group h-full overflow-hidden transition-shadow hover:shadow-md"
+        className="group h-full overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 hover:border-primary/20"
         data-testid="product-card"
       >
         {/* 이미지 영역 */}
@@ -71,20 +71,23 @@ export function ProductCard({ product, matchScore, className, priority = false }
             alt={product.name}
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-            className="object-cover transition-transform group-hover:scale-105"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
             priority={priority}
           />
 
+          {/* 호버 시 오버레이 효과 */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
           {/* 비교 버튼 */}
           <div
-            className="absolute left-2 top-2 z-10 opacity-0 transition-opacity group-hover:opacity-100"
+            className="absolute left-2 top-2 z-10 opacity-0 transition-all duration-300 transform -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
             onClick={(e) => e.preventDefault()}
           >
             <CompareButton
               product={compareItem}
               variant="icon"
               size="sm"
-              className="bg-background/80 backdrop-blur-sm hover:bg-background"
+              className="bg-background/90 backdrop-blur-sm hover:bg-background shadow-sm hover:shadow-md"
             />
           </div>
 
@@ -92,7 +95,7 @@ export function ProductCard({ product, matchScore, className, priority = false }
           {matchScore !== undefined && matchScore > 0 && (
             <Badge
               variant="secondary"
-              className="absolute right-2 top-2 bg-primary text-primary-foreground"
+              className="absolute right-2 top-2 bg-primary text-primary-foreground shadow-md transition-transform duration-300 group-hover:scale-105"
             >
               {matchScore}% 매칭
             </Badge>
@@ -100,21 +103,21 @@ export function ProductCard({ product, matchScore, className, priority = false }
         </div>
 
         {/* 정보 영역 */}
-        <CardContent className="p-3">
+        <CardContent className="p-3 transition-colors duration-300 group-hover:bg-muted/30">
           {/* 브랜드 */}
           <p className="text-xs text-muted-foreground truncate">
             {product.brand}
           </p>
 
           {/* 제품명 */}
-          <h3 className="mt-1 text-sm font-medium line-clamp-2 min-h-[2.5rem]">
+          <h3 className="mt-1 text-sm font-medium line-clamp-2 min-h-[2.5rem] transition-colors duration-300 group-hover:text-primary">
             {product.name}
           </h3>
 
           {/* 평점 */}
           {rating !== undefined && (
             <div className="mt-2 flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+              <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 transition-transform duration-300 group-hover:scale-110" />
               <span className="text-xs font-medium">{rating.toFixed(1)}</span>
               {reviewCount !== undefined && reviewCount > 0 && (
                 <span className="text-xs text-muted-foreground">
@@ -125,7 +128,7 @@ export function ProductCard({ product, matchScore, className, priority = false }
           )}
 
           {/* 가격 */}
-          <p className="mt-2 text-sm font-semibold">{formattedPrice}</p>
+          <p className="mt-2 text-sm font-semibold transition-colors duration-300 group-hover:text-primary">{formattedPrice}</p>
         </CardContent>
       </Card>
     </Link>

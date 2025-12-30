@@ -17,9 +17,9 @@ import {
   ArrowLeft,
   RefreshCw,
   AlertCircle,
-  UtensilsCrossed,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/common';
 import { cn } from '@/lib/utils';
 
 // 타입 정의
@@ -343,12 +343,13 @@ export default function NutritionHistoryPage() {
 
       {/* 기록이 없는 경우 */}
       {hasNoRecords ? (
-        <div className="bg-muted rounded-2xl p-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-muted/80 rounded-full mb-4">
-            <UtensilsCrossed className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <p className="text-muted-foreground">이 날에는 기록이 없습니다.</p>
-        </div>
+        <EmptyState
+          type="nutrition"
+          title="이 날에는 기록이 없어요"
+          description="식단을 기록하면 영양 분석을 받을 수 있어요"
+          ctaText="식단 기록하기"
+          ctaHref="/nutrition"
+        />
       ) : (
         /* 식사별 기록 */
         <div className="space-y-3">
