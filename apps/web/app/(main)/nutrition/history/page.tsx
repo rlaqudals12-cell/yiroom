@@ -242,14 +242,14 @@ export default function NutritionHistoryPage() {
         </div>
 
         {/* 에러 메시지 */}
-        <div className="bg-red-50 rounded-2xl p-6 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-            <AlertCircle className="w-8 h-8 text-red-600" />
+        <div className="bg-red-50 dark:bg-red-950/50 rounded-2xl p-6 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full mb-4">
+            <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
-          <h2 className="text-lg font-bold text-red-900 mb-2">
+          <h2 className="text-lg font-bold text-red-900 dark:text-red-100 mb-2">
             데이터를 불러올 수 없습니다
           </h2>
-          <p className="text-red-700 mb-4">오류가 발생했습니다.</p>
+          <p className="text-red-700 dark:text-red-300 mb-4">오류가 발생했습니다.</p>
           <Button onClick={() => fetchHistory(selectedDate)} variant="outline">
             <RefreshCw className="w-4 h-4 mr-2" />
             다시 시도

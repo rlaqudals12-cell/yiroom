@@ -227,12 +227,12 @@ export default function FoodCapturePage() {
         </div>
 
         {/* 에러 메시지 */}
-        <div className="bg-red-50 rounded-2xl p-6 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-            <AlertCircle className="w-8 h-8 text-red-600" />
+        <div className="bg-red-50 dark:bg-red-950/50 rounded-2xl p-6 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full mb-4">
+            <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
-          <h2 className="text-lg font-bold text-red-900 mb-2">분석 실패</h2>
-          <p className="text-red-700 mb-6">{errorMessage}</p>
+          <h2 className="text-lg font-bold text-red-900 dark:text-red-100 mb-2">분석 실패</h2>
+          <p className="text-red-700 dark:text-red-300 mb-6">{errorMessage}</p>
 
           <div className="space-y-3">
             <Button

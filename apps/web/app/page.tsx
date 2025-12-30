@@ -93,8 +93,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 모듈 태그 */}
-          <div className="flex gap-3 p-3 flex-wrap pr-4">
+          {/* 모듈 태그 - 모바일에서 가로 스크롤 */}
+          <div className="flex gap-3 p-3 overflow-x-auto md:flex-wrap pr-4 scrollbar-hide">
             {WELLNESS_MODULES.map((module) => (
               <div
                 key={module.id}

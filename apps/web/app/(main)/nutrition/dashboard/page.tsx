@@ -218,15 +218,15 @@ export default function NutritionDashboardPage() {
         className="min-h-screen bg-muted p-4"
       >
         <div className="mx-auto max-w-md">
-          <div className="rounded-2xl bg-red-50 p-6 text-center">
-            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
-            <h2 className="mb-2 text-lg font-bold text-red-900">
+          <div className="rounded-2xl bg-red-50 dark:bg-red-950/50 p-6 text-center">
+            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500 dark:text-red-400" />
+            <h2 className="mb-2 text-lg font-bold text-red-900 dark:text-red-100">
               데이터를 불러오는데 실패했습니다
             </h2>
-            <p className="mb-4 text-red-700">{error}</p>
+            <p className="mb-4 text-red-700 dark:text-red-300">{error}</p>
             <button
               onClick={fetchDashboardData}
-              className="rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+              className="rounded-lg bg-red-500 dark:bg-red-600 px-4 py-2 text-white hover:bg-red-600 dark:hover:bg-red-700"
             >
               다시 시도
             </button>

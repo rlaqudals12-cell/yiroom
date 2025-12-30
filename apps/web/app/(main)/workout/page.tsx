@@ -114,20 +114,20 @@ export default function WorkoutPage() {
       </Card>
 
       {/* 오늘의 운동 - 바로 시작 */}
-      <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+      <Card className="bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 text-white">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-indigo-100 text-sm">오늘의 운동</p>
+              <p className="text-orange-100 text-sm">오늘의 운동</p>
               <p className="text-xl font-bold mt-1">준비되셨나요?</p>
-              <p className="text-indigo-100 text-sm mt-1">
+              <p className="text-orange-100 text-sm mt-1">
                 운동을 시작하고 기록을 남겨보세요
               </p>
             </div>
             <Button
               variant="secondary"
               size="lg"
-              className="bg-card text-indigo-600 hover:bg-muted"
+              className="bg-card text-orange-600 hover:bg-muted"
               onClick={() => router.push('/workout/session')}
             >
               <Play className="h-5 w-5 mr-1" />
