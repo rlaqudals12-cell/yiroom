@@ -112,7 +112,7 @@ export default function DashboardPage() {
   // 비로그인 상태
   if (!user) {
     return (
-      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center" data-testid="dashboard-login-required">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-foreground mb-2">
             로그인이 필요합니다
@@ -126,7 +126,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-80px)] px-4 py-8">
+    <main className="min-h-[calc(100vh-80px)] px-4 py-8" data-testid="dashboard-page">
       <div className="max-w-4xl mx-auto">
         {/* Zone 1: Hero Section */}
         <section className="space-y-4 mb-10">
