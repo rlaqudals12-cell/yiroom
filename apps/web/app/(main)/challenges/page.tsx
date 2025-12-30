@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Target, Trophy, Flame } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ChallengeList } from '@/components/challenges';
+import { ChallengesListSkeleton } from '@/components/challenges/ChallengesSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   getActiveChallenges,
@@ -114,10 +115,8 @@ export default function ChallengesPage() {
   // 로딩
   if (!isLoaded || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">
-          챌린지 불러오는 중...
-        </div>
+      <div className="container max-w-lg mx-auto px-4 py-6">
+        <ChallengesListSkeleton />
       </div>
     );
   }

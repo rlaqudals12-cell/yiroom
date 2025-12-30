@@ -15,6 +15,7 @@ interface ProductCardProps {
   product: AnyProduct;
   matchScore?: number;
   className?: string;
+  priority?: boolean;
 }
 
 /**
@@ -23,7 +24,7 @@ interface ProductCardProps {
  * - 매칭도 배지 (선택)
  * - 클릭 시 상세 페이지로 이동
  */
-export function ProductCard({ product, matchScore, className }: ProductCardProps) {
+export function ProductCard({ product, matchScore, className, priority = false }: ProductCardProps) {
   const productType = getProductType(product);
   const typePath = productTypeToPath(productType);
   const href = `/products/${typePath}/${product.id}`;
@@ -71,6 +72,7 @@ export function ProductCard({ product, matchScore, className }: ProductCardProps
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className="object-cover transition-transform group-hover:scale-105"
+            priority={priority}
           />
 
           {/* 비교 버튼 */}
