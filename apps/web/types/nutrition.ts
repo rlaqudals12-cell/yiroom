@@ -512,6 +512,7 @@ export interface BarcodeSearchResponse {
   food?: BarcodeFood;
   barcode?: string;
   message?: string;
+  source?: 'local' | 'openfoodfacts' | 'foodsafetykorea';
 }
 
 // 바코드 등록 요청

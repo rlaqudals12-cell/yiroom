@@ -16,14 +16,37 @@ vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn(),
 }));
 
+// Mock Open Food Facts API
+vi.mock('@/lib/nutrition/openfoodfacts', () => ({
+  lookupOpenFoodFacts: vi.fn(),
+}));
+
 // Mock Supabase - 체이닝 지원
 const mockSingle = vi.fn();
+const mockInsertSingle = vi.fn(() => Promise.resolve({ data: null, error: null }));
+
+// insert 체인을 위한 mock 객체
+const createInsertChain = () => ({
+  select: vi.fn(() => ({
+    single: () => {
+      // mockSingle이 설정되어 있으면 사용 (POST 테스트용)
+      const result = mockInsertSingle();
+      return {
+        ...result,
+        then: (cb: (result: { data: unknown; error: unknown }) => void) => {
+          return result.then(cb);
+        },
+      };
+    },
+  })),
+});
+
 const mockSupabase = {
   from: vi.fn(() => mockSupabase),
   select: vi.fn(() => mockSupabase),
   eq: vi.fn(() => mockSupabase),
   single: mockSingle,
-  insert: vi.fn(() => mockSupabase),
+  insert: vi.fn(() => createInsertChain()),
   order: vi.fn(() => mockSupabase),
   limit: vi.fn(),
 };
@@ -33,6 +56,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 import { auth } from '@clerk/nextjs/server';
+import { lookupOpenFoodFacts } from '@/lib/nutrition/openfoodfacts';
 
 // 헬퍼 함수
 function createRequest(url: string, options?: RequestInit): Request {
@@ -108,6 +132,7 @@ describe('Barcode Foods API', () => {
         data: null,
         error: { code: 'PGRST116' },
       });
+      vi.mocked(lookupOpenFoodFacts).mockResolvedValueOnce({ found: false });
 
       const request = createRequest('http://localhost/api/nutrition/foods/barcode/9999999999999');
       const response = await GET(request, { params: Promise.resolve({ code: '9999999999999' }) });
@@ -124,6 +149,7 @@ describe('Barcode Foods API', () => {
         data: null,
         error: { code: 'PGRST116' },
       });
+      vi.mocked(lookupOpenFoodFacts).mockResolvedValueOnce({ found: false });
 
       const request = createRequest('http://localhost/api/nutrition/foods/barcode/12345678');
       const response = await GET(request, { params: Promise.resolve({ code: '12345678' }) });
@@ -136,11 +162,95 @@ describe('Barcode Foods API', () => {
         data: null,
         error: { code: 'PGRST116' },
       });
+      vi.mocked(lookupOpenFoodFacts).mockResolvedValueOnce({ found: false });
 
       const request = createRequest('http://localhost/api/nutrition/foods/barcode/12345678901234');
       const response = await GET(request, { params: Promise.resolve({ code: '12345678901234' }) });
 
       expect(response.status).toBe(200);
+    });
+
+    it('로컬 DB 미스 시 Open Food Facts에서 조회한다', async () => {
+      // 로컬 DB 미스
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: 'PGRST116' },
+      });
+
+      // Open Food Facts에서 발견
+      const offFood = {
+        id: 'off_8801234567890',
+        barcode: '8801234567890',
+        name: '신라면',
+        brand: '농심',
+        servingSize: 120,
+        servingUnit: 'g',
+        calories: 500,
+        protein: 10,
+        carbs: 80,
+        fat: 16,
+        source: 'api' as const,
+        verified: false,
+      };
+      vi.mocked(lookupOpenFoodFacts).mockResolvedValueOnce({
+        found: true,
+        food: offFood,
+      });
+
+      const request = createRequest('http://localhost/api/nutrition/foods/barcode/8801234567890');
+      const response = await GET(request, { params: Promise.resolve({ code: '8801234567890' }) });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.found).toBe(true);
+      expect(data.source).toBe('openfoodfacts');
+      expect(data.food.name).toBe('신라면');
+      expect(lookupOpenFoodFacts).toHaveBeenCalledWith('8801234567890');
+    });
+
+    it('Open Food Facts도 미스면 미등록 응답을 반환한다', async () => {
+      // 로컬 DB 미스
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: 'PGRST116' },
+      });
+
+      // Open Food Facts도 미스
+      vi.mocked(lookupOpenFoodFacts).mockResolvedValueOnce({ found: false });
+
+      const request = createRequest('http://localhost/api/nutrition/foods/barcode/9999999999999');
+      const response = await GET(request, { params: Promise.resolve({ code: '9999999999999' }) });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.found).toBe(false);
+      expect(data.message).toContain('등록되지 않은');
+    });
+
+    it('로컬 DB에서 찾으면 Open Food Facts를 호출하지 않는다', async () => {
+      const mockFood = {
+        id: 'food-1',
+        barcode: '8801234567890',
+        name: '신라면',
+        brand: '농심',
+        serving_size: 120,
+        calories: 500,
+        protein: 10,
+        carbs: 80,
+        fat: 16,
+        source: 'manual',
+        verified: true,
+      };
+
+      mockSingle.mockResolvedValueOnce({ data: mockFood, error: null });
+
+      const request = createRequest('http://localhost/api/nutrition/foods/barcode/8801234567890');
+      const response = await GET(request, { params: Promise.resolve({ code: '8801234567890' }) });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.source).toBe('local');
+      expect(lookupOpenFoodFacts).not.toHaveBeenCalled();
     });
   });
 
@@ -281,7 +391,7 @@ describe('Barcode Foods API', () => {
         source: 'crowdsourced',
         verified: false,
       };
-      mockSingle.mockResolvedValueOnce({ data: newFood, error: null });
+      mockInsertSingle.mockResolvedValueOnce({ data: newFood, error: null });
 
       const request = createRequest('http://localhost/api/nutrition/foods/barcode', {
         method: 'POST',
