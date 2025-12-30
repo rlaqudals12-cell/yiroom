@@ -62,8 +62,8 @@ export default function Home() {
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 960px"
               />
-              {/* 그라디언트 오버레이 */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/50" />
+              {/* 그라디언트 오버레이 - 다크모드에서 더 진하게 */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/50 dark:from-black/30 dark:to-black/70" />
 
               {/* 콘텐츠 */}
               <div className="absolute inset-0 flex flex-col gap-6 md:gap-8 items-start justify-end px-4 pb-10 md:px-10">

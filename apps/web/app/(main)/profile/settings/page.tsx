@@ -87,6 +87,9 @@ function Toggle({
 }) {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
       onClick={() => onChange(!enabled)}
       className={cn(
         'relative w-11 h-6 rounded-full transition-colors',
