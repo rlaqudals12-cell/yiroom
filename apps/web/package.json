@@ -14,7 +14,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:a11y": "playwright test e2e/a11y/"
   },
   "dependencies": {
     "@clerk/backend": "^1.33.1",
@@ -62,6 +63,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
     "@clerk/testing": "^1.13.20",
     "@eslint/eslintrc": "^3",
     "@next/bundle-analyzer": "^16.0.7",

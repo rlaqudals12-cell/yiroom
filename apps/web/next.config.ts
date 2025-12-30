@@ -91,6 +91,68 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // 보안 헤더 설정
+  async headers() {
+    return [
+      {
+        // 모든 라우트에 보안 헤더 적용
+        source: '/:path*',
+        headers: [
+          // XSS 공격 방지
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          // MIME 타입 스니핑 방지
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          // 클릭재킹 방지
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          // HTTPS 강제 (1년)
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains',
+          },
+          // Referrer 정책
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          // 권한 정책 (불필요한 API 차단)
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(), geolocation=(self), interest-cohort=()',
+          },
+          // CSP (Content Security Policy)
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com https://va.vercel-scripts.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "img-src 'self' data: blob: https: http:",
+              "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://*.supabase.co wss://*.supabase.co https://generativelanguage.googleapis.com https://va.vercel-scripts.com https://*.sentry.io",
+              "frame-src 'self' https://clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+              "worker-src 'self' blob:",
+              "manifest-src 'self'",
+              "media-src 'self' https:",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+            ].join('; '),
+          },
+        ],
+      },
+    ];
+  },
+
   // UX 리스트럭처링 리다이렉트 (기존 라우트 → 신규 라우트)
   async redirects() {
     return [
