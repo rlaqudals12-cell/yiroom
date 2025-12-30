@@ -164,11 +164,22 @@ SENTRY_AUTH_TOKEN=sntrys_...
 
 ## 8. 성능 검증
 
-### Lighthouse 점수
+### 적용된 최적화 (2025-12-30)
+- [x] 이미지 최적화: AVIF, WebP 포맷 지원
+- [x] PWA 캐싱: 정적 자산, API, 페이지 캐싱
+- [x] 트리 쉐이킹: lucide-react, date-fns, recharts
+- [x] Dynamic Import: 13개 무거운 컴포넌트 지연 로딩
+- [x] Preconnect hints: fonts.googleapis.com, clerk.com, supabase.co
+- [x] 폰트 최적화: display: swap, preload
+- [x] 프로덕션 console.log 제거
+
+### Lighthouse 점수 (프로덕션 배포 후 측정)
 - [ ] Performance: 90+ 목표
 - [ ] Accessibility: 90+ 목표
 - [ ] Best Practices: 90+ 목표
 - [ ] SEO: 90+ 목표
+
+> **참고**: 로컬 테스트 시 Clerk 인증 리다이렉트로 인해 정확한 측정 불가. 프로덕션 배포 후 PageSpeed Insights로 측정 필요.
 
 ### Core Web Vitals
 - [ ] LCP (Largest Contentful Paint): < 2.5s
