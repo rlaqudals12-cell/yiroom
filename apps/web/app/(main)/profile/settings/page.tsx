@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useClerk, useUser } from '@clerk/nextjs';
+import { useTheme } from '@/components/providers/theme-provider';
 import {
   ArrowLeft,
   User,
@@ -52,6 +53,29 @@ const settingsSections: SettingSection[] = [
   { id: 'data', label: '데이터 관리', icon: Database },
   { id: 'info', label: '앱 정보', icon: Info },
 ];
+
+// LocalStorage 키
+const STORAGE_KEYS = {
+  notifications: 'yiroom_notification_settings',
+  privacy: 'yiroom_privacy_settings',
+  language: 'yiroom_language',
+} as const;
+
+// 기본 설정값
+const DEFAULT_NOTIFICATION_SETTINGS = {
+  push: true,
+  email: true,
+  marketing: false,
+  friendRequest: true,
+  challenge: true,
+  reminder: true,
+};
+
+const DEFAULT_PRIVACY_SETTINGS = {
+  profilePublic: true,
+  activityPublic: false,
+  leaderboardPublic: true,
+};
 
 // Toggle 컴포넌트
 function Toggle({
@@ -144,6 +168,7 @@ export default function SettingsPage() {
   const searchParams = useSearchParams();
   const { signOut, openUserProfile } = useClerk();
   const { user } = useUser();
+  const { theme, setTheme } = useTheme();
   const initialTab = (searchParams.get('tab') as SettingsTab) || 'account';
 
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
@@ -151,27 +176,70 @@ export default function SettingsPage() {
   const userEmail = user?.emailAddresses[0]?.emailAddress || '';
 
   // 알림 설정 상태
-  const [notificationSettings, setNotificationSettings] = useState({
-    push: true,
-    email: true,
-    marketing: false,
-    friendRequest: true,
-    challenge: true,
-    reminder: true,
-  });
-
-  // 앱 설정 상태
-  const [appSettings, setAppSettings] = useState({
-    theme: 'system' as 'light' | 'dark' | 'system',
-    language: 'ko' as 'ko' | 'en',
-  });
+  const [notificationSettings, setNotificationSettings] = useState(DEFAULT_NOTIFICATION_SETTINGS);
 
   // 개인정보 설정 상태
-  const [privacySettings, setPrivacySettings] = useState({
-    profilePublic: true,
-    activityPublic: false,
-    leaderboardPublic: true,
-  });
+  const [privacySettings, setPrivacySettings] = useState(DEFAULT_PRIVACY_SETTINGS);
+
+  // 언어 설정 상태
+  const [language, setLanguage] = useState<'ko' | 'en'>('ko');
+
+  // 마운트 시 LocalStorage에서 설정 불러오기
+  useEffect(() => {
+    // 알림 설정 불러오기
+    const savedNotifications = localStorage.getItem(STORAGE_KEYS.notifications);
+    if (savedNotifications) {
+      try {
+        setNotificationSettings({ ...DEFAULT_NOTIFICATION_SETTINGS, ...JSON.parse(savedNotifications) });
+      } catch { /* 무시 */ }
+    }
+
+    // 개인정보 설정 불러오기
+    const savedPrivacy = localStorage.getItem(STORAGE_KEYS.privacy);
+    if (savedPrivacy) {
+      try {
+        setPrivacySettings({ ...DEFAULT_PRIVACY_SETTINGS, ...JSON.parse(savedPrivacy) });
+      } catch { /* 무시 */ }
+    }
+
+    // 언어 설정 불러오기
+    const savedLanguage = localStorage.getItem(STORAGE_KEYS.language);
+    if (savedLanguage === 'ko' || savedLanguage === 'en') {
+      setLanguage(savedLanguage);
+    }
+  }, []);
+
+  // 알림 설정 변경 시 저장
+  const updateNotificationSettings = (update: Partial<typeof notificationSettings>) => {
+    setNotificationSettings((prev) => {
+      const newSettings = { ...prev, ...update };
+      localStorage.setItem(STORAGE_KEYS.notifications, JSON.stringify(newSettings));
+      return newSettings;
+    });
+  };
+
+  // 개인정보 설정 변경 시 저장
+  const updatePrivacySettings = (update: Partial<typeof privacySettings>) => {
+    setPrivacySettings((prev) => {
+      const newSettings = { ...prev, ...update };
+      localStorage.setItem(STORAGE_KEYS.privacy, JSON.stringify(newSettings));
+      return newSettings;
+    });
+  };
+
+  // 테마 변경 핸들러
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
+    setTheme(newTheme);
+  };
+
+  // 언어 변경 핸들러
+  const handleLanguageChange = (newLanguage: 'ko' | 'en') => {
+    setLanguage(newLanguage);
+    localStorage.setItem(STORAGE_KEYS.language, newLanguage);
+  };
+
+  // 현재 테마 (next-themes)
+  const currentTheme = (theme as 'light' | 'dark' | 'system') || 'system';
 
   const renderContent = () => {
     switch (activeTab) {
@@ -219,9 +287,7 @@ export default function SettingsPage() {
                     action={
                       <Toggle
                         enabled={notificationSettings.push}
-                        onChange={(v) =>
-                          setNotificationSettings((s) => ({ ...s, push: v }))
-                        }
+                        onChange={(v) => updateNotificationSettings({ push: v })}
                       />
                     }
                   />
@@ -232,9 +298,7 @@ export default function SettingsPage() {
                     action={
                       <Toggle
                         enabled={notificationSettings.email}
-                        onChange={(v) =>
-                          setNotificationSettings((s) => ({ ...s, email: v }))
-                        }
+                        onChange={(v) => updateNotificationSettings({ email: v })}
                       />
                     }
                   />
@@ -245,9 +309,7 @@ export default function SettingsPage() {
                     action={
                       <Toggle
                         enabled={notificationSettings.marketing}
-                        onChange={(v) =>
-                          setNotificationSettings((s) => ({ ...s, marketing: v }))
-                        }
+                        onChange={(v) => updateNotificationSettings({ marketing: v })}
                       />
                     }
                   />
@@ -266,9 +328,7 @@ export default function SettingsPage() {
                     action={
                       <Toggle
                         enabled={notificationSettings.friendRequest}
-                        onChange={(v) =>
-                          setNotificationSettings((s) => ({ ...s, friendRequest: v }))
-                        }
+                        onChange={(v) => updateNotificationSettings({ friendRequest: v })}
                       />
                     }
                   />
@@ -278,9 +338,7 @@ export default function SettingsPage() {
                     action={
                       <Toggle
                         enabled={notificationSettings.challenge}
-                        onChange={(v) =>
-                          setNotificationSettings((s) => ({ ...s, challenge: v }))
-                        }
+                        onChange={(v) => updateNotificationSettings({ challenge: v })}
                       />
                     }
                   />
@@ -290,9 +348,7 @@ export default function SettingsPage() {
                     action={
                       <Toggle
                         enabled={notificationSettings.reminder}
-                        onChange={(v) =>
-                          setNotificationSettings((s) => ({ ...s, reminder: v }))
-                        }
+                        onChange={(v) => updateNotificationSettings({ reminder: v })}
                       />
                     }
                   />
@@ -322,24 +378,19 @@ export default function SettingsPage() {
                     { id: 'light', label: '라이트', icon: Sun },
                     { id: 'dark', label: '다크', icon: Moon },
                     { id: 'system', label: '시스템', icon: Palette },
-                  ].map((theme) => (
+                  ].map((themeOption) => (
                     <button
-                      key={theme.id}
-                      onClick={() =>
-                        setAppSettings((s) => ({
-                          ...s,
-                          theme: theme.id as 'light' | 'dark' | 'system',
-                        }))
-                      }
+                      key={themeOption.id}
+                      onClick={() => handleThemeChange(themeOption.id as 'light' | 'dark' | 'system')}
                       className={cn(
                         'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors',
-                        appSettings.theme === theme.id
+                        currentTheme === themeOption.id
                           ? 'bg-primary text-primary-foreground border-primary'
                           : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
                       )}
                     >
-                      <theme.icon className="w-4 h-4" />
-                      <span className="text-sm">{theme.label}</span>
+                      <themeOption.icon className="w-4 h-4" />
+                      <span className="text-sm">{themeOption.label}</span>
                     </button>
                   ))}
                 </div>
@@ -363,15 +414,10 @@ export default function SettingsPage() {
                   ].map((lang) => (
                     <button
                       key={lang.id}
-                      onClick={() =>
-                        setAppSettings((s) => ({
-                          ...s,
-                          language: lang.id as 'ko' | 'en',
-                        }))
-                      }
+                      onClick={() => handleLanguageChange(lang.id as 'ko' | 'en')}
                       className={cn(
                         'flex-1 py-2 rounded-lg border transition-colors',
-                        appSettings.language === lang.id
+                        language === lang.id
                           ? 'bg-primary text-primary-foreground border-primary'
                           : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
                       )}
@@ -396,9 +442,7 @@ export default function SettingsPage() {
                 action={
                   <Toggle
                     enabled={privacySettings.profilePublic}
-                    onChange={(v) =>
-                      setPrivacySettings((s) => ({ ...s, profilePublic: v }))
-                    }
+                    onChange={(v) => updatePrivacySettings({ profilePublic: v })}
                   />
                 }
               />
@@ -409,9 +453,7 @@ export default function SettingsPage() {
                 action={
                   <Toggle
                     enabled={privacySettings.activityPublic}
-                    onChange={(v) =>
-                      setPrivacySettings((s) => ({ ...s, activityPublic: v }))
-                    }
+                    onChange={(v) => updatePrivacySettings({ activityPublic: v })}
                   />
                 }
               />
@@ -422,9 +464,7 @@ export default function SettingsPage() {
                 action={
                   <Toggle
                     enabled={privacySettings.leaderboardPublic}
-                    onChange={(v) =>
-                      setPrivacySettings((s) => ({ ...s, leaderboardPublic: v }))
-                    }
+                    onChange={(v) => updatePrivacySettings({ leaderboardPublic: v })}
                   />
                 }
               />
