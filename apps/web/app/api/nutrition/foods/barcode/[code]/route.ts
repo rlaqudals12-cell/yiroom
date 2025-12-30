@@ -5,13 +5,15 @@
  * - 바코드로 식품 정보 조회
  * - 1. 로컬 DB 조회
  * - 2. Open Food Facts API 조회 (fallback)
- * - 3. 없으면 미등록 응답
+ * - 3. 식품안전나라 API 조회 (fallback, 한국 제품)
+ * - 4. 없으면 미등록 응답
  */
 
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { lookupOpenFoodFacts } from '@/lib/nutrition/openfoodfacts';
+import { lookupFoodSafetyKorea } from '@/lib/nutrition/foodsafetykorea';
 import type { BarcodeFood, BarcodeSearchResponse } from '@/types/nutrition';
 
 // DB 결과를 BarcodeFood 타입으로 변환
@@ -153,7 +155,61 @@ export async function GET(
       return NextResponse.json(response);
     }
 
-    // 3. 미등록 바코드
+    // 3. 식품안전나라 API에서 조회 (한국 제품용 fallback)
+    // 한국 바코드 (880으로 시작)인 경우만 시도
+    if (code.startsWith('880')) {
+      console.log('[Barcode API] Korean barcode, trying Food Safety Korea:', code);
+      const fskResult = await lookupFoodSafetyKorea(code);
+
+      if (fskResult.found && fskResult.food) {
+        // API에서 찾은 데이터를 로컬 DB에 캐싱 (비동기, 실패해도 무시)
+        supabase
+          .from('barcode_foods')
+          .insert({
+            barcode: fskResult.food.barcode,
+            name: fskResult.food.name,
+            brand: fskResult.food.brand,
+            serving_size: fskResult.food.servingSize,
+            serving_unit: fskResult.food.servingUnit,
+            calories: fskResult.food.calories,
+            protein: fskResult.food.protein,
+            carbs: fskResult.food.carbs,
+            fat: fskResult.food.fat,
+            sugar: fskResult.food.sugar,
+            fiber: fskResult.food.fiber,
+            sodium: fskResult.food.sodium,
+            image_url: fskResult.food.imageUrl,
+            category: fskResult.food.category,
+            allergens: fskResult.food.allergens,
+            source: 'api',
+            verified: true, // 공공데이터는 검증됨
+          })
+          .select()
+          .single()
+          .then(({ data: insertedData, error: insertError }) => {
+            if (insertError) {
+              console.warn('[Barcode API] Cache insert failed:', insertError);
+              return;
+            }
+            if (insertedData) {
+              supabase.from('user_barcode_history').insert({
+                clerk_user_id: userId,
+                barcode_food_id: insertedData.id,
+              });
+            }
+          });
+
+        const response: BarcodeSearchResponse = {
+          found: true,
+          food: fskResult.food,
+          source: 'foodsafetykorea',
+        };
+
+        return NextResponse.json(response);
+      }
+    }
+
+    // 4. 미등록 바코드
     const response: BarcodeSearchResponse = {
       found: false,
       barcode: code,

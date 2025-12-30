@@ -148,16 +148,3 @@ export async function lookupOpenFoodFacts(
   }
 }
 
-/**
- * 식품안전나라 API 조회 (향후 구현)
- *
- * - 한국 공공데이터 포털 API
- * - API 키 필요
- */
-export async function lookupFoodSafetyKorea(
-  _barcode: string
-): Promise<OpenFoodFactsResult> {
-  // TODO: 식품안전나라 API 연동
-  // https://www.data.go.kr/data/15050816/openapi.do
-  return { found: false, error: 'Not implemented' };
-}

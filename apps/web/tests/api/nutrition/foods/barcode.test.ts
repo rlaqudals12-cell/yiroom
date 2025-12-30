@@ -23,7 +23,9 @@ vi.mock('@/lib/nutrition/openfoodfacts', () => ({
 
 // Mock Supabase - 체이닝 지원
 const mockSingle = vi.fn();
-const mockInsertSingle = vi.fn(() => Promise.resolve({ data: null, error: null }));
+const mockInsertSingle = vi.fn().mockReturnValue(
+  Promise.resolve({ data: null, error: null })
+);
 
 // insert 체인을 위한 mock 객체
 const createInsertChain = () => ({
