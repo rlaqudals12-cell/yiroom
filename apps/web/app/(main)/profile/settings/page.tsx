@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useClerk, useUser } from '@clerk/nextjs';
 import {
   ArrowLeft,
   User,
@@ -16,7 +17,6 @@ import {
   Globe,
   Eye,
   EyeOff,
-  Download,
   Trash2,
   FileText,
   Lock,
@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
+import { DeleteAccountDialog, DataExportButton } from '@/components/settings';
 
 /**
  * 설정 페이지 - UX 리스트럭처링
@@ -141,9 +142,13 @@ function SettingItem({
 export default function SettingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { signOut, openUserProfile } = useClerk();
+  const { user } = useUser();
   const initialTab = (searchParams.get('tab') as SettingsTab) || 'account';
 
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const userEmail = user?.emailAddresses[0]?.emailAddress || '';
 
   // 알림 설정 상태
   const [notificationSettings, setNotificationSettings] = useState({
@@ -178,22 +183,19 @@ export default function SettingsPage() {
                 icon={User}
                 label="프로필 편집"
                 description="이름, 프로필 사진 변경"
-                onClick={() => router.push('/profile/edit')}
+                onClick={() => openUserProfile()}
               />
               <SettingItem
                 icon={Lock}
-                label="비밀번호 변경"
-                description="계정 보안 설정"
-                onClick={() => router.push('/profile/security')}
+                label="비밀번호 및 보안"
+                description="비밀번호 변경, 2단계 인증"
+                onClick={() => openUserProfile()}
               />
               <SettingItem
                 icon={LogOut}
                 label="로그아웃"
-                description="계정에서 로그아웃"
-                onClick={() => {
-                  // TODO: 로그아웃 처리
-                  router.push('/');
-                }}
+                description="현재 기기에서 로그아웃"
+                onClick={() => signOut({ redirectUrl: '/' })}
                 danger
               />
             </div>
@@ -434,28 +436,22 @@ export default function SettingsPage() {
         return (
           <FadeInUp>
             <div className="space-y-3">
-              <SettingItem
-                icon={Download}
-                label="데이터 내보내기"
-                description="모든 데이터를 JSON 파일로 다운로드"
-                onClick={() => {
-                  // TODO: 데이터 내보내기
-                  alert('데이터 내보내기 기능 준비 중');
-                }}
-              />
+              <DataExportButton />
               <SettingItem
                 icon={Trash2}
                 label="계정 삭제"
                 description="모든 데이터가 영구적으로 삭제됩니다"
-                onClick={() => {
-                  // TODO: 계정 삭제 확인 모달
-                  if (confirm('정말 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-                    alert('계정 삭제 기능 준비 중');
-                  }
-                }}
+                onClick={() => setDeleteDialogOpen(true)}
                 danger
               />
             </div>
+
+            {/* 계정 삭제 다이얼로그 */}
+            <DeleteAccountDialog
+              open={deleteDialogOpen}
+              onOpenChange={setDeleteDialogOpen}
+              userEmail={userEmail}
+            />
           </FadeInUp>
         );
 
@@ -471,17 +467,17 @@ export default function SettingsPage() {
               <SettingItem
                 icon={FileText}
                 label="이용약관"
-                onClick={() => router.push('/legal/terms')}
+                onClick={() => router.push('/terms')}
               />
               <SettingItem
                 icon={Shield}
                 label="개인정보처리방침"
-                onClick={() => router.push('/legal/privacy')}
+                onClick={() => router.push('/privacy')}
               />
               <SettingItem
                 icon={FileText}
                 label="오픈소스 라이선스"
-                onClick={() => router.push('/legal/licenses')}
+                onClick={() => router.push('/licenses')}
               />
             </div>
           </FadeInUp>
