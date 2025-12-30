@@ -196,9 +196,25 @@ SENTRY_AUTH_TOKEN=sntrys_...
 - [ ] HTTPS 강제 리다이렉트
 - [ ] CORS 설정 확인
 
+### 보안 헤더 (2025-12-30 구현완료)
+- [x] CSP (Content Security Policy) 설정 → `next.config.ts`
+- [x] Rate Limiting 적용 → `middleware.ts` + `lib/security/rate-limit.ts`
+- [x] X-XSS-Protection 헤더
+- [x] X-Content-Type-Options (nosniff)
+- [x] X-Frame-Options (DENY) - 클릭재킹 방지
+- [x] Strict-Transport-Security (HSTS)
+- [x] Referrer-Policy
+- [x] Permissions-Policy
+
+### Rate Limiting 설정
+| 엔드포인트 | 제한 | 용도 |
+|------------|------|------|
+| `/api/analysis`, `/api/gemini` | 10회/분 | AI API (비용 높음) |
+| `/api/auth` | 20회/분 | 인증 |
+| `/api/feedback` | 5회/분 | 피드백/리포트 |
+| 기타 API | 100회/분 | 일반 |
+
 ### 선택 확인
-- [ ] CSP (Content Security Policy) 설정
-- [ ] Rate Limiting 적용
 - [ ] SQL Injection 방지 확인
 
 ---
@@ -224,6 +240,10 @@ SENTRY_AUTH_TOKEN=sntrys_...
 - [x] 빌드 성공
 - [x] TypeScript 타입체크 통과
 - [x] ESLint 통과
+- [x] 접근성 테스트 추가 (2025-12-30) → `e2e/a11y/accessibility.spec.ts`
+  - Playwright + axe-core (WCAG 2.1 AA)
+  - 14개 테스트 케이스
+  - 실행: `npm run test:a11y`
 
 ### 수동 테스트
 - [ ] 모든 주요 기능 수동 테스트
