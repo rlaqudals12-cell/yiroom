@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/common";
 import { Heart, Brain, Dumbbell, Sparkles, Palette, User } from "lucide-react";
 
 // 웰니스 모듈 데이터
@@ -236,6 +237,9 @@ export default function Home() {
           </section>
         </div>
       </div>
+
+      {/* 푸터 */}
+      <Footer />
     </main>
   );
 }

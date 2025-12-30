@@ -49,6 +49,12 @@
 - [ ] Clerk 대시보드 > Domains에서 프로덕션 도메인 추가
 - [ ] HTTPS 인증서 확인
 
+### 법적 문서 URL 설정 (필수)
+- [ ] Clerk 대시보드 > Settings > Legal
+  - Terms of Service URL: `https://yiroom.app/terms`
+  - Privacy Policy URL: `https://yiroom.app/privacy`
+- [ ] 회원가입 시 동의 체크박스 표시 확인
+
 ### 소셜 로그인 설정 (선택)
 - [ ] Google OAuth 클라이언트 ID 설정
 - [ ] Apple Sign In 설정 (iOS 앱용)
@@ -191,10 +197,12 @@ SENTRY_AUTH_TOKEN=sntrys_...
 ### 완료
 - [x] 개인정보처리방침 업데이트 (2025-01-20)
 - [x] 이용약관 업데이트 (2025-01-20)
+- [x] 오픈소스 라이선스 페이지 생성 (2025-12-30)
+- [x] 홈페이지 푸터 법적 링크 추가 (2025-12-30)
 
 ### 확인
-- [ ] 푸터에 링크 표시 확인
-- [ ] 회원가입 시 동의 절차 확인
+- [x] 푸터에 링크 표시 확인
+- [ ] 회원가입 시 동의 절차 확인 (Clerk 대시보드 설정 필요)
 
 ---
 

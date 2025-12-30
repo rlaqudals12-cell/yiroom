@@ -1,4 +1,5 @@
 export { EmptyStateCard } from './EmptyStateCard';
+export { Footer } from './Footer';
 
 // P3-5.3: 통합 알림 시스템
 export {
