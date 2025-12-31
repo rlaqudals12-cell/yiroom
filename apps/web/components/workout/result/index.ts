@@ -3,7 +3,6 @@ export { default as RecommendedExerciseList } from './RecommendedExerciseList';
 export { default as VirtualizedExerciseList } from './VirtualizedExerciseList';
 export { default as BodyTypeInsight } from './BodyTypeInsight';
 export { default as WorkoutInsightCard } from './WorkoutInsightCard';
-export { default as CelebrityRoutineCard } from './CelebrityRoutineCard';
 export { default as WorkoutStyleCard } from './WorkoutStyleCard';
 export { default as PostWorkoutSkinCareCard } from './PostWorkoutSkinCareCard';
 export { default as PostWorkoutNutritionCard } from './PostWorkoutNutritionCard';

@@ -35,7 +35,6 @@ import {
   getAlternativeExercises,
 } from '@/lib/workout/exercises';
 import { getWorkoutStyleRecommendation } from '@/lib/workout/styleRecommendations';
-import { matchCelebrityRoutines } from '@/lib/celebrityMatching';
 import { generateWeeklyPlan } from '@/lib/workout/weeklyPlan';
 import { getPostWorkoutSkinCareTips, getQuickPostWorkoutMessage } from '@/lib/workout/skinTips';
 import { getPostWorkoutNutritionTips, getQuickNutritionMessage } from '@/lib/workout/nutritionTips';
@@ -312,7 +311,7 @@ describe('W-1 통합 테스트: 분석 로직', () => {
     expect(plan.length).toBe(7); // 월~일 7일
 
     // 최소 3일 이상 운동일이 있어야 함
-    const workoutDays = plan.filter(day => day.exercises && day.exercises.length > 0);
+    const workoutDays = plan.filter((day) => day.exercises && day.exercises.length > 0);
     expect(workoutDays.length).toBeGreaterThanOrEqual(3);
   });
 });
@@ -346,7 +345,7 @@ describe('W-1 통합 테스트: 운동 DB 조회', () => {
     expect(Array.isArray(alternatives)).toBe(true);
     expect(alternatives.length).toBeLessThanOrEqual(3);
     // 자기 자신은 포함되지 않아야 함
-    expect(alternatives.every(alt => alt.id !== exercise.id)).toBe(true);
+    expect(alternatives.every((alt) => alt.id !== exercise.id)).toBe(true);
   });
 
   it('대체 운동은 같은 카테고리 또는 같은 부위', () => {
@@ -355,11 +354,11 @@ describe('W-1 통합 테스트: 운동 DB 조회', () => {
       const exercise = upperExercises[0];
       const alternatives = getAlternativeExercises(exercise, 5);
 
-      alternatives.forEach(alt => {
+      alternatives.forEach((alt) => {
         // 같은 카테고리이거나 타겟 부위가 겹쳐야 함
         const sameCategoryOrParts =
           alt.category === exercise.category ||
-          alt.bodyParts.some(part => exercise.bodyParts.includes(part));
+          alt.bodyParts.some((part) => exercise.bodyParts.includes(part));
         expect(sameCategoryOrParts).toBe(true);
       });
     }
@@ -389,7 +388,7 @@ describe('W-1 통합 테스트: 체형별 분석', () => {
   it('체형별 Mock 분석 결과 생성', () => {
     const bodyTypes = ['X', 'A', 'V', 'H', 'O'];
 
-    bodyTypes.forEach(bodyType => {
+    bodyTypes.forEach((bodyType) => {
       const result = generateMockWorkoutAnalysis({
         bodyType,
         goals: ['weight_loss'],
@@ -493,30 +492,6 @@ describe('W-1 통합 테스트: Streak 계산', () => {
   });
 });
 
-describe('W-1 통합 테스트: 연예인 루틴 매칭', () => {
-  it('체형 + PC 기반 연예인 루틴 매칭', () => {
-    const matches = matchCelebrityRoutines('H', 'Spring', { limit: 3 });
-
-    expect(matches).toBeDefined();
-    expect(Array.isArray(matches)).toBe(true);
-    // 매칭 결과가 있어야 함
-    expect(matches.length).toBeGreaterThanOrEqual(0);
-  });
-
-  it('다양한 체형 조합 매칭', () => {
-    const bodyTypes = ['X', 'A', 'H', 'O', 'Y'] as const;
-    const seasons = ['Spring', 'Summer', 'Autumn', 'Winter'] as const;
-
-    bodyTypes.forEach((bodyType) => {
-      seasons.forEach((season) => {
-        const matches = matchCelebrityRoutines(bodyType, season, { limit: 2 });
-        expect(matches).toBeDefined();
-        expect(Array.isArray(matches)).toBe(true);
-      });
-    });
-  });
-});
-
 describe('W-1 통합 테스트: 엣지 케이스', () => {
   it('부상 있는 경우 운동 필터링 - 무릎', () => {
     const planWithInjury = generateWeeklyPlan({
@@ -600,7 +575,7 @@ describe('W-1 통합 테스트: 엣지 케이스', () => {
     });
 
     expect(minFrequencyPlan).toBeDefined();
-    const workoutDays = minFrequencyPlan.filter(day => day.exercises && day.exercises.length > 0);
+    const workoutDays = minFrequencyPlan.filter((day) => day.exercises && day.exercises.length > 0);
     // 1-2회 빈도이므로 운동일은 1~2일
     expect(workoutDays.length).toBeLessThanOrEqual(3);
   });
@@ -716,13 +691,13 @@ describe('W-1 통합 테스트: 연동 기능', () => {
       expect(links).toBeDefined();
       expect(Array.isArray(links)).toBe(true);
       expect(links.length).toBe(3); // 무신사, 에이블리, 쿠팡 3개 플랫폼
-      expect(links.every(link => link.url.length > 0)).toBe(true);
+      expect(links.every((link) => link.url.length > 0)).toBe(true);
     });
 
     it('PC 타입별 색상 키워드 반환', () => {
       const seasons = ['Spring', 'Summer', 'Autumn', 'Winter'] as const;
 
-      seasons.forEach(season => {
+      seasons.forEach((season) => {
         const keywords = getColorKeywordsForPC(season);
         expect(keywords).toBeDefined();
         expect(keywords.length).toBeGreaterThan(0);
@@ -732,7 +707,7 @@ describe('W-1 통합 테스트: 연동 기능', () => {
     it('체형별 핏 키워드 반환', () => {
       const bodyTypes = ['X', 'A', 'H', 'O', 'Y'] as const;
 
-      bodyTypes.forEach(bodyType => {
+      bodyTypes.forEach((bodyType) => {
         const keywords = getFitKeywordsForBodyType(bodyType);
         expect(keywords).toBeDefined();
         expect(keywords.length).toBeGreaterThan(0);
@@ -742,10 +717,10 @@ describe('W-1 통합 테스트: 연동 기능', () => {
     it('다양한 카테고리별 쇼핑 링크', () => {
       const categories = ['workout-top', 'workout-bottom', 'accessory'] as const;
 
-      categories.forEach(category => {
+      categories.forEach((category) => {
         const links = generateShoppingLinks(category, 'Summer', 'X');
         expect(links.length).toBe(3);
-        links.forEach(link => {
+        links.forEach((link) => {
           expect(link.category).toBe(category);
           expect(link.platformName).toBeDefined();
         });
@@ -809,11 +784,7 @@ describe('W-1 통합 테스트: 전체 데이터 플로우', () => {
     expect(caloriesBurned).toBeGreaterThan(0);
 
     // 6. 피부 케어 팁
-    const skinTips = getPostWorkoutSkinCareTips(
-      analysisResult.workoutType,
-      30,
-      null
-    );
+    const skinTips = getPostWorkoutSkinCareTips(analysisResult.workoutType, 30, null);
     expect(skinTips.immediateActions.length).toBeGreaterThan(0);
 
     // 7. 영양 팁
@@ -823,16 +794,7 @@ describe('W-1 통합 테스트: 전체 데이터 플로우', () => {
     );
     expect(nutritionTips).toBeDefined();
 
-    // 8. 연예인 루틴 매칭 (체형 + PC 기반)
-    const celebrityMatches = matchCelebrityRoutines(
-      (inputData.bodyTypeData?.type || 'H') as BodyType,
-      inputData.personalColor || 'Spring',
-      { limit: 3 }
-    );
-    expect(celebrityMatches).toBeDefined();
-    expect(Array.isArray(celebrityMatches)).toBe(true);
-
-    // 9. 주간 플랜 생성
+    // 8. 주간 플랜 생성
     const weeklyPlan = generateWeeklyPlan({
       workoutType: analysisResult.workoutType,
       frequency: inputData.frequency,
@@ -844,7 +806,7 @@ describe('W-1 통합 테스트: 전체 데이터 플로우', () => {
     expect(weeklyPlan).toBeDefined();
     expect(weeklyPlan.length).toBe(7);
 
-    // 10. 쇼핑 링크 생성 (PC + 체형 기반)
+    // 9. 쇼핑 링크 생성 (PC + 체형 기반)
     const shoppingLinks = generateShoppingLinks(
       'workout-top',
       inputData.personalColor || 'Spring',

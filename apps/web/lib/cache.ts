@@ -235,10 +235,7 @@ export function memoizeAsync<TArgs extends unknown[], TResult>(
   const cache = new MemoryCache<TResult>(options);
   const pending = new Map<string, Promise<TResult>>();
 
-  const memoized = async function (
-    this: unknown,
-    ...args: TArgs
-  ): Promise<TResult> {
+  const memoized = async function (this: unknown, ...args: TArgs): Promise<TResult> {
     const key = createCacheKey(...args);
 
     // 캐시에서 조회
@@ -279,12 +276,6 @@ export function memoizeAsync<TArgs extends unknown[], TResult>(
 export const workoutCache = new MemoryCache<unknown>({
   ttl: 10 * 60 * 1000, // 10분
   maxSize: 50,
-});
-
-// 전역 캐시 인스턴스 (연예인 매칭용)
-export const celebrityCache = new MemoryCache<unknown>({
-  ttl: 30 * 60 * 1000, // 30분 (자주 변경되지 않음)
-  maxSize: 30,
 });
 
 // 전역 캐시 인스턴스 (스타일 추천용)

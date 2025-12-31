@@ -5,7 +5,6 @@ import {
   memoize,
   memoizeAsync,
   workoutCache,
-  celebrityCache,
   styleCache,
 } from '@/lib/cache';
 
@@ -290,11 +289,6 @@ describe('전역 캐시 인스턴스', () => {
   it('workoutCache가 존재한다', () => {
     expect(workoutCache).toBeDefined();
     expect(workoutCache.getStats().ttl).toBe(10 * 60 * 1000); // 10분
-  });
-
-  it('celebrityCache가 존재한다', () => {
-    expect(celebrityCache).toBeDefined();
-    expect(celebrityCache.getStats().ttl).toBe(30 * 60 * 1000); // 30분
   });
 
   it('styleCache가 존재한다', () => {
