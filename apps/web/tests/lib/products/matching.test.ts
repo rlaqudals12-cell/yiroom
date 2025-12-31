@@ -159,9 +159,7 @@ describe('calculateMatchScore', () => {
       const result = calculateMatchScore(mockWorkoutEquipment, profile);
 
       // skillLevel이 'all'이므로 매칭됨
-      expect(result.reasons).toContainEqual(
-        expect.objectContaining({ matched: true })
-      );
+      expect(result.reasons).toContainEqual(expect.objectContaining({ matched: true }));
     });
   });
 
@@ -238,7 +236,7 @@ describe('리뷰 평점 보너스', () => {
     expect(result.reasons).toContainEqual(
       expect.objectContaining({ type: 'rating', matched: true })
     );
-    expect(result.reasons.find(r => r.type === 'rating')?.label).toContain('인기 제품');
+    expect(result.reasons.find((r) => r.type === 'rating')?.label).toContain('높은 평점');
   });
 
   it('적당한 평점 + 적당한 리뷰 시 중간 보너스', () => {
@@ -252,7 +250,7 @@ describe('리뷰 평점 보너스', () => {
 
     const result = calculateMatchScore(mediumRatedProduct, profile);
 
-    expect(result.reasons.find(r => r.type === 'rating')?.label).toContain('높은 평점');
+    expect(result.reasons.find((r) => r.type === 'rating')?.label).toContain('좋은 평점');
   });
 
   it('낮은 평점 시 보너스 없음', () => {
@@ -266,7 +264,7 @@ describe('리뷰 평점 보너스', () => {
 
     const result = calculateMatchScore(lowRatedProduct, profile);
 
-    expect(result.reasons.find(r => r.type === 'rating')).toBeUndefined();
+    expect(result.reasons.find((r) => r.type === 'rating')).toBeUndefined();
   });
 
   it('리뷰 수 적을 시 보너스 없음', () => {
@@ -280,6 +278,6 @@ describe('리뷰 평점 보너스', () => {
 
     const result = calculateMatchScore(fewReviewsProduct, profile);
 
-    expect(result.reasons.find(r => r.type === 'rating')).toBeUndefined();
+    expect(result.reasons.find((r) => r.type === 'rating')).toBeUndefined();
   });
 });

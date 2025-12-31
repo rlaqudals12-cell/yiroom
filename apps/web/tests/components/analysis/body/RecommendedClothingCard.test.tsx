@@ -83,22 +83,14 @@ describe('RecommendedClothingCard', () => {
   });
 
   it('displays personal color season badge when provided', () => {
-    render(
-      <RecommendedClothingCard
-        {...defaultProps}
-        personalColorSeason="웜톤 봄"
-      />
-    );
+    render(<RecommendedClothingCard {...defaultProps} personalColorSeason="웜톤 봄" />);
 
     expect(screen.getByText('웜톤 봄톤')).toBeInTheDocument();
   });
 
   it('shows color recommendation notice when colorRecommendations provided', () => {
     render(
-      <RecommendedClothingCard
-        {...defaultProps}
-        colorRecommendations={mockColorRecommendations}
-      />
+      <RecommendedClothingCard {...defaultProps} colorRecommendations={mockColorRecommendations} />
     );
 
     fireEvent.click(screen.getByRole('button', { name: '펼치기' }));
@@ -108,16 +100,13 @@ describe('RecommendedClothingCard', () => {
 
   it('shows recommended color for clothing items when colorRecommendations provided', () => {
     render(
-      <RecommendedClothingCard
-        {...defaultProps}
-        colorRecommendations={mockColorRecommendations}
-      />
+      <RecommendedClothingCard {...defaultProps} colorRecommendations={mockColorRecommendations} />
     );
 
     fireEvent.click(screen.getByRole('button', { name: '펼치기' }));
 
-    // Should show recommended colors from colorRecommendations
-    expect(screen.getByText('아이보리 추천')).toBeInTheDocument();
+    // Should show recommended colors from colorRecommendations (상의에 적용됨)
+    expect(screen.getAllByText('아이보리 추천').length).toBeGreaterThan(0);
   });
 
   it('collapses when clicking toggle button again', () => {
@@ -133,36 +122,40 @@ describe('RecommendedClothingCard', () => {
   });
 
   describe('body type specific items', () => {
-    it('shows X body type items', () => {
+    it('shows X body type items (mapped to S/스트레이트)', () => {
       render(<RecommendedClothingCard {...defaultProps} bodyType="X" />);
       fireEvent.click(screen.getByRole('button', { name: '펼치기' }));
 
-      expect(screen.getByText('핏티드 니트')).toBeInTheDocument();
-      expect(screen.getByText('하이웨이스트 팬츠')).toBeInTheDocument();
+      // X타입은 S(스트레이트)로 매핑됨
+      expect(screen.getByText('슬림핏 티셔츠')).toBeInTheDocument();
+      expect(screen.getByText('스트레이트 슬랙스')).toBeInTheDocument();
     });
 
-    it('shows A body type items', () => {
+    it('shows A body type items (mapped to W/웨이브)', () => {
       render(<RecommendedClothingCard {...defaultProps} bodyType="A" />);
       fireEvent.click(screen.getByRole('button', { name: '펼치기' }));
 
-      expect(screen.getByText('보트넥 상의')).toBeInTheDocument();
-      expect(screen.getByText('스트레이트 팬츠')).toBeInTheDocument();
+      // A타입은 W(웨이브)로 매핑됨
+      expect(screen.getByText('페플럼 블라우스')).toBeInTheDocument();
+      expect(screen.getByText('하이웨이스트 팬츠')).toBeInTheDocument();
     });
 
-    it('shows V body type items', () => {
+    it('shows V body type items (mapped to S/스트레이트)', () => {
       render(<RecommendedClothingCard {...defaultProps} bodyType="V" />);
       fireEvent.click(screen.getByRole('button', { name: '펼치기' }));
 
-      expect(screen.getByText('V넥 상의')).toBeInTheDocument();
-      expect(screen.getByText('와이드 팬츠')).toBeInTheDocument();
+      // V타입은 S(스트레이트)로 매핑됨
+      expect(screen.getByText('슬림핏 티셔츠')).toBeInTheDocument();
+      expect(screen.getByText('스트레이트 슬랙스')).toBeInTheDocument();
     });
 
-    it('shows 8 body type items', () => {
+    it('shows 8 body type items (mapped to W/웨이브)', () => {
       render(<RecommendedClothingCard {...defaultProps} bodyType="8" />);
       fireEvent.click(screen.getByRole('button', { name: '펼치기' }));
 
-      expect(screen.getByText('바디콘 원피스')).toBeInTheDocument();
-      expect(screen.getByText('펜슬 스커트')).toBeInTheDocument();
+      // 8타입은 W(웨이브)로 매핑됨
+      expect(screen.getByText('페플럼 블라우스')).toBeInTheDocument();
+      expect(screen.getByText('하이웨이스트 팬츠')).toBeInTheDocument();
     });
   });
 

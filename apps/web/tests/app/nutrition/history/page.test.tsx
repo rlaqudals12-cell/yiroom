@@ -166,10 +166,38 @@ const mockEmptyData = {
     mealCount: 0,
   },
   meals: [
-    { type: 'breakfast', label: '아침', icon: '🌅', order: 1, records: [], subtotal: { calories: 0, protein: 0, carbs: 0, fat: 0 } },
-    { type: 'lunch', label: '점심', icon: '🌞', order: 2, records: [], subtotal: { calories: 0, protein: 0, carbs: 0, fat: 0 } },
-    { type: 'dinner', label: '저녁', icon: '🌙', order: 3, records: [], subtotal: { calories: 0, protein: 0, carbs: 0, fat: 0 } },
-    { type: 'snack', label: '간식', icon: '🍎', order: 4, records: [], subtotal: { calories: 0, protein: 0, carbs: 0, fat: 0 } },
+    {
+      type: 'breakfast',
+      label: '아침',
+      icon: '🌅',
+      order: 1,
+      records: [],
+      subtotal: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+    },
+    {
+      type: 'lunch',
+      label: '점심',
+      icon: '🌞',
+      order: 2,
+      records: [],
+      subtotal: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+    },
+    {
+      type: 'dinner',
+      label: '저녁',
+      icon: '🌙',
+      order: 3,
+      records: [],
+      subtotal: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+    },
+    {
+      type: 'snack',
+      label: '간식',
+      icon: '🍎',
+      order: 4,
+      records: [],
+      subtotal: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+    },
   ],
 };
 
@@ -334,7 +362,9 @@ describe('NutritionHistoryPage', () => {
 
   describe('빈 상태 처리', () => {
     it('기록이 없는 날에는 빈 상태 메시지가 표시된다', async () => {
-      mockFetch.mockResolvedValueOnce({
+      // beforeEach의 기본 mock을 리셋하고 빈 데이터 반환하도록 설정
+      mockFetch.mockReset();
+      mockFetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockEmptyData),
       });
@@ -342,7 +372,7 @@ describe('NutritionHistoryPage', () => {
       render(<NutritionHistoryPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/기록이 없습니다/)).toBeInTheDocument();
+        expect(screen.getByText(/기록이 없어요/)).toBeInTheDocument();
       });
     });
   });
