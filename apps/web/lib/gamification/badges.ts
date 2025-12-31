@@ -5,6 +5,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { gamificationLogger } from '@/lib/utils/logger';
 import type {
   Badge,
   BadgeRow,
@@ -60,7 +61,7 @@ export async function getAllBadges(supabase: SupabaseClient): Promise<Badge[]> {
     .order('sort_order', { ascending: true });
 
   if (error) {
-    console.error('[Gamification] Failed to fetch badges:', error);
+    gamificationLogger.error('Failed to fetch badges:', error);
     return [];
   }
 
@@ -81,7 +82,7 @@ export async function getBadgesByCategory(
     .order('sort_order', { ascending: true });
 
   if (error) {
-    console.error('[Gamification] Failed to fetch badges by category:', error);
+    gamificationLogger.error('Failed to fetch badges by category:', error);
     return [];
   }
 
@@ -95,14 +96,10 @@ export async function getBadgeByCode(
   supabase: SupabaseClient,
   code: string
 ): Promise<Badge | null> {
-  const { data, error } = await supabase
-    .from('badges')
-    .select('*')
-    .eq('code', code)
-    .maybeSingle();
+  const { data, error } = await supabase.from('badges').select('*').eq('code', code).maybeSingle();
 
   if (error || !data) {
-    console.error('[Gamification] Failed to fetch badge by code:', error);
+    gamificationLogger.error('Failed to fetch badge by code:', error);
     return null;
   }
 
@@ -122,15 +119,17 @@ export async function getUserBadges(
 ): Promise<UserBadge[]> {
   const { data, error } = await supabase
     .from('user_badges')
-    .select(`
+    .select(
+      `
       *,
       badges (*)
-    `)
+    `
+    )
     .eq('clerk_user_id', clerkUserId)
     .order('earned_at', { ascending: false });
 
   if (error) {
-    console.error('[Gamification] Failed to fetch user badges:', error);
+    gamificationLogger.error('Failed to fetch user badges:', error);
     return [];
   }
 
@@ -147,16 +146,18 @@ export async function getRecentBadges(
 ): Promise<UserBadge[]> {
   const { data, error } = await supabase
     .from('user_badges')
-    .select(`
+    .select(
+      `
       *,
       badges (*)
-    `)
+    `
+    )
     .eq('clerk_user_id', clerkUserId)
     .order('earned_at', { ascending: false })
     .limit(limit);
 
   if (error) {
-    console.error('[Gamification] Failed to fetch recent badges:', error);
+    gamificationLogger.error('Failed to fetch recent badges:', error);
     return [];
   }
 
@@ -173,16 +174,18 @@ export async function hasBadge(
 ): Promise<boolean> {
   const { data, error } = await supabase
     .from('user_badges')
-    .select(`
+    .select(
+      `
       id,
       badges!inner (code)
-    `)
+    `
+    )
     .eq('clerk_user_id', clerkUserId)
     .eq('badges.code', badgeCode)
     .maybeSingle();
 
   if (error) {
-    console.error('[Gamification] Failed to check badge ownership:', error);
+    gamificationLogger.error('Failed to check badge ownership:', error);
     return false;
   }
 
@@ -205,7 +208,7 @@ export async function awardBadge(
   // 배지 정보 조회
   const badge = await getBadgeByCode(supabase, badgeCode);
   if (!badge) {
-    console.error('[Gamification] Badge not found:', badgeCode);
+    gamificationLogger.error('Badge not found:', badgeCode);
     return { userBadge: null, alreadyOwned: false, xpReward: 0 };
   }
 
@@ -222,14 +225,16 @@ export async function awardBadge(
       clerk_user_id: clerkUserId,
       badge_id: badge.id,
     })
-    .select(`
+    .select(
+      `
       *,
       badges (*)
-    `)
+    `
+    )
     .single();
 
   if (error) {
-    console.error('[Gamification] Failed to award badge:', error);
+    gamificationLogger.error('Failed to award badge:', error);
     return { userBadge: null, alreadyOwned: false, xpReward: 0 };
   }
 
@@ -251,10 +256,12 @@ export async function awardBadgeById(
       clerk_user_id: clerkUserId,
       badge_id: badgeId,
     })
-    .select(`
+    .select(
+      `
       *,
       badges (*)
-    `)
+    `
+    )
     .maybeSingle();
 
   if (error) {
@@ -262,7 +269,7 @@ export async function awardBadgeById(
     if (error.code === '23505') {
       return null;
     }
-    console.error('[Gamification] Failed to award badge by ID:', error);
+    gamificationLogger.error('Failed to award badge by ID:', error);
     return null;
   }
 
@@ -276,10 +283,7 @@ export async function awardBadgeById(
 /**
  * 배지를 카테고리별로 그룹화
  */
-export function groupBadgesByCategory(
-  allBadges: Badge[],
-  userBadges: UserBadge[]
-): BadgeGroup[] {
+export function groupBadgesByCategory(allBadges: Badge[], userBadges: UserBadge[]): BadgeGroup[] {
   const earnedBadgeIds = new Set(userBadges.map((ub) => ub.badgeId));
   const categories: BadgeCategory[] = ['streak', 'workout', 'nutrition', 'analysis', 'special'];
 

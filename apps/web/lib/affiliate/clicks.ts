@@ -4,10 +4,8 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
-import type {
-  AffiliateClickCreateInput,
-  AffiliateRecommendationType,
-} from '@/types/affiliate';
+import { affiliateLogger } from '@/lib/utils/logger';
+import type { AffiliateClickCreateInput, AffiliateRecommendationType } from '@/types/affiliate';
 
 /** 클릭 DB Row */
 interface ClickRow {
@@ -88,7 +86,7 @@ export async function createAffiliateClick(
     .single();
 
   if (error) {
-    console.error('[Affiliate] 클릭 기록 실패:', error);
+    affiliateLogger.error('클릭 기록 실패:', error);
     return null;
   }
 
@@ -110,7 +108,7 @@ export async function getUserClickHistory(
     .limit(limit);
 
   if (error) {
-    console.error('[Affiliate] 클릭 히스토리 조회 실패:', error);
+    affiliateLogger.error('클릭 히스토리 조회 실패:', error);
     return [];
   }
 
@@ -127,7 +125,7 @@ export async function getProductClickCount(productId: string): Promise<number> {
     .eq('product_id', productId);
 
   if (error) {
-    console.error('[Affiliate] 클릭 수 조회 실패:', error);
+    affiliateLogger.error('클릭 수 조회 실패:', error);
     return 0;
   }
 
@@ -152,7 +150,7 @@ export async function updateClickConversion(
     .eq('id', clickId);
 
   if (error) {
-    console.error('[Affiliate] 전환 업데이트 실패:', error);
+    affiliateLogger.error('전환 업데이트 실패:', error);
     return false;
   }
 
@@ -186,7 +184,7 @@ export async function getPartnerDailyStats(
     .order('date', { ascending: false });
 
   if (error) {
-    console.error('[Affiliate] 일별 통계 조회 실패:', error);
+    affiliateLogger.error('일별 통계 조회 실패:', error);
     return [];
   }
 
@@ -220,7 +218,7 @@ export async function getAffiliateStatsSummary(
     .lte('date', endDate);
 
   if (error || !data) {
-    console.error('[Affiliate] 통계 요약 조회 실패:', error);
+    affiliateLogger.error('통계 요약 조회 실패:', error);
     return {
       totalClicks: 0,
       totalConversions: 0,
@@ -242,9 +240,8 @@ export async function getAffiliateStatsSummary(
 
   return {
     ...totals,
-    conversionRate: totals.totalClicks > 0
-      ? (totals.totalConversions / totals.totalClicks) * 100
-      : 0,
+    conversionRate:
+      totals.totalClicks > 0 ? (totals.totalConversions / totals.totalClicks) * 100 : 0,
   };
 }
 
@@ -268,7 +265,7 @@ export async function getTopClickedProducts(
   const { data, error } = await query;
 
   if (error || !data) {
-    console.error('[Affiliate] 인기 제품 조회 실패:', error);
+    affiliateLogger.error('인기 제품 조회 실패:', error);
     return [];
   }
 

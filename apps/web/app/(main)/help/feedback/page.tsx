@@ -66,7 +66,6 @@ export default function FeedbackPage() {
     setIsSubmitting(true);
 
     try {
-      // TODO: 실제 API 호출
       const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -95,24 +94,23 @@ export default function FeedbackPage() {
   if (isSubmitted) {
     return (
       <div
-        className="container max-w-lg py-6 min-h-[80vh] flex flex-col items-center justify-center"
+        className="container flex min-h-[80vh] max-w-lg flex-col items-center justify-center py-6"
         data-testid="feedback-success"
       >
         {/* 체크 아이콘 - 바운스 애니메이션 */}
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-success-bounce">
-          <CheckCircle className="w-8 h-8 text-green-600" />
+        <div className="animate-success-bounce mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+          <CheckCircle className="h-8 w-8 text-green-600" />
         </div>
         {/* 텍스트 - 페이드인 애니메이션 */}
         <div className="animate-fade-in-up animation-delay-200">
-          <h2 className="text-xl font-bold mb-2 text-center">감사합니다!</h2>
-          <p className="text-muted-foreground text-center mb-6">
+          <h2 className="mb-2 text-center text-xl font-bold">감사합니다!</h2>
+          <p className="text-muted-foreground mb-6 text-center">
             소중한 의견을 보내주셔서 감사합니다.
-            <br />
-            더 나은 이룸을 만드는 데 참고하겠습니다.
+            <br />더 나은 이룸을 만드는 데 참고하겠습니다.
           </p>
         </div>
         {/* 버튼 - 지연 등장 */}
-        <div className="opacity-0 animate-fade-in-up animation-delay-400">
+        <div className="animate-fade-in-up animation-delay-400 opacity-0">
           <Button onClick={() => router.push('/dashboard')}>홈으로 돌아가기</Button>
         </div>
       </div>
@@ -122,7 +120,7 @@ export default function FeedbackPage() {
   const canSubmit = feedbackType && content.trim().length >= 10;
 
   return (
-    <div className="container max-w-lg py-6 space-y-6" data-testid="feedback-page">
+    <div className="container max-w-lg space-y-6 py-6" data-testid="feedback-page">
       {/* 헤더 */}
       <div className="flex items-center gap-4">
         <Link href="/help/faq">
@@ -132,9 +130,7 @@ export default function FeedbackPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold">피드백 보내기</h1>
-          <p className="text-sm text-muted-foreground">
-            이룸을 개선하는 데 도움을 주세요
-          </p>
+          <p className="text-muted-foreground text-sm">이룸을 개선하는 데 도움을 주세요</p>
         </div>
       </div>
 
@@ -147,15 +143,15 @@ export default function FeedbackPage() {
               key={option.id}
               onClick={() => setFeedbackType(option.id)}
               className={cn(
-                'p-4 rounded-xl border text-left transition-all',
+                'rounded-xl border p-4 text-left transition-all',
                 feedbackType === option.id
-                  ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                  ? 'border-primary bg-primary/5 ring-primary/20 ring-2'
                   : 'border-border hover:border-primary/50'
               )}
             >
-              <span className="text-2xl mb-2 block">{option.emoji}</span>
-              <p className="font-medium text-sm">{option.label}</p>
-              <p className="text-xs text-muted-foreground">{option.description}</p>
+              <span className="mb-2 block text-2xl">{option.emoji}</span>
+              <p className="text-sm font-medium">{option.label}</p>
+              <p className="text-muted-foreground text-xs">{option.description}</p>
             </button>
           ))}
         </div>
@@ -174,9 +170,7 @@ export default function FeedbackPage() {
           rows={5}
           className="resize-none"
         />
-        <p className="text-xs text-muted-foreground text-right">
-          {content.length}자
-        </p>
+        <p className="text-muted-foreground text-right text-xs">{content.length}자</p>
       </div>
 
       {/* 이메일 (선택) */}
@@ -189,9 +183,7 @@ export default function FeedbackPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <p className="text-xs text-muted-foreground">
-          이메일을 입력하시면 답변을 드릴 수 있어요
-        </p>
+        <p className="text-muted-foreground text-xs">이메일을 입력하시면 답변을 드릴 수 있어요</p>
       </div>
 
       {/* 제출 버튼 */}
@@ -205,14 +197,14 @@ export default function FeedbackPage() {
           '전송 중...'
         ) : (
           <>
-            <Send className="w-4 h-4 mr-2" />
+            <Send className="mr-2 h-4 w-4" />
             피드백 보내기
           </>
         )}
       </Button>
 
       {/* 안내 문구 */}
-      <p className="text-xs text-center text-muted-foreground">
+      <p className="text-muted-foreground text-center text-xs">
         피드백은 익명으로 처리되며, 서비스 개선에만 사용됩니다.
       </p>
     </div>

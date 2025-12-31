@@ -23,9 +23,30 @@ vi.mock('@/lib/gemini', () => ({
 vi.mock('@/lib/mock/body-analysis', () => ({
   generateMockBodyAnalysis3: vi.fn(),
   BODY_TYPES_3: {
-    S: { label: '스트레이트', labelEn: 'Straight', description: '입체적이고 탄탄한 실루엣', characteristics: '상체에 볼륨감이 있고 근육이 잘 붙는 체형', keywords: ['심플', '베이직', 'I라인'], avoidStyles: ['프릴', '오버핏'] },
-    W: { label: '웨이브', labelEn: 'Wave', description: '부드럽고 여성스러운 실루엣', characteristics: '하체에 볼륨감이 있고 곡선미가 돋보이는 체형', keywords: ['페미닌', 'X라인'], avoidStyles: ['오버핏', '박시핏'] },
-    N: { label: '내추럴', labelEn: 'Natural', description: '자연스럽고 골격감 있는 실루엣', characteristics: '뼈대가 크고 관절이 두드러지는 체형', keywords: ['캐주얼', '오버핏'], avoidStyles: ['타이트핏', '미니기장'] },
+    S: {
+      label: '스트레이트',
+      labelEn: 'Straight',
+      description: '입체적이고 탄탄한 실루엣',
+      characteristics: '상체에 볼륨감이 있고 근육이 잘 붙는 체형',
+      keywords: ['심플', '베이직', 'I라인'],
+      avoidStyles: ['프릴', '오버핏'],
+    },
+    W: {
+      label: '웨이브',
+      labelEn: 'Wave',
+      description: '부드럽고 여성스러운 실루엣',
+      characteristics: '하체에 볼륨감이 있고 곡선미가 돋보이는 체형',
+      keywords: ['페미닌', 'X라인'],
+      avoidStyles: ['오버핏', '박시핏'],
+    },
+    N: {
+      label: '내추럴',
+      labelEn: 'Natural',
+      description: '자연스럽고 골격감 있는 실루엣',
+      characteristics: '뼈대가 크고 관절이 두드러지는 체형',
+      keywords: ['캐주얼', '오버핏'],
+      avoidStyles: ['타이트핏', '미니기장'],
+    },
   },
 }));
 
@@ -107,8 +128,12 @@ describe('POST /api/analyze/body', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<ReturnType<typeof auth>>);
-    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
+      ReturnType<typeof auth>
+    >);
+    vi.mocked(createServiceRoleClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+    );
     vi.mocked(generateMockBodyAnalysis3).mockReturnValue(mockBodyAnalysisResult);
     vi.mocked(generateColorRecommendations).mockReturnValue(mockColorRecommendations);
     vi.mocked(getColorTipsForBodyType).mockReturnValue(mockColorTips);
@@ -125,13 +150,49 @@ describe('POST /api/analyze/body', () => {
           }),
         };
       }
+      // user_levels (gamification)
+      if (table === 'user_levels') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              maybeSingle: vi.fn().mockResolvedValue({
+                data: {
+                  id: 'level-123',
+                  clerk_user_id: 'user_test123',
+                  level: 1,
+                  current_xp: 0,
+                  total_xp: 0,
+                  tier: 'beginner',
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                },
+                error: null,
+              }),
+            }),
+          }),
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
+      }
       // personal_color_assessments
       return {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnThis(),
           order: vi.fn().mockReturnThis(),
           limit: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({ data: { season: 'Spring', best_colors: ['#FFD700'] }, error: null }),
+          single: vi
+            .fn()
+            .mockResolvedValue({
+              data: { season: 'Spring', best_colors: ['#FFD700'] },
+              error: null,
+            }),
+          maybeSingle: vi
+            .fn()
+            .mockResolvedValue({
+              data: { season: 'Spring', best_colors: ['#FFD700'] },
+              error: null,
+            }),
         }),
       };
     });
@@ -161,10 +222,12 @@ describe('POST /api/analyze/body', () => {
 
   describe('Mock 분석', () => {
     it('useMock=true이면 Mock 분석을 사용한다', async () => {
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -174,11 +237,13 @@ describe('POST /api/analyze/body', () => {
     });
 
     it('사용자 입력(키/체중)과 함께 분석이 가능하다', async () => {
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        userInput: { height: 165, weight: 55 },
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          userInput: { height: 165, weight: 55 },
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -191,9 +256,11 @@ describe('POST /api/analyze/body', () => {
     it('AI 분석 성공 시 결과를 반환한다', async () => {
       vi.mocked(analyzeBody).mockResolvedValue(mockBodyAnalysisResult);
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -204,9 +271,11 @@ describe('POST /api/analyze/body', () => {
     it('AI 분석 실패 시 Mock으로 폴백한다', async () => {
       vi.mocked(analyzeBody).mockRejectedValue(new Error('API Error'));
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -217,10 +286,12 @@ describe('POST /api/analyze/body', () => {
 
   describe('퍼스널 컬러 연동', () => {
     it('퍼스널 컬러 정보가 응답에 포함된다', async () => {
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -239,20 +310,39 @@ describe('POST /api/analyze/body', () => {
             }),
           };
         }
+        // user_levels (gamification)
+        if (table === 'user_levels') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: { id: 'level-123', level: 1, current_xp: 0, total_xp: 0, tier: 'beginner' },
+                  error: null,
+                }),
+              }),
+            }),
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ error: null }),
+            }),
+          };
+        }
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnThis(),
             order: vi.fn().mockReturnThis(),
             limit: vi.fn().mockReturnThis(),
             single: vi.fn().mockResolvedValue({ data: null, error: null }),
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
           }),
         };
       });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -263,11 +353,13 @@ describe('POST /api/analyze/body', () => {
 
   describe('BMI 계산', () => {
     it('키/체중 입력 시 BMI가 계산된다', async () => {
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        userInput: { height: 165, weight: 55 },
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          userInput: { height: 165, weight: 55 },
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -277,20 +369,24 @@ describe('POST /api/analyze/body', () => {
 
     it('BMI 카테고리가 올바르게 분류된다', async () => {
       // 정상 체중 (BMI < 23)
-      let response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        userInput: { height: 170, weight: 60 },
-        useMock: true,
-      }));
+      let response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          userInput: { height: 170, weight: 60 },
+          useMock: true,
+        })
+      );
       let json = await response.json();
       expect(json.result.bmiCategory).toBe('정상');
 
       // 저체중 (BMI < 18.5)
-      response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        userInput: { height: 170, weight: 50 },
-        useMock: true,
-      }));
+      response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          userInput: { height: 170, weight: 50 },
+          useMock: true,
+        })
+      );
       json = await response.json();
       expect(json.result.bmiCategory).toBe('저체중');
     });
@@ -298,10 +394,12 @@ describe('POST /api/analyze/body', () => {
 
   describe('DB 저장', () => {
     it('분석 결과가 DB에 저장된다', async () => {
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -319,20 +417,39 @@ describe('POST /api/analyze/body', () => {
             }),
           };
         }
+        // user_levels (gamification)
+        if (table === 'user_levels') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: { id: 'level-123', level: 1, current_xp: 0, total_xp: 0, tier: 'beginner' },
+                  error: null,
+                }),
+              }),
+            }),
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ error: null }),
+            }),
+          };
+        }
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnThis(),
             order: vi.fn().mockReturnThis(),
             limit: vi.fn().mockReturnThis(),
             single: vi.fn().mockResolvedValue({ data: null, error: null }),
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
           }),
         };
       });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(500);
@@ -342,10 +459,12 @@ describe('POST /api/analyze/body', () => {
 
   describe('응답 형식', () => {
     it('성공 응답에 필수 필드가 포함된다', async () => {
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(json).toHaveProperty('success', true);
@@ -371,8 +490,12 @@ describe('GET /api/analyze/body', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<ReturnType<typeof auth>>);
-    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
+      ReturnType<typeof auth>
+    >);
+    vi.mocked(createServiceRoleClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+    );
   });
 
   describe('인증', () => {
