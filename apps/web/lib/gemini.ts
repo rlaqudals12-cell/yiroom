@@ -6,17 +6,14 @@
  * Week 6: PC-1 Real AI 연동
  */
 
-import {
-  GoogleGenerativeAI,
-  HarmCategory,
-  HarmBlockThreshold,
-} from "@google/generative-ai";
-import { buildFoodAnalysisPrompt as buildFoodAnalysisPromptFromModule } from "@/lib/gemini/prompts/foodAnalysis";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { buildFoodAnalysisPrompt as buildFoodAnalysisPromptFromModule } from '@/lib/gemini/prompts/foodAnalysis';
+import { geminiLogger } from '@/lib/utils/logger';
 
 // API 키 검증
 const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 if (!apiKey) {
-  console.warn("GOOGLE_GENERATIVE_AI_API_KEY is not set");
+  geminiLogger.warn('GOOGLE_GENERATIVE_AI_API_KEY is not set');
 }
 
 // Gemini 클라이언트 초기화
@@ -45,7 +42,7 @@ const safetySettings = [
 // 모델 설정 (환경변수로 오버라이드 가능)
 // 2025-12-22: Gemini 3 Flash로 업그레이드 (무료 티어 + 성능 향상)
 const modelConfig = {
-  model: process.env.GEMINI_MODEL || "gemini-3-flash-preview",
+  model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
   safetySettings,
 };
 
@@ -58,7 +55,7 @@ export interface GeminiSkinAnalysisResult {
     id: string;
     name: string;
     value: number;
-    status: "good" | "normal" | "warning";
+    status: 'good' | 'normal' | 'warning';
     description: string;
   }>;
   insight: string;
@@ -75,7 +72,7 @@ export interface GeminiSkinAnalysisResult {
  * - N: 내추럴 (Natural) - 골격감, 프레임 큼, 자연스러운
  */
 export interface GeminiBodyAnalysisResult {
-  bodyType: "S" | "W" | "N";
+  bodyType: 'S' | 'W' | 'N';
   bodyTypeLabel: string;
   bodyTypeLabelEn: string;
   bodyTypeDescription: string;
@@ -99,7 +96,7 @@ export interface GeminiBodyAnalysisResult {
  * W-1 운동 타입 분석 결과 타입
  */
 export interface GeminiWorkoutAnalysisResult {
-  workoutType: "toner" | "builder" | "burner" | "mover" | "flexer";
+  workoutType: 'toner' | 'builder' | 'burner' | 'mover' | 'flexer';
   workoutTypeLabel: string;
   workoutTypeDescription: string;
   confidence: number;
@@ -115,7 +112,7 @@ export interface GeminiWorkoutAnalysisResult {
   weeklyPlanSuggestion: {
     workoutDays: number;
     focusAreas: string[];
-    intensity: "low" | "medium" | "high";
+    intensity: 'low' | 'medium' | 'high';
   };
 }
 
@@ -133,7 +130,7 @@ export interface GeminiExerciseRecommendationResult {
     weight?: {
       male: number;
       female: number;
-      unit: "kg" | "bodyweight";
+      unit: 'kg' | 'bodyweight';
     };
     duration?: number; // 유산소용 (분)
     priority: number; // 1=필수, 2=권장, 3=선택
@@ -143,7 +140,7 @@ export interface GeminiExerciseRecommendationResult {
   focusBodyParts: string[];
   estimatedMinutes: number;
   estimatedCalories: number;
-  difficultyLevel: "beginner" | "intermediate" | "advanced";
+  difficultyLevel: 'beginner' | 'intermediate' | 'advanced';
   aiTips: string[];
 }
 
@@ -174,11 +171,11 @@ export interface WorkoutAnalysisInput {
  * PC-1 퍼스널 컬러 분석 결과 타입
  */
 export interface GeminiPersonalColorResult {
-  seasonType: "spring" | "summer" | "autumn" | "winter";
+  seasonType: 'spring' | 'summer' | 'autumn' | 'winter';
   seasonLabel: string;
   seasonDescription: string;
-  tone: "warm" | "cool";
-  depth: "light" | "deep";
+  tone: 'warm' | 'cool';
+  depth: 'light' | 'deep';
   confidence: number;
   bestColors: Array<{
     hex: string;
@@ -214,13 +211,13 @@ function formatImageForGemini(base64Image: string): {
   inlineData: { mimeType: string; data: string };
 } {
   // data:image/jpeg;base64, 형식에서 실제 데이터만 추출
-  const base64Data = base64Image.includes("base64,")
-    ? base64Image.split("base64,")[1]
+  const base64Data = base64Image.includes('base64,')
+    ? base64Image.split('base64,')[1]
     : base64Image;
 
   // MIME 타입 추출 (기본값: jpeg)
-  let mimeType = "image/jpeg";
-  if (base64Image.includes("data:")) {
+  let mimeType = 'image/jpeg';
+  if (base64Image.includes('data:')) {
     const match = base64Image.match(/data:([^;]+);/);
     if (match) {
       mimeType = match[1];
@@ -416,48 +413,48 @@ const PERSONAL_COLOR_ANALYSIS_PROMPT = `당신은 전문 퍼스널 컬러 분석
 function buildWorkoutAnalysisPrompt(input: WorkoutAnalysisInput): string {
   // 목표 라벨 매핑
   const goalLabels: Record<string, string> = {
-    weight_loss: "체중 감량",
-    strength: "근력 강화",
-    endurance: "체력 향상",
-    stress: "스트레스 해소",
-    posture: "체형 교정",
+    weight_loss: '체중 감량',
+    strength: '근력 강화',
+    endurance: '체력 향상',
+    stress: '스트레스 해소',
+    posture: '체형 교정',
   };
 
   // 고민 라벨 매핑
   const concernLabels: Record<string, string> = {
-    belly: "뱃살",
-    thigh: "허벅지",
-    arm: "팔뚝",
-    back: "등살",
-    hip: "힙업",
-    calf: "종아리",
-    shoulder: "어깨",
-    overall: "전체적인 체중",
+    belly: '뱃살',
+    thigh: '허벅지',
+    arm: '팔뚝',
+    back: '등살',
+    hip: '힙업',
+    calf: '종아리',
+    shoulder: '어깨',
+    overall: '전체적인 체중',
   };
 
   // 빈도 라벨 매핑
   const frequencyLabels: Record<string, string> = {
-    "1-2": "주 1-2회",
-    "3-4": "주 3-4회",
-    "5-6": "주 5-6회",
-    daily: "매일",
+    '1-2': '주 1-2회',
+    '3-4': '주 3-4회',
+    '5-6': '주 5-6회',
+    daily: '매일',
   };
 
   // 장소 라벨 매핑
   const locationLabels: Record<string, string> = {
-    home: "집",
-    gym: "헬스장",
-    outdoor: "야외",
+    home: '집',
+    gym: '헬스장',
+    outdoor: '야외',
   };
 
-  const goalsText = input.goals.map((g) => goalLabels[g] || g).join(", ");
-  const concernsText = input.concerns.map((c) => concernLabels[c] || c).join(", ");
+  const goalsText = input.goals.map((g) => goalLabels[g] || g).join(', ');
+  const concernsText = input.concerns.map((c) => concernLabels[c] || c).join(', ');
   const frequencyText = frequencyLabels[input.frequency] || input.frequency;
   const locationText = locationLabels[input.location] || input.location;
-  const equipmentText = input.equipment.join(", ") || "없음";
-  const injuriesText = input.injuries?.length ? input.injuries.join(", ") : "없음";
+  const equipmentText = input.equipment.join(', ') || '없음';
+  const injuriesText = input.injuries?.length ? input.injuries.join(', ') : '없음';
 
-  let bodyInfo = "";
+  let bodyInfo = '';
   if (input.bodyType) {
     bodyInfo = `체형: ${input.bodyType}형`;
     if (input.bodyProportions) {
@@ -465,23 +462,23 @@ function buildWorkoutAnalysisPrompt(input: WorkoutAnalysisInput): string {
     }
   }
 
-  let physicalInfo = "";
+  let physicalInfo = '';
   if (input.height || input.currentWeight) {
     const parts = [];
     if (input.height) parts.push(`키: ${input.height}cm`);
     if (input.currentWeight) parts.push(`체중: ${input.currentWeight}kg`);
     if (input.targetWeight) parts.push(`목표 체중: ${input.targetWeight}kg`);
     if (input.age) parts.push(`나이: ${input.age}세`);
-    if (input.gender) parts.push(`성별: ${input.gender === "female" ? "여성" : "남성"}`);
-    physicalInfo = parts.join(", ");
+    if (input.gender) parts.push(`성별: ${input.gender === 'female' ? '여성' : '남성'}`);
+    physicalInfo = parts.join(', ');
   }
 
   return `당신은 전문 피트니스 트레이너이자 운동 처방 전문가입니다. 사용자의 신체 정보와 운동 목표를 분석하여 최적의 운동 타입을 추천해주세요.
 
 ## 사용자 정보
 
-${bodyInfo ? `- ${bodyInfo}` : ""}
-${physicalInfo ? `- ${physicalInfo}` : ""}
+${bodyInfo ? `- ${bodyInfo}` : ''}
+${physicalInfo ? `- ${physicalInfo}` : ''}
 - 운동 목표: ${goalsText}
 - 신체 고민 부위: ${concernsText}
 - 운동 빈도: ${frequencyText}
@@ -538,13 +535,13 @@ ${physicalInfo ? `- ${physicalInfo}` : ""}
 function parseJsonResponse<T>(text: string): T {
   // JSON 코드 블록 제거
   let cleanText = text.trim();
-  if (cleanText.startsWith("```json")) {
+  if (cleanText.startsWith('```json')) {
     cleanText = cleanText.slice(7);
   }
-  if (cleanText.startsWith("```")) {
+  if (cleanText.startsWith('```')) {
     cleanText = cleanText.slice(3);
   }
-  if (cleanText.endsWith("```")) {
+  if (cleanText.endsWith('```')) {
     cleanText = cleanText.slice(0, -3);
   }
   cleanText = cleanText.trim();
@@ -558,11 +555,9 @@ function parseJsonResponse<T>(text: string): T {
  * @param imageBase64 - Base64 인코딩된 얼굴 이미지
  * @returns 피부 분석 결과
  */
-export async function analyzeSkin(
-  imageBase64: string
-): Promise<GeminiSkinAnalysisResult> {
+export async function analyzeSkin(imageBase64: string): Promise<GeminiSkinAnalysisResult> {
   if (!genAI) {
-    throw new Error("Gemini API key is not configured");
+    throw new Error('Gemini API key is not configured');
   }
 
   const model = genAI.getGenerativeModel(modelConfig);
@@ -581,11 +576,9 @@ export async function analyzeSkin(
  * @param imageBase64 - Base64 인코딩된 전신 이미지
  * @returns 체형 분석 결과
  */
-export async function analyzeBody(
-  imageBase64: string
-): Promise<GeminiBodyAnalysisResult> {
+export async function analyzeBody(imageBase64: string): Promise<GeminiBodyAnalysisResult> {
   if (!genAI) {
-    throw new Error("Gemini API key is not configured");
+    throw new Error('Gemini API key is not configured');
   }
 
   const model = genAI.getGenerativeModel(modelConfig);
@@ -610,7 +603,7 @@ export async function analyzePersonalColor(
   wristImageBase64?: string
 ): Promise<GeminiPersonalColorResult> {
   if (!genAI) {
-    throw new Error("Gemini API key is not configured");
+    throw new Error('Gemini API key is not configured');
   }
 
   const model = genAI.getGenerativeModel(modelConfig);
@@ -620,7 +613,10 @@ export async function analyzePersonalColor(
   let prompt = PERSONAL_COLOR_ANALYSIS_PROMPT;
 
   // 이미지 배열 구성
-  const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [prompt, faceImagePart];
+  const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [
+    prompt,
+    faceImagePart,
+  ];
 
   // 손목 이미지가 있으면 추가
   if (wristImageBase64) {
@@ -644,7 +640,7 @@ export async function analyzePersonalColor(
 async function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
-  errorMessage = "Request timeout"
+  errorMessage = 'Request timeout'
 ): Promise<T> {
   let timeoutId: NodeJS.Timeout;
 
@@ -667,11 +663,7 @@ async function withTimeout<T>(
 /**
  * 재시도 로직이 포함된 함수 실행
  */
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  maxRetries = 2,
-  delayMs = 1000
-): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2, delayMs = 1000): Promise<T> {
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -679,10 +671,7 @@ async function withRetry<T>(
       return await fn();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      console.warn(
-        `[Gemini] Attempt ${attempt + 1}/${maxRetries + 1} failed:`,
-        lastError.message
-      );
+      geminiLogger.warn(`Attempt ${attempt + 1}/${maxRetries + 1} failed:`, lastError.message);
 
       if (attempt < maxRetries) {
         await new Promise((resolve) => setTimeout(resolve, delayMs));
@@ -703,7 +692,7 @@ export async function analyzeWorkout(
   input: WorkoutAnalysisInput
 ): Promise<GeminiWorkoutAnalysisResult> {
   if (!genAI) {
-    throw new Error("Gemini API key is not configured");
+    throw new Error('Gemini API key is not configured');
   }
 
   const model = genAI.getGenerativeModel(modelConfig);
@@ -711,12 +700,7 @@ export async function analyzeWorkout(
 
   // 타임아웃 (3초) + 재시도 (최대 2회) 적용
   const result = await withRetry(
-    () =>
-      withTimeout(
-        model.generateContent(prompt),
-        3000,
-        "Gemini API request timeout"
-      ),
+    () => withTimeout(model.generateContent(prompt), 3000, 'Gemini API request timeout'),
     2,
     1000
   );
@@ -732,12 +716,12 @@ export async function analyzeWorkout(
  */
 export interface GeminiWorkoutInsightResult {
   insights: Array<{
-    type: "balance" | "progress" | "streak" | "comparison" | "tip";
+    type: 'balance' | 'progress' | 'streak' | 'comparison' | 'tip';
     message: string;
-    priority: "high" | "medium" | "low";
+    priority: 'high' | 'medium' | 'low';
     data?: {
       percentage?: number;
-      trend?: "up" | "down" | "stable";
+      trend?: 'up' | 'down' | 'stable';
       targetArea?: string;
     };
   }>;
@@ -799,13 +783,13 @@ export interface WorkoutInsightInput {
  * W-1 운동 추천 입력 타입 (Task 3.3)
  */
 export interface ExerciseRecommendationInput {
-  workoutType: "toner" | "builder" | "burner" | "mover" | "flexer";
+  workoutType: 'toner' | 'builder' | 'burner' | 'mover' | 'flexer';
   bodyType?: string;
   goals: string[];
   concerns: string[]; // 집중할 부위
   injuries?: string[]; // 피해야 할 부상 부위
   equipment: string[];
-  location: "home" | "gym" | "outdoor";
+  location: 'home' | 'gym' | 'outdoor';
   availableExercises: Array<{
     id: string;
     name: string;
@@ -815,7 +799,7 @@ export interface ExerciseRecommendationInput {
     difficulty: string;
     met: number;
   }>;
-  userLevel?: "beginner" | "intermediate" | "advanced";
+  userLevel?: 'beginner' | 'intermediate' | 'advanced';
   sessionMinutes?: number; // 목표 운동 시간 (기본 30분)
   userWeight?: number; // 체중 (칼로리 계산용)
 }
@@ -823,46 +807,44 @@ export interface ExerciseRecommendationInput {
 /**
  * W-1 운동 추천 AI 프롬프트 빌더 (Task 3.3)
  */
-function buildExerciseRecommendationPrompt(
-  input: ExerciseRecommendationInput
-): string {
+function buildExerciseRecommendationPrompt(input: ExerciseRecommendationInput): string {
   const workoutTypeLabels: Record<string, string> = {
-    toner: "토너 (근육 탄력/라인)",
-    builder: "빌더 (근육량 증가)",
-    burner: "버너 (체지방 연소)",
-    mover: "무버 (체력 향상)",
-    flexer: "플렉서 (유연성)",
+    toner: '토너 (근육 탄력/라인)',
+    builder: '빌더 (근육량 증가)',
+    burner: '버너 (체지방 연소)',
+    mover: '무버 (체력 향상)',
+    flexer: '플렉서 (유연성)',
   };
 
   const concernLabels: Record<string, string> = {
-    belly: "복부",
-    thigh: "허벅지",
-    arm: "팔",
-    back: "등",
-    hip: "엉덩이",
-    calf: "종아리",
-    shoulder: "어깨",
-    chest: "가슴",
-    overall: "전신",
+    belly: '복부',
+    thigh: '허벅지',
+    arm: '팔',
+    back: '등',
+    hip: '엉덩이',
+    calf: '종아리',
+    shoulder: '어깨',
+    chest: '가슴',
+    overall: '전신',
   };
 
   const injuryLabels: Record<string, string> = {
-    neck: "목",
-    shoulder: "어깨",
-    back: "허리",
-    knee: "무릎",
-    ankle: "발목",
-    wrist: "손목",
+    neck: '목',
+    shoulder: '어깨',
+    back: '허리',
+    knee: '무릎',
+    ankle: '발목',
+    wrist: '손목',
   };
 
   const workoutTypeText = workoutTypeLabels[input.workoutType] || input.workoutType;
-  const concernsText = input.concerns.map((c) => concernLabels[c] || c).join(", ");
+  const concernsText = input.concerns.map((c) => concernLabels[c] || c).join(', ');
   const injuriesText = input.injuries?.length
-    ? input.injuries.map((i) => injuryLabels[i] || i).join(", ")
-    : "없음";
-  const equipmentText = input.equipment.length > 0 ? input.equipment.join(", ") : "맨몸";
+    ? input.injuries.map((i) => injuryLabels[i] || i).join(', ')
+    : '없음';
+  const equipmentText = input.equipment.length > 0 ? input.equipment.join(', ') : '맨몸';
   const sessionMinutes = input.sessionMinutes || 30;
-  const userLevel = input.userLevel || "beginner";
+  const userLevel = input.userLevel || 'beginner';
 
   // 사용 가능한 운동 목록을 JSON 형식으로 변환
   const exerciseListJson = JSON.stringify(
@@ -883,13 +865,13 @@ function buildExerciseRecommendationPrompt(
 ## 사용자 정보
 
 - 운동 타입: ${workoutTypeText}
-- 체형: ${input.bodyType || "미지정"}
-- 목표: ${input.goals.join(", ")}
-- 집중 부위: ${concernsText || "전신"}
+- 체형: ${input.bodyType || '미지정'}
+- 목표: ${input.goals.join(', ')}
+- 집중 부위: ${concernsText || '전신'}
 - 부상/통증 부위: ${injuriesText}
 - 사용 가능 장비: ${equipmentText}
-- 운동 장소: ${input.location === "home" ? "집" : input.location === "gym" ? "헬스장" : "야외"}
-- 운동 레벨: ${userLevel === "beginner" ? "초급" : userLevel === "intermediate" ? "중급" : "고급"}
+- 운동 장소: ${input.location === 'home' ? '집' : input.location === 'gym' ? '헬스장' : '야외'}
+- 운동 레벨: ${userLevel === 'beginner' ? '초급' : userLevel === 'intermediate' ? '중급' : '고급'}
 - 목표 운동 시간: ${sessionMinutes}분
 
 ## 운동 타입별 추천 원칙
@@ -954,7 +936,7 @@ export async function recommendExercises(
   input: ExerciseRecommendationInput
 ): Promise<GeminiExerciseRecommendationResult> {
   if (!genAI) {
-    throw new Error("Gemini API key is not configured");
+    throw new Error('Gemini API key is not configured');
   }
 
   const model = genAI.getGenerativeModel(modelConfig);
@@ -962,12 +944,7 @@ export async function recommendExercises(
 
   // 타임아웃 (3초) + 재시도 (최대 2회) 적용
   const result = await withRetry(
-    () =>
-      withTimeout(
-        model.generateContent(prompt),
-        3000,
-        "Gemini API request timeout"
-      ),
+    () => withTimeout(model.generateContent(prompt), 3000, 'Gemini API request timeout'),
     2,
     1000
   );
@@ -983,19 +960,19 @@ export async function recommendExercises(
  */
 function buildWorkoutInsightPrompt(input: WorkoutInsightInput): string {
   const workoutTypeLabels: Record<string, string> = {
-    toner: "토너",
-    builder: "빌더",
-    burner: "버너",
-    mover: "무버",
-    flexer: "플렉서",
+    toner: '토너',
+    builder: '빌더',
+    burner: '버너',
+    mover: '무버',
+    flexer: '플렉서',
   };
 
   const goalLabels: Record<string, string> = {
-    weight_loss: "체중 감량",
-    strength: "근력 강화",
-    endurance: "체력 향상",
-    stress: "스트레스 해소",
-    posture: "체형 교정",
+    weight_loss: '체중 감량',
+    strength: '근력 강화',
+    endurance: '체력 향상',
+    stress: '스트레스 해소',
+    posture: '체형 교정',
   };
 
   // 운동 기록 요약 (최근 7일)
@@ -1018,7 +995,7 @@ function buildWorkoutInsightPrompt(input: WorkoutInsightInput): string {
   const balanceText = `상체: ${(upper * 100).toFixed(0)}%, 하체: ${(lower * 100).toFixed(0)}%, 코어: ${(core * 100).toFixed(0)}%, 유산소: ${(cardio * 100).toFixed(0)}%`;
 
   // 볼륨 변화 계산
-  let volumeChangeText = "이전 데이터 없음";
+  let volumeChangeText = '이전 데이터 없음';
   if (input.previousWeekStats) {
     const volumeChange =
       input.previousWeekStats.totalVolume > 0
@@ -1026,11 +1003,11 @@ function buildWorkoutInsightPrompt(input: WorkoutInsightInput): string {
             input.previousWeekStats.totalVolume) *
           100
         : 0;
-    volumeChangeText = `${volumeChange >= 0 ? "+" : ""}${volumeChange.toFixed(1)}% (이전 주 대비)`;
+    volumeChangeText = `${volumeChange >= 0 ? '+' : ''}${volumeChange.toFixed(1)}% (이전 주 대비)`;
   }
 
   // 또래 비교 텍스트
-  let peerComparisonText = "비교 데이터 없음";
+  let peerComparisonText = '비교 데이터 없음';
   if (input.peerComparison) {
     peerComparisonText = `${input.peerComparison.ageGroup} 평균: 주 ${input.peerComparison.averageSessions}회`;
     if (input.peerComparison.userPercentile) {
@@ -1039,13 +1016,13 @@ function buildWorkoutInsightPrompt(input: WorkoutInsightInput): string {
   }
 
   // 목표 텍스트
-  const goalsText = input.goals?.map((g) => goalLabels[g] || g).join(", ") || "미설정";
+  const goalsText = input.goals?.map((g) => goalLabels[g] || g).join(', ') || '미설정';
 
   return `당신은 친근하고 동기부여를 잘하는 피트니스 코치입니다. 사용자의 운동 데이터를 분석하여 개인화된 인사이트를 제공해주세요.
 
 ## 사용자 정보
 
-- 이름: ${input.userName || "사용자"}
+- 이름: ${input.userName || '사용자'}
 - 운동 타입: ${workoutTypeLabels[input.userStats.workoutType] || input.userStats.workoutType}
 - 운동 목표: ${goalsText}
 - 현재 연속 운동일: ${input.userStats.currentStreak}일
@@ -1121,7 +1098,7 @@ export async function generateWorkoutInsights(
   input: WorkoutInsightInput
 ): Promise<GeminiWorkoutInsightResult> {
   if (!genAI) {
-    throw new Error("Gemini API key is not configured");
+    throw new Error('Gemini API key is not configured');
   }
 
   const model = genAI.getGenerativeModel(modelConfig);
@@ -1129,12 +1106,7 @@ export async function generateWorkoutInsights(
 
   // 타임아웃 (3초) + 재시도 (최대 2회) 적용
   const result = await withRetry(
-    () =>
-      withTimeout(
-        model.generateContent(prompt),
-        3000,
-        "Gemini API request timeout"
-      ),
+    () => withTimeout(model.generateContent(prompt), 3000, 'Gemini API request timeout'),
     2,
     1000
   );
@@ -1157,7 +1129,7 @@ export async function testConnection(): Promise<boolean> {
     const model = genAI.getGenerativeModel(modelConfig);
     const result = await model.generateContent("Hello, respond with 'OK'");
     const response = await result.response;
-    return response.text().includes("OK");
+    return response.text().includes('OK');
   } catch {
     return false;
   }
@@ -1179,7 +1151,7 @@ export interface GeminiFoodAnalysisResult {
     carbs: number;
     fat: number;
     fiber?: number;
-    trafficLight: "green" | "yellow" | "red";
+    trafficLight: 'green' | 'yellow' | 'red';
     confidence: number;
     foodId?: string;
   }>;
@@ -1187,7 +1159,7 @@ export interface GeminiFoodAnalysisResult {
   totalProtein?: number;
   totalCarbs?: number;
   totalFat?: number;
-  mealType?: "breakfast" | "lunch" | "dinner" | "snack";
+  mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   insight?: string;
   analyzedAt?: string;
 }
@@ -1197,7 +1169,7 @@ export interface GeminiFoodAnalysisResult {
  */
 export interface FoodAnalysisInput {
   imageBase64: string;
-  mealType?: "breakfast" | "lunch" | "dinner" | "snack";
+  mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   date?: string;
 }
 
@@ -1206,26 +1178,26 @@ export interface FoodAnalysisInput {
  * 피부/체형 연동으로 통합 추천 지원
  */
 export interface MealSuggestionInput {
-  goal: "weight_loss" | "maintain" | "muscle" | "skin" | "health";
+  goal: 'weight_loss' | 'maintain' | 'muscle' | 'skin' | 'health';
   tdee: number;
   consumedCalories: number;
   remainingCalories: number;
   allergies: string[];
   dislikedFoods: string[];
-  cookingSkill: "beginner" | "intermediate" | "advanced" | "none";
-  budget: "economy" | "moderate" | "premium" | "any";
-  mealType: "breakfast" | "lunch" | "dinner" | "snack";
+  cookingSkill: 'beginner' | 'intermediate' | 'advanced' | 'none';
+  budget: 'economy' | 'moderate' | 'premium' | 'any';
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   preferences?: string[];
   // S-1 피부 분석 연동 (선택)
   skinContext?: {
-    concerns: string[];      // 피부 고민 (수분 부족, 트러블 등)
+    concerns: string[]; // 피부 고민 (수분 부족, 트러블 등)
     recommendedFoods: string[]; // 피부에 좋은 음식
   };
   // C-1 체형 분석 연동 (선택)
   bodyContext?: {
-    bodyType: string;        // 체형 (S/W/N 또는 8타입)
-    targetWeight?: number;   // 목표 체중
-    currentWeight?: number;  // 현재 체중
+    bodyType: string; // 체형 (S/W/N 또는 8타입)
+    targetWeight?: number; // 목표 체중
+    currentWeight?: number; // 현재 체중
   };
 }
 
@@ -1239,9 +1211,9 @@ export interface GeminiMealSuggestionResult {
     protein: number;
     carbs: number;
     fat: number;
-    trafficLight: "green" | "yellow" | "red";
+    trafficLight: 'green' | 'yellow' | 'red';
     reason: string;
-    difficulty: "easy" | "medium" | "hard";
+    difficulty: 'easy' | 'medium' | 'hard';
     cookingTime?: number;
     ingredients?: string[];
   }>;
@@ -1259,58 +1231,58 @@ export interface GeminiMealSuggestionResult {
  */
 function buildMealSuggestionPrompt(input: MealSuggestionInput): string {
   const goalLabels: Record<string, string> = {
-    weight_loss: "체중 감량",
-    maintain: "체중 유지",
-    muscle: "근육 증가",
-    skin: "피부 개선",
-    health: "건강 관리",
+    weight_loss: '체중 감량',
+    maintain: '체중 유지',
+    muscle: '근육 증가',
+    skin: '피부 개선',
+    health: '건강 관리',
   };
 
   const mealTypeLabels: Record<string, string> = {
-    breakfast: "아침",
-    lunch: "점심",
-    dinner: "저녁",
-    snack: "간식",
+    breakfast: '아침',
+    lunch: '점심',
+    dinner: '저녁',
+    snack: '간식',
   };
 
   const cookingLabels: Record<string, string> = {
-    beginner: "초보 (간단한 요리만)",
-    intermediate: "중급 (대부분 요리 가능)",
-    advanced: "고급 (복잡한 요리도 가능)",
-    none: "요리 안 함 (완제품/배달만)",
+    beginner: '초보 (간단한 요리만)',
+    intermediate: '중급 (대부분 요리 가능)',
+    advanced: '고급 (복잡한 요리도 가능)',
+    none: '요리 안 함 (완제품/배달만)',
   };
 
   const budgetLabels: Record<string, string> = {
-    economy: "경제적 (저렴하게)",
-    moderate: "적당 (일반적)",
-    premium: "프리미엄 (비용 무관)",
-    any: "상관없음",
+    economy: '경제적 (저렴하게)',
+    moderate: '적당 (일반적)',
+    premium: '프리미엄 (비용 무관)',
+    any: '상관없음',
   };
 
   const goalText = goalLabels[input.goal] || input.goal;
   const mealTypeText = mealTypeLabels[input.mealType] || input.mealType;
   const cookingText = cookingLabels[input.cookingSkill] || input.cookingSkill;
   const budgetText = budgetLabels[input.budget] || input.budget;
-  const allergiesText = input.allergies.length > 0 ? input.allergies.join(", ") : "없음";
-  const dislikedText = input.dislikedFoods.length > 0 ? input.dislikedFoods.join(", ") : "없음";
+  const allergiesText = input.allergies.length > 0 ? input.allergies.join(', ') : '없음';
+  const dislikedText = input.dislikedFoods.length > 0 ? input.dislikedFoods.join(', ') : '없음';
 
   // 피부/체형 컨텍스트 빌드 (통합 추천용)
-  let integratedContext = "";
+  let integratedContext = '';
 
   if (input.skinContext?.concerns.length) {
     integratedContext += `\n## 피부 상태 연동 (S-1)\n`;
-    integratedContext += `- 피부 고민: ${input.skinContext.concerns.join(", ")}\n`;
+    integratedContext += `- 피부 고민: ${input.skinContext.concerns.join(', ')}\n`;
     if (input.skinContext.recommendedFoods.length) {
-      integratedContext += `- 피부에 좋은 음식: ${input.skinContext.recommendedFoods.join(", ")}\n`;
+      integratedContext += `- 피부에 좋은 음식: ${input.skinContext.recommendedFoods.join(', ')}\n`;
     }
     integratedContext += `→ 피부 개선에 도움되는 음식을 우선 추천해주세요.\n`;
   }
 
   if (input.bodyContext?.bodyType) {
     const bodyTypeLabels: Record<string, string> = {
-      S: "스트레이트 (상체 볼륨, I라인)",
-      W: "웨이브 (하체 볼륨, X라인)",
-      N: "내추럴 (골격감, 레이어드)",
+      S: '스트레이트 (상체 볼륨, I라인)',
+      W: '웨이브 (하체 볼륨, X라인)',
+      N: '내추럴 (골격감, 레이어드)',
     };
     const bodyLabel = bodyTypeLabels[input.bodyContext.bodyType] || input.bodyContext.bodyType;
     integratedContext += `\n## 체형 상태 연동 (C-1)\n`;
@@ -1326,7 +1298,7 @@ function buildMealSuggestionPrompt(input: MealSuggestionInput): string {
   }
 
   return `당신은 전문 영양사이자 식단 설계 전문가입니다. 사용자의 조건에 맞는 ${mealTypeText} 식사를 추천해주세요.
-${integratedContext ? `\n**통합 분석 데이터가 있으므로, 피부/체형 상태를 함께 고려해주세요.**` : ""}
+${integratedContext ? `\n**통합 분석 데이터가 있으므로, 피부/체형 상태를 함께 고려해주세요.**` : ''}
 
 ## 사용자 정보
 
@@ -1338,7 +1310,7 @@ ${integratedContext ? `\n**통합 분석 데이터가 있으므로, 피부/체�
 - 예산: ${budgetText}
 - 알레르기: ${allergiesText}
 - 기피 음식: ${dislikedText}
-${input.preferences?.length ? `- 선호 사항: ${input.preferences.join(", ")}` : ""}${integratedContext}
+${input.preferences?.length ? `- 선호 사항: ${input.preferences.join(', ')}` : ''}${integratedContext}
 
 ## 식사 타입별 칼로리 배분 가이드
 
@@ -1404,7 +1376,7 @@ export async function analyzeFoodImage(
   input: FoodAnalysisInput
 ): Promise<GeminiFoodAnalysisResult> {
   if (!genAI) {
-    throw new Error("Gemini API key is not configured");
+    throw new Error('Gemini API key is not configured');
   }
 
   const model = genAI.getGenerativeModel(modelConfig);
@@ -1417,7 +1389,7 @@ export async function analyzeFoodImage(
       withTimeout(
         model.generateContent([prompt, imagePart]),
         5000,
-        "Food analysis request timeout"
+        'Food analysis request timeout'
       ),
     2,
     1000
@@ -1445,7 +1417,7 @@ export async function generateMealSuggestion(
   input: MealSuggestionInput
 ): Promise<GeminiMealSuggestionResult> {
   if (!genAI) {
-    throw new Error("Gemini API key is not configured");
+    throw new Error('Gemini API key is not configured');
   }
 
   const model = genAI.getGenerativeModel(modelConfig);
@@ -1453,12 +1425,7 @@ export async function generateMealSuggestion(
 
   // 타임아웃 (3초) + 재시도 (최대 2회) 적용
   const result = await withRetry(
-    () =>
-      withTimeout(
-        model.generateContent(prompt),
-        3000,
-        "Meal suggestion request timeout"
-      ),
+    () => withTimeout(model.generateContent(prompt), 3000, 'Meal suggestion request timeout'),
     2,
     1000
   );

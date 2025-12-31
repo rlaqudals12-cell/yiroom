@@ -4,6 +4,7 @@
  */
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { coachLogger } from '@/lib/utils/logger';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import type { UserContext } from './context';
 import { buildCoachSystemPrompt, getQuestionHint } from './prompts';
@@ -14,10 +15,22 @@ const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
 // 안전 설정
 const safetySettings = [
-  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+  },
 ];
 
 /**
@@ -51,10 +64,13 @@ export interface CoachChatResponse {
  * Fallback 응답 (AI 실패 시)
  */
 const FALLBACK_RESPONSES: Record<string, string> = {
-  workout: '운동에 관해 궁금하시군요! 일반적으로 주 3-4회 30분 이상의 운동을 권장해요. 구체적인 조언을 위해 운동 분석을 진행해보시는 건 어떨까요?',
-  nutrition: '영양에 대한 질문이시네요! 균형 잡힌 식단과 충분한 수분 섭취가 중요해요. 더 맞춤화된 조언을 위해 영양 목표를 설정해보세요.',
+  workout:
+    '운동에 관해 궁금하시군요! 일반적으로 주 3-4회 30분 이상의 운동을 권장해요. 구체적인 조언을 위해 운동 분석을 진행해보시는 건 어떨까요?',
+  nutrition:
+    '영양에 대한 질문이시네요! 균형 잡힌 식단과 충분한 수분 섭취가 중요해요. 더 맞춤화된 조언을 위해 영양 목표를 설정해보세요.',
   skin: '피부 관련 질문이시군요! 기본적으로 클렌징, 보습, 자외선 차단이 중요해요. 피부 분석 결과를 바탕으로 더 상세한 조언을 드릴 수 있어요.',
-  default: '좋은 질문이에요! 정확한 답변을 드리기 어려운 상황이에요. 잠시 후 다시 시도해주시거나, 더 구체적인 질문을 해주시면 도움이 될 거예요.',
+  default:
+    '좋은 질문이에요! 정확한 답변을 드리기 어려운 상황이에요. 잠시 후 다시 시도해주시거나, 더 구체적인 질문을 해주시면 도움이 될 거예요.',
 };
 
 /**
@@ -63,13 +79,29 @@ const FALLBACK_RESPONSES: Record<string, string> = {
 function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'skin' | 'default' {
   const lowerQ = question.toLowerCase();
 
-  if (lowerQ.includes('운동') || lowerQ.includes('헬스') || lowerQ.includes('근육') || lowerQ.includes('스트레칭')) {
+  if (
+    lowerQ.includes('운동') ||
+    lowerQ.includes('헬스') ||
+    lowerQ.includes('근육') ||
+    lowerQ.includes('스트레칭')
+  ) {
     return 'workout';
   }
-  if (lowerQ.includes('먹') || lowerQ.includes('음식') || lowerQ.includes('칼로리') || lowerQ.includes('다이어트') || lowerQ.includes('단백질')) {
+  if (
+    lowerQ.includes('먹') ||
+    lowerQ.includes('음식') ||
+    lowerQ.includes('칼로리') ||
+    lowerQ.includes('다이어트') ||
+    lowerQ.includes('단백질')
+  ) {
     return 'nutrition';
   }
-  if (lowerQ.includes('피부') || lowerQ.includes('화장품') || lowerQ.includes('스킨케어') || lowerQ.includes('보습')) {
+  if (
+    lowerQ.includes('피부') ||
+    lowerQ.includes('화장품') ||
+    lowerQ.includes('스킨케어') ||
+    lowerQ.includes('보습')
+  ) {
     return 'skin';
   }
 
@@ -79,14 +111,20 @@ function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'sk
 /**
  * 제품 추천이 필요한 질문인지 확인
  */
-function needsProductRecommendation(question: string): 'cosmetic' | 'supplement' | 'equipment' | null {
+function needsProductRecommendation(
+  question: string
+): 'cosmetic' | 'supplement' | 'equipment' | null {
   const lowerQ = question.toLowerCase();
 
   // 화장품/스킨케어 추천
   if (
     (lowerQ.includes('추천') || lowerQ.includes('어떤') || lowerQ.includes('뭐가 좋')) &&
-    (lowerQ.includes('화장품') || lowerQ.includes('스킨케어') || lowerQ.includes('세럼') ||
-     lowerQ.includes('크림') || lowerQ.includes('토너') || lowerQ.includes('로션'))
+    (lowerQ.includes('화장품') ||
+      lowerQ.includes('스킨케어') ||
+      lowerQ.includes('세럼') ||
+      lowerQ.includes('크림') ||
+      lowerQ.includes('토너') ||
+      lowerQ.includes('로션'))
   ) {
     return 'cosmetic';
   }
@@ -94,8 +132,11 @@ function needsProductRecommendation(question: string): 'cosmetic' | 'supplement'
   // 영양제/건강식품 추천
   if (
     (lowerQ.includes('추천') || lowerQ.includes('어떤') || lowerQ.includes('뭐가 좋')) &&
-    (lowerQ.includes('영양제') || lowerQ.includes('비타민') || lowerQ.includes('보충제') ||
-     lowerQ.includes('유산균') || lowerQ.includes('오메가'))
+    (lowerQ.includes('영양제') ||
+      lowerQ.includes('비타민') ||
+      lowerQ.includes('보충제') ||
+      lowerQ.includes('유산균') ||
+      lowerQ.includes('오메가'))
   ) {
     return 'supplement';
   }
@@ -103,8 +144,11 @@ function needsProductRecommendation(question: string): 'cosmetic' | 'supplement'
   // 운동기구 추천
   if (
     (lowerQ.includes('추천') || lowerQ.includes('어떤') || lowerQ.includes('뭐가 좋')) &&
-    (lowerQ.includes('운동기구') || lowerQ.includes('덤벨') || lowerQ.includes('매트') ||
-     lowerQ.includes('홈트') || lowerQ.includes('기구'))
+    (lowerQ.includes('운동기구') ||
+      lowerQ.includes('덤벨') ||
+      lowerQ.includes('매트') ||
+      lowerQ.includes('홈트') ||
+      lowerQ.includes('기구'))
   ) {
     return 'equipment';
   }
@@ -158,7 +202,12 @@ async function searchRelatedProducts(
         data.forEach((p, i) => {
           const ingredients = p.main_ingredients as Array<{ name: string }> | null;
           contextStr += `${i + 1}. ${p.brand} ${p.name}\n`;
-          contextStr += `   - 주요 성분: ${ingredients?.slice(0, 3).map((ing) => ing.name).join(', ') || '정보 없음'}\n`;
+          contextStr += `   - 주요 성분: ${
+            ingredients
+              ?.slice(0, 3)
+              .map((ing) => ing.name)
+              .join(', ') || '정보 없음'
+          }\n`;
           contextStr += `   - 효능: ${(p.benefits as string[] | null)?.slice(0, 2).join(', ') || '정보 없음'}\n`;
         });
       }
@@ -181,7 +230,7 @@ async function searchRelatedProducts(
 
     return contextStr;
   } catch (error) {
-    console.error('[Coach] RAG search error:', error);
+    coachLogger.error('RAG search error:', error);
     return '';
   }
 }
@@ -213,11 +262,15 @@ export async function generateCoachResponse(request: CoachChatRequest): Promise<
 
   // AI 서비스 사용 불가 시 Fallback
   if (!genAI) {
-    console.warn('[Coach] Gemini API key not configured, using fallback');
+    coachLogger.warn('Gemini API key not configured, using fallback');
     const category = detectQuestionCategory(message);
     return {
       message: FALLBACK_RESPONSES[category],
-      suggestedQuestions: ['오늘 운동 뭐하면 좋을까요?', '다이어트 간식 추천해줘', '물 얼마나 마셔야 해요?'],
+      suggestedQuestions: [
+        '오늘 운동 뭐하면 좋을까요?',
+        '다이어트 간식 추천해줘',
+        '물 얼마나 마셔야 해요?',
+      ],
     };
   }
 
@@ -269,11 +322,15 @@ ${questionHint ? `참고: ${questionHint}\n` : ''}
       suggestedQuestions,
     };
   } catch (error) {
-    console.error('[Coach] Gemini error, falling back to mock:', error);
+    coachLogger.error('Gemini error, falling back to mock:', error);
     const category = detectQuestionCategory(message);
     return {
       message: FALLBACK_RESPONSES[category],
-      suggestedQuestions: ['오늘 운동 뭐하면 좋을까요?', '다이어트 간식 추천해줘', '물 얼마나 마셔야 해요?'],
+      suggestedQuestions: [
+        '오늘 운동 뭐하면 좋을까요?',
+        '다이어트 간식 추천해줘',
+        '물 얼마나 마셔야 해요?',
+      ],
     };
   }
 }
@@ -308,7 +365,10 @@ function cleanResponse(text: string): string {
 /**
  * 추천 질문 생성
  */
-function generateSuggestedQuestions(currentQuestion: string, userContext: UserContext | null): string[] {
+function generateSuggestedQuestions(
+  currentQuestion: string,
+  userContext: UserContext | null
+): string[] {
   const suggestions: string[] = [];
   const category = detectQuestionCategory(currentQuestion);
 
@@ -377,7 +437,7 @@ export async function* generateCoachResponseStream(
       }
     }
   } catch (error) {
-    console.error('[Coach] Streaming error:', error);
+    coachLogger.error('Streaming error:', error);
     yield FALLBACK_RESPONSES[detectQuestionCategory(request.message)];
   }
 }

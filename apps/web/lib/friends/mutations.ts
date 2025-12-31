@@ -4,6 +4,7 @@
 // ============================================================
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { socialLogger } from '@/lib/utils/logger';
 
 // 친구 요청 보내기
 export async function sendFriendRequest(
@@ -50,7 +51,7 @@ export async function sendFriendRequest(
     .single();
 
   if (error) {
-    console.error('[Friends] Error sending request:', error);
+    socialLogger.error('친구 요청 전송 실패:', error);
     return { success: false, error: '친구 요청을 보내는 데 실패했습니다.' };
   }
 
@@ -74,7 +75,7 @@ export async function acceptFriendRequest(
     .eq('status', 'pending');
 
   if (error) {
-    console.error('[Friends] Error accepting request:', error);
+    socialLogger.error('친구 요청 수락 실패:', error);
     return { success: false, error: '친구 요청을 수락하는 데 실패했습니다.' };
   }
 
@@ -98,7 +99,7 @@ export async function rejectFriendRequest(
     .eq('status', 'pending');
 
   if (error) {
-    console.error('[Friends] Error rejecting request:', error);
+    socialLogger.error('친구 요청 거절 실패:', error);
     return { success: false, error: '친구 요청을 거절하는 데 실패했습니다.' };
   }
 
@@ -119,7 +120,7 @@ export async function cancelFriendRequest(
     .eq('status', 'pending');
 
   if (error) {
-    console.error('[Friends] Error canceling request:', error);
+    socialLogger.error('친구 요청 취소 실패:', error);
     return { success: false, error: '친구 요청을 취소하는 데 실패했습니다.' };
   }
 
@@ -140,7 +141,7 @@ export async function removeFriend(
     .eq('status', 'accepted');
 
   if (error) {
-    console.error('[Friends] Error removing friend:', error);
+    socialLogger.error('친구 삭제 실패:', error);
     return { success: false, error: '친구를 삭제하는 데 실패했습니다.' };
   }
 
@@ -174,21 +175,19 @@ export async function blockUser(
       .eq('id', existing.id);
 
     if (error) {
-      console.error('[Friends] Error blocking user:', error);
+      socialLogger.error('사용자 차단 실패:', error);
       return { success: false, error: '사용자를 차단하는 데 실패했습니다.' };
     }
   } else {
     // 새로운 차단 관계 생성
-    const { error } = await supabase
-      .from('friendships')
-      .insert({
-        requester_id: clerkUserId,
-        addressee_id: targetUserId,
-        status: 'blocked',
-      });
+    const { error } = await supabase.from('friendships').insert({
+      requester_id: clerkUserId,
+      addressee_id: targetUserId,
+      status: 'blocked',
+    });
 
     if (error) {
-      console.error('[Friends] Error blocking user:', error);
+      socialLogger.error('사용자 차단 실패:', error);
       return { success: false, error: '사용자를 차단하는 데 실패했습니다.' };
     }
   }
@@ -212,7 +211,7 @@ export async function unblockUser(
     .eq('status', 'blocked');
 
   if (error) {
-    console.error('[Friends] Error unblocking user:', error);
+    socialLogger.error('차단 해제 실패:', error);
     return { success: false, error: '차단을 해제하는 데 실패했습니다.' };
   }
 

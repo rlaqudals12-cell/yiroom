@@ -7,17 +7,18 @@
  * - 결과 통합하여 반환
  */
 
-import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { productLogger } from '@/lib/utils/logger';
 
 /**
  * 피부 타입 정의
  */
-export type SkinType = "dry" | "oily" | "sensitive" | "combination" | "normal";
+export type SkinType = 'dry' | 'oily' | 'sensitive' | 'combination' | 'normal';
 
 /**
  * 성분 경고 레벨
  */
-export type WarningLevel = "high" | "medium" | "low";
+export type WarningLevel = 'high' | 'medium' | 'low';
 
 /**
  * 성분 경고 정보
@@ -29,7 +30,7 @@ export interface IngredientWarning {
   ewgGrade: number;
   reason: string;
   alternatives?: string[];
-  source: "db" | "ai";
+  source: 'db' | 'ai';
 }
 
 /**
@@ -56,13 +57,13 @@ export interface DBIngredient {
  */
 function getWarningLevel(ingredient: DBIngredient, skinType: SkinType): number {
   switch (skinType) {
-    case "dry":
+    case 'dry':
       return ingredient.warning_dry;
-    case "oily":
+    case 'oily':
       return ingredient.warning_oily;
-    case "sensitive":
+    case 'sensitive':
       return ingredient.warning_sensitive;
-    case "combination":
+    case 'combination':
       return ingredient.warning_combination;
     default:
       // normal: 모든 경고 레벨의 평균
@@ -80,9 +81,9 @@ function getWarningLevel(ingredient: DBIngredient, skinType: SkinType): number {
  * 숫자 레벨을 문자열 레벨로 변환
  */
 function numToWarningLevel(num: number): WarningLevel {
-  if (num >= 4) return "high";
-  if (num >= 3) return "medium";
-  return "low";
+  if (num >= 4) return 'high';
+  if (num >= 3) return 'medium';
+  return 'low';
 }
 
 /**
@@ -90,18 +91,16 @@ function numToWarningLevel(num: number): WarningLevel {
  * 한글명, 영문명, 별칭(aliases) 모두 검색
  * 검색 우선순위: 정확매칭 > 별칭매칭 > 부분매칭
  */
-async function searchIngredientInDB(
-  ingredientName: string
-): Promise<DBIngredient | null> {
+async function searchIngredientInDB(ingredientName: string): Promise<DBIngredient | null> {
   const supabase = createServiceRoleClient();
   const searchTerm = ingredientName.toLowerCase().trim();
 
   // 1. 정확한 매칭 먼저 시도 (name_ko, name_en)
   const { data: exactMatch } = await supabase
-    .from("ingredients")
-    .select("*")
+    .from('ingredients')
+    .select('*')
     .or(`name_ko.ilike.${searchTerm},name_en.ilike.${searchTerm}`)
-    .eq("is_active", true)
+    .eq('is_active', true)
     .limit(1)
     .single();
 
@@ -112,17 +111,15 @@ async function searchIngredientInDB(
   // 2. 모든 활성 성분 조회 후 별칭에서 검색
   // PostgreSQL 배열 검색의 한계로 클라이언트 측 필터링 수행
   const { data: allIngredients } = await supabase
-    .from("ingredients")
-    .select("*")
-    .eq("is_active", true)
-    .not("aliases", "is", null);
+    .from('ingredients')
+    .select('*')
+    .eq('is_active', true)
+    .not('aliases', 'is', null);
 
   if (allIngredients && allIngredients.length > 0) {
     // 별칭 정확 매칭
     const aliasExactMatch = allIngredients.find((ing) =>
-      ing.aliases?.some(
-        (alias: string) => alias.toLowerCase() === searchTerm
-      )
+      ing.aliases?.some((alias: string) => alias.toLowerCase() === searchTerm)
     );
     if (aliasExactMatch) {
       return aliasExactMatch as DBIngredient;
@@ -132,8 +129,7 @@ async function searchIngredientInDB(
     const aliasPartialMatch = allIngredients.find((ing) =>
       ing.aliases?.some(
         (alias: string) =>
-          alias.toLowerCase().includes(searchTerm) ||
-          searchTerm.includes(alias.toLowerCase())
+          alias.toLowerCase().includes(searchTerm) || searchTerm.includes(alias.toLowerCase())
       )
     );
     if (aliasPartialMatch) {
@@ -143,12 +139,10 @@ async function searchIngredientInDB(
 
   // 3. 이름 부분 매칭 시도 (name_ko, name_en)
   const { data: partialMatch } = await supabase
-    .from("ingredients")
-    .select("*")
-    .or(
-      `name_ko.ilike.%${searchTerm}%,name_en.ilike.%${searchTerm}%`
-    )
-    .eq("is_active", true)
+    .from('ingredients')
+    .select('*')
+    .or(`name_ko.ilike.%${searchTerm}%,name_en.ilike.%${searchTerm}%`)
+    .eq('is_active', true)
     .limit(1)
     .single();
 
@@ -182,7 +176,7 @@ async function searchIngredientInDB(
  */
 export async function analyzeIngredients(
   ingredients: string[],
-  skinType: SkinType = "normal"
+  skinType: SkinType = 'normal'
 ): Promise<IngredientWarning[]> {
   const warnings: IngredientWarning[] = [];
   const unknownIngredients: string[] = [];
@@ -205,9 +199,9 @@ export async function analyzeIngredients(
           ingredientEn: dbResult.name_en || undefined,
           level: numToWarningLevel(warningNum),
           ewgGrade: dbResult.ewg_grade || 5,
-          reason: dbResult.side_effects || "주의가 필요한 성분입니다.",
+          reason: dbResult.side_effects || '주의가 필요한 성분입니다.',
           alternatives: dbResult.alternatives || undefined,
-          source: "db",
+          source: 'db',
         });
       }
     } else {
@@ -248,31 +242,31 @@ export async function getWarningIngredientsForSkinType(
   // 피부 타입에 따른 컬럼 선택
   let warningColumn: string;
   switch (skinType) {
-    case "dry":
-      warningColumn = "warning_dry";
+    case 'dry':
+      warningColumn = 'warning_dry';
       break;
-    case "oily":
-      warningColumn = "warning_oily";
+    case 'oily':
+      warningColumn = 'warning_oily';
       break;
-    case "sensitive":
-      warningColumn = "warning_sensitive";
+    case 'sensitive':
+      warningColumn = 'warning_sensitive';
       break;
-    case "combination":
-      warningColumn = "warning_combination";
+    case 'combination':
+      warningColumn = 'warning_combination';
       break;
     default:
-      warningColumn = "warning_sensitive"; // normal은 민감성 기준
+      warningColumn = 'warning_sensitive'; // normal은 민감성 기준
   }
 
   const { data, error } = await supabase
-    .from("ingredients")
-    .select("*")
+    .from('ingredients')
+    .select('*')
     .gte(warningColumn, 3) // 주의 레벨 3 이상
-    .eq("is_active", true)
+    .eq('is_active', true)
     .order(warningColumn, { ascending: false });
 
   if (error) {
-    console.error("Failed to fetch warning ingredients:", error);
+    productLogger.error('Failed to fetch warning ingredients:', error);
     return [];
   }
 
@@ -282,20 +276,18 @@ export async function getWarningIngredientsForSkinType(
 /**
  * EWG 등급별 성분 조회
  */
-export async function getIngredientsByEWGGrade(
-  minGrade: number = 7
-): Promise<DBIngredient[]> {
+export async function getIngredientsByEWGGrade(minGrade: number = 7): Promise<DBIngredient[]> {
   const supabase = createServiceRoleClient();
 
   const { data, error } = await supabase
-    .from("ingredients")
-    .select("*")
-    .gte("ewg_grade", minGrade)
-    .eq("is_active", true)
-    .order("ewg_grade", { ascending: false });
+    .from('ingredients')
+    .select('*')
+    .gte('ewg_grade', minGrade)
+    .eq('is_active', true)
+    .order('ewg_grade', { ascending: false });
 
   if (error) {
-    console.error("Failed to fetch ingredients by EWG grade:", error);
+    productLogger.error('Failed to fetch ingredients by EWG grade:', error);
     return [];
   }
 
@@ -309,13 +301,13 @@ export async function getAllIngredients(): Promise<DBIngredient[]> {
   const supabase = createServiceRoleClient();
 
   const { data, error } = await supabase
-    .from("ingredients")
-    .select("*")
-    .eq("is_active", true)
-    .order("name_ko");
+    .from('ingredients')
+    .select('*')
+    .eq('is_active', true)
+    .order('name_ko');
 
   if (error) {
-    console.error("Failed to fetch all ingredients:", error);
+    productLogger.error('Failed to fetch all ingredients:', error);
     return [];
   }
 

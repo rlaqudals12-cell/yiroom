@@ -4,6 +4,7 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { adminLogger } from '@/lib/utils/logger';
 
 /**
  * 대시보드 통계 타입
@@ -180,7 +181,7 @@ export async function getUserList(
     .range(offset, offset + limit - 1);
 
   if (error || !data) {
-    console.error('사용자 목록 조회 실패:', error);
+    adminLogger.error('사용자 목록 조회 실패:', error);
     return { users: [], total: 0 };
   }
 
@@ -190,7 +191,8 @@ export async function getUserList(
     email: user.email as string | null,
     name: user.name as string | null,
     createdAt: new Date(user.created_at as string),
-    hasPersonalColor: Array.isArray(user.personal_color_assessments) && user.personal_color_assessments.length > 0,
+    hasPersonalColor:
+      Array.isArray(user.personal_color_assessments) && user.personal_color_assessments.length > 0,
     hasSkin: Array.isArray(user.skin_analyses) && user.skin_analyses.length > 0,
     hasBody: Array.isArray(user.body_analyses) && user.body_analyses.length > 0,
     hasWorkout: Array.isArray(user.workout_analyses) && user.workout_analyses.length > 0,
@@ -277,7 +279,5 @@ export async function getRecentActivities(limit: number = 10): Promise<RecentAct
   });
 
   // 시간순 정렬 후 limit 적용
-  return activities
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, limit);
+  return activities.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, limit);
 }

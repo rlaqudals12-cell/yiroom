@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { productLogger } from '@/lib/utils/logger';
 import type {
   IngredientInteraction,
   IngredientInteractionRow,
@@ -94,11 +95,11 @@ export async function getInteractionBetween(
     .select('*')
     .or(
       `and(ingredient_a.ilike.%${ingredientA}%,ingredient_b.ilike.%${ingredientB}%),` +
-      `and(ingredient_a.ilike.%${ingredientB}%,ingredient_b.ilike.%${ingredientA}%)`
+        `and(ingredient_a.ilike.%${ingredientB}%,ingredient_b.ilike.%${ingredientA}%)`
     );
 
   if (error) {
-    console.error('[Interactions] Failed to fetch interaction:', error);
+    productLogger.error('성분상호작용 Failed to fetch interaction:', error);
     return [];
   }
 
@@ -118,7 +119,7 @@ export async function getIngredientInteractions(
     .or(`ingredient_a.ilike.%${ingredient}%,ingredient_b.ilike.%${ingredient}%`);
 
   if (error) {
-    console.error('[Interactions] Failed to fetch interactions:', error);
+    productLogger.error('성분상호작용 Failed to fetch interactions:', error);
     return [];
   }
 
@@ -141,7 +142,7 @@ export async function getInteractionsByType(
     .limit(limit);
 
   if (error) {
-    console.error('[Interactions] Failed to fetch interactions by type:', error);
+    productLogger.error('성분상호작용 Failed to fetch interactions by type:', error);
     return [];
   }
 
@@ -185,12 +186,10 @@ export async function checkProductInteractions(
 
   // 모든 상호작용 조회 (현재 24개로 규모 작음)
   // 데이터 1000개 이상 시 성분 기반 필터링 쿼리로 최적화 필요
-  const { data, error } = await supabase
-    .from('ingredient_interactions')
-    .select('*');
+  const { data, error } = await supabase.from('ingredient_interactions').select('*');
 
   if (error || !data) {
-    console.error('[Interactions] Failed to fetch interactions:', error);
+    productLogger.error('성분상호작용 Failed to fetch interactions:', error);
     return [];
   }
 
@@ -213,10 +212,7 @@ export async function checkProductInteractions(
           const matches = allInteractions.filter((int) => {
             const a = int.ingredientA.toLowerCase();
             const b = int.ingredientB.toLowerCase();
-            return (
-              (a.includes(ingA) && b.includes(ingB)) ||
-              (a.includes(ingB) && b.includes(ingA))
-            );
+            return (a.includes(ingA) && b.includes(ingB)) || (a.includes(ingB) && b.includes(ingA));
           });
           foundInteractions.push(...matches);
         }
@@ -263,13 +259,10 @@ export async function checkWishlistInteractions(
 
   // 제품 데이터 조회
   const tableName = productType === 'supplement' ? 'supplement_products' : 'health_foods';
-  const { data, error } = await supabase
-    .from(tableName)
-    .select('*')
-    .in('id', productIds);
+  const { data, error } = await supabase.from(tableName).select('*').in('id', productIds);
 
   if (error || !data) {
-    console.error('[Interactions] Failed to fetch products:', error);
+    productLogger.error('성분상호작용 Failed to fetch products:', error);
     return [];
   }
 
@@ -283,9 +276,7 @@ export async function checkWishlistInteractions(
 /**
  * 상호작용 요약 생성
  */
-export function summarizeInteractions(
-  warnings: ProductInteractionWarning[]
-): InteractionSummary {
+export function summarizeInteractions(warnings: ProductInteractionWarning[]): InteractionSummary {
   const summary: InteractionSummary = {
     totalWarnings: warnings.length,
     byType: {

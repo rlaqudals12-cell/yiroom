@@ -5,6 +5,7 @@
 
 import { supabase } from '@/lib/supabase/client';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { productLogger } from '@/lib/utils/logger';
 import type { ProductType, ProductPriceHistory } from '@/types/product';
 
 interface ProductPriceHistoryRow {
@@ -31,17 +32,15 @@ export async function recordPriceHistory(
 ): Promise<boolean> {
   const serviceClient = createServiceRoleClient();
 
-  const { error } = await serviceClient
-    .from('product_price_history')
-    .insert({
-      product_type: productType,
-      product_id: productId,
-      price_krw: priceKrw,
-      source: source || null,
-    });
+  const { error } = await serviceClient.from('product_price_history').insert({
+    product_type: productType,
+    product_id: productId,
+    price_krw: priceKrw,
+    source: source || null,
+  });
 
   if (error) {
-    console.error('가격 히스토리 기록 실패:', error);
+    productLogger.error('가격 히스토리 기록 실패:', error);
     return false;
   }
 
@@ -68,7 +67,7 @@ export async function getPriceHistory(
     .limit(limit);
 
   if (error) {
-    console.error('가격 히스토리 조회 실패:', error);
+    productLogger.error('가격 히스토리 조회 실패:', error);
     return [];
   }
 
@@ -121,7 +120,9 @@ export async function getLowestPrice(
 export async function getPriceDropProducts(
   productType: ProductType,
   percentDrop = 10
-): Promise<Array<{ productId: string; previousPrice: number; currentPrice: number; dropPercent: number }>> {
+): Promise<
+  Array<{ productId: string; previousPrice: number; currentPrice: number; dropPercent: number }>
+> {
   // 최근 2개 가격 기록을 비교하여 하락한 제품 찾기
   const { data, error } = await supabase
     .from('product_price_history')
@@ -130,7 +131,7 @@ export async function getPriceDropProducts(
     .order('recorded_at', { ascending: false });
 
   if (error || !data) {
-    console.error('가격 하락 조회 실패:', error);
+    productLogger.error('가격 하락 조회 실패:', error);
     return [];
   }
 
@@ -144,7 +145,12 @@ export async function getPriceDropProducts(
   }
 
   // 가격 하락 제품 필터링
-  const drops: Array<{ productId: string; previousPrice: number; currentPrice: number; dropPercent: number }> = [];
+  const drops: Array<{
+    productId: string;
+    previousPrice: number;
+    currentPrice: number;
+    dropPercent: number;
+  }> = [];
 
   for (const [productId, records] of Object.entries(byProduct)) {
     if (records.length < 2) continue;

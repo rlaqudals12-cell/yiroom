@@ -4,6 +4,7 @@
  */
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { inventoryLogger } from '@/lib/utils/logger';
 import {
   InventoryItem,
   InventoryItemDB,
@@ -38,10 +39,7 @@ export async function getInventoryItems(
 ): Promise<InventoryItem[]> {
   const supabase = createClerkSupabaseClient();
 
-  let query = supabase
-    .from('user_inventory')
-    .select('*')
-    .eq('clerk_user_id', userId);
+  let query = supabase.from('user_inventory').select('*').eq('clerk_user_id', userId);
 
   // 카테고리 필터
   if (filter.category) {
@@ -106,7 +104,7 @@ export async function getInventoryItems(
   const { data, error } = await query;
 
   if (error) {
-    console.error('[Inventory] getInventoryItems error:', error);
+    inventoryLogger.error(' getInventoryItems error:', error);
     throw error;
   }
 
@@ -133,7 +131,7 @@ export async function getInventoryItemById(
     if (error.code === 'PGRST116') {
       return null; // Not found
     }
-    console.error('[Inventory] getInventoryItemById error:', error);
+    inventoryLogger.error(' getInventoryItemById error:', error);
     throw error;
   }
 
@@ -168,7 +166,7 @@ export async function createInventoryItem(
     .single();
 
   if (error) {
-    console.error('[Inventory] createInventoryItem error:', error);
+    inventoryLogger.error(' createInventoryItem error:', error);
     throw error;
   }
 
@@ -189,15 +187,12 @@ export async function updateInventoryItem(
   const updateData: Record<string, unknown> = {};
 
   if (request.name !== undefined) updateData.name = request.name;
-  if (request.subCategory !== undefined)
-    updateData.sub_category = request.subCategory;
+  if (request.subCategory !== undefined) updateData.sub_category = request.subCategory;
   if (request.imageUrl !== undefined) updateData.image_url = request.imageUrl;
   if (request.brand !== undefined) updateData.brand = request.brand;
   if (request.tags !== undefined) updateData.tags = request.tags;
-  if (request.isFavorite !== undefined)
-    updateData.is_favorite = request.isFavorite;
-  if (request.expiryDate !== undefined)
-    updateData.expiry_date = request.expiryDate;
+  if (request.isFavorite !== undefined) updateData.is_favorite = request.isFavorite;
+  if (request.expiryDate !== undefined) updateData.expiry_date = request.expiryDate;
   if (request.metadata !== undefined) updateData.metadata = request.metadata;
 
   const { data, error } = await supabase
@@ -209,7 +204,7 @@ export async function updateInventoryItem(
     .single();
 
   if (error) {
-    console.error('[Inventory] updateInventoryItem error:', error);
+    inventoryLogger.error(' updateInventoryItem error:', error);
     throw error;
   }
 
@@ -219,10 +214,7 @@ export async function updateInventoryItem(
 /**
  * 인벤토리 아이템 삭제
  */
-export async function deleteInventoryItem(
-  userId: string,
-  itemId: string
-): Promise<void> {
+export async function deleteInventoryItem(userId: string, itemId: string): Promise<void> {
   const supabase = createClerkSupabaseClient();
 
   const { error } = await supabase
@@ -232,7 +224,7 @@ export async function deleteInventoryItem(
     .eq('id', itemId);
 
   if (error) {
-    console.error('[Inventory] deleteInventoryItem error:', error);
+    inventoryLogger.error(' deleteInventoryItem error:', error);
     throw error;
   }
 }
@@ -240,10 +232,7 @@ export async function deleteInventoryItem(
 /**
  * 아이템 사용 기록 (useCount 증가, lastUsedAt 갱신)
  */
-export async function recordItemUsage(
-  userId: string,
-  itemId: string
-): Promise<void> {
+export async function recordItemUsage(userId: string, itemId: string): Promise<void> {
   const supabase = createClerkSupabaseClient();
 
   const { error } = await supabase.rpc('increment_inventory_use_count', {
@@ -281,10 +270,7 @@ export async function recordItemUsage(
 /**
  * 즐겨찾기 토글
  */
-export async function toggleFavorite(
-  userId: string,
-  itemId: string
-): Promise<boolean> {
+export async function toggleFavorite(userId: string, itemId: string): Promise<boolean> {
   const item = await getInventoryItemById(userId, itemId);
   if (!item) throw new Error('Item not found');
 
@@ -298,7 +284,7 @@ export async function toggleFavorite(
     .eq('id', itemId);
 
   if (error) {
-    console.error('[Inventory] toggleFavorite error:', error);
+    inventoryLogger.error(' toggleFavorite error:', error);
     throw error;
   }
 
@@ -348,7 +334,7 @@ export async function getSavedOutfits(
   const { data, error } = await query;
 
   if (error) {
-    console.error('[Inventory] getSavedOutfits error:', error);
+    inventoryLogger.error(' getSavedOutfits error:', error);
     throw error;
   }
 
@@ -375,7 +361,7 @@ export async function getSavedOutfitById(
     if (error.code === 'PGRST116') {
       return null;
     }
-    console.error('[Inventory] getSavedOutfitById error:', error);
+    inventoryLogger.error(' getSavedOutfitById error:', error);
     throw error;
   }
 
@@ -390,9 +376,7 @@ export async function getSavedOutfitById(
       .in('id', outfit.itemIds);
 
     if (items) {
-      outfit.items = (items as InventoryItemDB[]).map((item) =>
-        toClothingItem(dbToClient(item))
-      );
+      outfit.items = (items as InventoryItemDB[]).map((item) => toClothingItem(dbToClient(item)));
     }
   }
 
@@ -424,7 +408,7 @@ export async function createOutfit(
     .single();
 
   if (error) {
-    console.error('[Inventory] createOutfit error:', error);
+    inventoryLogger.error(' createOutfit error:', error);
     throw error;
   }
 
@@ -444,11 +428,9 @@ export async function updateOutfit(
   const updateData: Record<string, unknown> = {};
 
   if (request.name !== undefined) updateData.name = request.name;
-  if (request.description !== undefined)
-    updateData.description = request.description;
+  if (request.description !== undefined) updateData.description = request.description;
   if (request.itemIds !== undefined) updateData.item_ids = request.itemIds;
-  if (request.collageImageUrl !== undefined)
-    updateData.collage_image_url = request.collageImageUrl;
+  if (request.collageImageUrl !== undefined) updateData.collage_image_url = request.collageImageUrl;
   if (request.occasion !== undefined) updateData.occasion = request.occasion;
   if (request.season !== undefined) updateData.season = request.season;
   if (request.weatherCondition !== undefined)
@@ -463,7 +445,7 @@ export async function updateOutfit(
     .single();
 
   if (error) {
-    console.error('[Inventory] updateOutfit error:', error);
+    inventoryLogger.error(' updateOutfit error:', error);
     throw error;
   }
 
@@ -473,10 +455,7 @@ export async function updateOutfit(
 /**
  * 코디 삭제
  */
-export async function deleteOutfit(
-  userId: string,
-  outfitId: string
-): Promise<void> {
+export async function deleteOutfit(userId: string, outfitId: string): Promise<void> {
   const supabase = createClerkSupabaseClient();
 
   const { error } = await supabase
@@ -486,7 +465,7 @@ export async function deleteOutfit(
     .eq('id', outfitId);
 
   if (error) {
-    console.error('[Inventory] deleteOutfit error:', error);
+    inventoryLogger.error(' deleteOutfit error:', error);
     throw error;
   }
 }
@@ -494,10 +473,7 @@ export async function deleteOutfit(
 /**
  * 코디 착용 기록
  */
-export async function recordOutfitWear(
-  userId: string,
-  outfitId: string
-): Promise<void> {
+export async function recordOutfitWear(userId: string, outfitId: string): Promise<void> {
   const supabase = createClerkSupabaseClient();
 
   // 코디 착용 횟수 증가
@@ -546,7 +522,7 @@ export async function getInventoryStats(
     .eq('category', category);
 
   if (error) {
-    console.error('[Inventory] getInventoryStats error:', error);
+    inventoryLogger.error(' getInventoryStats error:', error);
     throw error;
   }
 
@@ -589,8 +565,7 @@ export async function getInventoryStats(
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
   const unused = typedItems.filter(
-    (item) =>
-      !item.lastUsedAt || new Date(item.lastUsedAt) < threeMonthsAgo
+    (item) => !item.lastUsedAt || new Date(item.lastUsedAt) < threeMonthsAgo
   ).length;
 
   return {
@@ -623,7 +598,7 @@ export async function getTopUsedItems(
     .limit(limit);
 
   if (error) {
-    console.error('[Inventory] getTopUsedItems error:', error);
+    inventoryLogger.error(' getTopUsedItems error:', error);
     throw error;
   }
 
@@ -648,13 +623,11 @@ export async function getUnusedItems(
     .select('*')
     .eq('clerk_user_id', userId)
     .eq('category', category)
-    .or(
-      `last_used_at.is.null,last_used_at.lt.${cutoffDate.toISOString()}`
-    )
+    .or(`last_used_at.is.null,last_used_at.lt.${cutoffDate.toISOString()}`)
     .order('created_at', { ascending: true });
 
   if (error) {
-    console.error('[Inventory] getUnusedItems error:', error);
+    inventoryLogger.error(' getUnusedItems error:', error);
     throw error;
   }
 
@@ -668,10 +641,7 @@ export async function getUnusedItems(
 /**
  * 특정 색상의 의류 조회
  */
-export async function getClothingByColor(
-  userId: string,
-  color: string
-): Promise<ClothingItem[]> {
+export async function getClothingByColor(userId: string, color: string): Promise<ClothingItem[]> {
   const items = await getInventoryItems(userId, {
     category: 'closet',
     color,
@@ -683,10 +653,7 @@ export async function getClothingByColor(
 /**
  * 특정 계절에 맞는 의류 조회
  */
-export async function getClothingBySeason(
-  userId: string,
-  season: Season
-): Promise<ClothingItem[]> {
+export async function getClothingBySeason(userId: string, season: Season): Promise<ClothingItem[]> {
   const items = await getInventoryItems(userId, {
     category: 'closet',
     season,

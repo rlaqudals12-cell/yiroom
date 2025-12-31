@@ -5,6 +5,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { gamificationLogger } from '@/lib/utils/logger';
 import type { BadgeAwardResult, LevelUpResult } from '@/types/gamification';
 import { STREAK_MILESTONES, getNewMilestones, type StreakMilestone } from './constants';
 import { awardBadge, getBadgeByCode } from './badges';
@@ -18,10 +19,7 @@ import { addXp } from './levels';
  * 스트릭 배지 코드 생성
  * @example getStreakBadgeCode('workout', 7) → 'workout_streak_7day'
  */
-export function getStreakBadgeCode(
-  domain: 'workout' | 'nutrition',
-  days: StreakMilestone
-): string {
+export function getStreakBadgeCode(domain: 'workout' | 'nutrition', days: StreakMilestone): string {
   return `${domain}_streak_${days}day`;
 }
 
@@ -69,16 +67,12 @@ export async function awardStreakBadge(
   // 배지 정보 조회
   const badge = await getBadgeByCode(supabase, badgeCode);
   if (!badge) {
-    console.warn('[Gamification] Streak badge not found:', badgeCode);
+    gamificationLogger.warn('Streak badge not found:', badgeCode);
     return null;
   }
 
   // 배지 부여
-  const { userBadge, alreadyOwned, xpReward } = await awardBadge(
-    supabase,
-    clerkUserId,
-    badgeCode
-  );
+  const { userBadge, alreadyOwned, xpReward } = await awardBadge(supabase, clerkUserId, badgeCode);
 
   if (alreadyOwned) {
     return {
@@ -242,16 +236,8 @@ export async function checkAndAwardAllAnalysisBadge(
         .select('id')
         .eq('clerk_user_id', clerkUserId)
         .limit(1),
-      supabase
-        .from('skin_analyses')
-        .select('id')
-        .eq('clerk_user_id', clerkUserId)
-        .limit(1),
-      supabase
-        .from('body_analyses')
-        .select('id')
-        .eq('clerk_user_id', clerkUserId)
-        .limit(1),
+      supabase.from('skin_analyses').select('id').eq('clerk_user_id', clerkUserId).limit(1),
+      supabase.from('body_analyses').select('id').eq('clerk_user_id', clerkUserId).limit(1),
     ]);
 
     const hasPC = pcResult.data && pcResult.data.length > 0;
@@ -265,7 +251,7 @@ export async function checkAndAwardAllAnalysisBadge(
 
     return null;
   } catch (err) {
-    console.error('[Gamification] All analysis badge check error:', err);
+    gamificationLogger.error('All analysis badge check error:', err);
     return null;
   }
 }

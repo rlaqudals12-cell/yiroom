@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { productLogger } from '@/lib/utils/logger';
 import type {
   WorkoutEquipment,
   WorkoutEquipmentRow,
@@ -56,11 +57,7 @@ export async function getWorkoutEquipment(
   filter?: WorkoutEquipmentFilter,
   limit = 50
 ): Promise<WorkoutEquipment[]> {
-  let query = supabase
-    .from('workout_equipment')
-    .select('*')
-    .eq('is_active', true)
-    .limit(limit);
+  let query = supabase.from('workout_equipment').select('*').eq('is_active', true).limit(limit);
 
   if (filter?.category) {
     query = query.eq('category', filter.category);
@@ -102,7 +99,7 @@ export async function getWorkoutEquipment(
   const { data, error } = await query.order('rating', { ascending: false });
 
   if (error) {
-    console.error('운동 기구 조회 실패:', error);
+    productLogger.error('운동 기구 조회 실패:', error);
     return [];
   }
 
@@ -113,9 +110,7 @@ export async function getWorkoutEquipment(
  * 운동 기구 단일 조회
  * @param id 제품 ID
  */
-export async function getWorkoutEquipmentById(
-  id: string
-): Promise<WorkoutEquipment | null> {
+export async function getWorkoutEquipmentById(id: string): Promise<WorkoutEquipment | null> {
   const { data, error } = await supabase
     .from('workout_equipment')
     .select('*')
@@ -124,7 +119,7 @@ export async function getWorkoutEquipmentById(
     .single();
 
   if (error || !data) {
-    console.error('운동 기구 조회 실패:', error);
+    productLogger.error('운동 기구 조회 실패:', error);
     return null;
   }
 
@@ -170,7 +165,7 @@ export async function getRecommendedEquipment(
   const { data, error } = await query;
 
   if (error) {
-    console.error('추천 운동 기구 조회 실패:', error);
+    productLogger.error('추천 운동 기구 조회 실패:', error);
     return [];
   }
 
@@ -187,7 +182,7 @@ export async function getWorkoutEquipmentBrands(): Promise<string[]> {
     .eq('is_active', true);
 
   if (error) {
-    console.error('브랜드 조회 실패:', error);
+    productLogger.error('브랜드 조회 실패:', error);
     return [];
   }
 

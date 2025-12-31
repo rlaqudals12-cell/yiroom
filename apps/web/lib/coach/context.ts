@@ -4,6 +4,7 @@
  */
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { coachLogger } from '@/lib/utils/logger';
 import type { UserContext, SkinScores } from './types';
 
 // 타입은 types.ts에서 re-export
@@ -175,7 +176,7 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
 
     return context;
   } catch (error) {
-    console.error('[Coach] 컨텍스트 조회 오류:', error);
+    coachLogger.error('컨텍스트 조회 오류:', error);
     return null;
   }
 }

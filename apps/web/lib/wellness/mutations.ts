@@ -4,10 +4,8 @@
 // ============================================================
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type {
-  ScoreBreakdown,
-  WellnessInsight,
-} from '@/types/wellness';
+import { wellnessLogger } from '@/lib/utils/logger';
+import type { ScoreBreakdown, WellnessInsight } from '@/types/wellness';
 
 interface SaveWellnessScoreInput {
   totalScore: number;
@@ -28,28 +26,26 @@ export async function saveWellnessScore(
 ): Promise<{ success: boolean; error?: string }> {
   const targetDate = date ?? new Date().toISOString().split('T')[0];
 
-  const { error } = await supabase
-    .from('wellness_scores')
-    .upsert(
-      {
-        clerk_user_id: clerkUserId,
-        date: targetDate,
-        total_score: input.totalScore,
-        workout_score: input.workoutScore,
-        nutrition_score: input.nutritionScore,
-        skin_score: input.skinScore,
-        body_score: input.bodyScore,
-        score_breakdown: input.scoreBreakdown,
-        insights: input.insights ?? [],
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: 'clerk_user_id,date',
-      }
-    );
+  const { error } = await supabase.from('wellness_scores').upsert(
+    {
+      clerk_user_id: clerkUserId,
+      date: targetDate,
+      total_score: input.totalScore,
+      workout_score: input.workoutScore,
+      nutrition_score: input.nutritionScore,
+      skin_score: input.skinScore,
+      body_score: input.bodyScore,
+      score_breakdown: input.scoreBreakdown,
+      insights: input.insights ?? [],
+      updated_at: new Date().toISOString(),
+    },
+    {
+      onConflict: 'clerk_user_id,date',
+    }
+  );
 
   if (error) {
-    console.error('[Wellness] Error saving score:', error);
+    wellnessLogger.error(' Error saving score:', error);
     return { success: false, error: error.message };
   }
 
@@ -75,7 +71,7 @@ export async function updateWellnessInsights(
     .eq('date', targetDate);
 
   if (error) {
-    console.error('[Wellness] Error updating insights:', error);
+    wellnessLogger.error(' Error updating insights:', error);
     return { success: false, error: error.message };
   }
 
@@ -95,7 +91,7 @@ export async function deleteWellnessScore(
     .eq('date', date);
 
   if (error) {
-    console.error('[Wellness] Error deleting score:', error);
+    wellnessLogger.error(' Error deleting score:', error);
     return { success: false, error: error.message };
   }
 
@@ -119,7 +115,7 @@ export async function cleanupOldWellnessScores(
     .select('id');
 
   if (error) {
-    console.error('[Wellness] Error cleaning up scores:', error);
+    wellnessLogger.error(' Error cleaning up scores:', error);
     return { success: false, deletedCount: 0, error: error.message };
   }
 

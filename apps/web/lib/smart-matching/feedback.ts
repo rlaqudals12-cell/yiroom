@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { smartMatchingLogger } from '@/lib/utils/logger';
 import type {
   UserFeedback,
   UserFeedbackDB,
@@ -24,10 +25,7 @@ export async function getFeedbackList(
     limit?: number;
   }
 ): Promise<UserFeedback[]> {
-  let query = supabase
-    .from('user_feedback')
-    .select('*')
-    .eq('clerk_user_id', clerkUserId);
+  let query = supabase.from('user_feedback').select('*').eq('clerk_user_id', clerkUserId);
 
   if (options?.type) {
     query = query.eq('feedback_type', options.type);
@@ -106,7 +104,7 @@ export async function createFeedback(input: {
     .single();
 
   if (error) {
-    console.error('[Feedback] 생성 실패:', error);
+    smartMatchingLogger.error('피드백 생성 실패:', error);
     return null;
   }
 
@@ -140,13 +138,10 @@ export async function updateFeedback(
   if (updates.cons !== undefined) updateData.cons = updates.cons;
   if (updates.photos !== undefined) updateData.photos = updates.photos;
 
-  const { error } = await supabase
-    .from('user_feedback')
-    .update(updateData)
-    .eq('id', feedbackId);
+  const { error } = await supabase.from('user_feedback').update(updateData).eq('id', feedbackId);
 
   if (error) {
-    console.error('[Feedback] 업데이트 실패:', error);
+    smartMatchingLogger.error('피드백 업데이트 실패:', error);
     return false;
   }
 
@@ -157,13 +152,10 @@ export async function updateFeedback(
  * 피드백 삭제
  */
 export async function deleteFeedback(feedbackId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('user_feedback')
-    .delete()
-    .eq('id', feedbackId);
+  const { error } = await supabase.from('user_feedback').delete().eq('id', feedbackId);
 
   if (error) {
-    console.error('[Feedback] 삭제 실패:', error);
+    smartMatchingLogger.error('피드백 삭제 실패:', error);
     return false;
   }
 

@@ -5,12 +5,15 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { UserLevel, UserLevelRow, LevelInfo, LevelUpResult, LevelTier } from '@/types/gamification';
-import {
-  calculateLevelInfo,
-  getLevelFromTotalXp,
-  getTierForLevel,
-} from './constants';
+import { gamificationLogger } from '@/lib/utils/logger';
+import type {
+  UserLevel,
+  UserLevelRow,
+  LevelInfo,
+  LevelUpResult,
+  LevelTier,
+} from '@/types/gamification';
+import { calculateLevelInfo, getLevelFromTotalXp, getTierForLevel } from './constants';
 
 // ============================================================
 // Row → 도메인 타입 변환
@@ -48,7 +51,7 @@ export async function getUserLevel(
     .maybeSingle();
 
   if (selectError) {
-    console.error('[Gamification] Failed to fetch user level:', selectError);
+    gamificationLogger.error(' Failed to fetch user level:', selectError);
     return null;
   }
 
@@ -70,7 +73,7 @@ export async function getUserLevel(
     .single();
 
   if (insertError) {
-    console.error('[Gamification] Failed to create user level:', insertError);
+    gamificationLogger.error(' Failed to create user level:', insertError);
     return null;
   }
 
@@ -129,7 +132,7 @@ export async function addXp(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Gamification] Failed to update XP:', error);
+    gamificationLogger.error(' Failed to update XP:', error);
     return null;
   }
 

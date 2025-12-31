@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { affiliateLogger } from '@/lib/utils/logger';
 import type {
   AffiliateProduct,
   AffiliateProductRow,
@@ -58,10 +59,7 @@ export async function getAffiliateProducts(
   limit = 20,
   offset = 0
 ): Promise<AffiliateProduct[]> {
-  let query = supabase
-    .from('affiliate_products')
-    .select('*')
-    .eq('is_active', true);
+  let query = supabase.from('affiliate_products').select('*').eq('is_active', true);
 
   // 필터 적용
   if (filter?.partnerId) {
@@ -139,7 +137,7 @@ export async function getAffiliateProducts(
   const { data, error } = await query;
 
   if (error) {
-    console.error('[Affiliate] 제품 조회 실패:', error);
+    affiliateLogger.error('제품 조회 실패:', error);
     return [];
   }
 
@@ -149,9 +147,7 @@ export async function getAffiliateProducts(
 /**
  * 제품 ID로 단일 조회
  */
-export async function getAffiliateProductById(
-  id: string
-): Promise<AffiliateProduct | null> {
+export async function getAffiliateProductById(id: string): Promise<AffiliateProduct | null> {
   const { data, error } = await supabase
     .from('affiliate_products')
     .select('*')
@@ -160,7 +156,7 @@ export async function getAffiliateProductById(
     .single();
 
   if (error || !data) {
-    console.error('[Affiliate] 제품 조회 실패:', error);
+    affiliateLogger.error('제품 조회 실패:', error);
     return null;
   }
 
@@ -203,7 +199,7 @@ export async function getAffiliateProductsByPartner(
     .single();
 
   if (partnerError || !partner) {
-    console.error('[Affiliate] 파트너 조회 실패:', partnerError);
+    affiliateLogger.error('파트너 조회 실패:', partnerError);
     return [];
   }
 
@@ -216,7 +212,7 @@ export async function getAffiliateProductsByPartner(
     .limit(limit);
 
   if (error) {
-    console.error('[Affiliate] 제품 조회 실패:', error);
+    affiliateLogger.error('제품 조회 실패:', error);
     return [];
   }
 
@@ -247,7 +243,7 @@ export async function getRecommendedProductsBySkin(
     .limit(limit);
 
   if (error) {
-    console.error('[Affiliate] 추천 제품 조회 실패:', error);
+    affiliateLogger.error('추천 제품 조회 실패:', error);
     return [];
   }
 
@@ -278,7 +274,7 @@ export async function getRecommendedProductsByColor(
     .limit(limit);
 
   if (error) {
-    console.error('[Affiliate] 추천 제품 조회 실패:', error);
+    affiliateLogger.error('추천 제품 조회 실패:', error);
     return [];
   }
 
@@ -309,7 +305,7 @@ export async function getRecommendedProductsByBodyType(
     .limit(limit);
 
   if (error) {
-    console.error('[Affiliate] 추천 제품 조회 실패:', error);
+    affiliateLogger.error('추천 제품 조회 실패:', error);
     return [];
   }
 
@@ -333,7 +329,7 @@ export async function searchAffiliateProducts(
     .limit(limit);
 
   if (error) {
-    console.error('[Affiliate] 제품 검색 실패:', error);
+    affiliateLogger.error('제품 검색 실패:', error);
     return [];
   }
 
@@ -362,7 +358,7 @@ export async function getPopularAffiliateProducts(
     .limit(limit);
 
   if (error) {
-    console.error('[Affiliate] 인기 제품 조회 실패:', error);
+    affiliateLogger.error('인기 제품 조회 실패:', error);
     return [];
   }
 
@@ -372,9 +368,7 @@ export async function getPopularAffiliateProducts(
 /**
  * 제품 총 개수 조회
  */
-export async function getAffiliateProductCount(
-  filter?: AffiliateProductFilter
-): Promise<number> {
+export async function getAffiliateProductCount(filter?: AffiliateProductFilter): Promise<number> {
   let query = supabase
     .from('affiliate_products')
     .select('id', { count: 'exact', head: true })
@@ -395,7 +389,7 @@ export async function getAffiliateProductCount(
   const { count, error } = await query;
 
   if (error) {
-    console.error('[Affiliate] 제품 개수 조회 실패:', error);
+    affiliateLogger.error('제품 개수 조회 실패:', error);
     return 0;
   }
 

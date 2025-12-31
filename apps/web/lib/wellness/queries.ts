@@ -4,6 +4,7 @@
 // ============================================================
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { wellnessLogger } from '@/lib/utils/logger';
 import type { WellnessScore, WellnessScoreRow } from '@/types/wellness';
 import { toWellnessScore, getWellnessGrade } from '@/types/wellness';
 
@@ -30,7 +31,7 @@ export async function getWellnessScoreByDate(
     .maybeSingle();
 
   if (error) {
-    console.error('[Wellness] Error fetching score:', error);
+    wellnessLogger.error(' Error fetching score:', error);
     return null;
   }
 
@@ -56,7 +57,7 @@ export async function getWellnessHistory(
     .order('date', { ascending: false });
 
   if (error) {
-    console.error('[Wellness] Error fetching history:', error);
+    wellnessLogger.error(' Error fetching history:', error);
     return [];
   }
 
@@ -77,7 +78,7 @@ export async function getLatestWellnessScore(
     .maybeSingle();
 
   if (error) {
-    console.error('[Wellness] Error fetching latest score:', error);
+    wellnessLogger.error(' Error fetching latest score:', error);
     return null;
   }
 

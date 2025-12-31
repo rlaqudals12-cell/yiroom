@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { affiliateLogger } from '@/lib/utils/logger';
 import type {
   AffiliatePartner,
   AffiliatePartnerRow,
@@ -46,7 +47,7 @@ export async function getAffiliatePartners(): Promise<AffiliatePartner[]> {
     .order('name');
 
   if (error) {
-    console.error('[Affiliate] 파트너 조회 실패:', error);
+    affiliateLogger.error('파트너 조회 실패:', error);
     return [];
   }
 
@@ -67,7 +68,7 @@ export async function getAffiliatePartnerByName(
     .single();
 
   if (error || !data) {
-    console.error('[Affiliate] 파트너 조회 실패:', error);
+    affiliateLogger.error('파트너 조회 실패:', error);
     return null;
   }
 
@@ -77,9 +78,7 @@ export async function getAffiliatePartnerByName(
 /**
  * 파트너 ID로 조회
  */
-export async function getAffiliatePartnerById(
-  id: string
-): Promise<AffiliatePartner | null> {
+export async function getAffiliatePartnerById(id: string): Promise<AffiliatePartner | null> {
   const { data, error } = await supabase
     .from('affiliate_partners')
     .select('*')
@@ -87,7 +86,7 @@ export async function getAffiliatePartnerById(
     .single();
 
   if (error || !data) {
-    console.error('[Affiliate] 파트너 조회 실패:', error);
+    affiliateLogger.error('파트너 조회 실패:', error);
     return null;
   }
 
@@ -117,7 +116,7 @@ export async function updatePartnerSyncStatus(
     .eq('id', partnerId);
 
   if (error) {
-    console.error('[Affiliate] 동기화 상태 업데이트 실패:', error);
+    affiliateLogger.error('동기화 상태 업데이트 실패:', error);
     return false;
   }
 

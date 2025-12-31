@@ -4,6 +4,7 @@
 // ============================================================
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { socialLogger } from '@/lib/utils/logger';
 import type {
   Friend,
   FriendRequest,
@@ -13,26 +14,25 @@ import type {
 } from '@/types/friends';
 
 // 친구 목록 조회
-export async function getFriends(
-  supabase: SupabaseClient,
-  clerkUserId: string
-): Promise<Friend[]> {
+export async function getFriends(supabase: SupabaseClient, clerkUserId: string): Promise<Friend[]> {
   // 수락된 친구 관계 조회
   const { data: friendships, error } = await supabase
     .from('friendships')
-    .select(`
+    .select(
+      `
       id,
       requester_id,
       addressee_id,
       status,
       created_at,
       updated_at
-    `)
+    `
+    )
     .or(`requester_id.eq.${clerkUserId},addressee_id.eq.${clerkUserId}`)
     .eq('status', 'accepted');
 
   if (error || !friendships) {
-    console.error('[Friends] Error fetching friends:', error);
+    socialLogger.error('친구 목록 조회 실패:', error);
     return [];
   }
 
@@ -50,7 +50,7 @@ export async function getFriends(
     .in('clerk_user_id', friendIds);
 
   if (usersError || !users) {
-    console.error('[Friends] Error fetching user info:', usersError);
+    socialLogger.error('사용자 정보 조회 실패:', usersError);
     return [];
   }
 
@@ -61,10 +61,12 @@ export async function getFriends(
     .in('clerk_user_id', friendIds);
 
   const levelMap = new Map(
-    (levels ?? []).map((l: { clerk_user_id: string; level: number; total_xp: number; tier: string }) => [
-      l.clerk_user_id,
-      { level: l.level, totalXp: l.total_xp, tier: l.tier },
-    ])
+    (levels ?? []).map(
+      (l: { clerk_user_id: string; level: number; total_xp: number; tier: string }) => [
+        l.clerk_user_id,
+        { level: l.level, totalXp: l.total_xp, tier: l.tier },
+      ]
+    )
   );
 
   // Friend 객체 생성
@@ -74,7 +76,11 @@ export async function getFriends(
         f.requester_id === user.clerk_user_id || f.addressee_id === user.clerk_user_id
     ) as FriendshipRow;
 
-    const levelInfo = levelMap.get(user.clerk_user_id) ?? { level: 1, totalXp: 0, tier: 'beginner' };
+    const levelInfo = levelMap.get(user.clerk_user_id) ?? {
+      level: 1,
+      totalXp: 0,
+      tier: 'beginner',
+    };
 
     return {
       userId: user.clerk_user_id,
@@ -96,17 +102,19 @@ export async function getReceivedRequests(
 ): Promise<FriendRequest[]> {
   const { data, error } = await supabase
     .from('friendships')
-    .select(`
+    .select(
+      `
       id,
       requester_id,
       created_at
-    `)
+    `
+    )
     .eq('addressee_id', clerkUserId)
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
 
   if (error || !data) {
-    console.error('[Friends] Error fetching requests:', error);
+    socialLogger.error('친구 요청 조회 실패:', error);
     return [];
   }
 
@@ -125,12 +133,8 @@ export async function getReceivedRequests(
     .select('clerk_user_id, level')
     .in('clerk_user_id', requesterIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
-  const levelMap = new Map(
-    (levels ?? []).map((l) => [l.clerk_user_id, l.level])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
+  const levelMap = new Map((levels ?? []).map((l) => [l.clerk_user_id, l.level]));
 
   return data.map((request) => {
     const user = userMap.get(request.requester_id);
@@ -152,17 +156,19 @@ export async function getSentRequests(
 ): Promise<FriendRequest[]> {
   const { data, error } = await supabase
     .from('friendships')
-    .select(`
+    .select(
+      `
       id,
       addressee_id,
       created_at
-    `)
+    `
+    )
     .eq('requester_id', clerkUserId)
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
 
   if (error || !data) {
-    console.error('[Friends] Error fetching sent requests:', error);
+    socialLogger.error('보낸 요청 조회 실패:', error);
     return [];
   }
 
@@ -175,9 +181,7 @@ export async function getSentRequests(
     .select('clerk_user_id, display_name, avatar_url')
     .in('clerk_user_id', addresseeIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
 
   return data.map((request) => {
     const user = userMap.get(request.addressee_id);
@@ -243,7 +247,7 @@ export async function searchUsers(
     .limit(limit);
 
   if (error || !users) {
-    console.error('[Friends] Error searching users:', error);
+    socialLogger.error('사용자 검색 실패:', error);
     return [];
   }
 
@@ -270,7 +274,10 @@ export async function searchUsers(
     (levels ?? []).map((l) => [l.clerk_user_id, { level: l.level, tier: l.tier }])
   );
 
-  const friendshipMap = new Map<string, { isFriend: boolean; isPending: boolean; isBlocked: boolean }>();
+  const friendshipMap = new Map<
+    string,
+    { isFriend: boolean; isPending: boolean; isBlocked: boolean }
+  >();
 
   (friendships ?? []).forEach((f) => {
     const friendId = f.requester_id === clerkUserId ? f.addressee_id : f.requester_id;

@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { smartMatchingLogger } from '@/lib/utils/logger';
 import type {
   BrandSizeChart,
   BrandSizeChartDB,
@@ -147,7 +148,7 @@ export async function upsertSizeChart(input: {
     .single();
 
   if (error) {
-    console.error('[SizeChart] Upsert 실패:', error);
+    smartMatchingLogger.error('사이즈차트 Upsert 실패:', error);
     return null;
   }
 
@@ -161,7 +162,9 @@ export async function upsertSizeChart(input: {
 /**
  * 제품 실측 데이터 조회
  */
-export async function getProductMeasurements(productId: string): Promise<ProductMeasurements | null> {
+export async function getProductMeasurements(
+  productId: string
+): Promise<ProductMeasurements | null> {
   const { data, error } = await supabase
     .from('product_measurements')
     .select('*')
@@ -198,7 +201,7 @@ export async function upsertProductMeasurements(input: {
     .single();
 
   if (error) {
-    console.error('[ProductMeasurements] Upsert 실패:', error);
+    smartMatchingLogger.error('제품실측 Upsert 실패:', error);
     return null;
   }
 
@@ -232,7 +235,10 @@ export function recommendSizeFromMeasurements(
 
     // 키 체크
     if (userMeasurements.height && mapping.minHeight && mapping.maxHeight) {
-      if (userMeasurements.height >= mapping.minHeight && userMeasurements.height <= mapping.maxHeight) {
+      if (
+        userMeasurements.height >= mapping.minHeight &&
+        userMeasurements.height <= mapping.maxHeight
+      ) {
         score += 1;
         reasons.push('키');
       }
@@ -241,7 +247,10 @@ export function recommendSizeFromMeasurements(
 
     // 몸무게 체크
     if (userMeasurements.weight && mapping.minWeight && mapping.maxWeight) {
-      if (userMeasurements.weight >= mapping.minWeight && userMeasurements.weight <= mapping.maxWeight) {
+      if (
+        userMeasurements.weight >= mapping.minWeight &&
+        userMeasurements.weight <= mapping.maxWeight
+      ) {
         score += 1;
         reasons.push('몸무게');
       }

@@ -4,6 +4,7 @@
  */
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { ragLogger } from '@/lib/utils/logger';
 import type { AnyProduct, ProductType, CosmeticProduct, SupplementProduct } from '@/types/product';
 
 // API 키 검증
@@ -12,10 +13,22 @@ const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
 // 안전 설정
 const safetySettings = [
-  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+  },
 ];
 
 export interface ProductQARequest {
@@ -159,7 +172,7 @@ export async function askProductQuestion(request: ProductQARequest): Promise<Pro
       confidence: 'medium',
     };
   } catch (error) {
-    console.error('Product Q&A 오류:', error);
+    ragLogger.error('Product Q&A 오류:', error);
     return {
       answer: '죄송합니다. 답변을 생성하는 중 오류가 발생했습니다.',
       confidence: 'low',

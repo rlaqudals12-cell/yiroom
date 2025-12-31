@@ -4,6 +4,7 @@
  */
 
 import type { AffiliatePartnerName } from '@/types/affiliate';
+import { affiliateLogger } from '@/lib/utils/logger';
 
 /** 실험 정의 */
 export interface ABExperiment {
@@ -139,10 +140,7 @@ function selectVariant(experiment: ABExperiment): ABVariant {
  * 사용자에게 변형 할당 (클라이언트 사이드)
  * @description 쿠키 기반으로 일관된 경험 제공
  */
-export function assignVariant(
-  experimentId: string,
-  existingAssignment?: string
-): ABVariant | null {
+export function assignVariant(experimentId: string, existingAssignment?: string): ABVariant | null {
   const experiment = getExperiment(experimentId);
   if (!experiment || !experiment.isActive) {
     return null;
@@ -163,10 +161,7 @@ export function assignVariant(
 /**
  * 쿠키에서 할당 정보 읽기
  */
-export function getAssignmentFromCookie(
-  cookies: string,
-  experimentId: string
-): string | null {
+export function getAssignmentFromCookie(cookies: string, experimentId: string): string | null {
   const cookieKey = `${COOKIE_PREFIX}${experimentId}`;
   const match = cookies.match(new RegExp(`${cookieKey}=([^;]+)`));
   return match ? match[1] : null;
@@ -175,11 +170,7 @@ export function getAssignmentFromCookie(
 /**
  * 쿠키에 할당 정보 저장 (클라이언트용)
  */
-export function setAssignmentCookie(
-  experimentId: string,
-  variantId: string,
-  days = 30
-): string {
+export function setAssignmentCookie(experimentId: string, variantId: string, days = 30): string {
   const cookieKey = `${COOKIE_PREFIX}${experimentId}`;
   const expires = new Date();
   expires.setDate(expires.getDate() + days);
@@ -203,9 +194,7 @@ export function getChannelOrder(
 
   // 가격순 정렬
   if (channelOrder === 'price-asc') {
-    return channels
-      .sort((a, b) => a.priceKrw - b.priceKrw)
-      .map((c) => c.partnerId);
+    return channels.sort((a, b) => a.priceKrw - b.priceKrw).map((c) => c.partnerId);
   }
 
   // 기본 순서
@@ -245,7 +234,7 @@ export function trackABEvent(event: Omit<ABEvent, 'timestamp'>): void {
 
   // 개발 모드 로깅
   if (process.env.NODE_ENV === 'development') {
-    console.log('[AB Test] Event:', fullEvent);
+    affiliateLogger.debug('AB Test 이벤트:', fullEvent);
   }
 }
 
@@ -264,7 +253,7 @@ export async function flushEvents(): Promise<void> {
   //   body: JSON.stringify({ events }),
   // });
 
-  console.log(`[AB Test] Flushed ${events.length} events`);
+  affiliateLogger.debug(`AB Test: ${events.length}개 이벤트 플러시됨`);
 }
 
 /**

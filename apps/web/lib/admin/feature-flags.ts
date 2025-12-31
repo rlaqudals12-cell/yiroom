@@ -5,6 +5,7 @@
 
 import { supabase } from '@/lib/supabase/client';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { adminLogger } from '@/lib/utils/logger';
 
 /**
  * Feature Flag 타입
@@ -66,13 +67,10 @@ export async function getAllFeatureFlags(): Promise<FeatureFlag[]> {
   // 관리자 페이지에서 호출되므로 service role 사용
   const client = createServiceRoleClient();
 
-  const { data, error } = await client
-    .from('feature_flags')
-    .select('*')
-    .order('name');
+  const { data, error } = await client.from('feature_flags').select('*').order('name');
 
   if (error) {
-    console.error('Feature flags 조회 실패:', error);
+    adminLogger.error('Feature flags 조회 실패:', error);
     return [];
   }
 
@@ -84,11 +82,7 @@ export async function getAllFeatureFlags(): Promise<FeatureFlag[]> {
  */
 export async function getFeatureFlag(key: FeatureFlagKey): Promise<FeatureFlag | null> {
   // 공개 클라이언트 사용 (feature 확인은 모든 곳에서 가능해야 함)
-  const { data, error } = await supabase
-    .from('feature_flags')
-    .select('*')
-    .eq('key', key)
-    .single();
+  const { data, error } = await supabase.from('feature_flags').select('*').eq('key', key).single();
 
   if (error || !data) {
     return null;
@@ -123,7 +117,7 @@ export async function toggleFeatureFlag(
     .single();
 
   if (error) {
-    console.error('Feature flag 토글 실패:', error);
+    adminLogger.error('Feature flag 토글 실패:', error);
     return null;
   }
 
@@ -150,7 +144,7 @@ export async function createFeatureFlag(
     .single();
 
   if (error) {
-    console.error('Feature flag 생성 실패:', error);
+    adminLogger.error('Feature flag 생성 실패:', error);
     return null;
   }
 
@@ -163,13 +157,10 @@ export async function createFeatureFlag(
 export async function deleteFeatureFlag(key: FeatureFlagKey): Promise<boolean> {
   const supabase = createServiceRoleClient();
 
-  const { error } = await supabase
-    .from('feature_flags')
-    .delete()
-    .eq('key', key);
+  const { error } = await supabase.from('feature_flags').delete().eq('key', key);
 
   if (error) {
-    console.error('Feature flag 삭제 실패:', error);
+    adminLogger.error('Feature flag 삭제 실패:', error);
     return false;
   }
 

@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { smartMatchingLogger } from '@/lib/utils/logger';
 import type { ProductBarcode, ProductBarcodeDB } from '@/types/smart-matching';
 
 /**
@@ -89,7 +90,7 @@ export async function createBarcode(input: {
     .single();
 
   if (error) {
-    console.error('[Barcode] 등록 실패:', error);
+    smartMatchingLogger.error('바코드 등록 실패:', error);
     return null;
   }
 
@@ -99,10 +100,7 @@ export async function createBarcode(input: {
 /**
  * 바코드-제품 연결
  */
-export async function linkBarcodeToProduct(
-  barcodeId: string,
-  productId: string
-): Promise<boolean> {
+export async function linkBarcodeToProduct(barcodeId: string, productId: string): Promise<boolean> {
   const { error } = await supabase
     .from('product_barcodes')
     .update({
@@ -112,7 +110,7 @@ export async function linkBarcodeToProduct(
     .eq('id', barcodeId);
 
   if (error) {
-    console.error('[Barcode] 연결 실패:', error);
+    smartMatchingLogger.error('바코드 연결 실패:', error);
     return false;
   }
 
@@ -129,7 +127,7 @@ export async function verifyBarcode(barcodeId: string): Promise<boolean> {
     .eq('id', barcodeId);
 
   if (error) {
-    console.error('[Barcode] 검증 실패:', error);
+    smartMatchingLogger.error('바코드 검증 실패:', error);
     return false;
   }
 

@@ -4,11 +4,8 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
-import type {
-  UserSizeHistory,
-  UserSizeHistoryDB,
-  SizeFit,
-} from '@/types/smart-matching';
+import { smartMatchingLogger } from '@/lib/utils/logger';
+import type { UserSizeHistory, UserSizeHistoryDB, SizeFit } from '@/types/smart-matching';
 import { mapSizeHistoryRow } from '@/types/smart-matching';
 
 /**
@@ -99,7 +96,7 @@ export async function addSizeHistory(input: {
     .single();
 
   if (error) {
-    console.error('[SizeHistory] 추가 실패:', error);
+    smartMatchingLogger.error('사이즈기록 추가 실패:', error);
     return null;
   }
 
@@ -109,17 +106,11 @@ export async function addSizeHistory(input: {
 /**
  * 사이즈 핏 피드백 업데이트
  */
-export async function updateSizeFit(
-  historyId: string,
-  fit: SizeFit
-): Promise<boolean> {
-  const { error } = await supabase
-    .from('user_size_history')
-    .update({ fit })
-    .eq('id', historyId);
+export async function updateSizeFit(historyId: string, fit: SizeFit): Promise<boolean> {
+  const { error } = await supabase.from('user_size_history').update({ fit }).eq('id', historyId);
 
   if (error) {
-    console.error('[SizeHistory] 핏 업데이트 실패:', error);
+    smartMatchingLogger.error('사이즈기록 핏 업데이트 실패:', error);
     return false;
   }
 
@@ -130,13 +121,10 @@ export async function updateSizeFit(
  * 사이즈 기록 삭제
  */
 export async function deleteSizeHistory(historyId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('user_size_history')
-    .delete()
-    .eq('id', historyId);
+  const { error } = await supabase.from('user_size_history').delete().eq('id', historyId);
 
   if (error) {
-    console.error('[SizeHistory] 삭제 실패:', error);
+    smartMatchingLogger.error('사이즈기록 삭제 실패:', error);
     return false;
   }
 

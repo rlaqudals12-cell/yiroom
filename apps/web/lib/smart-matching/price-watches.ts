@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { smartMatchingLogger } from '@/lib/utils/logger';
 import type {
   PriceWatch,
   PriceWatchDB,
@@ -79,7 +80,7 @@ export async function createPriceWatch(input: {
     .single();
 
   if (error) {
-    console.error('[PriceWatch] 생성 실패:', error);
+    smartMatchingLogger.error('가격알림 생성 실패:', error);
     return null;
   }
 
@@ -105,13 +106,10 @@ export async function updatePriceWatch(
   if (updates.platforms !== undefined) updateData.platforms = updates.platforms;
   if (updates.expiresAt !== undefined) updateData.expires_at = updates.expiresAt.toISOString();
 
-  const { error } = await supabase
-    .from('price_watches')
-    .update(updateData)
-    .eq('id', watchId);
+  const { error } = await supabase.from('price_watches').update(updateData).eq('id', watchId);
 
   if (error) {
-    console.error('[PriceWatch] 업데이트 실패:', error);
+    smartMatchingLogger.error('가격알림 업데이트 실패:', error);
     return false;
   }
 
@@ -135,7 +133,7 @@ export async function updateCurrentPrice(
     .eq('id', watchId);
 
   if (error) {
-    console.error('[PriceWatch] 최저가 업데이트 실패:', error);
+    smartMatchingLogger.error('가격알림 최저가 업데이트 실패:', error);
     return false;
   }
 
@@ -155,7 +153,7 @@ export async function markAsNotified(watchId: string): Promise<boolean> {
     .eq('id', watchId);
 
   if (error) {
-    console.error('[PriceWatch] 알림 처리 실패:', error);
+    smartMatchingLogger.error('가격알림 알림 처리 실패:', error);
     return false;
   }
 
@@ -166,13 +164,10 @@ export async function markAsNotified(watchId: string): Promise<boolean> {
  * 가격 알림 삭제
  */
 export async function deletePriceWatch(watchId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('price_watches')
-    .delete()
-    .eq('id', watchId);
+  const { error } = await supabase.from('price_watches').delete().eq('id', watchId);
 
   if (error) {
-    console.error('[PriceWatch] 삭제 실패:', error);
+    smartMatchingLogger.error('가격알림 삭제 실패:', error);
     return false;
   }
 
@@ -190,7 +185,7 @@ export async function cleanupExpiredWatches(): Promise<number> {
     .select();
 
   if (error) {
-    console.error('[PriceWatch] 만료 정리 실패:', error);
+    smartMatchingLogger.error('가격알림 만료 정리 실패:', error);
     return 0;
   }
 
@@ -223,10 +218,7 @@ export async function getPriceHistory(
     limit?: number;
   }
 ): Promise<PriceHistory[]> {
-  let query = supabase
-    .from('price_history')
-    .select('*')
-    .eq('product_id', productId);
+  let query = supabase.from('price_history').select('*').eq('product_id', productId);
 
   if (options?.platform) {
     query = query.eq('platform', options.platform);
@@ -274,7 +266,7 @@ export async function recordPrice(input: {
     .single();
 
   if (error) {
-    console.error('[PriceHistory] 기록 실패:', error);
+    smartMatchingLogger.error('가격히스토리 기록 실패:', error);
     return null;
   }
 
@@ -288,10 +280,7 @@ export async function getLowestPrice(
   productId: string,
   platform?: string
 ): Promise<{ price: number; platform: string; recordedAt: Date } | null> {
-  let query = supabase
-    .from('price_history')
-    .select('*')
-    .eq('product_id', productId);
+  let query = supabase.from('price_history').select('*').eq('product_id', productId);
 
   if (platform) {
     query = query.eq('platform', platform);

@@ -5,6 +5,7 @@
  * - AI 분류: Gemini Vision
  */
 
+import { inventoryLogger } from '@/lib/utils/logger';
 import { ClothingCategory, Pattern } from '@/types/inventory';
 
 // @imgly/background-removal 타입 (패키지 미설치 시에도 동작)
@@ -16,10 +17,7 @@ interface RemoveBackgroundOptions {
   };
 }
 
-type RemoveBackgroundFn = (
-  imageBlob: Blob,
-  options?: RemoveBackgroundOptions
-) => Promise<Blob>;
+type RemoveBackgroundFn = (imageBlob: Blob, options?: RemoveBackgroundOptions) => Promise<Blob>;
 
 // 색상 이름 매핑 (HEX -> 한글)
 const COLOR_NAMES: Record<string, string> = {
@@ -49,7 +47,13 @@ const COLOR_NAMES: Record<string, string> = {
  * RGB를 HEX로 변환
  */
 function rgbToHex(r: number, g: number, b: number): string {
-  return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+  return (
+    '#' +
+    [r, g, b]
+      .map((x) => x.toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase()
+  );
 }
 
 /**
@@ -92,10 +96,7 @@ function getClosestColorName(hex: string): string {
  * 이미지에서 주요 색상 추출 (Canvas API 사용)
  * 브라우저에서만 동작
  */
-export async function extractDominantColors(
-  imageBlob: Blob,
-  count: number = 3
-): Promise<string[]> {
+export async function extractDominantColors(imageBlob: Blob, count: number = 3): Promise<string[]> {
   // 서버 환경에서는 빈 배열 반환
   if (typeof window === 'undefined') {
     return [];
@@ -173,7 +174,7 @@ export async function removeBackgroundClient(imageBlob: Blob): Promise<Blob> {
 
     return result;
   } catch (error) {
-    console.error('[ImageProcessing] Background removal failed:', error);
+    inventoryLogger.error('Background removal failed:', error);
     // 실패 시 원본 반환
     return imageBlob;
   }
@@ -194,9 +195,7 @@ export interface ClothingClassificationResult {
 /**
  * AI로 의류 분류 (Gemini Vision)
  */
-export async function classifyClothing(
-  imageUrl: string
-): Promise<ClothingClassificationResult> {
+export async function classifyClothing(imageUrl: string): Promise<ClothingClassificationResult> {
   try {
     const response = await fetch('/api/inventory/classify', {
       method: 'POST',
@@ -210,7 +209,7 @@ export async function classifyClothing(
 
     return await response.json();
   } catch (error) {
-    console.error('[ImageProcessing] Classification failed:', error);
+    inventoryLogger.error('Classification failed:', error);
     // Fallback: 기본값 반환
     return {
       category: 'top',

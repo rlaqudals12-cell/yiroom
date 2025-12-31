@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { productLogger } from '@/lib/utils/logger';
 import type {
   HealthFood,
   HealthFoodRow,
@@ -58,15 +59,8 @@ export function mapHealthFoodRow(row: HealthFoodRow): HealthFood {
  * @param filter 필터 옵션
  * @param limit 최대 개수 (기본 50)
  */
-export async function getHealthFoods(
-  filter?: HealthFoodFilter,
-  limit = 50
-): Promise<HealthFood[]> {
-  let query = supabase
-    .from('health_foods')
-    .select('*')
-    .eq('is_active', true)
-    .limit(limit);
+export async function getHealthFoods(filter?: HealthFoodFilter, limit = 50): Promise<HealthFood[]> {
+  let query = supabase.from('health_foods').select('*').eq('is_active', true).limit(limit);
 
   if (filter?.category) {
     query = query.eq('category', filter.category);
@@ -108,7 +102,7 @@ export async function getHealthFoods(
   const { data, error } = await query.order('rating', { ascending: false });
 
   if (error) {
-    console.error('건강식품 조회 실패:', error);
+    productLogger.error('건강식품 조회 실패:', error);
     return [];
   }
 
@@ -119,9 +113,7 @@ export async function getHealthFoods(
  * 건강식품 단일 조회
  * @param id 제품 ID
  */
-export async function getHealthFoodById(
-  id: string
-): Promise<HealthFood | null> {
+export async function getHealthFoodById(id: string): Promise<HealthFood | null> {
   const { data, error } = await supabase
     .from('health_foods')
     .select('*')
@@ -130,7 +122,7 @@ export async function getHealthFoodById(
     .single();
 
   if (error || !data) {
-    console.error('건강식품 조회 실패:', error);
+    productLogger.error('건강식품 조회 실패:', error);
     return null;
   }
 
@@ -170,7 +162,7 @@ export async function getRecommendedHealthFoods(
   const { data, error } = await query;
 
   if (error) {
-    console.error('추천 건강식품 조회 실패:', error);
+    productLogger.error('추천 건강식품 조회 실패:', error);
     return [];
   }
 
@@ -201,7 +193,7 @@ export async function getHighProteinFoods(
   const { data, error } = await query;
 
   if (error) {
-    console.error('고단백 식품 조회 실패:', error);
+    productLogger.error('고단백 식품 조회 실패:', error);
     return [];
   }
 
@@ -212,13 +204,10 @@ export async function getHighProteinFoods(
  * 건강식품 브랜드 목록 조회
  */
 export async function getHealthFoodBrands(): Promise<string[]> {
-  const { data, error } = await supabase
-    .from('health_foods')
-    .select('brand')
-    .eq('is_active', true);
+  const { data, error } = await supabase.from('health_foods').select('brand').eq('is_active', true);
 
   if (error) {
-    console.error('브랜드 조회 실패:', error);
+    productLogger.error('브랜드 조회 실패:', error);
     return [];
   }
 

@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { productLogger } from '@/lib/utils/logger';
 import type {
   SupplementProduct,
   SupplementProductRow,
@@ -45,11 +46,7 @@ export async function getSupplementProducts(
   filter?: SupplementProductFilter,
   limit = 50
 ): Promise<SupplementProduct[]> {
-  let query = supabase
-    .from('supplement_products')
-    .select('*')
-    .eq('is_active', true)
-    .limit(limit);
+  let query = supabase.from('supplement_products').select('*').eq('is_active', true).limit(limit);
 
   if (filter?.category) {
     query = query.eq('category', filter.category);
@@ -78,7 +75,7 @@ export async function getSupplementProducts(
   const { data, error } = await query.order('rating', { ascending: false });
 
   if (error) {
-    console.error('영양제 조회 실패:', error);
+    productLogger.error('영양제 조회 실패:', error);
     return [];
   }
 
@@ -89,9 +86,7 @@ export async function getSupplementProducts(
  * 영양제 단일 조회
  * @param id 제품 ID
  */
-export async function getSupplementProductById(
-  id: string
-): Promise<SupplementProduct | null> {
+export async function getSupplementProductById(id: string): Promise<SupplementProduct | null> {
   const { data, error } = await supabase
     .from('supplement_products')
     .select('*')
@@ -100,7 +95,7 @@ export async function getSupplementProductById(
     .single();
 
   if (error || !data) {
-    console.error('영양제 조회 실패:', error);
+    productLogger.error('영양제 조회 실패:', error);
     return null;
   }
 
@@ -134,7 +129,7 @@ export async function getRecommendedSupplements(
   const { data, error } = await query;
 
   if (error) {
-    console.error('추천 영양제 조회 실패:', error);
+    productLogger.error('추천 영양제 조회 실패:', error);
     return [];
   }
 
@@ -151,7 +146,7 @@ export async function getSupplementBrands(): Promise<string[]> {
     .eq('is_active', true);
 
   if (error) {
-    console.error('브랜드 조회 실패:', error);
+    productLogger.error('브랜드 조회 실패:', error);
     return [];
   }
 

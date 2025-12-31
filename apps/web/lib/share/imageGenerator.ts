@@ -1,5 +1,7 @@
 'use client';
 
+import { shareLogger } from '@/lib/utils/logger';
+
 /**
  * HTML 요소를 PNG 이미지로 캡처
  * @param element 캡처할 HTML 요소
@@ -32,7 +34,7 @@ export async function captureElementAsImage(
     const response = await fetch(dataUrl);
     return response.blob();
   } catch (error) {
-    console.error('[이룸] 이미지 생성 실패:', error);
+    shareLogger.error('이미지 생성 실패:', error);
     return null;
   }
 }
@@ -42,9 +44,7 @@ export async function captureElementAsImage(
  * @param element 캡처할 HTML 요소
  * @returns PNG Data URL 또는 null (실패 시)
  */
-export async function captureElementAsDataUrl(
-  element: HTMLElement
-): Promise<string | null> {
+export async function captureElementAsDataUrl(element: HTMLElement): Promise<string | null> {
   const { toPng } = await import('html-to-image');
 
   try {
@@ -55,7 +55,7 @@ export async function captureElementAsDataUrl(
       backgroundColor: '#ffffff',
     });
   } catch (error) {
-    console.error('[이룸] 이미지 생성 실패:', error);
+    shareLogger.error('이미지 생성 실패:', error);
     return null;
   }
 }

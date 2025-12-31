@@ -4,6 +4,7 @@
 // ============================================================
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { leaderboardLogger } from '@/lib/utils/logger';
 import type {
   Leaderboard,
   LeaderboardPeriod,
@@ -58,7 +59,7 @@ export async function getLeaderboard(
     .maybeSingle();
 
   if (error) {
-    console.error('[Leaderboard] Error fetching leaderboard:', error);
+    leaderboardLogger.error(' Error fetching leaderboard:', error);
     return null;
   }
 
@@ -122,17 +123,19 @@ export async function calculateXpLeaderboard(
 ): Promise<RankingEntry[]> {
   const { data, error } = await supabase
     .from('user_levels')
-    .select(`
+    .select(
+      `
       clerk_user_id,
       level,
       total_xp,
       tier
-    `)
+    `
+    )
     .order('total_xp', { ascending: false })
     .limit(limit);
 
   if (error || !data) {
-    console.error('[Leaderboard] Error calculating XP leaderboard:', error);
+    leaderboardLogger.error(' Error calculating XP leaderboard:', error);
     return [];
   }
 
@@ -143,9 +146,7 @@ export async function calculateXpLeaderboard(
     .select('clerk_user_id, display_name, avatar_url')
     .in('clerk_user_id', userIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
 
   return data.map((entry, index) => {
     const user = userMap.get(entry.clerk_user_id);
@@ -168,18 +169,20 @@ export async function calculateLevelLeaderboard(
 ): Promise<RankingEntry[]> {
   const { data, error } = await supabase
     .from('user_levels')
-    .select(`
+    .select(
+      `
       clerk_user_id,
       level,
       total_xp,
       tier
-    `)
+    `
+    )
     .order('level', { ascending: false })
     .order('total_xp', { ascending: false })
     .limit(limit);
 
   if (error || !data) {
-    console.error('[Leaderboard] Error calculating level leaderboard:', error);
+    leaderboardLogger.error(' Error calculating level leaderboard:', error);
     return [];
   }
 
@@ -189,9 +192,7 @@ export async function calculateLevelLeaderboard(
     .select('clerk_user_id, display_name, avatar_url')
     .in('clerk_user_id', userIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
 
   return data.map((entry, index) => {
     const user = userMap.get(entry.clerk_user_id);
@@ -215,23 +216,25 @@ export async function calculateWellnessLeaderboard(
   // 가장 최근 웰니스 스코어 기준
   const { data, error } = await supabase
     .from('wellness_scores')
-    .select(`
+    .select(
+      `
       clerk_user_id,
       total_score,
       workout_score,
       nutrition_score,
       wellness_date
-    `)
+    `
+    )
     .order('wellness_date', { ascending: false })
     .order('total_score', { ascending: false });
 
   if (error || !data) {
-    console.error('[Leaderboard] Error calculating wellness leaderboard:', error);
+    leaderboardLogger.error(' Error calculating wellness leaderboard:', error);
     return [];
   }
 
   // 사용자별 최신 점수만 추출
-  const latestScores = new Map<string, typeof data[0]>();
+  const latestScores = new Map<string, (typeof data)[0]>();
   for (const entry of data) {
     if (!latestScores.has(entry.clerk_user_id)) {
       latestScores.set(entry.clerk_user_id, entry);
@@ -256,12 +259,8 @@ export async function calculateWellnessLeaderboard(
     .select('clerk_user_id, level, tier')
     .in('clerk_user_id', userIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
-  const levelMap = new Map(
-    (levels ?? []).map((l) => [l.clerk_user_id, l])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
+  const levelMap = new Map((levels ?? []).map((l) => [l.clerk_user_id, l]));
 
   return sortedScores.map((entry, index) => {
     const user = userMap.get(entry.clerk_user_id);
@@ -289,18 +288,20 @@ export async function calculateWorkoutLeaderboard(
 
   const { data, error } = await supabase
     .from('workout_logs')
-    .select(`
+    .select(
+      `
       user_id,
       actual_duration,
       actual_calories,
       completed_at
-    `)
+    `
+    )
     .gte('completed_at', weekStart)
     .lte('completed_at', weekEnd + 'T23:59:59')
     .not('completed_at', 'is', null);
 
   if (error || !data) {
-    console.error('[Leaderboard] Error calculating workout leaderboard:', error);
+    leaderboardLogger.error(' Error calculating workout leaderboard:', error);
     return [];
   }
 
@@ -311,9 +312,7 @@ export async function calculateWorkoutLeaderboard(
     .select('id, clerk_user_id')
     .in('id', Array.from(userIdSet));
 
-  const userIdToClerkId = new Map(
-    (userMappings ?? []).map((u) => [u.id, u.clerk_user_id])
-  );
+  const userIdToClerkId = new Map((userMappings ?? []).map((u) => [u.id, u.clerk_user_id]));
 
   // 사용자별 운동 시간 집계
   const workoutStats = new Map<string, { duration: number; calories: number }>();
@@ -344,12 +343,8 @@ export async function calculateWorkoutLeaderboard(
     .select('clerk_user_id, level, tier')
     .in('clerk_user_id', clerkUserIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
-  const levelMap = new Map(
-    (levels ?? []).map((l) => [l.clerk_user_id, l])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
+  const levelMap = new Map((levels ?? []).map((l) => [l.clerk_user_id, l]));
 
   return sortedStats.map(([clerkUserId, stats], index) => {
     const user = userMap.get(clerkUserId);
@@ -377,17 +372,19 @@ export async function calculateNutritionLeaderboard(
 
   const { data, error } = await supabase
     .from('daily_nutrition_summary')
-    .select(`
+    .select(
+      `
       clerk_user_id,
       record_date,
       total_calories,
       goal_met
-    `)
+    `
+    )
     .gte('record_date', weekStart)
     .lte('record_date', weekEnd);
 
   if (error || !data) {
-    console.error('[Leaderboard] Error calculating nutrition leaderboard:', error);
+    leaderboardLogger.error(' Error calculating nutrition leaderboard:', error);
     return [];
   }
 
@@ -424,12 +421,8 @@ export async function calculateNutritionLeaderboard(
     .select('clerk_user_id, level, tier')
     .in('clerk_user_id', clerkUserIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
-  const levelMap = new Map(
-    (levels ?? []).map((l) => [l.clerk_user_id, l])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
+  const levelMap = new Map((levels ?? []).map((l) => [l.clerk_user_id, l]));
 
   return sortedStats.map(([clerkUserId, stats], index) => {
     const user = userMap.get(clerkUserId);
@@ -478,7 +471,7 @@ export async function getFriendsLeaderboard(
     .order(category === 'level' ? 'level' : 'total_xp', { ascending: false });
 
   if (error || !levels) {
-    console.error('[Leaderboard] Error fetching friends leaderboard:', error);
+    leaderboardLogger.error(' Error fetching friends leaderboard:', error);
     return [];
   }
 
@@ -488,9 +481,7 @@ export async function getFriendsLeaderboard(
     .select('clerk_user_id, display_name, avatar_url')
     .in('clerk_user_id', allUserIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
 
   return levels.map((entry, index) => {
     const user = userMap.get(entry.clerk_user_id);

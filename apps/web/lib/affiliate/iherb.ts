@@ -5,6 +5,7 @@
  */
 
 import type { AffiliateProduct } from '@/types/affiliate';
+import { affiliateLogger } from '@/lib/utils/logger';
 
 // ============================================
 // 설정 및 타입
@@ -94,7 +95,8 @@ const MOCK_IHERB_PRODUCTS: IHerbProductFeed[] = [
     brand: 'California Gold Nutrition',
     price: 12.99,
     currency: 'USD',
-    image_url: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/cgn/cgn01066/y/10.jpg',
+    image_url:
+      'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/cgn/cgn01066/y/10.jpg',
     product_url: 'https://kr.iherb.com/pr/california-gold-nutrition-vitamin-d3-gummies/70316',
     category: 'Supplements',
     subcategory: 'Vitamins',
@@ -109,7 +111,8 @@ const MOCK_IHERB_PRODUCTS: IHerbProductFeed[] = [
     brand: 'NOW Foods',
     price: 15.49,
     currency: 'USD',
-    image_url: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/now/now00373/y/27.jpg',
+    image_url:
+      'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/now/now00373/y/27.jpg',
     product_url: 'https://kr.iherb.com/pr/now-foods-omega-3/327',
     category: 'Supplements',
     subcategory: 'Fish Oil & Omegas',
@@ -123,7 +126,8 @@ const MOCK_IHERB_PRODUCTS: IHerbProductFeed[] = [
     brand: 'Life Extension',
     price: 11.25,
     currency: 'USD',
-    image_url: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/lef/lef02301/y/3.jpg',
+    image_url:
+      'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/lef/lef02301/y/3.jpg',
     product_url: 'https://kr.iherb.com/pr/life-extension-magnesium-caps/67730',
     category: 'Supplements',
     subcategory: 'Minerals',
@@ -137,8 +141,10 @@ const MOCK_IHERB_PRODUCTS: IHerbProductFeed[] = [
     brand: 'California Gold Nutrition',
     price: 49.99,
     currency: 'USD',
-    image_url: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/cgn/cgn01198/y/14.jpg',
-    product_url: 'https://kr.iherb.com/pr/california-gold-nutrition-sport-whey-protein-isolate/85498',
+    image_url:
+      'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/cgn/cgn01198/y/14.jpg',
+    product_url:
+      'https://kr.iherb.com/pr/california-gold-nutrition-sport-whey-protein-isolate/85498',
     category: 'Sports',
     subcategory: 'Protein',
     in_stock: true,
@@ -150,9 +156,10 @@ const MOCK_IHERB_PRODUCTS: IHerbProductFeed[] = [
     product_id: 'THN-00272',
     product_name: 'Thorne Research 비타민 B 컴플렉스 60캡슐',
     brand: 'Thorne Research',
-    price: 22.00,
+    price: 22.0,
     currency: 'USD',
-    image_url: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/thr/thr00272/y/22.jpg',
+    image_url:
+      'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/thr/thr00272/y/22.jpg',
     product_url: 'https://kr.iherb.com/pr/thorne-research-basic-b-complex/18494',
     category: 'Supplements',
     subcategory: 'Vitamins',
@@ -166,7 +173,8 @@ const MOCK_IHERB_PRODUCTS: IHerbProductFeed[] = [
     brand: 'Madre Labs',
     price: 8.99,
     currency: 'USD',
-    image_url: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mda/mda00994/y/4.jpg',
+    image_url:
+      'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mda/mda00994/y/4.jpg',
     product_url: 'https://kr.iherb.com/pr/madre-labs-cocoapolls-dark-chocolate/61710',
     category: 'Grocery',
     subcategory: 'Cocoa & Hot Chocolate',
@@ -194,7 +202,7 @@ export async function searchIHerbProducts(
 
   // Mock 모드: 환경변수 미설정 시
   if (!config) {
-    console.log('[iHerb] Mock mode - returning mock products');
+    affiliateLogger.debug('iHerb Mock 모드: mock 제품 반환');
     return getMockProducts(keyword, category, limit, subId);
   }
 
@@ -219,9 +227,11 @@ export async function searchIHerbProducts(
     }
 
     const data = (await response.json()) as { products: IHerbProductFeed[] };
-    return data.products.map((product) => mapToAffiliateProduct(product, config.publisherId, subId));
+    return data.products.map((product) =>
+      mapToAffiliateProduct(product, config.publisherId, subId)
+    );
   } catch (error) {
-    console.error('[iHerb] API error, falling back to mock:', error);
+    affiliateLogger.error('iHerb API 에러, mock으로 폴백:', error);
     return getMockProducts(keyword, category, limit, subId);
   }
 }
@@ -229,10 +239,7 @@ export async function searchIHerbProducts(
 /**
  * iHerb 딥링크 생성
  */
-export async function createIHerbDeeplink(
-  productUrl: string,
-  subId?: string
-): Promise<string> {
+export async function createIHerbDeeplink(productUrl: string, subId?: string): Promise<string> {
   const config = getConfig();
 
   // Mock 모드
@@ -248,7 +255,7 @@ export async function createIHerbDeeplink(
     const clickUrl = `https://prf.hn/click/camref:${config.campaignId}/pubref:${subId || ''}/destination:${encodedUrl}`;
     return clickUrl;
   } catch (error) {
-    console.error('[iHerb] Deeplink error:', error);
+    affiliateLogger.error('iHerb 딥링크 생성 에러:', error);
     // Fallback
     return productUrl;
   }

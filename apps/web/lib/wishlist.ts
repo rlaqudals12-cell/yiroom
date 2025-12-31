@@ -5,6 +5,7 @@
 
 import type { ProductType } from '@/types/product';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { wishlistLogger } from '@/lib/utils/logger';
 
 export interface WishlistItem {
   id: string;
@@ -42,7 +43,7 @@ export async function addToWishlist(
       // 이미 추가된 제품
       return { success: true };
     }
-    console.error('위시리스트 추가 실패:', error);
+    wishlistLogger.error('위시리스트 추가 실패:', error);
     return { success: false, error: error.message };
   }
 
@@ -66,7 +67,7 @@ export async function removeFromWishlist(
     .eq('product_id', productId);
 
   if (error) {
-    console.error('위시리스트 제거 실패:', error);
+    wishlistLogger.error('위시리스트 제거 실패:', error);
     return { success: false, error: error.message };
   }
 
@@ -112,7 +113,7 @@ export async function checkWishlistStatus(
     .maybeSingle();
 
   if (error) {
-    console.error('위시리스트 상태 확인 실패:', error);
+    wishlistLogger.error('위시리스트 상태 확인 실패:', error);
     return false;
   }
 
@@ -140,7 +141,7 @@ export async function getUserWishlist(
   const { data, error } = await query;
 
   if (error) {
-    console.error('위시리스트 조회 실패:', error);
+    wishlistLogger.error('위시리스트 조회 실패:', error);
     return [];
   }
 
@@ -173,7 +174,7 @@ export async function checkWishlistStatusBulk(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('위시리스트 일괄 조회 실패:', error);
+    wishlistLogger.error('위시리스트 일괄 조회 실패:', error);
     return result;
   }
 
@@ -204,7 +205,7 @@ export async function getWishlistCount(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('위시리스트 개수 조회 실패:', error);
+    wishlistLogger.error('위시리스트 개수 조회 실패:', error);
     return 0;
   }
 

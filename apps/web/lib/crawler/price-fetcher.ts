@@ -11,11 +11,8 @@
  * - mock: 테스트/개발용
  */
 
-import type {
-  PriceFetchRequest,
-  PriceResult,
-  PriceSource,
-} from './types';
+import { crawlerLogger } from '@/lib/utils/logger';
+import type { PriceFetchRequest, PriceResult, PriceSource } from './types';
 import { PREFERRED_SOURCES_BY_TYPE } from './types';
 import { fetchMockPrice } from './sources/mock';
 import { fetchNaverPrice, isNaverApiAvailable } from './sources/naver';
@@ -40,8 +37,10 @@ export async function fetchPrice(
   }
 
   // 제품 타입별 권장 소스 순서대로 시도
-  const preferredSources =
-    PREFERRED_SOURCES_BY_TYPE[request.productType] || ['naver_shopping', 'mock'];
+  const preferredSources = PREFERRED_SOURCES_BY_TYPE[request.productType] || [
+    'naver_shopping',
+    'mock',
+  ];
 
   for (const source of preferredSources) {
     // 소스가 사용 가능한지 확인
@@ -54,15 +53,11 @@ export async function fetchPrice(
       return result;
     }
 
-    console.warn(
-      `[PriceFetcher] ${source} failed for ${request.productId}, trying next source`
-    );
+    crawlerLogger.warn(`${source} failed for ${request.productId}, trying next source`);
   }
 
   // 모든 소스 실패 시 Mock으로 폴백
-  console.warn(
-    `[PriceFetcher] All sources failed for ${request.productId}, using mock`
-  );
+  crawlerLogger.warn(`All sources failed for ${request.productId}, using mock`);
   return fetchMockPrice(request);
 }
 
@@ -202,8 +197,7 @@ export function calculatePriceChange(
   changeType: 'increase' | 'decrease' | 'unchanged';
 } {
   const changeAmount = newPrice - oldPrice;
-  const changePercent =
-    oldPrice > 0 ? Math.round((changeAmount / oldPrice) * 1000) / 10 : 0;
+  const changePercent = oldPrice > 0 ? Math.round((changeAmount / oldPrice) * 1000) / 10 : 0;
 
   let changeType: 'increase' | 'decrease' | 'unchanged';
   if (changePercent > 0) {

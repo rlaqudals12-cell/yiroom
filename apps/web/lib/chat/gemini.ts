@@ -4,6 +4,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { chatLogger } from '@/lib/utils/logger';
 import type { ChatMessage, ChatContext, ProductRecommendation } from '@/types/chat';
 import { buildFullPrompt, parseProductRecommendations } from './prompt';
 
@@ -74,7 +75,7 @@ export async function generateChatResponse(
       };
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      console.error(`[Chat Gemini] Attempt ${attempt + 1} failed:`, lastError.message);
+      chatLogger.error(`Attempt ${attempt + 1} failed:`, lastError.message);
 
       if (attempt < MAX_RETRIES) {
         // 재시도 전 잠시 대기
@@ -84,7 +85,7 @@ export async function generateChatResponse(
   }
 
   // 모든 재시도 실패 시 Mock 응답 반환
-  console.error('[Chat Gemini] All retries failed, returning mock response');
+  chatLogger.error('All retries failed, returning mock response');
   return generateMockResponse(userMessage);
 }
 
@@ -115,7 +116,11 @@ export function generateMockResponse(userMessage: string): {
         reason: '건성 피부 진정에 효과적인 세라마이드 함유',
       },
     ];
-  } else if (lowerMessage.includes('컬러') || lowerMessage.includes('립') || lowerMessage.includes('메이크업')) {
+  } else if (
+    lowerMessage.includes('컬러') ||
+    lowerMessage.includes('립') ||
+    lowerMessage.includes('메이크업')
+  ) {
     content = `회원님은 봄 웜톤이시네요!
 
 코랄, 피치, 살몬핑크 계열의 컬러가 잘 어울리실 거예요. 립 제품을 고르실 때는 오렌지빛이 살짝 도는 코랄 핑크를 추천드려요.

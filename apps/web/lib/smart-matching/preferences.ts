@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { smartMatchingLogger } from '@/lib/utils/logger';
 import type {
   UserPreferences,
   UserPreferencesDB,
@@ -59,7 +60,7 @@ export async function upsertPreferences(
     .single();
 
   if (error) {
-    console.error('[Preferences] Upsert 실패:', error);
+    smartMatchingLogger.error('설정 Upsert 실패:', error);
     return null;
   }
 
@@ -69,17 +70,14 @@ export async function upsertPreferences(
 /**
  * 예산 설정 업데이트
  */
-export async function updateBudget(
-  clerkUserId: string,
-  budget: BudgetSettings
-): Promise<boolean> {
+export async function updateBudget(clerkUserId: string, budget: BudgetSettings): Promise<boolean> {
   const { error } = await supabase
     .from('user_preferences')
     .update({ budget })
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Preferences] 예산 업데이트 실패:', error);
+    smartMatchingLogger.error('설정 예산 업데이트 실패:', error);
     return false;
   }
 
@@ -89,10 +87,7 @@ export async function updateBudget(
 /**
  * 즐겨찾기 브랜드 추가
  */
-export async function addFavoriteBrand(
-  clerkUserId: string,
-  brand: string
-): Promise<boolean> {
+export async function addFavoriteBrand(clerkUserId: string, brand: string): Promise<boolean> {
   // 현재 설정 조회
   const current = await getPreferences(clerkUserId);
   const favoriteBrands = current?.favoriteBrands ?? [];
@@ -110,7 +105,7 @@ export async function addFavoriteBrand(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Preferences] 즐겨찾기 브랜드 추가 실패:', error);
+    smartMatchingLogger.error('설정 즐겨찾기 브랜드 추가 실패:', error);
     return false;
   }
 
@@ -120,10 +115,7 @@ export async function addFavoriteBrand(
 /**
  * 즐겨찾기 브랜드 제거
  */
-export async function removeFavoriteBrand(
-  clerkUserId: string,
-  brand: string
-): Promise<boolean> {
+export async function removeFavoriteBrand(clerkUserId: string, brand: string): Promise<boolean> {
   const current = await getPreferences(clerkUserId);
   const favoriteBrands = (current?.favoriteBrands ?? []).filter((b) => b !== brand);
 
@@ -133,7 +125,7 @@ export async function removeFavoriteBrand(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Preferences] 즐겨찾기 브랜드 제거 실패:', error);
+    smartMatchingLogger.error('설정 즐겨찾기 브랜드 제거 실패:', error);
     return false;
   }
 
@@ -143,10 +135,7 @@ export async function removeFavoriteBrand(
 /**
  * 차단 브랜드 추가
  */
-export async function addBlockedBrand(
-  clerkUserId: string,
-  brand: string
-): Promise<boolean> {
+export async function addBlockedBrand(clerkUserId: string, brand: string): Promise<boolean> {
   const current = await getPreferences(clerkUserId);
   const blockedBrands = current?.blockedBrands ?? [];
 
@@ -162,7 +151,7 @@ export async function addBlockedBrand(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Preferences] 차단 브랜드 추가 실패:', error);
+    smartMatchingLogger.error('설정 차단 브랜드 추가 실패:', error);
     return false;
   }
 
@@ -172,10 +161,7 @@ export async function addBlockedBrand(
 /**
  * 차단 브랜드 제거
  */
-export async function removeBlockedBrand(
-  clerkUserId: string,
-  brand: string
-): Promise<boolean> {
+export async function removeBlockedBrand(clerkUserId: string, brand: string): Promise<boolean> {
   const current = await getPreferences(clerkUserId);
   const blockedBrands = (current?.blockedBrands ?? []).filter((b) => b !== brand);
 
@@ -185,7 +171,7 @@ export async function removeBlockedBrand(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Preferences] 차단 브랜드 제거 실패:', error);
+    smartMatchingLogger.error('설정 차단 브랜드 제거 실패:', error);
     return false;
   }
 
@@ -219,7 +205,7 @@ export async function updateNotificationSettings(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Preferences] 알림 설정 업데이트 실패:', error);
+    smartMatchingLogger.error('설정 알림 설정 업데이트 실패:', error);
     return false;
   }
 

@@ -6,6 +6,7 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { crawlerLogger } from '@/lib/utils/logger';
 import { recordPriceHistory } from '@/lib/products';
 import type { ProductType } from '@/types/product';
 import type {
@@ -17,11 +18,7 @@ import type {
   PriceSource,
 } from './types';
 import { DEFAULT_CRAWLER_CONFIG } from './types';
-import {
-  fetchPrices,
-  calculatePriceChange,
-  validatePriceChange,
-} from './price-fetcher';
+import { fetchPrices, calculatePriceChange, validatePriceChange } from './price-fetcher';
 
 /**
  * 제품 타입별 테이블 이름
@@ -56,7 +53,7 @@ async function getProductsForUpdate(
   const { data, error } = await query;
 
   if (error) {
-    console.error(`[PriceUpdater] Failed to fetch ${productType}:`, error);
+    crawlerLogger.error(`Failed to fetch ${productType}:`, error);
     return [];
   }
 
@@ -90,7 +87,7 @@ async function updateProductPrice(
     .eq('id', productId);
 
   if (error) {
-    console.error(`[PriceUpdater] Failed to update ${productId}:`, error);
+    crawlerLogger.error(`Failed to update ${productId}:`, error);
     return false;
   }
 
@@ -131,9 +128,7 @@ export async function updatePricesForType(
     };
   }
 
-  console.log(
-    `[PriceUpdater] Starting update for ${products.length} ${productType} products`
-  );
+  crawlerLogger.info(`Starting update for ${products.length} ${productType} products`);
 
   // 가격 조회
   const priceResults = await fetchPrices(products, {
@@ -170,9 +165,7 @@ export async function updatePricesForType(
     );
 
     if (!validation.isValid) {
-      console.warn(
-        `[PriceUpdater] Skipping ${product.productId}: ${validation.reason}`
-      );
+      crawlerLogger.warn(`Skipping ${product.productId}: ${validation.reason}`);
       skipped++;
       continue;
     }
@@ -211,16 +204,12 @@ export async function updatePricesForType(
 
   // 가격 변동 로그
   if (priceChanges.length > 0) {
-    console.log(
-      `[PriceUpdater] Price changes detected: ${priceChanges.length}`
-    );
+    crawlerLogger.info(`Price changes detected: ${priceChanges.length}`);
     const significantDrops = priceChanges.filter(
       (c) => c.changeType === 'decrease' && Math.abs(c.changePercent) >= 10
     );
     if (significantDrops.length > 0) {
-      console.log(
-        `[PriceUpdater] Significant price drops: ${significantDrops.length}`
-      );
+      crawlerLogger.info(`Significant price drops: ${significantDrops.length}`);
     }
   }
 
@@ -256,7 +245,7 @@ export async function updateAllPrices(
   const results: Record<string, BatchUpdateResult> = {};
 
   for (const productType of productTypes) {
-    console.log(`[PriceUpdater] Processing ${productType}...`);
+    crawlerLogger.debug(`Processing ${productType}...`);
     results[productType] = await updatePricesForType(productType, {
       limit: options.limitPerType,
       source: options.source,

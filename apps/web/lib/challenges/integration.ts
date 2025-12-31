@@ -4,12 +4,13 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type {
-  ChallengeProgress,
-  UserChallenge,
-  UserChallengeRow,
-} from '@/types/challenges';
-import { userChallengeRowToUserChallenge, isChallengeCompleted, getDaysSinceStart } from './constants';
+import { challengeLogger } from '@/lib/utils/logger';
+import type { ChallengeProgress, UserChallenge, UserChallengeRow } from '@/types/challenges';
+import {
+  userChallengeRowToUserChallenge,
+  isChallengeCompleted,
+  getDaysSinceStart,
+} from './constants';
 
 // ============================================================
 // 챌린지 진행 업데이트 결과
@@ -90,7 +91,7 @@ export async function updateChallengesByDomain(
       .eq('status', 'in_progress');
 
     if (fetchError || !userChallenges) {
-      console.error('[Challenges] Fetch active challenges error:', fetchError);
+      challengeLogger.error(' Fetch active challenges error:', fetchError);
       return { ...result, error: 'Failed to fetch challenges' };
     }
 
@@ -131,12 +132,7 @@ export async function updateChallengesByDomain(
 
       // Combined 챌린지의 경우 두 가지 모두 확인 필요
       if (challenge.domain === 'combined') {
-        const updated = await updateCombinedChallenge(
-          supabase,
-          userChallenge,
-          domain,
-          dayNumber
-        );
+        const updated = await updateCombinedChallenge(supabase, userChallenge, domain, dayNumber);
         if (updated) {
           result.updated++;
           if (updated.isCompleted) {
@@ -170,7 +166,7 @@ export async function updateChallengesByDomain(
       );
 
       if (updateError) {
-        console.error('[Challenges] Update challenge progress error:', updateError);
+        challengeLogger.error(' Update challenge progress error:', updateError);
         continue;
       }
 
@@ -188,7 +184,7 @@ export async function updateChallengesByDomain(
 
     return result;
   } catch (error) {
-    console.error('[Challenges] Update challenges by domain error:', error);
+    challengeLogger.error(' Update challenges by domain error:', error);
     return result;
   }
 }
@@ -243,8 +239,10 @@ async function updateCombinedChallenge(
   }
 
   // 양쪽 모두 완료된 날짜 계산
-  const bothCompletedDays = newWorkoutDayNumbers.filter(d => newNutritionDayNumbers.includes(d));
-  const newCompletedDays = Array.from(new Set([...completedDays, ...bothCompletedDays])).sort((a, b) => a - b);
+  const bothCompletedDays = newWorkoutDayNumbers.filter((d) => newNutritionDayNumbers.includes(d));
+  const newCompletedDays = Array.from(new Set([...completedDays, ...bothCompletedDays])).sort(
+    (a, b) => a - b
+  );
 
   const newProgress: CombinedProgress = {
     ...currentProgress,
@@ -269,7 +267,7 @@ async function updateCombinedChallenge(
   );
 
   if (updateError) {
-    console.error('[Challenges] Update combined challenge error:', updateError);
+    challengeLogger.error(' Update combined challenge error:', updateError);
     return null;
   }
 

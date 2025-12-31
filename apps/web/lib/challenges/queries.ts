@@ -3,6 +3,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { challengeLogger } from '@/lib/utils/logger';
 import type {
   Challenge,
   UserChallenge,
@@ -11,10 +12,7 @@ import type {
   ChallengeDomain,
   ChallengeDifficulty,
 } from '@/types/challenges';
-import {
-  challengeRowToChallenge,
-  userChallengeRowToUserChallenge,
-} from './constants';
+import { challengeRowToChallenge, userChallengeRowToUserChallenge } from './constants';
 
 // ============================================================
 // 챌린지 조회
@@ -23,9 +21,7 @@ import {
 /**
  * 모든 활성 챌린지 조회
  */
-export async function getActiveChallenges(
-  supabase: SupabaseClient
-): Promise<Challenge[]> {
+export async function getActiveChallenges(supabase: SupabaseClient): Promise<Challenge[]> {
   const { data, error } = await supabase
     .from('challenges')
     .select('*')
@@ -33,7 +29,7 @@ export async function getActiveChallenges(
     .order('sort_order', { ascending: true });
 
   if (error) {
-    console.error('[Challenges] Get active challenges error:', error);
+    challengeLogger.error(' Get active challenges error:', error);
     return [];
   }
 
@@ -55,7 +51,7 @@ export async function getChallengesByDomain(
     .order('sort_order', { ascending: true });
 
   if (error) {
-    console.error('[Challenges] Get challenges by domain error:', error);
+    challengeLogger.error(' Get challenges by domain error:', error);
     return [];
   }
 
@@ -77,7 +73,7 @@ export async function getChallengesByDifficulty(
     .order('sort_order', { ascending: true });
 
   if (error) {
-    console.error('[Challenges] Get challenges by difficulty error:', error);
+    challengeLogger.error(' Get challenges by difficulty error:', error);
     return [];
   }
 
@@ -99,7 +95,7 @@ export async function getChallengeById(
 
   if (error) {
     if (error.code !== 'PGRST116') {
-      console.error('[Challenges] Get challenge by ID error:', error);
+      challengeLogger.error(' Get challenge by ID error:', error);
     }
     return null;
   }
@@ -114,15 +110,11 @@ export async function getChallengeByCode(
   supabase: SupabaseClient,
   code: string
 ): Promise<Challenge | null> {
-  const { data, error } = await supabase
-    .from('challenges')
-    .select('*')
-    .eq('code', code)
-    .single();
+  const { data, error } = await supabase.from('challenges').select('*').eq('code', code).single();
 
   if (error) {
     if (error.code !== 'PGRST116') {
-      console.error('[Challenges] Get challenge by code error:', error);
+      challengeLogger.error(' Get challenge by code error:', error);
     }
     return null;
   }
@@ -148,7 +140,7 @@ export async function getUserChallenges(
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('[Challenges] Get user challenges error:', error);
+    challengeLogger.error(' Get user challenges error:', error);
     return [];
   }
 
@@ -170,7 +162,7 @@ export async function getActiveUserChallenges(
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('[Challenges] Get active user challenges error:', error);
+    challengeLogger.error(' Get active user challenges error:', error);
     return [];
   }
 
@@ -192,7 +184,7 @@ export async function getCompletedUserChallenges(
     .order('completed_at', { ascending: false });
 
   if (error) {
-    console.error('[Challenges] Get completed user challenges error:', error);
+    challengeLogger.error(' Get completed user challenges error:', error);
     return [];
   }
 
@@ -216,7 +208,7 @@ export async function getUserChallengeByChallenge(
 
   if (error) {
     if (error.code !== 'PGRST116') {
-      console.error('[Challenges] Get user challenge error:', error);
+      challengeLogger.error(' Get user challenge error:', error);
     }
     return null;
   }
@@ -241,7 +233,7 @@ export async function isUserParticipating(
     .limit(1);
 
   if (error) {
-    console.error('[Challenges] Check participation error:', error);
+    challengeLogger.error(' Check participation error:', error);
     return false;
   }
 
@@ -273,7 +265,7 @@ export async function getUserChallengeStats(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Challenges] Get challenge stats error:', error);
+    challengeLogger.error(' Get challenge stats error:', error);
     return {
       total: 0,
       inProgress: 0,

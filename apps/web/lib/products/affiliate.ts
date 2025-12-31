@@ -9,6 +9,7 @@
 
 import { supabase } from '@/lib/supabase/client';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { affiliateLogger } from '@/lib/utils/logger';
 import type {
   AffiliateProductType,
   TrackClickInput,
@@ -25,9 +26,7 @@ import type {
  * 어필리에이트 클릭 기록
  * @param input 클릭 정보
  */
-export async function trackAffiliateClick(
-  input: TrackClickInput
-): Promise<boolean> {
+export async function trackAffiliateClick(input: TrackClickInput): Promise<boolean> {
   const { error } = await supabase.from('affiliate_clicks').insert({
     product_type: input.productType,
     product_id: input.productId,
@@ -38,7 +37,7 @@ export async function trackAffiliateClick(
   });
 
   if (error) {
-    console.error('[Affiliate] Failed to track click:', error);
+    affiliateLogger.error(' Failed to track click:', error);
     return false;
   }
 
@@ -66,7 +65,7 @@ export async function openAffiliateLink(
     referrer: typeof window !== 'undefined' ? document.referrer : undefined,
     userAgent: typeof window !== 'undefined' ? navigator.userAgent : undefined,
   }).catch((err) => {
-    console.error('[Affiliate] Track failed:', err);
+    affiliateLogger.error(' Track failed:', err);
   });
 
   // 새 탭에서 링크 열기
@@ -102,22 +101,17 @@ export async function getAffiliateStats(
     .order('clicked_at', { ascending: false });
 
   if (error) {
-    console.error('[Affiliate] Failed to fetch stats:', error);
+    affiliateLogger.error(' Failed to fetch stats:', error);
     return null;
   }
 
   const clicks = data as AffiliateClickRow[];
 
   // 통계 계산
-  const uniqueUserIds = new Set(
-    clicks.filter((c) => c.clerk_user_id).map((c) => c.clerk_user_id)
-  );
+  const uniqueUserIds = new Set(clicks.filter((c) => c.clerk_user_id).map((c) => c.clerk_user_id));
 
   // 제품별 집계
-  const productMap = new Map<
-    string,
-    { clicks: number; users: Set<string | null> }
-  >();
+  const productMap = new Map<string, { clicks: number; users: Set<string | null> }>();
   for (const click of clicks) {
     const key = `${click.product_type}:${click.product_id}`;
     const existing = productMap.get(key) || { clicks: 0, users: new Set() };
@@ -128,18 +122,16 @@ export async function getAffiliateStats(
     productMap.set(key, existing);
   }
 
-  const byProduct: ProductClickStats[] = Array.from(productMap.entries()).map(
-    ([key, stats]) => {
-      const [productType, productId] = key.split(':');
-      return {
-        productType: productType as AffiliateProductType,
-        productId,
-        productName: '', // 제품명은 별도 조회 필요
-        totalClicks: stats.clicks,
-        uniqueUsers: stats.users.size,
-      };
-    }
-  );
+  const byProduct: ProductClickStats[] = Array.from(productMap.entries()).map(([key, stats]) => {
+    const [productType, productId] = key.split(':');
+    return {
+      productType: productType as AffiliateProductType,
+      productId,
+      productName: '', // 제품명은 별도 조회 필요
+      totalClicks: stats.clicks,
+      uniqueUsers: stats.users.size,
+    };
+  });
 
   // 일별 집계
   const dateMap = new Map<string, number>();
@@ -182,7 +174,7 @@ export async function getProductClickCount(
     .eq('product_id', productId);
 
   if (error) {
-    console.error('[Affiliate] Failed to get click count:', error);
+    affiliateLogger.error(' Failed to get click count:', error);
     return 0;
   }
 
@@ -204,7 +196,7 @@ export async function getTodayClickCount(): Promise<number> {
     .gte('clicked_at', today.toISOString());
 
   if (error) {
-    console.error('[Affiliate] Failed to get today clicks:', error);
+    affiliateLogger.error(' Failed to get today clicks:', error);
     return 0;
   }
 

@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { smartMatchingLogger } from '@/lib/utils/logger';
 import type {
   UserBodyMeasurements,
   UserBodyMeasurementsDB,
@@ -55,7 +56,7 @@ export async function upsertMeasurements(
     .single();
 
   if (error) {
-    console.error('[Measurements] Upsert 실패:', error);
+    smartMatchingLogger.error('치수 Upsert 실패:', error);
     return null;
   }
 
@@ -85,7 +86,7 @@ export async function updateBasicInfo(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Measurements] 기본 정보 업데이트 실패:', error);
+    smartMatchingLogger.error('치수 기본 정보 업데이트 실패:', error);
     return false;
   }
 
@@ -123,7 +124,7 @@ export async function updateDetailedMeasurements(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Measurements] 상세 치수 업데이트 실패:', error);
+    smartMatchingLogger.error('치수 상세 치수 업데이트 실패:', error);
     return false;
   }
 
@@ -143,7 +144,7 @@ export async function updatePreferredFit(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Measurements] 선호 핏 업데이트 실패:', error);
+    smartMatchingLogger.error('치수 선호 핏 업데이트 실패:', error);
     return false;
   }
 

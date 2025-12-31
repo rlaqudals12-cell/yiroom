@@ -3,15 +3,16 @@
  * @description 사용자 전환 퍼널 추적
  */
 
+import { analyticsLogger } from '@/lib/utils/logger';
 import { trackEvent } from './tracker';
 
 // 퍼널 정의
 export type FunnelType =
-  | 'onboarding'      // 온보딩 퍼널
-  | 'analysis'        // 분석 퍼널 (PC/피부/체형)
-  | 'workout'         // 운동 퍼널
-  | 'product'         // 제품 퍼널 (조회 → 클릭 → 전환)
-  | 'social';         // 소셜 퍼널 (친구추가 → 피드)
+  | 'onboarding' // 온보딩 퍼널
+  | 'analysis' // 분석 퍼널 (PC/피부/체형)
+  | 'workout' // 운동 퍼널
+  | 'product' // 제품 퍼널 (조회 → 클릭 → 전환)
+  | 'social'; // 소셜 퍼널 (친구추가 → 피드)
 
 // 퍼널 단계
 export interface FunnelStep {
@@ -30,33 +31,10 @@ const FUNNEL_STEPS: Record<FunnelType, string[]> = {
     'personal_color_complete',
     'complete',
   ],
-  analysis: [
-    'select_type',
-    'upload_image',
-    'processing',
-    'result_view',
-    'recommendation_view',
-  ],
-  workout: [
-    'onboarding_start',
-    'goal_select',
-    'schedule_set',
-    'plan_generated',
-    'first_workout',
-  ],
-  product: [
-    'browse',
-    'view_detail',
-    'click_affiliate',
-    'conversion',
-  ],
-  social: [
-    'view_leaderboard',
-    'search_friend',
-    'send_request',
-    'accepted',
-    'view_feed',
-  ],
+  analysis: ['select_type', 'upload_image', 'processing', 'result_view', 'recommendation_view'],
+  workout: ['onboarding_start', 'goal_select', 'schedule_set', 'plan_generated', 'first_workout'],
+  product: ['browse', 'view_detail', 'click_affiliate', 'conversion'],
+  social: ['view_leaderboard', 'search_friend', 'send_request', 'accepted', 'view_feed'],
 };
 
 /**
@@ -71,7 +49,7 @@ export async function trackFunnelStep(
   const stepNumber = steps.indexOf(step);
 
   if (stepNumber === -1) {
-    console.warn(`[Funnel] Unknown step "${step}" for funnel "${funnel}"`);
+    analyticsLogger.warn(`Unknown step "${step}" for funnel "${funnel}"`);
     return;
   }
 
@@ -104,10 +82,12 @@ export const onboardingFunnel = {
  */
 export const analysisFunnel = {
   selectType: (type: string) => trackFunnelStep('analysis', 'select_type', { analysisType: type }),
-  uploadImage: (type: string) => trackFunnelStep('analysis', 'upload_image', { analysisType: type }),
+  uploadImage: (type: string) =>
+    trackFunnelStep('analysis', 'upload_image', { analysisType: type }),
   processing: (type: string) => trackFunnelStep('analysis', 'processing', { analysisType: type }),
   resultView: (type: string) => trackFunnelStep('analysis', 'result_view', { analysisType: type }),
-  recommendationView: (type: string) => trackFunnelStep('analysis', 'recommendation_view', { analysisType: type }),
+  recommendationView: (type: string) =>
+    trackFunnelStep('analysis', 'recommendation_view', { analysisType: type }),
 };
 
 /**
@@ -139,7 +119,8 @@ export const productFunnel = {
 export const socialFunnel = {
   viewLeaderboard: () => trackFunnelStep('social', 'view_leaderboard'),
   searchFriend: () => trackFunnelStep('social', 'search_friend'),
-  sendRequest: (targetUserId: string) => trackFunnelStep('social', 'send_request', { targetUserId }),
+  sendRequest: (targetUserId: string) =>
+    trackFunnelStep('social', 'send_request', { targetUserId }),
   accepted: () => trackFunnelStep('social', 'accepted'),
   viewFeed: () => trackFunnelStep('social', 'view_feed'),
 };

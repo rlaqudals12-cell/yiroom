@@ -14,10 +14,12 @@
  * - OLIVEYOUNG_ENABLED: 올리브영 스크래핑 활성화 여부 (true/false)
  */
 
+import { crawlerLogger } from '@/lib/utils/logger';
 import type { PriceFetchRequest, PriceResult } from '../types';
 
 const OLIVEYOUNG_SEARCH_URL = 'https://www.oliveyoung.co.kr/store/search/getSearchMain.do';
-const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+const USER_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 interface OliveYoungProduct {
   name: string;
@@ -49,9 +51,7 @@ function parseSearchResults(html: string): OliveYoungProduct[] {
     const urlPattern = /goods_no=(\d+)/g;
 
     // 간단한 패턴 매칭 (실제로는 더 정교한 파싱 필요)
-    const prices = [...html.matchAll(pricePattern)].map((m) =>
-      parseInt(m[1], 10)
-    );
+    const prices = [...html.matchAll(pricePattern)].map((m) => parseInt(m[1], 10));
     const names = [...html.matchAll(namePattern)].map((m) => m[1].trim());
     const brands = [...html.matchAll(brandPattern)].map((m) => m[1].trim());
     const goodsNos = [...html.matchAll(urlPattern)].map((m) => m[1]);
@@ -70,7 +70,7 @@ function parseSearchResults(html: string): OliveYoungProduct[] {
       });
     }
   } catch (error) {
-    console.error('[OliveYoung] Parse error:', error);
+    crawlerLogger.error('OliveYoung parse error:', error);
   }
 
   return products;
@@ -79,18 +79,14 @@ function parseSearchResults(html: string): OliveYoungProduct[] {
 /**
  * 올리브영 상품 검색
  */
-async function searchOliveYoungProducts(
-  keyword: string,
-  limit = 5
-): Promise<OliveYoungProduct[]> {
+async function searchOliveYoungProducts(keyword: string, limit = 5): Promise<OliveYoungProduct[]> {
   const searchUrl = `${OLIVEYOUNG_SEARCH_URL}?query=${encodeURIComponent(keyword)}`;
 
   try {
     const response = await fetch(searchUrl, {
       headers: {
         'User-Agent': USER_AGENT,
-        Accept:
-          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
       },
     });
@@ -104,7 +100,7 @@ async function searchOliveYoungProducts(
 
     return products.slice(0, limit);
   } catch (error) {
-    console.error('[OliveYoung] Search error:', error);
+    crawlerLogger.error('OliveYoung search error:', error);
     throw error;
   }
 }
@@ -112,9 +108,7 @@ async function searchOliveYoungProducts(
 /**
  * 올리브영 가격 조회 (화장품 전용)
  */
-export async function fetchOliveYoungPrice(
-  request: PriceFetchRequest
-): Promise<PriceResult> {
+export async function fetchOliveYoungPrice(request: PriceFetchRequest): Promise<PriceResult> {
   // 화장품이 아니면 바로 실패 반환
   if (request.productType !== 'cosmetic') {
     return {
@@ -280,9 +274,7 @@ export async function fetchOliveYoungPrices(
   }
 
   // 화장품이 아닌 요청은 실패로 추가
-  const nonCosmeticRequests = requests.filter(
-    (r) => r.productType !== 'cosmetic'
-  );
+  const nonCosmeticRequests = requests.filter((r) => r.productType !== 'cosmetic');
   for (const request of nonCosmeticRequests) {
     results.push({
       productId: request.productId,

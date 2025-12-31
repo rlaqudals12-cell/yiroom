@@ -3,6 +3,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { challengeLogger } from '@/lib/utils/logger';
 import type {
   UserChallenge,
   UserChallengeRow,
@@ -81,7 +82,7 @@ export async function joinChallenge(
     .single();
 
   if (error) {
-    console.error('[Challenges] Join challenge error:', error);
+    challengeLogger.error(' Join challenge error:', error);
     return {
       success: false,
       userChallenge: null as unknown as UserChallenge,
@@ -116,7 +117,7 @@ export async function updateChallengeProgress(
     .single();
 
   if (fetchError || !current) {
-    console.error('[Challenges] Fetch for update error:', fetchError);
+    challengeLogger.error(' Fetch for update error:', fetchError);
     return {
       success: false,
       progress: {},
@@ -145,7 +146,7 @@ export async function updateChallengeProgress(
     .eq('id', userChallengeId);
 
   if (updateError) {
-    console.error('[Challenges] Update progress error:', updateError);
+    challengeLogger.error(' Update progress error:', updateError);
     return {
       success: false,
       progress: userChallenge.progress,
@@ -185,7 +186,7 @@ export async function completeChallenge(
     .single();
 
   if (fetchError || !current) {
-    console.error('[Challenges] Fetch for complete error:', fetchError);
+    challengeLogger.error(' Fetch for complete error:', fetchError);
     return {
       success: false,
       xpAwarded: 0,
@@ -214,7 +215,7 @@ export async function completeChallenge(
     .eq('id', userChallengeId);
 
   if (updateError) {
-    console.error('[Challenges] Complete challenge error:', updateError);
+    challengeLogger.error(' Complete challenge error:', updateError);
     return {
       success: false,
       xpAwarded: 0,
@@ -269,7 +270,7 @@ export async function abandonChallenge(
     .eq('id', userChallengeId);
 
   if (error) {
-    console.error('[Challenges] Abandon challenge error:', error);
+    challengeLogger.error(' Abandon challenge error:', error);
     return false;
   }
 
@@ -296,7 +297,7 @@ export async function failChallenge(
     .eq('id', userChallengeId);
 
   if (error) {
-    console.error('[Challenges] Fail challenge error:', error);
+    challengeLogger.error(' Fail challenge error:', error);
     return false;
   }
 
@@ -310,9 +311,7 @@ export async function failChallenge(
 /**
  * 만료된 진행 중 챌린지를 실패 처리
  */
-export async function processExpiredChallenges(
-  supabase: SupabaseClient
-): Promise<number> {
+export async function processExpiredChallenges(supabase: SupabaseClient): Promise<number> {
   const now = new Date().toISOString();
 
   const { data, error } = await supabase
@@ -326,7 +325,7 @@ export async function processExpiredChallenges(
     .select('id');
 
   if (error) {
-    console.error('[Challenges] Process expired challenges error:', error);
+    challengeLogger.error(' Process expired challenges error:', error);
     return 0;
   }
 

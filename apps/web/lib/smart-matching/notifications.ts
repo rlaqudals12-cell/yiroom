@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { smartMatchingLogger } from '@/lib/utils/logger';
 import type {
   SmartNotification,
   SmartNotificationDB,
@@ -22,10 +23,7 @@ export async function getNotifications(
     limit?: number;
   }
 ): Promise<SmartNotification[]> {
-  let query = supabase
-    .from('smart_notifications')
-    .select('*')
-    .eq('clerk_user_id', clerkUserId);
+  let query = supabase.from('smart_notifications').select('*').eq('clerk_user_id', clerkUserId);
 
   if (options?.unreadOnly) {
     query = query.eq('read', false);
@@ -61,7 +59,7 @@ export async function getUnreadCount(clerkUserId: string): Promise<number> {
     .eq('read', false);
 
   if (error) {
-    console.error('[Notification] 개수 조회 실패:', error);
+    smartMatchingLogger.error('알림 개수 조회 실패:', error);
     return 0;
   }
 
@@ -99,7 +97,7 @@ export async function createNotification(input: {
     .single();
 
   if (error) {
-    console.error('[Notification] 생성 실패:', error);
+    smartMatchingLogger.error('알림 생성 실패:', error);
     return null;
   }
 
@@ -119,7 +117,7 @@ export async function markAsRead(notificationId: string): Promise<boolean> {
     .eq('id', notificationId);
 
   if (error) {
-    console.error('[Notification] 읽음 처리 실패:', error);
+    smartMatchingLogger.error('알림 읽음 처리 실패:', error);
     return false;
   }
 
@@ -140,7 +138,7 @@ export async function markAllAsRead(clerkUserId: string): Promise<boolean> {
     .eq('read', false);
 
   if (error) {
-    console.error('[Notification] 전체 읽음 처리 실패:', error);
+    smartMatchingLogger.error('알림 전체 읽음 처리 실패:', error);
     return false;
   }
 
@@ -151,13 +149,10 @@ export async function markAllAsRead(clerkUserId: string): Promise<boolean> {
  * 알림 삭제
  */
 export async function deleteNotification(notificationId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('smart_notifications')
-    .delete()
-    .eq('id', notificationId);
+  const { error } = await supabase.from('smart_notifications').delete().eq('id', notificationId);
 
   if (error) {
-    console.error('[Notification] 삭제 실패:', error);
+    smartMatchingLogger.error('알림 삭제 실패:', error);
     return false;
   }
 
@@ -179,7 +174,7 @@ export async function cleanupOldNotifications(days: number = 30): Promise<number
     .select();
 
   if (error) {
-    console.error('[Notification] 정리 실패:', error);
+    smartMatchingLogger.error('알림 정리 실패:', error);
     return 0;
   }
 
@@ -216,7 +211,7 @@ export async function markAsSent(notificationId: string): Promise<boolean> {
     .eq('id', notificationId);
 
   if (error) {
-    console.error('[Notification] 발송 처리 실패:', error);
+    smartMatchingLogger.error('알림 발송 처리 실패:', error);
     return false;
   }
 

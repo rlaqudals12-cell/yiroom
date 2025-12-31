@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { productLogger } from '@/lib/utils/logger';
 import type {
   CosmeticProduct,
   CosmeticProductRow,
@@ -47,11 +48,7 @@ export async function getCosmeticProducts(
   filter?: CosmeticProductFilter,
   limit = 50
 ): Promise<CosmeticProduct[]> {
-  let query = supabase
-    .from('cosmetic_products')
-    .select('*')
-    .eq('is_active', true)
-    .limit(limit);
+  let query = supabase.from('cosmetic_products').select('*').eq('is_active', true).limit(limit);
 
   if (filter?.category) {
     query = query.eq('category', filter.category);
@@ -89,7 +86,7 @@ export async function getCosmeticProducts(
   const { data, error } = await query.order('rating', { ascending: false });
 
   if (error) {
-    console.error('화장품 조회 실패:', error);
+    productLogger.error('화장품 조회 실패:', error);
     return [];
   }
 
@@ -100,9 +97,7 @@ export async function getCosmeticProducts(
  * 화장품 단일 조회
  * @param id 제품 ID
  */
-export async function getCosmeticProductById(
-  id: string
-): Promise<CosmeticProduct | null> {
+export async function getCosmeticProductById(id: string): Promise<CosmeticProduct | null> {
   const { data, error } = await supabase
     .from('cosmetic_products')
     .select('*')
@@ -111,7 +106,7 @@ export async function getCosmeticProductById(
     .single();
 
   if (error || !data) {
-    console.error('화장품 조회 실패:', error);
+    productLogger.error('화장품 조회 실패:', error);
     return null;
   }
 
@@ -148,7 +143,7 @@ export async function getRecommendedCosmetics(
   const { data, error } = await query;
 
   if (error) {
-    console.error('추천 화장품 조회 실패:', error);
+    productLogger.error('추천 화장품 조회 실패:', error);
     return [];
   }
 
@@ -165,7 +160,7 @@ export async function getCosmeticBrands(): Promise<string[]> {
     .eq('is_active', true);
 
   if (error) {
-    console.error('브랜드 조회 실패:', error);
+    productLogger.error('브랜드 조회 실패:', error);
     return [];
   }
 

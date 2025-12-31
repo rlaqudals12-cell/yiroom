@@ -4,17 +4,9 @@
 // ============================================================
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type {
-  LeaderboardPeriod,
-  LeaderboardCategory,
-  RankingEntry,
-} from '@/types/leaderboard';
-import {
-  getWeekStartDate,
-  getWeekEndDate,
-  getMonthStartDate,
-  getMonthEndDate,
-} from './constants';
+import { leaderboardLogger } from '@/lib/utils/logger';
+import type { LeaderboardPeriod, LeaderboardCategory, RankingEntry } from '@/types/leaderboard';
+import { getWeekStartDate, getWeekEndDate, getMonthStartDate, getMonthEndDate } from './constants';
 
 // 리더보드 캐시 업데이트 (전체)
 export async function updateAllLeaderboards(
@@ -77,25 +69,23 @@ export async function updateLeaderboardCache(
   const rankings = await calculateRankings(supabase, category);
 
   // 캐시 upsert
-  const { error } = await supabase
-    .from('leaderboard_cache')
-    .upsert(
-      {
-        period,
-        category,
-        start_date: startDate,
-        end_date: endDate,
-        rankings,
-        total_participants: rankings.length,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: 'period,category,start_date',
-      }
-    );
+  const { error } = await supabase.from('leaderboard_cache').upsert(
+    {
+      period,
+      category,
+      start_date: startDate,
+      end_date: endDate,
+      rankings,
+      total_participants: rankings.length,
+      updated_at: new Date().toISOString(),
+    },
+    {
+      onConflict: 'period,category,start_date',
+    }
+  );
 
   if (error) {
-    console.error('[Leaderboard] Cache update error:', error);
+    leaderboardLogger.error('Cache update error:', error);
     return { success: false, error: error.message };
   }
 
@@ -113,18 +103,20 @@ async function calculateRankings(
 
   const { data, error } = await supabase
     .from('user_levels')
-    .select(`
+    .select(
+      `
       clerk_user_id,
       level,
       total_xp,
       tier
-    `)
+    `
+    )
     .order(orderColumn, { ascending: false })
     .order('total_xp', { ascending: false })
     .limit(limit);
 
   if (error || !data) {
-    console.error('[Leaderboard] Error calculating rankings:', error);
+    leaderboardLogger.error('Error calculating rankings:', error);
     return [];
   }
 
@@ -135,9 +127,7 @@ async function calculateRankings(
     .select('clerk_user_id, display_name, avatar_url')
     .in('clerk_user_id', userIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
 
   // RankingEntry 배열 생성
   return data.map((entry, index) => {
@@ -161,7 +151,7 @@ export async function refreshUserRankings(
 ): Promise<void> {
   // 전체 리더보드 업데이트 대신 사용자의 순위만 재계산
   // 실시간 조회에 의존하므로 별도 작업 불필요
-  console.log(`[Leaderboard] User ${clerkUserId} rankings will be calculated on-demand`);
+  leaderboardLogger.debug(`User ${clerkUserId} rankings will be calculated on-demand`);
 }
 
 // 오래된 캐시 정리
@@ -179,7 +169,7 @@ export async function cleanupOldCache(
     .select('id');
 
   if (error) {
-    console.error('[Leaderboard] Cleanup error:', error);
+    leaderboardLogger.error('Cleanup error:', error);
     return { success: false, deleted: 0 };
   }
 

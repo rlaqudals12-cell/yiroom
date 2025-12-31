@@ -5,12 +5,8 @@
  * 17개 지역 × 24시간 = 408 calls/day (무료 1,000/day 내)
  */
 
-import type {
-  KoreaRegion,
-  WeatherData,
-  HourlyForecast,
-  CachedWeatherData,
-} from '@/types/weather';
+import { styleLogger } from '@/lib/utils/logger';
+import type { KoreaRegion, WeatherData, HourlyForecast, CachedWeatherData } from '@/types/weather';
 import { WEATHER_CACHE_TTL_MS } from '@/types/weather';
 
 // OpenWeatherMap API 기본 URL
@@ -27,23 +23,20 @@ const WEATHER_DESCRIPTIONS: Record<string, string> = {
   'broken clouds': '흐림',
   'overcast clouds': '흐림',
   'shower rain': '소나기',
-  'rain': '비',
+  rain: '비',
   'light rain': '가벼운 비',
   'moderate rain': '비',
   'heavy intensity rain': '폭우',
-  'thunderstorm': '뇌우',
-  'snow': '눈',
+  thunderstorm: '뇌우',
+  snow: '눈',
   'light snow': '가벼운 눈',
-  'mist': '안개',
-  'fog': '안개',
-  'haze': '연무',
+  mist: '안개',
+  fog: '안개',
+  haze: '연무',
 };
 
 // 지역 좌표 가져오기 (types에서 import하기 어려우면 여기서 정의)
-const REGION_COORDS: Record<
-  KoreaRegion,
-  { lat: number; lon: number; nameKr: string }
-> = {
+const REGION_COORDS: Record<KoreaRegion, { lat: number; lon: number; nameKr: string }> = {
   seoul: { lat: 37.5665, lon: 126.978, nameKr: '서울' },
   busan: { lat: 35.1796, lon: 129.0756, nameKr: '부산' },
   daegu: { lat: 35.8714, lon: 128.6014, nameKr: '대구' },
@@ -184,9 +177,7 @@ function estimateUVI(): number {
 /**
  * 지역 기반 날씨 데이터 조회 (캐싱 적용)
  */
-export async function getWeatherByRegion(
-  region: KoreaRegion
-): Promise<WeatherData> {
+export async function getWeatherByRegion(region: KoreaRegion): Promise<WeatherData> {
   // 캐시 확인
   const cached = weatherCache.get(region);
   if (isCacheValid(cached)) {
@@ -228,11 +219,11 @@ export async function getWeatherByRegion(
 
     return weatherData;
   } catch (error) {
-    console.error(`[WeatherService] Failed to fetch weather for ${region}:`, error);
+    styleLogger.error(`Failed to fetch weather for ${region}:`, error);
 
     // 캐시된 데이터가 있으면 만료되어도 반환 (fallback)
     if (cached) {
-      console.log(`[WeatherService] Returning stale cache for ${region}`);
+      styleLogger.debug(`Returning stale cache for ${region}`);
       return cached;
     }
 
@@ -249,9 +240,7 @@ export function findNearestRegion(lat: number, lon: number): KoreaRegion {
   let minDistance = Infinity;
 
   for (const [region, coords] of Object.entries(REGION_COORDS)) {
-    const distance = Math.sqrt(
-      Math.pow(lat - coords.lat, 2) + Math.pow(lon - coords.lon, 2)
-    );
+    const distance = Math.sqrt(Math.pow(lat - coords.lat, 2) + Math.pow(lon - coords.lon, 2));
     if (distance < minDistance) {
       minDistance = distance;
       nearestRegion = region as KoreaRegion;
@@ -264,10 +253,7 @@ export function findNearestRegion(lat: number, lon: number): KoreaRegion {
 /**
  * 위도/경도 기반 날씨 조회
  */
-export async function getWeatherByCoords(
-  lat: number,
-  lon: number
-): Promise<WeatherData> {
+export async function getWeatherByCoords(lat: number, lon: number): Promise<WeatherData> {
   const region = findNearestRegion(lat, lon);
   return getWeatherByRegion(region);
 }

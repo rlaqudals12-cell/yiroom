@@ -6,6 +6,8 @@
  * 온라인 상태가 되면 서버와 동기화합니다.
  */
 
+import { offlineLogger } from '@/lib/utils/logger';
+
 // ============================================================
 // 타입 정의
 // ============================================================
@@ -67,7 +69,7 @@ function loadQueue(): SyncQueueItem[] {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
   } catch {
-    console.error('[SyncQueue] Failed to load queue from localStorage');
+    offlineLogger.error('Failed to load queue from localStorage');
     return [];
   }
 }
@@ -79,7 +81,7 @@ function saveQueue(queue: SyncQueueItem[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
   } catch {
-    console.error('[SyncQueue] Failed to save queue to localStorage');
+    offlineLogger.error('Failed to save queue to localStorage');
   }
 }
 
@@ -110,7 +112,7 @@ export function addToSyncQueue(
   queue.push(item);
   saveQueue(queue);
 
-  console.log('[SyncQueue] Added item:', item.id, type);
+  offlineLogger.debug('Added item:', item.id, type);
   return item;
 }
 
@@ -132,11 +134,7 @@ export function getPendingCount(): number {
 /**
  * 특정 항목 상태 업데이트
  */
-export function updateSyncItemStatus(
-  id: string,
-  status: SyncStatus,
-  error?: string
-): void {
+export function updateSyncItemStatus(id: string, status: SyncStatus, error?: string): void {
   const queue = loadQueue();
   const index = queue.findIndex((item) => item.id === id);
 
@@ -168,7 +166,7 @@ export function removeCompletedItems(): number {
  */
 export function clearSyncQueue(): void {
   saveQueue([]);
-  console.log('[SyncQueue] Queue cleared');
+  offlineLogger.debug('Queue cleared');
 }
 
 // ============================================================
@@ -191,7 +189,7 @@ const API_ENDPOINTS: Record<SyncActionType, { method: string; url: string }> = {
 async function syncItem(item: SyncQueueItem): Promise<boolean> {
   const endpoint = API_ENDPOINTS[item.type];
   if (!endpoint) {
-    console.error('[SyncQueue] Unknown action type:', item.type);
+    offlineLogger.error('Unknown action type:', item.type);
     return false;
   }
 
@@ -206,18 +204,18 @@ async function syncItem(item: SyncQueueItem): Promise<boolean> {
 
     if (response.ok) {
       updateSyncItemStatus(item.id, 'completed');
-      console.log('[SyncQueue] Synced successfully:', item.id);
+      offlineLogger.debug('Synced successfully:', item.id);
       return true;
     } else {
       const errorText = await response.text();
       updateSyncItemStatus(item.id, 'failed', `HTTP ${response.status}: ${errorText}`);
-      console.error('[SyncQueue] Sync failed:', item.id, response.status);
+      offlineLogger.error('Sync failed:', item.id, response.status);
       return false;
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     updateSyncItemStatus(item.id, 'failed', errorMessage);
-    console.error('[SyncQueue] Sync error:', item.id, errorMessage);
+    offlineLogger.error('Sync error:', item.id, errorMessage);
     return false;
   }
 }
@@ -234,15 +232,14 @@ export async function processSyncQueue(): Promise<SyncResult> {
   const queue = loadQueue();
   const pendingItems = queue.filter(
     (item) =>
-      (item.status === 'pending' || item.status === 'failed') &&
-      item.retryCount < MAX_RETRY_COUNT
+      (item.status === 'pending' || item.status === 'failed') && item.retryCount < MAX_RETRY_COUNT
   );
 
   if (pendingItems.length === 0) {
     return { success: true, syncedCount: 0, failedCount: 0, errors: [] };
   }
 
-  console.log('[SyncQueue] Processing', pendingItems.length, 'items');
+  offlineLogger.debug('Processing', pendingItems.length, 'items');
 
   let syncedCount = 0;
   let failedCount = 0;
@@ -269,7 +266,7 @@ export async function processSyncQueue(): Promise<SyncResult> {
   // 완료된 항목 정리
   removeCompletedItems();
 
-  console.log('[SyncQueue] Completed:', syncedCount, 'synced,', failedCount, 'failed');
+  offlineLogger.info('Completed:', syncedCount, 'synced,', failedCount, 'failed');
 
   return {
     success: failedCount === 0,
@@ -296,7 +293,7 @@ export function startAutoSync(intervalMs: number = 30000): void {
 
   // 온라인 이벤트에서 즉시 동기화
   const handleOnline = () => {
-    console.log('[SyncQueue] Online detected, syncing...');
+    offlineLogger.info('Online detected, syncing...');
     processSyncQueue();
   };
 
@@ -309,7 +306,7 @@ export function startAutoSync(intervalMs: number = 30000): void {
     }
   }, intervalMs);
 
-  console.log('[SyncQueue] Auto-sync started');
+  offlineLogger.info('Auto-sync started');
 }
 
 /**
@@ -319,7 +316,7 @@ export function stopAutoSync(): void {
   if (syncIntervalId) {
     clearInterval(syncIntervalId);
     syncIntervalId = null;
-    console.log('[SyncQueue] Auto-sync stopped');
+    offlineLogger.info('Auto-sync stopped');
   }
 }
 

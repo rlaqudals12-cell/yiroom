@@ -6,6 +6,7 @@
 
 import crypto from 'crypto';
 import type { AffiliateProduct } from '@/types/affiliate';
+import { affiliateLogger } from '@/lib/utils/logger';
 
 // ============================================
 // 설정 및 타입
@@ -109,7 +110,7 @@ function createHeaders(
 
   return {
     'Content-Type': 'application/json',
-    'Authorization': `CEA algorithm=HmacSHA256, access-key=${config.accessKey}, signed-date=${timestamp}, signature=${signature}`,
+    Authorization: `CEA algorithm=HmacSHA256, access-key=${config.accessKey}, signed-date=${timestamp}, signature=${signature}`,
   };
 }
 
@@ -128,7 +129,7 @@ export async function searchCoupangProducts(
 
   // Mock 모드: 환경변수 없으면 Mock 데이터 반환
   if (!config) {
-    console.log('[Coupang] Mock 모드: 환경변수 미설정');
+    affiliateLogger.debug('Coupang Mock 모드: 환경변수 미설정');
     return getMockSearchResults(options.keyword, options.limit);
   }
 
@@ -141,20 +142,20 @@ export async function searchCoupangProducts(
     });
 
     if (!response.ok) {
-      console.error('[Coupang] API 에러:', response.status);
+      affiliateLogger.error('Coupang API 에러:', response.status);
       return getMockSearchResults(options.keyword, options.limit);
     }
 
     const data = (await response.json()) as CoupangSearchResponse;
 
     if (data.rCode !== '0') {
-      console.error('[Coupang] API 응답 에러:', data.rMessage);
+      affiliateLogger.error('Coupang API 응답 에러:', data.rMessage);
       return getMockSearchResults(options.keyword, options.limit);
     }
 
     return data.data.productData.map((p) => mapCoupangProduct(p, options.subId));
   } catch (error) {
-    console.error('[Coupang] API 호출 실패:', error);
+    affiliateLogger.error('Coupang API 호출 실패:', error);
     return getMockSearchResults(options.keyword, options.limit);
   }
 }
@@ -163,10 +164,7 @@ export async function searchCoupangProducts(
  * 쿠팡 딥링크 생성
  * @description 어필리에이트 트래킹이 포함된 딥링크 생성
  */
-export async function createCoupangDeeplink(
-  originalUrl: string,
-  subId?: string
-): Promise<string> {
+export async function createCoupangDeeplink(originalUrl: string, subId?: string): Promise<string> {
   const config = getConfig();
 
   // Mock 모드
@@ -188,20 +186,20 @@ export async function createCoupangDeeplink(
     });
 
     if (!response.ok) {
-      console.error('[Coupang] 딥링크 생성 실패:', response.status);
+      affiliateLogger.error('Coupang 딥링크 생성 실패:', response.status);
       return originalUrl;
     }
 
     const data = (await response.json()) as CoupangDeeplinkResponse;
 
     if (data.rCode !== '0' || !data.data?.[0]?.shortenUrl) {
-      console.error('[Coupang] 딥링크 응답 에러:', data.rMessage);
+      affiliateLogger.error('Coupang 딥링크 응답 에러:', data.rMessage);
       return originalUrl;
     }
 
     return data.data[0].shortenUrl;
   } catch (error) {
-    console.error('[Coupang] 딥링크 생성 에러:', error);
+    affiliateLogger.error('Coupang 딥링크 생성 에러:', error);
     return originalUrl;
   }
 }
@@ -217,7 +215,7 @@ export async function getCoupangCategoryProducts(
   const config = getConfig();
 
   if (!config) {
-    console.log('[Coupang] Mock 모드: 카테고리 제품 조회');
+    affiliateLogger.debug('Coupang Mock 모드: 카테고리 제품 조회');
     return getMockCategoryProducts(categoryId, limit);
   }
 
@@ -230,20 +228,20 @@ export async function getCoupangCategoryProducts(
     });
 
     if (!response.ok) {
-      console.error('[Coupang] 카테고리 API 에러:', response.status);
+      affiliateLogger.error('Coupang 카테고리 API 에러:', response.status);
       return getMockCategoryProducts(categoryId, limit);
     }
 
     const data = (await response.json()) as CoupangSearchResponse;
 
     if (data.rCode !== '0') {
-      console.error('[Coupang] 카테고리 API 응답 에러:', data.rMessage);
+      affiliateLogger.error('Coupang 카테고리 API 응답 에러:', data.rMessage);
       return getMockCategoryProducts(categoryId, limit);
     }
 
     return data.data.productData.map((p) => mapCoupangProduct(p));
   } catch (error) {
-    console.error('[Coupang] 카테고리 API 호출 실패:', error);
+    affiliateLogger.error('Coupang 카테고리 API 호출 실패:', error);
     return getMockCategoryProducts(categoryId, limit);
   }
 }
@@ -255,10 +253,7 @@ export async function getCoupangCategoryProducts(
 /**
  * 쿠팡 API 응답 → AffiliateProduct 변환
  */
-function mapCoupangProduct(
-  product: CoupangProductResponse,
-  subId?: string
-): AffiliateProduct {
+function mapCoupangProduct(product: CoupangProductResponse, subId?: string): AffiliateProduct {
   const affiliateUrl = `https://link.coupang.com/a/${product.productId}${subId ? `?subId=${subId}` : ''}`;
 
   return {
@@ -280,10 +275,9 @@ function mapCoupangProduct(
     createdAt: new Date(),
     updatedAt: new Date(),
     // 쿠팡 특화 태그
-    tags: [
-      product.isRocket ? 'rocket' : '',
-      product.isFreeShipping ? 'free_shipping' : '',
-    ].filter(Boolean),
+    tags: [product.isRocket ? 'rocket' : '', product.isFreeShipping ? 'free_shipping' : ''].filter(
+      Boolean
+    ),
   };
 }
 
@@ -294,10 +288,7 @@ function mapCoupangProduct(
 /**
  * Mock 검색 결과 생성
  */
-function getMockSearchResults(
-  keyword: string,
-  limit: number = 10
-): AffiliateProduct[] {
+function getMockSearchResults(keyword: string, limit: number = 10): AffiliateProduct[] {
   const mockProducts: AffiliateProduct[] = [];
 
   for (let i = 0; i < Math.min(limit, 5); i++) {
@@ -330,10 +321,7 @@ function getMockSearchResults(
 /**
  * Mock 카테고리 제품 생성
  */
-function getMockCategoryProducts(
-  categoryId: number,
-  limit: number
-): AffiliateProduct[] {
+function getMockCategoryProducts(categoryId: number, limit: number): AffiliateProduct[] {
   const categoryNames: Record<number, string> = {
     1: '영양제',
     2: '화장품',

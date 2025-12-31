@@ -5,6 +5,7 @@
  */
 
 import type { AffiliateProduct } from '@/types/affiliate';
+import { affiliateLogger } from '@/lib/utils/logger';
 
 // ============================================
 // 설정 및 타입
@@ -192,7 +193,7 @@ export async function searchMusinsaProducts(
 
   // Mock 모드: 환경변수 미설정 시
   if (!config) {
-    console.log('[Musinsa] Mock mode - returning mock products');
+    affiliateLogger.debug('Musinsa Mock 모드: mock 제품 반환');
     return getMockProducts(keyword, category, limit, subId);
   }
 
@@ -220,7 +221,7 @@ export async function searchMusinsaProducts(
     const data = (await response.json()) as { data: { list: MusinsaProductFeed[] } };
     return data.data.list.map((product) => mapToAffiliateProduct(product, config.curatorId, subId));
   } catch (error) {
-    console.error('[Musinsa] API error, falling back to mock:', error);
+    affiliateLogger.error('Musinsa API 에러, mock으로 폴백:', error);
     return getMockProducts(keyword, category, limit, subId);
   }
 }
@@ -228,10 +229,7 @@ export async function searchMusinsaProducts(
 /**
  * 무신사 딥링크 생성
  */
-export async function createMusinsaDeeplink(
-  productUrl: string,
-  subId?: string
-): Promise<string> {
+export async function createMusinsaDeeplink(productUrl: string, subId?: string): Promise<string> {
   const config = getConfig();
 
   // Mock 모드
@@ -246,7 +244,7 @@ export async function createMusinsaDeeplink(
     const separator = productUrl.includes('?') ? '&' : '?';
     return `${productUrl}${separator}curator=${config.curatorId}${subId ? `&utm_source=${subId}` : ''}`;
   } catch (error) {
-    console.error('[Musinsa] Deeplink error:', error);
+    affiliateLogger.error('Musinsa 딥링크 생성 에러:', error);
     return productUrl;
   }
 }

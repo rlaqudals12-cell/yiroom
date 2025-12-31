@@ -5,6 +5,7 @@
 
 import { supabase } from '@/lib/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { productLogger } from '@/lib/utils/logger';
 import type {
   ProductReview,
   ProductReviewRow,
@@ -66,7 +67,7 @@ export async function getProductReviews(
     .range(offset, offset + limit - 1);
 
   if (error) {
-    console.error('[Reviews] Failed to fetch reviews:', error);
+    productLogger.error('리뷰 Failed to fetch reviews:', error);
     return [];
   }
 
@@ -106,7 +107,7 @@ export async function getReviewSummary(
     .eq('product_id', productId);
 
   if (error || !data) {
-    console.error('[Reviews] Failed to fetch review summary:', error);
+    productLogger.error('리뷰 Failed to fetch review summary:', error);
     return {
       averageRating: 0,
       totalCount: 0,
@@ -165,7 +166,7 @@ export async function hasUserReviewed(
     .eq('clerk_user_id', clerkUserId);
 
   if (error) {
-    console.error('[Reviews] Failed to check user review:', error);
+    productLogger.error('리뷰 Failed to check user review:', error);
     return false;
   }
 
@@ -177,10 +178,7 @@ export async function hasUserReviewed(
  * @param clerkUserId 사용자 ID
  * @param limit 최대 개수
  */
-export async function getUserReviews(
-  clerkUserId: string,
-  limit = 20
-): Promise<ProductReview[]> {
+export async function getUserReviews(clerkUserId: string, limit = 20): Promise<ProductReview[]> {
   const { data, error } = await supabase
     .from('product_reviews')
     .select('*')
@@ -189,7 +187,7 @@ export async function getUserReviews(
     .limit(limit);
 
   if (error) {
-    console.error('[Reviews] Failed to fetch user reviews:', error);
+    productLogger.error('리뷰 Failed to fetch user reviews:', error);
     return [];
   }
 
@@ -226,7 +224,7 @@ export async function createReview(
     .single();
 
   if (error) {
-    console.error('[Reviews] Failed to create review:', error);
+    productLogger.error('리뷰 Failed to create review:', error);
     return null;
   }
 
@@ -258,7 +256,7 @@ export async function updateReview(
     .single();
 
   if (error) {
-    console.error('[Reviews] Failed to update review:', error);
+    productLogger.error('리뷰 Failed to update review:', error);
     return null;
   }
 
@@ -275,13 +273,10 @@ export async function deleteReview(
   supabaseClient: SupabaseClient,
   reviewId: string
 ): Promise<boolean> {
-  const { error } = await supabaseClient
-    .from('product_reviews')
-    .delete()
-    .eq('id', reviewId);
+  const { error } = await supabaseClient.from('product_reviews').delete().eq('id', reviewId);
 
   if (error) {
-    console.error('[Reviews] Failed to delete review:', error);
+    productLogger.error('리뷰 Failed to delete review:', error);
     return false;
   }
 
@@ -304,19 +299,17 @@ export async function toggleReviewHelpful(
 ): Promise<boolean> {
   if (isHelpful) {
     // 도움됨 추가
-    const { error } = await supabaseClient
-      .from('review_helpful')
-      .insert({
-        review_id: reviewId,
-        clerk_user_id: clerkUserId,
-      });
+    const { error } = await supabaseClient.from('review_helpful').insert({
+      review_id: reviewId,
+      clerk_user_id: clerkUserId,
+    });
 
     if (error) {
       // 이미 존재하는 경우 무시
       if (error.code === '23505') {
         return true;
       }
-      console.error('[Reviews] Failed to mark helpful:', error);
+      productLogger.error('리뷰 Failed to mark helpful:', error);
       return false;
     }
   } else {
@@ -328,7 +321,7 @@ export async function toggleReviewHelpful(
       .eq('clerk_user_id', clerkUserId);
 
     if (error) {
-      console.error('[Reviews] Failed to unmark helpful:', error);
+      productLogger.error('리뷰 Failed to unmark helpful:', error);
       return false;
     }
   }
@@ -343,10 +336,7 @@ export async function toggleReviewHelpful(
 /**
  * DB row → ProductReview 변환
  */
-function mapReviewRow(
-  row: ProductReviewRow,
-  isHelpfulByMe = false
-): ProductReview {
+function mapReviewRow(row: ProductReviewRow, isHelpfulByMe = false): ProductReview {
   return {
     id: row.id,
     clerkUserId: row.clerk_user_id,

@@ -3,6 +3,7 @@
  * @description 사용자 행동 이벤트 수집 및 전송
  */
 
+import { analyticsLogger } from '@/lib/utils/logger';
 import type { AnalyticsEventType, AnalyticsEventInput } from '@/types/analytics';
 import {
   getOrCreateSession,
@@ -75,7 +76,7 @@ export async function flushEvents(): Promise<void> {
   try {
     // API 전송 (Mock 모드에서는 로깅만)
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Analytics] Events:', payload);
+      analyticsLogger.debug('Events:', payload);
       return;
     }
 
@@ -86,7 +87,7 @@ export async function flushEvents(): Promise<void> {
     });
   } catch (error) {
     // 실패 시 큐에 다시 추가 (재시도)
-    console.error('[Analytics] Failed to send events:', error);
+    analyticsLogger.error('Failed to send events:', error);
     eventQueue = [...events, ...eventQueue].slice(0, 100); // 최대 100개
   }
 }
@@ -141,7 +142,10 @@ export async function trackWorkoutStart(workoutPlanId: string): Promise<void> {
 /**
  * 운동 완료 트래킹
  */
-export async function trackWorkoutComplete(workoutPlanId: string, durationMin: number): Promise<void> {
+export async function trackWorkoutComplete(
+  workoutPlanId: string,
+  durationMin: number
+): Promise<void> {
   await trackEvent({
     eventType: 'workout_complete',
     eventName: 'Workout Completed',
@@ -229,10 +233,7 @@ export async function trackOnboardingComplete(stepsCompleted: number): Promise<v
 /**
  * 어필리에이트 전환 트래킹
  */
-export async function trackAffiliateConversion(
-  productId: string,
-  revenue: number
-): Promise<void> {
+export async function trackAffiliateConversion(productId: string, revenue: number): Promise<void> {
   await trackEvent({
     eventType: 'affiliate_conversion',
     eventName: 'Affiliate Conversion',

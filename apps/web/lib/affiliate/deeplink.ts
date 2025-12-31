@@ -4,6 +4,7 @@
  */
 
 import type { AffiliatePartnerName } from '@/types/affiliate';
+import { affiliateLogger } from '@/lib/utils/logger';
 import { createCoupangDeeplink } from './coupang';
 
 // ============================================
@@ -42,9 +43,7 @@ export interface DeeplinkResult {
  * 파트너별 딥링크 생성
  * @description 각 파트너의 규격에 맞는 어필리에이트 딥링크 생성
  */
-export async function createDeeplink(
-  options: DeeplinkOptions
-): Promise<DeeplinkResult> {
+export async function createDeeplink(options: DeeplinkOptions): Promise<DeeplinkResult> {
   const { partner, productUrl, productId, subId, campaignId } = options;
 
   try {
@@ -78,7 +77,7 @@ export async function createDeeplink(
       success: true,
     };
   } catch (error) {
-    console.error(`[Deeplink] ${partner} 딥링크 생성 실패:`, error);
+    affiliateLogger.error(`${partner} 딥링크 생성 실패:`, error);
     return {
       url: productUrl,
       partner,
@@ -97,16 +96,14 @@ export async function createMultipleDeeplinks(
 ): Promise<Map<AffiliatePartnerName, DeeplinkResult>> {
   const results = new Map<AffiliatePartnerName, DeeplinkResult>();
 
-  const promises = Array.from(productUrls.entries()).map(
-    async ([partner, url]) => {
-      const result = await createDeeplink({
-        partner,
-        productUrl: url,
-        subId,
-      });
-      results.set(partner, result);
-    }
-  );
+  const promises = Array.from(productUrls.entries()).map(async ([partner, url]) => {
+    const result = await createDeeplink({
+      partner,
+      productUrl: url,
+      subId,
+    });
+    results.set(partner, result);
+  });
 
   await Promise.all(promises);
 
@@ -121,11 +118,7 @@ export async function createMultipleDeeplinks(
  * iHerb 딥링크 생성
  * @description Partnerize 트래킹 파라미터 포함
  */
-function createIherbDeeplink(
-  productUrl: string,
-  productId?: string,
-  subId?: string
-): string {
+function createIherbDeeplink(productUrl: string, productId?: string, subId?: string): string {
   // iHerb는 pcode 파라미터로 어필리에이트 추적
   const affiliateCode = process.env.IHERB_AFFILIATE_CODE || 'YIROOM';
   const trackingSubId = subId || 'default';
@@ -140,11 +133,7 @@ function createIherbDeeplink(
  * 무신사 딥링크 생성
  * @description 큐레이터 트래킹 파라미터 포함
  */
-function createMusinsaDeeplink(
-  productUrl: string,
-  productId?: string,
-  subId?: string
-): string {
+function createMusinsaDeeplink(productUrl: string, productId?: string, subId?: string): string {
   const curatorId = process.env.MUSINSA_CURATOR_ID || 'yiroom';
   const separator = productUrl.includes('?') ? '&' : '?';
 
@@ -158,10 +147,7 @@ function createMusinsaDeeplink(
 /**
  * URL에서 제품 ID 추출
  */
-export function extractProductId(
-  url: string,
-  partner: AffiliatePartnerName
-): string | null {
+export function extractProductId(url: string, partner: AffiliatePartnerName): string | null {
   try {
     const urlObj = new URL(url);
 

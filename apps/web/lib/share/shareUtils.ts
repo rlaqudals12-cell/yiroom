@@ -1,3 +1,5 @@
+import { shareLogger } from '@/lib/utils/logger';
+
 /**
  * 이미지를 Web Share API로 공유하거나 다운로드
  * @param blob 공유할 이미지 Blob
@@ -5,11 +7,7 @@
  * @param text 공유 텍스트 (선택)
  * @returns 공유 성공 여부
  */
-export async function shareImage(
-  blob: Blob,
-  title: string,
-  text?: string
-): Promise<boolean> {
+export async function shareImage(blob: Blob, title: string, text?: string): Promise<boolean> {
   const file = new File([blob], `${title}.png`, { type: 'image/png' });
 
   // Web Share API 지원 확인 (파일 공유 가능 여부)
@@ -28,7 +26,7 @@ export async function shareImage(
     } catch (error) {
       // 사용자가 취소한 경우는 에러로 처리하지 않음
       if ((error as Error).name !== 'AbortError') {
-        console.error('[이룸] 공유 실패:', error);
+        shareLogger.error('공유 실패:', error);
       }
       return false;
     }
@@ -79,11 +77,7 @@ export function canShareFiles(): boolean {
  * @param url URL
  * @returns 공유 성공 여부
  */
-export async function shareText(
-  title: string,
-  text: string,
-  url?: string
-): Promise<boolean> {
+export async function shareText(title: string, text: string, url?: string): Promise<boolean> {
   if (typeof navigator === 'undefined' || !navigator.share) {
     // 폴백: 클립보드에 복사
     await copyToClipboard(url || text);
@@ -99,7 +93,7 @@ export async function shareText(
     return true;
   } catch (error) {
     if ((error as Error).name !== 'AbortError') {
-      console.error('[이룸] 텍스트 공유 실패:', error);
+      shareLogger.error('텍스트 공유 실패:', error);
     }
     return false;
   }

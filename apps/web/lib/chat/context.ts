@@ -3,6 +3,7 @@
  * @description 사용자 분석 결과 및 프로필 데이터 수집
  */
 
+import { chatLogger } from '@/lib/utils/logger';
 import type { ChatContext } from '@/types/chat';
 
 /**
@@ -58,7 +59,7 @@ export async function fetchUserContext(clerkUserId: string): Promise<ChatContext
   // const personalColor = await supabase.from('personal_color_assessments')...
 
   // 현재는 Mock 데이터 반환
-  console.log(`[Chat Context] Fetching context for user: ${clerkUserId}`);
+  chatLogger.debug(`Fetching context for user: ${clerkUserId}`);
 
   // 개발 환경에서는 Mock 데이터 사용
   return generateMockContext();
@@ -72,7 +73,9 @@ export function summarizeContext(context: ChatContext): string {
   const summaries: string[] = [];
 
   if (context.skinAnalysis) {
-    summaries.push(`피부: ${context.skinAnalysis.skinType}, 수분 ${context.skinAnalysis.moisture}%`);
+    summaries.push(
+      `피부: ${context.skinAnalysis.skinType}, 수분 ${context.skinAnalysis.moisture}%`
+    );
   }
 
   if (context.personalColor) {
