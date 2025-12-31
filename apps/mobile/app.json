@@ -1,0 +1,82 @@
+{
+  "expo": {
+    "name": "이룸",
+    "slug": "yiroom",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "yiroom",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2e5afa"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yiroom.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "퍼스널 컬러, 피부 분석을 위해 카메라 접근이 필요합니다.",
+        "NSPhotoLibraryUsageDescription": "체형 분석 및 음식 기록을 위해 사진 접근이 필요합니다.",
+        "NSPhotoLibraryAddUsageDescription": "분석 결과를 저장하기 위해 사진 저장 권한이 필요합니다."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2e5afa"
+      },
+      "package": "com.yiroom.app",
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-dev-client",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "퍼스널 컬러, 피부 분석을 위해 카메라 접근이 필요합니다."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "체형 분석 및 음식 기록을 위해 사진 접근이 필요합니다."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#2e5afa"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    },
+    "owner": "yiroom",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/your-project-id"
+    }
+  }
+}

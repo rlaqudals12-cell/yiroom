@@ -539,12 +539,60 @@ EXPO_PUBLIC_GOOGLE_AI_API_KEY=AIza...
 
 ---
 
-## 10. 문서 이력
+## 10. 저장소 구조 결정 (2026-01-01 추가)
 
-| 버전 | 날짜       | 변경 내용                            |
-| ---- | ---------- | ------------------------------------ |
-| 1.0  | 2025-12-31 | 초기 작성 - 전체 결정사항 통합       |
-| 1.1  | 2025-12-31 | 참고 자료 섹션 추가 (조사 출처 명시) |
+### 10.1 결정: 단일 저장소 (서브모듈 ❌)
+
+```yaml
+결정: 서브모듈 → 일반 디렉토리 변환
+이유:
+  - Expo SDK 52+ 모노레포 자동 감지
+  - Turborepo 캐싱 최적화
+  - @yiroom/shared import 단순화
+  - 커밋/푸시 단일화 (2번 → 1번)
+```
+
+### 10.2 변환 방법
+
+```bash
+# 서브모듈 제거, 파일 유지
+rm -rf apps/mobile/.git
+git rm --cached apps/mobile
+git add apps/mobile
+git commit -m "chore: mobile 서브모듈을 일반 디렉토리로 변환"
+```
+
+### 10.3 근거 자료 (2026-01-01 조사)
+
+| 자료                       | URL                                                                                                                                                | 핵심 내용                               |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| Turborepo 2025 Guide       | [medium.com](https://medium.com/better-dev-nextjs-react/setting-up-turborepo-with-react-native-and-next-js-the-2025-production-guide-690478ad75af) | "apps/mobileApp/.git 삭제 후 통합" 권장 |
+| Expo Monorepo Docs         | [docs.expo.dev](https://docs.expo.dev/guides/monorepos/)                                                                                           | 공식 모노레포 가이드, 단일 저장소       |
+| Cursor Monorepo Rules      | [cursor.directory](https://cursor.directory/rules/monorepo)                                                                                        | Turbo 기반 단일 저장소 권장             |
+| Claude Code Best Practices | [anthropic.com](https://www.anthropic.com/engineering/claude-code-best-practices)                                                                  | CLAUDE.md 계층 구조 지원                |
+
+### 10.4 최종 구조
+
+```
+yiroom/                    # 단일 Git 저장소
+├── .git/                  # 하나의 Git만 존재
+├── apps/
+│   ├── web/               # Next.js (기존)
+│   └── mobile/            # Expo (서브모듈 아님)
+├── packages/
+│   └── shared/            # 공통 타입/유틸
+└── CLAUDE.md
+```
+
+---
+
+## 11. 문서 이력
+
+| 버전 | 날짜       | 변경 내용                                      |
+| ---- | ---------- | ---------------------------------------------- |
+| 1.0  | 2025-12-31 | 초기 작성 - 전체 결정사항 통합                 |
+| 1.1  | 2025-12-31 | 참고 자료 섹션 추가 (조사 출처 명시)           |
+| 1.2  | 2026-01-01 | 저장소 구조 결정 추가 (서브모듈 → 단일 저장소) |
 
 ---
 

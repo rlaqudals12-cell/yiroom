@@ -1,0 +1,126 @@
+{
+  "app": {
+    "name": "이룸 - 온전한 나는?",
+    "shortName": "이룸",
+    "subtitle": "AI 퍼스널 컬러, 피부, 체형 분석",
+    "version": "0.1.0",
+    "buildNumber": 1
+  },
+  "ios": {
+    "bundleId": "com.yiroom.app",
+    "category": "Health & Fitness",
+    "secondaryCategory": "Lifestyle",
+    "ageRating": "4+",
+    "privacyPolicyUrl": "https://yiroom.com/privacy",
+    "supportUrl": "https://yiroom.com/support",
+    "marketingUrl": "https://yiroom.com"
+  },
+  "android": {
+    "packageName": "com.yiroom.app",
+    "category": "Health & Fitness",
+    "contentRating": "Everyone",
+    "privacyPolicyUrl": "https://yiroom.com/privacy"
+  },
+  "localization": {
+    "ko": {
+      "name": "이룸 - 온전한 나는?",
+      "subtitle": "AI 퍼스널 컬러, 피부, 체형 분석",
+      "description": "이룸은 AI 기반 통합 웰니스 플랫폼입니다.\n\n• 퍼스널 컬러 진단: 문진과 사진 분석으로 4계절 16톤 진단\n• 피부 분석: 7가지 지표로 정확한 피부 상태 파악\n• 체형 분석: 8가지 체형별 맞춤 스타일 추천\n• 운동 관리: 체형에 맞는 운동 루틴과 연예인 루틴\n• 영양 관리: AI 음식 인식과 칼로리 트래킹\n• 통합 리포트: 주간/월간 건강 리포트\n\n모든 분석은 당신의 기기에서 안전하게 처리됩니다.",
+      "keywords": "퍼스널컬러,피부분석,체형분석,운동,다이어트,칼로리,영양,AI,웰니스,건강,뷰티",
+      "whatsNew": "• 첫 번째 릴리즈\n• 퍼스널 컬러 진단 (PC-1)\n• 피부 분석 (S-1)\n• 체형 분석 (C-1)\n• 운동 관리 (W-1)\n• 영양 관리 (N-1)",
+      "promotionalText": "AI로 나만의 뷰티 & 웰니스 루틴을 찾아보세요!"
+    },
+    "en": {
+      "name": "Yiroom - Know Yourself",
+      "subtitle": "AI Personal Color, Skin & Body Analysis",
+      "description": "Yiroom is an AI-powered integrated wellness platform.\n\n• Personal Color Diagnosis: 4-season 16-tone analysis with questionnaire and photo\n• Skin Analysis: Accurate skin assessment with 7 indicators\n• Body Type Analysis: Personalized style recommendations for 8 body types\n• Workout Management: Body-type specific routines and celebrity workouts\n• Nutrition Management: AI food recognition and calorie tracking\n• Integrated Reports: Weekly/monthly health reports\n\nAll analysis is processed securely on your device.",
+      "keywords": "personalcolor,skinanalysis,bodytype,workout,diet,calorie,nutrition,AI,wellness,health,beauty",
+      "whatsNew": "• First Release\n• Personal Color Diagnosis (PC-1)\n• Skin Analysis (S-1)\n• Body Type Analysis (C-1)\n• Workout Management (W-1)\n• Nutrition Management (N-1)",
+      "promotionalText": "Find your personalized beauty & wellness routine with AI!"
+    }
+  },
+  "screenshots": {
+    "required": {
+      "iphone6_5": {
+        "size": "1284x2778",
+        "count": 10,
+        "scenes": [
+          "홈 대시보드",
+          "퍼스널 컬러 결과",
+          "피부 분석 결과",
+          "체형 분석 결과",
+          "운동 온보딩",
+          "운동 세션",
+          "영양 대시보드",
+          "음식 분석",
+          "주간 리포트",
+          "설정"
+        ]
+      },
+      "iphone5_5": {
+        "size": "1242x2208",
+        "count": 10
+      },
+      "ipad12_9": {
+        "size": "2048x2732",
+        "count": 10
+      }
+    },
+    "android": {
+      "phone": {
+        "size": "1080x1920",
+        "count": 8
+      },
+      "tablet7": {
+        "size": "1200x1920",
+        "count": 8
+      },
+      "tablet10": {
+        "size": "1920x1200",
+        "count": 8
+      }
+    }
+  },
+  "appPreview": {
+    "required": false,
+    "duration": "15-30 seconds",
+    "format": "H.264, AAC audio"
+  },
+  "privacyNutritionLabels": {
+    "dataCollected": [
+      {
+        "type": "Contact Info",
+        "items": ["Email Address"],
+        "linkedToUser": true,
+        "usedForTracking": false
+      },
+      {
+        "type": "Health & Fitness",
+        "items": ["Health", "Fitness"],
+        "linkedToUser": true,
+        "usedForTracking": false
+      },
+      {
+        "type": "User Content",
+        "items": ["Photos or Videos"],
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "note": "분석 후 즉시 삭제"
+      },
+      {
+        "type": "Usage Data",
+        "items": ["Product Interaction"],
+        "linkedToUser": true,
+        "usedForTracking": false
+      }
+    ],
+    "purposes": ["App Functionality", "Analytics", "Product Personalization"]
+  },
+  "reviewNotes": {
+    "demoAccount": {
+      "email": "demo@yiroom.com",
+      "password": "demo123!"
+    },
+    "notes": "이 앱은 AI 기반 웰니스 분석 서비스입니다. 퍼스널 컬러, 피부, 체형 분석은 참고용 정보를 제공하며 의료적 조언을 대체하지 않습니다. 모든 이미지 분석은 기기 내에서 처리되며 서버에 저장되지 않습니다."
+  }
+}
