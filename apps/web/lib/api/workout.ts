@@ -1,4 +1,5 @@
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { workoutLogger, gamificationLogger } from '@/lib/utils/logger';
 import { WorkoutInputData, WorkoutType } from '@/types/workout';
 import { getNewBadges, STREAK_MILESTONES, getDaysDifference } from '@/lib/workout/streak';
 import {
@@ -8,10 +9,7 @@ import {
   type BadgeAwardResult,
   type LevelUpResult,
 } from '@/lib/gamification';
-import {
-  updateChallengesOnWorkout,
-  type ChallengeUpdateResult,
-} from '@/lib/challenges';
+import { updateChallengesOnWorkout, type ChallengeUpdateResult } from '@/lib/challenges';
 
 // XP 보상 상수
 const XP_WORKOUT_COMPLETE = 5;
@@ -158,7 +156,7 @@ export async function saveWorkoutAnalysis(
     .single();
 
   if (error) {
-    console.error('Error saving workout analysis:', error);
+    workoutLogger.error('Error saving workout analysis:', error);
     return null;
   }
 
@@ -168,9 +166,7 @@ export async function saveWorkoutAnalysis(
 /**
  * 사용자의 최신 운동 분석 결과 조회
  */
-export async function getLatestWorkoutAnalysis(
-  userId: string
-): Promise<WorkoutAnalysis | null> {
+export async function getLatestWorkoutAnalysis(userId: string): Promise<WorkoutAnalysis | null> {
   const supabase = createClerkSupabaseClient();
 
   const { data, error } = await supabase
@@ -186,7 +182,7 @@ export async function getLatestWorkoutAnalysis(
       // No rows found
       return null;
     }
-    console.error('Error fetching workout analysis:', error);
+    workoutLogger.error('Error fetching workout analysis:', error);
     return null;
   }
 
@@ -210,7 +206,7 @@ export async function saveWorkoutPlan(
   const supabase = createClerkSupabaseClient();
 
   // 통계 계산
-  const totalWorkoutDays = dailyPlans.filter(d => !d.is_rest_day).length;
+  const totalWorkoutDays = dailyPlans.filter((d) => !d.is_rest_day).length;
   const totalEstimatedMinutes = dailyPlans.reduce((sum, d) => sum + d.estimated_minutes, 0);
   const totalEstimatedCalories = dailyPlans.reduce((sum, d) => sum + d.estimated_calories, 0);
 
@@ -230,7 +226,7 @@ export async function saveWorkoutPlan(
     .single();
 
   if (error) {
-    console.error('Error saving workout plan:', error);
+    workoutLogger.error('Error saving workout plan:', error);
     return null;
   }
 
@@ -240,9 +236,7 @@ export async function saveWorkoutPlan(
 /**
  * 현재 주간 운동 계획 조회
  */
-export async function getCurrentWeekPlan(
-  userId: string
-): Promise<WorkoutPlan | null> {
+export async function getCurrentWeekPlan(userId: string): Promise<WorkoutPlan | null> {
   const supabase = createClerkSupabaseClient();
 
   // 이번 주 월요일 날짜 계산 (일요일 처리 포함)
@@ -265,7 +259,7 @@ export async function getCurrentWeekPlan(
     if (error.code === 'PGRST116') {
       return null;
     }
-    console.error('Error fetching current week plan:', error);
+    workoutLogger.error('Error fetching current week plan:', error);
     return null;
   }
 
@@ -307,9 +301,12 @@ export async function saveWorkoutLog(
 
   // 총 볼륨 계산 (세트 x 횟수 x 무게)
   const totalVolume = exerciseLogs.reduce((total, exercise) => {
-    return total + exercise.sets.reduce((setTotal, set) => {
-      return setTotal + (set.completed ? set.reps * (set.weight || 1) : 0);
-    }, 0);
+    return (
+      total +
+      exercise.sets.reduce((setTotal, set) => {
+        return setTotal + (set.completed ? set.reps * (set.weight || 1) : 0);
+      }, 0)
+    );
   }, 0);
 
   const { data, error } = await supabase
@@ -331,7 +328,7 @@ export async function saveWorkoutLog(
     .single();
 
   if (error) {
-    console.error('Error saving workout log:', error);
+    workoutLogger.error('Error saving workout log:', error);
     return {
       log: null,
       gamification: { badgeResults: [], xpResult: null },
@@ -367,7 +364,7 @@ export async function getWorkoutLogByDate(
     if (error.code === 'PGRST116') {
       return null;
     }
-    console.error('Error fetching workout log:', error);
+    workoutLogger.error('Error fetching workout log:', error);
     return null;
   }
 
@@ -377,10 +374,7 @@ export async function getWorkoutLogByDate(
 /**
  * 최근 운동 기록 조회 (최근 7일)
  */
-export async function getRecentWorkoutLogs(
-  userId: string,
-  days = 7
-): Promise<WorkoutLog[]> {
+export async function getRecentWorkoutLogs(userId: string, days = 7): Promise<WorkoutLog[]> {
   const supabase = createClerkSupabaseClient();
 
   const startDate = new Date();
@@ -394,7 +388,7 @@ export async function getRecentWorkoutLogs(
     .order('workout_date', { ascending: false });
 
   if (error) {
-    console.error('Error fetching recent workout logs:', error);
+    workoutLogger.error('Error fetching recent workout logs:', error);
     return [];
   }
 
@@ -408,9 +402,7 @@ export async function getRecentWorkoutLogs(
 /**
  * 사용자의 Streak 조회
  */
-export async function getWorkoutStreak(
-  userId: string
-): Promise<WorkoutStreak | null> {
+export async function getWorkoutStreak(userId: string): Promise<WorkoutStreak | null> {
   const supabase = createClerkSupabaseClient();
 
   const { data, error } = await supabase
@@ -423,7 +415,7 @@ export async function getWorkoutStreak(
     if (error.code === 'PGRST116') {
       return null;
     }
-    console.error('Error fetching workout streak:', error);
+    workoutLogger.error('Error fetching workout streak:', error);
     return null;
   }
 
@@ -468,7 +460,7 @@ export async function updateWorkoutStreak(
       .single();
 
     if (error) {
-      console.error('Error creating workout streak:', error);
+      workoutLogger.error('Error creating workout streak:', error);
       return { streak: null, gamification: gamificationResult };
     }
 
@@ -481,16 +473,14 @@ export async function updateWorkoutStreak(
       const countBadges = await checkWorkoutCountBadges(supabase, userId, 1);
       gamificationResult.badgeResults.push(...countBadges);
     } catch (err) {
-      console.error('[Gamification] First workout error:', err);
+      gamificationLogger.error('First workout error:', err);
     }
 
     return { streak: data as WorkoutStreak, gamification: gamificationResult };
   }
 
   // 기존 streak 업데이트
-  const lastWorkout = streak.last_workout_date
-    ? new Date(streak.last_workout_date)
-    : null;
+  const lastWorkout = streak.last_workout_date ? new Date(streak.last_workout_date) : null;
 
   let newCurrentStreak = streak.current_streak;
   let newStreakStart = streak.streak_start_date;
@@ -543,7 +533,7 @@ export async function updateWorkoutStreak(
     .single();
 
   if (error) {
-    console.error('Error updating workout streak:', error);
+    workoutLogger.error('Error updating workout streak:', error);
     return { streak: null, gamification: gamificationResult };
   }
 
@@ -578,7 +568,7 @@ export async function updateWorkoutStreak(
     const challengeResult = await updateChallengesOnWorkout(supabase, userId, todayStr);
     gamificationResult.challengeResult = challengeResult;
   } catch (err) {
-    console.error('[Gamification] Workout streak sync error:', err);
+    gamificationLogger.error('Workout streak sync error:', err);
   }
 
   return { streak: data as WorkoutStreak, gamification: gamificationResult };

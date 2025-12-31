@@ -210,6 +210,45 @@ export const apiLogger = createLogger('API');
 /** 크롤러 로거 */
 export const crawlerLogger = createLogger('Crawler');
 
+/** 리더보드 로거 */
+export const leaderboardLogger = createLogger('Leaderboard');
+
+/** 웰니스 로거 */
+export const wellnessLogger = createLogger('Wellness');
+
+/** 인벤토리 로거 */
+export const inventoryLogger = createLogger('Inventory');
+
+/** 스마트 매칭 로거 */
+export const smartMatchingLogger = createLogger('SmartMatching');
+
+/** 오프라인 동기화 로거 */
+export const offlineLogger = createLogger('Offline');
+
+/** RAG 로거 */
+export const ragLogger = createLogger('RAG');
+
+/** 스타일 로거 */
+export const styleLogger = createLogger('Style');
+
+/** 분석 로거 */
+export const analyticsLogger = createLogger('Analytics');
+
+/** 피드백 로거 */
+export const feedbackLogger = createLogger('Feedback');
+
+/** 코치 로거 */
+export const coachLogger = createLogger('Coach');
+
+/** 채팅 로거 */
+export const chatLogger = createLogger('Chat');
+
+/** 공유 로거 */
+export const shareLogger = createLogger('Share');
+
+/** 위시리스트 로거 */
+export const wishlistLogger = createLogger('Wishlist');
+
 // ============================================
 // 유틸리티
 // ============================================
