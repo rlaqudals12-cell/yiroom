@@ -26,10 +26,10 @@ apps/mobile/
 │   ├── _layout.tsx         # 루트 레이아웃
 │   ├── (tabs)/             # 탭 네비게이션
 │   │   ├── _layout.tsx
-│   │   ├── index.tsx       # 홈
+│   │   ├── index.tsx       # 홈 (대시보드, 오늘 할 일, 알림)
 │   │   ├── beauty.tsx      # 뷰티 (PC-1, S-1)
 │   │   ├── style.tsx       # 스타일 (C-1, 쇼핑)
-│   │   ├── track.tsx       # 기록 (W-1, N-1)
+│   │   ├── records.tsx     # 기록 (W-1, N-1)
 │   │   └── profile.tsx     # 마이페이지
 │   ├── (auth)/             # 인증 플로우
 │   │   ├── sign-in.tsx
@@ -204,40 +204,41 @@ export function calculateBMI(weight: number, height: number): number {
 
 ## 개발 단계
 
-### Week 1: 환경 설정
+### Week 1: 환경 설정 ✅
 
-- [ ] Expo 프로젝트 구성 확인
-- [ ] EAS Build 설정
-- [ ] 5탭 네비게이션 구현
-- [ ] 디자인 시스템 (NativeWind 또는 StyleSheet)
+- [x] Expo 프로젝트 구성 확인
+- [x] EAS Build 설정 (eas.json)
+- [x] 5탭 네비게이션 구현 (홈/뷰티/스타일/기록/나)
+- [x] 디자인 시스템 (NativeWind v4 + StyleSheet 하이브리드)
 
-### Week 2: 인증 + DB
+### Week 2: 인증 + DB ✅
 
-- [ ] Clerk 로그인/회원가입
-- [ ] Supabase 연동
-- [ ] 사용자 프로필 동기화
-- [ ] 온보딩 플로우
+- [x] Clerk 로그인/회원가입 (sign-in, sign-up)
+- [x] Supabase 연동 (useClerkSupabaseClient)
+- [x] 사용자 프로필 동기화 (profile.tsx)
+- [x] 온보딩 플로우 (personal-color/index.tsx)
 
-### Week 3: 분석 기능
+### Week 3: 분석 기능 ✅
 
-- [ ] PC-1 카메라 분석
-- [ ] S-1 피부 분석
-- [ ] C-1 체형 분석
-- [ ] Gemini AI 연동
+- [x] PC-1 카메라 분석 (문진 + 카메라 + 결과)
+- [x] S-1 피부 분석 (index + camera + result)
+- [x] C-1 체형 분석 (index + result)
+- [x] Gemini AI 연동 (lib/gemini.ts)
 
-### Week 4: 트래킹
+### Week 4: 트래킹 🔄
 
-- [ ] W-1 운동 기록
-- [ ] N-1 영양 기록 (카메라 음식 인식)
-- [ ] 물 섭취 트래킹
-- [ ] 통계 대시보드
+- [x] 홈 탭 대시보드 (오늘의 요약, 오늘 할 일, 알림 요약)
+- [x] 데이터 훅 (useWorkoutData, useNutritionData)
+- [ ] W-1 운동 기록 상세 화면
+- [ ] N-1 영양 기록 상세 화면 (카메라 음식 인식)
+- [ ] 물 섭취 트래킹 UI
 
-### Week 5: 쇼핑 + 알림
+### Week 5: 쇼핑 + 알림 🔄
 
-- [ ] 제품 추천 리스트
-- [ ] 어필리에이트 링크
-- [ ] 푸시 알림 설정
-- [ ] 알림 스케줄링
+- [ ] 제품 추천 리스트 화면
+- [ ] 어필리에이트 링크 연동
+- [x] 푸시 알림 시스템 (lib/notifications.ts)
+- [x] 알림 스케줄링 (workout, meal, streak)
 
 ### Week 6: 테스트 + 배포
 
@@ -368,10 +369,13 @@ describe('Analysis Flow', () => {
 
 ## 문서 이력
 
-| 버전 | 날짜       | 변경 내용 |
-| ---- | ---------- | --------- |
-| 1.0  | 2025-12-31 | 초기 작성 |
+| 버전 | 날짜       | 변경 내용                                     |
+| ---- | ---------- | --------------------------------------------- |
+| 1.0  | 2025-12-31 | 초기 작성                                     |
+| 1.1  | 2026-01-01 | Week 1-3 완료, Week 4-5 진행 중 상태 업데이트 |
 
 ---
 
-**다음 단계**: Week 1 환경 설정부터 시작
+**현재 진행률**: Week 4 트래킹 (70% 완료)
+
+**다음 단계**: 운동/영양 상세 화면 구현

@@ -1,12 +1,13 @@
 /**
  * 이룸 홈 화면
- * 대시보드 스타일 UI + 퀵 액션 + 실제 데이터 연동
+ * 대시보드 스타일 UI + 오늘 할 일 + 알림 요약
  */
-import { View, Text, StyleSheet, ScrollView, useColorScheme, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useColorScheme, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useUser } from '@clerk/clerk-expo';
 import { useWorkoutData, useNutritionData, useUserAnalyses, calculateCalorieProgress } from '../../hooks';
+import { useMemo } from 'react';
 
 // 색상 상수
 const COLORS = {
@@ -49,6 +50,97 @@ export default function HomeScreen() {
       ? `${[personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length}/3`
       : '—';
 
+  // 오늘 할 일 목록 생성
+  const todayTasks = useMemo(() => {
+    const tasks: { id: string; label: string; completed: boolean; route: string }[] = [];
+
+    // 운동 완료 여부
+    tasks.push({
+      id: 'workout',
+      label: '오늘의 운동 완료',
+      completed: workoutStreak?.lastWorkoutDate === new Date().toISOString().split('T')[0],
+      route: '/(tabs)/records',
+    });
+
+    // 아침 식사 기록 (식사 횟수로 추정)
+    tasks.push({
+      id: 'meal',
+      label: '식사 기록하기',
+      completed: (todaySummary?.mealCount || 0) >= 1,
+      route: '/(tabs)/records',
+    });
+
+    // 물 섭취 (division by zero 방지)
+    const waterProgress = todaySummary && nutritionSettings && nutritionSettings.waterGoal > 0
+      ? (todaySummary.waterIntake / nutritionSettings.waterGoal) * 100
+      : 0;
+    tasks.push({
+      id: 'water',
+      label: `물 마시기 (${Math.round(waterProgress)}%)`,
+      completed: waterProgress >= 100,
+      route: '/(tabs)/records',
+    });
+
+    // 분석 완료 (3가지 중 미완료 항목)
+    if (!personalColor) {
+      tasks.push({
+        id: 'personal-color',
+        label: '퍼스널 컬러 분석',
+        completed: false,
+        route: '/(analysis)/personal-color',
+      });
+    }
+
+    return tasks;
+  }, [workoutStreak, todaySummary, nutritionSettings, personalColor]);
+
+  // 알림 요약 생성
+  const notificationSummary = useMemo(() => {
+    const notifications: { id: string; message: string; type: 'info' | 'warning' | 'success' }[] = [];
+
+    // Streak 알림
+    if (workoutStreak?.currentStreak && workoutStreak.currentStreak >= 3) {
+      notifications.push({
+        id: 'workout-streak',
+        message: `🔥 운동 ${workoutStreak.currentStreak}일 연속 달성 중!`,
+        type: 'success',
+      });
+    }
+
+    // 분석 미완료 알림
+    const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length;
+    if (analysisCount < 3 && analysisCount > 0) {
+      notifications.push({
+        id: 'analysis-incomplete',
+        message: `📊 분석 ${3 - analysisCount}개가 남아있어요`,
+        type: 'info',
+      });
+    }
+
+    // 식단 목표 달성 여부
+    if (todaySummary && nutritionSettings) {
+      const calorieProgress = calculateCalorieProgress(todaySummary.totalCalories, nutritionSettings.dailyCalorieGoal);
+      if (calorieProgress >= 100) {
+        notifications.push({
+          id: 'calorie-goal',
+          message: '✅ 오늘 칼로리 목표 달성!',
+          type: 'success',
+        });
+      }
+    }
+
+    // 기본 메시지
+    if (notifications.length === 0) {
+      notifications.push({
+        id: 'welcome',
+        message: '👋 오늘도 이룸과 함께 건강한 하루를!',
+        type: 'info',
+      });
+    }
+
+    return notifications;
+  }, [workoutStreak, personalColor, skinAnalysis, bodyAnalysis, todaySummary, nutritionSettings]);
+
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
       <ScrollView
@@ -65,6 +157,25 @@ export default function HomeScreen() {
           </Text>
         </View>
 
+        {/* 알림 요약 */}
+        <View style={styles.notificationSection}>
+          {notificationSummary.map((notification) => (
+            <View
+              key={notification.id}
+              style={[
+                styles.notificationBanner,
+                isDark && styles.cardDark,
+                notification.type === 'success' && styles.notificationSuccess,
+                notification.type === 'warning' && styles.notificationWarning,
+              ]}
+            >
+              <Text style={[styles.notificationText, isDark && styles.textLight]}>
+                {notification.message}
+              </Text>
+            </View>
+          ))}
+        </View>
+
         {/* 오늘의 요약 카드 */}
         <View style={[styles.summaryCard, isDark && styles.cardDark]}>
           <View style={styles.summaryHeader}>
@@ -76,6 +187,25 @@ export default function HomeScreen() {
             <StatItem label="운동" value={workoutValue} color={COLORS.workout} />
             <StatItem label="식단" value={nutritionValue} color={COLORS.nutrition} />
             <StatItem label="분석" value={checkinValue} color={COLORS.primary} />
+          </View>
+        </View>
+
+        {/* 오늘 할 일 */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+            오늘 할 일
+          </Text>
+          <View style={[styles.todoCard, isDark && styles.cardDark]}>
+            {todayTasks.map((task, index) => (
+              <TodoItem
+                key={task.id}
+                label={task.label}
+                completed={task.completed}
+                isDark={isDark}
+                onPress={() => router.push(task.route as never)}
+                isLast={index === todayTasks.length - 1}
+              />
+            ))}
           </View>
         </View>
 
@@ -123,14 +253,14 @@ export default function HomeScreen() {
               description="맞춤 운동 플랜으로 목표 달성"
               color={COLORS.workout}
               isDark={isDark}
-              onPress={() => router.push('/(tabs)/workout')}
+              onPress={() => router.push('/(workout)/onboarding')}
             />
             <ModuleCard
               title="영양"
               description="균형 잡힌 식단으로 건강 관리"
               color={COLORS.nutrition}
               isDark={isDark}
-              onPress={() => router.push('/(tabs)/nutrition')}
+              onPress={() => router.push('/(nutrition)/dashboard')}
             />
           </View>
         </View>
@@ -166,6 +296,46 @@ function StatItem({ label, value, color }: { label: string; value: string; color
       <Text style={[styles.statValue, { color }]}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
+  );
+}
+
+// 할 일 아이템
+function TodoItem({
+  label,
+  completed,
+  isDark,
+  onPress,
+  isLast,
+}: {
+  label: string;
+  completed: boolean;
+  isDark: boolean;
+  onPress: () => void;
+  isLast: boolean;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.todoItem,
+        !isLast && styles.todoItemBorder,
+        !isLast && isDark && styles.todoItemBorderDark,
+        pressed && styles.pressed,
+      ]}
+      onPress={onPress}
+    >
+      <View style={[styles.todoCheckbox, completed && styles.todoCheckboxCompleted]}>
+        {completed && <Text style={styles.todoCheckmark}>✓</Text>}
+      </View>
+      <Text
+        style={[
+          styles.todoLabel,
+          isDark && styles.textLight,
+          completed && styles.todoLabelCompleted,
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -278,6 +448,28 @@ const styles = StyleSheet.create({
     color: '#999',
   },
 
+  // 알림 배너
+  notificationSection: {
+    marginBottom: 16,
+    gap: 8,
+  },
+  notificationBanner: {
+    backgroundColor: '#e8f4fd',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  notificationSuccess: {
+    backgroundColor: '#dcfce7',
+  },
+  notificationWarning: {
+    backgroundColor: '#fef3c7',
+  },
+  notificationText: {
+    fontSize: 14,
+    color: '#333',
+  },
+
   // 요약 카드
   summaryCard: {
     backgroundColor: COLORS.cardLight,
@@ -327,6 +519,59 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111',
     marginBottom: 12,
+  },
+
+  // 오늘 할 일
+  todoCard: {
+    backgroundColor: COLORS.cardLight,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  todoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  todoItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  todoItemBorderDark: {
+    borderBottomColor: '#333',
+  },
+  todoCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: '#ddd',
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  todoCheckboxCompleted: {
+    backgroundColor: '#22c55e',
+    borderColor: '#22c55e',
+  },
+  todoCheckmark: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  todoLabel: {
+    fontSize: 15,
+    color: '#333',
+    flex: 1,
+  },
+  todoLabelCompleted: {
+    color: '#999',
+    textDecorationLine: 'line-through',
   },
 
   // 퀵 액션
