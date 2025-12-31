@@ -77,33 +77,29 @@ export function ChannelComparisonTable({
 
   // 최저가 / 최단 배송 찾기
   const inStockChannels = sortedChannels.filter((c) => c.inStock);
-  const lowestPrice = inStockChannels.length > 0
-    ? Math.min(...inStockChannels.map((c) => c.price))
-    : null;
-  const fastestDays = inStockChannels.length > 0
-    ? Math.min(...inStockChannels.map((c) => c.deliveryDays))
-    : null;
+  const lowestPrice =
+    inStockChannels.length > 0 ? Math.min(...inStockChannels.map((c) => c.price)) : null;
+  const fastestDays =
+    inStockChannels.length > 0 ? Math.min(...inStockChannels.map((c) => c.deliveryDays)) : null;
 
   if (channels.length === 0) {
     return (
       <div
-        className={cn('rounded-lg border bg-card p-4', className)}
+        className={cn('bg-card rounded-lg border p-4', className)}
         data-testid="channel-comparison-table"
       >
-        <p className="text-sm text-muted-foreground text-center">
-          비교할 채널이 없어요
-        </p>
+        <p className="text-muted-foreground text-center text-sm">비교할 채널이 없어요</p>
       </div>
     );
   }
 
   return (
     <div
-      className={cn('rounded-lg border bg-card overflow-hidden', className)}
+      className={cn('bg-card overflow-hidden rounded-lg border', className)}
       data-testid="channel-comparison-table"
     >
       {/* 테이블 헤더 */}
-      <div className="grid grid-cols-5 gap-2 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
+      <div className="bg-muted/50 text-muted-foreground grid grid-cols-5 gap-2 px-4 py-2 text-xs font-medium">
         <div>쇼핑몰</div>
         <div className="text-right">가격</div>
         <div className="text-center">배송</div>
@@ -125,23 +121,21 @@ export function ChannelComparisonTable({
             <div
               key={channel.partner}
               className={cn(
-                'grid grid-cols-5 gap-2 px-4 py-3 items-center',
+                'grid grid-cols-5 items-center gap-2 px-4 py-3',
                 !channel.inStock && 'opacity-50'
               )}
             >
               {/* 쇼핑몰 */}
               <div className="flex items-center gap-2">
-                <span className="font-medium text-sm">
-                  {channel.partnerDisplayName}
-                </span>
+                <span className="text-sm font-medium">{channel.partnerDisplayName}</span>
               </div>
 
               {/* 가격 */}
               <div className="text-right">
                 <div className="flex items-center justify-end gap-1">
-                  <span className="font-bold text-sm">{formatPrice(channel.price)}</span>
+                  <span className="text-sm font-bold">{formatPrice(channel.price)}</span>
                   {isLowest && channel.inStock && (
-                    <Badge className="bg-green-600 text-[10px] px-1">최저</Badge>
+                    <Badge className="bg-green-600 px-1 text-[10px]">최저</Badge>
                   )}
                 </div>
                 {discountPercent > 0 && (
@@ -154,9 +148,8 @@ export function ChannelComparisonTable({
                 <Badge className={cn('text-[10px]', deliveryBadge.className)}>
                   {deliveryBadge.label}
                 </Badge>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {channel.deliveryDays}일
-                  {isFastest && channel.inStock && ' ⚡'}
+                <p className="text-muted-foreground mt-0.5 text-[10px]">
+                  {channel.deliveryDays}일{isFastest && channel.inStock && ' ⚡'}
                 </p>
               </div>
 
@@ -164,7 +157,10 @@ export function ChannelComparisonTable({
               <div className="text-center">
                 <div className="flex flex-col items-center gap-0.5">
                   {channel.isFreeShipping && (
-                    <Badge variant="outline" className="text-[10px] text-green-600 border-green-300">
+                    <Badge
+                      variant="outline"
+                      className="border-green-300 text-[10px] text-green-600"
+                    >
                       무배
                     </Badge>
                   )}
@@ -172,7 +168,7 @@ export function ChannelComparisonTable({
                     <span className="text-[10px] text-purple-600">{channel.benefits}</span>
                   )}
                   {!channel.isFreeShipping && !channel.benefits && (
-                    <span className="text-[10px] text-muted-foreground">-</span>
+                    <span className="text-muted-foreground text-[10px]">-</span>
                   )}
                 </div>
               </div>
@@ -183,16 +179,41 @@ export function ChannelComparisonTable({
                   <Button
                     size="sm"
                     variant={isLowest ? 'default' : 'outline'}
-                    className="text-xs h-7"
-                    onClick={() => {
+                    className="h-7 text-xs"
+                    onClick={async () => {
                       onSelectChannel?.(channel);
-                      window.open(channel.affiliateUrl, '_blank', 'noopener,noreferrer');
+
+                      // 클릭 트래킹 API 호출
+                      try {
+                        const response = await fetch('/api/affiliate/click', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            productId: channel.productId,
+                            sourcePage: window.location.pathname,
+                            sourceComponent: 'ChannelComparisonTable',
+                          }),
+                        });
+
+                        if (response.ok) {
+                          const data = await response.json();
+                          window.open(
+                            data.affiliateUrl || channel.affiliateUrl,
+                            '_blank',
+                            'noopener,noreferrer'
+                          );
+                        } else {
+                          window.open(channel.affiliateUrl, '_blank', 'noopener,noreferrer');
+                        }
+                      } catch {
+                        window.open(channel.affiliateUrl, '_blank', 'noopener,noreferrer');
+                      }
                     }}
                   >
                     구매
                   </Button>
                 ) : (
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                  <Badge variant="outline" className="text-muted-foreground text-[10px]">
                     품절
                   </Badge>
                 )}
@@ -203,13 +224,11 @@ export function ChannelComparisonTable({
       </div>
 
       {/* 요약 */}
-      <div className="px-4 py-2 bg-muted/30 border-t flex justify-between items-center">
-        <p className="text-xs text-muted-foreground">
-          {inStockChannels.length}개 채널 비교
-        </p>
+      <div className="bg-muted/30 flex items-center justify-between border-t px-4 py-2">
+        <p className="text-muted-foreground text-xs">{inStockChannels.length}개 채널 비교</p>
         {lowestPrice && (
           <p className="text-xs">
-            최저가 <span className="font-bold text-primary">{formatPrice(lowestPrice)}</span>
+            최저가 <span className="text-primary font-bold">{formatPrice(lowestPrice)}</span>
           </p>
         )}
       </div>

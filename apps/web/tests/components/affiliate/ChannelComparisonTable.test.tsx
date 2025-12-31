@@ -10,6 +10,7 @@ import type { ChannelOption } from '@/components/affiliate/MultiChannelProductCa
 describe('ChannelComparisonTable', () => {
   const mockChannels: ChannelOption[] = [
     {
+      productId: 'prod-coupang-123',
       partner: 'coupang',
       partnerDisplayName: '쿠팡',
       price: 15900,
@@ -21,6 +22,7 @@ describe('ChannelComparisonTable', () => {
       inStock: true,
     },
     {
+      productId: 'prod-iherb-456',
       partner: 'iherb',
       partnerDisplayName: 'iHerb',
       price: 12500,
@@ -32,6 +34,7 @@ describe('ChannelComparisonTable', () => {
       benefits: '5% 적립',
     },
     {
+      productId: 'prod-musinsa-789',
       partner: 'musinsa',
       partnerDisplayName: '무신사',
       price: 18000,
@@ -118,12 +121,7 @@ describe('ChannelComparisonTable', () => {
     const mockOpen = vi.fn();
     vi.spyOn(window, 'open').mockImplementation(mockOpen);
 
-    render(
-      <ChannelComparisonTable
-        channels={mockChannels}
-        onSelectChannel={onSelectChannel}
-      />
-    );
+    render(<ChannelComparisonTable channels={mockChannels} onSelectChannel={onSelectChannel} />);
 
     // 구매 버튼 클릭
     const buyButtons = screen.getAllByText('구매');

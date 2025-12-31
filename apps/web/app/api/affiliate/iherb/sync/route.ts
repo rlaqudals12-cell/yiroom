@@ -5,10 +5,24 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { isIHerbConfigured } from '@/lib/affiliate';
+import { isAdmin } from '@/lib/admin';
 
 export async function POST(request: NextRequest) {
   try {
+    // 인증 확인
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
+    }
+
+    // 관리자 권한 확인
+    const adminCheck = await isAdmin();
+    if (!adminCheck) {
+      return NextResponse.json({ error: '관리자 권한이 필요합니다' }, { status: 403 });
+    }
+
     // 환경변수 확인
     if (!isIHerbConfigured()) {
       return NextResponse.json({
@@ -40,9 +54,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[iHerb Sync API] Error:', error);
-    return NextResponse.json(
-      { error: '동기화 중 오류가 발생했습니다' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '동기화 중 오류가 발생했습니다' }, { status: 500 });
   }
 }

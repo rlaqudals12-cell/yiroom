@@ -44,7 +44,12 @@ import {
   TopProductsTable,
 } from '@/components/affiliate/dashboard';
 import type { AffiliateStats } from '@/types/affiliate';
-import type { StatsPeriod, DashboardStats } from '@/lib/admin/affiliate-stats';
+import {
+  fetchDashboardStats,
+  fetchAffiliateStats,
+  type StatsPeriod,
+  type DashboardStats,
+} from '@/lib/admin/affiliate-stats';
 import {
   getDashboardSummary,
   getPartnerRevenues,
@@ -52,13 +57,18 @@ import {
   getTopProducts,
   getDateRange,
 } from '@/lib/affiliate/stats';
-import type { DashboardSummary, PartnerRevenue, DailyRevenueTrend, TopProduct } from '@/lib/affiliate/stats';
+import type {
+  DashboardSummary,
+  PartnerRevenue,
+  DailyRevenueTrend,
+  TopProduct,
+} from '@/lib/affiliate/stats';
 
 // 차트 동적 로딩
-const AffiliateChartDynamic = dynamic(
-  () => import('@/components/admin/AffiliateChart'),
-  { ssr: false, loading: () => <div className="h-[380px] animate-pulse bg-muted rounded-lg" /> }
-);
+const AffiliateChartDynamic = dynamic(() => import('@/components/admin/AffiliateChart'), {
+  ssr: false,
+  loading: () => <div className="bg-muted h-[380px] animate-pulse rounded-lg" />,
+});
 
 // 제품 타입 한글 이름
 const PRODUCT_TYPE_NAMES: Record<string, string> = {
@@ -84,10 +94,14 @@ export default function AdminAffiliatePage() {
   // 기간을 Phase 5 형식으로 변환
   const getPeriodForStats = useCallback(() => {
     switch (period) {
-      case 'today': return 'today';
-      case 'week': return 'week';
-      case 'month': return 'month';
-      default: return 'quarter';
+      case 'today':
+        return 'today';
+      case 'week':
+        return 'week';
+      case 'month':
+        return 'month';
+      default:
+        return 'quarter';
     }
   }, [period]);
 
@@ -95,64 +109,37 @@ export default function AdminAffiliatePage() {
   const loadStats = useCallback(async () => {
     setIsLoading(true);
 
-    // Mock 데이터 (실제로는 서버 액션 호출)
-    await new Promise((r) => setTimeout(r, 500));
+    try {
+      // 클릭 통계 데이터 로드 (서버 액션)
+      const [dashboardData, affiliateData] = await Promise.all([
+        fetchDashboardStats(),
+        fetchAffiliateStats(period),
+      ]);
 
-    // Mock 대시보드 통계
-    setDashboardStats({
-      todayClicks: 42,
-      weekClicks: 287,
-      monthClicks: 1234,
-      weeklyGrowth: 15,
-    });
+      setDashboardStats(dashboardData);
+      setStats(affiliateData);
 
-    // Mock 상세 통계
-    const mockByDate = [];
-    const today = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      mockByDate.push({
-        date: date.toISOString().split('T')[0],
-        clicks: Math.floor(Math.random() * 50) + 20,
-      });
+      // Phase 5 수익 분석 데이터 로드
+      const statsPeriod = getPeriodForStats();
+      const dateRange = getDateRange(statsPeriod);
+
+      const [summary, partners, trend, products] = await Promise.all([
+        getDashboardSummary(dateRange.start, dateRange.end),
+        getPartnerRevenues(dateRange.start, dateRange.end),
+        getDailyRevenueTrend(dateRange.start, dateRange.end),
+        getTopProducts(10),
+      ]);
+
+      setRevenueSummary(summary);
+      setPartnerRevenues(partners);
+      setDailyTrend(trend);
+      setTopProducts(products);
+    } catch (error) {
+      console.error('[Admin Affiliate] 통계 로드 에러:', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    setStats({
-      period: {
-        startDate: mockByDate[0].date,
-        endDate: mockByDate[mockByDate.length - 1].date,
-      },
-      totalClicks: mockByDate.reduce((sum, d) => sum + d.clicks, 0),
-      uniqueUsers: Math.floor(mockByDate.reduce((sum, d) => sum + d.clicks, 0) * 0.7),
-      byProduct: [
-        { productType: 'cosmetic', productId: '1', productName: '피부 진정 세럼', totalClicks: 89, uniqueUsers: 62 },
-        { productType: 'supplement', productId: '2', productName: '멀티비타민', totalClicks: 67, uniqueUsers: 45 },
-        { productType: 'equipment', productId: '3', productName: '폼롤러', totalClicks: 54, uniqueUsers: 38 },
-        { productType: 'healthfood', productId: '4', productName: '단백질 쉐이크', totalClicks: 43, uniqueUsers: 30 },
-        { productType: 'cosmetic', productId: '5', productName: '선크림', totalClicks: 34, uniqueUsers: 25 },
-      ],
-      byDate: mockByDate,
-    });
-
-    // Phase 5 수익 분석 데이터 로드
-    const statsPeriod = getPeriodForStats();
-    const dateRange = getDateRange(statsPeriod);
-
-    const [summary, partners, trend, products] = await Promise.all([
-      getDashboardSummary(dateRange.start, dateRange.end),
-      getPartnerRevenues(dateRange.start, dateRange.end),
-      getDailyRevenueTrend(dateRange.start, dateRange.end),
-      getTopProducts(10),
-    ]);
-
-    setRevenueSummary(summary);
-    setPartnerRevenues(partners);
-    setDailyTrend(trend);
-    setTopProducts(products);
-
-    setIsLoading(false);
-  }, [getPeriodForStats]);
+  }, [period, getPeriodForStats]);
 
   // 통계 로드
   useEffect(() => {
@@ -160,25 +147,20 @@ export default function AdminAffiliatePage() {
   }, [loadStats]);
 
   return (
-    <div className="container mx-auto py-8 px-4" data-testid="admin-affiliate-page">
+    <div className="container mx-auto px-4 py-8" data-testid="admin-affiliate-page">
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <MousePointerClick className="h-8 w-8 text-primary" />
+          <MousePointerClick className="text-primary h-8 w-8" />
           <div>
             <h1 className="text-2xl font-bold">어필리에이트 대시보드</h1>
-            <p className="text-muted-foreground">
-              제품 클릭 통계를 확인합니다.
-            </p>
+            <p className="text-muted-foreground">제품 클릭 통계를 확인합니다.</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Select
-            value={period}
-            onValueChange={(v) => setPeriod(v as StatsPeriod)}
-          >
+          <Select value={period} onValueChange={(v) => setPeriod(v as StatsPeriod)}>
             <SelectTrigger className="w-[130px]">
-              <Calendar className="h-4 w-4 mr-2" />
+              <Calendar className="mr-2 h-4 w-4" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -188,19 +170,18 @@ export default function AdminAffiliatePage() {
               <SelectItem value="all">전체</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={loadStats}
-            disabled={isLoading}
-          >
+          <Button variant="outline" size="icon" onClick={loadStats} disabled={isLoading}>
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
 
       {/* 탭 */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'clicks' | 'revenue')} className="mb-8">
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as 'clicks' | 'revenue')}
+        className="mb-8"
+      >
         <TabsList className="grid w-full max-w-[400px] grid-cols-2">
           <TabsTrigger value="clicks" className="flex items-center gap-2">
             <MousePointerClick className="h-4 w-4" />
@@ -213,33 +194,29 @@ export default function AdminAffiliatePage() {
         </TabsList>
 
         {/* 클릭 통계 탭 */}
-        <TabsContent value="clicks" className="space-y-8 mt-6">
+        <TabsContent value="clicks" className="mt-6 space-y-8">
           {/* 요약 카드 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-muted-foreground text-sm font-medium">
                   오늘 클릭
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {dashboardStats?.todayClicks ?? '-'}
-                </div>
+                <div className="text-2xl font-bold">{dashboardStats?.todayClicks ?? '-'}</div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-muted-foreground text-sm font-medium">
                   주간 클릭
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold">
-                    {dashboardStats?.weekClicks ?? '-'}
-                  </span>
+                  <span className="text-2xl font-bold">{dashboardStats?.weekClicks ?? '-'}</span>
                   {dashboardStats && (
                     <Badge
                       variant={dashboardStats.weeklyGrowth >= 0 ? 'default' : 'destructive'}
@@ -259,48 +236,39 @@ export default function AdminAffiliatePage() {
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-muted-foreground text-sm font-medium">
                   월간 클릭
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {dashboardStats?.monthClicks ?? '-'}
-                </div>
+                <div className="text-2xl font-bold">{dashboardStats?.monthClicks ?? '-'}</div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                <CardTitle className="text-muted-foreground flex items-center gap-1 text-sm font-medium">
                   <Users className="h-4 w-4" />
                   고유 사용자
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats?.uniqueUsers ?? '-'}
-                </div>
+                <div className="text-2xl font-bold">{stats?.uniqueUsers ?? '-'}</div>
               </CardContent>
             </Card>
           </div>
 
           {/* 차트 */}
-          <AffiliateChartDynamic
-            data={stats?.byDate ?? []}
-            title="일별 클릭 추이"
-          />
+          <AffiliateChartDynamic data={stats?.byDate ?? []} title="일별 클릭 추이" />
         </TabsContent>
 
         {/* 수익 분석 탭 (Phase 5) */}
-        <TabsContent value="revenue" className="space-y-8 mt-6">
+        <TabsContent value="revenue" className="mt-6 space-y-8">
           {/* 수익 요약 */}
-          {revenueSummary && (
-            <RevenueSummaryCard summary={revenueSummary} isLoading={isLoading} />
-          )}
+          {revenueSummary && <RevenueSummaryCard summary={revenueSummary} isLoading={isLoading} />}
 
           {/* 차트 영역 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <DailyRevenueChart trend={dailyTrend} isLoading={isLoading} />
             <PartnerRevenueChart partners={partnerRevenues} isLoading={isLoading} />
           </div>
@@ -317,13 +285,9 @@ export default function AdminAffiliatePage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              불러오는 중...
-            </div>
+            <div className="text-muted-foreground py-8 text-center">불러오는 중...</div>
           ) : !stats?.byProduct?.length ? (
-            <div className="text-center py-8 text-muted-foreground">
-              데이터가 없습니다.
-            </div>
+            <div className="text-muted-foreground py-8 text-center">데이터가 없습니다.</div>
           ) : (
             <Table>
               <TableHeader>
@@ -338,9 +302,7 @@ export default function AdminAffiliatePage() {
               <TableBody>
                 {stats.byProduct.map((product, index) => (
                   <TableRow key={`${product.productType}-${product.productId}`}>
-                    <TableCell className="font-medium">
-                      {index + 1}
-                    </TableCell>
+                    <TableCell className="font-medium">{index + 1}</TableCell>
                     <TableCell>{product.productName || '-'}</TableCell>
                     <TableCell>
                       <Badge variant="outline">

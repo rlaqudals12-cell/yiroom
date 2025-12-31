@@ -14,6 +14,7 @@ import {
   updatePartnerSyncStatus,
   getAffiliatePartnerByName,
 } from '@/lib/affiliate';
+import { isAdmin } from '@/lib/admin';
 import { supabase } from '@/lib/supabase/client';
 import type { CoupangCategory } from '@/lib/affiliate';
 
@@ -22,20 +23,14 @@ export async function POST(request: NextRequest) {
     // 인증 확인
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { error: '인증이 필요합니다' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
     }
 
-    // TODO: 관리자 권한 확인
-    // const isAdmin = await checkAdminRole(userId);
-    // if (!isAdmin) {
-    //   return NextResponse.json(
-    //     { error: '관리자 권한이 필요합니다' },
-    //     { status: 403 }
-    //   );
-    // }
+    // 관리자 권한 확인
+    const adminCheck = await isAdmin();
+    if (!adminCheck) {
+      return NextResponse.json({ error: '관리자 권한이 필요합니다' }, { status: 403 });
+    }
 
     const body = await request.json();
     const { categories, limit = 100 } = body as {
@@ -49,19 +44,13 @@ export async function POST(request: NextRequest) {
       : (Object.keys(COUPANG_CATEGORIES) as CoupangCategory[]);
 
     if (targetCategories.length === 0) {
-      return NextResponse.json(
-        { error: '유효한 카테고리가 없습니다' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '유효한 카테고리가 없습니다' }, { status: 400 });
     }
 
     // 파트너 정보 조회
     const partner = await getAffiliatePartnerByName('coupang');
     if (!partner) {
-      return NextResponse.json(
-        { error: '쿠팡 파트너 설정이 없습니다' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: '쿠팡 파트너 설정이 없습니다' }, { status: 404 });
     }
 
     // 동기화 상태 업데이트
@@ -85,32 +74,30 @@ export async function POST(request: NextRequest) {
 
         // 제품 upsert
         for (const product of products) {
-          const { error } = await supabase
-            .from('affiliate_products')
-            .upsert(
-              {
-                partner_id: partner.id,
-                external_product_id: product.externalProductId,
-                name: product.name,
-                brand: product.brand,
-                category: product.category,
-                image_url: product.imageUrl,
-                price_krw: product.priceKrw,
-                price_original_krw: product.priceOriginalKrw,
-                currency: 'KRW',
-                affiliate_url: product.affiliateUrl,
-                direct_url: product.directUrl,
-                rating: product.rating,
-                review_count: product.reviewCount,
-                tags: product.tags,
-                is_in_stock: product.isInStock,
-                is_active: true,
-                last_synced_at: new Date().toISOString(),
-              },
-              {
-                onConflict: 'partner_id,external_product_id',
-              }
-            );
+          const { error } = await supabase.from('affiliate_products').upsert(
+            {
+              partner_id: partner.id,
+              external_product_id: product.externalProductId,
+              name: product.name,
+              brand: product.brand,
+              category: product.category,
+              image_url: product.imageUrl,
+              price_krw: product.priceKrw,
+              price_original_krw: product.priceOriginalKrw,
+              currency: 'KRW',
+              affiliate_url: product.affiliateUrl,
+              direct_url: product.directUrl,
+              rating: product.rating,
+              review_count: product.reviewCount,
+              tags: product.tags,
+              is_in_stock: product.isInStock,
+              is_active: true,
+              last_synced_at: new Date().toISOString(),
+            },
+            {
+              onConflict: 'partner_id,external_product_id',
+            }
+          );
 
           if (error) {
             console.error('[Sync] 제품 저장 실패:', error);
@@ -162,10 +149,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: '동기화 중 오류가 발생했습니다' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '동기화 중 오류가 발생했습니다' }, { status: 500 });
   }
 }
 
@@ -177,10 +161,7 @@ export async function GET() {
     const partner = await getAffiliatePartnerByName('coupang');
 
     if (!partner) {
-      return NextResponse.json(
-        { error: '쿠팡 파트너 설정이 없습니다' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: '쿠팡 파트너 설정이 없습니다' }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -197,9 +178,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('[API] 동기화 상태 조회 에러:', error);
-    return NextResponse.json(
-      { error: '상태 조회 중 오류가 발생했습니다' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '상태 조회 중 오류가 발생했습니다' }, { status: 500 });
   }
 }

@@ -17,6 +17,8 @@ import type { AffiliatePartnerName } from '@/types/affiliate';
 // ============================================
 
 export interface ChannelOption {
+  /** 제품 ID (클릭 트래킹용) */
+  productId: string;
   /** 파트너 이름 */
   partner: AffiliatePartnerName;
   /** 파트너 표시명 */
@@ -117,76 +119,86 @@ export function MultiChannelProductCard({
   const [selectedChannel, setSelectedChannel] = useState<AffiliatePartnerName | null>(null);
 
   // 재고 있는 채널만 정렬 (가격 순)
-  const sortedChannels = [...channels]
-    .filter((c) => c.inStock)
-    .sort((a, b) => a.price - b.price);
+  const sortedChannels = [...channels].filter((c) => c.inStock).sort((a, b) => a.price - b.price);
 
   // 최저가 찾기
   const lowestPrice = sortedChannels.length > 0 ? sortedChannels[0].price : null;
 
   // 가장 빠른 배송 찾기
-  const fastestDelivery = sortedChannels.length > 0
-    ? sortedChannels.reduce((fastest, current) =>
-        current.deliveryDays < fastest.deliveryDays ? current : fastest
-      )
-    : null;
+  const fastestDelivery =
+    sortedChannels.length > 0
+      ? sortedChannels.reduce((fastest, current) =>
+          current.deliveryDays < fastest.deliveryDays ? current : fastest
+        )
+      : null;
 
-  const handleChannelClick = (channel: ChannelOption) => {
+  const handleChannelClick = async (channel: ChannelOption) => {
     setSelectedChannel(channel.partner);
     onChannelClick?.(channel);
-    // 어필리에이트 링크로 이동
-    window.open(channel.affiliateUrl, '_blank', 'noopener,noreferrer');
+
+    // 클릭 트래킹 API 호출
+    try {
+      const response = await fetch('/api/affiliate/click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: channel.productId,
+          sourcePage: window.location.pathname,
+          sourceComponent: 'MultiChannelProductCard',
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // API에서 반환된 어필리에이트 URL 사용 (최신 URL)
+        window.open(data.affiliateUrl || channel.affiliateUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        // API 실패 시에도 기존 URL로 이동
+        window.open(channel.affiliateUrl, '_blank', 'noopener,noreferrer');
+      }
+    } catch {
+      // 네트워크 오류 시에도 기존 URL로 이동
+      window.open(channel.affiliateUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   if (sortedChannels.length === 0) {
     return (
       <div
-        className={cn('rounded-lg border bg-card p-4', className)}
+        className={cn('bg-card rounded-lg border p-4', className)}
         data-testid="multi-channel-product-card"
       >
-        <p className="text-sm text-muted-foreground text-center">
-          현재 구매 가능한 채널이 없어요
-        </p>
+        <p className="text-muted-foreground text-center text-sm">현재 구매 가능한 채널이 없어요</p>
       </div>
     );
   }
 
   return (
     <div
-      className={cn('rounded-lg border bg-card overflow-hidden', className)}
+      className={cn('bg-card overflow-hidden rounded-lg border', className)}
       data-testid="multi-channel-product-card"
     >
       {/* 제품 정보 */}
-      <div className="p-4 border-b">
+      <div className="border-b p-4">
         <div className="flex gap-4">
           {imageUrl && (
-            <div className="relative w-20 h-20 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-              <Image
-                src={imageUrl}
-                alt={productName}
-                fill
-                sizes="80px"
-                className="object-cover"
-              />
+            <div className="bg-muted relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg">
+              <Image src={imageUrl} alt={productName} fill sizes="80px" className="object-cover" />
             </div>
           )}
-          <div className="flex-1 min-w-0">
-            {brand && (
-              <p className="text-xs text-muted-foreground">{brand}</p>
-            )}
-            <h3 className="font-medium text-sm line-clamp-2">{productName}</h3>
+          <div className="min-w-0 flex-1">
+            {brand && <p className="text-muted-foreground text-xs">{brand}</p>}
+            <h3 className="line-clamp-2 text-sm font-medium">{productName}</h3>
             {lowestPrice && (
-              <p className="text-lg font-bold text-primary mt-1">
-                {formatPrice(lowestPrice)}~
-              </p>
+              <p className="text-primary mt-1 text-lg font-bold">{formatPrice(lowestPrice)}~</p>
             )}
           </div>
         </div>
       </div>
 
       {/* 채널 헤더 */}
-      <div className="px-4 py-2 bg-muted/50">
-        <p className="text-xs text-muted-foreground">
+      <div className="bg-muted/50 px-4 py-2">
+        <p className="text-muted-foreground text-xs">
           어디서 구매하시겠어요? ({sortedChannels.length}개 채널)
         </p>
       </div>
@@ -204,7 +216,7 @@ export function MultiChannelProductCard({
             <div
               key={channel.partner}
               className={cn(
-                'p-3 flex items-center gap-3 cursor-pointer transition-colors hover:bg-muted/50',
+                'hover:bg-muted/50 flex cursor-pointer items-center gap-3 p-3 transition-colors',
                 selectedChannel === channel.partner && 'bg-muted/50'
               )}
               onClick={() => handleChannelClick(channel)}
@@ -212,7 +224,7 @@ export function MultiChannelProductCard({
               {/* 파트너 아이콘 */}
               <div
                 className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center text-lg border',
+                  'flex h-10 w-10 items-center justify-center rounded-full border text-lg',
                   getPartnerColor(channel.partner)
                 )}
               >
@@ -220,22 +232,18 @@ export function MultiChannelProductCard({
               </div>
 
               {/* 채널 정보 */}
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm">
-                    {channel.partnerDisplayName}
-                  </span>
-                  {isLowest && (
-                    <Badge className="bg-green-600 text-xs">최저가</Badge>
-                  )}
+                  <span className="text-sm font-medium">{channel.partnerDisplayName}</span>
+                  {isLowest && <Badge className="bg-green-600 text-xs">최저가</Badge>}
                   {isFastest && !isLowest && (
-                    <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">
+                    <Badge variant="outline" className="border-blue-300 text-xs text-blue-600">
                       빠른배송
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs text-muted-foreground">
+                <div className="mt-0.5 flex items-center gap-2">
+                  <span className="text-muted-foreground text-xs">
                     {getDeliveryLabel(channel.deliveryType, channel.deliveryDays)}
                   </span>
                   {channel.isFreeShipping && (
@@ -250,9 +258,7 @@ export function MultiChannelProductCard({
               {/* 가격 */}
               <div className="text-right">
                 <p className="font-bold">{formatPrice(channel.price)}</p>
-                {discountPercent > 0 && (
-                  <p className="text-xs text-red-500">-{discountPercent}%</p>
-                )}
+                {discountPercent > 0 && <p className="text-xs text-red-500">-{discountPercent}%</p>}
               </div>
 
               {/* 구매 버튼 */}
@@ -265,8 +271,8 @@ export function MultiChannelProductCard({
       </div>
 
       {/* 법적 고지 */}
-      <div className="px-4 py-2 bg-muted/30 border-t">
-        <p className="text-xs text-muted-foreground">
+      <div className="bg-muted/30 border-t px-4 py-2">
+        <p className="text-muted-foreground text-xs">
           * 이 링크를 통해 구매하시면 이룸에 소정의 수수료가 지급됩니다.
         </p>
       </div>
