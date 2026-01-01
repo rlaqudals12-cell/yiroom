@@ -2,7 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 import { ProductCard } from '@/components/products/ProductCard';
-import type { CosmeticProduct, SupplementProduct, WorkoutEquipment, HealthFood } from '@/types/product';
+import type {
+  CosmeticProduct,
+  SupplementProduct,
+  WorkoutEquipment,
+  HealthFood,
+} from '@/types/product';
 
 // next/image 모킹
 vi.mock('next/image', () => ({
@@ -146,12 +151,13 @@ describe('ProductCard', () => {
       expect(img).toHaveAttribute('src', 'https://example.com/image.jpg');
     });
 
-    it('이미지 URL이 없으면 placeholder 아이콘 표시', () => {
+    it('이미지 URL이 없으면 placeholder 이미지 표시', () => {
       const productWithoutImage = { ...mockCosmeticProduct, imageUrl: undefined };
       render(<ProductCard product={productWithoutImage} />);
 
-      // Package 아이콘이 placeholder로 사용됨 - 이미지가 없으면 alt text도 없음
-      expect(screen.queryByAltText('테스트 세럼')).not.toBeInTheDocument();
+      // imageUrl이 없으면 placehold.co placeholder 이미지 사용
+      const img = screen.getByAltText('테스트 세럼');
+      expect(img).toHaveAttribute('src', expect.stringContaining('placehold.co'));
     });
   });
 
