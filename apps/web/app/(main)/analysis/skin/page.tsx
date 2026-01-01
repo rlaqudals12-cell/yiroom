@@ -121,7 +121,9 @@ export default function SkinAnalysisPage() {
 
     setResult({
       ...mockResult,
-      insight: typeInsights[skinType] + (concernLabels ? ` 특히 ${concernLabels} 관리에 신경써주세요.` : ''),
+      insight:
+        typeInsights[skinType] +
+        (concernLabels ? ` 특히 ${concernLabels} 관리에 신경써주세요.` : ''),
       analyzedAt: new Date(),
     });
     setStep('result');
@@ -177,7 +179,6 @@ export default function SkinAnalysisPage() {
       }
 
       const data = await response.json();
-      console.log('[S-1] Analysis result:', data.usedMock ? 'Mock' : 'Real AI');
 
       // API 응답의 result + 성분 분석 + 제품 추천 통합
       setResult({
@@ -284,24 +285,16 @@ export default function SkinAnalysisPage() {
 
           {/* Step별 컴포넌트 렌더링 */}
           {step === 'guide' && (
-            <LightingGuide
-              onContinue={handleGuideComplete}
-              onSkip={handleSkipToKnownInput}
-            />
+            <LightingGuide onContinue={handleGuideComplete} onSkip={handleSkipToKnownInput} />
           )}
 
           {step === 'upload' && <PhotoUpload onPhotoSelect={handlePhotoSelect} />}
 
           {step === 'known-input' && (
-            <KnownSkinTypeInput
-              onSelect={handleKnownTypeSelect}
-              onBack={handleKnownInputBack}
-            />
+            <KnownSkinTypeInput onSelect={handleKnownTypeSelect} onBack={handleKnownInputBack} />
           )}
 
-          {step === 'loading' && (
-            <AnalysisLoading onComplete={handleAnalysisComplete} />
-          )}
+          {step === 'loading' && <AnalysisLoading onComplete={handleAnalysisComplete} />}
 
           {step === 'result' && result && (
             <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />
@@ -313,11 +306,7 @@ export default function SkinAnalysisPage() {
       {step === 'result' && result && (
         <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
           <div className="max-w-md mx-auto">
-            <ShareButton
-              onShare={share}
-              loading={shareLoading}
-              variant="outline"
-            />
+            <ShareButton onShare={share} loading={shareLoading} variant="outline" />
           </div>
         </div>
       )}

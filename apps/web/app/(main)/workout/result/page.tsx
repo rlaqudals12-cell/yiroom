@@ -49,12 +49,10 @@ export default function ResultPage() {
   const saveAnalysisToDatabase = useCallback(
     async (inputData: ReturnType<typeof getInputData>) => {
       if (!user?.id) {
-        console.log('[W-1] User not logged in, skipping DB save');
         return;
       }
 
       try {
-        console.log('[W-1] Saving analysis via Server Action...');
         const result = await saveWorkoutAnalysisAction(user.id, {
           bodyType: inputData.bodyTypeData?.type,
           goals: inputData.goals || [],
@@ -67,9 +65,7 @@ export default function ResultPage() {
           targetDate: inputData.targetDate,
         });
 
-        if (result.success && result.data) {
-          console.log('[W-1] Analysis saved to database successfully:', result.data.id);
-        } else {
+        if (!result.success) {
           console.error('[W-1] Failed to save analysis:', result.error);
         }
       } catch (err) {
