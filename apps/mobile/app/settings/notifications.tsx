@@ -3,6 +3,9 @@
  * 물, 운동, 식사 알림 설정
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
+import * as Notifications from 'expo-notifications';
 import { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -16,9 +19,6 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as Notifications from 'expo-notifications';
-import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 알림 설정 타입
 interface NotificationSettings {
@@ -45,7 +45,8 @@ export default function NotificationsSettingsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] =
+    useState<NotificationSettings>(DEFAULT_SETTINGS);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
   // 권한 확인
@@ -63,11 +64,9 @@ export default function NotificationsSettingsScreen() {
     const { status } = await Notifications.requestPermissionsAsync();
     setHasPermission(status === 'granted');
     if (status !== 'granted') {
-      Alert.alert(
-        '알림 권한 필요',
-        '설정에서 알림 권한을 허용해주세요.',
-        [{ text: '확인' }]
-      );
+      Alert.alert('알림 권한 필요', '설정에서 알림 권한을 허용해주세요.', [
+        { text: '확인' },
+      ]);
     }
   };
 
@@ -82,18 +81,24 @@ export default function NotificationsSettingsScreen() {
     }
   };
 
-  const saveSettings = useCallback(async (newSettings: NotificationSettings) => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
-      setSettings(newSettings);
-      Haptics.selectionAsync();
+  const saveSettings = useCallback(
+    async (newSettings: NotificationSettings) => {
+      try {
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
+        setSettings(newSettings);
+        Haptics.selectionAsync();
 
-      // 알림 스케줄 업데이트
-      await scheduleNotifications(newSettings);
-    } catch (error) {
-      console.error('[Settings] Failed to save notification settings:', error);
-    }
-  }, []);
+        // 알림 스케줄 업데이트
+        await scheduleNotifications(newSettings);
+      } catch (error) {
+        console.error(
+          '[Settings] Failed to save notification settings:',
+          error
+        );
+      }
+    },
+    []
+  );
 
   const scheduleNotifications = async (newSettings: NotificationSettings) => {
     // 기존 알림 취소
@@ -129,8 +134,14 @@ export default function NotificationsSettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* 권한 안내 */}
         {hasPermission === false && (
           <TouchableOpacity
@@ -151,14 +162,22 @@ export default function NotificationsSettingsScreen() {
 
         {/* 물 알림 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>물 알림</Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>
+            물 알림
+          </Text>
           <View style={[styles.settingsCard, isDark && styles.cardDark]}>
             <View style={styles.settingsRow}>
               <View style={styles.settingsRowContent}>
                 <Text style={styles.settingsIcon}>💧</Text>
                 <View style={styles.settingsTextContent}>
-                  <Text style={[styles.settingsLabel, isDark && styles.textLight]}>물 알림</Text>
-                  <Text style={[styles.settingsDesc, isDark && styles.textMuted]}>
+                  <Text
+                    style={[styles.settingsLabel, isDark && styles.textLight]}
+                  >
+                    물 알림
+                  </Text>
+                  <Text
+                    style={[styles.settingsDesc, isDark && styles.textMuted]}
+                  >
                     정해진 시간마다 알림
                   </Text>
                 </View>
@@ -173,7 +192,9 @@ export default function NotificationsSettingsScreen() {
 
             {settings.waterReminder && (
               <View style={styles.intervalSelector}>
-                <Text style={[styles.intervalLabel, isDark && styles.textMuted]}>
+                <Text
+                  style={[styles.intervalLabel, isDark && styles.textMuted]}
+                >
                   알림 간격
                 </Text>
                 <View style={styles.intervalOptions}>
@@ -183,7 +204,8 @@ export default function NotificationsSettingsScreen() {
                       style={[
                         styles.intervalOption,
                         isDark && styles.intervalOptionDark,
-                        settings.waterInterval === hours && styles.intervalOptionSelected,
+                        settings.waterInterval === hours &&
+                          styles.intervalOptionSelected,
                       ]}
                       onPress={() => handleIntervalChange(hours)}
                     >
@@ -191,7 +213,8 @@ export default function NotificationsSettingsScreen() {
                         style={[
                           styles.intervalOptionText,
                           isDark && styles.textMuted,
-                          settings.waterInterval === hours && styles.intervalOptionTextSelected,
+                          settings.waterInterval === hours &&
+                            styles.intervalOptionTextSelected,
                         ]}
                       >
                         {hours}시간
@@ -206,21 +229,31 @@ export default function NotificationsSettingsScreen() {
 
         {/* 운동 알림 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>운동 알림</Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>
+            운동 알림
+          </Text>
           <View style={[styles.settingsCard, isDark && styles.cardDark]}>
             <View style={styles.settingsRow}>
               <View style={styles.settingsRowContent}>
                 <Text style={styles.settingsIcon}>🏃</Text>
                 <View style={styles.settingsTextContent}>
-                  <Text style={[styles.settingsLabel, isDark && styles.textLight]}>운동 리마인더</Text>
-                  <Text style={[styles.settingsDesc, isDark && styles.textMuted]}>
+                  <Text
+                    style={[styles.settingsLabel, isDark && styles.textLight]}
+                  >
+                    운동 리마인더
+                  </Text>
+                  <Text
+                    style={[styles.settingsDesc, isDark && styles.textMuted]}
+                  >
                     매일 아침 운동 알림
                   </Text>
                 </View>
               </View>
               <Switch
                 value={settings.workoutReminder}
-                onValueChange={(value) => handleToggle('workoutReminder', value)}
+                onValueChange={(value) =>
+                  handleToggle('workoutReminder', value)
+                }
                 trackColor={{ false: '#767577', true: '#8b5cf6' }}
                 thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
               />
@@ -230,14 +263,22 @@ export default function NotificationsSettingsScreen() {
 
         {/* 식사 알림 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>식사 알림</Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>
+            식사 알림
+          </Text>
           <View style={[styles.settingsCard, isDark && styles.cardDark]}>
             <View style={styles.settingsRow}>
               <View style={styles.settingsRowContent}>
                 <Text style={styles.settingsIcon}>🍽️</Text>
                 <View style={styles.settingsTextContent}>
-                  <Text style={[styles.settingsLabel, isDark && styles.textLight]}>식사 기록 알림</Text>
-                  <Text style={[styles.settingsDesc, isDark && styles.textMuted]}>
+                  <Text
+                    style={[styles.settingsLabel, isDark && styles.textLight]}
+                  >
+                    식사 기록 알림
+                  </Text>
+                  <Text
+                    style={[styles.settingsDesc, isDark && styles.textMuted]}
+                  >
                     아침, 점심, 저녁 기록 알림
                   </Text>
                 </View>

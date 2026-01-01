@@ -1,6 +1,8 @@
 /**
  * C-1 체형 분석 - 입력 화면
  */
+import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -13,8 +15,6 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
 
 export default function BodyAnalysisScreen() {
   const colorScheme = useColorScheme();
@@ -78,7 +78,10 @@ export default function BodyAnalysisScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 헤더 */}
         <View style={styles.header}>
@@ -97,7 +100,9 @@ export default function BodyAnalysisScreen() {
           </Text>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, isDark && styles.textMuted]}>키 (cm)</Text>
+            <Text style={[styles.label, isDark && styles.textMuted]}>
+              키 (cm)
+            </Text>
             <TextInput
               style={[styles.input, isDark && styles.inputDark]}
               placeholder="예: 165"
@@ -110,7 +115,9 @@ export default function BodyAnalysisScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, isDark && styles.textMuted]}>체중 (kg)</Text>
+            <Text style={[styles.label, isDark && styles.textMuted]}>
+              체중 (kg)
+            </Text>
             <TextInput
               style={[styles.input, isDark && styles.inputDark]}
               placeholder="예: 55"
@@ -147,7 +154,9 @@ export default function BodyAnalysisScreen() {
             ) : (
               <>
                 <Text style={[styles.imagePickerIcon]}>+</Text>
-                <Text style={[styles.imagePickerText, isDark && styles.textMuted]}>
+                <Text
+                  style={[styles.imagePickerText, isDark && styles.textMuted]}
+                >
                   갤러리에서 선택
                 </Text>
               </>

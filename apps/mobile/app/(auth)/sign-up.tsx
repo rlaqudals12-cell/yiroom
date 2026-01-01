@@ -61,8 +61,9 @@ export default function SignUpScreen() {
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setPendingVerification(true);
     } catch (error: unknown) {
-      const clerkError = error as { errors?: Array<{ message: string }> };
-      const errorMessage = clerkError.errors?.[0]?.message || '회원가입에 실패했습니다.';
+      const clerkError = error as { errors?: { message: string }[] };
+      const errorMessage =
+        clerkError.errors?.[0]?.message || '회원가입에 실패했습니다.';
       Alert.alert('회원가입 실패', errorMessage);
     } finally {
       setIsLoading(false);
@@ -89,8 +90,9 @@ export default function SignUpScreen() {
         router.replace('/(tabs)');
       }
     } catch (error: unknown) {
-      const clerkError = error as { errors?: Array<{ message: string }> };
-      const errorMessage = clerkError.errors?.[0]?.message || '인증에 실패했습니다.';
+      const clerkError = error as { errors?: { message: string }[] };
+      const errorMessage =
+        clerkError.errors?.[0]?.message || '인증에 실패했습니다.';
       Alert.alert('인증 실패', errorMessage);
     } finally {
       setIsLoading(false);

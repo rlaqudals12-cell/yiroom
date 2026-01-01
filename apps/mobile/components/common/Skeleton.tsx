@@ -100,7 +100,11 @@ export function SkeletonText({
         <Skeleton
           key={index}
           height={14}
-          width={index === lines - 1 && lines > 1 ? lastLineWidth : ('100%' as DimensionValue)}
+          width={
+            index === lines - 1 && lines > 1
+              ? lastLineWidth
+              : ('100%' as DimensionValue)
+          }
           style={index > 0 ? { marginTop: spacing } : undefined}
         />
       ))}

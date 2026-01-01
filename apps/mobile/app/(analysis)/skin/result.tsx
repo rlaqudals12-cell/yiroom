@@ -1,6 +1,8 @@
 /**
  * S-1 피부 분석 - 결과 화면
  */
+import type { SkinType } from '@yiroom/shared';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import {
   View,
@@ -13,8 +15,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
-import type { SkinType } from '@yiroom/shared';
 
 // 피부 지표 타입
 interface SkinMetrics {
@@ -28,14 +28,18 @@ interface SkinMetrics {
 }
 
 // 피부 타입 데이터
-const SKIN_TYPE_DATA: Record<SkinType, {
-  name: string;
-  description: string;
-  tips: string[];
-}> = {
+const SKIN_TYPE_DATA: Record<
+  SkinType,
+  {
+    name: string;
+    description: string;
+    tips: string[];
+  }
+> = {
   dry: {
     name: '건성 피부',
-    description: '수분이 부족한 피부 타입입니다. 보습에 집중하는 스킨케어를 추천드려요.',
+    description:
+      '수분이 부족한 피부 타입입니다. 보습에 집중하는 스킨케어를 추천드려요.',
     tips: [
       '고보습 크림 사용을 권장해요',
       '클렌징 후 바로 토너를 발라주세요',
@@ -44,7 +48,8 @@ const SKIN_TYPE_DATA: Record<SkinType, {
   },
   oily: {
     name: '지성 피부',
-    description: '피지 분비가 활발한 피부 타입입니다. 유수분 밸런스 관리가 중요해요.',
+    description:
+      '피지 분비가 활발한 피부 타입입니다. 유수분 밸런스 관리가 중요해요.',
     tips: [
       '가벼운 젤 타입 보습제를 사용하세요',
       '주 1-2회 모공 관리를 해주세요',
@@ -53,7 +58,8 @@ const SKIN_TYPE_DATA: Record<SkinType, {
   },
   combination: {
     name: '복합성 피부',
-    description: 'T존은 지성, 볼은 건성인 피부 타입입니다. 부위별 맞춤 케어가 필요해요.',
+    description:
+      'T존은 지성, 볼은 건성인 피부 타입입니다. 부위별 맞춤 케어가 필요해요.',
     tips: [
       'T존과 볼을 다른 제품으로 케어하세요',
       '수분 공급과 유분 조절을 동시에 해주세요',
@@ -62,7 +68,8 @@ const SKIN_TYPE_DATA: Record<SkinType, {
   },
   sensitive: {
     name: '민감성 피부',
-    description: '자극에 예민한 피부 타입입니다. 순한 성분의 제품을 사용하세요.',
+    description:
+      '자극에 예민한 피부 타입입니다. 순한 성분의 제품을 사용하세요.',
     tips: [
       '무향료, 저자극 제품을 선택하세요',
       '새 제품은 패치 테스트 후 사용하세요',
@@ -71,7 +78,8 @@ const SKIN_TYPE_DATA: Record<SkinType, {
   },
   normal: {
     name: '정상 피부',
-    description: '유수분 밸런스가 좋은 피부 타입입니다. 현재 상태를 유지해주세요.',
+    description:
+      '유수분 밸런스가 좋은 피부 타입입니다. 현재 상태를 유지해주세요.',
     tips: [
       '기본적인 보습 케어를 유지하세요',
       '자외선 차단은 꼭 해주세요',
@@ -104,7 +112,13 @@ export default function SkinResultScreen() {
     await new Promise((resolve) => setTimeout(resolve, 2500));
 
     // Mock 결과
-    const types: SkinType[] = ['dry', 'oily', 'combination', 'sensitive', 'normal'];
+    const types: SkinType[] = [
+      'dry',
+      'oily',
+      'combination',
+      'sensitive',
+      'normal',
+    ];
     const randomType = types[Math.floor(Math.random() * types.length)];
 
     setSkinType(randomType);
@@ -155,7 +169,10 @@ export default function SkinResultScreen() {
   const typeData = SKIN_TYPE_DATA[skinType];
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 결과 이미지 */}
         {imageUri && (
@@ -183,12 +200,28 @@ export default function SkinResultScreen() {
             피부 분석 지표
           </Text>
           <View style={styles.metricsContainer}>
-            <MetricBar label="수분도" value={metrics.moisture} isDark={isDark} />
+            <MetricBar
+              label="수분도"
+              value={metrics.moisture}
+              isDark={isDark}
+            />
             <MetricBar label="유분도" value={metrics.oil} isDark={isDark} />
             <MetricBar label="모공" value={metrics.pores} isDark={isDark} />
-            <MetricBar label="탄력" value={metrics.elasticity} isDark={isDark} />
-            <MetricBar label="색소침착" value={metrics.pigmentation} isDark={isDark} />
-            <MetricBar label="민감도" value={metrics.sensitivity} isDark={isDark} />
+            <MetricBar
+              label="탄력"
+              value={metrics.elasticity}
+              isDark={isDark}
+            />
+            <MetricBar
+              label="색소침착"
+              value={metrics.pigmentation}
+              isDark={isDark}
+            />
+            <MetricBar
+              label="민감도"
+              value={metrics.sensitivity}
+              isDark={isDark}
+            />
           </View>
         </View>
 
@@ -214,7 +247,10 @@ export default function SkinResultScreen() {
           <TouchableOpacity style={styles.primaryButton} onPress={handleGoHome}>
             <Text style={styles.primaryButtonText}>홈으로 돌아가기</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleRetry}>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleRetry}
+          >
             <Text style={styles.secondaryButtonText}>다시 분석하기</Text>
           </TouchableOpacity>
         </View>
@@ -241,8 +277,12 @@ function MetricBar({
   return (
     <View style={styles.metricItem}>
       <View style={styles.metricHeader}>
-        <Text style={[styles.metricLabel, isDark && styles.textLight]}>{label}</Text>
-        <Text style={[styles.metricValue, isDark && styles.textMuted]}>{value}%</Text>
+        <Text style={[styles.metricLabel, isDark && styles.textLight]}>
+          {label}
+        </Text>
+        <Text style={[styles.metricValue, isDark && styles.textMuted]}>
+          {value}%
+        </Text>
       </View>
       <View style={[styles.metricBarBg, isDark && styles.metricBarBgDark]}>
         <View

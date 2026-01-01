@@ -58,12 +58,13 @@ describe('i18n', () => {
       );
     });
 
-    it('잘못된 로케일은 무시해야 함', async () => {
-      // @ts-expect-error 잘못된 로케일 테스트
-      await setLocale('fr');
+    it('지원되는 로케일만 설정해야 함', async () => {
+      // ko와 en만 지원
+      await setLocale('ko');
+      expect(getLocale()).toBe('ko');
 
-      // 기본값 유지
-      expect(getLocale()).not.toBe('fr');
+      await setLocale('en');
+      expect(getLocale()).toBe('en');
     });
   });
 

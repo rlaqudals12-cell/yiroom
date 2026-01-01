@@ -214,7 +214,9 @@ export async function cancelAllNotifications(): Promise<void> {
 /**
  * 특정 알림 취소
  */
-export async function cancelNotification(notificationId: string): Promise<void> {
+export async function cancelNotification(
+  notificationId: string
+): Promise<void> {
   await Notifications.cancelScheduledNotificationAsync(notificationId);
 }
 

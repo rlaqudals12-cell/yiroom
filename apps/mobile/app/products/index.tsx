@@ -2,6 +2,9 @@
  * 제품 추천 리스트 화면
  * 분석 결과 기반 맞춤 제품 추천
  */
+import { useUser } from '@clerk/clerk-expo';
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -15,10 +18,8 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { useUser } from '@clerk/clerk-expo';
+
 import { useClerkSupabaseClient } from '../../lib/supabase';
-import * as Haptics from 'expo-haptics';
 
 // 카테고리
 const CATEGORIES = [
@@ -230,13 +231,18 @@ export default function ProductsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       {/* 맞춤 추천 배너 */}
       {userSeason && (
         <View style={[styles.banner, isDark && styles.bannerDark]}>
           <Text style={styles.bannerIcon}>✨</Text>
           <View style={styles.bannerContent}>
-            <Text style={[styles.bannerTitle, isDark && styles.textLight]}>나를 위한 추천</Text>
+            <Text style={[styles.bannerTitle, isDark && styles.textLight]}>
+              나를 위한 추천
+            </Text>
             <Text style={[styles.bannerSubtitle, isDark && styles.textMuted]}>
               {getSeasonLabel(userSeason)}에 맞는 제품을 추천해드려요
             </Text>
@@ -303,32 +309,54 @@ export default function ProductsScreen() {
               >
                 {/* 이미지 플레이스홀더 */}
                 <View style={styles.productImageContainer}>
-                  <View style={[styles.productImagePlaceholder, isDark && styles.placeholderDark]}>
+                  <View
+                    style={[
+                      styles.productImagePlaceholder,
+                      isDark && styles.placeholderDark,
+                    ]}
+                  >
                     <Text style={styles.placeholderEmoji}>
-                      {product.category === 'skincare' ? '🧴' :
-                       product.category === 'makeup' ? '💄' :
-                       product.category === 'supplement' ? '💊' : '🏋️'}
+                      {product.category === 'skincare'
+                        ? '🧴'
+                        : product.category === 'makeup'
+                          ? '💄'
+                          : product.category === 'supplement'
+                            ? '💊'
+                            : '🏋️'}
                     </Text>
                   </View>
                   {/* 매칭 점수 배지 */}
                   <View style={styles.matchBadge}>
-                    <Text style={styles.matchBadgeText}>{product.matchScore}%</Text>
+                    <Text style={styles.matchBadgeText}>
+                      {product.matchScore}%
+                    </Text>
                   </View>
                 </View>
 
                 {/* 제품 정보 */}
                 <View style={styles.productInfo}>
-                  <Text style={[styles.productBrand, isDark && styles.textMuted]}>{product.brand}</Text>
-                  <Text style={[styles.productName, isDark && styles.textLight]} numberOfLines={2}>
+                  <Text
+                    style={[styles.productBrand, isDark && styles.textMuted]}
+                  >
+                    {product.brand}
+                  </Text>
+                  <Text
+                    style={[styles.productName, isDark && styles.textLight]}
+                    numberOfLines={2}
+                  >
                     {product.name}
                   </Text>
                   <View style={styles.ratingRow}>
                     <Text style={styles.ratingStar}>★</Text>
-                    <Text style={[styles.ratingText, isDark && styles.textMuted]}>
+                    <Text
+                      style={[styles.ratingText, isDark && styles.textMuted]}
+                    >
                       {product.rating.toFixed(1)} ({product.reviewCount})
                     </Text>
                   </View>
-                  <Text style={[styles.productPrice, isDark && styles.textLight]}>
+                  <Text
+                    style={[styles.productPrice, isDark && styles.textLight]}
+                  >
                     {formatPrice(product.price)}
                   </Text>
                 </View>

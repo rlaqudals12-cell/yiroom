@@ -6,7 +6,8 @@ import type { PersonalColorSeason, SkinType, BodyType } from '@yiroom/shared';
 
 // Gemini API 설정
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GEMINI_API_URL =
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 // 분석 타임아웃 (3초)
 const ANALYSIS_TIMEOUT = 3000;
@@ -89,9 +90,10 @@ async function callGeminiAPI(
     throw new Error('Gemini API key not configured');
   }
 
-  const parts: Array<{ text: string } | { inline_data: { mime_type: string; data: string } }> = [
-    { text: prompt },
-  ];
+  const parts: (
+    | { text: string }
+    | { inline_data: { mime_type: string; data: string } }
+  )[] = [{ text: prompt }];
 
   if (imageBase64) {
     parts.unshift({
@@ -153,7 +155,9 @@ export async function analyzePersonalColor(
 당신은 퍼스널 컬러 전문가입니다. 제공된 얼굴 이미지와 문진 결과를 분석하여 퍼스널 컬러를 진단해주세요.
 
 문진 결과:
-${Object.entries(questionAnswers).map(([q, a]) => `질문 ${q}: ${a}`).join('\n')}
+${Object.entries(questionAnswers)
+  .map(([q, a]) => `질문 ${q}: ${a}`)
+  .join('\n')}
 
 다음 JSON 형식으로만 응답해주세요:
 {
@@ -182,7 +186,9 @@ ${Object.entries(questionAnswers).map(([q, a]) => `질문 ${q}: ${a}`).join('\n'
 /**
  * 피부 분석
  */
-export async function analyzeSkin(imageBase64: string): Promise<SkinAnalysisResult> {
+export async function analyzeSkin(
+  imageBase64: string
+): Promise<SkinAnalysisResult> {
   const prompt = `
 당신은 피부과 전문의입니다. 제공된 얼굴 이미지를 분석하여 피부 상태를 진단해주세요.
 
@@ -220,7 +226,7 @@ export async function analyzeBody(
   height: number,
   weight: number
 ): Promise<BodyAnalysisResult> {
-  const bmi = weight / ((height / 100) ** 2);
+  const bmi = weight / (height / 100) ** 2;
 
   const prompt = `
 당신은 스타일리스트입니다. 제공된 전신 이미지와 신체 정보를 분석하여 체형을 진단해주세요.
@@ -290,7 +296,13 @@ function generateMockPersonalColorResult(
 }
 
 function generateMockSkinResult(): SkinAnalysisResult {
-  const types: SkinType[] = ['dry', 'oily', 'combination', 'sensitive', 'normal'];
+  const types: SkinType[] = [
+    'dry',
+    'oily',
+    'combination',
+    'sensitive',
+    'normal',
+  ];
   const skinType = types[Math.floor(Math.random() * types.length)];
 
   return {
@@ -309,8 +321,11 @@ function generateMockSkinResult(): SkinAnalysisResult {
   };
 }
 
-function generateMockBodyResult(height: number, weight: number): BodyAnalysisResult {
-  const bmi = weight / ((height / 100) ** 2);
+function generateMockBodyResult(
+  height: number,
+  weight: number
+): BodyAnalysisResult {
+  const bmi = weight / (height / 100) ** 2;
   const types: BodyType[] = [
     'Rectangle',
     'Triangle',

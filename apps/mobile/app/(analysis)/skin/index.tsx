@@ -1,6 +1,7 @@
 /**
  * S-1 피부 분석 - 시작 화면
  */
+import { router } from 'expo-router';
 import {
   View,
   Text,
@@ -11,7 +12,6 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
 export default function SkinAnalysisScreen() {
   const colorScheme = useColorScheme();
@@ -22,7 +22,10 @@ export default function SkinAnalysisScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 헤더 */}
         <View style={styles.header}>
@@ -43,13 +46,41 @@ export default function SkinAnalysisScreen() {
             분석 항목
           </Text>
           <View style={styles.itemList}>
-            <AnalysisItem label="피부 타입" description="건성/지성/복합/민감성" isDark={isDark} />
-            <AnalysisItem label="수분도" description="피부 수분 레벨 측정" isDark={isDark} />
-            <AnalysisItem label="유분도" description="피부 유분 밸런스" isDark={isDark} />
-            <AnalysisItem label="모공" description="모공 상태 분석" isDark={isDark} />
-            <AnalysisItem label="주름" description="피부 탄력 상태" isDark={isDark} />
-            <AnalysisItem label="색소침착" description="기미/잡티 분석" isDark={isDark} />
-            <AnalysisItem label="민감도" description="피부 민감 지수" isDark={isDark} />
+            <AnalysisItem
+              label="피부 타입"
+              description="건성/지성/복합/민감성"
+              isDark={isDark}
+            />
+            <AnalysisItem
+              label="수분도"
+              description="피부 수분 레벨 측정"
+              isDark={isDark}
+            />
+            <AnalysisItem
+              label="유분도"
+              description="피부 유분 밸런스"
+              isDark={isDark}
+            />
+            <AnalysisItem
+              label="모공"
+              description="모공 상태 분석"
+              isDark={isDark}
+            />
+            <AnalysisItem
+              label="주름"
+              description="피부 탄력 상태"
+              isDark={isDark}
+            />
+            <AnalysisItem
+              label="색소침착"
+              description="기미/잡티 분석"
+              isDark={isDark}
+            />
+            <AnalysisItem
+              label="민감도"
+              description="피부 민감 지수"
+              isDark={isDark}
+            />
           </View>
         </View>
 
@@ -74,7 +105,10 @@ export default function SkinAnalysisScreen() {
 
       {/* 시작 버튼 */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.startButton} onPress={handleStartAnalysis}>
+        <TouchableOpacity
+          style={styles.startButton}
+          onPress={handleStartAnalysis}
+        >
           <Text style={styles.startButtonText}>피부 분석 시작하기</Text>
         </TouchableOpacity>
       </View>
@@ -95,7 +129,9 @@ function AnalysisItem({
     <View style={styles.analysisItem}>
       <View style={styles.bullet} />
       <View>
-        <Text style={[styles.itemLabel, isDark && styles.textLight]}>{label}</Text>
+        <Text style={[styles.itemLabel, isDark && styles.textLight]}>
+          {label}
+        </Text>
         <Text style={[styles.itemDescription, isDark && styles.textMuted]}>
           {description}
         </Text>

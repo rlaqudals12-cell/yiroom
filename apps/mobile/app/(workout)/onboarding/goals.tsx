@@ -1,6 +1,7 @@
 /**
  * W-1 운동 온보딩 - 목표 선택
  */
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -11,15 +12,44 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
 const GOALS = [
-  { id: 'weight_loss', label: '체중 감량', emoji: '🔥', description: '체지방 감소, 다이어트' },
-  { id: 'muscle_gain', label: '근육 증가', emoji: '💪', description: '근력 강화, 벌크업' },
-  { id: 'endurance', label: '체력 향상', emoji: '🏃', description: '심폐 지구력, 스태미나' },
-  { id: 'flexibility', label: '유연성 향상', emoji: '🧘', description: '스트레칭, 요가' },
-  { id: 'maintenance', label: '건강 유지', emoji: '❤️', description: '현재 상태 유지' },
-  { id: 'stress', label: '스트레스 해소', emoji: '😌', description: '정신 건강, 릴렉스' },
+  {
+    id: 'weight_loss',
+    label: '체중 감량',
+    emoji: '🔥',
+    description: '체지방 감소, 다이어트',
+  },
+  {
+    id: 'muscle_gain',
+    label: '근육 증가',
+    emoji: '💪',
+    description: '근력 강화, 벌크업',
+  },
+  {
+    id: 'endurance',
+    label: '체력 향상',
+    emoji: '🏃',
+    description: '심폐 지구력, 스태미나',
+  },
+  {
+    id: 'flexibility',
+    label: '유연성 향상',
+    emoji: '🧘',
+    description: '스트레칭, 요가',
+  },
+  {
+    id: 'maintenance',
+    label: '건강 유지',
+    emoji: '❤️',
+    description: '현재 상태 유지',
+  },
+  {
+    id: 'stress',
+    label: '스트레스 해소',
+    emoji: '😌',
+    description: '정신 건강, 릴렉스',
+  },
 ];
 
 export default function WorkoutGoalsScreen() {
@@ -43,7 +73,10 @@ export default function WorkoutGoalsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, isDark && styles.textLight]}>
           운동 목표를 선택해주세요
@@ -80,7 +113,9 @@ export default function WorkoutGoalsScreen() {
                   >
                     {goal.label}
                   </Text>
-                  <Text style={[styles.goalDescription, isDark && styles.textMuted]}>
+                  <Text
+                    style={[styles.goalDescription, isDark && styles.textMuted]}
+                  >
                     {goal.description}
                   </Text>
                 </View>

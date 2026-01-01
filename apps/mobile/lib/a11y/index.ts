@@ -89,7 +89,8 @@ export function checkboxA11y(
   return {
     accessible: true,
     accessibilityLabel: label,
-    accessibilityHint: hint || (checked ? '선택됨, 탭하여 해제' : '선택 안됨, 탭하여 선택'),
+    accessibilityHint:
+      hint || (checked ? '선택됨, 탭하여 해제' : '선택 안됨, 탭하여 선택'),
     accessibilityRole: 'checkbox',
     accessibilityState: { checked },
   };
@@ -106,7 +107,8 @@ export function switchA11y(
   return {
     accessible: true,
     accessibilityLabel: label,
-    accessibilityHint: hint || (checked ? '켜짐, 탭하여 끄기' : '꺼짐, 탭하여 켜기'),
+    accessibilityHint:
+      hint || (checked ? '켜짐, 탭하여 끄기' : '꺼짐, 탭하여 켜기'),
     accessibilityRole: 'switch',
     accessibilityState: { checked },
   };
@@ -276,7 +278,10 @@ function hexToRgb(hex: string): [number, number, number] | null {
  * 컬러 대비율 계산
  * WCAG 기준: 일반 텍스트 4.5:1, 큰 텍스트 3:1
  */
-export function getContrastRatio(foreground: string, background: string): number {
+export function getContrastRatio(
+  foreground: string,
+  background: string
+): number {
   const fg = hexToRgb(foreground);
   const bg = hexToRgb(background);
 

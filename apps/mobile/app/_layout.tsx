@@ -6,6 +6,7 @@ import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
+
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
 
 export default function RootLayout() {

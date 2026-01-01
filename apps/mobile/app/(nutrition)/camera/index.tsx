@@ -2,6 +2,11 @@
  * N-1 AI 음식 인식 카메라 화면
  * 카메라로 음식 촬영 → AI 분석 → 결과 표시 → 저장
  */
+import { useUser } from '@clerk/clerk-expo';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 import { useState, useRef } from 'react';
 import {
   View,
@@ -15,12 +20,8 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as ImagePicker from 'expo-image-picker';
-import { useUser } from '@clerk/clerk-expo';
+
 import { useClerkSupabaseClient } from '../../../lib/supabase';
-import * as Haptics from 'expo-haptics';
 
 // 식사 타입
 const MEAL_TYPES = [
@@ -46,17 +47,90 @@ interface RecognizedFood {
 }
 
 // 음식 DB Mock (실제로는 API 호출)
-const FOOD_DATABASE: Record<string, Omit<RecognizedFood, 'id' | 'portion' | 'confidence'>> = {
-  '비빔밥': { name: '비빔밥', calories: 550, protein: 18, carbs: 65, fat: 12, trafficLight: 'yellow' },
-  '된장찌개': { name: '된장찌개', calories: 120, protein: 9, carbs: 8, fat: 5, trafficLight: 'green' },
-  '김치찌개': { name: '김치찌개', calories: 150, protein: 12, carbs: 10, fat: 6, trafficLight: 'green' },
-  '불고기': { name: '불고기', calories: 350, protein: 28, carbs: 15, fat: 20, trafficLight: 'yellow' },
-  '삼겹살': { name: '삼겹살', calories: 500, protein: 25, carbs: 2, fat: 45, trafficLight: 'red' },
-  '라면': { name: '라면', calories: 500, protein: 10, carbs: 70, fat: 18, trafficLight: 'red' },
-  '샐러드': { name: '샐러드', calories: 80, protein: 3, carbs: 10, fat: 3, trafficLight: 'green' },
-  '치킨': { name: '치킨', calories: 450, protein: 35, carbs: 15, fat: 28, trafficLight: 'red' },
-  '김밥': { name: '김밥', calories: 320, protein: 8, carbs: 45, fat: 12, trafficLight: 'yellow' },
-  '떡볶이': { name: '떡볶이', calories: 380, protein: 6, carbs: 65, fat: 10, trafficLight: 'red' },
+const FOOD_DATABASE: Record<
+  string,
+  Omit<RecognizedFood, 'id' | 'portion' | 'confidence'>
+> = {
+  비빔밥: {
+    name: '비빔밥',
+    calories: 550,
+    protein: 18,
+    carbs: 65,
+    fat: 12,
+    trafficLight: 'yellow',
+  },
+  된장찌개: {
+    name: '된장찌개',
+    calories: 120,
+    protein: 9,
+    carbs: 8,
+    fat: 5,
+    trafficLight: 'green',
+  },
+  김치찌개: {
+    name: '김치찌개',
+    calories: 150,
+    protein: 12,
+    carbs: 10,
+    fat: 6,
+    trafficLight: 'green',
+  },
+  불고기: {
+    name: '불고기',
+    calories: 350,
+    protein: 28,
+    carbs: 15,
+    fat: 20,
+    trafficLight: 'yellow',
+  },
+  삼겹살: {
+    name: '삼겹살',
+    calories: 500,
+    protein: 25,
+    carbs: 2,
+    fat: 45,
+    trafficLight: 'red',
+  },
+  라면: {
+    name: '라면',
+    calories: 500,
+    protein: 10,
+    carbs: 70,
+    fat: 18,
+    trafficLight: 'red',
+  },
+  샐러드: {
+    name: '샐러드',
+    calories: 80,
+    protein: 3,
+    carbs: 10,
+    fat: 3,
+    trafficLight: 'green',
+  },
+  치킨: {
+    name: '치킨',
+    calories: 450,
+    protein: 35,
+    carbs: 15,
+    fat: 28,
+    trafficLight: 'red',
+  },
+  김밥: {
+    name: '김밥',
+    calories: 320,
+    protein: 8,
+    carbs: 45,
+    fat: 12,
+    trafficLight: 'yellow',
+  },
+  떡볶이: {
+    name: '떡볶이',
+    calories: 380,
+    protein: 6,
+    carbs: 65,
+    fat: 10,
+    trafficLight: 'red',
+  },
 };
 
 type ScreenState = 'camera' | 'analyzing' | 'result';
@@ -136,7 +210,8 @@ export default function FoodCameraScreen() {
     const selectedFoods: RecognizedFood[] = [];
 
     for (let i = 0; i < numFoods; i++) {
-      const randomFood = foodNames[Math.floor(Math.random() * foodNames.length)];
+      const randomFood =
+        foodNames[Math.floor(Math.random() * foodNames.length)];
       const foodData = FOOD_DATABASE[randomFood];
 
       // 이미 선택된 음식이면 스킵
@@ -160,7 +235,10 @@ export default function FoodCameraScreen() {
     setRecognizedFoods((prev) =>
       prev.map((food) =>
         food.id === foodId
-          ? { ...food, portion: Math.max(0.5, Math.min(5, food.portion + delta)) }
+          ? {
+              ...food,
+              portion: Math.max(0.5, Math.min(5, food.portion + delta)),
+            }
           : food
       )
     );
@@ -202,9 +280,14 @@ export default function FoodCameraScreen() {
         total_carbs: Math.round(totalNutrition.carbs * 10) / 10,
         total_fat: Math.round(totalNutrition.fat * 10) / 10,
         ai_recognized_food: recognizedFoods.map((f) => f.name).join(', '),
-        ai_confidence: recognizedFoods.length > 0
-          ? recognizedFoods[0].confidence > 0.8 ? 'high' : recognizedFoods[0].confidence > 0.6 ? 'medium' : 'low'
-          : 'low',
+        ai_confidence:
+          recognizedFoods.length > 0
+            ? recognizedFoods[0].confidence > 0.8
+              ? 'high'
+              : recognizedFoods[0].confidence > 0.6
+                ? 'medium'
+                : 'low'
+            : 'low',
         user_confirmed: true,
       });
 
@@ -232,17 +315,23 @@ export default function FoodCameraScreen() {
   // 스톱라이트 색상
   const getTrafficLightColor = (light: TrafficLight) => {
     switch (light) {
-      case 'green': return '#22c55e';
-      case 'yellow': return '#eab308';
-      case 'red': return '#ef4444';
+      case 'green':
+        return '#22c55e';
+      case 'yellow':
+        return '#eab308';
+      case 'red':
+        return '#ef4444';
     }
   };
 
   const getTrafficLightEmoji = (light: TrafficLight) => {
     switch (light) {
-      case 'green': return '🟢';
-      case 'yellow': return '🟡';
-      case 'red': return '🔴';
+      case 'green':
+        return '🟢';
+      case 'yellow':
+        return '🟡';
+      case 'red':
+        return '🔴';
     }
   };
 
@@ -264,7 +353,10 @@ export default function FoodCameraScreen() {
           <Text style={[styles.permissionText, isDark && styles.textLight]}>
             카메라 권한이 필요합니다
           </Text>
-          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={requestPermission}
+          >
             <Text style={styles.permissionButtonText}>권한 허용</Text>
           </TouchableOpacity>
         </View>
@@ -278,9 +370,16 @@ export default function FoodCameraScreen() {
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.centerContent}>
           {capturedImage && (
-            <Image source={{ uri: capturedImage }} style={styles.analyzingImage} />
+            <Image
+              source={{ uri: capturedImage }}
+              style={styles.analyzingImage}
+            />
           )}
-          <ActivityIndicator size="large" color="#22c55e" style={styles.analyzingSpinner} />
+          <ActivityIndicator
+            size="large"
+            color="#22c55e"
+            style={styles.analyzingSpinner}
+          />
           <Text style={[styles.analyzingText, isDark && styles.textLight]}>
             AI가 음식을 분석하고 있어요...
           </Text>
@@ -292,8 +391,14 @@ export default function FoodCameraScreen() {
   // 결과 화면
   if (screenState === 'result') {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
-        <ScrollView style={styles.resultScroll} showsVerticalScrollIndicator={false}>
+      <SafeAreaView
+        style={[styles.container, isDark && styles.containerDark]}
+        edges={['bottom']}
+      >
+        <ScrollView
+          style={styles.resultScroll}
+          showsVerticalScrollIndicator={false}
+        >
           {/* 촬영 이미지 */}
           {capturedImage && (
             <Image source={{ uri: capturedImage }} style={styles.resultImage} />
@@ -310,18 +415,35 @@ export default function FoodCameraScreen() {
                 <Text style={[styles.emptyText, isDark && styles.textMuted]}>
                   음식을 인식하지 못했어요
                 </Text>
-                <TouchableOpacity style={styles.searchLink} onPress={() => router.push('/(nutrition)/search')}>
+                <TouchableOpacity
+                  style={styles.searchLink}
+                  onPress={() => router.push('/(nutrition)/search')}
+                >
                   <Text style={styles.searchLinkText}>검색으로 기록하기</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               recognizedFoods.map((food) => (
-                <View key={food.id} style={[styles.foodCard, isDark && styles.cardDark]}>
+                <View
+                  key={food.id}
+                  style={[styles.foodCard, isDark && styles.cardDark]}
+                >
                   <View style={styles.foodHeader}>
-                    <Text style={styles.trafficLight}>{getTrafficLightEmoji(food.trafficLight)}</Text>
+                    <Text style={styles.trafficLight}>
+                      {getTrafficLightEmoji(food.trafficLight)}
+                    </Text>
                     <View style={styles.foodInfo}>
-                      <Text style={[styles.foodName, isDark && styles.textLight]}>{food.name}</Text>
-                      <Text style={[styles.foodCalories, { color: getTrafficLightColor(food.trafficLight) }]}>
+                      <Text
+                        style={[styles.foodName, isDark && styles.textLight]}
+                      >
+                        {food.name}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.foodCalories,
+                          { color: getTrafficLightColor(food.trafficLight) },
+                        ]}
+                      >
                         {Math.round(food.calories * food.portion)} kcal
                       </Text>
                     </View>
@@ -331,24 +453,41 @@ export default function FoodCameraScreen() {
                   </View>
 
                   <Text style={[styles.macros, isDark && styles.textMuted]}>
-                    탄 {Math.round(food.carbs * food.portion)}g · 단 {Math.round(food.protein * food.portion)}g · 지 {Math.round(food.fat * food.portion)}g
+                    탄 {Math.round(food.carbs * food.portion)}g · 단{' '}
+                    {Math.round(food.protein * food.portion)}g · 지{' '}
+                    {Math.round(food.fat * food.portion)}g
                   </Text>
 
                   {/* 수량 조절 */}
                   <View style={styles.portionRow}>
-                    <Text style={[styles.portionLabel, isDark && styles.textMuted]}>수량:</Text>
+                    <Text
+                      style={[styles.portionLabel, isDark && styles.textMuted]}
+                    >
+                      수량:
+                    </Text>
                     <View style={styles.portionControls}>
                       <TouchableOpacity
-                        style={[styles.portionButton, isDark && styles.portionButtonDark]}
+                        style={[
+                          styles.portionButton,
+                          isDark && styles.portionButtonDark,
+                        ]}
                         onPress={() => handlePortionChange(food.id, -0.5)}
                       >
                         <Text style={styles.portionButtonText}>−</Text>
                       </TouchableOpacity>
-                      <Text style={[styles.portionValue, isDark && styles.textLight]}>
+                      <Text
+                        style={[
+                          styles.portionValue,
+                          isDark && styles.textLight,
+                        ]}
+                      >
                         {food.portion}인분
                       </Text>
                       <TouchableOpacity
-                        style={[styles.portionButton, isDark && styles.portionButtonDark]}
+                        style={[
+                          styles.portionButton,
+                          isDark && styles.portionButtonDark,
+                        ]}
                         onPress={() => handlePortionChange(food.id, 0.5)}
                       >
                         <Text style={styles.portionButtonText}>+</Text>
@@ -364,7 +503,9 @@ export default function FoodCameraScreen() {
               style={[styles.addFoodButton, isDark && styles.addFoodButtonDark]}
               onPress={() => router.push('/(nutrition)/search')}
             >
-              <Text style={[styles.addFoodText, isDark && styles.textMuted]}>+ 음식 추가하기</Text>
+              <Text style={[styles.addFoodText, isDark && styles.textMuted]}>
+                + 음식 추가하기
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -375,7 +516,9 @@ export default function FoodCameraScreen() {
                 총 {Math.round(totalNutrition.calories)} kcal
               </Text>
               <Text style={[styles.totalMacros, isDark && styles.textMuted]}>
-                탄 {Math.round(totalNutrition.carbs)}g · 단 {Math.round(totalNutrition.protein)}g · 지 {Math.round(totalNutrition.fat)}g
+                탄 {Math.round(totalNutrition.carbs)}g · 단{' '}
+                {Math.round(totalNutrition.protein)}g · 지{' '}
+                {Math.round(totalNutrition.fat)}g
               </Text>
             </View>
           )}
@@ -384,10 +527,16 @@ export default function FoodCameraScreen() {
         {/* 하단 버튼 */}
         <View style={styles.resultFooter}>
           <TouchableOpacity style={styles.retakeButton} onPress={handleRetake}>
-            <Text style={[styles.retakeButtonText, isDark && styles.textLight]}>다시 촬영</Text>
+            <Text style={[styles.retakeButtonText, isDark && styles.textLight]}>
+              다시 촬영
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.saveButton, (isSaving || recognizedFoods.length === 0) && styles.saveButtonDisabled]}
+            style={[
+              styles.saveButton,
+              (isSaving || recognizedFoods.length === 0) &&
+                styles.saveButtonDisabled,
+            ]}
             onPress={handleSave}
             disabled={isSaving || recognizedFoods.length === 0}
           >
@@ -404,13 +553,18 @@ export default function FoodCameraScreen() {
 
   // 카메라 화면
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <View style={styles.cameraContainer}>
         <CameraView ref={cameraRef} style={styles.camera} facing="back">
           {/* 가이드 프레임 */}
           <View style={styles.guideFrame}>
             <View style={styles.guideBox}>
-              <Text style={styles.guideText}>음식을 프레임 안에 맞춰주세요</Text>
+              <Text style={styles.guideText}>
+                음식을 프레임 안에 맞춰주세요
+              </Text>
             </View>
           </View>
         </CameraView>
@@ -447,7 +601,10 @@ export default function FoodCameraScreen() {
 
       {/* 촬영 버튼 */}
       <View style={styles.cameraControls}>
-        <TouchableOpacity style={styles.galleryButton} onPress={handlePickImage}>
+        <TouchableOpacity
+          style={styles.galleryButton}
+          onPress={handlePickImage}
+        >
           <Text style={styles.galleryButtonText}>갤러리</Text>
         </TouchableOpacity>
 
@@ -455,7 +612,10 @@ export default function FoodCameraScreen() {
           <View style={styles.captureButtonInner} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.searchButton} onPress={() => router.push('/(nutrition)/search')}>
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={() => router.push('/(nutrition)/search')}
+        >
           <Text style={styles.searchButtonText}>검색</Text>
         </TouchableOpacity>
       </View>

@@ -3,8 +3,8 @@
  * 5탭 구조: 홈 / 뷰티 / 스타일 / 기록 / 나
  */
 import { Tabs } from 'expo-router';
-import { useColorScheme, Platform } from 'react-native';
 import { Home, Sparkles, Shirt, BookOpen, User } from 'lucide-react-native';
+import { useColorScheme, Platform } from 'react-native';
 
 // 색상 상수 (이룸 브랜드 컬러)
 const COLORS = {
@@ -49,7 +49,9 @@ export default function TabLayout() {
         options={{
           title: '뷰티',
           tabBarLabel: '뷰티',
-          tabBarIcon: ({ color, size }) => <Sparkles color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <Sparkles color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -65,7 +67,9 @@ export default function TabLayout() {
         options={{
           title: '기록',
           tabBarLabel: '기록',
-          tabBarIcon: ({ color, size }) => <BookOpen color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <BookOpen color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen

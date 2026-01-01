@@ -4,6 +4,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { CacheMetadata, DEFAULT_CACHE_TTL } from './types';
 
 // 캐시 항목 구조
@@ -85,7 +86,9 @@ export async function removeCache(key: string): Promise<void> {
 /**
  * 캐시 메타데이터 조회
  */
-export async function getCacheMetadata(key: string): Promise<CacheMetadata | null> {
+export async function getCacheMetadata(
+  key: string
+): Promise<CacheMetadata | null> {
   try {
     const stored = await AsyncStorage.getItem(key);
     if (!stored) {
@@ -177,7 +180,9 @@ export async function getCacheOrFetch<T>(
     // 백그라운드에서 갱신 (stale-while-revalidate)
     fetchFn()
       .then((data) => setCache(key, data, ttl))
-      .catch((error) => console.error('[Cache] Background refresh failed:', error));
+      .catch((error) =>
+        console.error('[Cache] Background refresh failed:', error)
+      );
 
     return cached;
   }

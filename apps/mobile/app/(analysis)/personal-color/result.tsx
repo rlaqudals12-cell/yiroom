@@ -1,6 +1,8 @@
 /**
  * PC-1 퍼스널 컬러 진단 - 결과 화면
  */
+import type { PersonalColorSeason } from '@yiroom/shared';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import {
   View,
@@ -13,37 +15,42 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
-import type { PersonalColorSeason } from '@yiroom/shared';
 
 // 퍼스널 컬러 결과 데이터
-const SEASON_DATA: Record<PersonalColorSeason, {
-  name: string;
-  description: string;
-  colors: string[];
-  celebrities: string[];
-}> = {
+const SEASON_DATA: Record<
+  PersonalColorSeason,
+  {
+    name: string;
+    description: string;
+    colors: string[];
+    celebrities: string[];
+  }
+> = {
   Spring: {
     name: '봄 웜톤',
-    description: '밝고 화사한 색상이 잘 어울리는 타입입니다. 코랄, 피치, 아이보리 등 따뜻하고 맑은 색상을 추천드려요.',
+    description:
+      '밝고 화사한 색상이 잘 어울리는 타입입니다. 코랄, 피치, 아이보리 등 따뜻하고 맑은 색상을 추천드려요.',
     colors: ['#FFB6C1', '#FFDAB9', '#FFA07A', '#F0E68C', '#98FB98'],
     celebrities: ['아이유', '수지', '윤아'],
   },
   Summer: {
     name: '여름 쿨톤',
-    description: '부드럽고 차분한 색상이 잘 어울리는 타입입니다. 라벤더, 로즈핑크, 스카이블루 등 시원하고 우아한 색상을 추천드려요.',
+    description:
+      '부드럽고 차분한 색상이 잘 어울리는 타입입니다. 라벤더, 로즈핑크, 스카이블루 등 시원하고 우아한 색상을 추천드려요.',
     colors: ['#E6E6FA', '#DDA0DD', '#B0C4DE', '#F0FFFF', '#FFC0CB'],
     celebrities: ['블랙핑크 제니', '김태희', '손예진'],
   },
   Autumn: {
     name: '가을 웜톤',
-    description: '깊고 풍부한 색상이 잘 어울리는 타입입니다. 버건디, 머스타드, 카키 등 차분하고 고급스러운 색상을 추천드려요.',
+    description:
+      '깊고 풍부한 색상이 잘 어울리는 타입입니다. 버건디, 머스타드, 카키 등 차분하고 고급스러운 색상을 추천드려요.',
     colors: ['#8B4513', '#DAA520', '#BC8F8F', '#CD853F', '#556B2F'],
     celebrities: ['제니퍼 로페즈', '김희선', '공효진'],
   },
   Winter: {
     name: '겨울 쿨톤',
-    description: '선명하고 대비가 강한 색상이 잘 어울리는 타입입니다. 블랙, 화이트, 로열블루 등 강렬하고 세련된 색상을 추천드려요.',
+    description:
+      '선명하고 대비가 강한 색상이 잘 어울리는 타입입니다. 블랙, 화이트, 로열블루 등 강렬하고 세련된 색상을 추천드려요.',
     colors: ['#000000', '#FFFFFF', '#4169E1', '#DC143C', '#800080'],
     celebrities: ['김연아', '전지현', '송혜교'],
   },
@@ -74,8 +81,12 @@ export default function PersonalColorResultScreen() {
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const parsedAnswers = JSON.parse(answers || '{}');
-    const warmCount = Object.values(parsedAnswers).filter((v) => v === 'warm').length;
-    const coolCount = Object.values(parsedAnswers).filter((v) => v === 'cool').length;
+    const warmCount = Object.values(parsedAnswers).filter(
+      (v) => v === 'warm'
+    ).length;
+    const coolCount = Object.values(parsedAnswers).filter(
+      (v) => v === 'cool'
+    ).length;
 
     let season: PersonalColorSeason;
     if (warmCount > coolCount) {
@@ -123,7 +134,10 @@ export default function PersonalColorResultScreen() {
   const seasonData = SEASON_DATA[result];
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 결과 이미지 */}
         {imageUri && (
@@ -176,10 +190,7 @@ export default function PersonalColorResultScreen() {
 
         {/* 버튼 */}
         <View style={styles.buttons}>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleGoHome}
-          >
+          <TouchableOpacity style={styles.primaryButton} onPress={handleGoHome}>
             <Text style={styles.primaryButtonText}>홈으로 돌아가기</Text>
           </TouchableOpacity>
           <TouchableOpacity

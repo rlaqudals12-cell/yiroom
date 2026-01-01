@@ -3,10 +3,11 @@
  * Expo Push Token 획득 및 서버 등록
  */
 
-import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+
 import { PushTokenInfo } from './types';
 
 // 저장 키
@@ -45,7 +46,8 @@ export async function getExpoPushToken(): Promise<string | null> {
 
   try {
     // 권한 확인
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     if (existingStatus !== 'granted') {

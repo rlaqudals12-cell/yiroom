@@ -3,10 +3,16 @@
  * 위젯 및 외부 앱에서 딥링크 처리
  */
 
-import { Linking } from 'react-native';
-import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { DEEP_LINK_SCHEME, PATH_MAPPING, ParsedDeepLink, DeepLinkParams } from './types';
+import { router } from 'expo-router';
+import { Linking } from 'react-native';
+
+import {
+  DEEP_LINK_SCHEME,
+  PATH_MAPPING,
+  ParsedDeepLink,
+  DeepLinkParams,
+} from './types';
 
 /**
  * 딥링크 URL 파싱
@@ -55,7 +61,11 @@ export function navigateToDeepLink(parsed: ParsedDeepLink): boolean {
   let targetPath = PATH_MAPPING[parsed.path];
 
   // 동적 경로 처리 (예: /products/:id)
-  if (!targetPath && parsed.path.startsWith('/products/') && parsed.path !== '/products/search') {
+  if (
+    !targetPath &&
+    parsed.path.startsWith('/products/') &&
+    parsed.path !== '/products/search'
+  ) {
     const id = parsed.path.split('/').pop();
     targetPath = `/products/${id}`;
   }
@@ -112,7 +122,10 @@ export async function getInitialDeepLink(): Promise<ParsedDeepLink | null> {
 /**
  * 딥링크 URL 생성
  */
-export function createDeepLinkUrl(path: string, params?: DeepLinkParams): string {
+export function createDeepLinkUrl(
+  path: string,
+  params?: DeepLinkParams
+): string {
   const normalizedPath = path.startsWith('/') ? path.substring(1) : path;
   let url = `${DEEP_LINK_SCHEME}://${normalizedPath}`;
 

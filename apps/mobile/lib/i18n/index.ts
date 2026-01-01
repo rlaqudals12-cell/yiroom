@@ -3,11 +3,12 @@
  * 다국어 지원
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { getLocales } from 'expo-localization';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ko from './locales/ko';
+import { getLocales } from 'expo-localization';
+import { useState, useCallback, useEffect } from 'react';
+
 import en from './locales/en';
+import ko from './locales/ko';
 import { SupportedLocale, TranslationOptions } from './types';
 
 // 번역 데이터

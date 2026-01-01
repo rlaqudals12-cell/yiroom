@@ -1,8 +1,13 @@
 /**
  * 사용자 상태 스토어
  */
+import type {
+  PersonalColorSeason,
+  SkinType,
+  BodyType,
+  WorkoutType,
+} from '@yiroom/shared';
 import { create } from 'zustand';
-import type { PersonalColorSeason, SkinType, BodyType, WorkoutType } from '@yiroom/shared';
 
 interface UserAnalysisData {
   // 퍼스널 컬러 분석 결과

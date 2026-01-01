@@ -39,7 +39,11 @@ export interface WidgetConfig {
 }
 
 // 빠른 액션 타입
-export type QuickActionType = 'addWater' | 'startWorkout' | 'logMeal' | 'viewDashboard';
+export type QuickActionType =
+  | 'addWater'
+  | 'startWorkout'
+  | 'logMeal'
+  | 'viewDashboard';
 
 // 빠른 액션 데이터
 export interface QuickAction {

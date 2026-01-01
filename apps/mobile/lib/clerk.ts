@@ -1,8 +1,8 @@
 /**
  * Clerk 설정 및 토큰 캐시
  */
-import * as SecureStore from 'expo-secure-store';
 import { TokenCache } from '@clerk/clerk-expo';
+import * as SecureStore from 'expo-secure-store';
 
 /**
  * SecureStore 기반 토큰 캐시
@@ -37,4 +37,5 @@ export const tokenCache: TokenCache = {
  * Clerk Publishable Key
  * 환경변수에서 가져오거나 하드코딩된 값 사용
  */
-export const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || '';
+export const CLERK_PUBLISHABLE_KEY =
+  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || '';

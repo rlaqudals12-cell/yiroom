@@ -48,8 +48,9 @@ export default function SignInScreen() {
         router.replace('/(tabs)');
       }
     } catch (error: unknown) {
-      const clerkError = error as { errors?: Array<{ message: string }> };
-      const errorMessage = clerkError.errors?.[0]?.message || '로그인에 실패했습니다.';
+      const clerkError = error as { errors?: { message: string }[] };
+      const errorMessage =
+        clerkError.errors?.[0]?.message || '로그인에 실패했습니다.';
       Alert.alert('로그인 실패', errorMessage);
     } finally {
       setIsLoading(false);

@@ -1,6 +1,7 @@
 /**
  * N-1 영양 대시보드 화면
  */
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -11,7 +12,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
 // 샘플 데이터
 const DAILY_GOAL = {
@@ -69,7 +69,10 @@ export default function NutritionDashboardScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 칼로리 프로그레스 */}
         <View style={[styles.calorieCard, isDark && styles.cardDark]}>
@@ -81,7 +84,11 @@ export default function NutritionDashboardScreen() {
               <View
                 style={[
                   styles.ringProgress,
-                  { transform: [{ rotate: `${(caloriePercentage / 100) * 360}deg` }] },
+                  {
+                    transform: [
+                      { rotate: `${(caloriePercentage / 100) * 360}deg` },
+                    ],
+                  },
                 ]}
               />
               <View style={[styles.ringInner, isDark && styles.ringInnerDark]}>
@@ -176,7 +183,10 @@ export default function NutritionDashboardScreen() {
         </View>
 
         {/* 식사 기록 버튼 */}
-        <TouchableOpacity style={styles.recordButton} onPress={handleRecordMeal}>
+        <TouchableOpacity
+          style={styles.recordButton}
+          onPress={handleRecordMeal}
+        >
           <Text style={styles.recordButtonText}>식사 기록하기</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -213,7 +223,10 @@ function NutrientBar({
       </View>
       <View style={[styles.nutrientBarBg, isDark && styles.nutrientBarBgDark]}>
         <View
-          style={[styles.nutrientBarFill, { width: `${percentage}%`, backgroundColor: color }]}
+          style={[
+            styles.nutrientBarFill,
+            { width: `${percentage}%`, backgroundColor: color },
+          ]}
         />
       </View>
     </View>

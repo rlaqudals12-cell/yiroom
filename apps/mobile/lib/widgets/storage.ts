@@ -8,6 +8,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from './types';
 
 // 위젯 데이터 키
@@ -21,7 +22,9 @@ export const APP_GROUP_ID = 'group.com.yiroom.app';
  * 위젯 데이터 저장
  * 앱에서 데이터 변경 시 호출하여 위젯과 동기화
  */
-export async function saveWidgetData(data: Partial<TodaySummaryData>): Promise<void> {
+export async function saveWidgetData(
+  data: Partial<TodaySummaryData>
+): Promise<void> {
   try {
     const existingData = await getWidgetData();
     const updatedData: TodaySummaryData = {
@@ -90,7 +93,10 @@ export async function updateWaterIntake(amount: number): Promise<void> {
 /**
  * 운동 완료 업데이트
  */
-export async function updateWorkoutComplete(minutes: number, calories: number): Promise<void> {
+export async function updateWorkoutComplete(
+  minutes: number,
+  calories: number
+): Promise<void> {
   await saveWidgetData({
     workoutCompleted: true,
     workoutMinutes: minutes,
@@ -138,7 +144,10 @@ export async function resetDailyData(): Promise<void> {
 /**
  * 목표 설정
  */
-export async function setGoals(waterGoal: number, caloriesGoal: number): Promise<void> {
+export async function setGoals(
+  waterGoal: number,
+  caloriesGoal: number
+): Promise<void> {
   await saveWidgetData({
     waterGoal,
     caloriesGoal,

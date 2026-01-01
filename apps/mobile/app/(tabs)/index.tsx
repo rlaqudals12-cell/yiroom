@@ -2,12 +2,25 @@
  * 이룸 홈 화면
  * 대시보드 스타일 UI + 오늘 할 일 + 알림 요약
  */
-import { View, Text, StyleSheet, ScrollView, useColorScheme, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import { useUser } from '@clerk/clerk-expo';
-import { useWorkoutData, useNutritionData, useUserAnalyses, calculateCalorieProgress } from '../../hooks';
+import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  useColorScheme,
+  Pressable,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import {
+  useWorkoutData,
+  useNutritionData,
+  useUserAnalyses,
+  calculateCalorieProgress,
+} from '../../hooks';
 
 // 색상 상수
 const COLORS = {
@@ -31,14 +44,27 @@ export default function HomeScreen() {
 
   // 실제 데이터 훅
   const { streak: workoutStreak, isLoading: workoutLoading } = useWorkoutData();
-  const { todaySummary, settings: nutritionSettings, isLoading: nutritionLoading } = useNutritionData();
-  const { personalColor, skinAnalysis, bodyAnalysis, isLoading: analysisLoading } = useUserAnalyses();
+  const {
+    todaySummary,
+    settings: nutritionSettings,
+    isLoading: nutritionLoading,
+  } = useNutritionData();
+  const {
+    personalColor,
+    skinAnalysis,
+    bodyAnalysis,
+    isLoading: analysisLoading,
+  } = useUserAnalyses();
 
   const greeting = getGreeting();
   const userName = user?.firstName || user?.username || '사용자';
 
   // 오늘의 요약 값 계산
-  const workoutValue = workoutLoading ? '...' : workoutStreak?.currentStreak ? `${workoutStreak.currentStreak}일` : '—';
+  const workoutValue = workoutLoading
+    ? '...'
+    : workoutStreak?.currentStreak
+      ? `${workoutStreak.currentStreak}일`
+      : '—';
   const nutritionValue = nutritionLoading
     ? '...'
     : todaySummary && nutritionSettings
@@ -52,13 +78,20 @@ export default function HomeScreen() {
 
   // 오늘 할 일 목록 생성
   const todayTasks = useMemo(() => {
-    const tasks: { id: string; label: string; completed: boolean; route: string }[] = [];
+    const tasks: {
+      id: string;
+      label: string;
+      completed: boolean;
+      route: string;
+    }[] = [];
 
     // 운동 완료 여부
     tasks.push({
       id: 'workout',
       label: '오늘의 운동 완료',
-      completed: workoutStreak?.lastWorkoutDate === new Date().toISOString().split('T')[0],
+      completed:
+        workoutStreak?.lastWorkoutDate ===
+        new Date().toISOString().split('T')[0],
       route: '/(tabs)/records',
     });
 
@@ -71,9 +104,10 @@ export default function HomeScreen() {
     });
 
     // 물 섭취 (division by zero 방지)
-    const waterProgress = todaySummary && nutritionSettings && nutritionSettings.waterGoal > 0
-      ? (todaySummary.waterIntake / nutritionSettings.waterGoal) * 100
-      : 0;
+    const waterProgress =
+      todaySummary && nutritionSettings && nutritionSettings.waterGoal > 0
+        ? (todaySummary.waterIntake / nutritionSettings.waterGoal) * 100
+        : 0;
     tasks.push({
       id: 'water',
       label: `물 마시기 (${Math.round(waterProgress)}%)`,
@@ -96,7 +130,11 @@ export default function HomeScreen() {
 
   // 알림 요약 생성
   const notificationSummary = useMemo(() => {
-    const notifications: { id: string; message: string; type: 'info' | 'warning' | 'success' }[] = [];
+    const notifications: {
+      id: string;
+      message: string;
+      type: 'info' | 'warning' | 'success';
+    }[] = [];
 
     // Streak 알림
     if (workoutStreak?.currentStreak && workoutStreak.currentStreak >= 3) {
@@ -108,7 +146,9 @@ export default function HomeScreen() {
     }
 
     // 분석 미완료 알림
-    const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length;
+    const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(
+      Boolean
+    ).length;
     if (analysisCount < 3 && analysisCount > 0) {
       notifications.push({
         id: 'analysis-incomplete',
@@ -119,7 +159,10 @@ export default function HomeScreen() {
 
     // 식단 목표 달성 여부
     if (todaySummary && nutritionSettings) {
-      const calorieProgress = calculateCalorieProgress(todaySummary.totalCalories, nutritionSettings.dailyCalorieGoal);
+      const calorieProgress = calculateCalorieProgress(
+        todaySummary.totalCalories,
+        nutritionSettings.dailyCalorieGoal
+      );
       if (calorieProgress >= 100) {
         notifications.push({
           id: 'calorie-goal',
@@ -139,7 +182,14 @@ export default function HomeScreen() {
     }
 
     return notifications;
-  }, [workoutStreak, personalColor, skinAnalysis, bodyAnalysis, todaySummary, nutritionSettings]);
+  }, [
+    workoutStreak,
+    personalColor,
+    skinAnalysis,
+    bodyAnalysis,
+    todaySummary,
+    nutritionSettings,
+  ]);
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
@@ -169,7 +219,9 @@ export default function HomeScreen() {
                 notification.type === 'warning' && styles.notificationWarning,
               ]}
             >
-              <Text style={[styles.notificationText, isDark && styles.textLight]}>
+              <Text
+                style={[styles.notificationText, isDark && styles.textLight]}
+              >
                 {notification.message}
               </Text>
             </View>
@@ -184,9 +236,21 @@ export default function HomeScreen() {
             </Text>
           </View>
           <View style={styles.summaryStats}>
-            <StatItem label="운동" value={workoutValue} color={COLORS.workout} />
-            <StatItem label="식단" value={nutritionValue} color={COLORS.nutrition} />
-            <StatItem label="분석" value={checkinValue} color={COLORS.primary} />
+            <StatItem
+              label="운동"
+              value={workoutValue}
+              color={COLORS.workout}
+            />
+            <StatItem
+              label="식단"
+              value={nutritionValue}
+              color={COLORS.nutrition}
+            />
+            <StatItem
+              label="분석"
+              value={checkinValue}
+              color={COLORS.primary}
+            />
           </View>
         </View>
 
@@ -297,7 +361,15 @@ function getGreeting(): string {
 }
 
 // 통계 아이템
-function StatItem({ label, value, color }: { label: string; value: string; color: string }) {
+function StatItem({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string;
+  color: string;
+}) {
   return (
     <View style={styles.statItem}>
       <Text style={[styles.statValue, { color }]}>{value}</Text>
@@ -330,7 +402,9 @@ function TodoItem({
       ]}
       onPress={onPress}
     >
-      <View style={[styles.todoCheckbox, completed && styles.todoCheckboxCompleted]}>
+      <View
+        style={[styles.todoCheckbox, completed && styles.todoCheckboxCompleted]}
+      >
         {completed && <Text style={styles.todoCheckmark}>✓</Text>}
       </View>
       <Text

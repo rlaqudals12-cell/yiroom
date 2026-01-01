@@ -5,9 +5,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
-import { useNetworkStatus } from './useNetworkStatus';
+
 import { getSyncQueueCount, processSyncQueue } from './syncQueue';
 import { OfflineState, SyncStatus, SyncQueueItem } from './types';
+import { useNetworkStatus } from './useNetworkStatus';
 
 interface UseOfflineOptions {
   // 자동 동기화 활성화
@@ -28,7 +29,11 @@ interface UseOfflineReturn extends OfflineState {
  */
 export function useOffline(options: UseOfflineOptions = {}): UseOfflineReturn {
   const { autoSync = true, syncProcessor } = options;
-  const { status: networkStatus, isConnected, refresh: refreshNetwork } = useNetworkStatus();
+  const {
+    status: networkStatus,
+    isConnected,
+    refresh: refreshNetwork,
+  } = useNetworkStatus();
 
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('synced');
   const [pendingCount, setPendingCount] = useState(0);
@@ -111,7 +116,10 @@ export function useOffline(options: UseOfflineOptions = {}): UseOfflineReturn {
       }
     };
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange
+    );
     return () => subscription.remove();
   }, [autoSync, isConnected, pendingCount, sync]);
 

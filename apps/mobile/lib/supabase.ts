@@ -1,8 +1,8 @@
 /**
  * Supabase 클라이언트 설정 (Clerk 통합)
  */
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { useAuth } from '@clerk/clerk-expo';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { useMemo, useRef, useEffect } from 'react';
 
 // Supabase 설정
@@ -38,7 +38,9 @@ export function useClerkSupabaseClient(): SupabaseClient {
       global: {
         fetch: async (url, options = {}) => {
           // ref에서 최신 getToken 함수 사용
-          const clerkToken = await getTokenRef.current({ template: 'supabase' });
+          const clerkToken = await getTokenRef.current({
+            template: 'supabase',
+          });
 
           const headers = new Headers(options.headers);
           if (clerkToken) {

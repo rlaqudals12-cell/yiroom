@@ -2,6 +2,9 @@
  * 제품 상세 화면
  * 제품 정보, 성분, 리뷰, 구매 링크
  */
+import { useUser } from '@clerk/clerk-expo';
+import * as Haptics from 'expo-haptics';
+import { useLocalSearchParams, router } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -16,10 +19,8 @@ import {
   Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useUser } from '@clerk/clerk-expo';
+
 import { useClerkSupabaseClient } from '../../lib/supabase';
-import * as Haptics from 'expo-haptics';
 
 interface ProductDetail {
   id: string;
@@ -50,10 +51,23 @@ const MOCK_PRODUCT_DETAIL: Record<string, ProductDetail> = {
     rating: 4.5,
     reviewCount: 120,
     matchScore: 92,
-    description: '건조한 피부에 깊은 보습을 선사하는 고농축 수분 크림입니다. 히알루론산과 세라마이드가 피부 장벽을 강화하고 촉촉함을 오래 유지시켜줍니다.',
-    ingredients: ['히알루론산', '세라마이드', '판테놀', '나이아신아마이드', '알로에베라'],
-    benefits: ['24시간 보습 지속', '피부 장벽 강화', '건조함 완화', '촉촉한 피부결'],
-    howToUse: '세안 후 토너로 피부결을 정돈한 뒤, 적당량을 덜어 얼굴 전체에 부드럽게 펴 바릅니다.',
+    description:
+      '건조한 피부에 깊은 보습을 선사하는 고농축 수분 크림입니다. 히알루론산과 세라마이드가 피부 장벽을 강화하고 촉촉함을 오래 유지시켜줍니다.',
+    ingredients: [
+      '히알루론산',
+      '세라마이드',
+      '판테놀',
+      '나이아신아마이드',
+      '알로에베라',
+    ],
+    benefits: [
+      '24시간 보습 지속',
+      '피부 장벽 강화',
+      '건조함 완화',
+      '촉촉한 피부결',
+    ],
+    howToUse:
+      '세안 후 토너로 피부결을 정돈한 뒤, 적당량을 덜어 얼굴 전체에 부드럽게 펴 바릅니다.',
     images: [],
     purchaseUrl: 'https://example.com/product/1',
     isFavorite: false,
@@ -67,10 +81,17 @@ const MOCK_PRODUCT_DETAIL: Record<string, ProductDetail> = {
     rating: 4.7,
     reviewCount: 89,
     matchScore: 88,
-    description: '자연스러운 톤업 효과와 강력한 자외선 차단을 동시에. 가벼운 텍스처로 백탁 없이 산뜻하게 마무리됩니다.',
-    ingredients: ['징크옥사이드', '티타늄디옥사이드', '히알루론산', '녹차추출물'],
+    description:
+      '자연스러운 톤업 효과와 강력한 자외선 차단을 동시에. 가벼운 텍스처로 백탁 없이 산뜻하게 마무리됩니다.',
+    ingredients: [
+      '징크옥사이드',
+      '티타늄디옥사이드',
+      '히알루론산',
+      '녹차추출물',
+    ],
     benefits: ['SPF50+ PA++++', '자연스러운 톤업', '무자극', '촉촉한 마무리'],
-    howToUse: '스킨케어 마지막 단계에서 적당량을 덜어 얼굴과 목에 고르게 펴 바릅니다.',
+    howToUse:
+      '스킨케어 마지막 단계에서 적당량을 덜어 얼굴과 목에 고르게 펴 바릅니다.',
     images: [],
     purchaseUrl: 'https://example.com/product/2',
     isFavorite: true,
@@ -84,7 +105,8 @@ const MOCK_PRODUCT_DETAIL: Record<string, ProductDetail> = {
     rating: 4.8,
     reviewCount: 256,
     matchScore: 95,
-    description: '봄 웜톤에 완벽하게 어울리는 코랄 컬러 립스틱. 부드러운 발림성과 선명한 발색력으로 화사한 입술을 연출합니다.',
+    description:
+      '봄 웜톤에 완벽하게 어울리는 코랄 컬러 립스틱. 부드러운 발림성과 선명한 발색력으로 화사한 입술을 연출합니다.',
     ingredients: ['시어버터', '호호바오일', '비타민E'],
     benefits: ['고발색', '촉촉한 사용감', '오래 지속', '부드러운 발림성'],
     howToUse: '입술 중앙부터 바깥쪽으로 자연스럽게 펴 바릅니다.',
@@ -108,9 +130,30 @@ interface Review {
 }
 
 const MOCK_REVIEWS: Review[] = [
-  { id: '1', userName: '민**', rating: 5, date: '2025-12-20', content: '정말 촉촉해요! 건조한 겨울에 필수템이에요.', helpful: 12 },
-  { id: '2', userName: '지**', rating: 4, date: '2025-12-18', content: '발림성이 좋고 흡수도 빨라요.', helpful: 8 },
-  { id: '3', userName: '서**', rating: 5, date: '2025-12-15', content: '피부가 훨씬 촉촉해졌어요. 재구매 의사 있습니다.', helpful: 5 },
+  {
+    id: '1',
+    userName: '민**',
+    rating: 5,
+    date: '2025-12-20',
+    content: '정말 촉촉해요! 건조한 겨울에 필수템이에요.',
+    helpful: 12,
+  },
+  {
+    id: '2',
+    userName: '지**',
+    rating: 4,
+    date: '2025-12-18',
+    content: '발림성이 좋고 흡수도 빨라요.',
+    helpful: 8,
+  },
+  {
+    id: '3',
+    userName: '서**',
+    rating: 5,
+    date: '2025-12-15',
+    content: '피부가 훨씬 촉촉해졌어요. 재구매 의사 있습니다.',
+    helpful: 5,
+  },
 ];
 
 export default function ProductDetailScreen() {
@@ -130,7 +173,8 @@ export default function ProductDetailScreen() {
     // 실제로는 API 호출
     await new Promise((resolve) => setTimeout(resolve, 300));
 
-    const productData = MOCK_PRODUCT_DETAIL[id || '1'] || MOCK_PRODUCT_DETAIL['1'];
+    const productData =
+      MOCK_PRODUCT_DETAIL[id || '1'] || MOCK_PRODUCT_DETAIL['1'];
     setProduct(productData);
     setIsFavorite(productData.isFavorite);
     setIsLoading(false);
@@ -208,15 +252,25 @@ export default function ProductDetailScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         {/* 이미지 영역 */}
         <View style={[styles.imageSection, isDark && styles.imageSectionDark]}>
           <View style={styles.imagePlaceholder}>
             <Text style={styles.placeholderEmoji}>
-              {product.category === '스킨케어' ? '🧴' :
-               product.category === '메이크업' ? '💄' :
-               product.category === '영양제' ? '💊' : '🏋️'}
+              {product.category === '스킨케어'
+                ? '🧴'
+                : product.category === '메이크업'
+                  ? '💄'
+                  : product.category === '영양제'
+                    ? '💊'
+                    : '🏋️'}
             </Text>
           </View>
           {/* 이미지 인디케이터 */}
@@ -229,30 +283,44 @@ export default function ProductDetailScreen() {
 
         {/* 제품 정보 */}
         <View style={styles.infoSection}>
-          <Text style={[styles.brand, isDark && styles.textMuted]}>{product.brand}</Text>
-          <Text style={[styles.productName, isDark && styles.textLight]}>{product.name}</Text>
+          <Text style={[styles.brand, isDark && styles.textMuted]}>
+            {product.brand}
+          </Text>
+          <Text style={[styles.productName, isDark && styles.textLight]}>
+            {product.name}
+          </Text>
 
           {/* 평점 */}
           <View style={styles.ratingRow}>
-            <Text style={styles.ratingStars}>{renderStars(product.rating)}</Text>
+            <Text style={styles.ratingStars}>
+              {renderStars(product.rating)}
+            </Text>
             <Text style={[styles.ratingText, isDark && styles.textMuted]}>
               {product.rating.toFixed(1)} ({product.reviewCount}개 리뷰)
             </Text>
-            <Text style={[styles.categoryBadge, isDark && styles.categoryBadgeDark]}>
+            <Text
+              style={[styles.categoryBadge, isDark && styles.categoryBadgeDark]}
+            >
               {product.category}
             </Text>
           </View>
 
           {/* 가격 */}
-          <Text style={[styles.price, isDark && styles.textLight]}>{formatPrice(product.price)}</Text>
+          <Text style={[styles.price, isDark && styles.textLight]}>
+            {formatPrice(product.price)}
+          </Text>
 
           {/* 매칭 점수 */}
           <View style={[styles.matchCard, isDark && styles.matchCardDark]}>
             <Text style={styles.matchIcon}>🎯</Text>
             <View style={styles.matchInfo}>
-              <Text style={[styles.matchLabel, isDark && styles.textMuted]}>나와의 매칭</Text>
+              <Text style={[styles.matchLabel, isDark && styles.textMuted]}>
+                나와의 매칭
+              </Text>
               <View style={styles.matchBarContainer}>
-                <View style={[styles.matchBar, { width: `${product.matchScore}%` }]} />
+                <View
+                  style={[styles.matchBar, { width: `${product.matchScore}%` }]}
+                />
               </View>
             </View>
             <Text style={styles.matchScore}>{product.matchScore}%</Text>
@@ -270,12 +338,18 @@ export default function ProductDetailScreen() {
                 setActiveTab(tab);
               }}
             >
-              <Text style={[
-                styles.tabText,
-                isDark && styles.textMuted,
-                activeTab === tab && styles.tabTextActive,
-              ]}>
-                {tab === 'info' ? '제품 정보' : tab === 'ingredients' ? '성분' : `리뷰 ${product.reviewCount}`}
+              <Text
+                style={[
+                  styles.tabText,
+                  isDark && styles.textMuted,
+                  activeTab === tab && styles.tabTextActive,
+                ]}
+              >
+                {tab === 'info'
+                  ? '제품 정보'
+                  : tab === 'ingredients'
+                    ? '성분'
+                    : `리뷰 ${product.reviewCount}`}
               </Text>
             </TouchableOpacity>
           ))}
@@ -285,31 +359,60 @@ export default function ProductDetailScreen() {
         <View style={styles.tabContent}>
           {activeTab === 'info' && (
             <>
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>제품 설명</Text>
-              <Text style={[styles.description, isDark && styles.textMuted]}>{product.description}</Text>
+              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+                제품 설명
+              </Text>
+              <Text style={[styles.description, isDark && styles.textMuted]}>
+                {product.description}
+              </Text>
 
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>효과</Text>
+              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+                효과
+              </Text>
               <View style={styles.benefitsList}>
                 {product.benefits.map((benefit, index) => (
                   <View key={index} style={styles.benefitItem}>
                     <Text style={styles.benefitDot}>✓</Text>
-                    <Text style={[styles.benefitText, isDark && styles.textMuted]}>{benefit}</Text>
+                    <Text
+                      style={[styles.benefitText, isDark && styles.textMuted]}
+                    >
+                      {benefit}
+                    </Text>
                   </View>
                 ))}
               </View>
 
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>사용 방법</Text>
-              <Text style={[styles.description, isDark && styles.textMuted]}>{product.howToUse}</Text>
+              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+                사용 방법
+              </Text>
+              <Text style={[styles.description, isDark && styles.textMuted]}>
+                {product.howToUse}
+              </Text>
             </>
           )}
 
           {activeTab === 'ingredients' && (
             <>
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>주요 성분</Text>
+              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+                주요 성분
+              </Text>
               <View style={styles.ingredientsList}>
                 {product.ingredients.map((ingredient, index) => (
-                  <View key={index} style={[styles.ingredientChip, isDark && styles.ingredientChipDark]}>
-                    <Text style={[styles.ingredientText, isDark && styles.textLight]}>{ingredient}</Text>
+                  <View
+                    key={index}
+                    style={[
+                      styles.ingredientChip,
+                      isDark && styles.ingredientChipDark,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.ingredientText,
+                        isDark && styles.textLight,
+                      ]}
+                    >
+                      {ingredient}
+                    </Text>
                   </View>
                 ))}
               </View>
@@ -319,14 +422,31 @@ export default function ProductDetailScreen() {
           {activeTab === 'reviews' && (
             <>
               {MOCK_REVIEWS.map((review) => (
-                <View key={review.id} style={[styles.reviewCard, isDark && styles.reviewCardDark]}>
+                <View
+                  key={review.id}
+                  style={[styles.reviewCard, isDark && styles.reviewCardDark]}
+                >
                   <View style={styles.reviewHeader}>
-                    <Text style={[styles.reviewUser, isDark && styles.textLight]}>{review.userName}</Text>
-                    <Text style={styles.reviewRating}>{'★'.repeat(review.rating)}</Text>
+                    <Text
+                      style={[styles.reviewUser, isDark && styles.textLight]}
+                    >
+                      {review.userName}
+                    </Text>
+                    <Text style={styles.reviewRating}>
+                      {'★'.repeat(review.rating)}
+                    </Text>
                   </View>
-                  <Text style={[styles.reviewDate, isDark && styles.textMuted]}>{review.date}</Text>
-                  <Text style={[styles.reviewContent, isDark && styles.textMuted]}>{review.content}</Text>
-                  <Text style={[styles.reviewHelpful, isDark && styles.textMuted]}>
+                  <Text style={[styles.reviewDate, isDark && styles.textMuted]}>
+                    {review.date}
+                  </Text>
+                  <Text
+                    style={[styles.reviewContent, isDark && styles.textMuted]}
+                  >
+                    {review.content}
+                  </Text>
+                  <Text
+                    style={[styles.reviewHelpful, isDark && styles.textMuted]}
+                  >
                     👍 {review.helpful}명에게 도움이 됨
                   </Text>
                 </View>
@@ -338,13 +458,19 @@ export default function ProductDetailScreen() {
 
       {/* 하단 액션 바 */}
       <View style={[styles.actionBar, isDark && styles.actionBarDark]}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleFavoriteToggle}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={handleFavoriteToggle}
+        >
           <Text style={styles.actionIcon}>{isFavorite ? '❤️' : '🤍'}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
           <Text style={styles.actionIcon}>📤</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.purchaseButton} onPress={handlePurchase}>
+        <TouchableOpacity
+          style={styles.purchaseButton}
+          onPress={handlePurchase}
+        >
           <Text style={styles.purchaseButtonText}>구매하러 가기</Text>
         </TouchableOpacity>
       </View>

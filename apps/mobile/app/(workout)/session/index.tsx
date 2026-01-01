@@ -1,6 +1,7 @@
 /**
  * W-1 운동 세션 화면 (타이머 포함)
  */
+import { router } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -11,7 +12,6 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
 // 샘플 운동 데이터
 const SAMPLE_EXERCISES = [
@@ -101,18 +101,14 @@ export default function WorkoutSessionScreen() {
   };
 
   const handleEndSession = () => {
-    Alert.alert(
-      '운동 종료',
-      '운동을 종료하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '종료',
-          style: 'destructive',
-          onPress: () => router.replace('/(tabs)/records'),
-        },
-      ]
-    );
+    Alert.alert('운동 종료', '운동을 종료하시겠습니까?', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '종료',
+        style: 'destructive',
+        onPress: () => router.replace('/(tabs)/records'),
+      },
+    ]);
   };
 
   const formatTime = (seconds: number) => {
@@ -135,8 +131,13 @@ export default function WorkoutSessionScreen() {
 
           <View style={styles.exercisePreview}>
             {SAMPLE_EXERCISES.map((ex, index) => (
-              <View key={ex.id} style={[styles.previewItem, isDark && styles.previewItemDark]}>
-                <Text style={[styles.previewNumber, isDark && styles.textMuted]}>
+              <View
+                key={ex.id}
+                style={[styles.previewItem, isDark && styles.previewItemDark]}
+              >
+                <Text
+                  style={[styles.previewNumber, isDark && styles.textMuted]}
+                >
                   {index + 1}
                 </Text>
                 <Text style={[styles.previewName, isDark && styles.textLight]}>
@@ -149,7 +150,10 @@ export default function WorkoutSessionScreen() {
             ))}
           </View>
 
-          <TouchableOpacity style={styles.startButton} onPress={handleStartSession}>
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={handleStartSession}
+          >
             <Text style={styles.startButtonText}>운동 시작</Text>
           </TouchableOpacity>
         </View>
@@ -175,19 +179,25 @@ export default function WorkoutSessionScreen() {
               <Text style={[styles.statValue, isDark && styles.textLight]}>
                 {formatTime(totalTime)}
               </Text>
-              <Text style={[styles.statLabel, isDark && styles.textMuted]}>총 시간</Text>
+              <Text style={[styles.statLabel, isDark && styles.textMuted]}>
+                총 시간
+              </Text>
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statValue, isDark && styles.textLight]}>
                 {Math.round(caloriesBurned)}
               </Text>
-              <Text style={[styles.statLabel, isDark && styles.textMuted]}>칼로리</Text>
+              <Text style={[styles.statLabel, isDark && styles.textMuted]}>
+                칼로리
+              </Text>
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statValue, isDark && styles.textLight]}>
                 {SAMPLE_EXERCISES.length}
               </Text>
-              <Text style={[styles.statLabel, isDark && styles.textMuted]}>운동 수</Text>
+              <Text style={[styles.statLabel, isDark && styles.textMuted]}>
+                운동 수
+              </Text>
             </View>
           </View>
 
@@ -219,19 +229,24 @@ export default function WorkoutSessionScreen() {
       <View style={styles.mainContent}>
         {sessionState === 'resting' ? (
           <>
-            <Text style={[styles.stateLabel, isDark && styles.textMuted]}>휴식 중</Text>
+            <Text style={[styles.stateLabel, isDark && styles.textMuted]}>
+              휴식 중
+            </Text>
             <Text style={[styles.timerText, isDark && styles.textLight]}>
               {formatTime(timer)}
             </Text>
             <Text style={[styles.nextExerciseText, isDark && styles.textMuted]}>
-              다음: {currentSet < currentExercise.sets
+              다음:{' '}
+              {currentSet < currentExercise.sets
                 ? `${currentExercise.name} ${currentSet + 1}세트`
                 : currentExerciseIndex < SAMPLE_EXERCISES.length - 1
                   ? SAMPLE_EXERCISES[currentExerciseIndex + 1].name
-                  : '마지막 운동 완료!'
-              }
+                  : '마지막 운동 완료!'}
             </Text>
-            <TouchableOpacity style={styles.skipButton} onPress={handleSkipRest}>
+            <TouchableOpacity
+              style={styles.skipButton}
+              onPress={handleSkipRest}
+            >
               <Text style={styles.skipButtonText}>휴식 건너뛰기</Text>
             </TouchableOpacity>
           </>
@@ -256,7 +271,10 @@ export default function WorkoutSessionScreen() {
       {/* 하단 버튼 */}
       {sessionState === 'exercising' && (
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.completeButton} onPress={handleCompleteSet}>
+          <TouchableOpacity
+            style={styles.completeButton}
+            onPress={handleCompleteSet}
+          >
             <Text style={styles.completeButtonText}>세트 완료</Text>
           </TouchableOpacity>
         </View>

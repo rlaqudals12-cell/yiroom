@@ -3,18 +3,23 @@
  * 알림 수신 및 처리
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
+
 import {
   initializePushNotifications,
   registerPushTokenWithServer,
   unregisterPushTokenFromServer,
 } from './token';
-import { NotificationData, NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from './types';
+import {
+  NotificationData,
+  NotificationSettings,
+  DEFAULT_NOTIFICATION_SETTINGS,
+} from './types';
 import { handleDeepLinkUrl } from '../deeplink';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 알림 설정 저장 키
 const NOTIFICATION_SETTINGS_KEY = '@yiroom/notification_settings';
@@ -41,9 +46,12 @@ interface UsePushReturn {
  */
 export function usePush(userId?: string): UsePushReturn {
   const [pushToken, setPushToken] = useState<string | null>(null);
-  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+  const [settings, setSettings] = useState<NotificationSettings>(
+    DEFAULT_NOTIFICATION_SETTINGS
+  );
   const [isInitialized, setIsInitialized] = useState(false);
-  const [lastNotification, setLastNotification] = useState<Notifications.Notification | null>(null);
+  const [lastNotification, setLastNotification] =
+    useState<Notifications.Notification | null>(null);
 
   const notificationListener = useRef<Notifications.Subscription | null>(null);
   const responseListener = useRef<Notifications.Subscription | null>(null);
@@ -61,16 +69,23 @@ export function usePush(userId?: string): UsePushReturn {
   }, []);
 
   // 알림 설정 저장
-  const updateSettings = useCallback(async (newSettings: Partial<NotificationSettings>) => {
-    const updated = { ...settings, ...newSettings };
-    setSettings(updated);
-    await AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(updated));
-  }, [settings]);
+  const updateSettings = useCallback(
+    async (newSettings: Partial<NotificationSettings>) => {
+      const updated = { ...settings, ...newSettings };
+      setSettings(updated);
+      await AsyncStorage.setItem(
+        NOTIFICATION_SETTINGS_KEY,
+        JSON.stringify(updated)
+      );
+    },
+    [settings]
+  );
 
   // 알림 응답 처리 (딥링크)
   const handleNotificationResponse = useCallback(
     (response: Notifications.NotificationResponse) => {
-      const data = response.notification.request.content.data as NotificationData;
+      const data = response.notification.request.content
+        .data as NotificationData;
       console.log('[Push] 알림 응답:', data);
 
       // 딥링크 처리
@@ -136,17 +151,17 @@ export function usePush(userId?: string): UsePushReturn {
   // 알림 리스너 설정
   useEffect(() => {
     // 알림 수신 리스너
-    notificationListener.current = Notifications.addNotificationReceivedListener(
-      (notification) => {
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
         console.log('[Push] 알림 수신:', notification);
         setLastNotification(notification);
-      }
-    );
+      });
 
     // 알림 응답 리스너 (탭 시)
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(
-      handleNotificationResponse
-    );
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener(
+        handleNotificationResponse
+      );
 
     return () => {
       if (notificationListener.current) {
@@ -174,7 +189,10 @@ export function usePush(userId?: string): UsePushReturn {
     };
 
     checkInitialNotification();
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange
+    );
 
     return () => subscription.remove();
   }, [handleNotificationResponse]);

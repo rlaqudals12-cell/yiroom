@@ -3,6 +3,7 @@
  * 네트워크 연결 끊김 시 표시
  */
 
+import * as Haptics from 'expo-haptics';
 import { useEffect, useRef } from 'react';
 import {
   View,
@@ -12,7 +13,7 @@ import {
   TouchableOpacity,
   useColorScheme,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
+
 import { useNetworkStatus } from '../../lib/offline';
 
 interface OfflineBannerProps {
@@ -24,7 +25,11 @@ interface OfflineBannerProps {
   isSyncing?: boolean;
 }
 
-export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: OfflineBannerProps) {
+export function OfflineBanner({
+  pendingCount = 0,
+  onSync,
+  isSyncing = false,
+}: OfflineBannerProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const { isConnected } = useNetworkStatus();

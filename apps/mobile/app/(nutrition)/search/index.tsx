@@ -2,6 +2,9 @@
  * N-1 음식 검색 화면
  * 음식명 검색 → 선택 → 기록
  */
+import { useUser } from '@clerk/clerk-expo';
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useState, useMemo } from 'react';
 import {
   View,
@@ -15,10 +18,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { useUser } from '@clerk/clerk-expo';
+
 import { useClerkSupabaseClient } from '../../../lib/supabase';
-import * as Haptics from 'expo-haptics';
 
 // 스톱라이트 타입
 type TrafficLight = 'green' | 'yellow' | 'red';
@@ -37,37 +38,271 @@ interface FoodItem {
 // 음식 DB Mock
 const FOOD_DATABASE: FoodItem[] = [
   // 밥/면류
-  { id: '1', name: '흰쌀밥', calories: 300, protein: 6, carbs: 65, fat: 1, trafficLight: 'yellow', category: '밥' },
-  { id: '2', name: '현미밥', calories: 280, protein: 7, carbs: 58, fat: 2, trafficLight: 'green', category: '밥' },
-  { id: '3', name: '잡곡밥', calories: 290, protein: 8, carbs: 60, fat: 2, trafficLight: 'green', category: '밥' },
-  { id: '4', name: '비빔밥', calories: 550, protein: 18, carbs: 65, fat: 12, trafficLight: 'yellow', category: '밥' },
-  { id: '5', name: '김밥', calories: 320, protein: 8, carbs: 45, fat: 12, trafficLight: 'yellow', category: '밥' },
-  { id: '6', name: '라면', calories: 500, protein: 10, carbs: 70, fat: 18, trafficLight: 'red', category: '면' },
-  { id: '7', name: '짜장면', calories: 600, protein: 15, carbs: 85, fat: 20, trafficLight: 'red', category: '면' },
-  { id: '8', name: '냉면', calories: 450, protein: 12, carbs: 80, fat: 8, trafficLight: 'yellow', category: '면' },
+  {
+    id: '1',
+    name: '흰쌀밥',
+    calories: 300,
+    protein: 6,
+    carbs: 65,
+    fat: 1,
+    trafficLight: 'yellow',
+    category: '밥',
+  },
+  {
+    id: '2',
+    name: '현미밥',
+    calories: 280,
+    protein: 7,
+    carbs: 58,
+    fat: 2,
+    trafficLight: 'green',
+    category: '밥',
+  },
+  {
+    id: '3',
+    name: '잡곡밥',
+    calories: 290,
+    protein: 8,
+    carbs: 60,
+    fat: 2,
+    trafficLight: 'green',
+    category: '밥',
+  },
+  {
+    id: '4',
+    name: '비빔밥',
+    calories: 550,
+    protein: 18,
+    carbs: 65,
+    fat: 12,
+    trafficLight: 'yellow',
+    category: '밥',
+  },
+  {
+    id: '5',
+    name: '김밥',
+    calories: 320,
+    protein: 8,
+    carbs: 45,
+    fat: 12,
+    trafficLight: 'yellow',
+    category: '밥',
+  },
+  {
+    id: '6',
+    name: '라면',
+    calories: 500,
+    protein: 10,
+    carbs: 70,
+    fat: 18,
+    trafficLight: 'red',
+    category: '면',
+  },
+  {
+    id: '7',
+    name: '짜장면',
+    calories: 600,
+    protein: 15,
+    carbs: 85,
+    fat: 20,
+    trafficLight: 'red',
+    category: '면',
+  },
+  {
+    id: '8',
+    name: '냉면',
+    calories: 450,
+    protein: 12,
+    carbs: 80,
+    fat: 8,
+    trafficLight: 'yellow',
+    category: '면',
+  },
   // 국/찌개
-  { id: '9', name: '된장찌개', calories: 120, protein: 9, carbs: 8, fat: 5, trafficLight: 'green', category: '국' },
-  { id: '10', name: '김치찌개', calories: 150, protein: 12, carbs: 10, fat: 6, trafficLight: 'green', category: '국' },
-  { id: '11', name: '부대찌개', calories: 350, protein: 20, carbs: 25, fat: 18, trafficLight: 'yellow', category: '국' },
-  { id: '12', name: '미역국', calories: 80, protein: 5, carbs: 6, fat: 3, trafficLight: 'green', category: '국' },
+  {
+    id: '9',
+    name: '된장찌개',
+    calories: 120,
+    protein: 9,
+    carbs: 8,
+    fat: 5,
+    trafficLight: 'green',
+    category: '국',
+  },
+  {
+    id: '10',
+    name: '김치찌개',
+    calories: 150,
+    protein: 12,
+    carbs: 10,
+    fat: 6,
+    trafficLight: 'green',
+    category: '국',
+  },
+  {
+    id: '11',
+    name: '부대찌개',
+    calories: 350,
+    protein: 20,
+    carbs: 25,
+    fat: 18,
+    trafficLight: 'yellow',
+    category: '국',
+  },
+  {
+    id: '12',
+    name: '미역국',
+    calories: 80,
+    protein: 5,
+    carbs: 6,
+    fat: 3,
+    trafficLight: 'green',
+    category: '국',
+  },
   // 고기
-  { id: '13', name: '불고기', calories: 350, protein: 28, carbs: 15, fat: 20, trafficLight: 'yellow', category: '고기' },
-  { id: '14', name: '삼겹살', calories: 500, protein: 25, carbs: 2, fat: 45, trafficLight: 'red', category: '고기' },
-  { id: '15', name: '닭가슴살', calories: 165, protein: 31, carbs: 0, fat: 4, trafficLight: 'green', category: '고기' },
-  { id: '16', name: '치킨', calories: 450, protein: 35, carbs: 15, fat: 28, trafficLight: 'red', category: '고기' },
-  { id: '17', name: '제육볶음', calories: 380, protein: 22, carbs: 20, fat: 24, trafficLight: 'yellow', category: '고기' },
+  {
+    id: '13',
+    name: '불고기',
+    calories: 350,
+    protein: 28,
+    carbs: 15,
+    fat: 20,
+    trafficLight: 'yellow',
+    category: '고기',
+  },
+  {
+    id: '14',
+    name: '삼겹살',
+    calories: 500,
+    protein: 25,
+    carbs: 2,
+    fat: 45,
+    trafficLight: 'red',
+    category: '고기',
+  },
+  {
+    id: '15',
+    name: '닭가슴살',
+    calories: 165,
+    protein: 31,
+    carbs: 0,
+    fat: 4,
+    trafficLight: 'green',
+    category: '고기',
+  },
+  {
+    id: '16',
+    name: '치킨',
+    calories: 450,
+    protein: 35,
+    carbs: 15,
+    fat: 28,
+    trafficLight: 'red',
+    category: '고기',
+  },
+  {
+    id: '17',
+    name: '제육볶음',
+    calories: 380,
+    protein: 22,
+    carbs: 20,
+    fat: 24,
+    trafficLight: 'yellow',
+    category: '고기',
+  },
   // 채소/샐러드
-  { id: '18', name: '샐러드', calories: 80, protein: 3, carbs: 10, fat: 3, trafficLight: 'green', category: '채소' },
-  { id: '19', name: '시금치나물', calories: 50, protein: 4, carbs: 5, fat: 2, trafficLight: 'green', category: '채소' },
-  { id: '20', name: '콩나물무침', calories: 40, protein: 4, carbs: 4, fat: 1, trafficLight: 'green', category: '채소' },
+  {
+    id: '18',
+    name: '샐러드',
+    calories: 80,
+    protein: 3,
+    carbs: 10,
+    fat: 3,
+    trafficLight: 'green',
+    category: '채소',
+  },
+  {
+    id: '19',
+    name: '시금치나물',
+    calories: 50,
+    protein: 4,
+    carbs: 5,
+    fat: 2,
+    trafficLight: 'green',
+    category: '채소',
+  },
+  {
+    id: '20',
+    name: '콩나물무침',
+    calories: 40,
+    protein: 4,
+    carbs: 4,
+    fat: 1,
+    trafficLight: 'green',
+    category: '채소',
+  },
   // 분식
-  { id: '21', name: '떡볶이', calories: 380, protein: 6, carbs: 65, fat: 10, trafficLight: 'red', category: '분식' },
-  { id: '22', name: '순대', calories: 250, protein: 12, carbs: 30, fat: 10, trafficLight: 'yellow', category: '분식' },
-  { id: '23', name: '튀김', calories: 300, protein: 5, carbs: 35, fat: 16, trafficLight: 'red', category: '분식' },
+  {
+    id: '21',
+    name: '떡볶이',
+    calories: 380,
+    protein: 6,
+    carbs: 65,
+    fat: 10,
+    trafficLight: 'red',
+    category: '분식',
+  },
+  {
+    id: '22',
+    name: '순대',
+    calories: 250,
+    protein: 12,
+    carbs: 30,
+    fat: 10,
+    trafficLight: 'yellow',
+    category: '분식',
+  },
+  {
+    id: '23',
+    name: '튀김',
+    calories: 300,
+    protein: 5,
+    carbs: 35,
+    fat: 16,
+    trafficLight: 'red',
+    category: '분식',
+  },
   // 음료
-  { id: '24', name: '아메리카노', calories: 10, protein: 0, carbs: 2, fat: 0, trafficLight: 'green', category: '음료' },
-  { id: '25', name: '카페라떼', calories: 150, protein: 8, carbs: 12, fat: 8, trafficLight: 'yellow', category: '음료' },
-  { id: '26', name: '콜라', calories: 140, protein: 0, carbs: 35, fat: 0, trafficLight: 'red', category: '음료' },
+  {
+    id: '24',
+    name: '아메리카노',
+    calories: 10,
+    protein: 0,
+    carbs: 2,
+    fat: 0,
+    trafficLight: 'green',
+    category: '음료',
+  },
+  {
+    id: '25',
+    name: '카페라떼',
+    calories: 150,
+    protein: 8,
+    carbs: 12,
+    fat: 8,
+    trafficLight: 'yellow',
+    category: '음료',
+  },
+  {
+    id: '26',
+    name: '콜라',
+    calories: 140,
+    protein: 0,
+    carbs: 35,
+    fat: 0,
+    trafficLight: 'red',
+    category: '음료',
+  },
 ];
 
 // 식사 타입
@@ -100,8 +335,11 @@ export default function FoodSearchScreen() {
   // 필터링된 음식 목록
   const filteredFoods = useMemo(() => {
     return FOOD_DATABASE.filter((food) => {
-      const matchesSearch = food.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === '전체' || food.category === selectedCategory;
+      const matchesSearch = food.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === '전체' || food.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [searchQuery, selectedCategory]);
@@ -137,7 +375,10 @@ export default function FoodSearchScreen() {
     setSelectedFoods((prev) =>
       prev.map((food) =>
         food.id === foodId
-          ? { ...food, portion: Math.max(0.5, Math.min(5, food.portion + delta)) }
+          ? {
+              ...food,
+              portion: Math.max(0.5, Math.min(5, food.portion + delta)),
+            }
           : food
       )
     );
@@ -192,14 +433,20 @@ export default function FoodSearchScreen() {
   // 스톱라이트 이모지
   const getTrafficLightEmoji = (light: TrafficLight) => {
     switch (light) {
-      case 'green': return '🟢';
-      case 'yellow': return '🟡';
-      case 'red': return '🔴';
+      case 'green':
+        return '🟢';
+      case 'yellow':
+        return '🟡';
+      case 'red':
+        return '🔴';
     }
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       {/* 검색 바 */}
       <View style={styles.searchSection}>
         <TextInput
@@ -298,11 +545,16 @@ export default function FoodSearchScreen() {
                 ]}
                 onPress={() => handleToggleFood(food)}
               >
-                <Text style={styles.trafficLight}>{getTrafficLightEmoji(food.trafficLight)}</Text>
+                <Text style={styles.trafficLight}>
+                  {getTrafficLightEmoji(food.trafficLight)}
+                </Text>
                 <View style={styles.foodInfo}>
-                  <Text style={[styles.foodName, isDark && styles.textLight]}>{food.name}</Text>
+                  <Text style={[styles.foodName, isDark && styles.textLight]}>
+                    {food.name}
+                  </Text>
                   <Text style={[styles.foodMeta, isDark && styles.textMuted]}>
-                    {food.calories}kcal · 탄{food.carbs}g 단{food.protein}g 지{food.fat}g
+                    {food.calories}kcal · 탄{food.carbs}g 단{food.protein}g 지
+                    {food.fat}g
                   </Text>
                 </View>
                 {isSelected && (
@@ -313,7 +565,9 @@ export default function FoodSearchScreen() {
                     >
                       <Text style={styles.portionButtonText}>−</Text>
                     </TouchableOpacity>
-                    <Text style={[styles.portionValue, isDark && styles.textLight]}>
+                    <Text
+                      style={[styles.portionValue, isDark && styles.textLight]}
+                    >
                       {selectedFood?.portion}
                     </Text>
                     <TouchableOpacity

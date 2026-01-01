@@ -2,6 +2,8 @@
  * N-1 물 섭취 트래킹 화면
  * 원탭 물 추가 + 오늘 기록 히스토리
  */
+import { useUser } from '@clerk/clerk-expo';
+import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -14,9 +16,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useUser } from '@clerk/clerk-expo';
+
 import { useClerkSupabaseClient } from '../../../lib/supabase';
-import * as Haptics from 'expo-haptics';
 
 // 빠른 추가 옵션 (ml)
 const QUICK_ADD_OPTIONS = [
@@ -75,7 +76,10 @@ export default function WaterTrackingScreen() {
       if (error) throw error;
 
       setTodayRecords(data || []);
-      const total = (data || []).reduce((sum, record) => sum + record.amount_ml, 0);
+      const total = (data || []).reduce(
+        (sum, record) => sum + record.amount_ml,
+        0
+      );
       setTotalIntake(total);
     } catch (error) {
       console.error('[Mobile] Failed to fetch water records:', error);
@@ -175,8 +179,14 @@ export default function WaterTrackingScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         {/* 진행 상황 */}
         <View style={styles.progressSection}>
           <Text style={styles.progressIcon}>💧</Text>
@@ -193,7 +203,9 @@ export default function WaterTrackingScreen() {
 
         {/* 음료 타입 선택 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>음료 종류</Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+            음료 종류
+          </Text>
           <View style={styles.drinkTypeGrid}>
             {DRINK_TYPES.map((drink) => (
               <TouchableOpacity
@@ -201,7 +213,8 @@ export default function WaterTrackingScreen() {
                 style={[
                   styles.drinkTypeChip,
                   isDark && styles.drinkTypeChipDark,
-                  selectedDrinkType === drink.id && styles.drinkTypeChipSelected,
+                  selectedDrinkType === drink.id &&
+                    styles.drinkTypeChipSelected,
                 ]}
                 onPress={() => {
                   Haptics.selectionAsync();
@@ -213,7 +226,8 @@ export default function WaterTrackingScreen() {
                   style={[
                     styles.drinkTypeLabel,
                     isDark && styles.textLight,
-                    selectedDrinkType === drink.id && styles.drinkTypeLabelSelected,
+                    selectedDrinkType === drink.id &&
+                      styles.drinkTypeLabelSelected,
                   ]}
                 >
                   {drink.label}
@@ -225,17 +239,24 @@ export default function WaterTrackingScreen() {
 
         {/* 빠른 추가 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>빠른 추가</Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+            빠른 추가
+          </Text>
           <View style={styles.quickAddGrid}>
             {QUICK_ADD_OPTIONS.map((option) => (
               <TouchableOpacity
                 key={option.amount}
-                style={[styles.quickAddButton, isDark && styles.quickAddButtonDark]}
+                style={[
+                  styles.quickAddButton,
+                  isDark && styles.quickAddButtonDark,
+                ]}
                 onPress={() => handleAddWater(option.amount)}
                 disabled={isAdding}
               >
                 <Text style={styles.quickAddText}>{option.label}</Text>
-                <Text style={[styles.quickAddUnit, isDark && styles.textMuted]}>ml</Text>
+                <Text style={[styles.quickAddUnit, isDark && styles.textMuted]}>
+                  ml
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -243,7 +264,9 @@ export default function WaterTrackingScreen() {
 
         {/* 오늘 기록 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>오늘 기록</Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+            오늘 기록
+          </Text>
           {todayRecords.length === 0 ? (
             <View style={[styles.emptyCard, isDark && styles.emptyCardDark]}>
               <Text style={[styles.emptyText, isDark && styles.textMuted]}>
@@ -251,7 +274,9 @@ export default function WaterTrackingScreen() {
               </Text>
             </View>
           ) : (
-            <View style={[styles.recordsCard, isDark && styles.recordsCardDark]}>
+            <View
+              style={[styles.recordsCard, isDark && styles.recordsCardDark]}
+            >
               {todayRecords.map((record, index) => (
                 <TouchableOpacity
                   key={record.id}
@@ -262,11 +287,15 @@ export default function WaterTrackingScreen() {
                   ]}
                   onLongPress={() => handleDeleteRecord(record.id)}
                 >
-                  <Text style={styles.recordIcon}>{getDrinkIcon(record.drink_type)}</Text>
+                  <Text style={styles.recordIcon}>
+                    {getDrinkIcon(record.drink_type)}
+                  </Text>
                   <Text style={[styles.recordTime, isDark && styles.textMuted]}>
                     {formatTime(record.record_time)}
                   </Text>
-                  <Text style={[styles.recordAmount, isDark && styles.textLight]}>
+                  <Text
+                    style={[styles.recordAmount, isDark && styles.textLight]}
+                  >
                     {record.amount_ml}ml
                   </Text>
                 </TouchableOpacity>

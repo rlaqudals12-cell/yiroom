@@ -2,10 +2,19 @@
  * 프로필 화면 (Clerk 인증 연동)
  * 분석 완료 상태 표시 + 네비게이션
  */
-import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUser, useClerk } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  useColorScheme,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
 
 export default function ProfileScreen() {
@@ -38,19 +47,20 @@ export default function ProfileScreen() {
           {isSignedIn && user ? (
             <>
               {user.imageUrl ? (
-                <Image
-                  source={{ uri: user.imageUrl }}
-                  style={styles.avatar}
-                />
+                <Image source={{ uri: user.imageUrl }} style={styles.avatar} />
               ) : (
                 <View style={styles.avatarPlaceholder}>
                   <Text style={styles.avatarText}>
-                    {user.firstName?.[0] || user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() || '?'}
+                    {user.firstName?.[0] ||
+                      user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() ||
+                      '?'}
                   </Text>
                 </View>
               )}
               <Text style={[styles.profileName, isDark && styles.textLight]}>
-                {user.fullName || user.emailAddresses[0]?.emailAddress || '사용자'}
+                {user.fullName ||
+                  user.emailAddresses[0]?.emailAddress ||
+                  '사용자'}
               </Text>
               <TouchableOpacity
                 style={[styles.loginButton, styles.logoutButton]}
@@ -67,7 +77,10 @@ export default function ProfileScreen() {
               <Text style={[styles.profileName, isDark && styles.textLight]}>
                 로그인이 필요합니다
               </Text>
-              <TouchableOpacity style={styles.loginButton} onPress={handleSignIn}>
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={handleSignIn}
+              >
                 <Text style={styles.loginButtonText}>로그인</Text>
               </TouchableOpacity>
             </>
@@ -82,7 +95,9 @@ export default function ProfileScreen() {
             title="퍼스널 컬러"
             isDark={isDark}
             completed={!!personalColor}
-            subtitle={personalColor?.season ? `${personalColor.season}` : undefined}
+            subtitle={
+              personalColor?.season ? `${personalColor.season}` : undefined
+            }
             onPress={() => router.push('/(analysis)/personal-color')}
           />
           <MenuItem
@@ -109,14 +124,22 @@ export default function ProfileScreen() {
             title="운동 기록"
             isDark={isDark}
             completed={!!workoutAnalysis}
-            subtitle={workoutStreak?.currentStreak ? `🔥 ${workoutStreak.currentStreak}일 연속` : undefined}
+            subtitle={
+              workoutStreak?.currentStreak
+                ? `🔥 ${workoutStreak.currentStreak}일 연속`
+                : undefined
+            }
             onPress={() => router.push('/(tabs)/records')}
           />
           <MenuItem
             title="식단 기록"
             isDark={isDark}
             completed={!!nutritionStreak}
-            subtitle={nutritionStreak?.currentStreak ? `🔥 ${nutritionStreak.currentStreak}일 연속` : undefined}
+            subtitle={
+              nutritionStreak?.currentStreak
+                ? `🔥 ${nutritionStreak.currentStreak}일 연속`
+                : undefined
+            }
             onPress={() => router.push('/(tabs)/records')}
           />
           <MenuItem
@@ -191,9 +214,7 @@ function MenuItem({
           </Text>
         )}
       </View>
-      <Text style={[styles.menuItemArrow, isDark && styles.textMuted]}>
-        →
-      </Text>
+      <Text style={[styles.menuItemArrow, isDark && styles.textMuted]}>→</Text>
     </TouchableOpacity>
   );
 }

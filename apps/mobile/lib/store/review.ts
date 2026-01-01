@@ -3,10 +3,10 @@
  * 적절한 시점에 리뷰 요청
  */
 
-import { Platform, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as StoreReview from 'expo-store-review';
 import * as Haptics from 'expo-haptics';
+import * as StoreReview from 'expo-store-review';
+import { Platform, Linking } from 'react-native';
 
 // 저장 키
 const REVIEW_DATA_KEY = '@yiroom/review_data';
@@ -52,7 +52,9 @@ const REVIEW_CONDITIONS = {
 async function loadReviewData(): Promise<ReviewData> {
   try {
     const data = await AsyncStorage.getItem(REVIEW_DATA_KEY);
-    return data ? { ...DEFAULT_REVIEW_DATA, ...JSON.parse(data) } : DEFAULT_REVIEW_DATA;
+    return data
+      ? { ...DEFAULT_REVIEW_DATA, ...JSON.parse(data) }
+      : DEFAULT_REVIEW_DATA;
   } catch {
     return DEFAULT_REVIEW_DATA;
   }
@@ -97,7 +99,8 @@ async function shouldRequestReview(): Promise<boolean> {
   if (data.launchCount < REVIEW_CONDITIONS.minLaunchCount) return false;
 
   // 최소 긍정적 액션
-  if (data.positiveActionCount < REVIEW_CONDITIONS.minPositiveActions) return false;
+  if (data.positiveActionCount < REVIEW_CONDITIONS.minPositiveActions)
+    return false;
 
   // 설치 후 최소 일수
   const installDate = new Date(data.installDate);
@@ -112,7 +115,8 @@ async function shouldRequestReview(): Promise<boolean> {
     const daysSinceLastPrompt = Math.floor(
       (Date.now() - lastPrompt.getTime()) / (1000 * 60 * 60 * 24)
     );
-    if (daysSinceLastPrompt < REVIEW_CONDITIONS.promptIntervalDays) return false;
+    if (daysSinceLastPrompt < REVIEW_CONDITIONS.promptIntervalDays)
+      return false;
   }
 
   return true;

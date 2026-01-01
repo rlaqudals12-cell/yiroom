@@ -3,25 +3,53 @@
  * 테스트 환경 초기화 및 모킹
  */
 
-// React Native 모킹
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return {
-    ...RN,
-    Platform: {
-      OS: 'ios',
-      select: (obj) => obj.ios ?? obj.default,
-    },
-    AccessibilityInfo: {
-      isScreenReaderEnabled: jest.fn().mockResolvedValue(false),
-      isReduceMotionEnabled: jest.fn().mockResolvedValue(false),
-      isBoldTextEnabled: jest.fn().mockResolvedValue(false),
-      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
-      announceForAccessibility: jest.fn(),
-      setAccessibilityFocus: jest.fn(),
-    },
-  };
-});
+// Expo Router 모킹 (TurboModule 문제 방지)
+jest.mock('expo-router', () => ({
+  router: {
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    navigate: jest.fn(),
+  },
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    navigate: jest.fn(),
+  })),
+  useLocalSearchParams: jest.fn(() => ({})),
+  useSegments: jest.fn(() => []),
+  Link: 'Link',
+  Stack: {
+    Screen: 'Screen',
+  },
+  Tabs: {
+    Screen: 'Screen',
+  },
+}));
+
+// NativeWind/CSS Interop 모킹
+jest.mock('nativewind', () => ({
+  styled: (Component) => Component,
+  useColorScheme: jest.fn(() => ({ colorScheme: 'light' })),
+}));
+
+// Platform 모킹
+jest.mock('react-native/Libraries/Utilities/Platform', () => ({
+  OS: 'ios',
+  select: (obj) => obj.ios ?? obj.default,
+  Version: 17,
+}));
+
+// AccessibilityInfo 모킹
+jest.mock('react-native/Libraries/Components/AccessibilityInfo/AccessibilityInfo', () => ({
+  isScreenReaderEnabled: jest.fn().mockResolvedValue(false),
+  isReduceMotionEnabled: jest.fn().mockResolvedValue(false),
+  isBoldTextEnabled: jest.fn().mockResolvedValue(false),
+  addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+  announceForAccessibility: jest.fn(),
+  setAccessibilityFocus: jest.fn(),
+}));
 
 // AsyncStorage 모킹
 jest.mock('@react-native-async-storage/async-storage', () => ({

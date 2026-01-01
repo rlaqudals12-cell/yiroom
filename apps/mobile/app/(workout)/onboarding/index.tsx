@@ -1,6 +1,7 @@
 /**
  * W-1 운동 온보딩 - 시작 화면
  */
+import { router } from 'expo-router';
 import {
   View,
   Text,
@@ -10,7 +11,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
 export default function WorkoutOnboardingScreen() {
   const colorScheme = useColorScheme();
@@ -21,7 +21,10 @@ export default function WorkoutOnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 헤더 */}
         <View style={styles.header}>
@@ -107,7 +110,9 @@ function FeatureItem({
     <View style={styles.featureItem}>
       <Text style={styles.featureEmoji}>{emoji}</Text>
       <View style={styles.featureContent}>
-        <Text style={[styles.featureTitle, isDark && styles.textLight]}>{title}</Text>
+        <Text style={[styles.featureTitle, isDark && styles.textLight]}>
+          {title}
+        </Text>
         <Text style={[styles.featureDescription, isDark && styles.textMuted]}>
           {description}
         </Text>
@@ -130,7 +135,9 @@ function StepItem({
       <View style={styles.stepNumber}>
         <Text style={styles.stepNumberText}>{number}</Text>
       </View>
-      <Text style={[styles.stepTitle, isDark && styles.textLight]}>{title}</Text>
+      <Text style={[styles.stepTitle, isDark && styles.textLight]}>
+        {title}
+      </Text>
     </View>
   );
 }

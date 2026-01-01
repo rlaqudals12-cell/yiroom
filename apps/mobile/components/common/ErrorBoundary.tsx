@@ -3,6 +3,7 @@
  * 앱 크래시 방지 및 에러 화면 표시
  */
 
+import * as Haptics from 'expo-haptics';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import {
   View,
@@ -12,7 +13,6 @@ import {
   useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as Haptics from 'expo-haptics';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -28,7 +28,10 @@ interface ErrorBoundaryState {
 /**
  * 클래스 기반 에러 바운더리
  */
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -55,10 +58,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       }
 
       return (
-        <ErrorFallback
-          error={this.state.error}
-          onRetry={this.handleRetry}
-        />
+        <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />
       );
     }
 

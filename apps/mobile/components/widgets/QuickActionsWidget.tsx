@@ -3,9 +3,16 @@
  * 원탭 액션 버튼 위젯
  */
 
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
-import { Linking } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  useColorScheme,
+} from 'react-native';
+import { Linking } from 'react-native';
+
 import { WIDGET_DEEP_LINKS, QuickActionType } from '../../lib/widgets/types';
 
 interface QuickActionsWidgetProps {

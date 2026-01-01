@@ -1,6 +1,7 @@
 /**
  * PC-1 퍼스널 컬러 진단 - 온보딩/문진
  */
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -11,7 +12,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
 // 퍼스널 컬러 문진 질문
 const QUESTIONS = [
@@ -94,7 +94,10 @@ export default function PersonalColorScreen() {
   const progress = ((currentQuestion + 1) / QUESTIONS.length) * 100;
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       {/* 진행 바 */}
       <View style={styles.progressContainer}>
         <View style={[styles.progressBar, isDark && styles.progressBarDark]}>
@@ -121,7 +124,8 @@ export default function PersonalColorScreen() {
               style={[
                 styles.optionButton,
                 isDark && styles.optionButtonDark,
-                answers[currentQuestion] === option.value && styles.optionSelected,
+                answers[currentQuestion] === option.value &&
+                  styles.optionSelected,
               ]}
               onPress={() => handleAnswer(option.value)}
               activeOpacity={0.7}
@@ -130,7 +134,8 @@ export default function PersonalColorScreen() {
                 style={[
                   styles.optionText,
                   isDark && styles.textLight,
-                  answers[currentQuestion] === option.value && styles.optionTextSelected,
+                  answers[currentQuestion] === option.value &&
+                    styles.optionTextSelected,
                 ]}
               >
                 {option.label}

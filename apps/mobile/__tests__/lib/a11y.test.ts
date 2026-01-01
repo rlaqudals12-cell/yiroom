@@ -226,8 +226,8 @@ describe('meetsWcagAA', () => {
   });
 
   it('큰 텍스트 기준 (3:1)을 검사해야 함', () => {
-    expect(meetsWcagAA('#767676', '#FFFFFF', true)).toBe(true);
-    expect(meetsWcagAA('#959595', '#FFFFFF', true)).toBe(true);
+    expect(meetsWcagAA('#767676', '#FFFFFF', true)).toBe(true); // ~4.5:1 > 3:1
+    expect(meetsWcagAA('#808080', '#FFFFFF', true)).toBe(true); // ~3.9:1 > 3:1
   });
 });
 

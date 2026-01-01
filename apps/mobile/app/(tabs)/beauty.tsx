@@ -2,9 +2,9 @@
  * 뷰티 탭
  * 피부 분석, 퍼스널 컬러, 화장품 추천
  */
-import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Sparkles, Palette, Droplets } from 'lucide-react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 
 export default function BeautyTab() {
   const router = useRouter();
@@ -23,7 +23,9 @@ export default function BeautyTab() {
             <View className="w-10 h-10 bg-pink-100 rounded-full items-center justify-center mr-3">
               <Droplets size={20} color="#ec4899" />
             </View>
-            <Text className="text-lg font-semibold text-foreground">피부 분석</Text>
+            <Text className="text-lg font-semibold text-foreground">
+              피부 분석
+            </Text>
           </View>
           <Text className="text-muted-foreground">
             AI가 피부 상태를 분석하고 맞춤 케어를 추천해요
@@ -39,7 +41,9 @@ export default function BeautyTab() {
             <View className="w-10 h-10 bg-purple-100 rounded-full items-center justify-center mr-3">
               <Palette size={20} color="#a855f7" />
             </View>
-            <Text className="text-lg font-semibold text-foreground">퍼스널 컬러</Text>
+            <Text className="text-lg font-semibold text-foreground">
+              퍼스널 컬러
+            </Text>
           </View>
           <Text className="text-muted-foreground">
             나에게 어울리는 색상을 찾아보세요
@@ -55,7 +59,9 @@ export default function BeautyTab() {
             <View className="w-10 h-10 bg-rose-100 rounded-full items-center justify-center mr-3">
               <Sparkles size={20} color="#f43f5e" />
             </View>
-            <Text className="text-lg font-semibold text-foreground">추천 제품</Text>
+            <Text className="text-lg font-semibold text-foreground">
+              추천 제품
+            </Text>
           </View>
           <Text className="text-muted-foreground">
             내 피부 타입에 맞는 화장품을 추천받으세요

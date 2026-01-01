@@ -3,9 +3,10 @@
  * 딥링크 수신 및 처리
  */
 
+import { useRouter, useSegments } from 'expo-router';
 import { useEffect, useCallback, useState } from 'react';
 import { Linking } from 'react-native';
-import { useRouter, useSegments } from 'expo-router';
+
 import {
   parseDeepLink,
   navigateToDeepLink,
@@ -34,7 +35,9 @@ interface UseDeepLinkReturn {
 /**
  * 딥링크 처리 훅
  */
-export function useDeepLink(options: UseDeepLinkOptions = {}): UseDeepLinkReturn {
+export function useDeepLink(
+  options: UseDeepLinkOptions = {}
+): UseDeepLinkReturn {
   const { autoHandle = true, onBeforeNavigate, onAfterNavigate } = options;
   const router = useRouter();
   const segments = useSegments();

@@ -1,6 +1,7 @@
 /**
  * W-1 운동 온보딩 - 빈도 선택
  */
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -11,7 +12,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
 
 const FREQUENCIES = [
   { id: '1-2', label: '주 1-2회', description: '가볍게 시작하기', emoji: '🌱' },
@@ -32,7 +32,9 @@ export default function WorkoutFrequencyScreen() {
   const isDark = colorScheme === 'dark';
   const { goals } = useLocalSearchParams<{ goals: string }>();
 
-  const [selectedFrequency, setSelectedFrequency] = useState<string | null>(null);
+  const [selectedFrequency, setSelectedFrequency] = useState<string | null>(
+    null
+  );
   const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
 
   const handleAnalyze = () => {
@@ -49,7 +51,10 @@ export default function WorkoutFrequencyScreen() {
   const isComplete = selectedFrequency && selectedDuration;
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 운동 빈도 */}
         <View style={styles.section}>
@@ -77,7 +82,9 @@ export default function WorkoutFrequencyScreen() {
                 >
                   {freq.label}
                 </Text>
-                <Text style={[styles.optionDescription, isDark && styles.textMuted]}>
+                <Text
+                  style={[styles.optionDescription, isDark && styles.textMuted]}
+                >
                   {freq.description}
                 </Text>
               </TouchableOpacity>
@@ -110,7 +117,12 @@ export default function WorkoutFrequencyScreen() {
                 >
                   {dur.label}
                 </Text>
-                <Text style={[styles.durationDescription, isDark && styles.textMuted]}>
+                <Text
+                  style={[
+                    styles.durationDescription,
+                    isDark && styles.textMuted,
+                  ]}
+                >
                   {dur.description}
                 </Text>
               </TouchableOpacity>
@@ -121,7 +133,10 @@ export default function WorkoutFrequencyScreen() {
 
       <View style={[styles.footer, isDark && styles.footerDark]}>
         <TouchableOpacity
-          style={[styles.analyzeButton, !isComplete && styles.analyzeButtonDisabled]}
+          style={[
+            styles.analyzeButton,
+            !isComplete && styles.analyzeButtonDisabled,
+          ]}
           onPress={handleAnalyze}
           disabled={!isComplete}
         >

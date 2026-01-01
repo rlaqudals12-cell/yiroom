@@ -190,7 +190,12 @@ export function deepEqual<T>(a: T, b: T): boolean {
 
   for (const key of keysA) {
     if (!keysB.includes(key)) return false;
-    if (!deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
+    if (
+      !deepEqual(
+        (a as Record<string, unknown>)[key],
+        (b as Record<string, unknown>)[key]
+      )
+    ) {
       return false;
     }
   }
@@ -210,7 +215,10 @@ export function shallowEqual<T extends object>(a: T, b: T): boolean {
   if (keysA.length !== keysB.length) return false;
 
   for (const key of keysA) {
-    if ((a as Record<string, unknown>)[key] !== (b as Record<string, unknown>)[key]) {
+    if (
+      (a as Record<string, unknown>)[key] !==
+      (b as Record<string, unknown>)[key]
+    ) {
       return false;
     }
   }

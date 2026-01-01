@@ -2,6 +2,8 @@
  * 제품 검색 화면
  * 제품명/브랜드 검색
  */
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useState, useMemo } from 'react';
 import {
   View,
@@ -14,8 +16,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 
 interface Product {
   id: string;
@@ -30,18 +30,126 @@ interface Product {
 
 // Mock 제품 데이터
 const ALL_PRODUCTS: Product[] = [
-  { id: '1', name: '수분 크림 리치', brand: '아이오페', category: 'skincare', price: 35000, rating: 4.5, reviewCount: 120, matchScore: 92 },
-  { id: '2', name: '톤업 선크림 SPF50+', brand: '라운드랩', category: 'skincare', price: 18000, rating: 4.7, reviewCount: 89, matchScore: 88 },
-  { id: '3', name: '코랄 립스틱', brand: '롬앤', category: 'makeup', price: 12000, rating: 4.8, reviewCount: 256, matchScore: 95 },
-  { id: '4', name: '아이브로우 펜슬', brand: '에뛰드', category: 'makeup', price: 8000, rating: 4.3, reviewCount: 180, matchScore: 85 },
-  { id: '5', name: '멀티비타민', brand: '센트룸', category: 'supplement', price: 28000, rating: 4.6, reviewCount: 340, matchScore: 90 },
-  { id: '6', name: '오메가3', brand: '뉴트리원', category: 'supplement', price: 32000, rating: 4.4, reviewCount: 210, matchScore: 87 },
-  { id: '7', name: '요가매트 6mm', brand: '만두카', category: 'equipment', price: 45000, rating: 4.9, reviewCount: 78, matchScore: 82 },
-  { id: '8', name: '덤벨 세트 5kg', brand: '나이키', category: 'equipment', price: 55000, rating: 4.5, reviewCount: 92, matchScore: 80 },
-  { id: '9', name: '클렌징 폼', brand: '이니스프리', category: 'skincare', price: 12000, rating: 4.4, reviewCount: 320, matchScore: 86 },
-  { id: '10', name: '수분 에센스', brand: '코스알엑스', category: 'skincare', price: 22000, rating: 4.6, reviewCount: 150, matchScore: 89 },
-  { id: '11', name: '파운데이션', brand: '에스티로더', category: 'makeup', price: 65000, rating: 4.7, reviewCount: 95, matchScore: 91 },
-  { id: '12', name: '비타민C', brand: '솔가', category: 'supplement', price: 25000, rating: 4.5, reviewCount: 280, matchScore: 88 },
+  {
+    id: '1',
+    name: '수분 크림 리치',
+    brand: '아이오페',
+    category: 'skincare',
+    price: 35000,
+    rating: 4.5,
+    reviewCount: 120,
+    matchScore: 92,
+  },
+  {
+    id: '2',
+    name: '톤업 선크림 SPF50+',
+    brand: '라운드랩',
+    category: 'skincare',
+    price: 18000,
+    rating: 4.7,
+    reviewCount: 89,
+    matchScore: 88,
+  },
+  {
+    id: '3',
+    name: '코랄 립스틱',
+    brand: '롬앤',
+    category: 'makeup',
+    price: 12000,
+    rating: 4.8,
+    reviewCount: 256,
+    matchScore: 95,
+  },
+  {
+    id: '4',
+    name: '아이브로우 펜슬',
+    brand: '에뛰드',
+    category: 'makeup',
+    price: 8000,
+    rating: 4.3,
+    reviewCount: 180,
+    matchScore: 85,
+  },
+  {
+    id: '5',
+    name: '멀티비타민',
+    brand: '센트룸',
+    category: 'supplement',
+    price: 28000,
+    rating: 4.6,
+    reviewCount: 340,
+    matchScore: 90,
+  },
+  {
+    id: '6',
+    name: '오메가3',
+    brand: '뉴트리원',
+    category: 'supplement',
+    price: 32000,
+    rating: 4.4,
+    reviewCount: 210,
+    matchScore: 87,
+  },
+  {
+    id: '7',
+    name: '요가매트 6mm',
+    brand: '만두카',
+    category: 'equipment',
+    price: 45000,
+    rating: 4.9,
+    reviewCount: 78,
+    matchScore: 82,
+  },
+  {
+    id: '8',
+    name: '덤벨 세트 5kg',
+    brand: '나이키',
+    category: 'equipment',
+    price: 55000,
+    rating: 4.5,
+    reviewCount: 92,
+    matchScore: 80,
+  },
+  {
+    id: '9',
+    name: '클렌징 폼',
+    brand: '이니스프리',
+    category: 'skincare',
+    price: 12000,
+    rating: 4.4,
+    reviewCount: 320,
+    matchScore: 86,
+  },
+  {
+    id: '10',
+    name: '수분 에센스',
+    brand: '코스알엑스',
+    category: 'skincare',
+    price: 22000,
+    rating: 4.6,
+    reviewCount: 150,
+    matchScore: 89,
+  },
+  {
+    id: '11',
+    name: '파운데이션',
+    brand: '에스티로더',
+    category: 'makeup',
+    price: 65000,
+    rating: 4.7,
+    reviewCount: 95,
+    matchScore: 91,
+  },
+  {
+    id: '12',
+    name: '비타민C',
+    brand: '솔가',
+    category: 'supplement',
+    price: 25000,
+    rating: 4.5,
+    reviewCount: 280,
+    matchScore: 88,
+  },
 ];
 
 // 인기 검색어
@@ -64,9 +172,10 @@ export default function ProductSearchScreen() {
     setIsSearching(true);
 
     const query = searchQuery.toLowerCase();
-    const results = ALL_PRODUCTS.filter((product) =>
-      product.name.toLowerCase().includes(query) ||
-      product.brand.toLowerCase().includes(query)
+    const results = ALL_PRODUCTS.filter(
+      (product) =>
+        product.name.toLowerCase().includes(query) ||
+        product.brand.toLowerCase().includes(query)
     );
 
     // 시뮬레이션된 딜레이 후 결과 표시
@@ -100,19 +209,32 @@ export default function ProductSearchScreen() {
   // 카테고리 이모지
   const getCategoryEmoji = (category: string) => {
     switch (category) {
-      case 'skincare': return '🧴';
-      case 'makeup': return '💄';
-      case 'supplement': return '💊';
-      case 'equipment': return '🏋️';
-      default: return '📦';
+      case 'skincare':
+        return '🧴';
+      case 'makeup':
+        return '💄';
+      case 'supplement':
+        return '💊';
+      case 'equipment':
+        return '🏋️';
+      default:
+        return '📦';
     }
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       {/* 검색 바 */}
       <View style={styles.searchSection}>
-        <View style={[styles.searchInputContainer, isDark && styles.searchInputContainerDark]}>
+        <View
+          style={[
+            styles.searchInputContainer,
+            isDark && styles.searchInputContainerDark,
+          ]}
+        >
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={[styles.searchInput, isDark && styles.searchInputDark]}
@@ -140,9 +262,17 @@ export default function ProductSearchScreen() {
             {RECENT_SEARCHES.length > 0 && (
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
-                  <Text style={[styles.sectionTitle, isDark && styles.textLight]}>최근 검색</Text>
+                  <Text
+                    style={[styles.sectionTitle, isDark && styles.textLight]}
+                  >
+                    최근 검색
+                  </Text>
                   <TouchableOpacity>
-                    <Text style={[styles.clearAllText, isDark && styles.textMuted]}>전체 삭제</Text>
+                    <Text
+                      style={[styles.clearAllText, isDark && styles.textMuted]}
+                    >
+                      전체 삭제
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.tagList}>
@@ -153,7 +283,11 @@ export default function ProductSearchScreen() {
                       onPress={() => handleSearchTermPress(term)}
                     >
                       <Text style={styles.tagIcon}>🕐</Text>
-                      <Text style={[styles.tagText, isDark && styles.textLight]}>{term}</Text>
+                      <Text
+                        style={[styles.tagText, isDark && styles.textLight]}
+                      >
+                        {term}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -162,16 +296,24 @@ export default function ProductSearchScreen() {
 
             {/* 인기 검색어 */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>인기 검색어</Text>
+              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+                인기 검색어
+              </Text>
               <View style={styles.tagList}>
                 {POPULAR_SEARCHES.map((term, index) => (
                   <TouchableOpacity
                     key={index}
-                    style={[styles.searchTag, styles.popularTag, isDark && styles.popularTagDark]}
+                    style={[
+                      styles.searchTag,
+                      styles.popularTag,
+                      isDark && styles.popularTagDark,
+                    ]}
                     onPress={() => handleSearchTermPress(term)}
                   >
                     <Text style={styles.popularRank}>{index + 1}</Text>
-                    <Text style={[styles.tagText, isDark && styles.textLight]}>{term}</Text>
+                    <Text style={[styles.tagText, isDark && styles.textLight]}>
+                      {term}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -205,26 +347,51 @@ export default function ProductSearchScreen() {
                 style={[styles.productItem, isDark && styles.productItemDark]}
                 onPress={() => handleProductPress(product.id)}
               >
-                <View style={[styles.productImagePlaceholder, isDark && styles.placeholderDark]}>
-                  <Text style={styles.productEmoji}>{getCategoryEmoji(product.category)}</Text>
+                <View
+                  style={[
+                    styles.productImagePlaceholder,
+                    isDark && styles.placeholderDark,
+                  ]}
+                >
+                  <Text style={styles.productEmoji}>
+                    {getCategoryEmoji(product.category)}
+                  </Text>
                 </View>
                 <View style={styles.productInfo}>
-                  <Text style={[styles.productBrand, isDark && styles.textMuted]}>{product.brand}</Text>
-                  <Text style={[styles.productName, isDark && styles.textLight]} numberOfLines={1}>
+                  <Text
+                    style={[styles.productBrand, isDark && styles.textMuted]}
+                  >
+                    {product.brand}
+                  </Text>
+                  <Text
+                    style={[styles.productName, isDark && styles.textLight]}
+                    numberOfLines={1}
+                  >
                     {product.name}
                   </Text>
                   <View style={styles.productMeta}>
-                    <Text style={styles.productRating}>★ {product.rating.toFixed(1)}</Text>
-                    <Text style={[styles.productReviews, isDark && styles.textMuted]}>
+                    <Text style={styles.productRating}>
+                      ★ {product.rating.toFixed(1)}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.productReviews,
+                        isDark && styles.textMuted,
+                      ]}
+                    >
                       ({product.reviewCount})
                     </Text>
                   </View>
-                  <Text style={[styles.productPrice, isDark && styles.textLight]}>
+                  <Text
+                    style={[styles.productPrice, isDark && styles.textLight]}
+                  >
                     {formatPrice(product.price)}
                   </Text>
                 </View>
                 <View style={styles.matchBadge}>
-                  <Text style={styles.matchBadgeText}>{product.matchScore}%</Text>
+                  <Text style={styles.matchBadgeText}>
+                    {product.matchScore}%
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}

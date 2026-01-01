@@ -2,8 +2,9 @@
  * 운동 데이터 조회 Hook
  * 운동 분석, 플랜, 스트릭 정보를 가져옴
  */
-import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/clerk-expo';
+import { useState, useEffect, useCallback } from 'react';
+
 import { useClerkSupabaseClient } from '../lib/supabase';
 
 // 운동 타입
@@ -125,7 +126,9 @@ export function useWorkoutData(): UseWorkoutDataReturn {
       if (planData?.weekly_plan) {
         const weeklyPlan = planData.weekly_plan as Record<string, unknown>;
         const dayKey = getDayKey(dayOfWeek);
-        const todayPlan = weeklyPlan[dayKey] as { exercises?: unknown[] } | undefined;
+        const todayPlan = weeklyPlan[dayKey] as
+          | { exercises?: unknown[] }
+          | undefined;
 
         if (todayPlan?.exercises) {
           setTodayWorkout({
@@ -138,7 +141,9 @@ export function useWorkoutData(): UseWorkoutDataReturn {
                 name: String(exercise.name || ''),
                 sets: Number(exercise.sets || 3),
                 reps: Number(exercise.reps || 10),
-                duration: exercise.duration ? Number(exercise.duration) : undefined,
+                duration: exercise.duration
+                  ? Number(exercise.duration)
+                  : undefined,
                 category: String(exercise.category || ''),
               };
             }),
@@ -150,7 +155,9 @@ export function useWorkoutData(): UseWorkoutDataReturn {
       // AbortError는 정상적인 취소이므로 무시
       if (err instanceof Error && err.name === 'AbortError') return;
       console.error('[Mobile] Failed to fetch workout data:', err);
-      setError(err instanceof Error ? err : new Error('Failed to fetch workout data'));
+      setError(
+        err instanceof Error ? err : new Error('Failed to fetch workout data')
+      );
     } finally {
       setIsLoading(false);
     }
@@ -192,7 +199,15 @@ function isYesterday(dateStr: string | null): boolean {
 }
 
 function getDayKey(dayOfWeek: number): string {
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const days = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ];
   return days[dayOfWeek];
 }
 

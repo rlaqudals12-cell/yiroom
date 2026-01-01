@@ -2,6 +2,9 @@
  * W-1 운동 기록 화면
  * 3탭 완료 플로우: 운동 선택 → 시간/강도 → 저장
  */
+import { useUser } from '@clerk/clerk-expo';
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useState, useMemo } from 'react';
 import {
   View,
@@ -15,10 +18,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { useUser } from '@clerk/clerk-expo';
+
 import { useClerkSupabaseClient } from '../../../lib/supabase';
-import * as Haptics from 'expo-haptics';
 
 // 추천 운동 목록
 const RECOMMENDED_EXERCISES = [
@@ -56,7 +57,8 @@ export default function WorkoutLogScreen() {
 
   // 칼로리 예상 계산 (MET 기반 단순화)
   const estimatedCalories = useMemo(() => {
-    const intensityMultiplier = intensity === 'light' ? 4 : intensity === 'moderate' ? 6 : 8;
+    const intensityMultiplier =
+      intensity === 'light' ? 4 : intensity === 'moderate' ? 6 : 8;
     // 체중 70kg 가정, MET 기반 칼로리 = MET * 체중(kg) * 시간(h)
     return Math.round(intensityMultiplier * 70 * (duration / 60));
   }, [duration, intensity]);
@@ -101,7 +103,8 @@ export default function WorkoutLogScreen() {
           exercise_id: exerciseId,
           exercise_name: exercise?.name || exerciseId,
           sets: [{ reps: 0, completed: true }],
-          difficulty: INTENSITY_OPTIONS.find((i) => i.id === intensity)?.value || 2,
+          difficulty:
+            INTENSITY_OPTIONS.find((i) => i.id === intensity)?.value || 2,
         };
       });
 
@@ -112,9 +115,15 @@ export default function WorkoutLogScreen() {
         actual_duration: duration,
         actual_calories: estimatedCalories,
         exercise_logs: exerciseLogs,
-        perceived_effort: INTENSITY_OPTIONS.find((i) => i.id === intensity)?.value || 2,
+        perceived_effort:
+          INTENSITY_OPTIONS.find((i) => i.id === intensity)?.value || 2,
         notes: notes || null,
-        mood: intensity === 'light' ? 'relaxed' : intensity === 'intense' ? 'energetic' : 'normal',
+        mood:
+          intensity === 'light'
+            ? 'relaxed'
+            : intensity === 'intense'
+              ? 'energetic'
+              : 'normal',
       });
 
       if (error) throw error;
@@ -189,8 +198,14 @@ export default function WorkoutLogScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         {/* 운동 선택 섹션 */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
@@ -203,7 +218,8 @@ export default function WorkoutLogScreen() {
                 style={[
                   styles.exerciseChip,
                   isDark && styles.exerciseChipDark,
-                  selectedExercises.includes(exercise.id) && styles.exerciseChipSelected,
+                  selectedExercises.includes(exercise.id) &&
+                    styles.exerciseChipSelected,
                 ]}
                 onPress={() => handleExerciseToggle(exercise.id)}
               >
@@ -211,7 +227,8 @@ export default function WorkoutLogScreen() {
                   style={[
                     styles.exerciseChipText,
                     isDark && styles.textLight,
-                    selectedExercises.includes(exercise.id) && styles.exerciseChipTextSelected,
+                    selectedExercises.includes(exercise.id) &&
+                      styles.exerciseChipTextSelected,
                   ]}
                 >
                   {exercise.name}
@@ -299,7 +316,9 @@ export default function WorkoutLogScreen() {
 
         {/* 예상 칼로리 */}
         <View style={[styles.calorieCard, isDark && styles.calorieCardDark]}>
-          <Text style={[styles.calorieLabel, isDark && styles.textMuted]}>예상 소모 칼로리</Text>
+          <Text style={[styles.calorieLabel, isDark && styles.textMuted]}>
+            예상 소모 칼로리
+          </Text>
           <Text style={styles.calorieValue}>{estimatedCalories} kcal</Text>
         </View>
       </ScrollView>

@@ -4,7 +4,12 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AnalyticsEventType, AnalyticsEventProperties, UserProperties } from './types';
+
+import {
+  AnalyticsEventType,
+  AnalyticsEventProperties,
+  UserProperties,
+} from './types';
 
 // 개발 모드 여부
 const IS_DEV = __DEV__;
@@ -137,7 +142,9 @@ export async function logAnalysisCompleted(
 /**
  * 사용자 속성 설정
  */
-export async function setUserProperties(properties: UserProperties): Promise<void> {
+export async function setUserProperties(
+  properties: UserProperties
+): Promise<void> {
   if (IS_DEV) {
     console.log('[Analytics] 사용자 속성:', properties);
     return;

@@ -1,6 +1,8 @@
 /**
  * C-1 체형 분석 - 결과 화면
  */
+import type { BodyType } from '@yiroom/shared';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import {
   View,
@@ -13,61 +15,75 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
-import type { BodyType } from '@yiroom/shared';
 
 // 체형 타입 데이터
-const BODY_TYPE_DATA: Record<BodyType, {
-  name: string;
-  description: string;
-  recommendations: string[];
-  avoidItems: string[];
-}> = {
+const BODY_TYPE_DATA: Record<
+  BodyType,
+  {
+    name: string;
+    description: string;
+    recommendations: string[];
+    avoidItems: string[];
+  }
+> = {
   Rectangle: {
     name: '직사각형 체형',
-    description: '어깨, 허리, 엉덩이 너비가 비슷한 체형입니다. 허리 라인을 강조하는 스타일이 잘 어울려요.',
-    recommendations: ['벨트로 허리 강조', 'A라인 스커트', '페플럼 탑', '랩 원피스'],
+    description:
+      '어깨, 허리, 엉덩이 너비가 비슷한 체형입니다. 허리 라인을 강조하는 스타일이 잘 어울려요.',
+    recommendations: [
+      '벨트로 허리 강조',
+      'A라인 스커트',
+      '페플럼 탑',
+      '랩 원피스',
+    ],
     avoidItems: ['일자 실루엣', '박시한 상의'],
   },
   Triangle: {
     name: '삼각형 체형',
-    description: '엉덩이가 어깨보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
+    description:
+      '엉덩이가 어깨보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
     recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
     avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
   },
   InvertedTriangle: {
     name: '역삼각형 체형',
-    description: '어깨가 엉덩이보다 넓은 체형입니다. 하체에 볼륨을 주고 어깨 라인은 심플하게 연출하세요.',
+    description:
+      '어깨가 엉덩이보다 넓은 체형입니다. 하체에 볼륨을 주고 어깨 라인은 심플하게 연출하세요.',
     recommendations: ['V넥', '래글런 소매', '플레어 스커트', '와이드 팬츠'],
     avoidItems: ['패드 있는 어깨', '보트넥', '호리존탈 스트라이프 상의'],
   },
   Hourglass: {
     name: '모래시계 체형',
-    description: '어깨와 엉덩이가 비슷하고 허리가 잘록한 체형입니다. 곡선을 살리는 스타일이 잘 어울려요.',
+    description:
+      '어깨와 엉덩이가 비슷하고 허리가 잘록한 체형입니다. 곡선을 살리는 스타일이 잘 어울려요.',
     recommendations: ['허리 강조 원피스', '벨트', '바디컨 스타일', '랩 탑'],
     avoidItems: ['박시한 옷', '오버사이즈', '일자 실루엣'],
   },
   Oval: {
     name: '타원형 체형',
-    description: '복부가 가장 넓은 체형입니다. 세로 라인을 강조하고 편안한 실루엣을 선택하세요.',
+    description:
+      '복부가 가장 넓은 체형입니다. 세로 라인을 강조하고 편안한 실루엣을 선택하세요.',
     recommendations: ['세로 스트라이프', 'V넥', 'A라인', '하이웨이스트'],
     avoidItems: ['벨트 강조', '타이트한 복부', '가로 스트라이프'],
   },
   Diamond: {
     name: '다이아몬드 체형',
-    description: '허리가 넓고 어깨와 엉덩이가 좁은 체형입니다. 상하체 균형을 맞추세요.',
+    description:
+      '허리가 넓고 어깨와 엉덩이가 좁은 체형입니다. 상하체 균형을 맞추세요.',
     recommendations: ['어깨 강조', '와이드 팬츠', 'A라인', '스트럭처드 재킷'],
     avoidItems: ['타이트한 허리', '벨트 강조', '펜슬 스커트'],
   },
   Pear: {
     name: '배 체형',
-    description: '하체가 상체보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
+    description:
+      '하체가 상체보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
     recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
     avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
   },
   Athletic: {
     name: '운동선수 체형',
-    description: '탄탄하고 균형 잡힌 체형입니다. 다양한 스타일을 소화할 수 있어요.',
+    description:
+      '탄탄하고 균형 잡힌 체형입니다. 다양한 스타일을 소화할 수 있어요.',
     recommendations: ['핏된 옷', '스포티 룩', '캐주얼', '미니멀'],
     avoidItems: ['과도한 레이어링', '너무 루즈한 핏'],
   },
@@ -162,7 +178,10 @@ export default function BodyResultScreen() {
   const bmiStatus = getBmiStatus(bmi);
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 결과 이미지 */}
         {imageUri && (
@@ -175,8 +194,12 @@ export default function BodyResultScreen() {
         <View style={[styles.bmiCard, isDark && styles.cardDark]}>
           <Text style={[styles.bmiLabel, isDark && styles.textMuted]}>BMI</Text>
           <View style={styles.bmiValue}>
-            <Text style={[styles.bmiNumber, { color: bmiStatus.color }]}>{bmi}</Text>
-            <View style={[styles.bmiStatus, { backgroundColor: bmiStatus.color }]}>
+            <Text style={[styles.bmiNumber, { color: bmiStatus.color }]}>
+              {bmi}
+            </Text>
+            <View
+              style={[styles.bmiStatus, { backgroundColor: bmiStatus.color }]}
+            >
               <Text style={styles.bmiStatusText}>{bmiStatus.label}</Text>
             </View>
           </View>
@@ -231,7 +254,10 @@ export default function BodyResultScreen() {
           <TouchableOpacity style={styles.primaryButton} onPress={handleGoHome}>
             <Text style={styles.primaryButtonText}>홈으로 돌아가기</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleRetry}>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleRetry}
+          >
             <Text style={styles.secondaryButtonText}>다시 분석하기</Text>
           </TouchableOpacity>
         </View>

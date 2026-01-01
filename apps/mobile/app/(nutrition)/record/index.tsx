@@ -1,6 +1,7 @@
 /**
  * N-1 식사 기록 화면 (음식 촬영 분석)
  */
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -13,7 +14,6 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
@@ -44,7 +44,10 @@ export default function NutritionRecordScreen() {
     { name: string; calories: number; emoji: string }[]
   >([]);
 
-  const totalCalories = addedFoods.reduce((sum, food) => sum + food.calories, 0);
+  const totalCalories = addedFoods.reduce(
+    (sum, food) => sum + food.calories,
+    0
+  );
 
   const handleTakePhoto = () => {
     Alert.alert(
@@ -63,7 +66,11 @@ export default function NutritionRecordScreen() {
     );
   };
 
-  const handleAddFood = (food: { name: string; calories: number; emoji: string }) => {
+  const handleAddFood = (food: {
+    name: string;
+    calories: number;
+    emoji: string;
+  }) => {
     setAddedFoods((prev) => [...prev, food]);
   };
 
@@ -85,7 +92,10 @@ export default function NutritionRecordScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 식사 타입 선택 */}
         <View style={styles.mealTypeContainer}>
@@ -128,7 +138,9 @@ export default function NutritionRecordScreen() {
         </TouchableOpacity>
 
         {/* 검색 */}
-        <View style={[styles.searchContainer, isDark && styles.searchContainerDark]}>
+        <View
+          style={[styles.searchContainer, isDark && styles.searchContainerDark]}
+        >
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={[styles.searchInput, isDark && styles.textLight]}
@@ -158,7 +170,9 @@ export default function NutritionRecordScreen() {
                 >
                   {food.name}
                 </Text>
-                <Text style={[styles.quickAddCalories, isDark && styles.textMuted]}>
+                <Text
+                  style={[styles.quickAddCalories, isDark && styles.textMuted]}
+                >
                   {food.calories} kcal
                 </Text>
               </TouchableOpacity>
@@ -175,10 +189,14 @@ export default function NutritionRecordScreen() {
             {addedFoods.map((food, index) => (
               <View key={index} style={styles.addedFoodItem}>
                 <Text style={styles.addedFoodEmoji}>{food.emoji}</Text>
-                <Text style={[styles.addedFoodName, isDark && styles.textLight]}>
+                <Text
+                  style={[styles.addedFoodName, isDark && styles.textLight]}
+                >
                   {food.name}
                 </Text>
-                <Text style={[styles.addedFoodCalories, isDark && styles.textMuted]}>
+                <Text
+                  style={[styles.addedFoodCalories, isDark && styles.textMuted]}
+                >
                   {food.calories} kcal
                 </Text>
                 <TouchableOpacity onPress={() => handleRemoveFood(index)}>
