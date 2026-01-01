@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type SkinAnalysisResult } from '@/lib/mock/skin-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
@@ -53,25 +53,27 @@ function transformDbToResult(dbData: DbSkinAnalysis): SkinAnalysisResult {
     analyzedAt: new Date(dbData.created_at),
     personalColorSeason: dbData.personal_color_season,
     foundationRecommendation: dbData.foundation_recommendation,
-    ingredientWarnings: dbData.ingredient_warnings?.map(w => ({
+    ingredientWarnings: dbData.ingredient_warnings?.map((w) => ({
       ...w,
       ewgGrade: null, // DB에 없으면 null
     })),
-    productRecommendations: dbData.products ? {
-      routine: (dbData.products.routine || []).map(r => ({
-        ...r,
-        tip: '', // 기본값 추가
-      })),
-      specialCare: [],
-      careTips: {
-        weeklyCare: dbData.recommendations?.weekly_care || [],
-        lifestyleTips: [],
-      },
-      skincareRoutine: {
-        morning: dbData.recommendations?.morning_routine?.join(' → ') || '',
-        evening: dbData.recommendations?.evening_routine?.join(' → ') || '',
-      },
-    } : undefined,
+    productRecommendations: dbData.products
+      ? {
+          routine: (dbData.products.routine || []).map((r) => ({
+            ...r,
+            tip: '', // 기본값 추가
+          })),
+          specialCare: [],
+          careTips: {
+            weeklyCare: dbData.recommendations?.weekly_care || [],
+            lifestyleTips: [],
+          },
+          skincareRoutine: {
+            morning: dbData.recommendations?.morning_routine?.join(' → ') || '',
+            evening: dbData.recommendations?.evening_routine?.join(' → ') || '',
+          },
+        }
+      : undefined,
   };
 }
 
@@ -116,6 +118,7 @@ export default function SkinAnalysisResultPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<SkinAnalysisResult | null>(null);
+  const [skinType, setSkinType] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-피부분석-결과');
@@ -147,8 +150,10 @@ export default function SkinAnalysisResultPage() {
       }
 
       // DB 데이터 → 컴포넌트 props 변환
-      const transformedResult = transformDbToResult(data as DbSkinAnalysis);
+      const dbData = data as DbSkinAnalysis;
+      const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
+      setSkinType(dbData.skin_type);
     } catch (err) {
       console.error('[S-1] Fetch error:', err);
       setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
@@ -235,24 +240,25 @@ export default function SkinAnalysisResultPage() {
 
           {/* 결과 */}
           {result && (
-            <AnalysisResult
-              result={result}
-              onRetry={handleNewAnalysis}
-              shareRef={shareRef}
-            />
+            <AnalysisResult result={result} onRetry={handleNewAnalysis} shareRef={shareRef} />
           )}
         </div>
       </main>
 
-      {/* 공유 버튼 */}
+      {/* 하단 고정 버튼 */}
       {result && (
         <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
-          <div className="max-w-md mx-auto">
-            <ShareButton
-              onShare={share}
-              loading={shareLoading}
-              variant="outline"
-            />
+          <div className="max-w-md mx-auto space-y-2">
+            {/* 제품 추천 버튼 */}
+            <Button
+              className="w-full"
+              onClick={() => router.push(`/products?skinType=${skinType || ''}&category=skincare`)}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              피부 맞춤 제품 보기
+            </Button>
+            {/* 공유 버튼 */}
+            <ShareButton onShare={share} loading={shareLoading} variant="outline" />
           </div>
         </div>
       )}

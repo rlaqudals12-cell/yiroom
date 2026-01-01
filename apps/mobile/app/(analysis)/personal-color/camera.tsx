@@ -68,7 +68,7 @@ export default function PersonalColorCameraScreen() {
       if (photo?.uri) {
         navigateToResult(photo.uri, photo.base64);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('오류', '사진 촬영에 실패했습니다.');
     } finally {
       setIsCapturing(false);

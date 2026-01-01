@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   type PersonalColorResult,
@@ -72,23 +72,24 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
     confidence: dbData.confidence || 85,
     bestColors: dbData.best_colors || defaultBestColors,
     worstColors: dbData.worst_colors || defaultWorstColors,
-    lipstickRecommendations: dbData.makeup_recommendations?.lipstick?.map(l => ({
-      colorName: l.shade,
-      hex: l.hex,
-      brandExample: l.description,
-    })) || [],
+    lipstickRecommendations:
+      dbData.makeup_recommendations?.lipstick?.map((l) => ({
+        colorName: l.shade,
+        hex: l.hex,
+        brandExample: l.description,
+      })) || [],
     clothingRecommendations: [
-      ...(dbData.fashion_recommendations?.tops?.map(item => ({
+      ...(dbData.fashion_recommendations?.tops?.map((item) => ({
         item,
         colorSuggestion: '베스트 컬러 활용',
         reason: '얼굴 근처에 배치하면 좋아요',
       })) || []),
-      ...(dbData.fashion_recommendations?.bottoms?.map(item => ({
+      ...(dbData.fashion_recommendations?.bottoms?.map((item) => ({
         item,
         colorSuggestion: '뉴트럴 컬러',
         reason: '상의와 조화롭게 매치해보세요',
       })) || []),
-      ...(dbData.fashion_recommendations?.accessories?.map(item => ({
+      ...(dbData.fashion_recommendations?.accessories?.map((item) => ({
         item,
         colorSuggestion: '포인트 컬러',
         reason: '악세서리로 활용해보세요',
@@ -98,9 +99,12 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
       imageKeywords: ['화사한', '세련된'],
       makeupStyle: `${info.label}에 어울리는 자연스러운 메이크업`,
       fashionStyle: `${info.description}을 살리는 스타일`,
-      accessories: dbData.fashion_recommendations?.accessories?.join(', ') || '골드/실버 톤 악세서리',
+      accessories:
+        dbData.fashion_recommendations?.accessories?.join(', ') || '골드/실버 톤 악세서리',
     },
-    insight: dbData.image_analysis?.insight || `${info.label} 타입의 특징을 가지고 있어요! ${info.characteristics}`,
+    insight:
+      dbData.image_analysis?.insight ||
+      `${info.label} 타입의 특징을 가지고 있어요! ${info.characteristics}`,
     analyzedAt: new Date(dbData.created_at),
   };
 }
@@ -226,13 +230,22 @@ export default function PersonalColorResultPage() {
         </header>
 
         {/* 결과 */}
-        {result && (
-          <AnalysisResult
-            result={result}
-            onRetry={handleNewAnalysis}
-          />
-        )}
+        {result && <AnalysisResult result={result} onRetry={handleNewAnalysis} />}
       </div>
+
+      {/* 하단 고정 버튼 */}
+      {result && (
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
+          <div className="max-w-md mx-auto">
+            <Button
+              className="w-full"
+              onClick={() => router.push(`/products?season=${result.seasonType}&category=makeup`)}
+            >
+              <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
+            </Button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

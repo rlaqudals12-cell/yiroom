@@ -20,7 +20,7 @@ import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
 
   // 데이터 훅

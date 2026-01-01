@@ -4,7 +4,7 @@
  */
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -13,7 +13,6 @@ import {
   useColorScheme,
   TouchableOpacity,
   ScrollView,
-  Image,
   ActivityIndicator,
   Linking,
   Share,
@@ -160,8 +159,9 @@ export default function ProductDetailScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useUser();
-  const supabase = useClerkSupabaseClient();
+  // TODO: API 연동 시 활용 예정
+  const { user: _user } = useUser();
+  const _supabase = useClerkSupabaseClient();
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);

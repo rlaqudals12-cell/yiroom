@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Dumbbell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   type BodyAnalysisResult,
@@ -65,17 +65,21 @@ function transformDbToResult(dbData: DbBodyAnalysis): BodyAnalysisResult {
   const info = BODY_TYPES_3[bodyType3];
 
   // DB의 style_recommendations를 StyleRecommendation[] 형식으로 변환
-  const styleRecs = dbData.style_recommendations?.flatMap(rec =>
-    rec.items.map(item => ({
-      item,
-      reason: rec.tip || `${rec.category}에 어울리는 아이템`,
-    }))
-  ) || info.recommendations || [];
+  const styleRecs =
+    dbData.style_recommendations?.flatMap((rec) =>
+      rec.items.map((item) => ({
+        item,
+        reason: rec.tip || `${rec.category}에 어울리는 아이템`,
+      }))
+    ) ||
+    info.recommendations ||
+    [];
 
   // insights 배열을 하나의 문장으로 결합
-  const insightText = info.insights?.length > 0
-    ? info.insights[0]
-    : `${info.label} 체형의 특징을 가지고 있어요! ${info.characteristics}`;
+  const insightText =
+    info.insights?.length > 0
+      ? info.insights[0]
+      : `${info.label} 체형의 특징을 가지고 있어요! ${info.characteristics}`;
 
   return {
     // 3타입을 BodyType으로 캐스팅 (하위 호환성)
@@ -83,29 +87,47 @@ function transformDbToResult(dbData: DbBodyAnalysis): BodyAnalysisResult {
     bodyTypeLabel: info.label,
     bodyTypeDescription: info.description,
     measurements: [
-      { name: '어깨', value: dbData.shoulder || 50, description: getMeasurementDescription('어깨', dbData.shoulder || 50) },
-      { name: '허리', value: dbData.waist || 50, description: getMeasurementDescription('허리', dbData.waist || 50) },
-      { name: '골반', value: dbData.hip || 50, description: getMeasurementDescription('골반', dbData.hip || 50) },
+      {
+        name: '어깨',
+        value: dbData.shoulder || 50,
+        description: getMeasurementDescription('어깨', dbData.shoulder || 50),
+      },
+      {
+        name: '허리',
+        value: dbData.waist || 50,
+        description: getMeasurementDescription('허리', dbData.waist || 50),
+      },
+      {
+        name: '골반',
+        value: dbData.hip || 50,
+        description: getMeasurementDescription('골반', dbData.hip || 50),
+      },
     ],
     strengths: dbData.strengths || info.strengths,
     insight: insightText,
     styleRecommendations: styleRecs,
     analyzedAt: new Date(dbData.created_at),
-    userInput: dbData.height && dbData.weight ? {
-      height: dbData.height,
-      weight: dbData.weight,
-    } : undefined,
-    bmi: dbData.height && dbData.weight
-      ? Math.round((dbData.weight / ((dbData.height / 100) ** 2)) * 10) / 10
-      : undefined,
+    userInput:
+      dbData.height && dbData.weight
+        ? {
+            height: dbData.height,
+            weight: dbData.weight,
+          }
+        : undefined,
+    bmi:
+      dbData.height && dbData.weight
+        ? Math.round((dbData.weight / (dbData.height / 100) ** 2) * 10) / 10
+        : undefined,
     personalColorSeason: dbData.personal_color_season,
-    colorRecommendations: dbData.color_recommendations ? {
-      topColors: dbData.color_recommendations.topColors || [],
-      bottomColors: dbData.color_recommendations.bottomColors || [],
-      avoidColors: dbData.color_recommendations.avoidColors || [],
-      bestCombinations: [],
-      accessories: [],
-    } : null,
+    colorRecommendations: dbData.color_recommendations
+      ? {
+          topColors: dbData.color_recommendations.topColors || [],
+          bottomColors: dbData.color_recommendations.bottomColors || [],
+          avoidColors: dbData.color_recommendations.avoidColors || [],
+          bestCombinations: [],
+          accessories: [],
+        }
+      : null,
   };
 }
 
@@ -233,24 +255,29 @@ export default function BodyAnalysisResultPage() {
 
           {/* 결과 */}
           {result && (
-            <AnalysisResult
-              result={result}
-              onRetry={handleNewAnalysis}
-              shareRef={shareRef}
-            />
+            <AnalysisResult result={result} onRetry={handleNewAnalysis} shareRef={shareRef} />
           )}
         </div>
       </main>
 
-      {/* 공유 버튼 */}
+      {/* 하단 고정 버튼 */}
       {result && (
         <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
-          <div className="max-w-md mx-auto">
-            <ShareButton
-              onShare={share}
-              loading={shareLoading}
-              variant="outline"
-            />
+          <div className="max-w-md mx-auto space-y-2">
+            {/* 운동 추천 버튼 */}
+            <Button
+              className="w-full"
+              onClick={() =>
+                router.push(
+                  `/workout/onboarding?bodyType=${result.bodyType}&bmi=${result.bmi || ''}&fromAnalysis=body`
+                )
+              }
+            >
+              <Dumbbell className="w-4 h-4 mr-2" />
+              나에게 맞는 운동 추천
+            </Button>
+            {/* 공유 버튼 */}
+            <ShareButton onShare={share} loading={shareLoading} variant="outline" />
           </div>
         </div>
       )}

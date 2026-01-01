@@ -60,7 +60,7 @@ export interface BodyAnalysisResult {
 /**
  * 이미지를 Base64로 변환
  */
-async function imageToBase64(imageUri: string): Promise<string> {
+export async function imageToBase64(imageUri: string): Promise<string> {
   // React Native에서는 fetch로 이미지를 가져와서 변환
   const response = await fetch(imageUri);
   const blob = await response.blob();

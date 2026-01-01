@@ -2,6 +2,7 @@
  * PC-1 퍼스널 컬러 진단 - 결과 화면
  */
 import type { PersonalColorSeason } from '@yiroom/shared';
+import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import {
@@ -103,6 +104,18 @@ export default function PersonalColorResultScreen() {
     router.replace('/(analysis)/personal-color');
   };
 
+  // 내 색상에 맞는 제품 추천으로 이동
+  const handleProductRecommendation = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push({
+      pathname: '/products',
+      params: {
+        season: result || '',
+        category: 'makeup',
+      },
+    });
+  };
+
   const handleGoHome = () => {
     router.replace('/(tabs)');
   };
@@ -190,14 +203,20 @@ export default function PersonalColorResultScreen() {
 
         {/* 버튼 */}
         <View style={styles.buttons}>
-          <TouchableOpacity style={styles.primaryButton} onPress={handleGoHome}>
-            <Text style={styles.primaryButtonText}>홈으로 돌아가기</Text>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={handleProductRecommendation}
+          >
+            <Text style={styles.primaryButtonText}>💄 내 색상에 맞는 제품</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.secondaryButton}
-            onPress={handleRetry}
+            onPress={handleGoHome}
           >
-            <Text style={styles.secondaryButtonText}>다시 진단하기</Text>
+            <Text style={styles.secondaryButtonText}>홈으로 돌아가기</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleRetry}>
+            <Text style={styles.retryLink}>다시 진단하기</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -354,6 +373,13 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#666',
     fontSize: 16,
+  },
+  retryLink: {
+    color: '#666',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+    textAlign: 'center',
+    marginTop: 4,
   },
   textLight: {
     color: '#ffffff',

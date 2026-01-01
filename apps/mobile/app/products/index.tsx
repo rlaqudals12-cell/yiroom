@@ -4,7 +4,7 @@
  */
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -13,7 +13,6 @@ import {
   useColorScheme,
   TouchableOpacity,
   ScrollView,
-  Image,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
@@ -149,11 +148,28 @@ export default function ProductsScreen() {
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // 분석 결과에서 넘어온 쿼리 파라미터
+  const {
+    skinType,
+    concerns: _concerns, // TODO: 향후 고민 기반 필터링에 사용
+    season: querySeason,
+    category: initialCategory,
+  } = useLocalSearchParams<{
+    skinType?: string;
+    concerns?: string;
+    season?: string;
+    category?: string;
+  }>();
+
+  const [selectedCategory, setSelectedCategory] = useState(
+    initialCategory || 'all'
+  );
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [userSeason, setUserSeason] = useState<string | null>(null);
+  // 쿼리에서 온 필터 정보 표시용
+  const [filterSource, setFilterSource] = useState<string | null>(null);
 
   // 사용자 분석 결과 조회
   const fetchUserData = useCallback(async () => {
@@ -176,6 +192,17 @@ export default function ProductsScreen() {
     }
   }, [user?.id, supabase]);
 
+  // 쿼리 파라미터 기반 필터 소스 설정
+  useEffect(() => {
+    if (skinType) {
+      setFilterSource('피부 분석 결과 기반');
+    } else if (querySeason) {
+      setFilterSource('퍼스널 컬러 분석 기반');
+    } else {
+      setFilterSource(null);
+    }
+  }, [skinType, querySeason]);
+
   // 제품 목록 조회
   const fetchProducts = useCallback(async () => {
     // 실제로는 API 호출
@@ -187,13 +214,50 @@ export default function ProductsScreen() {
       filtered = MOCK_PRODUCTS.filter((p) => p.category === selectedCategory);
     }
 
+    // 피부 타입 기반 필터링 (태그 매칭)
+    if (skinType) {
+      const skinTypeMap: Record<string, string[]> = {
+        dry: ['건성', '보습', '수분'],
+        oily: ['지성', '유분조절', '모공'],
+        combination: ['복합성', '밸런싱'],
+        sensitive: ['민감성', '저자극', '무자극'],
+        normal: ['보통', '데일리'],
+      };
+      const matchTags = skinTypeMap[skinType] || [];
+      if (matchTags.length > 0) {
+        filtered = filtered.filter((p) =>
+          p.tags.some((tag) =>
+            matchTags.some((mt) => tag.toLowerCase().includes(mt))
+          )
+        );
+      }
+    }
+
+    // 시즌 기반 필터링 (퍼스널 컬러)
+    if (querySeason) {
+      const seasonMap: Record<string, string> = {
+        Spring: '봄웜톤',
+        Summer: '여름쿨톤',
+        Autumn: '가을웜톤',
+        Winter: '겨울쿨톤',
+      };
+      const seasonTag = seasonMap[querySeason];
+      if (seasonTag) {
+        filtered = filtered.filter((p) =>
+          p.tags.some(
+            (tag) => tag.includes(seasonTag) || tag.includes('데일리')
+          )
+        );
+      }
+    }
+
     // 매칭 점수순 정렬
     filtered = [...filtered].sort((a, b) => b.matchScore - a.matchScore);
 
     setProducts(filtered);
     setIsLoading(false);
     setIsRefreshing(false);
-  }, [selectedCategory]);
+  }, [selectedCategory, skinType, querySeason]);
 
   useEffect(() => {
     fetchUserData();
@@ -236,15 +300,17 @@ export default function ProductsScreen() {
       edges={['bottom']}
     >
       {/* 맞춤 추천 배너 */}
-      {userSeason && (
+      {(filterSource || userSeason) && (
         <View style={[styles.banner, isDark && styles.bannerDark]}>
-          <Text style={styles.bannerIcon}>✨</Text>
+          <Text style={styles.bannerIcon}>{filterSource ? '🎯' : '✨'}</Text>
           <View style={styles.bannerContent}>
             <Text style={[styles.bannerTitle, isDark && styles.textLight]}>
-              나를 위한 추천
+              {filterSource ? '맞춤 제품 추천' : '나를 위한 추천'}
             </Text>
             <Text style={[styles.bannerSubtitle, isDark && styles.textMuted]}>
-              {getSeasonLabel(userSeason)}에 맞는 제품을 추천해드려요
+              {filterSource
+                ? filterSource
+                : `${getSeasonLabel(userSeason!)}에 맞는 제품을 추천해드려요`}
             </Text>
           </View>
         </View>

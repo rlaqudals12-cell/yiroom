@@ -2,6 +2,7 @@
  * S-1 피부 분석 - 결과 화면
  */
 import type { SkinType } from '@yiroom/shared';
+import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import {
@@ -134,6 +135,18 @@ export default function SkinResultScreen() {
     setIsLoading(false);
   };
 
+  // 피부 맞춤 제품 추천으로 이동
+  const handleProductRecommendation = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push({
+      pathname: '/products',
+      params: {
+        skinType: skinType || '',
+        category: 'skincare',
+      },
+    });
+  };
+
   const handleRetry = () => {
     router.replace('/(analysis)/skin');
   };
@@ -244,14 +257,20 @@ export default function SkinResultScreen() {
 
         {/* 버튼 */}
         <View style={styles.buttons}>
-          <TouchableOpacity style={styles.primaryButton} onPress={handleGoHome}>
-            <Text style={styles.primaryButtonText}>홈으로 돌아가기</Text>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={handleProductRecommendation}
+          >
+            <Text style={styles.primaryButtonText}>🧴 피부 맞춤 제품 보기</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.secondaryButton}
-            onPress={handleRetry}
+            onPress={handleGoHome}
           >
-            <Text style={styles.secondaryButtonText}>다시 분석하기</Text>
+            <Text style={styles.secondaryButtonText}>홈으로 돌아가기</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.retryLink} onPress={handleRetry}>
+            <Text style={styles.retryLinkText}>다시 분석하기</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -464,6 +483,15 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#666',
     fontSize: 16,
+  },
+  retryLink: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  retryLinkText: {
+    color: '#999',
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
   textLight: {
     color: '#ffffff',

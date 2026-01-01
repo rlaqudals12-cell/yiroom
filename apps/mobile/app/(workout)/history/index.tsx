@@ -9,7 +9,6 @@ import {
   Text,
   StyleSheet,
   useColorScheme,
-  TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   RefreshControl,

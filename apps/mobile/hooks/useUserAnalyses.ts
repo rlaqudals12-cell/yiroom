@@ -71,7 +71,7 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchAnalyses = useCallback(
-    async (signal?: AbortSignal) => {
+    async (_signal?: AbortSignal) => {
       if (!user?.id) {
         setIsLoading(false);
         return;

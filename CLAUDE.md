@@ -40,23 +40,51 @@ npm run test:e2e:ui                       # Playwright UI 모드
 
 # 로컬 Supabase
 npx supabase start
+
+# 모바일 앱 전용 (apps/mobile에서 실행)
+cd apps/mobile
+npx expo start             # Expo 개발 서버
+npx expo start --clear     # 캐시 초기화 후 시작
+npm run test               # Jest 테스트 (151개)
+npm run lint               # ESLint
+npm run typecheck          # TypeScript 체크
+eas build --profile development --platform ios    # iOS 개발 빌드
+eas build --profile development --platform android # Android 개발 빌드
 ```
 
 ## 기술 스택
 
-| 분야 | 기술 |
-|------|------|
+### 웹 앱 (apps/web)
+
+| 분야      | 기술                                                        |
+| --------- | ----------------------------------------------------------- |
 | Framework | Next.js 16+ (App Router, Turbopack) + React 19 + TypeScript |
-| Auth | Clerk (clerk_user_id 기반 Supabase 네이티브 통합) |
-| Database | Supabase (PostgreSQL 15+, RLS 필수) |
-| AI | Google Gemini 3 Flash (이미지 분석) |
-| UI | shadcn/ui + Radix UI + Tailwind CSS v4 |
-| State | Zustand (다단계 폼), React Hook Form + Zod (폼) |
-| Testing | Vitest + React Testing Library + Playwright |
+| Auth      | Clerk (clerk_user_id 기반 Supabase 네이티브 통합)           |
+| Database  | Supabase (PostgreSQL 15+, RLS 필수)                         |
+| AI        | Google Gemini 3 Flash (이미지 분석)                         |
+| UI        | shadcn/ui + Radix UI + Tailwind CSS v4                      |
+| State     | Zustand (다단계 폼), React Hook Form + Zod (폼)             |
+| Testing   | Vitest + React Testing Library + Playwright                 |
+
+### 모바일 앱 (apps/mobile)
+
+| 분야      | 기술                                         |
+| --------- | -------------------------------------------- |
+| Framework | Expo SDK 54 + React Native + Expo Router     |
+| Auth      | Clerk Expo (@clerk/clerk-expo)               |
+| Database  | Supabase (웹과 동일 스키마)                  |
+| AI        | Google Gemini 1.5 Flash                      |
+| UI        | NativeWind (Tailwind for RN), RN StyleSheet  |
+| State     | React Context, Custom Hooks                  |
+| Testing   | Jest + React Native Testing Library          |
+| Push      | Expo Notifications                           |
+| Analytics | Sentry (크래시 리포트)                       |
+| Build     | EAS Build (development, preview, production) |
 
 ## 아키텍처
 
 ### 모노레포 구조
+
 ```
 yiroom/
 ├── apps/web/          # Next.js 웹 앱 (Lite PWA)
@@ -67,11 +95,11 @@ yiroom/
 
 ### Supabase 클라이언트 패턴
 
-| 컨텍스트 | 함수 | 파일 |
-|----------|------|------|
-| Client Component | `useClerkSupabaseClient()` | `lib/supabase/clerk-client.ts` |
-| Server Component/API | `createClerkSupabaseClient()` | `lib/supabase/server.ts` |
-| 관리자 (RLS 우회) | `createServiceRoleClient()` | `lib/supabase/service-role.ts` |
+| 컨텍스트             | 함수                          | 파일                           |
+| -------------------- | ----------------------------- | ------------------------------ |
+| Client Component     | `useClerkSupabaseClient()`    | `lib/supabase/clerk-client.ts` |
+| Server Component/API | `createClerkSupabaseClient()` | `lib/supabase/server.ts`       |
+| 관리자 (RLS 우회)    | `createServiceRoleClient()`   | `lib/supabase/service-role.ts` |
 
 ```tsx
 // Client Component
@@ -87,6 +115,7 @@ const supabase = createClerkSupabaseClient();
 ### lib/ Repository 패턴
 
 새 모듈 추가 시 `lib/api/workout.ts` 패턴 따르기:
+
 ```
 lib/
 ├── supabase/           # DB 클라이언트 (DIP 적용)
@@ -106,6 +135,7 @@ lib/
 ### AI 통합 패턴
 
 모든 AI 호출은 Mock Fallback 필수:
+
 ```typescript
 try {
   const result = await analyzeWithGemini(input);
@@ -119,29 +149,30 @@ try {
 ### Dynamic Import 패턴
 
 무거운 컴포넌트(차트, 모달)는 `next/dynamic` 사용:
+
 ```typescript
-export const ChartDynamic = dynamic(
-  () => import('./Chart'),
-  { ssr: false, loading: () => null }
-);
+export const ChartDynamic = dynamic(() => import('./Chart'), { ssr: false, loading: () => null });
 ```
 
 ## 모듈 구성
 
-| Phase | 모듈 | 설명 | 상태 |
-|-------|------|------|------|
-| Phase 1 | PC-1, S-1, C-1 | 퍼스널컬러, 피부, 체형 분석 | ✅ 완료 |
-| Phase 2 | W-1, N-1, R-1 | 운동, 영양, 리포트 | ✅ 완료 |
-| Phase 3 | 앱 고도화 | E2E 테스트, 크로스 모듈 | ✅ 완료 |
-| Phase A | Product DB | 850+ 제품, 리뷰, RAG | ✅ 완료 |
-| Phase B | React Native | 모노레포, Expo 앱 | 🔄 진행 중 |
-| Phase H | 소셜 | 웰니스 스코어, 친구, 리더보드 | ✅ 완료 |
-| Phase I | 어필리에이트 | iHerb, 쿠팡, 무신사 연동 | 🔄 진행 중 |
-| Launch | 출시 준비 | 온보딩, 도움말, 알림 | 🔄 진행 중 |
+| Phase   | 모듈           | 설명                          | 상태       |
+| ------- | -------------- | ----------------------------- | ---------- |
+| Phase 1 | PC-1, S-1, C-1 | 퍼스널컬러, 피부, 체형 분석   | ✅ 완료    |
+| Phase 2 | W-1, N-1, R-1  | 운동, 영양, 리포트            | ✅ 완료    |
+| Phase 3 | 앱 고도화      | E2E 테스트, 크로스 모듈       | ✅ 완료    |
+| Phase A | Product DB     | 850+ 제품, 리뷰, RAG          | ✅ 완료    |
+| Phase B | React Native   | 모노레포, Expo 앱             | 🔄 진행 중 |
+| Phase H | 소셜           | 웰니스 스코어, 친구, 리더보드 | ✅ 완료    |
+| Phase I | 어필리에이트   | iHerb, 쿠팡, 무신사 연동      | 🔄 진행 중 |
+| Launch  | 출시 준비      | 온보딩, 도움말, 알림          | 🔄 진행 중 |
 
 ## Route Groups
 
+### 웹 앱 (Next.js App Router)
+
 메인 기능들은 `app/(main)/` 그룹 내에 위치:
+
 ```
 app/(main)/
 ├── analysis/           # PC-1, S-1, C-1
@@ -156,9 +187,31 @@ app/(main)/
 └── feed/               # 소셜 피드
 ```
 
+### 모바일 앱 (Expo Router)
+
+5탭 구조 + 기능별 라우트 그룹:
+
+```
+apps/mobile/app/
+├── (tabs)/             # 하단 5탭 네비게이션
+│   ├── index.tsx       # 홈 (오늘 할 일, 요약)
+│   ├── workout.tsx     # 운동
+│   ├── nutrition.tsx   # 영양
+│   ├── records.tsx     # 기록
+│   └── profile.tsx     # 프로필
+├── (auth)/             # 인증 플로우
+├── (analysis)/         # AI 분석 (personal-color, skin, body)
+├── (workout)/          # 운동 세션, 히스토리
+├── (nutrition)/        # 식단 기록, 카메라
+├── products/           # 제품 추천
+├── settings/           # 설정 (notifications, goals, widgets)
+└── reports/            # 리포트
+```
+
 ## 데이터베이스
 
 **핵심 테이블 (clerk_user_id 기반 RLS):**
+
 - `users` → Clerk 사용자 정보
 - `personal_color_assessments` → PC-1 진단 (온보딩 필수)
 - `workout_analyses`, `workout_plans`, `workout_logs` → W-1
@@ -172,13 +225,13 @@ app/(main)/
 
 ## 슬래시 명령어
 
-| 명령어 | 용도 |
-|--------|------|
-| `/qplan` | 계획 분석 및 검토 |
-| `/qcode` | 구현 + 테스트 + 포맷팅 |
-| `/qcheck` | 코드 품질 검사 |
-| `/test` | 테스트 실행 |
-| `/review` | 코드 리뷰 |
+| 명령어    | 용도                   |
+| --------- | ---------------------- |
+| `/qplan`  | 계획 분석 및 검토      |
+| `/qcode`  | 구현 + 테스트 + 포맷팅 |
+| `/qcheck` | 코드 품질 검사         |
+| `/test`   | 테스트 실행            |
+| `/review` | 코드 리뷰              |
 
 ## 핵심 규칙
 
@@ -196,4 +249,5 @@ app/(main)/
 - `.claude/agents/` - 전문 Agent 설정
 
 ---
-**Version**: 8.0 | **Updated**: 2025-12-24
+
+**Version**: 9.0 | **Updated**: 2026-01-01
