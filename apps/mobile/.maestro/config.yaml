@@ -1,0 +1,18 @@
+# Maestro E2E 테스트 설정
+# https://maestro.mobile.dev/
+
+# 앱 ID
+appId: com.yiroom.app
+
+# 기본 설정
+name: Yiroom Mobile E2E Tests
+env:
+  APP_ID: com.yiroom.app
+  DEEP_LINK_SCHEME: yiroom
+
+# 흐름 실행 순서
+flows:
+  - onboarding/*.yaml
+  - workout/*.yaml
+  - nutrition/*.yaml
+  - products/*.yaml

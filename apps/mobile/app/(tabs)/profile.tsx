@@ -133,18 +133,25 @@ export default function ProfileScreen() {
           <MenuItem
             title="알림 설정"
             isDark={isDark}
-            onPress={() => {
-              // TODO: /(settings)/notifications 경로 구현 필요
-              console.log('알림 설정 - 구현 예정');
-            }}
+            subtitle="물, 운동, 식사 알림"
+            onPress={() => router.push('/settings/notifications')}
           />
           <MenuItem
-            title="앱 정보"
+            title="목표 설정"
             isDark={isDark}
-            onPress={() => {
-              // TODO: /(settings)/about 경로 구현 필요
-              console.log('앱 정보 - 구현 예정');
-            }}
+            subtitle="물, 칼로리, 운동 목표"
+            onPress={() => router.push('/settings/goals')}
+          />
+          <MenuItem
+            title="위젯 설정"
+            isDark={isDark}
+            subtitle="홈 화면 위젯"
+            onPress={() => router.push('/settings/widgets')}
+          />
+          <MenuItem
+            title="전체 설정"
+            isDark={isDark}
+            onPress={() => router.push('/settings')}
           />
         </View>
       </ScrollView>

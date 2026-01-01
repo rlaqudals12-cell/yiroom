@@ -52,6 +52,18 @@ export default function WorkoutLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="log/index"
+        options={{
+          title: '운동 기록',
+        }}
+      />
+      <Stack.Screen
+        name="history/index"
+        options={{
+          title: '운동 히스토리',
+        }}
+      />
     </Stack>
   );
 }

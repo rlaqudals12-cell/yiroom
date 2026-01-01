@@ -1,0 +1,51 @@
+# 운동 세션 테스트
+appId: com.yiroom.app
+name: Workout Session Flow
+
+---
+
+# 앱 실행
+- launchApp:
+    appId: ${APP_ID}
+
+# 홈 화면 대기
+- extendedWaitUntil:
+    visible:
+      id: "home-screen"
+    timeout: 10000
+
+# 운동 시작 버튼 찾기 및 탭
+- tapOn:
+    text: "운동 시작"
+
+# 운동 세션 화면 확인
+- extendedWaitUntil:
+    visible:
+      id: "workout-session"
+    timeout: 5000
+
+# 운동 세션 UI 요소 확인
+- assertVisible:
+    text: "세트"
+
+# 세트 완료 버튼 탭
+- tapOn:
+    text: "세트 완료"
+
+# 세트 증가 확인
+- assertVisible:
+    text: "1"
+
+# 다음 운동 버튼 탭
+- tapOn:
+    text: "다음"
+
+# 운동 종료 버튼 탭
+- tapOn:
+    text: "완료"
+
+# 결과 화면 확인
+- extendedWaitUntil:
+    visible:
+      text: "운동 완료"
+    timeout: 5000

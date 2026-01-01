@@ -20,6 +20,9 @@
         "NSCameraUsageDescription": "퍼스널 컬러, 피부 분석을 위해 카메라 접근이 필요합니다.",
         "NSPhotoLibraryUsageDescription": "체형 분석 및 음식 기록을 위해 사진 접근이 필요합니다.",
         "NSPhotoLibraryAddUsageDescription": "분석 결과를 저장하기 위해 사진 저장 권한이 필요합니다."
+      },
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.com.yiroom.app"]
       }
     },
     "android": {

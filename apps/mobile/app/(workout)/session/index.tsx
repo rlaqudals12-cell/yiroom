@@ -109,7 +109,7 @@ export default function WorkoutSessionScreen() {
         {
           text: '종료',
           style: 'destructive',
-          onPress: () => router.replace('/(tabs)/workout'),
+          onPress: () => router.replace('/(tabs)/records'),
         },
       ]
     );
@@ -193,7 +193,7 @@ export default function WorkoutSessionScreen() {
 
           <TouchableOpacity
             style={styles.finishButton}
-            onPress={() => router.replace('/(tabs)/workout')}
+            onPress={() => router.replace('/(tabs)/records')}
           >
             <Text style={styles.finishButtonText}>완료</Text>
           </TouchableOpacity>

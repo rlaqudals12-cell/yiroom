@@ -1,0 +1,794 @@
+/**
+ * N-1 AI 음식 인식 카메라 화면
+ * 카메라로 음식 촬영 → AI 분석 → 결과 표시 → 저장
+ */
+import { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  useColorScheme,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  Image,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import { useUser } from '@clerk/clerk-expo';
+import { useClerkSupabaseClient } from '../../../lib/supabase';
+import * as Haptics from 'expo-haptics';
+
+// 식사 타입
+const MEAL_TYPES = [
+  { id: 'breakfast', label: '아침', icon: '🍳' },
+  { id: 'lunch', label: '점심', icon: '🍱' },
+  { id: 'dinner', label: '저녁', icon: '🍝' },
+  { id: 'snack', label: '간식', icon: '🍪' },
+];
+
+// 스톱라이트 색상 (Noom 스타일)
+type TrafficLight = 'green' | 'yellow' | 'red';
+
+interface RecognizedFood {
+  id: string;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  trafficLight: TrafficLight;
+  portion: number;
+  confidence: number;
+}
+
+// 음식 DB Mock (실제로는 API 호출)
+const FOOD_DATABASE: Record<string, Omit<RecognizedFood, 'id' | 'portion' | 'confidence'>> = {
+  '비빔밥': { name: '비빔밥', calories: 550, protein: 18, carbs: 65, fat: 12, trafficLight: 'yellow' },
+  '된장찌개': { name: '된장찌개', calories: 120, protein: 9, carbs: 8, fat: 5, trafficLight: 'green' },
+  '김치찌개': { name: '김치찌개', calories: 150, protein: 12, carbs: 10, fat: 6, trafficLight: 'green' },
+  '불고기': { name: '불고기', calories: 350, protein: 28, carbs: 15, fat: 20, trafficLight: 'yellow' },
+  '삼겹살': { name: '삼겹살', calories: 500, protein: 25, carbs: 2, fat: 45, trafficLight: 'red' },
+  '라면': { name: '라면', calories: 500, protein: 10, carbs: 70, fat: 18, trafficLight: 'red' },
+  '샐러드': { name: '샐러드', calories: 80, protein: 3, carbs: 10, fat: 3, trafficLight: 'green' },
+  '치킨': { name: '치킨', calories: 450, protein: 35, carbs: 15, fat: 28, trafficLight: 'red' },
+  '김밥': { name: '김밥', calories: 320, protein: 8, carbs: 45, fat: 12, trafficLight: 'yellow' },
+  '떡볶이': { name: '떡볶이', calories: 380, protein: 6, carbs: 65, fat: 10, trafficLight: 'red' },
+};
+
+type ScreenState = 'camera' | 'analyzing' | 'result';
+
+export default function FoodCameraScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const { user } = useUser();
+  const supabase = useClerkSupabaseClient();
+  const cameraRef = useRef<CameraView>(null);
+
+  const [permission, requestPermission] = useCameraPermissions();
+  const [screenState, setScreenState] = useState<ScreenState>('camera');
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [selectedMealType, setSelectedMealType] = useState('lunch');
+  const [recognizedFoods, setRecognizedFoods] = useState<RecognizedFood[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // 총 영양 정보 계산
+  const totalNutrition = recognizedFoods.reduce(
+    (acc, food) => ({
+      calories: acc.calories + food.calories * food.portion,
+      protein: acc.protein + food.protein * food.portion,
+      carbs: acc.carbs + food.carbs * food.portion,
+      fat: acc.fat + food.fat * food.portion,
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+  );
+
+  // 사진 촬영
+  const handleCapture = async () => {
+    if (!cameraRef.current) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.8,
+        base64: true,
+      });
+
+      if (photo?.uri) {
+        setCapturedImage(photo.uri);
+        setScreenState('analyzing');
+        await analyzeFood(photo.base64 || '');
+      }
+    } catch (error) {
+      console.error('[Mobile] Camera capture error:', error);
+      Alert.alert('오류', '사진 촬영에 실패했습니다.');
+    }
+  };
+
+  // 갤러리에서 선택
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setCapturedImage(result.assets[0].uri);
+      setScreenState('analyzing');
+      await analyzeFood(result.assets[0].base64 || '');
+    }
+  };
+
+  // AI 음식 분석 (Mock)
+  const analyzeFood = async (_imageBase64: string) => {
+    // 실제로는 Gemini API 호출
+    // 여기서는 Mock 데이터 사용
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // 랜덤 음식 1-3개 인식
+    const foodNames = Object.keys(FOOD_DATABASE);
+    const numFoods = Math.floor(Math.random() * 3) + 1;
+    const selectedFoods: RecognizedFood[] = [];
+
+    for (let i = 0; i < numFoods; i++) {
+      const randomFood = foodNames[Math.floor(Math.random() * foodNames.length)];
+      const foodData = FOOD_DATABASE[randomFood];
+
+      // 이미 선택된 음식이면 스킵
+      if (selectedFoods.some((f) => f.name === randomFood)) continue;
+
+      selectedFoods.push({
+        id: `food-${Date.now()}-${i}`,
+        ...foodData,
+        portion: 1,
+        confidence: 0.7 + Math.random() * 0.25,
+      });
+    }
+
+    setRecognizedFoods(selectedFoods);
+    setScreenState('result');
+  };
+
+  // 수량 변경
+  const handlePortionChange = (foodId: string, delta: number) => {
+    Haptics.selectionAsync();
+    setRecognizedFoods((prev) =>
+      prev.map((food) =>
+        food.id === foodId
+          ? { ...food, portion: Math.max(0.5, Math.min(5, food.portion + delta)) }
+          : food
+      )
+    );
+  };
+
+  // 음식 삭제
+  const handleRemoveFood = (foodId: string) => {
+    Haptics.selectionAsync();
+    setRecognizedFoods((prev) => prev.filter((food) => food.id !== foodId));
+  };
+
+  // 저장
+  const handleSave = async () => {
+    if (!user?.id || recognizedFoods.length === 0) return;
+
+    setIsSaving(true);
+
+    try {
+      const foods = recognizedFoods.map((food) => ({
+        food_name: food.name,
+        portion: food.portion,
+        calories: food.calories * food.portion,
+        protein: food.protein * food.portion,
+        carbs: food.carbs * food.portion,
+        fat: food.fat * food.portion,
+        traffic_light: food.trafficLight,
+        ai_confidence: food.confidence,
+      }));
+
+      const { error } = await supabase.from('meal_records').insert({
+        clerk_user_id: user.id,
+        meal_type: selectedMealType,
+        meal_date: new Date().toISOString().split('T')[0],
+        meal_time: new Date().toTimeString().split(' ')[0],
+        record_type: 'photo',
+        foods,
+        total_calories: Math.round(totalNutrition.calories),
+        total_protein: Math.round(totalNutrition.protein * 10) / 10,
+        total_carbs: Math.round(totalNutrition.carbs * 10) / 10,
+        total_fat: Math.round(totalNutrition.fat * 10) / 10,
+        ai_recognized_food: recognizedFoods.map((f) => f.name).join(', '),
+        ai_confidence: recognizedFoods.length > 0
+          ? recognizedFoods[0].confidence > 0.8 ? 'high' : recognizedFoods[0].confidence > 0.6 ? 'medium' : 'low'
+          : 'low',
+        user_confirmed: true,
+      });
+
+      if (error) throw error;
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('완료', '식사가 기록되었습니다!', [
+        { text: '확인', onPress: () => router.back() },
+      ]);
+    } catch (error) {
+      console.error('[Mobile] Failed to save meal record:', error);
+      Alert.alert('오류', '식사 기록 저장에 실패했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // 다시 촬영
+  const handleRetake = () => {
+    setCapturedImage(null);
+    setRecognizedFoods([]);
+    setScreenState('camera');
+  };
+
+  // 스톱라이트 색상
+  const getTrafficLightColor = (light: TrafficLight) => {
+    switch (light) {
+      case 'green': return '#22c55e';
+      case 'yellow': return '#eab308';
+      case 'red': return '#ef4444';
+    }
+  };
+
+  const getTrafficLightEmoji = (light: TrafficLight) => {
+    switch (light) {
+      case 'green': return '🟢';
+      case 'yellow': return '🟡';
+      case 'red': return '🔴';
+    }
+  };
+
+  // 권한 없음
+  if (!permission) {
+    return (
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" color="#22c55e" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+        <View style={styles.centerContent}>
+          <Text style={[styles.permissionText, isDark && styles.textLight]}>
+            카메라 권한이 필요합니다
+          </Text>
+          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+            <Text style={styles.permissionButtonText}>권한 허용</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // 분석 중
+  if (screenState === 'analyzing') {
+    return (
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+        <View style={styles.centerContent}>
+          {capturedImage && (
+            <Image source={{ uri: capturedImage }} style={styles.analyzingImage} />
+          )}
+          <ActivityIndicator size="large" color="#22c55e" style={styles.analyzingSpinner} />
+          <Text style={[styles.analyzingText, isDark && styles.textLight]}>
+            AI가 음식을 분석하고 있어요...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // 결과 화면
+  if (screenState === 'result') {
+    return (
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+        <ScrollView style={styles.resultScroll} showsVerticalScrollIndicator={false}>
+          {/* 촬영 이미지 */}
+          {capturedImage && (
+            <Image source={{ uri: capturedImage }} style={styles.resultImage} />
+          )}
+
+          {/* AI 인식 결과 */}
+          <View style={styles.resultSection}>
+            <Text style={[styles.resultTitle, isDark && styles.textLight]}>
+              AI가 인식한 음식
+            </Text>
+
+            {recognizedFoods.length === 0 ? (
+              <View style={[styles.emptyCard, isDark && styles.cardDark]}>
+                <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+                  음식을 인식하지 못했어요
+                </Text>
+                <TouchableOpacity style={styles.searchLink} onPress={() => router.push('/(nutrition)/search')}>
+                  <Text style={styles.searchLinkText}>검색으로 기록하기</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              recognizedFoods.map((food) => (
+                <View key={food.id} style={[styles.foodCard, isDark && styles.cardDark]}>
+                  <View style={styles.foodHeader}>
+                    <Text style={styles.trafficLight}>{getTrafficLightEmoji(food.trafficLight)}</Text>
+                    <View style={styles.foodInfo}>
+                      <Text style={[styles.foodName, isDark && styles.textLight]}>{food.name}</Text>
+                      <Text style={[styles.foodCalories, { color: getTrafficLightColor(food.trafficLight) }]}>
+                        {Math.round(food.calories * food.portion)} kcal
+                      </Text>
+                    </View>
+                    <TouchableOpacity onPress={() => handleRemoveFood(food.id)}>
+                      <Text style={styles.removeButton}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={[styles.macros, isDark && styles.textMuted]}>
+                    탄 {Math.round(food.carbs * food.portion)}g · 단 {Math.round(food.protein * food.portion)}g · 지 {Math.round(food.fat * food.portion)}g
+                  </Text>
+
+                  {/* 수량 조절 */}
+                  <View style={styles.portionRow}>
+                    <Text style={[styles.portionLabel, isDark && styles.textMuted]}>수량:</Text>
+                    <View style={styles.portionControls}>
+                      <TouchableOpacity
+                        style={[styles.portionButton, isDark && styles.portionButtonDark]}
+                        onPress={() => handlePortionChange(food.id, -0.5)}
+                      >
+                        <Text style={styles.portionButtonText}>−</Text>
+                      </TouchableOpacity>
+                      <Text style={[styles.portionValue, isDark && styles.textLight]}>
+                        {food.portion}인분
+                      </Text>
+                      <TouchableOpacity
+                        style={[styles.portionButton, isDark && styles.portionButtonDark]}
+                        onPress={() => handlePortionChange(food.id, 0.5)}
+                      >
+                        <Text style={styles.portionButtonText}>+</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              ))
+            )}
+
+            {/* 음식 추가 버튼 */}
+            <TouchableOpacity
+              style={[styles.addFoodButton, isDark && styles.addFoodButtonDark]}
+              onPress={() => router.push('/(nutrition)/search')}
+            >
+              <Text style={[styles.addFoodText, isDark && styles.textMuted]}>+ 음식 추가하기</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* 총 영양 정보 */}
+          {recognizedFoods.length > 0 && (
+            <View style={[styles.totalCard, isDark && styles.cardDark]}>
+              <Text style={[styles.totalCalories, isDark && styles.textLight]}>
+                총 {Math.round(totalNutrition.calories)} kcal
+              </Text>
+              <Text style={[styles.totalMacros, isDark && styles.textMuted]}>
+                탄 {Math.round(totalNutrition.carbs)}g · 단 {Math.round(totalNutrition.protein)}g · 지 {Math.round(totalNutrition.fat)}g
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* 하단 버튼 */}
+        <View style={styles.resultFooter}>
+          <TouchableOpacity style={styles.retakeButton} onPress={handleRetake}>
+            <Text style={[styles.retakeButtonText, isDark && styles.textLight]}>다시 촬영</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.saveButton, (isSaving || recognizedFoods.length === 0) && styles.saveButtonDisabled]}
+            onPress={handleSave}
+            disabled={isSaving || recognizedFoods.length === 0}
+          >
+            {isSaving ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.saveButtonText}>기록하기</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // 카메라 화면
+  return (
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+      <View style={styles.cameraContainer}>
+        <CameraView ref={cameraRef} style={styles.camera} facing="back">
+          {/* 가이드 프레임 */}
+          <View style={styles.guideFrame}>
+            <View style={styles.guideBox}>
+              <Text style={styles.guideText}>음식을 프레임 안에 맞춰주세요</Text>
+            </View>
+          </View>
+        </CameraView>
+      </View>
+
+      {/* 식사 타입 선택 */}
+      <View style={styles.mealTypeRow}>
+        {MEAL_TYPES.map((meal) => (
+          <TouchableOpacity
+            key={meal.id}
+            style={[
+              styles.mealTypeChip,
+              isDark && styles.mealTypeChipDark,
+              selectedMealType === meal.id && styles.mealTypeChipSelected,
+            ]}
+            onPress={() => {
+              Haptics.selectionAsync();
+              setSelectedMealType(meal.id);
+            }}
+          >
+            <Text style={styles.mealTypeIcon}>{meal.icon}</Text>
+            <Text
+              style={[
+                styles.mealTypeLabel,
+                isDark && styles.textLight,
+                selectedMealType === meal.id && styles.mealTypeLabelSelected,
+              ]}
+            >
+              {meal.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* 촬영 버튼 */}
+      <View style={styles.cameraControls}>
+        <TouchableOpacity style={styles.galleryButton} onPress={handlePickImage}>
+          <Text style={styles.galleryButtonText}>갤러리</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
+          <View style={styles.captureButtonInner} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.searchButton} onPress={() => router.push('/(nutrition)/search')}>
+          <Text style={styles.searchButtonText}>검색</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  containerDark: {
+    backgroundColor: '#000',
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  permissionText: {
+    fontSize: 16,
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  permissionButton: {
+    backgroundColor: '#22c55e',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  permissionButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cameraContainer: {
+    flex: 1,
+  },
+  camera: {
+    flex: 1,
+  },
+  guideFrame: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  guideBox: {
+    width: '80%',
+    aspectRatio: 4 / 3,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.5)',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  guideText: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  mealTypeRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    backgroundColor: '#111',
+  },
+  mealTypeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#222',
+    borderRadius: 20,
+    gap: 4,
+  },
+  mealTypeChipDark: {
+    backgroundColor: '#222',
+  },
+  mealTypeChipSelected: {
+    backgroundColor: '#22c55e',
+  },
+  mealTypeIcon: {
+    fontSize: 16,
+  },
+  mealTypeLabel: {
+    fontSize: 13,
+    color: '#ccc',
+  },
+  mealTypeLabelSelected: {
+    color: '#fff',
+  },
+  cameraControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 24,
+    backgroundColor: '#111',
+  },
+  galleryButton: {
+    width: 60,
+    alignItems: 'center',
+  },
+  galleryButtonText: {
+    color: '#ccc',
+    fontSize: 14,
+  },
+  captureButton: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 4,
+    borderColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  captureButtonInner: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#fff',
+  },
+  searchButton: {
+    width: 60,
+    alignItems: 'center',
+  },
+  searchButtonText: {
+    color: '#ccc',
+    fontSize: 14,
+  },
+  analyzingImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 16,
+    marginBottom: 24,
+  },
+  analyzingSpinner: {
+    marginBottom: 16,
+  },
+  analyzingText: {
+    fontSize: 16,
+    color: '#fff',
+  },
+  resultScroll: {
+    flex: 1,
+    backgroundColor: '#f8f9fc',
+  },
+  resultImage: {
+    width: '100%',
+    height: 200,
+  },
+  resultSection: {
+    padding: 20,
+  },
+  resultTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111',
+    marginBottom: 12,
+  },
+  emptyCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+  },
+  cardDark: {
+    backgroundColor: '#1a1a1a',
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 12,
+  },
+  searchLink: {
+    padding: 8,
+  },
+  searchLinkText: {
+    fontSize: 14,
+    color: '#22c55e',
+    fontWeight: '500',
+  },
+  foodCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  foodHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  trafficLight: {
+    fontSize: 20,
+    marginRight: 12,
+  },
+  foodInfo: {
+    flex: 1,
+  },
+  foodName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111',
+  },
+  foodCalories: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  removeButton: {
+    fontSize: 18,
+    color: '#999',
+    padding: 4,
+  },
+  macros: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 12,
+  },
+  portionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  portionLabel: {
+    fontSize: 13,
+    color: '#666',
+  },
+  portionControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  portionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  portionButtonDark: {
+    backgroundColor: '#333',
+  },
+  portionButtonText: {
+    fontSize: 18,
+    color: '#22c55e',
+    fontWeight: '600',
+  },
+  portionValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#111',
+    minWidth: 50,
+    textAlign: 'center',
+  },
+  addFoodButton: {
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e5e5',
+    borderRadius: 12,
+    borderStyle: 'dashed',
+  },
+  addFoodButtonDark: {
+    borderColor: '#333',
+  },
+  addFoodText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  totalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  totalCalories: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#22c55e',
+    marginBottom: 4,
+  },
+  totalMacros: {
+    fontSize: 14,
+    color: '#666',
+  },
+  resultFooter: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  retakeButton: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e5e5',
+    alignItems: 'center',
+  },
+  retakeButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+  },
+  saveButton: {
+    flex: 2,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#22c55e',
+    alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    opacity: 0.5,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  textLight: {
+    color: '#fff',
+  },
+  textMuted: {
+    color: '#999',
+  },
+});

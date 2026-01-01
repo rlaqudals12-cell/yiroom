@@ -33,6 +33,25 @@ export default function NutritionLayout() {
           title: '식사 기록',
         }}
       />
+      <Stack.Screen
+        name="water/index"
+        options={{
+          title: '물 섭취',
+        }}
+      />
+      <Stack.Screen
+        name="camera/index"
+        options={{
+          title: '식사 기록',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="search/index"
+        options={{
+          title: '음식 검색',
+        }}
+      />
     </Stack>
   );
 }

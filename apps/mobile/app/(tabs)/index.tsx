@@ -262,6 +262,13 @@ export default function HomeScreen() {
               isDark={isDark}
               onPress={() => router.push('/(nutrition)/dashboard')}
             />
+            <ModuleCard
+              title="제품 추천"
+              description="나에게 맞는 제품 찾기"
+              color={COLORS.secondary}
+              isDark={isDark}
+              onPress={() => router.push('/products')}
+            />
           </View>
         </View>
 
