@@ -19,13 +19,17 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SizeRecommendation } from '../../components/products/SizeRecommendation';
+import type { ClothingCategory } from '../../lib/smart-matching';
 import { useClerkSupabaseClient } from '../../lib/supabase';
 
 interface ProductDetail {
   id: string;
   name: string;
   brand: string;
+  brandId: string;
   category: string;
+  clothingCategory?: ClothingCategory;
   price: number;
   rating: number;
   reviewCount: number;
@@ -37,6 +41,7 @@ interface ProductDetail {
   images: string[];
   purchaseUrl: string;
   isFavorite: boolean;
+  hasSize?: boolean;
 }
 
 // Mock 제품 상세 데이터
@@ -45,6 +50,7 @@ const MOCK_PRODUCT_DETAIL: Record<string, ProductDetail> = {
     id: '1',
     name: '수분 크림 리치',
     brand: '아이오페',
+    brandId: 'iope',
     category: '스킨케어',
     price: 35000,
     rating: 4.5,
@@ -75,6 +81,7 @@ const MOCK_PRODUCT_DETAIL: Record<string, ProductDetail> = {
     id: '2',
     name: '톤업 선크림 SPF50+',
     brand: '라운드랩',
+    brandId: 'roundlab',
     category: '스킨케어',
     price: 18000,
     rating: 4.7,
@@ -99,6 +106,7 @@ const MOCK_PRODUCT_DETAIL: Record<string, ProductDetail> = {
     id: '3',
     name: '코랄 립스틱',
     brand: '롬앤',
+    brandId: 'romand',
     category: '메이크업',
     price: 12000,
     rating: 4.8,
@@ -111,6 +119,49 @@ const MOCK_PRODUCT_DETAIL: Record<string, ProductDetail> = {
     howToUse: '입술 중앙부터 바깥쪽으로 자연스럽게 펴 바릅니다.',
     images: [],
     purchaseUrl: 'https://example.com/product/3',
+    isFavorite: false,
+  },
+  // 의류 제품 (사이즈 추천 테스트용)
+  '4': {
+    id: '4',
+    name: '에어리즘 코튼 오버사이즈 티셔츠',
+    brand: '유니클로',
+    brandId: 'uniqlo',
+    category: '의류',
+    clothingCategory: 'top',
+    hasSize: true,
+    price: 19900,
+    rating: 4.6,
+    reviewCount: 342,
+    matchScore: 88,
+    description:
+      '에어리즘 기술로 땀을 빠르게 흡수하고 건조시키는 쾌적한 오버사이즈 티셔츠입니다. 면 혼방 소재로 자연스러운 착용감을 제공합니다.',
+    ingredients: ['면 60%', '폴리에스터 40%'],
+    benefits: ['빠른 건조', '땀 흡수', '편안한 핏', '통기성'],
+    howToUse: '세탁 시 30도 이하 찬물에서 중성세제로 세탁해주세요.',
+    images: [],
+    purchaseUrl: 'https://example.com/product/4',
+    isFavorite: false,
+  },
+  '5': {
+    id: '5',
+    name: '와이드핏 데님 팬츠',
+    brand: '무신사 스탠다드',
+    brandId: 'musinsa-standard',
+    category: '의류',
+    clothingCategory: 'bottom',
+    hasSize: true,
+    price: 49900,
+    rating: 4.4,
+    reviewCount: 187,
+    matchScore: 85,
+    description:
+      '트렌디한 와이드핏 실루엣의 데님 팬츠입니다. 적당한 두께감과 부드러운 촉감으로 사계절 착용 가능합니다.',
+    ingredients: ['면 98%', '스판덱스 2%'],
+    benefits: ['편안한 착용감', '와이드핏', '사계절 활용', '높은 허리'],
+    howToUse: '첫 세탁 시 단독 세탁을 권장합니다. 건조기 사용을 피해주세요.',
+    images: [],
+    purchaseUrl: 'https://example.com/product/5',
     isFavorite: false,
   },
 };
@@ -325,6 +376,16 @@ export default function ProductDetailScreen() {
             </View>
             <Text style={styles.matchScore}>{product.matchScore}%</Text>
           </View>
+
+          {/* 사이즈 추천 (의류 제품만) */}
+          {product.hasSize && product.clothingCategory && (
+            <SizeRecommendation
+              brandId={product.brandId}
+              brandName={product.brand}
+              category={product.clothingCategory}
+              productId={product.id}
+            />
+          )}
         </View>
 
         {/* 탭 */}

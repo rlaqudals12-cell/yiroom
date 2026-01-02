@@ -69,7 +69,9 @@ const withPWA = withPWAInit({
  * - PWA (Phase A-1)
  * - React Compiler (2026-01-02 활성화)
  */
-const nextConfig: NextConfig & { experimental: { reactCompiler?: boolean } } = {
+const nextConfig: NextConfig = {
+  // React Compiler: 자동 메모이제이션 (Next.js 16에서 top-level로 이동)
+  reactCompiler: true,
   // Turbopack 설정 (Next.js 16 필수 - PWA 플러그인 webpack 호환)
   turbopack: {},
 
@@ -81,9 +83,19 @@ const nextConfig: NextConfig & { experimental: { reactCompiler?: boolean } } = {
 
   // 실험적 기능: 패키지 최적화 (tree-shaking 개선)
   experimental: {
-    // React Compiler: 자동 메모이제이션 (2026-01-02 활성화)
-    reactCompiler: true,
-    optimizePackageImports: ['lucide-react', 'date-fns', 'recharts', '@radix-ui/react-icons'],
+    optimizePackageImports: [
+      'lucide-react',
+      'date-fns',
+      'recharts',
+      '@radix-ui/react-icons',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-tooltip',
+      'framer-motion',
+      'zod',
+    ],
   },
 
   // 보안 헤더 설정

@@ -161,7 +161,8 @@ export async function removeBackgroundClient(imageBlob: Blob): Promise<Blob> {
 
   try {
     // @imgly/background-removal 패키지가 설치되어 있어야 동작
-    const mod = await import('@imgly/background-removal' as string);
+    // webpackIgnore: 패키지 미설치 시에도 빌드 에러 방지
+    const mod = await import(/* webpackIgnore: true */ '@imgly/background-removal');
     const removeBackground = mod.removeBackground as RemoveBackgroundFn;
 
     const result = await removeBackground(imageBlob, {
