@@ -15,13 +15,7 @@ import type { SkinType } from '@/lib/ingredients';
 
 describe('제품 추천 시스템', () => {
   describe('getRoutineForSkinType', () => {
-    const skinTypes: SkinType[] = [
-      'dry',
-      'oily',
-      'sensitive',
-      'combination',
-      'normal',
-    ];
+    const skinTypes: SkinType[] = ['dry', 'oily', 'sensitive', 'combination', 'normal'];
 
     skinTypes.forEach((skinType) => {
       it(`${skinType} 피부 타입의 루틴을 반환한다`, () => {
@@ -71,10 +65,7 @@ describe('제품 추천 시스템', () => {
     });
 
     it('민감성 피부에 부적합한 제품은 제외된다', () => {
-      const products = getProductsForConcerns(
-        ['pigmentation', 'pores'],
-        'sensitive'
-      );
+      const products = getProductsForConcerns(['pigmentation', 'pores'], 'sensitive');
 
       products.forEach((product) => {
         // avoidFor가 있는 경우에만 확인 (선택적 필드)
@@ -85,19 +76,13 @@ describe('제품 추천 시스템', () => {
     });
 
     it('여러 고민을 동시에 처리한다', () => {
-      const products = getProductsForConcerns(
-        ['hydration', 'wrinkles', 'pores'],
-        'normal'
-      );
+      const products = getProductsForConcerns(['hydration', 'wrinkles', 'pores'], 'normal');
 
       expect(products.length).toBeGreaterThan(0);
     });
 
     it('중복 제품은 제거된다', () => {
-      const products = getProductsForConcerns(
-        ['hydration', 'trouble'],
-        'normal'
-      );
+      const products = getProductsForConcerns(['hydration', 'trouble'], 'normal');
       const names = products.map((p) => p.name);
       const uniqueNames = [...new Set(names)];
 
@@ -315,17 +300,13 @@ describe('제품 추천 시스템', () => {
 
       if (recommendations.specialCare.length > 0) {
         expect(formatted.specialCare).toBeDefined();
-        expect(formatted.specialCare.length).toBe(
-          recommendations.specialCare.length
-        );
+        expect(formatted.specialCare.length).toBe(recommendations.specialCare.length);
       }
     });
   });
 });
 
 /**
- * TODO: 배포 전 마이그레이션 파일 작성 필요
- * - supabase/migrations/에 Phase 1 테이블 생성 SQL 추가
- * - ingredients 테이블 마이그레이션
- * - 관련 RLS 정책 설정
+ * 마이그레이션 파일 완료됨:
+ * - 20251126_ingredients_table.sql (테이블 생성 + 시드 데이터)
  */

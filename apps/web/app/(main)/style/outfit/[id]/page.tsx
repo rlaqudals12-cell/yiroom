@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import {
   ArrowLeft,
   Heart,
@@ -12,9 +13,12 @@ import {
   ChevronRight,
   Eye,
   ShoppingBag,
+  Loader2,
+  AlertTriangle,
 } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
+import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 
 /**
  * 코디 상세 페이지 - UX 리스트럭처링
@@ -26,18 +30,48 @@ import { cn } from '@/lib/utils';
  * - 전체 구매 버튼
  */
 
-// 임시 코디 데이터
-const mockOutfit = {
-  id: '1',
-  title: '봄 웜톤을 위한 하이웨스트 룩',
-  description: '하이웨스트로 허리 라인을 강조하고 부드러운 소재로 곡선미를 살린 코디',
-  matchRate: 92,
-  bodyType: '웨이브',
-  personalColor: '봄 웜톤',
+// 체형 코드 → 한글 매핑
+const bodyTypeMap: Record<string, string> = {
+  S: '스트레이트',
+  W: '웨이브',
+  N: '내추럴',
 };
 
-// 코디 아이템
-const outfitItems = [
+// 시즌 → 한글 매핑
+const seasonMap: Record<string, string> = {
+  Spring: '봄 웜톤',
+  Summer: '여름 쿨톤',
+  Autumn: '가을 웜톤',
+  Winter: '겨울 쿨톤',
+};
+
+// lookbook_posts 타입
+interface LookbookPost {
+  id: string;
+  clerk_user_id: string;
+  image_url: string;
+  caption: string | null;
+  body_type: 'S' | 'W' | 'N' | null;
+  personal_color: 'Spring' | 'Summer' | 'Autumn' | 'Winter' | null;
+  outfit_items: OutfitItem[];
+  likes_count: number;
+  comments_count: number;
+  is_public: boolean;
+  created_at: string;
+}
+
+interface OutfitItem {
+  category?: string;
+  description?: string;
+  color?: string;
+  colorHex?: string;
+  brand?: string;
+  price?: number;
+  url?: string;
+}
+
+// 폴백 코디 아이템 (데이터가 없을 때 사용)
+const fallbackOutfitItems = [
   {
     id: '1',
     category: '상의',
@@ -112,16 +146,187 @@ const reviews = [
 export default function OutfitDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { user, isLoaded } = useUser();
+  const supabase = useClerkSupabaseClient();
   const outfitId = params.id as string;
 
   const [isLiked, setIsLiked] = useState(false);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [userBodyType, setUserBodyType] = useState<string>('미분석');
+  const [userBodyTypeRaw, setUserBodyTypeRaw] = useState<string | null>(null);
+  const [userPersonalColor, setUserPersonalColor] = useState<string>('미분석');
+  const [userPersonalColorRaw, setUserPersonalColorRaw] = useState<string | null>(null);
+  const [lookbookPost, setLookbookPost] = useState<LookbookPost | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // TODO: 실제 데이터 연동
-  const userBodyType = '웨이브';
-  const userPersonalColor = '봄 웜톤';
+  // 룩북 포스트 데이터 가져오기
+  useEffect(() => {
+    const fetchPost = async () => {
+      if (!outfitId) return;
 
-  const totalPrice = outfitItems.reduce((sum, item) => sum + item.price, 0);
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('lookbook_posts')
+          .select('*')
+          .eq('id', outfitId)
+          .eq('is_public', true)
+          .single();
+
+        if (error) {
+          console.error('[OutfitDetail] Post fetch error:', error);
+          return;
+        }
+
+        if (data) {
+          setLookbookPost({
+            ...data,
+            outfit_items: (data.outfit_items as OutfitItem[]) || [],
+          });
+        }
+      } catch (err) {
+        console.error('[OutfitDetail] Post fetch error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPost();
+  }, [outfitId, supabase]);
+
+  // 분석 데이터 가져오기
+  useEffect(() => {
+    const fetchAnalysis = async () => {
+      if (!isLoaded || !user?.id) return;
+
+      try {
+        const [bodyResult, pcResult] = await Promise.all([
+          supabase
+            .from('body_analyses')
+            .select('body_type')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('personal_color_assessments')
+            .select('result_season, result_tone')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+
+        if (bodyResult.data) {
+          setUserBodyTypeRaw(bodyResult.data.body_type);
+          setUserBodyType(bodyTypeMap[bodyResult.data.body_type] || bodyResult.data.body_type);
+        }
+
+        if (pcResult.data) {
+          setUserPersonalColorRaw(pcResult.data.result_season);
+          setUserPersonalColor(`${pcResult.data.result_season} ${pcResult.data.result_tone}`);
+        }
+      } catch (err) {
+        console.error('[OutfitDetail] Analysis fetch error:', err);
+      }
+    };
+
+    fetchAnalysis();
+  }, [isLoaded, user?.id, supabase]);
+
+  // 매칭률 계산
+  const matchRate = useMemo(() => {
+    if (!lookbookPost) return 0;
+
+    let rate = 50; // 기본 50%
+
+    // 체형 매칭 (30%)
+    if (userBodyTypeRaw && lookbookPost.body_type === userBodyTypeRaw) {
+      rate += 30;
+    }
+
+    // 퍼스널컬러 매칭 (20%)
+    if (userPersonalColorRaw && lookbookPost.personal_color === userPersonalColorRaw) {
+      rate += 20;
+    }
+
+    return rate;
+  }, [lookbookPost, userBodyTypeRaw, userPersonalColorRaw]);
+
+  // 표시용 코디 데이터
+  const displayOutfit = useMemo(() => {
+    if (!lookbookPost) {
+      return {
+        id: '',
+        title: '',
+        description: '',
+        matchRate: 0,
+        bodyType: '',
+        personalColor: '',
+      };
+    }
+
+    return {
+      id: lookbookPost.id,
+      title: lookbookPost.caption || '코디 룩',
+      description: '',
+      matchRate,
+      bodyType: lookbookPost.body_type ? bodyTypeMap[lookbookPost.body_type] : '',
+      personalColor: lookbookPost.personal_color ? seasonMap[lookbookPost.personal_color] : '',
+    };
+  }, [lookbookPost, matchRate]);
+
+  // 표시용 아이템 목록
+  const displayItems = useMemo(() => {
+    if (!lookbookPost || lookbookPost.outfit_items.length === 0) {
+      return fallbackOutfitItems;
+    }
+
+    return lookbookPost.outfit_items.map((item, index) => ({
+      id: String(index + 1),
+      category: item.category || '아이템',
+      name: item.description || '코디 아이템',
+      brand: item.brand || '',
+      price: item.price || 0,
+      color: item.color || '',
+      colorHex: item.colorHex || '#CCCCCC',
+      url: item.url || '',
+      matchNote: '',
+    }));
+  }, [lookbookPost]);
+
+  const totalPrice = displayItems.reduce((sum, item) => sum + item.price, 0);
+
+  // 로딩 중
+  if (isLoading) {
+    return (
+      <div
+        className="min-h-screen bg-background flex items-center justify-center"
+        data-testid="outfit-detail-loading"
+      >
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">코디 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 코디를 찾을 수 없음
+  if (!lookbookPost) {
+    return (
+      <div
+        className="min-h-screen bg-background flex flex-col items-center justify-center gap-4"
+        data-testid="outfit-detail-not-found"
+      >
+        <AlertTriangle className="w-12 h-12 text-muted-foreground" />
+        <p className="text-muted-foreground">코디를 찾을 수 없습니다</p>
+        <button onClick={() => router.back()} className="text-primary hover:underline">
+          뒤로가기
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24" data-testid="outfit-detail">
@@ -166,7 +371,7 @@ export default function OutfitDetailPage() {
 
             {/* 아이템 태그 */}
             <div className="absolute bottom-4 left-4 right-4 flex justify-center gap-3">
-              {outfitItems.map((item) => (
+              {displayItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setSelectedItem(item.id)}
@@ -188,19 +393,18 @@ export default function OutfitDetailPage() {
         <FadeInUp delay={1}>
           <section className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 p-4">
             <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-              <Sparkles className="w-5 h-5 text-indigo-600" />
-              내 체형 매칭률
+              <Sparkles className="w-5 h-5 text-indigo-600" />내 체형 매칭률
             </h3>
             <div className="mb-3">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-3xl font-bold text-indigo-600">
-                  {mockOutfit.matchRate}%
+                  {displayOutfit.matchRate}%
                 </span>
               </div>
               <div className="h-3 bg-indigo-100 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all"
-                  style={{ width: `${mockOutfit.matchRate}%` }}
+                  style={{ width: `${displayOutfit.matchRate}%` }}
                 />
               </div>
             </div>
@@ -219,10 +423,7 @@ export default function OutfitDetailPage() {
             </h3>
             <ul className="space-y-2">
               {styleTips.map((tip, index) => (
-                <li
-                  key={index}
-                  className="flex items-start gap-2 text-sm text-foreground"
-                >
+                <li key={index} className="flex items-start gap-2 text-sm text-foreground">
                   <span className="text-primary">•</span>
                   {tip}
                 </li>
@@ -236,7 +437,7 @@ export default function OutfitDetailPage() {
           <section className="bg-card rounded-2xl border p-4">
             <h3 className="font-semibold text-foreground mb-4">코디 아이템</h3>
             <div className="space-y-3">
-              {outfitItems.map((item) => (
+              {displayItems.map((item) => (
                 <div
                   key={item.id}
                   className={cn(
@@ -270,9 +471,7 @@ export default function OutfitDetailPage() {
 
                   {/* 가격 + 링크 */}
                   <div className="text-right flex-shrink-0">
-                    <p className="font-semibold text-foreground">
-                      {item.price.toLocaleString()}원
-                    </p>
+                    <p className="font-semibold text-foreground">{item.price.toLocaleString()}원</p>
                     <a
                       href={item.url}
                       target="_blank"
@@ -302,9 +501,7 @@ export default function OutfitDetailPage() {
                     <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
                       {review.bodyType}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      {review.height}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{review.height}</span>
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
                         <Star
@@ -320,9 +517,7 @@ export default function OutfitDetailPage() {
                     </div>
                   </div>
                   <p className="text-sm text-foreground">{review.content}</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    도움됨 {review.helpful}
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">도움됨 {review.helpful}</p>
                 </div>
               ))}
             </div>
@@ -339,9 +534,7 @@ export default function OutfitDetailPage() {
 
       {/* 하단 구매 바 */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <button
-          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-        >
+        <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
           <ShoppingBag className="w-5 h-5" />
           전체 구매 ({totalPrice.toLocaleString()}원)
         </button>

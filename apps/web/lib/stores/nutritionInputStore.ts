@@ -89,6 +89,8 @@ interface NutritionInputState {
   setPersonalColor: (color: PersonalColorSeason | null) => void;
   resetAll: () => void;
   getInputData: () => NutritionInputData;
+  // P0-2: 간소화 지원 메서드
+  applyDefaults: () => void;
 }
 
 // 초기 상태
@@ -161,6 +163,15 @@ export const useNutritionInputStore = create<NutritionInputState>()(
       setPersonalColor: (color) => set({ personalColor: color }),
 
       resetAll: () => set(initialState),
+
+      // P0-2: 선택사항 기본값 적용 (건너뛰기 시)
+      applyDefaults: () => {
+        set({
+          allergies: [],
+          dislikedFoods: [],
+          mealCount: 3, // 기본값 3끼
+        });
+      },
 
       getInputData: () => {
         const state = get();

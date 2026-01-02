@@ -18,11 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   FEEDBACK_TYPE_NAMES,
   FEEDBACK_TYPE_ICONS,
@@ -35,51 +31,26 @@ import {
 } from '@/lib/feedback';
 import type { Feedback, FeedbackStatus, FeedbackType } from '@/types/feedback';
 
-// 목 데이터 (실제로는 서버에서 조회)
-const MOCK_FEEDBACKS: Feedback[] = [
-  {
-    id: '1',
-    clerkUserId: 'user_1',
-    type: 'bug',
-    title: '로그인 시 에러 발생',
-    content: '구글 로그인 버튼 클릭 시 간헐적으로 에러가 발생합니다.',
-    contactEmail: 'user1@example.com',
-    screenshotUrl: null,
-    status: 'pending',
-    adminNotes: null,
-    createdAt: new Date('2025-12-24T10:00:00'),
-    updatedAt: new Date('2025-12-24T10:00:00'),
-    userName: '김이룸',
-  },
-  {
-    id: '2',
-    clerkUserId: 'user_2',
-    type: 'suggestion',
-    title: '다크 모드 지원 요청',
-    content: '눈의 피로를 줄이기 위해 다크 모드 기능이 있으면 좋겠습니다.',
-    contactEmail: null,
-    screenshotUrl: null,
-    status: 'in_progress',
-    adminNotes: '다음 업데이트에 반영 예정',
-    createdAt: new Date('2025-12-23T15:30:00'),
-    updatedAt: new Date('2025-12-24T09:00:00'),
-    userName: '박건강',
-  },
-  {
-    id: '3',
-    clerkUserId: 'user_3',
-    type: 'question',
-    title: '프리미엄 구독 문의',
-    content: '프리미엄 구독 시 어떤 기능을 더 사용할 수 있나요?',
-    contactEmail: 'user3@example.com',
-    screenshotUrl: null,
-    status: 'resolved',
-    adminNotes: '이메일로 상세 안내 완료',
-    createdAt: new Date('2025-12-22T12:00:00'),
-    updatedAt: new Date('2025-12-22T14:00:00'),
-    userName: '이웰니스',
-  },
-];
+// 피드백 API 호출 함수
+async function fetchFeedbacks(): Promise<Feedback[]> {
+  try {
+    const res = await fetch('/api/feedback');
+    if (!res.ok) {
+      console.error('[AdminFeedback] API error:', res.status);
+      return [];
+    }
+    const data = await res.json();
+    // Date 문자열을 Date 객체로 변환
+    return (data.feedbacks || []).map((f: Feedback & { createdAt: string; updatedAt: string }) => ({
+      ...f,
+      createdAt: new Date(f.createdAt),
+      updatedAt: new Date(f.updatedAt),
+    }));
+  } catch (error) {
+    console.error('[AdminFeedback] Fetch error:', error);
+    return [];
+  }
+}
 
 export default function AdminFeedbackPage() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -88,13 +59,12 @@ export default function AdminFeedbackPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // 피드백 로드 (실제로는 서버 액션 사용)
+  // 피드백 로드
   useEffect(() => {
     const loadFeedbacks = async () => {
       setIsLoading(true);
-      // TODO: 서버에서 피드백 목록 조회
-      await new Promise((r) => setTimeout(r, 500));
-      setFeedbacks(MOCK_FEEDBACKS);
+      const data = await fetchFeedbacks();
+      setFeedbacks(data);
       setIsLoading(false);
     };
     loadFeedbacks();
@@ -102,22 +72,18 @@ export default function AdminFeedbackPage() {
 
   // 필터링된 피드백
   const filteredFeedbacks = sortFeedbackByDate(
-    filterFeedbackByType(
-      filterFeedbackByStatus(feedbacks, statusFilter),
-      typeFilter
-    )
+    filterFeedbackByType(filterFeedbackByStatus(feedbacks, statusFilter), typeFilter)
   );
 
   // 통계
   const stats = getFeedbackStats(feedbacks);
 
   // 새로고침
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setFeedbacks(MOCK_FEEDBACKS);
-      setIsLoading(false);
-    }, 500);
+    const data = await fetchFeedbacks();
+    setFeedbacks(data);
+    setIsLoading(false);
   };
 
   return (
@@ -128,17 +94,10 @@ export default function AdminFeedbackPage() {
           <MessageSquare className="h-8 w-8 text-primary" />
           <div>
             <h1 className="text-2xl font-bold">피드백 관리</h1>
-            <p className="text-muted-foreground">
-              사용자 피드백을 확인하고 처리합니다.
-            </p>
+            <p className="text-muted-foreground">사용자 피드백을 확인하고 처리합니다.</p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={isLoading}
-        >
+        <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           새로고침
         </Button>
@@ -191,10 +150,7 @@ export default function AdminFeedbackPage() {
           </SelectContent>
         </Select>
 
-        <Select
-          value={typeFilter}
-          onValueChange={(v) => setTypeFilter(v as FeedbackType | 'all')}
-        >
+        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as FeedbackType | 'all')}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="유형 필터" />
           </SelectTrigger>
@@ -236,9 +192,7 @@ export default function AdminFeedbackPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span>{FEEDBACK_TYPE_ICONS[feedback.type]}</span>
-                          <Badge variant="outline">
-                            {FEEDBACK_TYPE_NAMES[feedback.type]}
-                          </Badge>
+                          <Badge variant="outline">{FEEDBACK_TYPE_NAMES[feedback.type]}</Badge>
                           <Badge
                             className={`${FEEDBACK_STATUS_COLORS[feedback.status].bg} ${FEEDBACK_STATUS_COLORS[feedback.status].text}`}
                           >
@@ -280,9 +234,7 @@ export default function AdminFeedbackPage() {
                       {feedback.contactEmail && (
                         <div>
                           <div className="text-sm font-medium mb-1">연락처</div>
-                          <p className="text-muted-foreground">
-                            {feedback.contactEmail}
-                          </p>
+                          <p className="text-muted-foreground">{feedback.contactEmail}</p>
                         </div>
                       )}
 
@@ -290,9 +242,7 @@ export default function AdminFeedbackPage() {
                       {feedback.adminNotes && (
                         <div>
                           <div className="text-sm font-medium mb-1">관리자 메모</div>
-                          <p className="text-muted-foreground">
-                            {feedback.adminNotes}
-                          </p>
+                          <p className="text-muted-foreground">{feedback.adminNotes}</p>
                         </div>
                       )}
 

@@ -53,6 +53,16 @@ interface ProfileData {
   challengeStats: ChallengeStats;
   workoutStreak: { current: number; longest: number } | null;
   nutritionStreak: { current: number; longest: number } | null;
+  // 분석 결과
+  wellnessScore: number;
+  personalColor: string | null;
+  skinType: string | null;
+  bodyType: string | null;
+  // 소셜
+  friendCount: number;
+  friendRequests: number;
+  weeklyRank: number | null;
+  rankChange: number;
 }
 
 export default function ProfilePage() {
@@ -70,10 +80,72 @@ export default function ProfilePage() {
 
       try {
         // 병렬로 데이터 조회
-        const [levelInfo, userBadges, challengeStats] = await Promise.all([
+        const [
+          levelInfo,
+          userBadges,
+          challengeStats,
+          personalColorResult,
+          skinResult,
+          bodyResult,
+          friendsResult,
+          friendRequestsResult,
+          leaderboardResult,
+          wellnessResult,
+        ] = await Promise.all([
           getUserLevelInfo(supabase, user.id),
           getUserBadges(supabase, user.id),
           getUserChallengeStats(supabase, user.id),
+          // 퍼스널 컬러 분석 결과
+          supabase
+            .from('personal_color_assessments')
+            .select('result_season, result_tone')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single(),
+          // 피부 분석 결과
+          supabase
+            .from('skin_analyses')
+            .select('skin_type, sensitivity_level')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single(),
+          // 체형 분석 결과
+          supabase
+            .from('body_analyses')
+            .select('body_type')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single(),
+          // 친구 수 (accepted 상태)
+          supabase
+            .from('friendships')
+            .select('id', { count: 'exact', head: true })
+            .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+            .eq('status', 'accepted'),
+          // 친구 요청 수 (pending 상태, 내가 받은 요청)
+          supabase
+            .from('friendships')
+            .select('id', { count: 'exact', head: true })
+            .eq('addressee_id', user.id)
+            .eq('status', 'pending'),
+          // 리더보드 순위
+          supabase
+            .from('leaderboard_cache')
+            .select('rank, previous_rank')
+            .eq('clerk_user_id', user.id)
+            .eq('period', 'weekly')
+            .single(),
+          // 웰니스 스코어
+          supabase
+            .from('wellness_scores')
+            .select('total_score')
+            .eq('clerk_user_id', user.id)
+            .order('calculated_at', { ascending: false })
+            .limit(1)
+            .single(),
         ]);
 
         // 스트릭 조회
@@ -101,6 +173,32 @@ export default function ProfilePage() {
           .sort((a, b) => new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime())
           .slice(0, 3);
 
+        // 퍼스널 컬러 포맷팅
+        const pcData = personalColorResult.data;
+        const personalColor = pcData ? `${pcData.result_season} ${pcData.result_tone}` : null;
+
+        // 피부 타입 포맷팅
+        const skinData = skinResult.data;
+        const skinType = skinData
+          ? `${skinData.skin_type}${skinData.sensitivity_level ? '/' + skinData.sensitivity_level : ''}`
+          : null;
+
+        // 체형 포맷팅
+        const bodyTypeMap: Record<string, string> = {
+          S: '스트레이트',
+          W: '웨이브',
+          N: '내추럴',
+        };
+        const bodyData = bodyResult.data;
+        const bodyType = bodyData ? bodyTypeMap[bodyData.body_type] || bodyData.body_type : null;
+
+        // 리더보드 순위 변화
+        const leaderData = leaderboardResult.data;
+        const weeklyRank = leaderData?.rank ?? null;
+        const rankChange = leaderData
+          ? (leaderData.previous_rank ?? leaderData.rank) - leaderData.rank
+          : 0;
+
         setProfileData({
           levelInfo,
           recentBadges,
@@ -118,6 +216,16 @@ export default function ProfilePage() {
                 longest: nutritionStreakData.longest_streak,
               }
             : null,
+          // 분석 결과
+          wellnessScore: wellnessResult.data?.total_score ?? 0,
+          personalColor,
+          skinType,
+          bodyType,
+          // 소셜
+          friendCount: friendsResult.count ?? 0,
+          friendRequests: friendRequestsResult.count ?? 0,
+          weeklyRank,
+          rankChange,
         });
       } catch (error) {
         console.error('[ProfilePage] 데이터 조회 실패:', error);
@@ -152,15 +260,15 @@ export default function ProfilePage() {
     );
   }
 
-  // TODO: 실제 데이터 연동
-  const wellnessScore = 85;
-  const personalColor = '봄 웜톤';
-  const skinType = '복합성/민감성';
-  const bodyType = '웨이브';
-  const friendCount = 12;
-  const friendRequests = 3;
-  const weeklyRank = 127;
-  const rankChange = 23;
+  // profileData에서 값 추출 (없으면 기본값)
+  const wellnessScore = profileData?.wellnessScore ?? 0;
+  const personalColor = profileData?.personalColor ?? '미분석';
+  const skinType = profileData?.skinType ?? '미분석';
+  const bodyType = profileData?.bodyType ?? '미분석';
+  const friendCount = profileData?.friendCount ?? 0;
+  const friendRequests = profileData?.friendRequests ?? 0;
+  const weeklyRank = profileData?.weeklyRank;
+  const rankChange = profileData?.rankChange ?? 0;
 
   return (
     <div className="bg-background min-h-screen pb-20" data-testid="profile-page">
@@ -283,7 +391,21 @@ export default function ProfilePage() {
                   리더보드
                 </h3>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  이번 주 {weeklyRank}위 (+{rankChange}↑)
+                  {weeklyRank !== null ? (
+                    <>
+                      이번 주 {weeklyRank}위
+                      {rankChange !== 0 && (
+                        <span className={rankChange > 0 ? 'text-green-600' : 'text-red-600'}>
+                          {' '}
+                          ({rankChange > 0 ? '+' : ''}
+                          {rankChange}
+                          {rankChange > 0 ? '↑' : '↓'})
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    '아직 순위 없음'
+                  )}
                 </p>
               </div>
               <div className="flex flex-col gap-1">

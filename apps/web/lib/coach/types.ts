@@ -49,6 +49,14 @@ export interface UserContext {
     todayCalories?: number;
     waterIntake?: number;
   };
+  // 주간 요약 (부담 없는 인사이트용)
+  weeklySummary?: {
+    workoutCount?: number;
+    avgCalories?: number;
+    avgProtein?: number;
+    avgCarbs?: number;
+    avgFat?: number;
+  };
 }
 
 /**

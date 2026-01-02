@@ -8,33 +8,36 @@
 ## 전체 진행률
 
 ### Phase 1: 기초 분석 (Week 0-6) ✅
-| Week | 목표 | 상태 | 완료일 |
-|------|------|------|--------|
-| Week 0 | 학습 | ✅ 완료 | - |
-| Week 1 | S-1 피부 Mock | ✅ 완료 | 2025-11-26 |
-| Week 2 | C-1 체형 Mock | ✅ 완료 | 2025-11-26 |
+
+| Week   | 목표             | 상태    | 완료일     |
+| ------ | ---------------- | ------- | ---------- |
+| Week 0 | 학습             | ✅ 완료 | -          |
+| Week 1 | S-1 피부 Mock    | ✅ 완료 | 2025-11-26 |
+| Week 2 | C-1 체형 Mock    | ✅ 완료 | 2025-11-26 |
 | Week 3 | PC-1 퍼스널 컬러 | ✅ 완료 | 2025-11-26 |
-| Week 4 | Clerk + DB | ✅ 완료 | 2025-11-26 |
-| Week 5 | Gemini S-1, C-1 | ✅ 완료 | 2025-11-26 |
+| Week 4 | Clerk + DB       | ✅ 완료 | 2025-11-26 |
+| Week 5 | Gemini S-1, C-1  | ✅ 완료 | 2025-11-26 |
 | Week 6 | PC-1 + 성분 분석 | ✅ 완료 | 2025-11-26 |
 
 ### Phase 2-3: 확장 모듈 ✅
-| Phase | 모듈 | 설명 | 상태 |
-|-------|------|------|------|
-| Phase 2 | W-1 | 운동 분석 + 플랜 생성 | ✅ 완료 |
-| Phase 2 | N-1 | 영양 기록 + AI 분석 | ✅ 완료 |
-| Phase 2 | R-1 | 통합 리포트 | ✅ 완료 |
+
+| Phase   | 모듈   | 설명                    | 상태    |
+| ------- | ------ | ----------------------- | ------- |
+| Phase 2 | W-1    | 운동 분석 + 플랜 생성   | ✅ 완료 |
+| Phase 2 | N-1    | 영양 기록 + AI 분석     | ✅ 완료 |
+| Phase 2 | R-1    | 통합 리포트             | ✅ 완료 |
 | Phase 3 | 고도화 | E2E 테스트, 크로스 모듈 | ✅ 완료 |
 
 ### Phase A-I: 고급 기능
-| Phase | 모듈 | 설명 | 상태 |
-|-------|------|------|------|
-| Phase A | Product DB | 850+ 제품, 리뷰, 추천 | ✅ 완료 |
-| Phase B | React Native | 모노레포, Expo 앱 | 🔄 진행 중 |
-| Phase H | 소셜 | 친구, 리더보드, 챌린지 | ✅ 완료 |
-| Phase I | 어필리에이트 | iHerb, 쿠팡, 무신사 | ✅ 완료 |
-| Phase L | i18n | 4개 언어 (한/영/일/중) | ✅ 완료 |
-| Launch | 출시 준비 | 온보딩, 도움말, 알림 | ✅ 완료 |
+
+| Phase   | 모듈         | 설명                   | 상태       |
+| ------- | ------------ | ---------------------- | ---------- |
+| Phase A | Product DB   | 850+ 제품, 리뷰, 추천  | ✅ 완료    |
+| Phase B | React Native | 모노레포, Expo 앱      | 🔄 진행 중 |
+| Phase H | 소셜         | 친구, 리더보드, 챌린지 | ✅ 완료    |
+| Phase I | 어필리에이트 | iHerb, 쿠팡, 무신사    | ✅ 완료    |
+| Phase L | i18n         | 4개 언어 (한/영/일/중) | ✅ 완료    |
+| Launch  | 출시 준비    | 온보딩, 도움말, 알림   | ✅ 완료    |
 
 ---
 
@@ -176,6 +179,7 @@
 ```
 
 **구현 파일**:
+
 - [lib/gemini.ts](../lib/gemini.ts) - Gemini AI 클라이언트
 - [app/api/analyze/skin/route.ts](../app/api/analyze/skin/route.ts) - S-1 API (Real AI)
 - [app/api/analyze/body/route.ts](../app/api/analyze/body/route.ts) - C-1 API (Real AI)
@@ -248,9 +252,10 @@
 ```
 
 **구현 파일**:
+
 - [lib/gemini.ts](../lib/gemini.ts) - analyzePersonalColor() 추가
 - [app/api/analyze/personal-color/route.ts](../app/api/analyze/personal-color/route.ts) - PC-1 API (Real AI)
-- [app/(main)/analysis/personal-color/page.tsx](../app/(main)/analysis/personal-color/page.tsx) - API 호출 방식으로 변경
+- [app/(main)/analysis/personal-color/page.tsx](<../app/(main)/analysis/personal-color/page.tsx>) - API 호출 방식으로 변경
 - [lib/ingredients.ts](../lib/ingredients.ts) - 성분 분석 하이브리드 로직
 - [app/api/analyze/ingredients/route.ts](../app/api/analyze/ingredients/route.ts) - 성분 분석 API
 - [supabase/migrations/20251126_ingredients_table.sql](../supabase/migrations/20251126_ingredients_table.sql) - ingredients 테이블 + 시드 데이터
@@ -260,20 +265,34 @@
 - [app/api/analyze/body/route.ts](../app/api/analyze/body/route.ts) - C-1 API (PC 연동 통합)
 - [lib/mock/skin-analysis.ts](../lib/mock/skin-analysis.ts) - S-1 타입에 ingredientWarnings, productRecommendations 추가
 - [lib/mock/body-analysis.ts](../lib/mock/body-analysis.ts) - C-1 타입에 colorRecommendations 추가
-- [app/(main)/analysis/skin/page.tsx](../app/(main)/analysis/skin/page.tsx) - S-1 API 응답 연동
-- [app/(main)/analysis/skin/_components/AnalysisResult.tsx](../app/(main)/analysis/skin/_components/AnalysisResult.tsx) - S-1 성분경고/제품추천 UI
-- [app/(main)/analysis/body/page.tsx](../app/(main)/analysis/body/page.tsx) - C-1 API 응답 연동
-- [app/(main)/analysis/body/_components/AnalysisResult.tsx](../app/(main)/analysis/body/_components/AnalysisResult.tsx) - C-1 색상추천 UI
+- [app/(main)/analysis/skin/page.tsx](<../app/(main)/analysis/skin/page.tsx>) - S-1 API 응답 연동
+- [app/(main)/analysis/skin/\_components/AnalysisResult.tsx](<../app/(main)/analysis/skin/_components/AnalysisResult.tsx>) - S-1 성분경고/제품추천 UI
+- [app/(main)/analysis/body/page.tsx](<../app/(main)/analysis/body/page.tsx>) - C-1 API 응답 연동
+- [app/(main)/analysis/body/\_components/AnalysisResult.tsx](<../app/(main)/analysis/body/_components/AnalysisResult.tsx>) - C-1 색상추천 UI
 
 ---
 
-## Week 7-8: 베타 테스트 ⏳
+## Week 7-8: 베타 테스트 🔄
 
 ```yaml
-[ ] 베타 링크 생성
-[ ] 40-50명 모집 완료
+[x] 베타 배포 환경 준비
+    - Vercel 배포 설정 완료
+    - 보안 헤더 설정 (X-Frame-Options, CSP 등)
+    - Cron 작업 설정 (가격 업데이트)
+[x] 피드백 시스템 구현
+    - /help/feedback 페이지
+    - /api/feedback API
+    - /admin/feedback 관리자 페이지
+[x] UX 개선 완료 (SPEC-UX-IMPROVEMENT-V2)
+    - P0-1: 분석 결과 → 제품 바로 연결 ✅
+    - P0-2: 온보딩 단계 축소 (7→3단계) ✅
+    - P1: 결과 공유 카드 이미지 ✅
+    - P1: 닮은 스타일 예시 컴포넌트 ✅
+    - P2-1: 축하 애니메이션 & 햅틱 ✅
+    - P2-2: 홈 화면 정보 밀도 최적화 ✅
+[ ] 40-50명 테스터 모집
 [ ] 사용자 테스트 진행
-[ ] 피드백 수집
+[ ] 피드백 수집 및 분석
 [ ] 버그 수정
 [ ] 최종 점검
 ```
@@ -283,6 +302,7 @@
 ## Phase 2: 운동/영양 모듈 ✅
 
 ### W-1 운동 분석
+
 ```yaml
 [x] 운동 온보딩 (목표, 고민, 빈도, 장소, 장비)
 [x] AI 운동 타입 분석 (5가지: Toner, Builder, Athlete, etc.)
@@ -293,6 +313,7 @@
 ```
 
 ### N-1 영양 분석
+
 ```yaml
 [x] 영양 온보딩 (목표, 식단 스타일)
 [x] 식사 기록 시스템 (아침/점심/저녁/간식)
@@ -307,6 +328,7 @@
 ```
 
 ### R-1 리포트
+
 ```yaml
 [x] 주간/월간 리포트 생성
 [x] 운동/영양 통합 분석
@@ -433,6 +455,7 @@
 ## Phase 1 테스트 ✅ (2025-12-04 추가)
 
 ### 테스트 파일 구성
+
 ```yaml
 [x] tests/lib/mock/personal-color.test.ts (25 tests)
     - generateMockPersonalColorResult() 테스트
@@ -474,6 +497,7 @@
 ## 배포 전 TODO ⚠️
 
 ### DB 마이그레이션 파일 작성 필요
+
 ```yaml
 [ ] Phase 1 테이블 마이그레이션 파일 생성
     - supabase/migrations/ 디렉토리에 SQL 파일 추가
@@ -505,6 +529,7 @@
 ## 추가 완료 항목
 
 ### 인프라 설정
+
 ```yaml
 [x] .env.local 환경 변수 설정
 [x] Supabase 프로젝트 연결
@@ -513,6 +538,7 @@
 ```
 
 ### 인증 테스트
+
 ```yaml
 [x] /auth-test 페이지 구현
 [x] Clerk → Supabase 사용자 동기화
@@ -524,6 +550,7 @@
 ## Gemini AI 모델 계획
 
 ### 현재 설정 (개발/테스트)
+
 ```yaml
 모델: gemini-2.5-flash
 설정 파일: lib/gemini.ts
@@ -531,6 +558,7 @@
 ```
 
 ### MVP 완성 시 업그레이드 예정
+
 ```yaml
 [ ] Gemini 3 Pro 업그레이드
     - 모델 ID: gemini-3-pro (출시 후 확인 필요)
@@ -540,13 +568,14 @@
 
 ### Gemini 모델 비교
 
-| 모델 | 용도 | 비용 | 성능 |
-|------|------|------|------|
-| gemini-2.5-flash | 현재 (개발) | 무료/저가 | 빠름 |
-| gemini-2.5-pro | 고성능 필요 시 | 유료 | 높음 |
-| **gemini-3-pro** | **MVP 완성본** | **유료** | **최고** |
+| 모델             | 용도           | 비용      | 성능     |
+| ---------------- | -------------- | --------- | -------- |
+| gemini-2.5-flash | 현재 (개발)    | 무료/저가 | 빠름     |
+| gemini-2.5-pro   | 고성능 필요 시 | 유료      | 높음     |
+| **gemini-3-pro** | **MVP 완성본** | **유료**  | **최고** |
 
 ### 환경변수 설정 예시
+
 ```bash
 # .env.local
 
@@ -561,6 +590,7 @@ FORCE_MOCK_AI=true
 ```
 
 ### 업그레이드 체크리스트
+
 ```yaml
 [ ] Google Cloud Billing 활성화
 [ ] Gemini 3 Pro API 접근 권한 확인
@@ -574,16 +604,17 @@ FORCE_MOCK_AI=true
 
 ## 참조 문서
 
-| 문서 | 위치 |
-|------|------|
-| 마스터 플랜 | `3-phase1-docs/마스터-프로젝트-플랜-v2.4-Updated.md` |
-| Week 가이드 | `3-phase1-docs/Week-0-7-Phase1-완전가이드-v2.4-Hook버전.md` |
+| 문서            | 위치                                                        |
+| --------------- | ----------------------------------------------------------- |
+| 마스터 플랜     | `3-phase1-docs/마스터-프로젝트-플랜-v2.4-Updated.md`        |
+| Week 가이드     | `3-phase1-docs/Week-0-7-Phase1-완전가이드-v2.4-Hook버전.md` |
 | 개발 체크리스트 | `3-phase1-docs/개발전-최종-검토-체크리스트-v2.4-Updated.md` |
-| 프로젝트 TODO | `docs/TODO.md` |
+| 프로젝트 TODO   | `docs/TODO.md`                                              |
 
 ---
 
 **상태 범례**:
+
 - ✅ 완료
 - 🔄 진행 중
 - ⏳ 대기

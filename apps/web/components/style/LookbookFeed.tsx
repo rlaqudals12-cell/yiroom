@@ -179,11 +179,7 @@ export function LookbookFeed({
       {/* 더 불러오기 */}
       {hasMore && (
         <div className="flex justify-center pt-4">
-          <Button
-            variant="outline"
-            onClick={onLoadMore}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={onLoadMore} disabled={isLoading}>
             {isLoading ? '로딩 중...' : '더 보기'}
           </Button>
         </div>
@@ -216,10 +212,7 @@ function LookbookPostCard({ post, user, onLike, onShare, onClick }: LookbookPost
   };
 
   return (
-    <Card
-      className="overflow-hidden cursor-pointer group"
-      onClick={() => onClick?.(post.id)}
-    >
+    <Card className="overflow-hidden cursor-pointer group" onClick={() => onClick?.(post.id)}>
       {/* 이미지 */}
       <div className="relative aspect-[3/4] bg-muted">
         <Image
@@ -256,10 +249,7 @@ function LookbookPostCard({ post, user, onLike, onShare, onClick }: LookbookPost
             className="p-2 rounded-full bg-black/30 hover:bg-black/50 transition-colors"
           >
             <Heart
-              className={cn(
-                'h-4 w-4',
-                isLiked ? 'fill-red-500 text-red-500' : 'text-white'
-              )}
+              className={cn('h-4 w-4', isLiked ? 'fill-red-500 text-red-500' : 'text-white')}
               aria-hidden="true"
             />
           </button>
@@ -282,9 +272,7 @@ function LookbookPostCard({ post, user, onLike, onShare, onClick }: LookbookPost
         </div>
 
         {/* 캡션 */}
-        {post.caption && (
-          <p className="text-sm line-clamp-2 mb-2">{post.caption}</p>
-        )}
+        {post.caption && <p className="text-sm line-clamp-2 mb-2">{post.caption}</p>}
 
         {/* 상호작용 */}
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -296,7 +284,11 @@ function LookbookPostCard({ post, user, onLike, onShare, onClick }: LookbookPost
             <MessageCircle className="h-3 w-3" aria-hidden="true" />
             {post.commentsCount}
           </span>
-          <button onClick={handleShare} className="ml-auto hover:text-foreground">
+          <button
+            onClick={handleShare}
+            className="ml-auto hover:text-foreground"
+            aria-label="공유하기"
+          >
             <Share2 className="h-3 w-3" aria-hidden="true" />
           </button>
         </div>

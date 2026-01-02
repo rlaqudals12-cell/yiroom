@@ -242,6 +242,28 @@ export async function trackAffiliateConversion(productId: string, revenue: numbe
 }
 
 /**
+ * 쇼핑 링크 클릭 트래킹
+ * @param platform 쇼핑 플랫폼 (coupang, musinsa, iherb 등)
+ * @param category 상품 카테고리 (workout-top, workout-bottom, accessory)
+ * @param context 추가 컨텍스트 (personalColor, bodyType 등)
+ */
+export async function trackShoppingClick(
+  platform: string,
+  category: string,
+  context?: {
+    personalColor?: string;
+    bodyType?: string;
+    source?: string;
+  }
+): Promise<void> {
+  await trackEvent({
+    eventType: 'button_click',
+    eventName: `Shopping Click: ${platform}`,
+    eventData: { platform, category, ...context },
+  });
+}
+
+/**
  * 커스텀 이벤트 트래킹
  */
 export async function trackCustomEvent(

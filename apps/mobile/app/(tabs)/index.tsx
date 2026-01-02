@@ -4,7 +4,7 @@
  */
 import { useUser } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   ScrollView,
   useColorScheme,
   Pressable,
+  LayoutAnimation,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -41,6 +42,7 @@ export default function HomeScreen() {
   const isDark = colorScheme === 'dark';
   const router = useRouter();
   const { user, isLoaded } = useUser();
+  const [showMore, setShowMore] = useState(false);
 
   // 실제 데이터 훅
   const { streak: workoutStreak, isLoading: workoutLoading } = useWorkoutData();
@@ -191,6 +193,12 @@ export default function HomeScreen() {
     nutritionSettings,
   ]);
 
+  // 접이식 토글 핸들러
+  const handleToggleMore = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setShowMore(!showMore);
+  };
+
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
       <ScrollView
@@ -207,58 +215,34 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* 알림 요약 */}
-        <View style={styles.notificationSection}>
-          {notificationSummary.map((notification) => (
-            <View
-              key={notification.id}
-              style={[
-                styles.notificationBanner,
-                isDark && styles.cardDark,
-                notification.type === 'success' && styles.notificationSuccess,
-                notification.type === 'warning' && styles.notificationWarning,
-              ]}
-            >
-              <Text
-                style={[styles.notificationText, isDark && styles.textLight]}
-              >
-                {notification.message}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        {/* 오늘의 요약 카드 */}
-        <View style={[styles.summaryCard, isDark && styles.cardDark]}>
-          <View style={styles.summaryHeader}>
-            <Text style={[styles.summaryTitle, isDark && styles.textLight]}>
-              오늘의 요약
+        {/* 알림 요약 (최신 1개만) */}
+        {notificationSummary.length > 0 && (
+          <View
+            style={[
+              styles.notificationBanner,
+              isDark && styles.cardDark,
+              notificationSummary[0].type === 'success' &&
+                styles.notificationSuccess,
+              notificationSummary[0].type === 'warning' &&
+                styles.notificationWarning,
+            ]}
+          >
+            <Text style={[styles.notificationText, isDark && styles.textLight]}>
+              {notificationSummary[0].message}
             </Text>
           </View>
-          <View style={styles.summaryStats}>
-            <StatItem
-              label="운동"
-              value={workoutValue}
-              color={COLORS.workout}
-            />
-            <StatItem
-              label="식단"
-              value={nutritionValue}
-              color={COLORS.nutrition}
-            />
-            <StatItem
-              label="분석"
-              value={checkinValue}
-              color={COLORS.primary}
-            />
-          </View>
-        </View>
+        )}
 
-        {/* 오늘 할 일 */}
+        {/* 1순위: 오늘 할 일 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            오늘 할 일
-          </Text>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+              오늘 할 일
+            </Text>
+            <Text style={[styles.sectionBadge, isDark && styles.textMuted]}>
+              {todayTasks.filter((t) => !t.completed).length}개 남음
+            </Text>
+          </View>
           <View style={[styles.todoCard, isDark && styles.cardDark]}>
             {todayTasks.map((task, index) => (
               <TodoItem
@@ -273,7 +257,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* 퀵 액션 */}
+        {/* 2순위: 퀵 액션 */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
             빠른 시작
@@ -306,46 +290,94 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* 모듈 카드 */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            나의 여정
+        {/* 더 보기 토글 버튼 */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.moreToggle,
+            isDark && styles.cardDark,
+            pressed && styles.pressed,
+          ]}
+          onPress={handleToggleMore}
+        >
+          <Text style={[styles.moreToggleText, isDark && styles.textLight]}>
+            {showMore ? '접기' : '더 보기'}
           </Text>
-          <View style={styles.modules}>
-            <ModuleCard
-              title="운동"
-              description="맞춤 운동 플랜으로 목표 달성"
-              color={COLORS.workout}
-              isDark={isDark}
-              onPress={() => router.push('/(workout)/onboarding')}
-            />
-            <ModuleCard
-              title="영양"
-              description="균형 잡힌 식단으로 건강 관리"
-              color={COLORS.nutrition}
-              isDark={isDark}
-              onPress={() => router.push('/(nutrition)/dashboard')}
-            />
-            <ModuleCard
-              title="제품 추천"
-              description="나에게 맞는 제품 찾기"
-              color={COLORS.secondary}
-              isDark={isDark}
-              onPress={() => router.push('/products')}
-            />
-          </View>
-        </View>
+          <Text style={[styles.moreToggleIcon, isDark && styles.textMuted]}>
+            {showMore ? '▲' : '▼'}
+          </Text>
+        </Pressable>
 
-        {/* 팁 카드 */}
-        <View style={[styles.tipCard, isDark && styles.cardDark]}>
-          <Text style={[styles.tipLabel, { color: COLORS.secondary }]}>
-            💡 오늘의 팁
-          </Text>
-          <Text style={[styles.tipText, isDark && styles.textLight]}>
-            꾸준한 기록이 변화의 시작입니다.{'\n'}
-            오늘도 이룸과 함께해요!
-          </Text>
-        </View>
+        {/* 접이식 섹션 */}
+        {showMore && (
+          <>
+            {/* 오늘의 요약 카드 */}
+            <View style={[styles.summaryCard, isDark && styles.cardDark]}>
+              <View style={styles.summaryHeader}>
+                <Text style={[styles.summaryTitle, isDark && styles.textLight]}>
+                  오늘의 요약
+                </Text>
+              </View>
+              <View style={styles.summaryStats}>
+                <StatItem
+                  label="운동"
+                  value={workoutValue}
+                  color={COLORS.workout}
+                />
+                <StatItem
+                  label="식단"
+                  value={nutritionValue}
+                  color={COLORS.nutrition}
+                />
+                <StatItem
+                  label="분석"
+                  value={checkinValue}
+                  color={COLORS.primary}
+                />
+              </View>
+            </View>
+
+            {/* 모듈 카드 */}
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+                나의 여정
+              </Text>
+              <View style={styles.modules}>
+                <ModuleCard
+                  title="운동"
+                  description="맞춤 운동 플랜으로 목표 달성"
+                  color={COLORS.workout}
+                  isDark={isDark}
+                  onPress={() => router.push('/(workout)/onboarding')}
+                />
+                <ModuleCard
+                  title="영양"
+                  description="균형 잡힌 식단으로 건강 관리"
+                  color={COLORS.nutrition}
+                  isDark={isDark}
+                  onPress={() => router.push('/(nutrition)/dashboard')}
+                />
+                <ModuleCard
+                  title="제품 추천"
+                  description="나에게 맞는 제품 찾기"
+                  color={COLORS.secondary}
+                  isDark={isDark}
+                  onPress={() => router.push('/products')}
+                />
+              </View>
+            </View>
+
+            {/* 팁 카드 */}
+            <View style={[styles.tipCard, isDark && styles.cardDark]}>
+              <Text style={[styles.tipLabel, { color: COLORS.secondary }]}>
+                💡 오늘의 팁
+              </Text>
+              <Text style={[styles.tipText, isDark && styles.textLight]}>
+                꾸준한 기록이 변화의 시작입니다.{'\n'}
+                오늘도 이룸과 함께해요!
+              </Text>
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -539,6 +571,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    marginBottom: 16,
   },
   notificationSuccess: {
     backgroundColor: '#dcfce7',
@@ -595,11 +628,20 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 24,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#111',
-    marginBottom: 12,
+  },
+  sectionBadge: {
+    fontSize: 13,
+    color: '#666',
   },
 
   // 오늘 할 일
@@ -745,6 +787,33 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#999',
     marginLeft: 8,
+  },
+
+  // 더 보기 토글
+  moreToggle: {
+    backgroundColor: COLORS.cardLight,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  moreToggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginRight: 6,
+  },
+  moreToggleIcon: {
+    fontSize: 12,
+    color: '#999',
   },
 
   // 팁 카드

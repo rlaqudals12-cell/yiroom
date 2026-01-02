@@ -20,6 +20,13 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
     const supabase = createClerkSupabaseClient();
     const context: UserContext = {};
 
+    // 주간 날짜 계산
+    const today = new Date();
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekAgoStr = weekAgo.toISOString().split('T')[0];
+    const todayStr = today.toISOString().split('T')[0];
+
     // 병렬로 데이터 조회
     const [
       personalColorResult,
@@ -31,6 +38,8 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
       nutritionStreakResult,
       todayWorkoutResult,
       todayNutritionResult,
+      weeklyWorkoutResult,
+      weeklyNutritionResult,
     ] = await Promise.all([
       // 퍼스널 컬러
       supabase
@@ -94,7 +103,7 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
         .from('workout_logs')
         .select('exercise_name, duration_minutes')
         .eq('clerk_user_id', clerkUserId)
-        .gte('completed_at', new Date().toISOString().split('T')[0])
+        .gte('completed_at', todayStr)
         .order('completed_at', { ascending: false })
         .limit(1)
         .maybeSingle(),
@@ -104,8 +113,24 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
         .from('daily_nutrition_summary')
         .select('total_calories, water_ml')
         .eq('clerk_user_id', clerkUserId)
-        .eq('date', new Date().toISOString().split('T')[0])
+        .eq('date', todayStr)
         .maybeSingle(),
+
+      // 주간 운동 횟수
+      supabase
+        .from('workout_logs')
+        .select('id', { count: 'exact', head: true })
+        .eq('clerk_user_id', clerkUserId)
+        .gte('workout_date', weekAgoStr)
+        .lte('workout_date', todayStr),
+
+      // 주간 영양 평균
+      supabase
+        .from('daily_nutrition_summary')
+        .select('total_calories, protein_g, carbs_g, fat_g')
+        .eq('clerk_user_id', clerkUserId)
+        .gte('date', weekAgoStr)
+        .lte('date', todayStr),
     ]);
 
     // 퍼스널 컬러
@@ -166,6 +191,41 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
       if (todayNutritionResult.data) {
         context.recentActivity.todayCalories = todayNutritionResult.data.total_calories;
         context.recentActivity.waterIntake = todayNutritionResult.data.water_ml;
+      }
+    }
+
+    // 주간 요약
+    const weeklyWorkoutCount = weeklyWorkoutResult.count || 0;
+    const weeklyNutritionData = weeklyNutritionResult.data as Array<{
+      total_calories?: number;
+      protein_g?: number;
+      carbs_g?: number;
+      fat_g?: number;
+    }> | null;
+
+    if (weeklyWorkoutCount > 0 || (weeklyNutritionData && weeklyNutritionData.length > 0)) {
+      context.weeklySummary = {};
+
+      if (weeklyWorkoutCount > 0) {
+        context.weeklySummary.workoutCount = weeklyWorkoutCount;
+      }
+
+      if (weeklyNutritionData && weeklyNutritionData.length > 0) {
+        const count = weeklyNutritionData.length;
+        const totals = weeklyNutritionData.reduce(
+          (acc, day) => ({
+            calories: acc.calories + (day.total_calories || 0),
+            protein: acc.protein + (day.protein_g || 0),
+            carbs: acc.carbs + (day.carbs_g || 0),
+            fat: acc.fat + (day.fat_g || 0),
+          }),
+          { calories: 0, protein: 0, carbs: 0, fat: 0 }
+        );
+
+        context.weeklySummary.avgCalories = Math.round(totals.calories / count);
+        context.weeklySummary.avgProtein = Math.round(totals.protein / count);
+        context.weeklySummary.avgCarbs = Math.round(totals.carbs / count);
+        context.weeklySummary.avgFat = Math.round(totals.fat / count);
       }
     }
 

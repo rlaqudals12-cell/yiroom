@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Dumbbell } from 'lucide-react';
+import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import {
   type BodyAnalysisResult,
@@ -14,8 +15,9 @@ import {
   mapBodyTypeTo3Type,
 } from '@/lib/mock/body-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
-import { useShare } from '@/hooks/useShare';
+import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { ShareButton } from '@/components/share';
+import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 
 // DB 데이터 타입
@@ -139,10 +141,26 @@ export default function BodyAnalysisResultPage() {
   const [result, setResult] = useState<BodyAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
   const fetchedRef = useRef(false);
-  const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-체형분석-결과');
 
   const analysisId = params.id as string;
+
+  // 공유 카드 데이터
+  const shareData = useMemo(() => {
+    if (!result) return null;
+    return createBodyShareData({
+      bodyType: result.bodyType,
+      bodyTypeLabel: result.bodyTypeLabel,
+      strengths: result.strengths,
+    });
+  }, [result]);
+
+  // 공유 훅
+  const { share, loading: shareLoading } = useAnalysisShare(
+    shareData || { analysisType: 'body', title: '', subtitle: '' },
+    '이룸-체형분석-결과'
+  );
 
   // DB에서 분석 결과 조회
   const fetchAnalysis = useCallback(async () => {
@@ -169,6 +187,13 @@ export default function BodyAnalysisResultPage() {
 
       const transformedResult = transformDbToResult(data as DbBodyAnalysis);
       setResult(transformedResult);
+
+      // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
+      const celebrationKey = `celebration-body-${analysisId}`;
+      if (!sessionStorage.getItem(celebrationKey)) {
+        sessionStorage.setItem(celebrationKey, 'shown');
+        setShowCelebration(true);
+      }
     } catch (err) {
       console.error('[C-1] Fetch error:', err);
       setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
@@ -239,6 +264,14 @@ export default function BodyAnalysisResultPage() {
 
   return (
     <>
+      {/* 분석 완료 축하 효과 */}
+      <CelebrationEffect
+        type="analysis_complete"
+        trigger={showCelebration}
+        message="체형 분석 완료!"
+        onComplete={() => setShowCelebration(false)}
+      />
+
       <main className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
@@ -254,8 +287,18 @@ export default function BodyAnalysisResultPage() {
           </header>
 
           {/* 결과 */}
+          {result && <AnalysisResult result={result} onRetry={handleNewAnalysis} />}
+
+          {/* 맞춤 추천 제품 */}
           {result && (
-            <AnalysisResult result={result} onRetry={handleNewAnalysis} shareRef={shareRef} />
+            <RecommendedProducts
+              analysisType="body"
+              analysisResult={{
+                bodyType: result.bodyType,
+                recommendedExercises: result.styleRecommendations.slice(0, 3).map((r) => r.item),
+              }}
+              className="mt-8 pb-32"
+            />
           )}
         </div>
       </main>

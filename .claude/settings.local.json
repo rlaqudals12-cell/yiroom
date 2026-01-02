@@ -230,7 +230,10 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(mobile\\): 홈 탭에 오늘 할 일 및 알림 요약 추가\n\n**홈 탭 기능 추가:**\n- 오늘 할 일 섹션 \\(운동, 식사, 물 섭취, 분석\\)\n- 알림 요약 배너 \\(Streak, 분석 진행, 목표 달성\\)\n- 다크모드 지원 개선 \\(todoItemBorderDark\\)\n\n**버그 수정:**\n- 잘못된 라우트 경로 수정 \\(/\\(tabs\\)/workout → /\\(workout\\)/onboarding\\)\n- Division by zero 방지 \\(waterGoal > 0 체크\\)\n\n**문서 업데이트:**\n- SPEC-MOBILE-APP.md Week 1-3 완료, Week 4-5 진행 중 반영\n- 파일명 오류 수정 \\(track.tsx → records.tsx\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(npm run lint:fix:*)",
       "Bash(npx eas:*)",
-      "Bash(npm exec:*)"
+      "Bash(npm exec:*)",
+      "Bash(eas whoami:*)",
+      "Bash(timeout 180 npx vitest:*)",
+      "Bash(powershell -Command:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

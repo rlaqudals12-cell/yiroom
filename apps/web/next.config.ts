@@ -1,11 +1,11 @@
-import type { NextConfig } from "next";
-import withPWAInit from "@ducanh2912/next-pwa";
-import withBundleAnalyzer from "@next/bundle-analyzer";
-import { withSentryConfig } from "@sentry/nextjs";
-import createNextIntlPlugin from "next-intl/plugin";
+import type { NextConfig } from 'next';
+import withPWAInit from '@ducanh2912/next-pwa';
+import withBundleAnalyzer from '@next/bundle-analyzer';
+import { withSentryConfig } from '@sentry/nextjs';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 // i18n 플러그인 (서버 컴포넌트에서 메시지 로드)
-const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 /**
  * PWA 설정 (오프라인 지원 활성화)
@@ -13,8 +13,8 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
  * Task 6: 오프라인 지원 추가
  */
 const withPWA = withPWAInit({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
   register: true,
   // 오프라인 캐싱 활성화
   cacheOnFrontEndNav: true,
@@ -25,9 +25,9 @@ const withPWA = withPWAInit({
       // 정적 자산 캐싱 (이미지, 폰트)
       {
         urlPattern: /^https:\/\/.*\.(png|jpg|jpeg|webp|svg|gif|ico|woff|woff2)$/i,
-        handler: "CacheFirst",
+        handler: 'CacheFirst',
         options: {
-          cacheName: "static-assets",
+          cacheName: 'static-assets',
           expiration: {
             maxEntries: 100,
             maxAgeSeconds: 60 * 60 * 24 * 30, // 30일
@@ -37,9 +37,9 @@ const withPWA = withPWAInit({
       // API 요청 캐싱 (네트워크 우선, 실패시 캐시)
       {
         urlPattern: /^\/api\/.*/i,
-        handler: "NetworkFirst",
+        handler: 'NetworkFirst',
         options: {
-          cacheName: "api-cache",
+          cacheName: 'api-cache',
           expiration: {
             maxEntries: 50,
             maxAgeSeconds: 60 * 5, // 5분
@@ -50,9 +50,9 @@ const withPWA = withPWAInit({
       // 페이지 캐싱
       {
         urlPattern: /^\/(home|beauty|style|record|search)$/i,
-        handler: "StaleWhileRevalidate",
+        handler: 'StaleWhileRevalidate',
         options: {
-          cacheName: "pages-cache",
+          cacheName: 'pages-cache',
           expiration: {
             maxEntries: 20,
             maxAgeSeconds: 60 * 60 * 24, // 24시간
@@ -67,28 +67,23 @@ const withPWA = withPWAInit({
  * Next.js 설정
  * - 이미지 최적화 (Task 6.4)
  * - PWA (Phase A-1)
+ * - React Compiler (2026-01-02 활성화)
  */
-const nextConfig: NextConfig = {
+const nextConfig: NextConfig & { experimental: { reactCompiler?: boolean } } = {
   // Turbopack 설정 (Next.js 16 필수 - PWA 플러그인 webpack 호환)
   turbopack: {},
 
   // 프로덕션 컴파일러 최적화
   compiler: {
     // 프로덕션에서 console.log 제거 (console.error, console.warn 유지)
-    removeConsole:
-      process.env.NODE_ENV === "production"
-        ? { exclude: ["error", "warn"] }
-        : false,
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
 
   // 실험적 기능: 패키지 최적화 (tree-shaking 개선)
   experimental: {
-    optimizePackageImports: [
-      "lucide-react",
-      "date-fns",
-      "recharts",
-      "@radix-ui/react-icons",
-    ],
+    // React Compiler: 자동 메모이제이션 (2026-01-02 활성화)
+    reactCompiler: true,
+    optimizePackageImports: ['lucide-react', 'date-fns', 'recharts', '@radix-ui/react-icons'],
   },
 
   // 보안 헤더 설정
@@ -199,20 +194,20 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       // Clerk 프로필 이미지
-      { hostname: "img.clerk.com" },
+      { hostname: 'img.clerk.com' },
       // YouTube 썸네일 (운동 비디오)
-      { hostname: "img.youtube.com" },
-      { hostname: "i.ytimg.com" },
+      { hostname: 'img.youtube.com' },
+      { hostname: 'i.ytimg.com' },
       // Supabase Storage (향후 사용자 업로드 이미지)
       // ** 패턴: 0개 이상의 서브도메인 매칭 (예: xyz.supabase.co)
-      { hostname: "**.supabase.co" },
+      { hostname: '**.supabase.co' },
       // Unsplash 이미지 (홈페이지)
-      { hostname: "images.unsplash.com" },
+      { hostname: 'images.unsplash.com' },
       // 플레이스홀더 이미지 (제품 이미지 없을 때)
-      { hostname: "placehold.co" },
+      { hostname: 'placehold.co' },
     ],
     // 이미지 포맷 최적화 (WebP, AVIF)
-    formats: ["image/avif", "image/webp"],
+    formats: ['image/avif', 'image/webp'],
     // 디바이스 크기별 이미지 생성
     deviceSizes: [640, 750, 828, 1080, 1200],
     // 이미지 사이즈 (컴포넌트에서 지정한 크기)
@@ -225,7 +220,7 @@ const nextConfig: NextConfig = {
  * ANALYZE=true npm run build 로 실행
  */
 const withAnalyzer = withBundleAnalyzer({
-  enabled: process.env.ANALYZE === "true",
+  enabled: process.env.ANALYZE === 'true',
 });
 
 /**
@@ -250,7 +245,7 @@ const sentryConfig = {
   disableLogger: true,
 
   // Turbopack 호환 설정
-  tunnelRoute: "/monitoring",
+  tunnelRoute: '/monitoring',
 
   // 빌드 옵션
   automaticVercelMonitors: true,
@@ -265,6 +260,4 @@ const hasSentryConfig = process.env.SENTRY_ORG && process.env.SENTRY_PROJECT;
 // 플러그인 체인: i18n → PWA → Analyzer → (Sentry)
 const baseConfig = withNextIntl(withAnalyzer(withPWA(nextConfig)));
 
-export default hasSentryConfig
-  ? withSentryConfig(baseConfig, sentryConfig)
-  : baseConfig;
+export default hasSentryConfig ? withSentryConfig(baseConfig, sentryConfig) : baseConfig;

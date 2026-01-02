@@ -35,10 +35,12 @@ export default function BarcodeScanner({
 }: BarcodeScannerProps) {
   const scannerRef = useRef<HTMLDivElement>(null);
   const html5QrcodeRef = useRef<unknown>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<ScannerState>('initializing');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [flashOn, setFlashOn] = useState(false);
   const [hasFlash, setHasFlash] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
   // 진동 피드백
   const vibrate = useCallback(() => {
@@ -119,10 +121,7 @@ export default function BarcodeScanner({
       } catch (err) {
         if (!mounted) return;
 
-        const message =
-          err instanceof Error
-            ? err.message
-            : '카메라를 시작할 수 없습니다';
+        const message = err instanceof Error ? err.message : '카메라를 시작할 수 없습니다';
 
         // 권한 거부 메시지 개선
         if (message.includes('Permission') || message.includes('NotAllowed')) {
@@ -169,20 +168,78 @@ export default function BarcodeScanner({
     }
   };
 
-  // 갤러리에서 이미지 선택 (향후 구현)
+  // 갤러리에서 이미지 선택
   const handleGallerySelect = () => {
-    // TODO: 이미지에서 바코드 인식 구현
-    onError?.('갤러리 기능은 준비 중입니다');
+    fileInputRef.current?.click();
+  };
+
+  // 이미지 파일에서 바코드 인식
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // 이미지 파일 검증
+    if (!file.type.startsWith('image/')) {
+      onError?.('이미지 파일만 선택할 수 있습니다');
+      return;
+    }
+
+    setIsProcessingImage(true);
+
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode');
+
+      // 이미지 스캔용 임시 스캐너 생성
+      const imageScanner = new Html5Qrcode('barcode-image-scanner');
+
+      // scanFile 메서드는 타입 정의에 없지만 런타임에 존재
+      const scannerWithFile = imageScanner as unknown as {
+        scanFile: (file: File, showImage: boolean) => Promise<string>;
+        clear: () => void;
+      };
+
+      const result = await scannerWithFile.scanFile(file, false);
+
+      // 스캔 성공
+      handleScanSuccess(result);
+
+      // 임시 스캐너 정리
+      scannerWithFile.clear();
+    } catch (err) {
+      // 바코드를 찾지 못한 경우
+      const message =
+        err instanceof Error && err.message.includes('No barcode')
+          ? '이미지에서 바코드를 찾을 수 없습니다'
+          : '바코드 인식에 실패했습니다';
+
+      onError?.(message);
+    } finally {
+      setIsProcessingImage(false);
+      // 같은 파일 재선택 허용
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   return (
     <div
-      className={cn(
-        'fixed inset-0 z-50 bg-black flex flex-col',
-        className
-      )}
+      className={cn('fixed inset-0 z-50 bg-black flex flex-col', className)}
       data-testid="barcode-scanner"
     >
+      {/* 숨겨진 파일 input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        className="hidden"
+        aria-hidden="true"
+      />
+
+      {/* 이미지 스캔용 숨겨진 컨테이너 */}
+      <div id="barcode-image-scanner" className="hidden" />
+
       {/* 헤더 */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4">
         <button
@@ -193,20 +250,16 @@ export default function BarcodeScanner({
         >
           <X className="w-6 h-6" />
         </button>
-
-        <span className="text-white text-sm font-medium">
-          바코드를 프레임에 맞춰주세요
-        </span>
-
+        <span className="text-white text-sm font-medium">바코드를 프레임에 맞춰주세요</span>
         <div className="w-10" /> {/* 균형용 스페이서 */}
       </div>
 
       {/* 스캐너 영역 */}
       <div className="flex-1 flex items-center justify-center">
-        {state === 'initializing' && (
+        {(state === 'initializing' || isProcessingImage) && (
           <div className="text-white text-center">
             <div className="animate-spin w-10 h-10 border-4 border-white border-t-transparent rounded-full mx-auto mb-4" />
-            <p>카메라 준비 중...</p>
+            <p>{isProcessingImage ? '이미지 분석 중...' : '카메라 준비 중...'}</p>
           </div>
         )}
 
@@ -253,12 +306,16 @@ export default function BarcodeScanner({
           ref={scannerRef}
           className={cn(
             'w-full h-full',
-            (state === 'initializing' || state === 'error' || state === 'success') && 'hidden'
+            (state === 'initializing' ||
+              state === 'error' ||
+              state === 'success' ||
+              isProcessingImage) &&
+              'hidden'
           )}
         />
 
         {/* 스캔 가이드 오버레이 */}
-        {(state === 'ready' || state === 'scanning') && (
+        {(state === 'ready' || state === 'scanning') && !isProcessingImage && (
           <div className="absolute inset-0 pointer-events-none">
             {/* 어두운 영역 */}
             <div className="absolute inset-0 bg-black/50" />
@@ -293,11 +350,7 @@ export default function BarcodeScanner({
             aria-label={flashOn ? '플래시 끄기' : '플래시 켜기'}
             data-testid="barcode-scanner-flash"
           >
-            {flashOn ? (
-              <Flashlight className="w-6 h-6" />
-            ) : (
-              <FlashlightOff className="w-6 h-6" />
-            )}
+            {flashOn ? <Flashlight className="w-6 h-6" /> : <FlashlightOff className="w-6 h-6" />}
           </button>
         )}
 
@@ -305,19 +358,25 @@ export default function BarcodeScanner({
 
         {/* 중앙 안내 텍스트 */}
         <div className="text-center">
-          <p className="text-white/80 text-sm">
-            EAN-13, EAN-8, UPC-A 바코드 지원
-          </p>
+          <p className="text-white/80 text-sm">EAN-13, EAN-8, UPC-A 바코드 지원</p>
         </div>
 
         {/* 갤러리 버튼 */}
         <button
           onClick={handleGallerySelect}
-          className="p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+          disabled={isProcessingImage}
+          className={cn(
+            'p-3 rounded-full bg-black/50 text-white transition-colors',
+            isProcessingImage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-black/70'
+          )}
           aria-label="갤러리에서 선택"
           data-testid="barcode-scanner-gallery"
         >
-          <ImageIcon className="w-6 h-6" />
+          {isProcessingImage ? (
+            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <ImageIcon className="w-6 h-6" />
+          )}
         </button>
       </div>
 

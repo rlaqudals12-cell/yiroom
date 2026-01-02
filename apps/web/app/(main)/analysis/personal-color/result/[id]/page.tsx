@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Palette } from 'lucide-react';
+import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import {
   type PersonalColorResult,
@@ -16,7 +17,11 @@ import {
   WORST_COLORS,
 } from '@/lib/mock/personal-color';
 import AnalysisResult from '../../_components/AnalysisResult';
+import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
+import { ShareButton } from '@/components/share';
+import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
+import type { PersonalColorSeason } from '@/types/product';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -117,9 +122,26 @@ export default function PersonalColorResultPage() {
   const [result, setResult] = useState<PersonalColorResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;
+
+  // 공유 카드 데이터
+  const shareData = useMemo(() => {
+    if (!result) return null;
+    return createPersonalColorShareData({
+      seasonType: result.seasonType,
+      seasonLabel: result.seasonLabel,
+      bestColors: result.bestColors,
+    });
+  }, [result]);
+
+  // 공유 훅
+  const { share, loading: shareLoading } = useAnalysisShare(
+    shareData || { analysisType: 'personal-color', title: '', subtitle: '' },
+    '이룸-퍼스널컬러-결과'
+  );
 
   // DB에서 분석 결과 조회
   const fetchAnalysis = useCallback(async () => {
@@ -146,6 +168,13 @@ export default function PersonalColorResultPage() {
 
       const transformedResult = transformDbToResult(data as DbPersonalColorAssessment);
       setResult(transformedResult);
+
+      // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
+      const celebrationKey = `celebration-pc-${analysisId}`;
+      if (!sessionStorage.getItem(celebrationKey)) {
+        sessionStorage.setItem(celebrationKey, 'shown');
+        setShowCelebration(true);
+      }
     } catch (err) {
       console.error('[PC-1] Fetch error:', err);
       setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
@@ -216,6 +245,14 @@ export default function PersonalColorResultPage() {
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-muted">
+      {/* 분석 완료 축하 효과 */}
+      <CelebrationEffect
+        type="analysis_complete"
+        trigger={showCelebration}
+        message="퍼스널 컬러 분석 완료!"
+        onComplete={() => setShowCelebration(false)}
+      />
+
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="flex items-center justify-between mb-6">
@@ -231,18 +268,33 @@ export default function PersonalColorResultPage() {
 
         {/* 결과 */}
         {result && <AnalysisResult result={result} onRetry={handleNewAnalysis} />}
+
+        {/* 맞춤 추천 제품 */}
+        {result && (
+          <RecommendedProducts
+            analysisType="personal-color"
+            analysisResult={{
+              seasonType: (result.seasonType.charAt(0).toUpperCase() +
+                result.seasonType.slice(1)) as PersonalColorSeason,
+            }}
+            className="mt-8 pb-32"
+          />
+        )}
       </div>
 
       {/* 하단 고정 버튼 */}
       {result && (
         <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
-          <div className="max-w-md mx-auto">
+          <div className="max-w-md mx-auto space-y-2">
+            {/* 제품 추천 버튼 */}
             <Button
               className="w-full"
               onClick={() => router.push(`/products?season=${result.seasonType}&category=makeup`)}
             >
               <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
             </Button>
+            {/* 공유 버튼 */}
+            <ShareButton onShare={share} loading={shareLoading} variant="outline" />
           </div>
         </div>
       )}

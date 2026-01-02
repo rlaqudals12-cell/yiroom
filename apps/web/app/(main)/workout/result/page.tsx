@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { useWorkoutInputStore, type PersonalColorSeason } from '@/lib/stores/workoutInputStore';
+import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import { convertSkinMetricsToSummary } from '@/lib/nutrition/skinInsight';
+import type { MetricStatus } from '@/lib/mock/skin-analysis';
 import { classifyWorkoutType, WorkoutTypeResult } from '@/lib/workout/classifyWorkoutType';
 import { saveWorkoutAnalysisAction } from '../actions';
 import { getRecommendedExercises } from '@/lib/workout/exercises';
@@ -30,6 +33,7 @@ import { FadeInUp, ScaleIn, Confetti } from '@/components/animations';
 export default function ResultPage() {
   const router = useRouter();
   const { user, isLoaded: isUserLoaded } = useUser();
+  const supabase = useClerkSupabaseClient();
   const { getInputData, resetAll } = useWorkoutInputStore();
   const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-운동타입-결과');
 
@@ -40,6 +44,7 @@ export default function ResultPage() {
   const [concerns, setConcerns] = useState<string[]>([]);
   const [goals, setGoals] = useState<string[]>([]);
   const [location, setLocation] = useState<'home' | 'gym' | 'outdoor'>('home');
+  const [durationMinutes, setDurationMinutes] = useState(30);
   const [bodyType, setBodyType] = useState<BodyType | null>(null);
   const [personalColor, setPersonalColor] = useState<PersonalColorSeason | null>(null);
   const [skinAnalysis, setSkinAnalysis] = useState<SkinAnalysisSummary | null>(null);
@@ -109,6 +114,14 @@ export default function ResultPage() {
         setGoals(inputData.goals || []);
         setLocation((inputData.location as 'home' | 'gym' | 'outdoor') || 'home');
 
+        // 운동 빈도 기반 예상 운동 시간 설정
+        const frequencyToDuration: Record<string, number> = {
+          '1-2': 20,
+          '3-4': 30,
+          '5+': 45,
+        };
+        setDurationMinutes(frequencyToDuration[inputData.frequency || '3-4'] || 30);
+
         // 체형 및 퍼스널 컬러 저장
         const userBodyType = inputData.bodyTypeData?.type as BodyType | undefined;
         const userPC = inputData.personalColor;
@@ -120,19 +133,24 @@ export default function ResultPage() {
           setPersonalColor(userPC);
         }
 
-        // S-1 피부 분석 데이터 (실제로는 DB에서 가져옴)
-        // TODO: 실제 S-1 분석 데이터 연동 (Sprint 4)
-        // 여기서는 Mock 데이터로 시연
-        const mockSkinAnalysis: SkinAnalysisSummary = {
-          hydration: 'normal',
-          oil: 'warning',
-          pores: 'normal',
-          wrinkles: 'good',
-          elasticity: 'good',
-          pigmentation: 'normal',
-          trouble: 'warning',
-        };
-        setSkinAnalysis(mockSkinAnalysis);
+        // S-1 피부 분석 데이터 조회
+        try {
+          const { data: skinData } = await supabase
+            .from('skin_analyses')
+            .select('metrics')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (skinData?.metrics && Array.isArray(skinData.metrics)) {
+            const metricsArray = skinData.metrics as Array<{ id: string; status: MetricStatus }>;
+            const summary = convertSkinMetricsToSummary(metricsArray);
+            setSkinAnalysis(summary);
+          }
+        } catch (skinErr) {
+          console.warn('[W-1] Skin analysis fetch failed:', skinErr);
+          // 피부 분석 실패해도 운동 결과는 계속 표시
+        }
 
         // DB에 분석 결과 저장 (비동기)
         await saveAnalysisToDatabase(inputData);
@@ -147,7 +165,7 @@ export default function ResultPage() {
     }, 2000); // 2초 로딩 (UX용)
 
     return () => clearTimeout(analyzeTimer);
-  }, [getInputData, isUserLoaded, saveAnalysisToDatabase]);
+  }, [getInputData, isUserLoaded, saveAnalysisToDatabase, supabase]);
 
   // 다시 시작
   const handleRestart = () => {
@@ -218,7 +236,7 @@ export default function ResultPage() {
           <FadeInUp delay={4}>
             <PostWorkoutSkinCareCard
               workoutType={result.type}
-              durationMinutes={30} // TODO: 실제 운동 시간으로 교체
+              durationMinutes={durationMinutes}
               skinAnalysis={skinAnalysis}
             />
           </FadeInUp>
@@ -229,7 +247,7 @@ export default function ResultPage() {
           <FadeInUp delay={5}>
             <PostWorkoutNutritionCard
               workoutType={result.type as WorkoutType}
-              durationMinutes={30} // TODO: 실제 운동 시간으로 교체
+              durationMinutes={durationMinutes}
             />
           </FadeInUp>
         )}

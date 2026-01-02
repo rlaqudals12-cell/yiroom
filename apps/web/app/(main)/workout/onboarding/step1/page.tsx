@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useWorkoutInputStore, type PersonalColorSeason } from '@/lib/stores/workoutInputStore';
-import { ProgressIndicator, StepNavigation } from '@/components/workout/common';
+import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/workout/common';
 import { BODY_TYPES, type BodyType } from '@/lib/mock/body-analysis';
 import { workoutFunnel, durationTrackers } from '@/lib/analytics';
-import { Loader2, AlertCircle, CheckCircle2, Palette } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, Palette, ChevronDown, ChevronUp } from 'lucide-react';
 
 // body_analyses 테이블 데이터 타입
 interface BodyAnalysis {
@@ -39,16 +40,38 @@ const PC_SEASON_LABELS: Record<PersonalColorSeason, string> = {
   Winter: '겨울 쿨톤',
 };
 
+// 운동 목표 옵션 (Step 2에서 통합)
+const GOALS = [
+  { id: 'weight_loss', icon: '🔥', title: '체중 감량', desc: '건강하게 살 빼기' },
+  { id: 'strength', icon: '💪', title: '근력 강화', desc: '근육량 늘리기' },
+  { id: 'endurance', icon: '🏃', title: '체력 향상', desc: '지구력 키우기' },
+  { id: 'stress', icon: '😌', title: '스트레스 해소', desc: '마음 건강 챙기기' },
+  { id: 'posture', icon: '🧘', title: '체형 교정', desc: '바른 자세 만들기' },
+];
+
+// 신체 고민 옵션 (Step 3에서 통합 - 상위 4개만)
+const CONCERNS = [
+  { id: 'belly', icon: '🫃', title: '뱃살', desc: '복부 지방 감소' },
+  { id: 'thigh', icon: '🦵', title: '허벅지', desc: '하체 라인 정리' },
+  { id: 'arm', icon: '💪', title: '팔뚝', desc: '팔 라인 탄력' },
+  { id: 'back', icon: '🔙', title: '등살', desc: '등 라인 정리' },
+];
+
+const MAX_GOALS = 2;
+const MAX_CONCERNS = 3;
+
 export default function Step1Page() {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
-  const { setBodyTypeData, setPersonalColor, setStep } = useWorkoutInputStore();
+  const { goals, concerns, setBodyTypeData, setPersonalColor, setGoals, setConcerns, setStep } =
+    useWorkoutInputStore();
 
   const [bodyAnalysis, setBodyAnalysis] = useState<BodyAnalysis | null>(null);
   const [pcAssessment, setPcAssessment] = useState<PersonalColorAssessment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showBodyInfo, setShowBodyInfo] = useState(false);
 
   // 퍼널 트래킹: 온보딩 시작 + 체류 시간 측정
   useEffect(() => {
@@ -127,6 +150,32 @@ export default function Step1Page() {
     fetchUserData();
   }, [isLoaded, isSignedIn, supabase, setBodyTypeData, setPersonalColor]);
 
+  // 목표 선택/해제 처리
+  const handleGoalSelect = (goalId: string) => {
+    if (goals.includes(goalId)) {
+      setGoals(goals.filter((id) => id !== goalId));
+    } else {
+      if (goals.length >= MAX_GOALS) {
+        toast.warning(`최대 ${MAX_GOALS}개까지 선택 가능합니다`);
+        return;
+      }
+      setGoals([...goals, goalId]);
+    }
+  };
+
+  // 고민 선택/해제 처리
+  const handleConcernSelect = (concernId: string) => {
+    if (concerns.includes(concernId)) {
+      setConcerns(concerns.filter((id) => id !== concernId));
+    } else {
+      if (concerns.length >= MAX_CONCERNS) {
+        toast.warning(`최대 ${MAX_CONCERNS}개까지 선택 가능합니다`);
+        return;
+      }
+      setConcerns([...concerns, concernId]);
+    }
+  };
+
   // 다음 단계로 이동
   const handleNext = () => {
     setStep(2);
@@ -165,128 +214,31 @@ export default function Step1Page() {
 
   const bodyTypeInfo = bodyAnalysis ? BODY_TYPES[bodyAnalysis.body_type] : null;
 
+  // 진행 가능 조건: 체형 데이터 있음 AND 목표 1개 이상 AND 고민 1개 이상
+  const canProceed = !!bodyAnalysis && goals.length > 0 && concerns.length > 0;
+
   return (
     <div className="space-y-6">
-      {/* 진행 표시 */}
-      <ProgressIndicator currentStep={1} totalSteps={7} />
-
-      {/* 헤더 */}
-      <div className="text-center">
-        <h2 className="text-xl font-bold text-foreground">내 체형 정보</h2>
-        <p className="text-muted-foreground mt-1">
-          체형에 맞는 운동을 추천해 드릴게요
-        </p>
-      </div>
+      {/* 진행 표시 - 3단계 중 1단계 */}
+      <ProgressIndicator currentStep={1} totalSteps={3} />
 
       {/* 면책 조항 (스펙 16.3: 앱 최초 실행 시 표시) */}
       <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
         <p className="text-xs text-amber-700 leading-relaxed">
           <span className="font-medium">서비스 이용 안내</span>
           <br />
-          <br />
-          본 서비스는 전문 의료 조언을 대체하지 않습니다. 부상이나 통증이 있는 경우 전문가와 상담 후 운동하세요. 임산부, 심장질환자, 고혈압 환자는 의사와 상담 후 운동하세요.
+          <br />본 서비스는 전문 의료 조언을 대체하지 않습니다. 부상이나 통증이 있는 경우 전문가와
+          상담 후 운동하세요.
         </p>
       </div>
 
-      {/* C-1 데이터 있음: 체형 카드 */}
-      {bodyAnalysis && bodyTypeInfo ? (
-        <div className="space-y-4">
-          {/* 체형 타입 카드 */}
-          <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center text-3xl">
-                {bodyTypeInfo.emoji}
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-foreground">
-                  {bodyTypeInfo.label}
-                </h3>
-                <p className="text-muted-foreground text-sm">
-                  {bodyTypeInfo.description}
-                </p>
-              </div>
-            </div>
-
-            {/* 체형 특징 */}
-            <p className="text-foreground/80 text-sm mb-4">
-              {bodyTypeInfo.characteristics}
-            </p>
-
-            {/* 주요 특징 3가지 */}
-            {bodyAnalysis.strengths && bodyAnalysis.strengths.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground/80">주요 특징</p>
-                <ul className="space-y-2">
-                  {bodyAnalysis.strengths.slice(0, 3).map((strength, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center gap-2 text-sm text-muted-foreground"
-                    >
-                      <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      {strength}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* 신체 정보 */}
-            {(bodyAnalysis.height || bodyAnalysis.weight) && (
-              <div className="mt-4 pt-4 border-t border-border/50 flex gap-4">
-                {bodyAnalysis.height && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-foreground">
-                      {bodyAnalysis.height}
-                    </p>
-                    <p className="text-xs text-muted-foreground">cm</p>
-                  </div>
-                )}
-                {bodyAnalysis.weight && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-foreground">
-                      {bodyAnalysis.weight}
-                    </p>
-                    <p className="text-xs text-muted-foreground">kg</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* 퍼스널 컬러 정보 */}
-          {pcAssessment && (
-            <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-4 border border-pink-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-card rounded-xl flex items-center justify-center shadow-sm">
-                  <Palette className="w-5 h-5 text-pink-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">퍼스널 컬러</p>
-                  <p className="font-bold text-foreground">
-                    {PC_SEASON_LABELS[pcAssessment.season]}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 확인 메시지 */}
-          <div className="bg-indigo-50 rounded-xl p-4 flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-indigo-500 flex-shrink-0" />
-            <p className="text-sm text-indigo-700">
-              체형 정보를 확인했어요. 다음 단계로 진행해 주세요.
-            </p>
-          </div>
-        </div>
-      ) : (
-        /* C-1 데이터 없음: 분석 필요 안내 */
+      {/* C-1 데이터 없음: 분석 필요 안내 */}
+      {!bodyAnalysis ? (
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50 text-center">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-bold text-foreground mb-2">
-            체형 분석이 필요합니다
-          </h3>
+          <h3 className="text-lg font-bold text-foreground mb-2">체형 분석이 필요합니다</h3>
           <p className="text-muted-foreground text-sm mb-6">
             맞춤 운동 추천을 위해 먼저 체형 분석을 진행해 주세요.
           </p>
@@ -297,13 +249,147 @@ export default function Step1Page() {
             체형 분석하기
           </Link>
         </div>
+      ) : (
+        <>
+          {/* 섹션 1: 내 체형 정보 (접이식) */}
+          <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+            <button
+              onClick={() => setShowBodyInfo(!showBodyInfo)}
+              className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                {bodyTypeInfo && <span className="text-2xl">{bodyTypeInfo.emoji}</span>}
+                <div className="text-left">
+                  <p className="font-medium text-foreground">
+                    {bodyTypeInfo?.label || '체형 정보'}
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {pcAssessment && (
+                      <>
+                        <Palette className="w-3 h-3" />
+                        <span>{PC_SEASON_LABELS[pcAssessment.season]}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {showBodyInfo ? (
+                <ChevronUp className="w-5 h-5 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              )}
+            </button>
+
+            {/* 확장된 체형 정보 */}
+            {showBodyInfo && bodyTypeInfo && (
+              <div className="px-4 pb-4 border-t border-border/50 pt-4 space-y-3">
+                <p className="text-sm text-foreground/80">{bodyTypeInfo.characteristics}</p>
+                {bodyAnalysis.strengths && bodyAnalysis.strengths.length > 0 && (
+                  <ul className="space-y-1">
+                    {bodyAnalysis.strengths.slice(0, 3).map((strength, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center gap-2 text-sm text-muted-foreground"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        {strength}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {(bodyAnalysis.height || bodyAnalysis.weight) && (
+                  <div className="flex gap-4 pt-2 border-t border-border/30">
+                    {bodyAnalysis.height && (
+                      <div className="text-center">
+                        <p className="text-lg font-bold text-foreground">{bodyAnalysis.height}</p>
+                        <p className="text-xs text-muted-foreground">cm</p>
+                      </div>
+                    )}
+                    {bodyAnalysis.weight && (
+                      <div className="text-center">
+                        <p className="text-lg font-bold text-foreground">{bodyAnalysis.weight}</p>
+                        <p className="text-xs text-muted-foreground">kg</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 섹션 2: 운동 목표 */}
+          <div>
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-bold text-foreground">운동 목표</h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                원하는 목표를 선택해 주세요 (최대 {MAX_GOALS}개)
+              </p>
+            </div>
+            <div className="space-y-2">
+              {GOALS.map((goal) => (
+                <SelectionCard
+                  key={goal.id}
+                  mode="multiple"
+                  selected={goals.includes(goal.id)}
+                  onSelect={() => handleGoalSelect(goal.id)}
+                  icon={<span>{goal.icon}</span>}
+                  title={goal.title}
+                  description={goal.desc}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* 구분선 */}
+          <div className="border-t border-border" />
+
+          {/* 섹션 3: 신체 고민 */}
+          <div>
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-bold text-foreground">개선하고 싶은 부위</h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                집중하고 싶은 부위를 선택해 주세요 (최대 {MAX_CONCERNS}개)
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {CONCERNS.map((concern) => (
+                <SelectionCard
+                  key={concern.id}
+                  mode="multiple"
+                  selected={concerns.includes(concern.id)}
+                  onSelect={() => handleConcernSelect(concern.id)}
+                  icon={<span className="text-xl">{concern.icon}</span>}
+                  title={concern.title}
+                  description={concern.desc}
+                  compact
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* 선택 현황 */}
+          {(goals.length > 0 || concerns.length > 0) && (
+            <div className="bg-indigo-50 rounded-xl p-4 space-y-1">
+              {goals.length > 0 && (
+                <p className="text-sm text-indigo-700">
+                  목표: <span className="font-medium">{goals.length}개</span> 선택됨
+                </p>
+              )}
+              {concerns.length > 0 && (
+                <p className="text-sm text-indigo-700">
+                  부위: <span className="font-medium">{concerns.length}개</span> 선택됨
+                </p>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {/* 네비게이션 버튼 */}
       <StepNavigation
         isFirstStep={true}
         isLastStep={false}
-        canProceed={!!bodyAnalysis}
+        canProceed={canProceed}
         onPrev={() => {}}
         onNext={handleNext}
       />

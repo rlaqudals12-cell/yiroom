@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Send, Loader2, Bot, User, Sparkles, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { askProductQuestion, FAQ_TEMPLATES, type ProductQAResponse } from '@/lib/rag/product-qa';
+import { getProductById } from '@/lib/products';
 import type { AnyProduct, ProductType } from '@/types/product';
 
 interface Message {
@@ -23,10 +24,7 @@ function ChatMessage({ message }: { message: Message }) {
   const isUser = message.role === 'user';
 
   return (
-    <div
-      className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}
-      data-testid="chat-message"
-    >
+    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`} data-testid="chat-message">
       {/* 아바타 */}
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -42,9 +40,7 @@ function ChatMessage({ message }: { message: Message }) {
       <div className={`flex-1 max-w-[80%] ${isUser ? 'text-right' : ''}`}>
         <div
           className={`inline-block px-4 py-3 rounded-2xl ${
-            isUser
-              ? 'bg-primary text-primary-foreground rounded-br-md'
-              : 'bg-muted rounded-bl-md'
+            isUser ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-muted rounded-bl-md'
           }`}
         >
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -60,16 +56,16 @@ function ChatMessage({ message }: { message: Message }) {
                   message.confidence === 'high'
                     ? 'bg-green-500'
                     : message.confidence === 'medium'
-                    ? 'bg-yellow-500'
-                    : 'bg-red-500'
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
                 }`}
               />
               <span>
                 {message.confidence === 'high'
                   ? '높은 신뢰도'
                   : message.confidence === 'medium'
-                  ? '보통 신뢰도'
-                  : '낮은 신뢰도'}
+                    ? '보통 신뢰도'
+                    : '낮은 신뢰도'}
               </span>
             </div>
 
@@ -109,13 +105,7 @@ function ChatMessage({ message }: { message: Message }) {
 }
 
 // FAQ 버튼 컴포넌트
-function FAQButton({
-  question,
-  onClick,
-}: {
-  question: string;
-  onClick: () => void;
-}) {
+function FAQButton({ question, onClick }: { question: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -138,23 +128,35 @@ export default function ProductQAPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedProduct, _setSelectedProduct] = useState<AnyProduct | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<AnyProduct | null>(null);
   const [productType, setProductType] = useState<ProductType>('cosmetic');
+
+  // 제품 정보 로드
+  const loadProduct = useCallback(async (productId: string, type: ProductType) => {
+    try {
+      const product = await getProductById(type, productId);
+      if (product) {
+        setSelectedProduct(product);
+      }
+    } catch (err) {
+      console.error('[ProductQA] Failed to load product:', err);
+    }
+  }, []);
 
   // URL에서 제품 정보 가져오기 (옵션)
   useEffect(() => {
     const productId = searchParams.get('productId');
-    const type = searchParams.get('type') as ProductType;
+    const type = (searchParams.get('type') as ProductType) || 'cosmetic';
 
     if (type) {
       setProductType(type);
     }
 
-    // 제품 ID가 있으면 제품 정보 로드 (향후 구현)
+    // 제품 ID가 있으면 제품 정보 로드
     if (productId) {
-      // TODO: getProductById 호출
+      loadProduct(productId, type);
     }
-  }, [searchParams]);
+  }, [searchParams, loadProduct]);
 
   // 메시지 스크롤
   useEffect(() => {
@@ -251,9 +253,7 @@ export default function ProductQAPage() {
               <Sparkles className="w-5 h-5 text-violet-500" />
               제품 Q&A
             </h1>
-            <p className="text-xs text-muted-foreground">
-              AI가 제품에 대한 궁금증을 해결해 드려요
-            </p>
+            <p className="text-xs text-muted-foreground">AI가 제품에 대한 궁금증을 해결해 드려요</p>
           </div>
         </div>
       </div>
@@ -268,9 +268,7 @@ export default function ProductQAPage() {
                 <Bot className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-foreground mb-2">
-                  무엇이든 물어보세요!
-                </h2>
+                <h2 className="text-lg font-bold text-foreground mb-2">무엇이든 물어보세요!</h2>
                 <p className="text-muted-foreground text-sm">
                   제품에 대한 궁금한 점을 AI에게 질문해보세요
                 </p>
@@ -297,16 +295,10 @@ export default function ProductQAPage() {
 
               {/* FAQ */}
               <div className="space-y-3">
-                <p className="text-sm font-medium text-foreground/80">
-                  자주 묻는 질문
-                </p>
+                <p className="text-sm font-medium text-foreground/80">자주 묻는 질문</p>
                 <div className="grid gap-2">
                   {faqQuestions.map((q, index) => (
-                    <FAQButton
-                      key={index}
-                      question={q}
-                      onClick={() => handleSend(q)}
-                    />
+                    <FAQButton key={index} question={q} onClick={() => handleSend(q)} />
                   ))}
                 </div>
               </div>

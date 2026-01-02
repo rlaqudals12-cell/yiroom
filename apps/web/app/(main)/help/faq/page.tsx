@@ -1,7 +1,9 @@
 'use client';
 
+import { useState, useCallback } from 'react';
 import { ArrowLeft, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { FAQAccordion } from '@/components/help';
@@ -55,8 +57,7 @@ const mockFAQs: FAQ[] = [
     id: 'faq-4',
     category: 'account',
     question: '회원가입은 어떻게 하나요?',
-    answer:
-      '앱 첫 화면에서 이메일, Google, 또는 Apple 계정으로 간편하게 가입할 수 있습니다.',
+    answer: '앱 첫 화면에서 이메일, Google, 또는 Apple 계정으로 간편하게 가입할 수 있습니다.',
     sortOrder: 1,
     isPublished: true,
     helpfulCount: 56,
@@ -68,8 +69,7 @@ const mockFAQs: FAQ[] = [
     id: 'faq-5',
     category: 'account',
     question: '비밀번호를 잊어버렸어요.',
-    answer:
-      '로그인 화면에서 "비밀번호 찾기"를 눌러 이메일로 재설정 링크를 받으세요.',
+    answer: '로그인 화면에서 "비밀번호 찾기"를 눌러 이메일로 재설정 링크를 받으세요.',
     sortOrder: 2,
     isPublished: true,
     helpfulCount: 34,
@@ -83,8 +83,7 @@ const mockFAQs: FAQ[] = [
     id: 'faq-6',
     category: 'workout',
     question: '운동 분석은 어떻게 받나요?',
-    answer:
-      '운동 온보딩 질문에 답변하면 AI가 당신에게 맞는 운동 타입을 분석해드립니다.',
+    answer: '운동 온보딩 질문에 답변하면 AI가 당신에게 맞는 운동 타입을 분석해드립니다.',
     sortOrder: 1,
     isPublished: true,
     helpfulCount: 67,
@@ -96,8 +95,7 @@ const mockFAQs: FAQ[] = [
     id: 'faq-7',
     category: 'workout',
     question: '운동 기록은 어떻게 하나요?',
-    answer:
-      '대시보드에서 운동 기록 버튼을 누르고, 오늘 한 운동을 선택하세요.',
+    answer: '대시보드에서 운동 기록 버튼을 누르고, 오늘 한 운동을 선택하세요.',
     sortOrder: 2,
     isPublished: true,
     helpfulCount: 43,
@@ -111,8 +109,7 @@ const mockFAQs: FAQ[] = [
     id: 'faq-8',
     category: 'nutrition',
     question: '음식 기록은 어떻게 하나요?',
-    answer:
-      '영양 탭에서 "식사 기록" 버튼을 누르고, 음식을 검색하거나 사진으로 인식할 수 있습니다.',
+    answer: '영양 탭에서 "식사 기록" 버튼을 누르고, 음식을 검색하거나 사진으로 인식할 수 있습니다.',
     sortOrder: 1,
     isPublished: true,
     helpfulCount: 52,
@@ -124,8 +121,7 @@ const mockFAQs: FAQ[] = [
     id: 'faq-9',
     category: 'nutrition',
     question: '칼로리 목표는 어떻게 설정하나요?',
-    answer:
-      '설정 > 영양 설정에서 목표 칼로리, 단백질, 탄수화물, 지방 목표를 설정할 수 있습니다.',
+    answer: '설정 > 영양 설정에서 목표 칼로리, 단백질, 탄수화물, 지방 목표를 설정할 수 있습니다.',
     sortOrder: 2,
     isPublished: true,
     helpfulCount: 29,
@@ -139,8 +135,7 @@ const mockFAQs: FAQ[] = [
     id: 'faq-10',
     category: 'technical',
     question: '앱이 제대로 작동하지 않아요.',
-    answer:
-      '앱을 완전히 종료하고 다시 시작해보세요. 문제가 지속되면 피드백을 보내주세요.',
+    answer: '앱을 완전히 종료하고 다시 시작해보세요. 문제가 지속되면 피드백을 보내주세요.',
     sortOrder: 1,
     isPublished: true,
     helpfulCount: 18,
@@ -151,10 +146,37 @@ const mockFAQs: FAQ[] = [
 ];
 
 export default function FAQPage() {
-  const handleFeedback = (faqId: string, helpful: boolean) => {
-    // TODO: 피드백 저장 API 호출
-    console.log(`FAQ ${faqId}: ${helpful ? 'helpful' : 'not helpful'}`);
-  };
+  const [feedbackGiven, setFeedbackGiven] = useState<Record<string, boolean>>({});
+
+  // FAQ 피드백 저장 API 호출
+  const handleFeedback = useCallback(
+    async (faqId: string, helpful: boolean) => {
+      // 이미 피드백을 준 경우 무시
+      if (feedbackGiven[faqId]) {
+        toast.info('이미 의견을 주셨습니다');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/faq/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ faqId, helpful }),
+        });
+
+        if (response.ok) {
+          setFeedbackGiven((prev) => ({ ...prev, [faqId]: true }));
+          toast.success(helpful ? '감사합니다!' : '의견 감사합니다. 개선하겠습니다.');
+        }
+      } catch (error) {
+        console.error('[FAQ] Feedback error:', error);
+        // 에러 발생해도 UI는 정상 처리 (UX)
+        setFeedbackGiven((prev) => ({ ...prev, [faqId]: true }));
+        toast.success('의견 감사합니다');
+      }
+    },
+    [feedbackGiven]
+  );
 
   return (
     <div className="container max-w-2xl py-6 space-y-6">
@@ -177,11 +199,7 @@ export default function FAQPage() {
       </p>
 
       {/* FAQ 아코디언 */}
-      <FAQAccordion
-        faqs={mockFAQs}
-        showSearch={true}
-        onFeedback={handleFeedback}
-      />
+      <FAQAccordion faqs={mockFAQs} showSearch={true} onFeedback={handleFeedback} />
 
       {/* 추가 문의 */}
       <div className="text-center text-sm text-muted-foreground pt-4 border-t">

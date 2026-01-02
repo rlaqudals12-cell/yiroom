@@ -4,11 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { ArrowLeft, Calendar, List } from 'lucide-react';
-import {
-  WeeklyCalendar,
-  WorkoutHistoryCard,
-  HistoryStats,
-} from '@/components/workout/history';
+import { WeeklyCalendar, WorkoutHistoryCard, HistoryStats } from '@/components/workout/history';
 import { StreakCard } from '@/components/workout/streak';
 import { AnalyzingLoader, ErrorState } from '@/components/workout/common';
 import { EmptyState } from '@/components/common';
@@ -141,28 +137,26 @@ export default function HistoryPage() {
   }, [workoutLogs]);
 
   // 날짜 클릭 핸들러
-  const handleDayClick = useCallback((date: string) => {
-    const log = workoutLogs.find((l) => l.workout_date === date);
-    if (log) {
-      // TODO: 운동 기록 상세 페이지 구현 후 연결
-      // router.push(`/workout/history/${log.id}`);
-    }
-  }, [workoutLogs]);
+  const handleDayClick = useCallback(
+    (date: string) => {
+      const log = workoutLogs.find((l) => l.workout_date === date);
+      if (log) {
+        router.push(`/workout/history/${log.id}`);
+      }
+    },
+    [workoutLogs, router]
+  );
 
   // 기록 클릭 핸들러
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleLogClick = useCallback((logId: string) => {
-    // TODO: 운동 기록 상세 페이지 구현 후 연결
-    // router.push(`/workout/history/${logId}`);
-  }, []);
+  const handleLogClick = useCallback(
+    (logId: string) => {
+      router.push(`/workout/history/${logId}`);
+    },
+    [router]
+  );
 
   if (isLoading) {
-    return (
-      <AnalyzingLoader
-        title="기록 불러오는 중"
-        subtitle="운동 기록을 가져오고 있어요..."
-      />
-    );
+    return <AnalyzingLoader title="기록 불러오는 중" subtitle="운동 기록을 가져오고 있어요..." />;
   }
 
   if (error) {
@@ -207,9 +201,7 @@ export default function HistoryPage() {
             <button
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-md transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-card shadow-sm text-indigo-600'
-                  : 'text-muted-foreground'
+                viewMode === 'list' ? 'bg-card shadow-sm text-indigo-600' : 'text-muted-foreground'
               }`}
               aria-label="리스트 보기"
             >
@@ -246,9 +238,7 @@ export default function HistoryPage() {
 
         {/* 기록 리스트 */}
         <div className="space-y-3">
-          <h2 className="text-lg font-bold text-foreground px-1">
-            최근 기록
-          </h2>
+          <h2 className="text-lg font-bold text-foreground px-1">최근 기록</h2>
 
           {workoutLogs.length === 0 ? (
             <EmptyState
@@ -260,11 +250,7 @@ export default function HistoryPage() {
             />
           ) : (
             workoutLogs.map((log) => (
-              <WorkoutHistoryCard
-                key={log.id}
-                log={log}
-                onClick={() => handleLogClick(log.id)}
-              />
+              <WorkoutHistoryCard key={log.id} log={log} onClick={() => handleLogClick(log.id)} />
             ))
           )}
         </div>

@@ -11,16 +11,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import {
-  Heart,
-  Calendar,
-  Tag,
-  Shirt,
-  Palette,
-  Trash2,
-  Edit2,
-  TrendingUp,
-} from 'lucide-react';
+import { Heart, Calendar, Tag, Shirt, Palette, Trash2, Edit2, TrendingUp } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -103,18 +94,10 @@ export function ItemDetailSheet({
           <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20" />
         </div>
 
-        <div
-          data-testid="item-detail-sheet"
-          className="flex flex-col h-full overflow-auto pb-24"
-        >
+        <div data-testid="item-detail-sheet" className="flex flex-col h-full overflow-auto pb-24">
           {/* 이미지 */}
           <div className="relative aspect-square max-h-[300px] mx-auto w-full bg-muted rounded-xl overflow-hidden">
-            <Image
-              src={item.imageUrl}
-              alt={item.name}
-              fill
-              className="object-contain"
-            />
+            <Image src={item.imageUrl} alt={item.name} fill className="object-contain" />
 
             {/* 즐겨찾기 버튼 */}
             <button
@@ -126,10 +109,7 @@ export function ItemDetailSheet({
                 item.isFavorite ? 'text-red-500' : 'text-gray-400'
               )}
             >
-              <Heart
-                className="w-5 h-5"
-                fill={item.isFavorite ? 'currentColor' : 'none'}
-              />
+              <Heart className="w-5 h-5" fill={item.isFavorite ? 'currentColor' : 'none'} />
             </button>
           </div>
 
@@ -137,39 +117,55 @@ export function ItemDetailSheet({
           <div className="mt-4 space-y-4">
             <div>
               <h2 className="text-xl font-bold">{item.name}</h2>
-              {item.brand && (
-                <p className="text-muted-foreground">{item.brand}</p>
-              )}
+              {item.brand && <p className="text-muted-foreground">{item.brand}</p>}
             </div>
 
             {/* 착용 통계 */}
-            <div className="flex items-center gap-4 p-3 bg-muted rounded-lg">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <span className="text-sm">
-                  <strong>{item.useCount}</strong>회 착용
-                </span>
-              </div>
-              {item.lastUsedAt && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="w-4 h-4" />
-                  <span>
-                    마지막:{' '}
-                    {format(new Date(item.lastUsedAt), 'M월 d일', {
-                      locale: ko,
-                    })}
+            <div className="p-3 bg-muted rounded-lg space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  <span className="text-sm">
+                    <strong>{item.useCount}</strong>회 착용
                   </span>
+                </div>
+                {item.lastUsedAt && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="w-4 h-4" />
+                    <span>
+                      {format(new Date(item.lastUsedAt), 'M월 d일', {
+                        locale: ko,
+                      })}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {/* Cost-per-wear */}
+              {metadata?.price && metadata.price > 0 && (
+                <div className="border-t border-muted-foreground/10 pt-2 space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">구매가</span>
+                    <span>{metadata.price.toLocaleString()}원</span>
+                  </div>
+                  {item.useCount > 0 ? (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">1회 착용 비용</span>
+                      <span className="font-semibold text-primary">
+                        {Math.round(metadata.price / item.useCount).toLocaleString()}원
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground text-center">
+                      착용하면 1회 비용이 계산돼요
+                    </p>
+                  )}
                 </div>
               )}
             </div>
 
             {/* 착용 기록 버튼 */}
             {onRecordWear && (
-              <Button
-                onClick={() => onRecordWear(item)}
-                className="w-full"
-                size="lg"
-              >
+              <Button onClick={() => onRecordWear(item)} className="w-full" size="lg">
                 <Shirt className="w-4 h-4 mr-2" />
                 오늘 착용 기록
               </Button>
@@ -190,9 +186,7 @@ export function ItemDetailSheet({
                         <div
                           className="w-3 h-3 rounded-full border"
                           style={{
-                            backgroundColor: color.startsWith('#')
-                              ? color
-                              : undefined,
+                            backgroundColor: color.startsWith('#') ? color : undefined,
                           }}
                         />
                         <span>{color}</span>
@@ -263,11 +257,7 @@ export function ItemDetailSheet({
         {/* 하단 액션 버튼 */}
         <SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex gap-2">
           {onEdit && (
-            <Button
-              variant="outline"
-              onClick={() => onEdit(item)}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={() => onEdit(item)} className="flex-1">
               <Edit2 className="w-4 h-4 mr-2" />
               수정
             </Button>
@@ -284,8 +274,7 @@ export function ItemDetailSheet({
                 <AlertDialogHeader>
                   <AlertDialogTitle>아이템 삭제</AlertDialogTitle>
                   <AlertDialogDescription>
-                    &ldquo;{item.name}&rdquo;을(를) 삭제하시겠습니까? 이 작업은
-                    되돌릴 수 없습니다.
+                    &ldquo;{item.name}&rdquo;을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

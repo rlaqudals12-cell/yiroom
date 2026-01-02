@@ -48,6 +48,9 @@ interface WorkoutInputState {
   setInjuries: (injuries: string[]) => void;
   resetAll: () => void;
   getInputData: () => WorkoutInputData;
+  // P0-2: 간소화 지원 메서드
+  applyDefaults: () => void;
+  canSkipStep3: () => boolean;
 }
 
 // API 요청용 데이터 타입
@@ -122,6 +125,28 @@ export const useWorkoutInputStore = create<WorkoutInputState>()(
           targetDate: state.targetDate,
           injuries: state.injuries,
         };
+      },
+
+      // P0-2: Step 3 건너뛰기 시 기본값 적용
+      applyDefaults: () => {
+        set({
+          injuries: ['none'], // 부상 없음
+          targetWeight: undefined,
+          targetDate: undefined,
+        });
+      },
+
+      // P0-2: Step 3 건너뛰기 가능 여부 (필수 데이터가 모두 있어야 함)
+      canSkipStep3: () => {
+        const state = get();
+        return (
+          !!state.bodyTypeData &&
+          state.goals.length > 0 &&
+          state.concerns.length > 0 &&
+          !!state.frequency &&
+          !!state.location &&
+          state.equipment.length > 0
+        );
       },
     }),
     {

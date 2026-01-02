@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import {
   FlaskConical,
   Palette,
@@ -26,6 +27,7 @@ import {
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
+import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { IngredientFavoriteFilter } from '@/components/beauty/IngredientFavoriteFilter';
 import { AgeGroupFilter } from '@/components/beauty/AgeGroupFilter';
 import { SkinAgeCalculator } from '@/components/beauty/SkinAgeCalculator';
@@ -52,7 +54,14 @@ const skinTypes: { id: SkinType; label: string }[] = [
 ];
 
 // 피부 고민
-type SkinConcern = 'hydration' | 'whitening' | 'pore' | 'soothing' | 'acne' | 'wrinkle' | 'elasticity';
+type SkinConcern =
+  | 'hydration'
+  | 'whitening'
+  | 'pore'
+  | 'soothing'
+  | 'acne'
+  | 'wrinkle'
+  | 'elasticity';
 const skinConcerns: { id: SkinConcern; label: string; icon: React.ReactNode }[] = [
   { id: 'hydration', label: '보습', icon: <Droplets className="w-3.5 h-3.5" /> },
   { id: 'whitening', label: '미백', icon: <Sun className="w-3.5 h-3.5" /> },
@@ -138,54 +147,348 @@ interface RankingProduct {
 // 피부타입별 TOP 5 랭킹 데이터
 const rankingBySkinType: Record<SkinType, RankingProduct[]> = {
   dry: [
-    { id: 'r1', name: '수분 폭탄 크림', brand: '아비브', rating: 4.9, reviews: 8923, rank: 1, change: 'same', imageUrl: '/images/products/cream-1.jpg' },
-    { id: 'r2', name: '히알루론산 세럼', brand: '토리든', rating: 4.8, reviews: 6721, rank: 2, change: 'up', changeAmount: 2, imageUrl: '/images/products/serum-1.jpg' },
-    { id: 'r3', name: '세라마이드 토너', brand: '코스알엑스', rating: 4.7, reviews: 5432, rank: 3, change: 'down', changeAmount: 1, imageUrl: '/images/products/toner-1.jpg' },
-    { id: 'r4', name: '오일 세럼', brand: '클리오', rating: 4.6, reviews: 4211, rank: 4, change: 'new', imageUrl: '/images/products/oil-1.jpg' },
-    { id: 'r5', name: '수분 앰플', brand: '마녀공장', rating: 4.6, reviews: 3987, rank: 5, change: 'up', changeAmount: 3, imageUrl: '/images/products/ampoule-1.jpg' },
+    {
+      id: 'r1',
+      name: '수분 폭탄 크림',
+      brand: '아비브',
+      rating: 4.9,
+      reviews: 8923,
+      rank: 1,
+      change: 'same',
+      imageUrl: '/images/products/cream-1.jpg',
+    },
+    {
+      id: 'r2',
+      name: '히알루론산 세럼',
+      brand: '토리든',
+      rating: 4.8,
+      reviews: 6721,
+      rank: 2,
+      change: 'up',
+      changeAmount: 2,
+      imageUrl: '/images/products/serum-1.jpg',
+    },
+    {
+      id: 'r3',
+      name: '세라마이드 토너',
+      brand: '코스알엑스',
+      rating: 4.7,
+      reviews: 5432,
+      rank: 3,
+      change: 'down',
+      changeAmount: 1,
+      imageUrl: '/images/products/toner-1.jpg',
+    },
+    {
+      id: 'r4',
+      name: '오일 세럼',
+      brand: '클리오',
+      rating: 4.6,
+      reviews: 4211,
+      rank: 4,
+      change: 'new',
+      imageUrl: '/images/products/oil-1.jpg',
+    },
+    {
+      id: 'r5',
+      name: '수분 앰플',
+      brand: '마녀공장',
+      rating: 4.6,
+      reviews: 3987,
+      rank: 5,
+      change: 'up',
+      changeAmount: 3,
+      imageUrl: '/images/products/ampoule-1.jpg',
+    },
   ],
   oily: [
-    { id: 'r6', name: 'BHA 블랙헤드 토너', brand: '코스알엑스', rating: 4.8, reviews: 12453, rank: 1, change: 'same', imageUrl: '/images/products/toner-2.jpg' },
-    { id: 'r7', name: '티트리 진정 세럼', brand: '아이소이', rating: 4.7, reviews: 8932, rank: 2, change: 'up', changeAmount: 1, imageUrl: '/images/products/serum-2.jpg' },
-    { id: 'r8', name: '노세범 선크림', brand: '라로슈포제', rating: 4.9, reviews: 7654, rank: 3, change: 'down', changeAmount: 2, imageUrl: '/images/products/sun-1.jpg' },
-    { id: 'r9', name: 'AHA/BHA 필링젤', brand: '메디힐', rating: 4.5, reviews: 5432, rank: 4, change: 'same', imageUrl: '/images/products/peeling-1.jpg' },
-    { id: 'r10', name: '워터 젤 크림', brand: '벨리프', rating: 4.6, reviews: 4321, rank: 5, change: 'new', imageUrl: '/images/products/gel-1.jpg' },
+    {
+      id: 'r6',
+      name: 'BHA 블랙헤드 토너',
+      brand: '코스알엑스',
+      rating: 4.8,
+      reviews: 12453,
+      rank: 1,
+      change: 'same',
+      imageUrl: '/images/products/toner-2.jpg',
+    },
+    {
+      id: 'r7',
+      name: '티트리 진정 세럼',
+      brand: '아이소이',
+      rating: 4.7,
+      reviews: 8932,
+      rank: 2,
+      change: 'up',
+      changeAmount: 1,
+      imageUrl: '/images/products/serum-2.jpg',
+    },
+    {
+      id: 'r8',
+      name: '노세범 선크림',
+      brand: '라로슈포제',
+      rating: 4.9,
+      reviews: 7654,
+      rank: 3,
+      change: 'down',
+      changeAmount: 2,
+      imageUrl: '/images/products/sun-1.jpg',
+    },
+    {
+      id: 'r9',
+      name: 'AHA/BHA 필링젤',
+      brand: '메디힐',
+      rating: 4.5,
+      reviews: 5432,
+      rank: 4,
+      change: 'same',
+      imageUrl: '/images/products/peeling-1.jpg',
+    },
+    {
+      id: 'r10',
+      name: '워터 젤 크림',
+      brand: '벨리프',
+      rating: 4.6,
+      reviews: 4321,
+      rank: 5,
+      change: 'new',
+      imageUrl: '/images/products/gel-1.jpg',
+    },
   ],
   combination: [
-    { id: 'r11', name: '밸런싱 토너', brand: '달바', rating: 4.8, reviews: 9876, rank: 1, change: 'up', changeAmount: 1, imageUrl: '/images/products/toner-3.jpg' },
-    { id: 'r12', name: '나이아신 앰플', brand: '마녀공장', rating: 4.9, reviews: 8234, rank: 2, change: 'down', changeAmount: 1, imageUrl: '/images/products/ampoule-2.jpg' },
-    { id: 'r13', name: '멀티 세럼', brand: '아이소이', rating: 4.7, reviews: 6543, rank: 3, change: 'same', imageUrl: '/images/products/serum-3.jpg' },
-    { id: 'r14', name: '수분 젤 크림', brand: '라운드랩', rating: 4.6, reviews: 5421, rank: 4, change: 'up', changeAmount: 2, imageUrl: '/images/products/gel-2.jpg' },
-    { id: 'r15', name: 'T존 세범 컨트롤', brand: '이니스프리', rating: 4.5, reviews: 4532, rank: 5, change: 'new', imageUrl: '/images/products/control-1.jpg' },
+    {
+      id: 'r11',
+      name: '밸런싱 토너',
+      brand: '달바',
+      rating: 4.8,
+      reviews: 9876,
+      rank: 1,
+      change: 'up',
+      changeAmount: 1,
+      imageUrl: '/images/products/toner-3.jpg',
+    },
+    {
+      id: 'r12',
+      name: '나이아신 앰플',
+      brand: '마녀공장',
+      rating: 4.9,
+      reviews: 8234,
+      rank: 2,
+      change: 'down',
+      changeAmount: 1,
+      imageUrl: '/images/products/ampoule-2.jpg',
+    },
+    {
+      id: 'r13',
+      name: '멀티 세럼',
+      brand: '아이소이',
+      rating: 4.7,
+      reviews: 6543,
+      rank: 3,
+      change: 'same',
+      imageUrl: '/images/products/serum-3.jpg',
+    },
+    {
+      id: 'r14',
+      name: '수분 젤 크림',
+      brand: '라운드랩',
+      rating: 4.6,
+      reviews: 5421,
+      rank: 4,
+      change: 'up',
+      changeAmount: 2,
+      imageUrl: '/images/products/gel-2.jpg',
+    },
+    {
+      id: 'r15',
+      name: 'T존 세범 컨트롤',
+      brand: '이니스프리',
+      rating: 4.5,
+      reviews: 4532,
+      rank: 5,
+      change: 'new',
+      imageUrl: '/images/products/control-1.jpg',
+    },
   ],
   sensitive: [
-    { id: 'r16', name: '시카 크림', brand: '닥터지', rating: 4.9, reviews: 15432, rank: 1, change: 'same', imageUrl: '/images/products/cica-1.jpg' },
-    { id: 'r17', name: '마데카 세럼', brand: '아비브', rating: 4.8, reviews: 11234, rank: 2, change: 'same', imageUrl: '/images/products/madeca-1.jpg' },
-    { id: 'r18', name: '센텔라 토너', brand: '토리든', rating: 4.7, reviews: 8765, rank: 3, change: 'up', changeAmount: 1, imageUrl: '/images/products/centella-1.jpg' },
-    { id: 'r19', name: '진정 마스크팩', brand: '메디힐', rating: 4.6, reviews: 6543, rank: 4, change: 'down', changeAmount: 1, imageUrl: '/images/products/mask-1.jpg' },
-    { id: 'r20', name: '무자극 클렌저', brand: '라운드랩', rating: 4.5, reviews: 5432, rank: 5, change: 'new', imageUrl: '/images/products/cleanser-1.jpg' },
+    {
+      id: 'r16',
+      name: '시카 크림',
+      brand: '닥터지',
+      rating: 4.9,
+      reviews: 15432,
+      rank: 1,
+      change: 'same',
+      imageUrl: '/images/products/cica-1.jpg',
+    },
+    {
+      id: 'r17',
+      name: '마데카 세럼',
+      brand: '아비브',
+      rating: 4.8,
+      reviews: 11234,
+      rank: 2,
+      change: 'same',
+      imageUrl: '/images/products/madeca-1.jpg',
+    },
+    {
+      id: 'r18',
+      name: '센텔라 토너',
+      brand: '토리든',
+      rating: 4.7,
+      reviews: 8765,
+      rank: 3,
+      change: 'up',
+      changeAmount: 1,
+      imageUrl: '/images/products/centella-1.jpg',
+    },
+    {
+      id: 'r19',
+      name: '진정 마스크팩',
+      brand: '메디힐',
+      rating: 4.6,
+      reviews: 6543,
+      rank: 4,
+      change: 'down',
+      changeAmount: 1,
+      imageUrl: '/images/products/mask-1.jpg',
+    },
+    {
+      id: 'r20',
+      name: '무자극 클렌저',
+      brand: '라운드랩',
+      rating: 4.5,
+      reviews: 5432,
+      rank: 5,
+      change: 'new',
+      imageUrl: '/images/products/cleanser-1.jpg',
+    },
   ],
   normal: [
-    { id: 'r21', name: '비타민C 세럼', brand: '클레어스', rating: 4.8, reviews: 10234, rank: 1, change: 'up', changeAmount: 2, imageUrl: '/images/products/vitaminc-1.jpg' },
-    { id: 'r22', name: '글로우 토너', brand: '아이소이', rating: 4.7, reviews: 7654, rank: 2, change: 'down', changeAmount: 1, imageUrl: '/images/products/glow-1.jpg' },
-    { id: 'r23', name: '수분 크림', brand: '벨리프', rating: 4.9, reviews: 6543, rank: 3, change: 'down', changeAmount: 1, imageUrl: '/images/products/moisture-1.jpg' },
-    { id: 'r24', name: '멀티 에센스', brand: '달바', rating: 4.6, reviews: 5432, rank: 4, change: 'same', imageUrl: '/images/products/essence-1.jpg' },
-    { id: 'r25', name: '선 에센스', brand: '라로슈포제', rating: 4.7, reviews: 4321, rank: 5, change: 'new', imageUrl: '/images/products/sun-2.jpg' },
+    {
+      id: 'r21',
+      name: '비타민C 세럼',
+      brand: '클레어스',
+      rating: 4.8,
+      reviews: 10234,
+      rank: 1,
+      change: 'up',
+      changeAmount: 2,
+      imageUrl: '/images/products/vitaminc-1.jpg',
+    },
+    {
+      id: 'r22',
+      name: '글로우 토너',
+      brand: '아이소이',
+      rating: 4.7,
+      reviews: 7654,
+      rank: 2,
+      change: 'down',
+      changeAmount: 1,
+      imageUrl: '/images/products/glow-1.jpg',
+    },
+    {
+      id: 'r23',
+      name: '수분 크림',
+      brand: '벨리프',
+      rating: 4.9,
+      reviews: 6543,
+      rank: 3,
+      change: 'down',
+      changeAmount: 1,
+      imageUrl: '/images/products/moisture-1.jpg',
+    },
+    {
+      id: 'r24',
+      name: '멀티 에센스',
+      brand: '달바',
+      rating: 4.6,
+      reviews: 5432,
+      rank: 4,
+      change: 'same',
+      imageUrl: '/images/products/essence-1.jpg',
+    },
+    {
+      id: 'r25',
+      name: '선 에센스',
+      brand: '라로슈포제',
+      rating: 4.7,
+      reviews: 4321,
+      rank: 5,
+      change: 'new',
+      imageUrl: '/images/products/sun-2.jpg',
+    },
   ],
 };
 
 // 임시 제품 데이터 (imageUrl 포함)
 const mockProducts = [
-  { id: '1', name: '비타민C 세럼', brand: '브랜드A', rating: 4.8, reviews: 1253, matchRate: 98, price: 32000, imageUrl: '/images/products/vitaminc-serum.jpg' },
-  { id: '2', name: '히알루론산 토너', brand: '브랜드B', rating: 4.7, reviews: 892, matchRate: 95, price: 25000, imageUrl: '/images/products/hyaluronic-toner.jpg' },
-  { id: '3', name: '레티놀 크림', brand: '브랜드C', rating: 4.6, reviews: 567, matchRate: 92, price: 45000, imageUrl: '/images/products/retinol-cream.jpg' },
-  { id: '4', name: '나이아신아마이드 세럼', brand: '브랜드D', rating: 4.9, reviews: 2341, matchRate: 97, price: 28000, imageUrl: '/images/products/niacinamide-serum.jpg' },
-  { id: '5', name: '시카 진정 크림', brand: '브랜드E', rating: 4.5, reviews: 743, matchRate: 94, price: 35000, imageUrl: '/images/products/cica-cream.jpg' },
-  { id: '6', name: 'AHA/BHA 토너', brand: '브랜드F', rating: 4.4, reviews: 421, matchRate: 89, price: 22000, imageUrl: '/images/products/aha-bha-toner.jpg' },
+  {
+    id: '1',
+    name: '비타민C 세럼',
+    brand: '브랜드A',
+    rating: 4.8,
+    reviews: 1253,
+    matchRate: 98,
+    price: 32000,
+    imageUrl: '/images/products/vitaminc-serum.jpg',
+  },
+  {
+    id: '2',
+    name: '히알루론산 토너',
+    brand: '브랜드B',
+    rating: 4.7,
+    reviews: 892,
+    matchRate: 95,
+    price: 25000,
+    imageUrl: '/images/products/hyaluronic-toner.jpg',
+  },
+  {
+    id: '3',
+    name: '레티놀 크림',
+    brand: '브랜드C',
+    rating: 4.6,
+    reviews: 567,
+    matchRate: 92,
+    price: 45000,
+    imageUrl: '/images/products/retinol-cream.jpg',
+  },
+  {
+    id: '4',
+    name: '나이아신아마이드 세럼',
+    brand: '브랜드D',
+    rating: 4.9,
+    reviews: 2341,
+    matchRate: 97,
+    price: 28000,
+    imageUrl: '/images/products/niacinamide-serum.jpg',
+  },
+  {
+    id: '5',
+    name: '시카 진정 크림',
+    brand: '브랜드E',
+    rating: 4.5,
+    reviews: 743,
+    matchRate: 94,
+    price: 35000,
+    imageUrl: '/images/products/cica-cream.jpg',
+  },
+  {
+    id: '6',
+    name: 'AHA/BHA 토너',
+    brand: '브랜드F',
+    rating: 4.4,
+    reviews: 421,
+    matchRate: 89,
+    price: 22000,
+    imageUrl: '/images/products/aha-bha-toner.jpg',
+  },
 ];
 
 export default function BeautyPage() {
   const router = useRouter();
+  const { user, isLoaded } = useUser();
+  const supabase = useClerkSupabaseClient();
 
   // 필터 상태
   const [selectedSkinTypes, setSelectedSkinTypes] = useState<SkinType[]>(['combination']);
@@ -196,36 +499,169 @@ export default function BeautyPage() {
   const [showSortSheet, setShowSortSheet] = useState(false);
   const [matchFilterOn, setMatchFilterOn] = useState(true);
 
+  // 분석 결과 상태
+  const [hasAnalysis, setHasAnalysis] = useState(false);
+  const [personalColor, setPersonalColor] = useState<string | null>(null);
+  const [userSkinType, setUserSkinType] = useState<SkinType>('combination');
+  const [userSkinConcerns, setUserSkinConcerns] = useState<SkinConcern[]>([]);
+
   // 하이브리드 UX 상태
   const [favoriteIngredients, setFavoriteIngredients] = useState<FavoriteItem[]>([]);
   const [avoidIngredients, setAvoidIngredients] = useState<FavoriteItem[]>([]);
   const [selectedAgeGroups, setSelectedAgeGroups] = useState<AgeGroup[]>([]);
   const [morningRoutine] = useState<RoutineItem[]>([
-    { order: 1, category: 'cleanser', productName: '젠틀 클렌저', timing: 'morning', duration: '1분' },
-    { order: 2, category: 'toner', productName: '히알루론산 토너', timing: 'morning', duration: '30초' },
-    { order: 3, category: 'serum', productName: '비타민C 세럼', timing: 'morning', duration: '30초' },
-    { order: 4, category: 'moisturizer', productName: '수분 크림', timing: 'morning', duration: '30초' },
-    { order: 5, category: 'sunscreen', productName: 'SPF50+ 선크림', timing: 'morning', duration: '30초' },
+    {
+      order: 1,
+      category: 'cleanser',
+      productName: '젠틀 클렌저',
+      timing: 'morning',
+      duration: '1분',
+    },
+    {
+      order: 2,
+      category: 'toner',
+      productName: '히알루론산 토너',
+      timing: 'morning',
+      duration: '30초',
+    },
+    {
+      order: 3,
+      category: 'serum',
+      productName: '비타민C 세럼',
+      timing: 'morning',
+      duration: '30초',
+    },
+    {
+      order: 4,
+      category: 'moisturizer',
+      productName: '수분 크림',
+      timing: 'morning',
+      duration: '30초',
+    },
+    {
+      order: 5,
+      category: 'sunscreen',
+      productName: 'SPF50+ 선크림',
+      timing: 'morning',
+      duration: '30초',
+    },
   ]);
   const [eveningRoutine] = useState<RoutineItem[]>([
-    { order: 1, category: 'cleanser', productName: '클렌징 오일', timing: 'evening', duration: '2분' },
-    { order: 2, category: 'cleanser', productName: '폼 클렌저', timing: 'evening', duration: '1분' },
-    { order: 3, category: 'toner', productName: '각질 케어 토너', timing: 'evening', duration: '30초' },
-    { order: 4, category: 'serum', productName: '레티놀 세럼', timing: 'evening', duration: '30초' },
-    { order: 5, category: 'moisturizer', productName: '나이트 크림', timing: 'evening', duration: '30초' },
+    {
+      order: 1,
+      category: 'cleanser',
+      productName: '클렌징 오일',
+      timing: 'evening',
+      duration: '2분',
+    },
+    {
+      order: 2,
+      category: 'cleanser',
+      productName: '폼 클렌저',
+      timing: 'evening',
+      duration: '1분',
+    },
+    {
+      order: 3,
+      category: 'toner',
+      productName: '각질 케어 토너',
+      timing: 'evening',
+      duration: '30초',
+    },
+    {
+      order: 4,
+      category: 'serum',
+      productName: '레티놀 세럼',
+      timing: 'evening',
+      duration: '30초',
+    },
+    {
+      order: 5,
+      category: 'moisturizer',
+      productName: '나이트 크림',
+      timing: 'evening',
+      duration: '30초',
+    },
   ]);
+
+  // 분석 결과 가져오기
+  useEffect(() => {
+    const fetchAnalysis = async () => {
+      if (!isLoaded || !user?.id) return;
+
+      try {
+        const [skinResult, pcResult] = await Promise.all([
+          supabase
+            .from('skin_analyses')
+            .select('skin_type, concerns')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('personal_color_assessments')
+            .select('result_season, result_tone')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+
+        if (skinResult.data || pcResult.data) {
+          setHasAnalysis(true);
+
+          if (skinResult.data) {
+            // skin_type을 SkinType으로 매핑
+            const skinTypeMap: Record<string, SkinType> = {
+              건성: 'dry',
+              지성: 'oily',
+              복합성: 'combination',
+              민감성: 'sensitive',
+              중성: 'normal',
+            };
+            const mappedType = skinTypeMap[skinResult.data.skin_type] || 'combination';
+            setUserSkinType(mappedType);
+            setSelectedSkinTypes([mappedType]);
+
+            // concerns를 SkinConcern으로 매핑
+            const concernsData = skinResult.data.concerns as string[] | null;
+            if (concernsData && Array.isArray(concernsData)) {
+              const concernMap: Record<string, SkinConcern> = {
+                수분부족: 'hydration',
+                미백: 'whitening',
+                모공: 'pore',
+                진정: 'soothing',
+                여드름: 'acne',
+                주름: 'wrinkle',
+                탄력: 'elasticity',
+              };
+              const mappedConcerns = concernsData
+                .map((c) => concernMap[c])
+                .filter((c): c is SkinConcern => c !== undefined);
+              setUserSkinConcerns(mappedConcerns);
+              if (mappedConcerns.length > 0) {
+                setSelectedConcerns(mappedConcerns);
+              }
+            }
+          }
+
+          if (pcResult.data) {
+            setPersonalColor(`${pcResult.data.result_season} ${pcResult.data.result_tone}`);
+          }
+        }
+      } catch (err) {
+        console.error('[Beauty] Analysis fetch error:', err);
+      }
+    };
+
+    fetchAnalysis();
+  }, [isLoaded, user?.id, supabase]);
 
   // 대분류 변경 시 세부 카테고리 초기화
   const handleMainCategoryChange = (cat: MainCategory) => {
     setMainCategory(cat);
     setSubCategory(null);
   };
-
-  // TODO: 실제 분석 결과 연동 (API/DB에서 가져오기)
-  const hasAnalysis = true;
-  const personalColor = '봄 웜톤';
-  const userSkinType: SkinType = 'combination'; // AI 진단 결과
-  const userSkinConcerns: SkinConcern[] = ['hydration', 'soothing']; // AI 진단 결과
 
   // 피부타입 한글 라벨
   const getSkinTypeLabel = (type: SkinType) => {
@@ -386,7 +822,10 @@ export default function BeautyPage() {
 
       {/* 성분 즐겨찾기 & 연령대 필터 (하이브리드 UX) */}
       <FadeInUp delay={3}>
-        <section className="px-4 py-3 border-b flex flex-wrap items-center gap-3" aria-label="추가 필터">
+        <section
+          className="px-4 py-3 border-b flex flex-wrap items-center gap-3"
+          aria-label="추가 필터"
+        >
           <IngredientFavoriteFilter
             favorites={favoriteIngredients}
             avoids={avoidIngredients}
@@ -430,7 +869,10 @@ export default function BeautyPage() {
       {/* 세부 카테고리 (대분류 선택 시) */}
       {mainCategory !== 'all' && subCategories[mainCategory].length > 0 && (
         <FadeInUp delay={4}>
-          <nav className="px-4 py-2 border-b overflow-x-auto bg-muted/30" aria-label="세부 카테고리">
+          <nav
+            className="px-4 py-2 border-b overflow-x-auto bg-muted/30"
+            aria-label="세부 카테고리"
+          >
             <div className="flex gap-2 pb-1">
               <button
                 onClick={() => setSubCategory(null)}
@@ -506,7 +948,12 @@ export default function BeautyPage() {
 
       {/* 정렬 Bottom Sheet (화해 스타일) */}
       {showSortSheet && (
-        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="정렬 기준 선택">
+        <div
+          className="fixed inset-0 z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-label="정렬 기준 선택"
+        >
           {/* 배경 오버레이 */}
           <div
             className="absolute inset-0 bg-black/50 transition-opacity"
@@ -546,9 +993,7 @@ export default function BeautyPage() {
                     sortBy === option.id && 'text-primary'
                   )}
                 >
-                  <span className={cn(sortBy === option.id && 'font-medium')}>
-                    {option.label}
-                  </span>
+                  <span className={cn(sortBy === option.id && 'font-medium')}>{option.label}</span>
                   {sortBy === option.id && (
                     <Check className="w-5 h-5 text-primary" aria-hidden="true" />
                   )}
@@ -567,103 +1012,111 @@ export default function BeautyPage() {
         {hasAnalysis && (
           <FadeInUp delay={6}>
             <section className="bg-card rounded-2xl border p-4" aria-label="오늘의 랭킹">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-500" aria-hidden="true" />
-                {getSkinTypeLabel(userSkinType)} TOP 5
-              </h2>
-              <span className="text-xs text-muted-foreground">
-                실시간 업데이트
-              </span>
-            </div>
-            <div className="space-y-2">
-              {rankingBySkinType[userSkinType].map((product) => (
-                <button
-                  key={product.id}
-                  onClick={() => router.push(`/beauty/${product.id}`)}
-                  className="w-full flex items-center gap-3 bg-card rounded-xl border p-3 hover:shadow-md hover:bg-muted/30 transition-all duration-200 group"
-                >
-                  {/* 순위 */}
-                  <div className={cn(
-                    'w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0',
-                    product.rank === 1 ? 'bg-yellow-500 text-white' :
-                    product.rank === 2 ? 'bg-gray-400 text-white' :
-                    product.rank === 3 ? 'bg-amber-700 text-white' :
-                    'bg-muted text-muted-foreground'
-                  )}>
-                    {product.rank === 1 ? (
-                      <Crown className="w-4 h-4" aria-hidden="true" />
-                    ) : (
-                      product.rank
-                    )}
-                  </div>
-
-                  {/* 제품 이미지 */}
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-muted to-muted/50 overflow-hidden shrink-0">
-                    {/* 실제 이미지 로드 시 next/image 사용 */}
-                  </div>
-
-                  {/* 제품 정보 */}
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="text-xs text-muted-foreground">{product.brand}</p>
-                    <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                      {product.name}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" aria-hidden="true" />
-                      <span className="text-xs font-medium">{product.rating}</span>
-                      <span className="text-xs text-muted-foreground">
-                        ({product.reviews.toLocaleString()})
-                      </span>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-yellow-500" aria-hidden="true" />
+                  {getSkinTypeLabel(userSkinType)} TOP 5
+                </h2>
+                <span className="text-xs text-muted-foreground">실시간 업데이트</span>
+              </div>
+              <div className="space-y-2">
+                {rankingBySkinType[userSkinType].map((product) => (
+                  <button
+                    key={product.id}
+                    onClick={() => router.push(`/beauty/${product.id}`)}
+                    className="w-full flex items-center gap-3 bg-card rounded-xl border p-3 hover:shadow-md hover:bg-muted/30 transition-all duration-200 group"
+                  >
+                    {/* 순위 */}
+                    <div
+                      className={cn(
+                        'w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0',
+                        product.rank === 1
+                          ? 'bg-yellow-500 text-white'
+                          : product.rank === 2
+                            ? 'bg-gray-400 text-white'
+                            : product.rank === 3
+                              ? 'bg-amber-700 text-white'
+                              : 'bg-muted text-muted-foreground'
+                      )}
+                    >
+                      {product.rank === 1 ? (
+                        <Crown className="w-4 h-4" aria-hidden="true" />
+                      ) : (
+                        product.rank
+                      )}
                     </div>
-                  </div>
 
-                  {/* 순위 변동 */}
-                  <div className="shrink-0">
-                    {product.change === 'up' && (
-                      <div className="flex items-center gap-0.5 text-green-500">
-                        <TrendingUp className="w-4 h-4" aria-hidden="true" />
-                        <span className="text-xs font-medium">{product.changeAmount}</span>
-                      </div>
-                    )}
-                    {product.change === 'down' && (
-                      <div className="flex items-center gap-0.5 text-red-500">
-                        <TrendingDown className="w-4 h-4" aria-hidden="true" />
-                        <span className="text-xs font-medium">{product.changeAmount}</span>
-                      </div>
-                    )}
-                    {product.change === 'same' && (
-                      <div className="flex items-center text-muted-foreground">
-                        <Minus className="w-4 h-4" aria-hidden="true" />
-                      </div>
-                    )}
-                    {product.change === 'new' && (
-                      <span className="text-xs font-bold text-primary px-1.5 py-0.5 bg-primary/10 rounded">
-                        NEW
-                      </span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
+                    {/* 제품 이미지 */}
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-muted to-muted/50 overflow-hidden shrink-0">
+                      {/* 실제 이미지 로드 시 next/image 사용 */}
+                    </div>
 
-            {/* 다른 피부타입 랭킹 보기 */}
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-              {skinTypes.filter(t => t.id !== userSkinType).map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => {
-                    // 해당 피부타입 필터로 이동
-                    setSelectedSkinTypes([type.id]);
-                  }}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
-                >
-                  {type.label} 랭킹
-                </button>
-              ))}
-            </div>
-          </section>
-        </FadeInUp>
+                    {/* 제품 정보 */}
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs text-muted-foreground">{product.brand}</p>
+                      <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                        {product.name}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <Star
+                          className="w-3 h-3 fill-yellow-400 text-yellow-400"
+                          aria-hidden="true"
+                        />
+                        <span className="text-xs font-medium">{product.rating}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({product.reviews.toLocaleString()})
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 순위 변동 */}
+                    <div className="shrink-0">
+                      {product.change === 'up' && (
+                        <div className="flex items-center gap-0.5 text-green-500">
+                          <TrendingUp className="w-4 h-4" aria-hidden="true" />
+                          <span className="text-xs font-medium">{product.changeAmount}</span>
+                        </div>
+                      )}
+                      {product.change === 'down' && (
+                        <div className="flex items-center gap-0.5 text-red-500">
+                          <TrendingDown className="w-4 h-4" aria-hidden="true" />
+                          <span className="text-xs font-medium">{product.changeAmount}</span>
+                        </div>
+                      )}
+                      {product.change === 'same' && (
+                        <div className="flex items-center text-muted-foreground">
+                          <Minus className="w-4 h-4" aria-hidden="true" />
+                        </div>
+                      )}
+                      {product.change === 'new' && (
+                        <span className="text-xs font-bold text-primary px-1.5 py-0.5 bg-primary/10 rounded">
+                          NEW
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* 다른 피부타입 랭킹 보기 */}
+              <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+                {skinTypes
+                  .filter((t) => t.id !== userSkinType)
+                  .map((type) => (
+                    <button
+                      key={type.id}
+                      onClick={() => {
+                        // 해당 피부타입 필터로 이동
+                        setSelectedSkinTypes([type.id]);
+                      }}
+                      className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+                    >
+                      {type.label} 랭킹
+                    </button>
+                  ))}
+              </div>
+            </section>
+          </FadeInUp>
         )}
 
         {/* 제품 목록 */}
@@ -674,9 +1127,7 @@ export default function BeautyPage() {
                 <Flame className="w-5 h-5 text-orange-500" aria-hidden="true" />
                 {hasAnalysis ? '내 피부 맞춤' : '인기 제품'}
               </h2>
-              <span className="text-sm text-muted-foreground">
-                {mockProducts.length}개 제품
-              </span>
+              <span className="text-sm text-muted-foreground">{mockProducts.length}개 제품</span>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {mockProducts.map((product) => (
@@ -729,7 +1180,10 @@ export default function BeautyPage() {
 
                   {/* 평점 및 리뷰 */}
                   <div className="flex items-center gap-1.5 mt-2">
-                    <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" aria-hidden="true" />
+                    <Star
+                      className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400"
+                      aria-hidden="true"
+                    />
                     <span className="text-xs font-medium">{product.rating}</span>
                     <span className="text-xs text-muted-foreground">
                       ({product.reviews.toLocaleString()})
@@ -737,9 +1191,7 @@ export default function BeautyPage() {
                   </div>
 
                   {/* 가격 */}
-                  <p className="text-sm font-bold mt-2">
-                    {formatPrice(product.price)}원
-                  </p>
+                  <p className="text-sm font-bold mt-2">{formatPrice(product.price)}원</p>
                 </button>
               ))}
             </div>
@@ -749,10 +1201,7 @@ export default function BeautyPage() {
         {/* 스킨케어 루틴 (하이브리드 UX) */}
         {hasAnalysis && (
           <FadeInUp delay={8}>
-            <SkincareRoutineCard
-              morningRoutine={morningRoutine}
-              eveningRoutine={eveningRoutine}
-            />
+            <SkincareRoutineCard morningRoutine={morningRoutine} eveningRoutine={eveningRoutine} />
           </FadeInUp>
         )}
 

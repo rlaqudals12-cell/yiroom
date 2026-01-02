@@ -1,96 +1,48 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
-import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { useNutritionInputStore, type Gender, type ActivityLevel } from '@/lib/stores/nutritionInputStore';
+import {
+  useNutritionInputStore,
+  type MealStyle,
+  type CookingSkill,
+  type BudgetLevel,
+} from '@/lib/stores/nutritionInputStore';
 import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/workout/common';
-import { ACTIVITY_LEVEL_LABELS } from '@/lib/nutrition/calculateBMR';
-import { Loader2, CheckCircle2 } from 'lucide-react';
 
-// 성별 옵션
-const GENDER_OPTIONS: { id: Gender; icon: string; title: string }[] = [
-  { id: 'male', icon: '👨', title: '남성' },
-  { id: 'female', icon: '👩', title: '여성' },
+// 식사 스타일 옵션
+const MEAL_STYLES: { id: MealStyle; icon: string; title: string; desc: string }[] = [
+  { id: 'korean', icon: '🍚', title: '한식 위주', desc: '밥, 국, 반찬 구성' },
+  { id: 'salad', icon: '🥗', title: '샐러드/가벼운 식사', desc: '저탄고단 식단' },
+  { id: 'western', icon: '🍝', title: '양식/파스타/빵', desc: '서양식 위주' },
+  { id: 'lunchbox', icon: '🍱', title: '도시락/간편식', desc: '편의점, 도시락' },
+  { id: 'delivery', icon: '🥡', title: '배달/외식 많이', desc: '외식 위주' },
+  { id: 'any', icon: '🔀', title: '다양하게', desc: '특정 선호 없음' },
 ];
 
-// 활동 수준 옵션
-const ACTIVITY_OPTIONS: { id: ActivityLevel; icon: string }[] = [
-  { id: 'sedentary', icon: '🪑' },
-  { id: 'light', icon: '🚶' },
-  { id: 'moderate', icon: '🏃' },
-  { id: 'active', icon: '💪' },
-  { id: 'very_active', icon: '🔥' },
+// 요리 스킬 옵션
+const COOKING_SKILLS: { id: CookingSkill; icon: string; title: string; desc: string }[] = [
+  { id: 'advanced', icon: '⭐', title: '고급', desc: '30분+ 레시피' },
+  { id: 'intermediate', icon: '👨‍🍳', title: '중급', desc: '15-30분 레시피' },
+  { id: 'beginner', icon: '🍳', title: '초보', desc: '10분 이내' },
+  { id: 'none', icon: '🚫', title: '요리 안 함', desc: '완제품/배달' },
+];
+
+// 예산 옵션
+const BUDGET_OPTIONS: { id: BudgetLevel; icon: string; title: string; desc: string }[] = [
+  { id: 'economy', icon: '💰', title: '가성비 위주', desc: '1식 5천원 이하' },
+  { id: 'moderate', icon: '⚖️', title: '적당히', desc: '1식 5천~1만원' },
+  { id: 'premium', icon: '💎', title: '좋은 재료', desc: '1식 1만원 이상' },
+  { id: 'any', icon: '🔀', title: '상관없음', desc: '예산 제한 없음' },
 ];
 
 /**
- * N-1 온보딩 Step 2: 기본 정보 입력
- * - C-1 연동: 키/체중 자동 불러오기
- * - 성별, 생년월일, 활동량 입력
+ * N-1 온보딩 Step 2: 라이프스타일 통합
+ * - 식사 스타일 + 요리 실력 + 예산
  */
 export default function NutritionStep2Page() {
   const router = useRouter();
-  const { isSignedIn, isLoaded } = useAuth();
-  const supabase = useClerkSupabaseClient();
-  const {
-    gender,
-    birthDate,
-    height,
-    weight,
-    activityLevel,
-    setGender,
-    setBirthDate,
-    setHeight,
-    setWeight,
-    setActivityLevel,
-    setBodyTypeData,
-    setStep,
-  } = useNutritionInputStore();
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasC1Data, setHasC1Data] = useState(false);
-
-  // C-1 데이터 불러오기
-  useEffect(() => {
-    async function fetchC1Data() {
-      if (!isLoaded || !isSignedIn) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('body_analyses')
-          .select('height, weight, body_type, shoulder, waist, hip')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (!error && data) {
-          setHasC1Data(true);
-          if (data.height) setHeight(data.height);
-          if (data.weight) setWeight(data.weight);
-          setBodyTypeData({
-            type: data.body_type,
-            proportions: {
-              shoulder: data.shoulder || 0,
-              waist: data.waist || 0,
-              hip: data.hip || 0,
-            },
-            height: data.height || undefined,
-            weight: data.weight || undefined,
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching C-1 data:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchC1Data();
-  }, [isLoaded, isSignedIn, supabase, setHeight, setWeight, setBodyTypeData]);
+  const { mealStyle, cookingSkill, budget, setMealStyle, setCookingSkill, setBudget, setStep } =
+    useNutritionInputStore();
 
   // 이전 단계
   const handlePrev = () => {
@@ -104,122 +56,115 @@ export default function NutritionStep2Page() {
     router.push('/nutrition/onboarding/step3');
   };
 
-  // 유효성 검사
-  const canProceed = gender && birthDate && height && weight && activityLevel;
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-green-500 animate-spin mb-4" />
-        <p className="text-muted-foreground">정보를 불러오는 중...</p>
-      </div>
-    );
-  }
+  // 진행 가능 조건
+  const canProceed = mealStyle && cookingSkill && budget;
 
   return (
     <div className="space-y-6">
-      {/* 진행 표시 */}
-      <ProgressIndicator currentStep={2} totalSteps={7} />
+      {/* 진행 표시 - 3단계 중 2단계 */}
+      <ProgressIndicator currentStep={2} totalSteps={3} />
 
-      {/* 헤더 */}
-      <div className="text-center">
-        <h2 className="text-xl font-bold text-foreground">기본 정보</h2>
-        <p className="text-muted-foreground mt-1">
-          칼로리 계산을 위한 정보를 입력해 주세요
-        </p>
-      </div>
-
-      {/* C-1 연동 알림 */}
-      {hasC1Data && (
-        <div className="bg-green-50 rounded-xl p-4 flex items-center gap-3">
-          <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-          <p className="text-sm text-green-700">
-            체형 분석 데이터에서 키/체중을 불러왔어요
-          </p>
+      {/* 섹션 1: 식사 스타일 */}
+      <div>
+        <div className="text-center mb-4">
+          <h2 className="text-lg font-bold text-foreground">선호 식사 스타일</h2>
+          <p className="text-muted-foreground text-sm mt-1">평소 어떤 식사를 선호하세요?</p>
         </div>
-      )}
-
-      {/* 성별 선택 */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground/80">성별</label>
-        <div className="grid grid-cols-2 gap-3">
-          {GENDER_OPTIONS.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => setGender(option.id)}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                gender === option.id
-                  ? 'border-green-500 bg-green-50'
-                  : 'border-border hover:border-border/80'
-              }`}
-            >
-              <span className="text-2xl">{option.icon}</span>
-              <p className="mt-1 font-medium text-foreground">{option.title}</p>
-            </button>
+        <div className="grid grid-cols-2 gap-2">
+          {MEAL_STYLES.map((style) => (
+            <SelectionCard
+              key={style.id}
+              mode="single"
+              selected={mealStyle === style.id}
+              onSelect={() => setMealStyle(style.id)}
+              icon={<span className="text-xl">{style.icon}</span>}
+              title={style.title}
+              description={style.desc}
+              compact
+            />
           ))}
         </div>
       </div>
 
-      {/* 생년월일 */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-foreground/80">생년월일</label>
-        <input
-          type="date"
-          value={birthDate || ''}
-          onChange={(e) => setBirthDate(e.target.value)}
-          className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          max={new Date().toISOString().split('T')[0]}
-        />
-      </div>
+      {/* 구분선 */}
+      <div className="border-t border-border" />
 
-      {/* 키/체중 */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-foreground/80">키 (cm)</label>
-          <input
-            type="number"
-            value={height || ''}
-            onChange={(e) => setHeight(Number(e.target.value) || null)}
-            placeholder="170"
-            className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            min={100}
-            max={250}
-          />
+      {/* 섹션 2: 요리 실력 */}
+      <div>
+        <div className="text-center mb-4">
+          <h2 className="text-lg font-bold text-foreground">요리 실력</h2>
+          <p className="text-muted-foreground text-sm mt-1">평소 요리 실력은 어느 정도인가요?</p>
         </div>
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-foreground/80">체중 (kg)</label>
-          <input
-            type="number"
-            value={weight || ''}
-            onChange={(e) => setWeight(Number(e.target.value) || null)}
-            placeholder="65"
-            className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            min={30}
-            max={200}
-          />
+        <div className="grid grid-cols-2 gap-2">
+          {COOKING_SKILLS.map((skill) => (
+            <SelectionCard
+              key={skill.id}
+              mode="single"
+              selected={cookingSkill === skill.id}
+              onSelect={() => setCookingSkill(skill.id)}
+              icon={<span className="text-xl">{skill.icon}</span>}
+              title={skill.title}
+              description={skill.desc}
+              compact
+            />
+          ))}
         </div>
       </div>
 
-      {/* 활동 수준 */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground/80">활동 수준</label>
-        <div className="space-y-2">
-          {ACTIVITY_OPTIONS.map((option) => {
-            const label = ACTIVITY_LEVEL_LABELS[option.id];
-            return (
-              <SelectionCard
-                key={option.id}
-                mode="single"
-                selected={activityLevel === option.id}
-                onSelect={() => setActivityLevel(option.id)}
-                icon={<span>{option.icon}</span>}
-                title={label.label}
-                description={label.description}
-              />
-            );
-          })}
+      {/* 구분선 */}
+      <div className="border-t border-border" />
+
+      {/* 섹션 3: 예산 */}
+      <div>
+        <div className="text-center mb-4">
+          <h2 className="text-lg font-bold text-foreground">식비 예산</h2>
+          <p className="text-muted-foreground text-sm mt-1">한 끼 식사에 사용할 예산은?</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {BUDGET_OPTIONS.map((option) => (
+            <SelectionCard
+              key={option.id}
+              mode="single"
+              selected={budget === option.id}
+              onSelect={() => setBudget(option.id)}
+              icon={<span className="text-xl">{option.icon}</span>}
+              title={option.title}
+              description={option.desc}
+              compact
+            />
+          ))}
         </div>
       </div>
+
+      {/* 선택 현황 */}
+      {(mealStyle || cookingSkill || budget) && (
+        <div className="bg-green-50 rounded-xl p-4 space-y-1">
+          {mealStyle && (
+            <p className="text-sm text-green-700">
+              스타일:{' '}
+              <span className="font-medium">
+                {MEAL_STYLES.find((s) => s.id === mealStyle)?.title}
+              </span>
+            </p>
+          )}
+          {cookingSkill && (
+            <p className="text-sm text-green-700">
+              요리:{' '}
+              <span className="font-medium">
+                {COOKING_SKILLS.find((s) => s.id === cookingSkill)?.title}
+              </span>
+            </p>
+          )}
+          {budget && (
+            <p className="text-sm text-green-700">
+              예산:{' '}
+              <span className="font-medium">
+                {BUDGET_OPTIONS.find((b) => b.id === budget)?.title}
+              </span>
+            </p>
+          )}
+        </div>
+      )}
 
       {/* 네비게이션 버튼 */}
       <StepNavigation

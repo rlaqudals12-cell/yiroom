@@ -1,7 +1,16 @@
 'use client';
 
 import { useState, useMemo, memo, useCallback } from 'react';
-import { Shirt, Palette, Package, Sparkles, ChevronDown, ChevronUp, ExternalLink, ShoppingBag } from 'lucide-react';
+import {
+  Shirt,
+  Palette,
+  Package,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  ShoppingBag,
+} from 'lucide-react';
 import type { PersonalColorSeason, BodyType } from '@/types/workout';
 import {
   getWorkoutStyleRecommendation,
@@ -9,10 +18,8 @@ import {
   getPersonalColorEmoji,
   getPersonalColorTheme,
 } from '@/lib/workout/styleRecommendations';
-import {
-  generateShoppingLinks,
-  type ShoppingCategory,
-} from '@/lib/workout/shoppingLinks';
+import { generateShoppingLinks, type ShoppingCategory } from '@/lib/workout/shoppingLinks';
+import { trackShoppingClick } from '@/lib/analytics/tracker';
 
 interface WorkoutStyleCardProps {
   personalColor: PersonalColorSeason;
@@ -53,10 +60,18 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
   );
 
   // 쇼핑 링크 클릭 핸들러 (useCallback으로 최적화)
-  const handleShopClick = useCallback((url: string) => {
-    // TODO: 분석 이벤트 트래킹 추가 시 platform 파라미터 추가
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }, []);
+  const handleShopClick = useCallback(
+    (url: string, platform: string) => {
+      // 쇼핑 클릭 이벤트 트래킹
+      trackShoppingClick(platform, selectedCategory, {
+        personalColor,
+        bodyType: bodyType || undefined,
+        source: 'workout-style-card',
+      });
+      window.open(url, '_blank', 'noopener,noreferrer');
+    },
+    [selectedCategory, personalColor, bodyType]
+  );
 
   return (
     <div
@@ -82,11 +97,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
             className={`p-2 rounded-lg hover:bg-muted/50 transition-colors ${theme.text}`}
             aria-label={isExpanded ? '접기' : '펼치기'}
           >
-            {isExpanded ? (
-              <ChevronUp className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
+            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </button>
         </div>
       </div>
@@ -199,9 +210,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
                     <p className="text-xs font-medium text-foreground/80 truncate">
                       {accessory.item}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {accessory.colorName}
-                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{accessory.colorName}</p>
                   </div>
                 </div>
               ))}
@@ -243,11 +252,13 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
 
             {/* 카테고리 선택 */}
             <div className="flex gap-2 mb-3" data-testid="category-selector">
-              {([
-                { value: 'workout-top', label: '상의' },
-                { value: 'workout-bottom', label: '하의' },
-                { value: 'accessory', label: '소품' },
-              ] as const).map((cat) => (
+              {(
+                [
+                  { value: 'workout-top', label: '상의' },
+                  { value: 'workout-bottom', label: '하의' },
+                  { value: 'accessory', label: '소품' },
+                ] as const
+              ).map((cat) => (
                 <button
                   key={cat.value}
                   onClick={() => setSelectedCategory(cat.value)}
@@ -268,7 +279,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
               {shoppingLinks.map((link) => (
                 <button
                   key={link.platform}
-                  onClick={() => handleShopClick(link.url)}
+                  onClick={() => handleShopClick(link.url, link.platform)}
                   className="w-full py-2.5 px-4 flex items-center justify-between bg-card rounded-lg border border-border hover:border-border/80 hover:shadow-sm transition-all group"
                   data-testid={`shop-link-${link.platform}`}
                 >

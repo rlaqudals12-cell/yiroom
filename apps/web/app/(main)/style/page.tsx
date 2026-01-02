@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { User, Palette, Eye, Shirt, Star, Sparkles } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
+import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { MaterialFavoriteFilter } from '@/components/style/MaterialFavoriteFilter';
 import { OutfitRoutineCard, type OutfitItem } from '@/components/style/OutfitRoutineCard';
 import { LookbookFeed } from '@/components/style/LookbookFeed';
@@ -50,15 +52,84 @@ const mockProducts = [
 
 export default function StylePage() {
   const router = useRouter();
+  const { user, isLoaded } = useUser();
+  const supabase = useClerkSupabaseClient();
   const [category, setCategory] = useState<Category>('all');
   const [matchFilterOn, setMatchFilterOn] = useState(true);
+
+  // 분석 결과 상태
+  const [hasAnalysis, setHasAnalysis] = useState(false);
+  const [bodyType, setBodyType] = useState<string | null>(null);
+  const [personalColor, setPersonalColor] = useState<string | null>(null);
+  const [height, setHeight] = useState<string | null>(null);
+  const [feature, setFeature] = useState<string | null>(null);
+
+  // 분석 결과 가져오기
+  useEffect(() => {
+    const fetchAnalysis = async () => {
+      if (!isLoaded || !user?.id) return;
+
+      try {
+        const [bodyResult, pcResult] = await Promise.all([
+          supabase
+            .from('body_analyses')
+            .select('body_type, height, concerns')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('personal_color_assessments')
+            .select('result_season, result_tone')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+
+        const bodyData = bodyResult.data;
+        const pcData = pcResult.data;
+
+        if (bodyData || pcData) {
+          setHasAnalysis(true);
+
+          if (bodyData) {
+            const bodyTypeMap: Record<string, string> = {
+              S: '스트레이트',
+              W: '웨이브',
+              N: '내추럴',
+            };
+            setBodyType(bodyTypeMap[bodyData.body_type] || bodyData.body_type);
+            setHeight(bodyData.height ? `${bodyData.height}cm` : null);
+            // concerns 배열에서 첫 번째 항목을 특징으로 표시
+            const concerns = bodyData.concerns as string[] | null;
+            setFeature(concerns?.[0] || null);
+          }
+
+          if (pcData) {
+            setPersonalColor(`${pcData.result_season} ${pcData.result_tone}`);
+          }
+        }
+      } catch (err) {
+        console.error('[Style] Analysis fetch error:', err);
+      }
+    };
+
+    fetchAnalysis();
+  }, [isLoaded, user?.id, supabase]);
 
   // 하이브리드 UX 상태
   const [favoriteMaterials, setFavoriteMaterials] = useState<FavoriteItem[]>([]);
   const [avoidMaterials, setAvoidMaterials] = useState<FavoriteItem[]>([]);
   const [dailyOutfit] = useState<OutfitItem[]>([
     { order: 1, category: 'top', productName: '크롭 니트', color: '아이보리', colorHex: '#FFF8E7' },
-    { order: 2, category: 'bottom', productName: '하이웨스트 슬랙스', color: '베이지', colorHex: '#D4A574' },
+    {
+      order: 2,
+      category: 'bottom',
+      productName: '하이웨스트 슬랙스',
+      color: '베이지',
+      colorHex: '#D4A574',
+    },
     { order: 3, category: 'outer', productName: '숏 재킷', color: '코랄', colorHex: '#FF6B6B' },
     { order: 4, category: 'shoes', productName: '로퍼', color: '브라운', colorHex: '#8B4513' },
   ]);
@@ -113,13 +184,6 @@ export default function StylePage() {
     },
   ]);
 
-  // TODO: 실제 분석 결과 연동
-  const hasAnalysis = true; // 분석 완료 여부
-  const bodyType = '웨이브';
-  const personalColor = '봄 웜톤';
-  const height = '165cm';
-  const feature = '어깨 좁음';
-
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="style-page">
       {/* 페이지 제목 (스크린리더용) */}
@@ -135,10 +199,16 @@ export default function StylePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <User className="w-5 h-5 text-blue-500" aria-hidden="true" />
-                <span className="font-medium">{bodyType}</span>
-                <span className="text-muted-foreground" aria-hidden="true">|</span>
-                <Palette className="w-4 h-4 text-indigo-500" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground">{personalColor}</span>
+                <span className="font-medium">{bodyType || '미분석'}</span>
+                {personalColor && (
+                  <>
+                    <span className="text-muted-foreground" aria-hidden="true">
+                      |
+                    </span>
+                    <Palette className="w-4 h-4 text-indigo-500" aria-hidden="true" />
+                    <span className="text-sm text-muted-foreground">{personalColor}</span>
+                  </>
+                )}
               </div>
               <button
                 onClick={() => router.push('/profile/analysis')}
@@ -148,14 +218,20 @@ export default function StylePage() {
                 수정
               </button>
             </div>
-            <div className="flex gap-2 mt-2">
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                {height}
-              </span>
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                {feature}
-              </span>
-            </div>
+            {(height || feature) && (
+              <div className="flex gap-2 mt-2">
+                {height && (
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                    {height}
+                  </span>
+                )}
+                {feature && (
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                    {feature}
+                  </span>
+                )}
+              </div>
+            )}
           </section>
         </FadeInUp>
       ) : (
@@ -216,7 +292,9 @@ export default function StylePage() {
               aria-label="내 체형 맞춤 제품만 표시"
             >
               <Shirt className="w-4 h-4" aria-hidden="true" />
-              <span className="text-sm" aria-hidden="true">내 체형 맞춤만 보기</span>
+              <span className="text-sm" aria-hidden="true">
+                내 체형 맞춤만 보기
+              </span>
               <div
                 className={cn(
                   'w-10 h-6 rounded-full transition-colors relative',
@@ -337,9 +415,7 @@ export default function StylePage() {
                   className="bg-card rounded-xl border p-3 text-left hover:shadow-md transition-shadow"
                 >
                   {hasAnalysis && (
-                    <div className="text-xs font-bold text-primary mb-1">
-                      {product.matchRate}%
-                    </div>
+                    <div className="text-xs font-bold text-primary mb-1">{product.matchRate}%</div>
                   )}
                   <div className="w-full aspect-square bg-muted rounded-lg mb-2" />
                   <p className="text-xs text-muted-foreground">{product.brand}</p>
@@ -372,10 +448,7 @@ export default function StylePage() {
                     <span className="text-xs text-muted-foreground">|</span>
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((i) => (
-                        <Star
-                          key={i}
-                          className="w-3 h-3 fill-yellow-400 text-yellow-400"
-                        />
+                        <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                       ))}
                     </div>
                   </div>
@@ -411,9 +484,7 @@ export default function StylePage() {
               <Shirt className="w-5 h-5 text-violet-600" />
               오늘 뭐 입지?
             </h2>
-            <p className="text-sm text-muted-foreground">
-              체형 + 퍼스널컬러 + 날씨 맞춤 AI 추천
-            </p>
+            <p className="text-sm text-muted-foreground">체형 + 퍼스널컬러 + 날씨 맞춤 AI 추천</p>
             <button
               onClick={() => router.push('/style/suggest')}
               className="mt-3 w-full bg-violet-600 text-white py-2 rounded-lg font-medium hover:bg-violet-700 transition-colors"

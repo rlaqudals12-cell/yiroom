@@ -1,11 +1,33 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { BottomNav } from '@/components/BottomNav';
+
+// lucide-react 아이콘 mock
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lucide-react')>();
+  const createMockIcon = (name: string) => {
+    const MockIcon = ({ className }: { className?: string }) => (
+      <svg data-testid={`icon-${name}`} className={className} />
+    );
+    MockIcon.displayName = name;
+    return MockIcon;
+  };
+
+  return {
+    ...actual,
+    Home: createMockIcon('Home'),
+    Sparkles: createMockIcon('Sparkles'),
+    Shirt: createMockIcon('Shirt'),
+    ClipboardList: createMockIcon('ClipboardList'),
+    User: createMockIcon('User'),
+  };
+});
 
 // next/navigation 모킹
 vi.mock('next/navigation', () => ({
-  usePathname: vi.fn(() => '/dashboard'),
+  usePathname: vi.fn(() => '/home'),
 }));
+
+import { BottomNav } from '@/components/BottomNav';
 
 describe('BottomNav', () => {
   it('하단 네비게이션을 렌더링한다', () => {
@@ -14,63 +36,74 @@ describe('BottomNav', () => {
     expect(screen.getByTestId('bottom-nav')).toBeInTheDocument();
   });
 
-  it('4개의 네비게이션 링크를 표시한다', () => {
+  it('5개의 네비게이션 링크를 표시한다', () => {
     render(<BottomNav />);
 
     expect(screen.getByText('홈')).toBeInTheDocument();
-    expect(screen.getByText('영양')).toBeInTheDocument();
-    expect(screen.getByText('운동')).toBeInTheDocument();
-    expect(screen.getByText('리포트')).toBeInTheDocument();
+    expect(screen.getByText('뷰티')).toBeInTheDocument();
+    expect(screen.getByText('스타일')).toBeInTheDocument();
+    expect(screen.getByText('기록')).toBeInTheDocument();
+    expect(screen.getByText('나')).toBeInTheDocument();
   });
 
   it('각 링크가 올바른 href를 가진다', () => {
     render(<BottomNav />);
 
-    // role="menuitem"으로 변경됨 (접근성 개선)
-    expect(screen.getByRole('menuitem', { name: /홈/ })).toHaveAttribute('href', '/dashboard');
-    expect(screen.getByRole('menuitem', { name: /영양/ })).toHaveAttribute('href', '/nutrition');
-    expect(screen.getByRole('menuitem', { name: /운동/ })).toHaveAttribute('href', '/workout');
-    expect(screen.getByRole('menuitem', { name: /리포트/ })).toHaveAttribute('href', '/reports');
+    // role="menuitem"으로 접근성 지원
+    expect(screen.getByRole('menuitem', { name: /홈/ })).toHaveAttribute('href', '/home');
+    expect(screen.getByRole('menuitem', { name: /뷰티/ })).toHaveAttribute('href', '/beauty');
+    expect(screen.getByRole('menuitem', { name: /스타일/ })).toHaveAttribute('href', '/style');
+    expect(screen.getByRole('menuitem', { name: /기록/ })).toHaveAttribute('href', '/record');
+    expect(screen.getByRole('menuitem', { name: /나/ })).toHaveAttribute('href', '/profile');
   });
 
   it('현재 경로에 해당하는 링크가 활성화 스타일을 가진다', () => {
     render(<BottomNav />);
 
-    // /dashboard 경로에서 홈 링크가 활성화됨
+    // /home 경로에서 홈 링크가 활성화됨
     const homeLink = screen.getByRole('menuitem', { name: /홈/ });
     expect(homeLink).toHaveClass('text-primary');
   });
 });
 
 describe('BottomNav 경로 매칭', () => {
-  it('/nutrition 경로에서 영양 탭이 활성화된다', async () => {
+  it('/beauty 경로에서 뷰티 탭이 활성화된다', async () => {
     const { usePathname } = await import('next/navigation');
-    vi.mocked(usePathname).mockReturnValue('/nutrition');
+    vi.mocked(usePathname).mockReturnValue('/beauty');
 
     render(<BottomNav />);
 
-    // 영양 링크 확인 (role="menuitem")
-    const nutritionLink = screen.getByRole('menuitem', { name: /영양/ });
-    expect(nutritionLink).toHaveClass('text-primary');
+    const beautyLink = screen.getByRole('menuitem', { name: /뷰티/ });
+    expect(beautyLink).toHaveClass('text-primary');
   });
 
-  it('/workout 하위 경로에서 운동 탭이 활성화된다', async () => {
+  it('/style 하위 경로에서 스타일 탭이 활성화된다', async () => {
     const { usePathname } = await import('next/navigation');
-    vi.mocked(usePathname).mockReturnValue('/workout/session');
+    vi.mocked(usePathname).mockReturnValue('/style/outfit');
 
     render(<BottomNav />);
 
-    const workoutLink = screen.getByRole('menuitem', { name: /운동/ });
-    expect(workoutLink).toHaveClass('text-primary');
+    const styleLink = screen.getByRole('menuitem', { name: /스타일/ });
+    expect(styleLink).toHaveClass('text-primary');
   });
 
-  it('/reports 하위 경로에서 리포트 탭이 활성화된다', async () => {
+  it('/record 경로에서 기록 탭이 활성화된다', async () => {
     const { usePathname } = await import('next/navigation');
-    vi.mocked(usePathname).mockReturnValue('/reports/weekly/2024-01-01');
+    vi.mocked(usePathname).mockReturnValue('/record');
 
     render(<BottomNav />);
 
-    const reportsLink = screen.getByRole('menuitem', { name: /리포트/ });
-    expect(reportsLink).toHaveClass('text-primary');
+    const recordLink = screen.getByRole('menuitem', { name: /기록/ });
+    expect(recordLink).toHaveClass('text-primary');
+  });
+
+  it('/profile 경로에서 나 탭이 활성화된다', async () => {
+    const { usePathname } = await import('next/navigation');
+    vi.mocked(usePathname).mockReturnValue('/profile');
+
+    render(<BottomNav />);
+
+    const profileLink = screen.getByRole('menuitem', { name: /나/ });
+    expect(profileLink).toHaveClass('text-primary');
   });
 });

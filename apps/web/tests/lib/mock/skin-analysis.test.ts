@@ -85,8 +85,7 @@ describe('S-1 피부 분석 Mock', () => {
       for (let i = 0; i < 10; i++) {
         const result = generateMockAnalysisResult();
         const expectedAvg = Math.round(
-          result.metrics.reduce((sum, m) => sum + m.value, 0) /
-            result.metrics.length
+          result.metrics.reduce((sum, m) => sum + m.value, 0) / result.metrics.length
         );
         expect(result.overallScore).toBe(expectedAvg);
       }
@@ -224,9 +223,7 @@ describe('S-1 피부 분석 Mock', () => {
     it('색소침착(pigmentation)은 45~85 범위이다', () => {
       for (let i = 0; i < 20; i++) {
         const result = generateMockAnalysisResult();
-        const pigmentation = result.metrics.find(
-          (m) => m.id === 'pigmentation'
-        );
+        const pigmentation = result.metrics.find((m) => m.id === 'pigmentation');
         expect(pigmentation?.value).toBeGreaterThanOrEqual(45);
         expect(pigmentation?.value).toBeLessThanOrEqual(85);
       }
@@ -244,9 +241,8 @@ describe('S-1 피부 분석 Mock', () => {
 });
 
 /**
- * TODO: 배포 전 마이그레이션 파일 작성 필요
- * - supabase/migrations/에 Phase 1 테이블 생성 SQL 추가
- * - skin_analyses 테이블 마이그레이션
- * - 관련 RLS 정책 설정
- * - storage bucket (skin-images) 설정
+ * 마이그레이션 파일 완료됨:
+ * - 00000000000002_phase1_analysis_tables.sql (테이블 생성)
+ * - 202512220100_phase1_rls_policies.sql (RLS 정책)
+ * - 00000000000001_setup_storage.sql (uploads 버킷)
  */

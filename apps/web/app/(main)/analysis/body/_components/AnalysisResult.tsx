@@ -1,6 +1,22 @@
 'use client';
 
-import { RefreshCw, Sparkles, ShoppingBag, Zap, Ruler, Scale, Target, Palette, Shirt, Ban, AlertTriangle, Users, Lightbulb, Bookmark } from 'lucide-react';
+import {
+  RefreshCw,
+  Sparkles,
+  ShoppingBag,
+  Zap,
+  Ruler,
+  Scale,
+  Target,
+  Palette,
+  Shirt,
+  Ban,
+  AlertTriangle,
+  Users,
+  Lightbulb,
+  Bookmark,
+  Camera,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   type BodyAnalysisResult,
@@ -14,7 +30,7 @@ import {
   mapBodyTypeTo3Type,
 } from '@/lib/mock/body-analysis';
 import { FadeInUp, ScaleIn, CountUp } from '@/components/animations';
-import { RecommendedClothingCard } from '@/components/analysis/body';
+import { RecommendedClothingCard, BodyStyleImage } from '@/components/analysis/body';
 import { getOutfitExamples } from '@/lib/color-recommendations';
 
 // 3타입인지 확인
@@ -28,11 +44,7 @@ interface AnalysisResultProps {
   shareRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-export default function AnalysisResult({
-  result,
-  onRetry,
-  shareRef,
-}: AnalysisResultProps) {
+export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisResultProps) {
   const {
     bodyType,
     bodyTypeLabel,
@@ -52,20 +64,31 @@ export default function AnalysisResult({
 
   // 3타입 시스템 지원
   const is3Type = isBodyType3(bodyType);
-  const type3 = is3Type ? bodyType : mapBodyTypeTo3Type(bodyType as import('@/lib/mock/body-analysis').BodyType);
+  const type3 = is3Type
+    ? bodyType
+    : mapBodyTypeTo3Type(bodyType as import('@/lib/mock/body-analysis').BodyType);
   const typeInfo3 = BODY_TYPES_3[type3];
-  const _typeInfoLegacy = !is3Type ? BODY_TYPES[bodyType as import('@/lib/mock/body-analysis').BodyType] : null;
+  const _typeInfoLegacy = !is3Type
+    ? BODY_TYPES[bodyType as import('@/lib/mock/body-analysis').BodyType]
+    : null;
 
   // 색상 헬퍼
-  const getColor = () => is3Type ? getBodyType3Color(type3) : getBodyTypeColor(bodyType as import('@/lib/mock/body-analysis').BodyType);
-  const getBgColor = () => is3Type ? getBodyType3BgColor(type3) : getBodyTypeBgColor(bodyType as import('@/lib/mock/body-analysis').BodyType);
+  const getColor = () =>
+    is3Type
+      ? getBodyType3Color(type3)
+      : getBodyTypeColor(bodyType as import('@/lib/mock/body-analysis').BodyType);
+  const getBgColor = () =>
+    is3Type
+      ? getBodyType3BgColor(type3)
+      : getBodyTypeBgColor(bodyType as import('@/lib/mock/body-analysis').BodyType);
 
   // 키워드 (3타입이면 typeInfo3에서, 아니면 레거시 변환)
   const keywords = (result as { keywords?: string[] }).keywords || typeInfo3.keywords;
   // 피해야 할 스타일
   const avoidStyles = (result as { avoidStyles?: string[] }).avoidStyles || typeInfo3.avoidStyles;
   // 특징
-  const _characteristics = (result as { characteristics?: string }).characteristics || typeInfo3.characteristics;
+  const _characteristics =
+    (result as { characteristics?: string }).characteristics || typeInfo3.characteristics;
 
   // 체형 + 퍼스널 컬러 조합 코디 예시
   const outfitExamples = getOutfitExamples(type3, personalColorSeason || null);
@@ -106,17 +129,24 @@ export default function AnalysisResult({
                 <p className="text-xl font-bold text-foreground">
                   <CountUp end={bmi || 0} decimals={1} duration={1200} />
                 </p>
-                <p className={`text-xs ${
-                  bmiCategory === '정상' ? 'text-green-500' :
-                  bmiCategory === '저체중' ? 'text-blue-500' :
-                  'text-orange-500'
-                }`}>{bmiCategory}</p>
+                <p
+                  className={`text-xs ${
+                    bmiCategory === '정상'
+                      ? 'text-green-500'
+                      : bmiCategory === '저체중'
+                        ? 'text-blue-500'
+                        : 'text-orange-500'
+                  }`}
+                >
+                  {bmiCategory}
+                </p>
               </div>
             </div>
             {userInput.targetWeight && (
               <div className="mt-4 pt-4 border-t text-center">
                 <p className="text-sm text-muted-foreground">
-                  목표 몸무게: <span className="font-medium text-foreground">{userInput.targetWeight}kg</span>
+                  목표 몸무게:{' '}
+                  <span className="font-medium text-foreground">{userInput.targetWeight}kg</span>
                   <span className="ml-2 text-purple-500">
                     ({userInput.weight > userInput.targetWeight ? '-' : '+'}
                     {Math.abs(userInput.weight - userInput.targetWeight).toFixed(1)}kg)
@@ -138,19 +168,13 @@ export default function AnalysisResult({
               {is3Type ? typeInfo3.label : bodyTypeLabel}
             </span>
           </div>
-          {is3Type && (
-            <p className="text-sm text-muted-foreground mt-1">
-              ({typeInfo3.labelEn})
-            </p>
-          )}
+          {is3Type && <p className="text-sm text-muted-foreground mt-1">({typeInfo3.labelEn})</p>}
           <p className="mt-2 text-muted-foreground">{bodyTypeDescription}</p>
 
           {/* 초보자용 한 줄 설명 */}
           {typeInfo3.simpleExplanation && (
             <div className={`mt-3 px-4 py-2 rounded-lg ${getBgColor()} inline-block`}>
-              <p className={`text-sm font-medium ${getColor()}`}>
-                {typeInfo3.simpleExplanation}
-              </p>
+              <p className={`text-sm font-medium ${getColor()}`}>{typeInfo3.simpleExplanation}</p>
             </div>
           )}
 
@@ -161,9 +185,11 @@ export default function AnalysisResult({
                 key={keyword}
                 className={`px-3 py-1 rounded-full text-sm ${
                   is3Type
-                    ? type3 === 'S' ? 'bg-blue-100 text-blue-700'
-                    : type3 === 'W' ? 'bg-pink-100 text-pink-700'
-                    : 'bg-green-100 text-green-700'
+                    ? type3 === 'S'
+                      ? 'bg-blue-100 text-blue-700'
+                      : type3 === 'W'
+                        ? 'bg-pink-100 text-pink-700'
+                        : 'bg-green-100 text-green-700'
                     : 'bg-muted text-muted-foreground'
                 }`}
               >
@@ -209,6 +235,22 @@ export default function AnalysisResult({
         </FadeInUp>
       )}
 
+      {/* 스타일 예시 이미지 */}
+      {is3Type && (
+        <FadeInUp delay={2}>
+          <section className="bg-card rounded-xl border p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Camera className="w-5 h-5 text-violet-500" />
+              <h2 className="text-lg font-semibold text-foreground">추천 스타일 예시</h2>
+            </div>
+            <BodyStyleImage bodyType={type3} showLabels />
+            <p className="text-xs text-muted-foreground mt-3 text-center">
+              {typeInfo3.label} 체형에 잘 어울리는 스타일이에요
+            </p>
+          </section>
+        </FadeInUp>
+      )}
+
       {/* 비율 분석 */}
       <FadeInUp delay={3}>
         <section className="bg-card rounded-xl border p-6">
@@ -217,12 +259,8 @@ export default function AnalysisResult({
             {measurements.map((measurement) => (
               <div key={measurement.name}>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium text-foreground/80">
-                    {measurement.name}
-                  </span>
-                  <span className={`text-sm font-semibold ${getColor()}`}>
-                    {measurement.value}
-                  </span>
+                  <span className="text-sm font-medium text-foreground/80">{measurement.name}</span>
+                  <span className={`text-sm font-semibold ${getColor()}`}>{measurement.value}</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
@@ -474,10 +512,7 @@ export default function AnalysisResult({
           </div>
           <div className="space-y-3">
             {styleRecommendations.map((rec, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-3 p-3 bg-muted rounded-lg"
-              >
+              <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-sm font-medium">
                   {index + 1}
                 </span>
@@ -510,11 +545,7 @@ export default function AnalysisResult({
 
       {/* 다시 분석하기 버튼 */}
       <FadeInUp delay={12}>
-        <Button
-          onClick={onRetry}
-          variant="outline"
-          className="w-full h-12 text-base gap-2"
-        >
+        <Button onClick={onRetry} variant="outline" className="w-full h-12 text-base gap-2">
           <RefreshCw className="w-4 h-4" />
           다시 분석하기
         </Button>

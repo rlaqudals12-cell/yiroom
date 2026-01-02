@@ -39,18 +39,9 @@ import {
 } from '@/components/nutrition/dynamic';
 import type { NutritionGoal } from '@/types/nutrition';
 import { Button } from '@/components/ui/button';
-import {
-  convertSkinMetricsToSummary,
-  type SkinAnalysisSummary,
-} from '@/lib/nutrition/skinInsight';
-import {
-  createWorkoutSummary,
-  type WorkoutSummary,
-} from '@/lib/nutrition/workoutInsight';
-import {
-  convertBodyAnalysisToData,
-  type BodyAnalysisData,
-} from '@/lib/nutrition/bodyInsight';
+import { convertSkinMetricsToSummary, type SkinAnalysisSummary } from '@/lib/nutrition/skinInsight';
+import { createWorkoutSummary, type WorkoutSummary } from '@/lib/nutrition/workoutInsight';
+import { convertBodyAnalysisToData, type BodyAnalysisData } from '@/lib/nutrition/bodyInsight';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
 
@@ -180,9 +171,7 @@ export default function NutritionPage() {
       setData(result);
     } catch (err) {
       console.error('[Nutrition Page] Fetch error:', err);
-      setError(
-        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'
-      );
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -278,8 +267,16 @@ export default function NutritionPage() {
     try {
       // 오늘 날짜의 운동 기록 조회
       const today = new Date();
-      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
-      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
+      const startOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      ).toISOString();
+      const endOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + 1
+      ).toISOString();
 
       const { data: workoutLogs, error } = await supabase
         .from('workout_logs')
@@ -342,33 +339,30 @@ export default function NutritionPage() {
   }, [supabase]);
 
   // 수분 추가 핸들러 (빠른 추가)
-  const handleWaterQuickAdd = useCallback(
-    async (amount: number, drinkType: DrinkType) => {
-      const hydrationFactor = HYDRATION_FACTORS[drinkType];
-      const effectiveMl = Math.round(amount * hydrationFactor);
+  const handleWaterQuickAdd = useCallback(async (amount: number, drinkType: DrinkType) => {
+    const hydrationFactor = HYDRATION_FACTORS[drinkType];
+    const effectiveMl = Math.round(amount * hydrationFactor);
 
-      try {
-        const response = await fetch('/api/nutrition/water', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            drinkType,
-            amountMl: amount,
-          }),
-        });
+    try {
+      const response = await fetch('/api/nutrition/water', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          drinkType,
+          amountMl: amount,
+        }),
+      });
 
-        if (response.ok) {
-          // 성공 시 수분량 업데이트
-          setWaterAmount((prev) => prev + effectiveMl);
-        } else {
-          console.error('[Nutrition Page] Water add failed');
-        }
-      } catch (err) {
-        console.error('[Nutrition Page] Water add error:', err);
+      if (response.ok) {
+        // 성공 시 수분량 업데이트
+        setWaterAmount((prev) => prev + effectiveMl);
+      } else {
+        console.error('[Nutrition Page] Water add failed');
       }
-    },
-    []
-  );
+    } catch (err) {
+      console.error('[Nutrition Page] Water add error:', err);
+    }
+  }, []);
 
   // 수분 추가 핸들러 (직접 입력 시트)
   const handleWaterAdd = useCallback(
@@ -425,10 +419,24 @@ export default function NutritionPage() {
         });
 
         if (response.ok) {
-          // TODO: Task 2.15에서 saveAsFavorite 처리 구현
-          // if (foodData.saveAsFavorite) {
-          //   await fetch('/api/nutrition/favorites', { method: 'POST', ... });
-          // }
+          // 즐겨찾기 저장 (Task 2.15)
+          if (foodData.saveAsFavorite) {
+            try {
+              await fetch('/api/nutrition/favorites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  food_name: foodData.name,
+                  category: foodData.mealType,
+                  custom_portion: foodData.portion,
+                  custom_calories: foodData.calories,
+                }),
+              });
+            } catch (favErr) {
+              // 즐겨찾기 저장 실패는 무시 (메인 기록은 성공)
+              console.warn('[Nutrition Page] Favorite save failed:', favErr);
+            }
+          }
           setIsManualInputOpen(false);
           // 식단 데이터 새로고침
           fetchTodayMeals();
@@ -452,7 +460,14 @@ export default function NutritionPage() {
     fetchSkinAnalysis();
     fetchWorkoutData();
     fetchBodyAnalysis();
-  }, [fetchNutritionSettings, fetchTodayMeals, fetchTodayWater, fetchSkinAnalysis, fetchWorkoutData, fetchBodyAnalysis]);
+  }, [
+    fetchNutritionSettings,
+    fetchTodayMeals,
+    fetchTodayWater,
+    fetchSkinAnalysis,
+    fetchWorkoutData,
+    fetchBodyAnalysis,
+  ]);
 
   // 식사 기록 추가 핸들러
   const handleAddRecord = useCallback(
@@ -465,14 +480,11 @@ export default function NutritionPage() {
   );
 
   // 기록 클릭 핸들러 (상세 보기)
-  const handleRecordClick = useCallback(
-    (record: MealRecord) => {
-      // 향후 기록 상세/수정 페이지로 이동
-      console.log('[Nutrition Page] Record clicked:', record.id);
-      // router.push(`/nutrition/record/${record.id}`);
-    },
-    []
-  );
+  const handleRecordClick = useCallback((record: MealRecord) => {
+    // 향후 기록 상세/수정 페이지로 이동
+    console.log('[Nutrition Page] Record clicked:', record.id);
+    // router.push(`/nutrition/record/${record.id}`);
+  }, []);
 
   // 빠른 액션 핸들러
   const handleQuickAction = useCallback(
@@ -506,7 +518,10 @@ export default function NutritionPage() {
   // 설정 로딩 상태
   if (isSettingsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]" data-testid="nutrition-page-loading">
+      <div
+        className="flex items-center justify-center min-h-[50vh]"
+        data-testid="nutrition-page-loading"
+      >
         <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
       </div>
     );
@@ -568,9 +583,13 @@ export default function NutritionPage() {
         goal={nutritionGoal}
         consumedCalories={data?.summary?.totalCalories || 0}
         targetCalories={DEFAULT_CALORIE_GOAL}
-        skinConcerns={skinAnalysis ? Object.entries(skinAnalysis)
-          .filter(([, status]) => status === 'warning')
-          .map(([key]) => key) : []}
+        skinConcerns={
+          skinAnalysis
+            ? Object.entries(skinAnalysis)
+                .filter(([, status]) => status === 'warning')
+                .map(([key]) => key)
+            : []
+        }
         bodyType={bodyAnalysis?.bodyType}
       />
 
@@ -579,10 +598,7 @@ export default function NutritionPage() {
         // 로딩 스켈레톤
         <div className="space-y-3" data-testid="meal-sections-loading">
           {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-card rounded-2xl p-4 shadow-sm border border-border/50"
-            >
+            <div key={i} className="bg-card rounded-2xl p-4 shadow-sm border border-border/50">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
                 <div className="w-20 h-5 bg-muted animate-pulse rounded" />
@@ -654,7 +670,9 @@ export default function NutritionPage() {
             fetchWorkoutData();
             fetchBodyAnalysis();
           }}
-          disabled={isLoading || isWaterLoading || isSkinLoading || isWorkoutLoading || isBodyLoading}
+          disabled={
+            isLoading || isWaterLoading || isSkinLoading || isWorkoutLoading || isBodyLoading
+          }
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors"
           aria-label="식단 정보 새로고침"
           data-testid="refresh-button"
@@ -667,11 +685,7 @@ export default function NutritionPage() {
       </div>
 
       {/* 하단 빠른 액션 바 */}
-      <QuickActionBar
-        onAction={handleQuickAction}
-        waterAmount={waterAmount}
-        waterGoal={2000}
-      />
+      <QuickActionBar onAction={handleQuickAction} waterAmount={waterAmount} waterGoal={2000} />
 
       {/* 플로팅 카메라 버튼 */}
       <FloatingCameraButton onClick={handleCameraClick} />
@@ -712,12 +726,8 @@ function NutritionOnboardingPrompt() {
 
         {/* 텍스트 */}
         <div className="space-y-2">
-          <h2 className="text-xl font-bold text-foreground">
-            나만의 식단 관리
-          </h2>
-          <p className="text-muted-foreground">
-            목표에 맞는 맞춤 칼로리와 영양소를 설정해요
-          </p>
+          <h2 className="text-xl font-bold text-foreground">나만의 식단 관리</h2>
+          <p className="text-muted-foreground">목표에 맞는 맞춤 칼로리와 영양소를 설정해요</p>
         </div>
 
         {/* 시작 버튼 */}
@@ -730,7 +740,9 @@ function NutritionOnboardingPrompt() {
 
         {/* 설명 */}
         <div className="text-left bg-muted rounded-xl p-4">
-          <p className="text-sm text-muted-foreground font-medium mb-2">이런 기능을 사용할 수 있어요:</p>
+          <p className="text-sm text-muted-foreground font-medium mb-2">
+            이런 기능을 사용할 수 있어요:
+          </p>
           <ul className="text-sm text-muted-foreground space-y-1">
             <li>✓ 내 목표에 맞는 칼로리 계산</li>
             <li>✓ AI 음식 인식 및 영양 분석</li>

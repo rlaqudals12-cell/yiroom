@@ -267,9 +267,8 @@ describe('C-1 체형 분석 Mock', () => {
 });
 
 /**
- * TODO: 배포 전 마이그레이션 파일 작성 필요
- * - supabase/migrations/에 Phase 1 테이블 생성 SQL 추가
- * - body_analyses 테이블 마이그레이션
- * - 관련 RLS 정책 설정
- * - storage bucket (body-images) 설정
+ * 마이그레이션 파일 완료됨:
+ * - 00000000000002_phase1_analysis_tables.sql (테이블 생성)
+ * - 202512220100_phase1_rls_policies.sql (RLS 정책)
+ * - 00000000000001_setup_storage.sql (uploads 버킷)
  */

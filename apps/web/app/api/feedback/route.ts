@@ -1,8 +1,8 @@
 /**
  * 피드백 API
- * POST /api/feedback
- * - 사용자 피드백을 저장
- * - DB 스키마: feedback (clerk_user_id, type, title, content, contact_email, status)
+ * GET /api/feedback - 피드백 목록 조회 (관리자용)
+ * POST /api/feedback - 사용자 피드백 저장
+ * DB 스키마: feedback (clerk_user_id, type, title, content, contact_email, status)
  */
 
 import { auth } from '@clerk/nextjs/server';
@@ -32,6 +32,59 @@ interface FeedbackRequest {
   email?: string;
 }
 
+// GET /api/feedback - 피드백 목록 조회 (관리자용)
+export async function GET() {
+  try {
+    const { userId } = await auth();
+
+    // 인증 확인 (관리자 페이지에서 호출되므로 로그인 필수)
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const supabase = createServiceRoleClient();
+
+    // 피드백 목록 조회 (최신순)
+    const { data, error } = await supabase
+      .from('feedback')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (error) {
+      console.error('[Feedback API] GET error:', error);
+      return NextResponse.json({ feedbacks: [] });
+    }
+
+    // DB 형식 → 프론트엔드 형식 변환
+    const feedbacks = data.map((item) => ({
+      id: item.id,
+      clerkUserId: item.clerk_user_id,
+      type:
+        item.type === 'suggestion'
+          ? 'suggestion'
+          : item.type === 'question'
+            ? 'question'
+            : item.type,
+      title: item.title,
+      content: item.content,
+      contactEmail: item.contact_email,
+      screenshotUrl: null,
+      status: item.status,
+      adminNotes: item.admin_notes || null,
+      createdAt: new Date(item.created_at),
+      updatedAt: new Date(item.updated_at || item.created_at),
+      userName: item.clerk_user_id === 'anonymous' ? '익명' : null,
+    }));
+
+    return NextResponse.json({ feedbacks });
+  } catch (error) {
+    console.error('[Feedback API] GET Error:', error);
+    return NextResponse.json({ feedbacks: [] });
+  }
+}
+
+// POST /api/feedback - 사용자 피드백 저장
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
@@ -39,10 +92,7 @@ export async function POST(request: Request) {
 
     // 유효성 검사
     if (!body.type || !body.content) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     if (body.content.length < 10) {

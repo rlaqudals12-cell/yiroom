@@ -13,16 +13,12 @@ import type {
   UserSizeHistory,
   ClothingCategory,
   SizeFit,
+  ProductMeasurements,
 } from '@/types/smart-matching';
+import { smartMatchingLogger } from '@/lib/utils/logger';
 import { getMeasurements } from './measurements';
-import {
-  getSizeHistoryByBrand,
-  getPerfectFitHistory,
-} from './size-history';
-import {
-  getSizeChart,
-  recommendSizeFromMeasurements,
-} from './size-charts';
+import { getSizeHistoryByBrand, getPerfectFitHistory } from './size-history';
+import { getSizeChart, recommendSizeFromMeasurements, getProductMeasurements } from './size-charts';
 
 // ============================================
 // 메인 추천 함수
@@ -239,7 +235,7 @@ function inferSizeFromBasicMeasurements(
   let baseSize = 'M';
 
   if (height && weight) {
-    const bmi = weight / ((height / 100) ** 2);
+    const bmi = weight / (height / 100) ** 2;
 
     if (category === 'top' || category === 'outer') {
       if (bmi < 18.5) baseSize = 'S';
@@ -362,16 +358,29 @@ export async function getProductSizeRecommendation(
   category: ClothingCategory
 ): Promise<SizeRecommendation> {
   // 기본 추천 먼저 수행
-  const baseRecommendation = await getSizeRecommendation(
-    clerkUserId,
-    brandId,
-    brandName,
-    category
-  );
+  const baseRecommendation = await getSizeRecommendation(clerkUserId, brandId, brandName, category);
 
-  // TODO: 제품별 실측 데이터가 있으면 보정
-  // const productMeasurements = await getProductMeasurements(productId);
-  // if (productMeasurements) { ... }
+  // 제품별 실측 데이터로 보정
+  try {
+    const productMeasurementsData = await getProductMeasurements(productId);
+    if (productMeasurementsData && productMeasurementsData.sizeMeasurements.length > 0) {
+      // 사용자 신체 치수 조회
+      const userMeasurements = await getMeasurements(clerkUserId);
+      if (userMeasurements) {
+        smartMatchingLogger.debug(
+          `[Size] 실측 데이터 보정 적용 - product: ${productId}, reliability: ${productMeasurementsData.reliability}`
+        );
+        return calibrateWithProductMeasurements(
+          baseRecommendation,
+          productMeasurementsData,
+          userMeasurements,
+          category
+        );
+      }
+    }
+  } catch (error) {
+    smartMatchingLogger.error('[Size] 실측 데이터 보정 실패:', error);
+  }
 
   return baseRecommendation;
 }
@@ -410,4 +419,125 @@ export function getBasisDescription(basis: SizeRecommendationBasis): string {
     default:
       return '';
   }
+}
+
+// ============================================
+// 실측 데이터 보정 로직
+// ============================================
+
+/**
+ * 실측 데이터로 추천 사이즈 보정
+ * @description 사용자 신체 치수와 제품 실측 데이터 비교하여 사이즈 조정
+ */
+function calibrateWithProductMeasurements(
+  recommendation: SizeRecommendation,
+  productMeasurements: ProductMeasurements,
+  userMeasurements: UserBodyMeasurements,
+  category: ClothingCategory
+): SizeRecommendation {
+  // 현재 추천 사이즈의 실측 데이터 찾기
+  const currentSizeMeasurement = productMeasurements.sizeMeasurements.find(
+    (sm) => sm.size === recommendation.recommendedSize
+  );
+
+  if (!currentSizeMeasurement) {
+    return recommendation;
+  }
+
+  const actual = currentSizeMeasurement.actualMeasurements;
+
+  // 카테고리별 주요 비교 기준
+  let needsSizeUp = false;
+  let needsSizeDown = false;
+  let reason = '';
+
+  if (category === 'top' || category === 'outer') {
+    // 상의: 가슴 너비, 어깨 너비 비교
+    if (userMeasurements.chest && actual.chestWidth) {
+      // 제품 실측은 단면 기준, 사용자 치수는 둘레 기준
+      const productChestCircumference = actual.chestWidth * 2;
+      const diff = userMeasurements.chest - productChestCircumference;
+
+      if (diff > 6) {
+        // 6cm 이상 작으면 사이즈업
+        needsSizeUp = true;
+        reason = '가슴 둘레 기준 한 사이즈 업 권장';
+      } else if (diff < -10) {
+        // 10cm 이상 여유 있으면 사이즈다운 고려
+        needsSizeDown = true;
+        reason = '가슴 둘레 기준 여유 있어 사이즈 다운 가능';
+      }
+    }
+
+    if (!needsSizeUp && !needsSizeDown && userMeasurements.shoulder && actual.shoulderWidth) {
+      const diff = userMeasurements.shoulder - actual.shoulderWidth;
+      if (diff > 3) {
+        needsSizeUp = true;
+        reason = '어깨 너비 기준 한 사이즈 업 권장';
+      }
+    }
+  } else if (category === 'bottom') {
+    // 하의: 허리 너비, 엉덩이 너비 비교
+    if (userMeasurements.waist && actual.waistWidth) {
+      const productWaistCircumference = actual.waistWidth * 2;
+      const diff = userMeasurements.waist - productWaistCircumference;
+
+      if (diff > 4) {
+        needsSizeUp = true;
+        reason = '허리 둘레 기준 한 사이즈 업 권장';
+      } else if (diff < -8) {
+        needsSizeDown = true;
+        reason = '허리 둘레 기준 여유 있어 사이즈 다운 가능';
+      }
+    }
+
+    if (!needsSizeUp && !needsSizeDown && userMeasurements.hip && actual.hipWidth) {
+      const productHipCircumference = actual.hipWidth * 2;
+      const diff = userMeasurements.hip - productHipCircumference;
+
+      if (diff > 4) {
+        needsSizeUp = true;
+        reason = '엉덩이 둘레 기준 한 사이즈 업 권장';
+      }
+    }
+  }
+
+  // 사이즈 조정
+  if (needsSizeUp || needsSizeDown) {
+    const calibratedSize = needsSizeUp
+      ? adjustSizeUp(recommendation.recommendedSize)
+      : adjustSizeDown(recommendation.recommendedSize);
+
+    // 신뢰도 조정: 실측 데이터 신뢰도 반영
+    const confidenceBoost = productMeasurements.reliability * 10;
+
+    return {
+      ...recommendation,
+      recommendedSize: calibratedSize,
+      confidence: Math.min(recommendation.confidence + confidenceBoost, 95),
+      alternatives: [
+        {
+          size: recommendation.recommendedSize,
+          note: `기본 추천 (${reason})`,
+        },
+        ...recommendation.alternatives.filter((a) => a.size !== calibratedSize),
+      ],
+      brandInfo: {
+        ...recommendation.brandInfo,
+        sizeNote: `실측 데이터 기반: ${reason}`,
+      },
+    };
+  }
+
+  // 보정 불필요 시 신뢰도만 소폭 상향
+  return {
+    ...recommendation,
+    confidence: Math.min(recommendation.confidence + 5, 95),
+    brandInfo: {
+      ...recommendation.brandInfo,
+      sizeNote: recommendation.brandInfo?.sizeNote
+        ? `${recommendation.brandInfo.sizeNote} (실측 확인됨)`
+        : '제품 실측 데이터 확인됨',
+    },
+  };
 }

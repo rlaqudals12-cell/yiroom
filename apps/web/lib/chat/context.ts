@@ -4,6 +4,7 @@
  */
 
 import { chatLogger } from '@/lib/utils/logger';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import type { ChatContext } from '@/types/chat';
 
 /**
@@ -53,16 +54,122 @@ export function generateMockContext(): ChatContext {
  * @param clerkUserId Clerk 사용자 ID
  */
 export async function fetchUserContext(clerkUserId: string): Promise<ChatContext> {
-  // TODO: 실제 Supabase에서 사용자 데이터 조회
-  // const supabase = createClerkSupabaseClient();
-  // const skinAnalysis = await supabase.from('skin_analyses')...
-  // const personalColor = await supabase.from('personal_color_assessments')...
-
-  // 현재는 Mock 데이터 반환
   chatLogger.debug(`Fetching context for user: ${clerkUserId}`);
 
-  // 개발 환경에서는 Mock 데이터 사용
-  return generateMockContext();
+  try {
+    const supabase = createClerkSupabaseClient();
+
+    // 병렬로 모든 분석 데이터 조회
+    const [skinResult, pcResult, bodyResult, workoutResult, nutritionResult] = await Promise.all([
+      supabase
+        .from('skin_analyses')
+        .select('skin_type, moisture_level, concerns, created_at')
+        .eq('clerk_user_id', clerkUserId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('personal_color_assessments')
+        .select('result_season, result_tone, best_colors, worst_colors, created_at')
+        .eq('clerk_user_id', clerkUserId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('body_analyses')
+        .select('body_type, weight, height, bmi, created_at')
+        .eq('clerk_user_id', clerkUserId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('workout_plans')
+        .select('workout_goal, fitness_level, workout_frequency')
+        .eq('clerk_user_id', clerkUserId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('users')
+        .select('nutrition_goal, daily_calorie_target, protein_target')
+        .eq('clerk_user_id', clerkUserId)
+        .maybeSingle(),
+    ]);
+
+    const context: ChatContext = {};
+
+    // 피부 분석 데이터
+    if (skinResult.data) {
+      const skinTypeMap: Record<string, string> = {
+        dry: '건성',
+        oily: '지성',
+        combination: '복합성',
+        sensitive: '민감성',
+        normal: '중성',
+      };
+      context.skinAnalysis = {
+        skinType: skinTypeMap[skinResult.data.skin_type] || skinResult.data.skin_type,
+        moisture: skinResult.data.moisture_level || 50,
+        concerns: skinResult.data.concerns || [],
+        recommendedIngredients: [], // 피부 분석 결과에서 추출 가능
+        analyzedAt: skinResult.data.created_at?.split('T')[0] || '',
+      };
+    }
+
+    // 퍼스널 컬러 데이터
+    if (pcResult.data) {
+      context.personalColor = {
+        season: pcResult.data.result_season,
+        tone: pcResult.data.result_tone,
+        bestColors: pcResult.data.best_colors || [],
+        worstColors: pcResult.data.worst_colors || [],
+        analyzedAt: pcResult.data.created_at?.split('T')[0],
+      };
+    }
+
+    // 체형 분석 데이터
+    if (bodyResult.data) {
+      const bodyTypeMap: Record<string, string> = {
+        S: '스트레이트',
+        W: '웨이브',
+        N: '내추럴',
+      };
+      context.bodyAnalysis = {
+        bodyType: bodyTypeMap[bodyResult.data.body_type] || bodyResult.data.body_type,
+        bmi: bodyResult.data.bmi || 22,
+        muscleBalance: '보통', // 기본값
+        analyzedAt: bodyResult.data.created_at?.split('T')[0] || '',
+      };
+    }
+
+    // 운동 계획 데이터
+    if (workoutResult.data) {
+      context.workoutPlan = {
+        goal: workoutResult.data.workout_goal,
+        level: workoutResult.data.fitness_level,
+        frequency: workoutResult.data.workout_frequency,
+      };
+    }
+
+    // 영양 목표 데이터
+    if (nutritionResult.data) {
+      context.nutritionGoals = {
+        dailyCalories: nutritionResult.data.daily_calorie_target,
+        proteinTarget: nutritionResult.data.protein_target,
+      };
+    }
+
+    // 유효한 컨텍스트가 없으면 Mock 반환
+    if (!hasValidContext(context)) {
+      chatLogger.debug('No valid context found, using mock data');
+      return generateMockContext();
+    }
+
+    return context;
+  } catch (error) {
+    chatLogger.error('Failed to fetch user context:', error);
+    return generateMockContext();
+  }
 }
 
 /**

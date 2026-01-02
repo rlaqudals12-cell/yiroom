@@ -7,8 +7,14 @@
  * - 결과 통합하여 반환
  */
 
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { productLogger } from '@/lib/utils/logger';
+
+// Gemini 클라이언트 초기화
+const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 
 /**
  * 피부 타입 정의
@@ -156,16 +162,78 @@ async function searchIngredientInDB(ingredientName: string): Promise<DBIngredien
 /**
  * AI로 성분 분석 (Gemini)
  * DB에 없는 성분에 대해 호출
- * TODO: Week 6 후반 또는 Week 7에서 Gemini 연동 구현 예정
  */
-// async function analyzeIngredientWithAI(
-//   ingredientName: string,
-//   skinType: SkinType
-// ): Promise<IngredientWarning | null> {
-//   // 추후 Gemini 연동 구현
-//   // 현재는 null 반환 (DB에 없는 성분은 경고 없음으로 처리)
-//   return null;
-// }
+async function analyzeIngredientWithAI(
+  ingredientName: string,
+  skinType: SkinType
+): Promise<IngredientWarning | null> {
+  // Gemini 미설정 시 null 반환
+  if (!genAI) {
+    productLogger.debug('[Ingredients] Gemini not configured, skipping AI analysis');
+    return null;
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+
+    const prompt = `You are a cosmetic ingredient expert. Analyze the following ingredient for skin safety.
+
+Ingredient: "${ingredientName}"
+User skin type: ${skinType}
+
+Respond ONLY with a JSON object (no markdown, no extra text):
+{
+  "isHarmful": true/false,
+  "warningLevel": "high" | "medium" | "low",
+  "ewgGrade": 1-10,
+  "reason": "Brief explanation in Korean (1-2 sentences)",
+  "alternatives": ["Alternative 1", "Alternative 2"] or null
+}
+
+Guidelines:
+- high: Known irritant, allergen, or harmful (EWG 7-10)
+- medium: May cause issues for ${skinType} skin (EWG 4-6)
+- low: Generally safe but mild caution (EWG 1-3)
+- If the ingredient is generally safe, set isHarmful to false
+- Consider the user's skin type when evaluating risk`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text().trim();
+
+    // JSON 파싱
+    let cleanText = text;
+    if (cleanText.startsWith('```json')) cleanText = cleanText.slice(7);
+    if (cleanText.startsWith('```')) cleanText = cleanText.slice(3);
+    if (cleanText.endsWith('```')) cleanText = cleanText.slice(0, -3);
+    cleanText = cleanText.trim();
+
+    const parsed = JSON.parse(cleanText) as {
+      isHarmful: boolean;
+      warningLevel: WarningLevel;
+      ewgGrade: number;
+      reason: string;
+      alternatives: string[] | null;
+    };
+
+    // 해롭지 않으면 null 반환
+    if (!parsed.isHarmful) {
+      return null;
+    }
+
+    return {
+      ingredient: ingredientName,
+      level: parsed.warningLevel,
+      ewgGrade: parsed.ewgGrade,
+      reason: parsed.reason,
+      alternatives: parsed.alternatives || undefined,
+      source: 'ai',
+    };
+  } catch (error) {
+    productLogger.error('[Ingredients] Gemini analysis failed:', error);
+    return null;
+  }
+}
 
 /**
  * 성분 목록 분석 (하이브리드)
@@ -210,18 +278,22 @@ export async function analyzeIngredients(
     }
   }
 
-  // 2. DB에 없는 성분 AI 분석 (현재 비활성)
-  // 추후 Gemini 연동 시 활성화
-  /*
+  // 2. DB에 없는 성분 AI 분석 (Gemini)
   if (unknownIngredients.length > 0) {
-    for (const ingredientName of unknownIngredients) {
-      const aiResult = await analyzeIngredientWithAI(ingredientName, skinType);
-      if (aiResult) {
-        warnings.push(aiResult);
+    // 병렬 처리로 성능 최적화 (최대 5개씩)
+    const batchSize = 5;
+    for (let i = 0; i < unknownIngredients.length; i += batchSize) {
+      const batch = unknownIngredients.slice(i, i + batchSize);
+      const aiResults = await Promise.all(
+        batch.map((name) => analyzeIngredientWithAI(name, skinType))
+      );
+      for (const result of aiResults) {
+        if (result) {
+          warnings.push(result);
+        }
       }
     }
   }
-  */
 
   // 3. 위험도 높은 순으로 정렬
   return warnings.sort((a, b) => {

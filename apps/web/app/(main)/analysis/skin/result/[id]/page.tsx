@@ -1,16 +1,19 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Sparkles } from 'lucide-react';
+import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { type SkinAnalysisResult } from '@/lib/mock/skin-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
-import { useShare } from '@/hooks/useShare';
+import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { ShareButton } from '@/components/share';
+import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
+import type { SkinType as ProductSkinType, SkinConcern } from '@/types/product';
 
 // 점수 → 상태 (MetricStatus 타입에 맞게)
 function getStatus(value: number): 'good' | 'normal' | 'warning' {
@@ -121,10 +124,25 @@ export default function SkinAnalysisResultPage() {
   const [skinType, setSkinType] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-피부분석-결과');
+  const [showCelebration, setShowCelebration] = useState(false);
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;
+
+  // 공유 카드 데이터
+  const shareData = useMemo(() => {
+    if (!result) return null;
+    return createSkinShareData({
+      overallScore: result.overallScore,
+      metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
+    });
+  }, [result]);
+
+  // 공유 훅
+  const { share, loading: shareLoading } = useAnalysisShare(
+    shareData || { analysisType: 'skin', title: '', subtitle: '' },
+    '이룸-피부분석-결과'
+  );
 
   // DB에서 분석 결과 조회
   const fetchAnalysis = useCallback(async () => {
@@ -154,6 +172,13 @@ export default function SkinAnalysisResultPage() {
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setSkinType(dbData.skin_type);
+
+      // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
+      const celebrationKey = `celebration-skin-${analysisId}`;
+      if (!sessionStorage.getItem(celebrationKey)) {
+        sessionStorage.setItem(celebrationKey, 'shown');
+        setShowCelebration(true);
+      }
     } catch (err) {
       console.error('[S-1] Fetch error:', err);
       setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
@@ -224,6 +249,14 @@ export default function SkinAnalysisResultPage() {
 
   return (
     <>
+      {/* 분석 완료 축하 효과 */}
+      <CelebrationEffect
+        type="analysis_complete"
+        trigger={showCelebration}
+        message="피부 분석 완료!"
+        onComplete={() => setShowCelebration(false)}
+      />
+
       <main className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
@@ -239,8 +272,31 @@ export default function SkinAnalysisResultPage() {
           </header>
 
           {/* 결과 */}
-          {result && (
-            <AnalysisResult result={result} onRetry={handleNewAnalysis} shareRef={shareRef} />
+          {result && <AnalysisResult result={result} onRetry={handleNewAnalysis} />}
+
+          {/* 맞춤 추천 제품 */}
+          {result && skinType && (
+            <RecommendedProducts
+              analysisType="skin"
+              analysisResult={{
+                skinType: skinType as ProductSkinType,
+                skinConcerns: result.metrics
+                  .filter((m) => m.status === 'warning')
+                  .map((m) => {
+                    // 메트릭 ID → SkinConcern 매핑
+                    const concernMap: Record<string, SkinConcern> = {
+                      hydration: 'hydration',
+                      pores: 'pore',
+                      pigmentation: 'whitening',
+                      wrinkles: 'aging',
+                      sensitivity: 'redness',
+                    };
+                    return concernMap[m.id];
+                  })
+                  .filter((c): c is SkinConcern => c !== undefined),
+              }}
+              className="mt-8 pb-32"
+            />
           )}
         </div>
       </main>

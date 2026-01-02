@@ -12,12 +12,7 @@ import type { BodyType } from '@/lib/mock/body-analysis';
 
 describe('코디 색상 추천 시스템', () => {
   describe('generateColorRecommendations', () => {
-    const seasons: PersonalColorSeason[] = [
-      'Spring',
-      'Summer',
-      'Autumn',
-      'Winter',
-    ];
+    const seasons: PersonalColorSeason[] = ['Spring', 'Summer', 'Autumn', 'Winter'];
 
     seasons.forEach((season) => {
       it(`${season} 시즌의 색상 추천을 반환한다`, () => {
@@ -96,9 +91,7 @@ describe('코디 색상 추천 시스템', () => {
       it('Autumn은 브라운 가죽을 추천한다', () => {
         const rec = generateColorRecommendations('Autumn');
 
-        expect(rec?.accessories.some((a) => a.includes('브라운 가죽'))).toBe(
-          true
-        );
+        expect(rec?.accessories.some((a) => a.includes('브라운 가죽'))).toBe(true);
       });
     });
 
@@ -114,9 +107,7 @@ describe('코디 색상 추천 시스템', () => {
       it('Winter는 블랙 가죽을 추천한다', () => {
         const rec = generateColorRecommendations('Winter');
 
-        expect(rec?.accessories.some((a) => a.includes('블랙 가죽'))).toBe(
-          true
-        );
+        expect(rec?.accessories.some((a) => a.includes('블랙 가죽'))).toBe(true);
       });
     });
   });
@@ -243,9 +234,7 @@ describe('코디 색상 추천 시스템', () => {
 });
 
 /**
- * TODO: 배포 전 마이그레이션 파일 작성 필요
- * - supabase/migrations/에 Phase 1 테이블 생성 SQL 추가
- * - personal_color_assessments 테이블 마이그레이션
- * - body_analyses 테이블 마이그레이션
- * - 관련 RLS 정책 설정
+ * 마이그레이션 파일 완료됨:
+ * - 00000000000002_phase1_analysis_tables.sql (테이블 생성)
+ * - 202512220100_phase1_rls_policies.sql (RLS 정책)
  */

@@ -2,14 +2,20 @@
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { getNewBadges, STREAK_MILESTONES, getDaysDifference } from '@/lib/workout/streak';
+import { checkNewMilestone, type Milestone } from '@/lib/milestones';
 import type { WorkoutLog, WorkoutStreak, ExerciseLog } from '@/lib/api/workout';
+
+// 운동 기록 저장 결과 타입
+export interface SaveWorkoutResult {
+  log: WorkoutLog;
+  milestone?: Milestone | null;
+  totalWorkouts: number;
+}
 
 /**
  * 사용자의 Streak 조회 (Server Action)
  */
-export async function getWorkoutStreakAction(
-  userId: string
-): Promise<WorkoutStreak | null> {
+export async function getWorkoutStreakAction(userId: string): Promise<WorkoutStreak | null> {
   const supabase = createServiceRoleClient();
 
   const { data, error } = await supabase
@@ -66,9 +72,7 @@ async function updateWorkoutStreakAction(
     return data as WorkoutStreak;
   }
 
-  const lastWorkout = streak.last_workout_date
-    ? new Date(streak.last_workout_date)
-    : null;
+  const lastWorkout = streak.last_workout_date ? new Date(streak.last_workout_date) : null;
 
   let newCurrentStreak = streak.current_streak;
   let newStreakStart = streak.streak_start_date;
@@ -123,6 +127,7 @@ async function updateWorkoutStreakAction(
 
 /**
  * 운동 기록 저장 (Server Action)
+ * 마일스톤 달성 시 정보도 함께 반환
  */
 export async function saveWorkoutLogAction(
   userId: string,
@@ -136,18 +141,28 @@ export async function saveWorkoutLogAction(
     mood?: string;
     perceivedEffort?: number;
   }
-): Promise<WorkoutLog | null> {
+): Promise<SaveWorkoutResult | null> {
   const supabase = createServiceRoleClient();
+
+  // 이전 운동 횟수 조회 (마일스톤 체크용)
+  const { count: previousCount } = await supabase
+    .from('workout_logs')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
 
   // 총 볼륨 계산 (세트 x 횟수 x 무게)
   const totalVolume = exerciseLogs.reduce((total, exercise) => {
-    return total + exercise.sets.reduce((setTotal, set) => {
-      return setTotal + (set.completed ? set.reps * (set.weight || 1) : 0);
-    }, 0);
+    return (
+      total +
+      exercise.sets.reduce((setTotal, set) => {
+        return setTotal + (set.completed ? set.reps * (set.weight || 1) : 0);
+      }, 0)
+    );
   }, 0);
 
   // plan_id는 UUID 형식이 아니면 null로 설정
-  const isValidUUID = planId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId);
+  const isValidUUID =
+    planId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId);
 
   const { data, error } = await supabase
     .from('workout_logs')
@@ -185,5 +200,13 @@ export async function saveWorkoutLogAction(
   // Streak 업데이트
   await updateWorkoutStreakAction(userId, workoutDate);
 
-  return data as WorkoutLog;
+  // 마일스톤 체크
+  const currentCount = (previousCount || 0) + 1;
+  const milestone = checkNewMilestone('workout', previousCount || 0, currentCount);
+
+  return {
+    log: data as WorkoutLog,
+    milestone,
+    totalWorkouts: currentCount,
+  };
 }

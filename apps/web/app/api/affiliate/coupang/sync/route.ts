@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     const results: Record<string, { added: number; updated: number; errors: number }> = {};
     let totalAdded = 0;
-    const totalUpdated = 0; // TODO: upsert에서 구분 필요
+    let totalUpdated = 0;
     let totalErrors = 0;
 
     // 카테고리별 동기화
@@ -69,11 +69,19 @@ export async function POST(request: NextRequest) {
         const products = await getCoupangCategoryProducts(categoryId, limit);
 
         let added = 0;
-        const updated = 0; // TODO: upsert에서 구분 필요
+        let updated = 0;
         let errors = 0;
 
         // 제품 upsert
         for (const product of products) {
+          // 기존 제품 확인 (add/update 구분용)
+          const { data: existing } = await supabase
+            .from('affiliate_products')
+            .select('id')
+            .eq('partner_id', partner.id)
+            .eq('external_product_id', product.externalProductId)
+            .single();
+
           const { error } = await supabase.from('affiliate_products').upsert(
             {
               partner_id: partner.id,
@@ -103,8 +111,12 @@ export async function POST(request: NextRequest) {
             console.error('[Sync] 제품 저장 실패:', error);
             errors++;
             totalErrors++;
+          } else if (existing) {
+            // 기존 제품 업데이트
+            updated++;
+            totalUpdated++;
           } else {
-            // TODO: 실제로 추가/업데이트 구분 필요
+            // 새 제품 추가
             added++;
             totalAdded++;
           }
