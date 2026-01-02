@@ -11,44 +11,14 @@ import { useRouter } from 'expo-router';
 
 import type { NotificationType } from './templates';
 import { createNotification } from './templates';
+import {
+  type NotificationSettings,
+  DEFAULT_NOTIFICATION_SETTINGS,
+} from './types';
 
-// ============================================================
-// 타입 정의
-// ============================================================
-
-export interface NotificationSettings {
-  enabled: boolean;
-  workoutReminder: boolean;
-  workoutReminderTime: string; // HH:MM
-  nutritionReminder: boolean;
-  mealReminderTimes: {
-    breakfast: string;
-    lunch: string;
-    dinner: string;
-  };
-  waterReminder: boolean;
-  waterReminderInterval: number; // hours
-  streakWarning: boolean;
-  socialNotifications: boolean;
-  achievementNotifications: boolean;
-}
-
-export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
-  enabled: false,
-  workoutReminder: true,
-  workoutReminderTime: '09:00',
-  nutritionReminder: true,
-  mealReminderTimes: {
-    breakfast: '08:30',
-    lunch: '12:30',
-    dinner: '18:30',
-  },
-  waterReminder: true,
-  waterReminderInterval: 2,
-  streakWarning: true,
-  socialNotifications: true,
-  achievementNotifications: true,
-};
+// Re-export for backward compatibility
+export type { NotificationSettings } from './types';
+export { DEFAULT_NOTIFICATION_SETTINGS } from './types';
 
 const SETTINGS_KEY = 'yiroom_notification_settings';
 

@@ -1,9 +1,9 @@
 /**
  * 스타일 탭
- * 체형 분석, 패션 추천, 코디 가이드
+ * 체형 분석, 패션 추천, 코디 가이드, 내 옷장
  */
 import { useRouter } from 'expo-router';
-import { Shirt, Ruler, ShoppingBag } from 'lucide-react-native';
+import { Shirt, Ruler, ShoppingBag, Package, Wand2 } from 'lucide-react-native';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 
 export default function StyleTab() {
@@ -47,6 +47,42 @@ export default function StyleTab() {
           </View>
           <Text className="text-muted-foreground">
             체형과 퍼스널 컬러에 맞는 옷을 추천받으세요
+          </Text>
+        </Pressable>
+
+        {/* 내 옷장 카드 */}
+        <Pressable
+          className="bg-card rounded-2xl p-5 mb-4 border border-border"
+          onPress={() => router.push('/(closet)')}
+        >
+          <View className="flex-row items-center mb-3">
+            <View className="w-10 h-10 bg-purple-100 rounded-full items-center justify-center mr-3">
+              <Package size={20} color="#8b5cf6" />
+            </View>
+            <Text className="text-lg font-semibold text-foreground">
+              내 옷장
+            </Text>
+          </View>
+          <Text className="text-muted-foreground">
+            옷장을 관리하고 AI 코디 추천을 받으세요
+          </Text>
+        </Pressable>
+
+        {/* 코디 추천 카드 */}
+        <Pressable
+          className="bg-card rounded-2xl p-5 mb-4 border border-border"
+          onPress={() => router.push('/(closet)/recommend')}
+        >
+          <View className="flex-row items-center mb-3">
+            <View className="w-10 h-10 bg-pink-100 rounded-full items-center justify-center mr-3">
+              <Wand2 size={20} color="#ec4899" />
+            </View>
+            <Text className="text-lg font-semibold text-foreground">
+              오늘의 코디
+            </Text>
+          </View>
+          <Text className="text-muted-foreground">
+            퍼스널컬러와 체형에 맞는 코디를 추천받으세요
           </Text>
         </Pressable>
 
