@@ -79,6 +79,7 @@
 ## 1. users 테이블
 
 ### SQL 생성문
+
 ```sql
 -- Clerk 사용자 정보 저장
 CREATE TABLE users (
@@ -114,6 +115,7 @@ COMMENT ON COLUMN users.clerk_user_id IS 'Clerk에서 발급한 사용자 고유
 ```
 
 ### 필드 설명
+
 ```yaml
 id: UUID
   - Supabase 내부 ID
@@ -149,116 +151,107 @@ updated_at: TIMESTAMPTZ
 ## 2. personal_color_assessments 테이블 ⭐
 
 ### SQL 생성문
+
 ```sql
 -- PC-1 퍼스널 컬러 진단 결과 저장
 CREATE TABLE personal_color_assessments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   clerk_user_id TEXT NOT NULL,
-  
+
   -- 문진 데이터
   questionnaire_answers JSONB NOT NULL,
-  
+
   -- 이미지 정보
   face_image_url TEXT,
-  
+
   -- 분석 결과
   season TEXT NOT NULL CHECK (season IN ('Spring', 'Summer', 'Autumn', 'Winter')),
   undertone TEXT CHECK (undertone IN ('Warm', 'Cool', 'Neutral')),
   confidence INT CHECK (confidence >= 0 AND confidence <= 100),
-  
+
   -- 문진 점수
   season_scores JSONB,
-  
+
   -- 이미지 분석 결과
   image_analysis JSONB,
-  
+
   -- 추천 데이터
   best_colors JSONB,
   worst_colors JSONB,
   makeup_recommendations JSONB,
   fashion_recommendations JSONB,
-  
+
   -- 메타 정보
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 인덱스
-CREATE INDEX idx_pc_assessments_clerk_user_id 
+CREATE INDEX idx_pc_assessments_clerk_user_id
   ON personal_color_assessments(clerk_user_id);
-CREATE INDEX idx_pc_assessments_season 
+CREATE INDEX idx_pc_assessments_season
   ON personal_color_assessments(season);
-CREATE INDEX idx_pc_assessments_created_at 
+CREATE INDEX idx_pc_assessments_created_at
   ON personal_color_assessments(created_at DESC);
 
 -- 코멘트
-COMMENT ON TABLE personal_color_assessments 
+COMMENT ON TABLE personal_color_assessments
   IS 'PC-1 퍼스널 컬러 진단 결과 (온보딩 필수, S-1/C-1 자동 활용)';
-COMMENT ON COLUMN personal_color_assessments.questionnaire_answers 
+COMMENT ON COLUMN personal_color_assessments.questionnaire_answers
   IS '10개 문진 질문 답변 JSON';
-COMMENT ON COLUMN personal_color_assessments.season 
+COMMENT ON COLUMN personal_color_assessments.season
   IS '최종 계절 타입 (Spring/Summer/Autumn/Winter)';
-COMMENT ON COLUMN personal_color_assessments.season_scores 
+COMMENT ON COLUMN personal_color_assessments.season_scores
   IS '각 계절별 점수 {spring: 85, summer: 60, ...}';
 ```
 
 ### JSONB 필드 구조
+
 ```yaml
-questionnaire_answers:
-  {
-    "q1_vein_color": "blue",       # 손목 혈관
-    "q2_jewelry": "gold",          # 금/은 장신구
-    "q3_skin_tone": "light",       # 피부 톤
-    "q4_hair_color": "dark_brown", # 헤어 컬러
-    "q5_eye_color": "dark",        # 눈동자 색
-    "q6_flush": "sometimes",       # 홍조
-    "q7_sun_reaction": "burn",     # 태양 반응
-    "q8_lip_color": "pink",        # 입술 색
-    "q9_preferred_colors": "cool", # 선호 색상
-    "q10_gender_age": {            # 성별/나이
-      "gender": "female",
-      "age_group": "20s"
-    }
+questionnaire_answers: {
+    'q1_vein_color': 'blue', # 손목 혈관
+    'q2_jewelry': 'gold', # 금/은 장신구
+    'q3_skin_tone': 'light', # 피부 톤
+    'q4_hair_color': 'dark_brown', # 헤어 컬러
+    'q5_eye_color': 'dark', # 눈동자 색
+    'q6_flush': 'sometimes', # 홍조
+    'q7_sun_reaction': 'burn', # 태양 반응
+    'q8_lip_color': 'pink', # 입술 색
+    'q9_preferred_colors': 'cool', # 선호 색상
+    ? 'q10_gender_age' # 성별/나이
+    : { 'gender': 'female', 'age_group': '20s' },
   }
 
-season_scores:
-  {
-    "spring": 65,
-    "summer": 88,
-    "autumn": 45,
-    "winter": 72
-  }
+season_scores: { 'spring': 65, 'summer': 88, 'autumn': 45, 'winter': 72 }
 
 image_analysis:
   {
-    "detected_undertone": "cool",
-    "skin_brightness": 75,
-    "color_temperature": "cool",
-    "saturation_level": "medium",
-    "contrast_level": "low"
+    'detected_undertone': 'cool',
+    'skin_brightness': 75,
+    'color_temperature': 'cool',
+    'saturation_level': 'medium',
+    'contrast_level': 'low',
   }
 
-best_colors:
-  ["#FFB6C1", "#E6E6FA", "#87CEEB", "#98FB98", "#FFCCE5"]
+best_colors: ['#FFB6C1', '#E6E6FA', '#87CEEB', '#98FB98', '#FFCCE5']
 
-worst_colors:
-  ["#FF4500", "#FF8C00", "#FFD700", "#32CD32"]
+worst_colors: ['#FF4500', '#FF8C00', '#FFD700', '#32CD32']
 
 makeup_recommendations:
   {
-    "foundation": "쿨톤 베이지 21호",
-    "lipstick": ["로즈핑크", "라벤더핑크", "베리"],
-    "eyeshadow": ["파스텔퍼플", "핑크브라운", "그레이"],
-    "blush": ["로즈", "라벤더핑크"]
+    'foundation': '쿨톤 베이지 21호',
+    'lipstick': ['로즈핑크', '라벤더핑크', '베리'],
+    'eyeshadow': ['파스텔퍼플', '핑크브라운', '그레이'],
+    'blush': ['로즈', '라벤더핑크'],
   }
 
 fashion_recommendations:
   {
-    "best_colors": ["파스텔블루", "라벤더", "민트", "로즈"],
-    "avoid_colors": ["오렌지", "코랄", "머스타드"],
-    "metals": "실버",
-    "patterns": ["체크", "스트라이프"],
-    "fabrics": ["실크", "시폰", "린넨"]
+    'best_colors': ['파스텔블루', '라벤더', '민트', '로즈'],
+    'avoid_colors': ['오렌지', '코랄', '머스타드'],
+    'metals': '실버',
+    'patterns': ['체크', '스트라이프'],
+    'fabrics': ['실크', '시폰', '린넨'],
   }
 ```
 
@@ -267,16 +260,17 @@ fashion_recommendations:
 ## 3. skin_analyses 테이블
 
 ### SQL 생성문
+
 ```sql
 -- S-1 피부 분석 결과 저장
 CREATE TABLE skin_analyses (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   clerk_user_id TEXT NOT NULL,
-  
+
   -- 이미지 정보
   image_url TEXT NOT NULL,
-  
+
   -- 분석 결과 (7가지 지표)
   skin_type TEXT NOT NULL,
   hydration INT CHECK (hydration >= 0 AND hydration <= 100),
@@ -285,109 +279,101 @@ CREATE TABLE skin_analyses (
   pigmentation INT CHECK (pigmentation >= 0 AND pigmentation <= 100),
   wrinkles INT CHECK (wrinkles >= 0 AND wrinkles <= 100),
   sensitivity INT CHECK (sensitivity >= 0 AND sensitivity <= 100),
-  
+
   -- 전체 점수
   overall_score INT CHECK (overall_score >= 0 AND overall_score <= 100),
-  
+
   -- 추천 사항
   recommendations JSONB,
   products JSONB,
-  
+
   -- 성분 분석 (화해 스타일) ⭐
   ingredient_warnings JSONB,
-  
+
   -- 퍼스널 컬러 연동 ⭐
   personal_color_season TEXT,
   foundation_recommendation TEXT,
-  
+
   -- 메타 정보
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 인덱스
-CREATE INDEX idx_skin_analyses_clerk_user_id 
+CREATE INDEX idx_skin_analyses_clerk_user_id
   ON skin_analyses(clerk_user_id);
-CREATE INDEX idx_skin_analyses_created_at 
+CREATE INDEX idx_skin_analyses_created_at
   ON skin_analyses(created_at DESC);
-CREATE INDEX idx_skin_analyses_skin_type 
+CREATE INDEX idx_skin_analyses_skin_type
   ON skin_analyses(skin_type);
-CREATE INDEX idx_skin_analyses_pc_season 
+CREATE INDEX idx_skin_analyses_pc_season
   ON skin_analyses(personal_color_season);
 
 -- 코멘트
 COMMENT ON TABLE skin_analyses IS 'S-1 피부 분석 결과 (성분 분석 + PC 연동)';
-COMMENT ON COLUMN skin_analyses.ingredient_warnings 
+COMMENT ON COLUMN skin_analyses.ingredient_warnings
   IS '성분 경고 정보 (화해 스타일)';
-COMMENT ON COLUMN skin_analyses.personal_color_season 
+COMMENT ON COLUMN skin_analyses.personal_color_season
   IS '퍼스널 컬러 계절 (자동 조회)';
-COMMENT ON COLUMN skin_analyses.foundation_recommendation 
+COMMENT ON COLUMN skin_analyses.foundation_recommendation
   IS '퍼스널 컬러 기반 파운데이션 추천';
 ```
 
 ### JSONB 필드 구조
+
 ```yaml
 recommendations:
   {
-    "insight": "수분 보충이 필요해요! 히알루론산 성분을 추천드려요.",
-    "ingredients": [
-      {"name": "히알루론산", "reason": "수분 보충"},
-      {"name": "나이아신아마이드", "reason": "모공 개선"}
-    ],
-    "morning_routine": [
-      "세안 → 토너 → 세럼 → 수분크림 → 선크림"
-    ],
-    "evening_routine": [
-      "클렌징 → 세안 → 토너 → 세럼 → 아이크림 → 수분크림"
-    ],
-    "weekly_care": [
-      "주 1-2회 각질 케어",
-      "주 2-3회 시트 마스크"
-    ],
-    "lifestyle_tips": [
-      "물 2L 이상 섭취",
-      "7시간 이상 수면"
-    ]
+    'insight': '수분 보충이 필요해요! 히알루론산 성분을 추천드려요.',
+    'ingredients':
+      [
+        { 'name': '히알루론산', 'reason': '수분 보충' },
+        { 'name': '나이아신아마이드', 'reason': '모공 개선' },
+      ],
+    'morning_routine': ['세안 → 토너 → 세럼 → 수분크림 → 선크림'],
+    'evening_routine': ['클렌징 → 세안 → 토너 → 세럼 → 아이크림 → 수분크림'],
+    'weekly_care': ['주 1-2회 각질 케어', '주 2-3회 시트 마스크'],
+    'lifestyle_tips': ['물 2L 이상 섭취', '7시간 이상 수면'],
   }
 
 products:
   {
-    "cleanser": ["순한 폼클렌저", "젤 클렌저"],
-    "toner": ["무알콜 토너", "하이드레이팅 토너"],
-    "serum": ["히알루론산 세럼", "나이아신아마이드"],
-    "moisturizer": ["수분크림", "젤크림"],
-    "sunscreen": ["무기자차 선크림"],
-    "specialCare": ["히알루론산 앰플", "비타민C 세럼"]
+    'cleanser': ['순한 폼클렌저', '젤 클렌저'],
+    'toner': ['무알콜 토너', '하이드레이팅 토너'],
+    'serum': ['히알루론산 세럼', '나이아신아마이드'],
+    'moisturizer': ['수분크림', '젤크림'],
+    'sunscreen': ['무기자차 선크림'],
+    'specialCare': ['히알루론산 앰플', '비타민C 세럼'],
   }
 
 ingredient_warnings:
   [
     {
-      "ingredient": "알코올",
-      "ingredientEn": "Alcohol",
-      "level": "high",
-      "ewgGrade": 6,
-      "reason": "민감성 피부에 자극 유발 가능",
-      "alternatives": ["알코올 프리 토너", "글리세린 기반 제품"],
-      "category": "용매"
+      'ingredient': '알코올',
+      'ingredientEn': 'Alcohol',
+      'level': 'high',
+      'ewgGrade': 6,
+      'reason': '민감성 피부에 자극 유발 가능',
+      'alternatives': ['알코올 프리 토너', '글리세린 기반 제품'],
+      'category': '용매',
     },
     {
-      "ingredient": "향료",
-      "ingredientEn": "Fragrance",
-      "level": "medium",
-      "ewgGrade": 8,
-      "reason": "알러지 반응 가능성",
-      "alternatives": ["무향 제품"],
-      "category": "향료"
+      'ingredient': '향료',
+      'ingredientEn': 'Fragrance',
+      'level': 'medium',
+      'ewgGrade': 8,
+      'reason': '알러지 반응 가능성',
+      'alternatives': ['무향 제품'],
+      'category': '향료',
     },
     {
-      "ingredient": "파라벤",
-      "ingredientEn": "Paraben",
-      "level": "low",
-      "ewgGrade": 4,
-      "reason": "일부 민감 반응 보고",
-      "alternatives": ["파라벤 프리 제품", "천연 방부제 제품"],
-      "category": "방부제"
-    }
+      'ingredient': '파라벤',
+      'ingredientEn': 'Paraben',
+      'level': 'low',
+      'ewgGrade': 4,
+      'reason': '일부 민감 반응 보고',
+      'alternatives': ['파라벤 프리 제품', '천연 방부제 제품'],
+      'category': '방부제',
+    },
   ]
 ```
 
@@ -396,92 +382,95 @@ ingredient_warnings:
 ## 4. body_analyses 테이블
 
 ### SQL 생성문
+
 ```sql
 -- C-1 체형 분석 결과 저장
 CREATE TABLE body_analyses (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   clerk_user_id TEXT NOT NULL,
-  
+
   -- 이미지 정보
   image_url TEXT NOT NULL,
-  
+
   -- 기본 측정값
   height DECIMAL(5,2),
   weight DECIMAL(5,2),
-  
+
   -- 분석 결과
   body_type TEXT NOT NULL,
   shoulder INT CHECK (shoulder >= 0 AND shoulder <= 100),
   waist INT CHECK (waist >= 0 AND waist <= 100),
   hip INT CHECK (hip >= 0 AND hip <= 100),
   ratio DECIMAL(3,2),
-  
+
   -- 추천 사항
   strengths JSONB,
   improvements JSONB,
   style_recommendations JSONB,
-  
+
   -- 퍼스널 컬러 연동 ⭐
   personal_color_season TEXT,
   color_recommendations JSONB,
-  
+
   -- 목표 설정
   target_weight DECIMAL(5,2),
   target_date DATE,
-  
+
   -- 메타 정보
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 인덱스
-CREATE INDEX idx_body_analyses_clerk_user_id 
+CREATE INDEX idx_body_analyses_clerk_user_id
   ON body_analyses(clerk_user_id);
-CREATE INDEX idx_body_analyses_created_at 
+CREATE INDEX idx_body_analyses_created_at
   ON body_analyses(created_at DESC);
-CREATE INDEX idx_body_analyses_body_type 
+CREATE INDEX idx_body_analyses_body_type
   ON body_analyses(body_type);
-CREATE INDEX idx_body_analyses_pc_season 
+CREATE INDEX idx_body_analyses_pc_season
   ON body_analyses(personal_color_season);
 
 -- 코멘트
 COMMENT ON TABLE body_analyses IS 'C-1 체형 분석 결과 (PC 연동)';
-COMMENT ON COLUMN body_analyses.personal_color_season 
+COMMENT ON COLUMN body_analyses.personal_color_season
   IS '퍼스널 컬러 계절 (자동 조회)';
-COMMENT ON COLUMN body_analyses.color_recommendations 
+COMMENT ON COLUMN body_analyses.color_recommendations
   IS '퍼스널 컬러 기반 코디 색상 추천';
 ```
 
 ### JSONB 필드 구조
+
 ```yaml
-strengths:
-  ["균형 잡힌 어깨-허리 비율", "허리 라인이 잘 드러남"]
+strengths: ['균형 잡힌 어깨-허리 비율', '허리 라인이 잘 드러남']
 
 # improvements: 향후 확장 예정
 #   ["하체 볼륨 보완", "어깨 라인 강조"]
 
 style_recommendations:
   {
-    "items": [
-      {"item": "핏한 상의 + 하이웨이스트", "reason": "허리 라인을 강조해요"},
-      {"item": "A라인 스커트", "reason": "균형 잡힌 실루엣을 완성해요"},
-      {"item": "와이드 팬츠", "reason": "세련된 느낌을 더해요"}
-    ],
-    "insight": "허리를 강조하는 벨트 코디가 당신의 체형을 더 돋보이게 해요",
-    "colorTips": ["균형 잡힌 체형이므로 대부분의 색상 조합이 잘 어울려요"]
+    'items':
+      [
+        { 'item': '핏한 상의 + 하이웨이스트', 'reason': '허리 라인을 강조해요' },
+        { 'item': 'A라인 스커트', 'reason': '균형 잡힌 실루엣을 완성해요' },
+        { 'item': '와이드 팬츠', 'reason': '세련된 느낌을 더해요' },
+      ],
+    'insight': '허리를 강조하는 벨트 코디가 당신의 체형을 더 돋보이게 해요',
+    'colorTips': ['균형 잡힌 체형이므로 대부분의 색상 조합이 잘 어울려요'],
   }
 
 color_recommendations:
   {
-    "topColors": ["코랄", "피치", "민트", "라벤더"],
-    "bottomColors": ["베이지", "화이트", "그레이"],
-    "avoidColors": ["블랙 전체", "네이비 전체"],
-    "bestCombinations": [
-      {"top": "코랄", "bottom": "베이지"},
-      {"top": "민트", "bottom": "화이트"},
-      {"top": "라벤더", "bottom": "그레이"}
-    ],
-    "accessories": ["실버 주얼리", "파스텔 스카프"]
+    'topColors': ['코랄', '피치', '민트', '라벤더'],
+    'bottomColors': ['베이지', '화이트', '그레이'],
+    'avoidColors': ['블랙 전체', '네이비 전체'],
+    'bestCombinations':
+      [
+        { 'top': '코랄', 'bottom': '베이지' },
+        { 'top': '민트', 'bottom': '화이트' },
+        { 'top': '라벤더', 'bottom': '그레이' },
+      ],
+    'accessories': ['실버 주얼리', '파스텔 스카프'],
   }
 ```
 
@@ -582,7 +571,7 @@ CREATE POLICY "Users can delete own body analyses"
 
 -- 또는 SQL로:
 INSERT INTO storage.buckets (id, name, public)
-VALUES 
+VALUES
   ('personal-color-images', 'personal-color-images', true),
   ('skin-images', 'skin-images', true),
   ('body-images', 'body-images', true);
@@ -608,29 +597,30 @@ CREATE POLICY "Users can view own images"
 ## 🔗 API 구현 예제
 
 ### 1. 퍼스널 컬러 저장
+
 ```typescript
 // app/api/analyze/personal-color/route.ts
-import { auth } from '@clerk/nextjs/server'
-import { createClient } from '@/lib/supabase/server'
-import { analyzePersonalColor } from '@/lib/gemini'
+import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@/lib/supabase/server';
+import { analyzePersonalColor } from '@/lib/gemini';
 
 export async function POST(req: Request) {
-  const { userId } = auth()
+  const { userId } = auth();
   if (!userId) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { questionnaireAnswers, imageBase64 } = await req.json()
+  const { questionnaireAnswers, imageBase64 } = await req.json();
 
   // Gemini 분석
-  const pcResult = await analyzePersonalColor(questionnaireAnswers, imageBase64)
+  const pcResult = await analyzePersonalColor(questionnaireAnswers, imageBase64);
 
   // 이미지 업로드
-  const supabase = createClient()
-  const fileName = `${userId}/${Date.now()}.jpg`
+  const supabase = createClient();
+  const fileName = `${userId}/${Date.now()}.jpg`;
   const { data: uploadData } = await supabase.storage
     .from('personal-color-images')
-    .upload(fileName, imageBase64)
+    .upload(fileName, imageBase64);
 
   // 결과 저장
   const { data, error } = await supabase
@@ -647,34 +637,35 @@ export async function POST(req: Request) {
       best_colors: pcResult.bestColors,
       worst_colors: pcResult.worstColors,
       makeup_recommendations: pcResult.makeupRecommendations,
-      fashion_recommendations: pcResult.fashionRecommendations
+      fashion_recommendations: pcResult.fashionRecommendations,
     })
     .select()
-    .single()
+    .single();
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    return Response.json({ error: error.message }, { status: 500 });
   }
 
-  return Response.json(data)
+  return Response.json(data);
 }
 ```
 
 ### 2. 피부 분석 저장 (PC 연동)
+
 ```typescript
 // app/api/analyze/skin/route.ts
-import { auth } from '@clerk/nextjs/server'
-import { createClient } from '@/lib/supabase/server'
-import { analyzeSkinImage, analyzeIngredients } from '@/lib/gemini'
+import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@/lib/supabase/server';
+import { analyzeSkinImage, analyzeIngredients } from '@/lib/gemini';
 
 export async function POST(req: Request) {
-  const { userId } = auth()
+  const { userId } = auth();
   if (!userId) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { imageBase64 } = await req.json()
-  const supabase = createClient()
+  const { imageBase64 } = await req.json();
+  const supabase = createClient();
 
   // 퍼스널 컬러 조회 (자동 연동)
   const { data: pcData } = await supabase
@@ -683,25 +674,25 @@ export async function POST(req: Request) {
     .eq('clerk_user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single()
+    .single();
 
-  const personalColorSeason = pcData?.season
+  const personalColorSeason = pcData?.season;
 
   // Gemini 피부 분석 (PC 정보 포함)
-  const skinResult = await analyzeSkinImage(imageBase64, personalColorSeason)
+  const skinResult = await analyzeSkinImage(imageBase64, personalColorSeason);
 
   // 성분 분석
   const ingredientResult = await analyzeIngredients(
     skinResult.recommendedProducts,
     skinResult.skinType,
     skinResult.sensitivity
-  )
+  );
 
   // 이미지 업로드
-  const fileName = `${userId}/${Date.now()}.jpg`
+  const fileName = `${userId}/${Date.now()}.jpg`;
   const { data: uploadData } = await supabase.storage
     .from('skin-images')
-    .upload(fileName, imageBase64)
+    .upload(fileName, imageBase64);
 
   // 결과 저장
   const { data, error } = await supabase
@@ -721,28 +712,29 @@ export async function POST(req: Request) {
       products: skinResult.products,
       ingredient_warnings: ingredientResult.warnings,
       personal_color_season: personalColorSeason,
-      foundation_recommendation: skinResult.foundationRecommendation
+      foundation_recommendation: skinResult.foundationRecommendation,
     })
     .select()
-    .single()
+    .single();
 
-  return Response.json(data)
+  return Response.json(data);
 }
 ```
 
 ### 3. 통합 데이터 조회
+
 ```typescript
 // app/api/user/integrated-data/route.ts
-import { auth } from '@clerk/nextjs/server'
-import { createClient } from '@/lib/supabase/server'
+import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(req: Request) {
-  const { userId } = auth()
+  const { userId } = auth();
   if (!userId) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = createClient()
+  const supabase = createClient();
 
   // 병렬 조회
   const [pcResult, skinResult, bodyResult] = await Promise.all([
@@ -764,14 +756,14 @@ export async function GET(req: Request) {
       .select('*')
       .eq('clerk_user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(10)
-  ])
+      .limit(10),
+  ]);
 
   return Response.json({
     personalColor: pcResult.data,
     skinAnalyses: skinResult.data,
-    bodyAnalyses: bodyResult.data
-  })
+    bodyAnalyses: bodyResult.data,
+  });
 }
 ```
 
@@ -780,8 +772,7 @@ export async function GET(req: Request) {
 ## ✅ 체크리스트
 
 ```yaml
-Database 설정:
-  □ Supabase 프로젝트 생성
+Database 설정: □ Supabase 프로젝트 생성
   □ users 테이블 생성
   □ personal_color_assessments 테이블 생성
   □ skin_analyses 테이블 생성
@@ -790,20 +781,17 @@ Database 설정:
   □ updated_at 트리거 생성
   □ RLS 정책 설정
 
-Storage 설정:
-  □ personal-color-images 버킷
+Storage 설정: □ personal-color-images 버킷
   □ skin-images 버킷
   □ body-images 버킷
   □ Storage RLS 정책
 
-Clerk 연동:
-  □ clerk_user_id 필드 확인
+Clerk 연동: □ clerk_user_id 필드 확인
   □ API Route auth 체크
   □ 데이터 저장 테스트
   □ 데이터 조회 테스트
 
-퍼스널 컬러 통합:
-  □ PC 진단 저장
+퍼스널 컬러 통합: □ PC 진단 저장
   □ S-1에서 PC 자동 조회
   □ C-1에서 PC 자동 조회
   □ 통합 추천 작동
@@ -814,6 +802,7 @@ Clerk 연동:
 ## 5. cosmetic_products 테이블 (Product DB v1)
 
 ### SQL 생성문
+
 ```sql
 -- 화장품 제품 테이블
 CREATE TABLE cosmetic_products (
@@ -829,6 +818,7 @@ CREATE TABLE cosmetic_products (
   key_ingredients TEXT[],
   avoid_ingredients TEXT[],
   personal_color_seasons TEXT[], -- Spring, Summer, Autumn, Winter
+  target_age_groups TEXT[] DEFAULT ARRAY['20s', '30s']::TEXT[], -- 10s, 20s, 30s, 40s, 50s
   image_url TEXT,
   purchase_url TEXT,
   rating DECIMAL(2,1),
@@ -840,6 +830,7 @@ CREATE TABLE cosmetic_products (
 ```
 
 ### RLS 정책
+
 - **공개 읽기**: 모든 사용자가 활성화된 제품 조회 가능
 - **쓰기**: Service Role만 가능 (관리자)
 
@@ -848,6 +839,7 @@ CREATE TABLE cosmetic_products (
 ## 6. supplement_products 테이블 (Product DB v1)
 
 ### SQL 생성문
+
 ```sql
 -- 영양제 제품 테이블
 CREATE TABLE supplement_products (
@@ -874,6 +866,7 @@ CREATE TABLE supplement_products (
 ```
 
 ### RLS 정책
+
 - **공개 읽기**: 모든 사용자가 활성화된 제품 조회 가능
 - **쓰기**: Service Role만 가능 (관리자)
 
@@ -882,6 +875,7 @@ CREATE TABLE supplement_products (
 ## 7. workout_equipment 테이블 (Product DB v2)
 
 ### SQL 생성문
+
 ```sql
 -- 운동 기구 제품 테이블
 CREATE TABLE workout_equipment (
@@ -927,6 +921,7 @@ CREATE TABLE workout_equipment (
 ```
 
 ### 필드 설명
+
 ```yaml
 category: TEXT (CHECK)
   - dumbbell, barbell, kettlebell, resistance_band
@@ -947,6 +942,7 @@ use_location: TEXT
 ```
 
 ### RLS 정책
+
 - **공개 읽기**: 활성화된 제품만 조회 가능
 - **쓰기**: Service Role만 가능 (관리자)
 
@@ -955,6 +951,7 @@ use_location: TEXT
 ## 8. health_foods 테이블 (Product DB v2)
 
 ### SQL 생성문
+
 ```sql
 -- 건강식품 제품 테이블
 CREATE TABLE health_foods (
@@ -1007,6 +1004,7 @@ CREATE TABLE health_foods (
 ```
 
 ### 필드 설명
+
 ```yaml
 category: TEXT (CHECK)
   - protein_powder, protein_bar, meal_replacement
@@ -1027,6 +1025,7 @@ target_users: TEXT[]
 ```
 
 ### RLS 정책
+
 - **공개 읽기**: 활성화된 제품만 조회 가능
 - **쓰기**: Service Role만 가능 (관리자)
 
@@ -1035,6 +1034,7 @@ target_users: TEXT[]
 ## 9. product_price_history 테이블 (가격 추적)
 
 ### SQL 생성문
+
 ```sql
 -- 제품 가격 변동 히스토리
 CREATE TABLE product_price_history (
@@ -1048,6 +1048,7 @@ CREATE TABLE product_price_history (
 ```
 
 ### 필드 설명
+
 ```yaml
 product_type: TEXT (CHECK)
   - cosmetic: 화장품
@@ -1063,6 +1064,7 @@ source: TEXT
 ```
 
 ### RLS 정책
+
 - **공개 읽기**: 모든 사용자 조회 가능
 - **쓰기**: Service Role만 가능 (관리자)
 
@@ -1071,6 +1073,7 @@ source: TEXT
 ## 10. N-1 영양 모듈 테이블 (Phase 2)
 
 ### 10.1 foods 테이블 (음식 DB)
+
 ```sql
 CREATE TABLE foods (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -1094,6 +1097,7 @@ CREATE TABLE foods (
 ```
 
 ### 10.2 nutrition_settings 테이블 (영양 설정)
+
 ```sql
 CREATE TABLE nutrition_settings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -1118,6 +1122,7 @@ CREATE TABLE nutrition_settings (
 ```
 
 ### 10.3 meal_records 테이블 (식단 기록)
+
 ```sql
 CREATE TABLE meal_records (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -1145,6 +1150,7 @@ CREATE TABLE meal_records (
 ```
 
 ### 10.4 water_records 테이블 (수분 섭취)
+
 ```sql
 CREATE TABLE water_records (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -1161,6 +1167,7 @@ CREATE TABLE water_records (
 ```
 
 ### 10.5 기타 N-1 테이블
+
 - **favorite_foods**: 즐겨찾기 음식
 - **nutrition_streaks**: 식단 연속 기록
 - **daily_nutrition_summary**: 일일 영양 요약
@@ -1370,6 +1377,7 @@ CREATE TABLE affiliate_clicks (
 일일 체크인 - "오늘의 나" 기분/에너지/피부 상태 기록
 
 ### SQL 생성문
+
 ```sql
 CREATE TABLE daily_checkins (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -1396,6 +1404,7 @@ CREATE TABLE daily_checkins (
 ```
 
 ### 필드 설명
+
 ```yaml
 mood:
   - great: 좋아요 😊

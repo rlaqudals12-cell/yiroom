@@ -432,6 +432,8 @@ interface BeautyProduct {
   price: number;
   imageUrl: string;
   category?: string;
+  keyIngredients?: string[];
+  avoidIngredients?: string[];
 }
 
 // 이미지 placeholder 생성
@@ -582,7 +584,7 @@ export default function BeautyPage() {
         let query = supabase
           .from('cosmetic_products')
           .select(
-            'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns, personal_color_seasons'
+            'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns, personal_color_seasons, key_ingredients, avoid_ingredients, target_age_groups'
           )
           .eq('is_active', true)
           .limit(20);
@@ -607,6 +609,13 @@ export default function BeautyPage() {
         // 피부고민 필터
         if (selectedConcerns.length > 0) {
           query = query.overlaps('concerns', selectedConcerns);
+        }
+
+        // 연령대 필터 (선택된 연령대 중 하나라도 포함)
+        if (selectedAgeGroups.length > 0) {
+          // AgeGroup '50plus' → '50s' 변환
+          const dbAgeGroups = selectedAgeGroups.map((age) => (age === '50plus' ? '50s' : age));
+          query = query.overlaps('target_age_groups', dbAgeGroups);
         }
 
         // 정렬
@@ -656,14 +665,37 @@ export default function BeautyPage() {
             matchRate,
             price: row.price_krw ?? 0,
             imageUrl: getProductImageUrl(row.image_url, row.brand),
+            keyIngredients: row.key_ingredients ?? [],
+            avoidIngredients: row.avoid_ingredients ?? [],
           };
         });
 
         // 매칭 필터 적용 (90% 이상만)
-        const filteredProducts =
+        let filteredProducts =
           matchFilterOn && hasAnalysis
             ? mappedProducts.filter((p) => p.matchRate >= 90)
             : mappedProducts;
+
+        // 선호 성분 필터 (선택한 성분 중 하나라도 포함된 제품)
+        if (favoriteIngredients.length > 0) {
+          const favoriteNames = favoriteIngredients.map((f) => f.itemName.toLowerCase());
+          filteredProducts = filteredProducts.filter((p) =>
+            p.keyIngredients?.some((ing) =>
+              favoriteNames.some((fav) => ing.toLowerCase().includes(fav))
+            )
+          );
+        }
+
+        // 기피 성분 필터 (선택한 성분이 포함된 제품 제외)
+        if (avoidIngredients.length > 0) {
+          const avoidNames = avoidIngredients.map((a) => a.itemName.toLowerCase());
+          filteredProducts = filteredProducts.filter(
+            (p) =>
+              !p.keyIngredients?.some((ing) =>
+                avoidNames.some((avoid) => ing.toLowerCase().includes(avoid))
+              )
+          );
+        }
 
         setProducts(filteredProducts);
       } catch (err) {
@@ -680,6 +712,9 @@ export default function BeautyPage() {
     subCategory,
     selectedSkinTypes,
     selectedConcerns,
+    selectedAgeGroups,
+    favoriteIngredients,
+    avoidIngredients,
     sortBy,
     matchFilterOn,
     hasAnalysis,
