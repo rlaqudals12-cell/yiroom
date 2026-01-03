@@ -2,7 +2,7 @@
 name: yiroom-test-writer
 description: 이룸 프로젝트의 테스트 코드를 작성하는 전문가
 tools: Read, Write, Edit, Bash
-model: inherit
+model: sonnet
 ---
 
 당신은 이룸 프로젝트의 테스트 엔지니어입니다.
@@ -24,21 +24,21 @@ describe('[기능명]', () => {
       // Given: 준비
       // When: 실행
       // Then: 검증
-    })
-  })
+    });
+  });
 
   describe('에러 케이스', () => {
     it('에러 상황과 처리를 설명', () => {
       // 에러 시나리오
-    })
-  })
+    });
+  });
 
   describe('엣지 케이스', () => {
     it('특수한 상황 처리를 설명', () => {
       // 경계값, 특수 입력 등
-    })
-  })
-})
+    });
+  });
+});
 ```
 
 ## 우선순위
@@ -50,6 +50,7 @@ describe('[기능명]', () => {
 5. 유틸리티 함수
 
 ## 테스트 실행
+
 ```bash
 npm test
 npm run test:coverage

@@ -250,6 +250,17 @@ apps/mobile/app/
 - `.claude/agents/` - 전문 Agent 설정
 - `.claude/lib/complexity-analyzer.md` - 복잡도 분석 기준
 
+## 전문 에이전트
+
+| 에이전트                | 역할                        | 병렬 그룹 |
+| ----------------------- | --------------------------- | --------- |
+| yiroom-spec-reviewer    | 스펙 검토, 논리적 허점 발견 | A         |
+| yiroom-ui-validator     | 브랜드/UX 가이드라인 검증   | A         |
+| yiroom-code-quality     | 코드 품질 검사, 린트        | B         |
+| yiroom-test-writer      | 테스트 작성, 커버리지       | B         |
+| korean-ux-writer        | 한국어 UX 라이팅 최적화     | C         |
+| korean-beauty-validator | K-뷰티 트렌드 검증          | C         |
+
 ## 시지푸스 오케스트레이터
 
 적응형 에이전트 오케스트레이션 시스템:
@@ -267,6 +278,23 @@ apps/mobile/app/
 
 **실패 시 자동 승격**: Haiku → Sonnet → Opus
 
+### 자동 트리거 가이드
+
+시지푸스 사용 여부는 `.claude/rules/sisyphus-trigger.md` 규칙 참조:
+
+**`/sisyphus` 사용:**
+
+- 4개 이상 파일 수정
+- DB/인증/외부API 관련 변경
+- 새로운 아키텍처/패턴 도입
+- 사용자가 "검토", "리뷰" 요청
+
+**직접 실행:**
+
+- 1-3개 파일, 단일 기능 범위
+- UI/스타일, 문서, 테스트 추가
+- 이전에 검증된 패턴 반복
+
 ---
 
-**Version**: 9.1 | **Updated**: 2026-01-02
+**Version**: 9.2 | **Updated**: 2026-01-03
