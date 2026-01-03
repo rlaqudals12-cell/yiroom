@@ -4,3 +4,5 @@
 
 export { TodaySummaryWidget } from './TodaySummaryWidget';
 export { QuickActionsWidget } from './QuickActionsWidget';
+export { StreakWidget } from './StreakWidget';
+export { WaterWidget } from './WaterWidget';

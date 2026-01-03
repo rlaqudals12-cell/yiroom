@@ -13,6 +13,12 @@ export default function SocialLayout() {
       }}
     >
       <Stack.Screen
+        name="feed/index"
+        options={{
+          title: '피드',
+        }}
+      />
+      <Stack.Screen
         name="friends/index"
         options={{
           title: '친구',
