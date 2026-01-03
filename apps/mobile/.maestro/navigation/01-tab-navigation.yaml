@@ -1,0 +1,61 @@
+# 탭 네비게이션 테스트
+# 5개 탭 (홈, 뷰티, 스타일, 기록, 나) 전환 확인
+appId: com.yiroom.app
+name: Tab Navigation Flow
+
+---
+
+# 앱 실행
+- launchApp:
+    appId: ${APP_ID}
+    clearState: true
+
+# 앱 로딩 대기
+- extendedWaitUntil:
+    visible:
+      text: "홈"
+    timeout: 15000
+
+# 1. 홈 탭 확인 (기본 선택)
+- assertVisible:
+    text: "오늘 할 일"
+
+# 2. 뷰티 탭 이동
+- tapOn:
+    text: "뷰티"
+- extendedWaitUntil:
+    visible:
+      text: "피부 분석"
+    timeout: 5000
+
+# 3. 스타일 탭 이동
+- tapOn:
+    text: "스타일"
+- extendedWaitUntil:
+    visible:
+      text: "스타일"
+    timeout: 5000
+
+# 4. 기록 탭 이동
+- tapOn:
+    text: "기록"
+- extendedWaitUntil:
+    visible:
+      text: "운동 기록"
+    timeout: 5000
+
+# 5. 나 탭 이동 (프로필)
+- tapOn:
+    text: "나"
+- extendedWaitUntil:
+    visible:
+      text: "분석 결과"
+    timeout: 5000
+
+# 6. 홈 탭으로 복귀
+- tapOn:
+    text: "홈"
+- extendedWaitUntil:
+    visible:
+      text: "오늘 할 일"
+    timeout: 5000

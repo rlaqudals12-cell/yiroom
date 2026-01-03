@@ -13,6 +13,7 @@ env:
 # 흐름 실행 순서
 flows:
   - onboarding/*.yaml
+  - navigation/*.yaml
   - workout/*.yaml
   - nutrition/*.yaml
   - products/*.yaml
