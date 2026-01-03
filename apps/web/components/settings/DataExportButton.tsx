@@ -21,8 +21,8 @@ export function DataExportButton({ className }: DataExportButtonProps) {
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/api/user/export', {
-        method: 'POST',
+      const response = await fetch('/api/export', {
+        method: 'GET',
       });
 
       if (!response.ok) {
@@ -86,17 +86,15 @@ export function DataExportButton({ className }: DataExportButtonProps) {
               {state === 'exporting'
                 ? '데이터를 수집하고 있습니다...'
                 : state === 'success'
-                ? 'JSON 파일이 다운로드되었습니다'
-                : '모든 데이터를 JSON 파일로 다운로드'}
+                  ? 'JSON 파일이 다운로드되었습니다'
+                  : '모든 데이터를 JSON 파일로 다운로드'}
             </p>
           </div>
         </div>
       </button>
 
       {/* 에러 메시지 */}
-      {errorMessage && (
-        <p className="mt-2 text-sm text-destructive px-4">{errorMessage}</p>
-      )}
+      {errorMessage && <p className="mt-2 text-sm text-destructive px-4">{errorMessage}</p>}
     </div>
   );
 }

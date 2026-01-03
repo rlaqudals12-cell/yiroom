@@ -6,3 +6,4 @@
 export { AppVersion } from './AppVersion';
 export { DeleteAccountDialog } from './DeleteAccountDialog';
 export { DataExportButton } from './DataExportButton';
+export { DataExportCard } from './DataExportCard';

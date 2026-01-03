@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ArrowLeft, Settings } from 'lucide-react';
 import { NotificationSettings } from '@/components/notifications';
+import { DataExportCard } from '@/components/settings';
 
 /**
  * 설정 페이지
@@ -34,6 +35,9 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* 알림 설정 */}
         <NotificationSettings />
+
+        {/* 데이터 관리 */}
+        <DataExportCard />
 
         {/* 추가 설정 섹션 (필요시 확장) */}
         {/* <AccountSettings /> */}

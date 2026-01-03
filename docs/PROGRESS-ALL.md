@@ -2366,6 +2366,53 @@ data/
   - robots.txt에서 /sign-in/, /sign-up/ 의도적 차단
 ```
 
+### L-6: UX 개선 ✅ 완료
+
+```yaml
+날짜: 2026-01-03
+
+에러 처리:
+  [x] ErrorBoundary 컴포넌트
+      - 전역 에러 캐치 및 사용자 친화적 UI
+      - 재시도/홈으로 버튼
+      - 에러 로깅
+
+PWA 개선:
+  [x] PWAInstallPrompt 컴포넌트
+      - beforeinstallprompt 이벤트 핸들링
+      - 7일 닫기 기억 (localStorage)
+      - standalone 모드 감지
+
+SEO 구조화 데이터:
+  [x] JSON-LD 컴포넌트 (Schema.org)
+      - OrganizationJsonLd
+      - WebApplicationJsonLd
+      - BreadcrumbJsonLd
+      - FAQJsonLd
+  [x] layout.tsx에 Organization, WebApplication 추가
+
+오프라인 캐시 확장:
+  [x] 주요 페이지 캐싱 확장
+      - workout, nutrition, profile 추가
+      - analysis/** 페이지 (7일)
+  [x] StaleWhileRevalidate 전략
+
+스켈레톤 추가:
+  [x] SettingsPageSkeleton
+  [x] ProfilePageSkeleton
+
+데이터 내보내기:
+  [x] /api/export - GDPR 준수 데이터 다운로드
+      - 모든 사용자 테이블 병렬 쿼리
+      - JSON 형식 첨부파일 다운로드
+
+자동 푸시 알림:
+  [x] /api/cron/push-reminders
+      - vercel.json cron 설정
+      - KST 9시/15시/18시 알림
+      - daily_checkin, nutrition_reminder, workout_reminder
+```
+
 ### E2E 테스트 확장 ✅ 완료
 
 ```yaml

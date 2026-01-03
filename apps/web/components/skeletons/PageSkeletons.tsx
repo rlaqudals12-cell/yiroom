@@ -273,10 +273,7 @@ interface CategoryPageSkeletonProps extends SkeletonBaseProps {
   productCount?: number;
 }
 
-export function CategoryPageSkeleton({
-  className,
-  productCount = 8,
-}: CategoryPageSkeletonProps) {
+export function CategoryPageSkeleton({ className, productCount = 8 }: CategoryPageSkeletonProps) {
   return (
     <div
       className={cn('min-h-screen bg-background pb-20', className)}
@@ -416,17 +413,9 @@ interface ProductCardSkeletonProps extends SkeletonBaseProps {
   variant?: 'small' | 'large';
 }
 
-function ProductCardSkeleton({
-  className,
-  variant = 'small',
-}: ProductCardSkeletonProps) {
+function ProductCardSkeleton({ className, variant = 'small' }: ProductCardSkeletonProps) {
   return (
-    <div
-      className={cn(
-        'bg-card rounded-xl border p-3',
-        className
-      )}
-    >
+    <div className={cn('bg-card rounded-xl border p-3', className)}>
       {/* 매칭률 */}
       <Skeleton className="h-3 w-10 mb-2" />
 
@@ -514,6 +503,112 @@ export function SearchPageSkeleton({ className }: SkeletonBaseProps) {
 }
 
 // =====================================================
+// SettingsPageSkeleton - 설정 페이지 스켈레톤
+// =====================================================
+
+export function SettingsPageSkeleton({ className }: SkeletonBaseProps) {
+  return (
+    <div
+      className={cn('min-h-screen bg-background pb-20', className)}
+      role="status"
+      aria-label="설정 페이지 로딩 중"
+    >
+      {/* 헤더 */}
+      <header className="sticky top-0 z-40 bg-background border-b">
+        <div className="flex items-center gap-3 px-4 h-14">
+          <Skeleton className="w-5 h-5" />
+          <Skeleton className="w-12 h-6" />
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        {/* 알림 설정 */}
+        <div className="bg-card rounded-xl border p-4">
+          <Skeleton className="h-5 w-24 mb-4" />
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="w-5 h-5" />
+                  <div>
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-32 mt-1" />
+                  </div>
+                </div>
+                <Skeleton className="w-10 h-6 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 데이터 관리 */}
+        <div className="bg-card rounded-xl border p-4">
+          <Skeleton className="h-5 w-28 mb-4" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// =====================================================
+// ProfilePageSkeleton - 프로필 페이지 스켈레톤
+// =====================================================
+
+export function ProfilePageSkeleton({ className }: SkeletonBaseProps) {
+  return (
+    <div
+      className={cn('min-h-screen bg-background pb-20', className)}
+      role="status"
+      aria-label="프로필 페이지 로딩 중"
+    >
+      {/* 프로필 헤더 */}
+      <div className="bg-gradient-to-br from-primary/10 to-primary/5 px-4 py-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="w-20 h-20 rounded-full" />
+          <div>
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-4 w-32 mt-1" />
+            <Skeleton className="h-3 w-20 mt-2" />
+          </div>
+        </div>
+      </div>
+
+      <main className="px-4 py-4 space-y-4">
+        {/* 레벨 프로그레스 */}
+        <div className="bg-card rounded-xl border p-4">
+          <div className="flex items-center justify-between mb-2">
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <Skeleton className="h-2 w-full rounded-full" />
+        </div>
+
+        {/* 배지 */}
+        <div className="bg-card rounded-xl border p-4">
+          <Skeleton className="h-5 w-12 mb-3" />
+          <div className="flex gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="w-12 h-12 rounded-full" />
+            ))}
+          </div>
+        </div>
+
+        {/* 통계 */}
+        <div className="grid grid-cols-3 gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-card rounded-xl border p-4 text-center">
+              <Skeleton className="h-6 w-12 mx-auto" />
+              <Skeleton className="h-3 w-16 mx-auto mt-1" />
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// =====================================================
 // 통합 Export
 // =====================================================
 
@@ -526,6 +621,8 @@ const PageSkeletons = {
   Category: CategoryPageSkeleton,
   Record: RecordPageSkeleton,
   Search: SearchPageSkeleton,
+  Settings: SettingsPageSkeleton,
+  Profile: ProfilePageSkeleton,
   ProductCard: ProductCardSkeleton,
 };
 

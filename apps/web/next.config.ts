@@ -49,15 +49,27 @@ const withPWA = withPWAInit({
           networkTimeoutSeconds: 10,
         },
       },
-      // 페이지 캐싱
+      // 페이지 캐싱 (주요 페이지)
       {
-        urlPattern: /^\/(home|beauty|style|record|search)$/i,
+        urlPattern: /^\/(home|beauty|style|record|search|profile|workout|nutrition)$/i,
         handler: 'StaleWhileRevalidate',
         options: {
           cacheName: 'pages-cache',
           expiration: {
-            maxEntries: 20,
+            maxEntries: 30,
             maxAgeSeconds: 60 * 60 * 24, // 24시간
+          },
+        },
+      },
+      // 분석 페이지 캐싱
+      {
+        urlPattern: /^\/analysis\/.*/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'analysis-cache',
+          expiration: {
+            maxEntries: 10,
+            maxAgeSeconds: 60 * 60 * 24 * 7, // 7일
           },
         },
       },
