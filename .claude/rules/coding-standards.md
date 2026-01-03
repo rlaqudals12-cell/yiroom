@@ -11,23 +11,27 @@
 ## 코드 스타일
 
 ### 모듈 시스템
+
 - ES Modules 전용 (CommonJS 금지)
 - `import/export` 사용
 
 ### 네이밍 규칙
-| 대상 | 규칙 | 예시 |
-|------|------|------|
-| 컴포넌트 | PascalCase | `UserProfile.tsx` |
-| 함수/변수 | camelCase | `getUserById` |
-| 상수 | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` |
-| 타입/인터페이스 | PascalCase | `UserData`, `ApiResponse` |
+
+| 대상            | 규칙             | 예시                      |
+| --------------- | ---------------- | ------------------------- |
+| 컴포넌트        | PascalCase       | `UserProfile.tsx`         |
+| 함수/변수       | camelCase        | `getUserById`             |
+| 상수            | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT`         |
+| 타입/인터페이스 | PascalCase       | `UserData`, `ApiResponse` |
 
 ### 파일 구조
+
 - 파일당 하나의 `export default`
 - 관련 타입은 같은 파일 또는 `types/` 디렉토리
 - 테스트는 `tests/` 디렉토리, `*.test.ts(x)` 패턴
 
 ### 주석
+
 - 한국어 주석 필수 (복잡한 로직 위에 "왜" 설명)
 - JSDoc은 공개 API에만 사용
 
@@ -44,6 +48,7 @@ const MAX_RETRY = 3;
 ## React/Next.js 규칙
 
 ### 컴포넌트
+
 - 함수형 컴포넌트 + Hooks 사용
 - `'use client'` 지시어는 필요한 경우에만
 - 최상위 컨테이너에 `data-testid` 속성 필수
@@ -51,32 +56,53 @@ const MAX_RETRY = 3;
 ```tsx
 // 좋은 예
 export default function UserCard({ user }: UserCardProps) {
-  return (
-    <div data-testid="user-card">
-      {/* ... */}
-    </div>
-  );
+  return <div data-testid="user-card">{/* ... */}</div>;
 }
 ```
 
 ### 상태 관리
+
 - 로컬 상태: `useState`, `useReducer`
 - 다단계 폼: Zustand (`lib/stores/`)
 - 서버 상태: React Query 또는 직접 fetch
 
+### 커스텀 훅 사용 (hooks/)
+
+새 기능 구현 시 기존 훅 우선 활용:
+
+| 훅                  | 용도                         | 사용 예시          |
+| ------------------- | ---------------------------- | ------------------ |
+| `useUserMatching`   | 사용자 프로필 기반 제품 매칭 | 뷰티/스타일 페이지 |
+| `useBeautyProducts` | 화장품 목록 조회 + 매칭률    | 카테고리 페이지    |
+| `useDebounce`       | 입력 디바운싱 (300ms)        | 검색 페이지        |
+| `useInfiniteScroll` | 무한 스크롤                  | 제품 목록 페이지   |
+
+```typescript
+// 좋은 예: 기존 훅 활용
+const { hasAnalysis, calculateProductMatch } = useUserMatching();
+const matchRate = hasAnalysis ? calculateProductMatch(product) : 75;
+
+// 나쁜 예: 직접 분석 데이터 조회 (중복 코드)
+const { data } = await supabase.from('skin_analyses').select('*')...
+```
+
+**훅 적용 기준**:
+
+- 제품 매칭률 필요 → `useUserMatching`
+- 검색/필터 입력 → `useDebounce`
+- 20개 이상 목록 → `useInfiniteScroll`
+
 ### Dynamic Import
+
 무거운 컴포넌트는 `next/dynamic`으로 지연 로딩:
 
 ```typescript
 // default export
-export const ChartDynamic = dynamic(
-  () => import('./Chart'),
-  { ssr: false, loading: () => null }
-);
+export const ChartDynamic = dynamic(() => import('./Chart'), { ssr: false, loading: () => null });
 
 // named export
 export const FiltersDynamic = dynamic(
-  () => import('./Filters').then(mod => ({ default: mod.Filters })),
+  () => import('./Filters').then((mod) => ({ default: mod.Filters })),
   { ssr: false, loading: () => null }
 );
 ```
@@ -84,24 +110,28 @@ export const FiltersDynamic = dynamic(
 ## Supabase 규칙
 
 ### 클라이언트 선택
-| 컨텍스트 | 함수 | 파일 |
-|----------|------|------|
-| Client Component | `useClerkSupabaseClient()` | `clerk-client.ts` |
-| Server Component/API | `createClerkSupabaseClient()` | `server.ts` |
-| 관리자 (RLS 우회) | `createServiceRoleClient()` | `service-role.ts` |
+
+| 컨텍스트             | 함수                          | 파일              |
+| -------------------- | ----------------------------- | ----------------- |
+| Client Component     | `useClerkSupabaseClient()`    | `clerk-client.ts` |
+| Server Component/API | `createClerkSupabaseClient()` | `server.ts`       |
+| 관리자 (RLS 우회)    | `createServiceRoleClient()`   | `service-role.ts` |
 
 ### RLS 정책
+
 - 모든 테이블에 `clerk_user_id` 기반 RLS 필수
 - `auth.jwt() ->> 'sub'`로 사용자 확인
 
 ## 테스트 규칙
 
 ### 필수 사항
+
 - 모든 변경 후 `npm run test` 통과
 - 새 함수 추가 시 테스트 동반 작성
 - 커버리지 유지 (현재 2,686개 테스트)
 
 ### 테스트 구조
+
 ```
 tests/
 ├── components/     # 컴포넌트 테스트
@@ -114,6 +144,7 @@ tests/
 ## Git 커밋 규칙
 
 ### 커밋 메시지 형식
+
 ```
 <type>(<scope>): <subject>
 
@@ -125,16 +156,18 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ```
 
 ### 타입
-| 타입 | 설명 |
-|------|------|
-| feat | 새 기능 |
-| fix | 버그 수정 |
-| docs | 문서 변경 |
-| chore | 빌드/설정 변경 |
-| refactor | 리팩토링 |
-| test | 테스트 추가/수정 |
+
+| 타입     | 설명             |
+| -------- | ---------------- |
+| feat     | 새 기능          |
+| fix      | 버그 수정        |
+| docs     | 문서 변경        |
+| chore    | 빌드/설정 변경   |
+| refactor | 리팩토링         |
+| test     | 테스트 추가/수정 |
 
 ### 스코프 예시
+
 - `workout`, `nutrition`, `products`, `dashboard`
 - `db`, `auth`, `ui`, `a11y`
 
