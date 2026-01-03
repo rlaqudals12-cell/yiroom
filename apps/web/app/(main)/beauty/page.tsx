@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
 import {
   FlaskConical,
   Palette,
@@ -28,6 +27,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import { useUserMatching } from '@/hooks/useUserMatching';
 import { IngredientFavoriteFilter } from '@/components/beauty/IngredientFavoriteFilter';
 import { AgeGroupFilter } from '@/components/beauty/AgeGroupFilter';
 import { SkinAgeCalculator } from '@/components/beauty/SkinAgeCalculator';
@@ -445,8 +445,17 @@ function getProductImageUrl(imageUrl: string | null | undefined, brand: string):
 
 export default function BeautyPage() {
   const router = useRouter();
-  const { user, isLoaded } = useUser();
   const supabase = useClerkSupabaseClient();
+
+  // useUserMatching 훅으로 분석 결과 자동 로드
+  const {
+    skinType: userSkinTypeFromHook,
+    skinConcerns: userSkinConcernsFromHook,
+    personalColor,
+    hasAnalysis,
+    isLoading: profileLoading,
+    calculateProductMatch,
+  } = useUserMatching();
 
   // 필터 상태
   const [selectedSkinTypes, setSelectedSkinTypes] = useState<SkinType[]>(['combination']);
@@ -457,11 +466,9 @@ export default function BeautyPage() {
   const [showSortSheet, setShowSortSheet] = useState(false);
   const [matchFilterOn, setMatchFilterOn] = useState(true);
 
-  // 분석 결과 상태
-  const [hasAnalysis, setHasAnalysis] = useState(false);
-  const [personalColor, setPersonalColor] = useState<string | null>(null);
-  const [userSkinType, setUserSkinType] = useState<SkinType>('combination');
-  const [userSkinConcerns, setUserSkinConcerns] = useState<SkinConcern[]>([]);
+  // 훅에서 받은 값을 SkinType으로 변환
+  const userSkinType: SkinType = (userSkinTypeFromHook as SkinType) || 'combination';
+  const userSkinConcerns: SkinConcern[] = (userSkinConcernsFromHook as SkinConcern[]) || [];
 
   // 하이브리드 UX 상태
   const [favoriteIngredients, setFavoriteIngredients] = useState<FavoriteItem[]>([]);
@@ -546,78 +553,17 @@ export default function BeautyPage() {
     },
   ]);
 
-  // 분석 결과 가져오기
+  // 훅에서 분석 결과 로드 시 필터 상태 동기화
   useEffect(() => {
-    const fetchAnalysis = async () => {
-      if (!isLoaded || !user?.id) return;
-
-      try {
-        const [skinResult, pcResult] = await Promise.all([
-          supabase
-            .from('skin_analyses')
-            .select('skin_type, concerns')
-            .eq('clerk_user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle(),
-          supabase
-            .from('personal_color_assessments')
-            .select('result_season, result_tone')
-            .eq('clerk_user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle(),
-        ]);
-
-        if (skinResult.data || pcResult.data) {
-          setHasAnalysis(true);
-
-          if (skinResult.data) {
-            // skin_type을 SkinType으로 매핑
-            const skinTypeMap: Record<string, SkinType> = {
-              건성: 'dry',
-              지성: 'oily',
-              복합성: 'combination',
-              민감성: 'sensitive',
-              중성: 'normal',
-            };
-            const mappedType = skinTypeMap[skinResult.data.skin_type] || 'combination';
-            setUserSkinType(mappedType);
-            setSelectedSkinTypes([mappedType]);
-
-            // concerns를 SkinConcern으로 매핑
-            const concernsData = skinResult.data.concerns as string[] | null;
-            if (concernsData && Array.isArray(concernsData)) {
-              const concernMap: Record<string, SkinConcern> = {
-                수분부족: 'hydration',
-                미백: 'whitening',
-                모공: 'pore',
-                진정: 'soothing',
-                여드름: 'acne',
-                주름: 'wrinkle',
-                탄력: 'elasticity',
-              };
-              const mappedConcerns = concernsData
-                .map((c) => concernMap[c])
-                .filter((c): c is SkinConcern => c !== undefined);
-              setUserSkinConcerns(mappedConcerns);
-              if (mappedConcerns.length > 0) {
-                setSelectedConcerns(mappedConcerns);
-              }
-            }
-          }
-
-          if (pcResult.data) {
-            setPersonalColor(`${pcResult.data.result_season} ${pcResult.data.result_tone}`);
-          }
-        }
-      } catch (err) {
-        console.error('[Beauty] Analysis fetch error:', err);
+    if (!profileLoading && hasAnalysis) {
+      if (userSkinType) {
+        setSelectedSkinTypes([userSkinType]);
       }
-    };
-
-    fetchAnalysis();
-  }, [isLoaded, user?.id, supabase]);
+      if (userSkinConcerns.length > 0) {
+        setSelectedConcerns(userSkinConcerns);
+      }
+    }
+  }, [profileLoading, hasAnalysis, userSkinType, userSkinConcerns]);
 
   // 제품 데이터 조회
   useEffect(() => {
@@ -636,7 +582,7 @@ export default function BeautyPage() {
         let query = supabase
           .from('cosmetic_products')
           .select(
-            'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns'
+            'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns, personal_color_seasons'
           )
           .eq('is_active', true)
           .limit(20);
@@ -688,25 +634,17 @@ export default function BeautyPage() {
           return;
         }
 
-        // 매칭률 계산 (피부타입/고민 기반)
+        // 매칭률 계산 (useUserMatching 훅 활용 - 피부타입/고민/퍼스널컬러 통합)
         const mappedProducts: BeautyProduct[] = (data || []).map((row) => {
-          const skinTypes = row.skin_types as string[] | null;
-          const concerns = row.concerns as string[] | null;
-
-          // 피부타입 매칭 점수
-          const skinTypeMatch = skinTypes
-            ? selectedSkinTypes.filter((t) => skinTypes.includes(t)).length /
-              selectedSkinTypes.length
-            : 0.5;
-
-          // 피부고민 매칭 점수
-          const concernMatch = concerns
-            ? selectedConcerns.filter((c) => concerns.includes(c)).length /
-              Math.max(selectedConcerns.length, 1)
-            : 0.5;
-
-          // 종합 매칭률 (70-100%)
-          const matchRate = Math.round(70 + skinTypeMatch * 15 + concernMatch * 15);
+          // useUserMatching의 calculateProductMatch로 매칭률 계산
+          // (피부타입, 피부고민, 퍼스널컬러, 체형 등 모든 분석 결과 반영)
+          const matchRate = hasAnalysis
+            ? calculateProductMatch({
+                skinTypes: row.skin_types,
+                concerns: row.concerns,
+                personalColorSeasons: row.personal_color_seasons,
+              } as any)
+            : 75; // 분석 전 기본값
 
           return {
             id: row.id,
@@ -745,6 +683,7 @@ export default function BeautyPage() {
     sortBy,
     matchFilterOn,
     hasAnalysis,
+    calculateProductMatch,
   ]);
 
   // 대분류 변경 시 세부 카테고리 초기화
