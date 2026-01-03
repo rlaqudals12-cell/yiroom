@@ -1,6 +1,6 @@
 # 이룸 전체 진행 상황
 
-> **마지막 업데이트**: 2025-12-30
+> **마지막 업데이트**: 2026-01-03
 > **총 테스트**: 4,229개 통과 (전체 4,286개, 98.7% 통과율)
 > **코드 품질**: TypeCheck ✅, Lint 0 warnings, SRP 95%, Repository 90%
 
@@ -13,7 +13,7 @@ Phase 1 (분석 기능)     █████████████████�
 Phase 2 (운동/영양)     ████████████████████ 100% ✅
 Phase 3 (앱 고도화)     ████████████████████ 100% ✅
 Phase A (PWA/디자인)    ████████████████████ 100% ✅
-Phase B (React Native)  ████████████████░░░░  83% 🔄 (B-6: 2026/01/17 대기)
+Phase B (React Native)  ██████████████████░░  90% 🔄 (B-6: 2026/01/17 대기)
 Phase C (RAG/제품DB)    ████████████████████ 100% ✅
 Phase D (앱 개선)       ████████████████████ 100% ✅
 Phase E (추가 개선)     ████████████████████ 100% ✅
@@ -34,13 +34,13 @@ Phase L (출시 최적화)   ████████████████░
 
 ### 모듈별 상태
 
-| 모듈 | 설명 | 상태 | 테스트 |
-|------|------|------|--------|
-| PC-1 | 퍼스널 컬러 진단 | ✅ 완료 | 25개 |
-| S-1 | 피부 분석 | ✅ 완료 | 52개 |
-| C-1 | 체형 분석 | ✅ 완료 | 21개 |
-| 성분 분석 | 화장품 성분 경고 | ✅ 완료 | - |
-| 제품 추천 | 피부타입별 추천 | ✅ 완료 | 70개 |
+| 모듈      | 설명             | 상태    | 테스트 |
+| --------- | ---------------- | ------- | ------ |
+| PC-1      | 퍼스널 컬러 진단 | ✅ 완료 | 25개   |
+| S-1       | 피부 분석        | ✅ 완료 | 52개   |
+| C-1       | 체형 분석        | ✅ 완료 | 21개   |
+| 성분 분석 | 화장품 성분 경고 | ✅ 완료 | -      |
+| 제품 추천 | 피부타입별 추천  | ✅ 완료 | 70개   |
 
 ### 주요 기능
 
@@ -78,11 +78,11 @@ C-1 체형 분석:
 
 ### 모듈별 상태
 
-| 모듈 | 설명 | Sprint | 상태 | 테스트 |
-|------|------|--------|------|--------|
-| W-1 | 운동/피트니스 | 4개 완료 | ✅ 완료 | 703개 |
-| N-1 | 영양/식단 | 3개 완료 | ✅ 완료 | 680개 |
-| R-1 | 주간/월간 리포트 | 2개 완료 | ✅ 완료 | 67개 |
+| 모듈 | 설명             | Sprint   | 상태    | 테스트 |
+| ---- | ---------------- | -------- | ------- | ------ |
+| W-1  | 운동/피트니스    | 4개 완료 | ✅ 완료 | 703개  |
+| N-1  | 영양/식단        | 3개 완료 | ✅ 완료 | 680개  |
+| R-1  | 주간/월간 리포트 | 2개 완료 | ✅ 완료 | 67개   |
 
 ### W-1 운동/피트니스
 
@@ -179,12 +179,12 @@ AI 음식 분석:
 
 ### Sprint별 상태
 
-| Sprint | 내용 | 상태 |
-|--------|------|------|
-| Sprint 1 | 네비게이션 개선 | ✅ 완료 |
-| Sprint 2 | UI/UX 개선 | ✅ 완료 |
+| Sprint   | 내용             | 상태    |
+| -------- | ---------------- | ------- |
+| Sprint 1 | 네비게이션 개선  | ✅ 완료 |
+| Sprint 2 | UI/UX 개선       | ✅ 완료 |
 | Sprint 3 | 운동 기록 활성화 | ✅ 완료 |
-| Sprint 4 | E2E 테스트 | ✅ 완료 |
+| Sprint 4 | E2E 테스트       | ✅ 완료 |
 | Sprint 5 | 크로스 모듈 연동 | ✅ 완료 |
 
 ```yaml
@@ -226,40 +226,40 @@ E2E 테스트:
 
 ### A-0: 디자인 토큰 ✅ 완료
 
-| 항목 | 상태 |
-|------|------|
-| globals.css 색상 변환 | ✅ #2e5afa → oklch(0.53 0.23 262) |
-| 폰트 설정 | ✅ Inter + Noto Sans KR (한국어 지원) |
-| 빌드 테스트 | ✅ 통과 |
+| 항목                  | 상태                                  |
+| --------------------- | ------------------------------------- |
+| globals.css 색상 변환 | ✅ #2e5afa → oklch(0.53 0.23 262)     |
+| 폰트 설정             | ✅ Inter + Noto Sans KR (한국어 지원) |
+| 빌드 테스트           | ✅ 통과                               |
 
 ### A-1: Lite PWA ✅ 완료
 
-| 항목 | 상태 |
-|------|------|
-| @ducanh2912/next-pwa 설치 | ✅ |
-| app/manifest.ts 생성 | ✅ |
-| next.config.ts PWA 래핑 | ✅ |
-| .gitignore 업데이트 | ✅ |
-| PWA 아이콘 (public/icons/) | ✅ 이룸 브랜딩 적용 |
-| 로고 교체 | ✅ public/logo.png |
-| OG 이미지 교체 | ✅ public/og-image.png |
-| 파비콘 | ✅ favicon-16x16.png, favicon-32x32.png |
-| manifest.json | ✅ public/manifest.json |
+| 항목                       | 상태                                    |
+| -------------------------- | --------------------------------------- |
+| @ducanh2912/next-pwa 설치  | ✅                                      |
+| app/manifest.ts 생성       | ✅                                      |
+| next.config.ts PWA 래핑    | ✅                                      |
+| .gitignore 업데이트        | ✅                                      |
+| PWA 아이콘 (public/icons/) | ✅ 이룸 브랜딩 적용                     |
+| 로고 교체                  | ✅ public/logo.png                      |
+| OG 이미지 교체             | ✅ public/og-image.png                  |
+| 파비콘                     | ✅ favicon-16x16.png, favicon-32x32.png |
+| manifest.json              | ✅ public/manifest.json                 |
 
 ### A-2: Product DB v1 ✅ 완료
 
-| 항목 | 상태 |
-|------|------|
-| cosmetic_products 테이블 | ✅ `supabase/migrations/20251204_product_tables.sql` |
-| supplement_products 테이블 | ✅ |
-| TypeScript 타입 | ✅ `types/product.ts` |
-| API 유틸리티 | ✅ `lib/products.ts` |
-| RLS 정책 | ✅ 공개 읽기 + Service Role 쓰기 |
-| 시드 데이터 (화장품 135개) | ✅ `data/seeds/cosmetic-products.json` |
-| 시드 데이터 (영양제 30개) | ✅ `data/seeds/supplement-products.json` |
-| 시드 스크립트 | ✅ `scripts/seed-products.ts` |
-| 데이터 입력 가이드 | ✅ `docs/PRODUCT-DATA-GUIDE.md` |
-| 총 165개 제품 데이터 | ✅ 완료 |
+| 항목                       | 상태                                                 |
+| -------------------------- | ---------------------------------------------------- |
+| cosmetic_products 테이블   | ✅ `supabase/migrations/20251204_product_tables.sql` |
+| supplement_products 테이블 | ✅                                                   |
+| TypeScript 타입            | ✅ `types/product.ts`                                |
+| API 유틸리티               | ✅ `lib/products.ts`                                 |
+| RLS 정책                   | ✅ 공개 읽기 + Service Role 쓰기                     |
+| 시드 데이터 (화장품 135개) | ✅ `data/seeds/cosmetic-products.json`               |
+| 시드 데이터 (영양제 30개)  | ✅ `data/seeds/supplement-products.json`             |
+| 시드 스크립트              | ✅ `scripts/seed-products.ts`                        |
+| 데이터 입력 가이드         | ✅ `docs/PRODUCT-DATA-GUIDE.md`                      |
+| 총 165개 제품 데이터       | ✅ 완료                                              |
 
 ### A-0 디자인 토큰
 
@@ -314,14 +314,14 @@ E2E 테스트:
 
 ### 전체 진행률
 
-| Sprint | 내용 | Task | 상태 |
-|--------|------|------|------|
-| B-1 | 모노레포 설정 | 5개 | ✅ 완료 |
-| B-2 | 인증 & 데이터 | 5개 | ✅ 완료 |
-| B-3 | Phase 1 포팅 | 6개 | ✅ 완료 |
-| B-4 | Phase 2 포팅 | 6개 | ✅ 완료 |
-| B-5 | 배포 준비 | 7개 | ✅ 완료 |
-| B-6 | 정식 배포 | 8개 | 🔒 2026/01/17 이후 |
+| Sprint | 내용          | Task | 상태               |
+| ------ | ------------- | ---- | ------------------ |
+| B-1    | 모노레포 설정 | 5개  | ✅ 완료            |
+| B-2    | 인증 & 데이터 | 5개  | ✅ 완료            |
+| B-3    | Phase 1 포팅  | 6개  | ✅ 완료            |
+| B-4    | Phase 2 포팅  | 6개  | ✅ 완료            |
+| B-5    | 배포 준비     | 7개  | ✅ 완료            |
+| B-6    | 정식 배포     | 8개  | 🔒 2026/01/17 이후 |
 
 ### B-1 모노레포 설정 ✅ 완료
 
@@ -404,11 +404,11 @@ E2E 테스트:
 
 ### 전체 진행률
 
-| Sprint | 내용 | Task | 상태 |
-|--------|------|------|------|
-| C-1 | RAG 인프라 | 5개 | ✅ 완료 |
-| C-2 | 문서 임베딩 | 6개 | ✅ 완료 (150개) |
-| C-3 | Product DB v2 | 6개 | ✅ 완료 |
+| Sprint | 내용          | Task | 상태            |
+| ------ | ------------- | ---- | --------------- |
+| C-1    | RAG 인프라    | 5개  | ✅ 완료         |
+| C-2    | 문서 임베딩   | 6개  | ✅ 완료 (150개) |
+| C-3    | Product DB v2 | 6개  | ✅ 완료         |
 
 ### C-1 RAG 인프라 ✅ 완료
 
@@ -494,13 +494,13 @@ API & 타입:
 
 ### 전체 진행률
 
-| Step | 내용 | 상태 |
-|------|------|------|
-| Step 1 | 테스트 커버리지 확대 | ✅ 완료 |
-| Step 2 | 코드 품질 개선 | ✅ 완료 |
-| Step 3 | 성능 최적화 | ✅ 완료 |
-| Step 4 | 디자인 에셋 교체 | ✅ 완료 |
-| Step 5 | 추가 기능 구현 | ✅ 완료 |
+| Step   | 내용                      | 상태    |
+| ------ | ------------------------- | ------- |
+| Step 1 | 테스트 커버리지 확대      | ✅ 완료 |
+| Step 2 | 코드 품질 개선            | ✅ 완료 |
+| Step 3 | 성능 최적화               | ✅ 완료 |
+| Step 4 | 디자인 에셋 교체          | ✅ 완료 |
+| Step 5 | 추가 기능 구현            | ✅ 완료 |
 | Step 6 | UI 개선 (공유/애니메이션) | ✅ 완료 |
 
 ### Step 1: 테스트 커버리지 확대 ✅ 완료
@@ -694,12 +694,12 @@ Lighthouse 최적화 (2025-12-19):
 
 ### 전체 진행률
 
-| Step | 내용 | 상태 |
-|------|------|------|
-| E-1 | SEO 기본 | ✅ 완료 |
-| E-2 | 코드 품질 | ✅ 완료 |
-| E-3 | Product UI 확장 | ✅ 완료 |
-| E-4 | AI 기능 확장 | ✅ 완료 |
+| Step | 내용            | 상태    |
+| ---- | --------------- | ------- |
+| E-1  | SEO 기본        | ✅ 완료 |
+| E-2  | 코드 품질       | ✅ 완료 |
+| E-3  | Product UI 확장 | ✅ 완료 |
+| E-4  | AI 기능 확장    | ✅ 완료 |
 
 ### E-1: SEO 기본 ✅ 완료
 
@@ -750,13 +750,13 @@ Lighthouse 최적화 (2025-12-19):
 
 ### 전체 진행률
 
-| Step | 내용 | 상태 |
-|------|------|------|
-| F-1 | 관리자 페이지 | ✅ 완료 |
-| F-2 | UI/UX 개선 | ✅ 완료 |
-| F-3 | E2E 테스트 확장 | ✅ 완료 |
-| F-4 | Analytics/모니터링 | ✅ 완료 |
-| F-5 | 배포 + 피드백 | 🔄 테스트 중 (기능 점검 완료) |
+| Step | 내용               | 상태                          |
+| ---- | ------------------ | ----------------------------- |
+| F-1  | 관리자 페이지      | ✅ 완료                       |
+| F-2  | UI/UX 개선         | ✅ 완료                       |
+| F-3  | E2E 테스트 확장    | ✅ 완료                       |
+| F-4  | Analytics/모니터링 | ✅ 완료                       |
+| F-5  | 배포 + 피드백      | 🔄 테스트 중 (기능 점검 완료) |
 
 ### F-1: 관리자 페이지 ✅ 완료
 
@@ -877,11 +877,11 @@ DB 보안 (RLS): ✅ 완료 (2025-12-22)
 
 ### 전체 진행률
 
-| Sprint | 내용 | Task | 상태 |
-|--------|------|------|------|
-| Sprint 1 | 리뷰 시스템 | 6개 | ✅ 완료 |
-| Sprint 2 | 성분 상호작용 | 5개 | ✅ 완료 |
-| Sprint 3 | 어필리에이트 | 4개 | ✅ 완료 |
+| Sprint   | 내용          | Task | 상태    |
+| -------- | ------------- | ---- | ------- |
+| Sprint 1 | 리뷰 시스템   | 6개  | ✅ 완료 |
+| Sprint 2 | 성분 상호작용 | 5개  | ✅ 완료 |
+| Sprint 3 | 어필리에이트  | 4개  | ✅ 완료 |
 
 ### Sprint 1: 리뷰 시스템 ✅ 완료
 
@@ -1134,11 +1134,11 @@ Supabase 마이그레이션:
 
 ### 전체 진행률
 
-| Sprint | 내용 | Task | 상태 |
-|--------|------|------|------|
-| Sprint 1 | 게이미피케이션 + 챌린지 | 7개 | ✅ 완료 |
-| Sprint 2 | 소셜/리더보드/웰니스 | 8개 | ✅ 완료 |
-| Sprint 3 | Hybrid UX 개선 | 3개 | ✅ 완료 |
+| Sprint   | 내용                    | Task | 상태    |
+| -------- | ----------------------- | ---- | ------- |
+| Sprint 1 | 게이미피케이션 + 챌린지 | 7개  | ✅ 완료 |
+| Sprint 2 | 소셜/리더보드/웰니스    | 8개  | ✅ 완료 |
+| Sprint 3 | Hybrid UX 개선          | 3개  | ✅ 완료 |
 
 ### Sprint 1: 게이미피케이션 + 챌린지 ✅ 완료
 
@@ -1348,10 +1348,10 @@ TypeScript 및 테스트:
 
 ### 참조 문서
 
-| 문서 | 설명 |
-|------|------|
-| [GAMIFICATION-SPEC.md](phase-next/GAMIFICATION-SPEC.md) | 게이미피케이션 시스템 스펙 |
-| [CHALLENGE-SYSTEM-DESIGN.md](phase-next/CHALLENGE-SYSTEM-DESIGN.md) | 챌린지 시스템 설계 |
+| 문서                                                                | 설명                       |
+| ------------------------------------------------------------------- | -------------------------- |
+| [GAMIFICATION-SPEC.md](phase-next/GAMIFICATION-SPEC.md)             | 게이미피케이션 시스템 스펙 |
+| [CHALLENGE-SYSTEM-DESIGN.md](phase-next/CHALLENGE-SYSTEM-DESIGN.md) | 챌린지 시스템 설계         |
 
 ---
 
@@ -1370,48 +1370,48 @@ Trigger (계기) → Action (행동) → Reward (보상) → Investment (투자)
 
 #### PC-1 퍼스널 컬러 (Entry Point)
 
-| 단계 | 내용 | 구현 |
-|------|------|------|
-| Trigger | "내 퍼스널 컬러가 뭘까?" | ✅ 랜딩 CTA |
-| Action | 10개 문진 + 사진 1장 | ✅ 간단한 온보딩 |
-| Reward | 4계절 진단 + 연예인 매칭 + 컬러 팔레트 | ✅ 시각적 결과 |
-| Investment | 결과 저장, S-1/C-1 연동 유도 | ✅ 크로스 모듈 CTA |
+| 단계       | 내용                                   | 구현               |
+| ---------- | -------------------------------------- | ------------------ |
+| Trigger    | "내 퍼스널 컬러가 뭘까?"               | ✅ 랜딩 CTA        |
+| Action     | 10개 문진 + 사진 1장                   | ✅ 간단한 온보딩   |
+| Reward     | 4계절 진단 + 연예인 매칭 + 컬러 팔레트 | ✅ 시각적 결과     |
+| Investment | 결과 저장, S-1/C-1 연동 유도           | ✅ 크로스 모듈 CTA |
 
 #### S-1 피부 분석
 
-| 단계 | 내용 | 구현 |
-|------|------|------|
-| Trigger | "내 피부 상태는?" / PC 완료 후 유도 | ✅ |
-| Action | 사진 1장 업로드 | ✅ |
-| Reward | 7가지 지표 + 제품 추천 + PC 연동 파운데이션 | ✅ |
-| Investment | 성분 경고 저장, N-1 수분 연동 유도 | ✅ |
+| 단계       | 내용                                        | 구현 |
+| ---------- | ------------------------------------------- | ---- |
+| Trigger    | "내 피부 상태는?" / PC 완료 후 유도         | ✅   |
+| Action     | 사진 1장 업로드                             | ✅   |
+| Reward     | 7가지 지표 + 제품 추천 + PC 연동 파운데이션 | ✅   |
+| Investment | 성분 경고 저장, N-1 수분 연동 유도          | ✅   |
 
 #### C-1 체형 분석
 
-| 단계 | 내용 | 구현 |
-|------|------|------|
-| Trigger | "내 체형에 맞는 옷은?" / PC 완료 후 유도 | ✅ |
-| Action | 키/체중 입력 + 사진 1장 | ✅ |
-| Reward | 8가지 체형 + PC 연동 색상 추천 | ✅ |
-| Investment | W-1 운동 연동, N-1 칼로리 연동 | ✅ |
+| 단계       | 내용                                     | 구현 |
+| ---------- | ---------------------------------------- | ---- |
+| Trigger    | "내 체형에 맞는 옷은?" / PC 완료 후 유도 | ✅   |
+| Action     | 키/체중 입력 + 사진 1장                  | ✅   |
+| Reward     | 8가지 체형 + PC 연동 색상 추천           | ✅   |
+| Investment | W-1 운동 연동, N-1 칼로리 연동           | ✅   |
 
 #### W-1 운동/피트니스
 
-| 단계 | 내용 | 구현 |
-|------|------|------|
-| Trigger | "오늘 운동 뭐하지?" / 아침 알림 | ✅ |
-| Action | 운동 세션 시작 | ✅ |
-| Reward | 칼로리 소모 + Streak 배지 + 연예인 루틴 | ✅ |
-| Investment | 운동 기록, 연속 기록 유지, N-1 영양 유도 | ✅ |
+| 단계       | 내용                                     | 구현 |
+| ---------- | ---------------------------------------- | ---- |
+| Trigger    | "오늘 운동 뭐하지?" / 아침 알림          | ✅   |
+| Action     | 운동 세션 시작                           | ✅   |
+| Reward     | 칼로리 소모 + Streak 배지 + 연예인 루틴  | ✅   |
+| Investment | 운동 기록, 연속 기록 유지, N-1 영양 유도 | ✅   |
 
 #### N-1 영양/식단
 
-| 단계 | 내용 | 구현 |
-|------|------|------|
-| Trigger | "오늘 뭐 먹었지?" / 식사 시간 알림 | ✅ |
-| Action | 음식 사진 촬영 | ✅ |
-| Reward | 신호등 시스템 + 영양 분석 + 칼로리 트래킹 | ✅ |
-| Investment | 식단 기록, Streak, W-1 운동 유도 (칼로리 초과 시) | ✅ |
+| 단계       | 내용                                              | 구현 |
+| ---------- | ------------------------------------------------- | ---- |
+| Trigger    | "오늘 뭐 먹었지?" / 식사 시간 알림                | ✅   |
+| Action     | 음식 사진 촬영                                    | ✅   |
+| Reward     | 신호등 시스템 + 영양 분석 + 칼로리 트래킹         | ✅   |
+| Investment | 식단 기록, Streak, W-1 운동 유도 (칼로리 초과 시) | ✅   |
 
 ### 크로스 모듈 시너지
 
@@ -1435,12 +1435,12 @@ Phase 3 연동:
 
 ### 리텐션 메트릭 목표
 
-| 지표 | 목표 | 구현 |
-|------|------|------|
-| Day 1 리텐션 | 70%+ | ✅ PC-1 완료 후 S-1/C-1 유도 |
-| Day 7 리텐션 | 50%+ | ✅ Streak 시스템 |
-| 모듈 전환율 | 60%+ | ✅ 크로스 모듈 CTA |
-| 주간 재방문 | 2-3회 | ✅ 운동/식단 알림 |
+| 지표         | 목표  | 구현                         |
+| ------------ | ----- | ---------------------------- |
+| Day 1 리텐션 | 70%+  | ✅ PC-1 완료 후 S-1/C-1 유도 |
+| Day 7 리텐션 | 50%+  | ✅ Streak 시스템             |
+| 모듈 전환율  | 60%+  | ✅ 크로스 모듈 CTA           |
+| 주간 재방문  | 2-3회 | ✅ 운동/식단 알림            |
 
 ---
 
@@ -1682,35 +1682,95 @@ Analytics 데이터 수집 강화:
   [x] productCompareStore.test.ts (12개)
 ```
 
+### Week 6 🔄 진행 중 (2026-01-02 ~ 01-03)
+
+```yaml
+모바일 앱 Phase B 고도화:
+  [x] 옷장 UI 구현 (closet)
+      - 카테고리별 의류 관리
+      - 코디 추천 (날씨 기반 Mock)
+      - 저장된 코디 CRUD
+  [x] 알림 설정 페이지 (settings/notifications.tsx)
+      - 마스터 토글 + 카테고리별 설정
+      - 테스트 알림 발송 기능
+  [x] 모듈 구조 개선 (lib/ 타입 분리)
+      - lib/inventory/types.ts (순수 타입/상수)
+      - lib/notifications/types.ts (설정 인터페이스)
+      - hooks와 types 분리로 테스트 가능성 향상
+  [x] 테스트 추가 (263개 → 291개, +28개)
+      - inventory.test.ts (40개)
+      - notifications.test.ts (23개)
+      - onboarding.test.ts (28개)
+
+온보딩 플로우 구현 (3단계):
+  [x] lib/onboarding/types.ts - 타입/상수/유틸리티
+      - OnboardingGoal, ActivityLevel, Gender 타입
+      - GOAL_LABELS, GOAL_ICONS 등 상수
+      - isOnboardingComplete, calculateBMI 함수
+  [x] lib/onboarding/useOnboarding.ts - 상태 관리 훅
+      - useOnboarding: 목표/기본정보/선호도 관리
+      - useOnboardingCheck: 완료 여부 체크
+      - useOnboardingData: 완료된 데이터 조회
+  [x] (onboarding)/step1.tsx - 목표 선택 (5가지)
+  [x] (onboarding)/step2.tsx - 기본 정보 입력
+  [x] (onboarding)/step3.tsx - 선호도 + 완료
+
+온보딩-인증 연동:
+  [x] sign-up.tsx: 회원가입 완료 → 온보딩 리다이렉트
+  [x] index.tsx: 홈 진입 시 온보딩 체크 (미완료 시 리다이렉트)
+  [x] 로딩 상태 표시 (ActivityIndicator)
+
+푸시 알림 백엔드 연동:
+  [x] usePushToken 훅 구현
+      - Expo Push Token 등록
+      - AsyncStorage 로컬 저장
+  [x] syncWithServer: Supabase 동기화
+      - user_push_tokens 테이블 연동
+      - 플랫폼/디바이스 정보 전송
+
+EAS 빌드 설정 개선:
+  [x] base 프로필 환경변수 통합
+      - EXPO_PUBLIC_SUPABASE_URL
+      - EXPO_PUBLIC_SUPABASE_ANON_KEY
+      - EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+  [x] 채널별 설정 (development/preview/production)
+  [x] iOS simulator 빌드 지원
+
+커밋:
+  - feat(mobile): 옷장 UI + 알림 설정 업그레이드 + 테스트
+  - feat(mobile): 온보딩 플로우 구현 (3단계)
+  - feat(mobile): 온보딩 연동 + 푸시 토큰 + EAS 설정
+```
+
 ---
 
 ## 기술 스택 현황
 
 ### 프레임워크 & 라이브러리
 
-| 항목 | 버전 | 용도 |
-|------|------|------|
-| Next.js | 16+ | App Router, Turbopack |
-| React | 19 | UI 라이브러리 |
-| TypeScript | 5+ | 타입 안전성 |
-| Tailwind CSS | v4 | 스타일링 |
-| shadcn/ui | - | UI 컴포넌트 |
+| 항목         | 버전 | 용도                  |
+| ------------ | ---- | --------------------- |
+| Next.js      | 16+  | App Router, Turbopack |
+| React        | 19   | UI 라이브러리         |
+| TypeScript   | 5+   | 타입 안전성           |
+| Tailwind CSS | v4   | 스타일링              |
+| shadcn/ui    | -    | UI 컴포넌트           |
 
 ### 백엔드 & 인증
 
-| 항목 | 용도 |
-|------|------|
-| Supabase | PostgreSQL + Storage + RLS |
-| Clerk | 인증 (clerk_user_id 기반) |
-| Gemini 2.5 Flash | AI 분석 (이미지/텍스트) |
+| 항목             | 용도                       |
+| ---------------- | -------------------------- |
+| Supabase         | PostgreSQL + Storage + RLS |
+| Clerk            | 인증 (clerk_user_id 기반)  |
+| Gemini 2.5 Flash | AI 분석 (이미지/텍스트)    |
 
 ### 테스트
 
-| 항목 | 용도 | 테스트 수 |
-|------|------|----------|
-| Vitest | 단위/통합 테스트 | 2,491개 |
-| React Testing Library | 컴포넌트 테스트 | - |
-| Playwright | E2E 테스트 | 84개 |
+| 항목                  | 용도             | 테스트 수 |
+| --------------------- | ---------------- | --------- |
+| Vitest                | 단위/통합 테스트 | 2,491개   |
+| React Testing Library | 컴포넌트 테스트  | -         |
+| Playwright            | E2E 테스트       | 84개      |
 
 ---
 
@@ -1718,65 +1778,65 @@ Analytics 데이터 수집 강화:
 
 ### Phase 1 (4개 + 1개)
 
-| 테이블 | 설명 |
-|--------|------|
-| users | 사용자 정보 (Clerk 연동) |
-| personal_color_assessments | PC-1 진단 결과 |
-| skin_analyses | S-1 피부 분석 |
-| body_analyses | C-1 체형 분석 |
-| ingredients | 화장품 성분 DB |
+| 테이블                     | 설명                     |
+| -------------------------- | ------------------------ |
+| users                      | 사용자 정보 (Clerk 연동) |
+| personal_color_assessments | PC-1 진단 결과           |
+| skin_analyses              | S-1 피부 분석            |
+| body_analyses              | C-1 체형 분석            |
+| ingredients                | 화장품 성분 DB           |
 
 ### Phase 2 W-1 (4개)
 
-| 테이블 | 설명 |
-|--------|------|
+| 테이블           | 설명                |
+| ---------------- | ------------------- |
 | workout_analyses | 운동 타입 분석 결과 |
-| workout_plans | 주간 운동 플랜 |
-| workout_logs | 운동 기록 |
-| workout_streaks | 연속 운동 기록 |
+| workout_plans    | 주간 운동 플랜      |
+| workout_logs     | 운동 기록           |
+| workout_streaks  | 연속 운동 기록      |
 
 ### Phase 2 N-1 (8개)
 
-| 테이블 | 설명 |
-|--------|------|
-| nutrition_settings | 영양 설정 |
-| foods | 음식 DB (500종) |
-| meal_records | 식단 기록 |
-| water_records | 수분 섭취 기록 |
-| daily_nutrition_summary | 일일 영양 요약 |
-| favorite_foods | 즐겨찾기 음식 |
-| fasting_records | 간헐적 단식 기록 |
-| nutrition_streaks | 식단 연속 기록 |
+| 테이블                  | 설명             |
+| ----------------------- | ---------------- |
+| nutrition_settings      | 영양 설정        |
+| foods                   | 음식 DB (500종)  |
+| meal_records            | 식단 기록        |
+| water_records           | 수분 섭취 기록   |
+| daily_nutrition_summary | 일일 영양 요약   |
+| favorite_foods          | 즐겨찾기 음식    |
+| fasting_records         | 간헐적 단식 기록 |
+| nutrition_streaks       | 식단 연속 기록   |
 
 ### Phase A Product DB (2개)
 
-| 테이블 | 설명 |
-|--------|------|
-| cosmetic_products | 화장품 제품 DB (스킨케어 + 메이크업) |
-| supplement_products | 영양제/건강기능식품 제품 DB |
+| 테이블              | 설명                                 |
+| ------------------- | ------------------------------------ |
+| cosmetic_products   | 화장품 제품 DB (스킨케어 + 메이크업) |
+| supplement_products | 영양제/건강기능식품 제품 DB          |
 
 ### Phase C RAG + Product DB v2 (5개)
 
-| 테이블 | 설명 |
-|--------|------|
-| research_documents | 연구 문서 + 임베딩 (RAG 소스) |
-| document_chunks | 문서 청크 (긴 문서용) |
-| workout_equipment | 운동 기구/장비 DB |
-| health_foods | 건강식품/스포츠 영양 DB |
-| product_price_history | 제품 가격 히스토리 |
+| 테이블                | 설명                          |
+| --------------------- | ----------------------------- |
+| research_documents    | 연구 문서 + 임베딩 (RAG 소스) |
+| document_chunks       | 문서 청크 (긴 문서용)         |
+| workout_equipment     | 운동 기구/장비 DB             |
+| health_foods          | 건강식품/스포츠 영양 DB       |
+| product_price_history | 제품 가격 히스토리            |
 
 ### Phase H 게이미피케이션 (8개)
 
-| 테이블 | 설명 |
-|--------|------|
-| badges | 배지 마스터 (23개 배지) |
-| user_badges | 사용자 배지 획득 |
-| user_levels | 사용자 레벨 + XP |
-| challenges | 챌린지 마스터 (22개 챌린지) |
-| user_challenges | 사용자 챌린지 참여 |
-| wellness_scores | 통합 웰니스 점수 (0-100) |
-| friendships | 친구 관계 |
-| leaderboard_cache | 리더보드 캐시 |
+| 테이블            | 설명                        |
+| ----------------- | --------------------------- |
+| badges            | 배지 마스터 (23개 배지)     |
+| user_badges       | 사용자 배지 획득            |
+| user_levels       | 사용자 레벨 + XP            |
+| challenges        | 챌린지 마스터 (22개 챌린지) |
+| user_challenges   | 사용자 챌린지 참여          |
+| wellness_scores   | 통합 웰니스 점수 (0-100)    |
+| friendships       | 친구 관계                   |
+| leaderboard_cache | 리더보드 캐시               |
 
 ---
 
@@ -1787,19 +1847,21 @@ Analytics 데이터 수집 강화:
 ### 개요
 
 어필리에이트 파트너사(iHerb, 쿠팡, 무신사)와 연동하여:
+
 - 제품 이미지/데이터 자동 수집
 - 클릭 트래킹 및 전환 추적
 - 수수료 수익 창출
 
 ### 파트너사
 
-| 파트너사 | 카테고리 | 수수료율 | 우선순위 | 상태 |
-|---------|---------|---------|---------|------|
-| 쿠팡 파트너스 | 영양제, 화장품, 생활용품 | 1~3% | P0 | ⏳ 다음 |
-| iHerb | 영양제, 건강식품 | 5~20% | P0 | ⏳ 대기 |
-| 무신사 큐레이터 | 패션, 의류 | ~10% | P1 | ⏳ 대기 |
+| 파트너사        | 카테고리                 | 수수료율 | 우선순위 | 상태    |
+| --------------- | ------------------------ | -------- | -------- | ------- |
+| 쿠팡 파트너스   | 영양제, 화장품, 생활용품 | 1~3%     | P0       | ⏳ 다음 |
+| iHerb           | 영양제, 건강식품         | 5~20%    | P0       | ⏳ 대기 |
+| 무신사 큐레이터 | 패션, 의류               | ~10%     | P1       | ⏳ 대기 |
 
 > **전략**: 동일 제품을 여러 파트너에서 제공하여 사용자 선택권 부여
+>
 > - 빠른 배송 → 쿠팡 / 저렴한 가격 → iHerb / 포인트 → 네이버
 
 ### 구현 현황
@@ -1913,12 +1975,12 @@ supabase/migrations/
 
 ### DB 테이블
 
-| 테이블 | 설명 |
-|--------|------|
-| affiliate_partners | 파트너 설정 (iHerb, 쿠팡, 무신사) |
-| affiliate_products | 어필리에이트 제품 (매칭 정보 포함) |
-| affiliate_clicks | 클릭 추적 (IP 익명화) |
-| affiliate_daily_stats | 일별 통계 |
+| 테이블                | 설명                               |
+| --------------------- | ---------------------------------- |
+| affiliate_partners    | 파트너 설정 (iHerb, 쿠팡, 무신사)  |
+| affiliate_products    | 어필리에이트 제품 (매칭 정보 포함) |
+| affiliate_clicks      | 클릭 추적 (IP 익명화)              |
+| affiliate_daily_stats | 일별 통계                          |
 
 ---
 
@@ -1929,6 +1991,7 @@ supabase/migrations/
 ### 개요
 
 제품 추천의 정확도와 사용자 경험을 극대화하는 스마트 매칭 시스템:
+
 - 사용자 신체 치수 기반 사이즈 추천
 - 가격 모니터링 및 비교
 - 운동기구 개인화 추천
@@ -1936,14 +1999,14 @@ supabase/migrations/
 
 ### 모듈별 상태
 
-| 모듈 | 설명 | 상태 | 주요 파일 |
-|------|------|------|----------|
-| J-1 | 사용자 Preferences | ✅ 완료 | `preferences.ts`, `measurements.ts` |
-| J-2 | 사이즈 추천 | ✅ 완료 | `size-recommend.ts`, `size-charts.ts` |
-| J-3 | 가격 모니터링 | ✅ 완료 | `price-watches.ts`, `price-compare.ts` |
-| J-4 | 바코드 인식 | ✅ 완료 | `barcodes.ts`, `BarcodeScanner` |
-| J-5 | 제품 매칭 v2 | ✅ 완료 | `product-matching.ts` |
-| J-6 | 운동기구 매칭 | ✅ 완료 | `equipment-recommend.ts` |
+| 모듈 | 설명               | 상태    | 주요 파일                              |
+| ---- | ------------------ | ------- | -------------------------------------- |
+| J-1  | 사용자 Preferences | ✅ 완료 | `preferences.ts`, `measurements.ts`    |
+| J-2  | 사이즈 추천        | ✅ 완료 | `size-recommend.ts`, `size-charts.ts`  |
+| J-3  | 가격 모니터링      | ✅ 완료 | `price-watches.ts`, `price-compare.ts` |
+| J-4  | 바코드 인식        | ✅ 완료 | `barcodes.ts`, `BarcodeScanner`        |
+| J-5  | 제품 매칭 v2       | ✅ 완료 | `product-matching.ts`                  |
+| J-6  | 운동기구 매칭      | ✅ 완료 | `equipment-recommend.ts`               |
 
 ### 구현 현황
 
@@ -2020,14 +2083,14 @@ supabase/migrations/
 
 ### DB 테이블
 
-| 테이블 | 설명 |
-|--------|------|
-| user_preferences | 사용자 선호도 (알림, 가격 민감도) |
+| 테이블                 | 설명                                  |
+| ---------------------- | ------------------------------------- |
+| user_preferences       | 사용자 선호도 (알림, 가격 민감도)     |
 | user_body_measurements | 신체 치수 (키, 몸무게, 가슴, 허리 등) |
-| brand_size_charts | 브랜드별 사이즈 차트 |
-| user_size_history | 구매/착용 이력 |
-| price_watches | 가격 알림 설정 |
-| product_barcodes | 바코드-제품 매핑 |
+| brand_size_charts      | 브랜드별 사이즈 차트                  |
+| user_size_history      | 구매/착용 이력                        |
+| price_watches          | 가격 알림 설정                        |
+| product_barcodes       | 바코드-제품 매핑                      |
 
 ---
 
@@ -2134,10 +2197,10 @@ data/
 
 ### 모듈별 상태
 
-| 모듈 | 설명 | 상태 | 테스트 |
-|------|------|------|--------|
-| K-1 | 사용자 행동 분석 | ✅ 완료 | 51개 |
-| K-2 | AI 상담 채팅 | ✅ 완료 | 29개 |
+| 모듈 | 설명             | 상태    | 테스트 |
+| ---- | ---------------- | ------- | ------ |
+| K-1  | 사용자 행동 분석 | ✅ 완료 | 51개   |
+| K-2  | AI 상담 채팅     | ✅ 완료 | 29개   |
 
 ### K-1: 사용자 행동 분석 (Analytics)
 
@@ -2187,10 +2250,10 @@ data/
 
 ### 스펙 문서
 
-| 문서 | 설명 |
-|------|------|
+| 문서                                   | 설명                  |
+| -------------------------------------- | --------------------- |
 | [SPEC-ANALYTICS.md](SPEC-ANALYTICS.md) | 사용자 행동 분석 스펙 |
-| [SPEC-AI-CHAT.md](SPEC-AI-CHAT.md) | AI 상담 채팅 스펙 |
+| [SPEC-AI-CHAT.md](SPEC-AI-CHAT.md)     | AI 상담 채팅 스펙     |
 
 ---
 
@@ -2200,14 +2263,14 @@ data/
 
 ### 모듈별 상태
 
-| 모듈 | 설명 | 상태 | 테스트 |
-|------|------|------|--------|
-| L-1 | Web Push 알림 | ⏳ 대기 | - |
-| L-2 | 다국어 지원 (i18n) - 4언어 | ✅ 완료 | 139개 |
-| L-3 | 성능 최적화 | ✅ 완료 | - |
-| L-4 | 오프라인 지원 | ✅ 완료 | - |
-| L-5 | Lighthouse 측정 | ✅ 완료 | A11y 94, BP 93 |
-| E2E | 테스트 확장 | ✅ 완료 | 37개 추가 |
+| 모듈 | 설명                       | 상태    | 테스트         |
+| ---- | -------------------------- | ------- | -------------- |
+| L-1  | Web Push 알림              | ⏳ 대기 | -              |
+| L-2  | 다국어 지원 (i18n) - 4언어 | ✅ 완료 | 139개          |
+| L-3  | 성능 최적화                | ✅ 완료 | -              |
+| L-4  | 오프라인 지원              | ✅ 완료 | -              |
+| L-5  | Lighthouse 측정            | ✅ 완료 | A11y 94, BP 93 |
+| E2E  | 테스트 확장                | ✅ 완료 | 37개 추가      |
 
 ### L-1: Web Push 알림 ⏳ 대기
 
@@ -2324,27 +2387,28 @@ data/
 
 ## 참조 문서
 
-| 문서 | 설명 |
-|------|------|
-| [PROGRESS.md](PROGRESS.md) | Phase 1 상세 |
-| [PROGRESS-PHASE2.md](PROGRESS-PHASE2.md) | Phase 2 상세 |
-| [phase3/PROGRESS-PHASE3.md](phase3/PROGRESS-PHASE3.md) | Phase 3 상세 |
-| [ROADMAP-PHASE-NEXT.md](ROADMAP-PHASE-NEXT.md) | Phase A/B/C 로드맵 |
-| [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) | Stitch 디자인 토큰 |
-| [DATABASE-SCHEMA.md](DATABASE-SCHEMA.md) | DB 스키마 v5.0 (Phase H + Launch) |
-| [PRODUCT-DATA-GUIDE.md](PRODUCT-DATA-GUIDE.md) | Product DB 데이터 입력 가이드 |
-| [HOOK-MODEL.md](HOOK-MODEL.md) | 사용자 리텐션 모델 |
-| [phase-next/FEATURE-SPEC-PRODUCT-UI.md](phase-next/FEATURE-SPEC-PRODUCT-UI.md) | Step 5 Product UI 기능 스펙 |
-| [phase-next/SPRINT-BACKLOG-PRODUCT-UI.md](phase-next/SPRINT-BACKLOG-PRODUCT-UI.md) | Step 5 Product UI 스프린트 백로그 |
-| [phase-next/GAMIFICATION-SPEC.md](phase-next/GAMIFICATION-SPEC.md) | Phase H 게이미피케이션 시스템 스펙 |
-| [phase-next/CHALLENGE-SYSTEM-DESIGN.md](phase-next/CHALLENGE-SYSTEM-DESIGN.md) | Phase H 챌린지 시스템 설계 |
-| [ROADMAP-LAUNCH.md](ROADMAP-LAUNCH.md) | 런칭 로드맵 (2025-01-20 목표) |
-| [SPEC-AFFILIATE-SYSTEM.md](SPEC-AFFILIATE-SYSTEM.md) | Phase I 어필리에이트 시스템 스펙 |
-| [SPEC-SMART-MATCHING-SYSTEM.md](SPEC-SMART-MATCHING-SYSTEM.md) | Phase J 스마트 매칭 시스템 스펙 |
+| 문서                                                                               | 설명                               |
+| ---------------------------------------------------------------------------------- | ---------------------------------- |
+| [PROGRESS.md](PROGRESS.md)                                                         | Phase 1 상세                       |
+| [PROGRESS-PHASE2.md](PROGRESS-PHASE2.md)                                           | Phase 2 상세                       |
+| [phase3/PROGRESS-PHASE3.md](phase3/PROGRESS-PHASE3.md)                             | Phase 3 상세                       |
+| [ROADMAP-PHASE-NEXT.md](ROADMAP-PHASE-NEXT.md)                                     | Phase A/B/C 로드맵                 |
+| [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md)                                               | Stitch 디자인 토큰                 |
+| [DATABASE-SCHEMA.md](DATABASE-SCHEMA.md)                                           | DB 스키마 v5.0 (Phase H + Launch)  |
+| [PRODUCT-DATA-GUIDE.md](PRODUCT-DATA-GUIDE.md)                                     | Product DB 데이터 입력 가이드      |
+| [HOOK-MODEL.md](HOOK-MODEL.md)                                                     | 사용자 리텐션 모델                 |
+| [phase-next/FEATURE-SPEC-PRODUCT-UI.md](phase-next/FEATURE-SPEC-PRODUCT-UI.md)     | Step 5 Product UI 기능 스펙        |
+| [phase-next/SPRINT-BACKLOG-PRODUCT-UI.md](phase-next/SPRINT-BACKLOG-PRODUCT-UI.md) | Step 5 Product UI 스프린트 백로그  |
+| [phase-next/GAMIFICATION-SPEC.md](phase-next/GAMIFICATION-SPEC.md)                 | Phase H 게이미피케이션 시스템 스펙 |
+| [phase-next/CHALLENGE-SYSTEM-DESIGN.md](phase-next/CHALLENGE-SYSTEM-DESIGN.md)     | Phase H 챌린지 시스템 설계         |
+| [ROADMAP-LAUNCH.md](ROADMAP-LAUNCH.md)                                             | 런칭 로드맵 (2025-01-20 목표)      |
+| [SPEC-AFFILIATE-SYSTEM.md](SPEC-AFFILIATE-SYSTEM.md)                               | Phase I 어필리에이트 시스템 스펙   |
+| [SPEC-SMART-MATCHING-SYSTEM.md](SPEC-SMART-MATCHING-SYSTEM.md)                     | Phase J 스마트 매칭 시스템 스펙    |
 
 ---
 
 **상태 범례**:
+
 - ✅ 완료
 - 🔄 진행 중
 - ⏳ 대기
