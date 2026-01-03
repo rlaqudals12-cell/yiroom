@@ -36,6 +36,7 @@ export {
   type NotificationSettings,
   DEFAULT_NOTIFICATION_SETTINGS,
   useNotificationPermission,
+  usePushToken,
   useNotificationSettings,
   useNotificationScheduler,
   useNotificationResponse,

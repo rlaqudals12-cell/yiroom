@@ -4,7 +4,7 @@
  */
 import { useUser } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   useColorScheme,
   Pressable,
   LayoutAnimation,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -22,6 +23,7 @@ import {
   useUserAnalyses,
   calculateCalorieProgress,
 } from '../../hooks';
+import { useOnboardingCheck } from '../../lib/onboarding';
 
 // 색상 상수
 const COLORS = {
@@ -43,6 +45,16 @@ export default function HomeScreen() {
   const router = useRouter();
   const { user, isLoaded } = useUser();
   const [showMore, setShowMore] = useState(false);
+
+  // 온보딩 체크 - 미완료 시 온보딩으로 이동
+  const { isCompleted: onboardingCompleted, isLoading: onboardingLoading } =
+    useOnboardingCheck();
+
+  useEffect(() => {
+    if (!onboardingLoading && !onboardingCompleted) {
+      router.replace('/(onboarding)/step1');
+    }
+  }, [onboardingLoading, onboardingCompleted, router]);
 
   // 실제 데이터 훅
   const { streak: workoutStreak, isLoading: workoutLoading } = useWorkoutData();
@@ -198,6 +210,17 @@ export default function HomeScreen() {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setShowMore(!showMore);
   };
+
+  // 온보딩 로딩 중이면 로딩 화면 표시
+  if (onboardingLoading) {
+    return (
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
@@ -540,6 +563,11 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     marginBottom: 24,

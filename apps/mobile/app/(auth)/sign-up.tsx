@@ -87,7 +87,8 @@ export default function SignUpScreen() {
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
-        router.replace('/(tabs)');
+        // 신규 회원은 온보딩으로 이동
+        router.replace('/(onboarding)/step1');
       }
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };

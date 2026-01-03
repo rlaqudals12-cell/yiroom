@@ -21,6 +21,7 @@ export type { NotificationSettings } from './types';
 export { DEFAULT_NOTIFICATION_SETTINGS } from './types';
 
 const SETTINGS_KEY = 'yiroom_notification_settings';
+const PUSH_TOKEN_KEY = 'yiroom_push_token';
 
 // ============================================================
 // 알림 핸들러 설정
@@ -88,6 +89,121 @@ export function useNotificationPermission(): UseNotificationPermissionResult {
     hasPermission,
     isLoading,
     requestPermission,
+  };
+}
+
+// ============================================================
+// 푸시 토큰 훅 (서버 연동용)
+// ============================================================
+
+interface UsePushTokenResult {
+  token: string | null;
+  isLoading: boolean;
+  registerToken: () => Promise<string | null>;
+  syncWithServer: (userId: string) => Promise<boolean>;
+}
+
+export function usePushToken(): UsePushTokenResult {
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadToken();
+  }, []);
+
+  const loadToken = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
+      if (stored) {
+        setToken(stored);
+      }
+    } catch (error) {
+      console.error('[Mobile] loadToken error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const registerToken = useCallback(async (): Promise<string | null> => {
+    setIsLoading(true);
+
+    try {
+      // 권한 확인
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        setIsLoading(false);
+        return null;
+      }
+
+      // Expo Push Token 가져오기
+      const pushToken = await Notifications.getExpoPushTokenAsync({
+        projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+      });
+
+      const tokenString = pushToken.data;
+      setToken(tokenString);
+
+      // 로컬 저장
+      await AsyncStorage.setItem(PUSH_TOKEN_KEY, tokenString);
+
+      console.log('[Mobile] Push token registered:', tokenString.slice(0, 20));
+      return tokenString;
+    } catch (error) {
+      console.error('[Mobile] registerToken error:', error);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // 서버에 푸시 토큰 동기화
+  const syncWithServer = useCallback(
+    async (userId: string): Promise<boolean> => {
+      if (!token) {
+        console.warn('[Mobile] No token to sync');
+        return false;
+      }
+
+      try {
+        // Supabase API 호출 (웹앱과 동일한 엔드포인트 사용)
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_SUPABASE_URL}/rest/v1/user_push_tokens`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
+              'Prefer': 'resolution=merge-duplicates',
+            },
+            body: JSON.stringify({
+              clerk_user_id: userId,
+              push_token: token,
+              platform: Platform.OS,
+              device_name: Platform.OS === 'ios' ? 'iPhone' : 'Android',
+              last_active: new Date().toISOString(),
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}`);
+        }
+
+        console.log('[Mobile] Push token synced with server');
+        return true;
+      } catch (error) {
+        console.error('[Mobile] syncWithServer error:', error);
+        return false;
+      }
+    },
+    [token]
+  );
+
+  return {
+    token,
+    isLoading,
+    registerToken,
+    syncWithServer,
   };
 }
 
