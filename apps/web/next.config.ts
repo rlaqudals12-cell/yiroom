@@ -18,6 +18,8 @@ const withPWA = withPWAInit({
   register: true,
   // 오프라인 캐싱 활성화
   cacheOnFrontEndNav: true,
+  // 커스텀 서비스 워커 (Push 핸들러 포함)
+  customWorkerSrc: 'worker',
   // 런타임 캐싱 설정
   workboxOptions: {
     // 오프라인 폴백 페이지

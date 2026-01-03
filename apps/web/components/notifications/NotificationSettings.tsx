@@ -1,7 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Bell, BellOff, Clock, Dumbbell, Utensils, Flame, Sparkles } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import {
+  Bell,
+  BellOff,
+  Clock,
+  Dumbbell,
+  Utensils,
+  Flame,
+  Sparkles,
+  Smartphone,
+  Loader2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -23,6 +33,13 @@ import {
   stopReminderSchedule,
   type NotificationSettings as NotificationSettingsType,
 } from '@/lib/notifications';
+import {
+  isPushSupported,
+  getPushSubscriptionStatus,
+  subscribeToPush,
+  unsubscribeFromPush,
+  sendTestPush,
+} from '@/lib/push';
 import { toast } from 'sonner';
 
 // 시간 옵션 생성 (30분 단위)
@@ -47,6 +64,19 @@ export function NotificationSettings() {
     streakWarning: true,
   });
 
+  // Web Push 상태
+  const [isPushActive, setIsPushActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isTestingPush, setIsTestingPush] = useState(false);
+
+  // Push 상태 확인
+  const checkPushStatus = useCallback(async () => {
+    if (!isPushSupported()) return;
+
+    const status = await getPushSubscriptionStatus();
+    setIsPushActive(status.isSubscribed);
+  }, []);
+
   // 초기화
   useEffect(() => {
     const supported = isNotificationSupported();
@@ -55,8 +85,9 @@ export function NotificationSettings() {
     if (supported) {
       setPermission(getNotificationPermission());
       setSettings(loadNotificationSettings());
+      checkPushStatus();
     }
-  }, []);
+  }, [checkPushStatus]);
 
   // 설정 변경 시 저장 및 스케줄 관리
   useEffect(() => {
@@ -69,27 +100,78 @@ export function NotificationSettings() {
     }
   }, [settings, permission]);
 
-  // 알림 권한 요청
+  // 알림 권한 요청 + Push 구독
   const handleRequestPermission = async () => {
-    const result = await requestNotificationPermission();
-    setPermission(result);
+    setIsLoading(true);
+    try {
+      const result = await requestNotificationPermission();
+      setPermission(result);
 
-    if (result === 'granted') {
-      toast.success('알림 권한이 허용되었습니다!');
-      setSettings(prev => ({ ...prev, enabled: true }));
-      showTestNotification();
-    } else if (result === 'denied') {
-      toast.error('알림 권한이 거부되었습니다. 브라우저 설정에서 변경할 수 있습니다.');
+      if (result === 'granted') {
+        // Push 구독 시도
+        const subscription = await subscribeToPush();
+        if (subscription) {
+          setIsPushActive(true);
+          toast.success('푸시 알림이 활성화되었습니다!');
+        } else {
+          toast.success('알림 권한이 허용되었습니다!');
+        }
+        setSettings((prev) => ({ ...prev, enabled: true }));
+        showTestNotification();
+      } else if (result === 'denied') {
+        toast.error('알림 권한이 거부되었습니다. 브라우저 설정에서 변경할 수 있습니다.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Push 구독 토글
+  const handlePushToggle = async () => {
+    setIsLoading(true);
+    try {
+      if (isPushActive) {
+        const success = await unsubscribeFromPush();
+        if (success) {
+          setIsPushActive(false);
+          toast.success('백그라운드 푸시 알림이 비활성화되었습니다.');
+        }
+      } else {
+        const subscription = await subscribeToPush();
+        if (subscription) {
+          setIsPushActive(true);
+          toast.success('백그라운드 푸시 알림이 활성화되었습니다!');
+        } else {
+          toast.error('푸시 알림 등록에 실패했습니다.');
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 푸시 테스트
+  const handleTestPush = async () => {
+    setIsTestingPush(true);
+    try {
+      const success = await sendTestPush();
+      if (success) {
+        toast.success('테스트 푸시 알림을 발송했습니다!');
+      } else {
+        toast.error('푸시 알림 발송에 실패했습니다.');
+      }
+    } finally {
+      setIsTestingPush(false);
     }
   };
 
   // 설정 변경 핸들러
   const handleToggle = (key: keyof NotificationSettingsType) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleTimeChange = (time: string) => {
-    setSettings(prev => ({ ...prev, reminderTime: time }));
+    setSettings((prev) => ({ ...prev, reminderTime: time }));
     toast.success(`리마인더 시간이 ${time}으로 설정되었습니다.`);
   };
 
@@ -102,9 +184,7 @@ export function NotificationSettings() {
             <BellOff className="w-5 h-5 text-muted-foreground" />
             알림 설정
           </CardTitle>
-          <CardDescription>
-            이 브라우저는 푸시 알림을 지원하지 않습니다.
-          </CardDescription>
+          <CardDescription>이 브라우저는 푸시 알림을 지원하지 않습니다.</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -117,9 +197,7 @@ export function NotificationSettings() {
           <Bell className="w-5 h-5 text-amber-500" />
           알림 설정
         </CardTitle>
-        <CardDescription>
-          리마인더 알림을 설정하여 꾸준한 기록을 유지하세요
-        </CardDescription>
+        <CardDescription>리마인더 알림을 설정하여 꾸준한 기록을 유지하세요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* 권한 요청 */}
@@ -136,9 +214,18 @@ export function NotificationSettings() {
                   onClick={handleRequestPermission}
                   className="bg-amber-500 hover:bg-amber-600"
                   size="sm"
-                  disabled={permission === 'denied'}
+                  disabled={permission === 'denied' || isLoading}
                 >
-                  {permission === 'denied' ? '권한 거부됨' : '알림 허용하기'}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      처리 중...
+                    </>
+                  ) : permission === 'denied' ? (
+                    '권한 거부됨'
+                  ) : (
+                    '알림 허용하기'
+                  )}
                 </Button>
                 {permission === 'denied' && (
                   <p className="text-xs text-amber-600 mt-2">
@@ -167,6 +254,25 @@ export function NotificationSettings() {
           />
         </div>
 
+        {/* 백그라운드 푸시 알림 (Web Push) */}
+        {permission === 'granted' && isPushSupported() && (
+          <div className="flex items-center justify-between py-3 border-b">
+            <div className="flex items-center gap-3">
+              <Smartphone className="w-5 h-5 text-purple-500" aria-hidden="true" />
+              <div>
+                <p className="font-medium">백그라운드 푸시</p>
+                <p className="text-sm text-muted-foreground">앱이 꺼져 있어도 알림 받기</p>
+              </div>
+            </div>
+            <Switch
+              checked={isPushActive}
+              onCheckedChange={handlePushToggle}
+              disabled={isLoading || !settings.enabled}
+              data-testid="push-toggle"
+            />
+          </div>
+        )}
+
         {/* 리마인더 시간 */}
         <div className="flex items-center justify-between py-3 border-b">
           <div className="flex items-center gap-3">
@@ -185,7 +291,7 @@ export function NotificationSettings() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {TIME_OPTIONS.map(time => (
+              {TIME_OPTIONS.map((time) => (
                 <SelectItem key={time} value={time}>
                   {time}
                 </SelectItem>
@@ -247,17 +353,37 @@ export function NotificationSettings() {
 
         {/* 테스트 알림 */}
         {settings.enabled && permission === 'granted' && (
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              showTestNotification();
-              toast.success('테스트 알림을 보냈습니다!');
-            }}
-            data-testid="test-notification-button"
-          >
-            테스트 알림 보내기
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                showTestNotification();
+                toast.success('테스트 알림을 보냈습니다!');
+              }}
+              data-testid="test-notification-button"
+            >
+              브라우저 알림 테스트
+            </Button>
+            {isPushActive && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleTestPush}
+                disabled={isTestingPush}
+                data-testid="test-push-button"
+              >
+                {isTestingPush ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    발송 중...
+                  </>
+                ) : (
+                  '서버 푸시 알림 테스트'
+                )}
+              </Button>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>
