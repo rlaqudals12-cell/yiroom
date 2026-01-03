@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw, Palette } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Palette, Shirt } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +22,8 @@ import { ShareButton } from '@/components/share';
 import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 import type { PersonalColorSeason } from '@/types/product';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DrapingSimulationTab } from '@/components/analysis/visual';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -43,6 +45,7 @@ interface DbPersonalColorAssessment {
   image_analysis: {
     insight?: string;
   } | null;
+  image_url?: string;
   created_at: string;
 }
 
@@ -120,9 +123,11 @@ export default function PersonalColorResultPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<PersonalColorResult | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('basic');
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;
@@ -168,6 +173,7 @@ export default function PersonalColorResultPage() {
 
       const transformedResult = transformDbToResult(data as DbPersonalColorAssessment);
       setResult(transformedResult);
+      setImageUrl((data as DbPersonalColorAssessment).image_url || null);
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
       const celebrationKey = `celebration-pc-${analysisId}`;
@@ -266,19 +272,46 @@ export default function PersonalColorResultPage() {
           <div className="w-16" />
         </header>
 
-        {/* 결과 */}
-        {result && <AnalysisResult result={result} onRetry={handleNewAnalysis} />}
-
-        {/* 맞춤 추천 제품 */}
+        {/* 탭 기반 결과 */}
         {result && (
-          <RecommendedProducts
-            analysisType="personal-color"
-            analysisResult={{
-              seasonType: (result.seasonType.charAt(0).toUpperCase() +
-                result.seasonType.slice(1)) as PersonalColorSeason,
-            }}
-            className="mt-8 pb-32"
-          />
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="basic" className="gap-1">
+                <Palette className="w-4 h-4" />
+                기본 분석
+              </TabsTrigger>
+              <TabsTrigger value="draping" className="gap-1">
+                <Shirt className="w-4 h-4" />
+                드레이핑
+              </TabsTrigger>
+            </TabsList>
+
+            {/* 기본 분석 탭 */}
+            <TabsContent value="basic" className="mt-0">
+              <AnalysisResult result={result} onRetry={handleNewAnalysis} />
+
+              {/* 맞춤 추천 제품 */}
+              <RecommendedProducts
+                analysisType="personal-color"
+                analysisResult={{
+                  seasonType: (result.seasonType.charAt(0).toUpperCase() +
+                    result.seasonType.slice(1)) as PersonalColorSeason,
+                }}
+                className="mt-8 pb-32"
+              />
+            </TabsContent>
+
+            {/* 드레이핑 시뮬레이션 탭 (PC-1+) */}
+            <TabsContent value="draping" className="mt-0 pb-32">
+              {imageUrl ? (
+                <DrapingSimulationTab imageUrl={imageUrl} />
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  드레이핑 시뮬레이션에 필요한 이미지가 없습니다
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         )}
       </div>
 

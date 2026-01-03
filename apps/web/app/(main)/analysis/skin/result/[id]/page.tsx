@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Sparkles, Eye } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { type SkinAnalysisResult } from '@/lib/mock/skin-analysis';
@@ -14,6 +14,8 @@ import { ShareButton } from '@/components/share';
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 import type { SkinType as ProductSkinType, SkinConcern } from '@/types/product';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { VisualAnalysisTab } from '@/components/analysis/visual';
 
 // 점수 → 상태 (MetricStatus 타입에 맞게)
 function getStatus(value: number): 'good' | 'normal' | 'warning' {
@@ -122,9 +124,11 @@ export default function SkinAnalysisResultPage() {
   const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<SkinAnalysisResult | null>(null);
   const [skinType, setSkinType] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('basic');
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;
@@ -172,6 +176,7 @@ export default function SkinAnalysisResultPage() {
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setSkinType(dbData.skin_type);
+      setImageUrl(dbData.image_url);
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
       const celebrationKey = `celebration-skin-${analysisId}`;
@@ -271,32 +276,60 @@ export default function SkinAnalysisResultPage() {
             <div className="w-16" /> {/* 균형용 */}
           </header>
 
-          {/* 결과 */}
-          {result && <AnalysisResult result={result} onRetry={handleNewAnalysis} />}
+          {/* 탭 기반 결과 */}
+          {result && (
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="basic" className="gap-1">
+                  <Sparkles className="w-4 h-4" />
+                  기본 분석
+                </TabsTrigger>
+                <TabsTrigger value="visual" className="gap-1">
+                  <Eye className="w-4 h-4" />
+                  상세 시각화
+                </TabsTrigger>
+              </TabsList>
 
-          {/* 맞춤 추천 제품 */}
-          {result && skinType && (
-            <RecommendedProducts
-              analysisType="skin"
-              analysisResult={{
-                skinType: skinType as ProductSkinType,
-                skinConcerns: result.metrics
-                  .filter((m) => m.status === 'warning')
-                  .map((m) => {
-                    // 메트릭 ID → SkinConcern 매핑
-                    const concernMap: Record<string, SkinConcern> = {
-                      hydration: 'hydration',
-                      pores: 'pore',
-                      pigmentation: 'whitening',
-                      wrinkles: 'aging',
-                      sensitivity: 'redness',
-                    };
-                    return concernMap[m.id];
-                  })
-                  .filter((c): c is SkinConcern => c !== undefined),
-              }}
-              className="mt-8 pb-32"
-            />
+              {/* 기본 분석 탭 */}
+              <TabsContent value="basic" className="mt-0">
+                <AnalysisResult result={result} onRetry={handleNewAnalysis} />
+
+                {/* 맞춤 추천 제품 */}
+                {skinType && (
+                  <RecommendedProducts
+                    analysisType="skin"
+                    analysisResult={{
+                      skinType: skinType as ProductSkinType,
+                      skinConcerns: result.metrics
+                        .filter((m) => m.status === 'warning')
+                        .map((m) => {
+                          const concernMap: Record<string, SkinConcern> = {
+                            hydration: 'hydration',
+                            pores: 'pore',
+                            pigmentation: 'whitening',
+                            wrinkles: 'aging',
+                            sensitivity: 'redness',
+                          };
+                          return concernMap[m.id];
+                        })
+                        .filter((c): c is SkinConcern => c !== undefined),
+                    }}
+                    className="mt-8 pb-32"
+                  />
+                )}
+              </TabsContent>
+
+              {/* 상세 시각화 탭 (S-1+) */}
+              <TabsContent value="visual" className="mt-0 pb-32">
+                {imageUrl ? (
+                  <VisualAnalysisTab imageUrl={imageUrl} />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    시각화에 필요한 이미지가 없습니다
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </main>
