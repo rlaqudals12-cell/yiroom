@@ -421,69 +421,27 @@ const rankingBySkinType: Record<SkinType, RankingProduct[]> = {
   ],
 };
 
-// 임시 제품 데이터 (imageUrl 포함)
-const mockProducts = [
-  {
-    id: '1',
-    name: '비타민C 세럼',
-    brand: '브랜드A',
-    rating: 4.8,
-    reviews: 1253,
-    matchRate: 98,
-    price: 32000,
-    imageUrl: '/images/products/vitaminc-serum.jpg',
-  },
-  {
-    id: '2',
-    name: '히알루론산 토너',
-    brand: '브랜드B',
-    rating: 4.7,
-    reviews: 892,
-    matchRate: 95,
-    price: 25000,
-    imageUrl: '/images/products/hyaluronic-toner.jpg',
-  },
-  {
-    id: '3',
-    name: '레티놀 크림',
-    brand: '브랜드C',
-    rating: 4.6,
-    reviews: 567,
-    matchRate: 92,
-    price: 45000,
-    imageUrl: '/images/products/retinol-cream.jpg',
-  },
-  {
-    id: '4',
-    name: '나이아신아마이드 세럼',
-    brand: '브랜드D',
-    rating: 4.9,
-    reviews: 2341,
-    matchRate: 97,
-    price: 28000,
-    imageUrl: '/images/products/niacinamide-serum.jpg',
-  },
-  {
-    id: '5',
-    name: '시카 진정 크림',
-    brand: '브랜드E',
-    rating: 4.5,
-    reviews: 743,
-    matchRate: 94,
-    price: 35000,
-    imageUrl: '/images/products/cica-cream.jpg',
-  },
-  {
-    id: '6',
-    name: 'AHA/BHA 토너',
-    brand: '브랜드F',
-    rating: 4.4,
-    reviews: 421,
-    matchRate: 89,
-    price: 22000,
-    imageUrl: '/images/products/aha-bha-toner.jpg',
-  },
-];
+// 제품 타입 정의
+interface BeautyProduct {
+  id: string;
+  name: string;
+  brand: string;
+  rating: number;
+  reviews: number;
+  matchRate: number;
+  price: number;
+  imageUrl: string;
+  category?: string;
+}
+
+// 이미지 placeholder 생성
+function getProductImageUrl(imageUrl: string | null | undefined, brand: string): string {
+  if (imageUrl) return imageUrl;
+  // 브랜드 첫글자 해시 기반 파스텔 컬러 (텍스트 없이)
+  const colors = ['fce7f3', 'dbeafe', 'd1fae5', 'fef3c7', 'ede9fe', 'ffedd5'];
+  const colorIndex = brand.charCodeAt(0) % colors.length;
+  return `https://placehold.co/400x400/${colors[colorIndex]}/${colors[colorIndex]}`;
+}
 
 export default function BeautyPage() {
   const router = useRouter();
@@ -509,6 +467,10 @@ export default function BeautyPage() {
   const [favoriteIngredients, setFavoriteIngredients] = useState<FavoriteItem[]>([]);
   const [avoidIngredients, setAvoidIngredients] = useState<FavoriteItem[]>([]);
   const [selectedAgeGroups, setSelectedAgeGroups] = useState<AgeGroup[]>([]);
+
+  // 제품 데이터 상태
+  const [products, setProducts] = useState<BeautyProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [morningRoutine] = useState<RoutineItem[]>([
     {
       order: 1,
@@ -656,6 +618,134 @@ export default function BeautyPage() {
 
     fetchAnalysis();
   }, [isLoaded, user?.id, supabase]);
+
+  // 제품 데이터 조회
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setProductsLoading(true);
+      try {
+        // 카테고리 매핑 (mainCategory → DB category)
+        const categoryMap: Record<MainCategory, string | null> = {
+          all: null,
+          cleansing: 'cleanser',
+          skincare: 'toner', // 스킨케어는 기본적으로 토너부터
+          suncare: 'sunscreen',
+          mask: 'mask',
+        };
+
+        let query = supabase
+          .from('cosmetic_products')
+          .select(
+            'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns'
+          )
+          .eq('is_active', true)
+          .limit(20);
+
+        // 카테고리 필터
+        if (mainCategory !== 'all') {
+          if (subCategory) {
+            query = query.eq('subcategory', subCategory);
+          } else {
+            const dbCategory = categoryMap[mainCategory];
+            if (dbCategory) {
+              query = query.eq('category', dbCategory);
+            }
+          }
+        }
+
+        // 피부타입 필터 (선택된 것 중 하나라도 포함)
+        if (selectedSkinTypes.length > 0) {
+          query = query.overlaps('skin_types', selectedSkinTypes);
+        }
+
+        // 피부고민 필터
+        if (selectedConcerns.length > 0) {
+          query = query.overlaps('concerns', selectedConcerns);
+        }
+
+        // 정렬
+        switch (sortBy) {
+          case 'rating':
+            query = query.order('rating', { ascending: false });
+            break;
+          case 'review':
+            query = query.order('review_count', { ascending: false });
+            break;
+          case 'price_low':
+            query = query.order('price_krw', { ascending: true });
+            break;
+          case 'price_high':
+            query = query.order('price_krw', { ascending: false });
+            break;
+          default:
+            query = query.order('rating', { ascending: false });
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error('[Beauty] 제품 조회 실패:', error);
+          return;
+        }
+
+        // 매칭률 계산 (피부타입/고민 기반)
+        const mappedProducts: BeautyProduct[] = (data || []).map((row) => {
+          const skinTypes = row.skin_types as string[] | null;
+          const concerns = row.concerns as string[] | null;
+
+          // 피부타입 매칭 점수
+          const skinTypeMatch = skinTypes
+            ? selectedSkinTypes.filter((t) => skinTypes.includes(t)).length /
+              selectedSkinTypes.length
+            : 0.5;
+
+          // 피부고민 매칭 점수
+          const concernMatch = concerns
+            ? selectedConcerns.filter((c) => concerns.includes(c)).length /
+              Math.max(selectedConcerns.length, 1)
+            : 0.5;
+
+          // 종합 매칭률 (70-100%)
+          const matchRate = Math.round(70 + skinTypeMatch * 15 + concernMatch * 15);
+
+          return {
+            id: row.id,
+            name: row.name,
+            brand: row.brand,
+            category: row.category,
+            rating: row.rating ?? 4.0,
+            reviews: row.review_count ?? 0,
+            matchRate,
+            price: row.price_krw ?? 0,
+            imageUrl: getProductImageUrl(row.image_url, row.brand),
+          };
+        });
+
+        // 매칭 필터 적용 (90% 이상만)
+        const filteredProducts =
+          matchFilterOn && hasAnalysis
+            ? mappedProducts.filter((p) => p.matchRate >= 90)
+            : mappedProducts;
+
+        setProducts(filteredProducts);
+      } catch (err) {
+        console.error('[Beauty] 제품 조회 오류:', err);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [
+    supabase,
+    mainCategory,
+    subCategory,
+    selectedSkinTypes,
+    selectedConcerns,
+    sortBy,
+    matchFilterOn,
+    hasAnalysis,
+  ]);
 
   // 대분류 변경 시 세부 카테고리 초기화
   const handleMainCategoryChange = (cat: MainCategory) => {
@@ -1127,74 +1217,85 @@ export default function BeautyPage() {
                 <Flame className="w-5 h-5 text-orange-500" aria-hidden="true" />
                 {hasAnalysis ? '내 피부 맞춤' : '인기 제품'}
               </h2>
-              <span className="text-sm text-muted-foreground">{mockProducts.length}개 제품</span>
+              <span className="text-sm text-muted-foreground">
+                {productsLoading ? '로딩...' : `${products.length}개 제품`}
+              </span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {mockProducts.map((product) => (
-                <button
-                  key={product.id}
-                  onClick={() => router.push(`/beauty/${product.id}`)}
-                  className="bg-card rounded-2xl border p-3 text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
-                >
-                  {/* 매칭률 배지 */}
-                  {hasAnalysis && (
-                    <div
-                      className={cn(
-                        'absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-bold',
-                        product.matchRate >= 95
-                          ? 'bg-green-500 text-white'
-                          : product.matchRate >= 90
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
+            {productsLoading ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="bg-card rounded-2xl border p-3 animate-pulse">
+                    <div className="w-full aspect-square bg-muted rounded-xl mb-3" />
+                    <div className="h-3 bg-muted rounded w-1/3 mb-2" />
+                    <div className="h-4 bg-muted rounded w-full mb-2" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>조건에 맞는 제품이 없습니다.</p>
+                <p className="text-sm mt-1">필터를 조정해 보세요.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {products.map((product) => (
+                  <button
+                    key={product.id}
+                    onClick={() => router.push(`/beauty/${product.id}`)}
+                    className="bg-card rounded-2xl border p-3 text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
+                  >
+                    {/* 제품 이미지 */}
+                    <div className="w-full aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-xl mb-3 relative overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      {hasAnalysis && (
+                        <div
+                          className={cn(
+                            'absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-bold z-10',
+                            product.matchRate >= 95
+                              ? 'bg-green-500 text-white'
+                              : product.matchRate >= 90
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted text-muted-foreground'
+                          )}
+                        >
+                          {product.matchRate}%
+                        </div>
                       )}
-                    >
-                      {product.matchRate}%
                     </div>
-                  )}
 
-                  {/* 제품 이미지 */}
-                  <div className="w-full aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-xl mb-3 relative overflow-hidden">
-                    {hasAnalysis && (
-                      <div
-                        className={cn(
-                          'absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-bold z-10',
-                          product.matchRate >= 95
-                            ? 'bg-green-500 text-white'
-                            : product.matchRate >= 90
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-muted-foreground'
-                        )}
-                      >
-                        {product.matchRate}%
-                      </div>
-                    )}
-                  </div>
+                    {/* 브랜드 */}
+                    <p className="text-xs text-muted-foreground">{product.brand}</p>
 
-                  {/* 브랜드 */}
-                  <p className="text-xs text-muted-foreground">{product.brand}</p>
+                    {/* 제품명 */}
+                    <p className="text-sm font-medium line-clamp-2 mt-0.5 group-hover:text-primary transition-colors">
+                      {product.name}
+                    </p>
 
-                  {/* 제품명 */}
-                  <p className="text-sm font-medium line-clamp-2 mt-0.5 group-hover:text-primary transition-colors">
-                    {product.name}
-                  </p>
+                    {/* 평점 및 리뷰 */}
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <Star
+                        className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400"
+                        aria-hidden="true"
+                      />
+                      <span className="text-xs font-medium">{product.rating}</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({product.reviews.toLocaleString()})
+                      </span>
+                    </div>
 
-                  {/* 평점 및 리뷰 */}
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <Star
-                      className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400"
-                      aria-hidden="true"
-                    />
-                    <span className="text-xs font-medium">{product.rating}</span>
-                    <span className="text-xs text-muted-foreground">
-                      ({product.reviews.toLocaleString()})
-                    </span>
-                  </div>
-
-                  {/* 가격 */}
-                  <p className="text-sm font-bold mt-2">{formatPrice(product.price)}원</p>
-                </button>
-              ))}
-            </div>
+                    {/* 가격 */}
+                    <p className="text-sm font-bold mt-2">{formatPrice(product.price)}원</p>
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
         </FadeInUp>
 
