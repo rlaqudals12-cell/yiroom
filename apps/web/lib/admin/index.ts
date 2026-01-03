@@ -46,3 +46,15 @@ export {
   type StatsPeriod,
   type DashboardStats as AffiliateDashboardStats,
 } from './affiliate-stats';
+
+// 사용자 활동 통계 (DAU/WAU/MAU)
+export {
+  getActiveUserStats,
+  getFeatureUsageStats,
+  getDailyActiveUserTrend,
+  getDailyFeatureUsageTrend,
+  type ActiveUserStats,
+  type FeatureUsageStats,
+  type DailyActiveUserTrend,
+  type DailyFeatureUsageTrend,
+} from './user-activity-stats';
