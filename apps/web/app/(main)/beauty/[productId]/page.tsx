@@ -21,6 +21,7 @@ import {
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
 import type { CosmeticProduct, SkinType } from '@/types/product';
+import { IngredientAnalysisSection } from '@/components/products/ingredients';
 
 /**
  * 뷰티 제품 상세 페이지 - UX 리스트럭처링
@@ -43,29 +44,6 @@ const defaultProduct = {
   qnaCount: 0,
   images: [] as string[],
   description: '',
-};
-
-// 성분 효능 맵핑
-const ingredientEffects: Record<string, string> = {
-  나이아신아마이드: '미백, 피지 조절',
-  히알루론산: '수분 공급',
-  아데노신: '주름 개선',
-  비타민C: '항산화, 미백',
-  세라마이드: '피부 장벽 강화',
-  레티놀: '주름 개선, 재생',
-  펩타이드: '탄력 강화',
-  알로에: '진정, 보습',
-  녹차: '항산화',
-  프로폴리스: '진정, 항균',
-};
-
-// 주의 성분 경고 맵핑
-const cautionWarnings: Record<string, string> = {
-  향료: '민감성 피부 주의',
-  알코올: '건성 피부 주의',
-  파라벤: '민감성 피부 주의',
-  인공색소: '알레르기 주의',
-  SLS: '자극 가능성',
 };
 
 // 리뷰 데이터
@@ -103,10 +81,6 @@ const purchaseLinks = [
   { store: '네이버', price: 30500, url: 'https://shopping.naver.com' },
 ];
 
-// AI 성분 요약
-const aiSummary =
-  '비타민C와 나이아신아마이드가 함께 들어있어 미백과 보습에 효과적이에요. 히알루론산이 수분을 잡아주고, 아데노신이 피부 탄력을 개선해줍니다. 민감한 피부도 사용 가능하지만, 향료가 포함되어 있어 알레르기가 있다면 주의하세요.';
-
 export default function BeautyProductDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -115,7 +89,6 @@ export default function BeautyProductDetailPage() {
   const productId = params.productId as string;
 
   const [isLiked, setIsLiked] = useState(false);
-  const [showAllIngredients, setShowAllIngredients] = useState(false);
   const [filterBySkinType, setFilterBySkinType] = useState(true);
   const [userSkinType, setUserSkinType] = useState('복합성');
   const [userSkinTypeRaw, setUserSkinTypeRaw] = useState<SkinType | null>(null);
@@ -246,21 +219,6 @@ export default function BeautyProductDetailPage() {
       images: product.imageUrl ? [product.imageUrl] : [],
       description: '',
     };
-  }, [product]);
-
-  // 성분 데이터 (제품의 실제 데이터 사용)
-  const ingredients = useMemo(() => {
-    const good = (product?.keyIngredients ?? []).map((name) => ({
-      name,
-      effect: ingredientEffects[name] || '피부 개선',
-    }));
-
-    const caution = (product?.avoidIngredients ?? []).map((name) => ({
-      name,
-      warning: cautionWarnings[name] || '주의 필요',
-    }));
-
-    return { good, caution };
   }, [product]);
 
   const filteredReviews = filterBySkinType
@@ -402,75 +360,13 @@ export default function BeautyProductDetailPage() {
           </section>
         </FadeInUp>
 
-        {/* 성분 분석 */}
+        {/* 성분 분석 - 화해 스타일 (AI 요약 포함) */}
         <FadeInUp delay={3}>
-          <section className="bg-card rounded-2xl border p-4">
-            <h3 className="font-semibold text-foreground mb-4">성분 분석</h3>
-
-            {/* 좋은 성분 */}
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                  <Check className="w-4 h-4 text-green-600" />
-                </div>
-                <span className="font-medium text-green-700">
-                  좋은 성분 ({ingredients.good.length})
-                </span>
-              </div>
-              <div className="space-y-2 pl-8">
-                {ingredients.good.slice(0, showAllIngredients ? undefined : 3).map((ing, index) => (
-                  <div key={index} className="text-sm">
-                    <span className="font-medium text-foreground">{ing.name}</span>
-                    <span className="text-muted-foreground"> - {ing.effect}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 주의 성분 */}
-            {ingredients.caution.length > 0 && (
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
-                    <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  </div>
-                  <span className="font-medium text-amber-700">
-                    주의 성분 ({ingredients.caution.length})
-                  </span>
-                </div>
-                <div className="space-y-2 pl-8">
-                  {ingredients.caution.map((ing, index) => (
-                    <div key={index} className="text-sm">
-                      <span className="font-medium text-foreground">{ing.name}</span>
-                      <span className="text-amber-600"> - {ing.warning}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={() => setShowAllIngredients(!showAllIngredients)}
-              className="w-full text-center text-sm text-primary hover:underline"
-            >
-              {showAllIngredients ? '간략히 보기' : '전체 성분 보기'}
-            </button>
-          </section>
-        </FadeInUp>
-
-        {/* AI 성분 요약 */}
-        <FadeInUp delay={4}>
-          <section className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl border border-violet-200 p-4">
-            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-              <Sparkles className="w-5 h-5 text-violet-600" />
-              AI 성분 요약
-            </h3>
-            <p className="text-sm text-foreground leading-relaxed">{aiSummary}</p>
-          </section>
+          <IngredientAnalysisSection productId={productId} />
         </FadeInUp>
 
         {/* 리뷰 */}
-        <FadeInUp delay={5}>
+        <FadeInUp delay={4}>
           <section className="bg-card rounded-2xl border p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-foreground">리뷰</h3>
