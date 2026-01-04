@@ -411,23 +411,24 @@ const EWG_COLORS = {
 ### 2.4 제품 상세 페이지 통합
 
 ```typescript
-// app/(main)/beauty/[id]/page.tsx 수정
+// app/(main)/beauty/[productId]/page.tsx
 
 import { IngredientAnalysisSection } from '@/components/products/ingredients';
 
-// 기존 구조에 성분 분석 섹션 추가
-<Tabs defaultValue="info">
-  <TabsList>
-    <TabsTrigger value="info">상품정보</TabsTrigger>
-    <TabsTrigger value="ingredients">성분분석</TabsTrigger>  {/* NEW */}
-    <TabsTrigger value="reviews">리뷰</TabsTrigger>
-  </TabsList>
-
-  <TabsContent value="ingredients">
-    <IngredientAnalysisSection productId={product.id} />
-  </TabsContent>
-</Tabs>
+// 성분 분석 섹션을 독립 섹션으로 배치 (화해 스타일)
+// - 스크롤 시 자연스럽게 보이도록 페이지 하단부에 배치
+// - FadeInUp 애니메이션으로 순차적 노출
+<FadeInUp delay={3}>
+  <IngredientAnalysisSection productId={productId} />
+</FadeInUp>
 ```
+
+> **구현 노트**: 초기 SDD에서는 Tabs UI를 제안했으나, 실제 구현에서는 스크롤 기반
+> 독립 섹션 방식을 채택함. 이유:
+>
+> - 화해/올리브영 등 경쟁사 UX 패턴 분석 결과 반영
+> - 모바일 환경에서 탭 전환보다 스크롤이 더 자연스러움
+> - 성분 분석 정보를 항상 노출하여 사용자 인식률 향상
 
 ---
 

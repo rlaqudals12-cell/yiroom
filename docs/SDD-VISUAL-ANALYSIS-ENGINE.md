@@ -1,8 +1,16 @@
 # SDD: 통합 시각 분석 엔진 (S-1+ / PC-1+)
 
-**버전**: 1.0
+**버전**: 1.1
 **작성일**: 2026-01-04
-**상태**: 📋 스펙 작성 완료
+**최종 검증**: 2026-01-05
+**상태**: 🔄 부분 구현 (70%)
+
+> **구현 현황 요약**:
+>
+> - ✅ lib/analysis: 7/9 모듈 구현 (device-capability, face-landmark, skin-heatmap, drape-reflectance, synergy-insight, memory-manager, mediapipe-loader)
+> - ✅ components/analysis/visual: 7/8 컴포넌트 구현
+> - ✅ DB 스키마: analysis_visual_data 테이블 완전 구현
+> - ⏳ 미구현: drape-palette.ts, uniformity-measure.ts, HistoryCompare.tsx
 
 ---
 

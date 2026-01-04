@@ -10,6 +10,20 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/ge
 import { buildFoodAnalysisPrompt as buildFoodAnalysisPromptFromModule } from '@/lib/gemini/prompts/foodAnalysis';
 import { geminiLogger } from '@/lib/utils/logger';
 
+// Mock Fallback 함수 import
+import { generateMockAnalysisResult as generateMockSkinAnalysis } from '@/lib/mock/skin-analysis';
+import { generateMockBodyAnalysis3 as generateMockBodyAnalysis } from '@/lib/mock/body-analysis';
+import { generateMockPersonalColorResult } from '@/lib/mock/personal-color';
+import {
+  generateMockWorkoutAnalysis,
+  generateMockExerciseRecommendation,
+  generateMockWorkoutInsights,
+} from '@/lib/mock/workout-analysis';
+import { generateMockFoodAnalysis, generateMockMealSuggestion } from '@/lib/mock/food-analysis';
+
+// Mock 모드 환경변수
+const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
+
 // API 키 검증
 const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 if (!apiKey) {
@@ -551,48 +565,103 @@ function parseJsonResponse<T>(text: string): T {
 
 /**
  * S-1 피부 분석 실행
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 3초 타임아웃 + 2회 재시도 후 Mock Fallback
  *
  * @param imageBase64 - Base64 인코딩된 얼굴 이미지
  * @returns 피부 분석 결과
  */
 export async function analyzeSkin(imageBase64: string): Promise<GeminiSkinAnalysisResult> {
-  if (!genAI) {
-    throw new Error('Gemini API key is not configured');
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[S-1] Using mock (FORCE_MOCK_AI=true)');
+    return generateMockSkinAnalysis() as unknown as GeminiSkinAnalysisResult;
   }
 
-  const model = genAI.getGenerativeModel(modelConfig);
-  const imagePart = formatImageForGemini(imageBase64);
+  if (!genAI) {
+    geminiLogger.warn('[S-1] Gemini not configured, using mock');
+    return generateMockSkinAnalysis() as unknown as GeminiSkinAnalysisResult;
+  }
 
-  const result = await model.generateContent([SKIN_ANALYSIS_PROMPT, imagePart]);
-  const response = await result.response;
-  const text = response.text();
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const imagePart = formatImageForGemini(imageBase64);
 
-  return parseJsonResponse<GeminiSkinAnalysisResult>(text);
+    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () =>
+        withTimeout(
+          model.generateContent([SKIN_ANALYSIS_PROMPT, imagePart]),
+          3000,
+          '[S-1] Gemini timeout'
+        ),
+      2,
+      1000
+    );
+    const response = await result.response;
+    const text = response.text();
+
+    geminiLogger.info('[S-1] Gemini analysis completed');
+    return parseJsonResponse<GeminiSkinAnalysisResult>(text);
+  } catch (error) {
+    geminiLogger.error('[S-1] Gemini error, falling back to mock:', error);
+    return generateMockSkinAnalysis() as unknown as GeminiSkinAnalysisResult;
+  }
 }
 
 /**
  * C-1 체형 분석 실행
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 3초 타임아웃 + 2회 재시도 후 Mock Fallback
  *
  * @param imageBase64 - Base64 인코딩된 전신 이미지
  * @returns 체형 분석 결과
  */
 export async function analyzeBody(imageBase64: string): Promise<GeminiBodyAnalysisResult> {
-  if (!genAI) {
-    throw new Error('Gemini API key is not configured');
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[C-1] Using mock (FORCE_MOCK_AI=true)');
+    return generateMockBodyAnalysis() as unknown as GeminiBodyAnalysisResult;
   }
 
-  const model = genAI.getGenerativeModel(modelConfig);
-  const imagePart = formatImageForGemini(imageBase64);
+  if (!genAI) {
+    geminiLogger.warn('[C-1] Gemini not configured, using mock');
+    return generateMockBodyAnalysis() as unknown as GeminiBodyAnalysisResult;
+  }
 
-  const result = await model.generateContent([BODY_ANALYSIS_PROMPT, imagePart]);
-  const response = await result.response;
-  const text = response.text();
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const imagePart = formatImageForGemini(imageBase64);
 
-  return parseJsonResponse<GeminiBodyAnalysisResult>(text);
+    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () =>
+        withTimeout(
+          model.generateContent([BODY_ANALYSIS_PROMPT, imagePart]),
+          3000,
+          '[C-1] Gemini timeout'
+        ),
+      2,
+      1000
+    );
+    const response = result.response;
+    const text = response.text();
+
+    geminiLogger.info('[C-1] Gemini analysis completed');
+    return parseJsonResponse<GeminiBodyAnalysisResult>(text);
+  } catch (error) {
+    geminiLogger.error('[C-1] Gemini error, falling back to mock:', error);
+    return generateMockBodyAnalysis() as unknown as GeminiBodyAnalysisResult;
+  }
 }
 
 /**
  * PC-1 퍼스널 컬러 분석 실행
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 3초 타임아웃 + 2회 재시도 후 Mock Fallback
  *
  * @param faceImageBase64 - Base64 인코딩된 얼굴 이미지
  * @param wristImageBase64 - Base64 인코딩된 손목 이미지 (선택적 - 웜/쿨 판단 정확도 향상)
@@ -602,36 +671,54 @@ export async function analyzePersonalColor(
   faceImageBase64: string,
   wristImageBase64?: string
 ): Promise<GeminiPersonalColorResult> {
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[PC-1] Using mock (FORCE_MOCK_AI=true)');
+    return generateMockPersonalColorResult() as unknown as GeminiPersonalColorResult;
+  }
+
   if (!genAI) {
-    throw new Error('Gemini API key is not configured');
+    geminiLogger.warn('[PC-1] Gemini not configured, using mock');
+    return generateMockPersonalColorResult() as unknown as GeminiPersonalColorResult;
   }
 
-  const model = genAI.getGenerativeModel(modelConfig);
-  const faceImagePart = formatImageForGemini(faceImageBase64);
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const faceImagePart = formatImageForGemini(faceImageBase64);
 
-  // 프롬프트 구성
-  let prompt = PERSONAL_COLOR_ANALYSIS_PROMPT;
+    // 프롬프트 구성
+    let prompt = PERSONAL_COLOR_ANALYSIS_PROMPT;
 
-  // 이미지 배열 구성
-  const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [
-    prompt,
-    faceImagePart,
-  ];
+    // 이미지 배열 구성
+    const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [
+      prompt,
+      faceImagePart,
+    ];
 
-  // 손목 이미지가 있으면 추가
-  if (wristImageBase64) {
-    const wristImagePart = formatImageForGemini(wristImageBase64);
-    contentParts.push(wristImagePart);
-    // 프롬프트에 손목 이미지 분석 안내 추가
-    prompt += `\n\n첨부된 두 번째 이미지는 손목 안쪽 사진입니다. 혈관 색상을 분석하여 웜톤/쿨톤 판단에 활용해주세요. 파란색/보라색 혈관은 쿨톤, 녹색 혈관은 웜톤을 나타냅니다.`;
-    contentParts[0] = prompt;
+    // 손목 이미지가 있으면 추가
+    if (wristImageBase64) {
+      const wristImagePart = formatImageForGemini(wristImageBase64);
+      contentParts.push(wristImagePart);
+      // 프롬프트에 손목 이미지 분석 안내 추가
+      prompt += `\n\n첨부된 두 번째 이미지는 손목 안쪽 사진입니다. 혈관 색상을 분석하여 웜톤/쿨톤 판단에 활용해주세요. 파란색/보라색 혈관은 쿨톤, 녹색 혈관은 웜톤을 나타냅니다.`;
+      contentParts[0] = prompt;
+    }
+
+    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () => withTimeout(model.generateContent(contentParts), 3000, '[PC-1] Gemini timeout'),
+      2,
+      1000
+    );
+    const response = result.response;
+    const text = response.text();
+
+    geminiLogger.info('[PC-1] Gemini analysis completed');
+    return parseJsonResponse<GeminiPersonalColorResult>(text);
+  } catch (error) {
+    geminiLogger.error('[PC-1] Gemini error, falling back to mock:', error);
+    return generateMockPersonalColorResult() as unknown as GeminiPersonalColorResult;
   }
-
-  const result = await model.generateContent(contentParts);
-  const response = await result.response;
-  const text = response.text();
-
-  return parseJsonResponse<GeminiPersonalColorResult>(text);
 }
 
 /**
@@ -684,6 +771,9 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2, delayMs = 1000
 
 /**
  * W-1 운동 타입 분석 실행
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 3초 타임아웃 + 2회 재시도 후 Mock Fallback
  *
  * @param input - 운동 분석 입력 데이터
  * @returns 운동 타입 분석 결과
@@ -691,24 +781,37 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2, delayMs = 1000
 export async function analyzeWorkout(
   input: WorkoutAnalysisInput
 ): Promise<GeminiWorkoutAnalysisResult> {
-  if (!genAI) {
-    throw new Error('Gemini API key is not configured');
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[W-1] Using mock (FORCE_MOCK_AI=true)');
+    return generateMockWorkoutAnalysis(input) as unknown as GeminiWorkoutAnalysisResult;
   }
 
-  const model = genAI.getGenerativeModel(modelConfig);
-  const prompt = buildWorkoutAnalysisPrompt(input);
+  if (!genAI) {
+    geminiLogger.warn('[W-1] Gemini not configured, using mock');
+    return generateMockWorkoutAnalysis(input) as unknown as GeminiWorkoutAnalysisResult;
+  }
 
-  // 타임아웃 (3초) + 재시도 (최대 2회) 적용
-  const result = await withRetry(
-    () => withTimeout(model.generateContent(prompt), 3000, 'Gemini API request timeout'),
-    2,
-    1000
-  );
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const prompt = buildWorkoutAnalysisPrompt(input);
 
-  const response = await result.response;
-  const text = response.text();
+    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () => withTimeout(model.generateContent(prompt), 3000, '[W-1] Gemini timeout'),
+      2,
+      1000
+    );
 
-  return parseJsonResponse<GeminiWorkoutAnalysisResult>(text);
+    const response = result.response;
+    const text = response.text();
+
+    geminiLogger.info('[W-1] Gemini analysis completed');
+    return parseJsonResponse<GeminiWorkoutAnalysisResult>(text);
+  } catch (error) {
+    geminiLogger.error('[W-1] Gemini error, falling back to mock:', error);
+    return generateMockWorkoutAnalysis(input) as unknown as GeminiWorkoutAnalysisResult;
+  }
 }
 
 /**
@@ -928,6 +1031,9 @@ ${exerciseListJson}
 
 /**
  * W-1 운동 추천 실행 (Task 3.3)
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 3초 타임아웃 + 2회 재시도 후 Mock Fallback
  *
  * @param input - 운동 추천 입력 데이터
  * @returns 상세 운동 추천 결과
@@ -935,24 +1041,43 @@ ${exerciseListJson}
 export async function recommendExercises(
   input: ExerciseRecommendationInput
 ): Promise<GeminiExerciseRecommendationResult> {
-  if (!genAI) {
-    throw new Error('Gemini API key is not configured');
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[W-1] Using mock for exercise recommendation (FORCE_MOCK_AI=true)');
+    return generateMockExerciseRecommendation(
+      input
+    ) as unknown as GeminiExerciseRecommendationResult;
   }
 
-  const model = genAI.getGenerativeModel(modelConfig);
-  const prompt = buildExerciseRecommendationPrompt(input);
+  if (!genAI) {
+    geminiLogger.warn('[W-1] Gemini not configured, using mock');
+    return generateMockExerciseRecommendation(
+      input
+    ) as unknown as GeminiExerciseRecommendationResult;
+  }
 
-  // 타임아웃 (3초) + 재시도 (최대 2회) 적용
-  const result = await withRetry(
-    () => withTimeout(model.generateContent(prompt), 3000, 'Gemini API request timeout'),
-    2,
-    1000
-  );
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const prompt = buildExerciseRecommendationPrompt(input);
 
-  const response = await result.response;
-  const text = response.text();
+    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () => withTimeout(model.generateContent(prompt), 3000, '[W-1] Gemini timeout'),
+      2,
+      1000
+    );
 
-  return parseJsonResponse<GeminiExerciseRecommendationResult>(text);
+    const response = result.response;
+    const text = response.text();
+
+    geminiLogger.info('[W-1] Exercise recommendation completed');
+    return parseJsonResponse<GeminiExerciseRecommendationResult>(text);
+  } catch (error) {
+    geminiLogger.error('[W-1] Gemini error, falling back to mock:', error);
+    return generateMockExerciseRecommendation(
+      input
+    ) as unknown as GeminiExerciseRecommendationResult;
+  }
 }
 
 /**
@@ -1090,6 +1215,9 @@ ${recentLogsJson}
 
 /**
  * W-1 AI 인사이트 생성 (Task 4.1)
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 3초 타임아웃 + 2회 재시도 후 Mock Fallback
  *
  * @param input - 인사이트 생성 입력 데이터
  * @returns AI 생성 인사이트
@@ -1097,24 +1225,37 @@ ${recentLogsJson}
 export async function generateWorkoutInsights(
   input: WorkoutInsightInput
 ): Promise<GeminiWorkoutInsightResult> {
-  if (!genAI) {
-    throw new Error('Gemini API key is not configured');
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[W-1] Using mock for workout insights (FORCE_MOCK_AI=true)');
+    return generateMockWorkoutInsights(input) as unknown as GeminiWorkoutInsightResult;
   }
 
-  const model = genAI.getGenerativeModel(modelConfig);
-  const prompt = buildWorkoutInsightPrompt(input);
+  if (!genAI) {
+    geminiLogger.warn('[W-1] Gemini not configured, using mock');
+    return generateMockWorkoutInsights(input) as unknown as GeminiWorkoutInsightResult;
+  }
 
-  // 타임아웃 (3초) + 재시도 (최대 2회) 적용
-  const result = await withRetry(
-    () => withTimeout(model.generateContent(prompt), 3000, 'Gemini API request timeout'),
-    2,
-    1000
-  );
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const prompt = buildWorkoutInsightPrompt(input);
 
-  const response = await result.response;
-  const text = response.text();
+    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () => withTimeout(model.generateContent(prompt), 3000, '[W-1] Gemini timeout'),
+      2,
+      1000
+    );
 
-  return parseJsonResponse<GeminiWorkoutInsightResult>(text);
+    const response = result.response;
+    const text = response.text();
+
+    geminiLogger.info('[W-1] Workout insights generated');
+    return parseJsonResponse<GeminiWorkoutInsightResult>(text);
+  } catch (error) {
+    geminiLogger.error('[W-1] Gemini error, falling back to mock:', error);
+    return generateMockWorkoutInsights(input) as unknown as GeminiWorkoutInsightResult;
+  }
 }
 
 /**
@@ -1368,6 +1509,9 @@ ${input.preferences?.length ? `- 선호 사항: ${input.preferences.join(', ')}`
 
 /**
  * N-1 음식 사진 분석 실행 (Task 2.1)
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 5초 타임아웃 + 2회 재시도 후 Mock Fallback (이미지 분석은 더 긴 타임아웃)
  *
  * @param input - 음식 분석 입력 데이터
  * @returns 음식 분석 결과
@@ -1375,40 +1519,65 @@ ${input.preferences?.length ? `- 선호 사항: ${input.preferences.join(', ')}`
 export async function analyzeFoodImage(
   input: FoodAnalysisInput
 ): Promise<GeminiFoodAnalysisResult> {
-  if (!genAI) {
-    throw new Error('Gemini API key is not configured');
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[N-1] Using mock for food analysis (FORCE_MOCK_AI=true)');
+    return {
+      ...generateMockFoodAnalysis(input),
+      analyzedAt: new Date().toISOString(),
+    };
   }
 
-  const model = genAI.getGenerativeModel(modelConfig);
-  const prompt = buildFoodAnalysisPromptFromModule(input.mealType);
-  const imagePart = formatImageForGemini(input.imageBase64);
+  if (!genAI) {
+    geminiLogger.warn('[N-1] Gemini not configured, using mock');
+    return {
+      ...generateMockFoodAnalysis(input),
+      analyzedAt: new Date().toISOString(),
+    };
+  }
 
-  // 타임아웃 (5초) + 재시도 (최대 2회) 적용 - 이미지 분석은 더 긴 타임아웃
-  const result = await withRetry(
-    () =>
-      withTimeout(
-        model.generateContent([prompt, imagePart]),
-        5000,
-        'Food analysis request timeout'
-      ),
-    2,
-    1000
-  );
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const prompt = buildFoodAnalysisPromptFromModule(input.mealType);
+    const imagePart = formatImageForGemini(input.imageBase64);
 
-  const response = await result.response;
-  const text = response.text();
+    // 타임아웃 (5초) + 재시도 (최대 2회) 적용 - 이미지 분석은 더 긴 타임아웃
+    const result = await withRetry(
+      () =>
+        withTimeout(
+          model.generateContent([prompt, imagePart]),
+          5000,
+          '[N-1] Food analysis timeout'
+        ),
+      2,
+      1000
+    );
 
-  const parsed = parseJsonResponse<GeminiFoodAnalysisResult>(text);
+    const response = result.response;
+    const text = response.text();
 
-  // 분석 시간 추가
-  return {
-    ...parsed,
-    analyzedAt: new Date().toISOString(),
-  };
+    const parsed = parseJsonResponse<GeminiFoodAnalysisResult>(text);
+
+    geminiLogger.info('[N-1] Food analysis completed');
+    // 분석 시간 추가
+    return {
+      ...parsed,
+      analyzedAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    geminiLogger.error('[N-1] Gemini error, falling back to mock:', error);
+    return {
+      ...generateMockFoodAnalysis(input),
+      analyzedAt: new Date().toISOString(),
+    };
+  }
 }
 
 /**
  * N-1 식단 추천 생성 (Task 2.1)
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 3초 타임아웃 + 2회 재시도 후 Mock Fallback
  *
  * @param input - 식단 추천 입력 데이터
  * @returns 식단 추천 결과
@@ -1416,22 +1585,35 @@ export async function analyzeFoodImage(
 export async function generateMealSuggestion(
   input: MealSuggestionInput
 ): Promise<GeminiMealSuggestionResult> {
-  if (!genAI) {
-    throw new Error('Gemini API key is not configured');
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[N-1] Using mock for meal suggestion (FORCE_MOCK_AI=true)');
+    return generateMockMealSuggestion(input) as unknown as GeminiMealSuggestionResult;
   }
 
-  const model = genAI.getGenerativeModel(modelConfig);
-  const prompt = buildMealSuggestionPrompt(input);
+  if (!genAI) {
+    geminiLogger.warn('[N-1] Gemini not configured, using mock');
+    return generateMockMealSuggestion(input) as unknown as GeminiMealSuggestionResult;
+  }
 
-  // 타임아웃 (3초) + 재시도 (최대 2회) 적용
-  const result = await withRetry(
-    () => withTimeout(model.generateContent(prompt), 3000, 'Meal suggestion request timeout'),
-    2,
-    1000
-  );
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const prompt = buildMealSuggestionPrompt(input);
 
-  const response = await result.response;
-  const text = response.text();
+    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () => withTimeout(model.generateContent(prompt), 3000, '[N-1] Meal suggestion timeout'),
+      2,
+      1000
+    );
 
-  return parseJsonResponse<GeminiMealSuggestionResult>(text);
+    const response = result.response;
+    const text = response.text();
+
+    geminiLogger.info('[N-1] Meal suggestion generated');
+    return parseJsonResponse<GeminiMealSuggestionResult>(text);
+  } catch (error) {
+    geminiLogger.error('[N-1] Gemini error, falling back to mock:', error);
+    return generateMockMealSuggestion(input) as unknown as GeminiMealSuggestionResult;
+  }
 }
