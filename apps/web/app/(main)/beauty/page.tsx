@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   FlaskConical,
@@ -32,6 +32,8 @@ import { IngredientFavoriteFilter } from '@/components/beauty/IngredientFavorite
 import { AgeGroupFilter } from '@/components/beauty/AgeGroupFilter';
 import { SkinAgeCalculator } from '@/components/beauty/SkinAgeCalculator';
 import { SkincareRoutineCard } from '@/components/beauty/SkincareRoutineCard';
+import { TimeDealSection } from '@/components/beauty/TimeDealSection';
+import { BeautyFeed } from '@/components/beauty/BeautyFeed';
 import type { FavoriteItem, AgeGroup, RoutineItem } from '@/types/hybrid';
 
 /**
@@ -433,7 +435,6 @@ interface BeautyProduct {
   imageUrl: string;
   category?: string;
   keyIngredients?: string[];
-  avoidIngredients?: string[];
 }
 
 // 이미지 placeholder 생성
@@ -468,9 +469,12 @@ export default function BeautyPage() {
   const [showSortSheet, setShowSortSheet] = useState(false);
   const [matchFilterOn, setMatchFilterOn] = useState(true);
 
-  // 훅에서 받은 값을 SkinType으로 변환
+  // 훅에서 받은 값을 SkinType으로 변환 (useMemo로 안정화)
   const userSkinType: SkinType = (userSkinTypeFromHook as SkinType) || 'combination';
-  const userSkinConcerns: SkinConcern[] = (userSkinConcernsFromHook as SkinConcern[]) || [];
+  const userSkinConcerns: SkinConcern[] = useMemo(
+    () => (userSkinConcernsFromHook as SkinConcern[]) || [],
+    [userSkinConcernsFromHook]
+  );
 
   // 하이브리드 UX 상태
   const [favoriteIngredients, setFavoriteIngredients] = useState<FavoriteItem[]>([]);
@@ -584,7 +588,7 @@ export default function BeautyPage() {
         let query = supabase
           .from('cosmetic_products')
           .select(
-            'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns, personal_color_seasons, key_ingredients, avoid_ingredients, target_age_groups'
+            'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns, personal_color_seasons, key_ingredients, target_age_groups'
           )
           .eq('is_active', true)
           .limit(20);
@@ -603,19 +607,22 @@ export default function BeautyPage() {
 
         // 피부타입 필터 (선택된 것 중 하나라도 포함)
         if (selectedSkinTypes.length > 0) {
-          query = query.overlaps('skin_types', selectedSkinTypes);
+          // PostgREST 'ov' (overlap) 연산자 사용
+          query = query.filter('skin_types', 'ov', `{${selectedSkinTypes.join(',')}}`);
         }
 
         // 피부고민 필터
         if (selectedConcerns.length > 0) {
-          query = query.overlaps('concerns', selectedConcerns);
+          // PostgREST 'ov' (overlap) 연산자 사용
+          query = query.filter('concerns', 'ov', `{${selectedConcerns.join(',')}}`);
         }
 
         // 연령대 필터 (선택된 연령대 중 하나라도 포함)
         if (selectedAgeGroups.length > 0) {
           // AgeGroup '50plus' → '50s' 변환
           const dbAgeGroups = selectedAgeGroups.map((age) => (age === '50plus' ? '50s' : age));
-          query = query.overlaps('target_age_groups', dbAgeGroups);
+          // PostgREST 'ov' (overlap) 연산자 사용
+          query = query.filter('target_age_groups', 'ov', `{${dbAgeGroups.join(',')}}`);
         }
 
         // 정렬
@@ -666,7 +673,6 @@ export default function BeautyPage() {
             price: row.price_krw ?? 0,
             imageUrl: getProductImageUrl(row.image_url, row.brand),
             keyIngredients: row.key_ingredients ?? [],
-            avoidIngredients: row.avoid_ingredients ?? [],
           };
         });
 
@@ -1183,6 +1189,11 @@ export default function BeautyPage() {
           </FadeInUp>
         )}
 
+        {/* 타임딜 섹션 (화해/올리브영 스타일) */}
+        <FadeInUp delay={7}>
+          <TimeDealSection />
+        </FadeInUp>
+
         {/* 제품 목록 */}
         <FadeInUp delay={7}>
           <section>
@@ -1271,6 +1282,11 @@ export default function BeautyPage() {
               </div>
             )}
           </section>
+        </FadeInUp>
+
+        {/* SNS형 뷰티 피드 (올리브영 셔터 스타일) */}
+        <FadeInUp delay={8}>
+          <BeautyFeed limit={2} />
         </FadeInUp>
 
         {/* 스킨케어 루틴 (하이브리드 UX) */}
