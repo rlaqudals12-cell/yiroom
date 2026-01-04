@@ -262,7 +262,9 @@
       "Bash(docs/TECH-STACK-VISUAL-ANALYSIS.md)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(analysis\\): Visual Analysis Engine 구현 \\(S-1+, PC-1+\\)\n\n- lib/analysis: 시각 분석 핵심 모듈 9개 추가\n  - device-capability: 기기 성능 감지 및 적응형 처리\n  - face-landmark: MediaPipe Face Mesh 468점 랜드마크\n  - skin-heatmap: 멜라닌/헤모글로빈 히트맵 렌더링\n  - drape-reflectance: 드레이프 색상 반사율 분석\n  - synergy-insight: S-1→PC-1 시너지 인사이트\n  - memory-manager: Canvas 메모리 최적화\n  - mediapipe-loader: CDN 로딩 + Fallback 전략\n\n- components/analysis/visual: UI 컴포넌트 8개\n  - VisualAnalysisTab: 피부 분석 상세 시각화 탭\n  - DrapingSimulationTab: 퍼스널컬러 드레이핑 시뮬레이션\n  - SkinHeatmapCanvas: 광원모드별 히트맵 렌더링\n  - DrapeSimulator: 실시간 드레이프 미리보기\n  - SynergyInsightCard: 피부-컬러 연계 인사이트\n\n- 결과 페이지 탭 UI 통합\n  - skin/result: 기본 분석 + 상세 시각화 탭\n  - personal-color/result: 기본 분석 + 드레이핑 탭\n\n- 테스트: 94개 단위 테스트 + 10개 E2E 테스트\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(ls -la \"c:\\\\dev\\\\yiroom\\\\apps\\\\web\\\\components\\\\products\\\\ingredients\"\" 2>/dev/null || dir /b \"c:devyiroomappswebcomponentsproductsingredients \")",
-      "Bash(dir /b \"c:\\\\dev\\\\yiroom\\\\apps\\\\web\\\\components\\\\products\\\\ingredients\")"
+      "Bash(dir /b \"c:\\\\dev\\\\yiroom\\\\apps\\\\web\\\\components\\\\products\\\\ingredients\")",
+      "Bash(settings \")",
+      "Bash(tee:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

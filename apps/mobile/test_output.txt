@@ -1,0 +1,476 @@
+
+> @yiroom/mobile@0.1.0 test
+> jest
+
+PASS __tests__/lib/performance.test.ts
+PASS __tests__/lib/coach.test.ts
+PASS __tests__/lib/inventory.test.ts
+PASS __tests__/lib/affiliate/clicks.test.ts
+  ● Console
+
+    console.error
+      [Affiliate] 클릭 기록 실패: { message: 'DB error' }
+
+    [0m [90m 403 |[39m     [36mreturn[39m[33m;[39m
+     [90m 404 |[39m   }
+    [31m[1m>[22m[39m[90m 405 |[39m   originalError([33m...[39margs)[33m;[39m
+     [90m     |[39m                [31m[1m^[22m[39m
+     [90m 406 |[39m }[33m;[39m
+     [90m 407 |[39m
+     [90m 408 |[39m [90m// =============================================================================[39m[0m
+
+      at console.apply (jest.setup.js:405:16)
+      at error (lib/affiliate/clicks.ts:30:15)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+    console.error
+      [Affiliate] 히스토리 조회 실패: { message: 'DB error' }
+
+    [0m [90m 403 |[39m     [36mreturn[39m[33m;[39m
+     [90m 404 |[39m   }
+    [31m[1m>[22m[39m[90m 405 |[39m   originalError([33m...[39margs)[33m;[39m
+     [90m     |[39m                [31m[1m^[22m[39m
+     [90m 406 |[39m }[33m;[39m
+     [90m 407 |[39m
+     [90m 408 |[39m [90m// =============================================================================[39m[0m
+
+      at console.apply (jest.setup.js:405:16)
+      at error (lib/affiliate/clicks.ts:57:15)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+PASS __tests__/lib/onboarding.test.ts
+PASS __tests__/lib/smart-matching.test.ts
+PASS __tests__/lib/a11y.test.ts
+PASS __tests__/lib/notifications.test.ts
+FAIL __tests__/lib/i18n.test.ts
+  ● i18n › getLocale › 기본 로케일을 반환해야 함
+
+    TypeError: (0 , _i18n.getLocale) is not a function
+
+    [0m [90m 17 |[39m   describe([32m'getLocale'[39m[33m,[39m () [33m=>[39m {
+     [90m 18 |[39m     it([32m'기본 로케일을 반환해야 함'[39m[33m,[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 19 |[39m       [36mconst[39m locale [33m=[39m getLocale()[33m;[39m
+     [90m    |[39m                               [31m[1m^[22m[39m
+     [90m 20 |[39m       expect([[32m'ko'[39m[33m,[39m [32m'en'[39m])[33m.[39mtoContain(locale)[33m;[39m
+     [90m 21 |[39m     })[33m;[39m
+     [90m 22 |[39m   })[33m;[39m[0m
+
+      at Object.<anonymous> (__tests__/lib/i18n.test.ts:19:31)
+
+  ● i18n › setLocale › 로케일을 변경하고 저장해야 함
+
+    TypeError: (0 , _i18n.setLocale) is not a function
+
+    [0m [90m 51 |[39m   describe([32m'setLocale'[39m[33m,[39m () [33m=>[39m {
+     [90m 52 |[39m     it([32m'로케일을 변경하고 저장해야 함'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 53 |[39m       [36mawait[39m setLocale([32m'en'[39m)[33m;[39m
+     [90m    |[39m                      [31m[1m^[22m[39m
+     [90m 54 |[39m
+     [90m 55 |[39m       expect([33mAsyncStorage[39m[33m.[39msetItem)[33m.[39mtoHaveBeenCalledWith(
+     [90m 56 |[39m         [32m'@yiroom/locale'[39m[33m,[39m[0m
+
+      at Object.<anonymous> (__tests__/lib/i18n.test.ts:53:22)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ● i18n › setLocale › 지원되는 로케일만 설정해야 함
+
+    TypeError: (0 , _i18n.setLocale) is not a function
+
+    [0m [90m 61 |[39m     it([32m'지원되는 로케일만 설정해야 함'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+     [90m 62 |[39m       [90m// ko와 en만 지원[39m
+    [31m[1m>[22m[39m[90m 63 |[39m       [36mawait[39m setLocale([32m'ko'[39m)[33m;[39m
+     [90m    |[39m                      [31m[1m^[22m[39m
+     [90m 64 |[39m       expect(getLocale())[33m.[39mtoBe([32m'ko'[39m)[33m;[39m
+     [90m 65 |[39m
+     [90m 66 |[39m       [36mawait[39m setLocale([32m'en'[39m)[33m;[39m[0m
+
+      at Object.<anonymous> (__tests__/lib/i18n.test.ts:63:22)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ● i18n › initI18n › 저장된 로케일을 로드해야 함
+
+    TypeError: (0 , _i18n.initI18n) is not a function
+
+    [0m [90m 73 |[39m       ([33mAsyncStorage[39m[33m.[39mgetItem [36mas[39m jest[33m.[39m[33mMock[39m)[33m.[39mmockResolvedValue([32m'en'[39m)[33m;[39m
+     [90m 74 |[39m
+    [31m[1m>[22m[39m[90m 75 |[39m       [36mconst[39m locale [33m=[39m [36mawait[39m initI18n()[33m;[39m
+     [90m    |[39m                                    [31m[1m^[22m[39m
+     [90m 76 |[39m       expect(locale)[33m.[39mtoBe([32m'en'[39m)[33m;[39m
+     [90m 77 |[39m     })[33m;[39m
+     [90m 78 |[39m[0m
+
+      at Object.<anonymous> (__tests__/lib/i18n.test.ts:75:36)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ● i18n › initI18n › 저장된 로케일이 없으면 디바이스 설정 사용
+
+    TypeError: (0 , _i18n.initI18n) is not a function
+
+    [0m [90m 80 |[39m       ([33mAsyncStorage[39m[33m.[39mgetItem [36mas[39m jest[33m.[39m[33mMock[39m)[33m.[39mmockResolvedValue([36mnull[39m)[33m;[39m
+     [90m 81 |[39m
+    [31m[1m>[22m[39m[90m 82 |[39m       [36mconst[39m locale [33m=[39m [36mawait[39m initI18n()[33m;[39m
+     [90m    |[39m                                    [31m[1m^[22m[39m
+     [90m 83 |[39m       expect([[32m'ko'[39m[33m,[39m [32m'en'[39m])[33m.[39mtoContain(locale)[33m;[39m
+     [90m 84 |[39m     })[33m;[39m
+     [90m 85 |[39m   })[33m;[39m[0m
+
+      at Object.<anonymous> (__tests__/lib/i18n.test.ts:82:36)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ● 번역 키 무결성 › "common.loading" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "common.loading"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "common.error" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "common.error"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "common.retry" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "common.retry"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "common.cancel" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "common.cancel"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "common.confirm" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "common.confirm"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "common.save" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "common.save"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "common.delete" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "common.delete"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "tabs.home" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "tabs.home"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "tabs.workout" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "tabs.workout"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "tabs.nutrition" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "tabs.nutrition"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "tabs.profile" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "tabs.profile"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "workout.title" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "workout.title"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "workout.session" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "workout.session"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "workout.complete" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "workout.complete"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "nutrition.title" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "nutrition.title"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "nutrition.record" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "nutrition.record"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "nutrition.water" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "nutrition.water"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "products.title" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "products.title"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "products.forYou" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "products.forYou"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+  ● 번역 키 무결성 › "settings.title" 키가 번역되어야 함
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "settings.title"
+
+    [0m [90m 114 |[39m       [36mconst[39m result [33m=[39m t(key)[33m;[39m
+     [90m 115 |[39m       [90m// 키 자체가 아닌 번역된 문자열이어야 함[39m
+    [31m[1m>[22m[39m[90m 116 |[39m       expect(result)[33m.[39mnot[33m.[39mtoBe(key)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 117 |[39m       expect(result[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m
+     [90m 118 |[39m     })[33m;[39m
+     [90m 119 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (__tests__/lib/i18n.test.ts:116:26)
+
+PASS __tests__/lib/feed/index.test.ts
+PASS __tests__/lib/deeplink.test.ts
+PASS __tests__/lib/affiliate/deeplink.test.ts
+PASS __tests__/lib/stores/workoutSessionStore.test.ts
+PASS __tests__/lib/stores/favoritesStore.test.ts
+PASS __tests__/lib/stores/productFilterStore.test.ts
+PASS __tests__/lib/monitoring.test.ts
+PASS __tests__/lib/challenges.test.ts
+PASS __tests__/lib/social.test.ts
+PASS __tests__/lib/offline.test.ts
+
+Test Suites: 1 failed, 18 passed, 19 total
+Tests:       25 failed, 347 passed, 372 total
+Snapshots:   0 total
+Time:        5.018 s
+Ran all test suites.
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\dev\yiroom\apps\mobile
+npm error workspace @yiroom/mobile@0.1.0
+npm error location C:\dev\yiroom\apps\mobile
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c jest

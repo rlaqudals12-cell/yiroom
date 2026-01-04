@@ -3,9 +3,12 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { t, getLocale, setLocale, initI18n } from '../../lib/i18n';
 
-// AsyncStorage 모킹은 jest.setup.js에서 처리됨
+// jest.setup.js의 모킹을 실제 구현으로 대체
+jest.mock('@/lib/i18n', () => jest.requireActual('@/lib/i18n'));
+
+// 실제 i18n 모듈 import
+import { t, getLocale, setLocale, initI18n } from '../../lib/i18n';
 
 describe('i18n', () => {
   beforeEach(() => {
@@ -35,16 +38,18 @@ describe('i18n', () => {
     });
 
     it('변수 보간을 처리해야 함', () => {
-      const result = t('common.greeting', { name: '홍길동' });
+      // home.greeting에 {{name}} 변수가 있음
+      const result = t('home.greeting', { params: { name: '홍길동' } });
       // 변수가 포함된 문자열이어야 함
       expect(typeof result).toBe('string');
+      expect(result).toContain('홍길동');
     });
 
-    it('복수형을 처리해야 함', () => {
-      const singular = t('common.items', { count: 1 });
-      const plural = t('common.items', { count: 5 });
-      expect(typeof singular).toBe('string');
-      expect(typeof plural).toBe('string');
+    it('변수가 있는 다른 키도 처리해야 함', () => {
+      // workout.caloriesBurned에 {{calories}} 변수가 있음
+      const result = t('workout.caloriesBurned', { params: { calories: 200 } });
+      expect(typeof result).toBe('string');
+      expect(result).toContain('200');
     });
   });
 

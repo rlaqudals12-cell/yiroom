@@ -21,6 +21,15 @@ export * from './skin-heatmap';
 // 드레이프 반사광
 export * from './drape-reflectance';
 
+// 광학적 드레이프 팔레트 (PC-1+)
+export * from './drape-palette';
+
+// 피부 균일도 측정 (S-1+)
+export * from './uniformity-measure';
+
+// After 시뮬레이션 (PC-1+ / S-1+)
+export * from './after-simulation';
+
 // 시너지 인사이트
 export * from './synergy-insight';
 
