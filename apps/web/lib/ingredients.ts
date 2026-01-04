@@ -11,10 +11,34 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { productLogger } from '@/lib/utils/logger';
 
+// =============================================================================
+// 상수 정의
+// =============================================================================
+
+/** API 타임아웃 (3초) */
+const TIMEOUT_MS = 3000;
+
+/** 최대 재시도 횟수 */
+const MAX_RETRIES = 2;
+
 // Gemini 클라이언트 초기화
 const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
+
+// =============================================================================
+// 유틸리티 함수
+// =============================================================================
+
+/**
+ * 타임아웃이 있는 Promise 래퍼
+ */
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error(`[Ingredients] Timeout after ${ms}ms`)), ms)
+  );
+  return Promise.race([promise, timeout]);
+}
 
 /**
  * 피부 타입 정의
@@ -162,21 +186,27 @@ async function searchIngredientInDB(ingredientName: string): Promise<DBIngredien
 /**
  * AI로 성분 분석 (Gemini)
  * DB에 없는 성분에 대해 호출
+ * - 3초 타임아웃 + 2회 재시도 적용
  */
 async function analyzeIngredientWithAI(
   ingredientName: string,
   skinType: SkinType
 ): Promise<IngredientWarning | null> {
+  // Mock 모드 확인
+  if (process.env.FORCE_MOCK_AI === 'true') {
+    productLogger.info('[Ingredients] Using mock (FORCE_MOCK_AI=true)');
+    return null; // AI 분석 스킵, DB 결과만 사용
+  }
+
   // Gemini 미설정 시 null 반환
   if (!genAI) {
     productLogger.debug('[Ingredients] Gemini not configured, skipping AI analysis');
     return null;
   }
 
-  try {
-    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+  const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
-    const prompt = `You are a cosmetic ingredient expert. Analyze the following ingredient for skin safety.
+  const prompt = `You are a cosmetic ingredient expert. Analyze the following ingredient for skin safety.
 
 Ingredient: "${ingredientName}"
 User skin type: ${skinType}
@@ -197,42 +227,63 @@ Guidelines:
 - If the ingredient is generally safe, set isHarmful to false
 - Consider the user's skin type when evaluating risk`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
+  // 재시도 로직
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      // 타임아웃 적용
+      const result = await withTimeout(model.generateContent(prompt), TIMEOUT_MS);
+      const response = result.response;
+      const text = response.text().trim();
 
-    // JSON 파싱
-    let cleanText = text;
-    if (cleanText.startsWith('```json')) cleanText = cleanText.slice(7);
-    if (cleanText.startsWith('```')) cleanText = cleanText.slice(3);
-    if (cleanText.endsWith('```')) cleanText = cleanText.slice(0, -3);
-    cleanText = cleanText.trim();
+      // JSON 파싱
+      let cleanText = text;
+      if (cleanText.startsWith('```json')) cleanText = cleanText.slice(7);
+      if (cleanText.startsWith('```')) cleanText = cleanText.slice(3);
+      if (cleanText.endsWith('```')) cleanText = cleanText.slice(0, -3);
+      cleanText = cleanText.trim();
 
-    const parsed = JSON.parse(cleanText) as {
-      isHarmful: boolean;
-      warningLevel: WarningLevel;
-      ewgGrade: number;
-      reason: string;
-      alternatives: string[] | null;
-    };
+      const parsed = JSON.parse(cleanText) as {
+        isHarmful: boolean;
+        warningLevel: WarningLevel;
+        ewgGrade: number;
+        reason: string;
+        alternatives: string[] | null;
+      };
 
-    // 해롭지 않으면 null 반환
-    if (!parsed.isHarmful) {
-      return null;
+      // 해롭지 않으면 null 반환
+      if (!parsed.isHarmful) {
+        productLogger.debug(`[Ingredients] ${ingredientName} is safe`);
+        return null;
+      }
+
+      productLogger.info(`[Ingredients] AI analysis completed for: ${ingredientName}`);
+      return {
+        ingredient: ingredientName,
+        level: parsed.warningLevel,
+        ewgGrade: parsed.ewgGrade,
+        reason: parsed.reason,
+        alternatives: parsed.alternatives || undefined,
+        source: 'ai',
+      };
+    } catch (error) {
+      const isLastAttempt = attempt === MAX_RETRIES;
+      productLogger.warn(
+        `[Ingredients] Attempt ${attempt + 1}/${MAX_RETRIES + 1} failed for ${ingredientName}:`,
+        error instanceof Error ? error.message : error
+      );
+
+      if (isLastAttempt) {
+        productLogger.error(`[Ingredients] All retries failed for: ${ingredientName}`);
+        return null; // AI 실패 시 null 반환 (DB 결과만 사용)
+      }
+
+      // 재시도 전 짧은 대기
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
-
-    return {
-      ingredient: ingredientName,
-      level: parsed.warningLevel,
-      ewgGrade: parsed.ewgGrade,
-      reason: parsed.reason,
-      alternatives: parsed.alternatives || undefined,
-      source: 'ai',
-    };
-  } catch (error) {
-    productLogger.error('[Ingredients] Gemini analysis failed:', error);
-    return null;
   }
+
+  // 이론적으로 도달 불가능하지만 타입 안전성을 위해
+  return null;
 }
 
 /**

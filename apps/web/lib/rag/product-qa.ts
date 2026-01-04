@@ -7,6 +7,16 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/ge
 import { ragLogger } from '@/lib/utils/logger';
 import type { AnyProduct, ProductType, CosmeticProduct, SupplementProduct } from '@/types/product';
 
+// =============================================================================
+// 상수 정의
+// =============================================================================
+
+/** API 타임아웃 (5초 - RAG는 프롬프트가 길어 여유 필요) */
+const TIMEOUT_MS = 5000;
+
+/** 최대 재시도 횟수 */
+const MAX_RETRIES = 2;
+
 // API 키 검증
 const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
@@ -129,33 +139,78 @@ ${userContextStr}
 }
 
 /**
- * 제품 Q&A 답변 생성
+ * 타임아웃이 있는 Promise 래퍼
  */
-export async function askProductQuestion(request: ProductQARequest): Promise<ProductQAResponse> {
-  if (!genAI) {
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error(`[RAG] Timeout after ${ms}ms`)), ms)
+  );
+  return Promise.race([promise, timeout]);
+}
+
+/**
+ * Mock 응답 생성 (AI 실패 시 Fallback)
+ */
+function generateMockQAResponse(question: string): ProductQAResponse {
+  // 질문 유형에 따른 기본 응답
+  if (question.includes('민감') || question.includes('피부')) {
     return {
-      answer: '죄송합니다. 현재 AI 서비스를 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+      answer:
+        '제품 상세 페이지의 성분 정보를 확인해 주세요. 민감성 피부는 패치 테스트 후 사용을 권장합니다.',
       confidence: 'low',
+      relatedTopics: ['성분 확인', '패치 테스트'],
     };
   }
+  if (question.includes('사용') || question.includes('언제')) {
+    return {
+      answer: '제품 라벨의 사용법을 참고해 주세요. 일반적으로 아침저녁 세안 후 사용합니다.',
+      confidence: 'low',
+      relatedTopics: ['사용법', '스킨케어 루틴'],
+    };
+  }
+  return {
+    answer:
+      '죄송합니다. 해당 질문에 대한 정확한 답변을 제공하기 어렵습니다. 제품 상세 페이지를 참고해 주세요.',
+    confidence: 'low',
+  };
+}
 
-  try {
-    // 2025-12-22: Gemini 3 Flash로 통일 (무료 티어 + 성능 향상)
-    const model = genAI.getGenerativeModel({
-      model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
-      safetySettings,
-    });
+/**
+ * 제품 Q&A 답변 생성
+ * - 5초 타임아웃 + 2회 재시도 적용
+ */
+export async function askProductQuestion(request: ProductQARequest): Promise<ProductQAResponse> {
+  // Mock 모드 확인
+  if (process.env.FORCE_MOCK_AI === 'true') {
+    ragLogger.info('[RAG] Using mock (FORCE_MOCK_AI=true)');
+    return generateMockQAResponse(request.question);
+  }
 
-    const prompt = buildQAPrompt(request);
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
+  if (!genAI) {
+    ragLogger.warn('[RAG] Gemini not configured, using mock');
+    return generateMockQAResponse(request.question);
+  }
 
-    // JSON 파싱 시도
+  const model = genAI.getGenerativeModel({
+    model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
+    safetySettings,
+  });
+
+  const prompt = buildQAPrompt(request);
+
+  // 재시도 로직
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
+      // 타임아웃 적용
+      const result = await withTimeout(model.generateContent(prompt), TIMEOUT_MS);
+      const response = result.response;
+      const text = response.text();
+
+      // JSON 파싱 시도
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]) as ProductQAResponse;
+        ragLogger.info('[RAG] Q&A completed');
         return {
           answer: parsed.answer || '답변을 생성할 수 없습니다.',
           confidence: parsed.confidence || 'medium',
@@ -163,21 +218,31 @@ export async function askProductQuestion(request: ProductQARequest): Promise<Pro
           warning: parsed.warning,
         };
       }
-    } catch {
-      // JSON 파싱 실패 시 텍스트 그대로 반환
-    }
 
-    return {
-      answer: text.slice(0, 500),
-      confidence: 'medium',
-    };
-  } catch (error) {
-    ragLogger.error('Product Q&A 오류:', error);
-    return {
-      answer: '죄송합니다. 답변을 생성하는 중 오류가 발생했습니다.',
-      confidence: 'low',
-    };
+      ragLogger.info('[RAG] Q&A completed (text mode)');
+      return {
+        answer: text.slice(0, 500),
+        confidence: 'medium',
+      };
+    } catch (error) {
+      const isLastAttempt = attempt === MAX_RETRIES;
+      ragLogger.warn(
+        `[RAG] Attempt ${attempt + 1}/${MAX_RETRIES + 1} failed:`,
+        error instanceof Error ? error.message : error
+      );
+
+      if (isLastAttempt) {
+        ragLogger.error('[RAG] All retries failed, using mock');
+        return generateMockQAResponse(request.question);
+      }
+
+      // 재시도 전 짧은 대기
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
   }
+
+  // 이론적으로 도달 불가능하지만 타입 안전성을 위해
+  return generateMockQAResponse(request.question);
 }
 
 /**
