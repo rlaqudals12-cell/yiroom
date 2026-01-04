@@ -24,6 +24,7 @@ import {
   calculateCalorieProgress,
 } from '../../hooks';
 import { useOnboardingCheck } from '../../lib/onboarding';
+import { useWidgetSync } from '../../lib/widgets';
 
 // 색상 상수
 const COLORS = {
@@ -33,6 +34,7 @@ const COLORS = {
   nutrition: '#22c55e',
   skin: '#ec4899',
   body: '#06b6d4',
+  coach: '#10b981', // AI Coach 색상
   lightBg: '#f8f9fc',
   darkBg: '#0a0a0a',
   cardLight: '#ffffff',
@@ -69,6 +71,31 @@ export default function HomeScreen() {
     bodyAnalysis,
     isLoading: analysisLoading,
   } = useUserAnalyses();
+
+  // 위젯 데이터 동기화
+  const { syncAll } = useWidgetSync({ autoSync: true });
+
+  // 데이터 변경 시 위젯 동기화
+  useEffect(() => {
+    if (workoutLoading || nutritionLoading) return;
+
+    // 위젯에 현재 데이터 동기화
+    syncAll({
+      caloriesConsumed: todaySummary?.totalCalories || 0,
+      caloriesGoal: nutritionSettings?.dailyCalorieGoal || 2000,
+      waterIntake: todaySummary?.waterIntake || 0,
+      waterGoal: nutritionSettings?.waterGoal || 2000,
+      workoutMinutes: 0, // 오늘 운동 시간 (추후 연동)
+      currentStreak: workoutStreak?.currentStreak || 0,
+    });
+  }, [
+    workoutStreak,
+    todaySummary,
+    nutritionSettings,
+    workoutLoading,
+    nutritionLoading,
+    syncAll,
+  ]);
 
   const greeting = getGreeting();
   const userName = user?.firstName || user?.username || '사용자';
@@ -279,6 +306,31 @@ export default function HomeScreen() {
             ))}
           </View>
         </View>
+
+        {/* AI Coach 빠른 접근 */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.coachCard,
+            isDark && styles.cardDark,
+            pressed && styles.pressed,
+          ]}
+          onPress={() => router.push('/(coach)')}
+        >
+          <View style={styles.coachIconContainer}>
+            <Text style={styles.coachIcon}>💬</Text>
+          </View>
+          <View style={styles.coachContent}>
+            <Text style={[styles.coachTitle, isDark && styles.textLight]}>
+              AI 코치에게 물어보세요
+            </Text>
+            <Text style={[styles.coachSubtitle, isDark && styles.textMuted]}>
+              운동, 영양, 뷰티 궁금한 것 무엇이든
+            </Text>
+          </View>
+          <View style={styles.coachArrow}>
+            <Text style={[styles.arrowText, { color: COLORS.coach }]}>›</Text>
+          </View>
+        </Pressable>
 
         {/* 2순위: 퀵 액션 */}
         <View style={styles.section}>
@@ -864,5 +916,54 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     lineHeight: 22,
+  },
+
+  // AI Coach 카드
+  coachCard: {
+    backgroundColor: COLORS.cardLight,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: COLORS.coach,
+    shadowColor: COLORS.coach,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  coachIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: `${COLORS.coach}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  coachIcon: {
+    fontSize: 22,
+  },
+  coachContent: {
+    flex: 1,
+  },
+  coachTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111',
+    marginBottom: 2,
+  },
+  coachSubtitle: {
+    fontSize: 13,
+    color: '#666',
+  },
+  coachArrow: {
+    marginLeft: 8,
+  },
+  arrowText: {
+    fontSize: 28,
+    fontWeight: '300',
   },
 });

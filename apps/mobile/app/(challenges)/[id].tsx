@@ -3,6 +3,8 @@
  * @description 챌린지 정보, 진행 상황, 참가자 순위 표시
  */
 
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import React, { useMemo } from 'react';
 import {
   View,
@@ -13,19 +15,18 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import { useAppPreferencesStore } from '@/lib/stores';
-import {
-  useChallenges,
-  useJoinChallenge,
-} from '@/lib/challenges/useChallenges';
+
 import {
   calculateProgress,
   DOMAIN_COLORS,
   DIFFICULTY_NAMES,
   DIFFICULTY_COLORS,
 } from '@/lib/challenges';
+import {
+  useChallenges,
+  useJoinChallenge,
+} from '@/lib/challenges/useChallenges';
+import { useAppPreferencesStore } from '@/lib/stores';
 
 // 챌린지 상세 뷰 타입 (UI 표시용)
 interface ChallengeDetail {
@@ -59,7 +60,10 @@ interface ChallengeDetail {
   }>;
 }
 
-const DOMAIN_CONFIG: Record<string, { icon: string; color: string; label: string }> = {
+const DOMAIN_CONFIG: Record<
+  string,
+  { icon: string; color: string; label: string }
+> = {
   nutrition: { icon: '🥗', color: DOMAIN_COLORS.nutrition, label: '영양' },
   workout: { icon: '💪', color: DOMAIN_COLORS.workout, label: '운동' },
   skin: { icon: '✨', color: DOMAIN_COLORS.skin, label: '피부' },
@@ -78,7 +82,12 @@ export default function ChallengeDetailScreen() {
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
   // API 훅 사용
-  const { challenges, userChallenges, isLoading: challengesLoading, refetch } = useChallenges();
+  const {
+    challenges,
+    userChallenges,
+    isLoading: challengesLoading,
+    refetch,
+  } = useChallenges();
   const { join, isJoining } = useJoinChallenge(() => {
     refetch(); // 참가 성공 후 목록 새로고침
   });
@@ -98,7 +107,7 @@ export default function ChallengeDetailScreen() {
     if (!currentChallenge) return null;
 
     const isJoined = !!userChallenge;
-    const progress = userChallenge ? calculateProgress(userChallenge) : 0;
+    const _progress = userChallenge ? calculateProgress(userChallenge) : 0;
     const durationDays = currentChallenge.durationDays;
 
     // 마일스톤 생성 (7일, 14일, 21일, 30일 단위)
@@ -118,7 +127,9 @@ export default function ChallengeDetailScreen() {
       description: currentChallenge.description || '',
       domain: currentChallenge.domain,
       difficulty: currentChallenge.difficulty,
-      startDate: userChallenge?.startedAt.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+      startDate:
+        userChallenge?.startedAt.toISOString().split('T')[0] ||
+        new Date().toISOString().split('T')[0],
       endDate: userChallenge?.targetEndAt.toISOString().split('T')[0] || '',
       targetValue: currentChallenge.target.days || durationDays,
       targetUnit: '일',
@@ -187,14 +198,19 @@ export default function ChallengeDetailScreen() {
     if (!challenge) return 0;
     const end = new Date(challenge.endDate);
     const now = new Date();
-    const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const diff = Math.ceil(
+      (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
     return Math.max(0, diff);
   };
 
   // 진행률 계산
   const getProgressPercent = () => {
     if (!challenge) return 0;
-    return Math.min(100, Math.round((challenge.currentValue / challenge.targetValue) * 100));
+    return Math.min(
+      100,
+      Math.round((challenge.currentValue / challenge.targetValue) * 100)
+    );
   };
 
   if (isLoading) {
@@ -234,11 +250,20 @@ export default function ChallengeDetailScreen() {
         {/* 헤더 섹션 */}
         <View style={styles.headerSection}>
           <View style={styles.badgeRow}>
-            <View style={[styles.badge, { backgroundColor: domain.color + '20' }]}>
+            <View
+              style={[styles.badge, { backgroundColor: domain.color + '20' }]}
+            >
               <Text>{domain.icon}</Text>
-              <Text style={[styles.badgeText, { color: domain.color }]}>{domain.label}</Text>
+              <Text style={[styles.badgeText, { color: domain.color }]}>
+                {domain.label}
+              </Text>
             </View>
-            <View style={[styles.badge, { backgroundColor: difficulty.color + '20' }]}>
+            <View
+              style={[
+                styles.badge,
+                { backgroundColor: difficulty.color + '20' },
+              ]}
+            >
               <Text style={[styles.badgeText, { color: difficulty.color }]}>
                 {difficulty.label}
               </Text>
@@ -250,7 +275,9 @@ export default function ChallengeDetailScreen() {
 
           <View style={styles.statsRow}>
             <View style={styles.stat}>
-              <Text style={styles.statValue}>{challenge.participants.toLocaleString()}</Text>
+              <Text style={styles.statValue}>
+                {challenge.participants.toLocaleString()}
+              </Text>
               <Text style={styles.statLabel}>참가자</Text>
             </View>
             <View style={styles.statDivider} />
@@ -273,7 +300,8 @@ export default function ChallengeDetailScreen() {
             <View style={styles.progressCard}>
               <View style={styles.progressHeader}>
                 <Text style={styles.progressValue}>
-                  {challenge.currentValue.toLocaleString()} / {challenge.targetValue.toLocaleString()}
+                  {challenge.currentValue.toLocaleString()} /{' '}
+                  {challenge.targetValue.toLocaleString()}
                   {challenge.targetUnit}
                 </Text>
                 <Text style={styles.progressPercent}>{progressPercent}%</Text>
@@ -282,7 +310,10 @@ export default function ChallengeDetailScreen() {
                 <View
                   style={[
                     styles.progressBar,
-                    { width: `${progressPercent}%`, backgroundColor: domain.color },
+                    {
+                      width: `${progressPercent}%`,
+                      backgroundColor: domain.color,
+                    },
                   ]}
                 />
               </View>
@@ -319,7 +350,8 @@ export default function ChallengeDetailScreen() {
                 <View style={styles.milestoneContent}>
                   <Text style={styles.milestoneDay}>{milestone.day}일차</Text>
                   <Text style={styles.milestoneTarget}>
-                    {milestone.target.toLocaleString()}{challenge.targetUnit} 달성
+                    {milestone.target.toLocaleString()}
+                    {challenge.targetUnit} 달성
                   </Text>
                 </View>
               </View>
@@ -363,7 +395,9 @@ export default function ChallengeDetailScreen() {
                   {entry.rank}
                 </Text>
                 <Text style={styles.leaderboardName}>{entry.userName}</Text>
-                <Text style={styles.leaderboardProgress}>{entry.progress}%</Text>
+                <Text style={styles.leaderboardProgress}>
+                  {entry.progress}%
+                </Text>
               </View>
             ))}
           </View>
@@ -380,7 +414,9 @@ export default function ChallengeDetailScreen() {
           disabled={isJoining}
           style={({ pressed }) => [
             styles.joinButton,
-            challenge.isJoined ? styles.joinButtonLeave : { backgroundColor: domain.color },
+            challenge.isJoined
+              ? styles.joinButtonLeave
+              : { backgroundColor: domain.color },
             pressed && { opacity: 0.8 },
           ]}
         >

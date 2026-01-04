@@ -10,7 +10,13 @@ import {
   Calendar,
   Droplets,
 } from 'lucide-react-native';
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
 
 import {
   useWorkoutData,
@@ -22,17 +28,29 @@ export default function RecordsTab() {
   const router = useRouter();
 
   // 실제 데이터 훅 사용
-  const { streak: workoutStreak, todayWorkout, isLoading: workoutLoading } = useWorkoutData();
-  const { todaySummary, settings: nutritionSettings, isLoading: nutritionLoading } = useNutritionData();
+  const {
+    streak: workoutStreak,
+    todayWorkout,
+    isLoading: workoutLoading,
+  } = useWorkoutData();
+  const {
+    todaySummary,
+    settings: nutritionSettings,
+    isLoading: nutritionLoading,
+  } = useNutritionData();
 
   const isLoading = workoutLoading || nutritionLoading;
 
   // 오늘의 요약 값 계산
   const workoutCount = workoutStreak?.currentStreak || 0;
   const mealCount = todaySummary?.mealCount || 0;
-  const calorieProgress = todaySummary && nutritionSettings
-    ? calculateCalorieProgress(todaySummary.totalCalories, nutritionSettings.dailyCalorieGoal)
-    : 0;
+  const calorieProgress =
+    todaySummary && nutritionSettings
+      ? calculateCalorieProgress(
+          todaySummary.totalCalories,
+          nutritionSettings.dailyCalorieGoal
+        )
+      : 0;
   const waterIntake = todaySummary?.waterIntake || 0;
 
   return (
@@ -55,15 +73,21 @@ export default function RecordsTab() {
           ) : (
             <View className="flex-row justify-between">
               <View className="items-center">
-                <Text className="text-2xl font-bold text-primary">{workoutCount}일</Text>
+                <Text className="text-2xl font-bold text-primary">
+                  {workoutCount}일
+                </Text>
                 <Text className="text-muted-foreground text-sm">연속 운동</Text>
               </View>
               <View className="items-center">
-                <Text className="text-2xl font-bold text-primary">{mealCount}</Text>
+                <Text className="text-2xl font-bold text-primary">
+                  {mealCount}
+                </Text>
                 <Text className="text-muted-foreground text-sm">식사</Text>
               </View>
               <View className="items-center">
-                <Text className="text-2xl font-bold text-primary">{calorieProgress}%</Text>
+                <Text className="text-2xl font-bold text-primary">
+                  {calorieProgress}%
+                </Text>
                 <Text className="text-muted-foreground text-sm">칼로리</Text>
               </View>
             </View>
@@ -77,13 +101,19 @@ export default function RecordsTab() {
               <Droplets size={20} color="#06b6d4" />
             </View>
             <View>
-              <Text className="text-base font-semibold text-foreground">수분 섭취</Text>
+              <Text className="text-base font-semibold text-foreground">
+                수분 섭취
+              </Text>
               <Text className="text-muted-foreground text-sm">
-                {nutritionSettings ? `목표: ${nutritionSettings.waterGoal}ml` : '목표 설정 필요'}
+                {nutritionSettings
+                  ? `목표: ${nutritionSettings.waterGoal}ml`
+                  : '목표 설정 필요'}
               </Text>
             </View>
           </View>
-          <Text className="text-xl font-bold text-cyan-600">{waterIntake}ml</Text>
+          <Text className="text-xl font-bold text-cyan-600">
+            {waterIntake}ml
+          </Text>
         </View>
 
         {/* 운동 기록 카드 */}
