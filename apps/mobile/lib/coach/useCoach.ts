@@ -3,10 +3,11 @@
  * 채팅 상태 관리 및 메시지 전송
  */
 
-import { useCallback, useState } from 'react';
 import { useAuth } from '@clerk/clerk-expo';
+import { useCallback, useState } from 'react';
 
 import { useNetworkStatus } from '../offline';
+
 import {
   sendCoachMessage,
   getMockResponse,

@@ -29,10 +29,17 @@ export default function NotificationsSettingsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const { hasPermission, isLoading: permissionLoading, requestPermission } =
-    useNotificationPermission();
-  const { settings, isLoading: settingsLoading, updateSettings, applySettings } =
-    useNotificationSettings();
+  const {
+    hasPermission,
+    isLoading: permissionLoading,
+    requestPermission,
+  } = useNotificationPermission();
+  const {
+    settings,
+    isLoading: settingsLoading,
+    updateSettings,
+    applySettings,
+  } = useNotificationSettings();
   const { sendNow } = useNotificationScheduler();
 
   const [testSent, setTestSent] = useState(false);
@@ -65,10 +72,7 @@ export default function NotificationsSettingsScreen() {
     }
   };
 
-  const handleToggle = async (
-    key: keyof typeof settings,
-    value: boolean
-  ) => {
+  const handleToggle = async (key: keyof typeof settings, value: boolean) => {
     Haptics.selectionAsync();
     await updateSettings({ [key]: value });
   };
@@ -165,12 +169,18 @@ export default function NotificationsSettingsScreen() {
                     <Text style={styles.settingsIcon}>💧</Text>
                     <View style={styles.settingsTextContent}>
                       <Text
-                        style={[styles.settingsLabel, isDark && styles.textLight]}
+                        style={[
+                          styles.settingsLabel,
+                          isDark && styles.textLight,
+                        ]}
                       >
                         수분 섭취 알림
                       </Text>
                       <Text
-                        style={[styles.settingsDesc, isDark && styles.textMuted]}
+                        style={[
+                          styles.settingsDesc,
+                          isDark && styles.textMuted,
+                        ]}
                       >
                         정해진 간격으로 알림
                       </Text>
@@ -178,14 +188,21 @@ export default function NotificationsSettingsScreen() {
                   </View>
                   <Switch
                     value={settings.waterReminder}
-                    onValueChange={(value) => handleToggle('waterReminder', value)}
+                    onValueChange={(value) =>
+                      handleToggle('waterReminder', value)
+                    }
                     trackColor={{ false: '#767577', true: '#8b5cf6' }}
                     thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
                   />
                 </View>
 
                 {settings.waterReminder && (
-                  <View style={[styles.intervalSelector, isDark && styles.intervalSelectorDark]}>
+                  <View
+                    style={[
+                      styles.intervalSelector,
+                      isDark && styles.intervalSelectorDark,
+                    ]}
+                  >
                     <Text
                       style={[styles.intervalLabel, isDark && styles.textMuted]}
                     >
@@ -226,12 +243,18 @@ export default function NotificationsSettingsScreen() {
                     <Text style={styles.settingsIcon}>🍽️</Text>
                     <View style={styles.settingsTextContent}>
                       <Text
-                        style={[styles.settingsLabel, isDark && styles.textLight]}
+                        style={[
+                          styles.settingsLabel,
+                          isDark && styles.textLight,
+                        ]}
                       >
                         식사 기록 알림
                       </Text>
                       <Text
-                        style={[styles.settingsDesc, isDark && styles.textMuted]}
+                        style={[
+                          styles.settingsDesc,
+                          isDark && styles.textMuted,
+                        ]}
                       >
                         아침/점심/저녁 기록 알림
                       </Text>
@@ -260,12 +283,18 @@ export default function NotificationsSettingsScreen() {
                     <Text style={styles.settingsIcon}>🏃</Text>
                     <View style={styles.settingsTextContent}>
                       <Text
-                        style={[styles.settingsLabel, isDark && styles.textLight]}
+                        style={[
+                          styles.settingsLabel,
+                          isDark && styles.textLight,
+                        ]}
                       >
                         운동 리마인더
                       </Text>
                       <Text
-                        style={[styles.settingsDesc, isDark && styles.textMuted]}
+                        style={[
+                          styles.settingsDesc,
+                          isDark && styles.textMuted,
+                        ]}
                       >
                         매일 아침 운동 알림
                       </Text>
@@ -288,12 +317,18 @@ export default function NotificationsSettingsScreen() {
                     <Text style={styles.settingsIcon}>🔥</Text>
                     <View style={styles.settingsTextContent}>
                       <Text
-                        style={[styles.settingsLabel, isDark && styles.textLight]}
+                        style={[
+                          styles.settingsLabel,
+                          isDark && styles.textLight,
+                        ]}
                       >
                         스트릭 경고
                       </Text>
                       <Text
-                        style={[styles.settingsDesc, isDark && styles.textMuted]}
+                        style={[
+                          styles.settingsDesc,
+                          isDark && styles.textMuted,
+                        ]}
                       >
                         연속 기록이 끊기기 전 알림
                       </Text>
@@ -301,7 +336,9 @@ export default function NotificationsSettingsScreen() {
                   </View>
                   <Switch
                     value={settings.streakWarning}
-                    onValueChange={(value) => handleToggle('streakWarning', value)}
+                    onValueChange={(value) =>
+                      handleToggle('streakWarning', value)
+                    }
                     trackColor={{ false: '#767577', true: '#8b5cf6' }}
                     thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
                   />
@@ -320,12 +357,18 @@ export default function NotificationsSettingsScreen() {
                     <Text style={styles.settingsIcon}>👥</Text>
                     <View style={styles.settingsTextContent}>
                       <Text
-                        style={[styles.settingsLabel, isDark && styles.textLight]}
+                        style={[
+                          styles.settingsLabel,
+                          isDark && styles.textLight,
+                        ]}
                       >
                         소셜 알림
                       </Text>
                       <Text
-                        style={[styles.settingsDesc, isDark && styles.textMuted]}
+                        style={[
+                          styles.settingsDesc,
+                          isDark && styles.textMuted,
+                        ]}
                       >
                         친구 요청, 챌린지 초대
                       </Text>
@@ -348,12 +391,18 @@ export default function NotificationsSettingsScreen() {
                     <Text style={styles.settingsIcon}>🏆</Text>
                     <View style={styles.settingsTextContent}>
                       <Text
-                        style={[styles.settingsLabel, isDark && styles.textLight]}
+                        style={[
+                          styles.settingsLabel,
+                          isDark && styles.textLight,
+                        ]}
                       >
                         성취 알림
                       </Text>
                       <Text
-                        style={[styles.settingsDesc, isDark && styles.textMuted]}
+                        style={[
+                          styles.settingsDesc,
+                          isDark && styles.textMuted,
+                        ]}
                       >
                         레벨업, 뱃지 획득
                       </Text>

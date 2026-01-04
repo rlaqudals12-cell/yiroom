@@ -3,7 +3,13 @@
  * 물 섭취량과 목표 진행률 표시
  */
 
-import { View, Text, StyleSheet, useColorScheme, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  useColorScheme,
+  Pressable,
+} from 'react-native';
 
 interface WaterWidgetProps {
   current: number; // ml
@@ -41,9 +47,7 @@ export function WaterWidget({
           {(current / 1000).toFixed(1)}L
         </Text>
         <View style={styles.miniProgressBar}>
-          <View
-            style={[styles.miniProgressFill, { width: `${progress}%` }]}
-          />
+          <View style={[styles.miniProgressFill, { width: `${progress}%` }]} />
         </View>
       </View>
     );

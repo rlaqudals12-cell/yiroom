@@ -76,7 +76,8 @@ export const DEFAULT_APP_TOUR_STEPS: AppTourStep[] = [
   {
     id: 'profile-tab',
     title: '프로필',
-    description: '내 정보, 친구, 챌린지, 배지를 확인하세요.\n설정에서 투어를 다시 볼 수 있어요.',
+    description:
+      '내 정보, 친구, 챌린지, 배지를 확인하세요.\n설정에서 투어를 다시 볼 수 있어요.',
     tabKey: 'profile',
     position: 'bottom',
     icon: '👤',

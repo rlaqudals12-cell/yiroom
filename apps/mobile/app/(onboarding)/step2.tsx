@@ -43,12 +43,8 @@ export default function OnboardingStep2() {
   const [birthYear, setBirthYear] = useState(
     data.basicInfo.birthYear?.toString() || ''
   );
-  const [height, setHeight] = useState(
-    data.basicInfo.height?.toString() || ''
-  );
-  const [weight, setWeight] = useState(
-    data.basicInfo.weight?.toString() || ''
-  );
+  const [height, setHeight] = useState(data.basicInfo.height?.toString() || '');
+  const [weight, setWeight] = useState(data.basicInfo.weight?.toString() || '');
 
   const handleGenderSelect = (gender: Gender) => {
     setBasicInfo({ gender });
@@ -83,7 +79,9 @@ export default function OnboardingStep2() {
   };
 
   const canProceed =
-    data.basicInfo.gender && data.basicInfo.birthYear && data.basicInfo.activityLevel;
+    data.basicInfo.gender &&
+    data.basicInfo.birthYear &&
+    data.basicInfo.activityLevel;
 
   return (
     <SafeAreaView
@@ -161,7 +159,11 @@ export default function OnboardingStep2() {
           <View style={styles.inputRow}>
             <View style={styles.inputGroup}>
               <TextInput
-                style={[styles.input, styles.inputHalf, isDark && styles.inputDark]}
+                style={[
+                  styles.input,
+                  styles.inputHalf,
+                  isDark && styles.inputDark,
+                ]}
                 value={height}
                 onChangeText={handleHeightChange}
                 placeholder="170"
@@ -174,7 +176,11 @@ export default function OnboardingStep2() {
             </View>
             <View style={styles.inputGroup}>
               <TextInput
-                style={[styles.input, styles.inputHalf, isDark && styles.inputDark]}
+                style={[
+                  styles.input,
+                  styles.inputHalf,
+                  isDark && styles.inputDark,
+                ]}
                 value={weight}
                 onChangeText={handleWeightChange}
                 placeholder="65"
@@ -224,9 +230,13 @@ export default function OnboardingStep2() {
 
         {/* 진행 상황 */}
         <View style={styles.progress}>
-          <View style={[styles.progressDot, isDark && styles.progressDotDark]} />
+          <View
+            style={[styles.progressDot, isDark && styles.progressDotDark]}
+          />
           <View style={[styles.progressDot, styles.progressDotActive]} />
-          <View style={[styles.progressDot, isDark && styles.progressDotDark]} />
+          <View
+            style={[styles.progressDot, isDark && styles.progressDotDark]}
+          />
         </View>
       </ScrollView>
 

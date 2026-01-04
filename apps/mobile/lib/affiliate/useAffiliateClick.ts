@@ -3,8 +3,9 @@
  * @description 제품 클릭 시 트래킹 및 외부 링크 열기
  */
 
-import { useCallback, useState } from 'react';
 import { useUser } from '@clerk/clerk-expo';
+import { useCallback, useState } from 'react';
+
 import { createAffiliateClick } from './clicks';
 import { trackAndOpenLink, identifyPartner } from './deeplink';
 import type { AffiliatePartnerName } from './types';
@@ -28,7 +29,9 @@ interface UseAffiliateClickReturn {
  * 어필리에이트 클릭 훅
  * - 클릭 트래킹 → 딥링크 생성 → 외부 앱/브라우저 열기
  */
-export function useAffiliateClick(options: UseAffiliateClickOptions): UseAffiliateClickReturn {
+export function useAffiliateClick(
+  options: UseAffiliateClickOptions
+): UseAffiliateClickReturn {
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +81,15 @@ export function useAffiliateClick(options: UseAffiliateClickOptions): UseAffilia
     } finally {
       setIsLoading(false);
     }
-  }, [productId, productUrl, providedPartner, sourcePage, sourceComponent, recommendationType, user?.id]);
+  }, [
+    productId,
+    productUrl,
+    providedPartner,
+    sourcePage,
+    sourceComponent,
+    recommendationType,
+    user?.id,
+  ]);
 
   return {
     handleClick,

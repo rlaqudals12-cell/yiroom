@@ -35,7 +35,8 @@ export default function OnboardingStep3() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const { data, setPreferences, prevStep, completeOnboarding } = useOnboarding();
+  const { data, setPreferences, prevStep, completeOnboarding } =
+    useOnboarding();
 
   const handleFrequencySelect = (freq: WorkoutFrequency) => {
     setPreferences({ workoutFrequency: freq });
@@ -179,7 +180,9 @@ export default function OnboardingStep3() {
           </View>
           {age && (
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, isDark && styles.subtitleDark]}>
+              <Text
+                style={[styles.summaryLabel, isDark && styles.subtitleDark]}
+              >
                 나이
               </Text>
               <Text style={[styles.summaryValue, isDark && styles.textLight]}>
@@ -189,7 +192,9 @@ export default function OnboardingStep3() {
           )}
           {data.basicInfo.height && data.basicInfo.weight && (
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, isDark && styles.subtitleDark]}>
+              <Text
+                style={[styles.summaryLabel, isDark && styles.subtitleDark]}
+              >
                 신체
               </Text>
               <Text style={[styles.summaryValue, isDark && styles.textLight]}>
@@ -201,8 +206,12 @@ export default function OnboardingStep3() {
 
         {/* 진행 상황 */}
         <View style={styles.progress}>
-          <View style={[styles.progressDot, isDark && styles.progressDotDark]} />
-          <View style={[styles.progressDot, isDark && styles.progressDotDark]} />
+          <View
+            style={[styles.progressDot, isDark && styles.progressDotDark]}
+          />
+          <View
+            style={[styles.progressDot, isDark && styles.progressDotDark]}
+          />
           <View style={[styles.progressDot, styles.progressDotActive]} />
         </View>
       </ScrollView>

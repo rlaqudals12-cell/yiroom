@@ -2,9 +2,9 @@
  * 온보딩 상태 관리 훅
  */
 
-import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 
 import type {
   OnboardingData,
@@ -83,12 +83,15 @@ export function useOnboarding(): UseOnboardingResult {
   };
 
   // 스텝 네비게이션
-  const goToStep = useCallback((step: number) => {
-    if (step >= 1 && step <= 3) {
-      setCurrentStep(step);
-      router.push(`/(onboarding)/step${step}` as never);
-    }
-  }, [router]);
+  const goToStep = useCallback(
+    (step: number) => {
+      if (step >= 1 && step <= 3) {
+        setCurrentStep(step);
+        router.push(`/(onboarding)/step${step}` as never);
+      }
+    },
+    [router]
+  );
 
   const nextStep = useCallback(() => {
     if (currentStep < 3) {
@@ -135,16 +138,19 @@ export function useOnboarding(): UseOnboardingResult {
   }, []);
 
   // 선호도 설정
-  const setPreferences = useCallback((prefs: Partial<OnboardingPreferences>) => {
-    setData((prev) => {
-      const newData = {
-        ...prev,
-        preferences: { ...prev.preferences, ...prefs },
-      };
-      saveData(newData);
-      return newData;
-    });
-  }, []);
+  const setPreferences = useCallback(
+    (prefs: Partial<OnboardingPreferences>) => {
+      setData((prev) => {
+        const newData = {
+          ...prev,
+          preferences: { ...prev.preferences, ...prefs },
+        };
+        saveData(newData);
+        return newData;
+      });
+    },
+    []
+  );
 
   // 온보딩 완료
   const completeOnboarding = useCallback(async () => {

@@ -3,10 +3,11 @@
  * 옷장, 뷰티, 운동장비, 영양제, 냉장고 관리
  */
 
-import { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-expo';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
+
 import type {
   InventoryItem,
   InventoryCategory,

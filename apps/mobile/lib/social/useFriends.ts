@@ -3,10 +3,11 @@
  * 친구 목록, 요청, 검색 기능 제공
  */
 
-import { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-expo';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
+
 import {
   getFriends,
   getReceivedRequests,

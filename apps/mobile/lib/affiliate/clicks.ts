@@ -9,7 +9,9 @@ import type { AffiliateClickInput } from './types';
 /**
  * 클릭 기록 생성
  */
-export async function createAffiliateClick(input: AffiliateClickInput): Promise<string | null> {
+export async function createAffiliateClick(
+  input: AffiliateClickInput
+): Promise<string | null> {
   try {
     const { data, error } = await supabase
       .from('affiliate_clicks')

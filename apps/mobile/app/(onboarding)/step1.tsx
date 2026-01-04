@@ -92,8 +92,12 @@ export default function OnboardingStep1() {
         {/* 진행 상황 */}
         <View style={styles.progress}>
           <View style={[styles.progressDot, styles.progressDotActive]} />
-          <View style={[styles.progressDot, isDark && styles.progressDotDark]} />
-          <View style={[styles.progressDot, isDark && styles.progressDotDark]} />
+          <View
+            style={[styles.progressDot, isDark && styles.progressDotDark]}
+          />
+          <View
+            style={[styles.progressDot, isDark && styles.progressDotDark]}
+          />
         </View>
       </ScrollView>
 

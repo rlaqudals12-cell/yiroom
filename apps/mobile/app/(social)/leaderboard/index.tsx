@@ -2,8 +2,8 @@
  * 리더보드 페이지
  */
 
-import * as Haptics from 'expo-haptics';
 import { useUser } from '@clerk/clerk-expo';
+import * as Haptics from 'expo-haptics';
 import React, { useState } from 'react';
 import {
   View,

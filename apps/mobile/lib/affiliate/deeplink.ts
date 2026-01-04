@@ -4,11 +4,18 @@
  */
 
 import * as Linking from 'expo-linking';
-import type { AffiliatePartnerName, DeeplinkOptions, DeeplinkResult } from './types';
+
+import type {
+  AffiliatePartnerName,
+  DeeplinkOptions,
+  DeeplinkResult,
+} from './types';
 
 // 환경변수 (app.config.ts에서 설정)
-const IHERB_AFFILIATE_CODE = process.env.EXPO_PUBLIC_IHERB_AFFILIATE_CODE || 'YIROOM';
-const MUSINSA_CURATOR_ID = process.env.EXPO_PUBLIC_MUSINSA_CURATOR_ID || 'yiroom';
+const IHERB_AFFILIATE_CODE =
+  process.env.EXPO_PUBLIC_IHERB_AFFILIATE_CODE || 'YIROOM';
+const MUSINSA_CURATOR_ID =
+  process.env.EXPO_PUBLIC_MUSINSA_CURATOR_ID || 'yiroom';
 
 /**
  * 파트너별 딥링크 생성

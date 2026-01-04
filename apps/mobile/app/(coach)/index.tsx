@@ -3,8 +3,8 @@
  */
 
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useColorScheme, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ChatInterface } from '../../components/coach/ChatInterface';
 

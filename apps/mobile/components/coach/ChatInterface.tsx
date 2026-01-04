@@ -17,13 +17,13 @@ import {
   useColorScheme,
 } from 'react-native';
 
-import { useNetworkStatus } from '../../lib/offline';
 import {
   QUICK_QUESTIONS,
   type QuestionCategory,
   type CoachMessage,
 } from '../../lib/coach';
 import { useCoach } from '../../lib/coach/useCoach';
+import { useNetworkStatus } from '../../lib/offline';
 
 export function ChatInterface() {
   const colorScheme = useColorScheme();

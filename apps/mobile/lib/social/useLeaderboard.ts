@@ -3,10 +3,11 @@
  * 전체/친구 리더보드 및 내 순위 조회
  */
 
-import { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-expo';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
+
 import {
   getXpLeaderboard,
   getFriendsLeaderboard,

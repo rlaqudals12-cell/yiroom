@@ -3,8 +3,8 @@
  * AsyncStorage 기반 상태 관리
  */
 
-import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { AppTourStep, UseAppTourReturn } from './types';
 import { DEFAULT_APP_TOUR_STEPS, STORAGE_KEY, CURRENT_STEP_KEY } from './types';
@@ -67,9 +67,11 @@ export function useAppTour(options: UseAppTourOptions = {}): UseAppTourReturn {
   // 현재 스텝 저장
   useEffect(() => {
     if (isActive && !isLoading) {
-      AsyncStorage.setItem(CURRENT_STEP_KEY, currentStepIndex.toString()).catch((error) => {
-        console.error('[AppTour] Save step error:', error);
-      });
+      AsyncStorage.setItem(CURRENT_STEP_KEY, currentStepIndex.toString()).catch(
+        (error) => {
+          console.error('[AppTour] Save step error:', error);
+        }
+      );
     }
   }, [currentStepIndex, isActive, isLoading]);
 

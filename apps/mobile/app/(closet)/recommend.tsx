@@ -48,9 +48,12 @@ export default function RecommendScreen() {
   useEffect(() => {
     const month = new Date().getMonth();
     // 계절별 평균 온도 설정
-    if (month >= 2 && month <= 4) setTemp(15); // 봄
-    else if (month >= 5 && month <= 7) setTemp(27); // 여름
-    else if (month >= 8 && month <= 10) setTemp(18); // 가을
+    if (month >= 2 && month <= 4)
+      setTemp(15); // 봄
+    else if (month >= 5 && month <= 7)
+      setTemp(27); // 여름
+    else if (month >= 8 && month <= 10)
+      setTemp(18); // 가을
     else setTemp(3); // 겨울
   }, []);
 

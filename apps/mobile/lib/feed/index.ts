@@ -46,7 +46,9 @@ export async function getFriendsFeed(
   // 피드 아이템 조회 (user_activities 테이블 기반)
   const { data: activities, error } = await supabase
     .from('user_activities')
-    .select('id, clerk_user_id, activity_type, title, description, metadata, created_at')
+    .select(
+      'id, clerk_user_id, activity_type, title, description, metadata, created_at'
+    )
     .in('clerk_user_id', friendIds)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -69,7 +71,9 @@ export async function getFriendsFeed(
     .in('clerk_user_id', userIds);
 
   const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
-  const levelMap = new Map((levels ?? []).map((l) => [l.clerk_user_id, l.level]));
+  const levelMap = new Map(
+    (levels ?? []).map((l) => [l.clerk_user_id, l.level])
+  );
 
   return activities.map((activity) => {
     const user = userMap.get(activity.clerk_user_id);
@@ -101,7 +105,9 @@ export async function getMyFeed(
 ): Promise<FeedItem[]> {
   const { data: activities, error } = await supabase
     .from('user_activities')
-    .select('id, clerk_user_id, activity_type, title, description, metadata, created_at')
+    .select(
+      'id, clerk_user_id, activity_type, title, description, metadata, created_at'
+    )
     .eq('clerk_user_id', clerkUserId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -149,7 +155,9 @@ export async function getAllFeed(
 ): Promise<FeedItem[]> {
   const { data: activities, error } = await supabase
     .from('user_activities')
-    .select('id, clerk_user_id, activity_type, title, description, metadata, created_at')
+    .select(
+      'id, clerk_user_id, activity_type, title, description, metadata, created_at'
+    )
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -170,7 +178,9 @@ export async function getAllFeed(
     .in('clerk_user_id', userIds);
 
   const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
-  const levelMap = new Map((levels ?? []).map((l) => [l.clerk_user_id, l.level]));
+  const levelMap = new Map(
+    (levels ?? []).map((l) => [l.clerk_user_id, l.level])
+  );
 
   return activities.map((activity) => {
     const user = userMap.get(activity.clerk_user_id);

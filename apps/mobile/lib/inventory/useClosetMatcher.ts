@@ -5,8 +5,6 @@
 
 import { useCallback, useMemo } from 'react';
 
-import { useCloset } from './useInventory';
-import type { ClothingCategory, InventoryItem } from './index';
 import type {
   BodyType3,
   PersonalColorSeason,
@@ -20,6 +18,9 @@ import {
   suggestOutfitFromCloset,
   getRecommendationSummary,
 } from './closetMatcher';
+import { useCloset } from './useInventory';
+
+import type { ClothingCategory, InventoryItem } from './index';
 
 interface UseClosetMatcherProps {
   personalColor?: PersonalColorSeason | null;

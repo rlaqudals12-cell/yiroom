@@ -2,10 +2,11 @@
  * 챌린지 시스템 훅
  */
 
-import { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-expo';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
+
 import {
   getActiveChallenges,
   getUserChallenges,

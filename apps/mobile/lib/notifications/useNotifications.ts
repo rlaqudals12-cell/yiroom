@@ -3,11 +3,11 @@
  * 푸시 알림 권한 관리, 설정, 스케줄링
  */
 
-import { useCallback, useEffect, useState } from 'react';
-import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 
 import type { NotificationType } from './templates';
 import { createNotification } from './templates';
@@ -172,8 +172,8 @@ export function usePushToken(): UsePushTokenResult {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
-              'Prefer': 'resolution=merge-duplicates',
+              apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
+              Prefer: 'resolution=merge-duplicates',
             },
             body: JSON.stringify({
               clerk_user_id: userId,
