@@ -1,7 +1,7 @@
 # 이룸 프로젝트 진행 상황
 
-> **마지막 업데이트**: 2025-12-30
-> **현재 버전**: v2.0 (Phase I 진행 중)
+> **마지막 업데이트**: 2026-01-04
+> **현재 버전**: v2.2 (Visual Analysis Engine 완료)
 
 ---
 
@@ -38,6 +38,59 @@
 | Phase I | 어필리에이트 | iHerb, 쿠팡, 무신사    | ✅ 완료    |
 | Phase L | i18n         | 4개 언어 (한/영/일/중) | ✅ 완료    |
 | Launch  | 출시 준비    | 온보딩, 도움말, 알림   | ✅ 완료    |
+| Phase V | Visual       | S-1+/PC-1+ 시각 분석   | ✅ 완료    |
+
+---
+
+## Phase V: Visual Analysis Engine ✅ (2026-01-04)
+
+### 개요
+
+피부 분석(S-1)과 퍼스널컬러 분석(PC-1)의 시각적 결과 표현을 강화하는 엔진.
+MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
+
+### 완료 항목
+
+```yaml
+[x] lib/analysis: 핵심 모듈 9개
+    - device-capability: 기기 성능 감지 및 적응형 처리
+    - face-landmark: MediaPipe 468점 랜드마크 추출
+    - skin-heatmap: 멜라닌/헤모글로빈 히트맵
+    - drape-reflectance: 드레이프 색상 반사율 분석
+    - synergy-insight: S-1→PC-1 시너지 인사이트
+    - memory-manager: Canvas 메모리 최적화
+    - mediapipe-loader: CDN 로딩 + Mock Fallback
+    - canvas-utils: 이미지/Canvas 유틸리티
+
+[x] components/analysis/visual: UI 컴포넌트 8개
+    - VisualAnalysisTab: 피부 분석 상세 시각화 탭
+    - DrapingSimulationTab: 퍼스널컬러 드레이핑 시뮬레이션
+    - SkinHeatmapCanvas: 광원모드별 히트맵 렌더링
+    - LightModeTab: 일반광/편광/UV/피지 모드 전환
+    - DrapeSimulator: 실시간 드레이프 미리보기
+    - DrapeColorPalette: 128색 팔레트 (적응형)
+    - SynergyInsightCard: 피부-컬러 연계 인사이트
+
+[x] 결과 페이지 탭 UI 통합
+    - skin/result/[id]: 기본 분석 + 상세 시각화 탭
+    - personal-color/result/[id]: 기본 분석 + 드레이핑 탭
+
+[x] 테스트
+    - 단위 테스트: 94개
+    - E2E 테스트: 10개
+```
+
+### 주요 기술
+
+- MediaPipe Face Mesh (468 랜드마크)
+- Canvas 2D API (히트맵 렌더링)
+- 적응형 성능 조절 (high/medium/low 티어)
+- Mock Fallback 전략 (CDN 장애 대응)
+
+### 관련 문서
+
+- [SDD-VISUAL-ANALYSIS-ENGINE.md](./SDD-VISUAL-ANALYSIS-ENGINE.md)
+- [TECH-STACK-VISUAL-ANALYSIS.md](./TECH-STACK-VISUAL-ANALYSIS.md)
 
 ---
 
@@ -432,6 +485,61 @@
     - 피드백 페이지
     - 공지사항 페이지
 [x] 알림 시스템 (구조 설계)
+```
+
+---
+
+## 최근 업데이트 (2026-01-04)
+
+```yaml
+[x] 화장품 성분 분석 시스템 (화해 스타일) - Phase 1~3 완료
+    - Phase 1: DB 스키마 + 타입 정의 + 시드 데이터
+        - types/ingredient.ts (CosmeticIngredient, EWG 타입)
+        - supabase/migrations/202601040100_cosmetic_ingredients.sql
+        - data/cosmetic-ingredients-seed.json (100개 성분)
+    - Phase 2: UI 컴포넌트 8개 + 제품 상세 페이지 통합
+        - components/products/ingredients/IngredientAnalysisSection.tsx (메인)
+        - components/products/ingredients/IngredientEWGBadge.tsx (EWG 배지)
+        - components/products/ingredients/IngredientCautionAlert.tsx (주의 알림)
+        - components/products/ingredients/IngredientFilterTabs.tsx (필터 탭)
+        - components/products/ingredients/IngredientCard.tsx (개별 카드)
+        - components/products/ingredients/IngredientList.tsx (성분 목록)
+        - components/products/ingredients/IngredientFunctionChart.tsx (기능 차트)
+        - components/products/ingredients/SkinTypeAnalysis.tsx (피부타입 분석)
+        - lib/products/repositories/ingredients.ts (Repository)
+    - Phase 3: AI 분석 + 시각화
+        - lib/products/services/ingredient-analysis.ts (Gemini AI + Mock Fallback)
+        - components/products/ingredients/AIIngredientSummary.tsx (AI 요약 UI)
+        - 핵심 키워드, 한줄 요약, 추천/주의 포인트, 피부타입별 추천도
+    - 제품 상세 페이지 통합
+        - app/(main)/beauty/[productId]/page.tsx 연동
+[x] 시지푸스 자동 실행 활성화
+    - .claude/agents/sisyphus-adaptive.md PROACTIVE 트리거 추가
+    - 4개+ 파일, 아키텍처 변경, 리스크 요소 시 자동 실행
+[x] Beauty UX 개선 - 경쟁사 분석 기반 5개 항목
+    - #1 리뷰 AI 요약 키워드 (화해 스타일)
+        - components/products/reviews/ReviewAIKeywords.tsx
+        - 긍정/부정 키워드 TOP 5 추출
+        - AI 요약 문장, 추천/주의 포인트
+    - #2 긍정/부정 리뷰 필터 (글로우픽 스타일)
+        - components/products/reviews/ReviewSentimentFilter.tsx
+        - 전체/긍정/부정/포토 필터링
+    - #3 타임딜/특가 섹션 (화해/올리브영 스타일)
+        - components/beauty/TimeDealSection.tsx
+        - 실시간 카운트다운, 재고 소진율 표시
+    - #4 리뷰 작성 포인트 시스템 (언니의파우치 스타일)
+        - components/products/reviews/ReviewPointsBadge.tsx
+        - 포인트 정책 상세, 첫 리뷰 보너스
+    - #5 SNS형 피드 강화 (올리브영 셔터 스타일)
+        - components/beauty/BeautyFeed.tsx
+        - 좋아요/댓글/저장, 연관 제품 태그
+[x] ReviewSection 통합
+    - AI 키워드, 감성 필터, 포인트 배지 통합
+[x] Beauty 페이지 통합
+    - TimeDealSection, BeautyFeed 배치
+[x] 스펙 문서 작성
+    - docs/SDD-BEAUTY-UX-IMPROVEMENTS.md
+    - docs/SDD-INGREDIENT-ANALYSIS.md
 ```
 
 ---
