@@ -19,6 +19,7 @@ import { useRouter, Stack } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { useAppPreferencesStore } from '@/lib/stores';
+import { useCloset, type ClothingCategory, type Season } from '@/lib/inventory';
 
 // 카테고리 옵션
 const CATEGORIES = [
@@ -79,6 +80,7 @@ interface FormData {
 export default function ClosetAddScreen() {
   const router = useRouter();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
+  const { addItem } = useCloset();
 
   const [formData, setFormData] = useState<FormData>({
     imageUri: null,
@@ -187,13 +189,40 @@ export default function ClosetAddScreen() {
     setIsSubmitting(true);
 
     try {
-      // TODO: API 연동 - useCloset().addItem() 호출
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // 메타데이터 구성 (옷장 아이템 형식)
+      const metadata = {
+        colors: formData.colors,
+        seasons: formData.seasons as Season[],
+        occasions: formData.occasions,
+        notes: formData.notes,
+      };
 
-      Alert.alert('저장 완료', '옷장에 아이템이 추가되었습니다.', [
-        { text: '확인', onPress: () => router.back() },
-      ]);
+      // API 연동 - useCloset().addItem() 호출
+      // imageUri는 isValid()에서 이미 검증됨
+      const result = await addItem({
+        category: 'closet',
+        subCategory: formData.category as ClothingCategory,
+        name: formData.name.trim(),
+        imageUrl: formData.imageUri!,
+        originalImageUrl: formData.imageUri,
+        brand: formData.brand.trim() || null,
+        tags: [...formData.colors, ...formData.seasons, ...formData.occasions],
+        isFavorite: false,
+        useCount: 0,
+        lastUsedAt: null,
+        expiryDate: null,
+        metadata,
+      });
+
+      if (result) {
+        Alert.alert('저장 완료', '옷장에 아이템이 추가되었습니다.', [
+          { text: '확인', onPress: () => router.back() },
+        ]);
+      } else {
+        Alert.alert('오류', '저장에 실패했습니다. 다시 시도해주세요.');
+      }
     } catch (error) {
+      console.error('[Closet] Add item error:', error);
       Alert.alert('오류', '저장 중 문제가 발생했습니다.');
     } finally {
       setIsSubmitting(false);

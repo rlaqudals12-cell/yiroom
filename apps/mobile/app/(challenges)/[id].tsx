@@ -3,7 +3,7 @@
  * @description 챌린지 정보, 진행 상황, 참가자 순위 표시
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,13 +16,23 @@ import {
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useAppPreferencesStore } from '@/lib/stores';
+import {
+  useChallenges,
+  useJoinChallenge,
+} from '@/lib/challenges/useChallenges';
+import {
+  calculateProgress,
+  DOMAIN_COLORS,
+  DIFFICULTY_NAMES,
+  DIFFICULTY_COLORS,
+} from '@/lib/challenges';
 
-// 챌린지 타입 정의
+// 챌린지 상세 뷰 타입 (UI 표시용)
 interface ChallengeDetail {
   id: string;
   title: string;
   description: string;
-  domain: 'nutrition' | 'workout' | 'water' | 'sleep' | 'wellness';
+  domain: 'nutrition' | 'workout' | 'skin' | 'combined';
   difficulty: 'easy' | 'medium' | 'hard';
   startDate: string;
   endDate: string;
@@ -49,57 +59,17 @@ interface ChallengeDetail {
   }>;
 }
 
-// Mock 데이터
-const MOCK_CHALLENGE: ChallengeDetail = {
-  id: 'challenge_1',
-  title: '30일 물 2L 챌린지',
-  description: '매일 물 2L를 마시고 건강한 습관을 만들어보세요! 수분 섭취는 피부 건강, 체중 관리, 에너지 수준에 도움이 됩니다.',
-  domain: 'water',
-  difficulty: 'medium',
-  startDate: '2026-01-01',
-  endDate: '2026-01-30',
-  targetValue: 2000,
-  targetUnit: 'ml',
-  currentValue: 1500,
-  participants: 1234,
-  isJoined: true,
-  rewards: {
-    points: 500,
-    badge: '수분왕',
-  },
-  rules: [
-    '매일 물 2L (2000ml) 이상 섭취',
-    '카페인 음료는 물 섭취량에 포함되지 않음',
-    '앱에서 매일 물 섭취량 기록 필수',
-    '3일 연속 미달성 시 챌린지 실패',
-  ],
-  milestones: [
-    { day: 7, target: 14000, completed: true },
-    { day: 14, target: 28000, completed: false },
-    { day: 21, target: 42000, completed: false },
-    { day: 30, target: 60000, completed: false },
-  ],
-  leaderboard: [
-    { rank: 1, userId: 'u1', userName: '물마스터', progress: 100 },
-    { rank: 2, userId: 'u2', userName: '건강러버', progress: 95 },
-    { rank: 3, userId: 'u3', userName: '웰니스킹', progress: 88 },
-    { rank: 4, userId: 'u4', userName: '나', progress: 75 },
-    { rank: 5, userId: 'u5', userName: '도전자', progress: 70 },
-  ],
+const DOMAIN_CONFIG: Record<string, { icon: string; color: string; label: string }> = {
+  nutrition: { icon: '🥗', color: DOMAIN_COLORS.nutrition, label: '영양' },
+  workout: { icon: '💪', color: DOMAIN_COLORS.workout, label: '운동' },
+  skin: { icon: '✨', color: DOMAIN_COLORS.skin, label: '피부' },
+  combined: { icon: '🎯', color: DOMAIN_COLORS.combined, label: '복합' },
 };
 
-const DOMAIN_CONFIG = {
-  nutrition: { icon: '🥗', color: '#22C55E', label: '영양' },
-  workout: { icon: '💪', color: '#3B82F6', label: '운동' },
-  water: { icon: '💧', color: '#06B6D4', label: '수분' },
-  sleep: { icon: '😴', color: '#8B5CF6', label: '수면' },
-  wellness: { icon: '✨', color: '#F59E0B', label: '웰니스' },
-};
-
-const DIFFICULTY_CONFIG = {
-  easy: { label: '쉬움', color: '#22C55E' },
-  medium: { label: '보통', color: '#F59E0B' },
-  hard: { label: '어려움', color: '#EF4444' },
+const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
+  easy: { label: DIFFICULTY_NAMES.easy, color: DIFFICULTY_COLORS.easy },
+  medium: { label: DIFFICULTY_NAMES.medium, color: DIFFICULTY_COLORS.medium },
+  hard: { label: DIFFICULTY_NAMES.hard, color: DIFFICULTY_COLORS.hard },
 };
 
 export default function ChallengeDetailScreen() {
@@ -107,20 +77,72 @@ export default function ChallengeDetailScreen() {
   const router = useRouter();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
-  const [challenge, setChallenge] = useState<ChallengeDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isJoining, setIsJoining] = useState(false);
+  // API 훅 사용
+  const { challenges, userChallenges, isLoading: challengesLoading, refetch } = useChallenges();
+  const { join, isJoining } = useJoinChallenge(() => {
+    refetch(); // 참가 성공 후 목록 새로고침
+  });
 
-  useEffect(() => {
-    // TODO: API 연동
-    setTimeout(() => {
-      setChallenge({ ...MOCK_CHALLENGE, id: id || 'challenge_1' });
-      setIsLoading(false);
-    }, 500);
-  }, [id]);
+  // 현재 챌린지 찾기
+  const currentChallenge = useMemo(() => {
+    return challenges.find((c) => c.id === id);
+  }, [challenges, id]);
+
+  // 사용자 참여 정보 찾기
+  const userChallenge = useMemo(() => {
+    return userChallenges.find((uc) => uc.challengeId === id);
+  }, [userChallenges, id]);
+
+  // ChallengeDetail 형태로 변환
+  const challenge = useMemo((): ChallengeDetail | null => {
+    if (!currentChallenge) return null;
+
+    const isJoined = !!userChallenge;
+    const progress = userChallenge ? calculateProgress(userChallenge) : 0;
+    const durationDays = currentChallenge.durationDays;
+
+    // 마일스톤 생성 (7일, 14일, 21일, 30일 단위)
+    const milestones = [7, 14, 21, 30]
+      .filter((day) => day <= durationDays)
+      .map((day) => ({
+        day,
+        target: day,
+        completed: userChallenge
+          ? (userChallenge.progress.currentDays || 0) >= day
+          : false,
+      }));
+
+    return {
+      id: currentChallenge.id,
+      title: currentChallenge.name,
+      description: currentChallenge.description || '',
+      domain: currentChallenge.domain,
+      difficulty: currentChallenge.difficulty,
+      startDate: userChallenge?.startedAt.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+      endDate: userChallenge?.targetEndAt.toISOString().split('T')[0] || '',
+      targetValue: currentChallenge.target.days || durationDays,
+      targetUnit: '일',
+      currentValue: userChallenge?.progress.currentDays || 0,
+      participants: 0, // 참가자 수는 별도 API 필요
+      isJoined,
+      rewards: {
+        points: currentChallenge.rewardXp,
+        badge: currentChallenge.icon,
+      },
+      rules: [
+        `${durationDays}일 동안 매일 목표 달성`,
+        '앱에서 매일 진행 상황 기록 필수',
+        '3일 연속 미달성 시 챌린지 실패',
+      ],
+      milestones,
+      leaderboard: [], // 리더보드는 별도 API 필요
+    };
+  }, [currentChallenge, userChallenge]);
+
+  const isLoading = challengesLoading;
 
   const handleJoinToggle = async () => {
-    if (!challenge) return;
+    if (!challenge || !id) return;
 
     if (hapticEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -135,19 +157,20 @@ export default function ChallengeDetailScreen() {
           {
             text: '포기',
             style: 'destructive',
-            onPress: () => {
-              setChallenge({ ...challenge, isJoined: false });
+            onPress: async () => {
+              // TODO: 포기 API 구현 필요
+              Alert.alert('알림', '포기 기능은 준비 중입니다.');
             },
           },
         ]
       );
     } else {
-      setIsJoining(true);
-      // TODO: API 연동
-      setTimeout(() => {
-        setChallenge({ ...challenge, isJoined: true, participants: challenge.participants + 1 });
-        setIsJoining(false);
-      }, 500);
+      const result = await join(id);
+      if (result.success) {
+        Alert.alert('참가 완료', '챌린지에 참가했습니다!');
+      } else {
+        Alert.alert('참가 실패', result.error || '다시 시도해주세요.');
+      }
     }
   };
 
