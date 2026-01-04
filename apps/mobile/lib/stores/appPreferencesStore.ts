@@ -3,9 +3,9 @@
  * @description 사용자 앱 설정 (알림, 테마, 언어 등)
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type AppLanguage = 'ko' | 'en' | 'ja' | 'zh';
@@ -31,7 +31,10 @@ interface AppPreferencesState {
   // 알림 설정
   notifications: NotificationSettings;
   setNotificationEnabled: (enabled: boolean) => void;
-  setNotificationSetting: (key: keyof Omit<NotificationSettings, 'enabled'>, value: boolean) => void;
+  setNotificationSetting: (
+    key: keyof Omit<NotificationSettings, 'enabled'>,
+    value: boolean
+  ) => void;
 
   // 햅틱 피드백
   hapticEnabled: boolean;
@@ -95,7 +98,8 @@ export const useAppPreferencesStore = create<AppPreferencesState>()(
 
       setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
 
-      setOnboardingCompleted: (onboardingCompleted) => set({ onboardingCompleted }),
+      setOnboardingCompleted: (onboardingCompleted) =>
+        set({ onboardingCompleted }),
 
       setAppTourCompleted: (appTourCompleted) => set({ appTourCompleted }),
 

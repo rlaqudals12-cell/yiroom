@@ -3,11 +3,15 @@
  * @description AsyncStorage 기반 최근 본 제품 관리
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export type RecentProductType = 'cosmetic' | 'supplement' | 'equipment' | 'healthfood';
+export type RecentProductType =
+  | 'cosmetic'
+  | 'supplement'
+  | 'equipment'
+  | 'healthfood';
 
 export interface RecentlyViewedItem {
   productId: string;
@@ -37,7 +41,9 @@ export const useRecentlyViewedStore = create<RecentlyViewedState>()(
       addItem: (item) =>
         set((state) => {
           // 이미 있는 항목 제거 (중복 방지)
-          const filtered = state.items.filter((i) => i.productId !== item.productId);
+          const filtered = state.items.filter(
+            (i) => i.productId !== item.productId
+          );
 
           // 새 항목 추가 (최신순)
           const newItem: RecentlyViewedItem = {

@@ -3,14 +3,23 @@
  * @description 다단계 폼 상태 관리 (AsyncStorage 영속)
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 타입 정의
-export type NutritionGoal = 'weight_loss' | 'muscle_gain' | 'maintenance' | 'health';
+export type NutritionGoal =
+  | 'weight_loss'
+  | 'muscle_gain'
+  | 'maintenance'
+  | 'health';
 export type Gender = 'male' | 'female';
-export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+export type ActivityLevel =
+  | 'sedentary'
+  | 'light'
+  | 'moderate'
+  | 'active'
+  | 'very_active';
 export type MealStyle = 'korean' | 'western' | 'mixed' | 'vegetarian';
 export type CookingSkill = 'beginner' | 'intermediate' | 'advanced';
 export type BudgetLevel = 'low' | 'medium' | 'high';

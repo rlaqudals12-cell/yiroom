@@ -1,6 +1,6 @@
 /**
  * 제품 추천 리스트 화면
- * 분석 결과 기반 맞춤 제품 추천
+ * 분석 결과 기반 맞춤 제품 추천 (DB 연동)
  */
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
@@ -18,6 +18,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+  getAffiliateProducts,
+  getRecommendedProductsBySkin,
+  getRecommendedProductsByColor,
+  type AffiliateProduct,
+  type AffiliateProductFilter,
+} from '../../lib/affiliate';
 import { useClerkSupabaseClient } from '../../lib/supabase';
 
 // 카테고리
@@ -29,118 +36,10 @@ const CATEGORIES = [
   { id: 'equipment', label: '운동용품' },
 ];
 
-interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  category: string;
-  price: number;
-  rating: number;
-  reviewCount: number;
-  imageUrl: string;
+// 제품 표시용 인터페이스 (AffiliateProduct + matchScore)
+interface DisplayProduct extends AffiliateProduct {
   matchScore: number;
-  tags: string[];
 }
-
-// Mock 제품 데이터
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: '수분 크림 리치',
-    brand: '아이오페',
-    category: 'skincare',
-    price: 35000,
-    rating: 4.5,
-    reviewCount: 120,
-    imageUrl: 'https://via.placeholder.com/150',
-    matchScore: 92,
-    tags: ['건성', '보습', '히알루론산'],
-  },
-  {
-    id: '2',
-    name: '톤업 선크림 SPF50+',
-    brand: '라운드랩',
-    category: 'skincare',
-    price: 18000,
-    rating: 4.7,
-    reviewCount: 89,
-    imageUrl: 'https://via.placeholder.com/150',
-    matchScore: 88,
-    tags: ['자외선차단', '무자극', '봄웜톤'],
-  },
-  {
-    id: '3',
-    name: '코랄 립스틱',
-    brand: '롬앤',
-    category: 'makeup',
-    price: 12000,
-    rating: 4.8,
-    reviewCount: 256,
-    imageUrl: 'https://via.placeholder.com/150',
-    matchScore: 95,
-    tags: ['봄웜톤', '코랄', '데일리'],
-  },
-  {
-    id: '4',
-    name: '아이브로우 펜슬',
-    brand: '에뛰드',
-    category: 'makeup',
-    price: 8000,
-    rating: 4.3,
-    reviewCount: 180,
-    imageUrl: 'https://via.placeholder.com/150',
-    matchScore: 85,
-    tags: ['자연스러운', '소프트브라운'],
-  },
-  {
-    id: '5',
-    name: '멀티비타민',
-    brand: '센트룸',
-    category: 'supplement',
-    price: 28000,
-    rating: 4.6,
-    reviewCount: 340,
-    imageUrl: 'https://via.placeholder.com/150',
-    matchScore: 90,
-    tags: ['종합비타민', '에너지', '면역력'],
-  },
-  {
-    id: '6',
-    name: '오메가3',
-    brand: '뉴트리원',
-    category: 'supplement',
-    price: 32000,
-    rating: 4.4,
-    reviewCount: 210,
-    imageUrl: 'https://via.placeholder.com/150',
-    matchScore: 87,
-    tags: ['혈행건강', 'EPA', 'DHA'],
-  },
-  {
-    id: '7',
-    name: '요가매트 6mm',
-    brand: '만두카',
-    category: 'equipment',
-    price: 45000,
-    rating: 4.9,
-    reviewCount: 78,
-    imageUrl: 'https://via.placeholder.com/150',
-    matchScore: 82,
-    tags: ['요가', '필라테스', '미끄럼방지'],
-  },
-  {
-    id: '8',
-    name: '덤벨 세트 5kg',
-    brand: '나이키',
-    category: 'equipment',
-    price: 55000,
-    rating: 4.5,
-    reviewCount: 92,
-    imageUrl: 'https://via.placeholder.com/150',
-    matchScore: 80,
-    tags: ['근력운동', '홈트레이닝'],
-  },
-];
 
 export default function ProductsScreen() {
   const colorScheme = useColorScheme();
@@ -164,7 +63,7 @@ export default function ProductsScreen() {
   const [selectedCategory, setSelectedCategory] = useState(
     initialCategory || 'all'
   );
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<DisplayProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [userSeason, setUserSeason] = useState<string | null>(null);
@@ -203,61 +102,126 @@ export default function ProductsScreen() {
     }
   }, [skinType, querySeason]);
 
-  // 제품 목록 조회
+  // 매칭 점수 계산 (분석 결과 기반)
+  const calculateMatchScore = useCallback(
+    (product: AffiliateProduct): number => {
+      let score = 70; // 기본 점수
+
+      // 피부 타입 매칭
+      if (
+        skinType &&
+        product.skinTypes &&
+        product.skinTypes.includes(
+          skinType as 'dry' | 'oily' | 'combination' | 'sensitive' | 'normal'
+        )
+      ) {
+        score += 15;
+      }
+
+      // 퍼스널 컬러 매칭
+      if (querySeason) {
+        const seasonMap: Record<
+          string,
+          'spring_warm' | 'summer_cool' | 'autumn_warm' | 'winter_cool'
+        > = {
+          Spring: 'spring_warm',
+          Summer: 'summer_cool',
+          Autumn: 'autumn_warm',
+          Winter: 'winter_cool',
+        };
+        const colorKey = seasonMap[querySeason];
+        if (
+          colorKey &&
+          product.personalColors &&
+          product.personalColors.includes(colorKey)
+        ) {
+          score += 15;
+        }
+      }
+
+      // 평점 보너스 (4.5 이상)
+      if (product.rating && product.rating >= 4.5) {
+        score += 5;
+      }
+
+      return Math.min(score, 100);
+    },
+    [skinType, querySeason]
+  );
+
+  // 제품 목록 조회 (DB 연동)
   const fetchProducts = useCallback(async () => {
-    // 실제로는 API 호출
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      let rawProducts: AffiliateProduct[] = [];
 
-    // 카테고리 필터링
-    let filtered = MOCK_PRODUCTS;
-    if (selectedCategory !== 'all') {
-      filtered = MOCK_PRODUCTS.filter((p) => p.category === selectedCategory);
-    }
-
-    // 피부 타입 기반 필터링 (태그 매칭)
-    if (skinType) {
-      const skinTypeMap: Record<string, string[]> = {
-        dry: ['건성', '보습', '수분'],
-        oily: ['지성', '유분조절', '모공'],
-        combination: ['복합성', '밸런싱'],
-        sensitive: ['민감성', '저자극', '무자극'],
-        normal: ['보통', '데일리'],
-      };
-      const matchTags = skinTypeMap[skinType] || [];
-      if (matchTags.length > 0) {
-        filtered = filtered.filter((p) =>
-          p.tags.some((tag) =>
-            matchTags.some((mt) => tag.toLowerCase().includes(mt))
-          )
+      // 피부 타입 기반 추천
+      if (skinType) {
+        rawProducts = await getRecommendedProductsBySkin(
+          supabase,
+          skinType,
+          undefined,
+          20
         );
       }
-    }
-
-    // 시즌 기반 필터링 (퍼스널 컬러)
-    if (querySeason) {
-      const seasonMap: Record<string, string> = {
-        Spring: '봄웜톤',
-        Summer: '여름쿨톤',
-        Autumn: '가을웜톤',
-        Winter: '겨울쿨톤',
-      };
-      const seasonTag = seasonMap[querySeason];
-      if (seasonTag) {
-        filtered = filtered.filter((p) =>
-          p.tags.some(
-            (tag) => tag.includes(seasonTag) || tag.includes('데일리')
-          )
+      // 퍼스널 컬러 기반 추천
+      else if (querySeason) {
+        const seasonMap: Record<string, string> = {
+          Spring: 'spring_warm',
+          Summer: 'summer_cool',
+          Autumn: 'autumn_warm',
+          Winter: 'winter_cool',
+        };
+        const colorKey = seasonMap[querySeason];
+        if (colorKey) {
+          rawProducts = await getRecommendedProductsByColor(
+            supabase,
+            colorKey,
+            undefined,
+            20
+          );
+        }
+      }
+      // 일반 조회
+      else {
+        const filter: AffiliateProductFilter = {
+          inStockOnly: true,
+        };
+        if (selectedCategory !== 'all') {
+          filter.category = selectedCategory;
+        }
+        rawProducts = await getAffiliateProducts(
+          supabase,
+          filter,
+          'rating',
+          20,
+          0
         );
       }
+
+      // 카테고리 필터링 (추천 결과에도 적용)
+      if (selectedCategory !== 'all') {
+        rawProducts = rawProducts.filter(
+          (p) => p.category === selectedCategory
+        );
+      }
+
+      // 매칭 점수 계산 및 정렬
+      const displayProducts: DisplayProduct[] = rawProducts
+        .map((product) => ({
+          ...product,
+          matchScore: calculateMatchScore(product),
+        }))
+        .sort((a, b) => b.matchScore - a.matchScore);
+
+      setProducts(displayProducts);
+    } catch (error) {
+      console.error('[Mobile] Failed to fetch products:', error);
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
-
-    // 매칭 점수순 정렬
-    filtered = [...filtered].sort((a, b) => b.matchScore - a.matchScore);
-
-    setProducts(filtered);
-    setIsLoading(false);
-    setIsRefreshing(false);
-  }, [selectedCategory, skinType, querySeason]);
+  }, [supabase, selectedCategory, skinType, querySeason, calculateMatchScore]);
 
   useEffect(() => {
     fetchUserData();
@@ -417,7 +381,8 @@ export default function ProductsScreen() {
                     <Text
                       style={[styles.ratingText, isDark && styles.textMuted]}
                     >
-                      {product.rating.toFixed(1)} ({product.reviewCount})
+                      {(product.rating ?? 0).toFixed(1)} (
+                      {product.reviewCount ?? 0})
                     </Text>
                   </View>
                   <Text

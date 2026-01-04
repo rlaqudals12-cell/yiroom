@@ -3,15 +3,10 @@
  * @description 화장품 성분의 EWG 등급 및 안전성 표시
  */
 
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
 import * as Haptics from 'expo-haptics';
+import React, { useState } from 'react';
+import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+
 import { useAppPreferencesStore } from '@/lib/stores';
 
 // EWG 등급 타입
@@ -37,8 +32,20 @@ interface EWGAnalysisProps {
 // EWG 등급별 설정
 const EWG_CONFIG = {
   low: { min: 1, max: 2, label: '안전', color: '#22C55E', bgColor: '#DCFCE7' },
-  moderate: { min: 3, max: 6, label: '보통', color: '#F59E0B', bgColor: '#FEF3C7' },
-  high: { min: 7, max: 10, label: '주의', color: '#EF4444', bgColor: '#FEE2E2' },
+  moderate: {
+    min: 3,
+    max: 6,
+    label: '보통',
+    color: '#F59E0B',
+    bgColor: '#FEF3C7',
+  },
+  high: {
+    min: 7,
+    max: 10,
+    label: '주의',
+    color: '#EF4444',
+    bgColor: '#FEE2E2',
+  },
 };
 
 function getEWGCategory(grade?: EWGGrade) {
@@ -56,14 +63,18 @@ function getEWGConfig(grade?: EWGGrade) {
 
 export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
-  const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
+  const [expandedIngredient, setExpandedIngredient] = useState<string | null>(
+    null
+  );
   const [showAll, setShowAll] = useState(false);
 
   // 성분 통계 계산
   const stats = {
     total: ingredients.length,
     safe: ingredients.filter((i) => i.ewgGrade && i.ewgGrade <= 2).length,
-    moderate: ingredients.filter((i) => i.ewgGrade && i.ewgGrade >= 3 && i.ewgGrade <= 6).length,
+    moderate: ingredients.filter(
+      (i) => i.ewgGrade && i.ewgGrade >= 3 && i.ewgGrade <= 6
+    ).length,
     caution: ingredients.filter((i) => i.ewgGrade && i.ewgGrade >= 7).length,
     allergen: ingredients.filter((i) => i.isAllergen).length,
   };
@@ -167,7 +178,9 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
                     {ingredient.nameKo || ingredient.name}
                   </Text>
                   {ingredient.nameKo && (
-                    <Text style={styles.ingredientNameEn}>{ingredient.name}</Text>
+                    <Text style={styles.ingredientNameEn}>
+                      {ingredient.name}
+                    </Text>
                   )}
                 </View>
                 {ingredient.isAllergen && (
@@ -188,7 +201,9 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
                     </View>
                   )}
                   {ingredient.description && (
-                    <Text style={styles.descriptionText}>{ingredient.description}</Text>
+                    <Text style={styles.descriptionText}>
+                      {ingredient.description}
+                    </Text>
                   )}
                   {config && (
                     <Text style={[styles.safetyText, { color: config.color }]}>
@@ -236,7 +251,9 @@ export function EWGAnalysisSkeleton() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={[styles.skeleton, { width: 80, height: 20 }]} />
-        <View style={[styles.skeleton, { width: 120, height: 14, marginTop: 4 }]} />
+        <View
+          style={[styles.skeleton, { width: 120, height: 14, marginTop: 4 }]}
+        />
       </View>
       <View style={styles.statsRow}>
         {[1, 2, 3].map((i) => (

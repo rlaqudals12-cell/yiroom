@@ -14,12 +14,12 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Linking,
   Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SizeRecommendation } from '../../components/products/SizeRecommendation';
+import { useAffiliateClick, identifyPartner } from '../../lib/affiliate';
 import type { ClothingCategory } from '../../lib/smart-matching';
 import { useClerkSupabaseClient } from '../../lib/supabase';
 
@@ -219,6 +219,19 @@ export default function ProductDetailScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('info');
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // 어필리에이트 클릭 훅 (제품 정보 기반)
+  const { handleClick: affiliateClick, isLoading: _isClickLoading } =
+    useAffiliateClick({
+      productId: id || '',
+      productUrl: product?.purchaseUrl || '',
+      partner: product?.purchaseUrl
+        ? identifyPartner(product.purchaseUrl) || 'coupang'
+        : 'coupang',
+      sourcePage: 'product-detail',
+      sourceComponent: 'purchase-button',
+      recommendationType: 'general',
+    });
+
   // 제품 상세 조회
   const fetchProduct = useCallback(async () => {
     // 실제로는 API 호출
@@ -255,20 +268,14 @@ export default function ProductDetailScreen() {
     }
   };
 
-  // 구매하기
+  // 구매하기 (어필리에이트 클릭 훅 사용)
   const handlePurchase = async () => {
     if (!product?.purchaseUrl) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    try {
-      const supported = await Linking.canOpenURL(product.purchaseUrl);
-      if (supported) {
-        await Linking.openURL(product.purchaseUrl);
-      }
-    } catch (error) {
-      console.error('[Mobile] Open URL error:', error);
-    }
+    // 어필리에이트 훅으로 클릭 트래킹 + 딥링크 열기
+    await affiliateClick();
   };
 
   // 가격 포맷

@@ -21,6 +21,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+  analyzeFood as analyzeFoodWithGemini,
+  getConfidenceFeedback,
+  type FoodAnalysisResult,
+  type TrafficLight,
+} from '../../../lib/gemini';
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 
 // 식사 타입
@@ -31,9 +37,7 @@ const MEAL_TYPES = [
   { id: 'snack', label: '간식', icon: '🍪' },
 ];
 
-// 스톱라이트 색상 (Noom 스타일)
-type TrafficLight = 'green' | 'yellow' | 'red';
-
+// RecognizedFood 타입 - lib/gemini.ts의 FoodAnalysisResult['foods'][number]와 동일
 interface RecognizedFood {
   id: string;
   name: string;
@@ -45,93 +49,6 @@ interface RecognizedFood {
   portion: number;
   confidence: number;
 }
-
-// 음식 DB Mock (실제로는 API 호출)
-const FOOD_DATABASE: Record<
-  string,
-  Omit<RecognizedFood, 'id' | 'portion' | 'confidence'>
-> = {
-  비빔밥: {
-    name: '비빔밥',
-    calories: 550,
-    protein: 18,
-    carbs: 65,
-    fat: 12,
-    trafficLight: 'yellow',
-  },
-  된장찌개: {
-    name: '된장찌개',
-    calories: 120,
-    protein: 9,
-    carbs: 8,
-    fat: 5,
-    trafficLight: 'green',
-  },
-  김치찌개: {
-    name: '김치찌개',
-    calories: 150,
-    protein: 12,
-    carbs: 10,
-    fat: 6,
-    trafficLight: 'green',
-  },
-  불고기: {
-    name: '불고기',
-    calories: 350,
-    protein: 28,
-    carbs: 15,
-    fat: 20,
-    trafficLight: 'yellow',
-  },
-  삼겹살: {
-    name: '삼겹살',
-    calories: 500,
-    protein: 25,
-    carbs: 2,
-    fat: 45,
-    trafficLight: 'red',
-  },
-  라면: {
-    name: '라면',
-    calories: 500,
-    protein: 10,
-    carbs: 70,
-    fat: 18,
-    trafficLight: 'red',
-  },
-  샐러드: {
-    name: '샐러드',
-    calories: 80,
-    protein: 3,
-    carbs: 10,
-    fat: 3,
-    trafficLight: 'green',
-  },
-  치킨: {
-    name: '치킨',
-    calories: 450,
-    protein: 35,
-    carbs: 15,
-    fat: 28,
-    trafficLight: 'red',
-  },
-  김밥: {
-    name: '김밥',
-    calories: 320,
-    protein: 8,
-    carbs: 45,
-    fat: 12,
-    trafficLight: 'yellow',
-  },
-  떡볶이: {
-    name: '떡볶이',
-    calories: 380,
-    protein: 6,
-    carbs: 65,
-    fat: 10,
-    trafficLight: 'red',
-  },
-};
 
 type ScreenState = 'camera' | 'analyzing' | 'result';
 
@@ -198,35 +115,37 @@ export default function FoodCameraScreen() {
     }
   };
 
-  // AI 음식 분석 (Mock)
-  const analyzeFood = async (_imageBase64: string) => {
-    // 실제로는 Gemini API 호출
-    // 여기서는 Mock 데이터 사용
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+  // AI 인사이트 메시지 상태
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
 
-    // 랜덤 음식 1-3개 인식
-    const foodNames = Object.keys(FOOD_DATABASE);
-    const numFoods = Math.floor(Math.random() * 3) + 1;
-    const selectedFoods: RecognizedFood[] = [];
+  // AI 음식 분석 (Gemini API 연동 + Mock Fallback)
+  const analyzeFood = async (imageBase64: string) => {
+    try {
+      // Gemini API 호출 (lib/gemini.ts에서 Mock Fallback 포함)
+      const result: FoodAnalysisResult =
+        await analyzeFoodWithGemini(imageBase64);
 
-    for (let i = 0; i < numFoods; i++) {
-      const randomFood =
-        foodNames[Math.floor(Math.random() * foodNames.length)];
-      const foodData = FOOD_DATABASE[randomFood];
+      // 결과를 RecognizedFood 형식으로 변환
+      const recognizedFoods: RecognizedFood[] = result.foods.map((food) => ({
+        id: food.id,
+        name: food.name,
+        calories: food.calories,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        trafficLight: food.trafficLight,
+        portion: food.portion,
+        confidence: food.confidence,
+      }));
 
-      // 이미 선택된 음식이면 스킵
-      if (selectedFoods.some((f) => f.name === randomFood)) continue;
-
-      selectedFoods.push({
-        id: `food-${Date.now()}-${i}`,
-        ...foodData,
-        portion: 1,
-        confidence: 0.7 + Math.random() * 0.25,
-      });
+      setRecognizedFoods(recognizedFoods);
+      setAiInsight(result.insight || null);
+      setScreenState('result');
+    } catch (error) {
+      console.error('[Mobile] Food analysis failed:', error);
+      Alert.alert('분석 실패', '음식 분석에 실패했습니다. 다시 시도해주세요.');
+      setScreenState('camera');
     }
-
-    setRecognizedFoods(selectedFoods);
-    setScreenState('result');
   };
 
   // 수량 변경
@@ -309,6 +228,7 @@ export default function FoodCameraScreen() {
   const handleRetake = () => {
     setCapturedImage(null);
     setRecognizedFoods([]);
+    setAiInsight(null);
     setScreenState('camera');
   };
 
@@ -404,6 +324,15 @@ export default function FoodCameraScreen() {
             <Image source={{ uri: capturedImage }} style={styles.resultImage} />
           )}
 
+          {/* AI 인사이트 */}
+          {aiInsight && (
+            <View style={[styles.insightCard, isDark && styles.cardDark]}>
+              <Text style={[styles.insightText, isDark && styles.textMuted]}>
+                {aiInsight}
+              </Text>
+            </View>
+          )}
+
           {/* AI 인식 결과 */}
           <View style={styles.resultSection}>
             <Text style={[styles.resultTitle, isDark && styles.textLight]}>
@@ -457,6 +386,29 @@ export default function FoodCameraScreen() {
                     {Math.round(food.protein * food.portion)}g · 지{' '}
                     {Math.round(food.fat * food.portion)}g
                   </Text>
+
+                  {/* 신뢰도 피드백 배지 */}
+                  {(() => {
+                    const feedback = getConfidenceFeedback(food.confidence);
+                    return (
+                      <View
+                        style={[
+                          styles.confidenceBadge,
+                          { backgroundColor: feedback.color + '20' },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.confidenceBadgeText,
+                            { color: feedback.color },
+                          ]}
+                        >
+                          {feedback.message} (
+                          {Math.round(food.confidence * 100)}%)
+                        </Text>
+                      </View>
+                    );
+                  })()}
 
                   {/* 수량 조절 */}
                   <View style={styles.portionRow}>
@@ -773,6 +725,20 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
   },
+  insightCard: {
+    backgroundColor: '#f0fdf4',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 20,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+  },
+  insightText: {
+    fontSize: 14,
+    color: '#166534',
+    lineHeight: 20,
+  },
   resultSection: {
     padding: 20,
   },
@@ -839,7 +805,18 @@ const styles = StyleSheet.create({
   macros: {
     fontSize: 13,
     color: '#666',
+    marginBottom: 8,
+  },
+  confidenceBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
     marginBottom: 12,
+  },
+  confidenceBadgeText: {
+    fontSize: 11,
+    fontWeight: '500',
   },
   portionRow: {
     flexDirection: 'row',

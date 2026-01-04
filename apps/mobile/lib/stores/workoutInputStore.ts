@@ -3,9 +3,9 @@
  * @description 다단계 폼 상태 관리 (AsyncStorage 영속)
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 타입 정의
 export type WorkoutGoal =
@@ -112,7 +112,8 @@ export const useWorkoutInputStore = create<WorkoutInputState>()(
           goals: state.goals.filter((g) => g !== goal),
         })),
 
-      setConcerns: (concerns) => set({ concerns: concerns.slice(0, MAX_CONCERNS) }),
+      setConcerns: (concerns) =>
+        set({ concerns: concerns.slice(0, MAX_CONCERNS) }),
 
       setFrequency: (frequency) => set({ frequency }),
 

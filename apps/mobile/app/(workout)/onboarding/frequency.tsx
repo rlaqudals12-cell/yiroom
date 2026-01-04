@@ -1,6 +1,7 @@
 /**
- * W-1 운동 온보딩 - 빈도 선택
+ * W-1 운동 온보딩 - 빈도 설정
  */
+import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -13,42 +14,57 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const FREQUENCIES = [
-  { id: '1-2', label: '주 1-2회', description: '가볍게 시작하기', emoji: '🌱' },
-  { id: '3-4', label: '주 3-4회', description: '균형 잡힌 운동', emoji: '🌿' },
-  { id: '5-6', label: '주 5-6회', description: '적극적인 운동', emoji: '🌳' },
-  { id: '7', label: '매일', description: '운동이 일상', emoji: '🔥' },
+// 주당 운동 횟수 옵션 (2-6회)
+const FREQUENCY_OPTIONS = [
+  { value: 2, label: '주 2회', description: '가볍게 시작해요', emoji: '🌱' },
+  { value: 3, label: '주 3회', description: '균형 잡힌 운동', emoji: '🌿' },
+  { value: 4, label: '주 4회', description: '적극적인 운동', emoji: '🌳' },
+  { value: 5, label: '주 5회', description: '열정적인 운동', emoji: '💪' },
+  { value: 6, label: '주 6회', description: '고강도 트레이닝', emoji: '🔥' },
 ];
 
-const DURATIONS = [
-  { id: '15-30', label: '15-30분', description: '짧고 굵게' },
-  { id: '30-45', label: '30-45분', description: '적당한 시간' },
-  { id: '45-60', label: '45-60분', description: '충분한 시간' },
-  { id: '60+', label: '1시간 이상', description: '집중 운동' },
+// 선호 운동 시간대 옵션
+const TIME_OPTIONS = [
+  { id: 'morning', label: '아침', emoji: '🌅', description: '6시~12시' },
+  { id: 'afternoon', label: '점심', emoji: '☀️', description: '12시~18시' },
+  { id: 'evening', label: '저녁', emoji: '🌆', description: '18시~21시' },
+  { id: 'night', label: '밤', emoji: '🌙', description: '21시~24시' },
 ];
 
 export default function WorkoutFrequencyScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const { goals } = useLocalSearchParams<{ goals: string }>();
+  const params = useLocalSearchParams<{ goals?: string }>();
 
-  const [selectedFrequency, setSelectedFrequency] = useState<string | null>(
-    null
-  );
-  const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
+  const [frequency, setFrequency] = useState<number | null>(null);
+  const [preferredTime, setPreferredTime] = useState<string | null>(null);
 
-  const handleAnalyze = () => {
+  // 주당 횟수 선택 핸들러
+  const handleFrequencySelect = (value: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setFrequency(value);
+  };
+
+  // 시간대 선택 핸들러
+  const handleTimeSelect = (timeId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPreferredTime(timeId);
+  };
+
+  // 다음 단계로 이동
+  const handleNext = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.replace({
       pathname: '/(workout)/result',
       params: {
-        goals: goals || '[]',
-        frequency: selectedFrequency || '',
-        duration: selectedDuration || '',
+        goals: params.goals || '[]',
+        frequency: frequency?.toString() || '',
+        preferredTime: preferredTime || '',
       },
     });
   };
 
-  const isComplete = selectedFrequency && selectedDuration;
+  const isValid = frequency !== null && preferredTime !== null;
 
   return (
     <SafeAreaView
@@ -56,91 +72,116 @@ export default function WorkoutFrequencyScreen() {
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={styles.content}>
-        {/* 운동 빈도 */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            일주일에 몇 번 운동하실 건가요?
-          </Text>
-          <View style={styles.optionList}>
-            {FREQUENCIES.map((freq) => (
+        {/* 주당 운동 횟수 */}
+        <Text style={[styles.title, isDark && styles.textLight]}>
+          주당 운동 횟수
+        </Text>
+        <Text style={[styles.subtitle, isDark && styles.textMuted]}>
+          일주일에 몇 번 운동할 수 있나요?
+        </Text>
+
+        <View style={styles.frequencyList}>
+          {FREQUENCY_OPTIONS.map((option) => {
+            const isSelected = frequency === option.value;
+
+            return (
               <TouchableOpacity
-                key={freq.id}
+                key={option.value}
                 style={[
-                  styles.optionCard,
-                  isDark && styles.optionCardDark,
-                  selectedFrequency === freq.id && styles.optionCardSelected,
+                  styles.frequencyCard,
+                  isDark && styles.frequencyCardDark,
+                  isSelected && styles.frequencyCardSelected,
                 ]}
-                onPress={() => setSelectedFrequency(freq.id)}
+                onPress={() => handleFrequencySelect(option.value)}
+                activeOpacity={0.7}
               >
-                <Text style={styles.optionEmoji}>{freq.emoji}</Text>
-                <Text
-                  style={[
-                    styles.optionLabel,
-                    isDark && styles.textLight,
-                    selectedFrequency === freq.id && styles.optionLabelSelected,
-                  ]}
+                <Text style={styles.frequencyEmoji}>{option.emoji}</Text>
+                <View style={styles.frequencyContent}>
+                  <Text
+                    style={[
+                      styles.frequencyLabel,
+                      isDark && styles.textLight,
+                      isSelected && styles.frequencyLabelSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.frequencyDescription,
+                      isDark && styles.textMuted,
+                    ]}
+                  >
+                    {option.description}
+                  </Text>
+                </View>
+                <View
+                  style={[styles.radio, isSelected && styles.radioSelected]}
                 >
-                  {freq.label}
-                </Text>
-                <Text
-                  style={[styles.optionDescription, isDark && styles.textMuted]}
-                >
-                  {freq.description}
-                </Text>
+                  {isSelected && <View style={styles.radioInner} />}
+                </View>
               </TouchableOpacity>
-            ))}
-          </View>
+            );
+          })}
         </View>
 
-        {/* 운동 시간 */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            한 번에 얼마나 운동하실 건가요?
-          </Text>
-          <View style={styles.durationList}>
-            {DURATIONS.map((dur) => (
+        {/* 선호 운동 시간대 */}
+        <Text
+          style={[
+            styles.title,
+            styles.sectionMargin,
+            isDark && styles.textLight,
+          ]}
+        >
+          선호 운동 시간대
+        </Text>
+        <Text style={[styles.subtitle, isDark && styles.textMuted]}>
+          주로 어느 시간대에 운동하시나요?
+        </Text>
+
+        <View style={styles.timeGrid}>
+          {TIME_OPTIONS.map((option) => {
+            const isSelected = preferredTime === option.id;
+
+            return (
               <TouchableOpacity
-                key={dur.id}
+                key={option.id}
                 style={[
-                  styles.durationCard,
-                  isDark && styles.durationCardDark,
-                  selectedDuration === dur.id && styles.durationCardSelected,
+                  styles.timeCard,
+                  isDark && styles.timeCardDark,
+                  isSelected && styles.timeCardSelected,
                 ]}
-                onPress={() => setSelectedDuration(dur.id)}
+                onPress={() => handleTimeSelect(option.id)}
+                activeOpacity={0.7}
               >
+                <Text style={styles.timeEmoji}>{option.emoji}</Text>
                 <Text
                   style={[
-                    styles.durationLabel,
+                    styles.timeLabel,
                     isDark && styles.textLight,
-                    selectedDuration === dur.id && styles.durationLabelSelected,
+                    isSelected && styles.timeLabelSelected,
                   ]}
                 >
-                  {dur.label}
+                  {option.label}
                 </Text>
                 <Text
-                  style={[
-                    styles.durationDescription,
-                    isDark && styles.textMuted,
-                  ]}
+                  style={[styles.timeDescription, isDark && styles.textMuted]}
                 >
-                  {dur.description}
+                  {option.description}
                 </Text>
               </TouchableOpacity>
-            ))}
-          </View>
+            );
+          })}
         </View>
       </ScrollView>
 
       <View style={[styles.footer, isDark && styles.footerDark]}>
         <TouchableOpacity
-          style={[
-            styles.analyzeButton,
-            !isComplete && styles.analyzeButtonDisabled,
-          ]}
-          onPress={handleAnalyze}
-          disabled={!isComplete}
+          style={[styles.nextButton, !isValid && styles.nextButtonDisabled]}
+          onPress={handleNext}
+          disabled={!isValid}
         >
-          <Text style={styles.analyzeButtonText}>운동 타입 분석하기</Text>
+          <Text style={styles.nextButtonText}>운동 타입 분석하기</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -159,21 +200,86 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 100,
   },
-  section: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
+  title: {
+    fontSize: 24,
     fontWeight: '700',
     color: '#111',
-    marginBottom: 16,
+    marginBottom: 8,
   },
-  optionList: {
+  subtitle: {
+    fontSize: 15,
+    color: '#666',
+    marginBottom: 24,
+  },
+  sectionMargin: {
+    marginTop: 32,
+  },
+  // 주당 횟수 카드 스타일
+  frequencyList: {
+    gap: 12,
+  },
+  frequencyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  frequencyCardDark: {
+    backgroundColor: '#1a1a1a',
+  },
+  frequencyCardSelected: {
+    borderColor: '#ef4444',
+    backgroundColor: '#fef2f2',
+  },
+  frequencyEmoji: {
+    fontSize: 28,
+    marginRight: 12,
+  },
+  frequencyContent: {
+    flex: 1,
+  },
+  frequencyLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111',
+    marginBottom: 2,
+  },
+  frequencyLabelSelected: {
+    color: '#ef4444',
+  },
+  frequencyDescription: {
+    fontSize: 13,
+    color: '#666',
+  },
+  // 라디오 버튼 스타일
+  radio: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#ddd',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioSelected: {
+    borderColor: '#ef4444',
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#ef4444',
+  },
+  // 시간대 그리드 스타일
+  timeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
   },
-  optionCard: {
+  timeCard: {
     width: '47%',
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -182,63 +288,31 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  optionCardDark: {
+  timeCardDark: {
     backgroundColor: '#1a1a1a',
   },
-  optionCardSelected: {
+  timeCardSelected: {
     borderColor: '#ef4444',
     backgroundColor: '#fef2f2',
   },
-  optionEmoji: {
-    fontSize: 28,
+  timeEmoji: {
+    fontSize: 32,
     marginBottom: 8,
   },
-  optionLabel: {
+  timeLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: '#111',
     marginBottom: 4,
   },
-  optionLabelSelected: {
+  timeLabelSelected: {
     color: '#ef4444',
   },
-  optionDescription: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'center',
-  },
-  durationList: {
-    gap: 12,
-  },
-  durationCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  durationCardDark: {
-    backgroundColor: '#1a1a1a',
-  },
-  durationCardSelected: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2',
-  },
-  durationLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111',
-  },
-  durationLabelSelected: {
-    color: '#ef4444',
-  },
-  durationDescription: {
+  timeDescription: {
     fontSize: 13,
     color: '#666',
   },
+  // Footer 스타일
   footer: {
     position: 'absolute',
     bottom: 0,
@@ -253,16 +327,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#0a0a0a',
     borderTopColor: '#222',
   },
-  analyzeButton: {
+  nextButton: {
     backgroundColor: '#ef4444',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
-  analyzeButtonDisabled: {
+  nextButtonDisabled: {
     backgroundColor: '#ccc',
   },
-  analyzeButtonText: {
+  nextButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',

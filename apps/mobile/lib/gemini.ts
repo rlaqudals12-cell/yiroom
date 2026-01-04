@@ -348,6 +348,340 @@ function generateMockBodyResult(
   };
 }
 
+// ============================================
+// N-1 음식 분석 (Food Analysis)
+// ============================================
+
+/**
+ * 스톱라이트 색상 타입 (Noom 스타일)
+ */
+export type TrafficLight = 'green' | 'yellow' | 'red';
+
+/**
+ * N-1 음식 분석 결과 타입
+ */
+export interface FoodAnalysisResult {
+  foods: {
+    id: string;
+    name: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    trafficLight: TrafficLight;
+    portion: number;
+    confidence: number;
+  }[];
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  insight?: string;
+}
+
+/**
+ * N-1 음식 분석 프롬프트
+ */
+const FOOD_ANALYSIS_PROMPT = `당신은 전문 영양사 AI입니다. 업로드된 음식 사진을 분석하여 음식을 인식하고 영양 정보를 추정해주세요.
+
+다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
+
+{
+  "foods": [
+    {
+      "name": "[음식명 - 한국어]",
+      "calories": [예상 칼로리 kcal],
+      "protein": [단백질 g],
+      "carbs": [탄수화물 g],
+      "fat": [지방 g],
+      "trafficLight": "[green|yellow|red]",
+      "confidence": [0.0-1.0 신뢰도]
+    }
+  ],
+  "insight": "[식사에 대한 간단한 영양 조언 1문장]"
+}
+
+스톱라이트 기준:
+- green (초록): 칼로리 밀도 낮음, 영양가 높음 (채소, 과일, 저지방 단백질)
+- yellow (노랑): 적당한 칼로리, 균형 잡힌 영양 (곡물, 살코기, 유제품)
+- red (빨강): 고칼로리, 고지방 또는 가공식품 (튀김, 디저트, 패스트푸드)
+
+주의사항:
+- 사진에서 보이는 모든 음식을 인식하세요 (1-5개)
+- 한국 음식에 익숙해야 합니다
+- 1인분 기준으로 영양 정보를 추정하세요
+- confidence는 이미지 품질과 음식 인식 확실성에 따라 설정하세요
+- 한국어로 응답하세요`;
+
+/**
+ * N-1 음식 분석 실행
+ * Gemini API를 호출하여 음식 사진을 분석하고, 실패 시 Mock 데이터를 반환
+ *
+ * @param imageBase64 - Base64 인코딩된 음식 이미지
+ * @returns 음식 분석 결과
+ */
+export async function analyzeFood(
+  imageBase64: string
+): Promise<FoodAnalysisResult> {
+  try {
+    const response = await callGeminiAPI(FOOD_ANALYSIS_PROMPT, imageBase64);
+
+    // JSON 파싱
+    let cleanResponse = response.trim();
+    // JSON 코드 블록 제거
+    if (cleanResponse.startsWith('```json')) {
+      cleanResponse = cleanResponse.slice(7);
+    }
+    if (cleanResponse.startsWith('```')) {
+      cleanResponse = cleanResponse.slice(3);
+    }
+    if (cleanResponse.endsWith('```')) {
+      cleanResponse = cleanResponse.slice(0, -3);
+    }
+    cleanResponse = cleanResponse.trim();
+
+    const parsed = JSON.parse(cleanResponse);
+
+    // 결과 정규화 및 ID 생성
+    const foods = (parsed.foods || []).map(
+      (
+        food: {
+          name: string;
+          calories: number;
+          protein: number;
+          carbs: number;
+          fat: number;
+          trafficLight: TrafficLight;
+          confidence: number;
+        },
+        index: number
+      ) => ({
+        id: `food-${Date.now()}-${index}`,
+        name: food.name || '알 수 없는 음식',
+        calories: food.calories || 0,
+        protein: food.protein || 0,
+        carbs: food.carbs || 0,
+        fat: food.fat || 0,
+        trafficLight: validateTrafficLight(food.trafficLight),
+        portion: 1,
+        confidence: Math.min(1, Math.max(0, food.confidence || 0.7)),
+      })
+    );
+
+    // 총 영양 정보 계산
+    const totals = foods.reduce(
+      (
+        acc: {
+          calories: number;
+          protein: number;
+          carbs: number;
+          fat: number;
+        },
+        food: { calories: number; protein: number; carbs: number; fat: number }
+      ) => ({
+        calories: acc.calories + food.calories,
+        protein: acc.protein + food.protein,
+        carbs: acc.carbs + food.carbs,
+        fat: acc.fat + food.fat,
+      }),
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    );
+
+    return {
+      foods,
+      totalCalories: totals.calories,
+      totalProtein: totals.protein,
+      totalCarbs: totals.carbs,
+      totalFat: totals.fat,
+      insight: parsed.insight,
+    };
+  } catch (error) {
+    console.error(
+      '[Mobile] Gemini food analysis error, falling back to mock:',
+      error
+    );
+    // AI 실패 시 Mock Fallback
+    return generateMockFoodResult();
+  }
+}
+
+/**
+ * 스톱라이트 값 검증
+ */
+function validateTrafficLight(value: string): TrafficLight {
+  if (value === 'green' || value === 'yellow' || value === 'red') {
+    return value;
+  }
+  return 'yellow'; // 기본값
+}
+
+/**
+ * Mock 음식 분석 결과 생성
+ * AI 호출 실패 시 사용되는 Fallback
+ */
+function generateMockFoodResult(): FoodAnalysisResult {
+  // 한국 음식 Mock 데이터베이스
+  const MOCK_FOODS: {
+    name: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    trafficLight: TrafficLight;
+  }[] = [
+    {
+      name: '비빔밥',
+      calories: 550,
+      protein: 18,
+      carbs: 65,
+      fat: 12,
+      trafficLight: 'yellow',
+    },
+    {
+      name: '된장찌개',
+      calories: 120,
+      protein: 9,
+      carbs: 8,
+      fat: 5,
+      trafficLight: 'green',
+    },
+    {
+      name: '김치찌개',
+      calories: 150,
+      protein: 12,
+      carbs: 10,
+      fat: 6,
+      trafficLight: 'green',
+    },
+    {
+      name: '불고기',
+      calories: 350,
+      protein: 28,
+      carbs: 15,
+      fat: 20,
+      trafficLight: 'yellow',
+    },
+    {
+      name: '삼겹살',
+      calories: 500,
+      protein: 25,
+      carbs: 2,
+      fat: 45,
+      trafficLight: 'red',
+    },
+    {
+      name: '라면',
+      calories: 500,
+      protein: 10,
+      carbs: 70,
+      fat: 18,
+      trafficLight: 'red',
+    },
+    {
+      name: '샐러드',
+      calories: 80,
+      protein: 3,
+      carbs: 10,
+      fat: 3,
+      trafficLight: 'green',
+    },
+    {
+      name: '치킨',
+      calories: 450,
+      protein: 35,
+      carbs: 15,
+      fat: 28,
+      trafficLight: 'red',
+    },
+    {
+      name: '김밥',
+      calories: 320,
+      protein: 8,
+      carbs: 45,
+      fat: 12,
+      trafficLight: 'yellow',
+    },
+    {
+      name: '떡볶이',
+      calories: 380,
+      protein: 6,
+      carbs: 65,
+      fat: 10,
+      trafficLight: 'red',
+    },
+  ];
+
+  // 랜덤 음식 1-3개 선택
+  const numFoods = Math.floor(Math.random() * 3) + 1;
+  const selectedFoods: FoodAnalysisResult['foods'] = [];
+  const usedNames = new Set<string>();
+
+  for (let i = 0; i < numFoods; i++) {
+    let food;
+    do {
+      food = MOCK_FOODS[Math.floor(Math.random() * MOCK_FOODS.length)];
+    } while (usedNames.has(food.name));
+
+    usedNames.add(food.name);
+    selectedFoods.push({
+      id: `food-${Date.now()}-${i}`,
+      ...food,
+      portion: 1,
+      confidence: 0.7 + Math.random() * 0.25,
+    });
+  }
+
+  // 총 영양 정보 계산
+  const totals = selectedFoods.reduce(
+    (acc, food) => ({
+      calories: acc.calories + food.calories,
+      protein: acc.protein + food.protein,
+      carbs: acc.carbs + food.carbs,
+      fat: acc.fat + food.fat,
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+  );
+
+  return {
+    foods: selectedFoods,
+    totalCalories: totals.calories,
+    totalProtein: totals.protein,
+    totalCarbs: totals.carbs,
+    totalFat: totals.fat,
+    insight:
+      'AI 분석이 불가하여 예시 데이터가 표시됩니다. 음식을 직접 수정해주세요.',
+  };
+}
+
+/**
+ * 신뢰도 기반 피드백 메시지 생성
+ */
+export function getConfidenceFeedback(confidence: number): {
+  level: 'high' | 'medium' | 'low';
+  message: string;
+  color: string;
+} {
+  if (confidence >= 0.85) {
+    return {
+      level: 'high',
+      message: '높은 정확도로 인식됨',
+      color: '#22c55e',
+    };
+  } else if (confidence >= 0.65) {
+    return {
+      level: 'medium',
+      message: '확인이 필요할 수 있어요',
+      color: '#eab308',
+    };
+  } else {
+    return {
+      level: 'low',
+      message: '정확도가 낮아요. 수정해주세요',
+      color: '#ef4444',
+    };
+  }
+}
+
 /**
  * Gemini API 설정 검증
  */

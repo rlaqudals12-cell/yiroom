@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+
 import { StarRating, getRatingColor } from './StarRating';
 
 export interface ReviewSummaryData {
@@ -39,7 +40,10 @@ export function ReviewSummary({ summary }: ReviewSummaryProps) {
           <View
             style={[
               styles.bar,
-              { width: `${percentage}%`, backgroundColor: getRatingColor(rating) },
+              {
+                width: `${percentage}%`,
+                backgroundColor: getRatingColor(rating),
+              },
             ]}
           />
         </View>
@@ -62,7 +66,10 @@ export function ReviewSummary({ summary }: ReviewSummaryProps) {
       {/* 평점 분포 */}
       <View style={styles.distributionSection}>
         {[5, 4, 3, 2, 1].map((rating) =>
-          renderRatingBar(rating, ratingDistribution[rating as keyof typeof ratingDistribution])
+          renderRatingBar(
+            rating,
+            ratingDistribution[rating as keyof typeof ratingDistribution]
+          )
         )}
       </View>
     </View>
@@ -77,14 +84,23 @@ export function ReviewSummarySkeleton() {
     <View style={styles.container}>
       <View style={styles.averageSection}>
         <View style={[styles.skeleton, { width: 60, height: 48 }]} />
-        <View style={[styles.skeleton, { width: 120, height: 24, marginTop: 8 }]} />
-        <View style={[styles.skeleton, { width: 80, height: 16, marginTop: 8 }]} />
+        <View
+          style={[styles.skeleton, { width: 120, height: 24, marginTop: 8 }]}
+        />
+        <View
+          style={[styles.skeleton, { width: 80, height: 16, marginTop: 8 }]}
+        />
       </View>
       <View style={styles.distributionSection}>
         {[1, 2, 3, 4, 5].map((i) => (
           <View key={i} style={styles.ratingRow}>
             <View style={[styles.skeleton, { width: 24, height: 16 }]} />
-            <View style={[styles.skeleton, { flex: 1, height: 8, marginHorizontal: 8 }]} />
+            <View
+              style={[
+                styles.skeleton,
+                { flex: 1, height: 8, marginHorizontal: 8 },
+              ]}
+            />
             <View style={[styles.skeleton, { width: 24, height: 16 }]} />
           </View>
         ))}
@@ -97,7 +113,7 @@ export function ReviewSummarySkeleton() {
  * 리뷰 배열로부터 요약 데이터 계산
  */
 export function calculateReviewSummary(
-  reviews: Array<{ rating: number }>
+  reviews: { rating: number }[]
 ): ReviewSummaryData {
   if (reviews.length === 0) {
     return {

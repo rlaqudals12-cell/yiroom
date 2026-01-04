@@ -1,15 +1,19 @@
 /**
  * 어필리에이트 클릭 트래킹
- * @description 모바일 앱에서 클릭 기록
+ * @description 모바일 앱에서 클릭 기록 (Clerk 통합 Supabase)
  */
 
-import { supabase } from '../supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 import type { AffiliateClickInput } from './types';
 
 /**
  * 클릭 기록 생성
+ * @param supabase - Clerk 통합 Supabase 클라이언트
+ * @param input - 클릭 입력 데이터
  */
 export async function createAffiliateClick(
+  supabase: SupabaseClient,
   input: AffiliateClickInput
 ): Promise<string | null> {
   try {
@@ -27,21 +31,25 @@ export async function createAffiliateClick(
       .single();
 
     if (error) {
-      console.error('[Affiliate] 클릭 기록 실패:', error);
+      console.error('[Mobile Affiliate] 클릭 기록 실패:', error);
       return null;
     }
 
     return data.id;
   } catch (error) {
-    console.error('[Affiliate] 클릭 기록 오류:', error);
+    console.error('[Mobile Affiliate] 클릭 기록 오류:', error);
     return null;
   }
 }
 
 /**
  * 사용자 클릭 히스토리 조회
+ * @param supabase - Clerk 통합 Supabase 클라이언트
+ * @param clerkUserId - 사용자 ID
+ * @param limit - 조회 개수
  */
 export async function getUserClickHistory(
+  supabase: SupabaseClient,
   clerkUserId: string,
   limit = 20
 ): Promise<{ productId: string; clickedAt: Date }[]> {
@@ -54,7 +62,7 @@ export async function getUserClickHistory(
       .limit(limit);
 
     if (error) {
-      console.error('[Affiliate] 히스토리 조회 실패:', error);
+      console.error('[Mobile Affiliate] 히스토리 조회 실패:', error);
       return [];
     }
 
@@ -63,7 +71,7 @@ export async function getUserClickHistory(
       clickedAt: new Date(row.clicked_at),
     }));
   } catch (error) {
-    console.error('[Affiliate] 히스토리 조회 오류:', error);
+    console.error('[Mobile Affiliate] 히스토리 조회 오류:', error);
     return [];
   }
 }

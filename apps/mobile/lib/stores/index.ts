@@ -6,7 +6,11 @@
 export { useUserStore } from './userStore';
 
 // 제품 관련
-export { useFavoritesStore, getFavoritesCount, getFavoritesCountByType } from './favoritesStore';
+export {
+  useFavoritesStore,
+  getFavoritesCount,
+  getFavoritesCountByType,
+} from './favoritesStore';
 export type { FavoriteItem, FavoriteProductType } from './favoritesStore';
 
 export {
@@ -14,7 +18,10 @@ export {
   getRecentlyViewed,
   getRecentlyViewedCount,
 } from './recentlyViewedStore';
-export type { RecentlyViewedItem, RecentProductType } from './recentlyViewedStore';
+export type {
+  RecentlyViewedItem,
+  RecentProductType,
+} from './recentlyViewedStore';
 
 export {
   useProductFilterStore,
@@ -33,7 +40,10 @@ export {
 export type { ThemeMode, AppLanguage } from './appPreferencesStore';
 
 // 온보딩 폼
-export { useNutritionInputStore, isNutritionOnboardingComplete } from './nutritionInputStore';
+export {
+  useNutritionInputStore,
+  isNutritionOnboardingComplete,
+} from './nutritionInputStore';
 export type {
   NutritionGoal,
   Gender,

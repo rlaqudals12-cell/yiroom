@@ -3,6 +3,7 @@
  * @description 별점 표시 및 입력 지원
  */
 
+import * as Haptics from 'expo-haptics';
 import React from 'react';
 import {
   View,
@@ -11,7 +12,7 @@ import {
   StyleSheet,
   AccessibilityProps,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
+
 import { useAppPreferencesStore } from '@/lib/stores';
 
 interface StarRatingProps extends AccessibilityProps {
@@ -69,7 +70,10 @@ export function StarRating({
       <Text
         style={[
           styles.star,
-          { fontSize: starSize, color: filled || halfFilled ? color : '#E0E0E0' },
+          {
+            fontSize: starSize,
+            color: filled || halfFilled ? color : '#E0E0E0',
+          },
         ]}
       >
         {filled ? '★' : halfFilled ? '☆' : '☆'}

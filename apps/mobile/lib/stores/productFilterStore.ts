@@ -5,8 +5,18 @@
 
 import { create } from 'zustand';
 
-export type ProductCategory = 'all' | 'cosmetic' | 'supplement' | 'equipment' | 'healthfood';
-export type SortOption = 'matchScore' | 'rating' | 'price_asc' | 'price_desc' | 'newest';
+export type ProductCategory =
+  | 'all'
+  | 'cosmetic'
+  | 'supplement'
+  | 'equipment'
+  | 'healthfood';
+export type SortOption =
+  | 'matchScore'
+  | 'rating'
+  | 'price_asc'
+  | 'price_desc'
+  | 'newest';
 
 interface PriceRange {
   min: number | null;

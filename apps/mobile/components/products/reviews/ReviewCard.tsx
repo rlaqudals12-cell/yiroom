@@ -3,18 +3,13 @@
  * @description 개별 리뷰 표시 및 상호작용
  */
 
-import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  Image,
-  Alert,
-} from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { StarRating, getRatingColor } from './StarRating';
+import React, { useState, useCallback } from 'react';
+import { View, Text, Pressable, StyleSheet, Image, Alert } from 'react-native';
+
 import { useAppPreferencesStore } from '@/lib/stores';
+
+import { StarRating, getRatingColor } from './StarRating';
 
 export interface ReviewData {
   id: string;
@@ -96,18 +91,14 @@ export function ReviewCard({
         text: '삭제',
         style: 'destructive',
         onPress: () => {
-          Alert.alert(
-            '리뷰 삭제',
-            '정말 삭제하시겠습니까?',
-            [
-              { text: '취소', style: 'cancel' },
-              {
-                text: '삭제',
-                style: 'destructive',
-                onPress: () => onDelete?.(review.id),
-              },
-            ]
-          );
+          Alert.alert('리뷰 삭제', '정말 삭제하시겠습니까?', [
+            { text: '취소', style: 'cancel' },
+            {
+              text: '삭제',
+              style: 'destructive',
+              onPress: () => onDelete?.(review.id),
+            },
+          ]);
         },
       },
       { text: '취소', style: 'cancel' },
@@ -142,9 +133,7 @@ export function ReviewCard({
             />
           ) : (
             <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarText}>
-                {review.userName.charAt(0)}
-              </Text>
+              <Text style={styles.avatarText}>{review.userName.charAt(0)}</Text>
             </View>
           )}
 
@@ -176,20 +165,18 @@ export function ReviewCard({
       {/* 별점 */}
       <View style={styles.ratingRow}>
         <StarRating rating={review.rating} size="small" />
-        <Text style={[styles.ratingText, { color: getRatingColor(review.rating) }]}>
+        <Text
+          style={[styles.ratingText, { color: getRatingColor(review.rating) }]}
+        >
           {review.rating.toFixed(1)}
         </Text>
       </View>
 
       {/* 제목 */}
-      {review.title && (
-        <Text style={styles.title}>{review.title}</Text>
-      )}
+      {review.title && <Text style={styles.title}>{review.title}</Text>}
 
       {/* 내용 */}
-      {review.content && (
-        <Text style={styles.content}>{review.content}</Text>
-      )}
+      {review.content && <Text style={styles.content}>{review.content}</Text>}
 
       {/* 액션 */}
       <View style={styles.actions}>
@@ -205,10 +192,14 @@ export function ReviewCard({
           accessibilityLabel={`도움됨 ${helpfulCount}명`}
           accessibilityState={{ selected: isHelpful }}
         >
-          <Text style={[styles.helpfulIcon, isHelpful && styles.helpfulIconActive]}>
+          <Text
+            style={[styles.helpfulIcon, isHelpful && styles.helpfulIconActive]}
+          >
             👍
           </Text>
-          <Text style={[styles.helpfulText, isHelpful && styles.helpfulTextActive]}>
+          <Text
+            style={[styles.helpfulText, isHelpful && styles.helpfulTextActive]}
+          >
             도움됨 {helpfulCount > 0 && `(${helpfulCount})`}
           </Text>
         </Pressable>

@@ -1,7 +1,7 @@
 # 이룸 프로젝트 진행 상황
 
-> **마지막 업데이트**: 2026-01-04
-> **현재 버전**: v2.2 (Visual Analysis Engine 완료)
+> **마지막 업데이트**: 2026-01-05
+> **현재 버전**: v2.3 (Mobile Affiliate 테스트 완료)
 
 ---
 
@@ -485,6 +485,129 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
     - 피드백 페이지
     - 공지사항 페이지
 [x] 알림 시스템 (구조 설계)
+```
+
+---
+
+## 최근 업데이트 (2026-01-05)
+
+```yaml
+[x] Mobile App Affiliate 모듈 테스트 완료
+    - Week 6-1: 단위 테스트 추가
+        - __tests__/lib/affiliate/products.test.ts (24 tests)
+        - __tests__/lib/affiliate/clicks.test.ts (13 tests)
+        - __tests__/lib/affiliate/utils.test.ts (35 tests)
+    - Week 6-2: Utils 모듈 구현
+        - lib/affiliate/utils.ts (유틸리티 함수)
+            - formatPrice() - 가격 포맷팅 (₩1,000)
+            - getSeasonLabel() - 시즌 한글 라벨
+            - getCategoryLabel/Emoji() - 카테고리 변환
+            - calculateProductMatchScore() - 매칭 점수 계산
+            - calculateDiscountRate() - 할인율 계산
+            - sortProducts() - 제품 정렬 (인기순/가격순/별점순)
+        - lib/affiliate/index.ts - Utils export 추가
+    - Week 6-3: E2E 테스트 (Maestro)
+        - .maestro/products/02-affiliate-click.yaml
+        - 제품 브라우징 + 어필리에이트 클릭 흐름
+    - Week 6-4: 배포 문서화
+        - DEPLOYMENT.md (TestFlight/Google Play 가이드)
+        - eas.json 빌드 프로파일 설정 완료
+
+[x] 코드 품질 검증 완료 (시지푸스)
+    - TypeScript: ✅ 모든 패키지 통과 (shared, web, mobile)
+    - Lint: ✅ 0 오류, 68 경고 (허용 수준)
+    - 테스트: ✅ 436 passed, 2 skipped
+
+[x] SDD↔구현 일치 검증 (시지푸스)
+    - SDD-BEAUTY-UX-IMPROVEMENTS: 95% 구현
+    - SDD-INGREDIENT-ANALYSIS: 85% 구현
+    - SDD-VISUAL-ANALYSIS-ENGINE: 70% 구현
+    - Critical 이슈: 제품 상세 페이지 Tabs UI 미구현 (SDD 수정 권장)
+
+[x] AI Fallback 패턴 분석 (시지푸스)
+    - 모범 사례: lib/products/services/ingredient-analysis.ts
+    - 개선 필요: lib/gemini.ts (Mock Fallback 누락)
+    - 권장 개선: 타임아웃/재시도 일관성 강화
+```
+
+---
+
+## Phase B: React Native Mobile App 🔄
+
+### 진행 현황
+
+```yaml
+[x] Week 1: 모노레포 설정
+    - Turborepo 구성 (apps/web, apps/mobile, packages/shared)
+    - packages/shared 공통 타입/유틸리티 분리
+    - 워크스페이스 스크립트 설정
+
+[x] Week 2: Expo 초기 설정
+    - Expo SDK 54 + React Native
+    - Expo Router 파일 기반 라우팅
+    - NativeWind (Tailwind for RN)
+    - Clerk Expo 인증 연동
+
+[x] Week 3: 핵심 화면 구현
+    - (tabs)/ 5탭 네비게이션 (홈/운동/영양/기록/프로필)
+    - (analysis)/ AI 분석 플로우
+    - (workout)/ 운동 세션
+    - (nutrition)/ 식단 기록
+
+[x] Week 4: AI 분석 연동
+    - Gemini API 연동 (피부/체형/퍼스널컬러)
+    - Mock Fallback 패턴 적용
+    - 카메라/갤러리 이미지 처리
+
+[x] Week 5: 어필리에이트 모듈
+    - lib/affiliate/products.ts (제품 Repository)
+    - lib/affiliate/clicks.ts (클릭 트래킹)
+    - lib/affiliate/deeplink.ts (딥링크 생성)
+    - useAffiliateProducts, useAffiliateClick 훅
+
+[x] Week 6: 테스트 + 배포 준비
+    - 단위 테스트: 72개 (products + clicks + utils)
+    - E2E 테스트: Maestro 시나리오 2개
+    - DEPLOYMENT.md 작성 (TestFlight/Google Play)
+    - eas.json 빌드 프로파일 설정
+
+[ ] Week 7: TestFlight 배포 (키 연동 대기 중)
+    - Apple Developer 계정 설정
+    - EAS 프로젝트 연결
+    - 내부 테스트 빌드
+```
+
+### 테스트 현황
+
+| 분류        | 파일 수 | 테스트 수  | 상태       |
+| ----------- | ------- | ---------- | ---------- |
+| 단위 테스트 | 21      | 151+       | ✅ 통과    |
+| E2E 테스트  | 2       | 2 시나리오 | ✅ Maestro |
+
+### 주요 파일
+
+```yaml
+apps/mobile/
+├── app/
+│   ├── (tabs)/          # 5탭 네비게이션
+│   ├── (analysis)/      # AI 분석
+│   ├── (workout)/       # 운동
+│   ├── (nutrition)/     # 영양
+│   ├── products/        # 제품 추천
+│   └── settings/        # 설정
+├── lib/
+│   ├── affiliate/       # 어필리에이트 모듈
+│   │   ├── products.ts  # Repository
+│   │   ├── clicks.ts    # 트래킹
+│   │   ├── deeplink.ts  # 딥링크
+│   │   ├── utils.ts     # 유틸리티
+│   │   └── index.ts     # 통합 export
+│   ├── monitoring/      # Sentry, Analytics
+│   └── offline/         # 오프라인 캐시
+├── __tests__/
+│   └── lib/affiliate/   # 테스트
+├── .maestro/            # E2E 테스트
+└── DEPLOYMENT.md        # 배포 가이드
 ```
 
 ---

@@ -6,7 +6,11 @@
 import { create } from 'zustand';
 
 // 타입 정의
-export type SessionStatus = 'not_started' | 'in_progress' | 'paused' | 'completed';
+export type SessionStatus =
+  | 'not_started'
+  | 'in_progress'
+  | 'paused'
+  | 'completed';
 
 export interface ExerciseSet {
   setNumber: number;
@@ -63,7 +67,10 @@ interface WorkoutSessionState extends WorkoutSession {
   // Actions - 운동 제어
   completeSet: (reps: number, weight?: number) => void;
   skipSet: () => void;
-  completeExercise: (difficulty: 'easy' | 'normal' | 'hard', notes?: string) => void;
+  completeExercise: (
+    difficulty: 'easy' | 'normal' | 'hard',
+    notes?: string
+  ) => void;
   skipExercise: () => void;
   nextExercise: () => void;
   prevExercise: () => void;
@@ -81,7 +88,8 @@ interface WorkoutSessionState extends WorkoutSession {
   getProgress: () => { completed: number; total: number; percentage: number };
 }
 
-const generateSessionId = () => `session_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+const generateSessionId = () =>
+  `session_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
 const initialSession: WorkoutSession = {
   sessionId: '',
@@ -97,219 +105,221 @@ const initialSession: WorkoutSession = {
   estimatedCalories: 0,
 };
 
-export const useWorkoutSessionStore = create<WorkoutSessionState>((set, get) => ({
-  ...initialSession,
-  isResting: false,
-  restTimeRemaining: 0,
-  restDuration: 60,
+export const useWorkoutSessionStore = create<WorkoutSessionState>(
+  (set, get) => ({
+    ...initialSession,
+    isResting: false,
+    restTimeRemaining: 0,
+    restDuration: 60,
 
-  initSession: ({ planId, workoutType, exercises }) => {
-    const sessionExercises: SessionExercise[] = exercises.map((ex) => ({
-      ...ex,
-      currentSetIndex: 0,
-      isCompleted: false,
-    }));
+    initSession: ({ planId, workoutType, exercises }) => {
+      const sessionExercises: SessionExercise[] = exercises.map((ex) => ({
+        ...ex,
+        currentSetIndex: 0,
+        isCompleted: false,
+      }));
 
-    set({
-      ...initialSession,
-      sessionId: generateSessionId(),
-      planId,
-      workoutType,
-      exercises: sessionExercises,
-      status: 'not_started',
-    });
-  },
+      set({
+        ...initialSession,
+        sessionId: generateSessionId(),
+        planId,
+        workoutType,
+        exercises: sessionExercises,
+        status: 'not_started',
+      });
+    },
 
-  startSession: () => {
-    set({
-      status: 'in_progress',
-      startedAt: Date.now(),
-    });
-  },
+    startSession: () => {
+      set({
+        status: 'in_progress',
+        startedAt: Date.now(),
+      });
+    },
 
-  pauseSession: () => {
-    set({
-      status: 'paused',
-      pausedAt: Date.now(),
-    });
-  },
+    pauseSession: () => {
+      set({
+        status: 'paused',
+        pausedAt: Date.now(),
+      });
+    },
 
-  resumeSession: () => {
-    set({
-      status: 'in_progress',
-      pausedAt: null,
-    });
-  },
+    resumeSession: () => {
+      set({
+        status: 'in_progress',
+        pausedAt: null,
+      });
+    },
 
-  completeSession: () => {
-    set({
-      status: 'completed',
-      completedAt: Date.now(),
-    });
-  },
+    completeSession: () => {
+      set({
+        status: 'completed',
+        completedAt: Date.now(),
+      });
+    },
 
-  cancelSession: () => {
-    set({
-      ...initialSession,
-      isResting: false,
-      restTimeRemaining: 0,
-    });
-  },
+    cancelSession: () => {
+      set({
+        ...initialSession,
+        isResting: false,
+        restTimeRemaining: 0,
+      });
+    },
 
-  completeSet: (reps, weight) => {
-    set((state) => {
-      const exercises = [...state.exercises];
-      const currentExercise = exercises[state.currentExerciseIndex];
-      if (!currentExercise) return state;
+    completeSet: (reps, weight) => {
+      set((state) => {
+        const exercises = [...state.exercises];
+        const currentExercise = exercises[state.currentExerciseIndex];
+        if (!currentExercise) return state;
 
-      const sets = [...currentExercise.sets];
-      const currentSet = sets[currentExercise.currentSetIndex];
-      if (!currentSet) return state;
+        const sets = [...currentExercise.sets];
+        const currentSet = sets[currentExercise.currentSetIndex];
+        if (!currentSet) return state;
 
-      sets[currentExercise.currentSetIndex] = {
-        ...currentSet,
-        completedReps: reps,
-        actualWeight: weight,
-        isCompleted: true,
-        skipped: false,
-      };
+        sets[currentExercise.currentSetIndex] = {
+          ...currentSet,
+          completedReps: reps,
+          actualWeight: weight,
+          isCompleted: true,
+          skipped: false,
+        };
 
-      // 다음 세트로 이동
-      const nextSetIndex = currentExercise.currentSetIndex + 1;
+        // 다음 세트로 이동
+        const nextSetIndex = currentExercise.currentSetIndex + 1;
 
-      exercises[state.currentExerciseIndex] = {
-        ...currentExercise,
-        sets,
-        currentSetIndex: nextSetIndex,
-        isCompleted: nextSetIndex >= sets.length,
-      };
+        exercises[state.currentExerciseIndex] = {
+          ...currentExercise,
+          sets,
+          currentSetIndex: nextSetIndex,
+          isCompleted: nextSetIndex >= sets.length,
+        };
 
-      // 칼로리 추정 (간단 계산)
-      const caloriesBurned = Math.round(reps * (weight || 0) * 0.01 + 5);
+        // 칼로리 추정 (간단 계산)
+        const caloriesBurned = Math.round(reps * (weight || 0) * 0.01 + 5);
 
-      return {
-        exercises,
-        estimatedCalories: state.estimatedCalories + caloriesBurned,
-      };
-    });
-  },
+        return {
+          exercises,
+          estimatedCalories: state.estimatedCalories + caloriesBurned,
+        };
+      });
+    },
 
-  skipSet: () => {
-    set((state) => {
-      const exercises = [...state.exercises];
-      const currentExercise = exercises[state.currentExerciseIndex];
-      if (!currentExercise) return state;
+    skipSet: () => {
+      set((state) => {
+        const exercises = [...state.exercises];
+        const currentExercise = exercises[state.currentExerciseIndex];
+        if (!currentExercise) return state;
 
-      const sets = [...currentExercise.sets];
-      sets[currentExercise.currentSetIndex] = {
-        ...sets[currentExercise.currentSetIndex],
-        skipped: true,
-        isCompleted: true,
-      };
+        const sets = [...currentExercise.sets];
+        sets[currentExercise.currentSetIndex] = {
+          ...sets[currentExercise.currentSetIndex],
+          skipped: true,
+          isCompleted: true,
+        };
 
-      const nextSetIndex = currentExercise.currentSetIndex + 1;
+        const nextSetIndex = currentExercise.currentSetIndex + 1;
 
-      exercises[state.currentExerciseIndex] = {
-        ...currentExercise,
-        sets,
-        currentSetIndex: nextSetIndex,
-        isCompleted: nextSetIndex >= sets.length,
-      };
+        exercises[state.currentExerciseIndex] = {
+          ...currentExercise,
+          sets,
+          currentSetIndex: nextSetIndex,
+          isCompleted: nextSetIndex >= sets.length,
+        };
 
-      return { exercises };
-    });
-  },
+        return { exercises };
+      });
+    },
 
-  completeExercise: (difficulty, notes) => {
-    set((state) => {
-      const exercises = [...state.exercises];
-      exercises[state.currentExerciseIndex] = {
-        ...exercises[state.currentExerciseIndex],
-        difficulty,
-        notes,
-        isCompleted: true,
-      };
+    completeExercise: (difficulty, notes) => {
+      set((state) => {
+        const exercises = [...state.exercises];
+        exercises[state.currentExerciseIndex] = {
+          ...exercises[state.currentExerciseIndex],
+          difficulty,
+          notes,
+          isCompleted: true,
+        };
 
-      return { exercises };
-    });
-  },
+        return { exercises };
+      });
+    },
 
-  skipExercise: () => {
-    set((state) => {
-      const exercises = [...state.exercises];
-      exercises[state.currentExerciseIndex] = {
-        ...exercises[state.currentExerciseIndex],
-        isCompleted: true,
-      };
+    skipExercise: () => {
+      set((state) => {
+        const exercises = [...state.exercises];
+        exercises[state.currentExerciseIndex] = {
+          ...exercises[state.currentExerciseIndex],
+          isCompleted: true,
+        };
 
-      const nextIndex = state.currentExerciseIndex + 1;
+        const nextIndex = state.currentExerciseIndex + 1;
 
-      return {
-        exercises,
-        currentExerciseIndex: Math.min(nextIndex, exercises.length - 1),
-      };
-    });
-  },
+        return {
+          exercises,
+          currentExerciseIndex: Math.min(nextIndex, exercises.length - 1),
+        };
+      });
+    },
 
-  nextExercise: () => {
-    set((state) => ({
-      currentExerciseIndex: Math.min(
-        state.currentExerciseIndex + 1,
-        state.exercises.length - 1
-      ),
-    }));
-  },
+    nextExercise: () => {
+      set((state) => ({
+        currentExerciseIndex: Math.min(
+          state.currentExerciseIndex + 1,
+          state.exercises.length - 1
+        ),
+      }));
+    },
 
-  prevExercise: () => {
-    set((state) => ({
-      currentExerciseIndex: Math.max(state.currentExerciseIndex - 1, 0),
-    }));
-  },
+    prevExercise: () => {
+      set((state) => ({
+        currentExerciseIndex: Math.max(state.currentExerciseIndex - 1, 0),
+      }));
+    },
 
-  startRestTimer: (duration) => {
-    set({
-      isResting: true,
-      restTimeRemaining: duration,
-      restDuration: duration,
-    });
-  },
+    startRestTimer: (duration) => {
+      set({
+        isResting: true,
+        restTimeRemaining: duration,
+        restDuration: duration,
+      });
+    },
 
-  updateRestTimer: () => {
-    set((state) => {
-      if (!state.isResting) return state;
+    updateRestTimer: () => {
+      set((state) => {
+        if (!state.isResting) return state;
 
-      const newTime = state.restTimeRemaining - 1;
-      if (newTime <= 0) {
-        return { isResting: false, restTimeRemaining: 0 };
-      }
-      return { restTimeRemaining: newTime };
-    });
-  },
+        const newTime = state.restTimeRemaining - 1;
+        if (newTime <= 0) {
+          return { isResting: false, restTimeRemaining: 0 };
+        }
+        return { restTimeRemaining: newTime };
+      });
+    },
 
-  skipRest: () => {
-    set({ isResting: false, restTimeRemaining: 0 });
-  },
+    skipRest: () => {
+      set({ isResting: false, restTimeRemaining: 0 });
+    },
 
-  updateElapsedTime: () => {
-    set((state) => {
-      if (state.status !== 'in_progress') return state;
-      return { totalElapsedTime: state.totalElapsedTime + 1 };
-    });
-  },
+    updateElapsedTime: () => {
+      set((state) => {
+        if (state.status !== 'in_progress') return state;
+        return { totalElapsedTime: state.totalElapsedTime + 1 };
+      });
+    },
 
-  getCurrentExercise: () => {
-    const state = get();
-    return state.exercises[state.currentExerciseIndex] || null;
-  },
+    getCurrentExercise: () => {
+      const state = get();
+      return state.exercises[state.currentExerciseIndex] || null;
+    },
 
-  getProgress: () => {
-    const state = get();
-    const total = state.exercises.length;
-    const completed = state.exercises.filter((e) => e.isCompleted).length;
-    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-    return { completed, total, percentage };
-  },
-}));
+    getProgress: () => {
+      const state = get();
+      const total = state.exercises.length;
+      const completed = state.exercises.filter((e) => e.isCompleted).length;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      return { completed, total, percentage };
+    },
+  })
+);
 
 /**
  * 세션 진행 중 여부

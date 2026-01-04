@@ -3,8 +3,8 @@
  * @description 챌린지 정보, 진행 상황, 참가자 순위 표시
  */
 
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import React, { useMemo } from 'react';
 import {
   View,
@@ -47,17 +47,17 @@ interface ChallengeDetail {
     badge?: string;
   };
   rules: string[];
-  milestones: Array<{
+  milestones: {
     day: number;
     target: number;
     completed: boolean;
-  }>;
-  leaderboard: Array<{
+  }[];
+  leaderboard: {
     rank: number;
     userId: string;
     userName: string;
     progress: number;
-  }>;
+  }[];
 }
 
 const DOMAIN_CONFIG: Record<

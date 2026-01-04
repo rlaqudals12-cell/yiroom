@@ -3,6 +3,7 @@
  * @description 정렬/필터 + 무한 스크롤 리뷰 목록
  */
 
+import * as Haptics from 'expo-haptics';
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -12,9 +13,10 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
-import { ReviewCard, ReviewData } from './ReviewCard';
+
 import { useAppPreferencesStore } from '@/lib/stores';
+
+import { ReviewCard, ReviewData } from './ReviewCard';
 
 export type ReviewSortBy = 'recent' | 'helpful' | 'rating_high' | 'rating_low';
 
@@ -160,7 +162,9 @@ export function ReviewList({
         keyExtractor={(item) => item.id}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
-        contentContainerStyle={reviews.length === 0 ? styles.emptyList : undefined}
+        contentContainerStyle={
+          reviews.length === 0 ? styles.emptyList : undefined
+        }
         showsVerticalScrollIndicator={false}
         scrollEnabled={false} // 부모 ScrollView 사용
       />
@@ -171,11 +175,16 @@ export function ReviewList({
 /**
  * 리뷰 정렬 함수
  */
-export function sortReviews(reviews: ReviewData[], sortBy: ReviewSortBy): ReviewData[] {
+export function sortReviews(
+  reviews: ReviewData[],
+  sortBy: ReviewSortBy
+): ReviewData[] {
   return [...reviews].sort((a, b) => {
     switch (sortBy) {
       case 'recent':
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
       case 'helpful':
         return b.helpfulCount - a.helpfulCount;
       case 'rating_high':
