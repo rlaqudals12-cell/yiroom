@@ -1,29 +1,24 @@
 /**
- * 인벤토리 개별 아이템 API
+ * Inventory Item API
  * GET: 아이템 상세 조회
- * PUT: 아이템 수정
+ * PATCH: 아이템 수정
  * DELETE: 아이템 삭제
  */
 
-import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import {
   getInventoryItemById,
   updateInventoryItem,
   deleteInventoryItem,
   toggleFavorite,
   recordItemUsage,
-} from '@/lib/inventory/repository';
-import { UpdateInventoryItemRequest } from '@/types/inventory';
+} from '@/lib/inventory';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
-
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+/**
+ * GET /api/inventory/[id]
+ */
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -37,20 +32,18 @@ export async function GET(
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
     }
 
-    return NextResponse.json(item);
+    return NextResponse.json({ success: true, item });
   } catch (error) {
-    console.error('[API] GET /api/inventory/[id] error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('[Inventory Item API] GET error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+/**
+ * PATCH /api/inventory/[id]
+ * Body: UpdateInventoryItemRequest or action commands
+ */
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -58,42 +51,44 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const { searchParams } = new URL(request.url);
+    const body = await request.json();
 
-    // 즐겨찾기 토글
-    if (searchParams.get('action') === 'toggleFavorite') {
-      const newValue = await toggleFavorite(userId, id);
-      return NextResponse.json({ isFavorite: newValue });
+    // 특수 액션 처리
+    if (body.action === 'toggleFavorite') {
+      const isFavorite = await toggleFavorite(userId, id);
+      return NextResponse.json({ success: true, isFavorite });
     }
 
-    // 사용 기록
-    if (searchParams.get('action') === 'recordUsage') {
+    if (body.action === 'recordUsage') {
       await recordItemUsage(userId, id);
       return NextResponse.json({ success: true });
     }
 
-    // 일반 수정
-    const body: UpdateInventoryItemRequest = await request.json();
-    const item = await updateInventoryItem(userId, id, body);
+    // 일반 업데이트
+    const item = await updateInventoryItem(userId, id, {
+      name: body.name,
+      subCategory: body.subCategory,
+      imageUrl: body.imageUrl,
+      brand: body.brand,
+      tags: body.tags,
+      isFavorite: body.isFavorite,
+      expiryDate: body.expiryDate,
+      metadata: body.metadata,
+    });
 
-    return NextResponse.json(item);
+    return NextResponse.json({ success: true, item });
   } catch (error) {
-    console.error('[API] PUT /api/inventory/[id] error:', error);
-
-    if (error instanceof Error && error.message === 'Item not found') {
-      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('[Inventory Item API] PATCH error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
+/**
+ * DELETE /api/inventory/[id]
+ */
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -102,21 +97,11 @@ export async function DELETE(
     }
 
     const { id } = await params;
-
-    // 아이템 존재 확인
-    const item = await getInventoryItemById(userId, id);
-    if (!item) {
-      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
-    }
-
     await deleteInventoryItem(userId, id);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[API] DELETE /api/inventory/[id] error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('[Inventory Item API] DELETE error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
