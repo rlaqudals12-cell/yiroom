@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,9 +13,19 @@ import { CompareButton } from '@/components/products/CompareButton';
 import { ProductViewTracker } from '@/components/products/ProductViewTracker';
 import { ReviewSection } from '@/components/products/reviews';
 import { ProductQASection } from '@/components/products/ProductQASection';
+import { IngredientAnalysisSectionSkeleton } from '@/components/products/ingredients';
 import { getProductById, pathToProductType } from '@/lib/products';
 import type { ProductType, CosmeticProduct, SupplementProduct } from '@/types/product';
 import type { ReviewProductType } from '@/types/review';
+
+// 클라이언트 컴포넌트 (차트 포함) - 지연 로딩
+const IngredientAnalysisSection = dynamic(
+  () => import('@/components/products/ingredients').then((mod) => mod.IngredientAnalysisSection),
+  {
+    ssr: false,
+    loading: () => <IngredientAnalysisSectionSkeleton />,
+  }
+);
 
 interface ProductDetailPageProps {
   params: Promise<{
@@ -167,13 +178,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       {/* 제품 이미지 */}
       <div className="relative aspect-square bg-muted max-w-md mx-auto">
         {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            className="object-cover"
-            priority
-          />
+          <Image src={product.imageUrl} alt={product.name} fill className="object-cover" priority />
         ) : (
           <div className="flex h-full items-center justify-center">
             <Package className="h-24 w-24 text-muted-foreground/30" />
@@ -193,7 +198,10 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
           {/* 평점 */}
           {product.rating && (
-            <div className="flex items-center gap-2" aria-label={`평점 ${product.rating.toFixed(1)}점`}>
+            <div
+              className="flex items-center gap-2"
+              aria-label={`평점 ${product.rating.toFixed(1)}점`}
+            >
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
                 <span className="font-semibold">{product.rating.toFixed(1)}</span>
@@ -212,44 +220,53 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
         {/* 화장품: 피부타입 & 고민 */}
         {cosmetic && (
-          <Card>
-            <CardContent className="p-4 space-y-4">
-              {cosmetic.skinTypes && cosmetic.skinTypes.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium mb-2">추천 피부 타입</p>
-                  <div className="flex flex-wrap gap-2">
-                    {cosmetic.skinTypes.map((type) => (
-                      <Badge key={type} variant="secondary">
-                        {getSkinTypeLabel(type)}
-                      </Badge>
-                    ))}
+          <>
+            <Card>
+              <CardContent className="p-4 space-y-4">
+                {cosmetic.skinTypes && cosmetic.skinTypes.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium mb-2">추천 피부 타입</p>
+                    <div className="flex flex-wrap gap-2">
+                      {cosmetic.skinTypes.map((type) => (
+                        <Badge key={type} variant="secondary">
+                          {getSkinTypeLabel(type)}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {cosmetic.concerns && cosmetic.concerns.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium mb-2">이런 고민에 추천</p>
-                  <div className="flex flex-wrap gap-2">
-                    {cosmetic.concerns.map((concern) => (
-                      <Badge key={concern} variant="outline">
-                        {getConcernLabel(concern)}
-                      </Badge>
-                    ))}
+                {cosmetic.concerns && cosmetic.concerns.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium mb-2">이런 고민에 추천</p>
+                    <div className="flex flex-wrap gap-2">
+                      {cosmetic.concerns.map((concern) => (
+                        <Badge key={concern} variant="outline">
+                          {getConcernLabel(concern)}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {cosmetic.keyIngredients && cosmetic.keyIngredients.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium mb-2">주요 성분</p>
-                  <p className="text-sm text-muted-foreground">
-                    {cosmetic.keyIngredients.join(', ')}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                {cosmetic.keyIngredients && cosmetic.keyIngredients.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium mb-2">주요 성분</p>
+                    <p className="text-sm text-muted-foreground">
+                      {cosmetic.keyIngredients.join(', ')}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 성분 분석 (EWG 등급, AI 분석) */}
+            <Card>
+              <CardContent className="p-4">
+                <IngredientAnalysisSection productId={product.id} />
+              </CardContent>
+            </Card>
+          </>
         )}
 
         {/* 영양제: 효능 & 성분 */}
@@ -289,7 +306,10 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                     {supplement.mainIngredients.slice(0, 5).map((ing) => (
                       <div key={ing.name} className="flex justify-between">
                         <span>{ing.name}</span>
-                        <span>{ing.amount}{ing.unit}</span>
+                        <span>
+                          {ing.amount}
+                          {ing.unit}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -319,16 +339,10 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         </div>
 
         {/* Q&A 섹션 */}
-        <ProductQASection
-          product={product}
-          productType={productType}
-        />
+        <ProductQASection product={product} productType={productType} />
 
         {/* 리뷰 섹션 */}
-        <ReviewSection
-          productType={toReviewProductType(productType)}
-          productId={product.id}
-        />
+        <ReviewSection productType={toReviewProductType(productType)} productId={product.id} />
       </div>
     </div>
   );
