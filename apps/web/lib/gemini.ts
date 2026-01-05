@@ -1617,3 +1617,313 @@ export async function generateMealSuggestion(
     return generateMockMealSuggestion(input) as unknown as GeminiMealSuggestionResult;
   }
 }
+
+// ============================================
+// 이미지 질문 AI (Inventory Q&A)
+// ============================================
+
+/**
+ * 이미지 질문 결과 타입
+ */
+export interface GeminiImageQuestionResult {
+  answer: string;
+  suggestions?: string[];
+  confidence: number;
+}
+
+/**
+ * 이미지 질문 입력 타입
+ */
+export interface ImageQuestionInput {
+  imageBase64: string;
+  question: string;
+  context?: {
+    category?: string; // closet, beauty, equipment, etc.
+    itemName?: string;
+    personalColor?: string;
+    bodyType?: string;
+  };
+}
+
+/**
+ * 이미지 질문 프롬프트 빌더
+ */
+function buildImageQuestionPrompt(input: ImageQuestionInput): string {
+  const categoryLabels: Record<string, string> = {
+    closet: '의류/패션 아이템',
+    beauty: '화장품/스킨케어 제품',
+    equipment: '운동 장비',
+    supplement: '영양제/건강식품',
+    pantry: '식재료/식품',
+  };
+
+  const categoryText = input.context?.category
+    ? categoryLabels[input.context.category] || input.context.category
+    : '아이템';
+
+  let contextText = '';
+  if (input.context?.itemName) {
+    contextText += `\n- 아이템 이름: ${input.context.itemName}`;
+  }
+  if (input.context?.personalColor) {
+    contextText += `\n- 사용자 퍼스널컬러: ${input.context.personalColor}`;
+  }
+  if (input.context?.bodyType) {
+    contextText += `\n- 사용자 체형: ${input.context.bodyType}`;
+  }
+
+  return `당신은 ${categoryText} 전문가 AI 어시스턴트입니다. 사용자가 업로드한 이미지를 보고 질문에 답변해주세요.
+
+## 사용자 질문
+${input.question}
+${contextText ? `\n## 참고 정보${contextText}` : ''}
+
+## 응답 형식
+
+다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
+
+{
+  "answer": "[질문에 대한 상세하고 도움이 되는 답변 2-4문장]",
+  "suggestions": ["[관련 추천 1]", "[관련 추천 2]", "[관련 추천 3]"],
+  "confidence": [80-95 사이의 신뢰도]
+}
+
+## 주의사항
+
+- 이미지에 보이는 내용을 정확히 분석하세요
+- 패션/뷰티 관련 질문이면 퍼스널컬러와 체형을 고려하여 답변하세요
+- 구체적이고 실용적인 조언을 제공하세요
+- suggestions는 관련된 추가 정보나 추천 (없으면 빈 배열)
+- 한국어로 자연스럽게 작성`;
+}
+
+/**
+ * 이미지 질문 AI 실행
+ * - 인벤토리 아이템에 대한 질문-답변
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - 5초 타임아웃 + 2회 재시도 후 Mock Fallback
+ *
+ * @param input - 이미지 질문 입력 데이터
+ * @returns 질문에 대한 AI 답변
+ */
+export async function askAboutImage(input: ImageQuestionInput): Promise<GeminiImageQuestionResult> {
+  // Mock 응답 생성 함수
+  const generateMockAnswer = (): GeminiImageQuestionResult => ({
+    answer: `"${input.question}"에 대한 답변입니다. 이미지를 분석한 결과, 해당 아이템에 대해 유용한 정보를 제공해드릴 수 있습니다. 추가 질문이 있으시면 말씀해주세요.`,
+    suggestions: ['관련 아이템 추천', '코디 조합 제안', '관리 팁'],
+    confidence: 75,
+  });
+
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[IMG-Q] Using mock (FORCE_MOCK_AI=true)');
+    return generateMockAnswer();
+  }
+
+  if (!genAI) {
+    geminiLogger.warn('[IMG-Q] Gemini not configured, using mock');
+    return generateMockAnswer();
+  }
+
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const prompt = buildImageQuestionPrompt(input);
+    const imagePart = formatImageForGemini(input.imageBase64);
+
+    // 타임아웃 (5초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () =>
+        withTimeout(
+          model.generateContent([prompt, imagePart]),
+          5000,
+          '[IMG-Q] Image question timeout'
+        ),
+      2,
+      1000
+    );
+
+    const response = result.response;
+    const text = response.text();
+
+    geminiLogger.info('[IMG-Q] Image question answered');
+    return parseJsonResponse<GeminiImageQuestionResult>(text);
+  } catch (error) {
+    geminiLogger.error('[IMG-Q] Gemini error, falling back to mock:', error);
+    return generateMockAnswer();
+  }
+}
+
+// ============================================
+// 날씨 기반 코디 추천 AI
+// ============================================
+
+/**
+ * 날씨 코디 추천 결과 타입
+ */
+export interface GeminiWeatherOutfitResult {
+  recommendation: string;
+  outfit: {
+    outer?: string;
+    top: string;
+    bottom: string;
+    shoes?: string;
+    accessories?: string[];
+  };
+  tips: string[];
+  colorSuggestions: string[];
+}
+
+/**
+ * 날씨 코디 추천 입력 타입
+ */
+export interface WeatherOutfitInput {
+  weather: {
+    temp: number;
+    condition: string; // sunny, cloudy, rainy, snowy
+    humidity?: number;
+    wind?: number;
+  };
+  occasion: 'casual' | 'work' | 'date' | 'outdoor' | 'exercise';
+  personalColor?: string;
+  bodyType?: string;
+  preferences?: string[];
+}
+
+/**
+ * 날씨 코디 추천 프롬프트 빌더
+ */
+function buildWeatherOutfitPrompt(input: WeatherOutfitInput): string {
+  const occasionLabels: Record<string, string> = {
+    casual: '일상/캐주얼',
+    work: '출근/업무',
+    date: '데이트/약속',
+    outdoor: '야외활동',
+    exercise: '운동/스포츠',
+  };
+
+  const conditionLabels: Record<string, string> = {
+    sunny: '맑음',
+    cloudy: '흐림',
+    rainy: '비',
+    snowy: '눈',
+  };
+
+  const occasionText = occasionLabels[input.occasion] || input.occasion;
+  const conditionText = conditionLabels[input.weather.condition] || input.weather.condition;
+
+  let contextText = '';
+  if (input.personalColor) {
+    contextText += `\n- 퍼스널컬러: ${input.personalColor}`;
+  }
+  if (input.bodyType) {
+    contextText += `\n- 체형: ${input.bodyType}`;
+  }
+  if (input.preferences?.length) {
+    contextText += `\n- 선호 스타일: ${input.preferences.join(', ')}`;
+  }
+
+  return `당신은 전문 스타일리스트입니다. 오늘의 날씨와 상황에 맞는 코디를 추천해주세요.
+
+## 오늘의 날씨
+- 기온: ${input.weather.temp}°C
+- 날씨: ${conditionText}
+${input.weather.humidity ? `- 습도: ${input.weather.humidity}%` : ''}
+${input.weather.wind ? `- 바람: ${input.weather.wind}m/s` : ''}
+
+## 상황
+- TPO: ${occasionText}
+${contextText}
+
+## 응답 형식
+
+다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
+
+{
+  "recommendation": "[오늘 코디 전체 설명 1-2문장]",
+  "outfit": {
+    "outer": "[아우터 - 10°C 이하일 때만, 아니면 null]",
+    "top": "[상의 추천]",
+    "bottom": "[하의 추천]",
+    "shoes": "[신발 추천]",
+    "accessories": ["[액세서리1]", "[액세서리2]"]
+  },
+  "tips": ["[스타일링 팁 1]", "[스타일링 팁 2]"],
+  "colorSuggestions": ["[추천 컬러 1]", "[추천 컬러 2]", "[추천 컬러 3]"]
+}
+
+## 주의사항
+
+- 기온에 맞는 옷을 추천하세요 (레이어링 고려)
+- 비/눈 오면 방수/보온성 고려
+- 퍼스널컬러가 있으면 어울리는 색상 위주로 추천
+- 체형이 있으면 체형에 맞는 실루엣 추천
+- 한국어로 자연스럽게 작성`;
+}
+
+/**
+ * 날씨 기반 코디 추천 AI 실행
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - 3초 타임아웃 + 2회 재시도 후 Mock Fallback
+ *
+ * @param input - 날씨 코디 추천 입력 데이터
+ * @returns 코디 추천 결과
+ */
+export async function recommendWeatherOutfit(
+  input: WeatherOutfitInput
+): Promise<GeminiWeatherOutfitResult> {
+  // Mock 응답 생성 함수
+  const generateMockOutfit = (): GeminiWeatherOutfitResult => {
+    const isWarm = input.weather.temp >= 20;
+    const isCold = input.weather.temp <= 10;
+    const isRainy = input.weather.condition === 'rainy';
+
+    return {
+      recommendation: isWarm
+        ? '오늘은 가벼운 옷차림이 좋겠어요. 시원하고 편안한 코디를 추천드립니다.'
+        : isCold
+          ? '오늘은 따뜻하게 레이어링하세요. 아우터는 필수입니다.'
+          : '오늘은 적당한 기온이에요. 가디건이나 얇은 자켓을 챙기세요.',
+      outfit: {
+        outer: isCold ? '울 코트' : undefined,
+        top: isWarm ? '린넨 셔츠' : '니트 스웨터',
+        bottom: '슬랙스',
+        shoes: isRainy ? '레인부츠' : '로퍼',
+        accessories: isRainy ? ['우산', '방수 가방'] : ['시계', '선글라스'],
+      },
+      tips: [isRainy ? '우산 꼭 챙기세요!' : '자외선 차단제 바르세요', '편안한 신발 추천드려요'],
+      colorSuggestions: ['네이비', '베이지', '화이트'],
+    };
+  };
+
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[WEATHER-OUTFIT] Using mock (FORCE_MOCK_AI=true)');
+    return generateMockOutfit();
+  }
+
+  if (!genAI) {
+    geminiLogger.warn('[WEATHER-OUTFIT] Gemini not configured, using mock');
+    return generateMockOutfit();
+  }
+
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const prompt = buildWeatherOutfitPrompt(input);
+
+    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () => withTimeout(model.generateContent(prompt), 3000, '[WEATHER-OUTFIT] Timeout'),
+      2,
+      1000
+    );
+
+    const response = result.response;
+    const text = response.text();
+
+    geminiLogger.info('[WEATHER-OUTFIT] Outfit recommendation generated');
+    return parseJsonResponse<GeminiWeatherOutfitResult>(text);
+  } catch (error) {
+    geminiLogger.error('[WEATHER-OUTFIT] Gemini error, falling back to mock:', error);
+    return generateMockOutfit();
+  }
+}
