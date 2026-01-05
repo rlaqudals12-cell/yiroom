@@ -266,7 +266,14 @@
       "Bash(settings \")",
       "Bash(tee:*)",
       "Bash(npm run build-storybook:*)",
-      "Bash(CI=true npm run build-storybook)"
+      "Bash(CI=true npm run build-storybook)",
+      "Bash(node -r dotenv/config scripts/seed-ingredients.ts:*)",
+      "Bash(node -r dotenv/config -e:*)",
+      "Bash(timeout 120 powershell:*)",
+      "Bash(timeout 300 npx vitest run)",
+      "Bash(npx lighthouse --version)",
+      "Bash(dir /s /b \"c:\\\\dev\\\\yiroom\\\\apps\\\\web\\\\.next\\\\static\\\\chunks\\\\*.js\")",
+      "Bash(npx vitest run --reporter=basic)"
     ]
   },
   "enableAllProjectMcpServers": true,
