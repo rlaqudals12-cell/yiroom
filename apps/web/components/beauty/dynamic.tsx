@@ -7,11 +7,20 @@
 
 import dynamic from 'next/dynamic';
 
-// 성분 필터 (Sheet 모달)
+// 성분 필터 (Sheet 모달) - 기존 버전 (로컬 상태)
 export const IngredientFavoriteFilterDynamic = dynamic(() => import('./IngredientFavoriteFilter'), {
   ssr: false,
   loading: () => null,
 });
+
+// 성분 필터 V2 (Sheet 모달) - user_preferences 연동
+export const IngredientFavoriteFilterV2Dynamic = dynamic(
+  () => import('./IngredientFavoriteFilterV2'),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 // 피부 나이 계산기 (사용자 인터랙션 필요)
 export const SkinAgeCalculatorDynamic = dynamic(() => import('./SkinAgeCalculator'), {

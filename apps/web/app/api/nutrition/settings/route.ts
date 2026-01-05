@@ -1,7 +1,16 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import type { MealStyle, CookingSkill, BudgetLevel, AllergyType, NutritionGoal, ActivityLevel } from '@/types/nutrition';
+import { upsertPreferences } from '@/lib/preferences';
+import { allergiesToPreferences, dislikedFoodsToPreferences } from '@/lib/preferences/converters';
+import type {
+  MealStyle,
+  CookingSkill,
+  BudgetLevel,
+  AllergyType,
+  NutritionGoal,
+  ActivityLevel,
+} from '@/types/nutrition';
 
 // 영양 설정 저장 요청 타입
 interface NutritionSettingsRequest {
@@ -42,10 +51,7 @@ export async function POST(request: Request) {
 
     // 필수 필드 검증
     if (!body.goal || !body.bmr || !body.tdee || !body.dailyCalorieTarget) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     // Supabase에 저장 (upsert)
@@ -86,16 +92,29 @@ export async function POST(request: Request) {
       );
     }
 
+    // Dual Write: user_preferences에도 저장 (allergies + dislikedFoods)
+    try {
+      const preferences = [
+        ...allergiesToPreferences(body.allergies, userId),
+        ...dislikedFoodsToPreferences(body.dislikedFoods, userId),
+      ];
+
+      if (preferences.length > 0) {
+        await upsertPreferences(supabase, preferences);
+        console.log(`[N-1] Saved ${preferences.length} preferences to user_preferences`);
+      }
+    } catch (prefError) {
+      // user_preferences 저장 실패해도 기존 로직은 정상 동작
+      console.error('[N-1] Failed to save preferences (non-critical):', prefError);
+    }
+
     return NextResponse.json({
       success: true,
       data,
     });
   } catch (error) {
     console.error('Nutrition settings API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -140,10 +159,7 @@ export async function PATCH(request: Request) {
     }
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: 'No fields to update' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 
     const { data, error } = await supabase
@@ -174,10 +190,7 @@ export async function PATCH(request: Request) {
     });
   } catch (error) {
     console.error('[N-1] Nutrition settings PATCH error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -216,9 +229,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Nutrition settings API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

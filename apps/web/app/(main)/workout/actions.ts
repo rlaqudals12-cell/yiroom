@@ -2,6 +2,8 @@
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { generateMockWorkoutAnalysis } from '@/lib/mock/workout-analysis';
+import { upsertPreferences } from '@/lib/preferences';
+import { injuriesToPreferences } from '@/lib/preferences/converters';
 import type { WorkoutAnalysis, WorkoutStreak } from '@/lib/api/workout';
 import type { WorkoutAnalysisInput } from '@/lib/gemini';
 
@@ -102,6 +104,21 @@ export async function saveWorkoutAnalysisAction(
     return { success: false, error: `DB Error: ${error.message} (${error.code})` };
   }
 
+  // Dual Write: user_preferences에도 저장 (injuries)
+  try {
+    const preferences = injuriesToPreferences(input.injuries || [], clerkUserId);
+
+    if (preferences.length > 0) {
+      await upsertPreferences(supabase, preferences);
+      console.log(
+        `[W-1 Action] Saved ${preferences.length} injury preferences to user_preferences`
+      );
+    }
+  } catch (prefError) {
+    // user_preferences 저장 실패해도 기존 로직은 정상 동작
+    console.error('[W-1 Action] Failed to save preferences (non-critical):', prefError);
+  }
+
   console.log('[W-1 Action] Workout analysis saved:', data?.id, data?.workout_type);
   return { success: true, data: data as WorkoutAnalysis };
 }
@@ -154,9 +171,7 @@ export async function getLatestWorkoutAnalysisAction(
  * 사용자의 Streak 조회 (Server Action)
  * workout_streaks.user_id는 Clerk ID (TEXT)
  */
-export async function getWorkoutStreakAction(
-  clerkUserId: string
-): Promise<WorkoutStreak | null> {
+export async function getWorkoutStreakAction(clerkUserId: string): Promise<WorkoutStreak | null> {
   const supabase = createServiceRoleClient();
 
   const { data, error } = await supabase
