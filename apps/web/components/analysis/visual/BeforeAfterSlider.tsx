@@ -254,6 +254,7 @@ export default function BeforeAfterSlider({
     >
       {/* Before 이미지 */}
       <div className="absolute inset-0" style={{ clipPath: clipBefore }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- base64/dynamic URL 사용 */}
         <img
           src={beforeSrc}
           alt={beforeLabel}
@@ -272,6 +273,7 @@ export default function BeforeAfterSlider({
 
       {/* After 이미지 */}
       <div className="absolute inset-0" style={{ clipPath: clipAfter }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- base64/dynamic URL 사용 */}
         <img
           src={afterSrc}
           alt={afterLabel}

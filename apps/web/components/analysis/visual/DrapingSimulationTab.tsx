@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { FaceLandmark, DrapeResult, MetalType } from '@/types/visual-analysis';
+import type { DrapeResult, MetalType } from '@/types/visual-analysis';
 import { analyzeDeviceCapability } from '@/lib/analysis/device-capability';
 import { extractFaceLandmarks, createFaceMask } from '@/lib/analysis/face-landmark';
 import { preloadFaceMesh } from '@/lib/analysis/mediapipe-loader';
@@ -38,7 +38,7 @@ type AnalysisState = 'idle' | 'loading' | 'analyzing' | 'ready' | 'error';
  */
 export default function DrapingSimulationTab({
   imageUrl,
-  skinAnalysisId,
+  skinAnalysisId: _skinAnalysisId,
   className,
 }: DrapingSimulationTabProps) {
   const [state, setState] = useState<AnalysisState>('idle');

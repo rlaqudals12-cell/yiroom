@@ -278,6 +278,7 @@ function BeforeAfterSlider({
           clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`,
         }}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element -- base64/dynamic URL 사용 */}
         <img src={beforeImage} alt="이전" className="w-full h-full object-cover" />
         <div className="absolute top-2 left-2">
           <Badge variant="secondary" className="text-xs">
@@ -294,6 +295,7 @@ function BeforeAfterSlider({
           clipPath: `inset(0 0 0 ${sliderPosition}%)`,
         }}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element -- base64/dynamic URL 사용 */}
         <img src={afterImage} alt="이후" className="w-full h-full object-cover" />
         <div className="absolute top-2 right-2">
           <Badge variant="default" className="text-xs">
