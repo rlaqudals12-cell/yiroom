@@ -101,11 +101,7 @@ export {
 // ================================================
 // 매칭 서비스 (Matching)
 // ================================================
-export {
-  calculateMatchScore,
-  addMatchInfo,
-  addMatchInfoToProducts,
-} from './matching';
+export { calculateMatchScore, addMatchInfo, addMatchInfoToProducts } from './matching';
 export type { UserProfile, MatchResult } from './matching';
 
 // ================================================
@@ -118,3 +114,24 @@ export {
   getProductClickCount,
   getTodayClickCount,
 } from './affiliate';
+
+// ================================================
+// 화장품 성분 (Ingredients)
+// ================================================
+export {
+  getIngredientById,
+  searchIngredients,
+  getProductIngredients,
+  getCaution20Ingredients,
+  getAllergenIngredients,
+  getIngredientsByCategory,
+  analyzeProductIngredients,
+  ingredientExists,
+  getFunctionCounts,
+} from './repositories/ingredients';
+
+export {
+  analyzeIngredientsWithAI,
+  generateMockIngredientSummary,
+} from './services/ingredient-analysis';
+export type { AIIngredientKeyword, AIIngredientSummary } from './services/ingredient-analysis';
