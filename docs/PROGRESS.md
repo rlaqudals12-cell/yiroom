@@ -39,6 +39,52 @@
 | Phase L | i18n         | 4개 언어 (한/영/일/중) | ✅ 완료    |
 | Launch  | 출시 준비    | 온보딩, 도움말, 알림   | ✅ 완료    |
 | Phase V | Visual       | S-1+/PC-1+ 시각 분석   | ✅ 완료    |
+| Phase P | Preferences  | 통합 선호/기피 시스템  | ✅ 완료    |
+
+---
+
+## Phase P: User Preferences System ✅ (2026-01-05)
+
+### 개요
+
+사용자의 **선호(Favorites)**와 **기피(Avoids)** 항목을 도메인별로 통합 관리.
+i18n 친화적 AvoidLevel 설계 (의료 용어 대신 일상 표현).
+
+### 완료 항목
+
+```yaml
+[x] types/preferences.ts: 핵심 타입 정의
+    - AvoidLevel: dislike | avoid | cannot | danger
+    - AvoidReason: 12가지 카테고리
+    - UserPreference 인터페이스
+
+[x] lib/preferences: 비즈니스 로직
+    - repository.ts: Supabase CRUD (9개 함수)
+    - labels.ts: 5개 언어 i18n (ko, en, ja, zh_CN, zh_TW)
+    - converters.ts: allergies/injuries 변환
+
+[x] API Routes:
+    - GET/POST /api/preferences
+    - PATCH/DELETE /api/preferences/[id]
+    - GET /api/preferences/summary
+
+[x] 프론트엔드:
+    - useUserPreferences 훅
+    - PreferenceManager 컴포넌트
+    - AvoidLevelBadge 컴포넌트
+    - QuickAddSheet 컴포넌트
+
+[x] 기존 모듈 연동 (Dual Write):
+    - N-1: allergies[] → user_preferences
+    - W-1: injuries[] → user_preferences
+    - Beauty: IngredientFavoriteFilterV2
+
+[x] 테스트: 105개 통과
+```
+
+### 관련 문서
+
+- [SDD-USER-PREFERENCES.md](./SDD-USER-PREFERENCES.md)
 
 ---
 
@@ -521,13 +567,33 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
 [x] SDD↔구현 일치 검증 (시지푸스)
     - SDD-BEAUTY-UX-IMPROVEMENTS: 95% 구현
     - SDD-INGREDIENT-ANALYSIS: 85% 구현
-    - SDD-VISUAL-ANALYSIS-ENGINE: 70% 구현
-    - Critical 이슈: 제품 상세 페이지 Tabs UI 미구현 (SDD 수정 권장)
+    - SDD-VISUAL-ANALYSIS-ENGINE: ✅ 100% 구현 완료 (2026-01-05)
+    - ✅ Tabs UI 이슈 해결: SDD에 구현 노트 추가 (스크롤 방식 채택 사유 명시)
 
 [x] AI Fallback 패턴 분석 (시지푸스)
     - 모범 사례: lib/products/services/ingredient-analysis.ts
     - 개선 필요: lib/gemini.ts (Mock Fallback 누락)
     - 권장 개선: 타임아웃/재시도 일관성 강화
+
+[x] Storybook 설정 및 스토리 작성
+    - .storybook/main.ts, preview.ts 설정
+    - Visual Analysis 컴포넌트 스토리 2개
+        - BeforeAfterSlider.stories.tsx (10개 스토리)
+        - HistoryCompare.stories.tsx (10개 스토리)
+    - 버전 충돌 이슈 (8.x/10.x 혼재) - 추후 해결 예정
+
+[x] Ingredient 모듈 완성
+    - scripts/seed-ingredients.ts - 시드 삽입 스크립트
+    - 마이그레이션 추가: 202601050200_cosmetic_ingredients_unique.sql
+    - Repository 테스트 50개 추가
+        - tests/types/ingredient.test.ts (15 tests)
+        - tests/lib/products/repositories/ingredients.test.ts (14 tests)
+        - tests/lib/products/services/ingredient-analysis.test.ts (21 tests)
+    - SDD-INGREDIENT-ANALYSIS: 85% → 95% 완료
+
+[x] 코드 품질 개선
+    - Lint 경고 8개 → 0개 수정
+    - TypeScript 전체 통과 유지
 ```
 
 ---
