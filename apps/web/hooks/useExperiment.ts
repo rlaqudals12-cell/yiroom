@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
-import type { ExperimentAssignment, Variant } from '@/lib/experiments/types';
+import type { ExperimentAssignment } from '@/lib/experiments/types';
 
 interface UseExperimentOptions {
   /** 실험 키 */

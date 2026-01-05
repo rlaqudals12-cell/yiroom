@@ -264,7 +264,9 @@
       "Bash(ls -la \"c:\\\\dev\\\\yiroom\\\\apps\\\\web\\\\components\\\\products\\\\ingredients\"\" 2>/dev/null || dir /b \"c:devyiroomappswebcomponentsproductsingredients \")",
       "Bash(dir /b \"c:\\\\dev\\\\yiroom\\\\apps\\\\web\\\\components\\\\products\\\\ingredients\")",
       "Bash(settings \")",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(npm run build-storybook:*)",
+      "Bash(CI=true npm run build-storybook)"
     ]
   },
   "enableAllProjectMcpServers": true,
