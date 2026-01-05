@@ -154,6 +154,15 @@ CREATE TABLE IF NOT EXISTS affiliate_clicks (
   commission_krw INTEGER
 );
 
+-- 기존 테이블에 컬럼 추가 (없는 경우)
+ALTER TABLE affiliate_clicks ADD COLUMN IF NOT EXISTS recommendation_type TEXT;
+ALTER TABLE affiliate_clicks ADD COLUMN IF NOT EXISTS user_agent TEXT;
+ALTER TABLE affiliate_clicks ADD COLUMN IF NOT EXISTS ip_hash TEXT;
+ALTER TABLE affiliate_clicks ADD COLUMN IF NOT EXISTS session_id TEXT;
+ALTER TABLE affiliate_clicks ADD COLUMN IF NOT EXISTS converted_at TIMESTAMPTZ;
+ALTER TABLE affiliate_clicks ADD COLUMN IF NOT EXISTS conversion_value_krw INTEGER;
+ALTER TABLE affiliate_clicks ADD COLUMN IF NOT EXISTS commission_krw INTEGER;
+
 -- affiliate_clicks 인덱스
 CREATE INDEX IF NOT EXISTS idx_affiliate_clicks_product ON affiliate_clicks(product_id);
 CREATE INDEX IF NOT EXISTS idx_affiliate_clicks_user ON affiliate_clicks(clerk_user_id);
@@ -170,6 +179,8 @@ COMMENT ON COLUMN affiliate_clicks.commission_krw IS '예상 수수료 (원)';
 -- ================================================
 -- 4. affiliate_daily_stats (일별 통계)
 -- ================================================
+-- 뷰가 먼저 생성된 경우 삭제 (테이블로 재생성)
+DROP VIEW IF EXISTS affiliate_daily_stats CASCADE;
 CREATE TABLE IF NOT EXISTS affiliate_daily_stats (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 

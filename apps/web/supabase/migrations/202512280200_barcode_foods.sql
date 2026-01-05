@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS barcode_foods (
 
 -- 인덱스
 CREATE INDEX IF NOT EXISTS idx_barcode_foods_barcode ON barcode_foods(barcode);
-CREATE INDEX IF NOT EXISTS idx_barcode_foods_name ON barcode_foods USING gin(to_tsvector('korean', name));
+-- Korean text search fallback to simple (Korean config may not exist on all Supabase instances)
+CREATE INDEX IF NOT EXISTS idx_barcode_foods_name ON barcode_foods USING gin(to_tsvector('simple', name));
 CREATE INDEX IF NOT EXISTS idx_barcode_foods_category ON barcode_foods(category);
 CREATE INDEX IF NOT EXISTS idx_barcode_foods_brand ON barcode_foods(brand);
 
