@@ -11,3 +11,6 @@ export * from './labels';
 
 // Converters (기존 모듈 연동)
 export * from './converters';
+
+// Helpers (추천 API 통합)
+export * from './helpers';

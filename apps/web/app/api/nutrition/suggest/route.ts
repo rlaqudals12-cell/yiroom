@@ -1,14 +1,17 @@
-/**
+﻿/**
  * N-1 AI 식단 추천 API
  *
  * 통합 컨텍스트 기반 맞춤 식사 추천
  * - 피부 분석(S-1) + 체형 분석(C-1) 연동
+ * - user_preferences 기반 알레르기/기피 음식 자동 필터링
  * - 대중적이고 구하기 쉬운 한국 음식 위주
  * - 가성비 좋은 메뉴 추천
  */
 
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { getAllergies, getDislikedFoods } from '@/lib/preferences';
 import type { NutritionGoal, MealType, TrafficLight } from '@/types/nutrition';
 
 // 요청 타입
@@ -16,7 +19,7 @@ interface MealSuggestionRequest {
   goal: NutritionGoal;
   mealType: MealType;
   remainingCalories: number;
-  allergies?: string[];
+  allergies?: string[]; // Fallback용 (호환성)
   skinConcerns?: string[];
   bodyType?: string;
 }
@@ -251,7 +254,8 @@ function filterAndRankFoods(
   goal: NutritionGoal,
   remainingCalories: number,
   skinConcerns: string[],
-  allergies: string[]
+  allergies: string[],
+  dislikedFoods: string[]
 ): SuggestedFood[] {
   const prefs = GOAL_PREFERENCES[goal];
   const maxCal = Math.min(prefs.maxCalories, remainingCalories);
@@ -265,38 +269,43 @@ function filterAndRankFoods(
     }
   }
 
-  return foods
-    // 칼로리 필터
-    .filter((food) => food.calories <= maxCal)
-    // 알레르기 필터 (간단한 문자열 매칭)
-    .filter((food) => {
-      const foodText = `${food.name} ${food.description} ${food.tags.join(' ')}`.toLowerCase();
-      return !allergies.some((allergy) => foodText.includes(allergy.toLowerCase()));
-    })
-    // 점수 계산 후 정렬
-    .map((food) => {
-      let score = 0;
+  // 모든 기피 항목 통합
+  const allAvoids = [...allergies, ...dislikedFoods].map((item) => item.toLowerCase());
 
-      // 목표 관련 태그 매칭
-      for (const tag of food.tags) {
-        if (prefs.preferTags.includes(tag)) score += 10;
-      }
+  return (
+    foods
+      // 칼로리 필터
+      .filter((food) => food.calories <= maxCal)
+      // 알레르기/기피 음식 필터 (간단한 문자열 매칭)
+      .filter((food) => {
+        const foodText = `${food.name} ${food.description} ${food.tags.join(' ')}`.toLowerCase();
+        return !allAvoids.some((avoid) => foodText.includes(avoid));
+      })
+      // 점수 계산 후 정렬
+      .map((food) => {
+        let score = 0;
 
-      // 피부 고민 관련 태그 매칭
-      for (const tag of food.tags) {
-        if (skinTags.includes(tag)) score += 15;
-      }
+        // 목표 관련 태그 매칭
+        for (const tag of food.tags) {
+          if (prefs.preferTags.includes(tag)) score += 10;
+        }
 
-      // 가성비 보너스
-      if (food.priceRange === '저렴') score += 5;
+        // 피부 고민 관련 태그 매칭
+        for (const tag of food.tags) {
+          if (skinTags.includes(tag)) score += 15;
+        }
 
-      // 녹색 신호등 보너스
-      if (food.trafficLight === 'green') score += 8;
+        // 가성비 보너스
+        if (food.priceRange === '저렴') score += 5;
 
-      return { food, score };
-    })
-    .sort((a, b) => b.score - a.score)
-    .map((item) => item.food);
+        // 녹색 신호등 보너스
+        if (food.trafficLight === 'green') score += 8;
+
+        return { food, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .map((item) => item.food)
+  );
 }
 
 /**
@@ -364,10 +373,20 @@ export async function POST(request: Request) {
       goal,
       mealType,
       remainingCalories,
-      allergies = [],
+      allergies: fallbackAllergies = [],
       skinConcerns = [],
       bodyType,
     } = body;
+
+    // Supabase 클라이언트 생성
+    const supabase = createClerkSupabaseClient();
+
+    // user_preferences에서 알레르기/기피 음식 조회 (Fallback 포함)
+    const allergies = await getAllergies(supabase, userId, fallbackAllergies);
+    const dislikedFoods = await getDislikedFoods(supabase, userId);
+
+    console.log('[N-1 Suggest] Allergies:', allergies);
+    console.log('[N-1 Suggest] Disliked foods:', dislikedFoods);
 
     // 해당 식사 시간대 음식 가져오기
     const baseFoods = POPULAR_KOREAN_FOODS[mealType] || POPULAR_KOREAN_FOODS.lunch;
@@ -378,7 +397,8 @@ export async function POST(request: Request) {
       goal,
       remainingCalories,
       skinConcerns,
-      allergies
+      allergies,
+      dislikedFoods
     );
 
     // 상위 3개 선택 (없으면 기본 메뉴 제공)
@@ -418,9 +438,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('[Meal Suggest API] Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

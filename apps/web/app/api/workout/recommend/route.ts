@@ -21,7 +21,7 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *   bodyType?: string,             // 체형 (C-1 연동)
  *   goals: string[],               // 운동 목표
  *   concerns: string[],            // 집중 부위
- *   injuries?: string[],           // 부상/통증 부위
+ *   injuries?: string[],           // 부상/통증 부위 (Fallback용 - 호환성)
  *   equipment: string[],           // 사용 가능 장비
  *   location: string,              // 운동 장소
  *   userLevel?: string,            // 운동 레벨 (beginner, intermediate, advanced)
@@ -63,38 +63,29 @@ export async function POST(req: Request) {
 
     // 필수 필드 검증
     if (!workoutType) {
-      return NextResponse.json(
-        { error: 'Workout type is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Workout type is required' }, { status: 400 });
     }
 
     // 유효한 운동 타입인지 확인
     const validWorkoutTypes: WorkoutType[] = ['toner', 'builder', 'burner', 'mover', 'flexer'];
     if (!validWorkoutTypes.includes(workoutType as WorkoutType)) {
-      return NextResponse.json(
-        { error: 'Invalid workout type' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid workout type' }, { status: 400 });
     }
 
     if (!goals || !Array.isArray(goals) || goals.length === 0) {
-      return NextResponse.json(
-        { error: 'Goals are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Goals are required' }, { status: 400 });
     }
 
     // 유효한 운동 장소인지 확인 (기본값: home)
     const validLocations = ['home', 'gym', 'outdoor'] as const;
-    type ValidLocation = typeof validLocations[number];
+    type ValidLocation = (typeof validLocations)[number];
     const validatedLocation: ValidLocation = validLocations.includes(location as ValidLocation)
       ? (location as ValidLocation)
       : 'home';
 
     // 유효한 운동 레벨인지 확인 (기본값: beginner)
     const validLevels = ['beginner', 'intermediate', 'advanced'] as const;
-    type ValidLevel = typeof validLevels[number];
+    type ValidLevel = (typeof validLevels)[number];
     const validatedLevel: ValidLevel = validLevels.includes(userLevel as ValidLevel)
       ? (userLevel as ValidLevel)
       : 'beginner';
@@ -172,9 +163,7 @@ export async function POST(req: Request) {
       .filter(Boolean);
 
     // 워밍업 운동 상세 정보
-    const warmupExercises = result.warmupExercises
-      .map((id) => getExerciseById(id))
-      .filter(Boolean);
+    const warmupExercises = result.warmupExercises.map((id) => getExerciseById(id)).filter(Boolean);
 
     // 쿨다운 운동 상세 정보
     const cooldownExercises = result.cooldownExercises
@@ -203,9 +192,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('[W-1] Exercise recommendation error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

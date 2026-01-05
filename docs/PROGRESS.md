@@ -75,11 +75,22 @@ i18n 친화적 AvoidLevel 설계 (의료 용어 대신 일상 표현).
     - QuickAddSheet 컴포넌트
 
 [x] 기존 모듈 연동 (Dual Write):
-    - N-1: allergies[] → user_preferences
-    - W-1: injuries[] → user_preferences
+    - N-1: allergies[] → user_preferences (온보딩)
+    - W-1: injuries[] → user_preferences (온보딩)
     - Beauty: IngredientFavoriteFilterV2
 
-[x] 테스트: 105개 통과
+[x] 읽기 로직 통합 (Phase 3):
+    - lib/preferences/helpers.ts: 추천 API 헬퍼
+    - /api/nutrition/suggest: user_preferences 우선 조회
+    - /api/workout/recommend: user_preferences 우선 조회
+    - Fallback 지원으로 완전한 호환성 보장
+
+[x] 테스트: 115개 통과
+    - converters: 11개
+    - helpers: 10개
+    - repository: 15개
+    - hooks: 10개
+    - integration: 69개
 ```
 
 ### 관련 문서
