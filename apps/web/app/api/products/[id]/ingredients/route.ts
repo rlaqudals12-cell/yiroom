@@ -17,9 +17,9 @@ import { analyzeIngredientsWithAI } from '@/lib/products/services/ingredient-ana
  * Query Parameters:
  * - includeAI: true일 경우 AI 요약 포함 (기본 false)
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const productId = params.id;
+    const { id: productId } = await params;
     const { searchParams } = new URL(request.url);
     const includeAI = searchParams.get('includeAI') === 'true';
 

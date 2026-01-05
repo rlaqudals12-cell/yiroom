@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,19 +12,10 @@ import { CompareButton } from '@/components/products/CompareButton';
 import { ProductViewTracker } from '@/components/products/ProductViewTracker';
 import { ReviewSection } from '@/components/products/reviews';
 import { ProductQASection } from '@/components/products/ProductQASection';
-import { IngredientAnalysisSectionSkeleton } from '@/components/products/ingredients';
+import { IngredientAnalysisSectionDynamic } from '@/components/products/ingredients';
 import { getProductById, pathToProductType } from '@/lib/products';
 import type { ProductType, CosmeticProduct, SupplementProduct } from '@/types/product';
 import type { ReviewProductType } from '@/types/review';
-
-// 클라이언트 컴포넌트 (차트 포함) - 지연 로딩
-const IngredientAnalysisSection = dynamic(
-  () => import('@/components/products/ingredients').then((mod) => mod.IngredientAnalysisSection),
-  {
-    ssr: false,
-    loading: () => <IngredientAnalysisSectionSkeleton />,
-  }
-);
 
 interface ProductDetailPageProps {
   params: Promise<{
@@ -263,7 +253,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             {/* 성분 분석 (EWG 등급, AI 분석) */}
             <Card>
               <CardContent className="p-4">
-                <IngredientAnalysisSection productId={product.id} />
+                <IngredientAnalysisSectionDynamic productId={product.id} />
               </CardContent>
             </Card>
           </>

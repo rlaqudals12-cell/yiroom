@@ -8,6 +8,7 @@ export {
   IngredientAnalysisSection,
   IngredientAnalysisSectionSkeleton,
 } from './IngredientAnalysisSection';
+export { IngredientAnalysisSectionDynamic } from './IngredientAnalysisDynamic';
 
 // 배지 및 알림
 export { IngredientEWGBadge, EWGScoreBar } from './IngredientEWGBadge';
