@@ -9,10 +9,8 @@ import {
   type LevelUpResult,
 } from '@/lib/gamification';
 import { getDaysDifference } from '@/lib/nutrition/streak';
-import {
-  updateChallengesOnNutrition,
-  type ChallengeUpdateResult,
-} from '@/lib/challenges';
+import { updateChallengesOnNutrition, type ChallengeUpdateResult } from '@/lib/challenges';
+import { trackActivity } from '@/lib/levels';
 
 // XP 보상 상수
 const XP_MEAL_RECORD = 2;
@@ -51,10 +49,7 @@ export async function GET(req: Request) {
     let targetDate: string;
     if (dateParam) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
-        return NextResponse.json(
-          { error: 'Invalid date format. Use YYYY-MM-DD' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Invalid date format. Use YYYY-MM-DD' }, { status: 400 });
       }
       targetDate = dateParam;
     } else {
@@ -77,10 +72,7 @@ export async function GET(req: Request) {
 
     if (error) {
       console.error('[N-1] Meal records fetch error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch meal records' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch meal records' }, { status: 500 });
     }
 
     // 식사 타입별로 그룹화
@@ -124,22 +116,14 @@ export async function GET(req: Request) {
         order: info.order,
         records: mealsByType[type as MealType] || [],
         subtotal: {
-          calories: mealsByType[type as MealType]?.reduce(
-            (sum, m) => sum + (m.total_calories || 0),
-            0
-          ) || 0,
-          protein: mealsByType[type as MealType]?.reduce(
-            (sum, m) => sum + (m.total_protein || 0),
-            0
-          ) || 0,
-          carbs: mealsByType[type as MealType]?.reduce(
-            (sum, m) => sum + (m.total_carbs || 0),
-            0
-          ) || 0,
-          fat: mealsByType[type as MealType]?.reduce(
-            (sum, m) => sum + (m.total_fat || 0),
-            0
-          ) || 0,
+          calories:
+            mealsByType[type as MealType]?.reduce((sum, m) => sum + (m.total_calories || 0), 0) ||
+            0,
+          protein:
+            mealsByType[type as MealType]?.reduce((sum, m) => sum + (m.total_protein || 0), 0) || 0,
+          carbs:
+            mealsByType[type as MealType]?.reduce((sum, m) => sum + (m.total_carbs || 0), 0) || 0,
+          fat: mealsByType[type as MealType]?.reduce((sum, m) => sum + (m.total_fat || 0), 0) || 0,
         },
       })),
     };
@@ -147,10 +131,7 @@ export async function GET(req: Request) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('[N-1] Meal records error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -174,10 +155,7 @@ export async function POST(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     const {
@@ -216,12 +194,15 @@ export async function POST(req: Request) {
 
     // 총 영양소 계산
     const totals = foods.reduce(
-      (acc: { calories: number; protein: number; carbs: number; fat: number }, food: {
-        calories?: number;
-        protein?: number;
-        carbs?: number;
-        fat?: number;
-      }) => ({
+      (
+        acc: { calories: number; protein: number; carbs: number; fat: number },
+        food: {
+          calories?: number;
+          protein?: number;
+          carbs?: number;
+          fat?: number;
+        }
+      ) => ({
         calories: acc.calories + (food.calories || 0),
         protein: acc.protein + (food.protein || 0),
         carbs: acc.carbs + (food.carbs || 0),
@@ -231,33 +212,40 @@ export async function POST(req: Request) {
     );
 
     // 평균 신뢰도 계산
-    const avgConfidence = foods.length > 0
-      ? foods.reduce((sum: number, f: { confidence?: number }) => sum + (f.confidence || 0.8), 0) / foods.length
-      : 0.8;
+    const avgConfidence =
+      foods.length > 0
+        ? foods.reduce(
+            (sum: number, f: { confidence?: number }) => sum + (f.confidence || 0.8),
+            0
+          ) / foods.length
+        : 0.8;
 
     // 신뢰도 레벨 결정
-    const confidenceLevel = avgConfidence >= 0.85 ? 'high' : avgConfidence >= 0.7 ? 'medium' : 'low';
+    const confidenceLevel =
+      avgConfidence >= 0.85 ? 'high' : avgConfidence >= 0.7 ? 'medium' : 'low';
 
     // foods 배열을 DB 형식으로 변환
-    const foodsForDb = foods.map((food: {
-      name: string;
-      portion?: string;
-      calories: number;
-      protein: number;
-      carbs: number;
-      fat: number;
-      trafficLight?: string;
-      confidence?: number;
-    }) => ({
-      food_name: food.name,
-      portion: food.portion || '1인분',
-      calories: food.calories,
-      protein: food.protein,
-      carbs: food.carbs,
-      fat: food.fat,
-      traffic_light: food.trafficLight || 'yellow',
-      ai_confidence: food.confidence || 0.8,
-    }));
+    const foodsForDb = foods.map(
+      (food: {
+        name: string;
+        portion?: string;
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+        trafficLight?: string;
+        confidence?: number;
+      }) => ({
+        food_name: food.name,
+        portion: food.portion || '1인분',
+        calories: food.calories,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        traffic_light: food.trafficLight || 'yellow',
+        ai_confidence: food.confidence || 0.8,
+      })
+    );
 
     const supabase = createServiceRoleClient();
 
@@ -274,7 +262,8 @@ export async function POST(req: Request) {
         total_protein: Math.round(totals.protein * 10) / 10,
         total_carbs: Math.round(totals.carbs * 10) / 10,
         total_fat: Math.round(totals.fat * 10) / 10,
-        ai_recognized_food: recordType === 'manual' ? null : foods.map((f: { name: string }) => f.name).join(', '),
+        ai_recognized_food:
+          recordType === 'manual' ? null : foods.map((f: { name: string }) => f.name).join(', '),
         ai_confidence: recordType === 'manual' ? null : confidenceLevel,
         user_confirmed: true,
         // 이미지 저장은 선택적 (용량 고려)
@@ -285,10 +274,7 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error('[N-1] Meal record insert error:', error);
-      return NextResponse.json(
-        { error: 'Failed to save meal record' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to save meal record' }, { status: 500 });
     }
 
     // 게이미피케이션 연동
@@ -304,6 +290,9 @@ export async function POST(req: Request) {
       // XP 추가 (식단 기록 시 2 XP)
       const xpResult = await addXp(supabase, userId, XP_MEAL_RECORD);
       gamificationResult.xpResult = xpResult;
+
+      // 등급 시스템: 활동 트래킹
+      await trackActivity(supabase, userId, 'meal', data?.id);
 
       // 오늘 식단 기록 횟수 확인 (첫 식단 배지 체크)
       const { count: todayMealCount } = await supabase
@@ -342,10 +331,7 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('[N-1] Meal save error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -378,15 +364,13 @@ async function updateNutritionStreakWithGamification(
 
     if (fetchError && fetchError.code === 'PGRST116') {
       // 첫 기록 - 스트릭 생성
-      await supabase
-        .from('nutrition_streaks')
-        .insert({
-          clerk_user_id: userId,
-          current_streak: 1,
-          longest_streak: 1,
-          last_record_date: todayStr,
-          badges_earned: [],
-        });
+      await supabase.from('nutrition_streaks').insert({
+        clerk_user_id: userId,
+        current_streak: 1,
+        longest_streak: 1,
+        last_record_date: todayStr,
+        badges_earned: [],
+      });
 
       return result;
     }
@@ -443,7 +427,6 @@ async function updateNutritionStreakWithGamification(
     // 챌린지 진행 업데이트
     const challengeResult = await updateChallengesOnNutrition(supabase, userId, todayStr);
     result.challengeResult = challengeResult;
-
   } catch (err) {
     console.error('[N-1] Nutrition streak update error:', err);
   }

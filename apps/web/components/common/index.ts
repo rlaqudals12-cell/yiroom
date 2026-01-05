@@ -8,6 +8,10 @@ export { PWAInstallPrompt } from './PWAInstallPrompt';
 export { OrganizationJsonLd, WebApplicationJsonLd, BreadcrumbJsonLd, FAQJsonLd } from './JsonLd';
 export { AppTour } from './AppTour';
 
+// 등급 시스템
+export { LevelBadge, LevelBadgeFilled } from './LevelBadge';
+export { LevelProgress, LevelProgressCompact } from './LevelProgress';
+
 // P3-5.3: 통합 알림 시스템
 export {
   default as CrossModuleAlert,

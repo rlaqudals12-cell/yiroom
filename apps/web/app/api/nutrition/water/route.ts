@@ -8,6 +8,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { trackActivity } from '@/lib/levels';
 
 // 음료 종류별 수분 흡수율 (스펙 섹션 2.7)
 const HYDRATION_FACTORS: Record<string, number> = {
@@ -20,14 +21,7 @@ const HYDRATION_FACTORS: Record<string, number> = {
 };
 
 // 유효한 음료 타입
-const VALID_DRINK_TYPES = [
-  'water',
-  'tea',
-  'coffee',
-  'juice',
-  'soda',
-  'other',
-] as const;
+const VALID_DRINK_TYPES = ['water', 'tea', 'coffee', 'juice', 'soda', 'other'] as const;
 // DrinkType은 VALID_DRINK_TYPES에서 추론됨 (타입 검증용)
 
 /**
@@ -50,10 +44,7 @@ export async function GET(req: Request) {
     let targetDate: string;
     if (dateParam) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
-        return NextResponse.json(
-          { error: 'Invalid date format. Use YYYY-MM-DD' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Invalid date format. Use YYYY-MM-DD' }, { status: 400 });
       }
       targetDate = dateParam;
     } else {
@@ -76,10 +67,7 @@ export async function GET(req: Request) {
 
     if (error) {
       console.error('[N-1] Water records fetch error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch water records' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch water records' }, { status: 500 });
     }
 
     // 총 수분량 계산
@@ -103,8 +91,7 @@ export async function GET(req: Request) {
       }) || [];
 
     // 음료 타입별 합계
-    const byDrinkType: Record<string, { amountMl: number; effectiveMl: number }> =
-      {};
+    const byDrinkType: Record<string, { amountMl: number; effectiveMl: number }> = {};
     records?.forEach((record) => {
       const type = record.drink_type || 'water';
       if (!byDrinkType[type]) {
@@ -124,10 +111,7 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     console.error('[N-1] Water GET error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -160,10 +144,7 @@ export async function POST(req: Request) {
     }
 
     if (amountMl > 5000) {
-      return NextResponse.json(
-        { error: 'amountMl cannot exceed 5000ml' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'amountMl cannot exceed 5000ml' }, { status: 400 });
     }
 
     // 음료 타입 검증
@@ -219,11 +200,11 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error('[N-1] Water record insert error:', error);
-      return NextResponse.json(
-        { error: 'Failed to save water record' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to save water record' }, { status: 500 });
     }
+
+    // 등급 시스템: 활동 트래킹
+    await trackActivity(supabase, userId, 'water', record?.id);
 
     return NextResponse.json({
       success: true,
@@ -240,9 +221,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('[N-1] Water POST error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

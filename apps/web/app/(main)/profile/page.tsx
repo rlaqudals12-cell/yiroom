@@ -36,7 +36,9 @@ import {
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { LevelProgress, BadgeCard } from '@/components/gamification';
+import { BadgeCard } from '@/components/gamification';
+import { LevelBadgeFilled, LevelProgress as NewLevelProgress } from '@/components/common';
+import { getUserLevel, calculateUserLevelState, type UserLevelState } from '@/lib/levels';
 import {
   getUserLevelInfo,
   getUserBadges,
@@ -63,6 +65,8 @@ interface ProfileData {
   friendRequests: number;
   weeklyRank: number | null;
   rankChange: number;
+  // 새 등급 시스템
+  userLevelState: UserLevelState | null;
 }
 
 export default function ProfilePage() {
@@ -161,6 +165,12 @@ export default function ProfilePage() {
           .eq('clerk_user_id', user.id)
           .single();
 
+        // 새 등급 시스템 데이터 조회
+        const userLevelData = await getUserLevel(supabase, user.id);
+        const userLevelState = userLevelData
+          ? calculateUserLevelState(userLevelData.totalActivityCount)
+          : null;
+
         // 배지 통계 (전체 배지 수는 임시로 고정)
         const badgeStats = {
           total: 23, // 전체 배지 수
@@ -226,6 +236,8 @@ export default function ProfilePage() {
           friendRequests: friendRequestsResult.count ?? 0,
           weeklyRank,
           rankChange,
+          // 새 등급 시스템
+          userLevelState,
         });
       } catch (error) {
         console.error('[ProfilePage] 데이터 조회 실패:', error);
@@ -293,12 +305,21 @@ export default function ProfilePage() {
                 </div>
               )}
               <div className="flex-1">
-                <h2 className="text-xl font-bold">
-                  {user.fullName || user.username || '사용자'}님
-                </h2>
-                {profileData?.levelInfo && (
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold">
+                    {user.fullName || user.username || '사용자'}님
+                  </h2>
+                  {profileData?.userLevelState && (
+                    <LevelBadgeFilled
+                      level={profileData.userLevelState.level}
+                      size="sm"
+                      showLabel
+                    />
+                  )}
+                </div>
+                {profileData?.userLevelState && (
                   <p className="text-muted-foreground text-sm">
-                    Lv.{profileData.levelInfo.level} {profileData.levelInfo.tierName}
+                    {profileData.userLevelState.totalActivityCount}회 활동
                   </p>
                 )}
                 <div className="mt-2 flex items-center gap-2">
@@ -432,14 +453,20 @@ export default function ProfilePage() {
           </section>
         </FadeInUp>
 
-        {/* 레벨 & XP */}
-        {profileData?.levelInfo && (
+        {/* 등급 진행률 */}
+        {profileData?.userLevelState && (
           <section className="bg-card rounded-2xl border p-6">
             <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
               <TrendingUp className="h-5 w-5 text-purple-500" />
-              레벨 & 경험치
+              나의 등급
             </h3>
-            <LevelProgress levelInfo={profileData.levelInfo} showDetails />
+            <NewLevelProgress
+              level={profileData.userLevelState.level}
+              currentCount={profileData.userLevelState.totalActivityCount}
+              nextThreshold={profileData.userLevelState.nextLevelThreshold}
+              progress={profileData.userLevelState.progress}
+              showDetails
+            />
           </section>
         )}
 
@@ -624,7 +651,7 @@ export default function ProfilePage() {
               <ChevronRight className="text-muted-foreground h-4 w-4" />
             </Link>
             <Link
-              href="/help"
+              href="/help/faq"
               className="hover:bg-muted/50 flex items-center justify-between border-b p-4 transition-colors"
             >
               <div className="flex items-center gap-3">

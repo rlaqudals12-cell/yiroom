@@ -9,6 +9,7 @@ import {
 import { generateMockWorkoutAnalysis } from '@/lib/mock/workout-analysis';
 import { WORKOUT_TYPE_INFO } from '@/lib/workout/classifyWorkoutType';
 import type { WorkoutType } from '@/types/workout';
+import { trackActivity } from '@/lib/levels';
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
@@ -64,17 +65,11 @@ export async function POST(req: Request) {
 
     // 필수 필드 검증
     if (!goals || !Array.isArray(goals) || goals.length === 0) {
-      return NextResponse.json(
-        { error: 'Goals are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Goals are required' }, { status: 400 });
     }
 
     if (!frequency) {
-      return NextResponse.json(
-        { error: 'Frequency is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Frequency is required' }, { status: 400 });
     }
 
     // AI 분석 입력 데이터 구성
@@ -123,10 +118,7 @@ export async function POST(req: Request) {
 
     if (userError || !userData) {
       console.error('[W-1] User not found:', userError);
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // C-1 최신 체형 분석 결과 조회 (연동)
@@ -184,6 +176,9 @@ export async function POST(req: Request) {
       );
     }
 
+    // 등급 시스템: 활동 트래킹 (분석 완료)
+    await trackActivity(supabase, userId, 'analysis', data?.id);
+
     // 운동 타입 상세 정보 추가
     const workoutTypeInfo = WORKOUT_TYPE_INFO[result.workoutType as WorkoutType];
 
@@ -203,10 +198,7 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('[W-1] Workout analysis error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -233,10 +225,7 @@ export async function GET() {
       .single();
 
     if (userError || !userData) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // 최신 분석 결과 조회
@@ -258,10 +247,7 @@ export async function GET() {
         });
       }
       console.error('[W-1] Database query error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch analysis' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch analysis' }, { status: 500 });
     }
 
     // 운동 타입 상세 정보 추가
@@ -280,9 +266,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('[W-1] Get workout analysis error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
