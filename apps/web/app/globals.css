@@ -97,7 +97,7 @@
      그라디언트 표준화
      ======================================== */
   --gradient-primary: linear-gradient(135deg, oklch(0.53 0.23 262), oklch(0.55 0.20 280));
-  --gradient-brand: linear-gradient(135deg, oklch(0.70 0.18 340), oklch(0.60 0.20 300));
+  --gradient-brand: linear-gradient(135deg, oklch(0.60 0.18 240), oklch(0.53 0.23 262));
   --gradient-workout: linear-gradient(135deg, var(--module-workout), var(--module-workout-dark));
   --gradient-nutrition: linear-gradient(135deg, var(--module-nutrition), var(--module-nutrition-dark));
   --gradient-skin: linear-gradient(135deg, var(--module-skin), var(--module-skin-dark));
@@ -309,13 +309,13 @@
    그라디언트 유틸리티 클래스
    ======================================== */
 
-/* 브랜드 그라디언트 (핑크 → 퍼플) */
+/* 브랜드 그라디언트 (스카이블루 → 이룸블루) */
 .bg-gradient-brand {
   background: var(--gradient-brand);
 }
 
 .bg-gradient-brand-hover:hover {
-  background: linear-gradient(135deg, oklch(0.65 0.20 340), oklch(0.55 0.22 300));
+  background: linear-gradient(135deg, oklch(0.55 0.20 240), oklch(0.48 0.25 262));
 }
 
 /* 프라이머리 그라디언트 (블루 → 인디고) */
