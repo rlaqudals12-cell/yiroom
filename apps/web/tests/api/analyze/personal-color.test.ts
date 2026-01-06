@@ -22,6 +22,18 @@ vi.mock('@/lib/gemini', () => ({
 
 vi.mock('@/lib/mock/personal-color', () => ({
   generateMockPersonalColorResult: vi.fn(),
+  STYLE_DESCRIPTIONS: {
+    spring: { imageKeywords: [], makeupStyle: '', fashionStyle: '', accessories: '' },
+    summer: { imageKeywords: [], makeupStyle: '', fashionStyle: '', accessories: '' },
+    autumn: { imageKeywords: [], makeupStyle: '', fashionStyle: '', accessories: '' },
+    winter: { imageKeywords: [], makeupStyle: '', fashionStyle: '', accessories: '' },
+  },
+}));
+
+vi.mock('@/lib/gamification', () => ({
+  awardAnalysisBadge: vi.fn().mockResolvedValue(null),
+  checkAndAwardAllAnalysisBadge: vi.fn().mockResolvedValue(null),
+  addXp: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { GET, POST } from '@/app/api/analyze/personal-color/route';
@@ -93,11 +105,14 @@ const mockDbResult = {
 
 describe('POST /api/analyze/personal-color', () => {
   const mockStorageUpload = vi.fn();
+  const mockUpdate = vi.fn().mockReturnValue({ error: null });
   const mockSupabase = {
     from: vi.fn().mockReturnThis(),
     insert: vi.fn().mockReturnThis(),
     select: vi.fn().mockReturnThis(),
     single: vi.fn(),
+    update: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockImplementation(() => mockUpdate()),
     storage: {
       from: vi.fn().mockReturnValue({
         upload: mockStorageUpload,
@@ -107,8 +122,12 @@ describe('POST /api/analyze/personal-color', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<ReturnType<typeof auth>>);
-    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
+      ReturnType<typeof auth>
+    >);
+    vi.mocked(createServiceRoleClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+    );
     vi.mocked(generateMockPersonalColorResult).mockReturnValue(mockPersonalColorResult);
     mockStorageUpload.mockResolvedValue({ data: { path: 'user_test123/123.jpg' }, error: null });
   });
@@ -146,10 +165,12 @@ describe('POST /api/analyze/personal-color', () => {
     it('useMock=true이면 Mock 분석을 사용한다', async () => {
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -161,11 +182,13 @@ describe('POST /api/analyze/personal-color', () => {
     it('문진 응답과 함께 분석이 가능하다', async () => {
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        questionnaireAnswers: { q1: 'warm', q2: 'gold' },
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          questionnaireAnswers: { q1: 'warm', q2: 'gold' },
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -178,9 +201,11 @@ describe('POST /api/analyze/personal-color', () => {
       vi.mocked(analyzePersonalColor).mockResolvedValue(mockPersonalColorResult);
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -192,9 +217,11 @@ describe('POST /api/analyze/personal-color', () => {
       vi.mocked(analyzePersonalColor).mockRejectedValue(new Error('API Error'));
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -207,10 +234,12 @@ describe('POST /api/analyze/personal-color', () => {
     it('분석 결과가 DB에 저장된다', async () => {
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -222,10 +251,12 @@ describe('POST /api/analyze/personal-color', () => {
     it('DB 저장 실패 시 500을 반환한다', async () => {
       mockSupabase.single.mockResolvedValue({ data: null, error: { message: 'DB Error' } });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(500);
@@ -237,10 +268,12 @@ describe('POST /api/analyze/personal-color', () => {
     it('이미지가 Storage에 업로드된다', async () => {
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
-      await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
 
       expect(mockSupabase.storage.from).toHaveBeenCalledWith('personal-color-images');
       expect(mockStorageUpload).toHaveBeenCalled();
@@ -250,10 +283,12 @@ describe('POST /api/analyze/personal-color', () => {
       mockStorageUpload.mockResolvedValue({ data: null, error: { message: 'Upload failed' } });
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -265,10 +300,12 @@ describe('POST /api/analyze/personal-color', () => {
     it('성공 응답에 필수 필드가 포함된다', async () => {
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(json).toHaveProperty('success', true);
@@ -292,8 +329,12 @@ describe('GET /api/analyze/personal-color', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<ReturnType<typeof auth>>);
-    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
+      ReturnType<typeof auth>
+    >);
+    vi.mocked(createServiceRoleClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+    );
   });
 
   describe('인증', () => {
@@ -334,7 +375,10 @@ describe('GET /api/analyze/personal-color', () => {
     });
 
     it('DB 에러 시 500을 반환한다', async () => {
-      mockSupabase.single.mockResolvedValue({ data: null, error: { code: 'OTHER', message: 'DB Error' } });
+      mockSupabase.single.mockResolvedValue({
+        data: null,
+        error: { code: 'OTHER', message: 'DB Error' },
+      });
 
       const response = await GET();
       const json = await response.json();

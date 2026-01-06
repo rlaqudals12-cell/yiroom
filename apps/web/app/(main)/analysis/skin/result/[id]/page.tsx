@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw, Sparkles, Eye } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Sparkles, Eye, ClipboardList } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { type SkinAnalysisResult } from '@/lib/mock/skin-analysis';
@@ -16,6 +16,11 @@ import Link from 'next/link';
 import type { SkinType as ProductSkinType, SkinConcern } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VisualAnalysisTab } from '@/components/analysis/visual';
+import SkinAnalysisEvidenceReport, {
+  type SkinAnalysisEvidence,
+  type SkinImageQuality,
+} from '@/components/analysis/SkinAnalysisEvidenceReport';
+import { VisualReportCard, type MetricItem } from '@/components/analysis/visual-report';
 
 // 점수 → 상태 (MetricStatus 타입에 맞게)
 function getStatus(value: number): 'good' | 'normal' | 'warning' {
@@ -101,6 +106,8 @@ interface DbSkinAnalysis {
     morning_routine?: string[];
     evening_routine?: string[];
     weekly_care?: string[];
+    analysisEvidence?: SkinAnalysisEvidence;
+    imageQuality?: SkinImageQuality;
   } | null;
   products: {
     routine?: Array<{ step: number; category: string; products: string[] }>;
@@ -125,6 +132,8 @@ export default function SkinAnalysisResultPage() {
   const [result, setResult] = useState<SkinAnalysisResult | null>(null);
   const [skinType, setSkinType] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [analysisEvidence, setAnalysisEvidence] = useState<SkinAnalysisEvidence | null>(null);
+  const [imageQuality, setImageQuality] = useState<SkinImageQuality | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -177,6 +186,14 @@ export default function SkinAnalysisResultPage() {
       setResult(transformedResult);
       setSkinType(dbData.skin_type);
       setImageUrl(dbData.image_url);
+
+      // 분석 근거 데이터 추출
+      if (dbData.recommendations?.analysisEvidence) {
+        setAnalysisEvidence(dbData.recommendations.analysisEvidence);
+      }
+      if (dbData.recommendations?.imageQuality) {
+        setImageQuality(dbData.recommendations.imageQuality);
+      }
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
       const celebrationKey = `celebration-skin-${analysisId}`;
@@ -279,20 +296,56 @@ export default function SkinAnalysisResultPage() {
           {/* 탭 기반 결과 */}
           {result && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
                 <TabsTrigger value="basic" className="gap-1">
                   <Sparkles className="w-4 h-4" />
                   기본 분석
                 </TabsTrigger>
+                <TabsTrigger value="evidence" className="gap-1">
+                  <ClipboardList className="w-4 h-4" />
+                  분석 근거
+                </TabsTrigger>
                 <TabsTrigger value="visual" className="gap-1">
                   <Eye className="w-4 h-4" />
-                  상세 시각화
+                  시각화
                 </TabsTrigger>
               </TabsList>
 
               {/* 기본 분석 탭 */}
               <TabsContent value="basic" className="mt-0">
-                <AnalysisResult result={result} onRetry={handleNewAnalysis} />
+                {/* 비주얼 리포트 카드 */}
+                <VisualReportCard
+                  analysisType="skin"
+                  overallScore={result.overallScore}
+                  skinMetrics={result.metrics.map(
+                    (m): MetricItem => ({
+                      id: m.id,
+                      name: m.name,
+                      value: m.value,
+                      description: m.description,
+                    })
+                  )}
+                  analyzedAt={result.analyzedAt}
+                  className="mb-6"
+                />
+
+                <AnalysisResult
+                  result={result}
+                  onRetry={handleNewAnalysis}
+                  evidence={analysisEvidence}
+                  skinType={skinType || undefined}
+                />
+
+                {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
+                {(analysisEvidence || imageQuality) && (
+                  <SkinAnalysisEvidenceReport
+                    evidence={analysisEvidence}
+                    imageQuality={imageQuality}
+                    skinType={skinType || 'normal'}
+                    overallScore={result.overallScore}
+                    className="mt-6"
+                  />
+                )}
 
                 {/* 맞춤 추천 제품 */}
                 {skinType && (
@@ -316,6 +369,24 @@ export default function SkinAnalysisResultPage() {
                     }}
                     className="mt-8 pb-32"
                   />
+                )}
+              </TabsContent>
+
+              {/* 분석 근거 탭 */}
+              <TabsContent value="evidence" className="mt-0 pb-32">
+                {analysisEvidence || imageQuality ? (
+                  <SkinAnalysisEvidenceReport
+                    evidence={analysisEvidence}
+                    imageQuality={imageQuality}
+                    skinType={skinType || 'normal'}
+                    overallScore={result.overallScore}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>분석 근거 데이터가 없습니다</p>
+                    <p className="text-sm mt-1">새로 분석하면 상세 근거가 제공됩니다</p>
+                  </div>
                 )}
               </TabsContent>
 

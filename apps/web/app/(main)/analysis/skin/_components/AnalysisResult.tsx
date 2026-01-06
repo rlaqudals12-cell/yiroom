@@ -1,7 +1,18 @@
 'use client';
 
 import { useMemo } from 'react';
-import { RefreshCw, Sparkles, FlaskConical, AlertTriangle, ShoppingBag, Palette, Sun, Moon, TrendingUp, TrendingDown } from 'lucide-react';
+import {
+  RefreshCw,
+  Sparkles,
+  FlaskConical,
+  AlertTriangle,
+  ShoppingBag,
+  Palette,
+  Sun,
+  Moon,
+  TrendingUp,
+  TrendingDown,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   type SkinAnalysisResult,
@@ -10,15 +21,32 @@ import {
   getStatusLabel,
 } from '@/lib/mock/skin-analysis';
 import { FadeInUp, ScaleIn, CountUp } from '@/components/animations';
+import { SkinEvidenceSummary } from '@/components/analysis/EvidenceSummary';
+
+// 분석 근거 타입
+interface SkinAnalysisEvidence {
+  tZoneOiliness?: 'dry' | 'normal' | 'oily' | 'very_oily';
+  poreVisibility?: 'minimal' | 'visible' | 'enlarged' | 'very_enlarged';
+}
 
 interface AnalysisResultProps {
   result: SkinAnalysisResult;
   onRetry: () => void;
   shareRef?: React.RefObject<HTMLDivElement | null>;
+  evidence?: SkinAnalysisEvidence | null;
+  skinType?: string;
 }
 
 // 원형 프로그레스 바 컴포넌트
-function CircularProgress({ score, size = 140, strokeWidth = 10 }: { score: number; size?: number; strokeWidth?: number }) {
+function CircularProgress({
+  score,
+  size = 140,
+  strokeWidth = 10,
+}: {
+  score: number;
+  size?: number;
+  strokeWidth?: number;
+}) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (score / 100) * circumference;
@@ -71,6 +99,8 @@ export default function AnalysisResult({
   result,
   onRetry,
   shareRef,
+  evidence,
+  skinType,
 }: AnalysisResultProps) {
   const {
     overallScore,
@@ -106,13 +136,19 @@ export default function AnalysisResult({
             <span
               className={`px-4 py-1.5 rounded-full text-sm font-medium text-white ${getScoreBgColor(overallScore)}`}
             >
-              {overallScore >= 71
-                ? '건강한 피부'
-                : overallScore >= 41
-                  ? '보통 상태'
-                  : '관리 필요'}
+              {overallScore >= 71 ? '건강한 피부' : overallScore >= 41 ? '보통 상태' : '관리 필요'}
             </span>
           </div>
+
+          {/* 핵심 판정 근거 요약 */}
+          {skinType && (
+            <SkinEvidenceSummary
+              tZoneOiliness={evidence?.tZoneOiliness}
+              poreVisibility={evidence?.poreVisibility}
+              skinType={skinType}
+              className="mt-4"
+            />
+          )}
         </section>
       </ScaleIn>
 
@@ -143,16 +179,12 @@ export default function AnalysisResult({
       {/* 7가지 지표 */}
       <FadeInUp delay={2}>
         <section className="bg-card rounded-xl border p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">
-            7가지 피부 지표
-          </h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">7가지 피부 지표</h2>
           <div className="space-y-4">
             {metrics.map((metric) => (
               <div key={metric.id}>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium text-foreground/80">
-                    {metric.name}
-                  </span>
+                  <span className="text-sm font-medium text-foreground/80">{metric.name}</span>
                   <div className="flex items-center gap-2">
                     <span className={`text-sm font-semibold ${getScoreColor(metric.value)}`}>
                       {metric.value}
@@ -202,10 +234,7 @@ export default function AnalysisResult({
           </div>
           <div className="space-y-3">
             {recommendedIngredients.map((ingredient, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-3 p-3 bg-muted rounded-lg"
-              >
+              <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-sm font-medium">
                   {index + 1}
                 </span>
@@ -241,9 +270,7 @@ export default function AnalysisResult({
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-foreground">
-                        {warning.ingredient}
-                      </span>
+                      <span className="font-medium text-foreground">{warning.ingredient}</span>
                       {warning.ingredientEn && (
                         <span className="text-xs text-muted-foreground">
                           ({warning.ingredientEn})
@@ -315,20 +342,13 @@ export default function AnalysisResult({
               <div className="space-y-2">
                 <p className="text-sm font-medium text-foreground/80">추천 제품</p>
                 {productRecommendations.routine.slice(0, 5).map((step, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-2 p-2 bg-muted rounded-lg"
-                  >
+                  <div key={index} className="flex items-start gap-2 p-2 bg-muted rounded-lg">
                     <span className="flex-shrink-0 w-5 h-5 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-xs font-medium">
                       {step.step}
                     </span>
                     <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {step.category}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {step.products.join(', ')}
-                      </p>
+                      <p className="text-sm font-medium text-foreground">{step.category}</p>
+                      <p className="text-xs text-muted-foreground">{step.products.join(', ')}</p>
                     </div>
                   </div>
                 ))}
@@ -344,9 +364,7 @@ export default function AnalysisResult({
           <section className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200 p-6">
             <div className="flex items-center gap-2 mb-3">
               <Palette className="w-5 h-5 text-rose-500" />
-              <h2 className="text-lg font-semibold text-foreground">
-                파운데이션 추천
-              </h2>
+              <h2 className="text-lg font-semibold text-foreground">파운데이션 추천</h2>
               {personalColorSeason && (
                 <span className="ml-auto text-xs bg-rose-100 text-rose-700 px-2 py-1 rounded-full">
                   {personalColorSeason} 톤
@@ -367,11 +385,7 @@ export default function AnalysisResult({
 
       {/* 다시 분석하기 버튼 */}
       <FadeInUp delay={8}>
-        <Button
-          onClick={onRetry}
-          variant="outline"
-          className="w-full h-12 text-base gap-2"
-        >
+        <Button onClick={onRetry} variant="outline" className="w-full h-12 text-base gap-2">
           <RefreshCw className="w-4 h-4" />
           다시 분석하기
         </Button>

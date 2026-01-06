@@ -90,6 +90,8 @@ const mockBodyAnalysisResult = {
     { item: '테일러드 재킷', reason: '탄탄한 상체를 살려줘요' },
     { item: '스트레이트 팬츠', reason: 'I라인으로 깔끔하게' },
   ],
+  confidence: 85,
+  matchedFeatures: 4,
   analyzedAt: new Date(),
 };
 
@@ -181,18 +183,14 @@ describe('POST /api/analyze/body', () => {
           eq: vi.fn().mockReturnThis(),
           order: vi.fn().mockReturnThis(),
           limit: vi.fn().mockReturnThis(),
-          single: vi
-            .fn()
-            .mockResolvedValue({
-              data: { season: 'Spring', best_colors: ['#FFD700'] },
-              error: null,
-            }),
-          maybeSingle: vi
-            .fn()
-            .mockResolvedValue({
-              data: { season: 'Spring', best_colors: ['#FFD700'] },
-              error: null,
-            }),
+          single: vi.fn().mockResolvedValue({
+            data: { season: 'Spring', best_colors: ['#FFD700'] },
+            error: null,
+          }),
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { season: 'Spring', best_colors: ['#FFD700'] },
+            error: null,
+          }),
         }),
       };
     });

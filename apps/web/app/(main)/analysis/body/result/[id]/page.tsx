@@ -4,9 +4,10 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw, Dumbbell } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Dumbbell, BarChart3, Shirt, ClipboardList } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   type BodyAnalysisResult,
   type BodyType,
@@ -18,6 +19,12 @@ import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { ShareButton } from '@/components/share';
 import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
+import { BodyStylingTab } from '@/components/analysis/visual';
+import BodyAnalysisEvidenceReport, {
+  type BodyAnalysisEvidence,
+  type BodyImageQuality,
+} from '@/components/analysis/BodyAnalysisEvidenceReport';
+import { VisualReportCard } from '@/components/analysis/visual-report';
 import Link from 'next/link';
 
 // DB 데이터 타입
@@ -33,11 +40,22 @@ interface DbBodyAnalysis {
   ratio: number | null;
   strengths: string[] | null;
   improvements: string[] | null;
-  style_recommendations: Array<{
-    category: string;
-    items: string[];
-    tip: string;
-  }> | null;
+  style_recommendations:
+    | {
+        items?: Array<{ item: string; reason: string }>;
+        insight?: string;
+        colorTips?: string[];
+        analysisEvidence?: BodyAnalysisEvidence;
+        imageQuality?: BodyImageQuality;
+        confidence?: number;
+        matchedFeatures?: number;
+      }
+    | Array<{
+        category: string;
+        items: string[];
+        tip: string;
+      }>
+    | null;
   personal_color_season: string | null;
   color_recommendations: {
     topColors?: string[];
@@ -67,15 +85,24 @@ function transformDbToResult(dbData: DbBodyAnalysis): BodyAnalysisResult {
   const info = BODY_TYPES_3[bodyType3];
 
   // DB의 style_recommendations를 StyleRecommendation[] 형식으로 변환
-  const styleRecs =
-    dbData.style_recommendations?.flatMap((rec) =>
-      rec.items.map((item) => ({
-        item,
-        reason: rec.tip || `${rec.category}에 어울리는 아이템`,
-      }))
-    ) ||
-    info.recommendations ||
-    [];
+  let styleRecs: Array<{ item: string; reason: string }> = [];
+  if (dbData.style_recommendations) {
+    if (Array.isArray(dbData.style_recommendations)) {
+      // 레거시 배열 형식: { category, items, tip }[]
+      styleRecs = dbData.style_recommendations.flatMap((rec) =>
+        rec.items.map((item: string) => ({
+          item,
+          reason: rec.tip || `${rec.category}에 어울리는 아이템`,
+        }))
+      );
+    } else if (dbData.style_recommendations.items) {
+      // 새 객체 형식: { items: { item, reason }[] }
+      styleRecs = dbData.style_recommendations.items;
+    }
+  }
+  if (styleRecs.length === 0) {
+    styleRecs = info.recommendations || [];
+  }
 
   // insights 배열을 하나의 문장으로 결합
   const insightText =
@@ -139,9 +166,14 @@ export default function BodyAnalysisResultPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<BodyAnalysisResult | null>(null);
+  const [analysisEvidence, setAnalysisEvidence] = useState<BodyAnalysisEvidence | null>(null);
+  const [imageQuality, setImageQuality] = useState<BodyImageQuality | null>(null);
+  const [confidence, setConfidence] = useState<number | null>(null);
+  const [matchedFeatures, setMatchedFeatures] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('basic');
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;
@@ -185,8 +217,26 @@ export default function BodyAnalysisResultPage() {
         throw new Error('분석 결과를 찾을 수 없습니다');
       }
 
-      const transformedResult = transformDbToResult(data as DbBodyAnalysis);
+      const dbData = data as DbBodyAnalysis;
+      const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
+
+      // 분석 근거 데이터 추출 (새 구조에서)
+      const styleRecs = dbData.style_recommendations;
+      if (styleRecs && !Array.isArray(styleRecs)) {
+        if (styleRecs.analysisEvidence) {
+          setAnalysisEvidence(styleRecs.analysisEvidence);
+        }
+        if (styleRecs.imageQuality) {
+          setImageQuality(styleRecs.imageQuality);
+        }
+        if (styleRecs.confidence) {
+          setConfidence(styleRecs.confidence);
+        }
+        if (styleRecs.matchedFeatures) {
+          setMatchedFeatures(styleRecs.matchedFeatures);
+        }
+      }
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
       const celebrationKey = `celebration-body-${analysisId}`;
@@ -286,19 +336,97 @@ export default function BodyAnalysisResultPage() {
             <div className="w-16" />
           </header>
 
-          {/* 결과 */}
-          {result && <AnalysisResult result={result} onRetry={handleNewAnalysis} />}
-
-          {/* 맞춤 추천 제품 */}
+          {/* 탭 기반 결과 */}
           {result && (
-            <RecommendedProducts
-              analysisType="body"
-              analysisResult={{
-                bodyType: result.bodyType,
-                recommendedExercises: result.styleRecommendations.slice(0, 3).map((r) => r.item),
-              }}
-              className="mt-8 pb-32"
-            />
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
+                <TabsTrigger value="basic" className="gap-1">
+                  <BarChart3 className="w-4 h-4" />
+                  기본 분석
+                </TabsTrigger>
+                <TabsTrigger value="evidence" className="gap-1">
+                  <ClipboardList className="w-4 h-4" />
+                  분석 근거
+                </TabsTrigger>
+                <TabsTrigger value="styling" className="gap-1">
+                  <Shirt className="w-4 h-4" />
+                  스타일 가이드
+                </TabsTrigger>
+              </TabsList>
+
+              {/* 기본 분석 탭 */}
+              <TabsContent value="basic" className="mt-0">
+                {/* 비주얼 리포트 카드 */}
+                <VisualReportCard
+                  analysisType="body"
+                  overallScore={confidence || 70}
+                  bodyType={result.bodyType as 'S' | 'W' | 'N'}
+                  bodyTypeLabel={result.bodyTypeLabel}
+                  bodyStrengths={result.strengths}
+                  bodyMeasurements={result.measurements}
+                  analyzedAt={result.analyzedAt}
+                  className="mb-6"
+                />
+
+                <AnalysisResult
+                  result={result}
+                  onRetry={handleNewAnalysis}
+                  evidence={analysisEvidence}
+                />
+
+                {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
+                {(analysisEvidence || imageQuality) && (
+                  <BodyAnalysisEvidenceReport
+                    evidence={analysisEvidence}
+                    imageQuality={imageQuality}
+                    bodyType={result.bodyType}
+                    confidence={confidence}
+                    matchedFeatures={matchedFeatures}
+                    className="mt-6"
+                  />
+                )}
+
+                {/* 맞춤 추천 제품 */}
+                <RecommendedProducts
+                  analysisType="body"
+                  analysisResult={{
+                    bodyType: result.bodyType,
+                    recommendedExercises: result.styleRecommendations
+                      .slice(0, 3)
+                      .map((r) => r.item),
+                  }}
+                  className="mt-8 pb-32"
+                />
+              </TabsContent>
+
+              {/* 분석 근거 탭 */}
+              <TabsContent value="evidence" className="mt-0 pb-32">
+                {analysisEvidence || imageQuality ? (
+                  <BodyAnalysisEvidenceReport
+                    evidence={analysisEvidence}
+                    imageQuality={imageQuality}
+                    bodyType={result.bodyType}
+                    confidence={confidence}
+                    matchedFeatures={matchedFeatures}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>분석 근거 데이터가 없습니다</p>
+                    <p className="text-sm mt-1">새로 분석하면 상세 근거가 제공됩니다</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* 스타일 가이드 탭 (C-1+) */}
+              <TabsContent value="styling" className="mt-0 pb-32">
+                <BodyStylingTab
+                  bodyType={result.bodyType as BodyType3}
+                  measurements={result.measurements}
+                  personalColorSeason={result.personalColorSeason}
+                />
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </main>

@@ -1,6 +1,16 @@
 'use client';
 
-import { RefreshCw, Sparkles, Palette, Shirt, Heart, Star, XCircle, Brush, Tag } from 'lucide-react';
+import {
+  RefreshCw,
+  Sparkles,
+  Palette,
+  Shirt,
+  Heart,
+  Star,
+  XCircle,
+  Brush,
+  Tag,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   type PersonalColorResult,
@@ -12,16 +22,24 @@ import {
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { FadeInUp, ScaleIn } from '@/components/animations';
+import {
+  PersonalColorEvidenceSummary,
+  type PersonalColorEvidenceSummaryProps,
+} from '@/components/analysis/EvidenceSummary';
+
+// 분석 근거 타입 (AnalysisEvidenceReport와 호환)
+interface AnalysisEvidence {
+  veinColor?: PersonalColorEvidenceSummaryProps['veinColor'];
+  skinUndertone?: PersonalColorEvidenceSummaryProps['skinUndertone'];
+}
 
 interface AnalysisResultProps {
   result: PersonalColorResult;
   onRetry: () => void;
+  evidence?: AnalysisEvidence | null;
 }
 
-export default function AnalysisResult({
-  result,
-  onRetry,
-}: AnalysisResultProps) {
+export default function AnalysisResult({ result, onRetry, evidence }: AnalysisResultProps) {
   const {
     seasonType,
     seasonLabel,
@@ -37,13 +55,19 @@ export default function AnalysisResult({
   } = result;
 
   const info = SEASON_INFO[seasonType];
-  const { ref: shareRef, share, loading: shareLoading } = useShare(`이룸-퍼스널컬러-${seasonLabel}`);
+  const {
+    ref: shareRef,
+    share,
+    loading: shareLoading,
+  } = useShare(`이룸-퍼스널컬러-${seasonLabel}`);
 
   return (
     <div ref={shareRef} className="space-y-6">
       {/* 퍼스널 컬러 타입 카드 - 메인 결과로 ScaleIn 강조 */}
       <ScaleIn>
-        <section className={`rounded-xl border p-6 text-center ${getSeasonLightBgColor(seasonType)} ${getSeasonBorderColor(seasonType)}`}>
+        <section
+          className={`rounded-xl border p-6 text-center ${getSeasonLightBgColor(seasonType)} ${getSeasonBorderColor(seasonType)}`}
+        >
           <p className="text-sm text-muted-foreground mb-2">당신의 퍼스널 컬러</p>
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className={`text-4xl font-bold ${getSeasonColor(seasonType)}`}>
@@ -55,10 +79,16 @@ export default function AnalysisResult({
           <p className="mt-2 text-sm text-muted-foreground">{info.characteristics}</p>
           <div className="mt-4 inline-flex items-center gap-1 px-3 py-1 bg-card/70 rounded-full">
             <Star className="w-4 h-4 text-yellow-500" />
-            <span className="text-sm font-medium text-foreground/80">
-              신뢰도 {confidence}%
-            </span>
+            <span className="text-sm font-medium text-foreground/80">신뢰도 {confidence}%</span>
           </div>
+
+          {/* 핵심 판정 근거 요약 */}
+          <PersonalColorEvidenceSummary
+            veinColor={evidence?.veinColor}
+            skinUndertone={evidence?.skinUndertone}
+            tone={result.tone}
+            className="mt-4"
+          />
         </section>
       </ScaleIn>
 
@@ -183,10 +213,7 @@ export default function AnalysisResult({
           </div>
           <div className="space-y-3">
             {lipstickRecommendations.map((lip, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 p-3 bg-muted rounded-lg"
-              >
+              <div key={index} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                 <div
                   className="w-8 h-8 rounded-full shadow-sm border border-border"
                   style={{ backgroundColor: lip.hex }}
@@ -212,16 +239,16 @@ export default function AnalysisResult({
           </div>
           <div className="space-y-3">
             {clothingRecommendations.map((rec, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-3 p-3 bg-muted rounded-lg"
-              >
-                <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${getSeasonLightBgColor(seasonType)} ${getSeasonColor(seasonType)}`}>
+              <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+                <span
+                  className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${getSeasonLightBgColor(seasonType)} ${getSeasonColor(seasonType)}`}
+                >
                   {index + 1}
                 </span>
                 <div>
                   <p className="font-medium text-foreground">
-                    {rec.item} - <span className={getSeasonColor(seasonType)}>{rec.colorSuggestion}</span>
+                    {rec.item} -{' '}
+                    <span className={getSeasonColor(seasonType)}>{rec.colorSuggestion}</span>
                   </p>
                   <p className="text-sm text-muted-foreground">{rec.reason}</p>
                 </div>
@@ -235,7 +262,11 @@ export default function AnalysisResult({
       <FadeInUp delay={8}>
         <section className="bg-muted rounded-xl border p-4 text-center">
           <p className="text-sm text-muted-foreground">
-            전체 사용자 중 <span className={`font-semibold ${getSeasonColor(seasonType)}`}>{info.percentage}%</span>가 {seasonLabel}이에요
+            전체 사용자 중{' '}
+            <span className={`font-semibold ${getSeasonColor(seasonType)}`}>
+              {info.percentage}%
+            </span>
+            가 {seasonLabel}이에요
           </p>
         </section>
       </FadeInUp>
@@ -247,11 +278,7 @@ export default function AnalysisResult({
 
       {/* 다시 분석하기 버튼 */}
       <FadeInUp delay={9}>
-        <Button
-          onClick={onRetry}
-          variant="outline"
-          className="w-full h-12 text-base gap-2"
-        >
+        <Button onClick={onRetry} variant="outline" className="w-full h-12 text-base gap-2">
           <RefreshCw className="w-4 h-4" />
           다시 분석하기
         </Button>
@@ -259,11 +286,7 @@ export default function AnalysisResult({
 
       {/* 공유 버튼 */}
       <FadeInUp delay={9}>
-        <ShareButton
-          onShare={share}
-          loading={shareLoading}
-          variant="default"
-        />
+        <ShareButton onShare={share} loading={shareLoading} variant="default" />
       </FadeInUp>
     </div>
   );

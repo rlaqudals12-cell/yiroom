@@ -1,28 +1,21 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-import { createServiceRoleClient } from "@/lib/supabase/service-role";
-import { analyzeBody, type GeminiBodyAnalysisResult } from "@/lib/gemini";
-import {
-  generateMockBodyAnalysis3,
-  BODY_TYPES_3,
-  type BodyType3,
-} from "@/lib/mock/body-analysis";
-import {
-  generateColorRecommendations,
-  getColorTipsForBodyType,
-} from "@/lib/color-recommendations";
+import { auth } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { analyzeBody, type GeminiBodyAnalysisResult } from '@/lib/gemini';
+import { generateMockBodyAnalysis3, BODY_TYPES_3, type BodyType3 } from '@/lib/mock/body-analysis';
+import { generateColorRecommendations, getColorTipsForBodyType } from '@/lib/color-recommendations';
 import {
   awardAnalysisBadge,
   checkAndAwardAllAnalysisBadge,
   addXp,
   type BadgeAwardResult,
-} from "@/lib/gamification";
+} from '@/lib/gamification';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
-const FORCE_MOCK = process.env.FORCE_MOCK_AI === "true";
+const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
 
 /**
  * C-1 체형 분석 API (Real AI + Mock Fallback)
@@ -48,17 +41,14 @@ export async function POST(req: Request) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await req.json();
     const { imageBase64, userInput, useMock = false } = body;
 
     if (!imageBase64) {
-      return NextResponse.json(
-        { error: "Image is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
 
     // AI 분석 실행 (Real AI 또는 Mock)
@@ -80,18 +70,46 @@ export async function POST(req: Request) {
         avoidStyles: mockResult.avoidStyles,
         insight: mockResult.insight,
         styleRecommendations: mockResult.styleRecommendations,
+        confidence: 85,
+        matchedFeatures: 4,
+        // 분석 근거 데이터 (Mock)
+        analysisEvidence: {
+          shoulderLine:
+            mockResult.bodyType === 'S'
+              ? 'angular'
+              : mockResult.bodyType === 'W'
+                ? 'rounded'
+                : 'wide',
+          waistDefinition: mockResult.bodyType === 'W' ? 'defined' : 'straight',
+          hipLine: mockResult.bodyType === 'W' ? 'curved' : 'straight',
+          boneStructure: mockResult.bodyType === 'N' ? 'large' : 'medium',
+          muscleAttachment: mockResult.bodyType === 'S' ? 'easy' : 'moderate',
+          upperLowerBalance:
+            mockResult.bodyType === 'S'
+              ? 'upper_dominant'
+              : mockResult.bodyType === 'W'
+                ? 'lower_dominant'
+                : 'balanced',
+          silhouette: mockResult.bodyType === 'S' ? 'I' : mockResult.bodyType === 'W' ? 'S' : 'H',
+        },
+        imageQuality: {
+          angle: 'front',
+          poseNatural: true,
+          clothingFit: 'fitted',
+          analysisReliability: 'medium',
+        },
       };
       usedMock = true;
-      console.log("[C-1] Using mock analysis (3-type system)");
+      console.log('[C-1] Using mock analysis (3-type system)');
     } else {
       // Real AI 분석
       try {
-        console.log("[C-1] Starting Gemini analysis (3-type system)...");
+        console.log('[C-1] Starting Gemini analysis (3-type system)...');
         result = await analyzeBody(imageBase64);
-        console.log("[C-1] Gemini analysis completed");
+        console.log('[C-1] Gemini analysis completed');
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백 (3타입 시스템)
-        console.error("[C-1] Gemini error, falling back to mock:", aiError);
+        console.error('[C-1] Gemini error, falling back to mock:', aiError);
         const mockResult = generateMockBodyAnalysis3(userInput);
         result = {
           bodyType: mockResult.bodyType,
@@ -105,6 +123,34 @@ export async function POST(req: Request) {
           avoidStyles: mockResult.avoidStyles,
           insight: mockResult.insight,
           styleRecommendations: mockResult.styleRecommendations,
+          confidence: 85,
+          matchedFeatures: 4,
+          // 분석 근거 데이터 (Mock)
+          analysisEvidence: {
+            shoulderLine:
+              mockResult.bodyType === 'S'
+                ? 'angular'
+                : mockResult.bodyType === 'W'
+                  ? 'rounded'
+                  : 'wide',
+            waistDefinition: mockResult.bodyType === 'W' ? 'defined' : 'straight',
+            hipLine: mockResult.bodyType === 'W' ? 'curved' : 'straight',
+            boneStructure: mockResult.bodyType === 'N' ? 'large' : 'medium',
+            muscleAttachment: mockResult.bodyType === 'S' ? 'easy' : 'moderate',
+            upperLowerBalance:
+              mockResult.bodyType === 'S'
+                ? 'upper_dominant'
+                : mockResult.bodyType === 'W'
+                  ? 'lower_dominant'
+                  : 'balanced',
+            silhouette: mockResult.bodyType === 'S' ? 'I' : mockResult.bodyType === 'W' ? 'S' : 'H',
+          },
+          imageQuality: {
+            angle: 'front',
+            poseNatural: true,
+            clothingFit: 'fitted',
+            analysisReliability: 'medium',
+          },
         };
         usedMock = true;
       }
@@ -118,18 +164,18 @@ export async function POST(req: Request) {
       const fileName = `${userId}/${Date.now()}.jpg`;
 
       // Base64 데이터 정리
-      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
-      const buffer = Buffer.from(base64Data, "base64");
+      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
 
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("body-images")
+        .from('body-images')
         .upload(fileName, buffer, {
-          contentType: "image/jpeg",
+          contentType: 'image/jpeg',
           upsert: false,
         });
 
       if (uploadError) {
-        console.error("Image upload error:", uploadError);
+        console.error('Image upload error:', uploadError);
       } else {
         imageUrl = uploadData.path;
       }
@@ -137,10 +183,10 @@ export async function POST(req: Request) {
 
     // 퍼스널 컬러 조회 (자동 연동)
     const { data: pcData } = await supabase
-      .from("personal_color_assessments")
-      .select("season, best_colors")
-      .eq("clerk_user_id", userId)
-      .order("created_at", { ascending: false })
+      .from('personal_color_assessments')
+      .select('season, best_colors')
+      .eq('clerk_user_id', userId)
+      .order('created_at', { ascending: false })
       .limit(1)
       .single();
 
@@ -149,38 +195,38 @@ export async function POST(req: Request) {
     // measurements에서 어깨/허리/골반 추출
     const measurements = result.measurements || [];
     const getMeasurement = (name: string) =>
-      measurements.find(
-        (m: { name: string; value: number }) => m.name === name
-      )?.value || null;
+      measurements.find((m: { name: string; value: number }) => m.name === name)?.value || null;
 
     // 퍼스널 컬러 + 체형 기반 코디 색상 추천 생성
-    const colorRecommendations = generateColorRecommendations(
-      personalColorSeason,
-      result.bodyType
-    );
+    const colorRecommendations = generateColorRecommendations(personalColorSeason, result.bodyType);
     const colorTips = getColorTipsForBodyType(result.bodyType);
 
     console.log(
-      `[C-1] Generated color recommendations for ${personalColorSeason || "no PC"} + ${result.bodyType} body type`
+      `[C-1] Generated color recommendations for ${personalColorSeason || 'no PC'} + ${result.bodyType} body type`
     );
 
     // DB에 저장
     const { data, error } = await supabase
-      .from("body_analyses")
+      .from('body_analyses')
       .insert({
         clerk_user_id: userId,
-        image_url: imageUrl || "",
+        image_url: imageUrl || '',
         height: userInput?.height || null,
         weight: userInput?.weight || null,
         body_type: result.bodyType,
-        shoulder: getMeasurement("어깨"),
-        waist: getMeasurement("허리"),
-        hip: getMeasurement("골반"),
+        shoulder: getMeasurement('어깨'),
+        waist: getMeasurement('허리'),
+        hip: getMeasurement('골반'),
         strengths: result.strengths,
         style_recommendations: {
           items: result.styleRecommendations,
           insight: result.insight,
           colorTips,
+          // 분석 근거 및 이미지 품질 정보 (신뢰성 리포트용)
+          analysisEvidence: result.analysisEvidence || null,
+          imageQuality: result.imageQuality || null,
+          confidence: result.confidence || null,
+          matchedFeatures: result.matchedFeatures || null,
         },
         personal_color_season: personalColorSeason,
         // 퍼스널 컬러 + 체형 기반 색상 추천 (문서 구조에 맞춤)
@@ -191,9 +237,9 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      console.error("Database insert error:", error);
+      console.error('Database insert error:', error);
       return NextResponse.json(
-        { error: "Failed to save analysis", details: error.message },
+        { error: 'Failed to save analysis', details: error.message },
         { status: 500 }
       );
     }
@@ -203,11 +249,11 @@ export async function POST(req: Request) {
     let bmiCategory: string | undefined;
 
     if (userInput?.height && userInput?.weight) {
-      bmi = userInput.weight / ((userInput.height / 100) ** 2);
-      if (bmi < 18.5) bmiCategory = "저체중";
-      else if (bmi < 23) bmiCategory = "정상";
-      else if (bmi < 25) bmiCategory = "과체중";
-      else bmiCategory = "비만";
+      bmi = userInput.weight / (userInput.height / 100) ** 2;
+      if (bmi < 18.5) bmiCategory = '저체중';
+      else if (bmi < 23) bmiCategory = '정상';
+      else if (bmi < 25) bmiCategory = '과체중';
+      else bmiCategory = '비만';
     }
 
     // 체형 정보 보완 (BODY_TYPES_3에서 가져오기 - 3타입 시스템)
@@ -228,7 +274,7 @@ export async function POST(req: Request) {
       gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
 
       // 체형 분석 완료 배지
-      const bodyBadge = await awardAnalysisBadge(supabase, userId, "body");
+      const bodyBadge = await awardAnalysisBadge(supabase, userId, 'body');
       if (bodyBadge) {
         gamificationResult.badgeResults.push(bodyBadge);
       }
@@ -239,7 +285,7 @@ export async function POST(req: Request) {
         gamificationResult.badgeResults.push(allBadge);
       }
     } catch (gamificationError) {
-      console.error("[C-1] Gamification error:", gamificationError);
+      console.error('[C-1] Gamification error:', gamificationError);
     }
 
     return NextResponse.json({
@@ -265,11 +311,8 @@ export async function POST(req: Request) {
       gamification: gamificationResult,
     });
   } catch (error) {
-    console.error("Body analysis error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Body analysis error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -283,24 +326,21 @@ export async function GET() {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const supabase = createServiceRoleClient();
 
     const { data, error } = await supabase
-      .from("body_analyses")
-      .select("*")
-      .eq("clerk_user_id", userId)
-      .order("created_at", { ascending: false })
+      .from('body_analyses')
+      .select('*')
+      .eq('clerk_user_id', userId)
+      .order('created_at', { ascending: false })
       .limit(10);
 
     if (error) {
-      console.error("Database query error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch analyses" },
-        { status: 500 }
-      );
+      console.error('Database query error:', error);
+      return NextResponse.json({ error: 'Failed to fetch analyses' }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -309,10 +349,7 @@ export async function GET() {
       count: data?.length || 0,
     });
   } catch (error) {
-    console.error("Get body analyses error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Get body analyses error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
-import { auth, clerkClient } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { auth, clerkClient } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 
 /**
  * Clerk 사용자를 Supabase users 테이블에 동기화하는 API
@@ -14,7 +14,7 @@ export async function POST() {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Clerk에서 사용자 정보 가져오기
@@ -22,36 +22,33 @@ export async function POST() {
     const clerkUser = await client.users.getUser(userId);
 
     if (!clerkUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Supabase에 사용자 정보 동기화
     const supabase = createServiceRoleClient();
 
     const { data, error } = await supabase
-      .from("users")
+      .from('users')
       .upsert(
         {
           clerk_user_id: clerkUser.id,
           email: clerkUser.emailAddresses[0]?.emailAddress || null,
-          name:
-            clerkUser.fullName ||
-            clerkUser.username ||
-            clerkUser.emailAddresses[0]?.emailAddress ||
-            "Unknown",
-          profile_image_url: clerkUser.imageUrl || null,
+          first_name: clerkUser.firstName || null,
+          last_name: clerkUser.lastName || null,
+          image_url: clerkUser.imageUrl || null,
         },
         {
-          onConflict: "clerk_user_id",
+          onConflict: 'clerk_user_id',
         }
       )
       .select()
       .single();
 
     if (error) {
-      console.error("Supabase sync error:", error);
+      console.error('Supabase sync error:', error);
       return NextResponse.json(
-        { error: "Failed to sync user", details: error.message },
+        { error: 'Failed to sync user', details: error.message },
         { status: 500 }
       );
     }
@@ -61,10 +58,7 @@ export async function POST() {
       user: data,
     });
   } catch (error) {
-    console.error("Sync user error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Sync user error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

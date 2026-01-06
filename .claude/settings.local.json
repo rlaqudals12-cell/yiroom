@@ -273,7 +273,19 @@
       "Bash(timeout 300 npx vitest run)",
       "Bash(npx lighthouse --version)",
       "Bash(dir /s /b \"c:\\\\dev\\\\yiroom\\\\apps\\\\web\\\\.next\\\\static\\\\chunks\\\\*.js\")",
-      "Bash(npx vitest run --reporter=basic)"
+      "Bash(npx vitest run --reporter=basic)",
+      "Bash(docs/SPEC-MULTI-ANGLE-PHOTO.md )",
+      "Bash(apps/web/lib/mock/face-validation.ts )",
+      "Bash(apps/web/app/api/validate/ )",
+      "Bash(apps/web/app/api/analyze/skin/route.ts )",
+      "Bash(apps/web/app/\\\\\\(main\\\\\\)/analysis/skin/_components/MultiAngleSkinCapture.tsx )",
+      "Bash(apps/web/components/analysis/camera/ )",
+      "Bash(apps/web/tests/api/validate/ )",
+      "Bash(apps/web/tests/components/analysis/camera/ )",
+      "Bash(apps/web/tests/api/analyze/skin.test.ts )",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(analysis\\): 다각도 촬영 시스템 구현\n\n- 얼굴 이미지 검증 API \\(/api/validate/face-image\\)\n- 카메라 가이드 컴포넌트 \\(FaceGuideOverlay, AngleSelector, MultiAngleCapture\\)\n- S-1 피부 분석 API 다각도 이미지 지원\n- 정면 필수, 좌/우 선택 촬영 플로우\n- 신뢰도 향상: 3장 high, 2장 medium\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: 다각도 촬영 시스템 문서 업데이트\n\n- SPEC-MULTI-ANGLE-PHOTO.md 상태를 Approved로 변경\n- 테스트 케이스 완료 체크\n- 구현 결과 섹션 추가\n- PROGRESS.md v2.5 업데이트\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(timeout 60 tail:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

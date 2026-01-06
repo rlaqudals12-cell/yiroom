@@ -1,27 +1,24 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-import { createServiceRoleClient } from "@/lib/supabase/service-role";
-import {
-  analyzePersonalColor,
-  type GeminiPersonalColorResult,
-} from "@/lib/gemini";
+import { auth } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { analyzePersonalColor, type GeminiPersonalColorResult } from '@/lib/gemini';
 import {
   generateMockPersonalColorResult,
   STYLE_DESCRIPTIONS,
   type SeasonType,
-} from "@/lib/mock/personal-color";
+} from '@/lib/mock/personal-color';
 import {
   awardAnalysisBadge,
   checkAndAwardAllAnalysisBadge,
   addXp,
   type BadgeAwardResult,
-} from "@/lib/gamification";
+} from '@/lib/gamification';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
-const FORCE_MOCK = process.env.FORCE_MOCK_AI === "true";
+const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
 
 /**
  * PC-1 퍼스널 컬러 분석 API (Real AI + Mock Fallback)
@@ -46,17 +43,14 @@ export async function POST(req: Request) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await req.json();
     const { imageBase64, wristImageBase64, useMock = false } = body;
 
     if (!imageBase64) {
-      return NextResponse.json(
-        { error: "Image is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
 
     // AI 분석 실행 (Real AI 또는 Mock)
@@ -66,6 +60,7 @@ export async function POST(req: Request) {
     if (FORCE_MOCK || useMock) {
       // Mock 모드
       const mockResult = generateMockPersonalColorResult();
+      const isCool = mockResult.tone === 'cool';
       aiResult = {
         seasonType: mockResult.seasonType,
         seasonLabel: mockResult.seasonLabel,
@@ -79,19 +74,36 @@ export async function POST(req: Request) {
         clothingRecommendations: mockResult.clothingRecommendations,
         styleDescription: mockResult.styleDescription,
         insight: mockResult.insight,
+        // 분석 근거 데이터 (Mock)
+        analysisEvidence: {
+          veinColor: isCool ? 'blue' : 'green',
+          veinScore: isCool ? 75 : 25,
+          skinUndertone: isCool ? 'pink' : 'yellow',
+          skinHairContrast: 'medium',
+          eyeColor: 'brown',
+          lipNaturalColor: isCool ? 'pink' : 'coral',
+        },
+        imageQuality: {
+          lightingCondition: 'natural',
+          makeupDetected: false,
+          wristImageProvided: !!wristImageBase64,
+          analysisReliability: 'medium',
+        },
       };
       usedMock = true;
-      console.log("[PC-1] Using mock analysis");
+      console.log('[PC-1] Using mock analysis');
     } else {
       // Real AI 분석
       try {
-        console.log("[PC-1] Starting Gemini analysis...");
+        console.log('[PC-1] Starting Gemini analysis...');
+        console.log('[PC-1] Wrist image provided:', !!wristImageBase64);
         aiResult = await analyzePersonalColor(imageBase64, wristImageBase64);
-        console.log("[PC-1] Gemini analysis completed");
+        console.log('[PC-1] Gemini analysis completed');
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
-        console.error("[PC-1] Gemini error, falling back to mock:", aiError);
+        console.error('[PC-1] Gemini error, falling back to mock:', aiError);
         const mockResult = generateMockPersonalColorResult();
+        const isCool = mockResult.tone === 'cool';
         aiResult = {
           seasonType: mockResult.seasonType,
           seasonLabel: mockResult.seasonLabel,
@@ -105,6 +117,21 @@ export async function POST(req: Request) {
           clothingRecommendations: mockResult.clothingRecommendations,
           styleDescription: mockResult.styleDescription,
           insight: mockResult.insight,
+          // 분석 근거 데이터 (Mock)
+          analysisEvidence: {
+            veinColor: isCool ? 'blue' : 'green',
+            veinScore: isCool ? 75 : 25,
+            skinUndertone: isCool ? 'pink' : 'yellow',
+            skinHairContrast: 'medium',
+            eyeColor: 'brown',
+            lipNaturalColor: isCool ? 'pink' : 'coral',
+          },
+          imageQuality: {
+            lightingCondition: 'artificial',
+            makeupDetected: false,
+            wristImageProvided: !!wristImageBase64,
+            analysisReliability: 'medium',
+          },
         };
         usedMock = true;
       }
@@ -113,7 +140,8 @@ export async function POST(req: Request) {
     // AI 결과에 styleDescription이 없는 경우 기본값 사용
     const result = {
       ...aiResult,
-      styleDescription: aiResult.styleDescription || STYLE_DESCRIPTIONS[aiResult.seasonType as SeasonType],
+      styleDescription:
+        aiResult.styleDescription || STYLE_DESCRIPTIONS[aiResult.seasonType as SeasonType],
     };
 
     const supabase = createServiceRoleClient();
@@ -124,18 +152,18 @@ export async function POST(req: Request) {
       const fileName = `${userId}/${Date.now()}.jpg`;
 
       // Base64 데이터 정리
-      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
-      const buffer = Buffer.from(base64Data, "base64");
+      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
 
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("personal-color-images")
+        .from('personal-color-images')
         .upload(fileName, buffer, {
-          contentType: "image/jpeg",
+          contentType: 'image/jpeg',
           upsert: false,
         });
 
       if (uploadError) {
-        console.error("Image upload error:", uploadError);
+        console.error('Image upload error:', uploadError);
         // 이미지 업로드 실패해도 분석 결과는 저장
       } else {
         faceImageUrl = uploadData.path;
@@ -144,23 +172,23 @@ export async function POST(req: Request) {
 
     // 계절 타입 변환 (소문자 → DB 형식)
     const seasonMap: Record<string, string> = {
-      spring: "Spring",
-      summer: "Summer",
-      autumn: "Autumn",
-      winter: "Winter",
+      spring: 'Spring',
+      summer: 'Summer',
+      autumn: 'Autumn',
+      winter: 'Winter',
     };
     const season = seasonMap[result.seasonType] || result.seasonType;
 
     // 언더톤 변환
     const undertoneMap: Record<string, string> = {
-      warm: "Warm",
-      cool: "Cool",
+      warm: 'Warm',
+      cool: 'Cool',
     };
-    const undertone = undertoneMap[result.tone] || "Neutral";
+    const undertone = undertoneMap[result.tone] || 'Neutral';
 
     // DB에 저장
     const { data, error } = await supabase
-      .from("personal_color_assessments")
+      .from('personal_color_assessments')
       .insert({
         clerk_user_id: userId,
         questionnaire_answers: {}, // 문진 응답 (현재 미사용)
@@ -169,10 +197,10 @@ export async function POST(req: Request) {
         undertone: undertone,
         confidence: result.confidence,
         season_scores: {
-          spring: result.seasonType === "spring" ? result.confidence : 0,
-          summer: result.seasonType === "summer" ? result.confidence : 0,
-          autumn: result.seasonType === "autumn" ? result.confidence : 0,
-          winter: result.seasonType === "winter" ? result.confidence : 0,
+          spring: result.seasonType === 'spring' ? result.confidence : 0,
+          summer: result.seasonType === 'summer' ? result.confidence : 0,
+          autumn: result.seasonType === 'autumn' ? result.confidence : 0,
+          winter: result.seasonType === 'winter' ? result.confidence : 0,
         },
         // AI 분석 원본 데이터 저장
         image_analysis: {
@@ -181,6 +209,9 @@ export async function POST(req: Request) {
           depth: result.depth,
           insight: result.insight,
           styleDescription: result.styleDescription, // 연예인 매칭 대체
+          // 분석 근거 및 이미지 품질 정보 (신뢰성 리포트용)
+          analysisEvidence: aiResult.analysisEvidence || null,
+          imageQuality: aiResult.imageQuality || null,
         },
         best_colors: result.bestColors,
         worst_colors: result.worstColors,
@@ -198,11 +229,29 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      console.error("Database insert error:", error);
+      console.error('Database insert error:', error);
       return NextResponse.json(
-        { error: "Failed to save analysis", details: error.message },
+        { error: 'Failed to save analysis', details: error.message },
         { status: 500 }
       );
+    }
+
+    // users 테이블에 PC-1 결과 동기화 (비정규화 - 빠른 조회용)
+    const { error: userUpdateError } = await supabase
+      .from('users')
+      .update({
+        latest_pc_assessment_id: data.id,
+        personal_color_season: season,
+        personal_color_undertone: undertone,
+        face_image_url: faceImageUrl,
+      })
+      .eq('clerk_user_id', userId);
+
+    if (userUpdateError) {
+      // 동기화 실패해도 분석 결과는 이미 저장되었으므로 경고만 출력
+      console.warn('[PC-1] Failed to sync to users table:', userUpdateError);
+    } else {
+      console.log('[PC-1] Synced PC result to users table');
     }
 
     // 게이미피케이션 연동
@@ -220,7 +269,7 @@ export async function POST(req: Request) {
       gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
 
       // 퍼스널 컬러 분석 완료 배지
-      const pcBadge = await awardAnalysisBadge(supabase, userId, "personal-color");
+      const pcBadge = await awardAnalysisBadge(supabase, userId, 'personal-color');
       if (pcBadge) {
         gamificationResult.badgeResults.push(pcBadge);
       }
@@ -231,7 +280,7 @@ export async function POST(req: Request) {
         gamificationResult.badgeResults.push(allBadge);
       }
     } catch (gamificationError) {
-      console.error("[PC-1] Gamification error:", gamificationError);
+      console.error('[PC-1] Gamification error:', gamificationError);
     }
 
     return NextResponse.json({
@@ -245,11 +294,8 @@ export async function POST(req: Request) {
       gamification: gamificationResult,
     });
   } catch (error) {
-    console.error("Personal color analysis error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Personal color analysis error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -263,26 +309,23 @@ export async function GET() {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const supabase = createServiceRoleClient();
 
     const { data, error } = await supabase
-      .from("personal_color_assessments")
-      .select("*")
-      .eq("clerk_user_id", userId)
-      .order("created_at", { ascending: false })
+      .from('personal_color_assessments')
+      .select('*')
+      .eq('clerk_user_id', userId)
+      .order('created_at', { ascending: false })
       .limit(1)
       .single();
 
-    if (error && error.code !== "PGRST116") {
+    if (error && error.code !== 'PGRST116') {
       // PGRST116 = no rows returned
-      console.error("Database query error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch analysis" },
-        { status: 500 }
-      );
+      console.error('Database query error:', error);
+      return NextResponse.json({ error: 'Failed to fetch analysis' }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -291,10 +334,7 @@ export async function GET() {
       hasResult: !!data,
     });
   } catch (error) {
-    console.error("Get personal color error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Get personal color error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

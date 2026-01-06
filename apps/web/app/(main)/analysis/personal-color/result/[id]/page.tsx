@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw, Palette, Shirt } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Palette, Shirt, ClipboardList } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +24,11 @@ import Link from 'next/link';
 import type { PersonalColorSeason } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DrapingSimulationTab } from '@/components/analysis/visual';
+import AnalysisEvidenceReport, {
+  type AnalysisEvidence,
+  type ImageQuality,
+} from '@/components/analysis/AnalysisEvidenceReport';
+import { VisualReportCard } from '@/components/analysis/visual-report';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -44,6 +49,8 @@ interface DbPersonalColorAssessment {
   } | null;
   image_analysis: {
     insight?: string;
+    analysisEvidence?: AnalysisEvidence;
+    imageQuality?: ImageQuality;
   } | null;
   image_url?: string;
   created_at: string;
@@ -124,6 +131,8 @@ export default function PersonalColorResultPage() {
   const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<PersonalColorResult | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [analysisEvidence, setAnalysisEvidence] = useState<AnalysisEvidence | null>(null);
+  const [imageQuality, setImageQuality] = useState<ImageQuality | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -171,9 +180,18 @@ export default function PersonalColorResultPage() {
         throw new Error('분석 결과를 찾을 수 없습니다');
       }
 
-      const transformedResult = transformDbToResult(data as DbPersonalColorAssessment);
+      const dbData = data as DbPersonalColorAssessment;
+      const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
-      setImageUrl((data as DbPersonalColorAssessment).image_url || null);
+      setImageUrl(dbData.image_url || null);
+
+      // 분석 근거 데이터 추출
+      if (dbData.image_analysis?.analysisEvidence) {
+        setAnalysisEvidence(dbData.image_analysis.analysisEvidence);
+      }
+      if (dbData.image_analysis?.imageQuality) {
+        setImageQuality(dbData.image_analysis.imageQuality);
+      }
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
       const celebrationKey = `celebration-pc-${analysisId}`;
@@ -275,10 +293,14 @@ export default function PersonalColorResultPage() {
         {/* 탭 기반 결과 */}
         {result && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
               <TabsTrigger value="basic" className="gap-1">
                 <Palette className="w-4 h-4" />
                 기본 분석
+              </TabsTrigger>
+              <TabsTrigger value="evidence" className="gap-1">
+                <ClipboardList className="w-4 h-4" />
+                분석 근거
               </TabsTrigger>
               <TabsTrigger value="draping" className="gap-1">
                 <Shirt className="w-4 h-4" />
@@ -288,7 +310,34 @@ export default function PersonalColorResultPage() {
 
             {/* 기본 분석 탭 */}
             <TabsContent value="basic" className="mt-0">
-              <AnalysisResult result={result} onRetry={handleNewAnalysis} />
+              {/* 비주얼 리포트 카드 */}
+              <VisualReportCard
+                analysisType="personal-color"
+                overallScore={result.confidence}
+                seasonType={result.seasonType}
+                seasonLabel={result.seasonLabel}
+                confidence={result.confidence}
+                bestColors={result.bestColors}
+                analyzedAt={result.analyzedAt}
+                className="mb-6"
+              />
+
+              <AnalysisResult
+                result={result}
+                onRetry={handleNewAnalysis}
+                evidence={analysisEvidence}
+              />
+
+              {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
+              {(analysisEvidence || imageQuality) && (
+                <AnalysisEvidenceReport
+                  evidence={analysisEvidence}
+                  imageQuality={imageQuality}
+                  seasonType={result.seasonType}
+                  tone={result.tone}
+                  className="mt-6"
+                />
+              )}
 
               {/* 맞춤 추천 제품 */}
               <RecommendedProducts
@@ -299,6 +348,24 @@ export default function PersonalColorResultPage() {
                 }}
                 className="mt-8 pb-32"
               />
+            </TabsContent>
+
+            {/* 분석 근거 탭 */}
+            <TabsContent value="evidence" className="mt-0 pb-32">
+              {analysisEvidence || imageQuality ? (
+                <AnalysisEvidenceReport
+                  evidence={analysisEvidence}
+                  imageQuality={imageQuality}
+                  seasonType={result.seasonType}
+                  tone={result.tone}
+                />
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>분석 근거 데이터가 없습니다</p>
+                  <p className="text-sm mt-1">새로 분석하면 상세 근거가 제공됩니다</p>
+                </div>
+              )}
             </TabsContent>
 
             {/* 드레이핑 시뮬레이션 탭 (PC-1+) */}

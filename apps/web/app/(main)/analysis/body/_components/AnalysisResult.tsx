@@ -32,6 +32,13 @@ import {
 import { FadeInUp, ScaleIn, CountUp } from '@/components/animations';
 import { RecommendedClothingCard, BodyStyleImage } from '@/components/analysis/body';
 import { getOutfitExamples } from '@/lib/color-recommendations';
+import { BodyEvidenceSummary } from '@/components/analysis/EvidenceSummary';
+
+// 체형 분석 근거 타입
+interface BodyAnalysisEvidence {
+  silhouette?: 'I' | 'S' | 'X' | 'H' | 'Y';
+  upperLowerBalance?: 'upper_dominant' | 'balanced' | 'lower_dominant';
+}
 
 // 3타입인지 확인
 function isBodyType3(type: string): type is BodyType3 {
@@ -42,9 +49,15 @@ interface AnalysisResultProps {
   result: BodyAnalysisResult;
   onRetry: () => void;
   shareRef?: React.RefObject<HTMLDivElement | null>;
+  evidence?: BodyAnalysisEvidence | null;
 }
 
-export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisResultProps) {
+export default function AnalysisResult({
+  result,
+  onRetry,
+  shareRef,
+  evidence,
+}: AnalysisResultProps) {
   const {
     bodyType,
     bodyTypeLabel,
@@ -217,6 +230,14 @@ export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisRe
               </div>
             </div>
           )}
+
+          {/* 핵심 판정 근거 요약 */}
+          <BodyEvidenceSummary
+            silhouette={evidence?.silhouette}
+            upperLowerBalance={evidence?.upperLowerBalance}
+            bodyType={bodyType}
+            className="mt-4"
+          />
         </section>
       </ScaleIn>
 

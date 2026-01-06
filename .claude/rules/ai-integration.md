@@ -5,23 +5,26 @@
 ## 모델 선택
 
 ### 기본 모델: Gemini 3 Flash
+
 ```typescript
 // lib/gemini.ts
-model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview'
+model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 ```
 
 ### 사용처
-| 모듈 | 용도 |
-|------|------|
+
+| 모듈 | 용도             |
+| ---- | ---------------- |
 | PC-1 | 퍼스널 컬러 분석 |
-| S-1 | 피부 분석 |
-| C-1 | 체형 분석 |
-| N-1 | 음식 인식 |
-| RAG | 제품 Q&A |
+| S-1  | 피부 분석        |
+| C-1  | 체형 분석        |
+| N-1  | 음식 인식        |
+| RAG  | 제품 Q&A         |
 
 ## Fallback 전략
 
 ### 필수 패턴
+
 모든 AI 호출은 Mock Fallback 필수:
 
 ```typescript
@@ -35,6 +38,7 @@ try {
 ```
 
 ### Mock 파일 위치
+
 ```
 lib/mock/
 ├── workout-analysis.ts   # W-1 Mock
@@ -53,42 +57,52 @@ const MAX_RETRIES = 2;
 
 ## 프롬프트 규칙
 
-### 언어
-- 프롬프트: 영어 (더 정확한 응답)
-- 응답 형식: JSON 요청 시 명시
+> **상세 가이드**: 프롬프트 작성 시 [`prompt-engineering.md`](./prompt-engineering.md) 참조
+> (Step-by-Step 분석, 할루시네이션 방지, Few-shot 예시 등)
 
-### 구조
+### 언어 (이룸 표준)
+
+```
+프롬프트 본문: 한국어 (도메인 전문성 + 한국 사용자 맥락)
+JSON 필드명: 영어 (camelCase)
+응답 텍스트: 한국어
+```
+
+**예외**: RAG 제품 Q&A는 영어 (제품 데이터 혼재)
+
+### 구조 (이모지 + 평문)
+
 ```typescript
 const prompt = `
-You are a ${role} expert.
+당신은 ${role} 전문가입니다.
 
-Context:
-${context}
+⚠️ 분석 전 확인:
+${conditions}
 
-Task:
-${task}
+📊 분석 기준:
+${criteria}
 
-Output format:
-Return a JSON object with the following structure:
+다음 JSON 형식으로만 응답해주세요:
 ${schema}
 `;
 ```
 
 ### 예시 (피부 분석)
+
 ```typescript
 const prompt = `
-You are a professional dermatologist AI assistant.
+당신은 전문 피부과학 기반 AI 분석가입니다.
 
-Analyze the skin condition based on:
-- User age: ${age}
-- Skin type: ${skinType}
-- Concerns: ${concerns.join(', ')}
+📊 분석 기준:
+- 사용자 연령: ${age}
+- 피부 타입: ${skinType}
+- 관심사: ${concerns.join(', ')}
 
-Return JSON:
+다음 JSON 형식으로만 응답해주세요:
 {
-  "overallScore": number (0-100),
-  "concerns": string[],
-  "recommendations": string[]
+  "overallScore": [0-100 사이 점수],
+  "concerns": ["문제1", "문제2"],
+  "recommendations": ["추천1", "추천2"]
 }
 `;
 ```
@@ -96,6 +110,7 @@ Return JSON:
 ## 비용 최적화
 
 ### 컨텍스트 캐싱
+
 동일 프롬프트 반복 시 캐싱 활용:
 
 ```typescript
@@ -107,6 +122,7 @@ const cachedModel = genAI.getGenerativeModel({
 ```
 
 ### 토큰 절약
+
 - 불필요한 context 제거
 - 간결한 프롬프트 작성
 - JSON 응답 시 필요한 필드만 요청
