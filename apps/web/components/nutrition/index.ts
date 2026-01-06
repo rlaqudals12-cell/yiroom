@@ -118,3 +118,9 @@ export {
   CalorieSurplusAlertSkeleton,
   type CalorieSurplusAlertProps,
 } from './CalorieSurplusAlert';
+
+// Voice Record Button (AI Enhancement)
+export {
+  default as VoiceRecordButton,
+  type VoiceRecordButtonProps,
+} from './VoiceRecordButton';

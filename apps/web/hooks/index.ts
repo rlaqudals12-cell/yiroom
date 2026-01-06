@@ -23,3 +23,7 @@ export type { AppTourStep, UseAppTourOptions, UseAppTourReturn } from './useAppT
 
 // A/B 테스트 실험
 export { useExperiment } from './useExperiment';
+
+// 음성 인식
+export { useVoiceRecognition } from './useVoiceRecognition';
+export type { UseVoiceRecognitionOptions, UseVoiceRecognitionReturn } from './useVoiceRecognition';
