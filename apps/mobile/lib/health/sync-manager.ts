@@ -1,10 +1,12 @@
 /**
- * Apple Health 동기화 매니저
+ * 건강 데이터 동기화 매니저
+ * - Apple Health (iOS) + Google Fit (Android) 통합
  * - 마지막 동기화 시점 관리
  * - 백그라운드 동기화 지원
  * - 서버 API 연동
  */
 
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   SyncState,
@@ -17,11 +19,19 @@ import type {
 import {
   isHealthKitAvailable,
   initializeHealthKit,
-  getTodaySteps,
-  getTodayActiveCalories,
-  getTodayHeartRate,
-  getLastNightSleep,
+  getTodaySteps as getAppleSteps,
+  getTodayActiveCalories as getAppleCalories,
+  getTodayHeartRate as getAppleHeartRate,
+  getLastNightSleep as getAppleSleep,
 } from './apple-health';
+import {
+  isGoogleFitAvailable,
+  initializeGoogleFit,
+  getTodaySteps as getGoogleSteps,
+  getTodayActiveCalories as getGoogleCalories,
+  getTodayHeartRate as getGoogleHeartRate,
+  getLastNightSleep as getGoogleSleep,
+} from './google-fit';
 
 const SYNC_STATE_KEY = '@yiroom/health_sync_state';
 const SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15분
@@ -62,17 +72,46 @@ export async function setSyncState(state: Partial<SyncState>): Promise<void> {
 }
 
 /**
+ * 플랫폼별 건강 데이터 가용 여부
+ */
+export function isHealthDataAvailable(): boolean {
+  if (Platform.OS === 'ios') {
+    return isHealthKitAvailable();
+  } else if (Platform.OS === 'android') {
+    return isGoogleFitAvailable();
+  }
+  return false;
+}
+
+/**
+ * 플랫폼 타입 반환
+ */
+export function getHealthPlatform(): 'apple' | 'google' | null {
+  if (Platform.OS === 'ios' && isHealthKitAvailable()) return 'apple';
+  if (Platform.OS === 'android' && isGoogleFitAvailable()) return 'google';
+  return null;
+}
+
+/**
  * 동기화 활성화
  */
 export async function enableSync(): Promise<boolean> {
-  if (!isHealthKitAvailable()) {
-    console.log('[HealthSync] HealthKit not available');
-    return false;
-  }
+  const platform = getHealthPlatform();
 
-  const initialized = await initializeHealthKit();
-  if (!initialized) {
-    console.log('[HealthSync] Failed to initialize HealthKit');
+  if (platform === 'apple') {
+    const initialized = await initializeHealthKit();
+    if (!initialized) {
+      console.log('[HealthSync] Failed to initialize HealthKit');
+      return false;
+    }
+  } else if (platform === 'google') {
+    const initialized = await initializeGoogleFit();
+    if (!initialized) {
+      console.log('[HealthSync] Failed to initialize Google Fit');
+      return false;
+    }
+  } else {
+    console.log('[HealthSync] No health platform available');
     return false;
   }
 
@@ -107,10 +146,37 @@ export async function needsSync(): Promise<boolean> {
 }
 
 /**
+ * 플랫폼별 데이터 조회 함수 선택
+ */
+function getPlatformFunctions() {
+  const platform = getHealthPlatform();
+
+  if (platform === 'apple') {
+    return {
+      getSteps: getAppleSteps,
+      getCalories: getAppleCalories,
+      getHeartRate: getAppleHeartRate,
+      getSleep: getAppleSleep,
+    };
+  } else if (platform === 'google') {
+    return {
+      getSteps: getGoogleSteps,
+      getCalories: getGoogleCalories,
+      getHeartRate: getGoogleHeartRate,
+      getSleep: getGoogleSleep,
+    };
+  }
+
+  return null;
+}
+
+/**
  * 오늘의 건강 데이터 수집
  */
 export async function collectTodayHealthData(): Promise<HealthDataSummary | null> {
-  if (!isHealthKitAvailable()) {
+  const funcs = getPlatformFunctions();
+
+  if (!funcs) {
     return null;
   }
 
@@ -118,10 +184,10 @@ export async function collectTodayHealthData(): Promise<HealthDataSummary | null
     const today = new Date().toISOString().split('T')[0];
 
     const [steps, calories, heartRate, sleep] = await Promise.all([
-      getTodaySteps(),
-      getTodayActiveCalories(),
-      getTodayHeartRate(),
-      getLastNightSleep(),
+      funcs.getSteps(),
+      funcs.getCalories(),
+      funcs.getHeartRate(),
+      funcs.getSleep(),
     ]);
 
     return {

@@ -9,10 +9,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { Platform, AppState, AppStateStatus } from 'react-native';
 import type { HealthDataSummary, SyncState, SyncResult } from '@/lib/health/types';
 import {
-  isHealthKitAvailable,
-  initializeHealthKit,
-} from '@/lib/health/apple-health';
-import {
   getLocalSyncState,
   enableSync,
   disableSync,
@@ -20,6 +16,8 @@ import {
   performSync,
   performMockSync,
   needsSync,
+  isHealthDataAvailable,
+  getHealthPlatform,
 } from '@/lib/health/sync-manager';
 
 interface UseHealthDataResult {
@@ -30,6 +28,7 @@ interface UseHealthDataResult {
   isSyncing: boolean;
   lastSyncTime: string | null;
   error: string | null;
+  platform: 'apple' | 'google' | null;
 
   // 데이터
   todayData: HealthDataSummary | null;
@@ -42,9 +41,8 @@ interface UseHealthDataResult {
 }
 
 export function useHealthData(): UseHealthDataResult {
-  const [isAvailable] = useState(() =>
-    Platform.OS === 'ios' && isHealthKitAvailable()
-  );
+  const [isAvailable] = useState(() => isHealthDataAvailable());
+  const [platform] = useState(() => getHealthPlatform());
   const [syncState, setSyncState] = useState<SyncState | null>(null);
   const [todayData, setTodayData] = useState<HealthDataSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -215,6 +213,7 @@ export function useHealthData(): UseHealthDataResult {
     isSyncing,
     lastSyncTime: syncState?.lastSyncTime ?? null,
     error,
+    platform,
     todayData,
     enable,
     disable,

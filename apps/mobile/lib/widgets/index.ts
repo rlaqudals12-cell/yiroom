@@ -1,12 +1,22 @@
 /**
- * 위젯 모듈
- * iOS/Android 홈 화면 위젯 지원
+ * 위젯 모듈 export
  */
 
 // 타입
 export * from './types';
 
-// 저장소
+// 데이터 제공자 (새 API - 위젯 타입별)
+export {
+  generateDailySummaryData,
+  generateWorkoutProgressData,
+  generateNutritionTrackerData,
+  generateWellnessScoreData,
+  generateQuickActionsData,
+  generateWidgetData,
+  updateAllWidgets,
+} from './data-provider';
+
+// 저장소 (기존 API - TodaySummaryData)
 export {
   saveWidgetData,
   getWidgetData,

@@ -1,5 +1,6 @@
 /**
- * Apple Health 연동 설정 화면
+ * 건강 데이터 연동 설정 화면
+ * Apple Health (iOS) + Google Fit (Android) 지원
  */
 
 import { useState } from 'react';
@@ -30,11 +31,20 @@ export default function HealthSyncScreen() {
     isSyncing,
     lastSyncTime,
     todayData,
+    platform,
     enable,
     disable,
     refresh,
     sync,
   } = useHealthData();
+
+  // 플랫폼별 제목과 아이콘
+  const platformInfo = {
+    apple: { title: 'Apple Health 연동', icon: '❤️', name: 'Apple Health' },
+    google: { title: 'Google Fit 연동', icon: '💚', name: 'Google Fit' },
+    null: { title: '건강 데이터 연동', icon: '📊', name: '건강 앱' },
+  };
+  const info = platformInfo[platform ?? 'null'];
 
   const handleToggle = async (value: boolean) => {
     Haptics.selectionAsync();
@@ -65,7 +75,7 @@ export default function HealthSyncScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Apple Health 연동',
+          title: info.title,
           headerBackTitle: '설정',
         }}
       />
@@ -75,10 +85,11 @@ export default function HealthSyncScreen() {
       >
         <ScrollView contentContainerStyle={styles.content}>
           {/* 플랫폼 체크 */}
-          {Platform.OS !== 'ios' && (
+          {!isAvailable && (
             <View style={[styles.card, isDark && styles.cardDark]}>
               <Text style={[styles.warningText, isDark && styles.textLight]}>
-                ⚠️ Apple Health는 iOS에서만 사용 가능합니다
+                ⚠️ {Platform.OS === 'ios' ? 'Apple Health' : 'Google Fit'}를 사용할 수 없습니다.
+                {'\n'}시뮬레이터에서는 Mock 데이터로 테스트됩니다.
               </Text>
             </View>
           )}
@@ -88,7 +99,7 @@ export default function HealthSyncScreen() {
             <View style={styles.toggleRow}>
               <View>
                 <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-                  ❤️ Apple Health 연동
+                  {info.icon} {info.name} 연동
                 </Text>
                 <Text style={[styles.cardSubtitle, isDark && styles.textMuted]}>
                   걸음수, 심박수, 수면 데이터 동기화
@@ -98,7 +109,7 @@ export default function HealthSyncScreen() {
                 value={isEnabled}
                 onValueChange={handleToggle}
                 disabled={isLoading}
-                trackColor={{ false: '#767577', true: '#4CD964' }}
+                trackColor={{ false: '#767577', true: platform === 'google' ? '#34A853' : '#4CD964' }}
               />
             </View>
           </View>
