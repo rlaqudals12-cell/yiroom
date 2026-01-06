@@ -5,3 +5,4 @@
 
 export * from './types';
 export * from './apple-health';
+export * from './sync-manager';
