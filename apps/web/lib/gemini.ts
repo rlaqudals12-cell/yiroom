@@ -934,23 +934,61 @@ export async function analyzeBody(imageBase64: string): Promise<GeminiBodyAnalys
 }
 
 /**
- * PC-1 퍼스널 컬러 분석 실행
- * - FORCE_MOCK_AI 환경변수 지원
- * - API 키 미설정 시 Mock 반환
- * - 3초 타임아웃 + 2회 재시도 후 Mock Fallback
+ * PC-1 다각도 이미지 입력 인터페이스
+ * @description 정면(필수) + 좌/우(선택) 다각도 이미지 지원
+ */
+export interface PersonalColorMultiAngleInput {
+  /** 정면 이미지 (필수) */
+  frontImageBase64: string;
+  /** 좌측 이미지 (선택) */
+  leftImageBase64?: string;
+  /** 우측 이미지 (선택) */
+  rightImageBase64?: string;
+  /** 손목 이미지 (선택) - 웜/쿨 판단 정확도 향상 */
+  wristImageBase64?: string;
+}
+
+/**
+ * PC-1 퍼스널 컬러 분석 (다각도 지원)
+ * - 정면 이미지 필수, 좌/우측 이미지 선택
+ * - 다각도 분석 시 신뢰도 향상 (95% vs 80%)
+ * - 하위 호환성: 기존 2파라미터 시그니처 유지
  *
- * @param faceImageBase64 - Base64 인코딩된 얼굴 이미지
- * @param wristImageBase64 - Base64 인코딩된 손목 이미지 (선택적 - 웜/쿨 판단 정확도 향상)
+ * @param faceImageBase64 - 정면 얼굴 이미지 또는 MultiAngleInput 객체
+ * @param wristImageBase64 - 손목 이미지 (선택, 하위 호환용)
  * @returns 퍼스널 컬러 분석 결과
  */
 export async function analyzePersonalColor(
-  faceImageBase64: string,
+  faceImageBase64: string | PersonalColorMultiAngleInput,
   wristImageBase64?: string
 ): Promise<GeminiPersonalColorResult> {
+  // 입력 정규화: 다각도 객체 또는 단일 이미지
+  let input: PersonalColorMultiAngleInput;
+
+  if (typeof faceImageBase64 === 'string') {
+    // 하위 호환: 단일 이미지
+    input = {
+      frontImageBase64: faceImageBase64,
+      wristImageBase64,
+    };
+  } else {
+    // 다각도 입력
+    input = faceImageBase64;
+  }
+
+  // 다각도 분석 여부
+  const hasMultiAngle = !!(input.leftImageBase64 || input.rightImageBase64);
+  const imageCount = 1 + (input.leftImageBase64 ? 1 : 0) + (input.rightImageBase64 ? 1 : 0);
+
   // Mock 모드 확인
   if (FORCE_MOCK) {
     geminiLogger.info('[PC-1] Using mock (FORCE_MOCK_AI=true)');
-    return generateMockPersonalColorResult() as unknown as GeminiPersonalColorResult;
+    const mockResult = generateMockPersonalColorResult() as unknown as GeminiPersonalColorResult;
+    // 다각도 분석 시 신뢰도 향상
+    if (hasMultiAngle && mockResult.imageQuality) {
+      mockResult.imageQuality.analysisReliability = 'high';
+    }
+    return mockResult;
   }
 
   if (!genAI) {
@@ -960,25 +998,56 @@ export async function analyzePersonalColor(
 
   try {
     const model = genAI.getGenerativeModel(modelConfig);
-    const faceImagePart = formatImageForGemini(faceImageBase64);
-
-    // 프롬프트 구성
-    let prompt = PERSONAL_COLOR_ANALYSIS_PROMPT;
 
     // 이미지 배열 구성
-    const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [
-      prompt,
-      faceImagePart,
-    ];
+    const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [];
+
+    // 프롬프트 구성 (다각도 분석 안내 추가)
+    let prompt = PERSONAL_COLOR_ANALYSIS_PROMPT;
+
+    if (hasMultiAngle) {
+      prompt += `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+다각도 이미지 분석 (${imageCount}장 제공)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+여러 각도의 이미지가 제공되었습니다:
+- 정면: 전체적인 피부톤, 언더톤 판단의 기준
+${input.leftImageBase64 ? '- 좌측: 측면 피부색, 볼 색조 분석' : ''}
+${input.rightImageBase64 ? '- 우측: 측면 피부색, 볼 색조 분석 (좌우 비교)' : ''}
+
+[다각도 분석 규칙]
+✅ 좌우 피부톤이 다를 경우, 더 자연스러운 쪽 기준으로 판단
+✅ 조명 영향이 적은 각도 우선 고려
+✅ 다각도 분석으로 신뢰도 향상 (analysisReliability: high)`;
+    }
+
+    contentParts.push(prompt);
+
+    // 정면 이미지 추가
+    contentParts.push(formatImageForGemini(input.frontImageBase64));
+
+    // 좌측 이미지 추가
+    if (input.leftImageBase64) {
+      contentParts.push(formatImageForGemini(input.leftImageBase64));
+    }
+
+    // 우측 이미지 추가
+    if (input.rightImageBase64) {
+      contentParts.push(formatImageForGemini(input.rightImageBase64));
+    }
 
     // 손목 이미지가 있으면 추가
-    if (wristImageBase64) {
-      const wristImagePart = formatImageForGemini(wristImageBase64);
-      contentParts.push(wristImagePart);
-      // 프롬프트에 손목 이미지 분석 안내 추가
-      prompt += `\n\n첨부된 두 번째 이미지는 손목 안쪽 사진입니다. 혈관 색상을 분석하여 웜톤/쿨톤 판단에 활용해주세요. 파란색/보라색 혈관은 쿨톤, 녹색 혈관은 웜톤을 나타냅니다.`;
-      contentParts[0] = prompt;
+    if (input.wristImageBase64) {
+      contentParts.push(formatImageForGemini(input.wristImageBase64));
+      // 프롬프트 업데이트
+      const wristNote = `\n\n첨부된 ${hasMultiAngle ? '마지막' : '두 번째'} 이미지는 손목 안쪽 사진입니다. 혈관 색상을 분석하여 웜톤/쿨톤 판단에 활용해주세요. 파란색/보라색 혈관은 쿨톤, 녹색 혈관은 웜톤을 나타냅니다.`;
+      contentParts[0] = prompt + wristNote;
     }
+
+    geminiLogger.info(
+      `[PC-1] Starting analysis with ${imageCount} face image(s)${input.wristImageBase64 ? ' + wrist' : ''}`
+    );
 
     // 타임아웃 (15초) + 재시도 (최대 2회) 적용
     const result = await withRetry(

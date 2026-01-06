@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
-import { Clock, ArrowRight } from 'lucide-react';
+import { Clock, ArrowRight, Camera, ImageIcon } from 'lucide-react';
 import {
   type SkinAnalysisResult,
   type SkinTypeId,
@@ -12,8 +12,10 @@ import {
   generateMockAnalysisResult,
   SKIN_CONCERNS,
 } from '@/lib/mock/skin-analysis';
+import type { MultiAngleImages } from '@/types/visual-analysis';
 import LightingGuide from './_components/LightingGuide';
 import PhotoUpload from './_components/PhotoUpload';
+import MultiAngleSkinCapture from './_components/MultiAngleSkinCapture';
 import KnownSkinTypeInput from './_components/KnownSkinTypeInput';
 import AnalysisLoading from './_components/AnalysisLoading';
 import AnalysisResult from './_components/AnalysisResult';
@@ -21,9 +23,17 @@ import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { Confetti } from '@/components/animations';
 
-// 새 플로우: 조명가이드 → 사진촬영 → AI분석 → 결과
+// 새 플로우: 조명가이드 → 모드선택 → 사진촬영 → AI분석 → 결과
 // 또는: 기존 피부 타입 입력 → 결과
-type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result' | 'known-input';
+type CaptureMode = 'select' | 'camera' | 'gallery';
+type AnalysisStep =
+  | 'guide'
+  | 'mode-select'
+  | 'camera'
+  | 'upload'
+  | 'loading'
+  | 'result'
+  | 'known-input';
 
 // 날짜 포맷 헬퍼
 function formatDate(date: Date): string {
@@ -50,9 +60,12 @@ export default function SkinAnalysisPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   const [step, setStep] = useState<AnalysisStep>('guide');
+  const [captureMode, setCaptureMode] = useState<CaptureMode>('select');
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  // 다각도 이미지 상태
+  const [multiAngleImages, setMultiAngleImages] = useState<MultiAngleImages | null>(null);
   const [result, setResult] = useState<SkinAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,9 +102,36 @@ export default function SkinAnalysisPage() {
     checkExistingAnalysis();
   }, [isLoaded, isSignedIn, supabase]);
 
-  // 조명 가이드 완료 → 사진 촬영으로
+  // 조명 가이드 완료 → 모드 선택으로
   const handleGuideComplete = useCallback(() => {
+    setStep('mode-select');
+    setCaptureMode('select');
+  }, []);
+
+  // 카메라 모드 선택 (다각도 촬영)
+  const handleSelectCameraMode = useCallback(() => {
+    setCaptureMode('camera');
+    setStep('camera');
+  }, []);
+
+  // 갤러리 모드 선택 (단일 이미지)
+  const handleSelectGalleryMode = useCallback(() => {
+    setCaptureMode('gallery');
     setStep('upload');
+  }, []);
+
+  // 다각도 촬영 완료 핸들러
+  const handleMultiAngleCaptureComplete = useCallback((images: MultiAngleImages) => {
+    setMultiAngleImages(images);
+    setStep('loading');
+    setError(null);
+    analysisStartedRef.current = false;
+  }, []);
+
+  // 다각도 촬영 취소 핸들러
+  const handleMultiAngleCaptureCancel = useCallback(() => {
+    setStep('mode-select');
+    setCaptureMode('select');
   }, []);
 
   // 기존 피부 타입 알고 있음 → 입력 화면으로
@@ -153,9 +193,13 @@ export default function SkinAnalysisPage() {
     });
   };
 
-  // AI 분석 실행 (API 호출)
+  // AI 분석 실행 (API 호출) - 다각도/단일 모드 모두 지원
   const runAnalysis = useCallback(async () => {
-    if (!imageFile || !isSignedIn || analysisStartedRef.current) {
+    // 갤러리 모드 (단일 이미지) 또는 카메라 모드 (다각도)
+    const hasGalleryImage = imageFile && captureMode === 'gallery';
+    const hasMultiAngleImages = multiAngleImages && captureMode === 'camera';
+
+    if ((!hasGalleryImage && !hasMultiAngleImages) || !isSignedIn || analysisStartedRef.current) {
       return;
     }
 
@@ -163,14 +207,31 @@ export default function SkinAnalysisPage() {
     setIsAnalyzing(true);
 
     try {
-      const imageBase64 = await fileToBase64(imageFile);
+      let requestBody: Record<string, string | undefined>;
+
+      if (hasMultiAngleImages) {
+        // 다각도 촬영 모드: 3장의 이미지 전송
+        requestBody = {
+          frontImageBase64: multiAngleImages.frontImageBase64,
+          leftImageBase64: multiAngleImages.leftImageBase64,
+          rightImageBase64: multiAngleImages.rightImageBase64,
+        };
+      } else if (hasGalleryImage) {
+        // 갤러리 모드: 단일 이미지를 frontImageBase64로 전송 (하위 호환성)
+        const imageBase64 = await fileToBase64(imageFile);
+        requestBody = {
+          frontImageBase64: imageBase64,
+        };
+      } else {
+        throw new Error('No image available');
+      }
 
       const response = await fetch('/api/analyze/skin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ imageBase64 }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -193,13 +254,14 @@ export default function SkinAnalysisPage() {
       // 분석 완료 시 축하 효과
       setShowConfetti(true);
     } catch (err) {
-      console.error('Analysis error:', err);
+      console.error('[S-1] Analysis error:', err);
       setError(err instanceof Error ? err.message : 'Analysis failed');
-      setStep('upload');
+      // 에러 시 촬영 모드에 따라 적절한 단계로 복귀
+      setStep(captureMode === 'camera' ? 'camera' : 'upload');
     } finally {
       setIsAnalyzing(false);
     }
-  }, [imageFile, isSignedIn]);
+  }, [imageFile, multiAngleImages, captureMode, isSignedIn]);
 
   // 로딩 애니메이션 완료 시 분석 시작
   const handleAnalysisComplete = useCallback(() => {
@@ -209,6 +271,8 @@ export default function SkinAnalysisPage() {
   // 다시 분석하기
   const handleRetry = useCallback(() => {
     setImageFile(null);
+    setMultiAngleImages(null);
+    setCaptureMode('select');
     setResult(null);
     setStep('guide');
     setError(null);
@@ -222,8 +286,12 @@ export default function SkinAnalysisPage() {
     switch (step) {
       case 'guide':
         return '정확한 분석을 위한 촬영 가이드';
+      case 'mode-select':
+        return '촬영 방법을 선택해주세요';
+      case 'camera':
+        return '다각도 피부 촬영';
       case 'upload':
-        return '피부 사진을 촬영해주세요';
+        return '피부 사진을 선택해주세요';
       case 'known-input':
         return '피부 타입을 선택해주세요';
       case 'loading':
@@ -247,7 +315,7 @@ export default function SkinAnalysisPage() {
           </header>
 
           {/* 에러 메시지 */}
-          {error && step === 'upload' && (
+          {error && (step === 'upload' || step === 'camera') && (
             <div
               className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
               role="alert"
@@ -288,6 +356,64 @@ export default function SkinAnalysisPage() {
             <LightingGuide onContinue={handleGuideComplete} onSkip={handleSkipToKnownInput} />
           )}
 
+          {/* 모드 선택 UI */}
+          {step === 'mode-select' && (
+            <div className="space-y-6" data-testid="capture-mode-select">
+              <div className="text-center mb-4">
+                <p className="text-sm text-muted-foreground">피부 분석을 위한 사진이 필요해요</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* 카메라 모드 (다각도 촬영) */}
+                <button
+                  onClick={handleSelectCameraMode}
+                  className="flex flex-col items-center justify-center p-6 bg-card rounded-xl border-2 border-transparent hover:border-primary/50 hover:shadow-md transition-all"
+                  data-testid="camera-mode-button"
+                >
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                    <Camera className="w-7 h-7 text-primary" aria-hidden="true" />
+                  </div>
+                  <span className="font-medium text-foreground">촬영</span>
+                  <span className="text-xs text-muted-foreground mt-1">(다각도)</span>
+                </button>
+
+                {/* 갤러리 모드 (단일 이미지) */}
+                <button
+                  onClick={handleSelectGalleryMode}
+                  className="flex flex-col items-center justify-center p-6 bg-card rounded-xl border-2 border-transparent hover:border-primary/50 hover:shadow-md transition-all"
+                  data-testid="gallery-mode-button"
+                >
+                  <div className="w-14 h-14 rounded-full bg-secondary/50 flex items-center justify-center mb-3">
+                    <ImageIcon className="w-7 h-7 text-secondary-foreground" aria-hidden="true" />
+                  </div>
+                  <span className="font-medium text-foreground">갤러리</span>
+                  <span className="text-xs text-muted-foreground mt-1">(단일)</span>
+                </button>
+              </div>
+
+              {/* 모드 설명 */}
+              <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+                <p className="mb-2">
+                  <strong className="text-foreground">촬영 모드</strong>: 정면 + 좌/우측 다각도
+                  촬영으로 더 정확한 분석이 가능해요
+                </p>
+                <p>
+                  <strong className="text-foreground">갤러리 모드</strong>: 기존에 찍은 정면
+                  사진으로 간편하게 분석해요
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* 카메라 모드: 다각도 촬영 */}
+          {step === 'camera' && (
+            <MultiAngleSkinCapture
+              onComplete={handleMultiAngleCaptureComplete}
+              onCancel={handleMultiAngleCaptureCancel}
+            />
+          )}
+
+          {/* 갤러리 모드: 단일 이미지 업로드 */}
           {step === 'upload' && <PhotoUpload onPhotoSelect={handlePhotoSelect} />}
 
           {step === 'known-input' && (

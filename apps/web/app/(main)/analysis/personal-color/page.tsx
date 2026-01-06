@@ -17,12 +17,22 @@ import LightingGuide from './_components/LightingGuide';
 import PhotoUpload from './_components/PhotoUpload';
 import WristPhotoUpload from './_components/WristPhotoUpload';
 import KnownPersonalColorInput from './_components/KnownPersonalColorInput';
+import MultiAnglePersonalColorCapture from './_components/MultiAnglePersonalColorCapture';
 import AnalysisLoading from './_components/AnalysisLoading';
 import AnalysisResult from './_components/AnalysisResult';
+import type { MultiAngleImages } from '@/types/visual-analysis';
 
-// 새 플로우: 조명가이드 → 얼굴사진 → 손목사진 → AI분석 → 결과
+// 새 플로우: 조명가이드 → 다각도촬영 → 손목사진 → AI분석 → 결과
 // 또는: 기존 퍼스널 컬러 입력 → 결과
-type AnalysisStep = 'guide' | 'upload' | 'wrist' | 'loading' | 'result' | 'known-input';
+// 또는: 레거시 플로우 (단일 사진 업로드)
+type AnalysisStep =
+  | 'guide'
+  | 'multi-angle'
+  | 'upload'
+  | 'wrist'
+  | 'loading'
+  | 'result'
+  | 'known-input';
 
 // 날짜 포맷 헬퍼
 function formatDate(date: Date): string {
@@ -69,6 +79,8 @@ export default function PersonalColorPage() {
   const [faceImageFile, setFaceImageFile] = useState<File | null>(null);
   const [wristImageFile, setWristImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  // 다각도 촬영 이미지
+  const [multiAngleImages, setMultiAngleImages] = useState<MultiAngleImages | null>(null);
   const [result, setResult] = useState<PersonalColorResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -102,9 +114,21 @@ export default function PersonalColorPage() {
     checkExistingAnalysis();
   }, [isLoaded, isSignedIn, supabase]);
 
-  // 조명 가이드 완료 → 사진 촬영으로
+  // 조명 가이드 완료 → 다각도 촬영으로
   const handleGuideComplete = useCallback(() => {
-    setStep('upload');
+    setStep('multi-angle');
+  }, []);
+
+  // 다각도 촬영 완료 → 손목 촬영으로
+  const handleMultiAngleComplete = useCallback((images: MultiAngleImages) => {
+    setMultiAngleImages(images);
+    setStep('wrist');
+    setError(null);
+  }, []);
+
+  // 다각도 촬영 취소 → 가이드로 돌아가기
+  const handleMultiAngleCancel = useCallback(() => {
+    setStep('guide');
   }, []);
 
   // 기존 퍼스널 컬러 알고 있음 → 입력 화면으로
@@ -113,35 +137,42 @@ export default function PersonalColorPage() {
   }, []);
 
   // 기존 퍼스널 컬러 입력 → 결과 생성
-  const handleKnownColorSelect = useCallback((seasonType: SeasonType, subtype?: PersonalColorSubtype) => {
-    // Mock 결과 생성 (해당 시즌 타입으로)
-    const mockResult = generateMockPersonalColorResult();
+  const handleKnownColorSelect = useCallback(
+    (seasonType: SeasonType, subtype?: PersonalColorSubtype) => {
+      // Mock 결과 생성 (해당 시즌 타입으로)
+      const mockResult = generateMockPersonalColorResult();
 
-    // 서브타입 정보 찾기
-    const subtypeInfo = subtype
-      ? PERSONAL_COLOR_SUBTYPES.find(s => s.id === subtype)
-      : null;
+      // 서브타입 정보 찾기
+      const subtypeInfo = subtype ? PERSONAL_COLOR_SUBTYPES.find((s) => s.id === subtype) : null;
 
-    // 시즌 라벨 결정 (서브타입이 있으면 서브타입 라벨 사용)
-    const seasonLabel = subtypeInfo
-      ? subtypeInfo.label
-      : SEASON_INFO[seasonType].label;
+      // 시즌 라벨 결정 (서브타입이 있으면 서브타입 라벨 사용)
+      const seasonLabel = subtypeInfo ? subtypeInfo.label : SEASON_INFO[seasonType].label;
 
-    // 톤과 깊이 결정
-    const tone = subtypeInfo ? subtypeInfo.tone : (seasonType === 'spring' || seasonType === 'autumn' ? 'warm' : 'cool');
-    const depth = subtypeInfo ? subtypeInfo.depth : (seasonType === 'spring' || seasonType === 'summer' ? 'light' : 'deep');
+      // 톤과 깊이 결정
+      const tone = subtypeInfo
+        ? subtypeInfo.tone
+        : seasonType === 'spring' || seasonType === 'autumn'
+          ? 'warm'
+          : 'cool';
+      const depth = subtypeInfo
+        ? subtypeInfo.depth
+        : seasonType === 'spring' || seasonType === 'summer'
+          ? 'light'
+          : 'deep';
 
-    setResult({
-      ...mockResult,
-      seasonType,
-      seasonLabel,
-      tone,
-      depth,
-      confidence: 100, // 사용자가 직접 입력했으므로 100%
-      analyzedAt: new Date(),
-    });
-    setStep('result');
-  }, []);
+      setResult({
+        ...mockResult,
+        seasonType,
+        seasonLabel,
+        tone,
+        depth,
+        confidence: 100, // 사용자가 직접 입력했으므로 100%
+        analyzedAt: new Date(),
+      });
+      setStep('result');
+    },
+    []
+  );
 
   // 기존 퍼스널 컬러 입력에서 돌아가기
   const handleKnownInputBack = useCallback(() => {
@@ -183,7 +214,11 @@ export default function PersonalColorPage() {
 
   // AI 분석 실행 (API 호출)
   const runAnalysis = useCallback(async () => {
-    if (!faceImageFile || !isSignedIn || analysisStartedRef.current) {
+    // 다각도 이미지 또는 레거시 단일 이미지 필요
+    const hasMultiAngle = !!multiAngleImages;
+    const hasLegacyImage = !!faceImageFile;
+
+    if ((!hasMultiAngle && !hasLegacyImage) || !isSignedIn || analysisStartedRef.current) {
       return;
     }
 
@@ -191,13 +226,37 @@ export default function PersonalColorPage() {
     setIsAnalyzing(true);
 
     try {
-      // 얼굴 이미지를 Base64로 변환
-      const faceImageBase64 = await fileToBase64(faceImageFile);
-
       // 손목 이미지가 있으면 Base64로 변환
       let wristImageBase64: string | undefined;
       if (wristImageFile) {
         wristImageBase64 = await fileToBase64(wristImageFile);
+      }
+
+      // API 요청 본문 구성
+      let requestBody: Record<string, unknown>;
+
+      if (hasMultiAngle && multiAngleImages) {
+        // 다각도 분석 요청
+        requestBody = {
+          frontImageBase64: multiAngleImages.frontImageBase64,
+          leftImageBase64: multiAngleImages.leftImageBase64,
+          rightImageBase64: multiAngleImages.rightImageBase64,
+          wristImageBase64,
+        };
+        console.log('[PC-1] Using multi-angle images:', {
+          front: !!multiAngleImages.frontImageBase64,
+          left: !!multiAngleImages.leftImageBase64,
+          right: !!multiAngleImages.rightImageBase64,
+        });
+      } else if (faceImageFile) {
+        // 레거시 단일 이미지 요청
+        const faceImageBase64 = await fileToBase64(faceImageFile);
+        requestBody = {
+          imageBase64: faceImageBase64,
+          wristImageBase64,
+        };
+      } else {
+        throw new Error('No image available');
       }
 
       const response = await fetch('/api/analyze/personal-color', {
@@ -205,10 +264,7 @@ export default function PersonalColorPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          imageBase64: faceImageBase64,
-          wristImageBase64,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -217,7 +273,14 @@ export default function PersonalColorPage() {
       }
 
       const data = await response.json();
-      console.log('[PC-1] Analysis result:', data.usedMock ? 'Mock' : 'Real AI');
+      console.log(
+        '[PC-1] Analysis result:',
+        data.usedMock ? 'Mock' : 'Real AI',
+        '/ Reliability:',
+        data.analysisReliability,
+        '/ Images:',
+        data.imagesCount
+      );
 
       // API 응답의 result를 사용
       setResult({
@@ -228,11 +291,11 @@ export default function PersonalColorPage() {
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err instanceof Error ? err.message : 'Analysis failed');
-      setStep('upload');
+      setStep('multi-angle');
     } finally {
       setIsAnalyzing(false);
     }
-  }, [faceImageFile, wristImageFile, isSignedIn]);
+  }, [faceImageFile, wristImageFile, multiAngleImages, isSignedIn]);
 
   // 로딩 애니메이션 완료 시 분석 시작
   const handleAnalysisComplete = useCallback(() => {
@@ -247,6 +310,7 @@ export default function PersonalColorPage() {
     }
     setFaceImageFile(null);
     setWristImageFile(null);
+    setMultiAngleImages(null);
     setImageUrl(null);
     setResult(null);
     setStep('guide');
@@ -260,6 +324,8 @@ export default function PersonalColorPage() {
     switch (step) {
       case 'guide':
         return '정확한 진단을 위한 촬영 가이드';
+      case 'multi-angle':
+        return '정확한 진단을 위해 여러 각도로 촬영해요';
       case 'upload':
         return '얼굴 사진을 촬영해주세요';
       case 'wrist':
@@ -319,21 +385,20 @@ export default function PersonalColorPage() {
 
         {/* Step별 컴포넌트 렌더링 */}
         {step === 'guide' && (
-          <LightingGuide
-            onContinue={handleGuideComplete}
-            onSkip={handleSkipToKnownInput}
+          <LightingGuide onContinue={handleGuideComplete} onSkip={handleSkipToKnownInput} />
+        )}
+
+        {step === 'multi-angle' && (
+          <MultiAnglePersonalColorCapture
+            onComplete={handleMultiAngleComplete}
+            onCancel={handleMultiAngleCancel}
           />
         )}
 
-        {step === 'upload' && (
-          <PhotoUpload onPhotoSelect={handleFacePhotoSelect} />
-        )}
+        {step === 'upload' && <PhotoUpload onPhotoSelect={handleFacePhotoSelect} />}
 
         {step === 'wrist' && (
-          <WristPhotoUpload
-            onPhotoSelect={handleWristPhotoSelect}
-            onSkip={handleWristSkip}
-          />
+          <WristPhotoUpload onPhotoSelect={handleWristPhotoSelect} onSkip={handleWristSkip} />
         )}
 
         {step === 'known-input' && (
@@ -343,13 +408,9 @@ export default function PersonalColorPage() {
           />
         )}
 
-        {step === 'loading' && (
-          <AnalysisLoading onComplete={handleAnalysisComplete} />
-        )}
+        {step === 'loading' && <AnalysisLoading onComplete={handleAnalysisComplete} />}
 
-        {step === 'result' && result && (
-          <AnalysisResult result={result} onRetry={handleRetry} />
-        )}
+        {step === 'result' && result && <AnalysisResult result={result} onRetry={handleRetry} />}
       </div>
     </main>
   );

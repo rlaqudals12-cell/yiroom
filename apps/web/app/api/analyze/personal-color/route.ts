@@ -1,7 +1,11 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { analyzePersonalColor, type GeminiPersonalColorResult } from '@/lib/gemini';
+import {
+  analyzePersonalColor,
+  type GeminiPersonalColorResult,
+  type PersonalColorMultiAngleInput,
+} from '@/lib/gemini';
 import {
   generateMockPersonalColorResult,
   STYLE_DESCRIPTIONS,
@@ -25,8 +29,15 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *
  * POST /api/analyze/personal-color
  * Body: {
- *   imageBase64: string,                    // 얼굴 이미지 (필수)
- *   wristImageBase64?: string,              // 손목 이미지 (선택 - 웜/쿨 판단 정확도 향상)
+ *   // 기존 (하위 호환)
+ *   imageBase64?: string,                   // 얼굴 이미지 (단일)
+ *   wristImageBase64?: string,              // 손목 이미지 (선택)
+ *
+ *   // 다각도 지원 (신규)
+ *   frontImageBase64?: string,              // 정면 이미지 (필수 when 다각도)
+ *   leftImageBase64?: string,               // 좌측 이미지 (선택)
+ *   rightImageBase64?: string,              // 우측 이미지 (선택)
+ *
  *   useMock?: boolean                       // Mock 모드 강제 (선택)
  * }
  *
@@ -34,7 +45,8 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *   success: boolean,
  *   data: PersonalColorAssessment,   // DB 저장된 데이터
  *   result: PersonalColorResult,     // AI 분석 결과
- *   usedMock: boolean                // Mock 사용 여부
+ *   usedMock: boolean,               // Mock 사용 여부
+ *   analysisReliability: string      // 분석 신뢰도 (high/medium/low)
  * }
  */
 export async function POST(req: Request) {
@@ -47,11 +59,46 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { imageBase64, wristImageBase64, useMock = false } = body;
+    const {
+      // 하위 호환
+      imageBase64,
+      wristImageBase64,
+      // 다각도 지원
+      frontImageBase64,
+      leftImageBase64,
+      rightImageBase64,
+      useMock = false,
+    } = body;
 
-    if (!imageBase64) {
+    // 이미지 입력 검증: 다각도 또는 단일 이미지 필요
+    const hasFrontImage = !!frontImageBase64;
+    const hasLegacyImage = !!imageBase64;
+
+    if (!hasFrontImage && !hasLegacyImage) {
       return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
+
+    // 분석용 이미지 입력 구성
+    const analysisInput: PersonalColorMultiAngleInput = {
+      frontImageBase64: frontImageBase64 || imageBase64,
+      leftImageBase64,
+      rightImageBase64,
+      wristImageBase64,
+    };
+
+    // 다각도 분석 여부 (신뢰도 결정에 사용)
+    const hasMultiAngle = !!(leftImageBase64 || rightImageBase64);
+    const imagesCount = 1 + (leftImageBase64 ? 1 : 0) + (rightImageBase64 ? 1 : 0);
+
+    // 다각도 분석 시 신뢰도 결정
+    const determineReliability = (
+      hasMulti: boolean,
+      hasWrist: boolean
+    ): 'high' | 'medium' | 'low' => {
+      if (hasMulti && hasWrist) return 'high';
+      if (hasMulti || hasWrist) return 'high';
+      return 'medium';
+    };
 
     // AI 분석 실행 (Real AI 또는 Mock)
     let aiResult: GeminiPersonalColorResult;
@@ -61,6 +108,7 @@ export async function POST(req: Request) {
       // Mock 모드
       const mockResult = generateMockPersonalColorResult();
       const isCool = mockResult.tone === 'cool';
+      const reliability = determineReliability(hasMultiAngle, !!wristImageBase64);
       aiResult = {
         seasonType: mockResult.seasonType,
         seasonLabel: mockResult.seasonLabel,
@@ -87,23 +135,26 @@ export async function POST(req: Request) {
           lightingCondition: 'natural',
           makeupDetected: false,
           wristImageProvided: !!wristImageBase64,
-          analysisReliability: 'medium',
+          analysisReliability: reliability,
         },
       };
       usedMock = true;
-      console.log('[PC-1] Using mock analysis');
+      console.log(
+        `[PC-1] Using mock analysis (${imagesCount} image(s), reliability: ${reliability})`
+      );
     } else {
       // Real AI 분석
       try {
-        console.log('[PC-1] Starting Gemini analysis...');
-        console.log('[PC-1] Wrist image provided:', !!wristImageBase64);
-        aiResult = await analyzePersonalColor(imageBase64, wristImageBase64);
+        console.log(`[PC-1] Starting Gemini analysis with ${imagesCount} image(s)...`);
+        console.log('[PC-1] Multi-angle:', hasMultiAngle, '/ Wrist:', !!wristImageBase64);
+        aiResult = await analyzePersonalColor(analysisInput);
         console.log('[PC-1] Gemini analysis completed');
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[PC-1] Gemini error, falling back to mock:', aiError);
         const mockResult = generateMockPersonalColorResult();
         const isCool = mockResult.tone === 'cool';
+        const reliability = determineReliability(hasMultiAngle, !!wristImageBase64);
         aiResult = {
           seasonType: mockResult.seasonType,
           seasonLabel: mockResult.seasonLabel,
@@ -130,7 +181,7 @@ export async function POST(req: Request) {
             lightingCondition: 'artificial',
             makeupDetected: false,
             wristImageProvided: !!wristImageBase64,
-            analysisReliability: 'medium',
+            analysisReliability: reliability,
           },
         };
         usedMock = true;
@@ -144,15 +195,25 @@ export async function POST(req: Request) {
         aiResult.styleDescription || STYLE_DESCRIPTIONS[aiResult.seasonType as SeasonType],
     };
 
+    // 분석 신뢰도 결정
+    const analysisReliability =
+      aiResult.imageQuality?.analysisReliability ||
+      determineReliability(hasMultiAngle, !!wristImageBase64);
+
     const supabase = createServiceRoleClient();
 
-    // 이미지 업로드
+    // 이미지 업로드 (정면 이미지 우선)
+    const primaryImage = frontImageBase64 || imageBase64;
     let faceImageUrl: string | null = null;
-    if (imageBase64) {
-      const fileName = `${userId}/${Date.now()}.jpg`;
+    let leftImageUrl: string | null = null;
+    let rightImageUrl: string | null = null;
+
+    if (primaryImage) {
+      const timestamp = Date.now();
+      const fileName = `${userId}/${timestamp}.jpg`;
 
       // Base64 데이터 정리
-      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+      const base64Data = primaryImage.replace(/^data:image\/\w+;base64,/, '');
       const buffer = Buffer.from(base64Data, 'base64');
 
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -167,6 +228,32 @@ export async function POST(req: Request) {
         // 이미지 업로드 실패해도 분석 결과는 저장
       } else {
         faceImageUrl = uploadData.path;
+      }
+
+      // 좌측 이미지 업로드 (다각도 분석 시)
+      if (leftImageBase64) {
+        const leftBase64 = leftImageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const leftBuffer = Buffer.from(leftBase64, 'base64');
+        const { data: leftUpload } = await supabase.storage
+          .from('personal-color-images')
+          .upload(`${userId}/${timestamp}_left.jpg`, leftBuffer, {
+            contentType: 'image/jpeg',
+            upsert: false,
+          });
+        if (leftUpload) leftImageUrl = leftUpload.path;
+      }
+
+      // 우측 이미지 업로드 (다각도 분석 시)
+      if (rightImageBase64) {
+        const rightBase64 = rightImageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const rightBuffer = Buffer.from(rightBase64, 'base64');
+        const { data: rightUpload } = await supabase.storage
+          .from('personal-color-images')
+          .upload(`${userId}/${timestamp}_right.jpg`, rightBuffer, {
+            contentType: 'image/jpeg',
+            upsert: false,
+          });
+        if (rightUpload) rightImageUrl = rightUpload.path;
       }
     }
 
@@ -193,6 +280,10 @@ export async function POST(req: Request) {
         clerk_user_id: userId,
         questionnaire_answers: {}, // 문진 응답 (현재 미사용)
         face_image_url: faceImageUrl,
+        left_image_url: leftImageUrl,
+        right_image_url: rightImageUrl,
+        images_count: imagesCount,
+        analysis_reliability: analysisReliability,
         season: season,
         undertone: undertone,
         confidence: result.confidence,
@@ -212,6 +303,14 @@ export async function POST(req: Request) {
           // 분석 근거 및 이미지 품질 정보 (신뢰성 리포트용)
           analysisEvidence: aiResult.analysisEvidence || null,
           imageQuality: aiResult.imageQuality || null,
+          // 다각도 분석 메타데이터
+          multiAngle: hasMultiAngle
+            ? {
+                imagesCount,
+                leftProvided: !!leftImageBase64,
+                rightProvided: !!rightImageBase64,
+              }
+            : null,
         },
         best_colors: result.bestColors,
         worst_colors: result.worstColors,
@@ -291,6 +390,8 @@ export async function POST(req: Request) {
         analyzedAt: new Date().toISOString(),
       },
       usedMock,
+      analysisReliability,
+      imagesCount,
       gamification: gamificationResult,
     });
   } catch (error) {

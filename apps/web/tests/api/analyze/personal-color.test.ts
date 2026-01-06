@@ -132,6 +132,91 @@ describe('POST /api/analyze/personal-color', () => {
     mockStorageUpload.mockResolvedValue({ data: { path: 'user_test123/123.jpg' }, error: null });
   });
 
+  describe('다각도 촬영 지원', () => {
+    it('다각도 이미지(정면+좌측+우측)로 분석이 가능하다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(
+        createMockPostRequest({
+          frontImageBase64: 'data:image/jpeg;base64,/9j/front',
+          leftImageBase64: 'data:image/jpeg;base64,/9j/left',
+          rightImageBase64: 'data:image/jpeg;base64,/9j/right',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.imagesCount).toBe(3);
+      expect(json.analysisReliability).toBe('high');
+    });
+
+    it('정면 이미지만으로도 분석이 가능하다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(
+        createMockPostRequest({
+          frontImageBase64: 'data:image/jpeg;base64,/9j/front',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.imagesCount).toBe(1);
+    });
+
+    it('하위 호환성: imageBase64 단일 이미지로도 분석이 가능하다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.imagesCount).toBe(1);
+    });
+
+    it('다각도 분석 시 신뢰도가 high로 설정된다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(
+        createMockPostRequest({
+          frontImageBase64: 'data:image/jpeg;base64,/9j/front',
+          leftImageBase64: 'data:image/jpeg;base64,/9j/left',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.analysisReliability).toBe('high');
+    });
+
+    it('손목 이미지 포함 시 신뢰도가 high로 설정된다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(
+        createMockPostRequest({
+          frontImageBase64: 'data:image/jpeg;base64,/9j/front',
+          wristImageBase64: 'data:image/jpeg;base64,/9j/wrist',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.analysisReliability).toBe('high');
+    });
+  });
+
   describe('인증', () => {
     it('인증되지 않은 요청은 401을 반환한다', async () => {
       vi.mocked(auth).mockResolvedValue({ userId: null } as Awaited<ReturnType<typeof auth>>);
