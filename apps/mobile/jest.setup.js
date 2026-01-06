@@ -354,13 +354,9 @@ jest.mock('react-native-gesture-handler', () => {
 });
 
 // =============================================================================
-// React Native Reanimated 모킹
+// React Native Reanimated: __mocks__/react-native-reanimated.js 파일로 대체됨
+// jest.config.js의 moduleNameMapper에서 설정
 // =============================================================================
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  Reanimated.default.call = () => {};
-  return Reanimated;
-});
 
 // =============================================================================
 // 타이머 설정
