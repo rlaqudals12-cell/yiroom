@@ -569,6 +569,19 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
 
 [x] 스펙 문서 작성 및 승인
     - docs/SPEC-MULTI-ANGLE-PHOTO.md (Status: Approved)
+
+[x] S-1/PC-1 다각도 페이지 연동 (시지프스 병렬 구현)
+    Phase 4: S-1 페이지 연동 ✅
+    - 촬영 모드 선택 UI (카메라/갤러리)
+    - MultiAngleSkinCapture 컴포넌트 연동
+    - 정면(필수) + 좌/우(선택) 촬영 플로우
+    - docs/SPEC-S1-MULTIANGLE-INTEGRATION.md (Status: Approved)
+
+    Phase 5: PC-1 다각도 확장 ✅
+    - MultiAnglePersonalColorCapture 컴포넌트 생성
+    - analyzePersonalColor 다각도 입력 지원
+    - PC-1 API 다각도 이미지 및 신뢰도 추적
+    - docs/SPEC-PC1-MULTIANGLE.md (Status: Approved)
 ```
 
 ---
