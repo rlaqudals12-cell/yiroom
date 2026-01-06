@@ -1,7 +1,7 @@
 # 이룸 프로젝트 진행 상황
 
-> **마지막 업데이트**: 2026-01-09
-> **현재 버전**: v2.5 (다각도 촬영 시스템)
+> **마지막 업데이트**: 2026-01-07
+> **현재 버전**: v2.6 (피드 + 자세 분석 + AI 코치)
 
 ---
 
@@ -543,33 +543,72 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
 
 ## 최근 업데이트 (2026-01-07)
 
+### 뷰티 SNS 피드 UI (커밋 cf7e3c8)
+
 ```yaml
-[x] 테스트 커버리지 향상
-    - 웹 앱: 2,761개 테스트 (기존 2,686 + 신규 75)
-    - 신규 테스트 파일:
-        - tests/lib/gemini.test.ts (20 tests) - AI Mock Fallback 검증
-        - tests/pages/analysis/personal-color.test.tsx (13 tests)
-        - tests/pages/analysis/skin.test.tsx (17 tests)
-        - tests/pages/analysis/body.test.tsx (15 tests)
-        - tests/api/sync-user/route.test.ts (10 tests)
+[x] 피드 컴포넌트 구현
+    - FeedCard (좋아요, 저장, 공유, 댓글 버튼)
+    - CommentSection (대댓글 지원, 실시간 업데이트)
+    - FeedList (무한 스크롤)
 
-[x] 모바일 Jest 테스트 환경 수정
-    - babel.config.js: 테스트 환경에서 nativewind/babel 프리셋 건너뜀
-    - jest.config.js: react-native-reanimated 모듈 매핑 추가
-    - __mocks__/react-native-reanimated.js: 자체 구현 mock 파일 추가
-    - 결과: 436개 테스트 통과 (21/23 스위트)
+[x] 피드 페이지 및 API
+    - app/(main)/feed/page.tsx (메인 페이지)
+    - app/api/feed/route.ts (피드 조회)
+    - app/api/feed/[id]/route.ts (피드 상세/삭제)
+    - 포스트 작성 페이지 (image, caption, hashtags)
 
-[x] 기술 부채 정리
-    - ESLint: 68개 경고 → 2개 경고 (--fix 자동 수정)
-    - 미사용 import 제거 (Upload, preferencesToInjuries)
-    - 미사용 변수 prefix 추가 (_leftImageUrl, _rightImageUrl)
-    - TypeScript: 0 에러 유지
+[x] 데이터베이스 (RLS 정책 포함)
+    - feed_posts 테이블 (이미지, 캡션, 해시태그)
+    - feed_comments 테이블 (일반/대댓글)
+    - feed_likes 테이블
+    - feed_saves 테이블
+    - feed_shares 테이블
+```
 
-[x] Dynamic Import 최적화
-    - components/admin/analytics/dynamic.tsx 추가
-    - components/admin/dynamic.tsx 추가
-    - components/wellness/dynamic.tsx 개선
-    - components/products/detail/dynamic.tsx 개선
+### A-1 자세 분석 (커밋 cf7e3c8)
+
+```yaml
+[x] 자세 분석 메인 페이지
+    - app/(main)/analysis/posture/page.tsx
+    - 정면/측면 촬영 플로우
+    - 약간의 유도 텍스트 및 주의사항
+
+[x] Gemini AI 연동
+    - lib/gemini.ts analyzePosture() 함수 추가
+    - 척추 정렬, 어깨 높이, 골반 위치 분석
+    - 신뢰도 기반 평가 시스템
+
+[x] Mock Fallback 시스템
+    - lib/mock/posture-analysis.ts 구현
+    - AI 실패 시 자동 폴백
+
+[x] 데이터베이스
+    - supabase/migrations: posture_analyses 테이블 생성
+    - clerk_user_id 기반 RLS
+    - 이미지 Storage 연동
+
+[x] 게이미피케이션 연동
+    - A-1 분석 시 XP 획득
+    - 배지 시스템 통합
+```
+
+### AI 코치 스트리밍 API (커밋 6a0fb0d)
+
+```yaml
+[x] SSE 기반 스트리밍
+    - /api/coach/stream 엔드포인트
+    - Gemini AI 실시간 응답
+    - 클라이언트 쪽 처리 (EventSource)
+
+[x] 사용자 컨텍스트 주입
+    - 분석 이력 (PC-1, S-1, C-1, A-1)
+    - 운동/영양 정보
+    - 맞춤형 코칭 가능
+
+[x] UI 컴포넌트
+    - CoachChat 컴포넌트
+    - 실시간 메시지 표시
+    - 타이핑 애니메이션
 ```
 
 ---
@@ -793,31 +832,6 @@ apps/mobile/
 │   └── lib/affiliate/   # 테스트
 ├── .maestro/            # E2E 테스트
 └── DEPLOYMENT.md        # 배포 가이드
-```
-
----
-
-## 최근 업데이트 (2026-01-09)
-
-```yaml
-[x] 다각도 촬영 시스템 구현
-    - S-1 피부 분석 다각도 연동 (SPEC-S1-MULTIANGLE-INTEGRATION.md)
-    - PC-1 퍼스널컬러 다각도 확장 (SPEC-PC1-MULTIANGLE.md)
-    - 컴포넌트: MultiAngleSkinCapture, MultiAnglePersonalColorCapture
-    - API: /api/validate/face-image, /api/analyze/skin (다각도 지원)
-    - 신뢰도: 정면만 80%, 3장 촬영 시 95%
-
-[x] Recharts 지연 로딩 최적화
-    - components/admin/dynamic.tsx (AffiliateChartDynamic)
-    - components/admin/analytics/dynamic.tsx (ActiveUserTrendChartDynamic, FeatureUsageTrendChartDynamic)
-    - components/wellness/dynamic.tsx (ChartSkeleton 로딩 UI 추가)
-    - 예상 번들 절감: ~40-50KB (recharts)
-
-[x] 테스트 통과
-    - TypeScript typecheck: 전체 통과
-    - Admin 테스트: 31개 통과
-    - Wellness 테스트: 51개 통과
-    - Products 테스트: 103개 통과
 ```
 
 ---
