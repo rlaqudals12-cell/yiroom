@@ -22,17 +22,21 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *
  * POST /api/analyze/body
  * Body: {
- *   imageBase64: string,         // 체형 이미지 (필수)
- *   userInput?: UserBodyInput,   // 사용자 입력 (키, 체중)
- *   useMock?: boolean            // Mock 모드 강제 (선택)
+ *   imageBase64?: string,         // 체형 이미지 (기존 호환)
+ *   frontImageBase64?: string,    // 정면 이미지 (다각도 촬영)
+ *   sideImageBase64?: string,     // 측면 이미지 (선택)
+ *   backImageBase64?: string,     // 후면 이미지 (선택)
+ *   userInput?: UserBodyInput,    // 사용자 입력 (키, 체중)
+ *   useMock?: boolean             // Mock 모드 강제 (선택)
  * }
  *
  * Returns: {
  *   success: boolean,
- *   data: BodyAnalysis,          // DB 저장된 데이터
- *   result: BodyAnalysisResult,  // AI 분석 결과
+ *   data: BodyAnalysis,           // DB 저장된 데이터
+ *   result: BodyAnalysisResult,   // AI 분석 결과
  *   personalColorSeason: string | null,
- *   usedMock: boolean            // Mock 사용 여부
+ *   imagesAnalyzed: { front, side, back },  // 분석된 이미지 현황
+ *   usedMock: boolean             // Mock 사용 여부
  * }
  */
 export async function POST(req: Request) {
@@ -45,11 +49,22 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { imageBase64, userInput, useMock = false } = body;
+    const { imageBase64, frontImageBase64, sideImageBase64, backImageBase64, userInput, useMock = false } = body;
 
-    if (!imageBase64) {
+    // 다각도 이미지 또는 단일 이미지 (하위 호환)
+    const primaryImage = frontImageBase64 || imageBase64;
+
+    if (!primaryImage) {
       return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
+
+    // 분석에 사용된 이미지 현황
+    const imagesAnalyzed = {
+      front: !!primaryImage,
+      side: !!sideImageBase64,
+      back: !!backImageBase64,
+    };
+    const imageCount = Object.values(imagesAnalyzed).filter(Boolean).length;
 
     // AI 분석 실행 (Real AI 또는 Mock)
     let result: GeminiBodyAnalysisResult;
@@ -102,11 +117,16 @@ export async function POST(req: Request) {
       usedMock = true;
       console.log('[C-1] Using mock analysis (3-type system)');
     } else {
-      // Real AI 분석
+      // Real AI 분석 (다각도 지원)
       try {
-        console.log('[C-1] Starting Gemini analysis (3-type system)...');
-        result = await analyzeBody(imageBase64);
+        console.log(`[C-1] Starting Gemini analysis (${imageCount} image(s), 3-type system)...`);
+        result = await analyzeBody(primaryImage, sideImageBase64, backImageBase64);
         console.log('[C-1] Gemini analysis completed');
+
+        // 다각도 분석 시 신뢰도 보정
+        if (imageCount >= 2 && result.imageQuality) {
+          result.imageQuality.analysisReliability = imageCount >= 3 ? 'high' : 'medium';
+        }
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백 (3타입 시스템)
         console.error('[C-1] Gemini error, falling back to mock:', aiError);
@@ -158,13 +178,13 @@ export async function POST(req: Request) {
 
     const supabase = createServiceRoleClient();
 
-    // 이미지 업로드
+    // 이미지 업로드 (정면 이미지만 저장)
     let imageUrl: string | null = null;
-    if (imageBase64) {
+    if (primaryImage) {
       const fileName = `${userId}/${Date.now()}.jpg`;
 
       // Base64 데이터 정리
-      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+      const base64Data = primaryImage.replace(/^data:image\/\w+;base64,/, '');
       const buffer = Buffer.from(base64Data, 'base64');
 
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -307,6 +327,7 @@ export async function POST(req: Request) {
       personalColorSeason,
       colorRecommendations,
       colorTips,
+      imagesAnalyzed,
       usedMock,
       gamification: gamificationResult,
     });

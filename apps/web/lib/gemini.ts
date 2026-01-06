@@ -887,15 +887,24 @@ export async function analyzeSkin(imageBase64: string): Promise<GeminiSkinAnalys
 }
 
 /**
- * C-1 체형 분석 실행
+ * C-1 체형 분석 실행 (다각도 지원)
  * - FORCE_MOCK_AI 환경변수 지원
  * - API 키 미설정 시 Mock 반환
  * - 3초 타임아웃 + 2회 재시도 후 Mock Fallback
  *
- * @param imageBase64 - Base64 인코딩된 전신 이미지
+ * @param frontImageBase64 - Base64 인코딩된 정면 이미지 (필수)
+ * @param sideImageBase64 - Base64 인코딩된 측면 이미지 (선택)
+ * @param backImageBase64 - Base64 인코딩된 후면 이미지 (선택)
  * @returns 체형 분석 결과
  */
-export async function analyzeBody(imageBase64: string): Promise<GeminiBodyAnalysisResult> {
+export async function analyzeBody(
+  frontImageBase64: string,
+  sideImageBase64?: string,
+  backImageBase64?: string
+): Promise<GeminiBodyAnalysisResult> {
+  // 다각도 분석 여부
+  const hasMultiAngle = !!(sideImageBase64 || backImageBase64);
+  const imageCount = 1 + (sideImageBase64 ? 1 : 0) + (backImageBase64 ? 1 : 0);
   // Mock 모드 확인
   if (FORCE_MOCK) {
     geminiLogger.info('[C-1] Using mock (FORCE_MOCK_AI=true)');
@@ -909,14 +918,57 @@ export async function analyzeBody(imageBase64: string): Promise<GeminiBodyAnalys
 
   try {
     const model = genAI.getGenerativeModel(modelConfig);
-    const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    // 이미지 배열 구성
+    const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [];
+
+    // 프롬프트 구성 (다각도 분석 안내 추가)
+    let prompt = BODY_ANALYSIS_PROMPT;
+
+    if (hasMultiAngle) {
+      prompt += `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+다각도 이미지 분석 (${imageCount}장 제공)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+여러 각도의 이미지가 제공되었습니다:
+- 정면: 어깨/허리/골반 비율, 전체 실루엣 판단의 기준
+${sideImageBase64 ? '- 측면: 자세 정렬, 복부 돌출도, 엉덩이 곡선 분석' : ''}
+${backImageBase64 ? '- 후면: 어깨뼈 대칭, 허리 곡선, 척추 정렬 분석' : ''}
+
+[다각도 분석 규칙]
+✅ 정면에서 판단하기 어려운 부분은 측면/후면으로 보완
+✅ 측면에서 복부 돌출도와 자세 정렬을 정확히 파악
+✅ 다각도 분석으로 신뢰도 향상 (confidence +10~15%)
+✅ imageQuality.analysisReliability를 "high"로 설정`;
+    }
+
+    contentParts.push(prompt);
+
+    // 정면 이미지 추가
+    contentParts.push(formatImageForGemini(frontImageBase64));
+
+    // 측면 이미지 추가
+    if (sideImageBase64) {
+      contentParts.push(formatImageForGemini(sideImageBase64));
+    }
+
+    // 후면 이미지 추가
+    if (backImageBase64) {
+      contentParts.push(formatImageForGemini(backImageBase64));
+    }
+
+    geminiLogger.info(
+      `[C-1] Starting analysis with ${imageCount} image(s)`
+    );
+
+    // 타임아웃 (다각도는 10초, 단일은 3초) + 재시도 (최대 2회) 적용
+    const timeoutMs = hasMultiAngle ? 10000 : 3000;
     const result = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([BODY_ANALYSIS_PROMPT, imagePart]),
-          3000,
+          model.generateContent(contentParts),
+          timeoutMs,
           '[C-1] Gemini timeout'
         ),
       2,

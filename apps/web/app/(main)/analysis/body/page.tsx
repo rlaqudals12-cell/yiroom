@@ -21,10 +21,12 @@ import AnalysisResult from './_components/AnalysisResult';
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { Confetti } from '@/components/animations';
+import { MultiAngleBodyCapture, type MultiAngleBodyImages } from '@/components/analysis/camera';
 
-// 새로운 흐름: guide → input → upload → loading → result
+// 새로운 흐름: guide → input → multi-angle → loading → result
+// 또는: guide → input → upload → loading → result (갤러리 단일 이미지)
 // 또는: guide → known-type → result
-type AnalysisStep = 'guide' | 'input' | 'upload' | 'loading' | 'result' | 'known-type';
+type AnalysisStep = 'guide' | 'input' | 'multi-angle' | 'upload' | 'loading' | 'result' | 'known-type';
 
 // 날짜 포맷 헬퍼
 function formatDate(date: Date): string {
@@ -72,6 +74,7 @@ export default function BodyAnalysisPage() {
   const [step, setStep] = useState<AnalysisStep>('guide');
   const [userInput, setUserInput] = useState<UserBodyInput | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [multiAngleImages, setMultiAngleImages] = useState<MultiAngleBodyImages | null>(null);
   const [result, setResult] = useState<BodyAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,14 +146,27 @@ export default function BodyAnalysisPage() {
     setShowConfetti(true);
   }, [userInput]);
 
-  // 기본 정보 입력 완료 시 사진 업로드 단계로 전환
+  // 기본 정보 입력 완료 시 다각도 촬영 단계로 전환
   const handleInputSubmit = useCallback((data: UserBodyInput) => {
     setUserInput(data);
-    setStep('upload');
+    setStep('multi-angle');
     setError(null);
   }, []);
 
-  // 사진 선택 시 로딩 단계로 전환
+  // 다각도 촬영 완료 시 로딩 단계로 전환
+  const handleMultiAngleComplete = useCallback((images: MultiAngleBodyImages) => {
+    setMultiAngleImages(images);
+    setStep('loading');
+    setError(null);
+    analysisStartedRef.current = false;
+  }, []);
+
+  // 다각도 촬영 취소 시 입력 단계로 돌아가기
+  const handleMultiAngleCancel = useCallback(() => {
+    setStep('input');
+  }, []);
+
+  // 사진 선택 시 로딩 단계로 전환 (갤러리에서 단일 이미지 선택 시)
   const handlePhotoSelect = useCallback((file: File) => {
     setImageFile(file);
     setStep('loading');
@@ -168,9 +184,10 @@ export default function BodyAnalysisPage() {
     });
   };
 
-  // AI 분석 실행 (API 호출)
+  // AI 분석 실행 (API 호출) - 다각도 또는 단일 이미지
   const runAnalysis = useCallback(async () => {
-    if (!imageFile || !isSignedIn || analysisStartedRef.current) {
+    // 다각도 이미지 또는 단일 이미지 중 하나가 있어야 함
+    if ((!imageFile && !multiAngleImages) || !isSignedIn || analysisStartedRef.current) {
       return;
     }
 
@@ -178,14 +195,33 @@ export default function BodyAnalysisPage() {
     setIsAnalyzing(true);
 
     try {
-      const imageBase64 = await fileToBase64(imageFile);
+      let requestBody: Record<string, unknown>;
+
+      if (multiAngleImages) {
+        // 다각도 이미지 사용
+        requestBody = {
+          frontImageBase64: multiAngleImages.frontImageBase64,
+          sideImageBase64: multiAngleImages.sideImageBase64,
+          backImageBase64: multiAngleImages.backImageBase64,
+          userInput,
+        };
+        const imageCount = 1 + (multiAngleImages.sideImageBase64 ? 1 : 0) + (multiAngleImages.backImageBase64 ? 1 : 0);
+        console.log(`[C-1] Analyzing with ${imageCount} image(s)`);
+      } else if (imageFile) {
+        // 단일 이미지 사용 (갤러리에서 선택)
+        const imageBase64 = await fileToBase64(imageFile);
+        requestBody = { imageBase64, userInput };
+        console.log('[C-1] Analyzing with single image');
+      } else {
+        return;
+      }
 
       const response = await fetch('/api/analyze/body', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ imageBase64, userInput }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -194,7 +230,7 @@ export default function BodyAnalysisPage() {
       }
 
       const data = await response.json();
-      console.log('[C-1] Analysis result:', data.usedMock ? 'Mock' : 'Real AI');
+      console.log('[C-1] Analysis result:', data.usedMock ? 'Mock' : 'Real AI', 'Images:', data.imagesAnalyzed);
 
       // API 응답의 result + 퍼스널 컬러 추천 통합
       setResult({
@@ -203,6 +239,7 @@ export default function BodyAnalysisPage() {
         personalColorSeason: data.personalColorSeason,
         colorRecommendations: data.colorRecommendations,
         colorTips: data.colorTips,
+        imagesAnalyzed: data.imagesAnalyzed,
       });
       setStep('result');
       // 분석 완료 시 축하 효과
@@ -210,11 +247,11 @@ export default function BodyAnalysisPage() {
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err instanceof Error ? err.message : 'Analysis failed');
-      setStep('upload');
+      setStep('multi-angle');
     } finally {
       setIsAnalyzing(false);
     }
-  }, [imageFile, userInput, isSignedIn]);
+  }, [imageFile, multiAngleImages, userInput, isSignedIn]);
 
   // 로딩 애니메이션 완료 시 분석 시작
   const handleAnalysisComplete = useCallback(() => {
@@ -225,6 +262,7 @@ export default function BodyAnalysisPage() {
   const handleRetry = useCallback(() => {
     setUserInput(null);
     setImageFile(null);
+    setMultiAngleImages(null);
     setResult(null);
     setStep('guide');
     setError(null);
@@ -240,6 +278,8 @@ export default function BodyAnalysisPage() {
         return '정확한 분석을 위한 촬영 가이드';
       case 'input':
         return '나에게 어울리는 스타일이 궁금하신가요?';
+      case 'multi-angle':
+        return '정면, 측면, 후면 사진을 촬영해주세요';
       case 'upload':
         return '전신 사진을 업로드해주세요';
       case 'known-type':
@@ -312,6 +352,16 @@ export default function BodyAnalysisPage() {
           )}
 
           {step === 'input' && <InputForm onSubmit={handleInputSubmit} />}
+
+          {step === 'multi-angle' && (
+            <div className="bg-card rounded-xl overflow-hidden" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
+              <MultiAngleBodyCapture
+                onComplete={handleMultiAngleComplete}
+                onCancel={handleMultiAngleCancel}
+                className="h-full"
+              />
+            </div>
+          )}
 
           {step === 'upload' && <PhotoUpload onPhotoSelect={handlePhotoSelect} />}
 
