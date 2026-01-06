@@ -21,3 +21,4 @@ export {
 // 페이지 통합용 탭 컴포넌트
 export { default as VisualAnalysisTab } from './VisualAnalysisTab';
 export { default as DrapingSimulationTab } from './DrapingSimulationTab';
+export { default as BodyStylingTab } from './BodyStylingTab';

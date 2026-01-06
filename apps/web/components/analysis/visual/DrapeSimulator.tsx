@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState, useCallback } from 'react';
-import type { DrapeSimulatorProps, DrapeResult, MetalType } from '@/types/visual-analysis';
+import type { DrapeSimulatorProps, DrapeResult } from '@/types/visual-analysis';
 import {
   analyzeFullPalette,
   getBestColors,
@@ -24,12 +24,12 @@ export default function DrapeSimulator({
   image,
   faceMask,
   deviceCapability,
+  metalType,
   onAnalysisComplete,
   className,
 }: DrapeSimulatorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [metalType] = useState<MetalType>('gold');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [bestResults, setBestResults] = useState<DrapeResult[]>([]);

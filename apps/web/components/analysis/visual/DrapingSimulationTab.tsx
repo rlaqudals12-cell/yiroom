@@ -223,6 +223,7 @@ export default function DrapingSimulationTab({
                 image={image}
                 faceMask={faceMask}
                 deviceCapability={deviceCapability}
+                metalType={metalType}
                 onAnalysisComplete={handleAnalysisComplete}
               />
             </TabsContent>
