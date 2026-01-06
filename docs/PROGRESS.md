@@ -764,6 +764,31 @@ apps/mobile/
 
 ---
 
+## 최근 업데이트 (2026-01-09)
+
+```yaml
+[x] 다각도 촬영 시스템 구현
+    - S-1 피부 분석 다각도 연동 (SPEC-S1-MULTIANGLE-INTEGRATION.md)
+    - PC-1 퍼스널컬러 다각도 확장 (SPEC-PC1-MULTIANGLE.md)
+    - 컴포넌트: MultiAngleSkinCapture, MultiAnglePersonalColorCapture
+    - API: /api/validate/face-image, /api/analyze/skin (다각도 지원)
+    - 신뢰도: 정면만 80%, 3장 촬영 시 95%
+
+[x] Recharts 지연 로딩 최적화
+    - components/admin/dynamic.tsx (AffiliateChartDynamic)
+    - components/admin/analytics/dynamic.tsx (ActiveUserTrendChartDynamic, FeatureUsageTrendChartDynamic)
+    - components/wellness/dynamic.tsx (ChartSkeleton 로딩 UI 추가)
+    - 예상 번들 절감: ~40-50KB (recharts)
+
+[x] 테스트 통과
+    - TypeScript typecheck: 전체 통과
+    - Admin 테스트: 31개 통과
+    - Wellness 테스트: 51개 통과
+    - Products 테스트: 103개 통과
+```
+
+---
+
 ## 최근 업데이트 (2026-01-04)
 
 ```yaml

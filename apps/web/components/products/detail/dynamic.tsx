@@ -2,7 +2,7 @@
  * Product Detail Dynamic Import
  * recharts를 사용하는 무거운 차트 컴포넌트 지연 로딩
  *
- * 성능 최적화: ~100KB 번들 크기 감소 (recharts LineChart)
+ * 성능 최적화: ~40-50KB 번들 크기 감소 (recharts LineChart)
  */
 
 import dynamic from 'next/dynamic';
@@ -25,7 +25,7 @@ function ChartSkeleton() {
 
 // PriceHistoryChart - recharts LineChart 사용
 export const PriceHistoryChartDynamic = dynamic(
-  () => import('./PriceHistoryChart').then(mod => ({ default: mod.PriceHistoryChart })),
+  () => import('./PriceHistoryChart').then((mod) => ({ default: mod.PriceHistoryChart })),
   {
     ssr: false,
     loading: ChartSkeleton,
