@@ -4,17 +4,50 @@
 -- Spec: docs/SPEC-LEVEL-SYSTEM.md
 
 -- ============================================================
--- Step 1: user_levels 테이블 확장
+-- Step 1: user_levels 테이블 생성 (없는 경우)
 -- ============================================================
-ALTER TABLE user_levels ADD COLUMN IF NOT EXISTS
-  total_activity_count INTEGER DEFAULT 0;
+CREATE TABLE IF NOT EXISTS user_levels (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE UNIQUE,
 
-ALTER TABLE user_levels ADD COLUMN IF NOT EXISTS
-  level_updated_at TIMESTAMPTZ DEFAULT NOW();
+  -- 레벨 정보
+  level INTEGER NOT NULL DEFAULT 1,
+  total_activity_count INTEGER DEFAULT 0,
+  level_updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- 메타데이터
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- 유효성 검사
+  CONSTRAINT valid_level CHECK (level >= 1 AND level <= 5)
+);
 
 -- 인덱스
+CREATE INDEX IF NOT EXISTS idx_user_levels_clerk_user_id
+  ON user_levels(clerk_user_id);
+CREATE INDEX IF NOT EXISTS idx_user_levels_level
+  ON user_levels(level);
 CREATE INDEX IF NOT EXISTS idx_user_levels_activity_count
   ON user_levels(total_activity_count);
+
+-- RLS 정책
+ALTER TABLE user_levels ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own level" ON user_levels;
+CREATE POLICY "Users can view own level"
+  ON user_levels FOR SELECT
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+DROP POLICY IF EXISTS "Service role full access" ON user_levels;
+CREATE POLICY "Service role full access"
+  ON user_levels FOR ALL
+  USING (current_setting('role', true) = 'service_role');
+
+-- 권한 부여
+GRANT SELECT ON TABLE user_levels TO anon;
+GRANT SELECT ON TABLE user_levels TO authenticated;
+GRANT ALL ON TABLE user_levels TO service_role;
 
 -- ============================================================
 -- Step 2: activity_logs 테이블 생성
