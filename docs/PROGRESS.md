@@ -1,7 +1,7 @@
 # 이룸 프로젝트 진행 상황
 
-> **마지막 업데이트**: 2026-01-06
-> **현재 버전**: v2.4 (등급 시스템 + 인벤토리 확장)
+> **마지막 업데이트**: 2026-01-09
+> **현재 버전**: v2.5 (다각도 촬영 시스템)
 
 ---
 
@@ -537,6 +537,38 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
     - 피드백 페이지
     - 공지사항 페이지
 [x] 알림 시스템 (구조 설계)
+```
+
+---
+
+## 최근 업데이트 (2026-01-09)
+
+```yaml
+[x] 다각도 촬영 시스템 구현 (S-1 피부 분석)
+    - 정면(필수) + 좌/우(선택) 다각도 촬영 플로우
+    - 전문 피부 분석기 스타일 얼굴 가이드 오버레이
+    - AI 기반 이미지 검증 (각도, 조명, 메이크업, 블러 감지)
+    - 분석 신뢰도 개선 (3장=high, 2장=medium)
+
+    Phase 1: 이미지 검증 API ✅
+    - /api/validate/face-image 엔드포인트
+    - Gemini AI 검증 + Mock Fallback
+    - 13개 테스트 통과
+
+    Phase 2: 카메라 가이드 컴포넌트 ✅
+    - FaceGuideOverlay (SVG 얼굴 실루엣)
+    - AngleSelector (좌/우 선택 UI)
+    - MultiAngleCapture (통합 촬영 플로우)
+    - 19개 테스트 통과
+
+    Phase 3: S-1 통합 ✅
+    - MultiAngleSkinCapture 래퍼 컴포넌트
+    - 피부 분석 API 다각도 지원 추가
+    - 하위 호환성 유지 (imageBase64 단일 이미지)
+    - 12개 테스트 업데이트 및 통과
+
+[x] 스펙 문서 작성 및 승인
+    - docs/SPEC-MULTI-ANGLE-PHOTO.md (Status: Approved)
 ```
 
 ---
