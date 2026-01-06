@@ -958,19 +958,12 @@ ${backImageBase64 ? '- 후면: 어깨뼈 대칭, 허리 곡선, 척추 정렬 �
       contentParts.push(formatImageForGemini(backImageBase64));
     }
 
-    geminiLogger.info(
-      `[C-1] Starting analysis with ${imageCount} image(s)`
-    );
+    geminiLogger.info(`[C-1] Starting analysis with ${imageCount} image(s)`);
 
     // 타임아웃 (다각도는 10초, 단일은 3초) + 재시도 (최대 2회) 적용
     const timeoutMs = hasMultiAngle ? 10000 : 3000;
     const result = await withRetry(
-      () =>
-        withTimeout(
-          model.generateContent(contentParts),
-          timeoutMs,
-          '[C-1] Gemini timeout'
-        ),
+      () => withTimeout(model.generateContent(contentParts), timeoutMs, '[C-1] Gemini timeout'),
       2,
       1000
     );
@@ -2424,5 +2417,357 @@ export async function validateFaceImage(
   } catch (error) {
     geminiLogger.error('[FACE-VALIDATE] Gemini error, falling back to mock:', error);
     return generateMockFaceValidation(expectedAngle);
+  }
+}
+
+// ============================================================
+// A-1 자세 분석 (Posture Analysis)
+// ============================================================
+
+import {
+  generateMockPostureAnalysis,
+  type PostureAnalysisResult as MockPostureResult,
+  type PostureType,
+  type PostureMeasurement,
+  type StretchingRecommendation,
+} from '@/lib/mock/posture-analysis';
+
+/**
+ * A-1 자세 분석 결과 타입
+ */
+export interface GeminiPostureAnalysisResult {
+  postureType: PostureType;
+  postureTypeLabel: string;
+  postureTypeDescription: string;
+  overallScore: number;
+  confidence: number;
+  // 정면 분석
+  frontAnalysis: {
+    shoulderSymmetry: PostureMeasurement;
+    pelvisSymmetry: PostureMeasurement;
+    kneeAlignment: PostureMeasurement;
+    footAngle: PostureMeasurement;
+  };
+  // 측면 분석
+  sideAnalysis: {
+    headForwardAngle: PostureMeasurement;
+    thoracicKyphosis: PostureMeasurement;
+    lumbarLordosis: PostureMeasurement;
+    pelvicTilt: PostureMeasurement;
+  };
+  concerns: string[];
+  stretchingRecommendations: StretchingRecommendation[];
+  insight: string;
+  // 분석 근거
+  analysisEvidence?: {
+    headPosition: 'aligned' | 'forward' | 'backward';
+    shoulderPosition: 'aligned' | 'rounded' | 'elevated';
+    spineAlignment: 'normal' | 'kyphotic' | 'lordotic' | 'flat';
+    pelvisPosition: 'neutral' | 'anterior_tilt' | 'posterior_tilt';
+    kneePosition: 'aligned' | 'hyperextended' | 'flexed';
+  };
+  // 이미지 품질 정보
+  imageQuality?: {
+    angle: 'front' | 'side' | 'both';
+    fullBodyVisible: boolean;
+    clothingFit: 'fitted' | 'loose';
+    analysisReliability: 'high' | 'medium' | 'low';
+  };
+  // C-1 연동 정보
+  bodyTypeCorrelation?: {
+    bodyType: string;
+    correlationNote: string;
+    riskFactors: string[];
+  };
+}
+
+/**
+ * A-1 자세 분석 프롬프트
+ */
+const POSTURE_ANALYSIS_PROMPT = `당신은 전문 자세 분석 AI입니다. 업로드된 전신 이미지를 분석하여 자세 상태를 진단해주세요.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ 이미지 분석 전 조건 확인
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. 촬영 각도: 정면 또는 측면 촬영
+2. 전신 포함: 머리부터 발끝까지 보여야 함
+3. 의복: 체형이 드러나는 옷 권장
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 자세 타입 분류
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ideal] 이상적인 자세
+- 귀-어깨-골반-무릎-발목이 일직선
+- 자연스러운 척추 곡선 유지
+- 어깨와 골반이 대칭
+
+[forward_head] 거북목 (전방 두부 자세)
+- 머리가 어깨보다 앞으로 나옴
+- 턱이 앞으로 돌출
+- 목 뒤 근육 긴장
+
+[rounded_shoulders] 굽은 어깨
+- 어깨가 앞으로 말림
+- 가슴 근육 단축
+- 등 상부 근육 약화
+
+[swayback] 스웨이백
+- 골반이 앞으로 밀림
+- 등 상부가 뒤로 젖혀짐
+- 무릎 과신전 경향
+
+[flatback] 일자 허리
+- 요추 전만 감소
+- 골반 후방 경사
+- 허리가 평평해 보임
+
+[lordosis] 과전만 (요추 전만증)
+- 허리가 과도하게 앞으로 휨
+- 복부 돌출
+- 골반 전방 경사
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 분석 기준
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[정면 분석]
+- 어깨 대칭: 좌우 어깨 높이 차이 (50이 이상적)
+- 골반 대칭: 좌우 골반 높이 차이 (50이 이상적)
+- 무릎 정렬: 무릎 내/외반 정도
+- 발 각도: 발의 외/내전 각도
+
+[측면 분석]
+- 목 전방 경사: 귀와 어깨의 전후 위치 관계 (50이 이상적, 낮을수록 거북목)
+- 등 굽음 (흉추 후만): 등 상부 굽음 정도 (50이 이상적, 높을수록 굽음)
+- 허리 만곡 (요추 전만): 허리 곡선 정도 (50이 이상적, 높을수록 과전만)
+- 골반 기울기: 골반 전/후방 경사 (50이 이상적)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
+
+{
+  "postureType": "[ideal|forward_head|rounded_shoulders|swayback|flatback|lordosis]",
+  "postureTypeLabel": "[자세 타입 한국어 라벨]",
+  "postureTypeDescription": "[자세 타입 설명 1-2문장]",
+  "overallScore": [0-100 전체 점수, 높을수록 좋음],
+  "confidence": [70-95 분석 신뢰도],
+  "frontAnalysis": {
+    "shoulderSymmetry": {
+      "name": "어깨 대칭",
+      "value": [0-100, 50이 이상적],
+      "status": "[good|warning|alert]",
+      "description": "[분석 설명]"
+    },
+    "pelvisSymmetry": {
+      "name": "골반 대칭",
+      "value": [0-100, 50이 이상적],
+      "status": "[good|warning|alert]",
+      "description": "[분석 설명]"
+    },
+    "kneeAlignment": {
+      "name": "무릎 정렬",
+      "value": [0-100, 50이 이상적],
+      "status": "[good|warning|alert]",
+      "description": "[분석 설명]"
+    },
+    "footAngle": {
+      "name": "발 각도",
+      "value": [0-100, 50이 이상적],
+      "status": "[good|warning|alert]",
+      "description": "[분석 설명]"
+    }
+  },
+  "sideAnalysis": {
+    "headForwardAngle": {
+      "name": "목 전방 경사",
+      "value": [0-100, 50이 이상적],
+      "status": "[good|warning|alert]",
+      "description": "[분석 설명]"
+    },
+    "thoracicKyphosis": {
+      "name": "등 굽음",
+      "value": [0-100, 50이 이상적],
+      "status": "[good|warning|alert]",
+      "description": "[분석 설명]"
+    },
+    "lumbarLordosis": {
+      "name": "허리 만곡",
+      "value": [0-100, 50이 이상적],
+      "status": "[good|warning|alert]",
+      "description": "[분석 설명]"
+    },
+    "pelvicTilt": {
+      "name": "골반 기울기",
+      "value": [0-100, 50이 이상적],
+      "status": "[good|warning|alert]",
+      "description": "[분석 설명]"
+    }
+  },
+  "concerns": ["[우려 사항 1]", "[우려 사항 2]"],
+  "stretchingRecommendations": [
+    {
+      "name": "[운동명]",
+      "targetArea": "[타깃 부위]",
+      "duration": "[시간/횟수]",
+      "frequency": "[빈도]",
+      "description": "[설명]",
+      "difficulty": "[easy|medium|hard]"
+    }
+  ],
+  "insight": "[자세에 대한 AI 인사이트 2-3문장]",
+  "analysisEvidence": {
+    "headPosition": "[aligned|forward|backward]",
+    "shoulderPosition": "[aligned|rounded|elevated]",
+    "spineAlignment": "[normal|kyphotic|lordotic|flat]",
+    "pelvisPosition": "[neutral|anterior_tilt|posterior_tilt]",
+    "kneePosition": "[aligned|hyperextended|flexed]"
+  },
+  "imageQuality": {
+    "angle": "[front|side|both]",
+    "fullBodyVisible": [true|false],
+    "clothingFit": "[fitted|loose]",
+    "analysisReliability": "[high|medium|low]"
+  }
+}
+
+⚠️ 주의사항:
+- 측정값 0-100 범위에서 50이 이상적 (대칭/균형)
+- 이미지가 측면인지 정면인지에 따라 해당 분석 정확도 조절
+- 정면 이미지에서는 측면 분석의 신뢰도를 낮추고, 그 반대도 마찬가지
+- 확신이 없으면 confidence를 낮추고 analysisReliability를 "low"로 설정
+- stretchingRecommendations은 2-4개 제공`;
+
+/**
+ * A-1 자세 분석 (정면 + 측면 다각도 지원)
+ * - 정면 이미지 필수, 측면 이미지 선택
+ * - Mock Fallback 지원
+ * - C-1 체형 분석 연동 지원
+ *
+ * @param frontImageBase64 - 정면 이미지 (필수)
+ * @param sideImageBase64 - 측면 이미지 (선택)
+ * @param bodyType - C-1 체형 타입 (선택, 연동용)
+ * @returns 자세 분석 결과
+ */
+export async function analyzePosture(
+  frontImageBase64: string,
+  sideImageBase64?: string,
+  bodyType?: string
+): Promise<GeminiPostureAnalysisResult> {
+  const hasMultiAngle = !!sideImageBase64;
+  const imageCount = 1 + (sideImageBase64 ? 1 : 0);
+
+  // Mock 결과를 GeminiPostureAnalysisResult로 변환하는 함수
+  const convertMockToResult = (mock: MockPostureResult): GeminiPostureAnalysisResult => ({
+    postureType: mock.postureType,
+    postureTypeLabel: mock.postureTypeLabel,
+    postureTypeDescription: mock.postureTypeDescription,
+    overallScore: mock.overallScore,
+    confidence: mock.confidence,
+    frontAnalysis: mock.frontAnalysis,
+    sideAnalysis: mock.sideAnalysis,
+    concerns: mock.concerns,
+    stretchingRecommendations: mock.stretchingRecommendations,
+    insight: mock.insight,
+    bodyTypeCorrelation: mock.bodyTypeCorrelation,
+    imageQuality: {
+      angle: hasMultiAngle ? 'both' : 'front',
+      fullBodyVisible: true,
+      clothingFit: 'fitted',
+      analysisReliability: hasMultiAngle ? 'high' : 'medium',
+    },
+  });
+
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[A-1] Using mock (FORCE_MOCK_AI=true)');
+    const mockResult = generateMockPostureAnalysis(bodyType);
+    return convertMockToResult(mockResult);
+  }
+
+  if (!genAI) {
+    geminiLogger.warn('[A-1] Gemini not configured, using mock');
+    const mockResult = generateMockPostureAnalysis(bodyType);
+    return convertMockToResult(mockResult);
+  }
+
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+
+    // 이미지 배열 구성
+    const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [];
+
+    // 프롬프트 구성
+    let prompt = POSTURE_ANALYSIS_PROMPT;
+
+    if (hasMultiAngle) {
+      prompt += `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+다각도 이미지 분석 (${imageCount}장 제공)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+정면과 측면 이미지가 모두 제공되었습니다:
+- 정면: 어깨/골반 대칭, 무릎 정렬 분석
+- 측면: 목 전방 경사, 등 굽음, 허리 만곡, 골반 기울기 분석
+
+[다각도 분석 규칙]
+✅ 정면에서는 frontAnalysis 정확도 향상
+✅ 측면에서는 sideAnalysis 정확도 향상
+✅ 다각도 분석으로 신뢰도 향상 (confidence +10-15%)
+✅ imageQuality.analysisReliability를 "high"로 설정`;
+    }
+
+    // C-1 체형 연동 정보 추가
+    if (bodyType) {
+      prompt += `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+C-1 체형 연동 정보
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+사용자의 체형 타입: ${bodyType}
+
+체형별 자세 상관관계 참고:
+- S (스트레이트): 상체 근육 발달로 어깨가 앞으로 말리기 쉬움
+- W (웨이브): 하체 무게 중심으로 골반 전방 경사 경향
+- N (내추럴): 큰 골격으로 자세가 비교적 안정적
+
+bodyTypeCorrelation 필드에 체형과 자세의 연관성을 포함해주세요.`;
+    }
+
+    contentParts.push(prompt);
+
+    // 정면 이미지 추가
+    contentParts.push(formatImageForGemini(frontImageBase64));
+
+    // 측면 이미지 추가
+    if (sideImageBase64) {
+      contentParts.push(formatImageForGemini(sideImageBase64));
+    }
+
+    geminiLogger.info(`[A-1] Starting posture analysis with ${imageCount} image(s)`);
+
+    // 타임아웃 (다각도는 10초, 단일은 5초) + 재시도 (최대 2회) 적용
+    const timeoutMs = hasMultiAngle ? 10000 : 5000;
+    const result = await withRetry(
+      () =>
+        withTimeout(
+          model.generateContent(contentParts),
+          timeoutMs,
+          '[A-1] Posture analysis timeout'
+        ),
+      2,
+      1000
+    );
+
+    const response = result.response;
+    const text = response.text();
+
+    geminiLogger.info('[A-1] Posture analysis completed');
+    return parseJsonResponse<GeminiPostureAnalysisResult>(text);
+  } catch (error) {
+    geminiLogger.error('[A-1] Gemini error, falling back to mock:', error);
+    const mockResult = generateMockPostureAnalysis(bodyType);
+    return convertMockToResult(mockResult);
   }
 }

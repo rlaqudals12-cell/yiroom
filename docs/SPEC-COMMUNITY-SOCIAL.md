@@ -17,12 +17,12 @@
 
 ### 기존 vs 신규
 
-| 항목 | 기존 (리뷰) | 신규 (피드) |
-|------|-------------|-------------|
-| 형태 | 제품 상세 내 리뷰 | 독립 피드 페이지 |
-| 콘텐츠 | 텍스트 + 별점 | 사진/영상 + 텍스트 |
-| 상호작용 | 좋아요 | 좋아요, 댓글, 저장, 공유 |
-| 발견성 | 제품 검색 후 | 피드 스크롤 |
+| 항목     | 기존 (리뷰)       | 신규 (피드)              |
+| -------- | ----------------- | ------------------------ |
+| 형태     | 제품 상세 내 리뷰 | 독립 피드 페이지         |
+| 콘텐츠   | 텍스트 + 별점     | 사진/영상 + 텍스트       |
+| 상호작용 | 좋아요            | 좋아요, 댓글, 저장, 공유 |
+| 발견성   | 제품 검색 후      | 피드 스크롤              |
 
 ### 피드 카드 디자인
 
@@ -98,112 +98,27 @@ CREATE TABLE feed_comments (
 
 ---
 
-## 2. 그룹 챌린지 확장
-
-### 현재 상태
-
-기존 `challenges` 테이블 존재 (Phase H)
-
-### 확장 기능
-
-```yaml
-팀 배틀:
-  - 2개 팀 대결 형식
-  - 팀 총 점수/평균 점수 경쟁
-  - 실시간 리더보드
-
-기업 웰니스:
-  - 회사/부서 단위 챌린지
-  - 관리자 대시보드
-  - 참여율/성과 리포트
-
-시즌제:
-  - 월간/분기별 시즌
-  - 시즌 보상
-  - 명예의 전당
-```
-
-### 팀 배틀 플로우
-
-```
-[챌린지 생성]
-    ↓
-[팀 A vs 팀 B 구성]
-    ↓
-[참가자 모집 (각 팀 최대 10명)]
-    ↓
-[기간 중 활동 기록]
-    ↓
-[실시간 점수 집계]
-    ↓
-[종료 시 승리 팀 발표 + 보상]
-```
-
-### DB 스키마 확장
-
-```sql
--- 기존 challenge_teams 확장
-ALTER TABLE challenge_teams ADD COLUMN opponent_team_id UUID;
-
--- 팀 배틀 매치
-CREATE TABLE team_battles (
-  id UUID PRIMARY KEY,
-  challenge_id UUID REFERENCES challenges(id),
-  team_a_id UUID REFERENCES challenge_teams(id),
-  team_b_id UUID REFERENCES challenge_teams(id),
-  winner_team_id UUID,
-  status TEXT DEFAULT 'ongoing', -- ongoing | completed
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 기업 챌린지
-CREATE TABLE corporate_challenges (
-  id UUID PRIMARY KEY,
-  challenge_id UUID REFERENCES challenges(id),
-  company_name TEXT NOT NULL,
-  department TEXT,
-  admin_user_id TEXT NOT NULL,
-  participant_limit INT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 예상 작업량: 20h
-
----
-
 ## 구현 파일
 
-### 뷰티 피드
-
-| 파일 | 내용 |
-|------|------|
-| `app/(main)/feed/page.tsx` | 피드 메인 |
-| `app/(main)/feed/post/[id]/page.tsx` | 포스트 상세 |
-| `app/(main)/feed/create/page.tsx` | 포스트 작성 |
-| `components/feed/FeedCard.tsx` | 피드 카드 |
-| `components/feed/CommentSection.tsx` | 댓글 섹션 |
-| `app/api/feed/` | 피드 API (CRUD) |
-
-### 그룹 챌린지
-
-| 파일 | 내용 |
-|------|------|
-| `app/(main)/challenges/battle/page.tsx` | 팀 배틀 목록 |
-| `app/(main)/challenges/battle/[id]/page.tsx` | 배틀 상세 |
-| `components/challenges/TeamBattleCard.tsx` | 배틀 카드 |
-| `components/challenges/LiveScoreboard.tsx` | 실시간 점수판 |
-| `app/api/challenges/battle/` | 배틀 API |
+| 파일                                           | 내용               | 상태           |
+| ---------------------------------------------- | ------------------ | -------------- |
+| `app/(main)/feed/page.tsx`                     | 피드 메인          | ✅ 기존 (Mock) |
+| `app/(main)/feed/post/[id]/page.tsx`           | 포스트 상세        | 🔄 구현 필요   |
+| `app/(main)/feed/create/page.tsx`              | 포스트 작성        | 🔄 구현 필요   |
+| `components/feed/FeedCard.tsx`                 | 피드 카드          | 🔄 구현 필요   |
+| `components/feed/CommentSection.tsx`           | 댓글 섹션          | 🔄 구현 필요   |
+| `app/api/feed/`                                | 피드 API (CRUD)    | ✅ 완료        |
+| `lib/feed/`                                    | Repository + Types | ✅ 완료        |
+| `supabase/migrations/20260110_feed_tables.sql` | DB 스키마          | ✅ 완료        |
 
 ---
 
 ## 시지푸스 판정
 
-| 기능 | 파일 수 | 복잡도 | 판정 |
-|------|---------|--------|------|
-| 뷰티 피드 | 10개+ | 55점 | ✅ 시지푸스 필요 |
-| 그룹 챌린지 | 8개 | 45점 | ✅ 시지푸스 필요 |
+| 기능         | 파일 수 | 복잡도 | 판정         |
+| ------------ | ------- | ------ | ------------ |
+| 뷰티 피드 UI | 5개     | 35점   | ⚠️ 단독 가능 |
 
 ---
 
-**Status**: Draft (승인 대기)
+**Status**: In Progress (API 완료, UI 진행 중)
