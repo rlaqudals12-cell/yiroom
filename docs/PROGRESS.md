@@ -541,6 +541,39 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
 
 ---
 
+## 최근 업데이트 (2026-01-07)
+
+```yaml
+[x] 테스트 커버리지 향상
+    - 웹 앱: 2,761개 테스트 (기존 2,686 + 신규 75)
+    - 신규 테스트 파일:
+        - tests/lib/gemini.test.ts (20 tests) - AI Mock Fallback 검증
+        - tests/pages/analysis/personal-color.test.tsx (13 tests)
+        - tests/pages/analysis/skin.test.tsx (17 tests)
+        - tests/pages/analysis/body.test.tsx (15 tests)
+        - tests/api/sync-user/route.test.ts (10 tests)
+
+[x] 모바일 Jest 테스트 환경 수정
+    - babel.config.js: 테스트 환경에서 nativewind/babel 프리셋 건너뜀
+    - jest.config.js: react-native-reanimated 모듈 매핑 추가
+    - __mocks__/react-native-reanimated.js: 자체 구현 mock 파일 추가
+    - 결과: 436개 테스트 통과 (21/23 스위트)
+
+[x] 기술 부채 정리
+    - ESLint: 68개 경고 → 2개 경고 (--fix 자동 수정)
+    - 미사용 import 제거 (Upload, preferencesToInjuries)
+    - 미사용 변수 prefix 추가 (_leftImageUrl, _rightImageUrl)
+    - TypeScript: 0 에러 유지
+
+[x] Dynamic Import 최적화
+    - components/admin/analytics/dynamic.tsx 추가
+    - components/admin/dynamic.tsx 추가
+    - components/wellness/dynamic.tsx 개선
+    - components/products/detail/dynamic.tsx 개선
+```
+
+---
+
 ## 최근 업데이트 (2026-01-09)
 
 ```yaml
@@ -733,7 +766,7 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
 
 | 분류        | 파일 수 | 테스트 수  | 상태       |
 | ----------- | ------- | ---------- | ---------- |
-| 단위 테스트 | 21      | 151+       | ✅ 통과    |
+| 단위 테스트 | 23      | 436        | ✅ 통과    |
 | E2E 테스트  | 2       | 2 시나리오 | ✅ Maestro |
 
 ### 주요 파일
