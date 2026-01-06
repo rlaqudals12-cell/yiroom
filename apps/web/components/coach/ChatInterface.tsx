@@ -13,17 +13,31 @@ import { QUICK_QUESTIONS_BY_CATEGORY, summarizeContext } from '@/lib/coach/clien
 
 interface ChatInterfaceProps {
   userContext: UserContext | null;
-  onSendMessage: (message: string, history: CoachMessage[]) => Promise<{ message: string; suggestedQuestions?: string[] }>;
+  onSendMessage: (
+    message: string,
+    history: CoachMessage[]
+  ) => Promise<{ message: string; suggestedQuestions?: string[] }>;
+  /** 스트리밍 응답 사용 여부 (기본: false) */
+  useStreaming?: boolean;
 }
 
-export function ChatInterface({ userContext, onSendMessage }: ChatInterfaceProps) {
+export function ChatInterface({
+  userContext,
+  onSendMessage,
+  useStreaming = false,
+}: ChatInterfaceProps) {
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  // 스트리밍 중인 메시지 내용
+  const [streamingContent, setStreamingContent] = useState('');
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
-  const [activeCategory, setActiveCategory] = useState<keyof typeof QUICK_QUESTIONS_BY_CATEGORY>('general');
+  const [activeCategory, setActiveCategory] =
+    useState<keyof typeof QUICK_QUESTIONS_BY_CATEGORY>('general');
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // 스트리밍 중단을 위한 AbortController
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // 메시지 영역 스크롤
   const scrollToBottom = useCallback(() => {
@@ -32,7 +46,89 @@ export function ChatInterface({ userContext, onSendMessage }: ChatInterfaceProps
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, scrollToBottom]);
+  }, [messages, streamingContent, scrollToBottom]);
+
+  // 스트리밍 API를 통한 메시지 전송
+  const handleStreamingSend = useCallback(
+    async (messageText: string, currentMessages: CoachMessage[]) => {
+      // 이전 요청 중단
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+
+      try {
+        const response = await fetch('/api/coach/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: messageText,
+            chatHistory: currentMessages,
+          }),
+          signal: abortControllerRef.current.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error('Stream request failed');
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error('No reader available');
+        }
+
+        const decoder = new TextDecoder();
+        let accumulatedContent = '';
+
+        // SSE 이벤트 파싱 및 처리
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+
+                if (data.type === 'chunk') {
+                  accumulatedContent += data.content;
+                  setStreamingContent(accumulatedContent);
+                } else if (data.type === 'done') {
+                  // 스트리밍 완료 - 최종 메시지 저장
+                  const assistantMessage: CoachMessage = {
+                    id: `assistant-${Date.now()}`,
+                    role: 'assistant',
+                    content: accumulatedContent,
+                    timestamp: new Date(),
+                  };
+                  setMessages((prev) => [...prev, assistantMessage]);
+                  setStreamingContent('');
+
+                  if (data.suggestedQuestions) {
+                    setSuggestedQuestions(data.suggestedQuestions);
+                  }
+                } else if (data.type === 'error') {
+                  throw new Error(data.message);
+                }
+              } catch (parseError) {
+                // JSON 파싱 실패 시 무시 (불완전한 청크일 수 있음)
+              }
+            }
+          }
+        }
+      } catch (error) {
+        if ((error as Error).name === 'AbortError') {
+          // 사용자가 중단한 경우
+          return;
+        }
+        throw error;
+      }
+    },
+    []
+  );
 
   // 메시지 전송
   const handleSend = useCallback(
@@ -46,28 +142,36 @@ export function ChatInterface({ userContext, onSendMessage }: ChatInterfaceProps
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, userMessage]);
+      const updatedMessages = [...messages, userMessage];
+      setMessages(updatedMessages);
       setInput('');
       setLoading(true);
       setShowQuickQuestions(false);
 
       try {
-        const response = await onSendMessage(messageText, [...messages, userMessage]);
+        if (useStreaming) {
+          // 스트리밍 모드
+          await handleStreamingSend(messageText, updatedMessages);
+        } else {
+          // 일반 모드
+          const response = await onSendMessage(messageText, updatedMessages);
 
-        const assistantMessage: CoachMessage = {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: response.message,
-          timestamp: new Date(),
-        };
+          const assistantMessage: CoachMessage = {
+            id: `assistant-${Date.now()}`,
+            role: 'assistant',
+            content: response.message,
+            timestamp: new Date(),
+          };
 
-        setMessages((prev) => [...prev, assistantMessage]);
+          setMessages((prev) => [...prev, assistantMessage]);
 
-        if (response.suggestedQuestions) {
-          setSuggestedQuestions(response.suggestedQuestions);
+          if (response.suggestedQuestions) {
+            setSuggestedQuestions(response.suggestedQuestions);
+          }
         }
       } catch (error) {
         console.error('[Coach] 메시지 전송 오류:', error);
+        setStreamingContent('');
         const errorMessage: CoachMessage = {
           id: `error-${Date.now()}`,
           role: 'assistant',
@@ -79,7 +183,7 @@ export function ChatInterface({ userContext, onSendMessage }: ChatInterfaceProps
         setLoading(false);
       }
     },
-    [loading, messages, onSendMessage]
+    [loading, messages, onSendMessage, useStreaming, handleStreamingSend]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -150,8 +254,20 @@ export function ChatInterface({ userContext, onSendMessage }: ChatInterfaceProps
           <MessageBubble key={msg.id} message={msg} />
         ))}
 
-        {/* 로딩 인디케이터 */}
-        {loading && (
+        {/* 스트리밍 메시지 표시 */}
+        {streamingContent && (
+          <div className="flex gap-2 items-start">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-xs font-bold">AI</span>
+            </div>
+            <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%]">
+              <p className="text-sm whitespace-pre-wrap">{streamingContent}</p>
+            </div>
+          </div>
+        )}
+
+        {/* 로딩 인디케이터 (스트리밍 중이 아닐 때만) */}
+        {loading && !streamingContent && (
           <div className="flex gap-2 items-center">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center">
               <Loader2 className="w-4 h-4 text-white animate-spin" />
@@ -228,11 +344,7 @@ export function ChatInterface({ userContext, onSendMessage }: ChatInterfaceProps
             className="flex-1"
           />
           <Button type="submit" disabled={loading || !input.trim()} size="icon">
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </form>
         <p className="text-xs text-muted-foreground text-center mt-2">
