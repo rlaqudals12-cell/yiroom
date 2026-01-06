@@ -205,22 +205,22 @@ export async function POST(req: Request) {
 
     // 다각도 이미지 업로드
     let frontImageUrl: string | null = null;
-    let leftImageUrl: string | null = null;
-    let rightImageUrl: string | null = null;
+    let _leftImageUrl: string | null = null;
+    let _rightImageUrl: string | null = null;
 
     // 정면 이미지 업로드 (필수)
     if (primaryImage) {
       frontImageUrl = await uploadImage(primaryImage, 'front');
     }
 
-    // 좌측 이미지 업로드 (선택)
+    // 좌측 이미지 업로드 (선택) - 미래 다각도 분석용
     if (leftImageBase64) {
-      leftImageUrl = await uploadImage(leftImageBase64, 'left');
+      _leftImageUrl = await uploadImage(leftImageBase64, 'left');
     }
 
-    // 우측 이미지 업로드 (선택)
+    // 우측 이미지 업로드 (선택) - 미래 다각도 분석용
     if (rightImageBase64) {
-      rightImageUrl = await uploadImage(rightImageBase64, 'right');
+      _rightImageUrl = await uploadImage(rightImageBase64, 'right');
     }
 
     // 하위 호환: 기존 imageUrl은 frontImageUrl 사용

@@ -5,7 +5,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getCriticalAvoids, getAvoidedItemNames } from './repository';
-import { preferencesToAllergies, preferencesToInjuries } from './converters';
+import { preferencesToAllergies } from './converters';
 import type { AllergyType } from '@/types/nutrition';
 
 /**

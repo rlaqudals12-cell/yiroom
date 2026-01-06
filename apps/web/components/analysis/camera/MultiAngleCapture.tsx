@@ -8,7 +8,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Camera, RotateCcw, Upload, Loader2 } from 'lucide-react';
+import { Camera, RotateCcw, Loader2 } from 'lucide-react';
 import { FaceGuideOverlay } from './FaceGuideOverlay';
 import { AngleSelector } from './AngleSelector';
 import type {
