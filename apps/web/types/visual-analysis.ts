@@ -216,6 +216,8 @@ export interface DrapeSimulatorProps {
   faceMask: Uint8Array;
   /** 기기 성능 정보 */
   deviceCapability: DeviceCapability;
+  /** 금속 타입 (골드/실버) */
+  metalType: MetalType;
   /** 분석 완료 콜백 */
   onAnalysisComplete?: (results: DrapeResult[]) => void;
   /** 추가 클래스 */
@@ -244,4 +246,75 @@ export interface LightModeTabProps {
   disabled?: boolean;
   /** 추가 클래스 */
   className?: string;
+}
+
+// ============================================
+// 다각도 촬영 시스템 타입
+// ============================================
+
+/** 얼굴 촬영 각도 */
+export type FaceAngle = 'front' | 'left' | 'right';
+
+/** 조명 품질 상태 */
+export type LightingQuality = 'good' | 'dark' | 'bright' | 'uneven';
+
+/** 얼굴 이미지 검증 요청 */
+export interface ValidateFaceImageRequest {
+  /** Base64 인코딩된 이미지 */
+  imageBase64: string;
+  /** 기대하는 촬영 각도 */
+  expectedAngle: FaceAngle;
+}
+
+/** 얼굴 이미지 품질 정보 */
+export interface FaceImageQuality {
+  /** 조명 상태 */
+  lighting: LightingQuality;
+  /** 메이크업 감지 여부 */
+  makeupDetected: boolean;
+  /** 얼굴 감지 여부 */
+  faceDetected: boolean;
+  /** 이미지 흐림 여부 */
+  blur: boolean;
+}
+
+/** 얼굴 이미지 검증 응답 */
+export interface ValidateFaceImageResponse {
+  /** 적합 여부 (요청 각도와 일치하면 true) */
+  suitable: boolean;
+  /** 부적합 사유 (한국어) */
+  reason?: string;
+  /** 실제 감지된 각도 */
+  detectedAngle?: FaceAngle | 'unknown';
+  /** 이미지 품질 정보 */
+  quality: FaceImageQuality;
+}
+
+/** 다각도 이미지 세트 */
+export interface MultiAngleImages {
+  /** 정면 이미지 (필수) */
+  frontImageBase64: string;
+  /** 좌측 이미지 (선택) */
+  leftImageBase64?: string;
+  /** 우측 이미지 (선택) */
+  rightImageBase64?: string;
+}
+
+/** 다각도 분석 신뢰도 */
+export type MultiAngleReliability = 'high' | 'medium' | 'low';
+
+/** 다각도 분석 메타데이터 */
+export interface MultiAngleAnalysisMeta {
+  /** 분석에 사용된 이미지 */
+  imagesAnalyzed: {
+    front: boolean;
+    left: boolean;
+    right: boolean;
+  };
+  /** 좌우 비대칭 감지 여부 */
+  asymmetryDetected: boolean;
+  /** 비대칭 상세 (감지된 경우) */
+  asymmetryDetails?: string;
+  /** 분석 신뢰도 */
+  analysisReliability: MultiAngleReliability;
 }

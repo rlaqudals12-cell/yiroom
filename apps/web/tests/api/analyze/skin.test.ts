@@ -52,13 +52,53 @@ function createMockPostRequest(body: unknown): Request {
 // Mock 데이터
 const mockSkinAnalysisResult = {
   overallScore: 75,
+  skinType: 'combination' as const,
+  skinTypeLabel: '복합성',
+  sensitivityLevel: 'medium' as const,
+  concernAreas: ['T존', '눈가'],
   metrics: [
-    { id: 'hydration', name: '수분', value: 65, status: 'normal' as const, description: '적절한 수분 상태' },
-    { id: 'oil', name: '유분', value: 55, status: 'normal' as const, description: '적절한 유분 상태' },
-    { id: 'pores', name: '모공', value: 70, status: 'good' as const, description: '양호한 모공 상태' },
-    { id: 'wrinkles', name: '주름', value: 80, status: 'good' as const, description: '양호한 주름 상태' },
-    { id: 'pigmentation', name: '색소침착', value: 75, status: 'good' as const, description: '양호한 색소 상태' },
-    { id: 'sensitivity', name: '민감도', value: 40, status: 'normal' as const, description: '보통 민감도' },
+    {
+      id: 'hydration',
+      name: '수분',
+      value: 65,
+      status: 'normal' as const,
+      description: '적절한 수분 상태',
+    },
+    {
+      id: 'oil',
+      name: '유분',
+      value: 55,
+      status: 'normal' as const,
+      description: '적절한 유분 상태',
+    },
+    {
+      id: 'pores',
+      name: '모공',
+      value: 70,
+      status: 'good' as const,
+      description: '양호한 모공 상태',
+    },
+    {
+      id: 'wrinkles',
+      name: '주름',
+      value: 80,
+      status: 'good' as const,
+      description: '양호한 주름 상태',
+    },
+    {
+      id: 'pigmentation',
+      name: '색소침착',
+      value: 75,
+      status: 'good' as const,
+      description: '양호한 색소 상태',
+    },
+    {
+      id: 'sensitivity',
+      name: '민감도',
+      value: 40,
+      status: 'normal' as const,
+      description: '보통 민감도',
+    },
   ],
   insight: '전반적으로 건강한 피부 상태입니다.',
   recommendedIngredients: [
@@ -144,8 +184,12 @@ describe('POST /api/analyze/skin', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<ReturnType<typeof auth>>);
-    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
+      ReturnType<typeof auth>
+    >);
+    vi.mocked(createServiceRoleClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+    );
     vi.mocked(generateMockAnalysisResult).mockReturnValue(mockSkinAnalysisResult);
     vi.mocked(getWarningIngredientsForSkinType).mockResolvedValue(mockWarningIngredients);
     vi.mocked(generateProductRecommendations).mockReturnValue(mockProductRecommendations);
@@ -199,10 +243,12 @@ describe('POST /api/analyze/skin', () => {
         };
       });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -238,9 +284,11 @@ describe('POST /api/analyze/skin', () => {
     it('AI 분석 성공 시 결과를 반환한다', async () => {
       vi.mocked(analyzeSkin).mockResolvedValue(mockSkinAnalysisResult);
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -251,9 +299,11 @@ describe('POST /api/analyze/skin', () => {
     it('AI 분석 실패 시 Mock으로 폴백한다', async () => {
       vi.mocked(analyzeSkin).mockRejectedValue(new Error('API Error'));
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -284,10 +334,12 @@ describe('POST /api/analyze/skin', () => {
         };
       });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -317,10 +369,12 @@ describe('POST /api/analyze/skin', () => {
         };
       });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -351,10 +405,12 @@ describe('POST /api/analyze/skin', () => {
         };
       });
 
-      const response = await POST(createMockPostRequest({
-        imageBase64: 'data:image/jpeg;base64,/9j/test',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(json).toHaveProperty('success', true);
@@ -379,8 +435,12 @@ describe('GET /api/analyze/skin', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<ReturnType<typeof auth>>);
-    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
+      ReturnType<typeof auth>
+    >);
+    vi.mocked(createServiceRoleClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+    );
   });
 
   describe('인증', () => {
