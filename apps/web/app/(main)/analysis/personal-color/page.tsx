@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
-import { Clock, ArrowRight, Palette } from 'lucide-react';
+import { Clock, Palette } from 'lucide-react';
 import {
   type PersonalColorResult,
   type SeasonType,
@@ -18,16 +19,23 @@ import PhotoUpload from './_components/PhotoUpload';
 import WristPhotoUpload from './_components/WristPhotoUpload';
 import KnownPersonalColorInput from './_components/KnownPersonalColorInput';
 import MultiAnglePersonalColorCapture from './_components/MultiAnglePersonalColorCapture';
+import GalleryMultiAngleUpload from './_components/GalleryMultiAngleUpload';
 import AnalysisLoading from './_components/AnalysisLoading';
 import AnalysisResult from './_components/AnalysisResult';
-import type { MultiAngleImages } from '@/types/visual-analysis';
+import type {
+  MultiAngleImages,
+  FaceAngle,
+  ValidateFaceImageResponse,
+} from '@/types/visual-analysis';
 
 // 새 플로우: 조명가이드 → 다각도촬영 → 손목사진 → AI분석 → 결과
+// 또는: 갤러리 플로우 → 다각도 갤러리 업로드 → 손목사진 → AI분석 → 결과
 // 또는: 기존 퍼스널 컬러 입력 → 결과
 // 또는: 레거시 플로우 (단일 사진 업로드)
 type AnalysisStep =
   | 'guide'
   | 'multi-angle'
+  | 'gallery-upload'
   | 'upload'
   | 'wrist'
   | 'loading'
@@ -66,15 +74,19 @@ function getSeasonLabel(season: string): string {
 interface ExistingAnalysis {
   id: string;
   season: string;
+  confidence: number | null;
   created_at: string;
 }
 
+// 신뢰도 기준값 (이 이상이면 자동 리디렉트)
+const HIGH_CONFIDENCE_THRESHOLD = 70;
+
 export default function PersonalColorPage() {
+  const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
-  const existingCheckedRef = useRef(false);
   const [step, setStep] = useState<AnalysisStep>('guide');
   const [faceImageFile, setFaceImageFile] = useState<File | null>(null);
   const [wristImageFile, setWristImageFile] = useState<File | null>(null);
@@ -86,37 +98,100 @@ export default function PersonalColorPage() {
   const [error, setError] = useState<string | null>(null);
   const analysisStartedRef = useRef(false);
 
-  // 기존 분석 결과 확인
+  // 기존 분석 결과 확인 및 자동 리디렉트
   useEffect(() => {
-    async function checkExistingAnalysis() {
-      if (!isLoaded || !isSignedIn || existingCheckedRef.current) return;
+    // 이미 리디렉트 중이면 스킵
+    let isRedirecting = false;
 
-      existingCheckedRef.current = true;
+    async function checkExistingAnalysis() {
+      if (!isLoaded || !isSignedIn) return;
 
       try {
         const { data } = await supabase
           .from('personal_color_assessments')
-          .select('id, season, created_at')
+          .select('id, season, confidence, created_at')
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
 
-        if (data) {
+        if (data && !isRedirecting) {
+          // 신뢰도가 높으면 자동으로 결과 페이지로 리디렉트
+          const confidence = data.confidence ?? 85;
+          if (confidence >= HIGH_CONFIDENCE_THRESHOLD) {
+            isRedirecting = true;
+            router.replace(`/analysis/personal-color/result/${data.id}`);
+            return;
+          }
+          // 낮은 신뢰도면 배너 표시용으로 저장
           setExistingAnalysis(data);
         }
       } catch {
         // 기존 결과 없음 - 무시
       } finally {
-        setCheckingExisting(false);
+        if (!isRedirecting) {
+          setCheckingExisting(false);
+        }
       }
     }
 
     checkExistingAnalysis();
-  }, [isLoaded, isSignedIn, supabase]);
+  }, [isLoaded, isSignedIn, supabase, router]);
 
   // 조명 가이드 완료 → 다각도 촬영으로
   const handleGuideComplete = useCallback(() => {
+    setError(null); // 에러 초기화
     setStep('multi-angle');
+  }, []);
+
+  // 갤러리에서 선택 → 다각도 갤러리 업로드로
+  const handleGallerySelect = useCallback(() => {
+    setError(null); // 에러 초기화
+    setStep('gallery-upload');
+  }, []);
+
+  // 갤러리 이미지 검증 API 호출
+  const handleGalleryValidate = useCallback(
+    async (imageBase64: string, expectedAngle: FaceAngle): Promise<ValidateFaceImageResponse> => {
+      try {
+        const response = await fetch('/api/validate/face-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64, expectedAngle }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Validation failed');
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('[PC-1] Gallery validation error:', error);
+        // 검증 실패 시에도 촬영 허용 (AI 분석에서 처리)
+        return {
+          suitable: true,
+          detectedAngle: expectedAngle,
+          quality: {
+            lighting: 'good',
+            makeupDetected: false,
+            faceDetected: true,
+            blur: false,
+          },
+        };
+      }
+    },
+    []
+  );
+
+  // 갤러리 다각도 업로드 완료 → 손목 촬영으로
+  const handleGalleryUploadComplete = useCallback((images: MultiAngleImages) => {
+    setMultiAngleImages(images);
+    setStep('wrist');
+    setError(null);
+  }, []);
+
+  // 갤러리 업로드 취소 → 가이드로 돌아가기
+  const handleGalleryUploadCancel = useCallback(() => {
+    setStep('guide');
   }, []);
 
   // 다각도 촬영 완료 → 손목 촬영으로
@@ -282,20 +357,17 @@ export default function PersonalColorPage() {
         data.imagesCount
       );
 
-      // API 응답의 result를 사용
-      setResult({
-        ...data.result,
-        analyzedAt: new Date(data.result.analyzedAt),
-      });
-      setStep('result');
+      // 결과 페이지로 리다이렉트 (DB에서 analysisEvidence 포함한 전체 데이터 조회)
+      router.push(`/analysis/personal-color/result/${data.data.id}`);
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err instanceof Error ? err.message : 'Analysis failed');
-      setStep('multi-angle');
+      // 갤러리 플로우인지 카메라 플로우인지에 따라 돌아갈 step 결정
+      setStep('guide'); // 가이드로 돌아가서 사용자가 다시 선택하도록
     } finally {
       setIsAnalyzing(false);
     }
-  }, [faceImageFile, wristImageFile, multiAngleImages, isSignedIn]);
+  }, [faceImageFile, wristImageFile, multiAngleImages, isSignedIn, router]);
 
   // 로딩 애니메이션 완료 시 분석 시작
   const handleAnalysisComplete = useCallback(() => {
@@ -320,12 +392,15 @@ export default function PersonalColorPage() {
 
   // 단계별 서브타이틀
   const subtitle = useMemo(() => {
-    if (error) return '분석 중 오류가 발생했어요';
+    // guide 단계에서는 에러를 별도 UI로 표시하므로 subtitle은 기본값 유지
+    if (error && step !== 'guide') return '분석 중 오류가 발생했어요';
     switch (step) {
       case 'guide':
         return '정확한 진단을 위한 촬영 가이드';
       case 'multi-angle':
         return '정확한 진단을 위해 여러 각도로 촬영해요';
+      case 'gallery-upload':
+        return '갤러리에서 사진을 선택해주세요';
       case 'upload':
         return '얼굴 사진을 촬영해주세요';
       case 'wrist':
@@ -339,6 +414,18 @@ export default function PersonalColorPage() {
     }
   }, [step, error, isAnalyzing]);
 
+  // 기존 결과 확인 중이면 로딩 표시
+  if (checkingExisting) {
+    return (
+      <main className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-muted-foreground">확인 중...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-[calc(100vh-80px)] bg-muted">
       <div className="max-w-lg mx-auto px-4 py-8">
@@ -349,49 +436,78 @@ export default function PersonalColorPage() {
         </header>
 
         {/* 에러 메시지 */}
-        {error && step === 'upload' && (
+        {error && (step === 'upload' || step === 'guide') && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-            {error}. 다시 시도해주세요.
+            <p className="font-medium">분석 중 오류가 발생했어요</p>
+            <p className="mt-1 text-red-500">{error}</p>
+            <p className="mt-2 text-xs text-red-400">
+              다시 시도해주세요. 조명이 밝은 곳에서 촬영하면 더 좋아요.
+            </p>
           </div>
         )}
 
-        {/* 기존 분석 결과 배너 */}
+        {/* 기존 분석 결과 배너 (낮은 신뢰도인 경우에만 표시 - 높은 신뢰도는 자동 리디렉트) */}
         {step === 'guide' && existingAnalysis && !checkingExisting && (
-          <Link
-            href={`/analysis/personal-color/result/${existingAnalysis.id}`}
-            className="block mb-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl border border-pink-200 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center">
-                  <Palette className="w-5 h-5 text-pink-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">기존 진단 결과 보기</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="font-medium text-pink-600">
-                      {getSeasonLabel(existingAnalysis.season)}
-                    </span>
-                    <span>•</span>
-                    <Clock className="w-3 h-3" />
-                    {formatDate(new Date(existingAnalysis.created_at))}
-                  </div>
+          <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                <Palette className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="font-medium text-foreground">이전 진단 결과가 있어요</p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-medium text-amber-600">
+                    {getSeasonLabel(existingAnalysis.season)}
+                  </span>
+                  <span>•</span>
+                  <span className="text-amber-500">신뢰도 낮음</span>
+                  <span>•</span>
+                  <Clock className="w-3 h-3" />
+                  {formatDate(new Date(existingAnalysis.created_at))}
                 </div>
               </div>
-              <ArrowRight className="w-5 h-5 text-pink-500" />
             </div>
-          </Link>
+            <p className="text-sm text-amber-700 mb-3">
+              이전 분석의 신뢰도가 낮아요. 더 정확한 결과를 위해 재분석을 권장해요.
+            </p>
+            <div className="flex gap-2">
+              <Link
+                href={`/analysis/personal-color/result/${existingAnalysis.id}`}
+                className="flex-1 px-3 py-2 text-sm text-center bg-white border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
+              >
+                기존 결과 보기
+              </Link>
+              <button
+                onClick={() => setStep('multi-angle')}
+                className="flex-1 px-3 py-2 text-sm text-center bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium"
+              >
+                다시 분석하기
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Step별 컴포넌트 렌더링 */}
         {step === 'guide' && (
-          <LightingGuide onContinue={handleGuideComplete} onSkip={handleSkipToKnownInput} />
+          <LightingGuide
+            onContinue={handleGuideComplete}
+            onSkip={handleSkipToKnownInput}
+            onGallery={handleGallerySelect}
+          />
         )}
 
         {step === 'multi-angle' && (
           <MultiAnglePersonalColorCapture
             onComplete={handleMultiAngleComplete}
             onCancel={handleMultiAngleCancel}
+          />
+        )}
+
+        {step === 'gallery-upload' && (
+          <GalleryMultiAngleUpload
+            onComplete={handleGalleryUploadComplete}
+            onValidate={handleGalleryValidate}
+            onCancel={handleGalleryUploadCancel}
           />
         )}
 

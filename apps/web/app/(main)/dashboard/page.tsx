@@ -1,146 +1,19 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { useEffect, useState } from 'react';
 import UserProfile from './_components/UserProfile';
-import TodayFocusWidget from './_components/TodayFocusWidget';
 import GamificationWidget from './_components/GamificationWidget';
 import ChallengeWidget from './_components/ChallengeWidget';
-import WeeklyProgressSection from './_components/WeeklyProgressSection';
-import AnalysisSection from './_components/AnalysisSection';
 import ClosetWidget from './_components/ClosetWidget';
+import AnalysisPromptSection from './_components/AnalysisPromptSection';
+import AnalysisSummarySection from './_components/AnalysisSummarySection';
+import CompactActivityWidget from './_components/CompactActivityWidget';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
-
-// 분석 결과 타입 정의
-interface AnalysisSummary {
-  id: string;
-  type: 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
-  createdAt: Date;
-  summary: string;
-  // 타입별 추가 데이터
-  seasonType?: string; // PC-1
-  skinScore?: number; // S-1
-  bodyType?: string; // C-1
-  hairScore?: number; // H-1
-  hairType?: string; // H-1
-  undertone?: string; // M-1
-}
+import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
 
 export default function DashboardPage() {
   const { user, isLoaded: isUserLoaded } = useUser();
-  const supabase = useClerkSupabaseClient();
-  const [analyses, setAnalyses] = useState<AnalysisSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasPersonalColor, setHasPersonalColor] = useState(false);
-
-  // 데이터베이스에서 분석 결과 가져오기
-  useEffect(() => {
-    async function fetchAnalyses() {
-      if (!user?.id) return;
-
-      try {
-        // 퍼스널 컬러 분석 결과 가져오기
-        const { data: pcData } = await supabase
-          .from('personal_color_assessments')
-          .select('id, season, created_at')
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        // 피부 분석 결과 가져오기
-        const { data: skinData } = await supabase
-          .from('skin_analyses')
-          .select('id, overall_score, created_at')
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        // 체형 분석 결과 가져오기
-        const { data: bodyData } = await supabase
-          .from('body_analyses')
-          .select('id, body_type, created_at')
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        // 헤어 분석 결과 가져오기
-        const { data: hairData } = await supabase
-          .from('hair_analyses')
-          .select('id, hair_type, overall_score, created_at')
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        // 메이크업 분석 결과 가져오기
-        const { data: makeupData } = await supabase
-          .from('makeup_analyses')
-          .select('id, undertone, overall_score, created_at')
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        const results: AnalysisSummary[] = [];
-
-        if (pcData && pcData.length > 0) {
-          setHasPersonalColor(true);
-          results.push({
-            id: pcData[0].id,
-            type: 'personal-color',
-            createdAt: new Date(pcData[0].created_at),
-            summary: getSeasonLabel(pcData[0].season),
-            seasonType: pcData[0].season,
-          });
-        }
-
-        if (skinData && skinData.length > 0) {
-          results.push({
-            id: skinData[0].id,
-            type: 'skin',
-            createdAt: new Date(skinData[0].created_at),
-            summary: `피부 점수 ${skinData[0].overall_score}점`,
-            skinScore: skinData[0].overall_score,
-          });
-        }
-
-        if (bodyData && bodyData.length > 0) {
-          results.push({
-            id: bodyData[0].id,
-            type: 'body',
-            createdAt: new Date(bodyData[0].created_at),
-            summary: getBodyTypeLabel(bodyData[0].body_type),
-            bodyType: bodyData[0].body_type,
-          });
-        }
-
-        if (hairData && hairData.length > 0) {
-          results.push({
-            id: hairData[0].id,
-            type: 'hair',
-            createdAt: new Date(hairData[0].created_at),
-            summary: `${getHairTypeLabel(hairData[0].hair_type)} · ${hairData[0].overall_score}점`,
-            hairScore: hairData[0].overall_score,
-            hairType: hairData[0].hair_type,
-          });
-        }
-
-        if (makeupData && makeupData.length > 0) {
-          results.push({
-            id: makeupData[0].id,
-            type: 'makeup',
-            createdAt: new Date(makeupData[0].created_at),
-            summary: `${getUndertoneLabel(makeupData[0].undertone)} · ${makeupData[0].overall_score}점`,
-            undertone: makeupData[0].undertone,
-          });
-        }
-
-        setAnalyses(results);
-      } catch (error) {
-        console.error('Failed to fetch analyses:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (isUserLoaded) {
-      fetchAnalyses();
-    }
-  }, [user?.id, isUserLoaded, supabase]);
+  const { isLoading, analyses, isNewUser } = useAnalysisStatus();
 
   // 로딩 상태
   if (!isUserLoaded || isLoading) {
@@ -164,101 +37,49 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-[calc(100vh-80px)] px-4 py-8" data-testid="dashboard-page">
-      <div className="max-w-4xl mx-auto">
-        {/* Zone 1: Hero Section - 순차 입장 애니메이션 */}
-        <section className="space-y-4 mb-10">
-          {/* 사용자 프로필 (축소) */}
-          <div className="opacity-0 animate-fade-in-up">
-            <UserProfile
-              name={user.fullName || user.username || '사용자'}
-              imageUrl={user.imageUrl}
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Zone 1: User Profile (축소형) */}
+        <div className="opacity-0 animate-fade-in-up">
+          <UserProfile name={user.fullName || user.username || '사용자'} imageUrl={user.imageUrl} />
+        </div>
+
+        {/* Zone 2: Analysis Section (조건부 - 핵심 영역) */}
+        <div className="opacity-0 animate-fade-in-up animation-delay-100">
+          {isNewUser ? (
+            // 신규 사용자: 분석 시작 유도 CTA
+            <AnalysisPromptSection />
+          ) : (
+            // 기존 사용자: 분석 요약 + 추가 분석 유도
+            <AnalysisSummarySection analyses={analyses} />
+          )}
+        </div>
+
+        {/* Zone 3: Activity Summary (축소형) */}
+        <div className="opacity-0 animate-fade-in-up animation-delay-200">
+          <CompactActivityWidget userId={user.id} />
+        </div>
+
+        {/* Zone 4: Gamification (레벨 + 배지) */}
+        <div className="opacity-0 animate-fade-in-up animation-delay-300">
+          <GamificationWidget userId={user.id} />
+        </div>
+
+        {/* Zone 5: 진행 중인 챌린지 */}
+        <div className="opacity-0 animate-fade-in-up animation-delay-400">
+          <ChallengeWidget userId={user.id} />
+        </div>
+
+        {/* Zone 6: Closet & Style (분석 완료 사용자만) */}
+        {!isNewUser && (
+          <div className="opacity-0 animate-fade-in-up animation-delay-500">
+            <ClosetWidget
+              userId={user.id}
+              personalColor={analyses.find((a) => a.type === 'personal-color')?.seasonType}
+              bodyType={analyses.find((a) => a.type === 'body')?.bodyType}
             />
           </div>
-
-          {/* 오늘의 포커스 (스트릭 + 체크인 + 주간 요약) */}
-          <div className="opacity-0 animate-fade-in-up animation-delay-100">
-            <TodayFocusWidget userId={user.id} />
-          </div>
-
-          {/* 게이미피케이션 (레벨 + 배지) */}
-          <div className="opacity-0 animate-fade-in-up animation-delay-200">
-            <GamificationWidget userId={user.id} />
-          </div>
-
-          {/* 챌린지 (진행 중인 챌린지) */}
-          <div className="opacity-0 animate-fade-in-up animation-delay-300">
-            <ChallengeWidget userId={user.id} />
-          </div>
-        </section>
-
-        {/* Zone 2: Activity Hub */}
-        <section className="mb-10 space-y-4">
-          <div className="opacity-0 animate-fade-in-up animation-delay-400">
-            <WeeklyProgressSection />
-          </div>
-        </section>
-
-        {/* Zone 3: Closet & Style */}
-        <section className="mb-10 opacity-0 animate-fade-in-up animation-delay-500">
-          <ClosetWidget
-            userId={user.id}
-            personalColor={analyses.find((a) => a.type === 'personal-color')?.seasonType}
-            bodyType={analyses.find((a) => a.type === 'body')?.bodyType}
-          />
-        </section>
-
-        {/* Zone 4: Analysis Archive (Collapsible) */}
-        <section className="opacity-0 animate-fade-in-up animation-delay-600">
-          <AnalysisSection analyses={analyses} hasPersonalColor={hasPersonalColor} />
-        </section>
+        )}
       </div>
     </main>
   );
-}
-
-// 헬퍼 함수들
-function getSeasonLabel(season: string): string {
-  // DB 스키마: 'Spring', 'Summer', 'Autumn', 'Winter' (대문자 시작)
-  const labels: Record<string, string> = {
-    Spring: '봄 웜톤 🌸',
-    Summer: '여름 쿨톤 🌊',
-    Autumn: '가을 웜톤 🍂',
-    Winter: '겨울 쿨톤 ❄️',
-    // 소문자도 지원 (하위 호환)
-    spring: '봄 웜톤 🌸',
-    summer: '여름 쿨톤 🌊',
-    autumn: '가을 웜톤 🍂',
-    winter: '겨울 쿨톤 ❄️',
-  };
-  return labels[season] || season;
-}
-
-function getBodyTypeLabel(bodyType: string): string {
-  const labels: Record<string, string> = {
-    hourglass: '모래시계형',
-    pear: '서양배형',
-    apple: '사과형',
-    rectangle: '직사각형',
-    inverted_triangle: '역삼각형',
-  };
-  return labels[bodyType] || bodyType;
-}
-
-function getHairTypeLabel(hairType: string): string {
-  const labels: Record<string, string> = {
-    straight: '직모',
-    wavy: '웨이브',
-    curly: '곱슬',
-    coily: '꼬임',
-  };
-  return labels[hairType] || hairType;
-}
-
-function getUndertoneLabel(undertone: string): string {
-  const labels: Record<string, string> = {
-    warm: '웜톤',
-    cool: '쿨톤',
-    neutral: '뉴트럴',
-  };
-  return labels[undertone] || undertone;
 }

@@ -122,7 +122,7 @@ export function generateMockLandmarks(): FaceLandmarkResult {
  * - 분포 히스토그램
  */
 export function generateMockPigmentAnalysis(): PigmentAnalysisSummary {
-  // 한국인 평균 피부톤 기준 Mock
+  // 일반적인 피부톤 범위 Mock (중간 명도)
   const melaninBase = 0.35 + Math.random() * 0.2; // 0.35 ~ 0.55
   const hemoglobinBase = 0.25 + Math.random() * 0.15; // 0.25 ~ 0.40
 
@@ -163,9 +163,9 @@ const SEASON_COLORS = {
  * - 금속 테스트
  */
 export function generateMockDrapingResults(): DrapingResultsSummary {
-  // 랜덤 시즌 선택 (가중치: 봄/가을이 한국인에게 더 흔함)
+  // 랜덤 시즌 선택 (균등 분포)
   const seasons = ['spring', 'summer', 'autumn', 'winter'] as const;
-  const weights = [0.3, 0.2, 0.35, 0.15];
+  const weights = [0.25, 0.25, 0.25, 0.25];
   const random = Math.random();
   let cumulative = 0;
   let selectedSeason: (typeof seasons)[number] = 'spring';

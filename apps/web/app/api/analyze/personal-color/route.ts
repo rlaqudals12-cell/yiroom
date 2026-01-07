@@ -149,6 +149,144 @@ export async function POST(req: Request) {
         console.log('[PC-1] Multi-angle:', hasMultiAngle, '/ Wrist:', !!wristImageBase64);
         aiResult = await analyzePersonalColor(analysisInput);
         console.log('[PC-1] Gemini analysis completed');
+
+        // AI 결과에 analysisEvidence/imageQuality가 없으면 기본값 제공
+        const isCool = aiResult.tone === 'cool';
+        const reliability = determineReliability(hasMultiAngle, !!wristImageBase64);
+
+        if (!aiResult.analysisEvidence) {
+          console.log('[PC-1] Adding default analysisEvidence');
+          aiResult.analysisEvidence = {
+            veinColor: isCool ? 'blue' : 'green',
+            veinScore: isCool ? 70 : 30,
+            skinUndertone: isCool ? 'pink' : 'yellow',
+            skinHairContrast: 'medium',
+            eyeColor: 'brown',
+            lipNaturalColor: isCool ? 'pink' : 'coral',
+          };
+        }
+
+        if (!aiResult.imageQuality) {
+          console.log('[PC-1] Adding default imageQuality');
+          aiResult.imageQuality = {
+            lightingCondition: 'mixed',
+            makeupDetected: false,
+            wristImageProvided: !!wristImageBase64,
+            analysisReliability: reliability,
+          };
+        }
+
+        // 서버 측 일관성 검증: veinColor와 tone 일치 확인
+        // 혈관색이 blue/purple이면 반드시 cool 톤이어야 함
+        const veinColor = aiResult.analysisEvidence?.veinColor;
+        const skinUndertone = aiResult.analysisEvidence?.skinUndertone;
+        const originalTone = aiResult.tone;
+        const originalSeason = aiResult.seasonType;
+
+        // 혈관색 기반 검증
+        if (veinColor) {
+          const isCoolVein = ['blue', 'purple', 'blue_purple'].includes(veinColor.toLowerCase());
+          const isWarmVein = ['green', 'olive', 'green_olive'].includes(veinColor.toLowerCase());
+          const isUncertainVein = ['mixed', 'unknown'].includes(veinColor.toLowerCase());
+
+          // 혈관색과 톤 불일치 시 수정
+          if (isCoolVein && aiResult.tone !== 'cool') {
+            console.log(
+              `[PC-1] Consistency fix: veinColor=${veinColor} but tone=${aiResult.tone}, correcting to cool`
+            );
+            aiResult.tone = 'cool';
+          } else if (isWarmVein && aiResult.tone !== 'warm') {
+            console.log(
+              `[PC-1] Consistency fix: veinColor=${veinColor} but tone=${aiResult.tone}, correcting to warm`
+            );
+            aiResult.tone = 'warm';
+          } else if (isUncertainVein) {
+            // 혈관색이 불확실한 경우: skinUndertone으로 2차 검증
+            // 명확한 모순이 있는 경우에만 신뢰도 낮춤 (불명확한 경우는 AI 판정 신뢰)
+            const isCoolSkin = skinUndertone === 'pink' || skinUndertone === 'neutral';
+            const isWarmSkin = skinUndertone === 'yellow' || skinUndertone === 'olive';
+
+            if (isCoolSkin && aiResult.tone === 'warm') {
+              // 피부 언더톤과 판정 결과가 명확히 불일치 → 신뢰도 약간 낮춤
+              console.log(
+                `[PC-1] Uncertain vein: skinUndertone=${skinUndertone} suggests cool but tone=${aiResult.tone}`
+              );
+              aiResult.confidence = Math.min(aiResult.confidence || 85, 75);
+            } else if (isWarmSkin && aiResult.tone === 'cool') {
+              // 피부 언더톤과 판정 결과가 명확히 불일치 → 신뢰도 약간 낮춤
+              console.log(
+                `[PC-1] Uncertain vein: skinUndertone=${skinUndertone} suggests warm but tone=${aiResult.tone}`
+              );
+              aiResult.confidence = Math.min(aiResult.confidence || 85, 75);
+            }
+            // 불명확한 경우는 AI 판정을 신뢰 (신뢰도 유지)
+          }
+        }
+        // veinColor가 없어도 신뢰도는 유지 (AI 판정 신뢰)
+        // 명확한 모순이 없으면 AI의 원래 confidence 값 사용
+
+        // Cool 톤일 때 Summer vs Winter 결정
+        // Winter는 피부-머리카락 대비가 매우 높아야 함 (very_high)
+        // 그 외 cool 톤은 Summer로 분류 (더 일반적)
+        if (aiResult.tone === 'cool') {
+          const contrast = aiResult.analysisEvidence?.skinHairContrast;
+          const isVeryHighContrast = contrast === 'very_high';
+
+          if (aiResult.seasonType === 'winter' && !isVeryHighContrast) {
+            // Winter인데 대비가 높지 않으면 Summer로 수정
+            console.log(
+              `[PC-1] Season correction: winter but contrast=${contrast}, changing to summer`
+            );
+            aiResult.seasonType = 'summer';
+            aiResult.seasonLabel = '여름 쿨톤';
+            aiResult.seasonDescription = '차갑고 부드러운 색상이 잘 어울리는 여름 쿨톤입니다.';
+            aiResult.depth = 'light';
+          } else if (aiResult.seasonType === 'autumn') {
+            // Autumn인데 cool 톤이면 Summer로 수정 (Autumn은 항상 warm)
+            console.log('[PC-1] Season correction: autumn with cool tone, changing to summer');
+            aiResult.seasonType = 'summer';
+            aiResult.seasonLabel = '여름 쿨톤';
+            aiResult.seasonDescription = '차갑고 부드러운 색상이 잘 어울리는 여름 쿨톤입니다.';
+            aiResult.depth = 'light';
+          } else if (aiResult.seasonType === 'spring') {
+            // Spring인데 cool 톤이면 Summer로 수정 (Spring은 항상 warm)
+            console.log('[PC-1] Season correction: spring with cool tone, changing to summer');
+            aiResult.seasonType = 'summer';
+            aiResult.seasonLabel = '여름 쿨톤';
+            aiResult.seasonDescription = '차갑고 부드러운 색상이 잘 어울리는 여름 쿨톤입니다.';
+            aiResult.depth = 'light';
+          }
+        }
+
+        // Warm 톤일 때 Spring vs Autumn 결정
+        if (aiResult.tone === 'warm') {
+          if (aiResult.seasonType === 'summer' || aiResult.seasonType === 'winter') {
+            // Summer/Winter인데 warm 톤이면 수정
+            const depth = aiResult.depth || 'light';
+            const newSeason = depth === 'deep' ? 'autumn' : 'spring';
+            console.log(
+              `[PC-1] Season correction: ${aiResult.seasonType} with warm tone, changing to ${newSeason}`
+            );
+            if (newSeason === 'autumn') {
+              aiResult.seasonType = 'autumn';
+              aiResult.seasonLabel = '가을 웜톤';
+              aiResult.seasonDescription = '따뜻하고 깊은 색상이 잘 어울리는 가을 웜톤입니다.';
+              aiResult.depth = 'deep';
+            } else {
+              aiResult.seasonType = 'spring';
+              aiResult.seasonLabel = '봄 웜톤';
+              aiResult.seasonDescription = '밝고 따뜻한 색상이 잘 어울리는 봄 웜톤입니다.';
+              aiResult.depth = 'light';
+            }
+          }
+        }
+
+        // 수정이 있었으면 로그
+        if (originalTone !== aiResult.tone || originalSeason !== aiResult.seasonType) {
+          console.log(
+            `[PC-1] Result corrected: ${originalSeason} ${originalTone} → ${aiResult.seasonType} ${aiResult.tone}`
+          );
+        }
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[PC-1] Gemini error, falling back to mock:', aiError);

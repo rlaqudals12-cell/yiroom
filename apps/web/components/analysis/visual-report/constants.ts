@@ -157,6 +157,53 @@ export const POSITIVE_MESSAGES = {
   scoreDiff: (diff: number, target: string) => `${diff}점만 더 올리면 ${target} 달성!`,
 } as const;
 
+// 퍼스널 컬러 분석용 등급 메시지 (신뢰도 기반)
+// 퍼스널 컬러는 타고난 특성이므로 "유지/개선" 개념이 아닌 "정확도" 개념으로 표현
+export const PERSONAL_COLOR_GRADE_MESSAGES: Record<
+  AnalysisGrade,
+  { message: string; description: string }
+> = {
+  diamond: {
+    message: '매우 정확해요!',
+    description: '여러 특징이 일관되게 나타났어요',
+  },
+  gold: {
+    message: '신뢰할 수 있어요!',
+    description: '주요 특징들이 잘 분석되었어요',
+  },
+  silver: {
+    message: '참고해주세요',
+    description: '추가 분석으로 정확도를 높일 수 있어요',
+  },
+  bronze: {
+    message: '재분석을 권장해요',
+    description: '더 밝은 조명에서 다시 촬영해보세요',
+  },
+};
+
+/**
+ * 분석 타입에 따른 등급 설정 조회
+ * 퍼스널 컬러는 신뢰도 기반 메시지 사용
+ */
+export function getGradeForAnalysis(
+  score: number,
+  analysisType?: 'skin' | 'body' | 'personal-color'
+): GradeConfig {
+  const baseConfig = getGradeFromScore(score);
+
+  // 퍼스널 컬러는 전용 메시지 사용
+  if (analysisType === 'personal-color') {
+    const pcMessages = PERSONAL_COLOR_GRADE_MESSAGES[baseConfig.grade];
+    return {
+      ...baseConfig,
+      message: pcMessages.message,
+      description: pcMessages.description,
+    };
+  }
+
+  return baseConfig;
+}
+
 // 크기별 스타일
 export const SIZE_STYLES = {
   sm: {

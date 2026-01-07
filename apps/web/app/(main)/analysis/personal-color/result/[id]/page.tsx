@@ -3,8 +3,17 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
-import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw, Palette, Shirt, ClipboardList } from 'lucide-react';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Palette,
+  Shirt,
+  ClipboardList,
+  AlertTriangle,
+  Lightbulb,
+  Sun,
+  Sparkles,
+} from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,6 +64,9 @@ interface DbPersonalColorAssessment {
   image_url?: string;
   created_at: string;
 }
+
+// 신뢰도 기준값 (이 미만이면 재분석 권장)
+const LOW_CONFIDENCE_THRESHOLD = 70;
 
 // 시즌별 톤/깊이 결정
 function getSeasonToneDepth(seasonType: SeasonType): { tone: ToneType; depth: DepthType } {
@@ -128,7 +140,6 @@ export default function PersonalColorResultPage() {
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
-  const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<PersonalColorResult | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [analysisEvidence, setAnalysisEvidence] = useState<AnalysisEvidence | null>(null);
@@ -157,7 +168,7 @@ export default function PersonalColorResultPage() {
     '이룸-퍼스널컬러-결과'
   );
 
-  // DB에서 분석 결과 조회
+  // API Route를 통해 분석 결과 조회 (JWT 문제 해결)
   const fetchAnalysis = useCallback(async () => {
     if (!isSignedIn || !analysisId || fetchedRef.current) return;
 
@@ -166,21 +177,18 @@ export default function PersonalColorResultPage() {
     setError(null);
 
     try {
-      const { data, error: dbError } = await supabase
-        .from('personal_color_assessments')
-        .select('*')
-        .eq('id', analysisId)
-        .single();
+      const response = await fetch(`/api/analyze/personal-color/${analysisId}`);
+      const json = await response.json();
 
-      if (dbError) {
-        throw new Error(dbError.message);
+      if (!response.ok) {
+        throw new Error(json.error || '결과를 불러올 수 없습니다');
       }
 
-      if (!data) {
+      if (!json.data) {
         throw new Error('분석 결과를 찾을 수 없습니다');
       }
 
-      const dbData = data as DbPersonalColorAssessment;
+      const dbData = json.data as DbPersonalColorAssessment;
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setImageUrl(dbData.image_url || null);
@@ -205,7 +213,7 @@ export default function PersonalColorResultPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [isSignedIn, analysisId, supabase]);
+  }, [isSignedIn, analysisId]);
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {
@@ -290,6 +298,32 @@ export default function PersonalColorResultPage() {
           <div className="w-16" />
         </header>
 
+        {/* 낮은 신뢰도 경고 배너 */}
+        {result && result.confidence < LOW_CONFIDENCE_THRESHOLD && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground">분석 신뢰도가 낮아요</p>
+                <p className="text-sm text-amber-700 mt-1">
+                  더 정확한 결과를 위해 밝은 자연광 아래에서 다시 촬영해보세요.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNewAnalysis}
+                  className="mt-3 border-amber-300 text-amber-700 hover:bg-amber-100"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  다시 분석하기
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 탭 기반 결과 */}
         {result && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -322,6 +356,28 @@ export default function PersonalColorResultPage() {
                 className="mb-6"
               />
 
+              {/* 환경 요인 안내 카드 */}
+              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-100 dark:border-blue-900/50">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0">
+                    <Lightbulb className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm text-foreground">알아두세요</p>
+                    <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
+                      <li className="flex items-start gap-1.5">
+                        <Sun className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500" />
+                        <span>조명/메이크업에 따라 결과가 달라질 수 있어요</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500" />
+                        <span>염색은 피부톤에 영향 없지만 분석 정확도에 영향을 줄 수 있어요</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
               <AnalysisResult
                 result={result}
                 onRetry={handleNewAnalysis}
@@ -353,12 +409,80 @@ export default function PersonalColorResultPage() {
             {/* 분석 근거 탭 */}
             <TabsContent value="evidence" className="mt-0 pb-32">
               {analysisEvidence || imageQuality ? (
-                <AnalysisEvidenceReport
-                  evidence={analysisEvidence}
-                  imageQuality={imageQuality}
-                  seasonType={result.seasonType}
-                  tone={result.tone}
-                />
+                <>
+                  <AnalysisEvidenceReport
+                    evidence={analysisEvidence}
+                    imageQuality={imageQuality}
+                    seasonType={result.seasonType}
+                    tone={result.tone}
+                  />
+
+                  {/* 분석 정확도에 영향을 주는 요인 상세 설명 */}
+                  <div className="mt-6 p-5 bg-card rounded-xl border border-border">
+                    <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <Lightbulb className="w-5 h-5 text-blue-500" />
+                      분석 정확도에 영향을 주는 요인
+                    </h3>
+                    <div className="space-y-4 text-sm">
+                      {/* 조명 환경 */}
+                      <div>
+                        <p className="font-medium text-foreground mb-1.5 flex items-center gap-2">
+                          <Sun className="w-4 h-4 text-amber-500" />
+                          조명 환경
+                        </p>
+                        <p className="text-muted-foreground pl-6">
+                          인공 조명(형광등, LED)은 피부톤을 노랗거나 파랗게 왜곡할 수 있어요.
+                          <span className="text-foreground font-medium">
+                            {' '}
+                            자연광(창가, 오전~오후)
+                          </span>
+                          에서 촬영하면 가장 정확해요.
+                        </p>
+                      </div>
+
+                      {/* 메이크업 */}
+                      <div>
+                        <p className="font-medium text-foreground mb-1.5 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-rose-500" />
+                          메이크업
+                        </p>
+                        <p className="text-muted-foreground pl-6">
+                          파운데이션, 컨실러 등은 실제 피부톤을 가려요.
+                          <span className="text-foreground font-medium">
+                            {' '}
+                            노메이크업 또는 스킨케어만
+                          </span>{' '}
+                          한 상태가 가장 좋아요.
+                        </p>
+                      </div>
+
+                      {/* 염색 */}
+                      <div>
+                        <p className="font-medium text-foreground mb-1.5 flex items-center gap-2">
+                          <Palette className="w-4 h-4 text-purple-500" />
+                          모발 염색
+                        </p>
+                        <p className="text-muted-foreground pl-6">
+                          염색은{' '}
+                          <span className="text-foreground font-medium">
+                            피부의 언더톤(웜/쿨)에는 영향을 주지 않아요.
+                          </span>
+                          하지만 염색 색상이 얼굴에 반사되어 분석 정확도에 영향을 줄 수 있어요.
+                        </p>
+                      </div>
+
+                      {/* 최적 조건 */}
+                      <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900/50">
+                        <p className="font-medium text-green-700 dark:text-green-400 text-xs">
+                          ✓ 가장 정확한 결과를 위한 조건
+                        </p>
+                        <p className="text-green-600 dark:text-green-500 text-xs mt-1">
+                          자연광 + 노메이크업 + 자연 모발 (또는 뿌리 부분 확인)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />

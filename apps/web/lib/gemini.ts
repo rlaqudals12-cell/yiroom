@@ -66,6 +66,13 @@ const safetySettings = [
 const modelConfig = {
   model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
   safetySettings,
+  // 일관성 향상: temperature 낮춤 (0 = 완전 결정적, 1 = 창의적)
+  // 퍼스널 컬러 같은 분류 작업은 낮은 temperature가 적합
+  generationConfig: {
+    temperature: 0.1,
+    topP: 0.8,
+    topK: 40,
+  },
 };
 
 /**
@@ -569,7 +576,7 @@ N (내추럴/Natural) - 자연스럽고 골격감 있는 실루엣
  * 12시즌 시스템 + 과학적 색채 분석 기반
  * 얼굴 이미지와 손목 이미지를 통합 분석
  */
-const PERSONAL_COLOR_ANALYSIS_PROMPT = `당신은 전문 퍼스널 컬러 분석 AI입니다. 과학적 색채 이론과 한국인 피부 특성을 기반으로 정밀 분석합니다.
+const PERSONAL_COLOR_ANALYSIS_PROMPT = `당신은 전문 퍼스널 컬러 분석 AI입니다. 과학적 색채 이론을 기반으로 정밀 분석합니다.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🚨 최우선 판정 기준: 손목 혈관 색상
@@ -592,7 +599,7 @@ const PERSONAL_COLOR_ANALYSIS_PROMPT = `당신은 전문 퍼스널 컬러 분석
 특징: 황금빛 광채, 복숭아빛 피부, 밝은 갈색 눈동자
 베스트: 코랄, 살구색, 밝은 오렌지, 아이보리
 
-[SUMMER 여름 쿨톤] - 부드럽고 우아한 쿨톤 ⭐한국인 쿨톤 대다수
+[SUMMER 여름 쿨톤] - 부드럽고 우아한 쿨톤 ⭐가장 흔한 쿨톤
 ├─ Summer Light: 밝고 소프트한 (저채도, 고명도)
 ├─ Summer Mute: 회색끼 도는 뮤트한 (저채도, 중명도)
 └─ Summer True: 시원하고 청순한 (중채도, 중명도)
@@ -623,15 +630,29 @@ const PERSONAL_COLOR_ANALYSIS_PROMPT = `당신은 전문 퍼스널 컬러 분석
    - 다른 증거와 상관없이 쿨톤
 
 🔴 규칙 2: 손목 혈관이 녹색이면 → 무조건 웜톤
+   - 단, 녹색이 명확히 보여야 함
 
-🔴 규칙 3: 쿨톤 확정 후 여름/겨울 구분
-   - 기본값: summer (여름 쿨톤)
-   - winter는 아래 조건 모두 충족 시에만:
+🔴 규칙 3: 혈관색이 불분명할 때 (mixed/unknown)
+   - 피부 언더톤으로 2차 판단:
+     □ 핑크빛/차가운 느낌 (pink/neutral) → cool
+     □ 노란빛/올리브 느낌 (yellow/olive) → warm
+   - 그래도 불확실하면:
+     □ confidence를 70 이하로 설정
+     □ 무리하게 판정하지 말고 가장 가능성 높은 결과 제시
+
+🔴 규칙 4: 쿨톤 확정 후 여름/겨울 구분
+   - summer가 더 일반적 (대부분의 쿨톤)
+   - winter는 아래 조건 충족 시에만:
      □ 피부가 새하얗고 차가움
-     □ 머리카락이 순수한 블랙
-     □ 눈동자가 새까만 검정
-     □ 피부-머리 대비가 극도로 높음
-   - 조건 미충족 시 반드시 summer
+     □ 머리카락-피부 대비가 매우 높음 (very_high)
+     □ 눈동자가 검정에 가까움
+   - 조건 불충분 시 summer
+
+🔴 규칙 5: 웜톤 확정 후 봄/가을 구분
+   - 피부 명도로 판단:
+     □ 밝고 화사한 피부 → spring (light)
+     □ 깊고 따뜻한 피부 → autumn (deep)
+   - 대비가 낮으면 spring, 높으면 autumn
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️ 조명 왜곡 보정

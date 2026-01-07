@@ -41,7 +41,7 @@ const ANALYSIS_CONFIG = {
   'personal-color': {
     title: '퍼스널 컬러',
     icon: Palette,
-    href: '/analysis/personal-color',
+    baseHref: '/analysis/personal-color',
     bgColor: 'bg-module-personal-color-light',
     borderColor: 'border-module-personal-color/30',
     iconColor: 'text-module-personal-color',
@@ -49,7 +49,7 @@ const ANALYSIS_CONFIG = {
   skin: {
     title: '피부 분석',
     icon: Sparkles,
-    href: '/analysis/skin',
+    baseHref: '/analysis/skin',
     bgColor: 'bg-module-skin-light',
     borderColor: 'border-module-skin/30',
     iconColor: 'text-module-skin',
@@ -57,7 +57,7 @@ const ANALYSIS_CONFIG = {
   body: {
     title: '체형 분석',
     icon: User,
-    href: '/analysis/body',
+    baseHref: '/analysis/body',
     bgColor: 'bg-module-body-light',
     borderColor: 'border-module-body/30',
     iconColor: 'text-module-body',
@@ -65,7 +65,7 @@ const ANALYSIS_CONFIG = {
   hair: {
     title: '헤어 분석',
     icon: Scissors,
-    href: '/analysis/hair',
+    baseHref: '/analysis/hair',
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200/50',
     iconColor: 'text-amber-600',
@@ -73,22 +73,29 @@ const ANALYSIS_CONFIG = {
   makeup: {
     title: '메이크업 분석',
     icon: Heart,
-    href: '/analysis/makeup',
+    baseHref: '/analysis/makeup',
     bgColor: 'bg-rose-50',
     borderColor: 'border-rose-200/50',
     iconColor: 'text-rose-500',
   },
 };
 
+// 분석 결과가 있으면 결과 페이지로, 없으면 분석 페이지로
+function getAnalysisHref(type: AnalysisSummary['type'], id: string): string {
+  return `${ANALYSIS_CONFIG[type].baseHref}/result/${id}`;
+}
+
 export default function AnalysisCard({ analysis }: AnalysisCardProps) {
   const config = ANALYSIS_CONFIG[analysis.type];
   const Icon = config.icon;
+  // 분석 결과가 있으므로 결과 페이지로 바로 이동
+  const href = getAnalysisHref(analysis.type, analysis.id);
 
   // 시간 포맷팅 (한국어 상대 시간)
   const timeAgo = formatRelativeTime(analysis.createdAt);
 
   return (
-    <Link href={config.href}>
+    <Link href={href}>
       <div
         className={`
           ${config.bgColor} ${config.borderColor}

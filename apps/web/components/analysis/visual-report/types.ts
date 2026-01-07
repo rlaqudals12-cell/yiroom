@@ -44,6 +44,7 @@ export interface StrengthItem {
 export interface GradeDisplayProps {
   score: number;
   label?: string; // "전체 점수", "피부 상태" 등
+  analysisType?: AnalysisType; // 분석 타입별 메시지 차별화 (퍼스널 컬러는 신뢰도 기반 메시지)
   showProgress?: boolean; // 백분율 바 표시 여부
   showScore?: boolean; // 점수 숫자 표시 여부
   size?: 'sm' | 'md' | 'lg';

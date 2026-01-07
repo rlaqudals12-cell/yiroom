@@ -1,14 +1,16 @@
 'use client';
 
-import { Sun, User, LightbulbOff, Smartphone, Check } from 'lucide-react';
+import { Sun, User, LightbulbOff, Smartphone, Check, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface LightingGuideProps {
   onContinue: () => void;
   onSkip?: () => void;
+  /** 갤러리에서 선택 핸들러 */
+  onGallery?: () => void;
 }
 
-export default function LightingGuide({ onContinue, onSkip }: LightingGuideProps) {
+export default function LightingGuide({ onContinue, onSkip, onGallery }: LightingGuideProps) {
   return (
     <div data-testid="lighting-guide" className="space-y-8 animate-fade-in-up">
       {/* 1. 헤더: 전문적인 느낌의 뱃지와 타이포그래피 */}
@@ -115,6 +117,17 @@ export default function LightingGuide({ onContinue, onSkip }: LightingGuideProps
         >
           촬영 시작하기
         </Button>
+
+        {onGallery && (
+          <Button
+            variant="outline"
+            onClick={onGallery}
+            className="w-full h-12 text-base gap-2 rounded-xl"
+          >
+            <ImageIcon className="w-5 h-5" />
+            갤러리에서 선택
+          </Button>
+        )}
 
         {onSkip && (
           <button

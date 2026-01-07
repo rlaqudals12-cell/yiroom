@@ -17,11 +17,14 @@ import {
 import { BottomNav } from '@/components/BottomNav';
 import { HomeSkeleton } from '@/components/skeletons';
 import { RecentlyViewed } from '@/components/products/RecentlyViewed';
+import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
+import HomeAnalysisPrompt from './_components/HomeAnalysisPrompt';
+import HomeAnalysisSummary from './_components/HomeAnalysisSummary';
 
 /**
  * 홈 탭 - Glassmorphism 디자인
  * - 시간 기반 인사
- * - 웰니스 점수 카드
+ * - AI 분석 섹션 (조건부)
  * - 오늘의 추천 (뷰티/스타일)
  * - 오늘 기록 요약
  */
@@ -39,13 +42,14 @@ export default function HomePage() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const [greeting, setGreeting] = useState('');
+  const { isLoading: isAnalysisLoading, analyses, isNewUser } = useAnalysisStatus();
 
   useEffect(() => {
     setGreeting(getTimeGreeting());
   }, []);
 
   // 로딩 중
-  if (!isLoaded) {
+  if (!isLoaded || isAnalysisLoading) {
     return <HomeSkeleton />;
   }
 
@@ -91,53 +95,66 @@ export default function HomePage() {
           </p>
         </section>
 
-        {/* 오늘의 추천 - Glassmorphism Cards */}
-        <section aria-label="오늘의 맞춤 추천" className="animate-fade-in-up animation-delay-200">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-500" aria-hidden="true" />
-            오늘의 추천
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            {/* 피부 맞춤 추천 */}
-            <button
-              onClick={() => router.push('/beauty')}
-              className="group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 text-left hover:shadow-lg hover:shadow-pink-500/10 hover:scale-[1.02] transition-all duration-300 overflow-hidden"
-              aria-label="피부 맞춤 제품 추천 보기"
-            >
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-pink-400/20 to-rose-400/20 rounded-full blur-2xl" />
-              <div className="relative">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center mb-3 shadow-lg shadow-pink-500/30">
-                  <Droplet className="w-5 h-5 text-white" aria-hidden="true" />
-                </div>
-                <p className="font-semibold text-slate-900 dark:text-white">피부 맞춤</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">스킨케어 추천</p>
-                <ChevronRight
-                  className="w-4 h-4 text-slate-400 mt-2 group-hover:translate-x-1 transition-transform"
-                  aria-hidden="true"
-                />
-              </div>
-            </button>
-            {/* 체형 맞춤 추천 */}
-            <button
-              onClick={() => router.push('/style')}
-              className="group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 text-left hover:shadow-lg hover:shadow-blue-500/10 hover:scale-[1.02] transition-all duration-300 overflow-hidden"
-              aria-label="체형 맞춤 코디 추천 보기"
-            >
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-2xl" />
-              <div className="relative">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-3 shadow-lg shadow-blue-500/30">
-                  <Shirt className="w-5 h-5 text-white" aria-hidden="true" />
-                </div>
-                <p className="font-semibold text-slate-900 dark:text-white">체형 맞춤</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">코디 추천</p>
-                <ChevronRight
-                  className="w-4 h-4 text-slate-400 mt-2 group-hover:translate-x-1 transition-transform"
-                  aria-hidden="true"
-                />
-              </div>
-            </button>
-          </div>
+        {/* AI 분석 섹션 (조건부) */}
+        <section className="animate-fade-in-up animation-delay-100">
+          {isNewUser ? (
+            // 신규 사용자: 분석 시작 CTA
+            <HomeAnalysisPrompt />
+          ) : (
+            // 기존 사용자: 분석 결과 요약
+            <HomeAnalysisSummary analyses={analyses} />
+          )}
         </section>
+
+        {/* 오늘의 추천 - 기존 사용자만 표시 */}
+        {!isNewUser && (
+          <section aria-label="오늘의 맞춤 추천" className="animate-fade-in-up animation-delay-200">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-500" aria-hidden="true" />
+              오늘의 추천
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {/* 피부 맞춤 추천 */}
+              <button
+                onClick={() => router.push('/beauty')}
+                className="group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 text-left hover:shadow-lg hover:shadow-pink-500/10 hover:scale-[1.02] transition-all duration-300 overflow-hidden"
+                aria-label="피부 맞춤 제품 추천 보기"
+              >
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-pink-400/20 to-rose-400/20 rounded-full blur-2xl" />
+                <div className="relative">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center mb-3 shadow-lg shadow-pink-500/30">
+                    <Droplet className="w-5 h-5 text-white" aria-hidden="true" />
+                  </div>
+                  <p className="font-semibold text-slate-900 dark:text-white">피부 맞춤</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">스킨케어 추천</p>
+                  <ChevronRight
+                    className="w-4 h-4 text-slate-400 mt-2 group-hover:translate-x-1 transition-transform"
+                    aria-hidden="true"
+                  />
+                </div>
+              </button>
+              {/* 체형 맞춤 추천 */}
+              <button
+                onClick={() => router.push('/style')}
+                className="group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 text-left hover:shadow-lg hover:shadow-blue-500/10 hover:scale-[1.02] transition-all duration-300 overflow-hidden"
+                aria-label="체형 맞춤 코디 추천 보기"
+              >
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-2xl" />
+                <div className="relative">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-3 shadow-lg shadow-blue-500/30">
+                    <Shirt className="w-5 h-5 text-white" aria-hidden="true" />
+                  </div>
+                  <p className="font-semibold text-slate-900 dark:text-white">체형 맞춤</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">코디 추천</p>
+                  <ChevronRight
+                    className="w-4 h-4 text-slate-400 mt-2 group-hover:translate-x-1 transition-transform"
+                    aria-hidden="true"
+                  />
+                </div>
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* 오늘 기록 요약 - Glassmorphism */}
         <section className="animate-fade-in-up animation-delay-400">

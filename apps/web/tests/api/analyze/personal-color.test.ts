@@ -313,6 +313,100 @@ describe('POST /api/analyze/personal-color', () => {
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(true);
     });
+
+    it('veinColor가 blue인데 tone이 warm이면 cool로 수정한다', async () => {
+      // AI가 잘못된 결과 반환 시 서버 측 보정
+      const inconsistentResult = {
+        ...mockPersonalColorResult,
+        seasonType: 'autumn' as const,
+        seasonLabel: '가을 웜톤',
+        tone: 'warm' as const,
+        analysisEvidence: {
+          veinColor: 'blue' as const, // blue 혈관 → cool 톤이어야 함
+          veinScore: 75,
+          skinUndertone: 'pink' as const,
+          skinHairContrast: 'medium' as const,
+          eyeColor: 'brown' as const,
+          lipNaturalColor: 'pink' as const,
+        },
+      };
+      vi.mocked(analyzePersonalColor).mockResolvedValue(inconsistentResult);
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      // cool로 수정되고, autumn(warm)에서 summer(cool)로 변경되어야 함
+      expect(json.result.tone).toBe('cool');
+      expect(json.result.seasonType).toBe('summer');
+    });
+
+    it('cool 톤인데 winter이고 contrast가 medium이면 summer로 수정한다', async () => {
+      // Winter는 very_high contrast가 필요
+      const winterResult = {
+        ...mockPersonalColorResult,
+        seasonType: 'winter' as const,
+        seasonLabel: '겨울 쿨톤',
+        tone: 'cool' as const,
+        depth: 'deep' as const,
+        analysisEvidence: {
+          veinColor: 'blue' as const,
+          veinScore: 80,
+          skinUndertone: 'pink' as const,
+          skinHairContrast: 'medium' as const, // very_high 아님 → summer로
+          eyeColor: 'brown' as const,
+          lipNaturalColor: 'pink' as const,
+        },
+      };
+      vi.mocked(analyzePersonalColor).mockResolvedValue(winterResult);
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.result.seasonType).toBe('summer');
+      expect(json.result.seasonLabel).toBe('여름 쿨톤');
+    });
+
+    it('veinColor가 green이면 warm 톤으로 유지한다', async () => {
+      const warmResult = {
+        ...mockPersonalColorResult,
+        seasonType: 'autumn' as const,
+        seasonLabel: '가을 웜톤',
+        tone: 'warm' as const,
+        analysisEvidence: {
+          veinColor: 'green' as const, // green 혈관 → warm 톤
+          veinScore: 30,
+          skinUndertone: 'yellow' as const,
+          skinHairContrast: 'medium' as const,
+          eyeColor: 'brown' as const,
+          lipNaturalColor: 'coral' as const,
+        },
+      };
+      vi.mocked(analyzePersonalColor).mockResolvedValue(warmResult);
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.result.tone).toBe('warm');
+      expect(json.result.seasonType).toBe('autumn');
+    });
   });
 
   describe('DB 저장', () => {

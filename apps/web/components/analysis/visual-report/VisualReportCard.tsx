@@ -104,7 +104,7 @@ export function VisualReportCard({
             )}
           </CardHeader>
           <CardContent>
-            {/* 등급 표시 */}
+            {/* 등급 표시 - 분석 타입별 맞춤 메시지 */}
             <GradeDisplay
               score={displayScore}
               label={
@@ -114,6 +114,7 @@ export function VisualReportCard({
                     ? '체형 균형 점수'
                     : '진단 신뢰도'
               }
+              analysisType={analysisType}
               showProgress
               showScore
               size="md"

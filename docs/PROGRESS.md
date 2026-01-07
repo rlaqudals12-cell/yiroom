@@ -1,7 +1,7 @@
 # 이룸 프로젝트 진행 상황
 
 > **마지막 업데이트**: 2026-01-08
-> **현재 버전**: v2.7 (H-1/M-1 크로스 모듈 인사이트)
+> **현재 버전**: v2.8 (PC-1 UX 고도화)
 
 ---
 
@@ -40,6 +40,54 @@
 | Launch  | 출시 준비    | 온보딩, 도움말, 알림   | ✅ 완료    |
 | Phase V | Visual       | S-1+/PC-1+ 시각 분석   | ✅ 완료    |
 | Phase P | Preferences  | 통합 선호/기피 시스템  | ✅ 완료    |
+
+---
+
+## PC-1 UX 고도화 ✅ (2026-01-08)
+
+### 개요
+
+퍼스널 컬러 분석(PC-1) UX 개선 및 사용자 편의성 향상.
+신뢰도 기반 자동 리디렉트, 환경 요인 안내, 다각도 촬영 지원.
+
+### 완료 항목
+
+```yaml
+[x] 자동 리디렉트 시스템:
+    - 신뢰도 70%+ 기존 결과 → 결과 페이지 자동 이동
+    - 낮은 신뢰도 배너 + 재분석 권장 UI
+    - 로딩 상태 표시 (페이지 깜빡임 방지)
+
+[x] 신뢰도 일관성 개선:
+    - AI veinColor/skinUndertone 변동성 대응
+    - 명확한 모순에만 신뢰도 하향 (불확실 시 AI 판정 신뢰)
+    - temperature: 0.3 고정 (일관성 강화)
+
+[x] 환경 요인 안내 카드:
+    - 기본 분석 탭: 간단 안내 (조명/메이크업/염색)
+    - 분석 근거 탭: 상세 설명 (요인별 영향, 최적 조건)
+
+[x] 퍼스널 컬러 전용 등급 메시지:
+    - 기존: "좋은 상태 유지해주세요" (부적절)
+    - 변경: "매우 정확해요!", "신뢰할 수 있어요!" (정확도 개념)
+
+[x] 대시보드/홈 개선:
+    - 분석 카드 → 결과 페이지 직접 링크
+    - AnalysisPromptSection / AnalysisSummarySection 분리
+    - useAnalysisStatus 훅 추가
+
+[x] 다각도 촬영 플로우:
+    - 정면/좌측/우측/손목 4장 촬영
+    - 갤러리 멀티 앵글 업로드 지원
+    - GalleryMultiAngleUpload 컴포넌트
+```
+
+### 변경 파일
+
+- `app/(main)/analysis/personal-color/page.tsx` - 자동 리디렉트
+- `app/(main)/analysis/personal-color/result/[id]/page.tsx` - 안내 카드
+- `app/api/analyze/personal-color/route.ts` - 신뢰도 로직
+- `components/analysis/visual-report/constants.ts` - 전용 메시지
 
 ---
 

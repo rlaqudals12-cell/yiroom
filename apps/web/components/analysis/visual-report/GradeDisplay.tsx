@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { CountUp } from '@/components/animations';
 import { FadeInUp } from '@/components/animations';
-import { getGradeFromScore, SIZE_STYLES } from './constants';
+import { getGradeForAnalysis, SIZE_STYLES } from './constants';
 import type { GradeDisplayProps } from './types';
 
 // 아이콘 매핑
@@ -28,13 +28,15 @@ const GRADE_ICON_COMPONENTS = {
 export function GradeDisplay({
   score,
   label,
+  analysisType,
   showProgress = true,
   showScore = true,
   size = 'md',
   animate = true,
   className,
 }: GradeDisplayProps) {
-  const gradeConfig = getGradeFromScore(score);
+  // 분석 타입별 맞춤 메시지 (퍼스널 컬러는 신뢰도 기반 메시지)
+  const gradeConfig = getGradeForAnalysis(score, analysisType);
   const sizeStyle = SIZE_STYLES[size];
   const IconComponent = GRADE_ICON_COMPONENTS[gradeConfig.icon];
 
