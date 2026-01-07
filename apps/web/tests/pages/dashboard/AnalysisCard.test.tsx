@@ -35,7 +35,7 @@ describe('AnalysisCard', () => {
       expect(screen.getByText('봄 웜톤 🌸')).toBeInTheDocument();
     });
 
-    it('퍼스널 컬러 페이지로 링크된다', () => {
+    it('퍼스널 컬러 결과 페이지로 직접 링크된다', () => {
       const analysis = {
         id: 'pc-1',
         type: 'personal-color' as const,
@@ -46,7 +46,8 @@ describe('AnalysisCard', () => {
       render(<AnalysisCard analysis={analysis} />);
 
       const link = screen.getByTestId('link');
-      expect(link).toHaveAttribute('href', '/analysis/personal-color');
+      // 분석 결과가 있으면 결과 페이지로 바로 이동
+      expect(link).toHaveAttribute('href', '/analysis/personal-color/result/pc-1');
     });
   });
 
@@ -66,7 +67,7 @@ describe('AnalysisCard', () => {
       expect(screen.getByText('피부 점수 75점')).toBeInTheDocument();
     });
 
-    it('피부 분석 페이지로 링크된다', () => {
+    it('피부 분석 결과 페이지로 직접 링크된다', () => {
       const analysis = {
         id: 'skin-1',
         type: 'skin' as const,
@@ -77,7 +78,7 @@ describe('AnalysisCard', () => {
       render(<AnalysisCard analysis={analysis} />);
 
       const link = screen.getByTestId('link');
-      expect(link).toHaveAttribute('href', '/analysis/skin');
+      expect(link).toHaveAttribute('href', '/analysis/skin/result/skin-1');
     });
   });
 
@@ -97,7 +98,7 @@ describe('AnalysisCard', () => {
       expect(screen.getByText('모래시계형')).toBeInTheDocument();
     });
 
-    it('체형 분석 페이지로 링크된다', () => {
+    it('체형 분석 결과 페이지로 직접 링크된다', () => {
       const analysis = {
         id: 'body-1',
         type: 'body' as const,
@@ -108,7 +109,7 @@ describe('AnalysisCard', () => {
       render(<AnalysisCard analysis={analysis} />);
 
       const link = screen.getByTestId('link');
-      expect(link).toHaveAttribute('href', '/analysis/body');
+      expect(link).toHaveAttribute('href', '/analysis/body/result/body-1');
     });
   });
 
@@ -129,7 +130,7 @@ describe('AnalysisCard', () => {
       expect(screen.getByText('웨이브 · 85점')).toBeInTheDocument();
     });
 
-    it('헤어 분석 페이지로 링크된다', () => {
+    it('헤어 분석 결과 페이지로 직접 링크된다', () => {
       const analysis = {
         id: 'hair-1',
         type: 'hair' as const,
@@ -140,7 +141,7 @@ describe('AnalysisCard', () => {
       render(<AnalysisCard analysis={analysis} />);
 
       const link = screen.getByTestId('link');
-      expect(link).toHaveAttribute('href', '/analysis/hair');
+      expect(link).toHaveAttribute('href', '/analysis/hair/result/hair-1');
     });
   });
 
@@ -160,7 +161,7 @@ describe('AnalysisCard', () => {
       expect(screen.getByText('웜톤 · 78점')).toBeInTheDocument();
     });
 
-    it('메이크업 분석 페이지로 링크된다', () => {
+    it('메이크업 분석 결과 페이지로 직접 링크된다', () => {
       const analysis = {
         id: 'makeup-1',
         type: 'makeup' as const,
@@ -171,7 +172,7 @@ describe('AnalysisCard', () => {
       render(<AnalysisCard analysis={analysis} />);
 
       const link = screen.getByTestId('link');
-      expect(link).toHaveAttribute('href', '/analysis/makeup');
+      expect(link).toHaveAttribute('href', '/analysis/makeup/result/makeup-1');
     });
   });
 
