@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Palette, Sparkles, User, ArrowRight } from 'lucide-react';
+import { Palette, Sparkles, User, ArrowRight, Scissors, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface QuickActionsProps {
@@ -35,6 +35,24 @@ const ANALYSIS_ITEMS = [
     icon: User,
     href: '/analysis/body',
     bgColor: 'bg-gradient-body',
+    requiresPC: true,
+  },
+  {
+    id: 'hair',
+    title: '헤어 분석',
+    description: '두피와 모발 상태를 분석해보세요',
+    icon: Scissors,
+    href: '/analysis/hair',
+    bgColor: 'bg-gradient-to-br from-amber-400 to-orange-500',
+    requiresPC: false,
+  },
+  {
+    id: 'makeup',
+    title: '메이크업 분석',
+    description: '나에게 어울리는 메이크업을 찾아보세요',
+    icon: Heart,
+    href: '/analysis/makeup',
+    bgColor: 'bg-gradient-to-br from-rose-400 to-pink-500',
     requiresPC: true,
   },
 ];

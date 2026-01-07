@@ -13,10 +13,19 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { RefreshCw, AlertCircle, Utensils, Loader2 } from 'lucide-react';
+import { CrossModuleAlertList } from '@/components/common/CrossModuleAlert';
+import {
+  createScalpHealthNutritionAlert,
+  createHairLossPreventionAlert,
+  createHairShineBoostAlert,
+  createSkinToneNutritionAlert,
+  createCollagenBoostAlert,
+  type CrossModuleAlertData,
+} from '@/lib/alerts';
 import {
   DailyCalorieSummary,
   MealSectionList,
@@ -144,6 +153,24 @@ export default function NutritionPage() {
   const [bodyAnalysis, setBodyAnalysis] = useState<BodyAnalysisData | null>(null);
   const [currentWeight, setCurrentWeight] = useState<number | null>(null);
   const [isBodyLoading, setIsBodyLoading] = useState(false);
+
+  // H-1 헤어 분석 상태 (크로스 모듈 알림용)
+  const [hairAnalysis, setHairAnalysis] = useState<{
+    scalpHealth: number | null;
+    density: number | null;
+    damage: number | null;
+    recommendedIngredients: string[];
+  } | null>(null);
+  const [isHairLoading, setIsHairLoading] = useState(false);
+
+  // M-1 메이크업 분석 상태 (크로스 모듈 알림용)
+  const [makeupAnalysis, setMakeupAnalysis] = useState<{
+    undertone: 'warm' | 'cool' | 'neutral';
+    concerns: string[];
+    skinTexture: number | null;
+    hydration: number | null;
+  } | null>(null);
+  const [isMakeupLoading, setIsMakeupLoading] = useState(false);
 
   // 영양 목표 상태 (오늘 뭐 먹지? 연동용)
   const [nutritionGoal, setNutritionGoal] = useState<NutritionGoal>('health');
@@ -338,6 +365,71 @@ export default function NutritionPage() {
     }
   }, [supabase]);
 
+  // H-1 헤어 분석 데이터 로드 (크로스 모듈 알림용)
+  const fetchHairAnalysis = useCallback(async () => {
+    setIsHairLoading(true);
+    try {
+      const { data: hairData, error } = await supabase
+        .from('hair_analyses')
+        .select('scalp_health, density, damage_level, recommendations')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !hairData) {
+        setHairAnalysis(null);
+        return;
+      }
+
+      // recommendations에서 ingredients 추출
+      const recommendations = hairData.recommendations as {
+        ingredients?: string[];
+      } | null;
+
+      setHairAnalysis({
+        scalpHealth: hairData.scalp_health,
+        density: hairData.density,
+        damage: hairData.damage_level,
+        recommendedIngredients: recommendations?.ingredients || [],
+      });
+    } catch (err) {
+      console.error('[Nutrition Page] Hair analysis fetch error:', err);
+      setHairAnalysis(null);
+    } finally {
+      setIsHairLoading(false);
+    }
+  }, [supabase]);
+
+  // M-1 메이크업 분석 데이터 로드 (크로스 모듈 알림용)
+  const fetchMakeupAnalysis = useCallback(async () => {
+    setIsMakeupLoading(true);
+    try {
+      const { data: makeupData, error } = await supabase
+        .from('makeup_analyses')
+        .select('undertone, concerns, skin_texture, hydration')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !makeupData) {
+        setMakeupAnalysis(null);
+        return;
+      }
+
+      setMakeupAnalysis({
+        undertone: (makeupData.undertone as 'warm' | 'cool' | 'neutral') || 'neutral',
+        concerns: (makeupData.concerns as string[]) || [],
+        skinTexture: makeupData.skin_texture,
+        hydration: makeupData.hydration,
+      });
+    } catch (err) {
+      console.error('[Nutrition Page] Makeup analysis fetch error:', err);
+      setMakeupAnalysis(null);
+    } finally {
+      setIsMakeupLoading(false);
+    }
+  }, [supabase]);
+
   // 수분 추가 핸들러 (빠른 추가)
   const handleWaterQuickAdd = useCallback(async (amount: number, drinkType: DrinkType) => {
     const hydrationFactor = HYDRATION_FACTORS[drinkType];
@@ -452,6 +544,57 @@ export default function NutritionPage() {
     [fetchTodayMeals]
   );
 
+  // H-1/M-1 크로스 모듈 알림 생성
+  const beautyNutritionAlerts = useMemo(() => {
+    const alerts: CrossModuleAlertData[] = [];
+
+    // 헤어 분석 기반 알림
+    if (hairAnalysis) {
+      const scalpHealth = hairAnalysis.scalpHealth ?? 70;
+      const density = hairAnalysis.density ?? 70;
+      const damage = hairAnalysis.damage ?? 30;
+
+      // 두피 건강 알림
+      if (scalpHealth < 70) {
+        alerts.push(
+          createScalpHealthNutritionAlert(scalpHealth, hairAnalysis.recommendedIngredients)
+        );
+      }
+
+      // 탈모 예방 알림
+      if (density < 70) {
+        const riskLevel: 'low' | 'medium' | 'high' =
+          density < 40 ? 'high' : density < 60 ? 'medium' : 'low';
+        alerts.push(createHairLossPreventionAlert(density, riskLevel));
+      }
+
+      // 모발 윤기 알림
+      if (damage > 40) {
+        alerts.push(createHairShineBoostAlert(damage));
+      }
+    }
+
+    // 메이크업 분석 기반 알림
+    if (makeupAnalysis) {
+      // 피부톤 영양 알림
+      if (makeupAnalysis.concerns.length > 0) {
+        alerts.push(
+          createSkinToneNutritionAlert(makeupAnalysis.undertone, makeupAnalysis.concerns)
+        );
+      }
+
+      // 콜라겐 추천 알림
+      const skinTexture = makeupAnalysis.skinTexture ?? 70;
+      const hydration = makeupAnalysis.hydration ?? 70;
+      const elasticityProxy = Math.round((skinTexture + hydration) / 2);
+      if (elasticityProxy < 60) {
+        alerts.push(createCollagenBoostAlert(elasticityProxy));
+      }
+    }
+
+    return alerts;
+  }, [hairAnalysis, makeupAnalysis]);
+
   // 초기 데이터 로드
   useEffect(() => {
     fetchNutritionSettings();
@@ -460,6 +603,8 @@ export default function NutritionPage() {
     fetchSkinAnalysis();
     fetchWorkoutData();
     fetchBodyAnalysis();
+    fetchHairAnalysis();
+    fetchMakeupAnalysis();
   }, [
     fetchNutritionSettings,
     fetchTodayMeals,
@@ -467,6 +612,8 @@ export default function NutritionPage() {
     fetchSkinAnalysis,
     fetchWorkoutData,
     fetchBodyAnalysis,
+    fetchHairAnalysis,
+    fetchMakeupAnalysis,
   ]);
 
   // 식사 기록 추가 핸들러
@@ -578,6 +725,11 @@ export default function NutritionPage() {
         isLoading={isLoading || isWorkoutLoading}
       />
 
+      {/* H-1/M-1 뷰티 영양 크로스 모듈 알림 */}
+      {!isHairLoading && !isMakeupLoading && beautyNutritionAlerts.length > 0 && (
+        <CrossModuleAlertList alerts={beautyNutritionAlerts} maxCount={3} compact={false} />
+      )}
+
       {/* 오늘 뭐 먹지? AI 식단 추천 */}
       <MealSuggestionCardDynamic
         goal={nutritionGoal}
@@ -669,16 +821,24 @@ export default function NutritionPage() {
             fetchSkinAnalysis();
             fetchWorkoutData();
             fetchBodyAnalysis();
+            fetchHairAnalysis();
+            fetchMakeupAnalysis();
           }}
           disabled={
-            isLoading || isWaterLoading || isSkinLoading || isWorkoutLoading || isBodyLoading
+            isLoading ||
+            isWaterLoading ||
+            isSkinLoading ||
+            isWorkoutLoading ||
+            isBodyLoading ||
+            isHairLoading ||
+            isMakeupLoading
           }
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors"
           aria-label="식단 정보 새로고침"
           data-testid="refresh-button"
         >
           <RefreshCw
-            className={`w-4 h-4 ${isLoading || isWaterLoading || isSkinLoading || isWorkoutLoading || isBodyLoading ? 'animate-spin' : ''}`}
+            className={`w-4 h-4 ${isLoading || isWaterLoading || isSkinLoading || isWorkoutLoading || isBodyLoading || isHairLoading || isMakeupLoading ? 'animate-spin' : ''}`}
           />
           <span>새로고침</span>
         </button>

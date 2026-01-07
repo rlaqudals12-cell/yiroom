@@ -1,7 +1,7 @@
 # 이룸 프로젝트 진행 상황
 
-> **마지막 업데이트**: 2026-01-07
-> **현재 버전**: v2.6 (피드 + 자세 분석 + AI 코치)
+> **마지막 업데이트**: 2026-01-08
+> **현재 버전**: v2.7 (H-1/M-1 크로스 모듈 인사이트)
 
 ---
 
@@ -96,6 +96,56 @@ i18n 친화적 AvoidLevel 설계 (의료 용어 대신 일상 표현).
 ### 관련 문서
 
 - [SDD-USER-PREFERENCES.md](./SDD-USER-PREFERENCES.md)
+
+---
+
+## Cross-Module Insights: H-1/M-1 → N-1 ✅ (2026-01-08)
+
+### 개요
+
+헤어(H-1)와 메이크업(M-1) 분석 결과를 영양(N-1) 모듈과 연동하여
+뷰티 + 영양 통합 인사이트를 제공하는 크로스 모듈 시스템.
+
+### 완료 항목
+
+```yaml
+[x] 타입 확장 (lib/alerts/types.ts):
+    - ModuleType: 'hair', 'makeup' 추가
+    - CrossModuleAlertType: 5개 신규 (scalp_health_nutrition 외)
+    - ALERT_TYPE_CONFIG: H-1→N-1, M-1→N-1 설정
+    - MODULE_LABELS: 헤어, 메이크업
+
+[x] 알림 생성 함수 (lib/alerts/crossModuleAlerts.ts):
+    - createScalpHealthNutritionAlert: 두피 건강 < 70
+    - createHairLossPreventionAlert: 모발 밀도 < 70
+    - createHairShineBoostAlert: 손상도 > 40
+    - createSkinToneNutritionAlert: 피부 고민 존재
+    - createCollagenBoostAlert: 탄력 < 60
+
+[x] 트리거 연동:
+    - app/api/analyze/hair/route.ts: 분석 완료 시 알림 생성
+    - app/api/analyze/makeup/route.ts: 분석 완료 시 알림 생성
+    - app/(main)/nutrition/page.tsx: CrossModuleAlertList 표시
+
+[x] AI 코치 통합 (lib/coach/prompts.ts):
+    - buildUserContextSection: 헤어/메이크업 분석 정보 반영
+    - getQuestionHint: 헤어/메이크업 질문 인식
+    - QUICK_QUESTIONS_BY_CATEGORY: hair, makeup 카테고리 추가
+
+[x] 히스토리 비교 페이지:
+    - app/(main)/analysis/hair/compare/page.tsx
+    - app/(main)/analysis/makeup/compare/page.tsx
+    - API: /api/analysis/compare?type=hair|makeup
+
+[x] 테스트:
+    - crossModuleAlerts.test.ts: 29개 통과
+    - CrossModuleAlert.test.tsx: 24개 통과
+    - E2E: compare 페이지 6개 테스트
+```
+
+### 관련 문서
+
+- [cross-module-insights-hair-makeup.md](./specs/cross-module-insights-hair-makeup.md)
 
 ---
 
@@ -541,7 +591,78 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
 
 ---
 
-## 최근 업데이트 (2026-01-07)
+## 최근 업데이트 (2026-01-07) - 오후
+
+### AI 기능 통합 완료
+
+```yaml
+[x] AI 코치 스트리밍 활성화
+    - ChatInterface useStreaming=true 활성화
+    - /api/coach/stream SSE 스트리밍 응답
+    - 실시간 타이핑 애니메이션
+
+[x] 음성 식단 기록 (이미 구현 확인)
+    - VoiceRecordButton.tsx (Web Speech API 버튼)
+    - useVoiceRecognition.ts (음성 인식 훅)
+    - voice-parser.ts (Gemini AI 파싱)
+    - /api/nutrition/voice-record API
+
+[x] 크로스 모듈 인사이트 (이미 구현 확인)
+    - lib/nutrition/skinInsight.ts (S-1 → N-1 연동)
+    - lib/nutrition/workoutInsight.ts (W-1 → N-1 연동)
+    - lib/nutrition/bodyInsight.ts (C-1 → N-1 연동)
+    - SkinInsightCard, WorkoutInsightCard, BodyInsightCard 컴포넌트
+```
+
+### C-1 다각도 촬영 (이미 구현 확인)
+
+```yaml
+[x] MultiAngleBodyCapture 컴포넌트
+    - 정면(필수) + 측면(선택) + 후면(선택) 촬영 플로우
+    - BodyGuideOverlay (전신 촬영 가이드)
+    - BodyAngleSelector (각도 선택 UI)
+    - 테스트 파일 존재 (MultiAngleBodyCapture.test.tsx)
+
+[x] 페이지 연동 완료
+    - body/page.tsx에서 MultiAngleBodyCapture 사용
+    - multi-angle 스텝 지원
+```
+
+### Apple Health 연동 (Mobile - 이미 구현 확인)
+
+```yaml
+[x] apps/mobile/lib/health/ 모듈
+    - apple-health.ts (HealthKit 래퍼, ~500줄)
+    - google-fit.ts (Google Fit 래퍼)
+    - sync-manager.ts (동기화 관리)
+    - types.ts (타입 정의)
+
+[x] 지원 데이터
+    읽기: 걸음수, 활동칼로리, 심박수, 수면, 체중
+    쓰기: 운동기록, 수분섭취, 칼로리섭취
+
+[x] Mock Fallback 지원
+    - isHealthKitAvailable() 체크
+    - 개발 환경에서 Mock 데이터 반환
+```
+
+### 테스트 및 DB 마이그레이션
+
+```yaml
+[x] Feed UI + 자세분석 테스트 (88개)
+    - FeedCard.test.tsx (20개)
+    - CommentSection.test.tsx (16개)
+    - route.test.ts (14개)
+    - posture-analysis.test.ts (38개)
+
+[x] DB 마이그레이션 적용
+    - 20260110_feed_tables.sql (피드 시스템)
+    - 20260111_posture_analyses.sql (자세 분석)
+```
+
+---
+
+## 최근 업데이트 (2026-01-07) - 오전
 
 ### 뷰티 SNS 피드 UI (커밋 cf7e3c8)
 

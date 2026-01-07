@@ -2,23 +2,22 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Palette } from 'lucide-react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import AnalysisCard from './AnalysisCard';
 import QuickActions from './QuickActions';
 import EmptyState from './EmptyState';
 
 interface AnalysisSummary {
   id: string;
-  type: 'personal-color' | 'skin' | 'body';
+  type: 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
   createdAt: Date;
   summary: string;
   seasonType?: string;
   skinScore?: number;
   bodyType?: string;
+  hairScore?: number;
+  hairType?: string;
+  undertone?: string;
 }
 
 interface AnalysisSectionProps {
@@ -63,18 +62,14 @@ export default function AnalysisSection({
               <div className="text-left">
                 <h2 className="text-lg font-semibold text-foreground">내 분석 프로필</h2>
                 <p className="text-sm text-muted-foreground">
-                  {hasAnalyses
-                    ? `${analyses.length}개 분석 완료`
-                    : '분석을 시작해보세요'}
+                  {hasAnalyses ? `${analyses.length}개 분석 완료` : '분석을 시작해보세요'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {hasPersonalColor && (
                 <div className="px-2 py-1 bg-module-personal-color-light rounded-full">
-                  <span className="text-xs font-medium text-module-personal-color">
-                    PC 완료
-                  </span>
+                  <span className="text-xs font-medium text-module-personal-color">PC 완료</span>
                 </div>
               )}
               {isOpen ? (
@@ -90,9 +85,7 @@ export default function AnalysisSection({
         <CollapsibleContent>
           <div className="px-5 pb-5 space-y-6">
             {/* 분석 결과가 없는 경우 */}
-            {!hasAnalyses && !hasPersonalColor && (
-              <EmptyState />
-            )}
+            {!hasAnalyses && !hasPersonalColor && <EmptyState />}
 
             {/* 분석 결과 카드 그리드 */}
             {hasAnalyses && (

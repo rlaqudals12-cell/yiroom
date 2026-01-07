@@ -1,8 +1,19 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { generateMockHairAnalysisResult, type HairAnalysisResult } from '@/lib/mock/hair-analysis';
+import {
+  generateMockHairAnalysisResult,
+  type HairAnalysisResult,
+  type HairConcernId,
+} from '@/lib/mock/hair-analysis';
+import { analyzeHair } from '@/lib/gemini';
 import { addXp, type BadgeAwardResult } from '@/lib/gamification';
+import {
+  createScalpHealthNutritionAlert,
+  createHairLossPreventionAlert,
+  createHairShineBoostAlert,
+  type CrossModuleAlertData,
+} from '@/lib/alerts';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -35,7 +46,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
 
-    // AI 분석 실행 (현재는 Mock만 지원)
+    // AI 분석 실행
     let result: HairAnalysisResult;
     let usedMock = false;
 
@@ -45,16 +56,31 @@ export async function POST(req: Request) {
       usedMock = true;
       console.log('[H-1] Using mock analysis');
     } else {
-      // TODO: Real AI 분석 구현 (Gemini analyzeHair)
-      // 현재는 Mock으로 대체
+      // Gemini AI 분석 실행
       try {
-        console.log('[H-1] Starting analysis... (using mock for now)');
-        // TODO: result = await analyzeHair(imageBase64);
-        result = generateMockHairAnalysisResult();
-        usedMock = true;
-        console.log('[H-1] Analysis completed');
+        console.log('[H-1] Starting Gemini analysis...');
+        const geminiResult = await analyzeHair(imageBase64);
+        // Gemini 결과를 HairAnalysisResult 형식으로 변환
+        result = {
+          hairType: geminiResult.hairType,
+          hairTypeLabel: geminiResult.hairTypeLabel,
+          hairThickness: geminiResult.hairThickness,
+          hairThicknessLabel: geminiResult.hairThicknessLabel,
+          scalpType: geminiResult.scalpType,
+          scalpTypeLabel: geminiResult.scalpTypeLabel,
+          overallScore: geminiResult.overallScore,
+          metrics: geminiResult.metrics,
+          concerns: geminiResult.concerns as HairConcernId[],
+          insight: geminiResult.insight,
+          recommendedIngredients: geminiResult.recommendedIngredients,
+          recommendedProducts: geminiResult.recommendedProducts,
+          careTips: geminiResult.careTips,
+          analyzedAt: new Date(),
+          analysisReliability: geminiResult.analysisReliability,
+        };
+        console.log('[H-1] Gemini analysis completed');
       } catch (aiError) {
-        console.error('[H-1] Analysis error, falling back to mock:', aiError);
+        console.error('[H-1] Gemini error, falling back to mock:', aiError);
         result = generateMockHairAnalysisResult();
         usedMock = true;
       }
@@ -145,6 +171,31 @@ export async function POST(req: Request) {
       console.error('[H-1] Gamification error:', gamificationError);
     }
 
+    // 크로스 모듈 알림 생성 (H-1 → N-1)
+    const alerts: CrossModuleAlertData[] = [];
+
+    // 두피 건강 점수 기반 알림
+    const scalpHealthScore = getMetricValue('scalp') ?? 70;
+    if (scalpHealthScore < 70) {
+      alerts.push(
+        createScalpHealthNutritionAlert(scalpHealthScore, result.recommendedIngredients || [])
+      );
+    }
+
+    // 모발 밀도 기반 탈모 예방 알림
+    const densityScore = getMetricValue('density') ?? 70;
+    const riskLevel: 'low' | 'medium' | 'high' =
+      densityScore < 40 ? 'high' : densityScore < 60 ? 'medium' : 'low';
+    if (densityScore < 70) {
+      alerts.push(createHairLossPreventionAlert(densityScore, riskLevel));
+    }
+
+    // 모발 손상도 기반 윤기 알림
+    const damageLevel = getMetricValue('damage') ?? 30;
+    if (damageLevel > 40) {
+      alerts.push(createHairShineBoostAlert(damageLevel));
+    }
+
     return NextResponse.json({
       success: true,
       data: data,
@@ -154,6 +205,7 @@ export async function POST(req: Request) {
       },
       usedMock,
       gamification: gamificationResult,
+      alerts, // 크로스 모듈 알림
     });
   } catch (error) {
     console.error('[H-1] Hair analysis error:', error);

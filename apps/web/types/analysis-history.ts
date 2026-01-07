@@ -4,7 +4,7 @@
  */
 
 // 분석 타입
-export type AnalysisType = 'body' | 'skin' | 'personal-color';
+export type AnalysisType = 'body' | 'skin' | 'personal-color' | 'hair' | 'makeup';
 
 // 공통 분석 이력 아이템
 export interface AnalysisHistoryItem {
@@ -53,6 +53,29 @@ export interface PersonalColorHistoryItem extends AnalysisHistoryItem {
   };
 }
 
+// 헤어 분석 이력 아이템
+export interface HairAnalysisHistoryItem extends AnalysisHistoryItem {
+  type: 'hair';
+  details: {
+    hairType: string;
+    scalpHealth: number;
+    hairDensity: number;
+    hairThickness: number;
+    damageLevel: number;
+  };
+}
+
+// 메이크업 분석 이력 아이템
+export interface MakeupAnalysisHistoryItem extends AnalysisHistoryItem {
+  type: 'makeup';
+  details: {
+    undertone: string;
+    faceShape: string;
+    eyeShape?: string;
+    lipShape?: string;
+  };
+}
+
 // 이력 조회 응답
 export interface AnalysisHistoryResponse {
   analyses: AnalysisHistoryItem[];
@@ -82,7 +105,7 @@ export const PERIOD_DAYS: Record<PeriodFilter, number | null> = {
   '3m': 90,
   '6m': 180,
   '1y': 365,
-  'all': null,
+  all: null,
 };
 
 // 기간 라벨
@@ -92,5 +115,5 @@ export const PERIOD_LABELS: Record<PeriodFilter, string> = {
   '3m': '3개월',
   '6m': '6개월',
   '1y': '1년',
-  'all': '전체',
+  all: '전체',
 };

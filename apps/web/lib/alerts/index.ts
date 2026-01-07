@@ -21,6 +21,14 @@ export {
   createPostWorkoutSkinAlert,
   createHydrationReminderAlert,
   createWeightChangeAlert,
+  // H-1 → N-1 알림
+  createScalpHealthNutritionAlert,
+  createHairLossPreventionAlert,
+  createHairShineBoostAlert,
+  // M-1 → N-1 알림
+  createSkinToneNutritionAlert,
+  createCollagenBoostAlert,
+  // 유틸리티
   sortAlertsByPriority,
   filterExpiredAlerts,
   getVisibleAlerts,

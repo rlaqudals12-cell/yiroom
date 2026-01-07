@@ -300,7 +300,9 @@
       "Bash(dir /b \"c:\\\\dev\\\\yiroom\\\\apps\\\\mobile\\\\lib\\\\health\")",
       "Bash(git -C c:devyiroom status --short)",
       "Bash(git stash:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(ren:*)",
+      "Bash(timeout 180 npm run test -- --run)"
     ]
   },
   "env": {
@@ -308,9 +310,5 @@
     "BASH_MAX_OUTPUT_LENGTH": "50000"
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "filesystem",
-    "github",
-    "postgres"
-  ]
+  "enabledMcpjsonServers": ["filesystem", "github", "postgres"]
 }

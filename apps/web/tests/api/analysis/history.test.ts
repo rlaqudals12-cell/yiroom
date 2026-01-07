@@ -204,8 +204,30 @@ describe('Analysis History API', () => {
 
     it('트렌드가 declining으로 계산된다', async () => {
       const mockData = [
-        { id: '1', created_at: '2025-01-15', overall_score: 70, skin_type: 'dry', hydration: 0, oil_level: 0, pores: 0, pigmentation: 0, wrinkles: 0, sensitivity: 0 },
-        { id: '2', created_at: '2025-01-01', overall_score: 78, skin_type: 'dry', hydration: 0, oil_level: 0, pores: 0, pigmentation: 0, wrinkles: 0, sensitivity: 0 },
+        {
+          id: '1',
+          created_at: '2025-01-15',
+          overall_score: 70,
+          skin_type: 'dry',
+          hydration: 0,
+          oil_level: 0,
+          pores: 0,
+          pigmentation: 0,
+          wrinkles: 0,
+          sensitivity: 0,
+        },
+        {
+          id: '2',
+          created_at: '2025-01-01',
+          overall_score: 78,
+          skin_type: 'dry',
+          hydration: 0,
+          oil_level: 0,
+          pores: 0,
+          pigmentation: 0,
+          wrinkles: 0,
+          sensitivity: 0,
+        },
       ];
 
       setupQueryResult(mockData);
@@ -219,8 +241,30 @@ describe('Analysis History API', () => {
 
     it('트렌드가 stable로 계산된다', async () => {
       const mockData = [
-        { id: '1', created_at: '2025-01-15', overall_score: 75, skin_type: 'dry', hydration: 0, oil_level: 0, pores: 0, pigmentation: 0, wrinkles: 0, sensitivity: 0 },
-        { id: '2', created_at: '2025-01-01', overall_score: 74, skin_type: 'dry', hydration: 0, oil_level: 0, pores: 0, pigmentation: 0, wrinkles: 0, sensitivity: 0 },
+        {
+          id: '1',
+          created_at: '2025-01-15',
+          overall_score: 75,
+          skin_type: 'dry',
+          hydration: 0,
+          oil_level: 0,
+          pores: 0,
+          pigmentation: 0,
+          wrinkles: 0,
+          sensitivity: 0,
+        },
+        {
+          id: '2',
+          created_at: '2025-01-01',
+          overall_score: 74,
+          skin_type: 'dry',
+          hydration: 0,
+          oil_level: 0,
+          pores: 0,
+          pigmentation: 0,
+          wrinkles: 0,
+          sensitivity: 0,
+        },
       ];
 
       setupQueryResult(mockData);
@@ -243,6 +287,118 @@ describe('Analysis History API', () => {
       expect(data.analyses).toHaveLength(0);
       expect(data.trend).toBe('stable');
       expect(data.totalCount).toBe(0);
+    });
+
+    it('헤어 분석 이력을 조회한다', async () => {
+      const mockHairData = [
+        {
+          id: 'hair-1',
+          created_at: '2025-01-15T10:00:00Z',
+          image_url: 'https://example.com/hair1.jpg',
+          overall_score: 82,
+          hair_type: 'wavy',
+          scalp_health: 75,
+          hair_density: 80,
+          hair_thickness: 70,
+          damage_level: 25,
+        },
+        {
+          id: 'hair-2',
+          created_at: '2025-01-01T10:00:00Z',
+          image_url: 'https://example.com/hair2.jpg',
+          overall_score: 78,
+          hair_type: 'wavy',
+          scalp_health: 70,
+          hair_density: 75,
+          hair_thickness: 68,
+          damage_level: 30,
+        },
+      ];
+
+      setupQueryResult(mockHairData);
+
+      const request = createRequest('http://localhost/api/analysis/history?type=hair');
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.analyses).toHaveLength(2);
+      expect(data.analyses[0].type).toBe('hair');
+      expect(data.analyses[0].overallScore).toBe(82);
+      expect(data.analyses[0].details.hairType).toBe('wavy');
+      expect(data.analyses[0].details.scalpHealth).toBe(75);
+      expect(data.trend).toBe('improving'); // 82 - 78 = 4 > 2
+    });
+
+    it('메이크업 분석 이력을 조회한다', async () => {
+      const mockMakeupData = [
+        {
+          id: 'makeup-1',
+          created_at: '2025-01-15T10:00:00Z',
+          image_url: 'https://example.com/makeup1.jpg',
+          overall_score: 88,
+          undertone: 'warm',
+          face_shape: 'oval',
+          eye_shape: 'almond',
+          lip_shape: 'full',
+        },
+      ];
+
+      setupQueryResult(mockMakeupData);
+
+      const request = createRequest('http://localhost/api/analysis/history?type=makeup');
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.analyses).toHaveLength(1);
+      expect(data.analyses[0].type).toBe('makeup');
+      expect(data.analyses[0].overallScore).toBe(88);
+      expect(data.analyses[0].details.undertone).toBe('warm');
+      expect(data.analyses[0].details.faceShape).toBe('oval');
+      expect(data.analyses[0].details.eyeShape).toBe('almond');
+    });
+
+    it('헤어 분석에서 누락된 필드에 기본값을 사용한다', async () => {
+      const mockHairData = [
+        {
+          id: 'hair-1',
+          created_at: '2025-01-15T10:00:00Z',
+          // 다른 필드가 누락됨
+        },
+      ];
+
+      setupQueryResult(mockHairData);
+
+      const request = createRequest('http://localhost/api/analysis/history?type=hair');
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.analyses[0].overallScore).toBe(0);
+      expect(data.analyses[0].details.hairType).toBe('straight');
+      expect(data.analyses[0].details.scalpHealth).toBe(0);
+    });
+
+    it('메이크업 분석에서 누락된 필드에 기본값을 사용한다', async () => {
+      const mockMakeupData = [
+        {
+          id: 'makeup-1',
+          created_at: '2025-01-15T10:00:00Z',
+          // 다른 필드가 누락됨
+        },
+      ];
+
+      setupQueryResult(mockMakeupData);
+
+      const request = createRequest('http://localhost/api/analysis/history?type=makeup');
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.analyses[0].overallScore).toBe(0);
+      expect(data.analyses[0].details.undertone).toBe('neutral');
+      expect(data.analyses[0].details.faceShape).toBe('oval');
     });
   });
 });

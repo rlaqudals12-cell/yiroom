@@ -38,6 +38,9 @@ import {
   getCalorieBalanceStatus,
   getDateRange,
   DEFAULT_NUTRITION_TARGETS,
+  calculateBeautyNutritionCorrelation,
+  type RawHairAnalysis,
+  type RawMakeupAnalysis,
 } from './weeklyAggregator';
 import type { NutritionGoal } from '@/types/nutrition';
 
@@ -89,7 +92,10 @@ export function getMonthRangeFromYYYYMM(yearMonth: string): {
  * 월 내 주간 범위 계산
  * 월의 첫째 날부터 7일씩 나눔 (마지막 주는 짧을 수 있음)
  */
-export function getWeeksInMonth(monthStart: string, monthEnd: string): Array<{
+export function getWeeksInMonth(
+  monthStart: string,
+  monthEnd: string
+): Array<{
   weekNum: number;
   weekStart: string;
   weekEnd: string;
@@ -133,14 +139,10 @@ export function calculateWeeklySummary(
   weekEnd: string
 ): WeeklySummary {
   // 해당 주 데이터만 필터링
-  const weekNutrition = dailyNutrition.filter(
-    d => d.date >= weekStart && d.date <= weekEnd
-  );
-  const weekWorkout = dailyWorkout.filter(
-    d => d.date >= weekStart && d.date <= weekEnd
-  );
+  const weekNutrition = dailyNutrition.filter((d) => d.date >= weekStart && d.date <= weekEnd);
+  const weekWorkout = dailyWorkout.filter((d) => d.date >= weekStart && d.date <= weekEnd);
 
-  const daysWithRecords = weekNutrition.filter(d => d.mealsLogged > 0).length;
+  const daysWithRecords = weekNutrition.filter((d) => d.mealsLogged > 0).length;
   const totalCalories = weekNutrition.reduce((sum, d) => sum + d.calories, 0);
   const totalWater = weekNutrition.reduce((sum, d) => sum + d.water, 0);
   const totalProtein = weekNutrition.reduce((sum, d) => sum + d.protein, 0);
@@ -176,9 +178,7 @@ export function calculateBodyProgress(
       endWeight,
       weightChange: 0,
       reanalysisRecommended: false,
-      message: startWeight
-        ? '월말 체형 분석을 해보세요!'
-        : '체형 분석을 시작해보세요!',
+      message: startWeight ? '월말 체형 분석을 해보세요!' : '체형 분석을 시작해보세요!',
     };
   }
 
@@ -237,9 +237,7 @@ export function calculateGoalProgress(
       const weightLossBonus = bodyProgress.weightChange < 0 ? 20 : 0;
       achievementRate = Math.min(calorieCompliance * 0.8 + weightLossBonus, 100);
       isOnTrack = achievement.caloriesPercent <= 105 && bodyProgress.weightChange <= 0;
-      message = isOnTrack
-        ? '감량 목표를 잘 지키고 있어요!'
-        : '칼로리 섭취를 조금 줄여보세요.';
+      message = isOnTrack ? '감량 목표를 잘 지키고 있어요!' : '칼로리 섭취를 조금 줄여보세요.';
       break;
 
     case 'muscle':
@@ -248,9 +246,7 @@ export function calculateGoalProgress(
       const calorieScore = achievement.caloriesPercent >= 100 ? 20 : 0;
       achievementRate = Math.min(proteinScore * 0.8 + calorieScore, 100);
       isOnTrack = achievement.proteinPercent >= 100;
-      message = isOnTrack
-        ? '근육 증가 목표를 향해 잘 가고 있어요!'
-        : '단백질 섭취를 늘려보세요.';
+      message = isOnTrack ? '근육 증가 목표를 향해 잘 가고 있어요!' : '단백질 섭취를 늘려보세요.';
       break;
 
     case 'skin':
@@ -262,9 +258,7 @@ export function calculateGoalProgress(
       );
       achievementRate = Math.round(waterScore * 0.6 + balanceScore * 0.4);
       isOnTrack = achievement.waterPercent >= 80;
-      message = isOnTrack
-        ? '피부 건강을 위한 수분 섭취 좋아요!'
-        : '수분 섭취를 더 늘려보세요.';
+      message = isOnTrack ? '피부 건강을 위한 수분 섭취 좋아요!' : '수분 섭취를 더 늘려보세요.';
       break;
 
     case 'health':
@@ -281,9 +275,7 @@ export function calculateGoalProgress(
       const avgScore = allScores.reduce((a, b) => a + b, 0) / allScores.length;
       achievementRate = Math.min(Math.round(avgScore), 100);
       isOnTrack = avgScore >= 80 && avgScore <= 120;
-      message = isOnTrack
-        ? '균형 잡힌 식단을 유지하고 있어요!'
-        : '영양 균형을 맞춰보세요.';
+      message = isOnTrack ? '균형 잡힌 식단을 유지하고 있어요!' : '영양 균형을 맞춰보세요.';
       break;
   }
 
@@ -314,7 +306,9 @@ export function generateMonthlyInsights(
 
   // 목표 달성
   if (goalProgress.achievementRate >= 80) {
-    achievements.push(`${getGoalLabel(goalProgress.goal)} 목표 달성률 ${goalProgress.achievementRate}%!`);
+    achievements.push(
+      `${getGoalLabel(goalProgress.goal)} 목표 달성률 ${goalProgress.achievementRate}%!`
+    );
   }
 
   // 긍정적 하이라이트
@@ -419,7 +413,7 @@ function calculateWeekScore(week: WeeklySummary): number {
   // 음식 품질 점수 + 운동 보너스
   const qualityScore = week.foodQualityScore;
   const workoutBonus = Math.min(week.workoutCount * 5, 20);
-  const mealBonus = Math.min(week.mealCount, 21) / 21 * 10;
+  const mealBonus = (Math.min(week.mealCount, 21) / 21) * 10;
 
   return Math.round(qualityScore + workoutBonus + mealBonus);
 }
@@ -449,6 +443,9 @@ export interface MonthlyAggregatorInput {
   workoutStreak: ReportStreakStatus;
   bodyAnalysisStart?: { weight: number } | null;
   bodyAnalysisEnd?: { weight: number } | null;
+  // H-1/M-1 뷰티-영양 상관관계
+  hairAnalysis?: RawHairAnalysis | null;
+  makeupAnalysis?: RawMakeupAnalysis | null;
 }
 
 /**
@@ -465,6 +462,8 @@ export function generateMonthlyReport(input: MonthlyAggregatorInput): MonthlyRep
     workoutStreak,
     bodyAnalysisStart = null,
     bodyAnalysisEnd = null,
+    hairAnalysis,
+    makeupAnalysis,
   } = input;
 
   const { monthStart, monthEnd } = getMonthRangeFromYYYYMM(month);
@@ -485,7 +484,7 @@ export function generateMonthlyReport(input: MonthlyAggregatorInput): MonthlyRep
   const workoutTrend = calculateWorkoutTrend(dailyWorkout);
 
   // 주간 비교
-  const weeklyComparison = weeksInMonth.map(week =>
+  const weeklyComparison = weeksInMonth.map((week) =>
     calculateWeeklySummary(dailyNutrition, dailyWorkout, week.weekStart, week.weekEnd)
   );
 
@@ -494,9 +493,10 @@ export function generateMonthlyReport(input: MonthlyAggregatorInput): MonthlyRep
   const totalIntake = nutritionSummary.totalCalories;
   const totalBurned = workoutSummary.totalCaloriesBurned;
   const netCalories = totalIntake - totalBurned;
-  const avgNetPerDay = nutritionSummary.daysWithRecords > 0
-    ? Math.round(netCalories / nutritionSummary.daysWithRecords)
-    : 0;
+  const avgNetPerDay =
+    nutritionSummary.daysWithRecords > 0
+      ? Math.round(netCalories / nutritionSummary.daysWithRecords)
+      : 0;
 
   // 체중 변화 (C-1 연동)
   const goal = settings?.goal || 'maintain';
@@ -518,6 +518,13 @@ export function generateMonthlyReport(input: MonthlyAggregatorInput): MonthlyRep
 
   // 하이라이트
   const highlights = calculateMonthlyHighlights(weeklyComparison);
+
+  // H-1/M-1 뷰티-영양 상관관계 계산
+  const beautyNutritionCorrelation = calculateBeautyNutritionCorrelation(
+    nutritionSummary,
+    hairAnalysis,
+    makeupAnalysis
+  );
 
   return {
     month,
@@ -559,5 +566,8 @@ export function generateMonthlyReport(input: MonthlyAggregatorInput): MonthlyRep
     },
 
     highlights,
+
+    // H-1/M-1 뷰티-영양 상관관계
+    beautyNutritionCorrelation,
   };
 }

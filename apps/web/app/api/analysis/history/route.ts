@@ -3,7 +3,7 @@
  * GET /api/analysis/history
  *
  * Query params:
- * - type: 'body' | 'skin' | 'personal-color'
+ * - type: 'body' | 'skin' | 'personal-color' | 'hair' | 'makeup'
  * - limit: number (default: 10, max: 50)
  * - period: '1w' | '1m' | '3m' | '6m' | '1y' | 'all'
  */
@@ -17,6 +17,8 @@ import type {
   SkinAnalysisHistoryItem,
   BodyAnalysisHistoryItem,
   PersonalColorHistoryItem,
+  HairAnalysisHistoryItem,
+  MakeupAnalysisHistoryItem,
   PeriodFilter,
 } from '@/types/analysis-history';
 
@@ -27,7 +29,7 @@ const PERIOD_DAYS_MAP: Record<PeriodFilter, number | null> = {
   '3m': 90,
   '6m': 180,
   '1y': 365,
-  'all': null,
+  all: null,
 };
 
 export async function GET(request: Request) {
@@ -43,9 +45,9 @@ export async function GET(request: Request) {
     const limitParam = searchParams.get('limit');
     const periodParam = searchParams.get('period') as PeriodFilter | null;
 
-    if (!type || !['body', 'skin', 'personal-color'].includes(type)) {
+    if (!type || !['body', 'skin', 'personal-color', 'hair', 'makeup'].includes(type)) {
       return NextResponse.json(
-        { error: 'Invalid type. Must be body, skin, or personal-color' },
+        { error: 'Invalid type. Must be body, skin, personal-color, hair, or makeup' },
         { status: 400 }
       );
     }
@@ -64,21 +66,21 @@ export async function GET(request: Request) {
       startDate = date.toISOString();
     }
 
-    let analyses: SkinAnalysisHistoryItem[] | BodyAnalysisHistoryItem[] | PersonalColorHistoryItem[] = [];
+    let analyses:
+      | SkinAnalysisHistoryItem[]
+      | BodyAnalysisHistoryItem[]
+      | PersonalColorHistoryItem[]
+      | HairAnalysisHistoryItem[]
+      | MakeupAnalysisHistoryItem[] = [];
 
     if (type === 'skin') {
-      let query = supabase
-        .from('skin_analyses')
-        .select('*')
-        .eq('clerk_user_id', userId);
+      let query = supabase.from('skin_analyses').select('*').eq('clerk_user_id', userId);
 
       if (startDate) {
         query = query.gte('created_at', startDate);
       }
 
-      const { data, error } = await query
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      const { data, error } = await query.order('created_at', { ascending: false }).limit(limit);
 
       if (error) {
         console.error('[Analysis History] Skin query error:', error);
@@ -102,18 +104,13 @@ export async function GET(request: Request) {
         },
       }));
     } else if (type === 'body') {
-      let query = supabase
-        .from('body_analyses')
-        .select('*')
-        .eq('clerk_user_id', userId);
+      let query = supabase.from('body_analyses').select('*').eq('clerk_user_id', userId);
 
       if (startDate) {
         query = query.gte('created_at', startDate);
       }
 
-      const { data, error } = await query
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      const { data, error } = await query.order('created_at', { ascending: false }).limit(limit);
 
       if (error) {
         console.error('[Analysis History] Body query error:', error);
@@ -142,8 +139,7 @@ export async function GET(request: Request) {
           },
         };
       });
-    } else {
-      // personal-color
+    } else if (type === 'personal-color') {
       let query = supabase
         .from('personal_color_assessments')
         .select('*')
@@ -153,9 +149,7 @@ export async function GET(request: Request) {
         query = query.gte('created_at', startDate);
       }
 
-      const { data, error } = await query
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      const { data, error } = await query.order('created_at', { ascending: false }).limit(limit);
 
       if (error) {
         console.error('[Analysis History] PC query error:', error);
@@ -172,6 +166,62 @@ export async function GET(request: Request) {
           season: item.season,
           undertone: item.undertone || 'Neutral',
           confidence: item.confidence || 0,
+        },
+      }));
+    } else if (type === 'hair') {
+      let query = supabase.from('hair_analyses').select('*').eq('clerk_user_id', userId);
+
+      if (startDate) {
+        query = query.gte('created_at', startDate);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false }).limit(limit);
+
+      if (error) {
+        console.error('[Analysis History] Hair query error:', error);
+        return NextResponse.json({ error: 'Database error' }, { status: 500 });
+      }
+
+      analyses = (data || []).map((item) => ({
+        id: item.id,
+        date: item.created_at,
+        overallScore: item.overall_score || 0,
+        imageUrl: item.image_url,
+        type: 'hair' as const,
+        details: {
+          hairType: item.hair_type || 'straight',
+          scalpHealth: item.scalp_health || 0,
+          hairDensity: item.hair_density || 0,
+          hairThickness: item.hair_thickness || 0,
+          damageLevel: item.damage_level || 0,
+        },
+      }));
+    } else {
+      // makeup
+      let query = supabase.from('makeup_analyses').select('*').eq('clerk_user_id', userId);
+
+      if (startDate) {
+        query = query.gte('created_at', startDate);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false }).limit(limit);
+
+      if (error) {
+        console.error('[Analysis History] Makeup query error:', error);
+        return NextResponse.json({ error: 'Database error' }, { status: 500 });
+      }
+
+      analyses = (data || []).map((item) => ({
+        id: item.id,
+        date: item.created_at,
+        overallScore: item.overall_score || 0,
+        imageUrl: item.image_url,
+        type: 'makeup' as const,
+        details: {
+          undertone: item.undertone || 'neutral',
+          faceShape: item.face_shape || 'oval',
+          eyeShape: item.eye_shape,
+          lipShape: item.lip_shape,
         },
       }));
     }
@@ -199,9 +249,6 @@ export async function GET(request: Request) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('[Analysis History] Unexpected error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

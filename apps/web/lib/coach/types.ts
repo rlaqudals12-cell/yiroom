@@ -31,6 +31,19 @@ export interface UserContext {
     height?: number;
     weight?: number;
   };
+  hairAnalysis?: {
+    hairType: string;
+    scalpType: string;
+    overallScore: number;
+    concerns?: string[];
+  };
+  makeupAnalysis?: {
+    undertone: string;
+    faceShape: string;
+    eyeShape?: string;
+    overallScore: number;
+    recommendedStyles?: string[];
+  };
   workout?: {
     workoutType?: string;
     goal?: string;
@@ -75,6 +88,12 @@ export function summarizeContext(context: UserContext | null): string {
   }
   if (context.bodyAnalysis) {
     parts.push(`체형:${context.bodyAnalysis.bodyType}`);
+  }
+  if (context.hairAnalysis) {
+    parts.push(`헤어:${context.hairAnalysis.hairType}`);
+  }
+  if (context.makeupAnalysis) {
+    parts.push(`메이크업:${context.makeupAnalysis.undertone}`);
   }
   if (context.workout?.streak) {
     parts.push(`운동스트릭:${context.workout.streak}일`);

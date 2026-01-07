@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Palette, Sparkles, User, ChevronRight } from 'lucide-react';
+import { Palette, Sparkles, User, ChevronRight, Scissors, Heart } from 'lucide-react';
 
 // 상대 시간 포맷팅 헬퍼 함수
 function formatRelativeTime(date: Date): string {
@@ -21,12 +21,15 @@ function formatRelativeTime(date: Date): string {
 
 interface AnalysisSummary {
   id: string;
-  type: 'personal-color' | 'skin' | 'body';
+  type: 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
   createdAt: Date;
   summary: string;
   seasonType?: string;
   skinScore?: number;
   bodyType?: string;
+  hairScore?: number;
+  hairType?: string;
+  undertone?: string;
 }
 
 interface AnalysisCardProps {
@@ -59,6 +62,22 @@ const ANALYSIS_CONFIG = {
     borderColor: 'border-module-body/30',
     iconColor: 'text-module-body',
   },
+  hair: {
+    title: '헤어 분석',
+    icon: Scissors,
+    href: '/analysis/hair',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-200/50',
+    iconColor: 'text-amber-600',
+  },
+  makeup: {
+    title: '메이크업 분석',
+    icon: Heart,
+    href: '/analysis/makeup',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-200/50',
+    iconColor: 'text-rose-500',
+  },
 };
 
 export default function AnalysisCard({ analysis }: AnalysisCardProps) {
@@ -90,9 +109,7 @@ export default function AnalysisCard({ analysis }: AnalysisCardProps) {
         </div>
 
         {/* 결과 요약 */}
-        <p className="text-lg font-medium text-foreground mb-2">
-          {analysis.summary}
-        </p>
+        <p className="text-lg font-medium text-foreground mb-2">{analysis.summary}</p>
 
         {/* 시간 정보 */}
         <p className="text-sm text-muted-foreground">{timeAgo}</p>

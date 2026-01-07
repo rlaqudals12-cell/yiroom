@@ -32,6 +32,8 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
       personalColorResult,
       skinResult,
       bodyResult,
+      hairResult,
+      makeupResult,
       workoutAnalysisResult,
       workoutStreakResult,
       nutritionSettingsResult,
@@ -63,6 +65,24 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
       supabase
         .from('body_analyses')
         .select('body_type, bmi, height, weight')
+        .eq('clerk_user_id', clerkUserId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+
+      // 헤어 분석
+      supabase
+        .from('hair_analyses')
+        .select('hair_type, scalp_type, overall_score, concerns')
+        .eq('clerk_user_id', clerkUserId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+
+      // 메이크업 분석
+      supabase
+        .from('makeup_analyses')
+        .select('undertone, face_shape, eye_shape, overall_score, recommendations')
         .eq('clerk_user_id', clerkUserId)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -160,6 +180,30 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
         bmi: bodyResult.data.bmi,
         height: bodyResult.data.height,
         weight: bodyResult.data.weight,
+      };
+    }
+
+    // 헤어 분석
+    if (hairResult.data) {
+      context.hairAnalysis = {
+        hairType: hairResult.data.hair_type || '알 수 없음',
+        scalpType: hairResult.data.scalp_type || '알 수 없음',
+        overallScore: hairResult.data.overall_score || 0,
+        concerns: hairResult.data.concerns as string[] | undefined,
+      };
+    }
+
+    // 메이크업 분석
+    if (makeupResult.data) {
+      const recommendations = makeupResult.data.recommendations as {
+        styles?: string[];
+      } | null;
+      context.makeupAnalysis = {
+        undertone: makeupResult.data.undertone || '알 수 없음',
+        faceShape: makeupResult.data.face_shape || '알 수 없음',
+        eyeShape: makeupResult.data.eye_shape,
+        overallScore: makeupResult.data.overall_score || 0,
+        recommendedStyles: recommendations?.styles,
       };
     }
 

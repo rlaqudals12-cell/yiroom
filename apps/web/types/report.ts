@@ -27,12 +27,12 @@ export type CalorieBalanceStatus = 'deficit' | 'balanced' | 'surplus';
  * 일일 영양 데이터 (리포트용)
  */
 export interface DailyNutrition {
-  date: string;                     // YYYY-MM-DD
+  date: string; // YYYY-MM-DD
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-  water: number;                    // ml
+  water: number; // ml
   mealsLogged: number;
   trafficLightRatio: {
     green: number;
@@ -40,16 +40,16 @@ export interface DailyNutrition {
     red: number;
   };
   calorieTarget: number;
-  caloriePercent: number;           // 목표 대비 %
+  caloriePercent: number; // 목표 대비 %
 }
 
 /**
  * 일일 운동 데이터 (리포트용)
  */
 export interface DailyWorkout {
-  date: string;                     // YYYY-MM-DD
+  date: string; // YYYY-MM-DD
   sessions: number;
-  duration: number;                 // minutes
+  duration: number; // minutes
   caloriesBurned: number;
   workoutTypes: string[];
 }
@@ -80,7 +80,7 @@ export interface NutritionSummaryStats {
  * 영양 달성률
  */
 export interface NutritionAchievement {
-  caloriesPercent: number;          // 평균 목표 대비 %
+  caloriesPercent: number; // 평균 목표 대비 %
   proteinPercent: number;
   carbsPercent: number;
   fatPercent: number;
@@ -94,8 +94,8 @@ export interface NutritionTrend {
   caloriesTrend: TrendDirection;
   waterTrend: TrendDirection;
   proteinTrend: TrendDirection;
-  foodQualityScore: number;         // 0-100 (green 비율 기반)
-  consistencyScore: number;         // 0-100 (기록 빈도 기반)
+  foodQualityScore: number; // 0-100 (green 비율 기반)
+  consistencyScore: number; // 0-100 (기록 빈도 기반)
 }
 
 /**
@@ -103,7 +103,7 @@ export interface NutritionTrend {
  */
 export interface WorkoutSummaryStats {
   totalSessions: number;
-  totalDuration: number;            // minutes
+  totalDuration: number; // minutes
   avgDurationPerSession: number;
   totalCaloriesBurned: number;
   daysWithWorkout: number;
@@ -113,7 +113,7 @@ export interface WorkoutSummaryStats {
  * 운동 트렌드
  */
 export interface WorkoutTrend {
-  consistencyScore: number;         // 0-100
+  consistencyScore: number; // 0-100
   durationTrend: TrendDirection;
   caloriesTrend: TrendDirection;
 }
@@ -126,11 +126,11 @@ export interface WorkoutTrend {
  * 리포트 인사이트 타입
  */
 export type ReportInsightType =
-  | 'highlight'                     // 긍정적 변화/성과
-  | 'improvement'                   // 개선 필요
-  | 'tip'                           // 추천/팁
-  | 'achievement'                   // 마일스톤 달성
-  | 'warning';                      // 경고
+  | 'highlight' // 긍정적 변화/성과
+  | 'improvement' // 개선 필요
+  | 'tip' // 추천/팁
+  | 'achievement' // 마일스톤 달성
+  | 'warning'; // 경고
 
 /**
  * 리포트 인사이트
@@ -146,10 +146,10 @@ export interface ReportInsight {
  * 인사이트 모음
  */
 export interface ReportInsights {
-  highlights: string[];             // 긍정적 변화
-  improvements: string[];           // 개선 필요 사항
-  tips: string[];                   // 다음 기간 추천
-  achievements?: string[];          // 달성 사항
+  highlights: string[]; // 긍정적 변화
+  improvements: string[]; // 개선 필요 사항
+  tips: string[]; // 다음 기간 추천
+  achievements?: string[]; // 달성 사항
 }
 
 // =====================================================
@@ -162,7 +162,7 @@ export interface ReportInsights {
 export interface ReportStreakStatus {
   current: number;
   longest: number;
-  milestone: number | null;         // 기간 내 달성한 마일스톤
+  milestone: number | null; // 기간 내 달성한 마일스톤
   message: string;
 }
 
@@ -175,9 +175,9 @@ export interface ReportStreakStatus {
  */
 export interface WeeklyReport {
   // 메타데이터
-  weekStart: string;                // YYYY-MM-DD (월요일)
-  weekEnd: string;                  // YYYY-MM-DD (일요일)
-  generatedAt: string;              // ISO timestamp
+  weekStart: string; // YYYY-MM-DD (월요일)
+  weekEnd: string; // YYYY-MM-DD (일요일)
+  generatedAt: string; // ISO timestamp
 
   // 영양 데이터
   nutrition: {
@@ -192,7 +192,7 @@ export interface WeeklyReport {
     summary: WorkoutSummaryStats;
     trend: WorkoutTrend;
     dailyBreakdown: DailyWorkout[];
-    hasData: boolean;               // 운동 데이터 존재 여부
+    hasData: boolean; // 운동 데이터 존재 여부
   };
 
   // 통합 분석
@@ -215,11 +215,14 @@ export interface WeeklyReport {
 
   // 하이라이트
   highlights: {
-    bestDay: string | null;         // 가장 건강한 날 (date)
-    worstDay: string | null;        // 개선 필요한 날 (date)
+    bestDay: string | null; // 가장 건강한 날 (date)
+    worstDay: string | null; // 개선 필요한 날 (date)
     bestDayScore: number;
     worstDayScore: number;
   };
+
+  // 뷰티-영양 상관관계 (H-1/M-1 연동, 선택)
+  beautyNutritionCorrelation?: BeautyNutritionCorrelation;
 }
 
 // =====================================================
@@ -256,9 +259,64 @@ export interface BodyProgress {
  */
 export interface GoalProgress {
   goal: NutritionGoal;
-  achievementRate: number;          // 0-100
+  achievementRate: number; // 0-100
   message: string;
   isOnTrack: boolean;
+}
+
+// =====================================================
+// 뷰티-영양 상관관계 (H-1/M-1 → N-1 연동)
+// =====================================================
+
+/**
+ * 영양소별 뷰티 임팩트
+ */
+export interface NutrientBeautyImpact {
+  nutrient: string; // 영양소 ID
+  label: string; // 표시명 (비오틴, 아연 등)
+  intake: number; // 실제 섭취량
+  recommended: number; // 권장량
+  percentage: number; // 달성률 (0-100)
+  impact: 'positive' | 'neutral' | 'negative';
+}
+
+/**
+ * 뷰티-영양 상관관계 데이터
+ */
+export interface BeautyNutritionCorrelation {
+  // 헤어 건강 데이터 (H-1)
+  hairHealth: {
+    scalpScore: number | null; // 두피 건강 (0-100)
+    densityScore: number | null; // 모발 밀도 (0-100)
+    damageLevel: number | null; // 손상도 (0-100, 높을수록 손상)
+    overallScore: number | null; // 종합 점수
+    analyzedAt: string | null; // 분석 일시
+  } | null;
+
+  // 피부/메이크업 데이터 (M-1) - 선택
+  skinHealth: {
+    hydration: number | null; // 수분도
+    texture: number | null; // 피부 텍스처
+    overallScore: number | null;
+    analyzedAt: string | null;
+  } | null;
+
+  // 영양소별 뷰티 임팩트
+  nutrientImpacts: NutrientBeautyImpact[];
+
+  // 상관관계 분석
+  correlationSummary: {
+    overallScore: number; // 뷰티-영양 조화도 (0-100)
+    trend: TrendDirection; // 상관관계 트렌드
+    message: string; // 요약 메시지
+  };
+
+  // 개선 추천사항
+  recommendations: string[];
+
+  // 데이터 유효성
+  hasHairData: boolean;
+  hasSkinData: boolean;
 }
 
 /**
@@ -266,9 +324,9 @@ export interface GoalProgress {
  */
 export interface MonthlyReport {
   // 메타데이터
-  month: string;                    // YYYY-MM
-  monthStart: string;               // YYYY-MM-DD
-  monthEnd: string;                 // YYYY-MM-DD
+  month: string; // YYYY-MM
+  monthStart: string; // YYYY-MM-DD
+  monthEnd: string; // YYYY-MM-DD
   generatedAt: string;
 
   // 영양 데이터
@@ -316,11 +374,14 @@ export interface MonthlyReport {
 
   // 하이라이트
   highlights: {
-    bestWeek: number | null;        // 1-4
+    bestWeek: number | null; // 1-4
     worstWeek: number | null;
     bestWeekScore: number;
     worstWeekScore: number;
   };
+
+  // 뷰티-영양 상관관계 (H-1/M-1 연동, 선택)
+  beautyNutritionCorrelation?: BeautyNutritionCorrelation;
 }
 
 // =====================================================
@@ -352,8 +413,8 @@ export interface MonthlyReportResponse {
  */
 export interface ReportListItem {
   type: 'weekly' | 'monthly';
-  period: string;                   // YYYY-MM-DD (주간) 또는 YYYY-MM (월간)
-  label: string;                    // 표시용 (예: "12월 1주차", "2024년 12월")
+  period: string; // YYYY-MM-DD (주간) 또는 YYYY-MM (월간)
+  label: string; // 표시용 (예: "12월 1주차", "2024년 12월")
   summary: {
     avgCalories: number;
     avgWater: number;
@@ -431,7 +492,7 @@ export interface RawWorkoutLog {
   clerk_user_id: string;
   session_date: string;
   workout_type: string;
-  duration: number;                 // minutes
+  duration: number; // minutes
   calories_burned: number;
   completed_at: string | null;
 }

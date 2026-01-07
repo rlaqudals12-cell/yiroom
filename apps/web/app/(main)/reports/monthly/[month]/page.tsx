@@ -23,6 +23,7 @@ import {
   WeeklyComparisonChartDynamic,
   BodyProgressCard,
   GoalProgressCard,
+  BeautyNutritionCard,
 } from '@/components/reports';
 import { EmptyStateCard } from '@/components/common';
 import { Button } from '@/components/ui/button';
@@ -184,13 +185,15 @@ export default function MonthlyReportPage({ params }: MonthlyReportPageProps) {
         />
 
         {/* 체중 변화 */}
-        <BodyProgressCard
-          bodyProgress={report.bodyProgress}
-          onReanalyze={handleBodyReanalyze}
-        />
+        <BodyProgressCard bodyProgress={report.bodyProgress} onReanalyze={handleBodyReanalyze} />
 
         {/* 인사이트 */}
         <InsightCard insights={report.insights} />
+
+        {/* 뷰티-영양 상관관계 (H-1/M-1 연동) */}
+        {report.beautyNutritionCorrelation && (
+          <BeautyNutritionCard correlation={report.beautyNutritionCorrelation} />
+        )}
 
         {/* 스트릭 */}
         <StreakBadge

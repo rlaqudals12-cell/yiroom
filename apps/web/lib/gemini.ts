@@ -20,6 +20,14 @@ import {
   generateMockWorkoutInsights,
 } from '@/lib/mock/workout-analysis';
 import { generateMockFoodAnalysis, generateMockMealSuggestion } from '@/lib/mock/food-analysis';
+import {
+  generateMockHairAnalysisResult,
+  type HairAnalysisResult as MockHairAnalysisResult,
+} from '@/lib/mock/hair-analysis';
+import {
+  generateMockMakeupAnalysisResult,
+  type MakeupAnalysisResult as MockMakeupAnalysisResult,
+} from '@/lib/mock/makeup-analysis';
 
 // Mock 모드 환경변수
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
@@ -327,6 +335,19 @@ const SKIN_ANALYSIS_PROMPT = `당신은 전문 피부과학 기반 AI 분석가�
 1. 조명 상태: 자연광/인공광 구분 → 인공광은 피부톤을 왜곡할 수 있음
 2. 메이크업 여부: 베이스 메이크업이 있으면 실제 피부 상태 파악 어려움
 3. 이미지 해상도: 저해상도는 세부 분석 정확도 저하
+
+📋 분석 순서 (Step-by-Step):
+1. 먼저 이미지 품질(조명, 메이크업, 해상도)을 평가하세요.
+2. T존(이마/코/턱)의 유분과 모공 상태를 분석하세요.
+3. U존(볼/눈가)의 수분과 주름 상태를 분석하세요.
+4. 전체 피부 톤, 색소침착, 트러블을 평가하세요.
+5. 종합 점수와 피부 타입을 판정하세요.
+6. 맞춤 인사이트와 추천 성분을 도출하세요.
+
+⚠️ 할루시네이션 방지 규칙:
+- 저화질 이미지: analysisReliability를 "low"로 설정
+- 메이크업 감지 시: wrinkles, pores 점수는 신뢰도 낮음 표시
+- 불확실한 지표: 추측하지 말고 "normal" 점수 + 신뢰도 낮춤
 
 📊 과학적 분석 기준:
 
@@ -783,6 +804,20 @@ ${physicalInfo ? `- ${physicalInfo}` : ''}
 3. **버너 (BURNER)**: 체지방 연소와 체중 감량에 집중. 고강도 유산소와 HIIT 위주.
 4. **무버 (MOVER)**: 체력 향상과 심폐 기능 강화에 집중. 유산소 운동과 기능성 운동.
 5. **플렉서 (FLEXER)**: 유연성과 균형감각 향상에 집중. 요가, 스트레칭, 코어 운동.
+
+## 📋 분석 순서 (Step-by-Step)
+
+1. 먼저 사용자의 신체 정보(체형, 체중, 나이)를 분석하세요.
+2. 운동 제약조건(부상 부위, 빈도, 장비, 장소)을 파악하세요.
+3. 운동 목표와 고민 부위를 5가지 타입에 매핑하세요.
+4. 제약조건에 맞는 최적 타입을 선택하세요.
+5. 신뢰도와 추천 운동을 도출하세요.
+
+## ⚠️ 우선순위 규칙
+
+- **부상 부위 > 운동 목표**: 부상이 있으면 해당 부위 회피가 최우선
+- **장비/장소 제약 > 이상적 운동**: 현실적으로 가능한 운동 추천
+- **불확실한 경우**: confidence를 70-75%로 낮추고 보수적 추천
 
 ## 응답 형식
 
@@ -2768,6 +2803,493 @@ bodyTypeCorrelation 필드에 체형과 자세의 연관성을 포함해주세�
   } catch (error) {
     geminiLogger.error('[A-1] Gemini error, falling back to mock:', error);
     const mockResult = generateMockPostureAnalysis(bodyType);
+    return convertMockToResult(mockResult);
+  }
+}
+
+// ============================================================
+// H-1 헤어 분석 (Hair Analysis)
+// ============================================================
+
+/**
+ * H-1 헤어 분석 결과 타입
+ */
+export interface GeminiHairAnalysisResult {
+  // 기본 정보
+  hairType: 'straight' | 'wavy' | 'curly' | 'coily';
+  hairTypeLabel: string;
+  hairThickness: 'fine' | 'medium' | 'thick';
+  hairThicknessLabel: string;
+  scalpType: 'dry' | 'normal' | 'oily' | 'sensitive';
+  scalpTypeLabel: string;
+
+  // 점수
+  overallScore: number;
+  metrics: Array<{
+    id: string;
+    label: string;
+    value: number;
+    status: 'good' | 'normal' | 'warning';
+    description: string;
+  }>;
+
+  // 분석 결과
+  concerns: string[];
+  insight: string;
+
+  // 추천
+  recommendedIngredients: string[];
+  recommendedProducts: Array<{
+    category: string;
+    name: string;
+    description: string;
+  }>;
+
+  // 케어 팁
+  careTips: string[];
+
+  // 메타데이터
+  analysisReliability: 'high' | 'medium' | 'low';
+
+  // 이미지 품질 정보
+  imageQuality?: {
+    lightingCondition: 'natural' | 'artificial' | 'mixed';
+    hairVisible: boolean;
+    scalpVisible: boolean;
+  };
+}
+
+/**
+ * H-1 헤어 분석 프롬프트
+ */
+const HAIR_ANALYSIS_PROMPT = `당신은 전문 트리콜로지스트(모발/두피 전문가) AI입니다. 업로드된 헤어 이미지를 분석하여 모발과 두피 상태를 평가해주세요.
+
+⚠️ 이미지 분석 전 조건 확인:
+1. 조명 상태: 자연광에서 모발 결과 윤기가 정확히 보임
+2. 이미지 해상도: 모발 결과 두피가 선명하게 보여야 함
+3. 촬영 범위: 모발 전체 또는 두피 클로즈업
+
+📋 분석 순서 (Step-by-Step):
+1. 먼저 이미지 품질(조명, 해상도, 촬영 범위)을 평가하세요.
+2. 모발 타입(직모/웨이브/곱슬/강한 곱슬)을 판단하세요.
+3. 모발 굵기(가는/보통/굵은)를 분석하세요.
+4. 두피 타입(건성/중성/지성/민감성)을 판단하세요.
+5. 각 지표(수분도, 두피 건강, 손상도, 밀도, 탄력, 윤기)를 평가하세요.
+6. 종합 점수와 맞춤 인사이트를 도출하세요.
+
+⚠️ 할루시네이션 방지 규칙:
+- 저화질/흐린 이미지: analysisReliability를 "low"로 설정
+- 두피가 안 보이면: 두피 관련 지표는 신뢰도 낮춤
+- 불확실한 경우: 추측하지 말고 "normal" 점수 + 신뢰도 낮춤
+
+📊 과학적 분석 기준:
+
+[수분도 hydration]
+- 모발의 촉촉함, 건조함, 푸석함 정도
+- 끝 갈라짐, 거칠기 확인
+- 좋음: 71-100, 보통: 41-70, 주의: 0-40
+
+[두피 건강 scalp]
+- 두피 색상, 각질, 염증 유무
+- 모낭 상태, 홍반 확인
+- 좋음: 71-100, 보통: 41-70, 주의: 0-40
+
+[손상도 damage]
+- 열/화학적 손상 흔적
+- 끝 갈라짐, 끊어짐 정도
+- 낮음(건강): 71-100, 중간: 41-70, 높음(손상): 0-40
+
+[모발 밀도 density]
+- 모발의 밀집도, 숱
+- 탈모 징후 확인
+- 풍성: 71-100, 보통: 41-70, 적음: 0-40
+
+[탄력 elasticity]
+- 모발의 탄력성, 볼륨감
+- 늘어남과 복원력
+- 좋음: 71-100, 보통: 41-70, 주의: 0-40
+
+[윤기 shine]
+- 모발의 광택, 반사도
+- 건강한 큐티클 상태 반영
+- 좋음: 71-100, 보통: 41-70, 주의: 0-40
+
+다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
+
+{
+  "hairType": "[straight|wavy|curly|coily]",
+  "hairTypeLabel": "[직모|웨이브|곱슬|강한 곱슬]",
+  "hairThickness": "[fine|medium|thick]",
+  "hairThicknessLabel": "[가는 모발|보통|굵은 모발]",
+  "scalpType": "[dry|normal|oily|sensitive]",
+  "scalpTypeLabel": "[건성 두피|중성 두피|지성 두피|민감성 두피]",
+  "overallScore": [0-100 사이 종합 점수],
+  "metrics": [
+    {"id": "hydration", "label": "수분도", "value": [0-100], "status": "[good|normal|warning]", "description": "[모발 수분 상태 설명]"},
+    {"id": "scalp", "label": "두피 건강", "value": [0-100], "status": "[good|normal|warning]", "description": "[두피 상태 설명]"},
+    {"id": "damage", "label": "손상도", "value": [0-100], "status": "[good|normal|warning]", "description": "[손상 정도 설명 - 높을수록 건강]"},
+    {"id": "density", "label": "모발 밀도", "value": [0-100], "status": "[good|normal|warning]", "description": "[모발 밀도 설명]"},
+    {"id": "elasticity", "label": "탄력", "value": [0-100], "status": "[good|normal|warning]", "description": "[탄력 상태 설명]"},
+    {"id": "shine", "label": "윤기", "value": [0-100], "status": "[good|normal|warning]", "description": "[윤기 상태 설명]"}
+  ],
+  "concerns": ["[주요 고민1]", "[주요 고민2]"],
+  "insight": "[모발/두피 상태에 대한 맞춤 인사이트 2-3문장]",
+  "recommendedIngredients": ["[추천 성분1]", "[추천 성분2]", "[추천 성분3]", "[추천 성분4]"],
+  "recommendedProducts": [
+    {"category": "샴푸", "name": "[추천 샴푸 타입]", "description": "[추천 이유]"},
+    {"category": "트리트먼트", "name": "[추천 제품 타입]", "description": "[추천 이유]"},
+    {"category": "에센스", "name": "[추천 제품 타입]", "description": "[추천 이유]"}
+  ],
+  "careTips": ["[케어 팁1]", "[케어 팁2]", "[케어 팁3]", "[케어 팁4]"],
+  "analysisReliability": "[high|medium|low]",
+  "imageQuality": {
+    "lightingCondition": "[natural|artificial|mixed]",
+    "hairVisible": [true|false],
+    "scalpVisible": [true|false]
+  }
+}
+
+두피 타입별 추천 성분:
+- 건성: 히알루론산, 아르간 오일, 시어버터, 판테놀
+- 중성: 케라틴, 실크 아미노산, 비오틴, 프로비타민 B5
+- 지성: 티트리 오일, 살리실산, 녹차 추출물, 멘톨
+- 민감성: 알로에베라, 카모마일, 센텔라, 병풀 추출물`;
+
+/**
+ * H-1 헤어 분석 실행
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 5초 타임아웃 + 2회 재시도 후 Mock Fallback
+ *
+ * @param imageBase64 - Base64 인코딩된 헤어 이미지
+ * @returns 헤어 분석 결과
+ */
+export async function analyzeHair(imageBase64: string): Promise<GeminiHairAnalysisResult> {
+  // Mock 결과를 GeminiHairAnalysisResult로 변환
+  const convertMockToResult = (mock: MockHairAnalysisResult): GeminiHairAnalysisResult => ({
+    hairType: mock.hairType,
+    hairTypeLabel: mock.hairTypeLabel,
+    hairThickness: mock.hairThickness,
+    hairThicknessLabel: mock.hairThicknessLabel,
+    scalpType: mock.scalpType,
+    scalpTypeLabel: mock.scalpTypeLabel,
+    overallScore: mock.overallScore,
+    metrics: mock.metrics,
+    concerns: mock.concerns,
+    insight: mock.insight,
+    recommendedIngredients: mock.recommendedIngredients,
+    recommendedProducts: mock.recommendedProducts,
+    careTips: mock.careTips,
+    analysisReliability: mock.analysisReliability,
+    imageQuality: {
+      lightingCondition: 'natural',
+      hairVisible: true,
+      scalpVisible: true,
+    },
+  });
+
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[H-1] Using mock (FORCE_MOCK_AI=true)');
+    const mockResult = generateMockHairAnalysisResult();
+    return convertMockToResult(mockResult);
+  }
+
+  if (!genAI) {
+    geminiLogger.warn('[H-1] Gemini not configured, using mock');
+    const mockResult = generateMockHairAnalysisResult();
+    return convertMockToResult(mockResult);
+  }
+
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const imagePart = formatImageForGemini(imageBase64);
+
+    // 타임아웃 (5초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () =>
+        withTimeout(
+          model.generateContent([HAIR_ANALYSIS_PROMPT, imagePart]),
+          5000,
+          '[H-1] Hair analysis timeout'
+        ),
+      2,
+      1000
+    );
+
+    const response = await result.response;
+    const text = response.text();
+
+    geminiLogger.info('[H-1] Hair analysis completed');
+    return parseJsonResponse<GeminiHairAnalysisResult>(text);
+  } catch (error) {
+    geminiLogger.error('[H-1] Gemini error, falling back to mock:', error);
+    const mockResult = generateMockHairAnalysisResult();
+    return convertMockToResult(mockResult);
+  }
+}
+
+// ============================================================================
+// M-1 메이크업 분석
+// ============================================================================
+
+/**
+ * M-1 Gemini 메이크업 분석 결과 타입
+ */
+export interface GeminiMakeupAnalysisResult {
+  undertone: 'warm' | 'cool' | 'neutral';
+  undertoneLabel: string;
+  eyeShape: 'monolid' | 'double' | 'hooded' | 'round' | 'almond' | 'downturned';
+  eyeShapeLabel: string;
+  lipShape: 'full' | 'thin' | 'wide' | 'small' | 'heart' | 'asymmetric';
+  lipShapeLabel: string;
+  faceShape: 'oval' | 'round' | 'square' | 'heart' | 'oblong' | 'diamond';
+  faceShapeLabel: string;
+  overallScore: number;
+  metrics: {
+    id: string;
+    label: string;
+    value: number;
+    status: 'good' | 'normal' | 'warning';
+    description: string;
+  }[];
+  concerns: string[];
+  insight: string;
+  recommendedStyles: string[];
+  colorRecommendations: {
+    category: string;
+    categoryLabel: string;
+    colors: {
+      name: string;
+      hex: string;
+      description: string;
+    }[];
+  }[];
+  makeupTips: {
+    category: string;
+    tips: string[];
+  }[];
+  personalColorConnection?: {
+    season: string;
+    compatibility: 'high' | 'medium' | 'low';
+    note: string;
+  };
+  analysisReliability: 'high' | 'medium' | 'low';
+  imageQuality: {
+    lightingCondition: 'natural' | 'artificial' | 'mixed';
+    faceVisible: boolean;
+    makeupDetected: boolean;
+  };
+}
+
+/**
+ * M-1 메이크업 분석 프롬프트
+ */
+const MAKEUP_ANALYSIS_PROMPT = `당신은 전문 메이크업 아티스트이자 뷰티 컨설턴트 AI입니다.
+
+업로드된 얼굴 이미지를 분석하여 사용자에게 맞춤형 메이크업 추천을 제공하세요.
+
+⚠️ 이미지 분석 전 조건 확인:
+1. 얼굴이 충분히 보이는가? → 불충분하면 analysisReliability를 "low"로 설정
+2. 조명 상태는? → 인공광이면 undertone 판정에 주의
+3. 이미 메이크업이 되어있는가? → 메이크업 감지 시 원래 피부톤 추정에 주의
+
+📊 분석 기준:
+
+[언더톤 undertone]
+- warm: 노란빛, 복숭아빛, 골드가 어울림
+- cool: 핑크빛, 푸른빛, 실버가 어울림
+- neutral: 다양한 톤이 어울림
+- 혈관 색상, 피부 표면색, 눈동자/머리카락 색상 종합 판단
+
+[눈 모양 eyeShape]
+- monolid: 무쌍 (쌍꺼풀 없음)
+- double: 유쌍 (쌍꺼풀 있음)
+- hooded: 속쌍 (쌍꺼풀이 안으로 접힘)
+- round: 둥근 눈
+- almond: 아몬드형
+- downturned: 처진 눈 (눈꼬리가 내려감)
+
+[입술 모양 lipShape]
+- full: 도톰한 입술
+- thin: 얇은 입술
+- wide: 넓은 입술
+- small: 작은 입술
+- heart: 하트형 (윗입술이 도톰)
+- asymmetric: 비대칭
+
+[얼굴형 faceShape]
+- oval: 계란형
+- round: 둥근형
+- square: 각진형
+- heart: 하트형 (이마 넓고 턱 좁음)
+- oblong: 긴 얼굴
+- diamond: 다이아몬드 (광대 넓음)
+
+📋 분석 순서:
+1. 먼저 이미지 품질과 기존 메이크업 여부를 확인하세요.
+2. 피부 언더톤을 분석하세요 (혈관색, 피부표면색, 전체적인 느낌).
+3. 눈 모양, 입술 모양, 얼굴형을 순서대로 분석하세요.
+4. 피부 상태(결, 톤 균일도, 수분, 모공, 유수분 밸런스)를 평가하세요.
+5. 분석 결과를 바탕으로 맞춤 색상과 메이크업 스타일을 추천하세요.
+
+다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
+
+{
+  "undertone": "[warm|cool|neutral]",
+  "undertoneLabel": "[웜톤|쿨톤|뉴트럴]",
+  "eyeShape": "[monolid|double|hooded|round|almond|downturned]",
+  "eyeShapeLabel": "[무쌍|유쌍|속쌍|둥근 눈|아몬드형|처진 눈]",
+  "lipShape": "[full|thin|wide|small|heart|asymmetric]",
+  "lipShapeLabel": "[도톰한 입술|얇은 입술|넓은 입술|작은 입술|하트형|비대칭]",
+  "faceShape": "[oval|round|square|heart|oblong|diamond]",
+  "faceShapeLabel": "[계란형|둥근형|각진형|하트형|긴 얼굴|다이아몬드]",
+  "overallScore": [0-100 피부 상태 종합 점수],
+  "metrics": [
+    {"id": "skinTexture", "label": "피부 결", "value": [0-100], "status": "[good|normal|warning]", "description": "[피부 결 상태]"},
+    {"id": "skinTone", "label": "피부톤 균일도", "value": [0-100], "status": "[good|normal|warning]", "description": "[톤 균일성]"},
+    {"id": "hydration", "label": "수분감", "value": [0-100], "status": "[good|normal|warning]", "description": "[피부 수분]"},
+    {"id": "poreVisibility", "label": "모공 상태", "value": [0-100], "status": "[good|normal|warning]", "description": "[모공 눈에 띄는 정도 - 높을수록 덜 보임]"},
+    {"id": "oilBalance", "label": "유수분 밸런스", "value": [0-100], "status": "[good|normal|warning]", "description": "[유분/수분 균형]"}
+  ],
+  "concerns": ["[피부 고민1: dark-circles|redness|uneven-tone|large-pores|oily-tzone|dry-patches|acne-scars|fine-lines]", "[피부 고민2]"],
+  "insight": "[사용자의 얼굴 특성과 피부 상태에 대한 맞춤 인사이트 2-3문장]",
+  "recommendedStyles": ["[추천 스타일1: natural|glam|cute|chic|vintage|edgy]", "[추천 스타일2]", "[추천 스타일3]"],
+  "colorRecommendations": [
+    {
+      "category": "foundation",
+      "categoryLabel": "파운데이션",
+      "colors": [
+        {"name": "[색상명]", "hex": "[#XXXXXX]", "description": "[설명]"}
+      ]
+    },
+    {
+      "category": "lip",
+      "categoryLabel": "립",
+      "colors": [
+        {"name": "[색상명]", "hex": "[#XXXXXX]", "description": "[설명]"},
+        {"name": "[색상명]", "hex": "[#XXXXXX]", "description": "[설명]"},
+        {"name": "[색상명]", "hex": "[#XXXXXX]", "description": "[설명]"}
+      ]
+    },
+    {
+      "category": "eyeshadow",
+      "categoryLabel": "아이섀도",
+      "colors": [
+        {"name": "[색상명]", "hex": "[#XXXXXX]", "description": "[설명]"},
+        {"name": "[색상명]", "hex": "[#XXXXXX]", "description": "[설명]"},
+        {"name": "[색상명]", "hex": "[#XXXXXX]", "description": "[설명]"}
+      ]
+    },
+    {
+      "category": "blush",
+      "categoryLabel": "블러셔",
+      "colors": [
+        {"name": "[색상명]", "hex": "[#XXXXXX]", "description": "[설명]"}
+      ]
+    }
+  ],
+  "makeupTips": [
+    {"category": "베이스", "tips": ["[팁1]", "[팁2]"]},
+    {"category": "아이 메이크업", "tips": ["[팁1]", "[팁2]"]},
+    {"category": "립 메이크업", "tips": ["[팁1]", "[팁2]"]},
+    {"category": "컨투어링", "tips": ["[팁1]", "[팁2]"]}
+  ],
+  "personalColorConnection": {
+    "season": "[예상 퍼스널 컬러 시즌]",
+    "compatibility": "[high|medium|low]",
+    "note": "[퍼스널 컬러 진단과의 연동 안내]"
+  },
+  "analysisReliability": "[high|medium|low]",
+  "imageQuality": {
+    "lightingCondition": "[natural|artificial|mixed]",
+    "faceVisible": [true|false],
+    "makeupDetected": [true|false]
+  }
+}
+
+⚠️ 언더톤별 색상 추천 가이드:
+- 웜톤: 코랄, 오렌지, 브릭레드, 골드브라운, 피치계열
+- 쿨톤: 로즈핑크, 버건디, 플럼, 로즈골드, 라벤더계열
+- 뉴트럴: 모브핑크, 로지브라운, 토프, 샴페인, 베리계열`;
+
+/**
+ * M-1 메이크업 분석 실행
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 5초 타임아웃 + 2회 재시도 후 Mock Fallback
+ *
+ * @param imageBase64 - Base64 인코딩된 얼굴 이미지
+ * @returns 메이크업 분석 결과
+ */
+export async function analyzeMakeup(imageBase64: string): Promise<GeminiMakeupAnalysisResult> {
+  // Mock 결과를 GeminiMakeupAnalysisResult로 변환
+  const convertMockToResult = (mock: MockMakeupAnalysisResult): GeminiMakeupAnalysisResult => ({
+    undertone: mock.undertone,
+    undertoneLabel: mock.undertoneLabel,
+    eyeShape: mock.eyeShape,
+    eyeShapeLabel: mock.eyeShapeLabel,
+    lipShape: mock.lipShape,
+    lipShapeLabel: mock.lipShapeLabel,
+    faceShape: mock.faceShape,
+    faceShapeLabel: mock.faceShapeLabel,
+    overallScore: mock.overallScore,
+    metrics: mock.metrics,
+    concerns: mock.concerns,
+    insight: mock.insight,
+    recommendedStyles: mock.recommendedStyles,
+    colorRecommendations: mock.colorRecommendations.map((cr) => ({
+      category: cr.category,
+      categoryLabel: cr.categoryLabel,
+      colors: cr.colors,
+    })),
+    makeupTips: mock.makeupTips,
+    personalColorConnection: mock.personalColorConnection,
+    analysisReliability: mock.analysisReliability,
+    imageQuality: {
+      lightingCondition: 'natural',
+      faceVisible: true,
+      makeupDetected: false,
+    },
+  });
+
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[M-1] Using mock (FORCE_MOCK_AI=true)');
+    const mockResult = generateMockMakeupAnalysisResult();
+    return convertMockToResult(mockResult);
+  }
+
+  if (!genAI) {
+    geminiLogger.warn('[M-1] Gemini not configured, using mock');
+    const mockResult = generateMockMakeupAnalysisResult();
+    return convertMockToResult(mockResult);
+  }
+
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const imagePart = formatImageForGemini(imageBase64);
+
+    // 타임아웃 (5초) + 재시도 (최대 2회) 적용
+    const result = await withRetry(
+      () =>
+        withTimeout(
+          model.generateContent([MAKEUP_ANALYSIS_PROMPT, imagePart]),
+          5000,
+          '[M-1] Makeup analysis timeout'
+        ),
+      2,
+      1000
+    );
+
+    const response = await result.response;
+    const text = response.text();
+
+    geminiLogger.info('[M-1] Makeup analysis completed');
+    return parseJsonResponse<GeminiMakeupAnalysisResult>(text);
+  } catch (error) {
+    geminiLogger.error('[M-1] Gemini error, falling back to mock:', error);
+    const mockResult = generateMockMakeupAnalysisResult();
     return convertMockToResult(mockResult);
   }
 }

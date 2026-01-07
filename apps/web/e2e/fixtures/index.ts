@@ -27,7 +27,10 @@ export async function waitForLoadingToFinish(page: import('@playwright/test').Pa
   const loadingIndicator = page.locator('[data-testid*="loading"], .animate-spin');
 
   // 로딩 인디케이터가 있는지 확인 (짧은 대기)
-  const hasLoading = await loadingIndicator.first().isVisible({ timeout: 1000 }).catch(() => false);
+  const hasLoading = await loadingIndicator
+    .first()
+    .isVisible({ timeout: 1000 })
+    .catch(() => false);
 
   if (hasLoading) {
     await loadingIndicator.first().waitFor({ state: 'hidden', timeout: 30000 });
@@ -85,6 +88,8 @@ export const ROUTES = {
   ANALYSIS_PERSONAL_COLOR: '/analysis/personal-color',
   ANALYSIS_SKIN: '/analysis/skin',
   ANALYSIS_BODY: '/analysis/body',
+  ANALYSIS_HAIR: '/analysis/hair',
+  ANALYSIS_MAKEUP: '/analysis/makeup',
   // 옷장/인벤토리
   CLOSET: '/closet',
   CLOSET_ADD: '/closet/add',

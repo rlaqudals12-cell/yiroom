@@ -9,6 +9,11 @@ import {
   createPostWorkoutSkinAlert,
   createHydrationReminderAlert,
   createWeightChangeAlert,
+  createScalpHealthNutritionAlert,
+  createHairLossPreventionAlert,
+  createHairShineBoostAlert,
+  createSkinToneNutritionAlert,
+  createCollagenBoostAlert,
   sortAlertsByPriority,
   filterExpiredAlerts,
   getVisibleAlerts,
@@ -56,12 +61,7 @@ describe('알림 생성 함수', () => {
 
   describe('createPostWorkoutNutritionAlert', () => {
     it('운동 후 영양 추천 알림을 생성한다', () => {
-      const alert = createPostWorkoutNutritionAlert(
-        'builder',
-        15,
-        24,
-        '단백질 섭취 권장'
-      );
+      const alert = createPostWorkoutNutritionAlert('builder', 15, 24, '단백질 섭취 권장');
 
       expect(alert.type).toBe('post_workout_nutrition');
       expect(alert.sourceModule).toBe('workout');
@@ -126,6 +126,106 @@ describe('알림 생성 함수', () => {
 
       expect(alert.title).toBe('체중 감소 알림');
       expect(alert.message).toContain('1.5kg 감소');
+    });
+  });
+
+  describe('createScalpHealthNutritionAlert', () => {
+    it('두피 건강 영양 추천 알림을 생성한다', () => {
+      const alert = createScalpHealthNutritionAlert(60);
+
+      expect(alert.type).toBe('scalp_health_nutrition');
+      expect(alert.sourceModule).toBe('hair');
+      expect(alert.targetModule).toBe('nutrition');
+      expect(alert.level).toBe('info');
+    });
+
+    it('두피 건강 점수가 낮으면 warning 레벨이다', () => {
+      const alert = createScalpHealthNutritionAlert(30);
+
+      expect(alert.level).toBe('warning');
+      expect(alert.message).toContain('비오틴, 아연');
+    });
+  });
+
+  describe('createHairLossPreventionAlert', () => {
+    it('탈모 예방 식단 알림을 생성한다', () => {
+      const alert = createHairLossPreventionAlert(45, 'medium');
+
+      expect(alert.type).toBe('hair_loss_prevention');
+      expect(alert.sourceModule).toBe('hair');
+      expect(alert.targetModule).toBe('nutrition');
+      expect(alert.level).toBe('warning');
+    });
+
+    it('고위험은 danger 레벨이다', () => {
+      const alert = createHairLossPreventionAlert(30, 'high');
+
+      expect(alert.level).toBe('danger');
+      expect(alert.priority).toBe('high');
+      expect(alert.message).toContain('단백질, 철분');
+    });
+
+    it('저위험은 info 레벨이다', () => {
+      const alert = createHairLossPreventionAlert(70, 'low');
+
+      expect(alert.level).toBe('info');
+    });
+  });
+
+  describe('createHairShineBoostAlert', () => {
+    it('모발 윤기 영양 추천 알림을 생성한다', () => {
+      const alert = createHairShineBoostAlert(40);
+
+      expect(alert.type).toBe('hair_shine_boost');
+      expect(alert.sourceModule).toBe('hair');
+      expect(alert.targetModule).toBe('nutrition');
+    });
+
+    it('손상도가 높으면 회복 메시지를 표시한다', () => {
+      const alert = createHairShineBoostAlert(60);
+
+      expect(alert.message).toContain('손상된 모발 회복');
+    });
+  });
+
+  describe('createSkinToneNutritionAlert', () => {
+    it('피부톤 개선 영양 추천 알림을 생성한다', () => {
+      const alert = createSkinToneNutritionAlert('warm', ['dull']);
+
+      expect(alert.type).toBe('skin_tone_nutrition');
+      expect(alert.sourceModule).toBe('makeup');
+      expect(alert.targetModule).toBe('nutrition');
+      expect(alert.message).toContain('비타민C');
+    });
+
+    it('피부 고민별 맞춤 메시지를 표시한다', () => {
+      const unevenAlert = createSkinToneNutritionAlert('cool', ['uneven']);
+      expect(unevenAlert.message).toContain('비타민E');
+
+      const yellowishAlert = createSkinToneNutritionAlert('neutral', ['yellowish']);
+      expect(yellowishAlert.message).toContain('녹황색 채소');
+    });
+  });
+
+  describe('createCollagenBoostAlert', () => {
+    it('콜라겐 섭취 추천 알림을 생성한다', () => {
+      const alert = createCollagenBoostAlert(60);
+
+      expect(alert.type).toBe('collagen_boost');
+      expect(alert.sourceModule).toBe('makeup');
+      expect(alert.targetModule).toBe('nutrition');
+    });
+
+    it('탄력 점수가 낮으면 개선 메시지를 표시한다', () => {
+      const alert = createCollagenBoostAlert(40);
+
+      expect(alert.message).toContain('탄력 개선');
+    });
+
+    it('탄력 점수가 높으면 유지 메시지를 표시한다', () => {
+      const alert = createCollagenBoostAlert(60);
+
+      expect(alert.message).toContain('탄력 유지');
     });
   });
 });
@@ -204,9 +304,7 @@ describe('알림 정렬 및 필터링', () => {
     });
 
     it('만료 시간이 없는 알림은 유지된다', () => {
-      const alerts = [
-        createMockAlert('no-expiry', 'high', now),
-      ];
+      const alerts = [createMockAlert('no-expiry', 'high', now)];
 
       const filtered = filterExpiredAlerts(alerts);
 

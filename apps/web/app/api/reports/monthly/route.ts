@@ -10,11 +10,12 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { generateMonthlyReport, getMonthRangeFromYYYYMM } from '@/lib/reports/monthlyAggregator';
 import {
-  generateMonthlyReport,
-  getMonthRangeFromYYYYMM,
-} from '@/lib/reports/monthlyAggregator';
-import { DEFAULT_NUTRITION_TARGETS } from '@/lib/reports/weeklyAggregator';
+  DEFAULT_NUTRITION_TARGETS,
+  type RawHairAnalysis,
+  type RawMakeupAnalysis,
+} from '@/lib/reports/weeklyAggregator';
 import type {
   RawMealRecord,
   RawWaterRecord,
@@ -52,7 +53,7 @@ function convertToReportStreakStatus(
   const longest = streakData?.longestStreak || 0;
 
   const milestones = [3, 7, 14, 30, 60, 100];
-  const milestone = milestones.find(m => current >= m && !achievedMilestones.includes(m)) || null;
+  const milestone = milestones.find((m) => current >= m && !achievedMilestones.includes(m)) || null;
 
   return {
     current,
@@ -104,11 +105,15 @@ export async function GET(req: Request) {
       nutritionStreakResult,
       workoutStreakResult,
       bodyAnalysisResult,
+      hairAnalysisResult,
+      makeupAnalysisResult,
     ] = await Promise.all([
       // 식사 기록 조회
       supabase
         .from('meal_records')
-        .select('id, clerk_user_id, meal_date, meal_type, foods, total_calories, total_protein, total_carbs, total_fat, created_at')
+        .select(
+          'id, clerk_user_id, meal_date, meal_type, foods, total_calories, total_protein, total_carbs, total_fat, created_at'
+        )
         .eq('clerk_user_id', userId)
         .gte('meal_date', monthStart)
         .lte('meal_date', monthEnd)
@@ -125,7 +130,9 @@ export async function GET(req: Request) {
       // 운동 기록 조회
       supabase
         .from('workout_logs')
-        .select('id, user_id, workout_date, exercise_logs, actual_duration, actual_calories, completed_at')
+        .select(
+          'id, user_id, workout_date, exercise_logs, actual_duration, actual_calories, completed_at'
+        )
         .eq('user_id', userId)
         .gte('workout_date', monthStart)
         .lte('workout_date', monthEnd),
@@ -159,6 +166,28 @@ export async function GET(req: Request) {
         .gte('created_at', `${monthStart}T00:00:00`)
         .lte('created_at', `${monthEnd}T23:59:59`)
         .order('created_at', { ascending: true }),
+
+      // H-1 헤어 분석 조회 (최신 1건)
+      supabase
+        .from('hair_analyses')
+        .select(
+          'id, clerk_user_id, scalp_health, density, damage_level, overall_score, hair_type, concerns, recommendations, created_at'
+        )
+        .eq('clerk_user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+
+      // M-1 메이크업 분석 조회 (최신 1건)
+      supabase
+        .from('makeup_analyses')
+        .select(
+          'id, clerk_user_id, skin_texture, hydration, overall_score, undertone, concerns, created_at'
+        )
+        .eq('clerk_user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
 
     // 에러 처리
@@ -171,7 +200,7 @@ export async function GET(req: Request) {
     }
 
     // 데이터 변환
-    const meals: RawMealRecord[] = (mealsResult.data || []).map(m => ({
+    const meals: RawMealRecord[] = (mealsResult.data || []).map((m) => ({
       id: m.id,
       clerk_user_id: m.clerk_user_id,
       meal_date: m.meal_date,
@@ -191,7 +220,7 @@ export async function GET(req: Request) {
       created_at: m.created_at,
     }));
 
-    const waterRecords: RawWaterRecord[] = (waterResult.data || []).map(w => ({
+    const waterRecords: RawWaterRecord[] = (waterResult.data || []).map((w) => ({
       id: w.id,
       clerk_user_id: w.clerk_user_id,
       record_date: w.record_date,
@@ -200,7 +229,7 @@ export async function GET(req: Request) {
       drink_type: w.drink_type || 'water',
     }));
 
-    const workoutLogs: RawWorkoutLog[] = (workoutResult.data || []).map(w => ({
+    const workoutLogs: RawWorkoutLog[] = (workoutResult.data || []).map((w) => ({
       id: w.id,
       clerk_user_id: w.user_id,
       session_date: w.workout_date,
@@ -232,8 +261,8 @@ export async function GET(req: Request) {
 
     const previousBadges = (nutritionStreakResult.data?.badges_earned || []) as string[];
     const achievedMilestones = previousBadges
-      .map(badge => parseInt(badge.replace('day', ''), 10))
-      .filter(n => !isNaN(n));
+      .map((badge) => parseInt(badge.replace('day', ''), 10))
+      .filter((n) => !isNaN(n));
 
     const nutritionStreak = convertToReportStreakStatus(nutritionStreakData, achievedMilestones);
 
@@ -247,8 +276,8 @@ export async function GET(req: Request) {
 
     const workoutBadges = (workoutStreakResult.data?.badges_earned || []) as string[];
     const workoutAchievedMilestones = workoutBadges
-      .map(badge => parseInt(badge.replace('day', ''), 10))
-      .filter(n => !isNaN(n));
+      .map((badge) => parseInt(badge.replace('day', ''), 10))
+      .filter((n) => !isNaN(n));
 
     const workoutStreak = convertToReportStreakStatus(workoutStreakData, workoutAchievedMilestones);
 
@@ -258,12 +287,48 @@ export async function GET(req: Request) {
       user_input: { weight?: number } | null;
       created_at: string;
     }
-    const bodyAnalysisStart = bodyAnalyses.length > 0
-      ? { weight: ((bodyAnalyses[0] as BodyAnalysisRow).user_input?.weight || 0) }
+    const bodyAnalysisStart =
+      bodyAnalyses.length > 0
+        ? { weight: (bodyAnalyses[0] as BodyAnalysisRow).user_input?.weight || 0 }
+        : null;
+    const bodyAnalysisEnd =
+      bodyAnalyses.length > 1
+        ? {
+            weight:
+              (bodyAnalyses[bodyAnalyses.length - 1] as BodyAnalysisRow).user_input?.weight || 0,
+          }
+        : bodyAnalysisStart;
+
+    // 헤어 분석 데이터 변환
+    const hairAnalysis: RawHairAnalysis | null = hairAnalysisResult.data
+      ? {
+          id: hairAnalysisResult.data.id,
+          clerk_user_id: hairAnalysisResult.data.clerk_user_id,
+          scalp_health: hairAnalysisResult.data.scalp_health,
+          density: hairAnalysisResult.data.density,
+          damage_level: hairAnalysisResult.data.damage_level,
+          overall_score: hairAnalysisResult.data.overall_score,
+          hair_type: hairAnalysisResult.data.hair_type,
+          concerns: hairAnalysisResult.data.concerns as string[] | null,
+          recommendations: hairAnalysisResult.data
+            .recommendations as RawHairAnalysis['recommendations'],
+          created_at: hairAnalysisResult.data.created_at,
+        }
       : null;
-    const bodyAnalysisEnd = bodyAnalyses.length > 1
-      ? { weight: ((bodyAnalyses[bodyAnalyses.length - 1] as BodyAnalysisRow).user_input?.weight || 0) }
-      : bodyAnalysisStart;
+
+    // 메이크업 분석 데이터 변환
+    const makeupAnalysis: RawMakeupAnalysis | null = makeupAnalysisResult.data
+      ? {
+          id: makeupAnalysisResult.data.id,
+          clerk_user_id: makeupAnalysisResult.data.clerk_user_id,
+          skin_texture: makeupAnalysisResult.data.skin_texture,
+          hydration: makeupAnalysisResult.data.hydration,
+          overall_score: makeupAnalysisResult.data.overall_score,
+          undertone: makeupAnalysisResult.data.undertone,
+          concerns: makeupAnalysisResult.data.concerns as string[] | null,
+          created_at: makeupAnalysisResult.data.created_at,
+        }
+      : null;
 
     // 데이터 존재 여부 확인
     const hasData = meals.length > 0 || waterRecords.length > 0;
@@ -287,6 +352,8 @@ export async function GET(req: Request) {
       workoutStreak,
       bodyAnalysisStart,
       bodyAnalysisEnd,
+      hairAnalysis,
+      makeupAnalysis,
     });
 
     return NextResponse.json<MonthlyReportResponse>({

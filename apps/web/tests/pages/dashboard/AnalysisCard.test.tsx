@@ -112,6 +112,69 @@ describe('AnalysisCard', () => {
     });
   });
 
+  describe('헤어 분석 카드', () => {
+    it('헤어 분석 카드를 렌더링한다', () => {
+      const analysis = {
+        id: 'hair-1',
+        type: 'hair' as const,
+        createdAt: new Date(),
+        summary: '웨이브 · 85점',
+        hairScore: 85,
+        hairType: 'wavy',
+      };
+
+      render(<AnalysisCard analysis={analysis} />);
+
+      expect(screen.getByText('헤어 분석')).toBeInTheDocument();
+      expect(screen.getByText('웨이브 · 85점')).toBeInTheDocument();
+    });
+
+    it('헤어 분석 페이지로 링크된다', () => {
+      const analysis = {
+        id: 'hair-1',
+        type: 'hair' as const,
+        createdAt: new Date(),
+        summary: '직모 · 90점',
+      };
+
+      render(<AnalysisCard analysis={analysis} />);
+
+      const link = screen.getByTestId('link');
+      expect(link).toHaveAttribute('href', '/analysis/hair');
+    });
+  });
+
+  describe('메이크업 분석 카드', () => {
+    it('메이크업 분석 카드를 렌더링한다', () => {
+      const analysis = {
+        id: 'makeup-1',
+        type: 'makeup' as const,
+        createdAt: new Date(),
+        summary: '웜톤 · 78점',
+        undertone: 'warm',
+      };
+
+      render(<AnalysisCard analysis={analysis} />);
+
+      expect(screen.getByText('메이크업 분석')).toBeInTheDocument();
+      expect(screen.getByText('웜톤 · 78점')).toBeInTheDocument();
+    });
+
+    it('메이크업 분석 페이지로 링크된다', () => {
+      const analysis = {
+        id: 'makeup-1',
+        type: 'makeup' as const,
+        createdAt: new Date(),
+        summary: '쿨톤 · 82점',
+      };
+
+      render(<AnalysisCard analysis={analysis} />);
+
+      const link = screen.getByTestId('link');
+      expect(link).toHaveAttribute('href', '/analysis/makeup');
+    });
+  });
+
   describe('상대 시간 표시', () => {
     it('방금 전을 표시한다', () => {
       const analysis = {

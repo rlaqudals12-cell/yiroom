@@ -43,7 +43,9 @@ function buildUserContextSection(context: UserContext): string {
 
   // 퍼스널 컬러
   if (context.personalColor) {
-    sections.push(`- 퍼스널 컬러: ${context.personalColor.season} (${context.personalColor.tone || '기본톤'})`);
+    sections.push(
+      `- 퍼스널 컬러: ${context.personalColor.season} (${context.personalColor.tone || '기본톤'})`
+    );
   }
 
   // 피부 분석
@@ -59,6 +61,27 @@ function buildUserContextSection(context: UserContext): string {
     sections.push(`- 체형: ${context.bodyAnalysis.bodyType}`);
     if (context.bodyAnalysis.bmi) {
       sections.push(`- BMI: ${context.bodyAnalysis.bmi.toFixed(1)}`);
+    }
+  }
+
+  // 헤어 분석
+  if (context.hairAnalysis) {
+    sections.push(`- 헤어 타입: ${context.hairAnalysis.hairType}`);
+    sections.push(`- 두피 타입: ${context.hairAnalysis.scalpType}`);
+    if (context.hairAnalysis.concerns?.length) {
+      sections.push(`- 헤어 고민: ${context.hairAnalysis.concerns.join(', ')}`);
+    }
+  }
+
+  // 메이크업 분석
+  if (context.makeupAnalysis) {
+    sections.push(`- 언더톤: ${context.makeupAnalysis.undertone}`);
+    sections.push(`- 얼굴형: ${context.makeupAnalysis.faceShape}`);
+    if (context.makeupAnalysis.eyeShape) {
+      sections.push(`- 눈 모양: ${context.makeupAnalysis.eyeShape}`);
+    }
+    if (context.makeupAnalysis.recommendedStyles?.length) {
+      sections.push(`- 추천 스타일: ${context.makeupAnalysis.recommendedStyles.join(', ')}`);
     }
   }
 
@@ -118,13 +141,38 @@ export function getQuestionHint(question: string): string {
   }
 
   // 영양/식단 관련
-  if (lowerQ.includes('먹') || lowerQ.includes('음식') || lowerQ.includes('칼로리') || lowerQ.includes('다이어트')) {
+  if (
+    lowerQ.includes('먹') ||
+    lowerQ.includes('음식') ||
+    lowerQ.includes('칼로리') ||
+    lowerQ.includes('다이어트')
+  ) {
     return '영양/식단 관련 질문입니다. 사용자의 목표 칼로리와 영양 목표를 참고하세요.';
   }
 
   // 피부 관련
   if (lowerQ.includes('피부') || lowerQ.includes('화장품') || lowerQ.includes('스킨케어')) {
     return '피부 관련 질문입니다. 사용자의 피부 타입과 고민을 고려해 답변하세요.';
+  }
+
+  // 헤어 관련
+  if (
+    lowerQ.includes('머리') ||
+    lowerQ.includes('헤어') ||
+    lowerQ.includes('두피') ||
+    lowerQ.includes('탈모')
+  ) {
+    return '헤어 관련 질문입니다. 사용자의 헤어 타입과 두피 상태를 고려해 답변하세요.';
+  }
+
+  // 메이크업 관련
+  if (
+    lowerQ.includes('메이크업') ||
+    lowerQ.includes('화장') ||
+    lowerQ.includes('립') ||
+    lowerQ.includes('섀도')
+  ) {
+    return '메이크업 관련 질문입니다. 사용자의 언더톤과 얼굴형을 고려해 답변하세요.';
   }
 
   // 제품 추천
@@ -168,6 +216,18 @@ export const QUICK_QUESTIONS_BY_CATEGORY = {
     '트러블이 났는데 어떻게 해요?',
     '선크림 꼭 발라야 해요?',
     '제 피부에 맞는 루틴 알려줘요',
+  ],
+  hair: [
+    '머리가 빠지는 것 같은데 어떡해요?',
+    '두피가 가려울 때 어떻게 해요?',
+    '머릿결 좋아지는 방법 알려줘요',
+    '샴푸 어떤 거 쓰면 좋아요?',
+  ],
+  makeup: [
+    '제 언더톤에 맞는 립 추천해요',
+    '얼굴형에 맞는 메이크업 알려줘요',
+    '자연스러운 화장법 알려줘요',
+    '눈 화장 팁 알려줘요',
   ],
   general: [
     '물은 하루에 얼마나 마셔야 해요?',

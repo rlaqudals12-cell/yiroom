@@ -18,6 +18,7 @@ import {
   InsightCard,
   StreakBadge,
   CalorieTrendChartDynamic,
+  BeautyNutritionCard,
 } from '@/components/reports';
 import { EmptyStateCard } from '@/components/common';
 import { Button } from '@/components/ui/button';
@@ -167,6 +168,11 @@ export default function WeeklyReportPage({ params }: WeeklyReportPageProps) {
 
         {/* 인사이트 */}
         <InsightCard insights={report.insights} />
+
+        {/* 뷰티-영양 상관관계 (H-1/M-1 연동) */}
+        {report.beautyNutritionCorrelation && (
+          <BeautyNutritionCard correlation={report.beautyNutritionCorrelation} />
+        )}
 
         {/* 스트릭 */}
         <StreakBadge

@@ -176,6 +176,7 @@ vi.mock('lucide-react', () => ({
   FlaskConical: createIconMock('FlaskConical'),
   Tag: createIconMock('Tag'),
   Brush: createIconMock('Brush'),
+  Scissors: createIconMock('Scissors'),
 
   // Media & Input
   Camera: createIconMock('Camera'),
@@ -214,6 +215,8 @@ vi.mock('lucide-react', () => ({
   Hand: createIconMock('Hand'),
   FileText: createIconMock('FileText'),
   Move: createIconMock('Move'),
+  ClipboardList: createIconMock('ClipboardList'),
+  Upload: createIconMock('Upload'),
 
   // UI Components (Icon 접미사 버전)
   XIcon: createIconMock('XIcon'),

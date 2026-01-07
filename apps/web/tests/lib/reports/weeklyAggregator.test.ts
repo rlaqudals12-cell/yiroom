@@ -20,6 +20,9 @@ import {
   generateWeeklyInsights,
   calculateHighlights,
   generateWeeklyReport,
+  calculateBeautyNutritionCorrelation,
+  type RawHairAnalysis,
+  type RawMakeupAnalysis,
 } from '@/lib/reports/weeklyAggregator';
 import type {
   DailyNutrition,
@@ -27,6 +30,7 @@ import type {
   RawWaterRecord,
   RawWorkoutLog,
   RawNutritionSettings,
+  NutritionSummaryStats,
 } from '@/types/report';
 
 describe('유틸리티 함수', () => {
@@ -92,16 +96,28 @@ describe('유틸리티 함수', () => {
   describe('calculateFoodQualityScore', () => {
     it('green 비율의 평균을 반환한다', () => {
       const data: DailyNutrition[] = [
-        createDailyNutrition({ trafficLightRatio: { green: 60, yellow: 30, red: 10 }, mealsLogged: 2 }),
-        createDailyNutrition({ trafficLightRatio: { green: 80, yellow: 15, red: 5 }, mealsLogged: 2 }),
+        createDailyNutrition({
+          trafficLightRatio: { green: 60, yellow: 30, red: 10 },
+          mealsLogged: 2,
+        }),
+        createDailyNutrition({
+          trafficLightRatio: { green: 80, yellow: 15, red: 5 },
+          mealsLogged: 2,
+        }),
       ];
       expect(calculateFoodQualityScore(data)).toBe(70); // (60 + 80) / 2
     });
 
     it('식사 기록이 없는 날은 제외한다', () => {
       const data: DailyNutrition[] = [
-        createDailyNutrition({ trafficLightRatio: { green: 60, yellow: 30, red: 10 }, mealsLogged: 2 }),
-        createDailyNutrition({ trafficLightRatio: { green: 0, yellow: 0, red: 0 }, mealsLogged: 0 }),
+        createDailyNutrition({
+          trafficLightRatio: { green: 60, yellow: 30, red: 10 },
+          mealsLogged: 2,
+        }),
+        createDailyNutrition({
+          trafficLightRatio: { green: 0, yellow: 0, red: 0 },
+          mealsLogged: 0,
+        }),
       ];
       expect(calculateFoodQualityScore(data)).toBe(60);
     });
@@ -234,8 +250,18 @@ describe('집계 함수', () => {
   describe('aggregateWorkoutsByDay', () => {
     it('날짜별로 운동을 집계한다', () => {
       const workouts: RawWorkoutLog[] = [
-        createRawWorkoutLog({ session_date: '2024-01-15', duration: 30, calories_burned: 200, completed_at: '2024-01-15T10:00:00' }),
-        createRawWorkoutLog({ session_date: '2024-01-15', duration: 45, calories_burned: 300, completed_at: '2024-01-15T18:00:00' }),
+        createRawWorkoutLog({
+          session_date: '2024-01-15',
+          duration: 30,
+          calories_burned: 200,
+          completed_at: '2024-01-15T10:00:00',
+        }),
+        createRawWorkoutLog({
+          session_date: '2024-01-15',
+          duration: 45,
+          calories_burned: 300,
+          completed_at: '2024-01-15T18:00:00',
+        }),
       ];
       const dateRange = ['2024-01-15', '2024-01-16'];
 
@@ -377,16 +403,10 @@ describe('인사이트 생성', () => {
         daysWithWorkout: 5,
       };
 
-      const result = generateWeeklyInsights(
-        summary,
-        achievement,
-        trend,
-        workoutSummary,
-        null
-      );
+      const result = generateWeeklyInsights(summary, achievement, trend, workoutSummary, null);
 
       expect(result.highlights.length).toBeGreaterThan(0);
-      expect(result.highlights.some(h => h.includes('칼로리'))).toBe(true);
+      expect(result.highlights.some((h) => h.includes('칼로리'))).toBe(true);
     });
 
     it('단백질 부족 시 개선 사항을 생성한다', () => {
@@ -426,15 +446,9 @@ describe('인사이트 생성', () => {
         daysWithWorkout: 0,
       };
 
-      const result = generateWeeklyInsights(
-        summary,
-        achievement,
-        trend,
-        workoutSummary,
-        null
-      );
+      const result = generateWeeklyInsights(summary, achievement, trend, workoutSummary, null);
 
-      expect(result.improvements.some(i => i.includes('단백질'))).toBe(true);
+      expect(result.improvements.some((i) => i.includes('단백질'))).toBe(true);
     });
 
     it('운동 없을 때 팁을 생성한다', () => {
@@ -474,15 +488,9 @@ describe('인사이트 생성', () => {
         daysWithWorkout: 0,
       };
 
-      const result = generateWeeklyInsights(
-        summary,
-        achievement,
-        trend,
-        workoutSummary,
-        null
-      );
+      const result = generateWeeklyInsights(summary, achievement, trend, workoutSummary, null);
 
-      expect(result.tips.some(t => t.includes('운동'))).toBe(true);
+      expect(result.tips.some((t) => t.includes('운동'))).toBe(true);
     });
   });
 
@@ -583,6 +591,150 @@ describe('generateWeeklyReport', () => {
     expect(result.nutrition.summary.totalCalories).toBe(0);
     expect(result.nutrition.dailyBreakdown).toHaveLength(7);
     expect(result.workout.hasData).toBe(false);
+  });
+});
+
+describe('뷰티-영양 상관관계', () => {
+  describe('calculateBeautyNutritionCorrelation', () => {
+    const mockNutritionSummary: NutritionSummaryStats = {
+      totalCalories: 14000,
+      avgCaloriesPerDay: 2000,
+      totalProtein: 560,
+      avgProteinPerDay: 80,
+      totalCarbs: 1750,
+      avgCarbsPerDay: 250,
+      totalFat: 385,
+      avgFatPerDay: 55,
+      totalWater: 14000,
+      avgWaterPerDay: 2000,
+      mealCount: 21,
+      daysWithRecords: 7,
+    };
+
+    const mockHairAnalysis: RawHairAnalysis = {
+      id: 'hair-1',
+      clerk_user_id: 'user-1',
+      scalp_health: 75,
+      density: 80,
+      damage_level: 65,
+      overall_score: 73,
+      hair_type: 'normal',
+      concerns: ['건조함', '탈모 초기'],
+      recommendations: {
+        ingredients: ['아르간 오일', '히알루론산'],
+        careTips: ['주 2회 딥 컨디셔닝', '열 보호제 사용'],
+      },
+      created_at: '2024-01-15T10:00:00Z',
+    };
+
+    const mockMakeupAnalysis: RawMakeupAnalysis = {
+      id: 'makeup-1',
+      clerk_user_id: 'user-1',
+      skin_texture: 70,
+      hydration: 65,
+      overall_score: 68,
+      undertone: 'warm',
+      concerns: ['모공', '건조'],
+      created_at: '2024-01-15T10:00:00Z',
+    };
+
+    it('헤어와 피부 분석 데이터가 모두 있을 때 완전한 상관관계를 반환한다', () => {
+      const result = calculateBeautyNutritionCorrelation(
+        mockNutritionSummary,
+        mockHairAnalysis,
+        mockMakeupAnalysis
+      );
+
+      expect(result).toBeDefined();
+      expect(result!.hasHairData).toBe(true);
+      expect(result!.hasSkinData).toBe(true);
+      expect(result!.hairHealth).not.toBeNull();
+      expect(result!.skinHealth).not.toBeNull();
+      expect(result!.hairHealth!.overallScore).toBe(73);
+      expect(result!.skinHealth!.overallScore).toBe(68);
+      expect(result!.nutrientImpacts.length).toBeGreaterThan(0);
+      expect(result!.recommendations.length).toBeGreaterThan(0);
+    });
+
+    it('헤어 분석 데이터만 있을 때 헤어 상관관계만 반환한다', () => {
+      const result = calculateBeautyNutritionCorrelation(
+        mockNutritionSummary,
+        mockHairAnalysis,
+        null
+      );
+
+      expect(result).toBeDefined();
+      expect(result!.hasHairData).toBe(true);
+      expect(result!.hasSkinData).toBe(false);
+      expect(result!.hairHealth).not.toBeNull();
+      expect(result!.skinHealth).toBeNull();
+    });
+
+    it('피부 분석 데이터만 있을 때 피부 상관관계만 반환한다', () => {
+      const result = calculateBeautyNutritionCorrelation(
+        mockNutritionSummary,
+        null,
+        mockMakeupAnalysis
+      );
+
+      expect(result).toBeDefined();
+      expect(result!.hasHairData).toBe(false);
+      expect(result!.hasSkinData).toBe(true);
+      expect(result!.hairHealth).toBeNull();
+      expect(result!.skinHealth).not.toBeNull();
+    });
+
+    it('뷰티 분석 데이터가 모두 없으면 undefined를 반환한다', () => {
+      const result = calculateBeautyNutritionCorrelation(mockNutritionSummary, null, null);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('영양소 임팩트 분석이 올바르게 계산된다', () => {
+      const result = calculateBeautyNutritionCorrelation(
+        mockNutritionSummary,
+        mockHairAnalysis,
+        mockMakeupAnalysis
+      );
+
+      expect(result!.nutrientImpacts).toBeDefined();
+      // 영양소별 임팩트가 있어야 함
+      const biotinImpact = result!.nutrientImpacts.find((i) => i.nutrient === 'biotin');
+      expect(biotinImpact).toBeDefined();
+      expect(biotinImpact!.percentage).toBeGreaterThanOrEqual(0);
+      expect(['positive', 'neutral', 'negative']).toContain(biotinImpact!.impact);
+    });
+
+    it('상관관계 요약이 올바른 형식을 가진다', () => {
+      const result = calculateBeautyNutritionCorrelation(
+        mockNutritionSummary,
+        mockHairAnalysis,
+        mockMakeupAnalysis
+      );
+
+      expect(result!.correlationSummary).toBeDefined();
+      expect(typeof result!.correlationSummary.overallScore).toBe('number');
+      expect(['up', 'down', 'stable']).toContain(result!.correlationSummary.trend);
+      expect(typeof result!.correlationSummary.message).toBe('string');
+    });
+
+    it('영양 기록이 없는 날이 있어도 정상 동작한다', () => {
+      const summaryWithFewRecords: NutritionSummaryStats = {
+        ...mockNutritionSummary,
+        daysWithRecords: 3,
+        avgCaloriesPerDay: 1500,
+        avgProteinPerDay: 50,
+      };
+
+      const result = calculateBeautyNutritionCorrelation(
+        summaryWithFewRecords,
+        mockHairAnalysis,
+        mockMakeupAnalysis
+      );
+
+      expect(result).toBeDefined();
+      expect(result!.nutrientImpacts.length).toBeGreaterThan(0);
+    });
   });
 });
 

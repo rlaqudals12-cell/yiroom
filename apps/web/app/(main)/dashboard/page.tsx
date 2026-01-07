@@ -15,13 +15,16 @@ import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 // 분석 결과 타입 정의
 interface AnalysisSummary {
   id: string;
-  type: 'personal-color' | 'skin' | 'body';
+  type: 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
   createdAt: Date;
   summary: string;
   // 타입별 추가 데이터
   seasonType?: string; // PC-1
   skinScore?: number; // S-1
   bodyType?: string; // C-1
+  hairScore?: number; // H-1
+  hairType?: string; // H-1
+  undertone?: string; // M-1
 }
 
 export default function DashboardPage() {
@@ -58,6 +61,20 @@ export default function DashboardPage() {
           .order('created_at', { ascending: false })
           .limit(1);
 
+        // 헤어 분석 결과 가져오기
+        const { data: hairData } = await supabase
+          .from('hair_analyses')
+          .select('id, hair_type, overall_score, created_at')
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        // 메이크업 분석 결과 가져오기
+        const { data: makeupData } = await supabase
+          .from('makeup_analyses')
+          .select('id, undertone, overall_score, created_at')
+          .order('created_at', { ascending: false })
+          .limit(1);
+
         const results: AnalysisSummary[] = [];
 
         if (pcData && pcData.length > 0) {
@@ -91,6 +108,27 @@ export default function DashboardPage() {
           });
         }
 
+        if (hairData && hairData.length > 0) {
+          results.push({
+            id: hairData[0].id,
+            type: 'hair',
+            createdAt: new Date(hairData[0].created_at),
+            summary: `${getHairTypeLabel(hairData[0].hair_type)} · ${hairData[0].overall_score}점`,
+            hairScore: hairData[0].overall_score,
+            hairType: hairData[0].hair_type,
+          });
+        }
+
+        if (makeupData && makeupData.length > 0) {
+          results.push({
+            id: makeupData[0].id,
+            type: 'makeup',
+            createdAt: new Date(makeupData[0].created_at),
+            summary: `${getUndertoneLabel(makeupData[0].undertone)} · ${makeupData[0].overall_score}점`,
+            undertone: makeupData[0].undertone,
+          });
+        }
+
         setAnalyses(results);
       } catch (error) {
         console.error('Failed to fetch analyses:', error);
@@ -112,14 +150,13 @@ export default function DashboardPage() {
   // 비로그인 상태
   if (!user) {
     return (
-      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center" data-testid="dashboard-login-required">
+      <div
+        className="min-h-[calc(100vh-80px)] flex items-center justify-center"
+        data-testid="dashboard-login-required"
+      >
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">
-            로그인이 필요합니다
-          </h2>
-          <p className="text-muted-foreground">
-            분석 결과를 확인하려면 먼저 로그인해주세요
-          </p>
+          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
+          <p className="text-muted-foreground">분석 결과를 확인하려면 먼저 로그인해주세요</p>
         </div>
       </div>
     );
@@ -155,8 +192,10 @@ export default function DashboardPage() {
         </section>
 
         {/* Zone 2: Activity Hub */}
-        <section className="mb-10 opacity-0 animate-fade-in-up animation-delay-400">
-          <WeeklyProgressSection />
+        <section className="mb-10 space-y-4">
+          <div className="opacity-0 animate-fade-in-up animation-delay-400">
+            <WeeklyProgressSection />
+          </div>
         </section>
 
         {/* Zone 3: Closet & Style */}
@@ -170,10 +209,7 @@ export default function DashboardPage() {
 
         {/* Zone 4: Analysis Archive (Collapsible) */}
         <section className="opacity-0 animate-fade-in-up animation-delay-600">
-          <AnalysisSection
-            analyses={analyses}
-            hasPersonalColor={hasPersonalColor}
-          />
+          <AnalysisSection analyses={analyses} hasPersonalColor={hasPersonalColor} />
         </section>
       </div>
     </main>
@@ -206,4 +242,23 @@ function getBodyTypeLabel(bodyType: string): string {
     inverted_triangle: '역삼각형',
   };
   return labels[bodyType] || bodyType;
+}
+
+function getHairTypeLabel(hairType: string): string {
+  const labels: Record<string, string> = {
+    straight: '직모',
+    wavy: '웨이브',
+    curly: '곱슬',
+    coily: '꼬임',
+  };
+  return labels[hairType] || hairType;
+}
+
+function getUndertoneLabel(undertone: string): string {
+  const labels: Record<string, string> = {
+    warm: '웜톤',
+    cool: '쿨톤',
+    neutral: '뉴트럴',
+  };
+  return labels[undertone] || undertone;
 }

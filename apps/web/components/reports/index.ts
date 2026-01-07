@@ -14,11 +14,11 @@ export { CalorieTrendChart } from './CalorieTrendChart';
 export { WeeklyComparisonChart } from './WeeklyComparisonChart';
 
 // 차트 컴포넌트 (Dynamic Import - 페이지에서 사용 권장)
-export {
-  CalorieTrendChartDynamic,
-  WeeklyComparisonChartDynamic,
-} from './dynamic';
+export { CalorieTrendChartDynamic, WeeklyComparisonChartDynamic } from './dynamic';
 
 // R-2 월간 리포트 컴포넌트
 export { BodyProgressCard } from './BodyProgressCard';
 export { GoalProgressCard } from './GoalProgressCard';
+
+// 뷰티-영양 상관관계 (H-1/M-1 연동)
+export { BeautyNutritionCard } from './BeautyNutritionCard';

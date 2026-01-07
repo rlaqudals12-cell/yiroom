@@ -7,7 +7,7 @@ import { AnalysisShareCard } from '@/components/share';
 import { captureElementAsImage, shareImage } from '@/lib/share';
 
 // 분석 타입
-type AnalysisType = 'personal-color' | 'skin' | 'body';
+type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
 
 // 공유 카드 데이터
 interface ShareCardData {
@@ -104,6 +104,57 @@ export function createBodyShareData(result: BodyData): ShareCardData {
     subtitle: '이룸 AI 분석 결과',
     typeLabel: result.bodyTypeLabel,
     typeEmoji: bodyEmoji[result.bodyType] || '👤',
+    highlights,
+  };
+}
+
+// 헤어 분석 결과에서 공유 데이터 생성
+interface HairData {
+  overallScore: number;
+  hairTypeLabel: string;
+  hairThicknessLabel: string;
+  metrics?: Array<{ name: string; value: number }>;
+}
+
+export function createHairShareData(result: HairData): ShareCardData {
+  const sorted = result.metrics ? [...result.metrics].sort((a, b) => b.value - a.value) : [];
+  const best = sorted[0];
+  const worst = sorted[sorted.length - 1];
+
+  const highlights: ShareCardData['highlights'] = [];
+  if (best) highlights.push({ label: 'Best', value: best.name });
+  if (worst) highlights.push({ label: 'Focus', value: worst.name });
+
+  return {
+    analysisType: 'hair',
+    title: '헤어 건강 점수',
+    subtitle: '이룸 AI 분석 결과',
+    score: result.overallScore,
+    typeLabel: `${result.hairTypeLabel} · ${result.hairThicknessLabel}`,
+    typeEmoji: '💇',
+    highlights,
+  };
+}
+
+// 메이크업 분석 결과에서 공유 데이터 생성
+interface MakeupData {
+  overallScore: number;
+  undertoneLabel: string;
+  styleLabel?: string;
+  metrics?: Array<{ name: string; value: number }>;
+}
+
+export function createMakeupShareData(result: MakeupData): ShareCardData {
+  const highlights: ShareCardData['highlights'] = [];
+  if (result.undertoneLabel) highlights.push({ label: '언더톤', value: result.undertoneLabel });
+  if (result.styleLabel) highlights.push({ label: '스타일', value: result.styleLabel });
+
+  return {
+    analysisType: 'makeup',
+    title: '메이크업 분석 점수',
+    subtitle: '이룸 AI 분석 결과',
+    score: result.overallScore,
+    typeEmoji: '💄',
     highlights,
   };
 }
