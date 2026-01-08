@@ -4,7 +4,17 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw, Dumbbell, BarChart3, Shirt, ClipboardList } from 'lucide-react';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Dumbbell,
+  BarChart3,
+  Shirt,
+  ClipboardList,
+  Lightbulb,
+  Sun,
+  Sparkles,
+} from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,6 +23,7 @@ import {
   type BodyType,
   type BodyType3,
   BODY_TYPES_3,
+  EASY_BODY_TIPS,
   mapBodyTypeTo3Type,
 } from '@/lib/mock/body-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
@@ -72,7 +83,7 @@ function getMeasurementDescription(name: string, value: number): string {
   return `${name}가 좁은 편이에요`;
 }
 
-// DB → BodyAnalysisResult 변환 (기존 8타입 → 3타입 매핑)
+// DB 데이터 → BodyAnalysisResult 변환 (Hybrid: DB는 핵심 데이터만, 표시용은 최신 Mock 사용)
 function transformDbToResult(dbData: DbBodyAnalysis): BodyAnalysisResult {
   const rawBodyType = dbData.body_type as BodyType | BodyType3;
 
@@ -83,6 +94,9 @@ function transformDbToResult(dbData: DbBodyAnalysis): BodyAnalysisResult {
     : mapBodyTypeTo3Type(rawBodyType as BodyType);
 
   const info = BODY_TYPES_3[bodyType3];
+
+  // Hybrid 전략: 표시 데이터는 항상 최신 Mock 사용 (코드 업데이트 시 기존 사용자도 혜택)
+  const mockEasyBodyTip = EASY_BODY_TIPS[bodyType3];
 
   // DB의 style_recommendations를 StyleRecommendation[] 형식으로 변환
   let styleRecs: Array<{ item: string; reason: string }> = [];
@@ -157,6 +171,8 @@ function transformDbToResult(dbData: DbBodyAnalysis): BodyAnalysisResult {
           accessories: [],
         }
       : null,
+    // Hybrid 데이터: 초보자 친화 팁 (최신 Mock 사용)
+    easyBodyTip: mockEasyBodyTip,
   };
 }
 
@@ -258,9 +274,9 @@ export default function BodyAnalysisResultPage() {
     }
   }, [isLoaded, isSignedIn, fetchAnalysis]);
 
-  // 새로 분석하기
+  // 새로 분석하기 (forceNew 파라미터로 자동 리디렉트 방지)
   const handleNewAnalysis = useCallback(() => {
-    router.push('/analysis/body');
+    router.push('/analysis/body?forceNew=true');
   }, [router]);
 
   // 로딩 상태
@@ -368,6 +384,44 @@ export default function BodyAnalysisResultPage() {
                   className="mb-6"
                 />
 
+                {/* 환경 요인 안내 카드 */}
+                <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0">
+                      <Lightbulb
+                        className="w-4 h-4 text-violet-600 dark:text-violet-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm text-foreground">알아두세요</p>
+                      <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
+                        <li className="flex items-start gap-1.5">
+                          <Sun
+                            className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500"
+                            aria-hidden="true"
+                          />
+                          <span>조명에 따라 실루엣 인식이 달라질 수 있어요</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <Shirt
+                            className="w-3 h-3 mt-0.5 flex-shrink-0 text-blue-500"
+                            aria-hidden="true"
+                          />
+                          <span>오버핏 의류는 분석 정확도에 영향을 줄 수 있어요</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <Sparkles
+                            className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500"
+                            aria-hidden="true"
+                          />
+                          <span>타이트한 옷에서 촬영하면 더 정확해요</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
                 <AnalysisResult
                   result={result}
                   onRetry={handleNewAnalysis}
@@ -433,7 +487,7 @@ export default function BodyAnalysisResultPage() {
 
       {/* 하단 고정 버튼 */}
       {result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
           <div className="max-w-md mx-auto space-y-2">
             {/* 운동 추천 버튼 */}
             <Button
@@ -447,8 +501,14 @@ export default function BodyAnalysisResultPage() {
               <Dumbbell className="w-4 h-4 mr-2" />
               나에게 맞는 운동 추천
             </Button>
-            {/* 공유 버튼 */}
-            <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+            {/* 다시 분석하기 + 공유 */}
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                다시 분석하기
+              </Button>
+              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+            </div>
           </div>
         </div>
       )}

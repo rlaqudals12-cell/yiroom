@@ -209,9 +209,9 @@ export default function HairAnalysisResultPage() {
     }
   }, [isLoaded, isSignedIn, fetchAnalysis]);
 
-  // 새로 분석하기
+  // 새로 분석하기 (forceNew 파라미터로 자동 리디렉트 방지)
   const handleNewAnalysis = useCallback(() => {
-    router.push('/analysis/hair');
+    router.push('/analysis/hair?forceNew=true');
   }, [router]);
 
   // 상태별 색상
@@ -443,7 +443,7 @@ export default function HairAnalysisResultPage() {
 
       {/* 하단 고정 버튼 */}
       {result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
           <div className="max-w-md mx-auto space-y-2">
             {/* 제품 추천 버튼 */}
             <Button
@@ -455,8 +455,14 @@ export default function HairAnalysisResultPage() {
               <Sparkles className="w-4 h-4 mr-2" />
               헤어 맞춤 제품 보기
             </Button>
-            {/* 공유 버튼 */}
-            <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+            {/* 다시 분석하기 + 공유 */}
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                다시 분석하기
+              </Button>
+              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+            </div>
           </div>
         </div>
       )}

@@ -24,6 +24,9 @@ import {
   SEASON_INFO,
   BEST_COLORS,
   WORST_COLORS,
+  LIPSTICK_RECOMMENDATIONS,
+  STYLE_DESCRIPTIONS,
+  EASY_INSIGHTS,
 } from '@/lib/mock/personal-color';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
@@ -82,13 +85,18 @@ function getSeasonToneDepth(seasonType: SeasonType): { tone: ToneType; depth: De
   }
 }
 
-// DB → PersonalColorResult 변환
+// DB → PersonalColorResult 변환 (Hybrid: DB는 핵심 데이터만, 표시용은 최신 Mock 사용)
 function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorResult {
   const seasonType = dbData.season.toLowerCase() as SeasonType;
   const info = SEASON_INFO[seasonType] || SEASON_INFO.spring;
   const { tone, depth } = getSeasonToneDepth(seasonType);
-  const defaultBestColors = BEST_COLORS[seasonType] || [];
-  const defaultWorstColors = WORST_COLORS[seasonType] || [];
+
+  // Hybrid 전략: 표시 데이터는 항상 최신 Mock 사용 (코드 업데이트 시 기존 사용자도 혜택)
+  const mockBestColors = BEST_COLORS[seasonType] || [];
+  const mockWorstColors = WORST_COLORS[seasonType] || [];
+  const mockLipstick = LIPSTICK_RECOMMENDATIONS[seasonType] || [];
+  const mockStyle = STYLE_DESCRIPTIONS[seasonType];
+  const mockEasyInsight = EASY_INSIGHTS[seasonType]?.[0];
 
   return {
     seasonType,
@@ -97,14 +105,12 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
     tone,
     depth,
     confidence: dbData.confidence || 85,
-    bestColors: dbData.best_colors || defaultBestColors,
-    worstColors: dbData.worst_colors || defaultWorstColors,
-    lipstickRecommendations:
-      dbData.makeup_recommendations?.lipstick?.map((l) => ({
-        colorName: l.shade,
-        hex: l.hex,
-        brandExample: l.description,
-      })) || [],
+    // 컬러 데이터: 최신 Mock 사용 (초보자 친화 이름 적용)
+    bestColors: mockBestColors,
+    worstColors: mockWorstColors,
+    // 립스틱 추천: 최신 Mock 사용
+    lipstickRecommendations: mockLipstick,
+    // 의류 추천: DB 데이터가 있으면 활용, 없으면 기본값
     clothingRecommendations: [
       ...(dbData.fashion_recommendations?.tops?.map((item) => ({
         item,
@@ -122,16 +128,20 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
         reason: '악세서리로 활용해보세요',
       })) || []),
     ],
-    styleDescription: {
+    // 스타일 설명: 최신 Mock 사용
+    styleDescription: mockStyle || {
       imageKeywords: ['화사한', '세련된'],
       makeupStyle: `${info.label}에 어울리는 자연스러운 메이크업`,
       fashionStyle: `${info.description}을 살리는 스타일`,
-      accessories:
-        dbData.fashion_recommendations?.accessories?.join(', ') || '골드/실버 톤 악세서리',
+      accessories: '골드/실버 톤 악세서리',
     },
+    // 인사이트: DB에 AI 분석 인사이트가 있으면 사용, 없으면 easyInsight
     insight:
       dbData.image_analysis?.insight ||
+      mockEasyInsight?.summary ||
       `${info.label} 타입의 특징을 가지고 있어요! ${info.characteristics}`,
+    // 초보자 친화 인사이트 추가
+    easyInsight: mockEasyInsight,
     analyzedAt: new Date(dbData.created_at),
   };
 }
@@ -221,9 +231,9 @@ export default function PersonalColorResultPage() {
     }
   }, [isLoaded, isSignedIn, fetchAnalysis]);
 
-  // 새로 분석하기
+  // 새로 분석하기 (forceNew 파라미터로 자동 리디렉트 방지)
   const handleNewAnalysis = useCallback(() => {
-    router.push('/analysis/personal-color');
+    router.push('/analysis/personal-color?forceNew=true');
   }, [router]);
 
   // 로딩 상태
@@ -508,7 +518,7 @@ export default function PersonalColorResultPage() {
 
       {/* 하단 고정 버튼 */}
       {result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
           <div className="max-w-md mx-auto space-y-2">
             {/* 제품 추천 버튼 */}
             <Button
@@ -517,8 +527,14 @@ export default function PersonalColorResultPage() {
             >
               <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
             </Button>
-            {/* 공유 버튼 */}
-            <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+            {/* 다시 분석하기 + 공유 */}
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                다시 분석하기
+              </Button>
+              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+            </div>
           </div>
         </div>
       )}
