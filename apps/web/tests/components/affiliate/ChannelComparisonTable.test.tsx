@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ChannelComparisonTable } from '@/components/affiliate/ChannelComparisonTable';
 import type { ChannelOption } from '@/components/affiliate/MultiChannelProductCard';
 
@@ -116,10 +116,16 @@ describe('ChannelComparisonTable', () => {
     expect(screen.getByText('품절')).toBeInTheDocument();
   });
 
-  it('채널 선택 시 콜백을 호출한다', () => {
+  it('채널 선택 시 콜백을 호출한다', async () => {
     const onSelectChannel = vi.fn();
     const mockOpen = vi.fn();
     vi.spyOn(window, 'open').mockImplementation(mockOpen);
+
+    // fetch 모킹 (클릭 트래킹 API)
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ affiliateUrl: 'https://link.coupang.com/a/123' }),
+    });
 
     render(<ChannelComparisonTable channels={mockChannels} onSelectChannel={onSelectChannel} />);
 
@@ -127,8 +133,13 @@ describe('ChannelComparisonTable', () => {
     const buyButtons = screen.getAllByText('구매');
     fireEvent.click(buyButtons[0]);
 
+    // onSelectChannel은 동기적으로 호출됨
     expect(onSelectChannel).toHaveBeenCalled();
-    expect(mockOpen).toHaveBeenCalled();
+
+    // window.open은 비동기 fetch 완료 후 호출됨
+    await waitFor(() => {
+      expect(mockOpen).toHaveBeenCalled();
+    });
   });
 
   it('채널이 없으면 안내 메시지를 표시한다', () => {

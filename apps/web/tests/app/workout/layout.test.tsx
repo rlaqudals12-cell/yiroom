@@ -4,6 +4,7 @@ import WorkoutLayout from '@/app/(main)/workout/layout';
 
 // next/navigation mock
 vi.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: vi.fn().mockReturnValue(null) }),
   useRouter: () => ({
     back: vi.fn(),
     push: vi.fn(),

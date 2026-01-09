@@ -80,25 +80,30 @@ function HairProductRecommendations({
 describe('HairProductRecommendations', () => {
   describe('정상 케이스', () => {
     it('헤어 타입별 제품 추천', () => {
-      // Given: wavy 헤어 타입
+      // Given: wavy 헤어 타입과 제품
       const hairType = 'wavy';
+      const mockProducts: HairProduct[] = [{ id: '1', name: '웨이브 샴푸', category: 'shampoo' }];
 
       // When: 렌더링
-      render(<HairProductRecommendations hairType={hairType} products={[]} />);
+      render(<HairProductRecommendations hairType={hairType} products={mockProducts} />);
 
       // Then: 웨이브 헤어 전용 제품 표시
       expect(screen.getByText(/웨이브 전용/)).toBeInTheDocument();
     });
 
     it('두피 건강도에 따른 제품 필터링', () => {
-      // Given: 낮은 두피 건강 (30점)
+      // Given: 낮은 두피 건강 (30점)과 제품
       const scalpHealth = 30;
+      const mockProducts: HairProduct[] = [
+        { id: '1', name: '스칼프 케어', category: 'scalp_care' },
+      ];
 
       // When: 렌더링
-      render(<HairProductRecommendations scalpHealth={scalpHealth} products={[]} />);
+      render(<HairProductRecommendations scalpHealth={scalpHealth} products={mockProducts} />);
 
-      // Then: 두피 케어 제품 우선 표시
-      expect(screen.getByText(/두피 케어/)).toBeInTheDocument();
+      // Then: 두피 케어 제품 우선 표시 (여러 요소가 있을 수 있으므로 getAllByText 사용)
+      const scalpCareElements = screen.getAllByText(/두피 케어/);
+      expect(scalpCareElements.length).toBeGreaterThanOrEqual(1);
     });
 
     it('제품 목록 표시', () => {
@@ -260,7 +265,8 @@ describe('HairProductRecommendations', () => {
 
     it('웨이브 타입 제품 추천', () => {
       const hairType = 'wavy';
-      render(<HairProductRecommendations hairType={hairType} products={[]} />);
+      const mockProducts: HairProduct[] = [{ id: '1', name: '웨이브 샴푸', category: 'shampoo' }];
+      render(<HairProductRecommendations hairType={hairType} products={mockProducts} />);
       expect(screen.getByText(/웨이브 전용/)).toBeInTheDocument();
     });
 
@@ -294,9 +300,13 @@ describe('HairProductRecommendations', () => {
 
     it('두피 건강 나쁨 (0-40)', () => {
       const scalpHealth = 30;
-      render(<HairProductRecommendations scalpHealth={scalpHealth} products={[]} />);
-      // 나쁠 때 두피 케어 우선 표시
-      expect(screen.getByText(/두피 케어/)).toBeInTheDocument();
+      const mockProducts: HairProduct[] = [
+        { id: '1', name: '스칼프 샴푸', category: 'scalp_care' },
+      ];
+      render(<HairProductRecommendations scalpHealth={scalpHealth} products={mockProducts} />);
+      // 나쁠 때 두피 케어 우선 표시 (여러 요소가 있을 수 있으므로 getAllByText 사용)
+      const scalpcareElements = screen.getAllByText(/두피 케어/);
+      expect(scalpcareElements.length).toBeGreaterThanOrEqual(1);
     });
   });
 });

@@ -5,6 +5,7 @@ import type { FeedPostWithAuthor } from '@/lib/feed/types';
 
 // useRouter 모킹
 vi.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: vi.fn().mockReturnValue(null) }),
   useRouter: () => ({
     push: vi.fn(),
     back: vi.fn(),

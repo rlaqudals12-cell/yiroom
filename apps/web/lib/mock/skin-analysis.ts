@@ -53,7 +53,14 @@ export const SKIN_TYPES: SkinTypeInfo[] = [
 ];
 
 // 피부 고민 정의
-export type SkinConcernId = 'acne' | 'wrinkles' | 'pigmentation' | 'pores' | 'dryness' | 'redness' | 'dullness';
+export type SkinConcernId =
+  | 'acne'
+  | 'wrinkles'
+  | 'pigmentation'
+  | 'pores'
+  | 'dryness'
+  | 'redness'
+  | 'dullness';
 
 export interface SkinConcernInfo {
   id: SkinConcernId;
@@ -198,6 +205,8 @@ export interface SkinAnalysisResult {
   foundationRecommendation?: string | null;
   ingredientWarnings?: IngredientWarning[];
   productRecommendations?: ProductRecommendations | null;
+  // Hybrid 데이터용 초보자 친화 필드 (선택적, 하위 호환)
+  easySkinTip?: EasySkinTip;
 }
 
 // 점수에 따른 상태 결정
@@ -229,6 +238,76 @@ const INGREDIENT_POOL: RecommendedIngredient[] = [
   { name: '펩타이드', reason: '콜라겐 생성 촉진' },
   { name: '알로에베라', reason: '진정 및 수분 공급' },
 ];
+
+// 초보자 친화 피부 관리 팁 (Hybrid 데이터용)
+export interface EasySkinTip {
+  summary: string; // "건성 피부는 수분 크림이 필수예요!"
+  easyExplanation: string; // 쉬운 설명
+  morningRoutine: string[]; // 아침 루틴
+  eveningRoutine: string[]; // 저녁 루틴
+  productTip: string; // 제품 팁
+  avoidTip: string; // 피해야 할 것
+}
+
+export const EASY_SKIN_TIPS: Record<SkinTypeId, EasySkinTip> = {
+  dry: {
+    summary: '건성 피부는 수분 크림이 필수예요!',
+    easyExplanation:
+      '피부가 건조하고 당기는 느낌이 자주 들어요. 수분을 꾸준히 보충해주면 촉촉하고 건강한 피부를 유지할 수 있어요.',
+    morningRoutine: ['순한 클렌저로 세안', '토너로 수분 충전', '에센스', '수분 크림 듬뿍'],
+    eveningRoutine: ['오일 클렌징', '폼 클렌징', '토너', '세럼', '나이트 크림 or 수면팩'],
+    productTip: '히알루론산, 세라마이드 성분을 찾아보세요. 크림 제형이 좋아요!',
+    avoidTip: '알코올이 들어간 토너, 너무 뜨거운 물로 세안하기',
+  },
+  oily: {
+    summary: '지성 피부도 보습은 필수! 가벼운 수분 케어가 답이에요',
+    easyExplanation:
+      '피지 분비가 많아서 번들거리지만, 수분이 부족하면 피지가 더 나와요. 가벼운 수분 케어로 밸런스를 맞춰보세요.',
+    morningRoutine: ['폼 클렌저로 깔끔 세안', '가벼운 토너', '수분 세럼', '가벼운 로션 or 젤 크림'],
+    eveningRoutine: [
+      '오일 클렌징',
+      '폼 클렌징',
+      'BHA 토너 (주 2-3회)',
+      '수분 세럼',
+      '가벼운 젤 크림',
+    ],
+    productTip: '나이아신아마이드, BHA 성분이 도움돼요. 젤 타입 제품을 선택하세요!',
+    avoidTip: '무거운 오일 제품, 과도한 세안 (하루 2회 이상)',
+  },
+  combination: {
+    summary: 'T존과 U존을 다르게 관리하면 완벽해요!',
+    easyExplanation:
+      'T존(이마, 코)은 기름지고 U존(볼, 턱)은 건조한 복합성 피부예요. 부위별로 다르게 케어해주면 밸런스가 좋아져요.',
+    morningRoutine: ['순한 클렌저', '전체 토너', 'T존엔 세럼, U존엔 크림'],
+    eveningRoutine: ['오일 클렌징', '폼 클렌징', 'T존에 BHA 토너 (주 2회)', 'U존에 수분 크림'],
+    productTip: 'T존용 매트 제품과 U존용 수분 제품을 분리해서 사용해보세요!',
+    avoidTip: '전체에 같은 제품 두껍게 바르기',
+  },
+  normal: {
+    summary: '균형 잡힌 피부! 현재 상태를 유지하는 게 포인트예요',
+    easyExplanation:
+      '수분과 유분의 밸런스가 좋은 건강한 피부예요. 지금 상태를 유지하면서 노화 예방에 신경 써주세요.',
+    morningRoutine: ['순한 클렌저', '토너', '에센스', '가벼운 크림', '선크림'],
+    eveningRoutine: ['클렌징', '토너', '세럼 (비타민C 추천)', '크림'],
+    productTip: '지금 잘 맞는 제품을 꾸준히 사용하세요. 항산화 성분이 노화 예방에 좋아요!',
+    avoidTip: '제품을 너무 자주 바꾸기, 과도한 각질 제거',
+  },
+  sensitive: {
+    summary: '민감 피부는 진정이 먼저! 순하게 케어해주세요',
+    easyExplanation:
+      '피부가 자극에 쉽게 반응하고 붉어지거나 트러블이 생겨요. 저자극 제품으로 진정 케어하는 게 중요해요.',
+    morningRoutine: [
+      '미온수로 가볍게 세안',
+      '진정 토너',
+      '진정 세럼',
+      '순한 크림',
+      '물리적 선크림',
+    ],
+    eveningRoutine: ['마일드 클렌저', '진정 토너', '센텔라 or 판테놀 세럼', '순한 크림'],
+    productTip: '센텔라, 판테놀, 마데카소사이드 성분이 진정에 좋아요. 무향료 제품 선택!',
+    avoidTip: '새 제품 바로 얼굴에 바르기, 알코올/향료 제품, 강한 각질 제거',
+  },
+};
 
 // 로딩 화면 팁 목록
 export const LOADING_TIPS = [
@@ -303,9 +382,7 @@ export const generateMockAnalysisResult = (): SkinAnalysisResult => {
   });
 
   // 전체 점수 계산 (평균)
-  const overallScore = Math.round(
-    metrics.reduce((sum, m) => sum + m.value, 0) / metrics.length
-  );
+  const overallScore = Math.round(metrics.reduce((sum, m) => sum + m.value, 0) / metrics.length);
 
   // 가변 보상: 랜덤 인사이트 선택
   const insight = INSIGHTS[Math.floor(Math.random() * INSIGHTS.length)];

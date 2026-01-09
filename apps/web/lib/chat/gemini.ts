@@ -12,7 +12,7 @@ import { buildFullPrompt, parseProductRecommendations } from './prompt';
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '');
 
 // 모델 설정
-const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 const TIMEOUT_MS = 10000; // 10초 타임아웃
 const MAX_RETRIES = 2;
 

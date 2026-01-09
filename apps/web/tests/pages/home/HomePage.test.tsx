@@ -14,9 +14,13 @@ import userEvent from '@testing-library/user-event';
 // Mock lucide-react icons
 vi.mock('lucide-react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('lucide-react')>();
-  const MockIcon = ({ className, 'aria-hidden': ariaHidden }: { className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }) => (
-    <svg className={className} aria-hidden={ariaHidden} data-testid="mock-icon" />
-  );
+  const MockIcon = ({
+    className,
+    'aria-hidden': ariaHidden,
+  }: {
+    className?: string;
+    'aria-hidden'?: boolean | 'true' | 'false';
+  }) => <svg className={className} aria-hidden={ariaHidden} data-testid="mock-icon" />;
   return {
     ...actual,
     Bell: MockIcon,
@@ -34,6 +38,7 @@ vi.mock('lucide-react', async (importOriginal) => {
 // Mock Next.js router
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: vi.fn().mockReturnValue(null) }),
   useRouter: () => ({
     push: mockPush,
     replace: vi.fn(),
@@ -62,6 +67,33 @@ vi.mock('@/components/skeletons', () => ({
   HomeSkeleton: () => <div data-testid="home-skeleton">Loading...</div>,
 }));
 
+// Mock useAnalysisStatus hook
+vi.mock('@/hooks/useAnalysisStatus', () => ({
+  useAnalysisStatus: () => ({
+    isLoading: false,
+    isNewUser: false,
+    analyses: {
+      personalColor: { id: '1', season: 'spring' },
+      skin: { id: '2' },
+      body: { id: '3' },
+    },
+  }),
+}));
+
+// Mock HomeAnalysisPrompt and HomeAnalysisSummary
+vi.mock('@/app/(main)/home/_components/HomeAnalysisPrompt', () => ({
+  default: () => <div data-testid="analysis-prompt">분석 시작하기</div>,
+}));
+
+vi.mock('@/app/(main)/home/_components/HomeAnalysisSummary', () => ({
+  default: () => <div data-testid="analysis-summary">분석 결과 요약</div>,
+}));
+
+// Mock RecentlyViewed
+vi.mock('@/components/products/RecentlyViewed', () => ({
+  RecentlyViewed: () => <div data-testid="recently-viewed">최근 본 제품</div>,
+}));
+
 import HomePage from '@/app/(main)/home/page';
 
 describe('HomePage', () => {
@@ -85,7 +117,7 @@ describe('HomePage', () => {
     it('사용자 이름이 인사말에 표시된다', () => {
       render(<HomePage />);
 
-      expect(screen.getByText(/테스터님!/)).toBeInTheDocument();
+      expect(screen.getByText(/테스터님/)).toBeInTheDocument();
     });
 
     it('오늘의 추천 섹션이 표시된다', () => {
@@ -185,11 +217,9 @@ describe('HomePage', () => {
     it('인사말이 표시된다', () => {
       render(<HomePage />);
 
-      // 시간에 따라 다른 인사말이 표시됨
-      const greetings = ['좋은 아침', '좋은 오후', '좋은 저녁', '좋은 밤'];
-      const hasGreeting = greetings.some((greeting) =>
-        screen.queryByText(new RegExp(greeting))
-      );
+      // 시간에 따라 다른 인사말이 표시됨 (이에요/예요 포함)
+      const greetings = ['좋은 아침이에요', '좋은 오후예요', '좋은 저녁이에요', '좋은 밤이에요'];
+      const hasGreeting = greetings.some((greeting) => screen.queryByText(new RegExp(greeting)));
 
       expect(hasGreeting).toBe(true);
     });
@@ -221,13 +251,13 @@ describe('HomePage', () => {
     it('칼로리 수치가 표시된다', () => {
       render(<HomePage />);
 
-      expect(screen.getByText(/1,200 \/ 2,000 kcal/)).toBeInTheDocument();
+      expect(screen.getByText(/1,200 \/ 2,000/)).toBeInTheDocument();
     });
 
     it('운동 시간이 표시된다', () => {
       render(<HomePage />);
 
-      expect(screen.getByText(/30분 완료/)).toBeInTheDocument();
+      expect(screen.getByText(/30 \/ 60분/)).toBeInTheDocument();
     });
 
     it('수분 섭취량이 표시된다', () => {

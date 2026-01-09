@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Flame, Dumbbell, Droplets, ChevronRight } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { Progress } from '@/components/ui/progress';
 
 interface DailyActivity {
   calories: { current: number; target: number };

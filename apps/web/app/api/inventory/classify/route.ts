@@ -28,10 +28,7 @@ export async function POST(request: NextRequest) {
     const { imageUrl, imageBase64 } = await request.json();
 
     if (!imageUrl && !imageBase64) {
-      return NextResponse.json(
-        { error: 'imageUrl or imageBase64 is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'imageUrl or imageBase64 is required' }, { status: 400 });
     }
 
     // Gemini API 키 확인
@@ -44,7 +41,7 @@ export async function POST(request: NextRequest) {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
-        model: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
+        model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
       });
 
       // 프롬프트
@@ -125,9 +122,6 @@ Only return the JSON object, no other text.`;
     }
   } catch (error) {
     console.error('[API] POST /api/inventory/classify error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import Link from 'next/link';
-import { Clock, ArrowRight, User } from 'lucide-react';
 import {
   type BodyAnalysisResult,
   type UserBodyInput,
@@ -26,49 +25,21 @@ import { MultiAngleBodyCapture, type MultiAngleBodyImages } from '@/components/a
 // 새로운 흐름: guide → input → multi-angle → loading → result
 // 또는: guide → input → upload → loading → result (갤러리 단일 이미지)
 // 또는: guide → known-type → result
-type AnalysisStep = 'guide' | 'input' | 'multi-angle' | 'upload' | 'loading' | 'result' | 'known-type';
-
-// 날짜 포맷 헬퍼
-function formatDate(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (days === 0) return '오늘';
-  if (days === 1) return '어제';
-  if (days < 7) return `${days}일 전`;
-  if (days < 30) return `${Math.floor(days / 7)}주 전`;
-  return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-}
-
-// 체형 라벨 헬퍼
-function getBodyTypeLabel(bodyType: string): string {
-  const labels: Record<string, string> = {
-    X: 'X형 (모래시계)',
-    A: 'A형 (삼각형)',
-    V: 'V형 (역삼각형)',
-    H: 'H형 (직사각형)',
-    O: 'O형 (원형)',
-    hourglass: '모래시계형',
-    pear: '서양배형',
-    apple: '사과형',
-    rectangle: '직사각형',
-    inverted_triangle: '역삼각형',
-  };
-  return labels[bodyType] || bodyType;
-}
-
-// 기존 분석 결과 타입
-interface ExistingAnalysis {
-  id: string;
-  body_type: string;
-  created_at: string;
-}
+type AnalysisStep =
+  | 'guide'
+  | 'input'
+  | 'multi-angle'
+  | 'upload'
+  | 'loading'
+  | 'result'
+  | 'known-type';
 
 export default function BodyAnalysisPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const forceNew = searchParams.get('forceNew') === 'true';
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
-  const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
   const existingCheckedRef = useRef(false);
   const [step, setStep] = useState<AnalysisStep>('guide');
@@ -82,9 +53,18 @@ export default function BodyAnalysisPage() {
   const analysisStartedRef = useRef(false);
   const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-체형분석-결과');
 
-  // 기존 분석 결과 확인
+  // 기존 분석 결과 확인 및 자동 리디렉트
   useEffect(() => {
+    let isRedirecting = false;
+
     async function checkExistingAnalysis() {
+      // forceNew 파라미터가 있으면 자동 리디렉트 건너뛰기
+      if (forceNew) {
+        console.log('[C-1] forceNew=true, skipping auto-redirect');
+        setCheckingExisting(false);
+        return;
+      }
+
       if (!isLoaded || !isSignedIn || existingCheckedRef.current) return;
 
       existingCheckedRef.current = true;
@@ -92,23 +72,28 @@ export default function BodyAnalysisPage() {
       try {
         const { data } = await supabase
           .from('body_analyses')
-          .select('id, body_type, created_at')
+          .select('id')
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
 
-        if (data) {
-          setExistingAnalysis(data);
+        if (data && !isRedirecting) {
+          // 기존 결과가 있으면 자동으로 결과 페이지로 리디렉트
+          isRedirecting = true;
+          router.replace(`/analysis/body/result/${data.id}`);
+          return;
         }
       } catch {
         // 기존 결과 없음 - 무시
       } finally {
-        setCheckingExisting(false);
+        if (!isRedirecting) {
+          setCheckingExisting(false);
+        }
       }
     }
 
     checkExistingAnalysis();
-  }, [isLoaded, isSignedIn, supabase]);
+  }, [isLoaded, isSignedIn, supabase, router, forceNew]);
 
   // 가이드 완료 → 입력 단계로
   const handleGuideComplete = useCallback(() => {
@@ -126,25 +111,28 @@ export default function BodyAnalysisPage() {
   }, []);
 
   // 기존 체형 타입 선택 → Mock 결과 생성
-  const handleKnownTypeSelect = useCallback((bodyType: BodyType3) => {
-    const typeInfo = BODY_TYPES_3[bodyType];
-    const mockResult = generateMockBodyAnalysis3(userInput || undefined);
+  const handleKnownTypeSelect = useCallback(
+    (bodyType: BodyType3) => {
+      const typeInfo = BODY_TYPES_3[bodyType];
+      const mockResult = generateMockBodyAnalysis3(userInput || undefined);
 
-    // 선택된 타입으로 결과 덮어쓰기 (BodyAnalysisResult 형식으로 변환)
-    setResult({
-      bodyType: bodyType as unknown as import('@/lib/mock/body-analysis').BodyType,
-      bodyTypeLabel: typeInfo.label,
-      bodyTypeDescription: typeInfo.description,
-      measurements: mockResult.measurements,
-      strengths: typeInfo.strengths,
-      insight: typeInfo.insights[0],
-      styleRecommendations: typeInfo.recommendations,
-      analyzedAt: new Date(),
-      userInput: userInput || undefined,
-    });
-    setStep('result');
-    setShowConfetti(true);
-  }, [userInput]);
+      // 선택된 타입으로 결과 덮어쓰기 (BodyAnalysisResult 형식으로 변환)
+      setResult({
+        bodyType: bodyType as unknown as import('@/lib/mock/body-analysis').BodyType,
+        bodyTypeLabel: typeInfo.label,
+        bodyTypeDescription: typeInfo.description,
+        measurements: mockResult.measurements,
+        strengths: typeInfo.strengths,
+        insight: typeInfo.insights[0],
+        styleRecommendations: typeInfo.recommendations,
+        analyzedAt: new Date(),
+        userInput: userInput || undefined,
+      });
+      setStep('result');
+      setShowConfetti(true);
+    },
+    [userInput]
+  );
 
   // 기본 정보 입력 완료 시 다각도 촬영 단계로 전환
   const handleInputSubmit = useCallback((data: UserBodyInput) => {
@@ -205,7 +193,10 @@ export default function BodyAnalysisPage() {
           backImageBase64: multiAngleImages.backImageBase64,
           userInput,
         };
-        const imageCount = 1 + (multiAngleImages.sideImageBase64 ? 1 : 0) + (multiAngleImages.backImageBase64 ? 1 : 0);
+        const imageCount =
+          1 +
+          (multiAngleImages.sideImageBase64 ? 1 : 0) +
+          (multiAngleImages.backImageBase64 ? 1 : 0);
         console.log(`[C-1] Analyzing with ${imageCount} image(s)`);
       } else if (imageFile) {
         // 단일 이미지 사용 (갤러리에서 선택)
@@ -230,7 +221,12 @@ export default function BodyAnalysisPage() {
       }
 
       const data = await response.json();
-      console.log('[C-1] Analysis result:', data.usedMock ? 'Mock' : 'Real AI', 'Images:', data.imagesAnalyzed);
+      console.log(
+        '[C-1] Analysis result:',
+        data.usedMock ? 'Mock' : 'Real AI',
+        'Images:',
+        data.imagesAnalyzed
+      );
 
       // API 응답의 result + 퍼스널 컬러 추천 통합
       setResult({
@@ -291,6 +287,18 @@ export default function BodyAnalysisPage() {
     }
   };
 
+  // 기존 결과 확인 중이면 로딩 표시
+  if (checkingExisting) {
+    return (
+      <main className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-muted-foreground">확인 중...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <>
       {/* 축하 Confetti 효과 */}
@@ -315,46 +323,18 @@ export default function BodyAnalysisPage() {
             </div>
           )}
 
-          {/* 기존 분석 결과 배너 */}
-          {step === 'guide' && existingAnalysis && !checkingExisting && (
-            <Link
-              href={`/analysis/body/result/${existingAnalysis.id}`}
-              className="block mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <User className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">기존 분석 결과 보기</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="font-medium text-blue-600">
-                        {getBodyTypeLabel(existingAnalysis.body_type)}
-                      </span>
-                      <span>•</span>
-                      <Clock className="w-3 h-3" />
-                      {formatDate(new Date(existingAnalysis.created_at))}
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight className="w-5 h-5 text-blue-500" />
-              </div>
-            </Link>
-          )}
-
           {/* Step별 컴포넌트 렌더링 */}
           {step === 'guide' && (
-            <BodyPhotographyGuide
-              onContinue={handleGuideComplete}
-              onSkip={handleSkipToKnownType}
-            />
+            <BodyPhotographyGuide onContinue={handleGuideComplete} onSkip={handleSkipToKnownType} />
           )}
 
           {step === 'input' && <InputForm onSubmit={handleInputSubmit} />}
 
           {step === 'multi-angle' && (
-            <div className="bg-card rounded-xl overflow-hidden" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
+            <div
+              className="bg-card rounded-xl overflow-hidden"
+              style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}
+            >
               <MultiAngleBodyCapture
                 onComplete={handleMultiAngleComplete}
                 onCancel={handleMultiAngleCancel}
@@ -366,15 +346,10 @@ export default function BodyAnalysisPage() {
           {step === 'upload' && <PhotoUpload onPhotoSelect={handlePhotoSelect} />}
 
           {step === 'known-type' && (
-            <KnownBodyTypeInput
-              onSelect={handleKnownTypeSelect}
-              onBack={handleKnownTypeBack}
-            />
+            <KnownBodyTypeInput onSelect={handleKnownTypeSelect} onBack={handleKnownTypeBack} />
           )}
 
-          {step === 'loading' && (
-            <AnalysisLoading onComplete={handleAnalysisComplete} />
-          )}
+          {step === 'loading' && <AnalysisLoading onComplete={handleAnalysisComplete} />}
 
           {step === 'result' && result && (
             <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />
@@ -386,11 +361,7 @@ export default function BodyAnalysisPage() {
       {step === 'result' && result && (
         <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
           <div className="max-w-md mx-auto">
-            <ShareButton
-              onShare={share}
-              loading={shareLoading}
-              variant="outline"
-            />
+            <ShareButton onShare={share} loading={shareLoading} variant="outline" />
           </div>
         </div>
       )}

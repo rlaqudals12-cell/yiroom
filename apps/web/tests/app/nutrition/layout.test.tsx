@@ -9,6 +9,7 @@ import NutritionLayout from '@/app/(main)/nutrition/layout';
 // next/navigation mock
 const mockBack = vi.fn();
 vi.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: vi.fn().mockReturnValue(null) }),
   useRouter: () => ({
     back: mockBack,
   }),

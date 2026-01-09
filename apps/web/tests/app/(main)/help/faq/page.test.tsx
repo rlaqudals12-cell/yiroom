@@ -61,9 +61,7 @@ describe('FAQPage', () => {
     it('대시보드 링크', () => {
       render(<FAQPage />);
       const links = screen.getAllByRole('link');
-      const dashboardLink = links.find(
-        (link) => link.getAttribute('href') === '/dashboard'
-      );
+      const dashboardLink = links.find((link) => link.getAttribute('href') === '/dashboard');
       expect(dashboardLink).toBeDefined();
     });
 
@@ -75,9 +73,7 @@ describe('FAQPage', () => {
     it('설명 텍스트 표시', () => {
       render(<FAQPage />);
       expect(
-        screen.getByText(
-          '이룸 사용 중 궁금한 점이 있으신가요? 아래에서 답변을 찾아보세요.'
-        )
+        screen.getByText('이룸 사용 중 궁금한 점이 있으신가요? 아래에서 답변을 찾아보세요.')
       ).toBeInTheDocument();
     });
   });
@@ -90,10 +86,7 @@ describe('FAQPage', () => {
 
     it('검색 기능 활성화', () => {
       render(<FAQPage />);
-      expect(screen.getByTestId('faq-accordion')).toHaveAttribute(
-        'data-show-search',
-        'true'
-      );
+      expect(screen.getByTestId('faq-accordion')).toHaveAttribute('data-show-search', 'true');
     });
   });
 
@@ -120,36 +113,52 @@ describe('FAQPage', () => {
 
     it('기술 카테고리 FAQ 표시', () => {
       render(<FAQPage />);
-      expect(
-        screen.getByText('앱이 제대로 작동하지 않아요.')
-      ).toBeInTheDocument();
+      expect(screen.getByText('앱이 제대로 작동하지 않아요.')).toBeInTheDocument();
     });
   });
 
   describe('피드백 기능', () => {
-    it('도움됨 피드백 로그', () => {
+    it('도움됨 피드백 API 호출', async () => {
+      // fetch 모킹
+      global.fetch = vi.fn().mockResolvedValue({ ok: true });
+
       render(<FAQPage />);
       const helpfulButton = screen.getAllByText('도움됨')[0];
       helpfulButton.click();
 
-      expect(consoleSpy).toHaveBeenCalledWith('FAQ faq-1: helpful');
+      // API 호출 검증
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/faq/feedback',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ faqId: 'faq-1', helpful: true }),
+        })
+      );
     });
 
-    it('도움안됨 피드백 로그', () => {
+    it('도움안됨 피드백 API 호출', async () => {
+      // fetch 모킹
+      global.fetch = vi.fn().mockResolvedValue({ ok: true });
+
       render(<FAQPage />);
       const notHelpfulButton = screen.getAllByText('도움안됨')[0];
       notHelpfulButton.click();
 
-      expect(consoleSpy).toHaveBeenCalledWith('FAQ faq-1: not helpful');
+      // API 호출 검증
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/faq/feedback',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ faqId: 'faq-1', helpful: false }),
+        })
+      );
     });
   });
 
   describe('추가 문의 섹션', () => {
     it('문의하기 안내 표시', () => {
       render(<FAQPage />);
-      expect(
-        screen.getByText('원하는 답변을 찾지 못하셨나요?')
-      ).toBeInTheDocument();
+      expect(screen.getByText('원하는 답변을 찾지 못하셨나요?')).toBeInTheDocument();
     });
 
     it('문의하기 링크', () => {

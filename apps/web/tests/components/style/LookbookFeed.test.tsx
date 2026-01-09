@@ -48,9 +48,7 @@ describe('LookbookFeed', () => {
       bodyType: 'S',
       personalColor: 'Summer',
       caption: '미니멀 오피스룩',
-      outfitItems: [
-        { category: 'top', description: '셔츠', color: '화이트', colorHex: '#FFFFFF' },
-      ],
+      outfitItems: [{ category: 'top', description: '셔츠', color: '화이트', colorHex: '#FFFFFF' }],
       likesCount: 156,
       commentsCount: 8,
       isPublic: true,
@@ -89,8 +87,8 @@ describe('LookbookFeed', () => {
     const handleShare = vi.fn();
     render(<LookbookFeed posts={mockPosts} onShare={handleShare} />);
 
-    // 공유 버튼 클릭 (Share 아이콘 버튼)
-    const shareButtons = screen.getAllByRole('button', { name: /Share/ });
+    // 공유 버튼 클릭 (aria-label="공유하기")
+    const shareButtons = screen.getAllByRole('button', { name: /공유하기/ });
     fireEvent.click(shareButtons[0]);
     expect(handleShare).toHaveBeenCalledWith('1');
   });
@@ -136,13 +134,7 @@ describe('LookbookFeed', () => {
 
   it('shows load more button when hasMore', () => {
     const handleLoadMore = vi.fn();
-    render(
-      <LookbookFeed
-        posts={mockPosts}
-        hasMore={true}
-        onLoadMore={handleLoadMore}
-      />
-    );
+    render(<LookbookFeed posts={mockPosts} hasMore={true} onLoadMore={handleLoadMore} />);
 
     const loadMoreButton = screen.getByText('더 보기');
     fireEvent.click(loadMoreButton);

@@ -33,6 +33,12 @@ vi.mock('@/lib/product-recommendations', () => ({
   formatProductsForDB: vi.fn(),
 }));
 
+vi.mock('@/lib/gamification', () => ({
+  awardAnalysisBadge: vi.fn(),
+  checkAndAwardAllAnalysisBadge: vi.fn(),
+  addXp: vi.fn(),
+}));
+
 import { GET, POST } from '@/app/api/analyze/skin/route';
 import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
@@ -233,6 +239,17 @@ describe('POST /api/analyze/skin', () => {
             }),
           };
         }
+        if (table === 'image_consents') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
+              }),
+            }),
+          };
+        }
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnThis(),
@@ -266,6 +283,17 @@ describe('POST /api/analyze/skin', () => {
             insert: vi.fn().mockReturnValue({
               select: vi.fn().mockReturnValue({
                 single: vi.fn().mockResolvedValue({ data: mockDbResult, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'image_consents') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
               }),
             }),
           };
@@ -324,6 +352,17 @@ describe('POST /api/analyze/skin', () => {
             }),
           };
         }
+        if (table === 'image_consents') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
+              }),
+            }),
+          };
+        }
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnThis(),
@@ -355,6 +394,17 @@ describe('POST /api/analyze/skin', () => {
             insert: vi.fn().mockReturnValue({
               select: vi.fn().mockReturnValue({
                 single: vi.fn().mockResolvedValue({ data: mockDbResult, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'image_consents') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
               }),
             }),
           };
@@ -391,6 +441,17 @@ describe('POST /api/analyze/skin', () => {
             insert: vi.fn().mockReturnValue({
               select: vi.fn().mockReturnValue({
                 single: vi.fn().mockResolvedValue({ data: mockDbResult, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'image_consents') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
               }),
             }),
           };

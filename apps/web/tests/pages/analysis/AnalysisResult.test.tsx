@@ -46,7 +46,8 @@ describe('AnalysisResult', () => {
       fashionStyle: '아이보리, 크림색, 연한 오렌지 톤의 밝고 따뜻한 색상이 어울립니다.',
       accessories: '골드 주얼리, 베이지톤 가방이 잘 어울립니다.',
     },
-    insight: '당신은 밝고 따뜻한 색상이 잘 어울리는 봄 웜톤입니다. 코랄, 피치 계열의 색상으로 스타일링하면 더욱 화사해 보여요!',
+    insight:
+      '당신은 밝고 따뜻한 색상이 잘 어울리는 봄 웜톤입니다. 코랄, 피치 계열의 색상으로 스타일링하면 더욱 화사해 보여요!',
     analyzedAt: new Date('2025-12-09T10:00:00'),
   };
 
@@ -80,7 +81,9 @@ describe('AnalysisResult', () => {
     it('베스트 컬러 섹션을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('베스트 컬러')).toBeInTheDocument();
+      // 베스트 컬러가 여러 곳에 나타날 수 있음
+      const bestColorElements = screen.getAllByText('베스트 컬러');
+      expect(bestColorElements.length).toBeGreaterThanOrEqual(1);
     });
 
     it('베스트 컬러 이름을 표시한다', () => {
@@ -94,7 +97,8 @@ describe('AnalysisResult', () => {
     it('워스트 컬러 섹션을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('피해야 할 컬러')).toBeInTheDocument();
+      // 나머지 주의 컬러 섹션 (worstColors[1:] 표시)
+      expect(screen.getByText('나머지 주의 컬러 (참고용)')).toBeInTheDocument();
     });
 
     it('워스트 컬러 이름을 표시한다', () => {

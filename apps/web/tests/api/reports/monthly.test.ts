@@ -50,7 +50,9 @@ const mockMeals = [
     clerk_user_id: 'user_test123',
     meal_date: '2025-12-01',
     meal_type: 'breakfast',
-    foods: [{ food_name: '밥', calories: 300, protein: 5, carbs: 65, fat: 1, traffic_light: 'green' }],
+    foods: [
+      { food_name: '밥', calories: 300, protein: 5, carbs: 65, fat: 1, traffic_light: 'green' },
+    ],
     total_calories: 300,
     total_protein: 5,
     total_carbs: 65,
@@ -218,9 +220,16 @@ describe('GET /api/reports/monthly', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<ReturnType<typeof auth>>);
-    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
-    vi.mocked(getMonthRangeFromYYYYMM).mockReturnValue({ monthStart: '2025-12-01', monthEnd: '2025-12-31' });
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
+      ReturnType<typeof auth>
+    >);
+    vi.mocked(createServiceRoleClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+    );
+    vi.mocked(getMonthRangeFromYYYYMM).mockReturnValue({
+      monthStart: '2025-12-01',
+      monthEnd: '2025-12-31',
+    });
     vi.mocked(generateMonthlyReport).mockReturnValue(mockMonthlyReport);
 
     // Default supabase mock
@@ -300,7 +309,32 @@ describe('GET /api/reports/monthly', () => {
           }),
         };
       }
-      return {};
+      // hair_analyses, makeup_analyses (H-1, M-1)
+      if (table === 'hair_analyses' || table === 'makeup_analyses') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              order: vi.fn().mockReturnValue({
+                limit: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
+              }),
+            }),
+          }),
+        };
+      }
+      // 알 수 없는 테이블에 대한 기본 mock
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: null, error: null }),
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+            gte: vi.fn().mockReturnValue({
+              lte: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
+          }),
+        }),
+      };
     });
   });
 
@@ -318,7 +352,9 @@ describe('GET /api/reports/monthly', () => {
 
   describe('입력 검증', () => {
     it('잘못된 월 형식은 400을 반환한다', async () => {
-      const response = await GET(createMockGetRequest('http://localhost/api/reports/monthly?month=2025-12-01'));
+      const response = await GET(
+        createMockGetRequest('http://localhost/api/reports/monthly?month=2025-12-01')
+      );
       const json = await response.json();
 
       expect(response.status).toBe(400);
@@ -326,7 +362,9 @@ describe('GET /api/reports/monthly', () => {
     });
 
     it('잘못된 월 형식 (슬래시)은 400을 반환한다', async () => {
-      const response = await GET(createMockGetRequest('http://localhost/api/reports/monthly?month=2025/12'));
+      const response = await GET(
+        createMockGetRequest('http://localhost/api/reports/monthly?month=2025/12')
+      );
       const json = await response.json();
 
       expect(response.status).toBe(400);
@@ -334,7 +372,9 @@ describe('GET /api/reports/monthly', () => {
     });
 
     it('월 형식이 맞으면 정상 처리된다', async () => {
-      const response = await GET(createMockGetRequest('http://localhost/api/reports/monthly?month=2025-12'));
+      const response = await GET(
+        createMockGetRequest('http://localhost/api/reports/monthly?month=2025-12')
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -354,9 +394,14 @@ describe('GET /api/reports/monthly', () => {
     });
 
     it('지정된 월의 리포트를 반환한다', async () => {
-      vi.mocked(getMonthRangeFromYYYYMM).mockReturnValue({ monthStart: '2025-11-01', monthEnd: '2025-11-30' });
+      vi.mocked(getMonthRangeFromYYYYMM).mockReturnValue({
+        monthStart: '2025-11-01',
+        monthEnd: '2025-11-30',
+      });
 
-      const response = await GET(createMockGetRequest('http://localhost/api/reports/monthly?month=2025-11'));
+      const response = await GET(
+        createMockGetRequest('http://localhost/api/reports/monthly?month=2025-11')
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -402,11 +447,28 @@ describe('GET /api/reports/monthly', () => {
             }),
           };
         }
-        if (table === 'nutrition_settings' || table === 'nutrition_streaks' || table === 'workout_streaks') {
+        if (
+          table === 'nutrition_settings' ||
+          table === 'nutrition_streaks' ||
+          table === 'workout_streaks'
+        ) {
           return {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
                 single: vi.fn().mockResolvedValue({ data: null, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'hair_analyses' || table === 'makeup_analyses') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                  }),
+                }),
               }),
             }),
           };
@@ -430,7 +492,12 @@ describe('GET /api/reports/monthly', () => {
               eq: vi.fn().mockReturnValue({
                 gte: vi.fn().mockReturnValue({
                   lte: vi.fn().mockReturnValue({
-                    order: vi.fn().mockResolvedValue({ data: null, error: { code: 'OTHER', message: 'DB Error' } }),
+                    order: vi
+                      .fn()
+                      .mockResolvedValue({
+                        data: null,
+                        error: { code: 'OTHER', message: 'DB Error' },
+                      }),
                   }),
                 }),
               }),
@@ -444,6 +511,19 @@ describe('GET /api/reports/monthly', () => {
                 gte: vi.fn().mockReturnValue({
                   lte: vi.fn().mockReturnValue({
                     order: vi.fn().mockResolvedValue({ data: [], error: null }),
+                  }),
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === 'hair_analyses' || table === 'makeup_analyses') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
                   }),
                 }),
               }),
@@ -526,7 +606,7 @@ describe('GET /api/reports/monthly', () => {
                   lte: vi.fn().mockReturnValue({
                     order: vi.fn().mockResolvedValue({
                       data: [{ user_input: { weight: 65 }, created_at: '2025-12-01T00:00:00Z' }],
-                      error: null
+                      error: null,
                     }),
                   }),
                 }),
@@ -534,11 +614,28 @@ describe('GET /api/reports/monthly', () => {
             }),
           };
         }
-        if (table === 'nutrition_settings' || table === 'nutrition_streaks' || table === 'workout_streaks') {
+        if (
+          table === 'nutrition_settings' ||
+          table === 'nutrition_streaks' ||
+          table === 'workout_streaks'
+        ) {
           return {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
                 single: vi.fn().mockResolvedValue({ data: null, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'hair_analyses' || table === 'makeup_analyses') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                  }),
+                }),
               }),
             }),
           };

@@ -1,0 +1,9 @@
+# cleanup-expired-consents Edge Function 설정
+# 매일 03:00 KST (UTC 18:00)에 실행
+
+[function]
+name = "cleanup-expired-consents"
+verify_jwt = false
+
+# Cron 스케줄 (Supabase Dashboard에서 설정 필요)
+# cron = "0 18 * * *"

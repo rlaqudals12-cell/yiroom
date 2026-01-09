@@ -34,6 +34,8 @@ import {
   FaceZoneMap,
   SkinVitalityScore,
   ZoneDetailCard,
+  PhotoOverlayMap,
+  TrendChart,
   type MetricItem,
   type ZoneStatus,
   type FaceZoneMapProps,
@@ -166,6 +168,8 @@ export default function SkinAnalysisResultPage() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
   const [selectedZone, setSelectedZone] = useState<FaceZoneId | null>(null);
+  // 트렌드 데이터 (과거 분석 기록)
+  const [trendData, setTrendData] = useState<Array<{ date: Date; score: number }>>([]);
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;
@@ -339,6 +343,22 @@ export default function SkinAnalysisResultPage() {
       if (!sessionStorage.getItem(celebrationKey)) {
         sessionStorage.setItem(celebrationKey, 'shown');
         setShowCelebration(true);
+      }
+
+      // 트렌드 데이터 조회 (최근 6개)
+      const { data: trendRecords } = await supabase
+        .from('skin_analyses')
+        .select('overall_score, created_at')
+        .order('created_at', { ascending: true })
+        .limit(6);
+
+      if (trendRecords && trendRecords.length > 0) {
+        setTrendData(
+          trendRecords.map((r) => ({
+            date: new Date(r.created_at),
+            score: r.overall_score,
+          }))
+        );
       }
     } catch (err) {
       console.error('[S-1] Fetch error:', err);
@@ -577,7 +597,26 @@ export default function SkinAnalysisResultPage() {
 
               {/* 상세 시각화 탭 (S-1+) */}
               <TabsContent value="visual" className="mt-0 pb-32 space-y-6">
-                {/* 얼굴 존 맵 */}
+                {/* 트렌드 차트 (과거 분석 이력) */}
+                <TrendChart data={trendData} metric="overall" showGoal goalScore={80} />
+
+                {/* 사진 오버레이 맵 (실제 사진 + 존 상태) */}
+                {imageUrl && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      사진 기반 분석 결과
+                    </h3>
+                    <PhotoOverlayMap
+                      imageUrl={imageUrl}
+                      zones={zoneStatuses as Record<string, ZoneStatus>}
+                      onZoneClick={(zoneId) => setSelectedZone(zoneId as FaceZoneId)}
+                      showLabels
+                      opacity={0.5}
+                    />
+                  </div>
+                )}
+
+                {/* 얼굴 존 맵 (도식화) */}
                 <div className="flex flex-col items-center">
                   <h3 className="text-sm font-medium text-muted-foreground mb-4">
                     영역별 상태 (탭하여 상세 보기)

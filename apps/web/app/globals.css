@@ -306,6 +306,31 @@
 }
 
 /* ========================================
+   iOS Safe Area 유틸리티
+   ======================================== */
+
+/* 하단 네비게이션 높이 + Safe Area를 포함한 패딩 */
+.pb-bottom-nav {
+  /* 네비게이션 높이(64px) + Safe Area */
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* 더 넉넉한 하단 패딩 (고정 버튼이 있는 페이지용) */
+.pb-bottom-nav-lg {
+  /* 네비게이션 높이(64px) + 여유 공간(32px) + Safe Area */
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* iOS 노치/홈 인디케이터 대응 padding */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ========================================
    그라디언트 유틸리티 클래스
    ======================================== */
 

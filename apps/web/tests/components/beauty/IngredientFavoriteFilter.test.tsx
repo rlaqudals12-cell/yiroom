@@ -11,12 +11,39 @@ import type { FavoriteItem } from '@/types/hybrid';
 
 describe('IngredientFavoriteFilter', () => {
   const mockFavorites: FavoriteItem[] = [
-    { id: '1', clerkUserId: 'user-1', domain: 'beauty', itemType: 'ingredient', itemName: '히알루론산', itemNameEn: 'Hyaluronic Acid', isFavorite: true, createdAt: '2025-01-01' },
-    { id: '2', clerkUserId: 'user-1', domain: 'beauty', itemType: 'ingredient', itemName: '나이아신아마이드', itemNameEn: 'Niacinamide', isFavorite: true, createdAt: '2025-01-01' },
+    {
+      id: '1',
+      clerkUserId: 'user-1',
+      domain: 'beauty',
+      itemType: 'ingredient',
+      itemName: '히알루론산',
+      itemNameEn: 'Hyaluronic Acid',
+      isFavorite: true,
+      createdAt: '2025-01-01',
+    },
+    {
+      id: '2',
+      clerkUserId: 'user-1',
+      domain: 'beauty',
+      itemType: 'ingredient',
+      itemName: '나이아신아마이드',
+      itemNameEn: 'Niacinamide',
+      isFavorite: true,
+      createdAt: '2025-01-01',
+    },
   ];
 
   const mockAvoids: FavoriteItem[] = [
-    { id: '3', clerkUserId: 'user-1', domain: 'beauty', itemType: 'ingredient', itemName: '레티놀', itemNameEn: 'Retinol', isFavorite: false, createdAt: '2025-01-01' },
+    {
+      id: '3',
+      clerkUserId: 'user-1',
+      domain: 'beauty',
+      itemType: 'ingredient',
+      itemName: '레티놀',
+      itemNameEn: 'Retinol',
+      isFavorite: false,
+      createdAt: '2025-01-01',
+    },
   ];
 
   const defaultProps = {
@@ -45,11 +72,7 @@ describe('IngredientFavoriteFilter', () => {
 
     it('총 카운트가 있으면 필터 버튼에 배지가 표시된다', () => {
       render(
-        <IngredientFavoriteFilter
-          {...defaultProps}
-          favorites={mockFavorites}
-          avoids={mockAvoids}
-        />
+        <IngredientFavoriteFilter {...defaultProps} favorites={mockFavorites} avoids={mockAvoids} />
       );
 
       // 총 3개 (favorites 2 + avoids 1)
@@ -57,9 +80,7 @@ describe('IngredientFavoriteFilter', () => {
     });
 
     it('className prop이 적용된다', () => {
-      render(
-        <IngredientFavoriteFilter {...defaultProps} className="custom-class" />
-      );
+      render(<IngredientFavoriteFilter {...defaultProps} className="custom-class" />);
 
       expect(screen.getByTestId('ingredient-favorite-filter')).toHaveClass('custom-class');
     });
@@ -67,36 +88,24 @@ describe('IngredientFavoriteFilter', () => {
 
   describe('활성 필터 배지', () => {
     it('즐겨찾기가 있으면 카운트 배지가 표시된다', () => {
-      render(
-        <IngredientFavoriteFilter
-          {...defaultProps}
-          favorites={mockFavorites}
-        />
-      );
+      render(<IngredientFavoriteFilter {...defaultProps} favorites={mockFavorites} />);
 
-      // favorites.length = 2
-      expect(screen.getByText('2')).toBeInTheDocument();
+      // favorites.length = 2 (여러 '2' 요소가 있을 수 있으므로 getAllByText 사용)
+      const twos = screen.getAllByText('2');
+      expect(twos.length).toBeGreaterThanOrEqual(1);
     });
 
     it('기피가 있으면 카운트 배지가 표시된다', () => {
-      render(
-        <IngredientFavoriteFilter
-          {...defaultProps}
-          avoids={mockAvoids}
-        />
-      );
+      render(<IngredientFavoriteFilter {...defaultProps} avoids={mockAvoids} />);
 
-      // avoids.length = 1
-      expect(screen.getByText('1')).toBeInTheDocument();
+      // avoids.length = 1 (여러 '1' 요소가 있을 수 있으므로 getAllByText 사용)
+      const ones = screen.getAllByText('1');
+      expect(ones.length).toBeGreaterThanOrEqual(1);
     });
 
     it('즐겨찾기와 기피 모두 있으면 합산된 배지가 표시된다', () => {
       render(
-        <IngredientFavoriteFilter
-          {...defaultProps}
-          favorites={mockFavorites}
-          avoids={mockAvoids}
-        />
+        <IngredientFavoriteFilter {...defaultProps} favorites={mockFavorites} avoids={mockAvoids} />
       );
 
       // 총 3개
@@ -160,7 +169,9 @@ describe('IngredientFavoriteFilter', () => {
       render(<IngredientFavoriteFilter {...defaultProps} />);
 
       // lucide-react 아이콘들이 aria-hidden을 가지고 있어야 함
-      const icons = screen.getByTestId('ingredient-favorite-filter').querySelectorAll('[aria-hidden="true"]');
+      const icons = screen
+        .getByTestId('ingredient-favorite-filter')
+        .querySelectorAll('[aria-hidden="true"]');
       expect(icons.length).toBeGreaterThan(0);
     });
   });

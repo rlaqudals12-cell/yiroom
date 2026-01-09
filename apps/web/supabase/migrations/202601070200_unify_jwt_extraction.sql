@@ -227,22 +227,22 @@ CREATE POLICY "Users can delete own water records"
   USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- =====================================================
--- 11. wishlist
+-- 11. user_wishlists
 -- =====================================================
-DROP POLICY IF EXISTS "Users can view own wishlist" ON wishlist;
-DROP POLICY IF EXISTS "Users can insert own wishlist" ON wishlist;
-DROP POLICY IF EXISTS "Users can delete own wishlist" ON wishlist;
+DROP POLICY IF EXISTS "Users can view own wishlist" ON user_wishlists;
+DROP POLICY IF EXISTS "Users can insert own wishlist" ON user_wishlists;
+DROP POLICY IF EXISTS "Users can delete own wishlist" ON user_wishlists;
 
 CREATE POLICY "Users can view own wishlist"
-  ON wishlist FOR SELECT
+  ON user_wishlists FOR SELECT
   USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 CREATE POLICY "Users can insert own wishlist"
-  ON wishlist FOR INSERT
+  ON user_wishlists FOR INSERT
   WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
 CREATE POLICY "Users can delete own wishlist"
-  ON wishlist FOR DELETE
+  ON user_wishlists FOR DELETE
   USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- =====================================================
@@ -300,22 +300,22 @@ CREATE POLICY "Users can insert own badges"
   WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- =====================================================
--- 15. challenge_participations
+-- 15. user_challenges (챌린지 참여)
 -- =====================================================
-DROP POLICY IF EXISTS "Users can view own participations" ON challenge_participations;
-DROP POLICY IF EXISTS "Users can insert own participations" ON challenge_participations;
-DROP POLICY IF EXISTS "Users can update own participations" ON challenge_participations;
+DROP POLICY IF EXISTS "Users can view own participations" ON user_challenges;
+DROP POLICY IF EXISTS "Users can insert own participations" ON user_challenges;
+DROP POLICY IF EXISTS "Users can update own participations" ON user_challenges;
 
 CREATE POLICY "Users can view own participations"
-  ON challenge_participations FOR SELECT
+  ON user_challenges FOR SELECT
   USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 CREATE POLICY "Users can insert own participations"
-  ON challenge_participations FOR INSERT
+  ON user_challenges FOR INSERT
   WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
 CREATE POLICY "Users can update own participations"
-  ON challenge_participations FOR UPDATE
+  ON user_challenges FOR UPDATE
   USING (clerk_user_id = auth.jwt() ->> 'sub')
   WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
@@ -407,39 +407,14 @@ CREATE POLICY "Users can delete own reviews"
   USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- =====================================================
--- 20. feed_posts (소셜 피드)
+-- 20. feed_posts (소셜 피드) - 20260110_feed_tables.sql에서 처리
 -- =====================================================
-DROP POLICY IF EXISTS "Users can view public feed posts" ON feed_posts;
-DROP POLICY IF EXISTS "Users can insert own feed posts" ON feed_posts;
-DROP POLICY IF EXISTS "Users can update own feed posts" ON feed_posts;
-DROP POLICY IF EXISTS "Users can delete own feed posts" ON feed_posts;
-
-CREATE POLICY "Users can view public feed posts"
-  ON feed_posts FOR SELECT
-  USING (
-    visibility = 'public' OR
-    clerk_user_id = auth.jwt() ->> 'sub'
-  );
-
-CREATE POLICY "Users can insert own feed posts"
-  ON feed_posts FOR INSERT
-  WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
-
-CREATE POLICY "Users can update own feed posts"
-  ON feed_posts FOR UPDATE
-  USING (clerk_user_id = auth.jwt() ->> 'sub')
-  WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
-
-CREATE POLICY "Users can delete own feed posts"
-  ON feed_posts FOR DELETE
-  USING (clerk_user_id = auth.jwt() ->> 'sub');
+-- feed_posts 테이블은 이 마이그레이션 이후에 생성되므로
+-- 해당 마이그레이션에서 직접 RLS 정책 설정
 
 -- =====================================================
--- 코멘트
--- =====================================================
-COMMENT ON EXTENSION IF EXISTS "pg_stat_statements" IS NULL;
-
 -- 마이그레이션 완료 로그
+-- =====================================================
 DO $$
 BEGIN
   RAISE NOTICE 'JWT extraction method unified to auth.jwt() for all RLS policies';

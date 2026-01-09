@@ -12,6 +12,7 @@ const mockPush = vi.fn();
 const mockBack = vi.fn();
 
 vi.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: vi.fn().mockReturnValue(null) }),
   useRouter: () => ({
     push: mockPush,
     back: mockBack,

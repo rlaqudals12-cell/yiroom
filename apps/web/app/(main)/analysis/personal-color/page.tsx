@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
@@ -83,6 +83,8 @@ const HIGH_CONFIDENCE_THRESHOLD = 70;
 
 export default function PersonalColorPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const forceNew = searchParams.get('forceNew') === 'true';
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
@@ -104,15 +106,70 @@ export default function PersonalColorPage() {
     let isRedirecting = false;
 
     async function checkExistingAnalysis() {
-      if (!isLoaded || !isSignedIn) return;
+      // forceNew 파라미터가 있으면 자동 리디렉트 건너뛰기
+      if (forceNew) {
+        console.log('[PC-1] forceNew=true, skipping auto-redirect');
+        setCheckingExisting(false);
+        return;
+      }
+
+      if (!isLoaded || !isSignedIn) {
+        console.log('[PC-1] Skipping check - isLoaded:', isLoaded, 'isSignedIn:', isSignedIn);
+        return;
+      }
 
       try {
-        const { data } = await supabase
-          .from('personal_color_assessments')
-          .select('id, season, confidence, created_at')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+        console.log('[PC-1] Checking existing analysis...');
+        console.log('[PC-1] Auth state - isLoaded:', isLoaded, 'isSignedIn:', isSignedIn);
+
+        // 1차 시도: 클라이언트 측 Supabase 쿼리 (RLS)
+        let data = null;
+        let queryFailed = false;
+
+        try {
+          const result = await supabase
+            .from('personal_color_assessments')
+            .select('id, season, confidence, created_at', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          console.log('[PC-1] Client query result - data:', result.data, 'count:', result.count);
+
+          if (result.error) {
+            console.error('[PC-1] Client query error:', result.error.message);
+            queryFailed = true;
+          } else {
+            data = result.data;
+          }
+        } catch (clientError) {
+          console.error('[PC-1] Client query exception:', clientError);
+          queryFailed = true;
+        }
+
+        // 2차 시도: 클라이언트 쿼리 실패 시 API 통해 조회 (Service Role 사용)
+        if (queryFailed || (!data && isSignedIn)) {
+          console.log('[PC-1] Trying API fallback...');
+          try {
+            const response = await fetch('/api/analyze/personal-color');
+            if (response.ok) {
+              const apiResult = await response.json();
+              console.log('[PC-1] API fallback result:', apiResult);
+              if (apiResult.data) {
+                data = {
+                  id: apiResult.data.id,
+                  season: apiResult.data.season,
+                  confidence: apiResult.data.confidence,
+                  created_at: apiResult.data.created_at,
+                };
+              }
+            }
+          } catch (apiError) {
+            console.error('[PC-1] API fallback error:', apiError);
+          }
+        }
+
+        console.log('[PC-1] Final existing analysis data:', data);
 
         if (data && !isRedirecting) {
           // 신뢰도가 높으면 자동으로 결과 페이지로 리디렉트
@@ -125,8 +182,9 @@ export default function PersonalColorPage() {
           // 낮은 신뢰도면 배너 표시용으로 저장
           setExistingAnalysis(data);
         }
-      } catch {
-        // 기존 결과 없음 - 무시
+      } catch (err) {
+        // 기존 결과 없음 또는 에러
+        console.error('[PC-1] Exception in checkExistingAnalysis:', err);
       } finally {
         if (!isRedirecting) {
           setCheckingExisting(false);
@@ -135,7 +193,7 @@ export default function PersonalColorPage() {
     }
 
     checkExistingAnalysis();
-  }, [isLoaded, isSignedIn, supabase, router]);
+  }, [isLoaded, isSignedIn, supabase, router, forceNew]);
 
   // 조명 가이드 완료 → 다각도 촬영으로
   const handleGuideComplete = useCallback(() => {

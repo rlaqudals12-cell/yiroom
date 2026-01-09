@@ -10,13 +10,21 @@ export type DepthType = 'light' | 'deep';
 // 12톤 서브타입 (세분화된 퍼스널 컬러)
 export type PersonalColorSubtype =
   // 봄 웜
-  | 'spring-light' | 'spring-bright' | 'spring-true'
+  | 'spring-light'
+  | 'spring-bright'
+  | 'spring-true'
   // 여름 쿨
-  | 'summer-light' | 'summer-mute' | 'summer-true'
+  | 'summer-light'
+  | 'summer-mute'
+  | 'summer-true'
   // 가을 웜
-  | 'autumn-mute' | 'autumn-deep' | 'autumn-true'
+  | 'autumn-mute'
+  | 'autumn-deep'
+  | 'autumn-true'
   // 겨울 쿨
-  | 'winter-deep' | 'winter-bright' | 'winter-true';
+  | 'winter-deep'
+  | 'winter-bright'
+  | 'winter-true';
 
 // 서브타입 정보
 export interface PersonalColorSubtypeInfo {
@@ -147,10 +155,10 @@ export const PERSONAL_COLOR_SUBTYPES: PersonalColorSubtypeInfo[] = [
 
 // 시즌별 서브타입 그룹화
 export const SUBTYPES_BY_SEASON: Record<SeasonType, PersonalColorSubtypeInfo[]> = {
-  spring: PERSONAL_COLOR_SUBTYPES.filter(s => s.season === 'spring'),
-  summer: PERSONAL_COLOR_SUBTYPES.filter(s => s.season === 'summer'),
-  autumn: PERSONAL_COLOR_SUBTYPES.filter(s => s.season === 'autumn'),
-  winter: PERSONAL_COLOR_SUBTYPES.filter(s => s.season === 'winter'),
+  spring: PERSONAL_COLOR_SUBTYPES.filter((s) => s.season === 'spring'),
+  summer: PERSONAL_COLOR_SUBTYPES.filter((s) => s.season === 'summer'),
+  autumn: PERSONAL_COLOR_SUBTYPES.filter((s) => s.season === 'autumn'),
+  winter: PERSONAL_COLOR_SUBTYPES.filter((s) => s.season === 'winter'),
 };
 
 // 문진 질문 옵션
@@ -188,6 +196,9 @@ export interface LipstickRecommendation {
   colorName: string;
   hex: string;
   brandExample?: string;
+  // 초보자 친화 필드 (선택적, 하위 호환)
+  easyDescription?: string; // "진한 와인색" 같은 쉬운 설명
+  oliveyoungAlt?: string; // 올리브영 대안 제품
 }
 
 // 의류 추천
@@ -197,12 +208,45 @@ export interface ClothingRecommendation {
   reason: string;
 }
 
+// 초보자 친화 메이크업 가이드
+export interface EasyMakeupGuide {
+  lip: string; // "진한 와인색이나 빨간색"
+  eye: string; // "검정 아이라이너로 눈매만 살짝"
+  cheek: string; // "핑크빛 블러셔를 살짝"
+  tip: string; // "립이 진하면 눈 화장은 가볍게!"
+}
+
+// 초보자 친화 패션 가이드
+export interface EasyFashionGuide {
+  colors: string[]; // ["검정", "흰색", "남색"]
+  avoid: string[]; // ["베이지", "카키"]
+  style: string; // "깔끔하고 세련된 느낌"
+  tip: string; // "무채색 위주로 입으면 실패 없어요"
+}
+
+// 초보자 친화 액세서리 가이드
+export interface EasyAccessoryGuide {
+  metal: string; // "은색 계열"
+  examples: string[]; // ["실버 목걸이", "진주 귀걸이"]
+}
+
 // 스타일 설명 (연예인 매칭 대체 - 법적 리스크 회피)
 export interface StyleDescription {
   imageKeywords: string[]; // 이미지 키워드 (예: "청순한", "시크한")
   makeupStyle: string; // 메이크업 스타일 설명
   fashionStyle: string; // 패션 스타일 설명
   accessories: string; // 어울리는 액세서리
+  // 초보자 친화 필드 (선택적, 하위 호환)
+  easyMakeup?: EasyMakeupGuide;
+  easyFashion?: EasyFashionGuide;
+  easyAccessory?: EasyAccessoryGuide;
+}
+
+// 초보자 친화 인사이트
+export interface EasyInsight {
+  summary: string; // 기존 인사이트 문구
+  easyExplanation: string; // 쉬운 말로 풀어쓴 설명
+  actionTip: string; // 바로 실천할 수 있는 팁
 }
 
 // 퍼스널 컬러 결과
@@ -220,6 +264,8 @@ export interface PersonalColorResult {
   styleDescription: StyleDescription; // 연예인 매칭 대체
   insight: string;
   analyzedAt: Date;
+  // 초보자 친화 필드 (선택적, 하위 호환)
+  easyInsight?: EasyInsight;
 }
 
 // 계절별 정보
@@ -315,59 +361,131 @@ export const BEST_COLORS: Record<SeasonType, ColorInfo[]> = {
   ],
 };
 
-// 계절별 워스트 컬러 (5색)
+// 워스트 컬러 (초보자 친화 이름)
 export const WORST_COLORS: Record<SeasonType, ColorInfo[]> = {
   spring: [
-    { hex: '#000000', name: '블랙' },
-    { hex: '#808080', name: '그레이' },
-    { hex: '#800000', name: '마룬' },
-    { hex: '#4B0082', name: '인디고' },
-    { hex: '#2F4F4F', name: '다크 슬레이트' },
+    { hex: '#000000', name: '검정' },
+    { hex: '#808080', name: '회색' },
+    { hex: '#800000', name: '진한 와인' },
+    { hex: '#4B0082', name: '남보라' },
+    { hex: '#2F4F4F', name: '진한 청회색' },
   ],
   summer: [
-    { hex: '#FF4500', name: '오렌지 레드' },
-    { hex: '#FFD700', name: '골드' },
-    { hex: '#000000', name: '블랙' },
-    { hex: '#8B4513', name: '새들 브라운' },
-    { hex: '#FF8C00', name: '다크 오렌지' },
+    { hex: '#FF4500', name: '주황빨강' },
+    { hex: '#FFD700', name: '금색' },
+    { hex: '#000000', name: '검정' },
+    { hex: '#8B4513', name: '진갈색' },
+    { hex: '#FF8C00', name: '진한 주황' },
   ],
   autumn: [
-    { hex: '#FF00FF', name: '매젠타' },
-    { hex: '#00FFFF', name: '시안' },
-    { hex: '#FF69B4', name: '핫 핑크' },
-    { hex: '#E6E6FA', name: '라벤더' },
-    { hex: '#87CEEB', name: '스카이 블루' },
+    { hex: '#FF00FF', name: '핫핑크' },
+    { hex: '#00FFFF', name: '하늘색' },
+    { hex: '#FF69B4', name: '형광 분홍' },
+    { hex: '#E6E6FA', name: '연보라' },
+    { hex: '#87CEEB', name: '밝은 하늘색' },
   ],
   winter: [
-    { hex: '#FFDAB9', name: '피치' },
-    { hex: '#F5DEB3', name: '위트' },
-    { hex: '#D2B48C', name: '탄' },
-    { hex: '#DEB887', name: '벌리우드' },
-    { hex: '#F0E68C', name: '카키' },
+    { hex: '#FFDAB9', name: '살구색' },
+    { hex: '#F5DEB3', name: '밀색 베이지' },
+    { hex: '#D2B48C', name: '황갈색' },
+    { hex: '#DEB887', name: '누런 베이지' },
+    { hex: '#BDB76B', name: '국방색 카키' },
   ],
 };
 
 // 계절별 립스틱 추천
 export const LIPSTICK_RECOMMENDATIONS: Record<SeasonType, LipstickRecommendation[]> = {
   spring: [
-    { colorName: '코랄 핑크', hex: '#F88379', brandExample: 'MAC 샤이걸' },
-    { colorName: '피치 베이지', hex: '#FFDAB9', brandExample: 'NARS 도서' },
-    { colorName: '살몬', hex: '#FA8072', brandExample: '샤넬 코코밤' },
+    {
+      colorName: '코랄 핑크',
+      hex: '#F88379',
+      brandExample: 'MAC 샤이걸',
+      easyDescription: '살구색 + 분홍색 (복숭아 느낌)',
+      oliveyoungAlt: '롬앤 쥬시래스팅틴트 피치블러쉬',
+    },
+    {
+      colorName: '피치 베이지',
+      hex: '#FFDAB9',
+      brandExample: 'NARS 도서',
+      easyDescription: '살구색 (자연스러운 내 입술색)',
+      oliveyoungAlt: '컬러그램 누디블러틴트 코랄베일',
+    },
+    {
+      colorName: '살몬',
+      hex: '#FA8072',
+      brandExample: '샤넬 코코밤',
+      easyDescription: '연어색 (오렌지+핑크)',
+      oliveyoungAlt: '페리페라 잉크벨벳 살몬코랄',
+    },
   ],
   summer: [
-    { colorName: '로즈 핑크', hex: '#FF66B2', brandExample: 'MAC 플래밍고' },
-    { colorName: '베리', hex: '#8E4585', brandExample: 'NARS 돌체비타' },
-    { colorName: '모브 핑크', hex: '#E0B0FF', brandExample: '샤넬 보이' },
+    {
+      colorName: '로즈 핑크',
+      hex: '#FF66B2',
+      brandExample: 'MAC 플래밍고',
+      easyDescription: '장미빛 분홍색 (여리여리한 느낌)',
+      oliveyoungAlt: '에스쁘아 노웨어샤인 티클드핑크',
+    },
+    {
+      colorName: '베리',
+      hex: '#8E4585',
+      brandExample: 'NARS 돌체비타',
+      easyDescription: '자두색 (블루베리 느낌)',
+      oliveyoungAlt: '3CE CHILL MOVE',
+    },
+    {
+      colorName: '모브 핑크',
+      hex: '#E0B0FF',
+      brandExample: '샤넬 보이',
+      easyDescription: '연보라 핑크 (라벤더 느낌)',
+      oliveyoungAlt: '롬앤 듀이풀워터틴트 라벤더로즈',
+    },
   ],
   autumn: [
-    { colorName: '브릭 레드', hex: '#CB4154', brandExample: 'MAC 칠리' },
-    { colorName: '테라코타', hex: '#E2725B', brandExample: 'NARS 탄' },
-    { colorName: '브라운 레드', hex: '#A52A2A', brandExample: '샤넬 누아르' },
+    {
+      colorName: '브릭 레드',
+      hex: '#CB4154',
+      brandExample: 'MAC 칠리',
+      easyDescription: '벽돌색 빨간색 (가을 낙엽 느낌)',
+      oliveyoungAlt: '페리페라 잉크벨벳 브릭브라운',
+    },
+    {
+      colorName: '테라코타',
+      hex: '#E2725B',
+      brandExample: 'NARS 탄',
+      easyDescription: '흙빛 오렌지 (화분 색깔)',
+      oliveyoungAlt: '롬앤 제로매트립스틱 스모크드베이지',
+    },
+    {
+      colorName: '브라운 레드',
+      hex: '#A52A2A',
+      brandExample: '샤넬 누아르',
+      easyDescription: '갈색+빨간색 (초콜릿 느낌)',
+      oliveyoungAlt: '클리오 매드매트립 치즈레드',
+    },
   ],
   winter: [
-    { colorName: '버건디', hex: '#800020', brandExample: 'MAC 다크사이드' },
-    { colorName: '트루 레드', hex: '#FF0000', brandExample: 'NARS 드래곤걸' },
-    { colorName: '푸시아', hex: '#FF00FF', brandExample: '샤넬 피에르' },
+    {
+      colorName: '버건디',
+      hex: '#800020',
+      brandExample: 'MAC 다크사이드',
+      easyDescription: '진한 와인색 (레드와인 색깔)',
+      oliveyoungAlt: '무지개맨션 오브제리퀴드 009퍼셉션',
+    },
+    {
+      colorName: '트루 레드',
+      hex: '#FF0000',
+      brandExample: 'NARS 드래곤걸',
+      easyDescription: '찐 빨간색 (빨간 사과 색)',
+      oliveyoungAlt: '페리페라 잉크벨벳 016하트백만개',
+    },
+    {
+      colorName: '푸시아',
+      hex: '#FF00FF',
+      brandExample: '샤넬 피에르',
+      easyDescription: '핫핑크 (진한 분홍색)',
+      oliveyoungAlt: '클리오 매드매트립 핫핑크',
+    },
   ],
 };
 
@@ -375,27 +493,103 @@ export const LIPSTICK_RECOMMENDATIONS: Record<SeasonType, LipstickRecommendation
 export const STYLE_DESCRIPTIONS: Record<SeasonType, StyleDescription> = {
   spring: {
     imageKeywords: ['청순한', '화사한', '생기있는', '밝은', '사랑스러운'],
-    makeupStyle: '코랄, 피치 계열의 자연스러운 메이크업이 잘 어울려요. 블러셔는 복숭아빛으로, 립은 촉촉한 코랄 틴트가 찰떡이에요.',
-    fashionStyle: '밝고 화사한 파스텔 톤, 아이보리, 베이지 계열의 부드러운 스타일이 잘 어울려요. 플라워 패턴이나 러블리한 디테일도 좋아요.',
-    accessories: '로즈골드, 옐로우골드 액세서리가 피부를 더욱 화사하게 만들어줘요. 진주 액세서리도 잘 어울려요.',
+    makeupStyle:
+      '코랄, 피치 계열의 자연스러운 메이크업이 잘 어울려요. 블러셔는 복숭아빛으로, 립은 촉촉한 코랄 틴트가 찰떡이에요.',
+    fashionStyle:
+      '밝고 화사한 파스텔 톤, 아이보리, 베이지 계열의 부드러운 스타일이 잘 어울려요. 플라워 패턴이나 러블리한 디테일도 좋아요.',
+    accessories:
+      '로즈골드, 옐로우골드 액세서리가 피부를 더욱 화사하게 만들어줘요. 진주 액세서리도 잘 어울려요.',
+    easyMakeup: {
+      lip: '복숭아색이나 살구색 립 (오렌지+핑크 느낌)',
+      eye: '갈색 아이라이너로 부드럽게, 아이섀도는 연한 핑크나 골드',
+      cheek: '복숭아빛 블러셔를 광대뼈에 살짝',
+      tip: '자연스럽고 화사하게! 너무 진한 색은 피하세요',
+    },
+    easyFashion: {
+      colors: ['흰색', '아이보리', '연분홍', '살구색', '연노랑'],
+      avoid: ['검정', '진회색', '진한 남색'],
+      style: '밝고 부드러운 느낌, 꽃무늬나 귀여운 디테일',
+      tip: '밝은 색 위주로 입으면 얼굴이 환해 보여요',
+    },
+    easyAccessory: {
+      metal: '금색 계열 (로즈골드, 옐로우골드)',
+      examples: ['진주 귀걸이', '골드 목걸이', '로즈골드 팔찌'],
+    },
   },
   summer: {
     imageKeywords: ['우아한', '청량한', '부드러운', '세련된', '시원한'],
-    makeupStyle: '로즈 핑크, 라벤더 계열의 소프트한 메이크업이 잘 어울려요. 뮤트한 톤으로 은은하게 연출하면 우아해 보여요.',
-    fashionStyle: '파스텔 블루, 라벤더, 민트 등 시원하고 부드러운 색상이 잘 어울려요. 쉬폰이나 린넨 같은 가벼운 소재도 좋아요.',
-    accessories: '실버, 화이트골드 액세서리가 쿨한 피부톤과 조화를 이뤄요. 블루 계열 보석도 추천해요.',
+    makeupStyle:
+      '로즈 핑크, 라벤더 계열의 소프트한 메이크업이 잘 어울려요. 뮤트한 톤으로 은은하게 연출하면 우아해 보여요.',
+    fashionStyle:
+      '파스텔 블루, 라벤더, 민트 등 시원하고 부드러운 색상이 잘 어울려요. 쉬폰이나 린넨 같은 가벼운 소재도 좋아요.',
+    accessories:
+      '실버, 화이트골드 액세서리가 쿨한 피부톤과 조화를 이뤄요. 블루 계열 보석도 추천해요.',
+    easyMakeup: {
+      lip: '장미색이나 자두색 립 (핑크+보라 느낌)',
+      eye: '회색이나 연보라 아이섀도, 아이라이너는 진회색',
+      cheek: '연분홍 블러셔를 은은하게',
+      tip: '차분하고 우아하게! 오렌지색은 피하세요',
+    },
+    easyFashion: {
+      colors: ['하늘색', '연보라', '민트', '연분홍', '흰색'],
+      avoid: ['주황색', '카키', '진한 갈색'],
+      style: '시원하고 부드러운 느낌, 가벼운 소재',
+      tip: '파스텔 톤으로 입으면 피부가 맑아 보여요',
+    },
+    easyAccessory: {
+      metal: '은색 계열 (실버, 화이트골드)',
+      examples: ['실버 반지', '화이트골드 목걸이', '파란 보석 귀걸이'],
+    },
   },
   autumn: {
     imageKeywords: ['시크한', '성숙한', '따뜻한', '고급스러운', '깊이있는'],
-    makeupStyle: '테라코타, 브릭 레드 계열의 깊이있는 메이크업이 잘 어울려요. 브론저로 건강한 윤기를 더하면 더욱 좋아요.',
-    fashionStyle: '카멜, 브라운, 올리브, 머스타드 같은 어스톤이 잘 어울려요. 가죽, 스웨이드 같은 텍스처감 있는 소재가 좋아요.',
-    accessories: '골드, 앤틱골드 액세서리가 따뜻한 피부톤을 돋보이게 해요. 호피나 터틀쉘 패턴도 잘 어울려요.',
+    makeupStyle:
+      '테라코타, 브릭 레드 계열의 깊이있는 메이크업이 잘 어울려요. 브론저로 건강한 윤기를 더하면 더욱 좋아요.',
+    fashionStyle:
+      '카멜, 브라운, 올리브, 머스타드 같은 어스톤이 잘 어울려요. 가죽, 스웨이드 같은 텍스처감 있는 소재가 좋아요.',
+    accessories:
+      '골드, 앤틱골드 액세서리가 따뜻한 피부톤을 돋보이게 해요. 호피나 터틀쉘 패턴도 잘 어울려요.',
+    easyMakeup: {
+      lip: '벽돌색이나 갈색빨간색 립 (가을 낙엽 느낌)',
+      eye: '갈색이나 카키색 아이섀도, 아이라이너는 진갈색',
+      cheek: '브라운 계열 블러셔로 음영 효과',
+      tip: '깊고 따뜻하게! 핑크색은 피하세요',
+    },
+    easyFashion: {
+      colors: ['갈색', '카키', '겨자색', '오렌지', '와인색'],
+      avoid: ['핑크', '하늘색', '연보라'],
+      style: '차분하고 고급스러운 느낌, 가죽이나 니트 소재',
+      tip: '갈색 계열 옷이 얼굴을 건강하게 보여줘요',
+    },
+    easyAccessory: {
+      metal: '금색 계열 (골드, 앤틱골드)',
+      examples: ['골드 귀걸이', '가죽 팔찌', '호피 무늬 스카프'],
+    },
   },
   winter: {
     imageKeywords: ['도회적인', '시크한', '선명한', '강렬한', '모던한'],
-    makeupStyle: '버건디, 와인, 트루레드 같은 선명한 컬러가 잘 어울려요. 깔끔한 아이라인과 볼드한 립으로 강렬함을 연출해보세요.',
-    fashionStyle: '블랙, 화이트, 네이비 같은 모노톤이 잘 어울려요. 샤프한 실루엣과 미니멀한 디자인으로 시크하게 연출해보세요.',
-    accessories: '실버, 플래티넘 액세서리가 쿨한 피부톤과 잘 맞아요. 다이아몬드나 크리스탈처럼 빛나는 소재도 추천해요.',
+    makeupStyle:
+      '버건디, 와인, 트루레드 같은 선명한 컬러가 잘 어울려요. 깔끔한 아이라인과 볼드한 립으로 강렬함을 연출해보세요.',
+    fashionStyle:
+      '블랙, 화이트, 네이비 같은 모노톤이 잘 어울려요. 샤프한 실루엣과 미니멀한 디자인으로 시크하게 연출해보세요.',
+    accessories:
+      '실버, 플래티넘 액세서리가 쿨한 피부톤과 잘 맞아요. 다이아몬드나 크리스탈처럼 빛나는 소재도 추천해요.',
+    easyMakeup: {
+      lip: '진한 와인색이나 빨간색 립 (레드와인, 체리 느낌)',
+      eye: '검정 아이라이너로 눈매를 또렷하게',
+      cheek: '분홍 블러셔를 살짝만 (립이 포인트니까)',
+      tip: '립이 진하면 눈은 가볍게! 둘 다 진하면 촌스러워요',
+    },
+    easyFashion: {
+      colors: ['검정', '흰색', '남색', '빨간색', '진분홍'],
+      avoid: ['베이지', '카키', '살구색'],
+      style: '깔끔하고 세련된 느낌, 무채색 위주',
+      tip: '검정 옷에 빨간 립 하나면 완벽한 스타일!',
+    },
+    easyAccessory: {
+      metal: '은색 계열 (실버, 플래티넘)',
+      examples: ['실버 목걸이', '큐빅 귀걸이', '메탈 시계'],
+    },
   },
 };
 
@@ -523,27 +717,63 @@ export const ONBOARDING_QUESTIONS: OnboardingQuestion[] = [
   },
 ];
 
-// AI 인사이트 목록 (가변 보상)
+// AI 인사이트 목록 (초보자 친화 버전)
 const INSIGHTS: Record<SeasonType, string[]> = {
   spring: [
-    '봄처럼 화사하고 생기있는 컬러가 당신의 피부를 더욱 밝게 만들어줘요!',
-    '밝고 맑은 컬러를 선택하면 얼굴이 환하게 빛날 거예요.',
-    '코랄, 피치 계열의 컬러로 자연스러운 화사함을 연출해보세요.',
+    '복숭아색, 살구색처럼 따뜻하고 밝은 색이 당신 피부를 환하게 만들어줘요!',
+    '밝은 색 옷을 입으면 얼굴이 화사해 보여요. 분홍이나 연노랑 추천!',
+    '살구색 립 하나면 건강하고 생기있어 보여요.',
   ],
   summer: [
-    '부드럽고 우아한 컬러가 당신의 피부톤을 더욱 고급스럽게 만들어줘요!',
-    '뮤트하고 소프트한 파스텔 톤으로 세련된 분위기를 연출해보세요.',
-    '라벤더, 로즈 계열의 컬러가 당신에게 완벽하게 어울려요.',
+    '하늘색, 연보라색처럼 시원한 파스텔 톤이 당신을 우아하게 만들어줘요!',
+    '부드러운 분홍이나 라벤더색 옷이 피부를 맑아 보이게 해요.',
+    '장미색 립이 당신에게 딱 어울려요!',
   ],
   autumn: [
-    '따뜻하고 깊이있는 컬러가 당신의 피부를 건강하게 보이게 해요!',
-    '브라운, 카키 계열의 어스톤으로 시크한 매력을 뽐내보세요.',
-    '골드 액세서리와 함께 하면 더욱 빛나는 스타일링이 완성돼요.',
+    '갈색, 카키색처럼 차분한 색이 당신 피부를 건강하게 보이게 해요!',
+    '니트나 가죽 재질의 갈색 옷이 세련되어 보여요.',
+    '금색 액세서리와 함께 하면 더욱 빛나요!',
   ],
   winter: [
-    '선명하고 강렬한 컬러가 당신의 도회적인 매력을 극대화해요!',
-    '블랙, 화이트의 모노톤으로 시크함을 연출해보세요.',
-    '비비드한 레드나 블루로 포인트를 주면 눈이 번쩍 뜨여요.',
+    '검정, 흰색, 빨간색처럼 선명한 색이 당신의 세련된 매력을 살려줘요!',
+    '검정 옷에 빨간 립 하나면 완벽한 스타일이에요!',
+    '은색 액세서리가 잘 어울려요. 실버 귀걸이 추천!',
+  ],
+};
+
+// 초보자 친화 인사이트 목록 (Hybrid 데이터용 export)
+export const EASY_INSIGHTS: Record<SeasonType, EasyInsight[]> = {
+  spring: [
+    {
+      summary: '봄처럼 화사하고 생기있는 컬러가 당신의 피부를 더욱 밝게 만들어줘요!',
+      easyExplanation:
+        '복숭아색, 살구색처럼 따뜻하고 밝은 색이 잘 어울려요. 이런 색을 입거나 바르면 얼굴이 환해 보여요.',
+      actionTip: '오늘 살구색 립 하나 발라보세요!',
+    },
+  ],
+  summer: [
+    {
+      summary: '부드럽고 우아한 컬러가 당신의 피부톤을 더욱 고급스럽게 만들어줘요!',
+      easyExplanation:
+        '하늘색, 연보라색처럼 시원하고 부드러운 색이 잘 어울려요. 파스텔 톤이 피부를 맑아 보이게 해요.',
+      actionTip: '연분홍 립이나 라벤더 옷을 입어보세요!',
+    },
+  ],
+  autumn: [
+    {
+      summary: '따뜻하고 깊이있는 컬러가 당신의 피부를 건강하게 보이게 해요!',
+      easyExplanation:
+        '갈색, 카키색처럼 차분하고 깊은 색이 잘 어울려요. 가을 느낌의 색이 얼굴을 건강해 보이게 해요.',
+      actionTip: '갈색 계열 옷이나 브릭 레드 립을 시도해보세요!',
+    },
+  ],
+  winter: [
+    {
+      summary: '선명하고 강렬한 컬러가 당신의 도회적인 매력을 극대화해요!',
+      easyExplanation:
+        '검정, 흰색, 빨간색처럼 확 튀는 색이 잘 어울려요. 파스텔보다 진한 색이 얼굴을 살려줘요.',
+      actionTip: '검정 옷에 빨간 립 하나면 완벽한 스타일!',
+    },
   ],
 };
 
@@ -556,9 +786,7 @@ export const LOADING_TIPS = [
 ];
 
 // 의류 추천 생성
-const generateClothingRecommendations = (
-  seasonType: SeasonType
-): ClothingRecommendation[] => {
+const generateClothingRecommendations = (seasonType: SeasonType): ClothingRecommendation[] => {
   const recommendations: Record<SeasonType, ClothingRecommendation[]> = {
     spring: [
       { item: '블라우스', colorSuggestion: '피치 핑크', reason: '화사한 느낌을 더해줘요' },
@@ -675,6 +903,7 @@ export const generateMockPersonalColorResult = (
 
   const info = SEASON_INFO[seasonType];
   const insights = INSIGHTS[seasonType];
+  const easyInsights = EASY_INSIGHTS[seasonType];
 
   return {
     seasonType,
@@ -689,6 +918,7 @@ export const generateMockPersonalColorResult = (
     clothingRecommendations: generateClothingRecommendations(seasonType),
     styleDescription: STYLE_DESCRIPTIONS[seasonType],
     insight: insights[Math.floor(Math.random() * insights.length)],
+    easyInsight: easyInsights[Math.floor(Math.random() * easyInsights.length)],
     analyzedAt: new Date(),
   };
 };

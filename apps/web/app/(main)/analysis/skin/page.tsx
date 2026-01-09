@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import Link from 'next/link';
-import { Clock, ArrowRight, Camera, ImageIcon } from 'lucide-react';
+import { Camera, ImageIcon } from 'lucide-react';
 import {
   type SkinAnalysisResult,
   type SkinTypeId,
@@ -13,15 +13,19 @@ import {
   SKIN_CONCERNS,
 } from '@/lib/mock/skin-analysis';
 import type { MultiAngleImages } from '@/types/visual-analysis';
+import type { ImageConsent } from '@/components/analysis/consent/types';
 import LightingGuide from './_components/LightingGuide';
 import PhotoUpload from './_components/PhotoUpload';
 import MultiAngleSkinCapture from './_components/MultiAngleSkinCapture';
 import KnownSkinTypeInput from './_components/KnownSkinTypeInput';
 import AnalysisLoading from './_components/AnalysisLoading';
 import AnalysisResult from './_components/AnalysisResult';
+import { ImageConsentModal } from '@/components/analysis/consent';
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { Confetti } from '@/components/animations';
+import { PhotoReuseSelector } from '@/components/analysis/skin/PhotoReuseSelector';
+import { checkPhotoReuseEligibility, type PhotoReuseEligibility } from '@/lib/analysis/photo-reuse';
 
 // 새 플로우: 조명가이드 → 모드선택 → 사진촬영 → AI분석 → 결과
 // 또는: 기존 피부 타입 입력 → 결과
@@ -35,33 +39,14 @@ type AnalysisStep =
   | 'result'
   | 'known-input';
 
-// 날짜 포맷 헬퍼
-function formatDate(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (days === 0) return '오늘';
-  if (days === 1) return '어제';
-  if (days < 7) return `${days}일 전`;
-  if (days < 30) return `${Math.floor(days / 7)}주 전`;
-  return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-}
-
-// 기존 분석 결과 타입
-interface ExistingAnalysis {
-  id: string;
-  overall_score: number;
-  skin_type: string;
-  created_at: string;
-}
-
 export default function SkinAnalysisPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const forceNew = searchParams.get('forceNew') === 'true';
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   const [step, setStep] = useState<AnalysisStep>('guide');
   const [captureMode, setCaptureMode] = useState<CaptureMode>('select');
-  const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
   // 다각도 이미지 상태
@@ -70,13 +55,38 @@ export default function SkinAnalysisPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  // 이미지 동의 관련 상태
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [existingConsent, setExistingConsent] = useState<ImageConsent | null>(null);
+  const [consentLoading, setConsentLoading] = useState(false);
+  // 임시 이미지 상태 (동의 모달 표시 전 저장)
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [pendingMultiAngleImages, setPendingMultiAngleImages] = useState<MultiAngleImages | null>(
+    null
+  );
+  // 사진 재사용 상태
+  const [photoReuseEligibility, setPhotoReuseEligibility] = useState<PhotoReuseEligibility | null>(
+    null
+  );
+  const [reuseChecking, setReuseChecking] = useState(false);
   const analysisStartedRef = useRef(false);
   const existingCheckedRef = useRef(false);
+  const consentCheckedRef = useRef(false);
+  const reuseCheckedRef = useRef(false);
   const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-피부분석-결과');
 
-  // 기존 분석 결과 확인
+  // 기존 분석 결과 확인 및 자동 리디렉트
   useEffect(() => {
+    let isRedirecting = false;
+
     async function checkExistingAnalysis() {
+      // forceNew 파라미터가 있으면 자동 리디렉트 건너뛰기
+      if (forceNew) {
+        console.log('[S-1] forceNew=true, skipping auto-redirect');
+        setCheckingExisting(false);
+        return;
+      }
+
       if (!isLoaded || !isSignedIn || existingCheckedRef.current) return;
 
       existingCheckedRef.current = true;
@@ -84,22 +94,74 @@ export default function SkinAnalysisPage() {
       try {
         const { data } = await supabase
           .from('skin_analyses')
-          .select('id, overall_score, skin_type, created_at')
+          .select('id')
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
 
-        if (data) {
-          setExistingAnalysis(data);
+        if (data && !isRedirecting) {
+          // 기존 결과가 있으면 자동으로 결과 페이지로 리디렉트
+          isRedirecting = true;
+          router.replace(`/analysis/skin/result/${data.id}`);
+          return;
         }
       } catch {
         // 기존 결과 없음 - 무시
       } finally {
-        setCheckingExisting(false);
+        if (!isRedirecting) {
+          setCheckingExisting(false);
+        }
       }
     }
 
     checkExistingAnalysis();
+  }, [isLoaded, isSignedIn, supabase, router, forceNew]);
+
+  // 기존 이미지 저장 동의 확인
+  useEffect(() => {
+    async function checkExistingConsent() {
+      if (!isLoaded || !isSignedIn || consentCheckedRef.current) return;
+
+      consentCheckedRef.current = true;
+
+      try {
+        const { data } = await supabase
+          .from('image_consents')
+          .select('*')
+          .eq('analysis_type', 'skin')
+          .maybeSingle();
+
+        if (data) {
+          setExistingConsent(data as ImageConsent);
+        }
+      } catch (err) {
+        console.error('[S-1] Error checking consent:', err);
+      }
+    }
+
+    checkExistingConsent();
+  }, [isLoaded, isSignedIn, supabase]);
+
+  // 사진 재사용 가능 여부 확인
+  useEffect(() => {
+    async function checkPhotoReuse() {
+      if (!isLoaded || !isSignedIn || reuseCheckedRef.current) return;
+
+      reuseCheckedRef.current = true;
+      setReuseChecking(true);
+
+      try {
+        const eligibility = await checkPhotoReuseEligibility(supabase, 'skin');
+        setPhotoReuseEligibility(eligibility);
+      } catch (err) {
+        console.error('[S-1] Error checking photo reuse:', err);
+        setPhotoReuseEligibility({ eligible: false, reason: 'no_image' });
+      } finally {
+        setReuseChecking(false);
+      }
+    }
+
+    checkPhotoReuse();
   }, [isLoaded, isSignedIn, supabase]);
 
   // 조명 가이드 완료 → 모드 선택으로
@@ -120,13 +182,58 @@ export default function SkinAnalysisPage() {
     setStep('upload');
   }, []);
 
+  // 분석 진행 (동의 후 또는 기존 동의가 있는 경우)
+  const proceedToAnalysis = useCallback(
+    (file: File | null, multiImages: MultiAngleImages | null) => {
+      if (file) {
+        setImageFile(file);
+      }
+      if (multiImages) {
+        setMultiAngleImages(multiImages);
+      }
+      setPendingImageFile(null);
+      setPendingMultiAngleImages(null);
+      setStep('loading');
+      setError(null);
+      analysisStartedRef.current = false;
+    },
+    []
+  );
+
+  // 사진 재사용 선택
+  const handleSelectReuse = useCallback(async () => {
+    if (!photoReuseEligibility?.sourceImage) return;
+
+    // 재사용 이미지 URL을 fetch하여 File 객체로 변환 후 분석 진행
+    try {
+      const response = await fetch(photoReuseEligibility.sourceImage.imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'reused-photo.jpg', { type: 'image/jpeg' });
+
+      setCaptureMode('gallery');
+      proceedToAnalysis(file, null);
+    } catch (err) {
+      console.error('[S-1] Error fetching reuse image:', err);
+      // 에러 시 새 촬영으로 fallback
+      setCaptureMode('camera');
+      setStep('camera');
+    }
+  }, [photoReuseEligibility, proceedToAnalysis]);
+
   // 다각도 촬영 완료 핸들러
-  const handleMultiAngleCaptureComplete = useCallback((images: MultiAngleImages) => {
-    setMultiAngleImages(images);
-    setStep('loading');
-    setError(null);
-    analysisStartedRef.current = false;
-  }, []);
+  const handleMultiAngleCaptureComplete = useCallback(
+    (images: MultiAngleImages) => {
+      // 기존 동의가 있으면 바로 분석 진행
+      if (existingConsent?.consent_given) {
+        proceedToAnalysis(null, images);
+        return;
+      }
+      // 동의가 없으면 모달 표시
+      setPendingMultiAngleImages(images);
+      setShowConsentModal(true);
+    },
+    [existingConsent, proceedToAnalysis]
+  );
 
   // 다각도 촬영 취소 핸들러
   const handleMultiAngleCaptureCancel = useCallback(() => {
@@ -175,13 +282,63 @@ export default function SkinAnalysisPage() {
     setStep('guide');
   }, []);
 
-  // 사진 선택 시 로딩 단계로 전환
-  const handlePhotoSelect = useCallback((file: File) => {
-    setImageFile(file);
-    setStep('loading');
-    setError(null);
-    analysisStartedRef.current = false;
-  }, []);
+  // 사진 선택 시 동의 모달 표시 또는 분석 진행
+  const handlePhotoSelect = useCallback(
+    (file: File) => {
+      // 기존 동의가 있으면 바로 분석 진행
+      if (existingConsent?.consent_given) {
+        proceedToAnalysis(file, null);
+        return;
+      }
+      // 동의가 없으면 모달 표시
+      setPendingImageFile(file);
+      setShowConsentModal(true);
+    },
+    [existingConsent, proceedToAnalysis]
+  );
+
+  // 동의 저장 핸들러
+  const handleConsentAgree = useCallback(async () => {
+    setConsentLoading(true);
+    try {
+      const response = await fetch('/api/consent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysisType: 'skin' }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        // 14세 미만이거나 생년월일 미입력 시 오류 메시지 표시 후 건너뛰기
+        if (errorData.reason === 'under_age' || errorData.reason === 'no_birthdate') {
+          console.warn('[S-1] Consent ineligible:', errorData.reason);
+          // 오류가 있어도 분석은 진행 (이미지만 저장 안 함)
+        } else {
+          throw new Error(errorData.error || 'Failed to save consent');
+        }
+      } else {
+        const data = await response.json();
+        setExistingConsent(data.consent);
+      }
+
+      // 분석 진행
+      setShowConsentModal(false);
+      proceedToAnalysis(pendingImageFile, pendingMultiAngleImages);
+    } catch (err) {
+      console.error('[S-1] Consent save error:', err);
+      // 에러 발생해도 분석은 진행
+      setShowConsentModal(false);
+      proceedToAnalysis(pendingImageFile, pendingMultiAngleImages);
+    } finally {
+      setConsentLoading(false);
+    }
+  }, [pendingImageFile, pendingMultiAngleImages, proceedToAnalysis]);
+
+  // 동의 건너뛰기 핸들러
+  const handleConsentSkip = useCallback(() => {
+    setShowConsentModal(false);
+    proceedToAnalysis(pendingImageFile, pendingMultiAngleImages);
+  }, [pendingImageFile, pendingMultiAngleImages, proceedToAnalysis]);
 
   // 이미지를 Base64로 변환
   const fileToBase64 = (file: File): Promise<string> => {
@@ -301,10 +458,31 @@ export default function SkinAnalysisPage() {
     }
   }, [step, error, isAnalyzing]);
 
+  // 기존 결과 확인 중이면 로딩 표시
+  if (checkingExisting) {
+    return (
+      <main className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-muted-foreground">확인 중...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <>
       {/* 축하 Confetti 효과 */}
       <Confetti trigger={showConfetti} />
+
+      {/* 이미지 저장 동의 모달 */}
+      <ImageConsentModal
+        isOpen={showConsentModal}
+        onConsent={handleConsentAgree}
+        onSkip={handleConsentSkip}
+        analysisType="skin"
+        isLoading={consentLoading}
+      />
 
       <main className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
@@ -325,32 +503,6 @@ export default function SkinAnalysisPage() {
             </div>
           )}
 
-          {/* 기존 분석 결과 배너 */}
-          {step === 'guide' && existingAnalysis && !checkingExisting && (
-            <Link
-              href={`/analysis/skin/result/${existingAnalysis.id}`}
-              className="block mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <span className="text-lg font-bold text-emerald-600">
-                      {existingAnalysis.overall_score}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">기존 분석 결과 보기</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      {formatDate(new Date(existingAnalysis.created_at))}
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight className="w-5 h-5 text-emerald-500" />
-              </div>
-            </Link>
-          )}
-
           {/* Step별 컴포넌트 렌더링 */}
           {step === 'guide' && (
             <LightingGuide onContinue={handleGuideComplete} onSkip={handleSkipToKnownInput} />
@@ -359,49 +511,69 @@ export default function SkinAnalysisPage() {
           {/* 모드 선택 UI */}
           {step === 'mode-select' && (
             <div className="space-y-6" data-testid="capture-mode-select">
-              <div className="text-center mb-4">
-                <p className="text-sm text-muted-foreground">피부 분석을 위한 사진이 필요해요</p>
-              </div>
+              {/* 사진 재사용 옵션 (재사용 가능한 경우에만 표시) */}
+              {!reuseChecking && photoReuseEligibility?.eligible && (
+                <PhotoReuseSelector
+                  eligibility={photoReuseEligibility}
+                  onSelectReuse={handleSelectReuse}
+                  onSelectNewCapture={handleSelectCameraMode}
+                  className="mb-4"
+                />
+              )}
 
-              <div className="grid grid-cols-2 gap-4">
-                {/* 카메라 모드 (다각도 촬영) */}
-                <button
-                  onClick={handleSelectCameraMode}
-                  className="flex flex-col items-center justify-center p-6 bg-card rounded-xl border-2 border-transparent hover:border-primary/50 hover:shadow-md transition-all"
-                  data-testid="camera-mode-button"
-                >
-                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                    <Camera className="w-7 h-7 text-primary" aria-hidden="true" />
+              {/* 재사용 불가 시 기존 모드 선택 UI 표시 */}
+              {(!photoReuseEligibility?.eligible || reuseChecking) && (
+                <>
+                  <div className="text-center mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      피부 분석을 위한 사진이 필요해요
+                    </p>
                   </div>
-                  <span className="font-medium text-foreground">촬영</span>
-                  <span className="text-xs text-muted-foreground mt-1">(다각도)</span>
-                </button>
 
-                {/* 갤러리 모드 (단일 이미지) */}
-                <button
-                  onClick={handleSelectGalleryMode}
-                  className="flex flex-col items-center justify-center p-6 bg-card rounded-xl border-2 border-transparent hover:border-primary/50 hover:shadow-md transition-all"
-                  data-testid="gallery-mode-button"
-                >
-                  <div className="w-14 h-14 rounded-full bg-secondary/50 flex items-center justify-center mb-3">
-                    <ImageIcon className="w-7 h-7 text-secondary-foreground" aria-hidden="true" />
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* 카메라 모드 (다각도 촬영) */}
+                    <button
+                      onClick={handleSelectCameraMode}
+                      className="flex flex-col items-center justify-center p-6 bg-card rounded-xl border-2 border-transparent hover:border-primary/50 hover:shadow-md transition-all"
+                      data-testid="camera-mode-button"
+                    >
+                      <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                        <Camera className="w-7 h-7 text-primary" aria-hidden="true" />
+                      </div>
+                      <span className="font-medium text-foreground">촬영</span>
+                      <span className="text-xs text-muted-foreground mt-1">(다각도)</span>
+                    </button>
+
+                    {/* 갤러리 모드 (단일 이미지) */}
+                    <button
+                      onClick={handleSelectGalleryMode}
+                      className="flex flex-col items-center justify-center p-6 bg-card rounded-xl border-2 border-transparent hover:border-primary/50 hover:shadow-md transition-all"
+                      data-testid="gallery-mode-button"
+                    >
+                      <div className="w-14 h-14 rounded-full bg-secondary/50 flex items-center justify-center mb-3">
+                        <ImageIcon
+                          className="w-7 h-7 text-secondary-foreground"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <span className="font-medium text-foreground">갤러리</span>
+                      <span className="text-xs text-muted-foreground mt-1">(단일)</span>
+                    </button>
                   </div>
-                  <span className="font-medium text-foreground">갤러리</span>
-                  <span className="text-xs text-muted-foreground mt-1">(단일)</span>
-                </button>
-              </div>
 
-              {/* 모드 설명 */}
-              <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-                <p className="mb-2">
-                  <strong className="text-foreground">촬영 모드</strong>: 정면 + 좌/우측 다각도
-                  촬영으로 더 정확한 분석이 가능해요
-                </p>
-                <p>
-                  <strong className="text-foreground">갤러리 모드</strong>: 기존에 찍은 정면
-                  사진으로 간편하게 분석해요
-                </p>
-              </div>
+                  {/* 모드 설명 */}
+                  <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+                    <p className="mb-2">
+                      <strong className="text-foreground">촬영 모드</strong>: 정면 + 좌/우측 다각도
+                      촬영으로 더 정확한 분석이 가능해요
+                    </p>
+                    <p>
+                      <strong className="text-foreground">갤러리 모드</strong>: 기존에 찍은 정면
+                      사진으로 간편하게 분석해요
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           )}
 

@@ -6,6 +6,13 @@ export { GradeDisplay } from './GradeDisplay';
 export { MetricBar } from './MetricBar';
 export { StrengthsFirst } from './StrengthsFirst';
 export { VisualReportCard } from './VisualReportCard';
+export { FaceZoneMap } from './FaceZoneMap';
+export { DetailedFaceZoneMap } from './DetailedFaceZoneMap';
+export { SkinVitalityScore } from './SkinVitalityScore';
+export { ZoneDetailCard } from './ZoneDetailCard';
+export { LightingGuide } from './LightingGuide';
+export { PhotoOverlayMap } from './PhotoOverlayMap';
+export { TrendChart } from './TrendChart';
 
 // 상수 및 유틸리티
 export {
@@ -33,3 +40,10 @@ export type {
   VisualReportCardProps,
   VisualReportData,
 } from './types';
+export type { ZoneStatus, FaceZoneMapProps } from './FaceZoneMap';
+export type { DetailedFaceZoneMapProps } from './DetailedFaceZoneMap';
+export type { SkinVitalityScoreProps } from './SkinVitalityScore';
+export type { ZoneDetailCardProps } from './ZoneDetailCard';
+export type { LightingGuideProps, QualityCheckResult } from './LightingGuide';
+export type { PhotoOverlayMapProps } from './PhotoOverlayMap';
+export type { TrendChartProps } from './TrendChart';

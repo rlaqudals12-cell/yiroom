@@ -120,10 +120,12 @@ CREATE POLICY "Service role can manage ingredient interactions"
 -- =====================================================
 ALTER TABLE badges ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can view badges" ON badges;
 CREATE POLICY "Anyone can view badges"
   ON badges FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Service role can manage badges" ON badges;
 CREATE POLICY "Service role can manage badges"
   ON badges FOR ALL
   USING (auth.role() = 'service_role')
@@ -134,10 +136,12 @@ CREATE POLICY "Service role can manage badges"
 -- =====================================================
 ALTER TABLE challenges ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can view challenges" ON challenges;
 CREATE POLICY "Anyone can view challenges"
   ON challenges FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Service role can manage challenges" ON challenges;
 CREATE POLICY "Service role can manage challenges"
   ON challenges FOR ALL
   USING (auth.role() = 'service_role')
@@ -148,10 +152,12 @@ CREATE POLICY "Service role can manage challenges"
 -- =====================================================
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can view active announcements" ON announcements;
 CREATE POLICY "Anyone can view active announcements"
   ON announcements FOR SELECT
-  USING (is_active = true);
+  USING (is_published = true);
 
+DROP POLICY IF EXISTS "Service role can manage announcements" ON announcements;
 CREATE POLICY "Service role can manage announcements"
   ON announcements FOR ALL
   USING (auth.role() = 'service_role')
@@ -162,10 +168,12 @@ CREATE POLICY "Service role can manage announcements"
 -- =====================================================
 ALTER TABLE faqs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can view published faqs" ON faqs;
 CREATE POLICY "Anyone can view published faqs"
   ON faqs FOR SELECT
   USING (is_published = true);
 
+DROP POLICY IF EXISTS "Service role can manage faqs" ON faqs;
 CREATE POLICY "Service role can manage faqs"
   ON faqs FOR ALL
   USING (auth.role() = 'service_role')
@@ -176,10 +184,12 @@ CREATE POLICY "Service role can manage faqs"
 -- =====================================================
 ALTER TABLE affiliate_partners ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can view active partners" ON affiliate_partners;
 CREATE POLICY "Anyone can view active partners"
   ON affiliate_partners FOR SELECT
   USING (is_active = true);
 
+DROP POLICY IF EXISTS "Service role can manage partners" ON affiliate_partners;
 CREATE POLICY "Service role can manage partners"
   ON affiliate_partners FOR ALL
   USING (auth.role() = 'service_role')
@@ -190,10 +200,12 @@ CREATE POLICY "Service role can manage partners"
 -- =====================================================
 ALTER TABLE affiliate_products ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can view active affiliate products" ON affiliate_products;
 CREATE POLICY "Anyone can view active affiliate products"
   ON affiliate_products FOR SELECT
   USING (is_active = true);
 
+DROP POLICY IF EXISTS "Service role can manage affiliate products" ON affiliate_products;
 CREATE POLICY "Service role can manage affiliate products"
   ON affiliate_products FOR ALL
   USING (auth.role() = 'service_role')

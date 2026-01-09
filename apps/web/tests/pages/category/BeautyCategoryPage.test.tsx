@@ -17,6 +17,7 @@ const mockParams = {
 };
 
 vi.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: vi.fn().mockReturnValue(null) }),
   useRouter: () => mockRouter,
   useParams: () => mockParams,
 }));

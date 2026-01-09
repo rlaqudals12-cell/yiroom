@@ -7,7 +7,7 @@ import {
   Shirt,
   Heart,
   Star,
-  XCircle,
+  Lightbulb,
   Brush,
   Tag,
 } from 'lucide-react';
@@ -39,6 +39,20 @@ interface AnalysisResultProps {
   evidence?: AnalysisEvidence | null;
 }
 
+// 얼굴 실루엣 아바타 (색상 비교용)
+function FaceAvatar({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 56" className={className} aria-hidden="true">
+      {/* 머리 */}
+      <ellipse cx="24" cy="20" rx="14" ry="16" fill="currentColor" />
+      {/* 목 */}
+      <rect x="18" y="34" width="12" height="8" fill="currentColor" />
+      {/* 어깨 */}
+      <ellipse cx="24" cy="48" rx="20" ry="8" fill="currentColor" />
+    </svg>
+  );
+}
+
 export default function AnalysisResult({ result, onRetry, evidence }: AnalysisResultProps) {
   const {
     seasonType,
@@ -51,6 +65,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
     clothingRecommendations,
     styleDescription,
     insight,
+    easyInsight,
     analyzedAt,
   } = result;
 
@@ -114,39 +129,112 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
         </section>
       </FadeInUp>
 
-      {/* 워스트 컬러 */}
+      {/* 컬러 비교 - Color Comparison UX */}
       <FadeInUp delay={2}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
-            <XCircle className="w-5 h-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold text-foreground">피해야 할 컬러</h2>
+            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">컬러가 주는 인상 차이</h2>
           </div>
-          <div className="grid grid-cols-5 gap-2">
-            {worstColors.map((color, index) => (
-              <div key={index} className="text-center opacity-70">
+
+          {/* 베스트 vs 워스트 비교 카드 */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* 베스트 컬러 */}
+            <div className="text-center">
+              <div className="relative w-20 h-24 mx-auto mb-2">
+                <FaceAvatar className="w-full h-full text-stone-300 dark:text-stone-600" />
                 <div
-                  className="w-full aspect-square rounded-lg shadow-sm border border-border relative"
-                  style={{ backgroundColor: color.hex }}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-full h-0.5 bg-red-500/50 rotate-45" />
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 truncate">{color.name}</p>
+                  className="absolute inset-0 mix-blend-multiply opacity-50 dark:mix-blend-screen dark:opacity-30"
+                  style={{ backgroundColor: bestColors[0]?.hex }}
+                />
               </div>
-            ))}
+              <div
+                className="w-10 h-10 mx-auto rounded-lg shadow-sm border-2 border-pink-300 dark:border-pink-700"
+                style={{ backgroundColor: bestColors[0]?.hex }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">{bestColors[0]?.name}</p>
+              <p className="text-sm font-medium text-pink-600 dark:text-pink-400 mt-1 flex items-center justify-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                화사해요
+              </p>
+            </div>
+
+            {/* 워스트 컬러 */}
+            <div className="text-center">
+              <div className="relative w-20 h-24 mx-auto mb-2">
+                <FaceAvatar className="w-full h-full text-stone-300 dark:text-stone-600" />
+                <div
+                  className="absolute inset-0 mix-blend-multiply opacity-50 dark:mix-blend-screen dark:opacity-30"
+                  style={{ backgroundColor: worstColors[0]?.hex }}
+                />
+              </div>
+              <div
+                className="w-10 h-10 mx-auto rounded-lg shadow-sm border border-muted opacity-70"
+                style={{ backgroundColor: worstColors[0]?.hex }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">{worstColors[0]?.name}</p>
+              <p className="text-sm text-muted-foreground mt-1">칙칙해요</p>
+            </div>
           </div>
+
+          {/* 구분선 */}
+          <div className="border-t border-border my-4" />
+
+          {/* 나머지 주의 컬러 (참고용) */}
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">나머지 주의 컬러 (참고용)</p>
+            <div className="flex gap-2">
+              {worstColors.slice(1, 5).map((color, index) => (
+                <div key={index} className="text-center">
+                  <div
+                    className="w-8 h-8 rounded-md border border-dashed border-muted-foreground/40"
+                    style={{ backgroundColor: color.hex }}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-0.5 text-center leading-tight max-w-[48px]">
+                    {color.name}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 안내 텍스트 */}
+          <p className="text-xs text-muted-foreground mt-4">
+            위의 <span className="font-medium text-foreground">베스트 컬러</span>를 활용하면 피부가
+            더 화사해 보여요
+          </p>
         </section>
       </FadeInUp>
 
-      {/* AI 스타일 인사이트 (가변 보상) */}
+      {/* AI 스타일 인사이트 (초보자 친화) */}
       <FadeInUp delay={3}>
-        <section className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl border border-pink-200 p-6">
+        <section className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-950/30 dark:to-purple-950/30 rounded-xl border border-pink-200 dark:border-pink-800 p-6">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-5 h-5 text-pink-500" />
             <h2 className="text-lg font-semibold text-foreground">스타일 인사이트</h2>
           </div>
-          <p className="text-foreground/80 leading-relaxed">{insight}</p>
+          {easyInsight ? (
+            <div className="space-y-4">
+              <p className="text-foreground/90 leading-relaxed font-medium">
+                {easyInsight.summary}
+              </p>
+              <p className="text-foreground/70 leading-relaxed text-sm">
+                {easyInsight.easyExplanation}
+              </p>
+              <div className="mt-3 p-3 bg-pink-100 dark:bg-pink-900/30 rounded-lg">
+                <p className="text-sm text-pink-700 dark:text-pink-300 font-medium">
+                  💡 바로 실천해보세요
+                </p>
+                <p className="text-sm text-pink-600 dark:text-pink-400 mt-1">
+                  {easyInsight.actionTip}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-foreground/80 leading-relaxed">{insight}</p>
+          )}
         </section>
       </FadeInUp>
 
@@ -170,7 +258,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
         </section>
       </FadeInUp>
 
-      {/* 메이크업 & 패션 스타일 가이드 */}
+      {/* 메이크업 & 패션 스타일 가이드 (초보자 친화) */}
       <FadeInUp delay={5}>
         <section className="bg-card rounded-xl border p-6 space-y-4">
           <div className="flex items-center gap-2 mb-2">
@@ -178,33 +266,113 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
             <h2 className="text-lg font-semibold text-foreground">스타일 가이드</h2>
           </div>
 
-          {/* 메이크업 */}
-          <div className="p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg">
-            <p className="text-sm font-medium text-pink-700 dark:text-pink-300 mb-2">메이크업</p>
-            <p className="text-sm text-foreground/80 leading-relaxed">
-              {styleDescription.makeupStyle}
-            </p>
+          {/* 메이크업 - 초보자 친화 */}
+          <div className="p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg space-y-3">
+            <p className="text-sm font-medium text-pink-700 dark:text-pink-300">💄 메이크업</p>
+            {styleDescription.easyMakeup ? (
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
+                    립
+                  </span>
+                  <p className="text-sm text-foreground/80">{styleDescription.easyMakeup.lip}</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
+                    눈
+                  </span>
+                  <p className="text-sm text-foreground/80">{styleDescription.easyMakeup.eye}</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
+                    볼
+                  </span>
+                  <p className="text-sm text-foreground/80">{styleDescription.easyMakeup.cheek}</p>
+                </div>
+                <p className="text-xs text-pink-600 dark:text-pink-400 mt-2 p-2 bg-pink-100 dark:bg-pink-900/30 rounded">
+                  💡 {styleDescription.easyMakeup.tip}
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                {styleDescription.makeupStyle}
+              </p>
+            )}
           </div>
 
-          {/* 패션 */}
-          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-            <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">패션</p>
-            <p className="text-sm text-foreground/80 leading-relaxed">
-              {styleDescription.fashionStyle}
-            </p>
+          {/* 패션 - 초보자 친화 */}
+          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg space-y-3">
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">👕 패션</p>
+            {styleDescription.easyFashion ? (
+              <div className="space-y-2">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">추천 컬러</p>
+                  <div className="flex flex-wrap gap-1">
+                    {styleDescription.easyFashion.colors.map((color, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded"
+                      >
+                        {color}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">피해야 할 컬러</p>
+                  <div className="flex flex-wrap gap-1">
+                    {styleDescription.easyFashion.avoid.map((color, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded line-through"
+                      >
+                        {color}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-sm text-foreground/80">{styleDescription.easyFashion.style}</p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 p-2 bg-blue-100 dark:bg-blue-900/30 rounded">
+                  💡 {styleDescription.easyFashion.tip}
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                {styleDescription.fashionStyle}
+              </p>
+            )}
           </div>
 
-          {/* 액세서리 */}
-          <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
-            <p className="text-sm font-medium text-amber-700 dark:text-amber-300 mb-2">액세서리</p>
-            <p className="text-sm text-foreground/80 leading-relaxed">
-              {styleDescription.accessories}
-            </p>
+          {/* 액세서리 - 초보자 친화 */}
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg space-y-3">
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300">💍 액세서리</p>
+            {styleDescription.easyAccessory ? (
+              <div className="space-y-2">
+                <p className="text-sm text-foreground/80">
+                  <span className="font-medium">{styleDescription.easyAccessory.metal}</span>이 잘
+                  어울려요
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {styleDescription.easyAccessory.examples.map((item, idx) => (
+                    <span
+                      key={idx}
+                      className="text-xs bg-amber-200 dark:bg-amber-800 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                {styleDescription.accessories}
+              </p>
+            )}
           </div>
         </section>
       </FadeInUp>
 
-      {/* 립스틱 추천 */}
+      {/* 립스틱 추천 (초보자 친화) */}
       <FadeInUp delay={6}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -213,17 +381,33 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
           </div>
           <div className="space-y-3">
             {lipstickRecommendations.map((lip, index) => (
-              <div key={index} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                <div
-                  className="w-8 h-8 rounded-full shadow-sm border border-border"
-                  style={{ backgroundColor: lip.hex }}
-                />
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{lip.colorName}</p>
-                  {lip.brandExample && (
-                    <p className="text-xs text-muted-foreground">{lip.brandExample}</p>
-                  )}
+              <div key={index} className="p-3 bg-muted rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-full shadow-sm border border-border flex-shrink-0"
+                    style={{ backgroundColor: lip.hex }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-foreground">{lip.colorName}</p>
+                      {lip.easyDescription && (
+                        <span className="text-xs text-muted-foreground">
+                          = {lip.easyDescription}
+                        </span>
+                      )}
+                    </div>
+                    {lip.brandExample && (
+                      <p className="text-xs text-muted-foreground">{lip.brandExample}</p>
+                    )}
+                  </div>
                 </div>
+                {lip.oliveyoungAlt && (
+                  <div className="mt-2 ml-13 pl-[52px]">
+                    <p className="text-xs text-green-600 dark:text-green-400">
+                      🏪 올리브영: {lip.oliveyoungAlt}
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>

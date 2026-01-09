@@ -302,7 +302,18 @@
       "Bash(git stash:*)",
       "Bash(git checkout:*)",
       "Bash(ren:*)",
-      "Bash(timeout 180 npm run test -- --run)"
+      "Bash(timeout 180 npm run test -- --run)",
+      "Bash(psql:*)",
+      "Bash(docker logs:*)",
+      "Bash(timeout 180 npm run lint)",
+      "Bash(while read:*)",
+      "Bash(do)",
+      "Bash(if ! grep -q \"useSearchParams\" \"$file\")",
+      "Bash(then)",
+      "Bash(for file in tests/app/nutrition/layout.test.tsx tests/app/workout/layout.test.tsx tests/components/feed/FeedCard.test.tsx tests/components/nutrition/FastingTimer.test.tsx)",
+      "Bash(__NEW_LINE__ sed -i \"s/vi\\\\.mock\\(''next\\\\/navigation'', \\(\\) => \\({/vi.mock\\(''next\\\\/navigation'', \\(\\) => \\({\\\\n  useSearchParams: \\(\\) => \\({ get: vi.fn\\(\\).mockReturnValue\\(null\\) }\\),/g\" \"$file\")",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npm run test:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ntest: 테스트 파일 추가 수정\n\n- profile/page.test.tsx: 새 ProfilePage UI 구조에 맞게 테스트 업데이트\n  - FadeInUp, BottomNav, LevelBadgeFilled 등 컴포넌트 mock 추가\n  - getUserLevel mock 추가\n  - 설정 링크 href /settings → /profile/settings 변경\n  - 사용자 이름 ''테스트 사용자'' → ''테스트 사용자님'' 수정\n  \n- VoiceRecordButton.test.tsx: lucide-react 아이콘 mock 추가\n  - Mic, MicOff, X, Check, Loader2 아이콘 mock\n\n- admin/feedback/page.test.tsx: global.fetch mock 추가\n  - /api/feedback 호출용 mock 데이터 추가\n\n- body.test.tsx: ESLint rules-of-hooks 오류 수정\n  - 익명 함수 → MockAnalysisLoading 컴포넌트명으로 변경\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   },
   "env": {

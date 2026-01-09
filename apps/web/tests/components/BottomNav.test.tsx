@@ -24,6 +24,7 @@ vi.mock('lucide-react', async (importOriginal) => {
 
 // next/navigation 모킹
 vi.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: vi.fn().mockReturnValue(null) }),
   usePathname: vi.fn(() => '/home'),
 }));
 

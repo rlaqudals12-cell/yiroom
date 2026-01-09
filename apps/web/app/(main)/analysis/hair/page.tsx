@@ -12,7 +12,6 @@ import {
   generateMockHairAnalysisResult,
   HAIR_TYPES,
   HAIR_CONCERNS,
-  SCALP_TYPES,
 } from '@/lib/mock/hair-analysis';
 import { Button } from '@/components/ui/button';
 import { Confetti } from '@/components/animations';

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { koKR, enUS } from '@clerk/localizations';
 import { Inter, Noto_Sans_KR } from 'next/font/google';
@@ -87,6 +87,19 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * iOS Safe Area 지원을 위한 Viewport 설정
+ * viewport-fit=cover로 env(safe-area-inset-*) 활성화
+ */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#2e5afa',
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -126,7 +139,7 @@ export default async function RootLayout({
               <SyncUserProvider>
                 <GamificationProvider>
                   <Navbar />
-                  <main id="main-content" className="pb-16 md:pb-0">
+                  <main id="main-content" className="pb-bottom-nav md:pb-0">
                     {children}
                   </main>
                   <BottomNav />

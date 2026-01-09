@@ -131,6 +131,67 @@ export interface GeminiSkinAnalysisResult {
 }
 
 /**
+ * S-1 세부 12존 피부 분석 결과 타입 (Phase 3)
+ * 기본 6존 분석을 12개 세부 영역으로 확장
+ */
+export interface GeminiDetailedSkinAnalysisResult extends GeminiSkinAnalysisResult {
+  /** 12존 세부 분석 데이터 */
+  detailedZones: {
+    /** 이마 중앙 - T존 상단, 피지 분비 */
+    forehead_center: DetailedZoneData;
+    /** 왼쪽 이마 - 헤어라인 접촉 영역 */
+    forehead_left: DetailedZoneData;
+    /** 오른쪽 이마 - 헤어라인 접촉 영역 */
+    forehead_right: DetailedZoneData;
+    /** 왼쪽 눈가 - 다크서클, 잔주름 */
+    eye_left: DetailedZoneData;
+    /** 오른쪽 눈가 - 다크서클, 잔주름 */
+    eye_right: DetailedZoneData;
+    /** 왼쪽 볼 - 홍조, 모공 확대 */
+    cheek_left: DetailedZoneData;
+    /** 오른쪽 볼 - 홍조, 모공 확대 */
+    cheek_right: DetailedZoneData;
+    /** 콧등 - 블랙헤드, 각질 */
+    nose_bridge: DetailedZoneData;
+    /** 코끝 - 피지, 모공 */
+    nose_tip: DetailedZoneData;
+    /** 턱 중앙 - 여드름 빈발 */
+    chin_center: DetailedZoneData;
+    /** 왼쪽 턱선 - 탄력 체크 */
+    chin_left: DetailedZoneData;
+    /** 오른쪽 턱선 - 탄력 체크 */
+    chin_right: DetailedZoneData;
+  };
+  /** 좌우 비대칭 분석 */
+  asymmetryAnalysis?: {
+    /** 전체 비대칭도 (0-100, 낮을수록 대칭) */
+    overallAsymmetry: number;
+    /** 가장 큰 차이 영역 */
+    mostDifferentZone: {
+      left: string;
+      right: string;
+      scoreDiff: number;
+    };
+    /** 비대칭 권고사항 */
+    recommendation?: string;
+  };
+}
+
+/** 12존 개별 영역 데이터 */
+export interface DetailedZoneData {
+  /** 점수 (0-100) */
+  score: number;
+  /** 상태 레벨 */
+  status: 'excellent' | 'good' | 'normal' | 'warning' | 'critical';
+  /** 우려사항 목록 (최대 3개) */
+  concerns: string[];
+  /** 관리법 추천 (최대 2개) */
+  recommendations: string[];
+  /** AI 분석 근거 */
+  evidence?: string;
+}
+
+/**
  * C-1 체형 분석 결과 타입 (3타입 골격진단 시스템)
  * - S: 스트레이트 (Straight) - 상체 볼륨, 입체적, 직선적
  * - W: 웨이브 (Wave) - 하체 볼륨, 곡선적, 부드러운
@@ -448,6 +509,230 @@ const SKIN_ANALYSIS_PROMPT = `당신은 전문 피부과학 기반 AI 분석가�
 - 색소침착: 비타민C, 아르부틴, 트라넥삼산
 - 노화: 레티놀, 펩타이드, 아데노신
 - 민감성: 판테놀, 센텔라, 알란토인`;
+
+/**
+ * S-1 세부 12존 피부 분석 프롬프트 (Phase 3)
+ * 기본 6존을 12개 세부 영역으로 확장하여 정밀 분석
+ */
+const SKIN_ANALYSIS_DETAILED_PROMPT = `당신은 전문 피부과학 기반 AI 분석가입니다. 업로드된 얼굴 이미지를 12개 세부 영역으로 나누어 정밀 분석해주세요.
+
+⚠️ 이미지 분석 전 조건 확인:
+1. 조명 상태: 자연광/인공광 구분 → 인공광은 피부톤을 왜곡할 수 있음
+2. 메이크업 여부: 베이스 메이크업이 있으면 실제 피부 상태 파악 어려움
+3. 이미지 해상도: 저해상도는 세부 분석 정확도 저하
+
+📋 분석 순서 (Step-by-Step):
+1. 이미지 품질 평가 (조명, 메이크업, 해상도)
+2. 12개 세부 영역 개별 분석
+3. 좌우 비대칭 분석
+4. 종합 점수 및 인사이트 도출
+
+📊 12개 세부 영역 분석 기준:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔹 이마 영역 (3개 존)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[forehead_center] 이마 중앙
+- T존 상단, 피지 분비 활발
+- 모공, 유분, 잔주름 체크
+- 스트레스성 트러블 빈발 영역
+
+[forehead_left] 왼쪽 이마
+- 헤어라인 접촉으로 트러블 발생 가능
+- 헤어 제품/모자 자극 확인
+
+[forehead_right] 오른쪽 이마
+- 헤어라인 접촉으로 트러블 발생 가능
+- 수면 자세 영향 확인
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔹 눈가 영역 (2개 존)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[eye_left] 왼쪽 눈가
+- 다크서클, 잔주름 집중 분석
+- 피로도/수면 부족 반영
+- 피부 얇아 변화 민감
+
+[eye_right] 오른쪽 눈가
+- 다크서클, 잔주름 집중 분석
+- 좌우 비대칭 체크 중요
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔹 볼 영역 (2개 존)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[cheek_left] 왼쪽 볼
+- 홍조, 모공 확대, 색소침착
+- 전화기/베개 접촉 트러블 확인
+- U존 수분 상태 체크
+
+[cheek_right] 오른쪽 볼
+- 홍조, 모공 확대, 색소침착
+- 좌우 트러블 패턴 비교
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔹 코 영역 (2개 존)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[nose_bridge] 콧등
+- 블랙헤드, 각질, 피지 산화
+- 모공 크기, 피지 플러그 확인
+- 선글라스/안경 자극 체크
+
+[nose_tip] 코끝
+- 피지, 모공 관리 핵심 영역
+- 화이트헤드/블랙헤드 빈발
+- T존 하단 유분 체크
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔹 턱 영역 (3개 존)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[chin_center] 턱 중앙
+- 여드름 발생 빈도 높음
+- 호르몬 영향 트러블 체크
+- 마스크 마찰 영향 확인
+
+[chin_left] 왼쪽 턱선
+- 턱선 탄력 및 처짐
+- V라인 정의도 체크
+- 손 습관적 터치 확인
+
+[chin_right] 오른쪽 턱선
+- 턱선 탄력 및 처짐
+- 좌우 비대칭 탄력 비교
+
+📊 점수 기준 (5단계):
+- 85-100: excellent (매우 좋음)
+- 70-84: good (좋음)
+- 50-69: normal (보통)
+- 30-49: warning (주의)
+- 0-29: critical (심각)
+
+⚠️ 할루시네이션 방지 규칙:
+- 저화질/메이크업: 해당 영역 score를 50-60으로 보수적 평가
+- 불확실한 영역: "확인 어려움" 메시지 추가
+- 좌우 동일 분석 금지: 반드시 개별 평가
+
+다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
+
+{
+  "overallScore": [0-100 종합 점수],
+  "skinType": "[dry|normal|oily|combination]",
+  "skinTypeLabel": "[건성|중성|지성|복합성]",
+  "sensitivityLevel": "[low|medium|high]",
+  "metrics": [
+    {"id": "hydration", "name": "수분도", "value": [0-100], "status": "[good|normal|warning]", "description": "[설명]"},
+    {"id": "oil", "name": "유분도", "value": [0-100], "status": "[good|normal|warning]", "description": "[설명]"},
+    {"id": "pores", "name": "모공", "value": [0-100], "status": "[good|normal|warning]", "description": "[설명]"},
+    {"id": "wrinkles", "name": "주름", "value": [0-100], "status": "[good|normal|warning]", "description": "[설명]"},
+    {"id": "elasticity", "name": "탄력", "value": [0-100], "status": "[good|normal|warning]", "description": "[설명]"},
+    {"id": "pigmentation", "name": "색소침착", "value": [0-100], "status": "[good|normal|warning]", "description": "[설명]"},
+    {"id": "trouble", "name": "트러블", "value": [0-100], "status": "[good|normal|warning]", "description": "[설명]"}
+  ],
+  "concernAreas": ["[주요 고민 부위1]", "[주요 고민 부위2]"],
+  "insight": "[피부 상태 맞춤 인사이트 1-2문장]",
+  "recommendedIngredients": [
+    {"name": "[성분명]", "reason": "[추천 이유]", "efficacy": "[기대 효과]"}
+  ],
+  "imageQuality": {
+    "lightingCondition": "[natural|artificial|mixed]",
+    "makeupDetected": [true|false],
+    "analysisReliability": "[high|medium|low]"
+  },
+  "detailedZones": {
+    "forehead_center": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항1]", "[우려사항2]"],
+      "recommendations": ["[관리법1]", "[관리법2]"],
+      "evidence": "[분석 근거]"
+    },
+    "forehead_left": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    },
+    "forehead_right": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    },
+    "eye_left": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    },
+    "eye_right": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    },
+    "cheek_left": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    },
+    "cheek_right": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    },
+    "nose_bridge": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    },
+    "nose_tip": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    },
+    "chin_center": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    },
+    "chin_left": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    },
+    "chin_right": {
+      "score": [0-100],
+      "status": "[excellent|good|normal|warning|critical]",
+      "concerns": ["[우려사항]"],
+      "recommendations": ["[관리법]"],
+      "evidence": "[분석 근거]"
+    }
+  },
+  "asymmetryAnalysis": {
+    "overallAsymmetry": [0-100, 낮을수록 대칭],
+    "mostDifferentZone": {
+      "left": "[왼쪽 영역명]",
+      "right": "[오른쪽 영역명]",
+      "scoreDiff": [점수 차이]
+    },
+    "recommendation": "[비대칭 관련 권고사항]"
+  }
+}`;
 
 /**
  * C-1 체형 분석 프롬프트 (고도화 v2)
@@ -940,6 +1225,156 @@ export async function analyzeSkin(imageBase64: string): Promise<GeminiSkinAnalys
     geminiLogger.error('[S-1] Gemini error, falling back to mock:', error);
     return generateMockSkinAnalysis() as unknown as GeminiSkinAnalysisResult;
   }
+}
+
+/**
+ * S-1 세부 12존 피부 분석 실행 (Phase 3)
+ * - FORCE_MOCK_AI 환경변수 지원
+ * - API 키 미설정 시 Mock 반환
+ * - 5초 타임아웃 + 2회 재시도 후 Mock Fallback (12존은 분석량 많아 시간 연장)
+ *
+ * @param imageBase64 - Base64 인코딩된 얼굴 이미지
+ * @returns 12존 세부 피부 분석 결과
+ */
+export async function analyzeSkinDetailed(
+  imageBase64: string
+): Promise<GeminiDetailedSkinAnalysisResult> {
+  // Mock 모드 확인
+  if (FORCE_MOCK) {
+    geminiLogger.info('[S-1 Detailed] Using mock (FORCE_MOCK_AI=true)');
+    return generateMockDetailedSkinAnalysis();
+  }
+
+  if (!genAI) {
+    geminiLogger.warn('[S-1 Detailed] Gemini not configured, using mock');
+    return generateMockDetailedSkinAnalysis();
+  }
+
+  try {
+    const model = genAI.getGenerativeModel(modelConfig);
+    const imagePart = formatImageForGemini(imageBase64);
+
+    // 타임아웃 (5초) + 재시도 (최대 2회) 적용 - 12존은 분석량 많음
+    const result = await withRetry(
+      () =>
+        withTimeout(
+          model.generateContent([SKIN_ANALYSIS_DETAILED_PROMPT, imagePart]),
+          5000,
+          '[S-1 Detailed] Gemini timeout'
+        ),
+      2,
+      1000
+    );
+    const response = await result.response;
+    const text = response.text();
+
+    geminiLogger.info('[S-1 Detailed] Gemini 12-zone analysis completed');
+    return parseJsonResponse<GeminiDetailedSkinAnalysisResult>(text);
+  } catch (error) {
+    geminiLogger.error('[S-1 Detailed] Gemini error, falling back to mock:', error);
+    return generateMockDetailedSkinAnalysis();
+  }
+}
+
+/**
+ * 12존 세부 피부 분석 Mock 생성
+ */
+function generateMockDetailedSkinAnalysis(): GeminiDetailedSkinAnalysisResult {
+  // 기본 분석 Mock 생성
+  const baseAnalysis = generateMockSkinAnalysis() as unknown as GeminiSkinAnalysisResult;
+
+  // 12존 세부 데이터 생성
+  const zones = [
+    'forehead_center',
+    'forehead_left',
+    'forehead_right',
+    'eye_left',
+    'eye_right',
+    'cheek_left',
+    'cheek_right',
+    'nose_bridge',
+    'nose_tip',
+    'chin_center',
+    'chin_left',
+    'chin_right',
+  ] as const;
+
+  const zoneData: Record<string, DetailedZoneData> = {};
+
+  // 각 존별 Mock 데이터 생성
+  const zoneConcerns: Record<string, string[]> = {
+    forehead_center: ['유분 과다', '모공 확대'],
+    forehead_left: ['헤어라인 트러블'],
+    forehead_right: ['헤어라인 트러블'],
+    eye_left: ['다크서클', '잔주름'],
+    eye_right: ['다크서클'],
+    cheek_left: ['홍조', '모공'],
+    cheek_right: ['홍조'],
+    nose_bridge: ['블랙헤드', '각질'],
+    nose_tip: ['피지 과다', '모공'],
+    chin_center: ['여드름 흔적'],
+    chin_left: ['탄력 저하'],
+    chin_right: ['탄력 저하'],
+  };
+
+  const zoneRecommendations: Record<string, string[]> = {
+    forehead_center: ['유분 컨트롤 세럼', 'BHA 토너'],
+    forehead_left: ['순한 클렌저 사용'],
+    forehead_right: ['헤어라인 청결 유지'],
+    eye_left: ['아이크림 사용', '충분한 수면'],
+    eye_right: ['아이크림 사용'],
+    cheek_left: ['진정 마스크', '수분 앰플'],
+    cheek_right: ['수분 앰플'],
+    nose_bridge: ['클레이 마스크 주 1회', '각질 제거'],
+    nose_tip: ['피지 흡착 패드'],
+    chin_center: ['스팟 케어'],
+    chin_left: ['리프팅 마사지'],
+    chin_right: ['리프팅 마사지'],
+  };
+
+  for (const zone of zones) {
+    const baseScore = 50 + Math.floor(Math.random() * 40);
+    const status =
+      baseScore >= 85
+        ? 'excellent'
+        : baseScore >= 70
+          ? 'good'
+          : baseScore >= 50
+            ? 'normal'
+            : baseScore >= 30
+              ? 'warning'
+              : 'critical';
+
+    zoneData[zone] = {
+      score: baseScore,
+      status: status as DetailedZoneData['status'],
+      concerns: zoneConcerns[zone] || [],
+      recommendations: zoneRecommendations[zone] || [],
+      evidence: `${zone} 영역 상태 양호`,
+    };
+  }
+
+  // 좌우 비대칭 분석
+  const leftCheekScore = zoneData['cheek_left'].score;
+  const rightCheekScore = zoneData['cheek_right'].score;
+  const asymmetryScore = Math.abs(leftCheekScore - rightCheekScore);
+
+  return {
+    ...baseAnalysis,
+    detailedZones: zoneData as GeminiDetailedSkinAnalysisResult['detailedZones'],
+    asymmetryAnalysis: {
+      overallAsymmetry: asymmetryScore,
+      mostDifferentZone: {
+        left: '왼쪽 볼',
+        right: '오른쪽 볼',
+        scoreDiff: asymmetryScore,
+      },
+      recommendation:
+        asymmetryScore > 10
+          ? '좌우 볼 피부 상태에 차이가 있습니다. 수면 자세나 전화기 사용 습관을 확인해보세요.'
+          : '좌우 피부 상태가 균형 있게 유지되고 있습니다.',
+    },
+  };
 }
 
 /**

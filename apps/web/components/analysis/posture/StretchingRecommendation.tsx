@@ -1,6 +1,6 @@
 'use client';
 
-import { Dumbbell, Clock, Calendar, ChevronRight } from 'lucide-react';
+import { Dumbbell, Clock, Calendar } from 'lucide-react';
 import { type StretchingRecommendation as StretchingRecommendationType } from '@/lib/mock/posture-analysis';
 
 interface StretchingRecommendationProps {

@@ -113,7 +113,7 @@ export function ChatInterface({
                 } else if (data.type === 'error') {
                   throw new Error(data.message);
                 }
-              } catch (parseError) {
+              } catch {
                 // JSON 파싱 실패 시 무시 (불완전한 청크일 수 있음)
               }
             }

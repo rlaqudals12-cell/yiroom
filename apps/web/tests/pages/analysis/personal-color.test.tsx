@@ -36,11 +36,15 @@ vi.mock('lucide-react', async (importOriginal) => {
 
 // Mock Next.js router
 const mockPush = vi.fn();
+const mockSearchParamsGet = vi.fn().mockReturnValue(null);
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
     replace: vi.fn(),
     back: vi.fn(),
+  }),
+  useSearchParams: () => ({
+    get: mockSearchParamsGet,
   }),
 }));
 
@@ -356,16 +360,20 @@ describe('PersonalColorPage', () => {
 
   describe('기존 분석 결과', () => {
     it('기존 분석이 있으면 배너가 표시된다', async () => {
+      // 낮은 신뢰도 (< 70)면 자동 리디렉트 대신 배너 표시
+      // 실제 쿼리: .select().order().limit().maybeSingle()
       mockSupabaseSelect.mockReturnValue({
         order: vi.fn().mockReturnValue({
           limit: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({
+            maybeSingle: vi.fn().mockResolvedValue({
               data: {
                 id: 'test-id',
                 season: 'spring',
+                confidence: 50, // 낮은 신뢰도 → 배너 표시
                 created_at: new Date().toISOString(),
               },
               error: null,
+              count: 1,
             }),
           }),
         }),
@@ -374,7 +382,8 @@ describe('PersonalColorPage', () => {
       render(<PersonalColorPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('기존 진단 결과 보기')).toBeInTheDocument();
+        // 낮은 신뢰도 기존 분석 배너 텍스트
+        expect(screen.getByText('기존 결과 보기')).toBeInTheDocument();
       });
     });
   });
@@ -416,21 +425,37 @@ describe('PersonalColorPage - API 통합', () => {
   });
 
   it('API 호출이 성공하면 결과가 표시된다', async () => {
-    const mockResponse = {
-      result: {
-        seasonType: 'spring',
-        seasonLabel: '봄 웜톤',
-        tone: 'warm',
-        depth: 'light',
-        confidence: 95,
-        analyzedAt: new Date().toISOString(),
-      },
-      usedMock: false,
+    // GET: 기존 분석 확인 (없음 반환 → 새 분석 진행)
+    const mockGetResponse = {
+      data: null,
     };
 
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
+    // POST: 새 분석 결과 (router.push로 결과 페이지 이동)
+    const mockPostResponse = {
+      data: {
+        id: 'test-analysis-id',
+        season: 'spring',
+        confidence: 95,
+        created_at: new Date().toISOString(),
+      },
+      usedMock: false,
+      analysisReliability: 'high',
+      imagesCount: 2,
+    };
+
+    // GET과 POST 요청 구분하여 응답
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url, options) => {
+      if (options?.method === 'POST') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockPostResponse,
+        });
+      }
+      // GET 요청
+      return Promise.resolve({
+        ok: true,
+        json: async () => mockGetResponse,
+      });
     });
 
     const user = userEvent.setup();
@@ -444,10 +469,10 @@ describe('PersonalColorPage - API 통합', () => {
     await user.click(screen.getByTestId('capture-complete'));
     await user.click(screen.getByTestId('wrist-skip'));
 
-    // 로딩 후 결과 표시
+    // POST 호출 후 router.push로 결과 페이지 이동
     await waitFor(
       () => {
-        expect(screen.getByTestId('analysis-result')).toBeInTheDocument();
+        expect(mockPush).toHaveBeenCalledWith('/analysis/personal-color/result/test-analysis-id');
       },
       { timeout: 3000 }
     );

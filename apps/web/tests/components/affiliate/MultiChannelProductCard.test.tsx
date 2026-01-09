@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MultiChannelProductCard } from '@/components/affiliate/MultiChannelProductCard';
 import type { ChannelOption } from '@/components/affiliate/MultiChannelProductCard';
 
@@ -107,11 +107,17 @@ describe('MultiChannelProductCard', () => {
     expect(screen.getByText('5% 적립')).toBeInTheDocument();
   });
 
-  it('채널 클릭 시 콜백을 호출한다', () => {
+  it('채널 클릭 시 콜백을 호출한다', async () => {
     const onChannelClick = vi.fn();
     // window.open 모킹
     const mockOpen = vi.fn();
     vi.spyOn(window, 'open').mockImplementation(mockOpen);
+
+    // fetch 모킹 (클릭 트래킹 API)
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ affiliateUrl: 'https://kr.iherb.com/pr/product/456' }),
+    });
 
     render(
       <MultiChannelProductCard
@@ -121,16 +127,29 @@ describe('MultiChannelProductCard', () => {
       />
     );
 
-    // iHerb 채널 클릭
-    const iherbRow = screen.getByText('iHerb').closest('div[class*="cursor-pointer"]');
-    if (iherbRow) fireEvent.click(iherbRow);
+    // iHerb 채널 클릭 (텍스트로 찾아서 클릭 가능한 부모 요소 클릭)
+    const iherbText = screen.getByText('iHerb');
+    // cursor-pointer가 포함된 부모 div를 찾기
+    let clickableElement = iherbText.parentElement;
+    while (clickableElement && !clickableElement.className.includes('cursor-pointer')) {
+      clickableElement = clickableElement.parentElement;
+    }
 
+    if (clickableElement) {
+      fireEvent.click(clickableElement);
+    }
+
+    // 콜백은 동기적으로 호출됨
     expect(onChannelClick).toHaveBeenCalled();
-    expect(mockOpen).toHaveBeenCalledWith(
-      'https://kr.iherb.com/pr/product/456',
-      '_blank',
-      'noopener,noreferrer'
-    );
+
+    // window.open은 비동기 fetch 완료 후 호출됨
+    await waitFor(() => {
+      expect(mockOpen).toHaveBeenCalledWith(
+        'https://kr.iherb.com/pr/product/456',
+        '_blank',
+        'noopener,noreferrer'
+      );
+    });
   });
 
   it('채널이 없으면 안내 메시지를 표시한다', () => {

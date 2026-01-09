@@ -62,10 +62,10 @@ CREATE POLICY "Authenticated users can insert barcodes"
   WITH CHECK (true);
 
 -- ============================================
--- 3. 사용자 개인화 설정
+-- 3. 사용자 쇼핑 설정 (쇼핑/배송 선호)
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS user_preferences (
+CREATE TABLE IF NOT EXISTS user_shopping_preferences (
   clerk_user_id TEXT PRIMARY KEY,
 
   -- 예산 설정 (JSONB)
@@ -98,10 +98,10 @@ CREATE TABLE IF NOT EXISTS user_preferences (
 );
 
 -- RLS
-ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_shopping_preferences ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can manage own preferences"
-  ON user_preferences
+CREATE POLICY "Users can manage own shopping preferences"
+  ON user_shopping_preferences
   FOR ALL
   USING (clerk_user_id = auth.jwt() ->> 'sub');
 
@@ -406,7 +406,7 @@ DO $$
 DECLARE
   tables TEXT[] := ARRAY[
     'product_barcodes',
-    'user_preferences',
+    'user_shopping_preferences',
     'user_body_measurements',
     'brand_size_charts',
     'product_measurements'

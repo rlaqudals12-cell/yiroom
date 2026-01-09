@@ -247,6 +247,7 @@ apps/mobile/app/
 - `docs/DATABASE-SCHEMA.md` - 테이블 구조, RLS, JSONB 필드
 - `docs/SDD-WORKFLOW.md` - Spec-Driven Development 가이드
 - `.claude/rules/` - 코딩 표준, 프로젝트 구조, AI 통합 규칙
+- `.claude/rules/hybrid-data-pattern.md` - Hybrid 데이터 패턴 (DB + Mock 조합)
 - `.claude/agents/` - 전문 Agent 설정
 - `.claude/lib/complexity-analyzer.md` - 복잡도 분석 기준
 

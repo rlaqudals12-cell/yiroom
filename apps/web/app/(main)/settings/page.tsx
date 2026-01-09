@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Settings } from 'lucide-react';
+import { ArrowLeft, Settings, Shield, ChevronRight } from 'lucide-react';
 import { NotificationSettings } from '@/components/notifications';
 import { DataExportCard } from '@/components/settings';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 /**
  * 설정 페이지
@@ -33,6 +34,22 @@ export default function SettingsPage() {
 
       {/* 컨텐츠 */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        {/* 개인정보 설정 */}
+        <Link href="/settings/privacy" className="block">
+          <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center justify-between text-base">
+                <span className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  개인정보 설정
+                </span>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </CardTitle>
+              <CardDescription>이미지 저장 동의, 데이터 보관 기간 관리</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
         {/* 알림 설정 */}
         <NotificationSettings />
 

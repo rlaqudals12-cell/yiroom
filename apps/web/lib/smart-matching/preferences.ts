@@ -18,7 +18,7 @@ import { mapPreferencesRow } from '@/types/smart-matching';
  */
 export async function getPreferences(clerkUserId: string): Promise<UserPreferences | null> {
   const { data, error } = await supabase
-    .from('user_preferences')
+    .from('user_shopping_preferences')
     .select('*')
     .eq('clerk_user_id', clerkUserId)
     .single();
@@ -38,7 +38,7 @@ export async function upsertPreferences(
   preferences: Partial<Omit<UserPreferences, 'clerkUserId' | 'createdAt' | 'updatedAt'>>
 ): Promise<UserPreferences | null> {
   const { data, error } = await supabase
-    .from('user_preferences')
+    .from('user_shopping_preferences')
     .upsert({
       clerk_user_id: clerkUserId,
       budget: preferences.budget ?? {},
@@ -72,7 +72,7 @@ export async function upsertPreferences(
  */
 export async function updateBudget(clerkUserId: string, budget: BudgetSettings): Promise<boolean> {
   const { error } = await supabase
-    .from('user_preferences')
+    .from('user_shopping_preferences')
     .update({ budget })
     .eq('clerk_user_id', clerkUserId);
 
@@ -98,7 +98,7 @@ export async function addFavoriteBrand(clerkUserId: string, brand: string): Prom
   }
 
   const { error } = await supabase
-    .from('user_preferences')
+    .from('user_shopping_preferences')
     .update({
       favorite_brands: [...favoriteBrands, brand],
     })
@@ -120,7 +120,7 @@ export async function removeFavoriteBrand(clerkUserId: string, brand: string): P
   const favoriteBrands = (current?.favoriteBrands ?? []).filter((b) => b !== brand);
 
   const { error } = await supabase
-    .from('user_preferences')
+    .from('user_shopping_preferences')
     .update({ favorite_brands: favoriteBrands })
     .eq('clerk_user_id', clerkUserId);
 
@@ -144,7 +144,7 @@ export async function addBlockedBrand(clerkUserId: string, brand: string): Promi
   }
 
   const { error } = await supabase
-    .from('user_preferences')
+    .from('user_shopping_preferences')
     .update({
       blocked_brands: [...blockedBrands, brand],
     })
@@ -166,7 +166,7 @@ export async function removeBlockedBrand(clerkUserId: string, brand: string): Pr
   const blockedBrands = (current?.blockedBrands ?? []).filter((b) => b !== brand);
 
   const { error } = await supabase
-    .from('user_preferences')
+    .from('user_shopping_preferences')
     .update({ blocked_brands: blockedBrands })
     .eq('clerk_user_id', clerkUserId);
 
@@ -200,7 +200,7 @@ export async function updateNotificationSettings(
   if (settings.restock !== undefined) updates.notify_restock = settings.restock;
 
   const { error } = await supabase
-    .from('user_preferences')
+    .from('user_shopping_preferences')
     .update(updates)
     .eq('clerk_user_id', clerkUserId);
 

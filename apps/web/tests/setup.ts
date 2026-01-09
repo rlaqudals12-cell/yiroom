@@ -258,6 +258,9 @@ vi.mock('lucide-react', () => ({
   Move: createIconMock('Move'),
   ClipboardList: createIconMock('ClipboardList'),
   Upload: createIconMock('Upload'),
+  Megaphone: createIconMock('Megaphone'),
+  MessageSquare: createIconMock('MessageSquare'),
+  Filter: createIconMock('Filter'),
 
   // UI Components (Icon 접미사 버전)
   XIcon: createIconMock('XIcon'),

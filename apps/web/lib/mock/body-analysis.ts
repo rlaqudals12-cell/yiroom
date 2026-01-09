@@ -72,6 +72,8 @@ export interface BodyAnalysisResult {
   personalColorSeason?: string | null;
   colorRecommendations?: ColorRecommendations | null;
   colorTips?: string[];
+  // Hybrid 데이터용 초보자 친화 필드 (선택적, 하위 호환)
+  easyBodyTip?: EasyBodyTip;
 }
 
 // 체형별 정보 (8가지) - 사용자 친화적 설명 포함
@@ -593,6 +595,48 @@ export const BODY_TYPES_3: Record<BodyType3, BodyType3Info> = {
     simpleExplanation: '오버핏과 레이어드 스타일이 가장 잘 어울리는 타입이에요',
     selfCheckTip:
       "오버사이즈 옷이나 맨투맨을 입으면 '멋있다'는 말을 듣나요? 내추럴일 확률이 높아요!",
+  },
+};
+
+// 초보자 친화 체형 스타일 팁 (Hybrid 데이터용)
+export interface EasyBodyTip {
+  summary: string; // 한 줄 요약
+  easyExplanation: string; // 쉬운 설명
+  doList: string[]; // 추천 스타일
+  dontList: string[]; // 피해야 할 스타일
+  styleTip: string; // 핵심 팁
+}
+
+export const EASY_BODY_TIPS: Record<BodyType3, EasyBodyTip> = {
+  S: {
+    summary: '딱 맞는 사이즈가 최고! 심플하게 입으면 멋져요',
+    easyExplanation:
+      '상체가 탄탄하고 옷이 잘 떨어지는 스트레이트 체형이에요. 복잡한 디테일보다 깔끔한 스타일이 잘 어울려요.',
+    doList: ['테일러드 재킷', '스트레이트 팬츠', 'V넥 니트', '깔끔한 셔츠', '정장 스타일'],
+    dontList: ['프릴 많은 옷', '오버핏 전체', '과한 레이어드', '너무 루즈한 옷'],
+    styleTip: '심플 이즈 베스트! 핏이 좋은 기본 아이템으로 코디해보세요',
+  },
+  W: {
+    summary: '허리 라인 강조가 포인트! 하이웨이스트가 찰떡이에요',
+    easyExplanation:
+      '곡선미가 돋보이는 웨이브 체형이에요. 허리를 강조하고 X라인을 만들면 비율이 예뻐 보여요.',
+    doList: [
+      '하이웨이스트 팬츠',
+      'A라인 스커트',
+      '크롭 가디건',
+      '페플럼 블라우스',
+      '리본/벨트 장식',
+    ],
+    dontList: ['박시핏 전체', '롱기장 아우터', '직선적 실루엣', '오버사이즈 니트'],
+    styleTip: '허리 벨트를 활용해보세요! 비율이 확 살아나요',
+  },
+  N: {
+    summary: '오버핏이 잘 어울려요! 편하게 입어도 멋있는 타입',
+    easyExplanation:
+      '골격감이 있고 자연스러운 내추럴 체형이에요. 루즈하게 떨어지는 옷이 오히려 잘 어울려요.',
+    doList: ['오버사이즈 니트', '와이드 팬츠', '롱 코트', '캐주얼 재킷', '내추럴 소재'],
+    dontList: ['몸에 딱 붙는 옷', '과한 장식', '프릴/레이스', '정장 같은 딱딱한 옷'],
+    styleTip: '여유 있는 핏으로 편하게! 천연 소재 아이템을 찾아보세요',
   },
 };
 

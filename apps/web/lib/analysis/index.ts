@@ -35,3 +35,9 @@ export * from './synergy-insight';
 
 // 메모리 관리
 export * from './memory-manager';
+
+// 사진 재사용 (Phase 2)
+export * from './photo-reuse';
+
+// 피부 다이어리 상관관계 분석 (Phase 3)
+export * from './skin-correlation';

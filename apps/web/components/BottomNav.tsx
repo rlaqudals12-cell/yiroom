@@ -47,6 +47,10 @@ export function BottomNav() {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border md:hidden"
+      style={{
+        // iOS Safe Area를 포함한 전체 높이 계산
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
       data-testid="bottom-nav"
       aria-label="메인 네비게이션"
       role="navigation"
@@ -67,28 +71,18 @@ export function BottomNav() {
               className={cn(
                 'flex flex-col items-center justify-center flex-1 py-2 transition-colors',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg',
-                active
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
+                active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <Icon
-                className={cn(
-                  'h-6 w-6 mb-1',
-                  active ? 'text-primary' : 'text-muted-foreground'
-                )}
+                className={cn('h-6 w-6 mb-1', active ? 'text-primary' : 'text-muted-foreground')}
                 aria-hidden="true"
               />
-              <span className={cn('text-xs', active && 'font-medium')}>
-                {item.label}
-              </span>
+              <span className={cn('text-xs', active && 'font-medium')}>{item.label}</span>
             </Link>
           );
         })}
       </div>
-
-      {/* Safe area padding for iOS */}
-      <div className="pb-safe" />
     </nav>
   );
 }

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { createClient } from "@supabase/supabase-js";
-import { useAuth } from "@clerk/nextjs";
-import { useMemo } from "react";
+import { createClient } from '@supabase/supabase-js';
+import { useAuth } from '@clerk/nextjs';
+import { useMemo } from 'react';
 
 /**
  * Clerk + Supabase 네이티브 통합 클라이언트 (Client Component용)
@@ -40,22 +40,50 @@ export function useClerkSupabaseClient() {
     // 빌드 시 환경 변수가 없을 수 있음 - 빈 클라이언트 반환 방지
     if (!supabaseUrl || !supabaseKey) {
       throw new Error(
-        "Supabase URL or Anon Key is missing. Please check your environment variables."
+        'Supabase URL or Anon Key is missing. Please check your environment variables.'
       );
     }
 
     return createClient(supabaseUrl, supabaseKey, {
       async accessToken() {
         try {
-          const token = await getToken();
-          if (!token) {
-            console.warn(
-              "[Clerk-Supabase] Token is null - user may not be authenticated"
-            );
+          // Clerk가 아직 로드되지 않은 경우 처리
+          if (typeof getToken !== 'function') {
+            console.warn('[Clerk-Supabase] getToken is not ready yet');
+            return null;
           }
+
+          // 먼저 'supabase' JWT 템플릿 시도
+          let token = await getToken({ template: 'supabase' });
+
+          // 'supabase' 템플릿 실패 시 기본 토큰 시도
+          if (!token) {
+            console.log(
+              "[Clerk-Supabase] 'supabase' template returned null, trying default token..."
+            );
+            token = await getToken();
+          }
+
+          if (!token) {
+            console.warn('[Clerk-Supabase] Token is null - user may not be authenticated');
+          } else {
+            // JWT 디버깅: 토큰의 payload 확인 (프로덕션에서는 제거)
+            try {
+              const payload = JSON.parse(atob(token.split('.')[1]));
+              console.log('[Clerk-Supabase] Token payload:', {
+                sub: payload.sub,
+                aud: payload.aud,
+                role: payload.role,
+                exp: new Date(payload.exp * 1000).toISOString(),
+              });
+            } catch {
+              console.log('[Clerk-Supabase] Token received (could not parse payload)');
+            }
+          }
+
           return token ?? null;
         } catch (error) {
-          console.error("[Clerk-Supabase] Failed to get token:", error);
+          console.error('[Clerk-Supabase] Failed to get token:', error);
           return null;
         }
       },

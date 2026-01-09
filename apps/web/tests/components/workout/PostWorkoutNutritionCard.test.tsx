@@ -36,23 +36,13 @@ describe('PostWorkoutNutritionCard', () => {
 
   describe('운동 타입별 메시지', () => {
     it('builder 운동에 단백질 메시지가 표시된다', () => {
-      render(
-        <PostWorkoutNutritionCard
-          workoutType="builder"
-          durationMinutes={30}
-        />
-      );
+      render(<PostWorkoutNutritionCard workoutType="builder" durationMinutes={30} />);
 
       expect(screen.getByText(/단백질/)).toBeInTheDocument();
     });
 
     it('burner 운동에 탄수화물 메시지가 표시된다', () => {
-      render(
-        <PostWorkoutNutritionCard
-          workoutType="burner"
-          durationMinutes={30}
-        />
-      );
+      render(<PostWorkoutNutritionCard workoutType="burner" durationMinutes={30} />);
 
       expect(screen.getByText(/탄수화물/)).toBeInTheDocument();
     });
@@ -87,7 +77,7 @@ describe('PostWorkoutNutritionCard', () => {
       fireEvent.click(screen.getByLabelText('펼치기'));
 
       expect(screen.getByTestId('protein-recommendation')).toBeInTheDocument();
-      expect(screen.getByText('🥩 단백질 권장량')).toBeInTheDocument();
+      expect(screen.getByText('단백질 권장량')).toBeInTheDocument();
     });
 
     it('펼치면 단백질 팁 섹션이 표시된다', () => {
@@ -96,7 +86,7 @@ describe('PostWorkoutNutritionCard', () => {
       fireEvent.click(screen.getByLabelText('펼치기'));
 
       expect(screen.getByTestId('protein-tips')).toBeInTheDocument();
-      expect(screen.getByText('💪 단백질 보충')).toBeInTheDocument();
+      expect(screen.getByText('단백질 보충')).toBeInTheDocument();
     });
 
     it('펼치면 식사 추천 섹션이 표시된다', () => {
@@ -105,7 +95,7 @@ describe('PostWorkoutNutritionCard', () => {
       fireEvent.click(screen.getByLabelText('펼치기'));
 
       expect(screen.getByTestId('meal-tips')).toBeInTheDocument();
-      expect(screen.getByText('🍽️ 식사 추천')).toBeInTheDocument();
+      expect(screen.getByText('식사 추천')).toBeInTheDocument();
     });
 
     it('펼치면 수분 보충 팁이 표시된다', () => {
@@ -156,12 +146,7 @@ describe('PostWorkoutNutritionCard', () => {
     const workoutTypes = ['toner', 'builder', 'burner', 'mover', 'flexer'] as const;
 
     it.each(workoutTypes)('운동 타입 %s에 대한 팁이 표시된다', (workoutType) => {
-      render(
-        <PostWorkoutNutritionCard
-          workoutType={workoutType}
-          durationMinutes={30}
-        />
-      );
+      render(<PostWorkoutNutritionCard workoutType={workoutType} durationMinutes={30} />);
 
       fireEvent.click(screen.getByLabelText('펼치기'));
 
@@ -173,23 +158,14 @@ describe('PostWorkoutNutritionCard', () => {
 
   describe('칼로리 계산', () => {
     it('caloriesBurned prop이 제공되면 해당 값을 사용한다', () => {
-      render(
-        <PostWorkoutNutritionCard
-          {...defaultProps}
-          caloriesBurned={500}
-        />
-      );
+      render(<PostWorkoutNutritionCard {...defaultProps} caloriesBurned={500} />);
 
       expect(screen.getByText(/500kcal/)).toBeInTheDocument();
     });
 
     it('caloriesBurned가 없으면 자동 계산된다', () => {
       render(
-        <PostWorkoutNutritionCard
-          workoutType="builder"
-          durationMinutes={30}
-          bodyWeightKg={60}
-        />
+        <PostWorkoutNutritionCard workoutType="builder" durationMinutes={30} bodyWeightKg={60} />
       );
 
       // builder 30분 60kg = 8 * 30 = 240kcal

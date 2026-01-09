@@ -31,11 +31,15 @@ vi.mock('lucide-react', async (importOriginal) => {
 
 // Mock Next.js router
 const mockPush = vi.fn();
+const mockSearchParams = new Map<string, string>();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
     replace: vi.fn(),
     back: vi.fn(),
+  }),
+  useSearchParams: () => ({
+    get: (key: string) => mockSearchParams.get(key) ?? null,
   }),
 }));
 
@@ -47,19 +51,57 @@ vi.mock('@clerk/nextjs', () => ({
   }),
 }));
 
-// Mock Supabase client
+// Mock photo-reuse (Phase 2 기능)
+vi.mock('@/lib/analysis/photo-reuse', () => ({
+  checkPhotoReuseEligibility: vi.fn().mockResolvedValue({ eligible: false, reason: 'no_image' }),
+}));
+
+// Mock Supabase client - 기존 분석/동의 조회용
+const mockMaybeSingle = vi.fn();
+const mockSingle = vi.fn();
+const mockSupabaseChain = {
+  select: vi.fn().mockReturnThis(),
+  order: vi.fn().mockReturnThis(),
+  limit: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockReturnThis(),
+  single: mockSingle,
+  maybeSingle: mockMaybeSingle,
+};
+const mockSupabaseClient = {
+  from: vi.fn().mockReturnValue(mockSupabaseChain),
+};
 vi.mock('@/lib/supabase/clerk-client', () => ({
-  useClerkSupabaseClient: () => ({
-    from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        order: vi.fn().mockReturnValue({
-          limit: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({ data: null }),
-          }),
-        }),
-      }),
-    }),
-  }),
+  useClerkSupabaseClient: () => mockSupabaseClient,
+}));
+
+// Mock ImageConsentModal
+let mockConsentModalProps: {
+  isOpen: boolean;
+  onConsent?: () => void;
+  onSkip?: () => void;
+} | null = null;
+
+vi.mock('@/components/analysis/consent', () => ({
+  ImageConsentModal: (props: {
+    isOpen: boolean;
+    onConsent: () => void;
+    onSkip: () => void;
+    analysisType: string;
+    isLoading?: boolean;
+  }) => {
+    mockConsentModalProps = props;
+    if (!props.isOpen) return null;
+    return (
+      <div data-testid="image-consent-modal">
+        <button onClick={props.onConsent} data-testid="consent-agree">
+          저장하기
+        </button>
+        <button onClick={props.onSkip} data-testid="consent-skip">
+          건너뛰기
+        </button>
+      </div>
+    );
+  },
 }));
 
 // Mock 컴포넌트들
@@ -204,18 +246,36 @@ describe('SkinAnalysisPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetch.mockReset();
+    mockMaybeSingle.mockReset();
+    mockSingle.mockReset();
+    mockConsentModalProps = null;
+
+    // 기본값 설정
+    // 기존 분석 없음 (single: reject로 catch 블록 타게)
+    mockSingle.mockRejectedValue(new Error('No existing analysis'));
+    // 기존 동의 없음
+    mockMaybeSingle.mockResolvedValue({ data: null, error: null });
   });
 
   describe('렌더링', () => {
-    it('초기 상태에서 조명 가이드를 표시한다', () => {
+    it('초기 상태에서 조명 가이드를 표시한다', async () => {
       render(<SkinAnalysisPage />);
+
+      // 기존 분석 확인 후 로딩 완료 대기
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
 
       expect(screen.getByTestId('lighting-guide')).toBeInTheDocument();
       expect(screen.getByText('정확한 분석을 위한 촬영 가이드')).toBeInTheDocument();
     });
 
-    it('헤더에 피부 분석 제목이 표시된다', () => {
+    it('헤더에 피부 분석 제목이 표시된다', async () => {
       render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
 
       expect(screen.getByRole('heading', { name: '피부 분석' })).toBeInTheDocument();
     });
@@ -225,6 +285,10 @@ describe('SkinAnalysisPage', () => {
     it('가이드 완료 시 모드 선택 화면으로 전환된다', async () => {
       const user = userEvent.setup();
       render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
 
       await user.click(screen.getByTestId('guide-continue'));
 
@@ -236,6 +300,10 @@ describe('SkinAnalysisPage', () => {
       const user = userEvent.setup();
       render(<SkinAnalysisPage />);
 
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
       await user.click(screen.getByTestId('guide-continue'));
 
       expect(screen.getByTestId('camera-mode-button')).toBeInTheDocument();
@@ -246,9 +314,21 @@ describe('SkinAnalysisPage', () => {
   });
 
   describe('카메라 모드 (다각도 촬영)', () => {
+    // 카메라 기능 테스트에서는 동의가 이미 있다고 가정
+    beforeEach(() => {
+      mockMaybeSingle.mockResolvedValue({
+        data: { consent_given: true },
+        error: null,
+      });
+    });
+
     it('카메라 모드 선택 시 MultiAngleSkinCapture가 렌더링된다', async () => {
       const user = userEvent.setup();
       render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
 
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('camera-mode-button'));
@@ -273,6 +353,10 @@ describe('SkinAnalysisPage', () => {
       });
 
       render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
 
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('camera-mode-button'));
@@ -307,6 +391,10 @@ describe('SkinAnalysisPage', () => {
 
       render(<SkinAnalysisPage />);
 
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('camera-mode-button'));
       await user.click(screen.getByTestId('capture-front-only'));
@@ -326,6 +414,10 @@ describe('SkinAnalysisPage', () => {
       const user = userEvent.setup();
       render(<SkinAnalysisPage />);
 
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('camera-mode-button'));
 
@@ -338,9 +430,21 @@ describe('SkinAnalysisPage', () => {
   });
 
   describe('갤러리 모드 (단일 이미지)', () => {
+    // 갤러리 기능 테스트에서는 동의가 이미 있다고 가정
+    beforeEach(() => {
+      mockMaybeSingle.mockResolvedValue({
+        data: { consent_given: true },
+        error: null,
+      });
+    });
+
     it('갤러리 모드 선택 시 PhotoUpload가 렌더링된다', async () => {
       const user = userEvent.setup();
       render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
 
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('gallery-mode-button'));
@@ -365,6 +469,10 @@ describe('SkinAnalysisPage', () => {
 
       render(<SkinAnalysisPage />);
 
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('gallery-mode-button'));
       await user.click(screen.getByTestId('select-photo'));
@@ -380,6 +488,10 @@ describe('SkinAnalysisPage', () => {
       const user = userEvent.setup();
       render(<SkinAnalysisPage />);
 
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
       await user.click(screen.getByTestId('guide-skip'));
 
       expect(screen.getByTestId('known-skin-type-input')).toBeInTheDocument();
@@ -387,6 +499,14 @@ describe('SkinAnalysisPage', () => {
   });
 
   describe('분석 결과', () => {
+    // 분석 결과 테스트에서는 동의가 이미 있다고 가정
+    beforeEach(() => {
+      mockMaybeSingle.mockResolvedValue({
+        data: { consent_given: true },
+        error: null,
+      });
+    });
+
     it('분석 완료 후 결과 화면이 표시된다', async () => {
       const user = userEvent.setup();
 
@@ -402,6 +522,10 @@ describe('SkinAnalysisPage', () => {
       });
 
       render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
 
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('camera-mode-button'));
@@ -430,6 +554,10 @@ describe('SkinAnalysisPage', () => {
 
       render(<SkinAnalysisPage />);
 
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('camera-mode-button'));
       await user.click(screen.getByTestId('capture-complete'));
@@ -445,6 +573,14 @@ describe('SkinAnalysisPage', () => {
   });
 
   describe('에러 처리', () => {
+    // 에러 처리 테스트에서는 동의가 이미 있다고 가정
+    beforeEach(() => {
+      mockMaybeSingle.mockResolvedValue({
+        data: { consent_given: true },
+        error: null,
+      });
+    });
+
     it('API 에러 시 에러 메시지를 표시하고 카메라 모드로 복귀한다', async () => {
       const user = userEvent.setup();
 
@@ -454,6 +590,10 @@ describe('SkinAnalysisPage', () => {
       });
 
       render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
 
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('camera-mode-button'));
@@ -473,12 +613,198 @@ describe('SkinAnalysisPage', () => {
       const user = userEvent.setup();
       render(<SkinAnalysisPage />);
 
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
       await user.click(screen.getByTestId('guide-continue'));
 
       expect(
         screen.getByText(/정면 \+ 좌\/우측 다각도 촬영으로 더 정확한 분석/)
       ).toBeInTheDocument();
       expect(screen.getByText(/기존에 찍은 정면 사진으로 간편하게 분석/)).toBeInTheDocument();
+    });
+  });
+
+  describe('이미지 저장 동의 플로우', () => {
+    it('동의 없이 사진 촬영 시 동의 모달이 표시된다', async () => {
+      const user = userEvent.setup();
+
+      // 기존 동의 없음
+      mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+
+      render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('guide-continue'));
+      await user.click(screen.getByTestId('camera-mode-button'));
+      await user.click(screen.getByTestId('capture-complete'));
+
+      // 동의 모달이 표시되어야 함
+      await waitFor(() => {
+        expect(screen.getByTestId('image-consent-modal')).toBeInTheDocument();
+      });
+    });
+
+    it('기존 동의가 있으면 모달 없이 분석 진행', async () => {
+      const user = userEvent.setup();
+
+      // 기존 동의 있음
+      mockMaybeSingle.mockResolvedValue({
+        data: { consent_given: true },
+        error: null,
+      });
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          result: {
+            overallScore: 80,
+            skinType: 'oily',
+            analyzedAt: new Date().toISOString(),
+          },
+        }),
+      });
+
+      render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('guide-continue'));
+      await user.click(screen.getByTestId('camera-mode-button'));
+      await user.click(screen.getByTestId('capture-complete'));
+
+      // 모달 없이 바로 분석 진행
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith('/api/analyze/skin', expect.any(Object));
+      });
+
+      // 모달이 표시되지 않아야 함
+      expect(screen.queryByTestId('image-consent-modal')).not.toBeInTheDocument();
+    });
+
+    it('동의 모달에서 저장하기 클릭 시 분석 진행', async () => {
+      const user = userEvent.setup();
+
+      // 기존 동의 없음
+      mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+
+      // 동의 저장 API mock
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          consent: { consent_given: true },
+        }),
+      });
+
+      // 분석 API mock
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          result: {
+            overallScore: 80,
+            skinType: 'oily',
+            analyzedAt: new Date().toISOString(),
+          },
+        }),
+      });
+
+      render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('guide-continue'));
+      await user.click(screen.getByTestId('camera-mode-button'));
+      await user.click(screen.getByTestId('capture-complete'));
+
+      // 동의 모달 표시 대기
+      await waitFor(() => {
+        expect(screen.getByTestId('image-consent-modal')).toBeInTheDocument();
+      });
+
+      // 저장하기 클릭
+      await user.click(screen.getByTestId('consent-agree'));
+
+      // 동의 API 호출 확인
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith('/api/consent', expect.any(Object));
+      });
+    });
+
+    it('동의 모달에서 건너뛰기 클릭 시 분석만 진행', async () => {
+      const user = userEvent.setup();
+
+      // 기존 동의 없음
+      mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+
+      // 분석 API mock만 (동의 API는 호출 안됨)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          result: {
+            overallScore: 80,
+            skinType: 'oily',
+            analyzedAt: new Date().toISOString(),
+          },
+        }),
+      });
+
+      render(<SkinAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('guide-continue'));
+      await user.click(screen.getByTestId('camera-mode-button'));
+      await user.click(screen.getByTestId('capture-complete'));
+
+      // 동의 모달 표시 대기
+      await waitFor(() => {
+        expect(screen.getByTestId('image-consent-modal')).toBeInTheDocument();
+      });
+
+      // 건너뛰기 클릭
+      await user.click(screen.getByTestId('consent-skip'));
+
+      // 분석 API만 호출 (동의 API는 호출 안됨)
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith('/api/analyze/skin', expect.any(Object));
+      });
+
+      // 동의 API는 호출 안됨
+      const consentCalls = mockFetch.mock.calls.filter((call) => call[0] === '/api/consent');
+      expect(consentCalls).toHaveLength(0);
+    });
+
+    it('갤러리 모드에서도 동의 모달이 표시된다', async () => {
+      const user = userEvent.setup();
+
+      // 기존 동의 없음
+      mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+
+      render(<SkinAnalysisPage />);
+
+      // 로딩 완료 대기
+      await waitFor(() => {
+        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('guide-continue'));
+      await user.click(screen.getByTestId('gallery-mode-button'));
+      await user.click(screen.getByTestId('select-photo'));
+
+      // 동의 모달이 표시되어야 함
+      await waitFor(() => {
+        expect(screen.getByTestId('image-consent-modal')).toBeInTheDocument();
+      });
     });
   });
 });

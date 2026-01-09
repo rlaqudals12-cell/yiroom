@@ -13,6 +13,17 @@ vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn(),
 }));
 
+// Mock Supabase server client
+vi.mock('@/lib/supabase/server', () => ({
+  createClerkSupabaseClient: vi.fn(() => ({})),
+}));
+
+// Mock preferences helpers
+vi.mock('@/lib/preferences', () => ({
+  getAllergies: vi.fn().mockResolvedValue([]),
+  getDislikedFoods: vi.fn().mockResolvedValue([]),
+}));
+
 import { auth } from '@clerk/nextjs/server';
 
 // 요청 헬퍼

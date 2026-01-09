@@ -1,11 +1,11 @@
 # SDD: S-1 피부 분석 UX 개선
 
-> **Status**: Approved (검토 완료)
+> **Status**: Phase 1 완료, Phase 2-3 진행 중
 > **Created**: 2026-01-09
 > **Updated**: 2026-01-09
 > **Module**: S-1 피부 분석
 > **Parent Spec**: SDD-VISUAL-SKIN-REPORT.md
-> **Complexity**: 54점 (standard 전략)
+> **Complexity**: Phase 1: 43점 (완료) / Phase 2: 68점 / Phase 3: 85점
 
 ## 1. 개요
 
@@ -344,57 +344,676 @@ ADD COLUMN IF NOT EXISTS skin_vitality_score INTEGER
 -- vitalityFactors는 기존 analysis_result JSONB에 포함
 ```
 
-## 3. Phase 2 설계 (요약)
+## 3. Phase 2 상세 설계
 
-### 3.1 PhotoOverlayMap
+> **복잡도**: 68점 | **전략**: standard (시지푸스 권장)
 
-동의 받은 사진 위에 존 오버레이 표시.
+### 3.1 사진 재사용 시스템
+
+#### 3.1.1 DB 스키마 확장
+
+```sql
+-- 마이그레이션: 202601100100_photo_reuse_system.sql
+
+-- 이미지 메타데이터 테이블
+CREATE TABLE IF NOT EXISTS analysis_images (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  analysis_type TEXT NOT NULL CHECK (analysis_type IN ('personal-color', 'skin', 'body', 'hair')),
+  source_analysis_id UUID,
+  storage_path TEXT NOT NULL,
+  thumbnail_path TEXT,
+  quality_score INTEGER CHECK (quality_score BETWEEN 0 AND 100),
+  angle TEXT DEFAULT 'front',
+  lighting_score INTEGER CHECK (lighting_score BETWEEN 0 AND 100),
+  consent_given BOOLEAN DEFAULT false,
+  retention_until TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  CONSTRAINT fk_user FOREIGN KEY (clerk_user_id)
+    REFERENCES users(clerk_user_id) ON DELETE CASCADE
+);
+
+-- RLS 정책
+ALTER TABLE analysis_images ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own images" ON analysis_images
+  FOR SELECT USING (clerk_user_id = auth.jwt() ->> 'sub');
+
+CREATE POLICY "Users can insert own images" ON analysis_images
+  FOR INSERT WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
+
+-- 인덱스
+CREATE INDEX idx_analysis_images_user_type
+  ON analysis_images(clerk_user_id, analysis_type, created_at DESC);
+```
+
+#### 3.1.2 사진 재사용 로직
 
 ```typescript
+// lib/analysis/photo-reuse.ts
+
+export interface PhotoReuseEligibility {
+  eligible: boolean;
+  reason?: 'no_consent' | 'expired' | 'no_image' | 'low_quality' | 'wrong_angle';
+  sourceImage?: {
+    id: string;
+    analysisType: 'personal-color';
+    imageUrl: string;
+    thumbnailUrl?: string;
+    qualityScore: number;
+    analyzedAt: Date;
+  };
+}
+
+export const REUSE_CONDITIONS = {
+  maxAgeDays: 7, // 7일 이내 촬영
+  minQualityScore: 70, // 품질 70점 이상
+  minLightingScore: 60, // 조명 60점 이상
+  requiredAngle: 'front', // 정면 사진만
+} as const;
+
+export async function checkPhotoReuseEligibility(
+  supabase: SupabaseClient,
+  targetAnalysisType: 'skin' | 'body'
+): Promise<PhotoReuseEligibility> {
+  // 최근 7일 내 동의받은 퍼스널컬러 이미지 조회
+  const { data: images } = await supabase
+    .from('analysis_images')
+    .select('*')
+    .eq('analysis_type', 'personal-color')
+    .eq('consent_given', true)
+    .eq('angle', 'front')
+    .gte('quality_score', REUSE_CONDITIONS.minQualityScore)
+    .gte(
+      'created_at',
+      new Date(Date.now() - REUSE_CONDITIONS.maxAgeDays * 24 * 60 * 60 * 1000).toISOString()
+    )
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (!images || images.length === 0) {
+    return { eligible: false, reason: 'no_image' };
+  }
+
+  const image = images[0];
+
+  // 보존 기한 확인
+  if (image.retention_until && new Date(image.retention_until) < new Date()) {
+    return { eligible: false, reason: 'expired' };
+  }
+
+  return {
+    eligible: true,
+    sourceImage: {
+      id: image.id,
+      analysisType: 'personal-color',
+      imageUrl: await getSignedUrl(supabase, image.storage_path),
+      thumbnailUrl: image.thumbnail_path
+        ? await getSignedUrl(supabase, image.thumbnail_path)
+        : undefined,
+      qualityScore: image.quality_score,
+      analyzedAt: new Date(image.created_at),
+    },
+  };
+}
+```
+
+#### 3.1.3 PhotoReuseSelector 컴포넌트
+
+```typescript
+// components/analysis/skin/PhotoReuseSelector.tsx
+'use client';
+
+interface PhotoReuseSelectorProps {
+  eligibility: PhotoReuseEligibility;
+  onSelectReuse: () => void;
+  onSelectNewCapture: () => void;
+  className?: string;
+}
+
+export function PhotoReuseSelector({
+  eligibility,
+  onSelectReuse,
+  onSelectNewCapture,
+  className,
+}: PhotoReuseSelectorProps) {
+  if (!eligibility.eligible || !eligibility.sourceImage) {
+    // 재사용 불가 시 새 촬영만 표시
+    return (
+      <div className={cn('space-y-4', className)}>
+        <Button onClick={onSelectNewCapture} className="w-full">
+          <Camera className="w-4 h-4 mr-2" />
+          사진 촬영하기
+        </Button>
+      </div>
+    );
+  }
+
+  const { sourceImage } = eligibility;
+  const daysSinceCapture = Math.floor(
+    (Date.now() - sourceImage.analyzedAt.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  return (
+    <div className={cn('space-y-4', className)} data-testid="photo-reuse-selector">
+      <div className="text-sm text-muted-foreground flex items-center gap-2">
+        <Sparkles className="w-4 h-4 text-primary" />
+        최근 퍼스널 컬러 분석 사진이 있어요!
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {/* 재사용 옵션 */}
+        <button
+          onClick={onSelectReuse}
+          className="relative p-4 rounded-xl border-2 border-primary bg-primary/5 hover:bg-primary/10 transition-colors"
+        >
+          <div className="aspect-square relative mb-3 rounded-lg overflow-hidden">
+            <Image
+              src={sourceImage.thumbnailUrl || sourceImage.imageUrl}
+              alt="퍼스널 컬러 분석 사진"
+              fill
+              className="object-cover"
+            />
+            <Badge className="absolute top-2 right-2 bg-primary">추천</Badge>
+          </div>
+          <div className="text-sm font-medium">이 사진 사용하기</div>
+          <div className="text-xs text-muted-foreground">
+            {daysSinceCapture === 0 ? '오늘' : `${daysSinceCapture}일 전`} 촬영
+          </div>
+        </button>
+
+        {/* 새 촬영 옵션 */}
+        <button
+          onClick={onSelectNewCapture}
+          className="p-4 rounded-xl border-2 border-border hover:border-primary/50 transition-colors"
+        >
+          <div className="aspect-square flex items-center justify-center mb-3 rounded-lg bg-muted">
+            <Camera className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <div className="text-sm font-medium">새로 촬영하기</div>
+          <div className="text-xs text-muted-foreground">
+            더 정확한 분석
+          </div>
+        </button>
+      </div>
+
+      <p className="text-xs text-muted-foreground text-center">
+        💡 피부 상태가 바뀌었다면 새로 촬영을 추천해요
+      </p>
+    </div>
+  );
+}
+```
+
+### 3.2 PhotoOverlayMap 컴포넌트
+
+#### 3.2.1 설계
+
+```typescript
+// components/analysis/visual-report/PhotoOverlayMap.tsx
+'use client';
+
 interface PhotoOverlayMapProps {
   imageUrl: string;
   zones: Record<ZoneId, ZoneStatus>;
   onZoneClick?: (zoneId: ZoneId) => void;
+  showLabels?: boolean;
+  opacity?: number; // 오버레이 투명도 (0-1)
+  className?: string;
+}
+
+export function PhotoOverlayMap({
+  imageUrl,
+  zones,
+  onZoneClick,
+  showLabels = true,
+  opacity = 0.6,
+  className,
+}: PhotoOverlayMapProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // 얼굴 영역 자동 감지 (선택적)
+  // 또는 고정 비율로 오버레이 배치
+
+  return (
+    <div className={cn('relative', className)} data-testid="photo-overlay-map">
+      {/* 배경 이미지 */}
+      <div className="relative aspect-[3/4] rounded-xl overflow-hidden">
+        <Image
+          src={imageUrl}
+          alt="분석 사진"
+          fill
+          className="object-cover"
+          onLoadingComplete={() => setImageLoaded(true)}
+        />
+
+        {/* 존 오버레이 */}
+        {imageLoaded && (
+          <svg
+            viewBox="0 0 200 280"
+            className="absolute inset-0 w-full h-full"
+            style={{ opacity }}
+          >
+            {Object.entries(zones).map(([zoneId, status]) => (
+              <ZoneOverlay
+                key={zoneId}
+                zoneId={zoneId as ZoneId}
+                status={status}
+                onClick={onZoneClick}
+                showLabel={showLabels}
+              />
+            ))}
+          </svg>
+        )}
+      </div>
+    </div>
+  );
 }
 ```
 
-### 3.2 BeforeAfterSlider
+### 3.3 BeforeAfterSlider 컴포넌트
 
-이전/현재 분석 사진 비교.
+> ✅ **이미 구현 완료**: `components/analysis/visual/BeforeAfterSlider.tsx`
+> 테스트: `tests/components/analysis/visual/BeforeAfterSlider.test.tsx`
+
+#### 3.3.1 통합 방안
 
 ```typescript
-interface BeforeAfterSliderProps {
-  beforeImage: string;
-  afterImage: string;
-  beforeDate: Date;
-  afterDate: Date;
+// 피부 분석 결과 페이지에서 사용
+import { BeforeAfterSlider } from '@/components/analysis/visual/BeforeAfterSlider';
+
+// 이전 분석 이미지 조회
+const { data: previousAnalysis } = await supabase
+  .from('skin_analyses')
+  .select('id, created_at, analysis_images!inner(storage_path)')
+  .order('created_at', { ascending: false })
+  .limit(2);
+
+if (previousAnalysis && previousAnalysis.length >= 2) {
+  <BeforeAfterSlider
+    beforeImage={previousAnalysis[1].analysis_images.storage_path}
+    afterImage={previousAnalysis[0].analysis_images.storage_path}
+    beforeDate={new Date(previousAnalysis[1].created_at)}
+    afterDate={new Date(previousAnalysis[0].created_at)}
+  />
 }
 ```
 
-### 3.3 TrendChart
-
-월별 점수 변화 그래프.
+### 3.4 TrendChart 컴포넌트
 
 ```typescript
+// components/analysis/visual-report/TrendChart.tsx
+'use client';
+
 interface TrendChartProps {
-  data: Array<{ date: Date; score: number }>;
-  metric: 'overall' | 'hydration' | 'oiliness' | 'pores';
+  data: Array<{
+    date: Date;
+    score: number;
+    label?: string;
+  }>;
+  metric: 'overall' | 'hydration' | 'oiliness' | 'pores' | 'vitality';
+  height?: number;
+  showGoal?: boolean;
+  goalScore?: number;
+}
+
+const METRIC_LABELS: Record<string, string> = {
+  overall: '종합 점수',
+  hydration: '수분도',
+  oiliness: '유분도',
+  pores: '모공',
+  vitality: '활력도',
+};
+
+export function TrendChart({
+  data,
+  metric,
+  height = 200,
+  showGoal = false,
+  goalScore = 80,
+}: TrendChartProps) {
+  // 최근 6개월 데이터만 표시
+  const recentData = data.slice(-6);
+
+  return (
+    <div data-testid="trend-chart" style={{ height }}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-medium">{METRIC_LABELS[metric]} 변화</span>
+        {showGoal && (
+          <span className="text-xs text-muted-foreground">
+            목표: {goalScore}점
+          </span>
+        )}
+      </div>
+
+      {/* 차트 렌더링 (recharts 또는 custom SVG) */}
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={recentData}>
+          <XAxis dataKey="date" tickFormatter={formatDate} />
+          <YAxis domain={[0, 100]} />
+          <Line
+            type="monotone"
+            dataKey="score"
+            stroke="hsl(var(--primary))"
+            strokeWidth={2}
+            dot={{ fill: 'hsl(var(--primary))' }}
+          />
+          {showGoal && (
+            <ReferenceLine
+              y={goalScore}
+              stroke="hsl(var(--muted-foreground))"
+              strokeDasharray="3 3"
+            />
+          )}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
 ```
 
-## 4. Phase 3 설계 (요약)
+### 3.5 Phase 2 구현 순서
 
-### 4.1 12개 세부 존
+| 순서     | 작업                                | 의존성   | 난이도 | 예상 시간 |
+| -------- | ----------------------------------- | -------- | ------ | --------- |
+| 1        | analysis_images 테이블 마이그레이션 | 없음     | 중     | 0.5일     |
+| 2        | photo-reuse.ts 유틸리티             | #1       | 중     | 0.5일     |
+| 3        | PhotoReuseSelector 컴포넌트         | #2       | 중     | 1일       |
+| 4        | 피부 분석 페이지에 재사용 UI 통합   | #3       | 중     | 0.5일     |
+| 5        | PhotoOverlayMap 컴포넌트            | 없음     | 상     | 1일       |
+| 6        | TrendChart 컴포넌트                 | 없음     | 중     | 0.5일     |
+| 7        | BeforeAfterSlider 통합              | 없음     | 하     | 0.5일     |
+| 8        | 결과 페이지에 시각화 통합           | #5,#6,#7 | 중     | 0.5일     |
+| 9        | 테스트 작성                         | 전체     | 중     | 1일       |
+| **총계** |                                     |          |        | **6일**   |
 
-- forehead_center, forehead_left, forehead_right
-- eye_left, eye_right
-- cheek_left, cheek_right
-- nose_bridge, nose_tip
-- chin_center, chin_left, chin_right
+## 4. Phase 3 상세 설계
 
-### 4.2 피부 일기
+> **복잡도**: 85점 | **전략**: full (시지푸스 필수)
 
-일일 컨디션, 수면, 식단 기록과 피부 상태 연관 분석.
+### 4.1 12개 세부 존 시스템
+
+#### 4.1.1 존 정의
+
+```typescript
+// types/skin-zones.ts
+
+export type DetailedZoneId =
+  | 'forehead_center'
+  | 'forehead_left'
+  | 'forehead_right'
+  | 'eye_left'
+  | 'eye_right'
+  | 'cheek_left'
+  | 'cheek_right'
+  | 'nose_bridge'
+  | 'nose_tip'
+  | 'chin_center'
+  | 'chin_left'
+  | 'chin_right';
+
+export interface DetailedZoneStatus {
+  zoneId: DetailedZoneId;
+  score: number;
+  status: 'excellent' | 'good' | 'normal' | 'warning' | 'critical';
+  concerns: string[];
+  recommendations: string[];
+  comparedToPrevious?: {
+    change: 'improved' | 'same' | 'declined';
+    scoreDiff: number;
+  };
+}
+
+// 6존 → 12존 매핑
+export const ZONE_MAPPING: Record<ZoneId, DetailedZoneId[]> = {
+  forehead: ['forehead_center', 'forehead_left', 'forehead_right'],
+  eyes: ['eye_left', 'eye_right'],
+  tZone: ['nose_bridge', 'nose_tip'],
+  cheeks: ['cheek_left', 'cheek_right'],
+  uZone: ['chin_left', 'chin_right'],
+  chin: ['chin_center'],
+};
+```
+
+#### 4.1.2 DetailedFaceZoneMap 컴포넌트
+
+```typescript
+// components/analysis/visual-report/DetailedFaceZoneMap.tsx
+
+interface DetailedFaceZoneMapProps {
+  zones: Record<DetailedZoneId, DetailedZoneStatus>;
+  size?: 'sm' | 'md' | 'lg';
+  onZoneClick?: (zoneId: DetailedZoneId) => void;
+  viewMode?: 'simple' | 'detailed'; // 6존/12존 토글
+  highlightWorst?: boolean;
+  className?: string;
+}
+```
+
+#### 4.1.3 Gemini 프롬프트 확장
+
+```typescript
+const DETAILED_ZONE_PROMPT = `
+📊 12개 세부 존 분석:
+
+각 존별로 다음 정보를 제공해주세요:
+
+[이마 영역]
+- forehead_center: 이마 중앙 (T존 상단)
+- forehead_left: 왼쪽 이마
+- forehead_right: 오른쪽 이마
+
+[눈가 영역]
+- eye_left: 왼쪽 눈가 (다크서클, 주름)
+- eye_right: 오른쪽 눈가
+
+[코 영역 (T존)]
+- nose_bridge: 콧등 (모공, 블랙헤드)
+- nose_tip: 코끝
+
+[볼 영역]
+- cheek_left: 왼쪽 볼 (홍조, 모공)
+- cheek_right: 오른쪽 볼
+
+[턱 영역]
+- chin_center: 턱 중앙 (여드름)
+- chin_left: 왼쪽 턱선
+- chin_right: 오른쪽 턱선
+
+각 존별 JSON 형식:
+{
+  "detailedZones": {
+    "forehead_center": {
+      "score": [0-100],
+      "status": "excellent|good|normal|warning|critical",
+      "concerns": ["문제1", "문제2"],
+      "recommendations": ["관리법1", "관리법2"]
+    },
+    // ... 12개 존 모두
+  }
+}
+`;
+```
+
+### 4.2 피부 다이어리 시스템
+
+#### 4.2.1 DB 스키마
+
+```sql
+-- 마이그레이션: 202601100200_skin_diary.sql
+
+CREATE TABLE IF NOT EXISTS skin_diary_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  entry_date DATE NOT NULL,
+
+  -- 컨디션 기록
+  skin_condition INTEGER CHECK (skin_condition BETWEEN 1 AND 5), -- 1: 매우 나쁨, 5: 매우 좋음
+  condition_notes TEXT,
+
+  -- 생활 요인
+  sleep_hours DECIMAL(3,1),
+  sleep_quality INTEGER CHECK (sleep_quality BETWEEN 1 AND 5),
+  water_intake_ml INTEGER,
+  stress_level INTEGER CHECK (stress_level BETWEEN 1 AND 5),
+
+  -- 외부 요인
+  weather TEXT CHECK (weather IN ('sunny', 'cloudy', 'rainy', 'cold', 'hot', 'humid', 'dry')),
+  outdoor_hours DECIMAL(3,1),
+
+  -- 스킨케어
+  morning_routine_completed BOOLEAN DEFAULT false,
+  evening_routine_completed BOOLEAN DEFAULT false,
+  special_treatments TEXT[], -- ["시트마스크", "필링", "에센스 집중케어"]
+
+  -- AI 연관 분석 (분석 후 업데이트)
+  ai_correlation_score INTEGER, -- 컨디션과 요인 상관관계 점수
+  ai_insights JSONB,
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  CONSTRAINT fk_user FOREIGN KEY (clerk_user_id)
+    REFERENCES users(clerk_user_id) ON DELETE CASCADE,
+  CONSTRAINT unique_user_date UNIQUE (clerk_user_id, entry_date)
+);
+
+-- RLS
+ALTER TABLE skin_diary_entries ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own diary" ON skin_diary_entries
+  FOR ALL USING (clerk_user_id = auth.jwt() ->> 'sub');
+
+-- 인덱스
+CREATE INDEX idx_skin_diary_user_date
+  ON skin_diary_entries(clerk_user_id, entry_date DESC);
+```
+
+#### 4.2.2 SkinDiaryEntry 컴포넌트
+
+```typescript
+// components/analysis/skin-diary/SkinDiaryEntry.tsx
+
+interface SkinDiaryEntryProps {
+  date: Date;
+  existingEntry?: DiaryEntry;
+  onSave: (entry: DiaryEntry) => Promise<void>;
+  onCancel: () => void;
+}
+
+interface DiaryEntry {
+  skinCondition: 1 | 2 | 3 | 4 | 5;
+  conditionNotes?: string;
+  sleepHours?: number;
+  sleepQuality?: 1 | 2 | 3 | 4 | 5;
+  waterIntakeMl?: number;
+  stressLevel?: 1 | 2 | 3 | 4 | 5;
+  weather?: Weather;
+  outdoorHours?: number;
+  morningRoutineCompleted: boolean;
+  eveningRoutineCompleted: boolean;
+  specialTreatments: string[];
+}
+```
+
+#### 4.2.3 CorrelationAnalysis 컴포넌트
+
+```typescript
+// components/analysis/skin-diary/CorrelationAnalysis.tsx
+
+interface CorrelationAnalysisProps {
+  diaryData: DiaryEntry[];
+  skinAnalyses: SkinAnalysis[];
+  period: '7days' | '30days' | '90days';
+}
+
+// AI 분석 결과
+interface CorrelationInsight {
+  factor: string; // "수면", "수분 섭취", "스트레스"
+  correlation: number; // -1 ~ 1 (음/양 상관관계)
+  confidence: number; // 0-100
+  insight: string; // "수면 7시간 이상일 때 피부 상태가 평균 15% 개선됩니다"
+  recommendation: string; // "수면 시간을 7시간 이상 유지해보세요"
+}
+```
+
+### 4.3 Phase 3 구현 순서
+
+| 순서     | 작업                                   | 의존성 | 난이도 | 예상 시간 |
+| -------- | -------------------------------------- | ------ | ------ | --------- |
+| 1        | DetailedZoneId 타입 정의               | 없음   | 하     | 0.5일     |
+| 2        | DetailedFaceZoneMap 컴포넌트           | #1     | 상     | 1.5일     |
+| 3        | 12존 Gemini 프롬프트 확장              | #1     | 중     | 1일       |
+| 4        | skin_diary_entries 테이블              | 없음   | 중     | 0.5일     |
+| 5        | SkinDiaryEntry 컴포넌트                | #4     | 상     | 1.5일     |
+| 6        | 다이어리 페이지 (/analysis/skin/diary) | #5     | 중     | 1일       |
+| 7        | CorrelationAnalysis AI 로직            | #4,#5  | 상     | 1.5일     |
+| 8        | CorrelationAnalysis 시각화             | #7     | 중     | 1일       |
+| 9        | 결과 페이지 통합                       | 전체   | 중     | 1일       |
+| 10       | 테스트 작성                            | 전체   | 중     | 1.5일     |
+| **총계** |                                        |        |        | **11일**  |
+
+## 5. 전체 복잡도 분석
+
+### 5.1 Phase별 복잡도
+
+| Phase   | 항목 | 점수      | 전략          |
+| ------- | ---- | --------- | ------------- |
+| Phase 1 | 43점 | 직접 구현 | ✅ 완료       |
+| Phase 2 | 68점 | standard  | 시지푸스 권장 |
+| Phase 3 | 85점 | full      | 시지푸스 필수 |
+
+### 5.2 Phase 2 복잡도 상세
+
+| 항목            | 점수     | 근거                           |
+| --------------- | -------- | ------------------------------ |
+| 파일 수         | 18점     | 9개 신규/수정                  |
+| DB 변경         | 15점     | analysis_images 테이블 + RLS   |
+| 외부 API        | 10점     | Supabase Storage 연동          |
+| 컴포넌트 복잡도 | 15점     | PhotoOverlayMap (SVG + 이미지) |
+| 테스트          | 10점     | 새 컴포넌트 + 통합 테스트      |
+| **총점**        | **68점** |                                |
+
+### 5.3 Phase 3 복잡도 상세
+
+| 항목            | 점수     | 근거                               |
+| --------------- | -------- | ---------------------------------- |
+| 파일 수         | 22점     | 11개 신규/수정                     |
+| DB 변경         | 18점     | skin_diary_entries + 복잡한 스키마 |
+| 외부 API        | 20점     | Gemini 12존 프롬프트 대폭 확장     |
+| 컴포넌트 복잡도 | 15점     | 12존 SVG + 다이어리 폼             |
+| 테스트          | 10점     | 복잡한 상관관계 로직 테스트        |
+| **총점**        | **85점** |                                    |
+
+## 6. 시지푸스 전략
+
+### 6.1 권장 전략
+
+| Phase   | 복잡도 | 전략     | 에이전트 조합                              |
+| ------- | ------ | -------- | ------------------------------------------ |
+| Phase 2 | 68점   | standard | spec-reviewer → code-quality → test-writer |
+| Phase 3 | 85점   | full     | 전체 파이프라인 (Opus 4.5)                 |
+
+### 6.2 Phase 2 에이전트 활용
+
+```
+1. yiroom-spec-reviewer: Phase 2 스펙 검토
+2. 직접 구현 (순차)
+3. yiroom-code-quality: 코드 품질 검사
+4. yiroom-test-writer: 테스트 작성
+```
+
+### 6.3 Phase 3 에이전트 활용
+
+```
+1. sisyphus-adaptive: 복잡도 재분석
+2. yiroom-spec-reviewer: Phase 3 스펙 검토
+3. yiroom-ui-validator: 12존 UI 검증
+4. 병렬 구현 (존 컴포넌트 / 다이어리 / AI 로직)
+5. yiroom-code-quality: 전체 품질 검사
+6. yiroom-test-writer: 테스트 작성
+```
 
 ## 5. 파일 구조
 
