@@ -235,6 +235,8 @@ vi.mock('lucide-react', () => ({
   Award: createIconMock('Award'),
   Medal: createIconMock('Medal'),
   Crown: createIconMock('Crown'),
+  Gem: createIconMock('Gem'),
+  Shield: createIconMock('Shield'),
   Percent: createIconMock('Percent'),
 
   // Admin & System
