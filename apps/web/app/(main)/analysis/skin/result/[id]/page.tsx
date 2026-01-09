@@ -36,10 +36,13 @@ import {
   ZoneDetailCard,
   PhotoOverlayMap,
   TrendChart,
+  CircularProgress,
+  ScoreChangeBadge,
   type MetricItem,
   type ZoneStatus,
   type FaceZoneMapProps,
 } from '@/components/analysis/visual-report';
+import { useSwipeTab } from '@/hooks/useSwipeTab';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
 
 // 존 ID 타입 (FaceZoneMapProps에서 추출)
@@ -170,7 +173,16 @@ export default function SkinAnalysisResultPage() {
   const [selectedZone, setSelectedZone] = useState<FaceZoneId | null>(null);
   // 트렌드 데이터 (과거 분석 기록)
   const [trendData, setTrendData] = useState<Array<{ date: Date; score: number }>>([]);
+  // 이전 분석 비교용
+  const [previousScore, setPreviousScore] = useState<number | null>(null);
   const fetchedRef = useRef(false);
+
+  // 탭 스와이프 훅
+  const { containerRef: swipeContainerRef, handlers: swipeHandlers } = useSwipeTab({
+    tabs: ['basic', 'evidence', 'visual'],
+    activeTab,
+    onTabChange: setActiveTab,
+  });
 
   const analysisId = params.id as string;
 
@@ -360,6 +372,19 @@ export default function SkinAnalysisResultPage() {
           }))
         );
       }
+
+      // 이전 분석 조회 (현재 분석 이전의 가장 최근 1개)
+      const { data: previousAnalysis } = await supabase
+        .from('skin_analyses')
+        .select('overall_score')
+        .lt('created_at', dbData.created_at)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (previousAnalysis) {
+        setPreviousScore(previousAnalysis.overall_score);
+      }
     } catch (err) {
       console.error('[S-1] Fetch error:', err);
       setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
@@ -452,208 +477,237 @@ export default function SkinAnalysisResultPage() {
             <div className="w-16" /> {/* 균형용 */}
           </header>
 
-          {/* 탭 기반 결과 */}
+          {/* 히어로 섹션: 점수 원형 게이지 + 변화 배지 */}
           {result && (
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
-                <TabsTrigger value="basic" className="gap-1">
-                  <Sparkles className="w-4 h-4" />
-                  기본 분석
-                </TabsTrigger>
-                <TabsTrigger value="evidence" className="gap-1">
-                  <ClipboardList className="w-4 h-4" />
-                  분석 근거
-                </TabsTrigger>
-                <TabsTrigger value="visual" className="gap-1">
-                  <Eye className="w-4 h-4" />
-                  시각화
-                </TabsTrigger>
-              </TabsList>
+            <div className="flex flex-col items-center mb-6">
+              <div className="relative">
+                <CircularProgress
+                  score={result.overallScore}
+                  size="lg"
+                  animate
+                  showScore
+                  showGradeIcon
+                />
+                {/* 이전 분석 대비 변화 배지 */}
+                {previousScore !== null && (
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+                    <ScoreChangeBadge delta={result.overallScore - previousScore} size="sm" />
+                  </div>
+                )}
+              </div>
+              {previousScore !== null && (
+                <p className="text-xs text-muted-foreground mt-4">
+                  지난 분석 대비 {result.overallScore - previousScore > 0 ? '+' : ''}
+                  {result.overallScore - previousScore}점
+                </p>
+              )}
+            </div>
+          )}
 
-              {/* 기본 분석 탭 */}
-              <TabsContent value="basic" className="mt-0">
-                {/* 비주얼 리포트 카드 */}
-                <VisualReportCard
-                  analysisType="skin"
-                  overallScore={result.overallScore}
-                  skinMetrics={result.metrics.map(
-                    (m): MetricItem => ({
-                      id: m.id,
-                      name: m.name,
-                      value: m.value,
-                      description: m.description,
-                    })
+          {/* 탭 기반 결과 (스와이프 지원) */}
+          {result && (
+            <div ref={swipeContainerRef} {...swipeHandlers} className="touch-pan-y">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
+                  <TabsTrigger value="basic" className="gap-1">
+                    <Sparkles className="w-4 h-4" />
+                    기본 분석
+                  </TabsTrigger>
+                  <TabsTrigger value="evidence" className="gap-1">
+                    <ClipboardList className="w-4 h-4" />
+                    분석 근거
+                  </TabsTrigger>
+                  <TabsTrigger value="visual" className="gap-1">
+                    <Eye className="w-4 h-4" />
+                    시각화
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* 기본 분석 탭 */}
+                <TabsContent value="basic" className="mt-0">
+                  {/* 비주얼 리포트 카드 */}
+                  <VisualReportCard
+                    analysisType="skin"
+                    overallScore={result.overallScore}
+                    skinMetrics={result.metrics.map(
+                      (m): MetricItem => ({
+                        id: m.id,
+                        name: m.name,
+                        value: m.value,
+                        description: m.description,
+                      })
+                    )}
+                    analyzedAt={result.analyzedAt}
+                    className="mb-6"
+                  />
+
+                  {/* 피부 활력도 점수 */}
+                  <SkinVitalityScore
+                    score={vitalityData.score}
+                    factors={vitalityData.factors}
+                    showDetails
+                    className="mb-6"
+                  />
+
+                  {/* 환경 요인 안내 카드 */}
+                  <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
+                        <Lightbulb
+                          className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm text-foreground">알아두세요</p>
+                        <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
+                          <li className="flex items-start gap-1.5">
+                            <Sun
+                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500"
+                              aria-hidden="true"
+                            />
+                            <span>조명/메이크업에 따라 결과가 달라질 수 있어요</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <Droplets
+                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-sky-500"
+                              aria-hidden="true"
+                            />
+                            <span>메이크업이 있으면 피부 상태 분석 정확도가 낮아져요</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <Sparkles
+                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500"
+                              aria-hidden="true"
+                            />
+                            <span>노메이크업 상태에서 촬영하면 가장 정확해요</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <AnalysisResult
+                    result={result}
+                    onRetry={handleNewAnalysis}
+                    evidence={analysisEvidence}
+                    skinType={skinType || undefined}
+                  />
+
+                  {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
+                  {(analysisEvidence || imageQuality) && (
+                    <SkinAnalysisEvidenceReport
+                      evidence={analysisEvidence}
+                      imageQuality={imageQuality}
+                      skinType={skinType || 'normal'}
+                      overallScore={result.overallScore}
+                      className="mt-6"
+                    />
                   )}
-                  analyzedAt={result.analyzedAt}
-                  className="mb-6"
-                />
 
-                {/* 피부 활력도 점수 */}
-                <SkinVitalityScore
-                  score={vitalityData.score}
-                  factors={vitalityData.factors}
-                  showDetails
-                  className="mb-6"
-                />
+                  {/* 맞춤 추천 제품 */}
+                  {skinType && (
+                    <RecommendedProducts
+                      analysisType="skin"
+                      analysisResult={{
+                        skinType: skinType as ProductSkinType,
+                        skinConcerns: result.metrics
+                          .filter((m) => m.status === 'warning')
+                          .map((m) => {
+                            const concernMap: Record<string, SkinConcern> = {
+                              hydration: 'hydration',
+                              pores: 'pore',
+                              pigmentation: 'whitening',
+                              wrinkles: 'aging',
+                              sensitivity: 'redness',
+                            };
+                            return concernMap[m.id];
+                          })
+                          .filter((c): c is SkinConcern => c !== undefined),
+                      }}
+                      className="mt-8 pb-32"
+                    />
+                  )}
+                </TabsContent>
 
-                {/* 환경 요인 안내 카드 */}
-                <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
-                      <Lightbulb
-                        className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
-                        aria-hidden="true"
+                {/* 분석 근거 탭 */}
+                <TabsContent value="evidence" className="mt-0 pb-32">
+                  {analysisEvidence || imageQuality ? (
+                    <SkinAnalysisEvidenceReport
+                      evidence={analysisEvidence}
+                      imageQuality={imageQuality}
+                      skinType={skinType || 'normal'}
+                      overallScore={result.overallScore}
+                    />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>분석 근거 데이터가 없습니다</p>
+                      <p className="text-sm mt-1">새로 분석하면 상세 근거가 제공됩니다</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* 상세 시각화 탭 (S-1+) */}
+                <TabsContent value="visual" className="mt-0 pb-32 space-y-6">
+                  {/* 트렌드 차트 (과거 분석 이력) */}
+                  <TrendChart data={trendData} metric="overall" showGoal goalScore={80} />
+
+                  {/* 사진 오버레이 맵 (실제 사진 + 존 상태) */}
+                  {imageUrl && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-muted-foreground">
+                        사진 기반 분석 결과
+                      </h3>
+                      <PhotoOverlayMap
+                        imageUrl={imageUrl}
+                        zones={zoneStatuses as Record<string, ZoneStatus>}
+                        onZoneClick={(zoneId) => setSelectedZone(zoneId as FaceZoneId)}
+                        showLabels
+                        opacity={0.5}
                       />
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm text-foreground">알아두세요</p>
-                      <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
-                        <li className="flex items-start gap-1.5">
-                          <Sun
-                            className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500"
-                            aria-hidden="true"
-                          />
-                          <span>조명/메이크업에 따라 결과가 달라질 수 있어요</span>
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <Droplets
-                            className="w-3 h-3 mt-0.5 flex-shrink-0 text-sky-500"
-                            aria-hidden="true"
-                          />
-                          <span>메이크업이 있으면 피부 상태 분석 정확도가 낮아져요</span>
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <Sparkles
-                            className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500"
-                            aria-hidden="true"
-                          />
-                          <span>노메이크업 상태에서 촬영하면 가장 정확해요</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
+                  )}
 
-                <AnalysisResult
-                  result={result}
-                  onRetry={handleNewAnalysis}
-                  evidence={analysisEvidence}
-                  skinType={skinType || undefined}
-                />
-
-                {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
-                {(analysisEvidence || imageQuality) && (
-                  <SkinAnalysisEvidenceReport
-                    evidence={analysisEvidence}
-                    imageQuality={imageQuality}
-                    skinType={skinType || 'normal'}
-                    overallScore={result.overallScore}
-                    className="mt-6"
-                  />
-                )}
-
-                {/* 맞춤 추천 제품 */}
-                {skinType && (
-                  <RecommendedProducts
-                    analysisType="skin"
-                    analysisResult={{
-                      skinType: skinType as ProductSkinType,
-                      skinConcerns: result.metrics
-                        .filter((m) => m.status === 'warning')
-                        .map((m) => {
-                          const concernMap: Record<string, SkinConcern> = {
-                            hydration: 'hydration',
-                            pores: 'pore',
-                            pigmentation: 'whitening',
-                            wrinkles: 'aging',
-                            sensitivity: 'redness',
-                          };
-                          return concernMap[m.id];
-                        })
-                        .filter((c): c is SkinConcern => c !== undefined),
-                    }}
-                    className="mt-8 pb-32"
-                  />
-                )}
-              </TabsContent>
-
-              {/* 분석 근거 탭 */}
-              <TabsContent value="evidence" className="mt-0 pb-32">
-                {analysisEvidence || imageQuality ? (
-                  <SkinAnalysisEvidenceReport
-                    evidence={analysisEvidence}
-                    imageQuality={imageQuality}
-                    skinType={skinType || 'normal'}
-                    overallScore={result.overallScore}
-                  />
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>분석 근거 데이터가 없습니다</p>
-                    <p className="text-sm mt-1">새로 분석하면 상세 근거가 제공됩니다</p>
-                  </div>
-                )}
-              </TabsContent>
-
-              {/* 상세 시각화 탭 (S-1+) */}
-              <TabsContent value="visual" className="mt-0 pb-32 space-y-6">
-                {/* 트렌드 차트 (과거 분석 이력) */}
-                <TrendChart data={trendData} metric="overall" showGoal goalScore={80} />
-
-                {/* 사진 오버레이 맵 (실제 사진 + 존 상태) */}
-                {imageUrl && (
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      사진 기반 분석 결과
+                  {/* 얼굴 존 맵 (도식화) */}
+                  <div className="flex flex-col items-center">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-4">
+                      영역별 상태 (탭하여 상세 보기)
                     </h3>
-                    <PhotoOverlayMap
-                      imageUrl={imageUrl}
-                      zones={zoneStatuses as Record<string, ZoneStatus>}
-                      onZoneClick={(zoneId) => setSelectedZone(zoneId as FaceZoneId)}
+                    <FaceZoneMap
+                      zones={zoneStatuses}
                       showLabels
-                      opacity={0.5}
+                      showScores
+                      size="lg"
+                      highlightWorst
+                      onZoneClick={(zoneId) => setSelectedZone(zoneId as FaceZoneId)}
                     />
                   </div>
-                )}
 
-                {/* 얼굴 존 맵 (도식화) */}
-                <div className="flex flex-col items-center">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-4">
-                    영역별 상태 (탭하여 상세 보기)
-                  </h3>
-                  <FaceZoneMap
-                    zones={zoneStatuses}
-                    showLabels
-                    showScores
-                    size="lg"
-                    highlightWorst
-                    onZoneClick={(zoneId) => setSelectedZone(zoneId as FaceZoneId)}
-                  />
-                </div>
+                  {/* 선택된 존 상세 카드 */}
+                  {selectedZoneDetail && (
+                    <ZoneDetailCard
+                      zoneId={selectedZoneDetail.zoneId}
+                      zoneName={selectedZoneDetail.zoneName}
+                      score={selectedZoneDetail.score}
+                      status={selectedZoneDetail.status}
+                      concerns={selectedZoneDetail.concerns}
+                      recommendations={selectedZoneDetail.recommendations}
+                      onClose={() => setSelectedZone(null)}
+                    />
+                  )}
 
-                {/* 선택된 존 상세 카드 */}
-                {selectedZoneDetail && (
-                  <ZoneDetailCard
-                    zoneId={selectedZoneDetail.zoneId}
-                    zoneName={selectedZoneDetail.zoneName}
-                    score={selectedZoneDetail.score}
-                    status={selectedZoneDetail.status}
-                    concerns={selectedZoneDetail.concerns}
-                    recommendations={selectedZoneDetail.recommendations}
-                    onClose={() => setSelectedZone(null)}
-                  />
-                )}
-
-                {/* 기존 시각화 (이미지 기반) */}
-                {imageUrl ? (
-                  <VisualAnalysisTab imageUrl={imageUrl} />
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    시각화에 필요한 이미지가 없습니다
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+                  {/* 기존 시각화 (이미지 기반) */}
+                  {imageUrl ? (
+                    <VisualAnalysisTab imageUrl={imageUrl} />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      시각화에 필요한 이미지가 없습니다
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
           )}
         </div>
       </main>

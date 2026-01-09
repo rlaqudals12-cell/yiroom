@@ -13,6 +13,8 @@ export { ZoneDetailCard } from './ZoneDetailCard';
 export { LightingGuide } from './LightingGuide';
 export { PhotoOverlayMap } from './PhotoOverlayMap';
 export { TrendChart } from './TrendChart';
+export { CircularProgress } from './CircularProgress';
+export { ScoreChangeBadge, MetricDelta } from './ScoreChangeBadge';
 
 // 상수 및 유틸리티
 export {
@@ -47,3 +49,5 @@ export type { ZoneDetailCardProps } from './ZoneDetailCard';
 export type { LightingGuideProps, QualityCheckResult } from './LightingGuide';
 export type { PhotoOverlayMapProps } from './PhotoOverlayMap';
 export type { TrendChartProps } from './TrendChart';
+export type { CircularProgressProps } from './CircularProgress';
+export type { ScoreChangeBadgeProps, MetricDeltaProps } from './ScoreChangeBadge';

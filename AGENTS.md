@@ -37,13 +37,11 @@ pnpm lint
 이 프로젝트는 Clerk와 Supabase의 네이티브 통합 (2025년 4월 이후 권장 방식)을 사용합니다:
 
 1. **인증 흐름**:
-
    - Clerk가 사용자 인증 처리
    - `SyncUserProvider`가 로그인 시 자동으로 Clerk 사용자를 Supabase `users` 테이블에 동기화
    - Supabase 클라이언트가 Clerk 토큰을 사용하여 인증 (JWT 템플릿 불필요)
 
 2. **Supabase 클라이언트 파일들** (`lib/supabase/`):
-
    - `clerk-client.ts`: Client Component용 (useClerkSupabaseClient hook)
      - Clerk 세션 토큰으로 인증된 사용자의 데이터 접근
      - RLS 정책이 `auth.jwt()->>'sub'`로 Clerk user ID 확인
@@ -215,14 +213,14 @@ const searchParams = await props.searchParams;
 
 ### 핵심 Agent (6개)
 
-| Agent | 파일 | 역할 |
-|-------|------|------|
-| **korean-beauty-validator** | korean-beauty-validator.md | K-뷰티 트렌드 검증, 제품 추천 검증 |
-| **korean-ux-writer** | korean-ux-writer.md | 세대별 한국어 UI 문구, 마이크로카피 |
-| **yiroom-spec-reviewer** | yiroom-spec-reviewer.md | 스펙 문서 검토 |
-| **yiroom-code-quality** | yiroom-code-quality.md | 코드 품질 검사 |
-| **yiroom-test-writer** | yiroom-test-writer.md | 테스트 코드 작성 |
-| **yiroom-ui-validator** | yiroom-ui-validator.md | UI/UX 검증 |
+| Agent                       | 파일                       | 역할                                |
+| --------------------------- | -------------------------- | ----------------------------------- |
+| **korean-beauty-validator** | korean-beauty-validator.md | K-뷰티 트렌드 검증, 제품 추천 검증  |
+| **korean-ux-writer**        | korean-ux-writer.md        | 세대별 한국어 UI 문구, 마이크로카피 |
+| **yiroom-spec-reviewer**    | yiroom-spec-reviewer.md    | 스펙 문서 검토                      |
+| **yiroom-code-quality**     | yiroom-code-quality.md     | 코드 품질 검사                      |
+| **yiroom-test-writer**      | yiroom-test-writer.md      | 테스트 코드 작성                    |
+| **yiroom-ui-validator**     | yiroom-ui-validator.md     | UI/UX 검증                          |
 
 ### Agent 활용 예시
 
@@ -255,18 +253,19 @@ specs/
 
 `.claude/commands/`에 정의된 슬래시 명령어들:
 
-| 명령어 | 설명 | 사용 예시 |
-|--------|------|-----------|
-| `/create-feature` | SDD 기반 새 기능 생성 | `/create-feature PC-1` |
-| `/review` | 종합 코드 리뷰 | `/review app/analysis/` |
-| `/test` | 테스트 실행 및 분석 | `/test --coverage` |
-| `/deploy-check` | 배포 전 체크리스트 | `/deploy-check` |
-| `/standup` | 일일 개발 현황 요약 | `/standup` |
-| `/qplan` | 빠른 계획 검토 | `/qplan 로그인 버튼 추가` |
-| `/qcode` | 빠른 구현 + 검증 | `/qcode` |
-| `/qcheck` | 빠른 품질 검사 | `/qcheck` |
+| 명령어            | 설명                  | 사용 예시                 |
+| ----------------- | --------------------- | ------------------------- |
+| `/create-feature` | SDD 기반 새 기능 생성 | `/create-feature PC-1`    |
+| `/review`         | 종합 코드 리뷰        | `/review app/analysis/`   |
+| `/test`           | 테스트 실행 및 분석   | `/test --coverage`        |
+| `/deploy-check`   | 배포 전 체크리스트    | `/deploy-check`           |
+| `/standup`        | 일일 개발 현황 요약   | `/standup`                |
+| `/qplan`          | 빠른 계획 검토        | `/qplan 로그인 버튼 추가` |
+| `/qcode`          | 빠른 구현 + 검증      | `/qcode`                  |
+| `/qcheck`         | 빠른 품질 검사        | `/qcheck`                 |
 
 ### Quick Workflow (권장)
+
 ```bash
 # 1. 계획 검토
 /qplan [작업 내용]
@@ -285,18 +284,45 @@ specs/
 
 프로젝트는 디렉토리별 CLAUDE.md를 사용합니다:
 
-| 위치 | 역할 |
-|------|------|
-| `CLAUDE.md` (루트) | 프로젝트 핵심 규칙 (50줄) |
-| `app/CLAUDE.md` | Next.js App Router 규칙 |
-| `components/CLAUDE.md` | 컴포넌트 작성 규칙 |
-| `tests/CLAUDE.md` | 테스트 규칙 |
-| `supabase/CLAUDE.md` | DB/Supabase 규칙 |
+| 위치                   | 역할                      |
+| ---------------------- | ------------------------- |
+| `CLAUDE.md` (루트)     | 프로젝트 핵심 규칙 (50줄) |
+| `app/CLAUDE.md`        | Next.js App Router 규칙   |
+| `components/CLAUDE.md` | 컴포넌트 작성 규칙        |
+| `tests/CLAUDE.md`      | 테스트 규칙               |
+| `supabase/CLAUDE.md`   | DB/Supabase 규칙          |
 
 ## 작업 관리 파일
 
-| 파일 | 용도 |
-|------|------|
-| `SCRATCHPAD.md` | 진행 중인 작업, To-Do, 메모 |
-| `COMPLETED.md` | 완료된 작업 기록 |
-| `.mcp.json` | 외부 도구 연동 설정 (GitHub, PostgreSQL 등) |
+| 파일            | 용도                                        |
+| --------------- | ------------------------------------------- |
+| `SCRATCHPAD.md` | 진행 중인 작업, To-Do, 메모                 |
+| `COMPLETED.md`  | 완료된 작업 기록                            |
+| `.mcp.json`     | 외부 도구 연동 설정 (GitHub, PostgreSQL 등) |
+
+## Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd sync
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
