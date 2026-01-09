@@ -3,8 +3,24 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { POST } from '@/app/api/analytics/events/route';
 import { NextRequest } from 'next/server';
+
+// Clerk auth 모킹 (server-only 문제 해결)
+vi.mock('@clerk/nextjs/server', () => ({
+  auth: vi.fn().mockResolvedValue({ userId: null }),
+}));
+
+// Supabase service-role 모킹
+vi.mock('@/lib/supabase/service-role', () => ({
+  createServiceRoleClient: vi.fn(() => ({
+    from: vi.fn(() => ({
+      insert: vi.fn().mockResolvedValue({ error: null }),
+    })),
+  })),
+}));
+
+// 모킹 후 라우트 동적 import
+const { POST } = await import('@/app/api/analytics/events/route');
 
 describe('POST /api/analytics/events', () => {
   beforeEach(() => {

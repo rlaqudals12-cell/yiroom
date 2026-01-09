@@ -43,6 +43,42 @@ class MockIntersectionObserver implements IntersectionObserver {
 
 global.IntersectionObserver = MockIntersectionObserver;
 
+// ResizeObserver 모킹 (Radix UI Slider 등에서 사용)
+class MockResizeObserver implements ResizeObserver {
+  constructor(private callback: ResizeObserverCallback) {}
+
+  observe(_target: Element): void {
+    // 즉시 콜백 호출
+    this.callback(
+      [
+        {
+          target: _target,
+          contentRect: {
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            top: 0,
+            right: 100,
+            bottom: 100,
+            left: 0,
+            toJSON: () => ({}),
+          },
+          borderBoxSize: [{ inlineSize: 100, blockSize: 100 }],
+          contentBoxSize: [{ inlineSize: 100, blockSize: 100 }],
+          devicePixelContentBoxSize: [{ inlineSize: 100, blockSize: 100 }],
+        },
+      ],
+      this
+    );
+  }
+
+  unobserve(_target: Element): void {}
+  disconnect(): void {}
+}
+
+global.ResizeObserver = MockResizeObserver;
+
 // Mock lucide-react icons (글로벌)
 // 모든 아이콘을 간단한 span으로 대체
 // testid 형식: lucide-{name} (컴포넌트 testid와 충돌 방지)
@@ -133,6 +169,10 @@ vi.mock('lucide-react', () => ({
   Cloud: createIconMock('Cloud'),
   CloudRain: createIconMock('CloudRain'),
   CloudSun: createIconMock('CloudSun'),
+  Wind: createIconMock('Wind'),
+
+  // Mental & Stress
+  Brain: createIconMock('Brain'),
 
   // Nutrition & Health
   Utensils: createIconMock('Utensils'),
@@ -181,6 +221,7 @@ vi.mock('lucide-react', () => ({
   // Media & Input
   Camera: createIconMock('Camera'),
   ImageIcon: createIconMock('ImageIcon'),
+  ImagePlus: createIconMock('ImagePlus'),
   ScanBarcode: createIconMock('ScanBarcode'),
   MessageCircle: createIconMock('MessageCircle'),
   Volume2: createIconMock('Volume2'),
