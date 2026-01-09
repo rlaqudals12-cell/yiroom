@@ -2,6 +2,7 @@
  * 프로필 페이지 테스트
  */
 
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import ProfilePage from '@/app/(main)/profile/page';
@@ -9,6 +10,9 @@ import ProfilePage from '@/app/(main)/profile/page';
 // Mock Clerk
 vi.mock('@clerk/nextjs', () => ({
   useUser: vi.fn(),
+  SignOutButton: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="sign-out-button">{children}</div>
+  ),
 }));
 
 // Mock Supabase client
@@ -20,13 +24,40 @@ vi.mock('@/lib/supabase/clerk-client', () => ({
 vi.mock('@/lib/gamification', () => ({
   getUserLevelInfo: vi.fn(),
   getUserBadges: vi.fn(),
-  LevelProgress: vi.fn(() => <div data-testid="level-progress">LevelProgress</div>),
+}));
+
+// Mock gamification components
+vi.mock('@/components/gamification', () => ({
   BadgeCard: vi.fn(() => <div data-testid="badge-card">BadgeCard</div>),
+}));
+
+// Mock common components
+vi.mock('@/components/common', () => ({
+  LevelBadgeFilled: vi.fn(() => <span data-testid="level-badge">Level Badge</span>),
+  LevelProgress: vi.fn(() => <div data-testid="level-progress">LevelProgress</div>),
 }));
 
 // Mock challenges
 vi.mock('@/lib/challenges', () => ({
   getUserChallengeStats: vi.fn(),
+}));
+
+// Mock levels
+vi.mock('@/lib/levels', () => ({
+  getUserLevel: vi.fn(),
+  calculateUserLevelState: vi.fn(),
+}));
+
+// Mock animations
+vi.mock('@/components/animations', () => ({
+  FadeInUp: vi.fn(({ children }: { children: React.ReactNode }) => (
+    <div data-testid="fade-in-up">{children}</div>
+  )),
+}));
+
+// Mock BottomNav
+vi.mock('@/components/BottomNav', () => ({
+  BottomNav: vi.fn(() => <nav data-testid="bottom-nav">BottomNav</nav>),
 }));
 
 // Mock next/image
@@ -36,20 +67,65 @@ vi.mock('next/image', () => ({
   )),
 }));
 
+// Mock lucide-react icons
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lucide-react')>();
+  const MockIcon = ({ className }: { className?: string }) => (
+    <span className={className} data-testid="mock-icon" />
+  );
+  return {
+    ...actual,
+    LogOut: MockIcon,
+    User: MockIcon,
+    Users: MockIcon,
+    Settings: MockIcon,
+    Trophy: MockIcon,
+    Target: MockIcon,
+    Award: MockIcon,
+    ChevronRight: MockIcon,
+    Calendar: MockIcon,
+    Bell: MockIcon,
+    Shield: MockIcon,
+    HelpCircle: MockIcon,
+    MessageSquare: MockIcon,
+    Star: MockIcon,
+    TrendingUp: MockIcon,
+    Flame: MockIcon,
+    Zap: MockIcon,
+    Heart: MockIcon,
+    Megaphone: MockIcon,
+    Palette: MockIcon,
+    FlaskConical: MockIcon,
+  };
+});
+
 import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { getUserLevelInfo, getUserBadges } from '@/lib/gamification';
 import { getUserChallengeStats } from '@/lib/challenges';
+import { getUserLevel } from '@/lib/levels';
 
-// Mock Supabase response helper
+// Mock Supabase response helper - 체이너블 쿼리 빌더
 function createMockSupabase() {
-  const mockSingle = vi.fn().mockResolvedValue({ data: null, error: null });
-  const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
-  const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
-  const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+  // 재귀적 체이너블 객체 생성
+  const createChainable = (data: unknown = null) => {
+    const result = { data, error: null };
+    const chainable: Record<string, unknown> = {
+      select: vi.fn(() => chainable),
+      eq: vi.fn(() => chainable),
+      neq: vi.fn(() => chainable),
+      or: vi.fn(() => chainable),
+      order: vi.fn(() => chainable),
+      limit: vi.fn(() => chainable),
+      single: vi.fn(() => Promise.resolve(result)),
+      maybeSingle: vi.fn(() => Promise.resolve(result)),
+      then: (resolve: (value: typeof result) => unknown) => resolve(result),
+    };
+    return chainable;
+  };
 
   return {
-    from: mockFrom,
+    from: vi.fn(() => createChainable()),
   };
 }
 
@@ -130,30 +206,33 @@ describe('ProfilePage', () => {
         failed: 0,
         abandoned: 0,
       });
+
+      // Mock levels
+      vi.mocked(getUserLevel).mockResolvedValue(null);
     });
 
     it('사용자 이름을 표시한다', async () => {
       render(<ProfilePage />);
 
-      // 로딩 후 사용자 이름 표시
+      // 로딩 후 사용자 이름 표시 (페이지에서는 "님"을 붙임)
       await vi.waitFor(() => {
-        expect(screen.getByText('테스트 사용자')).toBeInTheDocument();
+        expect(screen.getByText('테스트 사용자님')).toBeInTheDocument();
       });
     });
 
-    it('이메일을 표시한다', async () => {
+    it('내 분석 결과 섹션을 표시한다', async () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        expect(screen.getByText('test@example.com')).toBeInTheDocument();
+        expect(screen.getByText(/내 분석 결과/)).toBeInTheDocument();
       });
     });
 
-    it('내 프로필 제목을 표시한다', async () => {
+    it('웰니스 스코어를 표시한다', async () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        expect(screen.getByText('내 프로필')).toBeInTheDocument();
+        expect(screen.getByText(/웰니스 스코어/)).toBeInTheDocument();
       });
     });
 
@@ -195,17 +274,15 @@ describe('ProfilePage', () => {
       await vi.waitFor(() => {
         const settingsLink = screen.getByRole('link', { name: '설정' });
         expect(settingsLink).toBeInTheDocument();
-        expect(settingsLink).toHaveAttribute('href', '/settings');
+        expect(settingsLink).toHaveAttribute('href', '/profile/settings');
       });
     });
 
-    it('대시보드 돌아가기 링크를 표시한다', async () => {
+    it('리더보드 섹션을 표시한다', async () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        const backLink = screen.getByRole('link', { name: '대시보드로 돌아가기' });
-        expect(backLink).toBeInTheDocument();
-        expect(backLink).toHaveAttribute('href', '/dashboard');
+        expect(screen.getByText('리더보드')).toBeInTheDocument();
       });
     });
   });
@@ -231,6 +308,7 @@ describe('ProfilePage', () => {
 
       vi.mocked(getUserLevelInfo).mockResolvedValue(null);
       vi.mocked(getUserBadges).mockResolvedValue([]);
+      vi.mocked(getUserLevel).mockResolvedValue(null);
     });
 
     it('챌린지 통계를 표시한다', async () => {
@@ -272,6 +350,7 @@ describe('ProfilePage', () => {
       vi.mocked(useClerkSupabaseClient).mockReturnValue(createMockSupabase() as any);
 
       vi.mocked(getUserLevelInfo).mockResolvedValue(null);
+      vi.mocked(getUserLevel).mockResolvedValue(null);
       vi.mocked(getUserChallengeStats).mockResolvedValue({
         total: 0,
         inProgress: 0,
@@ -326,6 +405,7 @@ describe('ProfilePage', () => {
     beforeEach(() => {
       vi.mocked(useClerkSupabaseClient).mockReturnValue(createMockSupabase() as any);
       vi.mocked(getUserLevelInfo).mockResolvedValue(null);
+      vi.mocked(getUserLevel).mockResolvedValue(null);
       vi.mocked(getUserBadges).mockResolvedValue([]);
       vi.mocked(getUserChallengeStats).mockResolvedValue({
         total: 0,

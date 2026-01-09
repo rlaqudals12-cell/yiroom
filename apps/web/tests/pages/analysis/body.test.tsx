@@ -8,6 +8,7 @@
  * - 에러 처리
  */
 
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -36,11 +37,16 @@ vi.mock('lucide-react', async (importOriginal) => {
 
 // Mock Next.js router
 const mockPush = vi.fn();
+const mockReplace = vi.fn();
+const mockSearchParamsGet = vi.fn().mockReturnValue(null);
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
-    replace: vi.fn(),
+    replace: mockReplace,
     back: vi.fn(),
+  }),
+  useSearchParams: () => ({
+    get: mockSearchParamsGet,
   }),
 }));
 
@@ -125,11 +131,44 @@ vi.mock('@/app/(main)/analysis/body/_components/PhotoUpload', () => ({
   ),
 }));
 
+// Mock MultiAngleBodyCapture (새로운 다각도 촬영 컴포넌트)
+vi.mock('@/components/analysis/camera', () => ({
+  MultiAngleBodyCapture: ({
+    onComplete,
+    onCancel,
+  }: {
+    onComplete: (images: {
+      frontImageBase64: string;
+      sideImageBase64?: string;
+      backImageBase64?: string;
+    }) => void;
+    onCancel: () => void;
+  }) => (
+    <div data-testid="multi-angle-capture">
+      <button
+        onClick={() =>
+          onComplete({
+            frontImageBase64: 'data:image/jpeg;base64,front',
+            sideImageBase64: 'data:image/jpeg;base64,side',
+            backImageBase64: 'data:image/jpeg;base64,back',
+          })
+        }
+        data-testid="multi-angle-complete"
+      >
+        촬영 완료
+      </button>
+      <button onClick={onCancel} data-testid="multi-angle-cancel">
+        취소
+      </button>
+    </div>
+  ),
+}));
+
 vi.mock('@/app/(main)/analysis/body/_components/KnownBodyTypeInput', () => ({
   default: ({ onSelect, onBack }: { onSelect: (bodyType: string) => void; onBack: () => void }) => (
     <div data-testid="known-type-input">
-      <button onClick={() => onSelect('X')} data-testid="select-x-type">
-        X형
+      <button onClick={() => onSelect('S')} data-testid="select-s-type">
+        스트레이트형
       </button>
       <button onClick={onBack} data-testid="known-back">
         뒤로
@@ -138,13 +177,17 @@ vi.mock('@/app/(main)/analysis/body/_components/KnownBodyTypeInput', () => ({
   ),
 }));
 
-vi.mock('@/app/(main)/analysis/body/_components/AnalysisLoading', () => ({
-  default: ({ onComplete }: { onComplete: () => void }) => {
-    // 자동으로 onComplete 호출
-    setTimeout(onComplete, 100);
+vi.mock('@/app/(main)/analysis/body/_components/AnalysisLoading', () => {
+  // 컴포넌트 이름을 대문자로 시작하여 React Hook 규칙 준수
+  const MockAnalysisLoading = ({ onComplete }: { onComplete: () => void }) => {
+    React.useEffect(() => {
+      const timer = setTimeout(onComplete, 100);
+      return () => clearTimeout(timer);
+    }, [onComplete]);
     return <div data-testid="analysis-loading">분석 중...</div>;
-  },
-}));
+  };
+  return { default: MockAnalysisLoading };
+});
 
 vi.mock('@/app/(main)/analysis/body/_components/AnalysisResult', () => ({
   default: ({ result, onRetry }: { result: unknown; onRetry: () => void }) => (
@@ -214,8 +257,8 @@ describe('BodyAnalysisPage', () => {
     });
   });
 
-  describe('정상 플로우: 가이드 → 입력 → 촬영 → 분석', () => {
-    it('가이드 → 입력 폼 → 사진 업로드 → 분석 단계로 진행된다', async () => {
+  describe('정상 플로우: 가이드 → 입력 → 다각도촬영 → 분석', () => {
+    it('가이드 → 입력 폼 → 다각도 촬영 → 분석 단계로 진행된다', async () => {
       const user = userEvent.setup();
       render(<BodyAnalysisPage />);
 
@@ -232,16 +275,16 @@ describe('BodyAnalysisPage', () => {
       });
       expect(screen.getByText('나에게 어울리는 스타일이 궁금하신가요?')).toBeInTheDocument();
 
-      // 3. 폼 제출 → 사진 업로드
+      // 3. 폼 제출 → 다각도 촬영
       await user.click(screen.getByTestId('form-submit'));
 
       await waitFor(() => {
-        expect(screen.getByTestId('photo-upload')).toBeInTheDocument();
+        expect(screen.getByTestId('multi-angle-capture')).toBeInTheDocument();
       });
-      expect(screen.getByText('전신 사진을 업로드해주세요')).toBeInTheDocument();
+      expect(screen.getByText('정면, 측면, 후면 사진을 촬영해주세요')).toBeInTheDocument();
 
-      // 4. 사진 선택 → 분석 로딩
-      await user.click(screen.getByTestId('photo-select'));
+      // 4. 촬영 완료 → 분석 로딩
+      await user.click(screen.getByTestId('multi-angle-complete'));
 
       await waitFor(() => {
         expect(screen.getByTestId('analysis-loading')).toBeInTheDocument();
@@ -267,7 +310,7 @@ describe('BodyAnalysisPage', () => {
       expect(screen.getByText('기존 체형 타입을 선택해주세요')).toBeInTheDocument();
 
       // X형 선택
-      await user.click(screen.getByTestId('select-x-type'));
+      await user.click(screen.getByTestId('select-s-type'));
 
       await waitFor(() => {
         expect(screen.getByTestId('analysis-result')).toBeInTheDocument();
@@ -302,7 +345,7 @@ describe('BodyAnalysisPage', () => {
       });
 
       await user.click(screen.getByTestId('skip-button'));
-      await user.click(screen.getByTestId('select-x-type'));
+      await user.click(screen.getByTestId('select-s-type'));
 
       await waitFor(() => {
         expect(screen.getByTestId('analysis-result')).toBeInTheDocument();
@@ -318,14 +361,14 @@ describe('BodyAnalysisPage', () => {
   });
 
   describe('기존 분석 결과', () => {
-    it('기존 분석이 있으면 배너가 표시된다', async () => {
+    it('기존 분석이 있으면 결과 페이지로 리다이렉트한다', async () => {
       mockSupabaseSelect.mockReturnValue({
         order: vi.fn().mockReturnValue({
           limit: vi.fn().mockReturnValue({
             single: vi.fn().mockResolvedValue({
               data: {
                 id: 'test-id',
-                body_type: 'X',
+                body_type: 'S',
                 created_at: new Date().toISOString(),
               },
               error: null,
@@ -336,8 +379,9 @@ describe('BodyAnalysisPage', () => {
 
       render(<BodyAnalysisPage />);
 
+      // 기존 분석이 있으면 결과 페이지로 자동 리다이렉트
       await waitFor(() => {
-        expect(screen.getByText('기존 분석 결과 보기')).toBeInTheDocument();
+        expect(mockReplace).toHaveBeenCalledWith('/analysis/body/result/test-id');
       });
     });
   });
@@ -361,7 +405,7 @@ describe('BodyAnalysisPage', () => {
 
       await user.click(screen.getByTestId('continue-button'));
       await user.click(screen.getByTestId('form-submit'));
-      await user.click(screen.getByTestId('photo-select'));
+      await user.click(screen.getByTestId('multi-angle-complete'));
 
       await waitFor(() => {
         expect(screen.getByText(/AI가 분석 중이에요/)).toBeInTheDocument();
@@ -370,7 +414,7 @@ describe('BodyAnalysisPage', () => {
   });
 
   describe('에러 처리', () => {
-    it('에러 발생 시 에러 메시지가 표시된다', async () => {
+    it('에러 발생 시 다각도 촬영 화면으로 복귀한다', async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: false,
         json: async () => ({ error: 'Analysis failed' }),
@@ -385,19 +429,19 @@ describe('BodyAnalysisPage', () => {
 
       await user.click(screen.getByTestId('continue-button'));
       await user.click(screen.getByTestId('form-submit'));
-      await user.click(screen.getByTestId('photo-select'));
+      await user.click(screen.getByTestId('multi-angle-complete'));
 
-      // 에러 발생 후 업로드 화면으로 복귀
+      // 에러 발생 후 다각도 촬영 화면으로 복귀
       await waitFor(
         () => {
-          expect(screen.getByTestId('photo-upload')).toBeInTheDocument();
+          expect(screen.getByTestId('multi-angle-capture')).toBeInTheDocument();
         },
         { timeout: 3000 }
       );
 
-      // 에러 메시지 확인
+      // 에러 서브타이틀 확인
       await waitFor(() => {
-        expect(screen.getByRole('alert')).toBeInTheDocument();
+        expect(screen.getByText('분석 중 오류가 발생했어요')).toBeInTheDocument();
       });
     });
   });
@@ -412,7 +456,7 @@ describe('BodyAnalysisPage', () => {
       });
 
       await user.click(screen.getByTestId('skip-button'));
-      await user.click(screen.getByTestId('select-x-type'));
+      await user.click(screen.getByTestId('select-s-type'));
 
       await waitFor(() => {
         expect(screen.getByTestId('confetti')).toBeInTheDocument();
@@ -430,7 +474,7 @@ describe('BodyAnalysisPage', () => {
       });
 
       await user.click(screen.getByTestId('skip-button'));
-      await user.click(screen.getByTestId('select-x-type'));
+      await user.click(screen.getByTestId('select-s-type'));
 
       await waitFor(() => {
         expect(screen.getByTestId('share-button')).toBeInTheDocument();
@@ -444,8 +488,8 @@ describe('BodyAnalysisPage', () => {
         ok: true,
         json: async () => ({
           result: {
-            bodyType: 'X',
-            bodyTypeLabel: 'X형 (모래시계)',
+            bodyType: 'S',
+            bodyTypeLabel: '스트레이트형',
             analyzedAt: new Date().toISOString(),
           },
         }),
@@ -461,7 +505,7 @@ describe('BodyAnalysisPage', () => {
 
       await user.click(screen.getByTestId('continue-button'));
       await user.click(screen.getByTestId('form-submit'));
-      await user.click(screen.getByTestId('photo-select'));
+      await user.click(screen.getByTestId('multi-angle-complete'));
 
       await waitFor(
         () => {
@@ -491,16 +535,16 @@ describe('BodyAnalysisPage - API 통합', () => {
   it('API 호출이 성공하면 결과가 표시된다', async () => {
     const mockResponse = {
       result: {
-        bodyType: 'X',
-        bodyTypeLabel: 'X형 (모래시계)',
-        bodyTypeDescription: '균형잡힌 체형',
+        bodyType: 'S',
+        bodyTypeLabel: '스트레이트형',
+        bodyTypeDescription: '입체적이고 탄탄한 실루엣',
         measurements: {
           shoulderWidth: 40,
           waistWidth: 30,
           hipWidth: 42,
         },
-        strengths: ['균형잡힌 비율'],
-        insight: '모든 스타일이 잘 어울려요',
+        strengths: ['상체가 탄탄해요'],
+        insight: '심플하고 베이직한 스타일이 가장 잘 어울려요!',
         styleRecommendations: [],
         analyzedAt: new Date().toISOString(),
       },
@@ -523,7 +567,7 @@ describe('BodyAnalysisPage - API 통합', () => {
 
     await user.click(screen.getByTestId('continue-button'));
     await user.click(screen.getByTestId('form-submit'));
-    await user.click(screen.getByTestId('photo-select'));
+    await user.click(screen.getByTestId('multi-angle-complete'));
 
     // 로딩 후 결과 표시
     await waitFor(
@@ -546,12 +590,12 @@ describe('BodyAnalysisPage - API 통합', () => {
 
     await user.click(screen.getByTestId('continue-button'));
     await user.click(screen.getByTestId('form-submit'));
-    await user.click(screen.getByTestId('photo-select'));
+    await user.click(screen.getByTestId('multi-angle-complete'));
 
-    // 에러 발생 후 업로드 화면으로 복귀
+    // 에러 발생 후 다각도 촬영 화면으로 복귀
     await waitFor(
       () => {
-        expect(screen.getByTestId('photo-upload')).toBeInTheDocument();
+        expect(screen.getByTestId('multi-angle-capture')).toBeInTheDocument();
       },
       { timeout: 3000 }
     );

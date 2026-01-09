@@ -1,9 +1,63 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import AdminFeedbackPage from '@/app/admin/feedback/page';
 
 // scrollIntoView 모킹
 Element.prototype.scrollIntoView = vi.fn();
+
+// Mock feedback data
+const mockFeedbacks = [
+  {
+    id: '1',
+    type: 'bug',
+    category: 'auth',
+    title: '로그인 시 에러 발생',
+    content: '구글 로그인 버튼 클릭 시 에러가 발생합니다.',
+    status: 'pending',
+    priority: 'high',
+    userEmail: 'test1@example.com',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    type: 'feature',
+    category: 'ui',
+    title: '다크 모드 지원 요청',
+    content: '다크 모드 기능을 추가해주세요.',
+    status: 'in_progress',
+    priority: 'medium',
+    userEmail: 'test2@example.com',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: '3',
+    type: 'question',
+    category: 'billing',
+    title: '프리미엄 구독 문의',
+    content: '프리미엄 구독 혜택이 무엇인가요?',
+    status: 'resolved',
+    priority: 'low',
+    userEmail: 'test3@example.com',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+// Mock global fetch
+const originalFetch = global.fetch;
+
+beforeEach(() => {
+  global.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ feedbacks: mockFeedbacks }),
+  });
+});
+
+afterEach(() => {
+  global.fetch = originalFetch;
+});
 
 // lucide-react 아이콘 모킹
 vi.mock('lucide-react', async (importOriginal) => {
@@ -39,9 +93,7 @@ describe('AdminFeedbackPage', () => {
       render(<AdminFeedbackPage />);
 
       await waitFor(() => {
-        expect(
-          screen.getByText('사용자 피드백을 확인하고 처리합니다.')
-        ).toBeInTheDocument();
+        expect(screen.getByText('사용자 피드백을 확인하고 처리합니다.')).toBeInTheDocument();
       });
     });
 
@@ -159,9 +211,7 @@ describe('AdminFeedbackPage', () => {
 
       // 내용 표시 확인
       await waitFor(() => {
-        expect(
-          screen.getByText(/구글 로그인 버튼 클릭 시/)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/구글 로그인 버튼 클릭 시/)).toBeInTheDocument();
       });
     });
   });
