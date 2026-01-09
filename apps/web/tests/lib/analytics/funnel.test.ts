@@ -13,11 +13,26 @@ import {
   calculateFunnelConversion,
 } from '@/lib/analytics/funnel';
 import * as tracker from '@/lib/analytics/tracker';
+import * as logger from '@/lib/utils/logger';
 
 // trackEvent 모킹
 vi.mock('@/lib/analytics/tracker', () => ({
   trackEvent: vi.fn().mockResolvedValue(undefined),
 }));
+
+// analyticsLogger 모킹
+vi.mock('@/lib/utils/logger', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/lib/utils/logger')>();
+  return {
+    ...original,
+    analyticsLogger: {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    },
+  };
+});
 
 describe('Funnel Tracker', () => {
   beforeEach(() => {
@@ -57,16 +72,12 @@ describe('Funnel Tracker', () => {
     });
 
     it('잘못된 단계는 경고를 출력하고 트래킹하지 않는다', async () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
       await trackFunnelStep('onboarding', 'invalid_step');
 
-      expect(warnSpy).toHaveBeenCalledWith(
-        '[Funnel] Unknown step "invalid_step" for funnel "onboarding"'
+      expect(logger.analyticsLogger.warn).toHaveBeenCalledWith(
+        'Unknown step "invalid_step" for funnel "onboarding"'
       );
       expect(tracker.trackEvent).not.toHaveBeenCalled();
-
-      warnSpy.mockRestore();
     });
   });
 

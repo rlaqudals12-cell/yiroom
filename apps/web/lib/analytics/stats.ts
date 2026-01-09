@@ -245,7 +245,7 @@ export async function getTopPages(
         pageViews: stats.pageViews,
         uniqueUsers: stats.uniqueUsers,
         avgDuration: stats.count > 0 ? Math.round(stats.totalDuration / stats.count) : 0,
-        bounceRate: 0, // TODO: 실제 이탈률 계산
+        bounceRate: 0, // P2: 세션 기반 이탈률 계산 (단일 페이지뷰 세션 비율)
       }))
       .sort((a, b) => b.pageViews - a.pageViews)
       .slice(0, limit);

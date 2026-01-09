@@ -121,7 +121,7 @@ export async function POST(req: Request) {
       // Real AI 분석
       try {
         console.log('[S-1] Starting Gemini analysis...');
-        // TODO: 다각도 분석 지원 시 analyzeSkinMultiAngle() 사용
+        // 현재: 정면 이미지 기반 분석 (다각도 이미지는 메타데이터로 활용)
         result = await analyzeSkin(primaryImage);
         // 다각도 메타데이터 추가
         result.multiAngleMeta = {
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
             left: !!leftImageBase64,
             right: !!rightImageBase64,
           },
-          asymmetryDetected: false, // TODO: AI 분석에서 감지
+          asymmetryDetected: false, // P2: 좌우 비대칭 AI 감지 (12존 분석 확장 시)
         };
         // 신뢰도 오버라이드 (다각도 촬영 시 향상)
         if (result.imageQuality && imagesCount >= 2) {
@@ -185,8 +185,21 @@ export async function POST(req: Request) {
 
     const supabase = createServiceRoleClient();
 
-    // 이미지 업로드 헬퍼
+    // 이미지 저장 동의 확인 (PIPA 준수)
+    const { data: consentData } = await supabase
+      .from('image_consents')
+      .select('consent_given')
+      .eq('clerk_user_id', userId)
+      .eq('analysis_type', 'skin')
+      .maybeSingle();
+
+    const hasImageConsent = consentData?.consent_given === true;
+    console.log(`[S-1] Image consent status: ${hasImageConsent ? 'granted' : 'not granted'}`);
+
+    // 이미지 업로드 헬퍼 (동의가 있는 경우에만 사용)
     const uploadImage = async (base64: string, suffix: string): Promise<string | null> => {
+      if (!hasImageConsent) return null;
+
       const fileName = `${userId}/${Date.now()}_${suffix}.jpg`;
       const base64Data = base64.replace(/^data:image\/\w+;base64,/, '');
       const buffer = Buffer.from(base64Data, 'base64');
@@ -203,24 +216,26 @@ export async function POST(req: Request) {
       return data.path;
     };
 
-    // 다각도 이미지 업로드
+    // 다각도 이미지 업로드 (동의가 있는 경우에만)
     let frontImageUrl: string | null = null;
     let _leftImageUrl: string | null = null;
     let _rightImageUrl: string | null = null;
 
-    // 정면 이미지 업로드 (필수)
-    if (primaryImage) {
-      frontImageUrl = await uploadImage(primaryImage, 'front');
-    }
+    if (hasImageConsent) {
+      // 정면 이미지 업로드
+      if (primaryImage) {
+        frontImageUrl = await uploadImage(primaryImage, 'front');
+      }
 
-    // 좌측 이미지 업로드 (선택) - 미래 다각도 분석용
-    if (leftImageBase64) {
-      _leftImageUrl = await uploadImage(leftImageBase64, 'left');
-    }
+      // 좌측 이미지 업로드 (선택) - 미래 다각도 분석용
+      if (leftImageBase64) {
+        _leftImageUrl = await uploadImage(leftImageBase64, 'left');
+      }
 
-    // 우측 이미지 업로드 (선택) - 미래 다각도 분석용
-    if (rightImageBase64) {
-      _rightImageUrl = await uploadImage(rightImageBase64, 'right');
+      // 우측 이미지 업로드 (선택) - 미래 다각도 분석용
+      if (rightImageBase64) {
+        _rightImageUrl = await uploadImage(rightImageBase64, 'right');
+      }
     }
 
     // 하위 호환: 기존 imageUrl은 frontImageUrl 사용

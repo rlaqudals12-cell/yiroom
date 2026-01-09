@@ -176,7 +176,7 @@ export async function POST(req: Request) {
       await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
       gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
 
-      // TODO: 메이크업 분석 배지 추가 시 활성화
+      // P3: 메이크업 분석 배지 (게이미피케이션 확장 시 활성화)
       // const makeupBadge = await awardAnalysisBadge(supabase, userId, 'makeup');
     } catch (gamificationError) {
       console.error('[M-1] Gamification error:', gamificationError);
