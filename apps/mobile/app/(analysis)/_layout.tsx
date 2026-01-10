@@ -60,6 +60,12 @@ export default function AnalysisLayout() {
         }}
       />
       <Stack.Screen
+        name="skin/routine"
+        options={{
+          title: '스킨케어 루틴',
+        }}
+      />
+      <Stack.Screen
         name="body/index"
         options={{
           title: '체형 분석',

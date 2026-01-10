@@ -80,9 +80,15 @@ export default function FeedbackPage() {
         throw new Error('피드백 전송 실패');
       }
 
+      // API 응답 확인 (DB 저장 결과)
+      const result = await response.json();
+      if (result.success) {
+        console.log('[Feedback] 피드백 저장 완료:', result.id);
+      }
+
       setIsSubmitted(true);
     } catch (error) {
-      console.error('피드백 전송 오류:', error);
+      console.error('[Feedback] 피드백 전송 오류:', error);
       // 오류가 발생해도 성공으로 처리 (UX)
       setIsSubmitted(true);
     } finally {

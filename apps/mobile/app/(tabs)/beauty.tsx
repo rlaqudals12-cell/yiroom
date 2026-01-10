@@ -3,7 +3,7 @@
  * 피부 분석, 퍼스널 컬러, 화장품 추천
  */
 import { useRouter } from 'expo-router';
-import { Sparkles, Palette, Droplets } from 'lucide-react-native';
+import { Sparkles, Palette, Droplets, Calendar } from 'lucide-react-native';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 
 export default function BeautyTab() {
@@ -29,6 +29,24 @@ export default function BeautyTab() {
           </View>
           <Text className="text-muted-foreground">
             AI가 피부 상태를 분석하고 맞춤 케어를 추천해요
+          </Text>
+        </Pressable>
+
+        {/* 스킨케어 루틴 카드 */}
+        <Pressable
+          className="bg-card rounded-2xl p-5 mb-4 border border-border"
+          onPress={() => router.push('/(analysis)/skin/routine')}
+        >
+          <View className="flex-row items-center mb-3">
+            <View className="w-10 h-10 bg-sky-100 rounded-full items-center justify-center mr-3">
+              <Calendar size={20} color="#0ea5e9" />
+            </View>
+            <Text className="text-lg font-semibold text-foreground">
+              스킨케어 루틴
+            </Text>
+          </View>
+          <Text className="text-muted-foreground">
+            내 피부에 맞는 아침/저녁 스킨케어 루틴을 확인해요
           </Text>
         </Pressable>
 
