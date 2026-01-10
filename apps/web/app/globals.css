@@ -220,6 +220,29 @@
 }
 
 /* ========================================
+   접근성: 포커스 표시 스타일 (WCAG 2.4.7)
+   ======================================== */
+
+/* 키보드 포커스 시 명확한 표시 */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* 마우스 클릭 시 outline 제거 (키보드 사용자만 표시) */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* 고대비 모드 지원 */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 3px solid CanvasText;
+    outline-offset: 2px;
+  }
+}
+
+/* ========================================
    결과 화면 와우 모먼트 애니메이션
    ======================================== */
 

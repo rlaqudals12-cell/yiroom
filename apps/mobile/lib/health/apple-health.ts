@@ -4,6 +4,7 @@
  */
 
 import { Platform } from 'react-native';
+
 import type {
   HealthPermissions,
   HealthPermissionType,

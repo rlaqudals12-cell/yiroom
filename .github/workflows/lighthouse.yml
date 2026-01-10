@@ -1,0 +1,53 @@
+name: Lighthouse CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build:web
+        env:
+          # 빌드 시 필요한 환경 변수 (Lighthouse 테스트용)
+          SKIP_ENV_VALIDATION: true
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          # 테스트할 URL (localhost:3000에서 실행)
+          urls: |
+            http://localhost:3000/home
+            http://localhost:3000/analysis/skin
+            http://localhost:3000/beauty
+          # 성능 예산 파일
+          budgetPath: ./apps/web/lighthouse-budget.json
+          # Lighthouse 결과를 아티팩트로 저장
+          uploadArtifacts: true
+          # 임시 public 저장소 비활성화 (보안)
+          temporaryPublicStorage: true
+          # 빌드된 앱 실행 명령
+          configPath: ./apps/web/lighthouserc.json
+
+      - name: Upload Lighthouse Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
+          retention-days: 30

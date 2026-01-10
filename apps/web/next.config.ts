@@ -241,6 +241,8 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200],
     // 이미지 사이즈 (컴포넌트에서 지정한 크기)
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // 이미지 캐시 TTL: 30일 (성능 최적화)
+    minimumCacheTTL: 60 * 60 * 24 * 30,
   },
 };
 

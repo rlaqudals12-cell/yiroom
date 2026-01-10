@@ -3,6 +3,8 @@
  * Apple Health (iOS) + Google Fit (Android) 지원
  */
 
+import * as Haptics from 'expo-haptics';
+import { Stack } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -16,8 +18,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
-import * as Haptics from 'expo-haptics';
+
 import { useHealthData } from '@/hooks/useHealthData';
 
 export default function HealthSyncScreen() {
@@ -88,7 +89,8 @@ export default function HealthSyncScreen() {
           {!isAvailable && (
             <View style={[styles.card, isDark && styles.cardDark]}>
               <Text style={[styles.warningText, isDark && styles.textLight]}>
-                ⚠️ {Platform.OS === 'ios' ? 'Apple Health' : 'Google Fit'}를 사용할 수 없습니다.
+                ⚠️ {Platform.OS === 'ios' ? 'Apple Health' : 'Google Fit'}를
+                사용할 수 없습니다.
                 {'\n'}시뮬레이터에서는 Mock 데이터로 테스트됩니다.
               </Text>
             </View>
@@ -109,7 +111,10 @@ export default function HealthSyncScreen() {
                 value={isEnabled}
                 onValueChange={handleToggle}
                 disabled={isLoading}
-                trackColor={{ false: '#767577', true: platform === 'google' ? '#34A853' : '#4CD964' }}
+                trackColor={{
+                  false: '#767577',
+                  true: platform === 'google' ? '#34A853' : '#4CD964',
+                }}
               />
             </View>
           </View>
@@ -176,12 +181,17 @@ export default function HealthSyncScreen() {
                   <Text style={[styles.cardTitle, isDark && styles.textLight]}>
                     🔄 마지막 동기화
                   </Text>
-                  <Text style={[styles.cardSubtitle, isDark && styles.textMuted]}>
+                  <Text
+                    style={[styles.cardSubtitle, isDark && styles.textMuted]}
+                  >
                     {formatTime(lastSyncTime)}
                   </Text>
                 </View>
                 <TouchableOpacity
-                  style={[styles.syncButton, isSyncing && styles.syncButtonDisabled]}
+                  style={[
+                    styles.syncButton,
+                    isSyncing && styles.syncButtonDisabled,
+                  ]}
                   onPress={handleSync}
                   disabled={isSyncing}
                 >
@@ -220,7 +230,9 @@ function DataItem({
   return (
     <View style={styles.dataItem}>
       <Text style={styles.dataEmoji}>{emoji}</Text>
-      <Text style={[styles.dataLabel, isDark && styles.textLight]}>{label}</Text>
+      <Text style={[styles.dataLabel, isDark && styles.textLight]}>
+        {label}
+      </Text>
       <Text style={styles.checkmark}>✓</Text>
     </View>
   );
@@ -237,8 +249,12 @@ function StatItem({
 }) {
   return (
     <View style={styles.statItem}>
-      <Text style={[styles.statValue, isDark && styles.textLight]}>{value}</Text>
-      <Text style={[styles.statLabel, isDark && styles.textMuted]}>{label}</Text>
+      <Text style={[styles.statValue, isDark && styles.textLight]}>
+        {value}
+      </Text>
+      <Text style={[styles.statLabel, isDark && styles.textMuted]}>
+        {label}
+      </Text>
     </View>
   );
 }

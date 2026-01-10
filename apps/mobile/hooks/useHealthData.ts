@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Platform, AppState, AppStateStatus } from 'react-native';
-import type { HealthDataSummary, SyncState, SyncResult } from '@/lib/health/types';
+
 import {
   getLocalSyncState,
   enableSync,
@@ -19,6 +19,11 @@ import {
   isHealthDataAvailable,
   getHealthPlatform,
 } from '@/lib/health/sync-manager';
+import type {
+  HealthDataSummary,
+  SyncState,
+  SyncResult,
+} from '@/lib/health/types';
 
 interface UseHealthDataResult {
   // 상태
@@ -83,7 +88,10 @@ export function useHealthData(): UseHealthDataResult {
       }
     };
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange
+    );
     return () => subscription.remove();
   }, [syncState?.isEnabled]);
 
@@ -196,7 +204,13 @@ export function useHealthData(): UseHealthDataResult {
         return {
           success: false,
           syncedAt: new Date().toISOString(),
-          itemsSynced: { steps: 0, calories: 0, heartRate: 0, sleep: 0, workouts: 0 },
+          itemsSynced: {
+            steps: 0,
+            calories: 0,
+            heartRate: 0,
+            sleep: 0,
+            workouts: 0,
+          },
           errors: [err instanceof Error ? err.message : 'Sync failed'],
         };
       } finally {

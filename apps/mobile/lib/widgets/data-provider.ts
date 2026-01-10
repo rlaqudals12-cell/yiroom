@@ -4,6 +4,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import type {
   WidgetType,
   WidgetSize,
@@ -149,7 +150,8 @@ export async function generateWellnessScoreData(
         sleep: Math.floor(Math.random() * 30) + 60,
         mindfulness: Math.floor(Math.random() * 30) + 60,
       },
-      trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
+      trend:
+        Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
       weeklyChange: Math.floor(Math.random() * 10) - 5,
     },
   };

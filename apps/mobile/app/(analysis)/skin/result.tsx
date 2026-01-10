@@ -1,5 +1,7 @@
 /**
  * S-1 피부 분석 - 결과 화면
+ *
+ * CircularProgress와 ScoreChangeBadge를 활용한 피부 분석 결과 시각화
  */
 import type { SkinType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
@@ -17,6 +19,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// 새로운 분석 컴포넌트
+import {
+  CircularProgress,
+  ScoreChangeBadge,
+  MetricDelta,
+} from '@/components/analysis';
+
 // 피부 지표 타입
 interface SkinMetrics {
   moisture: number;
@@ -26,6 +35,18 @@ interface SkinMetrics {
   pigmentation: number;
   sensitivity: number;
   elasticity: number;
+}
+
+// 이전 분석 대비 변화량 (Mock 데이터)
+interface SkinMetricsDelta {
+  moisture: number;
+  oil: number;
+  pores: number;
+  wrinkles: number;
+  pigmentation: number;
+  sensitivity: number;
+  elasticity: number;
+  overall: number;
 }
 
 // 피부 타입 데이터
@@ -100,6 +121,9 @@ export default function SkinResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [skinType, setSkinType] = useState<SkinType | null>(null);
   const [metrics, setMetrics] = useState<SkinMetrics | null>(null);
+  const [overallScore, setOverallScore] = useState<number>(0);
+  const [delta, setDelta] = useState<SkinMetricsDelta | null>(null);
+  const [previousScore, setPreviousScore] = useState<number | null>(null);
 
   useEffect(() => {
     analyzeSkin();
@@ -122,8 +146,8 @@ export default function SkinResultScreen() {
     ];
     const randomType = types[Math.floor(Math.random() * types.length)];
 
-    setSkinType(randomType);
-    setMetrics({
+    // Mock 지표 생성
+    const mockMetrics = {
       moisture: Math.floor(Math.random() * 40) + 40,
       oil: Math.floor(Math.random() * 40) + 30,
       pores: Math.floor(Math.random() * 30) + 50,
@@ -131,7 +155,42 @@ export default function SkinResultScreen() {
       pigmentation: Math.floor(Math.random() * 30) + 50,
       sensitivity: Math.floor(Math.random() * 40) + 30,
       elasticity: Math.floor(Math.random() * 30) + 55,
-    });
+    };
+
+    // 종합 점수 계산 (가중 평균)
+    const score = Math.round(
+      mockMetrics.moisture * 0.2 +
+        mockMetrics.elasticity * 0.2 +
+        mockMetrics.pores * 0.15 +
+        mockMetrics.wrinkles * 0.15 +
+        mockMetrics.pigmentation * 0.1 +
+        mockMetrics.oil * 0.1 +
+        (100 - mockMetrics.sensitivity) * 0.1
+    );
+
+    // Mock 이전 분석 데이터 (50% 확률로 존재)
+    const hasPreviousAnalysis = Math.random() > 0.5;
+    const mockPreviousScore = hasPreviousAnalysis
+      ? Math.floor(Math.random() * 30) + 50
+      : null;
+
+    // 변화량 계산
+    const mockDelta: SkinMetricsDelta = {
+      moisture: Math.floor(Math.random() * 10) - 5,
+      oil: Math.floor(Math.random() * 10) - 5,
+      pores: Math.floor(Math.random() * 8) - 4,
+      wrinkles: Math.floor(Math.random() * 6) - 3,
+      pigmentation: Math.floor(Math.random() * 8) - 4,
+      sensitivity: Math.floor(Math.random() * 10) - 5,
+      elasticity: Math.floor(Math.random() * 8) - 4,
+      overall: mockPreviousScore ? score - mockPreviousScore : 0,
+    };
+
+    setSkinType(randomType);
+    setMetrics(mockMetrics);
+    setOverallScore(score);
+    setDelta(mockDelta);
+    setPreviousScore(mockPreviousScore);
     setIsLoading(false);
   };
 
@@ -187,12 +246,43 @@ export default function SkinResultScreen() {
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={styles.content}>
-        {/* 결과 이미지 */}
-        {imageUri && (
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: imageUri }} style={styles.resultImage} />
+        {/* 종합 점수 카드 */}
+        <View style={[styles.scoreCard, isDark && styles.cardDark]}>
+          <View style={styles.scoreHeader}>
+            <Text style={[styles.scoreLabel, isDark && styles.textMuted]}>
+              피부 건강 점수
+            </Text>
+            {delta && delta.overall !== 0 && (
+              <ScoreChangeBadge
+                delta={delta.overall}
+                size="sm"
+                previousScore={previousScore || undefined}
+                showPreviousScore={previousScore !== null}
+                isDark={isDark}
+              />
+            )}
           </View>
-        )}
+          <View style={styles.scoreContent}>
+            {/* 결과 이미지 (작은 원형) */}
+            {imageUri && (
+              <View style={styles.smallImageContainer}>
+                <Image
+                  source={{ uri: imageUri }}
+                  style={styles.smallResultImage}
+                />
+              </View>
+            )}
+            {/* CircularProgress */}
+            <CircularProgress
+              score={overallScore}
+              size="lg"
+              animate
+              showScore
+              showGradeLabel
+              isDark={isDark}
+            />
+          </View>
+        </View>
 
         {/* 피부 타입 결과 */}
         <View style={[styles.resultCard, isDark && styles.cardDark]}>
@@ -216,23 +306,37 @@ export default function SkinResultScreen() {
             <MetricBar
               label="수분도"
               value={metrics.moisture}
+              delta={delta?.moisture}
               isDark={isDark}
             />
-            <MetricBar label="유분도" value={metrics.oil} isDark={isDark} />
-            <MetricBar label="모공" value={metrics.pores} isDark={isDark} />
+            <MetricBar
+              label="유분도"
+              value={metrics.oil}
+              delta={delta?.oil}
+              isDark={isDark}
+            />
+            <MetricBar
+              label="모공"
+              value={metrics.pores}
+              delta={delta?.pores}
+              isDark={isDark}
+            />
             <MetricBar
               label="탄력"
               value={metrics.elasticity}
+              delta={delta?.elasticity}
               isDark={isDark}
             />
             <MetricBar
               label="색소침착"
               value={metrics.pigmentation}
+              delta={delta?.pigmentation}
               isDark={isDark}
             />
             <MetricBar
               label="민감도"
               value={metrics.sensitivity}
+              delta={delta?.sensitivity}
               isDark={isDark}
             />
           </View>
@@ -281,10 +385,12 @@ export default function SkinResultScreen() {
 function MetricBar({
   label,
   value,
+  delta,
   isDark,
 }: {
   label: string;
   value: number;
+  delta?: number;
   isDark: boolean;
 }) {
   const getColor = (val: number) => {
@@ -294,14 +400,22 @@ function MetricBar({
   };
 
   return (
-    <View style={styles.metricItem}>
+    <View
+      style={styles.metricItem}
+      accessibilityLabel={`${label}: ${value}%${delta ? `, 변화: ${delta > 0 ? '+' : ''}${delta}` : ''}`}
+    >
       <View style={styles.metricHeader}>
         <Text style={[styles.metricLabel, isDark && styles.textLight]}>
           {label}
         </Text>
-        <Text style={[styles.metricValue, isDark && styles.textMuted]}>
-          {value}%
-        </Text>
+        <View style={styles.metricValueContainer}>
+          <Text style={[styles.metricValue, isDark && styles.textMuted]}>
+            {value}%
+          </Text>
+          {delta !== undefined && delta !== 0 && (
+            <MetricDelta delta={delta} size="sm" isDark={isDark} />
+          )}
+        </View>
       </View>
       <View style={[styles.metricBarBg, isDark && styles.metricBarBgDark]}>
         <View
@@ -358,6 +472,40 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  scoreCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  scoreHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  scoreLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  scoreContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 24,
+  },
+  smallImageContainer: {
+    alignItems: 'center',
+  },
+  smallResultImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: '#22c55e',
   },
   imageContainer: {
     alignItems: 'center',
@@ -418,6 +566,11 @@ const styles = StyleSheet.create({
   metricHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  metricValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   metricLabel: {
     fontSize: 14,

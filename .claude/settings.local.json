@@ -313,7 +313,26 @@
       "Bash(for file in tests/app/nutrition/layout.test.tsx tests/app/workout/layout.test.tsx tests/components/feed/FeedCard.test.tsx tests/components/nutrition/FastingTimer.test.tsx)",
       "Bash(__NEW_LINE__ sed -i \"s/vi\\\\.mock\\(''next\\\\/navigation'', \\(\\) => \\({/vi.mock\\(''next\\\\/navigation'', \\(\\) => \\({\\\\n  useSearchParams: \\(\\) => \\({ get: vi.fn\\(\\).mockReturnValue\\(null\\) }\\),/g\" \"$file\")",
       "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npm run test:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\ntest: 테스트 파일 추가 수정\n\n- profile/page.test.tsx: 새 ProfilePage UI 구조에 맞게 테스트 업데이트\n  - FadeInUp, BottomNav, LevelBadgeFilled 등 컴포넌트 mock 추가\n  - getUserLevel mock 추가\n  - 설정 링크 href /settings → /profile/settings 변경\n  - 사용자 이름 ''테스트 사용자'' → ''테스트 사용자님'' 수정\n  \n- VoiceRecordButton.test.tsx: lucide-react 아이콘 mock 추가\n  - Mic, MicOff, X, Check, Loader2 아이콘 mock\n\n- admin/feedback/page.test.tsx: global.fetch mock 추가\n  - /api/feedback 호출용 mock 데이터 추가\n\n- body.test.tsx: ESLint rules-of-hooks 오류 수정\n  - 익명 함수 → MockAnalysisLoading 컴포넌트명으로 변경\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ntest: 테스트 파일 추가 수정\n\n- profile/page.test.tsx: 새 ProfilePage UI 구조에 맞게 테스트 업데이트\n  - FadeInUp, BottomNav, LevelBadgeFilled 등 컴포넌트 mock 추가\n  - getUserLevel mock 추가\n  - 설정 링크 href /settings → /profile/settings 변경\n  - 사용자 이름 ''테스트 사용자'' → ''테스트 사용자님'' 수정\n  \n- VoiceRecordButton.test.tsx: lucide-react 아이콘 mock 추가\n  - Mic, MicOff, X, Check, Loader2 아이콘 mock\n\n- admin/feedback/page.test.tsx: global.fetch mock 추가\n  - /api/feedback 호출용 mock 데이터 추가\n\n- body.test.tsx: ESLint rules-of-hooks 오류 수정\n  - 익명 함수 → MockAnalysisLoading 컴포넌트명으로 변경\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 분석 UX 개선 및 개인정보 동의 시스템 구축\n\n## 주요 변경사항\n\n### 분석 UX 개선 \\(S-1, C-1\\)\n- 분석 페이지 UI/UX 개선\n- Hybrid 데이터 패턴 적용 \\(DB 핵심 + Mock 표시 데이터\\)\n- Mock 데이터 구조 개선 \\(personal-color, skin, body\\)\n- 다시 분석하기 버튼 추가\n\n### 개인정보 동의 시스템\n- 이용약관/개인정보 동의 페이지 \\(agreement\\)\n- 이미지 동의 모달 \\(ImageConsentModal\\)\n- 마케팅 수신 토글 \\(MarketingConsentToggle\\)\n- 동의 상태 확인 컴포넌트 \\(ConsentStatus\\)\n- 개인정보 설정 페이지 \\(settings/privacy\\)\n\n### 시각적 리포트 컴포넌트\n- FaceZoneMap: 얼굴 부위별 분석 시각화\n- SkinVitalityScore: 피부 활력 점수\n- TrendChart: 트렌드 차트\n- ZoneDetailCard: 부위별 상세 정보\n- PhotoOverlayMap: 사진 오버레이\n- LightingGuide: 조명 가이드\n\n### 피부 다이어리\n- 피부 상태 기록 컴포넌트\n- 사진 재사용 시스템 \\(photo-reuse.ts\\)\n\n### DB 마이그레이션\n- image_consents 테이블\n- user_agreements 테이블\n- skin_analyses 확장\n- hair_analyses 테이블\n- photo_reuse_system\n- GDPR cleanup cron\n\n### 테스트 수정\n- 컴포넌트 구조 변경에 따른 테스트 업데이트\n- Mock 패턴 개선 \\(lucide-react, fetch 등\\)\n\n## 문서\n- SDD-VISUAL-SKIN-REPORT.md\n- SDD-TERMS-AGREEMENT.md\n- SDD-MARKETING-TOGGLE-UI.md\n- SDD-HYBRID-DATA-EXTENSION.md\n- hybrid-data-pattern.md \\(규칙\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ntest: PhotoOverlayMap 테스트 추가 \\(26개\\)\n\n- 기본 렌더링, 존 렌더링, 상태별 색상 테스트\n- 라벨, 클릭 이벤트, 호버 툴팁 테스트\n- opacity, className, 접근성 테스트\n- BACKLOG 업데이트 \\(테스트 완료 반영\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ntest: visual-report 컴포넌트 테스트 추가 \\(85개\\)\n\n- TrendChart 테스트 \\(21개\\): 트렌드 표시, 메트릭별 라벨, 목표선\n- LightingGuide 테스트 \\(16개\\): 밝기/균일성/그림자 상태\n- MetricBar 테스트 \\(13개\\): 점수별 등급, showGrade\n- GradeDisplay 테스트 \\(20개\\): 점수별 등급, Progress 바, 사이즈\n- StrengthsFirst 테스트 \\(15개\\): 강점/성장 영역, 퍼스널 컬러\n- setup.ts에 Gem, Shield 아이콘 모킹 추가\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(claude --version)",
+      "Bash(npm show:*)",
+      "Bash(where cursor:*)",
+      "Bash(cursor --version:*)",
+      "Bash(unzip:*)",
+      "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe version:*)",
+      "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe init:*)",
+      "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe doctor:*)",
+      "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe sync:*)",
+      "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe ready:*)",
+      "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe add \"Phase A: 성분 분석 강화 - 회피 성분 경고 확대, 성분 궁합 체크, EWG 등급 표시\" --priority high)",
+      "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe add:*)",
+      "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe:*)",
+      "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe list:*)",
+      "Bash(dir \"c:\\\\dev\\\\yiroom\\\\apps\\\\web\\\\e2e\" /B)",
+      "Bash(npx next experimental-analyze)"
     ]
   },
   "env": {

@@ -6,16 +6,9 @@
  * - 서버 API 연동
  */
 
-import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type {
-  SyncState,
-  SyncResult,
-  HealthDataSummary,
-  StepCountData,
-  SleepSummary,
-  HeartRateSummary,
-} from './types';
+import { Platform } from 'react-native';
+
 import {
   isHealthKitAvailable,
   initializeHealthKit,
@@ -32,6 +25,14 @@ import {
   getTodayHeartRate as getGoogleHeartRate,
   getLastNightSleep as getGoogleSleep,
 } from './google-fit';
+import type {
+  SyncState,
+  SyncResult,
+  HealthDataSummary,
+  StepCountData,
+  SleepSummary,
+  HeartRateSummary,
+} from './types';
 
 const SYNC_STATE_KEY = '@yiroom/health_sync_state';
 const SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15분
@@ -234,10 +235,19 @@ export async function syncToServer(
         Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify({
-        stepData: data.steps > 0 ? [{ date: data.date, steps: data.steps, source: 'HealthKit' }] : [],
+        stepData:
+          data.steps > 0
+            ? [{ date: data.date, steps: data.steps, source: 'HealthKit' }]
+            : [],
         calorieData:
           data.activeCalories > 0
-            ? [{ date: data.date, calories: data.activeCalories, source: 'HealthKit' }]
+            ? [
+                {
+                  date: data.date,
+                  calories: data.activeCalories,
+                  source: 'HealthKit',
+                },
+              ]
             : [],
         heartRateData: data.heartRate ? [data.heartRate] : [],
         sleepData: data.sleep ? [data.sleep] : [],
@@ -279,7 +289,13 @@ export async function performSync(authToken: string): Promise<SyncResult> {
     return {
       success: false,
       syncedAt: new Date().toISOString(),
-      itemsSynced: { steps: 0, calories: 0, heartRate: 0, sleep: 0, workouts: 0 },
+      itemsSynced: {
+        steps: 0,
+        calories: 0,
+        heartRate: 0,
+        sleep: 0,
+        workouts: 0,
+      },
       errors: ['Sync is disabled'],
     };
   }
@@ -290,7 +306,13 @@ export async function performSync(authToken: string): Promise<SyncResult> {
     return {
       success: false,
       syncedAt: new Date().toISOString(),
-      itemsSynced: { steps: 0, calories: 0, heartRate: 0, sleep: 0, workouts: 0 },
+      itemsSynced: {
+        steps: 0,
+        calories: 0,
+        heartRate: 0,
+        sleep: 0,
+        workouts: 0,
+      },
       errors: ['Failed to collect health data'],
     };
   }

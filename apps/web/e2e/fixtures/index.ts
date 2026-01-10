@@ -3,7 +3,7 @@
  * 공통 테스트 설정 및 유틸리티
  */
 
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, type Page } from '@playwright/test';
 
 // 확장된 테스트 타입 정의 (추후 인증된 사용자 fixture 추가 예정)
 export const test = base.extend<Record<string, never>>({
@@ -11,6 +11,53 @@ export const test = base.extend<Record<string, never>>({
 });
 
 export { expect };
+
+/**
+ * 테스트 픽스처 데이터
+ */
+export const TEST_FIXTURES = {
+  // 테스트 이미지 경로
+  faceImage: 'e2e/fixtures/test-face.jpg',
+  skinImage: 'e2e/fixtures/test-skin.jpg',
+  bodyImage: 'e2e/fixtures/test-body.jpg',
+
+  // Mock 분석 ID
+  skinAnalysisId: 'test-skin-analysis-id',
+  personalColorAnalysisId: 'test-pc-analysis-id',
+  bodyAnalysisId: 'test-body-analysis-id',
+
+  // 테스트 제품 ID
+  testProductId: 'test-product-id',
+  testCosmeticId: 'test-cosmetic-id',
+  testSupplementId: 'test-supplement-id',
+} as const;
+
+/**
+ * 테스트 사용자 타입
+ */
+export interface TestUserCredentials {
+  username: string;
+  password: string;
+  email?: string;
+}
+
+/**
+ * 테스트 환경 설정
+ */
+export const TEST_CONFIG = {
+  // 타임아웃 설정
+  defaultTimeout: 10000,
+  networkTimeout: 30000,
+  animationTimeout: 500,
+
+  // 재시도 설정
+  maxRetries: 3,
+
+  // 뷰포트
+  desktop: { width: 1280, height: 720 },
+  tablet: { width: 768, height: 1024 },
+  mobile: { width: 375, height: 667 },
+} as const;
 
 /**
  * 페이지 로드 대기 헬퍼
