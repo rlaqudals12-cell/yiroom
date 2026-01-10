@@ -54,6 +54,30 @@ function buildUserContextSection(context: UserContext): string {
     if (context.skinAnalysis.concerns?.length) {
       sections.push(`- 피부 고민: ${context.skinAnalysis.concerns.join(', ')}`);
     }
+    // Phase D: 피부 일기 데이터
+    if (context.skinAnalysis.recentCondition !== undefined) {
+      sections.push(`- 최근 7일 피부 컨디션: ${context.skinAnalysis.recentCondition}/5점`);
+    }
+    if (context.skinAnalysis.routineCompletionRate) {
+      sections.push(
+        `- 루틴 완료율: 아침 ${context.skinAnalysis.routineCompletionRate.morning}%, 저녁 ${context.skinAnalysis.routineCompletionRate.evening}%`
+      );
+    }
+    if (context.skinAnalysis.recentFactors) {
+      const factors: string[] = [];
+      if (context.skinAnalysis.recentFactors.avgSleep) {
+        factors.push(`수면 ${context.skinAnalysis.recentFactors.avgSleep}시간`);
+      }
+      if (context.skinAnalysis.recentFactors.avgWater) {
+        factors.push(`수분 ${context.skinAnalysis.recentFactors.avgWater}ml`);
+      }
+      if (context.skinAnalysis.recentFactors.avgStress) {
+        factors.push(`스트레스 ${context.skinAnalysis.recentFactors.avgStress}/5`);
+      }
+      if (factors.length > 0) {
+        sections.push(`- 최근 생활 요인: ${factors.join(', ')}`);
+      }
+    }
   }
 
   // 체형 분석
@@ -216,6 +240,11 @@ export const QUICK_QUESTIONS_BY_CATEGORY = {
     '트러블이 났는데 어떻게 해요?',
     '선크림 꼭 발라야 해요?',
     '제 피부에 맞는 루틴 알려줘요',
+    // Phase D: 피부 상담 질문 확장
+    '제 피부 타입에 맞는 세럼 추천해줘',
+    '모공 관리는 어떻게 해야 해요?',
+    '피부 컨디션이 안 좋을 때 관리법',
+    '수면과 피부의 관계가 뭐예요?',
   ],
   hair: [
     '머리가 빠지는 것 같은데 어떡해요?',

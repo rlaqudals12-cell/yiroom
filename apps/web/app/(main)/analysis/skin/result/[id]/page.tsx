@@ -21,6 +21,7 @@ import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { ShareButton } from '@/components/share';
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
+import { SkinConsultantCTA } from '@/components/skin/SkinConsultantCTA';
 import Link from 'next/link';
 import type { SkinType as ProductSkinType, SkinConcern } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -716,19 +717,29 @@ export default function SkinAnalysisResultPage() {
       {result && (
         <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
           <div className="max-w-md mx-auto space-y-2">
-            {/* 제품 추천 버튼 */}
-            <Button
-              className="w-full"
-              onClick={() => router.push(`/products?skinType=${skinType || ''}&category=skincare`)}
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              피부 맞춤 제품 보기
-            </Button>
+            {/* 제품 추천 + AI 상담 버튼 (Phase D) */}
+            <div className="flex gap-2">
+              <Button
+                className="flex-1"
+                onClick={() =>
+                  router.push(`/products?skinType=${skinType || ''}&category=skincare`)
+                }
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                맞춤 제품
+              </Button>
+              <SkinConsultantCTA
+                skinType={skinType || undefined}
+                concerns={result.metrics.filter((m) => m.status === 'warning').map((m) => m.name)}
+                variant="default"
+                className="flex-1"
+              />
+            </div>
             {/* 다시 분석하기 + 공유 */}
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                다시 분석하기
+                다시 분석
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
             </div>

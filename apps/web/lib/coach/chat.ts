@@ -8,6 +8,7 @@ import { coachLogger } from '@/lib/utils/logger';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import type { UserContext } from './context';
 import { buildCoachSystemPrompt, getQuestionHint } from './prompts';
+import { searchSkinProducts, formatSkinProductsForPrompt } from './skin-rag';
 
 // API 키 검증
 const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -109,6 +110,52 @@ function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'sk
 }
 
 /**
+ * 피부 상담 질문인지 확인 (Phase D)
+ */
+function isSkinConsultationQuestion(question: string): boolean {
+  const lowerQ = question.toLowerCase();
+
+  // 피부 고민 상담 키워드
+  const skinConcernKeywords = [
+    '피부',
+    '트러블',
+    '여드름',
+    '건조',
+    '지성',
+    '민감',
+    '주름',
+    '모공',
+    '홍조',
+    '각질',
+    '잡티',
+    '다크서클',
+    '탄력',
+    '미백',
+    '보습',
+  ];
+
+  // 스킨케어/루틴 키워드
+  const routineKeywords = ['스킨케어', '루틴', '클렌징', '세안', '토너', '세럼', '크림', '선크림'];
+
+  // 성분 관련 키워드
+  const ingredientKeywords = [
+    '레티놀',
+    '비타민',
+    '나이아신',
+    '히알루론',
+    '세라마이드',
+    'aha',
+    'bha',
+  ];
+
+  return (
+    skinConcernKeywords.some((kw) => lowerQ.includes(kw)) ||
+    routineKeywords.some((kw) => lowerQ.includes(kw)) ||
+    ingredientKeywords.some((kw) => lowerQ.includes(kw))
+  );
+}
+
+/**
  * 제품 추천이 필요한 질문인지 확인
  */
 function needsProductRecommendation(
@@ -116,7 +163,7 @@ function needsProductRecommendation(
 ): 'cosmetic' | 'supplement' | 'equipment' | null {
   const lowerQ = question.toLowerCase();
 
-  // 화장품/스킨케어 추천
+  // 화장품/스킨케어 추천 (더 넓은 범위로 확장)
   if (
     (lowerQ.includes('추천') || lowerQ.includes('어떤') || lowerQ.includes('뭐가 좋')) &&
     (lowerQ.includes('화장품') ||
@@ -124,7 +171,8 @@ function needsProductRecommendation(
       lowerQ.includes('세럼') ||
       lowerQ.includes('크림') ||
       lowerQ.includes('토너') ||
-      lowerQ.includes('로션'))
+      lowerQ.includes('로션') ||
+      lowerQ.includes('제품'))
   ) {
     return 'cosmetic';
   }
@@ -285,10 +333,15 @@ export async function generateCoachResponse(request: CoachChatRequest): Promise<
     const questionHint = getQuestionHint(message);
     const historySection = formatChatHistory(chatHistory || []);
 
-    // RAG: 제품 추천이 필요한 경우 관련 제품 검색
+    // RAG: 제품 추천 또는 피부 상담이 필요한 경우 관련 제품 검색
     let ragContext = '';
     const productType = needsProductRecommendation(message);
-    if (productType) {
+
+    // Phase D: 피부 상담 질문이면 skin-rag 사용
+    if (isSkinConsultationQuestion(message)) {
+      const skinProducts = await searchSkinProducts(userContext, message);
+      ragContext = formatSkinProductsForPrompt(skinProducts);
+    } else if (productType) {
       ragContext = await searchRelatedProducts(productType, userContext);
     }
 

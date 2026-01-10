@@ -24,6 +24,17 @@ export interface UserContext {
     skinType: string;
     concerns?: string[];
     scores?: SkinScores;
+    // Phase D: 피부 일기 연동
+    recentCondition?: number; // 최근 7일 평균 피부 컨디션 (1-5점)
+    routineCompletionRate?: {
+      morning: number; // 아침 루틴 완료율 (0-100%)
+      evening: number; // 저녁 루틴 완료율 (0-100%)
+    };
+    recentFactors?: {
+      avgSleep?: number; // 평균 수면 시간
+      avgWater?: number; // 평균 수분 섭취 (ml)
+      avgStress?: number; // 평균 스트레스 (1-5점)
+    };
   };
   bodyAnalysis?: {
     bodyType: string;

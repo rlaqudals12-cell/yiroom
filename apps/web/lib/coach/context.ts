@@ -42,6 +42,7 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
       todayNutritionResult,
       weeklyWorkoutResult,
       weeklyNutritionResult,
+      skinDiaryResult, // Phase D
     ] = await Promise.all([
       // 퍼스널 컬러
       supabase
@@ -151,6 +152,16 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
         .eq('clerk_user_id', clerkUserId)
         .gte('date', weekAgoStr)
         .lte('date', todayStr),
+
+      // Phase D: 피부 일기 최근 7일
+      supabase
+        .from('skin_diary_entries')
+        .select(
+          'skin_condition, sleep_hours, water_intake_ml, stress_level, morning_routine_completed, evening_routine_completed'
+        )
+        .eq('clerk_user_id', clerkUserId)
+        .gte('entry_date', weekAgoStr)
+        .lte('entry_date', todayStr),
     ]);
 
     // 퍼스널 컬러
@@ -171,6 +182,57 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
         concerns: skinResult.data.concerns as string[] | undefined,
         scores: skinResult.data.scores as SkinScores | undefined,
       };
+
+      // Phase D: 피부 일기 데이터 추가
+      const diaryEntries = skinDiaryResult.data as Array<{
+        skin_condition?: number;
+        sleep_hours?: number;
+        water_intake_ml?: number;
+        stress_level?: number;
+        morning_routine_completed?: boolean;
+        evening_routine_completed?: boolean;
+      }> | null;
+
+      if (diaryEntries && diaryEntries.length > 0) {
+        const count = diaryEntries.length;
+
+        // 평균 피부 컨디션
+        const conditionSum = diaryEntries.reduce((sum, e) => sum + (e.skin_condition || 0), 0);
+        const validConditions = diaryEntries.filter((e) => e.skin_condition).length;
+        if (validConditions > 0) {
+          context.skinAnalysis.recentCondition =
+            Math.round((conditionSum / validConditions) * 10) / 10;
+        }
+
+        // 루틴 완료율
+        const morningCompleted = diaryEntries.filter((e) => e.morning_routine_completed).length;
+        const eveningCompleted = diaryEntries.filter((e) => e.evening_routine_completed).length;
+        context.skinAnalysis.routineCompletionRate = {
+          morning: Math.round((morningCompleted / count) * 100),
+          evening: Math.round((eveningCompleted / count) * 100),
+        };
+
+        // 생활 요인 평균
+        const sleepSum = diaryEntries.reduce((sum, e) => sum + (e.sleep_hours || 0), 0);
+        const waterSum = diaryEntries.reduce((sum, e) => sum + (e.water_intake_ml || 0), 0);
+        const stressSum = diaryEntries.reduce((sum, e) => sum + (e.stress_level || 0), 0);
+        const validSleep = diaryEntries.filter((e) => e.sleep_hours).length;
+        const validWater = diaryEntries.filter((e) => e.water_intake_ml).length;
+        const validStress = diaryEntries.filter((e) => e.stress_level).length;
+
+        context.skinAnalysis.recentFactors = {};
+        if (validSleep > 0) {
+          context.skinAnalysis.recentFactors.avgSleep =
+            Math.round((sleepSum / validSleep) * 10) / 10;
+        }
+        if (validWater > 0) {
+          context.skinAnalysis.recentFactors.avgWater = Math.round(waterSum / validWater);
+        }
+        if (validStress > 0) {
+          context.skinAnalysis.recentFactors.avgStress =
+            Math.round((stressSum / validStress) * 10) / 10;
+        }
+      }
     }
 
     // 체형 분석
