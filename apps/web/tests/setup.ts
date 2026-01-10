@@ -195,6 +195,7 @@ vi.mock('lucide-react', () => ({
   // Trends & Stats
   TrendingUp: createIconMock('TrendingUp'),
   TrendingDown: createIconMock('TrendingDown'),
+  BarChart: createIconMock('BarChart'),
   BarChart3: createIconMock('BarChart3'),
   FileBarChart: createIconMock('FileBarChart'),
 
@@ -247,6 +248,9 @@ vi.mock('lucide-react', () => ({
   HardDrive: createIconMock('HardDrive'),
   ToggleLeft: createIconMock('ToggleLeft'),
   ToggleRight: createIconMock('ToggleRight'),
+
+  // Charts & Analysis
+  LineChart: createIconMock('LineChart'),
 
   // Misc
   Calendar: createIconMock('Calendar'),

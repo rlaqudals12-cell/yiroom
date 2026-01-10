@@ -332,7 +332,10 @@
       "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe:*)",
       "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe list:*)",
       "Bash(dir \"c:\\\\dev\\\\yiroom\\\\apps\\\\web\\\\e2e\" /B)",
-      "Bash(npx next experimental-analyze)"
+      "Bash(npx next experimental-analyze)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 5개 병렬 작업 완료 \\(스킨케어 루틴, 모바일, E2E, 성능, 접근성\\)\n\n## 그룹 A \\(신규 기능\\)\n\n### 피부 Phase B - 스킨케어 루틴\n- 아침/저녁 루틴 페이지 \\(app/\\(main\\)/analysis/skin/routine/\\)\n- 6개 컴포넌트: RoutineCard, StepList, StepItem, Timeline, ProductRecommendation, Toggle\n- 피부 타입별 커스터마이징 \\(건성/지성/복합성/민감성\\)\n- 어필리에이트 제품 연동\n- 149개 테스트 추가\n\n### 모바일 앱 고도화\n- CircularProgress: react-native-svg 원형 게이지 + reanimated 애니메이션\n- ScoreChangeBadge: 이전 분석 대비 델타 표시\n- 피부 분석 결과 화면 통합\n- 38개 테스트 추가\n\n### E2E 테스트 강화\n- 피부 분석 플로우 테스트 \\(16개 시나리오\\)\n- 제품 추천 플로우 테스트 \\(19개 시나리오\\)\n- 인증 헬퍼 및 테스트 픽스처\n\n## 그룹 B \\(품질 개선\\)\n\n### 성능 최적화\n- lighthouse-budget.json: 성능 예산 설정\n- Lighthouse CI 워크플로우 \\(.github/workflows/lighthouse.yml\\)\n- 이미지 최적화 스크립트 \\(scripts/optimize-images.sh\\)\n- next.config.ts 캐시 TTL 추가\n\n### 접근성\\(a11y\\)\n- SkipLink 컴포넌트 \\(WCAG 2.4.1\\)\n- UI 컴포넌트 aria 속성 강화 \\(button, dialog, input, tabs\\)\n- :focus-visible 스타일 개선\n- vitest-axe 기반 15개 접근성 테스트\n\n## 스펙 문서\n- SDD-SKIN-ROUTINE.md\n- SDD-MOBILE-ENHANCEMENT.md\n- SDD-E2E-TESTING.md\n- SDD-PERFORMANCE.md\n- SDD-ACCESSIBILITY.md\n\n테스트: 237개 추가\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(/c/Users/Administrator/AppData/Local/bin/bd.exe close:*)",
+      "Bash(timeout /t 30)"
     ]
   },
   "env": {

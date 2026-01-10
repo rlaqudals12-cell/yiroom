@@ -1,37 +1,53 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Plus, Calendar, TrendingUp, Sparkles } from 'lucide-react';
-import { SkinDiaryEntry, type DiaryEntry } from '@/components/analysis/skin-diary';
+import { ChevronLeft, FileText, TrendingUp, Calendar, Sparkles } from 'lucide-react';
+import {
+  DiaryCalendar,
+  DiaryEntryForm,
+  MonthlyReportCard,
+  CorrelationChart,
+  FactorTrendChart,
+} from '@/components/skin/diary';
+import type {
+  SkinDiaryEntry,
+  SkinDiaryEntryInput,
+  MonthlyReport,
+  CorrelationInsight,
+  DbSkinDiaryEntry,
+  SkinConditionScore,
+} from '@/types/skin-diary';
+import { analyzeCorrelations } from '@/lib/skincare/correlation';
+import { generateSampleMonthlyReport, DEFAULT_INSIGHTS } from '@/lib/mock/skin-diary';
 
-// 다이어리 목록 아이템 타입
-interface DiaryListItem {
-  id: string;
-  entry_date: string;
-  skin_condition: number;
-  condition_notes: string | null;
-  morning_routine_completed: boolean;
-  evening_routine_completed: boolean;
-  created_at: string;
-}
-
-// 주간 통계 타입
-interface WeeklyStats {
-  week_start: string;
-  entries_count: number;
-  avg_condition: number;
-  avg_sleep_hours: number;
-  avg_water_ml: number;
-  avg_stress: number;
-  morning_routine_count: number;
-  evening_routine_count: number;
+// DB 엔트리를 앱 엔트리로 변환
+function transformDbToEntry(dbEntry: DbSkinDiaryEntry): SkinDiaryEntry {
+  return {
+    id: dbEntry.id,
+    clerkUserId: dbEntry.clerk_user_id,
+    entryDate: new Date(dbEntry.entry_date),
+    skinCondition: dbEntry.skin_condition as SkinConditionScore,
+    conditionNotes: dbEntry.condition_notes ?? undefined,
+    sleepHours: dbEntry.sleep_hours ?? undefined,
+    sleepQuality: dbEntry.sleep_quality as SkinDiaryEntry['sleepQuality'],
+    waterIntakeMl: dbEntry.water_intake_ml ?? undefined,
+    stressLevel: dbEntry.stress_level as SkinDiaryEntry['stressLevel'],
+    weather: dbEntry.weather as SkinDiaryEntry['weather'],
+    outdoorHours: dbEntry.outdoor_hours ?? undefined,
+    morningRoutineCompleted: dbEntry.morning_routine_completed,
+    eveningRoutineCompleted: dbEntry.evening_routine_completed,
+    specialTreatments: dbEntry.special_treatments ?? [],
+    aiCorrelationScore: dbEntry.ai_correlation_score ?? undefined,
+    aiInsights: dbEntry.ai_insights ?? undefined,
+    createdAt: new Date(dbEntry.created_at),
+    updatedAt: new Date(dbEntry.updated_at),
+  };
 }
 
 export default function SkinDiaryPage() {
@@ -40,133 +56,99 @@ export default function SkinDiaryPage() {
   const supabase = useClerkSupabaseClient();
 
   // 상태
-  const [activeTab, setActiveTab] = useState<'list' | 'stats' | 'entry'>('list');
-  const [entries, setEntries] = useState<DiaryListItem[]>([]);
-  const [weeklyStats, setWeeklyStats] = useState<WeeklyStats[]>([]);
+  const [activeTab, setActiveTab] = useState<'calendar' | 'insights'>('calendar');
+  const [entries, setEntries] = useState<SkinDiaryEntry[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [existingEntry, setExistingEntry] = useState<Partial<DiaryEntry> | undefined>();
+  const [selectedEntry, setSelectedEntry] = useState<SkinDiaryEntry | undefined>();
+  const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
 
-  // 다이어리 목록 로드
-  const loadEntries = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { data, error: err } = await supabase
-        .from('skin_diary_entries')
-        .select(
-          'id, entry_date, skin_condition, condition_notes, morning_routine_completed, evening_routine_completed, created_at'
-        )
-        .order('entry_date', { ascending: false })
-        .limit(30);
+  // 월별 엔트리 로드
+  const loadEntries = useCallback(
+    async (year: number, month: number) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      if (err) throw err;
-      setEntries(data || []);
-    } catch (err) {
-      console.error('[Diary] Load entries error:', err);
-      setError('다이어리를 불러오는데 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase]);
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
 
-  // 주간 통계 로드
-  const loadStats = useCallback(async () => {
-    try {
-      const { data, error: err } = await supabase
-        .from('skin_diary_weekly_stats')
-        .select('*')
-        .order('week_start', { ascending: false })
-        .limit(8);
+        const { data, error: err } = await supabase
+          .from('skin_diary_entries')
+          .select('*')
+          .gte('entry_date', startDate.toISOString().split('T')[0])
+          .lte('entry_date', endDate.toISOString().split('T')[0])
+          .order('entry_date', { ascending: true });
 
-      if (err) throw err;
-      setWeeklyStats(data || []);
-    } catch (err) {
-      console.error('[Diary] Load stats error:', err);
-    }
-  }, [supabase]);
+        if (err) throw err;
 
-  // 초기 로드
-  useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      loadEntries();
-      loadStats();
-    }
-  }, [isLoaded, isSignedIn, loadEntries, loadStats]);
-
-  // 특정 날짜 엔트리 로드
-  const loadEntryForDate = useCallback(
-    async (date: Date) => {
-      const dateStr = date.toISOString().split('T')[0];
-      const { data } = await supabase
-        .from('skin_diary_entries')
-        .select('*')
-        .eq('entry_date', dateStr)
-        .maybeSingle();
-
-      if (data) {
-        setExistingEntry({
-          skinCondition: data.skin_condition,
-          conditionNotes: data.condition_notes || undefined,
-          sleepHours: data.sleep_hours,
-          sleepQuality: data.sleep_quality,
-          waterIntakeMl: data.water_intake_ml,
-          stressLevel: data.stress_level,
-          weather: data.weather,
-          outdoorHours: data.outdoor_hours,
-          morningRoutineCompleted: data.morning_routine_completed,
-          eveningRoutineCompleted: data.evening_routine_completed,
-          specialTreatments: data.special_treatments || [],
-        });
-      } else {
-        setExistingEntry(undefined);
+        const transformedEntries = ((data as DbSkinDiaryEntry[]) || []).map(transformDbToEntry);
+        setEntries(transformedEntries);
+      } catch (err) {
+        console.error('[Diary] Load entries error:', err);
+        setError('다이어리를 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
       }
     },
     [supabase]
   );
 
-  // 새 엔트리 작성
-  const handleNewEntry = useCallback(() => {
-    setSelectedDate(new Date());
-    setExistingEntry(undefined);
-    setActiveTab('entry');
+  // 초기 로드
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      loadEntries(currentYear, currentMonth);
+    }
+  }, [isLoaded, isSignedIn, loadEntries, currentYear, currentMonth]);
+
+  // 월 변경 핸들러
+  const handleMonthChange = useCallback((year: number, month: number) => {
+    setCurrentYear(year);
+    setCurrentMonth(month);
   }, []);
 
-  // 기존 엔트리 편집
-  const handleEditEntry = useCallback(
-    async (entry: DiaryListItem) => {
-      const date = new Date(entry.entry_date);
+  // 날짜 선택 핸들러
+  const handleDateSelect = useCallback(
+    (date: Date) => {
       setSelectedDate(date);
-      await loadEntryForDate(date);
-      setActiveTab('entry');
+      const entry = entries.find((e) => {
+        const entryDate = e.entryDate.toISOString().split('T')[0];
+        const selectedDateStr = date.toISOString().split('T')[0];
+        return entryDate === selectedDateStr;
+      });
+      setSelectedEntry(entry);
+      setShowForm(true);
     },
-    [loadEntryForDate]
+    [entries]
   );
 
-  // 엔트리 저장
+  // 엔트리 저장 핸들러
   const handleSaveEntry = useCallback(
-    async (entry: DiaryEntry) => {
+    async (input: SkinDiaryEntryInput) => {
       try {
         setSaving(true);
         setError(null);
 
-        const dateStr = selectedDate.toISOString().split('T')[0];
+        const dateStr = input.entryDate.toISOString().split('T')[0];
 
         const { error: err } = await supabase.from('skin_diary_entries').upsert(
           {
             entry_date: dateStr,
-            skin_condition: entry.skinCondition,
-            condition_notes: entry.conditionNotes || null,
-            sleep_hours: entry.sleepHours,
-            sleep_quality: entry.sleepQuality,
-            water_intake_ml: entry.waterIntakeMl,
-            stress_level: entry.stressLevel,
-            weather: entry.weather || null,
-            outdoor_hours: entry.outdoorHours,
-            morning_routine_completed: entry.morningRoutineCompleted,
-            evening_routine_completed: entry.eveningRoutineCompleted,
-            special_treatments: entry.specialTreatments,
+            skin_condition: input.skinCondition,
+            condition_notes: input.conditionNotes || null,
+            sleep_hours: input.sleepHours ?? null,
+            sleep_quality: input.sleepQuality ?? null,
+            water_intake_ml: input.waterIntakeMl ?? null,
+            stress_level: input.stressLevel ?? null,
+            weather: input.weather || null,
+            outdoor_hours: input.outdoorHours ?? null,
+            morning_routine_completed: input.morningRoutineCompleted ?? false,
+            evening_routine_completed: input.eveningRoutineCompleted ?? false,
+            special_treatments: input.specialTreatments || null,
           },
           {
             onConflict: 'clerk_user_id,entry_date',
@@ -176,9 +158,9 @@ export default function SkinDiaryPage() {
         if (err) throw err;
 
         // 목록 새로고침
-        await loadEntries();
-        await loadStats();
-        setActiveTab('list');
+        await loadEntries(currentYear, currentMonth);
+        setShowForm(false);
+        setSelectedEntry(undefined);
       } catch (err) {
         console.error('[Diary] Save error:', err);
         setError('저장에 실패했습니다. 다시 시도해주세요.');
@@ -186,14 +168,77 @@ export default function SkinDiaryPage() {
         setSaving(false);
       }
     },
-    [selectedDate, supabase, loadEntries, loadStats]
+    [supabase, loadEntries, currentYear, currentMonth]
   );
 
-  // 엔트리 작성 취소
-  const handleCancelEntry = useCallback(() => {
-    setActiveTab('list');
-    setExistingEntry(undefined);
+  // 폼 취소 핸들러
+  const handleCancelForm = useCallback(() => {
+    setShowForm(false);
+    setSelectedEntry(undefined);
   }, []);
+
+  // 상관관계 인사이트 계산
+  const correlationInsights = useMemo<CorrelationInsight[]>(() => {
+    if (entries.length < 7) {
+      return DEFAULT_INSIGHTS;
+    }
+    return analyzeCorrelations(entries, '30days');
+  }, [entries]);
+
+  // 월간 리포트 계산
+  const monthlyReport = useMemo<MonthlyReport | null>(() => {
+    if (entries.length === 0) {
+      return null;
+    }
+
+    const totalCondition = entries.reduce((sum, e) => sum + e.skinCondition, 0);
+    const avgCondition = totalCondition / entries.length;
+
+    let bestDay: Date | null = null;
+    let worstDay: Date | null = null;
+    let bestScore = 0;
+    let worstScore = 6;
+
+    for (const entry of entries) {
+      if (entry.skinCondition > bestScore) {
+        bestScore = entry.skinCondition;
+        bestDay = entry.entryDate;
+      }
+      if (entry.skinCondition < worstScore) {
+        worstScore = entry.skinCondition;
+        worstDay = entry.entryDate;
+      }
+    }
+
+    const morningCount = entries.filter((e) => e.morningRoutineCompleted).length;
+    const eveningCount = entries.filter((e) => e.eveningRoutineCompleted).length;
+
+    // 간단한 트렌드 계산
+    let trendDirection: 'improving' | 'stable' | 'declining' = 'stable';
+    if (entries.length >= 7) {
+      const firstHalf = entries.slice(0, Math.floor(entries.length / 2));
+      const secondHalf = entries.slice(Math.floor(entries.length / 2));
+      const firstAvg = firstHalf.reduce((s, e) => s + e.skinCondition, 0) / firstHalf.length;
+      const secondAvg = secondHalf.reduce((s, e) => s + e.skinCondition, 0) / secondHalf.length;
+      if (secondAvg - firstAvg > 0.3) trendDirection = 'improving';
+      else if (secondAvg - firstAvg < -0.3) trendDirection = 'declining';
+    }
+
+    return {
+      month: `${currentYear}-${String(currentMonth).padStart(2, '0')}`,
+      totalEntries: entries.length,
+      avgCondition: Math.round(avgCondition * 10) / 10,
+      bestDay,
+      worstDay,
+      topFactors: correlationInsights.slice(0, 3),
+      routineCompletionRate: {
+        morning: entries.length > 0 ? Math.round((morningCount / entries.length) * 100) : 0,
+        evening: entries.length > 0 ? Math.round((eveningCount / entries.length) * 100) : 0,
+      },
+      trendDirection,
+      weeklyAverages: [],
+    };
+  }, [entries, correlationInsights, currentYear, currentMonth]);
 
   // 로딩/인증 체크
   if (!isLoaded) {
@@ -215,31 +260,9 @@ export default function SkinDiaryPage() {
     );
   }
 
-  // 컨디션 이모지
-  const conditionEmoji = (condition: number) => {
-    const emojis: Record<number, string> = {
-      1: '😢',
-      2: '😕',
-      3: '😐',
-      4: '🙂',
-      5: '😊',
-    };
-    return emojis[condition] || '😐';
-  };
-
-  // 날짜 포맷
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
-      month: 'short',
-      day: 'numeric',
-      weekday: 'short',
-    });
-  };
-
   return (
     <main className="min-h-[calc(100vh-80px)] bg-muted" data-testid="skin-diary-page">
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-2xl mx-auto px-4 py-6">
         {/* 헤더 */}
         <header className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="icon" onClick={() => router.back()} className="shrink-0">
@@ -249,12 +272,14 @@ export default function SkinDiaryPage() {
             <h1 className="text-xl font-bold">피부 다이어리</h1>
             <p className="text-sm text-muted-foreground">매일 피부 상태를 기록해보세요</p>
           </div>
-          {activeTab !== 'entry' && (
-            <Button size="sm" onClick={handleNewEntry}>
-              <Plus className="w-4 h-4 mr-1" />
-              기록하기
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/analysis/skin/diary/report')}
+          >
+            <FileText className="w-4 h-4 mr-1" />
+            리포트
+          </Button>
         </header>
 
         {/* 에러 메시지 */}
@@ -267,128 +292,82 @@ export default function SkinDiaryPage() {
           </div>
         )}
 
-        {/* 탭 컨텐츠 */}
-        {activeTab === 'entry' ? (
-          <SkinDiaryEntry
+        {/* 폼 모달 */}
+        {showForm ? (
+          <DiaryEntryForm
             date={selectedDate}
-            existingEntry={existingEntry}
-            onSave={handleSaveEntry}
-            onCancel={handleCancelEntry}
-            isSaving={saving}
+            existingEntry={selectedEntry}
+            onSubmit={handleSaveEntry}
+            onCancel={handleCancelForm}
+            isLoading={saving}
           />
         ) : (
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'list' | 'stats')}>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'calendar' | 'insights')}>
             <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="list" className="flex items-center gap-1">
+              <TabsTrigger value="calendar" className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                기록
+                캘린더
               </TabsTrigger>
-              <TabsTrigger value="stats" className="flex items-center gap-1">
+              <TabsTrigger value="insights" className="flex items-center gap-1">
                 <TrendingUp className="w-4 h-4" />
-                통계
+                인사이트
               </TabsTrigger>
             </TabsList>
 
-            {/* 기록 목록 */}
-            <TabsContent value="list" className="space-y-3">
+            {/* 캘린더 탭 */}
+            <TabsContent value="calendar" className="space-y-4">
               {loading ? (
-                <div className="text-center py-8 text-muted-foreground">불러오는 중...</div>
-              ) : entries.length === 0 ? (
                 <Card>
                   <CardContent className="py-12 text-center">
-                    <Sparkles className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-                    <p className="text-muted-foreground mb-4">
-                      아직 기록이 없어요.
-                      <br />
-                      오늘의 피부 상태를 기록해보세요!
-                    </p>
-                    <Button onClick={handleNewEntry}>
-                      <Plus className="w-4 h-4 mr-1" />첫 기록 작성하기
-                    </Button>
+                    <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+                    <p className="text-muted-foreground">불러오는 중...</p>
                   </CardContent>
                 </Card>
               ) : (
-                entries.map((entry) => (
-                  <Card
-                    key={entry.id}
-                    className="cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => handleEditEntry(entry)}
-                  >
-                    <CardContent className="py-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{conditionEmoji(entry.skin_condition)}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium">{formatDate(entry.entry_date)}</div>
-                          {entry.condition_notes && (
-                            <p className="text-sm text-muted-foreground truncate">
-                              {entry.condition_notes}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex gap-1">
-                          {entry.morning_routine_completed && (
-                            <Badge variant="outline" className="text-xs">
-                              아침
-                            </Badge>
-                          )}
-                          {entry.evening_routine_completed && (
-                            <Badge variant="outline" className="text-xs">
-                              저녁
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
+                <>
+                  {/* 캘린더 */}
+                  <Card>
+                    <CardContent className="pt-6">
+                      <DiaryCalendar
+                        entries={entries}
+                        selectedDate={selectedDate}
+                        onDateSelect={handleDateSelect}
+                        onMonthChange={handleMonthChange}
+                      />
                     </CardContent>
                   </Card>
-                ))
+
+                  {/* 월간 요약 */}
+                  {monthlyReport && (
+                    <MonthlyReportCard
+                      report={monthlyReport}
+                      onViewDetails={() => router.push('/analysis/skin/diary/report')}
+                    />
+                  )}
+                </>
               )}
             </TabsContent>
 
-            {/* 통계 */}
-            <TabsContent value="stats" className="space-y-4">
-              {weeklyStats.length === 0 ? (
+            {/* 인사이트 탭 */}
+            <TabsContent value="insights" className="space-y-4">
+              {entries.length === 0 ? (
                 <Card>
                   <CardContent className="py-12 text-center">
-                    <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-                    <p className="text-muted-foreground">기록이 쌓이면 통계를 볼 수 있어요.</p>
+                    <Sparkles className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-muted-foreground mb-2">아직 기록이 없어요</p>
+                    <p className="text-sm text-muted-foreground">
+                      캘린더에서 날짜를 선택해 첫 기록을 작성해보세요!
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
-                weeklyStats.map((stat) => (
-                  <Card key={stat.week_start}>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        {new Date(stat.week_start).toLocaleDateString('ko-KR', {
-                          month: 'long',
-                          day: 'numeric',
-                        })}{' '}
-                        주
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">평균 컨디션</span>
-                          <div className="font-medium">{stat.avg_condition?.toFixed(1) || '-'}</div>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">평균 수면</span>
-                          <div className="font-medium">
-                            {stat.avg_sleep_hours?.toFixed(1) || '-'}시간
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">평균 수분</span>
-                          <div className="font-medium">{stat.avg_water_ml || '-'}ml</div>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">기록 횟수</span>
-                          <div className="font-medium">{stat.entries_count}일</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                <>
+                  {/* 트렌드 차트 */}
+                  <FactorTrendChart entries={entries} factor="skinCondition" period="30days" />
+
+                  {/* 상관관계 차트 */}
+                  <CorrelationChart insights={correlationInsights} />
+                </>
               )}
             </TabsContent>
           </Tabs>
