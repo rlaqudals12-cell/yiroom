@@ -2,7 +2,7 @@
 name: korean-beauty-validator
 description: 한국 뷰티 트렌드 검증 및 K-뷰티 전문 분석 Agent
 tools: Read, Grep, WebSearch
-model: sonnet
+model: opus
 ---
 
 # 🇰🇷 Korean Beauty Validator Agent

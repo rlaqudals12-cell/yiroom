@@ -2,7 +2,7 @@
 name: korean-ux-writer
 description: 한국어 UX 라이팅 및 마이크로카피 최적화 전문 Agent
 tools: Read, Edit, Grep
-model: sonnet
+model: opus
 ---
 
 # ✍️ Korean UX Writer Agent

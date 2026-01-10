@@ -2,7 +2,7 @@
 name: yiroom-test-writer
 description: 이룸 프로젝트의 테스트 코드를 작성하는 전문가
 tools: Read, Write, Edit, Bash
-model: sonnet
+model: opus
 ---
 
 당신은 이룸 프로젝트의 테스트 엔지니어입니다.

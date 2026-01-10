@@ -8,6 +8,7 @@
 ## 🎯 SDD 핵심 철학
 
 ### 왜 SDD인가?
+
 ```yaml
 전통 방식 문제점:
   - 코드 작성 중 설계 변경 → 시간 낭비
@@ -25,51 +26,62 @@ SDD 해결책:
 ## 📚 3단계 문서 체계
 
 ### 1️⃣ Feature 문서 (전체 맥락)
+
 ```markdown
 # Feature: 피부 분석 시스템
 
 ## 개요
+
 사용자 얼굴 사진을 AI로 분석하여 피부 상태 진단 및 제품 추천
 
 ## 핵심 기능
+
 1. 이미지 업로드 및 검증
 2. AI 분석 (Gemini Vision)
 3. 결과 시각화
 4. 맞춤 제품 추천
 
 ## 사용자 플로우
+
 [Mermaid 다이어그램]
 
 ## 데이터 스키마
+
 [ERD 다이어그램]
 
 ## API 엔드포인트
+
 - POST /api/skin-analysis
 - GET /api/skin-analysis/:id
 ```
 
 ### 2️⃣ Task 문서 (작업 단위)
+
 ```markdown
 # Task: 피부 분석 이미지 업로더 구현
 
 ## 요구사항
+
 - 파일 크기: 최대 5MB
 - 포맷: JPG, PNG, WEBP
 - 최소 해상도: 800x800
 - 얼굴 인식 검증
 
 ## 유스케이스
+
 1. 정상 업로드
 2. 파일 크기 초과
 3. 잘못된 포맷
 4. 얼굴 미인식
 
 ## 엣지케이스
+
 - 여러 얼굴 감지
 - 너무 어두운 사진
 - 블러 처리된 사진
 
 ## 체크리스트
+
 - [ ] 파일 검증 로직
 - [ ] 프리뷰 UI
 - [ ] 에러 메시지
@@ -77,19 +89,22 @@ SDD 해결책:
 ```
 
 ### 3️⃣ Development 문서 (구현 명세)
+
 ```markdown
 # Dev: ImageUploader 컴포넌트
 
 ## 인터페이스
+
 \`\`\`typescript
 interface ImageUploaderProps {
-  onUpload: (file: File) => Promise<void>
-  maxSize?: number // bytes
-  acceptedFormats?: string[]
+onUpload: (file: File) => Promise<void>
+maxSize?: number // bytes
+acceptedFormats?: string[]
 }
 \`\`\`
 
 ## 상태 관리
+
 \`\`\`typescript
 const [preview, setPreview] = useState<string>()
 const [isLoading, setIsLoading] = useState(false)
@@ -97,16 +112,18 @@ const [error, setError] = useState<string>()
 \`\`\`
 
 ## 검증 로직
+
 \`\`\`typescript
 function validateFile(file: File): ValidationResult {
-  // 1. 크기 검사
-  // 2. 포맷 검사
-  // 3. 이미지 차원 검사
-  return { valid: boolean, error?: string }
+// 1. 크기 검사
+// 2. 포맷 검사
+// 3. 이미지 차원 검사
+return { valid: boolean, error?: string }
 }
 \`\`\`
 
 ## 테스트 시나리오
+
 1. 정상 파일 업로드
 2. 대용량 파일 거부
 3. 잘못된 포맷 거부
@@ -118,6 +135,7 @@ function validateFile(file: File): ValidationResult {
 ## 🔄 SDD 실행 프로세스
 
 ### Step 1: Feature 정의
+
 ```yaml
 1. 전체 기능 범위 확정
 2. 사용자 스토리 작성
@@ -126,6 +144,7 @@ function validateFile(file: File): ValidationResult {
 ```
 
 ### Step 2: Task 분해
+
 ```yaml
 1. Feature를 작업 단위로 분해
 2. 각 Task 의존성 파악
@@ -134,6 +153,7 @@ function validateFile(file: File): ValidationResult {
 ```
 
 ### Step 3: Development 상세화
+
 ```yaml
 1. API/컴포넌트 인터페이스 정의
 2. 상태 관리 전략 수립
@@ -142,6 +162,7 @@ function validateFile(file: File): ValidationResult {
 ```
 
 ### Step 4: AI 구현
+
 ```yaml
 1. Development 문서 전달
 2. AI가 코드 생성
@@ -153,62 +174,119 @@ function validateFile(file: File): ValidationResult {
 
 ## 📝 문서 작성 템플릿
 
+### TL;DR 헤더 (필수, 500줄+ 문서 권장)
+
+**목적**: AI가 전체 문서 없이도 핵심을 빠르게 파악
+
+```markdown
+## TL;DR
+
+| 항목          | 내용                                   |
+| ------------- | -------------------------------------- |
+| **목표**      | [한 줄 요약]                           |
+| **핵심 파일** | `lib/[module]/*.ts`                    |
+| **복잡도**    | [점수]점 ([Quick/Light/Standard/Full]) |
+| **예상 파일** | [N]개                                  |
+| **의존성**    | [선행 모듈/없음]                       |
+
+> 상세 구현 시에만 아래 내용 참조
+```
+
+**적용 기준**:
+
+- ✅ 필수: 500줄 이상 SDD 문서
+- ✅ 권장: 모든 신규 SDD 문서
+- ⏭️ 선택: 300줄 미만 단순 문서
+
+**예시 (Phase D SDD)**:
+
+```markdown
+## TL;DR
+
+| 항목          | 내용                           |
+| ------------- | ------------------------------ |
+| **목표**      | AI 기반 피부 상담 챗봇         |
+| **핵심 파일** | `lib/ai-consultation/*.ts`     |
+| **복잡도**    | 75점 (Full)                    |
+| **예상 파일** | 20개                           |
+| **의존성**    | Phase B (루틴), Phase C (일기) |
+
+> 상세 구현 시에만 아래 내용 참조
+```
+
+---
+
 ### Feature 템플릿
+
 ```markdown
 # Feature: [기능명]
 
 ## 비즈니스 목표
+
 [왜 이 기능이 필요한가?]
 
 ## 사용자 스토리
+
 As a [사용자 유형]
 I want to [원하는 것]
 So that [얻는 가치]
 
 ## 기능 요구사항
+
 - [ ] FR-1: [기능 요구사항 1]
 - [ ] FR-2: [기능 요구사항 2]
 
 ## 비기능 요구사항
+
 - [ ] NFR-1: 응답시간 < 2초
 - [ ] NFR-2: 모바일 최적화
 
 ## 제약사항
+
 - [기술적 제약]
 - [비즈니스 제약]
 
 ## 성공 지표
+
 - [측정 가능한 목표]
 ```
 
 ### Task 템플릿
+
 ```markdown
 # Task: [작업명]
 
 ## 선행 조건
+
 - [필요한 사전 작업]
 
 ## 구현 범위
+
 - IN: [포함되는 것]
 - OUT: [제외되는 것]
 
 ## 세부 단계
+
 1. [ ] Step 1: [작업]
 2. [ ] Step 2: [작업]
 
 ## 검증 방법
+
 - [어떻게 완료를 확인하나]
 
 ## 리스크
+
 - Risk 1: [위험 요소]
   - Mitigation: [대응 방안]
 ```
 
 ### Development 템플릿
+
 ```markdown
 # Dev: [컴포넌트/API명]
 
 ## 기술 명세
+
 \`\`\`typescript
 // 타입 정의
 // 인터페이스
@@ -216,23 +294,26 @@ So that [얻는 가치]
 \`\`\`
 
 ## 구현 로직
+
 \`\`\`mermaid
 graph TD
-  A[시작] --> B{조건}
-  B -->|Yes| C[처리]
-  B -->|No| D[에러]
+A[시작] --> B{조건}
+B -->|Yes| C[처리]
+B -->|No| D[에러]
 \`\`\`
 
 ## 엣지 케이스
+
 1. [예외 상황 1]
    - 처리: [대응 방법]
 
 ## 테스트 케이스
+
 \`\`\`typescript
 describe('[컴포넌트명]', () => {
-  it('should [동작]', () => {
-    // 테스트 시나리오
-  })
+it('should [동작]', () => {
+// 테스트 시나리오
+})
 })
 \`\`\`
 ```
@@ -242,6 +323,7 @@ describe('[컴포넌트명]', () => {
 ## 🚀 SDD 실전 예시
 
 ### 실제 작업 흐름
+
 ```yaml
 병민님: "피부 분석 기능 만들어줘"
 
@@ -279,6 +361,7 @@ Claude (실행 모드):
 ## 📊 SDD 성과 지표
 
 ### 측정 가능한 이점
+
 ```yaml
 개발 속도:
   - 전통: 2-3주 (2명)
@@ -301,6 +384,7 @@ Claude (실행 모드):
 ## ⚠️ SDD 주의사항
 
 ### 피해야 할 함정
+
 ```yaml
 과도한 문서화:
   - ❌ 모든 것을 문서화
@@ -316,18 +400,19 @@ AI 과신:
 ```
 
 ### 성공 팁
+
 ```yaml
 1. 작게 시작하기
-   - 간단한 기능부터 SDD 적용
-   - 점진적으로 범위 확대
+- 간단한 기능부터 SDD 적용
+- 점진적으로 범위 확대
 
 2. 템플릿 활용
-   - 반복되는 패턴 템플릿화
-   - 팀 표준 만들기
+- 반복되는 패턴 템플릿화
+- 팀 표준 만들기
 
 3. 지속적 개선
-   - 회고를 통한 프로세스 개선
-   - 문서 품질 향상
+- 회고를 통한 프로세스 개선
+- 문서 품질 향상
 ```
 
 ---
@@ -335,18 +420,21 @@ AI 과신:
 ## 🎯 체크리스트
 
 ### SDD 시작 전
+
 - [ ] Feature 문서 작성됨?
 - [ ] Task 분해 완료됨?
 - [ ] Development 명세 준비됨?
 - [ ] 테스트 시나리오 정의됨?
 
 ### SDD 진행 중
+
 - [ ] Plan Mode에서 검토함?
 - [ ] 스펙 애매한 부분 없음?
 - [ ] 엣지케이스 고려됨?
 - [ ] 사용자 확인 받음?
 
 ### SDD 완료 후
+
 - [ ] 테스트 모두 통과?
 - [ ] 문서 업데이트됨?
 - [ ] 다음 작업 준비됨?
