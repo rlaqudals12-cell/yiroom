@@ -1,7 +1,7 @@
-# 🗄️ Database 스키마 v5.0 (Phase H + Launch)
+# 🗄️ Database 스키마 v5.1 (Phase H + Launch + Notifications)
 
-**버전**: v5.0 (Phase H 게이미피케이션 + Launch 운영)
-**업데이트**: 2025년 12월 24일
+**버전**: v5.1 (Phase H 게이미피케이션 + Launch 운영 + 알림 설정)
+**업데이트**: 2026년 1월 11일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템
@@ -63,6 +63,10 @@
     32. announcement_reads          # 공지 읽음 표시 (2025-12-26)
     33. faqs                        # FAQ (2025-12-26)
     34. feedback                    # 사용자 피드백 (2025-12-26)
+
+  알림 (Notifications):
+    35. user_notification_settings  # 알림 설정 (2026-01-11)
+    36. user_push_tokens            # 푸시 토큰 (2026-01-11)
 
 관계도:
   users (1) ━━━━━ (N) personal_color_assessments
@@ -1426,6 +1430,198 @@ skin_condition:
 
 ---
 
-**버전**: v4.5 (일일 체크인 테이블 추가)
-**최종 업데이트**: 2025년 12월 22일
-**상태**: Phase 1 + Phase 2 + Admin + Phase G + Checkin 완료 ✅
+## 19. user_notification_settings 테이블 (알림 설정)
+
+사용자별 알림 설정 저장
+
+### SQL 생성문
+
+```sql
+CREATE TABLE user_notification_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL UNIQUE,
+
+  -- 전역 설정
+  enabled BOOLEAN DEFAULT false,
+
+  -- 운동 알림
+  workout_reminder BOOLEAN DEFAULT true,
+  workout_reminder_time TIME DEFAULT '09:00',
+  streak_warning BOOLEAN DEFAULT true,
+
+  -- 영양 알림
+  nutrition_reminder BOOLEAN DEFAULT true,
+  meal_reminder_breakfast TIME DEFAULT '08:30',
+  meal_reminder_lunch TIME DEFAULT '12:30',
+  meal_reminder_dinner TIME DEFAULT '18:30',
+  water_reminder BOOLEAN DEFAULT true,
+  water_reminder_interval INTEGER DEFAULT 2,  -- 시간 간격
+
+  -- 소셜/성취 알림
+  social_notifications BOOLEAN DEFAULT true,
+  achievement_notifications BOOLEAN DEFAULT true,
+
+  -- 메타데이터
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 인덱스
+CREATE INDEX idx_notification_settings_clerk_user_id
+  ON user_notification_settings(clerk_user_id);
+
+-- 코멘트
+COMMENT ON TABLE user_notification_settings IS '사용자별 알림 설정';
+COMMENT ON COLUMN user_notification_settings.water_reminder_interval IS '수분 섭취 알림 간격 (시간)';
+```
+
+### 필드 설명
+
+```yaml
+enabled: BOOLEAN
+  - 전역 알림 ON/OFF
+  - false일 경우 모든 알림 비활성화
+
+workout_reminder: BOOLEAN
+  - 운동 리마인더 활성화 여부
+
+workout_reminder_time: TIME
+  - 운동 리마인더 시간
+  - 기본값: 09:00
+
+streak_warning: BOOLEAN
+  - 연속 기록 끊김 경고 알림
+
+nutrition_reminder: BOOLEAN
+  - 식사 리마인더 활성화 여부
+
+meal_reminder_*: TIME
+  - 아침/점심/저녁 리마인더 시간
+
+water_reminder: BOOLEAN
+  - 수분 섭취 리마인더 활성화 여부
+
+water_reminder_interval: INTEGER
+  - 수분 섭취 알림 간격 (시간 단위)
+  - 기본값: 2 (2시간마다)
+
+social_notifications: BOOLEAN
+  - 친구 요청, 챌린지 초대 등 소셜 알림
+
+achievement_notifications: BOOLEAN
+  - 뱃지 획득, 레벨업 등 성취 알림
+```
+
+### RLS 정책
+
+```sql
+ALTER TABLE user_notification_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own notification settings"
+  ON user_notification_settings FOR SELECT
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+CREATE POLICY "Users can insert own notification settings"
+  ON user_notification_settings FOR INSERT
+  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+CREATE POLICY "Users can update own notification settings"
+  ON user_notification_settings FOR UPDATE
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+```
+
+---
+
+## 20. user_push_tokens 테이블 (푸시 토큰)
+
+사용자 기기별 푸시 알림 토큰 저장
+
+### SQL 생성문
+
+```sql
+CREATE TABLE user_push_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+
+  -- 토큰 정보
+  push_token TEXT NOT NULL,
+  platform TEXT CHECK (platform IN ('ios', 'android', 'web')),
+  device_name TEXT,
+
+  -- 상태
+  is_active BOOLEAN DEFAULT true,
+  last_used_at TIMESTAMPTZ,
+
+  -- 메타데이터
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- 사용자-토큰 조합 유니크
+  UNIQUE (clerk_user_id, push_token)
+);
+
+-- 인덱스
+CREATE INDEX idx_push_tokens_clerk_user_id
+  ON user_push_tokens(clerk_user_id);
+CREATE INDEX idx_push_tokens_is_active
+  ON user_push_tokens(is_active) WHERE is_active = true;
+
+-- 코멘트
+COMMENT ON TABLE user_push_tokens IS '사용자 기기별 푸시 알림 토큰';
+COMMENT ON COLUMN user_push_tokens.platform IS '플랫폼 (ios, android, web)';
+COMMENT ON COLUMN user_push_tokens.is_active IS '토큰 활성 상태 (만료/로그아웃 시 false)';
+```
+
+### 필드 설명
+
+```yaml
+push_token: TEXT
+  - Expo/FCM/APNs 푸시 토큰
+  - Expo: ExponentPushToken[...]
+  - FCM: 디바이스 토큰
+
+platform: TEXT (CHECK)
+  - ios: iOS 앱
+  - android: Android 앱
+  - web: 웹 푸시 (PWA)
+
+device_name: TEXT
+  - 기기 이름 (선택적)
+  - 예: "iPhone 15 Pro", "Galaxy S24"
+
+is_active: BOOLEAN
+  - 토큰 활성 상태
+  - 로그아웃/토큰 만료 시 false
+
+last_used_at: TIMESTAMPTZ
+  - 마지막 푸시 발송 시간
+  - 비활성 토큰 정리에 활용
+```
+
+### RLS 정책
+
+```sql
+ALTER TABLE user_push_tokens ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own push tokens"
+  ON user_push_tokens FOR SELECT
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+CREATE POLICY "Users can insert own push tokens"
+  ON user_push_tokens FOR INSERT
+  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+CREATE POLICY "Users can update own push tokens"
+  ON user_push_tokens FOR UPDATE
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+CREATE POLICY "Users can delete own push tokens"
+  ON user_push_tokens FOR DELETE
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+```
+
+---
+
+**버전**: v5.1 (알림 설정 테이블 추가)
+**최종 업데이트**: 2026년 1월 11일
+**상태**: Phase 1 + Phase 2 + Admin + Phase G + Checkin + Notifications 완료 ✅
