@@ -1,14 +1,28 @@
 /**
  * 알림 시스템 훅
  * 푸시 알림 권한 관리, 설정, 스케줄링
+ *
+ * DB 연동 전략:
+ * - 초기 로드: DB 우선 → AsyncStorage fallback
+ * - 저장 시: DB 저장 → AsyncStorage 백업
+ * - 오프라인: DB 실패 시 AsyncStorage만 사용
  */
 
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 
+import { useClerkSupabaseClient } from '../supabase';
+
+import {
+  getUserNotificationSettings,
+  saveUserNotificationSettings,
+  savePushToken,
+  deactivatePushToken,
+} from './api';
 import type { NotificationType } from './templates';
 import { createNotification } from './templates';
 import {
@@ -100,12 +114,16 @@ interface UsePushTokenResult {
   token: string | null;
   isLoading: boolean;
   registerToken: () => Promise<string | null>;
-  syncWithServer: (userId: string) => Promise<boolean>;
+  syncWithServer: () => Promise<boolean>;
+  deactivateToken: () => Promise<boolean>;
 }
 
 export function usePushToken(): UsePushTokenResult {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { userId } = useAuth();
+  const supabase = useClerkSupabaseClient();
 
   useEffect(() => {
     loadToken();
@@ -156,67 +174,66 @@ export function usePushToken(): UsePushTokenResult {
     }
   }, []);
 
-  // 서버에 푸시 토큰 동기화
-  const syncWithServer = useCallback(
-    async (userId: string): Promise<boolean> => {
-      if (!token) {
-        console.warn('[Mobile] No token to sync');
-        return false;
-      }
+  // DB에 푸시 토큰 동기화 (Clerk 인증된 Supabase 클라이언트 사용)
+  const syncWithServer = useCallback(async (): Promise<boolean> => {
+    if (!token || !userId) {
+      console.warn('[Mobile] No token or userId to sync');
+      return false;
+    }
 
-      try {
-        // Supabase API 호출 (웹앱과 동일한 엔드포인트 사용)
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_SUPABASE_URL}/rest/v1/user_push_tokens`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
-              Prefer: 'resolution=merge-duplicates',
-            },
-            body: JSON.stringify({
-              clerk_user_id: userId,
-              push_token: token,
-              platform: Platform.OS,
-              device_name: Platform.OS === 'ios' ? 'iPhone' : 'Android',
-              last_active: new Date().toISOString(),
-            }),
-          }
-        );
+    try {
+      await savePushToken(
+        supabase,
+        userId,
+        token,
+        Platform.OS === 'ios' ? 'iPhone' : 'Android'
+      );
+      console.log('[Mobile] Push token synced with server');
+      return true;
+    } catch (error) {
+      console.error('[Mobile] syncWithServer error:', error);
+      return false;
+    }
+  }, [token, userId, supabase]);
 
-        if (!response.ok) {
-          throw new Error(`Server returned ${response.status}`);
-        }
+  // 로그아웃 시 토큰 비활성화
+  const deactivateToken = useCallback(async (): Promise<boolean> => {
+    if (!token || !userId) {
+      return false;
+    }
 
-        console.log('[Mobile] Push token synced with server');
-        return true;
-      } catch (error) {
-        console.error('[Mobile] syncWithServer error:', error);
-        return false;
-      }
-    },
-    [token]
-  );
+    try {
+      await deactivatePushToken(supabase, userId, token);
+      console.log('[Mobile] Push token deactivated');
+      return true;
+    } catch (error) {
+      console.error('[Mobile] deactivateToken error:', error);
+      return false;
+    }
+  }, [token, userId, supabase]);
 
   return {
     token,
     isLoading,
     registerToken,
     syncWithServer,
+    deactivateToken,
   };
 }
 
 // ============================================================
 // 알림 설정 훅
+// DB 연동: 초기 로드 시 DB 우선, 저장 시 DB + AsyncStorage 동시 저장
 // ============================================================
 
 interface UseNotificationSettingsResult {
   settings: NotificationSettings;
   isLoading: boolean;
+  isSyncing: boolean;
   updateSettings: (updates: Partial<NotificationSettings>) => Promise<void>;
   resetSettings: () => Promise<void>;
   applySettings: () => Promise<void>;
+  syncFromServer: () => Promise<void>;
 }
 
 export function useNotificationSettings(): UseNotificationSettingsResult {
@@ -224,19 +241,62 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
     DEFAULT_NOTIFICATION_SETTINGS
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const { userId, isSignedIn } = useAuth();
+  const supabase = useClerkSupabaseClient();
+
+  // 중복 로드 방지를 위한 ref
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    loadSettings();
-  }, []);
+    if (!hasLoadedRef.current) {
+      loadSettings();
+      hasLoadedRef.current = true;
+    }
+  }, [userId, isSignedIn]);
 
+  // DB 우선, AsyncStorage fallback 로드
   const loadSettings = async () => {
+    setIsLoading(true);
+
     try {
+      // 로그인 상태라면 DB에서 먼저 시도
+      if (isSignedIn && userId) {
+        try {
+          const dbSettings = await getUserNotificationSettings(
+            supabase,
+            userId
+          );
+          if (dbSettings) {
+            setSettings(dbSettings);
+            // DB 데이터를 AsyncStorage에도 백업
+            await AsyncStorage.setItem(
+              SETTINGS_KEY,
+              JSON.stringify(dbSettings)
+            );
+            console.log('[Mobile] Settings loaded from DB');
+            return;
+          }
+          // DB에 없으면 AsyncStorage fallback
+          console.log('[Mobile] No DB settings, falling back to AsyncStorage');
+        } catch (dbError) {
+          console.warn(
+            '[Mobile] DB load failed, falling back to AsyncStorage:',
+            dbError
+          );
+        }
+      }
+
+      // AsyncStorage fallback
       const stored = await AsyncStorage.getItem(SETTINGS_KEY);
       if (stored) {
+        const parsed = JSON.parse(stored);
         setSettings({
           ...DEFAULT_NOTIFICATION_SETTINGS,
-          ...JSON.parse(stored),
+          ...parsed,
         });
+        console.log('[Mobile] Settings loaded from AsyncStorage');
       }
     } catch (error) {
       console.error('[Mobile] loadSettings error:', error);
@@ -245,11 +305,26 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
     }
   };
 
+  // DB + AsyncStorage 동시 저장
   const saveSettings = async (newSettings: NotificationSettings) => {
+    // AsyncStorage 저장 (항상 성공해야 함)
     try {
       await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
     } catch (error) {
-      console.error('[Mobile] saveSettings error:', error);
+      console.error('[Mobile] AsyncStorage save error:', error);
+    }
+
+    // DB 저장 (로그인 시에만, 실패해도 graceful)
+    if (isSignedIn && userId) {
+      try {
+        await saveUserNotificationSettings(supabase, userId, newSettings);
+        console.log('[Mobile] Settings saved to DB');
+      } catch (error) {
+        console.warn(
+          '[Mobile] DB save failed (AsyncStorage backup exists):',
+          error
+        );
+      }
     }
   };
 
@@ -259,13 +334,35 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
       setSettings(newSettings);
       await saveSettings(newSettings);
     },
-    [settings]
+    [settings, isSignedIn, userId, supabase]
   );
 
   const resetSettings = useCallback(async () => {
     setSettings(DEFAULT_NOTIFICATION_SETTINGS);
     await saveSettings(DEFAULT_NOTIFICATION_SETTINGS);
-  }, []);
+  }, [isSignedIn, userId, supabase]);
+
+  // 서버에서 설정 다시 가져오기 (수동 동기화)
+  const syncFromServer = useCallback(async () => {
+    if (!isSignedIn || !userId) {
+      console.warn('[Mobile] Cannot sync: not signed in');
+      return;
+    }
+
+    setIsSyncing(true);
+    try {
+      const dbSettings = await getUserNotificationSettings(supabase, userId);
+      if (dbSettings) {
+        setSettings(dbSettings);
+        await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(dbSettings));
+        console.log('[Mobile] Settings synced from server');
+      }
+    } catch (error) {
+      console.error('[Mobile] syncFromServer error:', error);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [isSignedIn, userId, supabase]);
 
   const applySettings = useCallback(async () => {
     await Notifications.cancelAllScheduledNotificationsAsync();
@@ -301,9 +398,11 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
   return {
     settings,
     isLoading,
+    isSyncing,
     updateSettings,
     resetSettings,
     applySettings,
+    syncFromServer,
   };
 }
 

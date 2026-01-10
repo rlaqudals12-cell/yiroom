@@ -41,3 +41,12 @@ export {
   useNotificationScheduler,
   useNotificationResponse,
 } from './useNotifications';
+
+// DB API (직접 사용은 드물지만 테스트/디버깅용 export)
+export {
+  getUserNotificationSettings,
+  saveUserNotificationSettings,
+  savePushToken,
+  deactivatePushToken,
+  getActivePushTokens,
+} from './api';

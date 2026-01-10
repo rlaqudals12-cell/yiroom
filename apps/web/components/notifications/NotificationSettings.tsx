@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Bell,
   BellOff,
-  Clock,
   Dumbbell,
   Utensils,
   Flame,
   Sparkles,
   Smartphone,
   Loader2,
+  Droplets,
+  Users,
+  Trophy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -26,12 +28,11 @@ import {
   isNotificationSupported,
   getNotificationPermission,
   requestNotificationPermission,
-  loadNotificationSettings,
-  saveNotificationSettings,
+  loadNotificationSettings as loadLocalSettings,
+  saveNotificationSettings as saveLocalSettings,
   showTestNotification,
   startReminderSchedule,
   stopReminderSchedule,
-  type NotificationSettings as NotificationSettingsType,
 } from '@/lib/notifications';
 import {
   isPushSupported,
@@ -41,6 +42,9 @@ import {
   sendTestPush,
 } from '@/lib/push';
 import { toast } from 'sonner';
+import { useUser } from '@clerk/nextjs';
+import type { NotificationSettings as DbNotificationSettings } from '@/types/notifications';
+import { DEFAULT_NOTIFICATION_SETTINGS } from '@/types/notifications';
 
 // 시간 옵션 생성 (30분 단위)
 const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
@@ -49,25 +53,30 @@ const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
   return `${String(hour).padStart(2, '0')}:${minute}`;
 });
 
+// 수분 섭취 알림 간격 옵션 (시간 단위)
+const WATER_INTERVAL_OPTIONS = [1, 2, 3, 4] as const;
+
 /**
  * 알림 설정 컴포넌트
  * 브라우저 푸시 알림 권한 요청 및 리마인더 설정
+ * DB에 설정 저장, localStorage를 fallback으로 사용
  */
 export function NotificationSettings() {
+  const { user, isLoaded: isUserLoaded } = useUser();
   const [isSupported, setIsSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('default');
-  const [settings, setSettings] = useState<NotificationSettingsType>({
-    enabled: false,
-    reminderTime: '09:00',
-    workoutReminder: true,
-    nutritionReminder: true,
-    streakWarning: true,
-  });
+  const [settings, setSettings] = useState<DbNotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Web Push 상태
   const [isPushActive, setIsPushActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isTestingPush, setIsTestingPush] = useState(false);
+
+  // 설정 변경 디바운스를 위한 ref
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isFirstRender = useRef(true);
 
   // Push 상태 확인
   const checkPushStatus = useCallback(async () => {
@@ -77,28 +86,156 @@ export function NotificationSettings() {
     setIsPushActive(status.isSubscribed);
   }, []);
 
-  // 초기화
-  useEffect(() => {
-    const supported = isNotificationSupported();
-    setIsSupported(supported);
+  // DB에서 설정 로드
+  const loadSettingsFromDb = useCallback(async () => {
+    try {
+      const response = await fetch('/api/notifications/settings');
+      if (!response.ok) {
+        throw new Error('Failed to fetch settings');
+      }
+      const data = await response.json();
 
-    if (supported) {
-      setPermission(getNotificationPermission());
-      setSettings(loadNotificationSettings());
-      checkPushStatus();
+      if (data.success && data.data) {
+        return data.data as DbNotificationSettings;
+      }
+      return null;
+    } catch (error) {
+      console.error('[NotificationSettings] Failed to load from DB:', error);
+      return null;
     }
-  }, [checkPushStatus]);
+  }, []);
 
-  // 설정 변경 시 저장 및 스케줄 관리
+  // DB에 설정 저장
+  const saveSettingsToDb = useCallback(async (newSettings: DbNotificationSettings) => {
+    try {
+      const response = await fetch('/api/notifications/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSettings),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save settings');
+      }
+
+      const data = await response.json();
+      return data.success;
+    } catch (error) {
+      console.error('[NotificationSettings] Failed to save to DB:', error);
+      return false;
+    }
+  }, []);
+
+  // localStorage에서 기존 설정 마이그레이션 (DB 타입으로 변환)
+  const migrateLocalSettings = useCallback((): DbNotificationSettings => {
+    const localSettings = loadLocalSettings();
+    return {
+      ...DEFAULT_NOTIFICATION_SETTINGS,
+      enabled: localSettings.enabled,
+      workoutReminder: localSettings.workoutReminder,
+      workoutReminderTime: localSettings.reminderTime,
+      nutritionReminder: localSettings.nutritionReminder,
+      streakWarning: localSettings.streakWarning,
+    };
+  }, []);
+
+  // localStorage에 설정 저장 (기존 형식으로 변환)
+  const saveToLocalStorage = useCallback((newSettings: DbNotificationSettings) => {
+    saveLocalSettings({
+      enabled: newSettings.enabled,
+      reminderTime: newSettings.workoutReminderTime,
+      workoutReminder: newSettings.workoutReminder,
+      nutritionReminder: newSettings.nutritionReminder,
+      streakWarning: newSettings.streakWarning,
+    });
+  }, []);
+
+  // 초기화: DB에서 설정 로드, fallback으로 localStorage
   useEffect(() => {
-    saveNotificationSettings(settings);
+    const initializeSettings = async () => {
+      const supported = isNotificationSupported();
+      setIsSupported(supported);
 
+      if (!supported) {
+        setIsInitialLoading(false);
+        return;
+      }
+
+      setPermission(getNotificationPermission());
+      checkPushStatus();
+
+      // 로그인한 사용자는 DB에서 로드
+      if (isUserLoaded && user) {
+        const dbSettings = await loadSettingsFromDb();
+        if (dbSettings) {
+          setSettings(dbSettings);
+          // DB 설정을 localStorage에도 동기화 (오프라인 fallback)
+          saveToLocalStorage(dbSettings);
+        } else {
+          // DB에 없으면 localStorage에서 마이그레이션
+          const migrated = migrateLocalSettings();
+          setSettings(migrated);
+        }
+      } else if (isUserLoaded) {
+        // 비로그인 사용자는 localStorage만 사용
+        const migrated = migrateLocalSettings();
+        setSettings(migrated);
+      }
+
+      setIsInitialLoading(false);
+    };
+
+    initializeSettings();
+  }, [
+    isUserLoaded,
+    user,
+    checkPushStatus,
+    loadSettingsFromDb,
+    migrateLocalSettings,
+    saveToLocalStorage,
+  ]);
+
+  // 설정 변경 시 저장 (디바운스 적용)
+  useEffect(() => {
+    // 첫 렌더링이거나 초기 로딩 중이면 저장하지 않음
+    if (isFirstRender.current || isInitialLoading) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    // localStorage에 즉시 저장 (오프라인 fallback)
+    saveToLocalStorage(settings);
+
+    // 스케줄 관리
     if (settings.enabled && permission === 'granted') {
       startReminderSchedule();
     } else {
       stopReminderSchedule();
     }
-  }, [settings, permission]);
+
+    // DB 저장 디바운스 (500ms)
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    if (user) {
+      saveTimeoutRef.current = setTimeout(async () => {
+        setIsSaving(true);
+        const success = await saveSettingsToDb(settings);
+        setIsSaving(false);
+
+        if (!success) {
+          console.warn('[NotificationSettings] DB save failed, localStorage backup used');
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [settings, permission, user, isInitialLoading, saveToLocalStorage, saveSettingsToDb]);
 
   // 알림 권한 요청 + Push 구독
   const handleRequestPermission = async () => {
@@ -166,13 +303,18 @@ export function NotificationSettings() {
   };
 
   // 설정 변경 핸들러
-  const handleToggle = (key: keyof NotificationSettingsType) => {
+  const handleToggle = (key: keyof DbNotificationSettings) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleTimeChange = (time: string) => {
-    setSettings((prev) => ({ ...prev, reminderTime: time }));
-    toast.success(`리마인더 시간이 ${time}으로 설정되었습니다.`);
+  const handleTimeChange = (key: keyof DbNotificationSettings, time: string) => {
+    setSettings((prev) => ({ ...prev, [key]: time }));
+    toast.success(`시간이 ${time}으로 설정되었습니다.`);
+  };
+
+  const handleIntervalChange = (interval: number) => {
+    setSettings((prev) => ({ ...prev, waterReminderInterval: interval }));
+    toast.success(`수분 섭취 알림 간격이 ${interval}시간으로 설정되었습니다.`);
   };
 
   // 지원하지 않는 브라우저
@@ -190,12 +332,31 @@ export function NotificationSettings() {
     );
   }
 
+  // 로딩 중
+  if (isInitialLoading) {
+    return (
+      <Card data-testid="notification-settings">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="w-5 h-5 text-amber-500" />
+            알림 설정
+          </CardTitle>
+          <CardDescription>설정을 불러오는 중...</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card data-testid="notification-settings">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bell className="w-5 h-5 text-amber-500" />
           알림 설정
+          {isSaving && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
         </CardTitle>
         <CardDescription>리마인더 알림을 설정하여 꾸준한 기록을 유지하세요</CardDescription>
       </CardHeader>
@@ -273,33 +434,6 @@ export function NotificationSettings() {
           </div>
         )}
 
-        {/* 리마인더 시간 */}
-        <div className="flex items-center justify-between py-3 border-b">
-          <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
-            <div>
-              <p className="font-medium">리마인더 시간</p>
-              <p className="text-sm text-muted-foreground">매일 알림 받을 시간</p>
-            </div>
-          </div>
-          <Select
-            value={settings.reminderTime}
-            onValueChange={handleTimeChange}
-            disabled={!settings.enabled}
-          >
-            <SelectTrigger className="w-24" data-testid="reminder-time-select">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TIME_OPTIONS.map((time) => (
-                <SelectItem key={time} value={time}>
-                  {time}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* 운동 리마인더 */}
         <div className="flex items-center justify-between py-3 border-b">
           <div className="flex items-center gap-3">
@@ -309,11 +443,46 @@ export function NotificationSettings() {
               <p className="text-sm text-muted-foreground">운동 기록 알림</p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <Select
+              value={settings.workoutReminderTime}
+              onValueChange={(time) => handleTimeChange('workoutReminderTime', time)}
+              disabled={!settings.enabled || !settings.workoutReminder}
+            >
+              <SelectTrigger className="w-20" data-testid="workout-time-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TIME_OPTIONS.map((time) => (
+                  <SelectItem key={time} value={time}>
+                    {time}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Switch
+              checked={settings.workoutReminder}
+              onCheckedChange={() => handleToggle('workoutReminder')}
+              disabled={!settings.enabled}
+              data-testid="workout-reminder-toggle"
+            />
+          </div>
+        </div>
+
+        {/* Streak 경고 */}
+        <div className="flex items-center justify-between py-3 border-b">
+          <div className="flex items-center gap-3">
+            <Flame className="w-5 h-5 text-orange-500" aria-hidden="true" />
+            <div>
+              <p className="font-medium">Streak 끊김 경고</p>
+              <p className="text-sm text-muted-foreground">연속 기록이 끊길 위험 시 알림</p>
+            </div>
+          </div>
           <Switch
-            checked={settings.workoutReminder}
-            onCheckedChange={() => handleToggle('workoutReminder')}
+            checked={settings.streakWarning}
+            onCheckedChange={() => handleToggle('streakWarning')}
             disabled={!settings.enabled}
-            data-testid="workout-reminder-toggle"
+            data-testid="streak-warning-toggle"
           />
         </div>
 
@@ -334,20 +503,132 @@ export function NotificationSettings() {
           />
         </div>
 
-        {/* Streak 경고 */}
-        <div className="flex items-center justify-between py-3">
+        {/* 식단 시간대별 알림 (영양 리마인더 활성화 시) */}
+        {settings.nutritionReminder && settings.enabled && (
+          <div className="ml-8 space-y-3 py-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">아침</p>
+              <Select
+                value={settings.mealReminderBreakfast}
+                onValueChange={(time) => handleTimeChange('mealReminderBreakfast', time)}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIME_OPTIONS.map((time) => (
+                    <SelectItem key={time} value={time}>
+                      {time}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">점심</p>
+              <Select
+                value={settings.mealReminderLunch}
+                onValueChange={(time) => handleTimeChange('mealReminderLunch', time)}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIME_OPTIONS.map((time) => (
+                    <SelectItem key={time} value={time}>
+                      {time}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">저녁</p>
+              <Select
+                value={settings.mealReminderDinner}
+                onValueChange={(time) => handleTimeChange('mealReminderDinner', time)}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIME_OPTIONS.map((time) => (
+                    <SelectItem key={time} value={time}>
+                      {time}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+
+        {/* 수분 섭취 알림 */}
+        <div className="flex items-center justify-between py-3 border-b">
           <div className="flex items-center gap-3">
-            <Flame className="w-5 h-5 text-orange-500" aria-hidden="true" />
+            <Droplets className="w-5 h-5 text-cyan-500" aria-hidden="true" />
             <div>
-              <p className="font-medium">Streak 끊김 경고</p>
-              <p className="text-sm text-muted-foreground">연속 기록이 끊길 위험 시 알림</p>
+              <p className="font-medium">수분 섭취 알림</p>
+              <p className="text-sm text-muted-foreground">물 마시기 알림</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select
+              value={String(settings.waterReminderInterval)}
+              onValueChange={(val) => handleIntervalChange(Number(val))}
+              disabled={!settings.enabled || !settings.waterReminder}
+            >
+              <SelectTrigger className="w-20" data-testid="water-interval-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {WATER_INTERVAL_OPTIONS.map((interval) => (
+                  <SelectItem key={interval} value={String(interval)}>
+                    {interval}시간
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Switch
+              checked={settings.waterReminder}
+              onCheckedChange={() => handleToggle('waterReminder')}
+              disabled={!settings.enabled}
+              data-testid="water-reminder-toggle"
+            />
+          </div>
+        </div>
+
+        {/* 소셜 알림 */}
+        <div className="flex items-center justify-between py-3 border-b">
+          <div className="flex items-center gap-3">
+            <Users className="w-5 h-5 text-indigo-500" aria-hidden="true" />
+            <div>
+              <p className="font-medium">소셜 알림</p>
+              <p className="text-sm text-muted-foreground">친구 활동, 댓글, 좋아요 알림</p>
             </div>
           </div>
           <Switch
-            checked={settings.streakWarning}
-            onCheckedChange={() => handleToggle('streakWarning')}
+            checked={settings.socialNotifications}
+            onCheckedChange={() => handleToggle('socialNotifications')}
             disabled={!settings.enabled}
-            data-testid="streak-warning-toggle"
+            data-testid="social-notifications-toggle"
+          />
+        </div>
+
+        {/* 성취 알림 */}
+        <div className="flex items-center justify-between py-3">
+          <div className="flex items-center gap-3">
+            <Trophy className="w-5 h-5 text-yellow-500" aria-hidden="true" />
+            <div>
+              <p className="font-medium">성취 알림</p>
+              <p className="text-sm text-muted-foreground">배지, 레벨업, 목표 달성 알림</p>
+            </div>
+          </div>
+          <Switch
+            checked={settings.achievementNotifications}
+            onCheckedChange={() => handleToggle('achievementNotifications')}
+            disabled={!settings.enabled}
+            data-testid="achievement-notifications-toggle"
           />
         </div>
 
