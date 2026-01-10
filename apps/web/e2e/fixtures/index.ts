@@ -151,5 +151,6 @@ export const ROUTES = {
   CHAT: '/chat',
   WELLNESS: '/wellness',
   HELP_FAQ: '/help/faq',
+  HELP_FEEDBACK: '/help/feedback',
   ANNOUNCEMENTS: '/announcements',
 } as const;
