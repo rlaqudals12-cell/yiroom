@@ -29,7 +29,7 @@ import {
 import { toast } from 'sonner';
 import { ConsentStatus, type ImageConsent } from '@/components/analysis/consent';
 import { getDaysUntilExpiry } from '@/lib/consent/version-check';
-import { MarketingConsentToggle } from '@/components/settings/MarketingConsentToggle';
+import { MarketingConsentToggle, AgreementHistory } from '@/components/settings';
 
 /**
  * 개인정보 설정 페이지
@@ -283,6 +283,9 @@ export default function PrivacySettingsPage() {
           />
         )}
 
+        {/* 약관 동의 내역 */}
+        <AgreementHistory />
+
         {/* 개인정보 처리방침 안내 */}
         <Card>
           <CardHeader>
@@ -297,7 +300,7 @@ export default function PrivacySettingsPage() {
               <li>동의 철회: 언제든 설정에서 철회 가능</li>
             </ul>
             <Button variant="link" className="p-0 h-auto" asChild>
-              <Link href="/help/privacy">전체 개인정보 처리방침 보기</Link>
+              <Link href="/privacy-policy">전체 개인정보 처리방침 보기</Link>
             </Button>
           </CardContent>
         </Card>
