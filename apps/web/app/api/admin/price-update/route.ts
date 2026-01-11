@@ -1,8 +1,8 @@
 /**
  * 관리자 가격 업데이트 API
  * @description 제품 가격을 수동으로 업데이트하는 관리자 API
- * @version 1.0
- * @date 2025-12-09
+ * @version 1.1
+ * @date 2026-01-11
  *
  * POST /api/admin/price-update
  * - productType: 제품 타입 (선택)
@@ -14,11 +14,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import type { ProductType } from '@/types/product';
-import {
-  updatePricesForType,
-  updateAllPrices,
-  type PriceSource,
-} from '@/lib/crawler';
+import { updatePricesForType, updateAllPrices, type PriceSource } from '@/lib/crawler';
+import { logAdminAction, getClientIp } from '@/lib/audit/logger';
 
 // Dynamic route - 빌드 시 정적 생성 방지
 export const dynamic = 'force-dynamic';
@@ -77,14 +74,25 @@ export async function POST(request: NextRequest) {
     }
 
     if (limit < 1 || limit > 500) {
-      return NextResponse.json(
-        { error: 'limit must be between 1 and 500' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'limit must be between 1 and 500' }, { status: 400 });
     }
 
     console.log(
       `[Admin API] Price update requested: type=${productType || 'all'}, limit=${limit}, source=${source || 'auto'}`
+    );
+
+    // 감사 로그 기록
+    const clientIp = getClientIp(request);
+    logAdminAction(
+      'admin_api_key', // API 키 기반 인증이므로 고정 값 사용
+      'price-update',
+      productType ? `products:${productType}` : 'products:all',
+      {
+        productType: productType || 'all',
+        limit,
+        source: source || 'auto',
+      },
+      clientIp
     );
 
     // 가격 업데이트 실행
@@ -98,9 +106,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       result,
-      message: productType
-        ? `Updated ${productType} prices`
-        : 'Updated all product prices',
+      message: productType ? `Updated ${productType} prices` : 'Updated all product prices',
     });
   } catch (error) {
     console.error('[Admin API] Price update error:', error);
