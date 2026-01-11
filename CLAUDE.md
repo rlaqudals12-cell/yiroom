@@ -168,6 +168,7 @@ export const ChartDynamic = dynamic(() => import('./Chart'), { ssr: false, loadi
 | Launch  | 출시 준비      | 공지사항, FAQ, 알림 DB 연동                     | ✅ 완료 |
 | Phase J | AI 스타일링    | 색상 조합, 악세서리, 메이크업                   | ✅ 완료 |
 | Phase K | UX 고도화      | 성별 중립화, 패션 확장, 레시피, 프로필 리디자인 | ✅ 완료 |
+| Phase D | AI 피부 상담   | 피부 고민 Q&A, 제품 추천 RAG, 상담 CTA          | ✅ 완료 |
 
 ## Route Groups
 
@@ -303,4 +304,4 @@ apps/mobile/app/
 
 ---
 
-**Version**: 11.0 | **Updated**: 2026-01-12 | Phase K 완료, UX 고도화 단계
+**Version**: 11.1 | **Updated**: 2026-01-12 | Phase D 완료, AI 피부 상담 단계
