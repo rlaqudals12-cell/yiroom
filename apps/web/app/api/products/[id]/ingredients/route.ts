@@ -33,12 +33,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const ingredients = await getProductIngredients(supabase, productId);
 
     if (ingredients.length === 0) {
-      return NextResponse.json({
-        success: true,
-        ingredients: [],
-        analysis: null,
-        aiSummary: null,
-      });
+      return NextResponse.json(
+        {
+          success: true,
+          ingredients: [],
+          analysis: null,
+          aiSummary: null,
+        },
+        {
+          headers: {
+            'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+          },
+        }
+      );
     }
 
     // 성분 분석 (EWG 분포, 주의 성분 등)
@@ -55,12 +62,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      ingredients,
-      analysis,
-      aiSummary,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        ingredients,
+        analysis,
+        aiSummary,
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        },
+      }
+    );
   } catch (error) {
     console.error('[Product Ingredients API] Error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

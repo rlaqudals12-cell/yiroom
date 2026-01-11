@@ -13,6 +13,7 @@ import {
   isGeminiConfigured,
   detectRelatedAnalysis,
 } from '@/lib/chat';
+import { applyRateLimit } from '@/lib/security/rate-limit';
 
 // 세션 메모리 저장소 (실제 구현에서는 Redis 또는 DB 사용)
 const sessionStore = new Map<string, ChatMessage[]>();
@@ -27,10 +28,13 @@ export async function POST(request: NextRequest) {
     // 인증 확인
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { success: false, error: '로그인이 필요합니다' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: '로그인이 필요합니다' }, { status: 401 });
+    }
+
+    // Rate Limit 체크
+    const rateLimitResult = applyRateLimit(request, userId);
+    if (!rateLimitResult.success) {
+      return rateLimitResult.response;
     }
 
     // 요청 파싱
@@ -39,10 +43,7 @@ export async function POST(request: NextRequest) {
 
     // 메시지 검증
     if (!message || message.trim().length === 0) {
-      return NextResponse.json(
-        { success: false, error: '메시지를 입력해주세요' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: '메시지를 입력해주세요' }, { status: 400 });
     }
 
     // 메시지 길이 제한
@@ -98,14 +99,17 @@ export async function POST(request: NextRequest) {
     // 히스토리 저장 (최대 20개 유지)
     sessionStore.set(currentSessionId, history.slice(-20));
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        message: response.message,
-        sessionId: currentSessionId,
-        productRecommendations: response.productRecommendations,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          message: response.message,
+          sessionId: currentSessionId,
+          productRecommendations: response.productRecommendations,
+        },
       },
-    });
+      { headers: rateLimitResult.headers }
+    );
   } catch (error) {
     console.error('[Chat API] Error:', error);
     return NextResponse.json(

@@ -25,10 +25,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Ingredient not found' }, { status: 404 });
     }
 
-    return NextResponse.json({
-      success: true,
-      ingredient,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        ingredient,
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        },
+      }
+    );
   } catch (error) {
     console.error('[Ingredient Detail API] Error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

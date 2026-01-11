@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createAffiliateClick, hashIpAddress } from '@/lib/affiliate/clicks';
 import { getAffiliateProductById } from '@/lib/affiliate/products';
+import { applyRateLimit } from '@/lib/security/rate-limit';
 import type { AffiliateRecommendationType } from '@/types/affiliate';
 
 /** 요청 Body */
@@ -26,14 +27,20 @@ interface ClickRequestBody {
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as ClickRequestBody;
+    // 사용자 ID (로그인한 경우)
+    const { userId } = await auth();
+
+    // Rate Limit 체크
+    const rateLimitResult = applyRateLimit(request, userId);
+    if (!rateLimitResult.success) {
+      return rateLimitResult.response;
+    }
+
+    const body = (await request.json()) as ClickRequestBody;
 
     // 필수 필드 검증
     if (!body.productId || !body.sourcePage || !body.sourceComponent) {
-      return NextResponse.json(
-        { error: '필수 필드가 누락되었습니다.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '필수 필드가 누락되었습니다.' }, { status: 400 });
     }
 
     // 제품 존재 확인 및 어필리에이트 URL 조회
@@ -41,12 +48,9 @@ export async function POST(request: NextRequest) {
     if (!product) {
       return NextResponse.json(
         { error: '제품을 찾을 수 없습니다.' },
-        { status: 404 }
+        { status: 404, headers: rateLimitResult.headers }
       );
     }
-
-    // 사용자 ID (로그인한 경우)
-    const { userId } = await auth();
 
     // IP 해시 (익명화)
     const forwardedFor = request.headers.get('x-forwarded-for');
@@ -73,17 +77,17 @@ export async function POST(request: NextRequest) {
       console.error('[Affiliate] 클릭 기록 저장 실패, 계속 진행');
     }
 
-    // 어필리에이트 URL 반환
-    return NextResponse.json({
-      success: true,
-      affiliateUrl: product.affiliateUrl,
-      clickId: click?.id,
-    });
+    // 어필리에이트 URL 반환 (Rate Limit 헤더 포함)
+    return NextResponse.json(
+      {
+        success: true,
+        affiliateUrl: product.affiliateUrl,
+        clickId: click?.id,
+      },
+      { headers: rateLimitResult.headers }
+    );
   } catch (error) {
     console.error('[Affiliate] 클릭 처리 에러:', error);
-    return NextResponse.json(
-      { error: '클릭 처리 중 오류가 발생했습니다.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '클릭 처리 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }

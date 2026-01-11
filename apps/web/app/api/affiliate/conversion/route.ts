@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateClickConversion } from '@/lib/affiliate/clicks';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { applyRateLimit } from '@/lib/security/rate-limit';
 import crypto from 'crypto';
 
 /** 웹훅 요청 Body (공통 형식) */
@@ -85,6 +86,12 @@ function extractCommission(body: ConversionWebhookBody): number {
  * 전환 웹훅 수신 및 처리
  */
 export async function POST(request: NextRequest) {
+  // Rate Limit 체크 (웹훅은 IP 기반으로 체크)
+  const rateLimitResult = applyRateLimit(request, null);
+  if (!rateLimitResult.success) {
+    return rateLimitResult.response;
+  }
+
   try {
     const rawBody = await request.text();
     let body: ConversionWebhookBody;
@@ -150,12 +157,15 @@ export async function POST(request: NextRequest) {
       `[Conversion] ${partner} 전환 처리 완료: clickId=${clickId}, value=${conversionValue}, commission=${commission}`
     );
 
-    return NextResponse.json({
-      success: true,
-      clickId,
-      conversionValue,
-      commission,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        clickId,
+        conversionValue,
+        commission,
+      },
+      { headers: rateLimitResult.headers }
+    );
   } catch (error) {
     console.error('[Conversion] 웹훅 처리 에러:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
