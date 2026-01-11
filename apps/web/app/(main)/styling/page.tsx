@@ -11,8 +11,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Palette, Dumbbell, ArrowLeft, Sparkles, Info, AlertCircle } from 'lucide-react';
-import { ColorCombination, WorkoutStyling } from '@/components/styling';
+import { Palette, Dumbbell, ArrowLeft, Sparkles, Info, AlertCircle, Gem } from 'lucide-react';
+import {
+  ColorCombination,
+  WorkoutStyling,
+  AccessoryStyling,
+  MakeupStyling,
+} from '@/components/styling';
 import { getColorCombinations } from '@/lib/mock/styling';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useUser } from '@clerk/nextjs';
@@ -210,14 +215,21 @@ export default function StylingPage() {
 
       {/* 탭 콘텐츠 */}
       <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="daily" className="gap-1">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsTrigger value="daily" className="gap-1 text-xs">
             <Palette className="w-4 h-4" />
-            일상 코디
+            <span className="hidden sm:inline">일상</span> 코디
           </TabsTrigger>
-          <TabsTrigger value="workout" className="gap-1">
+          <TabsTrigger value="workout" className="gap-1 text-xs">
             <Dumbbell className="w-4 h-4" />
             운동복
+          </TabsTrigger>
+          <TabsTrigger value="accessory" className="gap-1 text-xs">
+            <Gem className="w-4 h-4" />
+            악세서리
+          </TabsTrigger>
+          <TabsTrigger value="makeup" className="gap-1 text-xs">
+            💄 메이크업
           </TabsTrigger>
         </TabsList>
 
@@ -235,6 +247,16 @@ export default function StylingPage() {
         {/* 운동복 탭 */}
         <TabsContent value="workout">
           <WorkoutStyling seasonType={seasonType} onProductClick={handleWorkoutProductClick} />
+        </TabsContent>
+
+        {/* 악세서리 탭 */}
+        <TabsContent value="accessory">
+          <AccessoryStyling seasonType={seasonType} />
+        </TabsContent>
+
+        {/* 메이크업 탭 */}
+        <TabsContent value="makeup">
+          <MakeupStyling seasonType={seasonType} />
         </TabsContent>
       </Tabs>
     </div>

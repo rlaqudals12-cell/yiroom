@@ -353,3 +353,372 @@ export function filterByWorkoutCategory(
 ): WorkoutCombination[] {
   return combinations.filter((c) => c.category === category);
 }
+
+// ============================================
+// Phase J P2: 악세서리 & 메이크업 Mock 데이터
+// ============================================
+
+import type {
+  AccessoryStyling as AccessoryStylingType,
+  MakeupStyling as MakeupStylingType,
+} from '@/types/styling';
+
+/**
+ * 시즌별 악세서리 스타일링
+ */
+export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
+  spring: {
+    seasonType: 'spring',
+    metalTones: [
+      { metalTone: 'gold', isRecommended: true, description: '옐로우 골드가 가장 잘 어울립니다' },
+      {
+        metalTone: 'rose_gold',
+        isRecommended: true,
+        description: '로즈골드도 따뜻한 느낌으로 좋습니다',
+      },
+      {
+        metalTone: 'silver',
+        isRecommended: false,
+        description: '차가운 실버는 피하는 것이 좋습니다',
+      },
+      {
+        metalTone: 'bronze',
+        isRecommended: false,
+        description: '브론즈는 가을 웜톤에 더 적합합니다',
+      },
+    ],
+    items: [
+      {
+        type: 'earring',
+        name: '코랄 드롭',
+        metalTone: 'gold',
+        gemstone: { name: '코랄', hex: '#FF7F7F' },
+        tip: '작은 사이즈가 더 화사해 보입니다',
+      },
+      {
+        type: 'necklace',
+        name: '피치 펜던트',
+        metalTone: 'gold',
+        gemstone: { name: '피치 문스톤', hex: '#FFDAB9' },
+      },
+      {
+        type: 'ring',
+        name: '골드 밴드',
+        metalTone: 'gold',
+        tip: '심플한 골드 링이 세련된 느낌',
+      },
+      {
+        type: 'bracelet',
+        name: '체인 팔찌',
+        metalTone: 'rose_gold',
+        gemstone: { name: '로즈쿼츠', hex: '#F7CAC9' },
+      },
+    ],
+    generalTip:
+      '봄 웜톤은 옐로우 골드와 따뜻한 색상의 원석이 잘 어울립니다. 피치, 코랄 계열 보석을 추천합니다.',
+  },
+
+  summer: {
+    seasonType: 'summer',
+    metalTones: [
+      { metalTone: 'silver', isRecommended: true, description: '쿨한 실버가 가장 잘 어울립니다' },
+      {
+        metalTone: 'rose_gold',
+        isRecommended: true,
+        description: '핑크빛 로즈골드도 좋은 선택입니다',
+      },
+      {
+        metalTone: 'gold',
+        isRecommended: false,
+        description: '옐로우 골드는 피하는 것이 좋습니다',
+      },
+      { metalTone: 'bronze', isRecommended: false, description: '브론즈는 너무 따뜻한 느낌입니다' },
+    ],
+    items: [
+      {
+        type: 'earring',
+        name: '라벤더 스터드',
+        metalTone: 'silver',
+        gemstone: { name: '자수정', hex: '#9966CC' },
+        tip: '차분한 보라색이 우아한 분위기를 연출',
+      },
+      {
+        type: 'necklace',
+        name: '실버 체인',
+        metalTone: 'silver',
+        tip: '심플한 실버 체인이 세련됩니다',
+      },
+      {
+        type: 'ring',
+        name: '블루 토파즈',
+        metalTone: 'silver',
+        gemstone: { name: '블루 토파즈', hex: '#87CEEB' },
+      },
+      {
+        type: 'bracelet',
+        name: '펄 팔찌',
+        metalTone: 'silver',
+        gemstone: { name: '담수진주', hex: '#FDEEF4' },
+      },
+    ],
+    generalTip:
+      '여름 쿨톤은 실버와 시원한 색상의 보석이 잘 어울립니다. 라벤더, 스카이블루 계열을 추천합니다.',
+  },
+
+  autumn: {
+    seasonType: 'autumn',
+    metalTones: [
+      { metalTone: 'gold', isRecommended: true, description: '앤틱 골드가 가장 잘 어울립니다' },
+      {
+        metalTone: 'bronze',
+        isRecommended: true,
+        description: '브론즈/황동이 깊이있는 느낌을 줍니다',
+      },
+      {
+        metalTone: 'rose_gold',
+        isRecommended: true,
+        description: '로즈골드도 따뜻한 느낌으로 좋습니다',
+      },
+      { metalTone: 'silver', isRecommended: false, description: '차가운 실버는 어울리지 않습니다' },
+    ],
+    items: [
+      {
+        type: 'earring',
+        name: '앰버 드롭',
+        metalTone: 'gold',
+        gemstone: { name: '호박(앰버)', hex: '#FFBF00' },
+        tip: '호박 원석이 가을 분위기와 잘 맞습니다',
+      },
+      {
+        type: 'necklace',
+        name: '앤틱 펜던트',
+        metalTone: 'bronze',
+        gemstone: { name: '타이거아이', hex: '#B8860B' },
+      },
+      {
+        type: 'ring',
+        name: '오닉스 링',
+        metalTone: 'gold',
+        gemstone: { name: '오닉스', hex: '#353839' },
+      },
+      {
+        type: 'watch',
+        name: '가죽 스트랩',
+        metalTone: 'bronze',
+        tip: '브라운 가죽과 브론즈 조합 추천',
+      },
+    ],
+    generalTip:
+      '가을 웜톤은 앤틱 골드, 브론즈와 깊이있는 색상의 원석이 잘 어울립니다. 앰버, 타이거아이를 추천합니다.',
+  },
+
+  winter: {
+    seasonType: 'winter',
+    metalTones: [
+      { metalTone: 'silver', isRecommended: true, description: '화이트 실버가 가장 잘 어울립니다' },
+      {
+        metalTone: 'gold',
+        isRecommended: true,
+        description: '화이트 골드도 좋은 선택입니다',
+      },
+      {
+        metalTone: 'rose_gold',
+        isRecommended: false,
+        description: '로즈골드는 너무 따뜻한 느낌입니다',
+      },
+      { metalTone: 'bronze', isRecommended: false, description: '브론즈는 어울리지 않습니다' },
+    ],
+    items: [
+      {
+        type: 'earring',
+        name: '다이아몬드 스터드',
+        metalTone: 'silver',
+        gemstone: { name: '큐빅', hex: '#E6E8E6' },
+        tip: '선명한 반짝임이 겨울 쿨톤과 잘 맞습니다',
+      },
+      {
+        type: 'necklace',
+        name: '사파이어 펜던트',
+        metalTone: 'silver',
+        gemstone: { name: '사파이어', hex: '#0F52BA' },
+      },
+      {
+        type: 'ring',
+        name: '에메랄드 링',
+        metalTone: 'silver',
+        gemstone: { name: '에메랄드', hex: '#50C878' },
+      },
+      {
+        type: 'bracelet',
+        name: '테니스 팔찌',
+        metalTone: 'silver',
+        gemstone: { name: '큐빅', hex: '#E6E8E6' },
+      },
+    ],
+    generalTip:
+      '겨울 쿨톤은 실버와 선명한 색상의 보석이 잘 어울립니다. 다이아몬드, 사파이어, 에메랄드를 추천합니다.',
+  },
+};
+
+/**
+ * 시즌별 메이크업 스타일링
+ */
+export const MAKEUP_STYLING: Record<SeasonType, MakeupStylingType> = {
+  spring: {
+    seasonType: 'spring',
+    lipstick: {
+      category: 'lipstick',
+      colors: [
+        { name: '코랄 핑크', hex: '#FF7F7F', finish: 'glossy' },
+        { name: '피치', hex: '#FFDAB9', finish: 'satin' },
+        { name: '살몬 핑크', hex: '#FA8072', finish: 'matte' },
+        { name: '오렌지 레드', hex: '#FF6347', finish: 'glossy' },
+        { name: '누드 베이지', hex: '#E8C4A2', finish: 'satin' },
+      ],
+      tip: '따뜻한 톤의 립이 얼굴을 화사하게 밝혀줍니다',
+    },
+    eyeshadow: {
+      category: 'eyeshadow',
+      colors: [
+        { name: '베이지', hex: '#F5F5DC', finish: 'matte' },
+        { name: '피치', hex: '#FFDAB9', finish: 'shimmer' },
+        { name: '골드', hex: '#FFD700', finish: 'shimmer' },
+        { name: '웜 브라운', hex: '#8B4513', finish: 'matte' },
+      ],
+      tip: '따뜻한 브라운 계열로 자연스러운 눈매 연출',
+    },
+    blusher: {
+      category: 'blusher',
+      colors: [
+        { name: '코랄', hex: '#FF7F7F' },
+        { name: '피치', hex: '#FFDAB9' },
+        { name: '살몬', hex: '#FA8072' },
+      ],
+      tip: '자연스러운 혈색 표현을 위해 코랄/피치 계열 추천',
+    },
+    generalTip:
+      '봄 웜톤은 화사하고 밝은 메이크업이 잘 어울립니다. 오렌지, 코랄, 피치 계열을 적극 활용하세요.',
+  },
+
+  summer: {
+    seasonType: 'summer',
+    lipstick: {
+      category: 'lipstick',
+      colors: [
+        { name: '로즈 핑크', hex: '#FF66B2', finish: 'satin' },
+        { name: '베리', hex: '#8E4585', finish: 'matte' },
+        { name: '말린 장미', hex: '#C08081', finish: 'matte' },
+        { name: '체리 레드', hex: '#DE3163', finish: 'glossy' },
+        { name: '모브 핑크', hex: '#E0B0FF', finish: 'satin' },
+      ],
+      tip: '푸른 기가 도는 핑크 계열이 피부를 맑게 보이게 합니다',
+    },
+    eyeshadow: {
+      category: 'eyeshadow',
+      colors: [
+        { name: '라벤더', hex: '#E6E6FA', finish: 'shimmer' },
+        { name: '로즈', hex: '#FF66B2', finish: 'matte' },
+        { name: '그레이', hex: '#A9A9B3', finish: 'matte' },
+        { name: '쿨 브라운', hex: '#8B7355', finish: 'matte' },
+      ],
+      tip: '회색빛이 도는 부드러운 톤으로 우아한 눈매 연출',
+    },
+    blusher: {
+      category: 'blusher',
+      colors: [
+        { name: '로즈', hex: '#FF66B2' },
+        { name: '핑크', hex: '#FFB6C1' },
+        { name: '라벤더', hex: '#E6E6FA' },
+      ],
+      tip: '차가운 핑크 계열로 청량한 분위기 연출',
+    },
+    generalTip:
+      '여름 쿨톤은 부드럽고 시원한 메이크업이 잘 어울립니다. 로즈, 라벤더, 베리 계열을 활용하세요.',
+  },
+
+  autumn: {
+    seasonType: 'autumn',
+    lipstick: {
+      category: 'lipstick',
+      colors: [
+        { name: '테라코타', hex: '#E2725B', finish: 'matte' },
+        { name: '버건디', hex: '#800020', finish: 'satin' },
+        { name: '브릭 레드', hex: '#CB4154', finish: 'matte' },
+        { name: '머스타드 오렌지', hex: '#FF8C00', finish: 'matte' },
+        { name: '누드 브라운', hex: '#C19A6B', finish: 'satin' },
+      ],
+      tip: '깊이있는 웜톤 립컬러가 고급스러운 분위기를 연출합니다',
+    },
+    eyeshadow: {
+      category: 'eyeshadow',
+      colors: [
+        { name: '올리브', hex: '#708238', finish: 'matte' },
+        { name: '골드 브라운', hex: '#996515', finish: 'shimmer' },
+        { name: '테라코타', hex: '#E2725B', finish: 'matte' },
+        { name: '초콜릿', hex: '#7B3F00', finish: 'matte' },
+      ],
+      tip: '깊이있는 어스 톤으로 풍부한 눈매 연출',
+    },
+    blusher: {
+      category: 'blusher',
+      colors: [
+        { name: '브릭', hex: '#CB4154' },
+        { name: '테라코타', hex: '#E2725B' },
+        { name: '피그먼트 브라운', hex: '#C19A6B' },
+      ],
+      tip: '테라코타, 브릭 계열로 건강한 혈색 표현',
+    },
+    generalTip:
+      '가을 웜톤은 깊이있고 풍부한 메이크업이 잘 어울립니다. 테라코타, 버건디, 올리브 계열을 활용하세요.',
+  },
+
+  winter: {
+    seasonType: 'winter',
+    lipstick: {
+      category: 'lipstick',
+      colors: [
+        { name: '트루 레드', hex: '#FF0000', finish: 'matte' },
+        { name: '와인', hex: '#722F37', finish: 'satin' },
+        { name: '핫 핑크', hex: '#FF69B4', finish: 'glossy' },
+        { name: '푸시아', hex: '#FF00FF', finish: 'matte' },
+        { name: '딥 플럼', hex: '#8E4585', finish: 'satin' },
+      ],
+      tip: '선명하고 강렬한 립컬러가 피부를 더 밝게 보이게 합니다',
+    },
+    eyeshadow: {
+      category: 'eyeshadow',
+      colors: [
+        { name: '실버', hex: '#C0C0C0', finish: 'shimmer' },
+        { name: '네이비', hex: '#000080', finish: 'matte' },
+        { name: '딥 퍼플', hex: '#4B0082', finish: 'matte' },
+        { name: '블랙', hex: '#000000', finish: 'matte' },
+      ],
+      tip: '선명한 색상으로 또렷한 눈매 연출',
+    },
+    blusher: {
+      category: 'blusher',
+      colors: [
+        { name: '핑크', hex: '#FF69B4' },
+        { name: '플럼', hex: '#8E4585' },
+        { name: '와인', hex: '#722F37' },
+      ],
+      tip: '선명한 핑크나 플럼 계열로 강렬한 인상 연출',
+    },
+    generalTip:
+      '겨울 쿨톤은 선명하고 대비가 강한 메이크업이 잘 어울립니다. 트루 레드, 핫 핑크, 딥 컬러를 활용하세요.',
+  },
+};
+
+/**
+ * 시즌별 악세서리 스타일링 가져오기
+ */
+export function getAccessoryStyling(seasonType: SeasonType): AccessoryStylingType {
+  return ACCESSORY_STYLING[seasonType];
+}
+
+/**
+ * 시즌별 메이크업 스타일링 가져오기
+ */
+export function getMakeupStyling(seasonType: SeasonType): MakeupStylingType {
+  return MAKEUP_STYLING[seasonType];
+}

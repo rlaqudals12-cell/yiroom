@@ -101,6 +101,94 @@ export interface OutfitPreviewProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
+// ============================================
+// Phase J P2: 악세서리 & 메이크업 타입
+// ============================================
+
+/** 금속 톤 */
+export type MetalTone = 'gold' | 'silver' | 'rose_gold' | 'bronze';
+
+/** 악세서리 종류 */
+export type AccessoryType = 'earring' | 'necklace' | 'ring' | 'bracelet' | 'watch';
+
+/** 금속 톤 추천 */
+export interface AccessoryRecommendation {
+  metalTone: MetalTone;
+  isRecommended: boolean;
+  description: string;
+}
+
+/** 악세서리 아이템 */
+export interface AccessoryItem {
+  type: AccessoryType;
+  name: string;
+  metalTone: MetalTone;
+  gemstone?: {
+    name: string;
+    hex: string;
+  };
+  tip?: string;
+}
+
+/** 시즌별 악세서리 스타일링 */
+export interface AccessoryStyling {
+  seasonType: SeasonType;
+  metalTones: AccessoryRecommendation[];
+  items: AccessoryItem[];
+  generalTip: string;
+}
+
+/** 메이크업 카테고리 */
+export type MakeupCategory = 'lipstick' | 'eyeshadow' | 'blusher' | 'foundation';
+
+/** 메이크업 색상 */
+export interface MakeupColor {
+  name: string;
+  hex: string;
+  finish?: 'matte' | 'glossy' | 'shimmer' | 'satin';
+}
+
+/** 메이크업 팔레트 */
+export interface MakeupPalette {
+  category: MakeupCategory;
+  colors: MakeupColor[];
+  tip: string;
+}
+
+/** 시즌별 메이크업 스타일링 */
+export interface MakeupStyling {
+  seasonType: SeasonType;
+  lipstick: MakeupPalette;
+  eyeshadow: MakeupPalette;
+  blusher: MakeupPalette;
+  generalTip: string;
+}
+
+/** 금속 톤 한글 라벨 */
+export const METAL_TONE_LABELS: Record<MetalTone, string> = {
+  gold: '골드',
+  silver: '실버',
+  rose_gold: '로즈골드',
+  bronze: '브론즈',
+};
+
+/** 악세서리 타입 한글 라벨 */
+export const ACCESSORY_TYPE_LABELS: Record<AccessoryType, string> = {
+  earring: '귀걸이',
+  necklace: '목걸이',
+  ring: '반지',
+  bracelet: '팔찌',
+  watch: '시계',
+};
+
+/** 메이크업 카테고리 한글 라벨 */
+export const MAKEUP_CATEGORY_LABELS: Record<MakeupCategory, string> = {
+  lipstick: '립스틱',
+  eyeshadow: '아이섀도',
+  blusher: '블러셔',
+  foundation: '파운데이션',
+};
+
 /** Occasion 한글 라벨 */
 export const OCCASION_LABELS: Record<Occasion, string> = {
   daily: '데일리',
