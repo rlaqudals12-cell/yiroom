@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   RefreshCw,
   Palette,
-  Shirt,
   ClipboardList,
   AlertTriangle,
   Lightbulb,
@@ -25,6 +24,8 @@ import {
   BEST_COLORS,
   WORST_COLORS,
   LIPSTICK_RECOMMENDATIONS,
+  FOUNDATION_RECOMMENDATIONS,
+  CLOTHING_RECOMMENDATIONS,
   STYLE_DESCRIPTIONS,
   EASY_INSIGHTS,
 } from '@/lib/mock/personal-color';
@@ -35,12 +36,12 @@ import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnaly
 import Link from 'next/link';
 import type { PersonalColorSeason } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DrapingSimulationTab } from '@/components/analysis/visual';
 import AnalysisEvidenceReport, {
   type AnalysisEvidence,
   type ImageQuality,
 } from '@/components/analysis/AnalysisEvidenceReport';
 import { VisualReportCard } from '@/components/analysis/visual-report';
+import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -64,7 +65,7 @@ interface DbPersonalColorAssessment {
     analysisEvidence?: AnalysisEvidence;
     imageQuality?: ImageQuality;
   } | null;
-  image_url?: string;
+  face_image_url?: string; // DB 컬럼명과 일치
   created_at: string;
 }
 
@@ -95,6 +96,7 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
   const mockBestColors = BEST_COLORS[seasonType] || [];
   const mockWorstColors = WORST_COLORS[seasonType] || [];
   const mockLipstick = LIPSTICK_RECOMMENDATIONS[seasonType] || [];
+  const mockFoundation = FOUNDATION_RECOMMENDATIONS[seasonType] || [];
   const mockStyle = STYLE_DESCRIPTIONS[seasonType];
   const mockEasyInsight = EASY_INSIGHTS[seasonType]?.[0];
 
@@ -110,24 +112,10 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
     worstColors: mockWorstColors,
     // 립스틱 추천: 최신 Mock 사용
     lipstickRecommendations: mockLipstick,
-    // 의류 추천: DB 데이터가 있으면 활용, 없으면 기본값
-    clothingRecommendations: [
-      ...(dbData.fashion_recommendations?.tops?.map((item) => ({
-        item,
-        colorSuggestion: '베스트 컬러 활용',
-        reason: '얼굴 근처에 배치하면 좋아요',
-      })) || []),
-      ...(dbData.fashion_recommendations?.bottoms?.map((item) => ({
-        item,
-        colorSuggestion: '뉴트럴 컬러',
-        reason: '상의와 조화롭게 매치해보세요',
-      })) || []),
-      ...(dbData.fashion_recommendations?.accessories?.map((item) => ({
-        item,
-        colorSuggestion: '포인트 컬러',
-        reason: '악세서리로 활용해보세요',
-      })) || []),
-    ],
+    // 파운데이션 추천: 최신 Mock 사용
+    foundationRecommendations: mockFoundation,
+    // 의류 추천: Hybrid 전략 - 최신 Mock 사용 (DB 데이터는 무시, 최신 추천 제공)
+    clothingRecommendations: CLOTHING_RECOMMENDATIONS[seasonType] || [],
     // 스타일 설명: 최신 Mock 사용
     styleDescription: mockStyle || {
       imageKeywords: ['화사한', '세련된'],
@@ -151,7 +139,6 @@ export default function PersonalColorResultPage() {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
   const [result, setResult] = useState<PersonalColorResult | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [analysisEvidence, setAnalysisEvidence] = useState<AnalysisEvidence | null>(null);
   const [imageQuality, setImageQuality] = useState<ImageQuality | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -201,7 +188,6 @@ export default function PersonalColorResultPage() {
       const dbData = json.data as DbPersonalColorAssessment;
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
-      setImageUrl(dbData.image_url || null);
 
       // 분석 근거 데이터 추출
       if (dbData.image_analysis?.analysisEvidence) {
@@ -337,18 +323,14 @@ export default function PersonalColorResultPage() {
         {/* 탭 기반 결과 */}
         {result && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
+            <TabsList className="grid w-full grid-cols-2 mb-4 sticky top-0 z-10 bg-muted">
               <TabsTrigger value="basic" className="gap-1">
                 <Palette className="w-4 h-4" />
                 기본 분석
               </TabsTrigger>
-              <TabsTrigger value="evidence" className="gap-1">
+              <TabsTrigger value="detailed" className="gap-1">
                 <ClipboardList className="w-4 h-4" />
-                분석 근거
-              </TabsTrigger>
-              <TabsTrigger value="draping" className="gap-1">
-                <Shirt className="w-4 h-4" />
-                드레이핑
+                상세 리포트
               </TabsTrigger>
             </TabsList>
 
@@ -412,132 +394,97 @@ export default function PersonalColorResultPage() {
                   seasonType: (result.seasonType.charAt(0).toUpperCase() +
                     result.seasonType.slice(1)) as PersonalColorSeason,
                 }}
-                className="mt-8 pb-32"
+                className="mt-8"
               />
+
+              {/* 액션 버튼 (탭 내부) */}
+              <div className="mt-8 mb-4 space-y-2">
+                <Button
+                  className="w-full"
+                  onClick={() =>
+                    router.push(`/products?season=${result.seasonType}&category=makeup`)
+                  }
+                >
+                  <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
+                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    다시 분석하기
+                  </Button>
+                  <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+                </div>
+              </div>
             </TabsContent>
 
-            {/* 분석 근거 탭 */}
-            <TabsContent value="evidence" className="mt-0 pb-32">
-              {analysisEvidence || imageQuality ? (
-                <>
-                  <AnalysisEvidenceReport
-                    evidence={analysisEvidence}
-                    imageQuality={imageQuality}
-                    seasonType={result.seasonType}
-                    tone={result.tone}
-                  />
+            {/* 상세 리포트 탭 */}
+            <TabsContent value="detailed" className="mt-0">
+              {/* 시각적 상세 리포트 */}
+              <DetailedEvidenceReport
+                evidence={analysisEvidence}
+                imageQuality={imageQuality}
+                seasonType={result.seasonType}
+                tone={result.tone}
+                bestColors={result.bestColors}
+                worstColors={result.worstColors}
+              />
 
-                  {/* 분석 정확도에 영향을 주는 요인 상세 설명 */}
-                  <div className="mt-6 p-5 bg-card rounded-xl border border-border">
-                    <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                      <Lightbulb className="w-5 h-5 text-blue-500" />
-                      분석 정확도에 영향을 주는 요인
-                    </h3>
-                    <div className="space-y-4 text-sm">
-                      {/* 조명 환경 */}
-                      <div>
-                        <p className="font-medium text-foreground mb-1.5 flex items-center gap-2">
-                          <Sun className="w-4 h-4 text-amber-500" />
-                          조명 환경
-                        </p>
-                        <p className="text-muted-foreground pl-6">
-                          인공 조명(형광등, LED)은 피부톤을 노랗거나 파랗게 왜곡할 수 있어요.
-                          <span className="text-foreground font-medium">
-                            {' '}
-                            자연광(창가, 오전~오후)
-                          </span>
-                          에서 촬영하면 가장 정확해요.
-                        </p>
-                      </div>
+              {/* 기존 분석 근거 (텍스트) */}
+              {(analysisEvidence || imageQuality) && (
+                <AnalysisEvidenceReport
+                  evidence={analysisEvidence}
+                  imageQuality={imageQuality}
+                  seasonType={result.seasonType}
+                  tone={result.tone}
+                  className="mt-4"
+                />
+              )}
 
-                      {/* 메이크업 */}
-                      <div>
-                        <p className="font-medium text-foreground mb-1.5 flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-rose-500" />
-                          메이크업
-                        </p>
-                        <p className="text-muted-foreground pl-6">
-                          파운데이션, 컨실러 등은 실제 피부톤을 가려요.
-                          <span className="text-foreground font-medium">
-                            {' '}
-                            노메이크업 또는 스킨케어만
-                          </span>{' '}
-                          한 상태가 가장 좋아요.
-                        </p>
-                      </div>
-
-                      {/* 염색 */}
-                      <div>
-                        <p className="font-medium text-foreground mb-1.5 flex items-center gap-2">
-                          <Palette className="w-4 h-4 text-purple-500" />
-                          모발 염색
-                        </p>
-                        <p className="text-muted-foreground pl-6">
-                          염색은{' '}
-                          <span className="text-foreground font-medium">
-                            피부의 언더톤(웜/쿨)에는 영향을 주지 않아요.
-                          </span>
-                          하지만 염색 색상이 얼굴에 반사되어 분석 정확도에 영향을 줄 수 있어요.
-                        </p>
-                      </div>
-
-                      {/* 최적 조건 */}
-                      <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900/50">
-                        <p className="font-medium text-green-700 dark:text-green-400 text-xs">
-                          ✓ 가장 정확한 결과를 위한 조건
-                        </p>
-                        <p className="text-green-600 dark:text-green-500 text-xs mt-1">
-                          자연광 + 노메이크업 + 자연 모발 (또는 뿌리 부분 확인)
-                        </p>
-                      </div>
-                    </div>
+              {/* 분석 정확도 안내 */}
+              <div className="mt-6 p-5 bg-card rounded-xl border border-border">
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-blue-500" />더 정확한 결과를 위한 팁
+                </h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start gap-3">
+                    <Sun className="w-4 h-4 text-amber-500 mt-0.5" />
+                    <p className="text-muted-foreground">
+                      <span className="text-foreground font-medium">자연광</span>에서 촬영하면
+                      피부톤 왜곡이 적어요
+                    </p>
                   </div>
-                </>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p>분석 근거 데이터가 없습니다</p>
-                  <p className="text-sm mt-1">새로 분석하면 상세 근거가 제공됩니다</p>
+                  <div className="flex items-start gap-3">
+                    <Sparkles className="w-4 h-4 text-rose-500 mt-0.5" />
+                    <p className="text-muted-foreground">
+                      <span className="text-foreground font-medium">노메이크업</span> 상태가 가장
+                      정확해요
+                    </p>
+                  </div>
                 </div>
-              )}
-            </TabsContent>
+              </div>
 
-            {/* 드레이핑 시뮬레이션 탭 (PC-1+) */}
-            <TabsContent value="draping" className="mt-0 pb-32">
-              {imageUrl ? (
-                <DrapingSimulationTab imageUrl={imageUrl} />
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  드레이핑 시뮬레이션에 필요한 이미지가 없습니다
+              {/* 액션 버튼 */}
+              <div className="mt-8 mb-4 space-y-2">
+                <Button
+                  className="w-full"
+                  onClick={() =>
+                    router.push(`/products?season=${result.seasonType}&category=makeup`)
+                  }
+                >
+                  <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
+                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    다시 분석하기
+                  </Button>
+                  <ShareButton onShare={share} loading={shareLoading} variant="outline" />
                 </div>
-              )}
+              </div>
             </TabsContent>
           </Tabs>
         )}
       </div>
-
-      {/* 하단 고정 버튼 */}
-      {result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
-          <div className="max-w-md mx-auto space-y-2">
-            {/* 제품 추천 버튼 */}
-            <Button
-              className="w-full"
-              onClick={() => router.push(`/products?season=${result.seasonType}&category=makeup`)}
-            >
-              <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
-            </Button>
-            {/* 다시 분석하기 + 공유 */}
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                다시 분석하기
-              </Button>
-              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
