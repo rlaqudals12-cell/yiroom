@@ -14,3 +14,12 @@ export { default as WorkoutStyling, WorkoutCard, WorkoutOutfitPreview } from './
 // P2: 악세서리 & 메이크업
 export { default as AccessoryStyling, MetalToneCard, AccessoryCard } from './AccessoryStyling';
 export { default as MakeupStyling, PaletteCard } from './MakeupStyling';
+
+// P3: 전체 코디
+export {
+  default as FullOutfit,
+  ClothingSection,
+  AccessorySection,
+  MakeupSection,
+  OutfitPreviewCard,
+} from './FullOutfit';

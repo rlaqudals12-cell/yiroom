@@ -722,3 +722,412 @@ export function getAccessoryStyling(seasonType: SeasonType): AccessoryStylingTyp
 export function getMakeupStyling(seasonType: SeasonType): MakeupStylingType {
   return MAKEUP_STYLING[seasonType];
 }
+
+// ============================================
+// Phase J P3: 전체 코디 프리셋 Mock 데이터
+// ============================================
+
+import type { FullOutfit, OutfitPreset, OutfitOccasion } from '@/types/styling';
+
+/**
+ * 시즌별 전체 코디 프리셋
+ */
+export const OUTFIT_PRESETS: Record<SeasonType, OutfitPreset[]> = {
+  spring: [
+    {
+      occasion: 'daily',
+      name: '화사한 봄 데일리',
+      description: '따뜻하고 밝은 일상 스타일',
+      outfits: [
+        {
+          id: 'spring-daily-full-1',
+          seasonType: 'spring',
+          occasion: 'daily',
+          clothing: COLOR_COMBINATIONS.spring[0],
+          accessory: {
+            metalTone: 'gold',
+            items: ACCESSORY_STYLING.spring.items.slice(0, 2),
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.spring.lipstick.colors[0],
+            eyeshadow: MAKEUP_STYLING.spring.eyeshadow.colors.slice(0, 2),
+            blusher: MAKEUP_STYLING.spring.blusher.colors[0],
+          },
+          tip: '코랄 톤으로 통일감 있게 연출하세요',
+        },
+      ],
+    },
+    {
+      occasion: 'work',
+      name: '밝은 봄 출근룩',
+      description: '단정하면서 화사한 오피스 스타일',
+      outfits: [
+        {
+          id: 'spring-work-full-1',
+          seasonType: 'spring',
+          occasion: 'work',
+          clothing: COLOR_COMBINATIONS.spring[2],
+          accessory: {
+            metalTone: 'gold',
+            items: [ACCESSORY_STYLING.spring.items[2]],
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.spring.lipstick.colors[4],
+            eyeshadow: [MAKEUP_STYLING.spring.eyeshadow.colors[0]],
+            blusher: MAKEUP_STYLING.spring.blusher.colors[1],
+          },
+          tip: '누드 톤으로 자연스럽게, 골드 포인트로 세련되게',
+        },
+      ],
+    },
+    {
+      occasion: 'date',
+      name: '로맨틱 봄 데이트',
+      description: '사랑스럽고 여성스러운 데이트룩',
+      outfits: [
+        {
+          id: 'spring-date-full-1',
+          seasonType: 'spring',
+          occasion: 'date',
+          clothing: COLOR_COMBINATIONS.spring[1],
+          accessory: {
+            metalTone: 'rose_gold',
+            items: ACCESSORY_STYLING.spring.items.slice(0, 2),
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.spring.lipstick.colors[1],
+            eyeshadow: MAKEUP_STYLING.spring.eyeshadow.colors.slice(1, 3),
+            blusher: MAKEUP_STYLING.spring.blusher.colors[0],
+          },
+          tip: '피치 톤으로 사랑스럽게, 로즈골드로 포인트',
+        },
+      ],
+    },
+    {
+      occasion: 'party',
+      name: '화려한 봄 파티',
+      description: '밝고 활기찬 파티룩',
+      outfits: [
+        {
+          id: 'spring-party-full-1',
+          seasonType: 'spring',
+          occasion: 'party',
+          clothing: COLOR_COMBINATIONS.spring[1],
+          accessory: {
+            metalTone: 'gold',
+            items: ACCESSORY_STYLING.spring.items,
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.spring.lipstick.colors[3],
+            eyeshadow: MAKEUP_STYLING.spring.eyeshadow.colors.slice(2, 4),
+            blusher: MAKEUP_STYLING.spring.blusher.colors[2],
+          },
+          tip: '오렌지 레드 립으로 화사하고 활기찬 분위기',
+        },
+      ],
+    },
+  ],
+
+  summer: [
+    {
+      occasion: 'daily',
+      name: '시원한 여름 데일리',
+      description: '청량하고 우아한 일상 스타일',
+      outfits: [
+        {
+          id: 'summer-daily-full-1',
+          seasonType: 'summer',
+          occasion: 'daily',
+          clothing: COLOR_COMBINATIONS.summer[1],
+          accessory: {
+            metalTone: 'silver',
+            items: ACCESSORY_STYLING.summer.items.slice(0, 2),
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.summer.lipstick.colors[2],
+            eyeshadow: MAKEUP_STYLING.summer.eyeshadow.colors.slice(0, 2),
+            blusher: MAKEUP_STYLING.summer.blusher.colors[1],
+          },
+          tip: '쿨한 색감으로 시원하고 우아하게',
+        },
+      ],
+    },
+    {
+      occasion: 'work',
+      name: '세련된 여름 출근룩',
+      description: '시원하면서 전문적인 오피스 스타일',
+      outfits: [
+        {
+          id: 'summer-work-full-1',
+          seasonType: 'summer',
+          occasion: 'work',
+          clothing: COLOR_COMBINATIONS.summer[0],
+          accessory: {
+            metalTone: 'silver',
+            items: [ACCESSORY_STYLING.summer.items[1]],
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.summer.lipstick.colors[4],
+            eyeshadow: [MAKEUP_STYLING.summer.eyeshadow.colors[2]],
+            blusher: MAKEUP_STYLING.summer.blusher.colors[0],
+          },
+          tip: '라벤더와 그레이로 지적이고 차분하게',
+        },
+      ],
+    },
+    {
+      occasion: 'date',
+      name: '로맨틱 여름 데이트',
+      description: '부드럽고 여성스러운 데이트룩',
+      outfits: [
+        {
+          id: 'summer-date-full-1',
+          seasonType: 'summer',
+          occasion: 'date',
+          clothing: COLOR_COMBINATIONS.summer[2],
+          accessory: {
+            metalTone: 'rose_gold',
+            items: ACCESSORY_STYLING.summer.items.slice(0, 2),
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.summer.lipstick.colors[0],
+            eyeshadow: MAKEUP_STYLING.summer.eyeshadow.colors.slice(0, 2),
+            blusher: MAKEUP_STYLING.summer.blusher.colors[0],
+          },
+          tip: '로즈 핑크로 사랑스럽고 우아하게',
+        },
+      ],
+    },
+    {
+      occasion: 'party',
+      name: '시크한 여름 파티',
+      description: '세련되고 모던한 파티룩',
+      outfits: [
+        {
+          id: 'summer-party-full-1',
+          seasonType: 'summer',
+          occasion: 'party',
+          clothing: COLOR_COMBINATIONS.summer[2],
+          accessory: {
+            metalTone: 'silver',
+            items: ACCESSORY_STYLING.summer.items,
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.summer.lipstick.colors[1],
+            eyeshadow: MAKEUP_STYLING.summer.eyeshadow.colors.slice(2, 4),
+            blusher: MAKEUP_STYLING.summer.blusher.colors[2],
+          },
+          tip: '베리 립으로 시크하고 세련되게',
+        },
+      ],
+    },
+  ],
+
+  autumn: [
+    {
+      occasion: 'daily',
+      name: '따뜻한 가을 데일리',
+      description: '깊고 따뜻한 일상 스타일',
+      outfits: [
+        {
+          id: 'autumn-daily-full-1',
+          seasonType: 'autumn',
+          occasion: 'daily',
+          clothing: COLOR_COMBINATIONS.autumn[0],
+          accessory: {
+            metalTone: 'gold',
+            items: ACCESSORY_STYLING.autumn.items.slice(0, 2),
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.autumn.lipstick.colors[0],
+            eyeshadow: MAKEUP_STYLING.autumn.eyeshadow.colors.slice(0, 2),
+            blusher: MAKEUP_STYLING.autumn.blusher.colors[0],
+          },
+          tip: '테라코타 톤으로 따뜻하고 깊이있게',
+        },
+      ],
+    },
+    {
+      occasion: 'work',
+      name: '고급스러운 가을 출근룩',
+      description: '품격있고 세련된 오피스 스타일',
+      outfits: [
+        {
+          id: 'autumn-work-full-1',
+          seasonType: 'autumn',
+          occasion: 'work',
+          clothing: COLOR_COMBINATIONS.autumn[1],
+          accessory: {
+            metalTone: 'gold',
+            items: [ACCESSORY_STYLING.autumn.items[3]],
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.autumn.lipstick.colors[4],
+            eyeshadow: [MAKEUP_STYLING.autumn.eyeshadow.colors[3]],
+            blusher: MAKEUP_STYLING.autumn.blusher.colors[2],
+          },
+          tip: '머스타드와 브라운으로 고급스럽게',
+        },
+      ],
+    },
+    {
+      occasion: 'date',
+      name: '무드있는 가을 데이트',
+      description: '깊고 로맨틱한 데이트룩',
+      outfits: [
+        {
+          id: 'autumn-date-full-1',
+          seasonType: 'autumn',
+          occasion: 'date',
+          clothing: COLOR_COMBINATIONS.autumn[2],
+          accessory: {
+            metalTone: 'bronze',
+            items: ACCESSORY_STYLING.autumn.items.slice(0, 2),
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.autumn.lipstick.colors[1],
+            eyeshadow: MAKEUP_STYLING.autumn.eyeshadow.colors.slice(0, 2),
+            blusher: MAKEUP_STYLING.autumn.blusher.colors[1],
+          },
+          tip: '버건디 립으로 깊이있는 매력 연출',
+        },
+      ],
+    },
+    {
+      occasion: 'party',
+      name: '화려한 가을 파티',
+      description: '풍부하고 드라마틱한 파티룩',
+      outfits: [
+        {
+          id: 'autumn-party-full-1',
+          seasonType: 'autumn',
+          occasion: 'party',
+          clothing: COLOR_COMBINATIONS.autumn[2],
+          accessory: {
+            metalTone: 'gold',
+            items: ACCESSORY_STYLING.autumn.items,
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.autumn.lipstick.colors[2],
+            eyeshadow: MAKEUP_STYLING.autumn.eyeshadow.colors.slice(1, 3),
+            blusher: MAKEUP_STYLING.autumn.blusher.colors[0],
+          },
+          tip: '브릭 레드와 골드로 화려하게',
+        },
+      ],
+    },
+  ],
+
+  winter: [
+    {
+      occasion: 'daily',
+      name: '시크한 겨울 데일리',
+      description: '모던하고 선명한 일상 스타일',
+      outfits: [
+        {
+          id: 'winter-daily-full-1',
+          seasonType: 'winter',
+          occasion: 'daily',
+          clothing: COLOR_COMBINATIONS.winter[0],
+          accessory: {
+            metalTone: 'silver',
+            items: ACCESSORY_STYLING.winter.items.slice(0, 2),
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.winter.lipstick.colors[0],
+            eyeshadow: MAKEUP_STYLING.winter.eyeshadow.colors.slice(0, 2),
+            blusher: MAKEUP_STYLING.winter.blusher.colors[0],
+          },
+          tip: '흑백 대비로 시크하고 모던하게',
+        },
+      ],
+    },
+    {
+      occasion: 'work',
+      name: '프로페셔널 겨울 출근룩',
+      description: '전문적이고 카리스마 있는 오피스 스타일',
+      outfits: [
+        {
+          id: 'winter-work-full-1',
+          seasonType: 'winter',
+          occasion: 'work',
+          clothing: COLOR_COMBINATIONS.winter[1],
+          accessory: {
+            metalTone: 'silver',
+            items: [ACCESSORY_STYLING.winter.items[1]],
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.winter.lipstick.colors[1],
+            eyeshadow: [MAKEUP_STYLING.winter.eyeshadow.colors[1]],
+            blusher: MAKEUP_STYLING.winter.blusher.colors[0],
+          },
+          tip: '로얄블루와 와인 립으로 강렬하게',
+        },
+      ],
+    },
+    {
+      occasion: 'date',
+      name: '드라마틱 겨울 데이트',
+      description: '강렬하고 매력적인 데이트룩',
+      outfits: [
+        {
+          id: 'winter-date-full-1',
+          seasonType: 'winter',
+          occasion: 'date',
+          clothing: COLOR_COMBINATIONS.winter[2],
+          accessory: {
+            metalTone: 'silver',
+            items: ACCESSORY_STYLING.winter.items.slice(0, 2),
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.winter.lipstick.colors[2],
+            eyeshadow: MAKEUP_STYLING.winter.eyeshadow.colors.slice(0, 2),
+            blusher: MAKEUP_STYLING.winter.blusher.colors[0],
+          },
+          tip: '핫핑크 립으로 강렬한 매력 연출',
+        },
+      ],
+    },
+    {
+      occasion: 'party',
+      name: '글래머러스 겨울 파티',
+      description: '화려하고 극적인 파티룩',
+      outfits: [
+        {
+          id: 'winter-party-full-1',
+          seasonType: 'winter',
+          occasion: 'party',
+          clothing: COLOR_COMBINATIONS.winter[2],
+          accessory: {
+            metalTone: 'silver',
+            items: ACCESSORY_STYLING.winter.items,
+          },
+          makeup: {
+            lipstick: MAKEUP_STYLING.winter.lipstick.colors[3],
+            eyeshadow: MAKEUP_STYLING.winter.eyeshadow.colors.slice(2, 4),
+            blusher: MAKEUP_STYLING.winter.blusher.colors[1],
+          },
+          tip: '푸시아와 딥 퍼플로 화려하게',
+        },
+      ],
+    },
+  ],
+};
+
+/**
+ * 시즌별 코디 프리셋 가져오기
+ */
+export function getOutfitPresets(seasonType: SeasonType): OutfitPreset[] {
+  return OUTFIT_PRESETS[seasonType] || [];
+}
+
+/**
+ * 상황별 코디 프리셋 가져오기
+ */
+export function getOutfitPresetByOccasion(
+  seasonType: SeasonType,
+  occasion: OutfitOccasion
+): OutfitPreset | undefined {
+  const presets = getOutfitPresets(seasonType);
+  return presets.find((p) => p.occasion === occasion);
+}

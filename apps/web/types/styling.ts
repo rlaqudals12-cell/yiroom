@@ -210,3 +210,52 @@ export const STYLE_LABELS: Record<OutfitStyle, string> = {
   elegant: '엘레강스',
   romantic: '로맨틱',
 };
+
+// ============================================
+// Phase J P3: 전체 코디 타입
+// ============================================
+
+/** 전체 코디 상황 */
+export type OutfitOccasion = 'daily' | 'work' | 'date' | 'party';
+
+/** 전체 코디 */
+export interface FullOutfit {
+  id: string;
+  seasonType: SeasonType;
+  occasion: OutfitOccasion;
+  clothing: ColorCombination;
+  accessory: {
+    metalTone: MetalTone;
+    items: AccessoryItem[];
+  };
+  makeup: {
+    lipstick: MakeupColor;
+    eyeshadow: MakeupColor[];
+    blusher: MakeupColor;
+  };
+  tip: string;
+}
+
+/** 상황별 코디 프리셋 */
+export interface OutfitPreset {
+  occasion: OutfitOccasion;
+  name: string;
+  description: string;
+  outfits: FullOutfit[];
+}
+
+/** 전체 코디 상황 한글 라벨 */
+export const OUTFIT_OCCASION_LABELS: Record<OutfitOccasion, string> = {
+  daily: '데일리',
+  work: '출근',
+  date: '데이트',
+  party: '파티',
+};
+
+/** 전체 코디 상황 아이콘 */
+export const OUTFIT_OCCASION_ICONS: Record<OutfitOccasion, string> = {
+  daily: '☀️',
+  work: '💼',
+  date: '💕',
+  party: '🎉',
+};
