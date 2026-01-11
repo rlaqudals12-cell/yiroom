@@ -31,13 +31,8 @@ export function SkinConsultantCTA({
   const router = useRouter();
 
   const handleClick = () => {
-    // 코치 페이지로 이동 (피부 카테고리 활성화 + 컨텍스트 전달)
-    const params = new URLSearchParams();
-    params.set('category', 'skin');
-    if (skinType) params.set('skinType', skinType);
-    if (concerns?.length) params.set('concerns', concerns.join(','));
-
-    router.push(`/coach?${params.toString()}`);
+    // 피부 상담 페이지로 이동
+    router.push('/analysis/skin/consultation');
   };
 
   return (

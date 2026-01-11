@@ -53,6 +53,7 @@ const mockFullOutfit: FullOutfit = {
       {
         type: 'necklace',
         name: '골드 체인 목걸이',
+        metalTone: 'gold',
         gemstone: { name: '시트린', hex: '#FFD700' },
       },
     ],
