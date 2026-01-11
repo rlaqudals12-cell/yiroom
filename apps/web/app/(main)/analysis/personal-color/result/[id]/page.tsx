@@ -44,6 +44,7 @@ import AnalysisEvidenceReport, {
 import { VisualReportCard } from '@/components/analysis/visual-report';
 import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
+import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -388,6 +389,9 @@ export default function PersonalColorResultPage() {
                   className="mt-6"
                 />
               )}
+
+              {/* 성별 적응형 악세서리 추천 (K-1) */}
+              <GenderAdaptiveAccessories seasonType={result.seasonType} className="mt-6" />
 
               {/* 맞춤 추천 제품 */}
               <RecommendedProducts

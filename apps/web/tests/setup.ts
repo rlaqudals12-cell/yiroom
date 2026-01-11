@@ -262,6 +262,10 @@ vi.mock('lucide-react', () => ({
   // History
   History: createIconMock('History'),
 
+  // Accessories (K-1)
+  Watch: createIconMock('Watch'),
+  Glasses: createIconMock('Glasses'),
+
   // Misc
   Calendar: createIconMock('Calendar'),
   Lock: createIconMock('Lock'),
