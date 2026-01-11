@@ -32,11 +32,13 @@ import {
   User,
   Flame,
   Calendar,
+  QrCode,
 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { BadgeCard } from '@/components/gamification';
+import { QRCodeDisplay } from '@/components/common/QRCodeDisplay';
 import { LevelBadgeFilled, LevelProgress as NewLevelProgress } from '@/components/common';
 import { getUserLevel, calculateUserLevelState, type UserLevelState } from '@/lib/levels';
 import {
@@ -74,6 +76,7 @@ export default function ProfilePage() {
   const supabase = useClerkSupabaseClient();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -328,6 +331,33 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+          </section>
+        </FadeInUp>
+
+        {/* 내 QR 코드 */}
+        <FadeInUp>
+          <section className="bg-card rounded-2xl border p-4">
+            <button
+              onClick={() => setShowQR(!showQR)}
+              className="flex w-full items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <QrCode className="h-5 w-5 text-purple-500" />
+                <span className="font-semibold">내 QR 코드</span>
+              </div>
+              <ChevronRight
+                className={`h-4 w-4 text-muted-foreground transition-transform ${showQR ? 'rotate-90' : ''}`}
+              />
+            </button>
+            {showQR && (
+              <div className="mt-4">
+                <QRCodeDisplay
+                  type="referral"
+                  data={{ referralCode: user.id }}
+                  description="친구가 이 QR을 스캔하면 이룸에 가입할 수 있어요"
+                />
+              </div>
+            )}
           </section>
         </FadeInUp>
 

@@ -32,6 +32,7 @@ import {
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { ShareButton } from '@/components/share';
+import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 import type { PersonalColorSeason } from '@/types/product';
@@ -414,6 +415,16 @@ export default function PersonalColorResultPage() {
                   </Button>
                   <ShareButton onShare={share} loading={shareLoading} variant="outline" />
                 </div>
+                {/* 소셜 공유 버튼 */}
+                <div className="flex justify-center">
+                  <ShareButtons
+                    content={{
+                      title: `나의 퍼스널 컬러는 ${result?.seasonType?.toUpperCase() || ''} 타입!`,
+                      description: '이룸에서 AI 퍼스널 컬러 진단 받아보세요',
+                      url: typeof window !== 'undefined' ? window.location.href : '',
+                    }}
+                  />
+                </div>
               </div>
             </TabsContent>
 
@@ -479,6 +490,16 @@ export default function PersonalColorResultPage() {
                     다시 분석하기
                   </Button>
                   <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+                </div>
+                {/* 소셜 공유 버튼 */}
+                <div className="flex justify-center">
+                  <ShareButtons
+                    content={{
+                      title: `나의 퍼스널 컬러는 ${result?.seasonType?.toUpperCase() || ''} 타입!`,
+                      description: '이룸에서 AI 퍼스널 컬러 진단 받아보세요',
+                      url: typeof window !== 'undefined' ? window.location.href : '',
+                    }}
+                  />
                 </div>
               </div>
             </TabsContent>

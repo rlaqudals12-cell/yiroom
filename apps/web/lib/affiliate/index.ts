@@ -86,12 +86,7 @@ export {
   getTopProducts,
   getDateRange,
 } from './stats';
-export type {
-  PartnerRevenue,
-  DailyRevenueTrend,
-  DashboardSummary,
-  TopProduct,
-} from './stats';
+export type { PartnerRevenue, DailyRevenueTrend, DashboardSummary, TopProduct } from './stats';
 
 // A/B Testing
 export {
@@ -106,13 +101,23 @@ export {
   getMockResults,
   calculateSignificance,
 } from './ab-test';
+export type { ABExperiment, ABVariant, ABResult, ABEvent, UserAssignment } from './ab-test';
+
+// Global Links (Region-based)
+export {
+  createGlobalDeeplink,
+  createRegionalDeeplinks,
+  createAllRegionalDeeplinks,
+  getRegionalPartners,
+  getPartnerInfo,
+  isAffiliateSupported,
+  GLOBAL_PARTNER_CONFIG,
+} from './global-links';
 export type {
-  ABExperiment,
-  ABVariant,
-  ABResult,
-  ABEvent,
-  UserAssignment,
-} from './ab-test';
+  GlobalPartnerName,
+  GlobalDeeplinkOptions,
+  GlobalDeeplinkResult,
+} from './global-links';
 
 // Types re-export (convenience)
 export type {

@@ -354,7 +354,12 @@
       "Bash(taskkill /F /PID 25396)",
       "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
       "Bash(npx tsc --noEmit)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(Phase-J-P3-D\\): 코디 공유 기능 \\(이미지 생성\\)\n\nhtml-to-image를 사용하여 코디를 이미지로 변환하고 \n공유/다운로드/복사할 수 있는 기능 추가.\n\n- OutfitShareCard: 공유용 카드 레이아웃\n- OutfitShareModal: 공유 모달 \\(미리보기 + 액션\\)\n- useOutfitShare: 이미지 생성/공유/다운로드 훅\n- Web Share API 지원 \\(모바일\\)\n- 테스트 11개 추가\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(Phase-J-P3-D\\): 코디 공유 기능 \\(이미지 생성\\)\n\nhtml-to-image를 사용하여 코디를 이미지로 변환하고 \n공유/다운로드/복사할 수 있는 기능 추가.\n\n- OutfitShareCard: 공유용 카드 레이아웃\n- OutfitShareModal: 공유 모달 \\(미리보기 + 액션\\)\n- useOutfitShare: 이미지 생성/공유/다운로드 훅\n- Web Share API 지원 \\(모바일\\)\n- 테스트 11개 추가\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(Phase-D\\): AI 피부 상담 챗봇 구현\n\n- 피부 고민 Q&A 채팅 UI \\(SkinConsultationChat\\)\n- 고민별 Mock 응답 및 제품 추천 \\(skin-consultation.ts\\)\n- 빠른 질문 버튼 \\(QuickQuestions\\)\n- 피부 분석 결과 요약 카드\n- 상담 페이지 \\(/analysis/skin/consultation\\)\n- SkinConsultantCTA 연결 업데이트\n- 17개 테스트 추가\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Skill(qcheck)",
+      "Skill(qcheck:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nrefactor\\(Phase-E\\): 품질 검사 개선점 적용\n\n- 헬퍼 함수에 한국어 JSDoc 주석 추가\n  - getDescriptionForType: 심각도별 설명 생성 로직\n  - getRecommendationsForType: K-뷰티 성분 매핑 설명\n  - generateMockProblemAreas: AI fallback 좌표 생성 로직\n- ZoomableImage 줌 계산 로직에 \"왜\" 설명 주석 추가\n  - handleZoom: 중심점 기준 줌 위치 계산 수식\n  - focusPoint: 마커 클릭 시 자동 이동 로직\n- SolutionPanel ESC 키 테스트 추가 \\(19개 → 총 34개\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(Phase-F\\): 제품 스캔 및 제품함 기능 구현\n\n- 바코드 스캔 기능 \\(F-1\\): ScanCamera, BarcodeInput 컴포넌트\n- 성분 OCR 분석 \\(F-2\\): IngredientCapture 컴포넌트\n- 사용자 연동 분석 \\(F-3\\): skin-ingredient-match, compatibility\n- 제품함 관리 \\(F-4\\): ShelfList, ShelfItem, RecentScans 컴포넌트\n- 한국 제품 시드 데이터 30개 \\(F-5\\)\n- AI 피부 상담 CTA \\(Phase D\\)\n- E2E 테스트 및 DB 마이그레이션\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   },
   "env": {

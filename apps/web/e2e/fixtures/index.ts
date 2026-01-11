@@ -146,6 +146,9 @@ export const ROUTES = {
   FRIENDS_SEARCH: '/friends/search',
   FRIENDS_REQUESTS: '/friends/requests',
   LEADERBOARD: '/leaderboard',
+  // 제품 스캔
+  SCAN: '/scan',
+  SCAN_SHELF: '/scan/shelf',
   // 기타
   COACH: '/coach',
   CHAT: '/chat',

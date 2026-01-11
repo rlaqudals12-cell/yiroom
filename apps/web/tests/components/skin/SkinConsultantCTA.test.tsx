@@ -129,4 +129,38 @@ describe('SkinConsultantCTA', () => {
       expect(calledUrl).toContain('concerns=');
     });
   });
+
+  describe('빠른 질문 모드', () => {
+    it('showQuickQuestions=true일 때 빠른 질문이 표시된다', () => {
+      render(<SkinConsultantCTA showQuickQuestions />);
+
+      expect(screen.getByText('AI에게 물어보기')).toBeInTheDocument();
+      expect(screen.getByText('제 피부에 맞는 루틴 알려줘요')).toBeInTheDocument();
+    });
+
+    it('빠른 질문 클릭 시 질문이 URL에 포함된다', () => {
+      render(<SkinConsultantCTA showQuickQuestions />);
+
+      fireEvent.click(screen.getByText('제 피부에 맞는 루틴 알려줘요'));
+
+      const calledUrl = mockPush.mock.calls[0][0];
+      expect(calledUrl).toContain('category=skin');
+      expect(calledUrl).toContain('q=');
+    });
+
+    it('더 많은 질문하기 버튼이 표시된다', () => {
+      render(<SkinConsultantCTA showQuickQuestions />);
+
+      expect(screen.getByText('더 많은 질문하기 →')).toBeInTheDocument();
+    });
+
+    it('빠른 질문은 3개만 표시된다', () => {
+      render(<SkinConsultantCTA showQuickQuestions />);
+
+      const questions = screen
+        .getAllByRole('button')
+        .filter((btn) => !btn.textContent?.includes('더 많은'));
+      expect(questions.length).toBe(3);
+    });
+  });
 });

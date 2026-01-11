@@ -11,6 +11,7 @@ import type { ProductFilterState } from './ProductFilters';
 import { ProductFiltersDynamic } from './dynamic';
 import type { ProductCategory, AnyProduct, ProductSortBy, CosmeticProduct } from '@/types/product';
 import { getProductsByCategory, searchProducts } from '@/lib/products';
+import { RegionBadge } from '@/components/common/RegionSelector';
 
 // 시즌 라벨 변환
 function getSeasonLabel(season: string): string {
@@ -254,8 +255,15 @@ export function ProductsPageClient() {
         </div>
       )}
 
-      {/* 검색창 */}
-      <ProductSearch value={searchQuery} onValueChange={handleSearchChange} className="max-w-md" />
+      {/* 검색창 + 지역 */}
+      <div className="flex items-center justify-between gap-4">
+        <ProductSearch
+          value={searchQuery}
+          onValueChange={handleSearchChange}
+          className="max-w-md flex-1"
+        />
+        <RegionBadge />
+      </div>
 
       {/* 카테고리 탭 */}
       <CategoryTabs value={category} onValueChange={handleCategoryChange} />

@@ -556,13 +556,36 @@
   animation: medal-drop 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
+/* 스캔 라인 애니메이션 */
+@keyframes scan-line {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: calc(100% - 2px);
+    opacity: 0;
+  }
+}
+
+.animate-scan-line {
+  animation: scan-line 2s ease-in-out infinite;
+}
+
 /* 축하 애니메이션 접근성 */
 @media (prefers-reduced-motion: reduce) {
   .animate-sparkle,
   .animate-pulse-light,
   .animate-pulse-strong,
   .animate-bounce-slow,
-  .animate-medal-drop {
+  .animate-medal-drop,
+  .animate-scan-line {
     animation: none;
   }
 }

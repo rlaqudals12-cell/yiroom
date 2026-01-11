@@ -221,12 +221,18 @@ vi.mock('lucide-react', () => ({
 
   // Media & Input
   Camera: createIconMock('Camera'),
+  CameraOff: createIconMock('CameraOff'),
   ImageIcon: createIconMock('ImageIcon'),
   ImagePlus: createIconMock('ImagePlus'),
   ScanBarcode: createIconMock('ScanBarcode'),
+  ScanLine: createIconMock('ScanLine'),
+  Flashlight: createIconMock('Flashlight'),
+  FlashlightOff: createIconMock('FlashlightOff'),
   MessageCircle: createIconMock('MessageCircle'),
   Volume2: createIconMock('Volume2'),
   VolumeX: createIconMock('VolumeX'),
+  Keyboard: createIconMock('Keyboard'),
+  Hash: createIconMock('Hash'),
 
   // People & Awards
   User: createIconMock('User'),
@@ -267,6 +273,15 @@ vi.mock('lucide-react', () => ({
   Megaphone: createIconMock('Megaphone'),
   MessageSquare: createIconMock('MessageSquare'),
   Filter: createIconMock('Filter'),
+
+  // Product Shelf
+  Archive: createIconMock('Archive'),
+  Beaker: createIconMock('Beaker'),
+  CircleSlash: createIconMock('CircleSlash'),
+  EllipsisVertical: createIconMock('EllipsisVertical'),
+  QrCode: createIconMock('QrCode'),
+  Copy: createIconMock('Copy'),
+  Link: createIconMock('Link'),
 
   // UI Components (Icon 접미사 버전)
   XIcon: createIconMock('XIcon'),
