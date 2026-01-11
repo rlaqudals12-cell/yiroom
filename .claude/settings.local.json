@@ -353,7 +353,8 @@
       "Bash(powershell -Command \"Get-Process -Name node -ErrorAction SilentlyContinue | Select-Object Id, ProcessName\")",
       "Bash(taskkill /F /PID 25396)",
       "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
-      "Bash(npx tsc --noEmit)"
+      "Bash(npx tsc --noEmit)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(Phase-J-P3-D\\): 코디 공유 기능 \\(이미지 생성\\)\n\nhtml-to-image를 사용하여 코디를 이미지로 변환하고 \n공유/다운로드/복사할 수 있는 기능 추가.\n\n- OutfitShareCard: 공유용 카드 레이아웃\n- OutfitShareModal: 공유 모달 \\(미리보기 + 액션\\)\n- useOutfitShare: 이미지 생성/공유/다운로드 훅\n- Web Share API 지원 \\(모바일\\)\n- 테스트 11개 추가\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   },
   "env": {

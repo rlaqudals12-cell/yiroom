@@ -23,3 +23,7 @@ export {
   MakeupSection,
   OutfitPreviewCard,
 } from './FullOutfit';
+
+// P3-D: 코디 공유
+export { default as OutfitShareCard } from './OutfitShareCard';
+export { default as OutfitShareModal } from './OutfitShareModal';

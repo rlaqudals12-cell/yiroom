@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Sparkles, Info, AlertCircle, Palette, Bookmark } from 'lucide-react';
-import { FullOutfit } from '@/components/styling';
+import { FullOutfit, OutfitShareModal } from '@/components/styling';
 import { useSavedOutfits } from '@/hooks/useSavedOutfits';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useUser } from '@clerk/nextjs';
@@ -35,6 +35,10 @@ export default function OutfitPage() {
   const [seasonType, setSeasonType] = useState<SeasonType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 공유 모달 상태
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareOutfit, setShareOutfit] = useState<FullOutfitType | null>(null);
 
   // 저장된 코디 훅
   const { savedOutfits, toggleSaveOutfit, fetchSavedOutfits } = useSavedOutfits();
@@ -95,8 +99,8 @@ export default function OutfitPage() {
 
   // 공유 핸들러
   const handleShare = (outfit: FullOutfitType) => {
-    // P3-D에서 구현 예정
-    toast.info('공유 기능은 곧 제공될 예정입니다');
+    setShareOutfit(outfit);
+    setShareModalOpen(true);
   };
 
   // 로딩 상태
@@ -228,6 +232,14 @@ export default function OutfitPage() {
         onSave={handleSave}
         onShare={handleShare}
         savedOutfitIds={savedOutfits.map((o) => o.outfitId)}
+      />
+
+      {/* 공유 모달 */}
+      <OutfitShareModal
+        open={shareModalOpen}
+        onOpenChange={setShareModalOpen}
+        outfit={shareOutfit}
+        seasonType={seasonType}
       />
     </div>
   );
