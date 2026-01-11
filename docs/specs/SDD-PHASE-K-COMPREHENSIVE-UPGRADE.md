@@ -1,10 +1,12 @@
 # Phase K: 종합 업그레이드 스펙
 
-> **Status**: Planning
+> **Status**: In Progress (AI 도메인 상담 구현 완료)
 > **Created**: 2026-01-11
+> **Updated**: 2026-01-12
 > **Author**: Claude Code
 > **Phase**: K (종합 업그레이드)
-> **Complexity**: 85점 (Full 트랙)
+> **Complexity**: 75점 (Full 트랙) ← 기존 인프라 재사용으로 감소
+> **Research**: [PHASE-K-RESEARCH.md](../research/PHASE-K-RESEARCH.md)
 
 ---
 
@@ -102,18 +104,44 @@ export function getGenderAdaptiveContent(
 
 ## 3. K-2: 패션 확장
 
+### 3.0 기존 인프라 재사용 전략
+
+> **핵심**: Phase I의 closetMatcher가 이미 퍼스널컬러/체형 기반 매칭 지원
+
+#### 재사용 가능한 기존 인프라
+
+| 기존 컴포넌트             | 위치                             | K-2 활용            |
+| ------------------------- | -------------------------------- | ------------------- |
+| `closetMatcher.ts`        | `lib/inventory/closetMatcher.ts` | 색상/체형 매칭 로직 |
+| `COLOR_KEYWORDS`          | closetMatcher.ts:21-115          | 시즌별 색상 키워드  |
+| `ClothingCategory`        | `types/inventory.ts`             | 의류 카테고리       |
+| `Occasion`                | `types/inventory.ts`             | TPO 분류            |
+| `OutfitRecommendResponse` | `types/inventory.ts:320-324`     | 코디 추천 응답      |
+
 ### 3.1 요구사항
 
-| ID   | 기능                             | 설명                                  |
-| ---- | -------------------------------- | ------------------------------------- |
-| F-01 | 퍼스널 컬러 + 체형 → 사이즈 추천 | 체형별 핏 가이드 제공                 |
-| F-02 | 스타일 카테고리 분류             | 캐주얼, 포멀, 힙합, 미니멀, 스트릿 등 |
-| F-03 | "Best 10" 추천                   | 카테고리별 인기 조합 10개             |
-| F-04 | 악세서리 확장                    | 시계, 선글라스, 벨트, 가방, 모자      |
-| F-05 | 신발 추천                        | 스니커즈, 구두, 샌들, 부츠 등         |
-| F-06 | 옷장(인벤토리) 연동 코디         | 보유 의류 기반 코디 추천              |
+| ID   | 기능                             | 설명                                  | 구현 방식                            |
+| ---- | -------------------------------- | ------------------------------------- | ------------------------------------ |
+| F-01 | 퍼스널 컬러 + 체형 → 사이즈 추천 | 체형별 핏 가이드 제공                 | 신규 size-recommendation             |
+| F-02 | 스타일 카테고리 분류             | 캐주얼, 포멀, 힙합, 미니멀, 스트릿 등 | 신규 타입 추가                       |
+| F-03 | "Best 10" 추천                   | 카테고리별 인기 조합 10개             | 신규 best10-generator                |
+| F-04 | 악세서리 확장                    | 시계, 선글라스, 벨트, 가방, 모자      | **기존 accessory 서브카테고리 활용** |
+| F-05 | 신발 추천                        | 스니커즈, 구두, 샌들, 부츠 등         | **기존 shoes 서브카테고리 활용**     |
+| F-06 | 옷장(인벤토리) 연동 코디         | 보유 의류 기반 코디 추천              | **기존 closetMatcher 확장**          |
 
-### 3.2 스타일 카테고리
+### 3.2 2026 패션 트렌드 반영
+
+> **참고**: [PHASE-K-RESEARCH.md](../research/PHASE-K-RESEARCH.md) 섹션 1.1
+
+| 트렌드 키워드  | 설명                    | 앱 적용                           |
+| -------------- | ----------------------- | --------------------------------- |
+| **미코노미**   | 과시보다 취향 중심      | 개인 스타일 추천 강화             |
+| **멀티유즈**   | 한 벌로 여러 상황 커버  | TPO별 코디 추천                   |
+| **오버핏**     | 오버사이즈 핏 지속 인기 | 핏 타입별 추천 (슬림/레귤러/오버) |
+| **아이스블루** | 2026년 트렌드 컬러      | 퍼스널컬러별 트렌드 컬러 매칭     |
+| **탐험가카키** | 도시적 밀리터리 스타일  | 스트릿/캐주얼 카테고리 확장       |
+
+### 3.3 스타일 카테고리
 
 ```typescript
 // types/fashion.ts
@@ -133,17 +161,65 @@ export interface StyleBest10 {
   seasonType: SeasonType;
   bodyType?: BodyType;
 }
+
+// 스타일별 2026 트렌드 아이템 (리서치 기반)
+export const STYLE_TREND_ITEMS_2026: Record<StyleCategory, string[]> = {
+  casual: ['폴로 셔츠', '버뮤다 팬츠', '스웨트셔츠'],
+  formal: ['니트 재킷', '기능성 슬랙스'],
+  street: ['새깅 팬츠', '그래픽 티'],
+  minimal: ['아이스 블루 니트', '화이트 셔츠'],
+  'hip-hop': ['오버사이즈 아우터', '볼드 주얼리'],
+  sporty: ['테크웨어', '윈드브레이커'],
+  classic: ['옥스포드 셔츠', '카멜 코트'],
+  preppy: ['니트 베스트', '플리츠 스커트'],
+};
 ```
 
-### 3.3 사이즈 추천 로직
+### 3.4 한국 의류 사이즈 표준
+
+> **참고**: [PHASE-K-RESEARCH.md](../research/PHASE-K-RESEARCH.md) 섹션 1.2
+
+#### 성별별 사이즈 체계
+
+| 구분      | 사이즈 표기            | 비고                  |
+| --------- | ---------------------- | --------------------- |
+| 여성복    | 90(여), 95(여)         | 55, 66 캐주얼은 더 큼 |
+| 남성복    | 100(남), 105(남)       | 통상 기준             |
+| 공용(UNI) | XS, S, M, L, XL        | 여성 전용보다 큼      |
+| KS 표준   | 남성: M~XL, 여성: S~XL | 범위 표시 치수 분류표 |
+
+#### 체형별 핏팅 가이드
+
+| 핏 타입         | 키 범위   | 적합 체형    |
+| --------------- | --------- | ------------ |
+| Short Fitting   | 165-170cm | 키 작은 남성 |
+| Regular Fitting | 170-180cm | 표준 체형    |
+| Long Fitting    | 180-188cm | 키 큰 남성   |
+| Petite (P)      | ~155cm    | 키 작은 여성 |
+
+### 3.5 사이즈 추천 로직
 
 ```typescript
 // lib/fashion/size-recommendation.ts
+export type FitType = 'slim' | 'regular' | 'relaxed';
+export type HeightFit = 'short' | 'regular' | 'long' | 'petite';
+
 export interface SizeRecommendation {
   category: 'top' | 'bottom' | 'shoes';
   recommendedSize: string;
-  fitType: 'slim' | 'regular' | 'relaxed';
+  fitType: FitType;
+  heightFit: HeightFit; // 키 기반 핏 추천 추가
   tips: string[];
+}
+
+// 키 기반 핏 결정
+export function determineHeightFit(height: number, gender: 'male' | 'female'): HeightFit {
+  if (gender === 'female') {
+    return height <= 155 ? 'petite' : 'regular';
+  }
+  if (height < 170) return 'short';
+  if (height >= 180) return 'long';
+  return 'regular';
 }
 
 export function recommendSize(
@@ -288,72 +364,184 @@ export interface CorrectionExercise {
 }
 ```
 
-### 4.3 BMI 계산 로직
+### 4.3 아시아인 BMI 기준 (대한비만학회)
+
+> **참고**: [PHASE-K-RESEARCH.md](../research/PHASE-K-RESEARCH.md) 섹션 2.1
+> **중요**: 아시아인은 같은 BMI에서 더 많은 내장지방을 저장하므로 낮은 기준 적용
+
+| 분류                 | BMI 범위    | 비고 (vs WHO)   |
+| -------------------- | ----------- | --------------- |
+| 저체중               | < 18.5      | 동일            |
+| 정상                 | 18.5 - 22.9 | WHO: 18.5-24.9  |
+| 과체중 (비만 전단계) | 23.0 - 24.9 | **아시아 기준** |
+| 1단계 비만           | 25.0 - 29.9 | WHO: 과체중     |
+| 2단계 비만           | 30.0 - 34.9 | WHO: 1단계 비만 |
+| 3단계 비만 (고도)    | ≥ 35        | WHO: 2단계 비만 |
+
+#### 복부비만 기준 (허리둘레)
+
+| 성별 | 한국 기준 | WHO 아시아-태평양 |
+| ---- | --------- | ----------------- |
+| 남성 | ≥ 90cm    | ≥ 90cm            |
+| 여성 | ≥ 85cm    | ≥ 80cm            |
+
+### 4.4 BMI 계산 로직 (아시아 기준 적용)
 
 ```typescript
 // lib/body/bmi-calculator.ts
+export type BMICategory =
+  | 'underweight'
+  | 'normal'
+  | 'overweight' // 비만 전단계 (23-24.9)
+  | 'obese1' // 1단계 비만
+  | 'obese2' // 2단계 비만
+  | 'obese3'; // 3단계 비만 (고도)
+
+export interface BMIResult {
+  value: number;
+  category: BMICategory;
+  healthyRange: { min: number; max: number };
+  disclaimer: string; // 의학적 면책조항 필수
+}
+
 export function calculateBMI(height: number, weight: number): BMIResult {
   const heightM = height / 100;
   const bmi = weight / (heightM * heightM);
 
-  let category: BMIResult['category'];
+  // 아시아인 기준 (대한비만학회, KSSO)
+  let category: BMICategory;
   if (bmi < 18.5) category = 'underweight';
-  else if (bmi < 25) category = 'normal';
-  else if (bmi < 30) category = 'overweight';
-  else category = 'obese';
+  else if (bmi < 23)
+    category = 'normal'; // WHO는 25
+  else if (bmi < 25)
+    category = 'overweight'; // 비만 전단계
+  else if (bmi < 30)
+    category = 'obese1'; // 1단계 비만
+  else if (bmi < 35)
+    category = 'obese2'; // 2단계 비만
+  else category = 'obese3'; // 3단계 비만 (고도)
 
   return {
     value: Math.round(bmi * 10) / 10,
     category,
     healthyRange: {
       min: Math.round(18.5 * heightM * heightM),
-      max: Math.round(24.9 * heightM * heightM),
+      max: Math.round(22.9 * heightM * heightM), // 아시아 기준
     },
+    disclaimer:
+      '아시아인 기준 적용 (대한비만학회). 의료 조언이 아니며, 정확한 진단은 전문의와 상담하세요.',
   };
 }
 ```
 
-### 4.4 자세 교정 운동 데이터
+### 4.5 자세 교정 운동 데이터 (연구 기반)
+
+> **참고**: [PHASE-K-RESEARCH.md](../research/PHASE-K-RESEARCH.md) 섹션 2.3
+> **근거**: 주 2회, 40분, 4주 프로그램 기반 연구 결과
 
 ```typescript
 // lib/mock/posture-correction.ts
+export interface PostureIssue {
+  name: string;
+  description: string;
+  weakMuscles: string[]; // 약화된 근육
+  tightMuscles: string[]; // 단축된 근육
+}
+
+// 자세 문제 유형 정의
+export const POSTURE_ISSUES: Record<string, PostureIssue> = {
+  anteriorPelvicTilt: {
+    name: '골반 전방경사',
+    description: '골반이 앞으로 기울어져 배가 나와 보이고 허리가 과도하게 휜 상태',
+    weakMuscles: ['대둔근', '햄스트링', '복근'],
+    tightMuscles: ['대퇴사두근', '장요근'],
+  },
+  forwardHeadPosture: {
+    name: '거북목',
+    description: '머리가 어깨보다 앞으로 나온 자세',
+    weakMuscles: ['경추 심부굴곡근', '하부승모근'],
+    tightMuscles: ['흉쇄유돌근', '사각근', '후두하근'],
+  },
+  roundedShoulders: {
+    name: '라운드 숄더',
+    description: '어깨가 앞으로 말려들어간 자세',
+    weakMuscles: ['능형근', '하부승모근'],
+    tightMuscles: ['대흉근', '소흉근'],
+  },
+};
+
 export const POSTURE_CORRECTIONS: Record<BodyType, PostureCorrection> = {
   hourglass: {
     bodyType: 'hourglass',
-    issues: ['골반 전방경사', '과도한 허리 곡선'],
+    issues: ['anteriorPelvicTilt'],
     exercises: [
       {
-        name: '골반 틸트 스트레칭',
-        targetArea: '골반, 허리',
-        duration: '30초 x 3세트',
-        frequency: '매일',
+        name: '다리 앞쪽 스트레칭',
+        targetArea: '대퇴사두근, 장요근',
+        duration: '1-3분 유지',
+        frequency: '양쪽 3-5회, 매일',
         steps: [
-          '바닥에 등을 대고 눕습니다',
-          '무릎을 세우고 발바닥을 바닥에 붙입니다',
-          '허리를 바닥에 붙이며 골반을 뒤로 기울입니다',
-          '5초간 유지 후 이완합니다',
+          '한쪽 무릎을 꿇고 다른 발은 앞에 둡니다 (런지 자세)',
+          '골반을 앞으로 밀며 앞 허벅지가 당기는 느낌까지',
+          '1-3분 유지 후 반대쪽 반복',
+        ],
+      },
+      {
+        name: '브릿지 + 한 다리 뻗기',
+        targetArea: '대둔근, 햄스트링',
+        duration: '10회 x 3세트',
+        frequency: '주 3회',
+        steps: [
+          '바닥에 등을 대고 누워 무릎을 세웁니다',
+          '엉덩이를 들어 어깨-골반-무릎이 일직선이 되게 합니다',
+          '한 다리를 일직선으로 뻗어 5초 유지',
+          '반대 다리도 반복',
         ],
       },
     ],
   },
   rectangle: {
     bodyType: 'rectangle',
-    issues: ['거북목', '라운드 숄더'],
+    issues: ['forwardHeadPosture', 'roundedShoulders'],
     exercises: [
       {
-        name: '월 엔젤',
-        targetArea: '어깨, 등',
-        duration: '10회 x 3세트',
+        name: '후두하근 마사지',
+        targetArea: '후두하근 (뇌가 머리 위치 인식하는 근육)',
+        duration: '5분',
         frequency: '매일',
         steps: [
-          '벽에 등을 붙이고 섭니다',
-          '팔을 90도로 들어 벽에 붙입니다',
-          '팔을 위로 밀어 올렸다 내립니다',
+          '마사지볼을 뒤통수 아래(목과 두개골 경계)에 놓습니다',
+          '체중을 실어 5분간 압박합니다',
+          '고개를 좌우로 천천히 움직여 근육 이완',
+        ],
+      },
+      {
+        name: '벽 엔젤 운동',
+        targetArea: '어깨, 등',
+        duration: '10회 x 2세트',
+        frequency: '매일 2번, 1달 이상',
+        steps: [
+          '벽에 뒤통수-어깨-골반-발뒤꿈치를 밀착합니다',
+          '팔을 90도로 들어 벽에 붙입니다 (W 모양)',
+          '팔을 위로 밀어 올립니다 (Y 모양)',
+          '천천히 내리며 10회 반복',
+        ],
+      },
+      {
+        name: 'Y-T-W 운동',
+        targetArea: '능형근, 하부승모근',
+        duration: '각 동작 10회',
+        frequency: '주 3회',
+        steps: [
+          '엎드려서 이마를 바닥에 대거나 매트에 눕습니다',
+          'Y 동작: 팔을 Y자로 뻗어 올립니다',
+          'T 동작: 팔을 T자로 뻗어 올립니다',
+          'W 동작: 팔꿈치를 구부려 W자로 올립니다',
         ],
       },
     ],
   },
-  // ... 다른 체형
+  // ... 다른 체형도 연구 기반 운동 추가
 };
 ```
 
@@ -392,33 +580,128 @@ export const POSTURE_CORRECTIONS: Record<BodyType, PostureCorrection> = {
 
 ## 5. K-4: 영양/레시피 확장
 
+### 5.0 기존 인프라 재사용 전략
+
+> **핵심**: Phase I에서 구축된 인벤토리 시스템을 최대한 활용
+
+#### 재사용 가능한 기존 인프라
+
+| 기존 컴포넌트              | 위치                               | K-4 활용                 |
+| -------------------------- | ---------------------------------- | ------------------------ |
+| `pantry` 카테고리          | `types/inventory.ts:12`            | 식재료 인벤토리 카테고리 |
+| `PantryMetadata`           | `types/inventory.ts:150-156`       | 식재료 메타데이터        |
+| `InventoryItem.expiryDate` | `types/inventory.ts:173`           | 유통기한 관리            |
+| CRUD repository            | `lib/inventory/repository.ts`      | 식재료 CRUD              |
+| 이미지 처리                | `lib/inventory/imageProcessing.ts` | 식재료 사진 처리         |
+| `ItemUploader`             | `components/inventory/common/`     | 식재료 등록 UI           |
+| `InventoryGrid`            | `components/inventory/common/`     | 식재료 목록 UI           |
+| `closetMatcher.ts` 패턴    | `lib/inventory/closetMatcher.ts`   | → `recipeMatcher.ts`     |
+
+#### 재사용 비율 분석
+
+```
+기존 코드 재사용:  ~70%
+확장/신규 코드:    ~30%
+예상 코드 절감:    ~800줄 (1,200줄 → 400줄)
+```
+
 ### 5.1 요구사항
 
-| ID   | 기능                  | 설명                            |
-| ---- | --------------------- | ------------------------------- |
-| N-01 | 식재료 스캔           | 바코드/이미지로 식재료 인식     |
-| N-02 | 식재료 인벤토리       | 보유 식재료 관리                |
-| N-03 | 레시피 추천           | 보유 재료 기반 추천             |
-| N-04 | 구하기 쉬운 재료 옵션 | 마트에서 쉽게 구할 수 있는 재료 |
-| N-05 | 선호 재료 설정        | 사용자 선호 재료 저장           |
-| N-06 | 목표별 레시피         | 다이어트/벌크업/린매스 목표별   |
+| ID   | 기능                  | 설명                            | 구현 방식                     |
+| ---- | --------------------- | ------------------------------- | ----------------------------- |
+| N-01 | 식재료 스캔           | 바코드/이미지로 식재료 인식     | **기존 ItemUploader 재사용**  |
+| N-02 | 식재료 인벤토리       | 보유 식재료 관리                | **기존 repository 재사용**    |
+| N-03 | 레시피 추천           | 보유 재료 기반 추천             | 신규 recipeMatcher 생성       |
+| N-04 | 구하기 쉬운 재료 옵션 | 마트에서 쉽게 구할 수 있는 재료 | Mock 데이터                   |
+| N-05 | 선호 재료 설정        | 사용자 선호 재료 저장           | **기존 tags/isFavorite 활용** |
+| N-06 | 목표별 레시피         | 다이어트/벌크업/린매스 목표별   | 신규 goal-calculator          |
 
-### 5.2 데이터 모델
+### 5.2 활용 가능한 레시피 API
+
+> **참고**: [PHASE-K-RESEARCH.md](../research/PHASE-K-RESEARCH.md) 섹션 3.1
+
+| API                | 제공 기관                  | 특징                        | 활용 방안                |
+| ------------------ | -------------------------- | --------------------------- | ------------------------ |
+| 레시피 재료정보    | 농림수산식품교육문화정보원 | 우리 농산물 활용, 영양성분  | 메인 레시피 데이터소스   |
+| 조리식품 레시피 DB | 식품의약품안전처           | 조리법, 영양정보            | 영양 정보 보강           |
+| 만개의레시피       | 만개의레시피               | 10만개+ 레시피, 사용자 평가 | 인기 레시피, 난이도 참고 |
+
+#### 참고 프로젝트 (알고리즘)
+
+| 프로젝트        | 핵심 기능                              | GitHub URL                                      |
+| --------------- | -------------------------------------- | ----------------------------------------------- |
+| NAMORE          | 좋아하는/싫어하는 재료, "나의 냉장고"  | https://github.com/KangminP/NAMORE              |
+| ReCook          | 재료 선택→추천, 취향 분석, 연관 레시피 | https://github.com/dudcheol/ReCook              |
+| KoreanRecipeGPT | 음식명+식재료→레시피 생성 (GPT 기반)   | https://github.com/skku-taehwan/KoreanRecipeGPT |
+
+### 5.3 데이터 모델 (기존 확장)
+
+> **전략**: 새 테이블 생성 대신 기존 `PantryMetadata` 확장
 
 ```typescript
-// types/nutrition-extended.ts
-export interface FoodIngredient {
-  id: string;
-  name: string;
-  category: 'vegetable' | 'meat' | 'seafood' | 'dairy' | 'grain' | 'seasoning';
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  storageLife: number; // 일
-  addedAt: Date;
-  expiresAt?: Date;
+// types/inventory.ts - 기존 PantryMetadata 확장
+export interface PantryMetadata {
+  // 기존 필드
+  unit: string; // 단위 (g, ml, 개)
+  quantity: number;
+  storageType: 'refrigerator' | 'freezer' | 'room';
+  purchaseDate?: string;
+
+  // K-4 확장 필드 (선택적, 하위호환)
+  ingredientType?: IngredientCategory; // 재료 종류
+  calories?: number; // 영양정보
+  protein?: number;
+  carbs?: number;
+  fat?: number;
 }
+
+// types/nutrition-extended.ts - 레시피 전용 타입만 신규
+export type IngredientCategory = 'vegetable' | 'meat' | 'seafood' | 'dairy' | 'grain' | 'seasoning';
+
+// 기존 InventoryItem 활용 (category='pantry')
+// → FoodIngredient 별도 정의 불필요
+// → user_inventory 테이블의 pantry 레코드 그대로 사용
+
+// 식재료 카테고리별 기본 데이터 (리서치 기반)
+export const INGREDIENT_CATEGORIES: Record<
+  IngredientCategory,
+  {
+    name: string;
+    items: string[];
+    avgStorageLife: number;
+  }
+> = {
+  vegetable: {
+    name: '채소',
+    items: ['양배추', '당근', '양파', '브로콜리', '시금치', '토마토', '파프리카', '오이'],
+    avgStorageLife: 7,
+  },
+  meat: {
+    name: '육류',
+    items: ['닭가슴살', '소고기', '돼지고기', '닭다리살', '오리고기', '양고기'],
+    avgStorageLife: 3, // 냉장 기준
+  },
+  seafood: {
+    name: '해산물',
+    items: ['연어', '새우', '오징어', '고등어', '참치', '조개'],
+    avgStorageLife: 2,
+  },
+  dairy: {
+    name: '유제품',
+    items: ['우유', '치즈', '요거트', '버터', '생크림', '그릭요거트'],
+    avgStorageLife: 7,
+  },
+  grain: {
+    name: '곡물',
+    items: ['쌀', '파스타', '빵', '오트밀', '현미', '귀리'],
+    avgStorageLife: 30,
+  },
+  seasoning: {
+    name: '양념',
+    items: ['간장', '소금', '설탕', '고추장', '된장', '올리브오일', '참기름'],
+    avgStorageLife: 365,
+  },
+};
 
 export interface UserIngredientInventory {
   userId: string;
@@ -484,23 +767,66 @@ export const NUTRITION_GOALS: Record<NutritionGoal, NutritionTarget> = {
 };
 ```
 
-### 5.4 레시피 추천 로직
+### 5.4 레시피 추천 로직 (closetMatcher 패턴 재사용)
+
+> **패턴**: `lib/inventory/closetMatcher.ts`의 스코어링 로직을 레시피에 적용
 
 ```typescript
-// lib/nutrition/recipe-recommendation.ts
-export function recommendRecipes(
-  inventory: UserIngredientInventory,
+// lib/nutrition/recipe-matcher.ts
+// closetMatcher.ts 패턴 재사용
+
+import { getItems } from '@/lib/inventory/repository';
+
+export interface RecipeMatchResult {
+  recipe: Recipe;
+  matchScore: number; // 0-100 (closetMatcher와 동일)
+  matchedIngredients: string[];
+  missingIngredients: string[];
+  matchReason: string;
+}
+
+export async function recommendRecipes(
+  userId: string,
   goal: NutritionGoal,
-  options: {
+  options?: {
     preferEasyToFind?: boolean;
     maxMissingIngredients?: number;
     maxCookTime?: number;
   }
-): RecipeRecommendation[] {
-  // 1. 목표에 맞는 레시피 필터링
-  // 2. 보유 재료 매칭률 계산
-  // 3. 선호/비선호 재료 반영
-  // 4. 정렬 및 반환
+): Promise<RecipeMatchResult[]> {
+  // 1. 기존 repository로 pantry 아이템 조회
+  const pantryItems = await getItems(userId, { category: 'pantry' });
+
+  // 2. 사용자 보유 재료명 추출
+  const userIngredients = pantryItems.map((item) => item.name.toLowerCase());
+
+  // 3. 목표에 맞는 레시피 필터링
+  const recipes = await getRecipesByGoal(goal);
+
+  // 4. 매칭 스코어 계산 (closetMatcher.ts 패턴)
+  const results = recipes.map((recipe) => {
+    const matched = recipe.ingredients.filter((ing) =>
+      userIngredients.includes(ing.name.toLowerCase())
+    );
+    const missing = recipe.ingredients.filter(
+      (ing) => !userIngredients.includes(ing.name.toLowerCase())
+    );
+
+    const matchScore = Math.round((matched.length / recipe.ingredients.length) * 100);
+
+    return {
+      recipe,
+      matchScore,
+      matchedIngredients: matched.map((i) => i.name),
+      missingIngredients: missing.map((i) => i.name),
+      matchReason: generateMatchReason(matchScore, matched.length),
+    };
+  });
+
+  // 5. 옵션 필터링 및 정렬
+  return results
+    .filter((r) => r.missingIngredients.length <= (options?.maxMissingIngredients ?? 3))
+    .sort((a, b) => b.matchScore - a.matchScore);
 }
 ```
 
@@ -568,15 +894,26 @@ export function recommendRecipes(
 
 ## 6. K-5: 관리자/프로필 페이지
 
-### 6.1 관리자 대시보드 요구사항
+### 6.1 2026 UX/UI 트렌드 적용
 
-| 기능              | 설명                      |
-| ----------------- | ------------------------- |
-| 사용자 통계       | DAU, MAU, 리텐션율        |
-| 분석 현황         | 모듈별 분석 완료 수       |
-| 어필리에이트 성과 | 클릭수, 전환율, 수익      |
-| 콘텐츠 관리       | FAQ, 공지사항 CRUD        |
-| 오류 모니터링     | AI 분석 실패율, 에러 로그 |
+> **참고**: [PHASE-K-RESEARCH.md](../research/PHASE-K-RESEARCH.md) 섹션 4.1
+
+| 트렌드                   | 설명                            | 프로필 적용              | 관리자 적용            |
+| ------------------------ | ------------------------------- | ------------------------ | ---------------------- |
+| **주변 개인화**          | 환경/행동 패턴 기반 미묘한 조정 | 시간대별 인사말 변경     | 시간대별 주요 지표     |
+| **벤토 박스**            | 정리된 그리드 기반 레이아웃     | 분석/활동/기록 섹션 분리 | 대시보드 카드 레이아웃 |
+| **미니멀 데이터 시각화** | 복잡한 데이터를 간단하게        | 웰니스 스코어 링 차트    | 핵심 KPI 숫자 강조     |
+| **윤리적 디자인**        | 다크 패턴 배제, 투명한 UX       | 명확한 설정/로그아웃     | 투명한 통계 표시       |
+
+### 6.2 관리자 대시보드 요구사항
+
+| 기능              | 설명                      | 핵심 KPI                        |
+| ----------------- | ------------------------- | ------------------------------- |
+| 사용자 통계       | DAU, MAU, 리텐션율        | DAU/MAU 비율, 7일 리텐션        |
+| 분석 현황         | 모듈별 분석 완료 수       | 완료율, AI 성공률               |
+| 어필리에이트 성과 | 클릭수, 전환율, 수익      | CTR, 전환율, 예상 월 수익       |
+| 콘텐츠 관리       | FAQ, 공지사항 CRUD        | FAQ 조회수, 공지 도달률         |
+| 오류 모니터링     | AI 분석 실패율, 에러 로그 | 실패율 <5%, 평균 응답 시간 <3초 |
 
 ### 6.2 사용자 프로필 페이지 개선
 
@@ -588,32 +925,214 @@ export function recommendRecipes(
 | 설정          | 산재        | 통합 설정 페이지              |
 | 연동 계정     | 없음        | 소셜 로그인 연동 관리         |
 
-### 6.3 UI: 프로필 페이지 리디자인
+### 6.3 UI: 프로필 페이지 리디자인 (벤토 박스 레이아웃)
 
 ```
 ┌─────────────────────────────────────────┐
-│  [프로필 사진]                           │
-│  김이룸님                                │
-│  🏆 Lv.12 웰니스 마스터                  │
-│  💎 웰니스 스코어: 85점                  │
+│  [프로필 영역 - 상단 고정]               │
+│  ┌───────────────────────────────────┐  │
+│  │  [사진]  김이룸님                  │  │
+│  │          🏆 Lv.12 웰니스 마스터    │  │
+│  │          💎 스코어: 85점 (링 차트) │  │
+│  └───────────────────────────────────┘  │
 ├─────────────────────────────────────────┤
+│  [벤토 박스 - 3열 그리드]                │
+│  ┌─────────┬─────────┬─────────┐       │
+│  │ 분석    │ 활동    │ 기록    │       │
+│  │ 결과    │ 요약    │ 통계    │       │
+│  │ ────    │ ────    │ ────    │       │
+│  │ PC: 봄웜│ 운동 3일│ 체중 -2kg│       │
+│  │ 피부:건성│ 식단 5일│ BMI 22.3│       │
+│  │ 체형:역삼│ 물 2L  │ 달성 80%│       │
+│  └─────────┴─────────┴─────────┘       │
 │                                         │
-│  ── 이번 주 활동 ──                      │
-│  ┌─────┬─────┬─────┬─────┬─────┐       │
-│  │ 월  │ 화  │ 수  │ 목  │ 금  │       │
-│  │ ●  │ ●  │ ○  │ ●  │     │       │
-│  └─────┴─────┴─────┴─────┴─────┘       │
-│                                         │
-│  ── 내 분석 결과 ──                      │
-│  [퍼스널컬러] 봄 웜톤                    │
-│  [피부 타입] 복합성 건성                 │
-│  [체형] 역삼각형                         │
+│  ── 최근 활동 타임라인 ──                │
+│  • 10:30 운동 완료 - 하체 루틴           │
+│  • 08:00 식단 기록 - 아침 420kcal        │
+│  • 어제 피부 분석 재시도                 │
 │                                         │
 │  ── 빠른 메뉴 ──                         │
-│  [설정] [도움말] [친구] [로그아웃]       │
+│  [⚙️ 설정] [❓ 도움말] [👥 친구] [🚪 로그아웃]│
 │                                         │
 └─────────────────────────────────────────┘
 ```
+
+> **디자인 원칙**: 벤토 박스 레이아웃으로 정보 밀도를 높이면서 시각적 정리 유지
+
+---
+
+## 6.5 AI 도메인 상담 확장 (Cross-cutting)
+
+> **패턴**: Phase D (피부 상담) 패턴을 패션/영양/운동에 동일 적용
+> **재사용**: 기존 AI 코치 인프라 (`lib/coach/*`) 확장
+
+### 6.5.1 확장 대상 도메인
+
+| 도메인         | 데이터 소스     | RAG 대상        | Phase K 연관    |
+| -------------- | --------------- | --------------- | --------------- |
+| **퍼스널컬러** | PC-1 분석 결과  | 색상 추천/코디  | K-1, K-2        |
+| **패션**       | 옷장 인벤토리   | 의류/악세서리   | K-2             |
+| **영양**       | 냉장고 인벤토리 | 레시피/식재료   | K-4             |
+| **운동**       | 운동 기록       | 운동 루틴/장비  | (기존 W-1 강화) |
+| 피부           | 피부 일기       | 화장품/스킨케어 | Phase D (별도)  |
+
+### 6.5.2 공통 패턴 (Phase D 기반)
+
+```
+각 도메인별 확장 구조:
+├── lib/coach/{domain}-rag.ts       # 도메인 RAG 검색
+├── lib/coach/{domain}-context.ts   # 컨텍스트 강화 (선택)
+├── components/{domain}/CoachCTA.tsx # 상담 진입 CTA
+└── 빠른 질문 확장                   # QUICK_QUESTIONS_BY_CATEGORY
+```
+
+### 6.5.3 도메인별 구현 계획
+
+#### 퍼스널컬러 상담 (K-1 연계)
+
+```typescript
+// lib/coach/personal-color-rag.ts
+export async function searchByPersonalColor(
+  userId: string,
+  query: string,
+  context: { seasonType: string; subSeason?: string }
+): Promise<ColorSearchResult[]> {
+  // 1. 시즌 타입 기반 색상 추천
+  const recommendedColors = getSeasonColors(context.seasonType);
+
+  // 2. 질문 의도 분석 (옷? 메이크업? 염색?)
+  const intent = analyzeColorIntent(query);
+
+  // 3. 의도별 맞춤 추천
+  return generateColorRecommendations(recommendedColors, intent);
+}
+```
+
+**빠른 질문 예시**:
+
+- "내 퍼스널컬러에 안 어울리는 색이 뭐야?"
+- "웜톤인데 쿨톤 옷 입어도 돼?"
+- "내 시즌에 맞는 립 색상 추천해줘"
+- "염색하려는데 어떤 색이 어울려?"
+- "결혼식 하객룩 색상 추천해줘"
+- "이 색 조합이 나한테 어울려?"
+
+**컨텍스트 활용**:
+
+- PC-1 분석 결과 (시즌 타입, 서브 시즌)
+- 저장된 베스트/워스트 컬러
+- 최근 저장한 코디 색상
+
+#### 패션 상담 (K-2 연계)
+
+```typescript
+// lib/coach/fashion-rag.ts
+export async function searchFashionItems(
+  userId: string,
+  query: string,
+  context: { seasonType: string; bodyType: string }
+): Promise<FashionSearchResult[]> {
+  // 1. 사용자 옷장에서 검색
+  const closetItems = await getItems(userId, { category: 'closet' });
+
+  // 2. 퍼스널컬러/체형 기반 매칭
+  const matched = closetItems.filter((item) => matchesPersonalColor(item, context.seasonType));
+
+  // 3. 스타일 추천 생성
+  return generateStyleRecommendations(matched, query);
+}
+```
+
+**빠른 질문 예시**:
+
+- "오늘 면접인데 뭐 입으면 좋을까요?"
+- "내 옷장에서 데이트룩 추천해줘"
+- "이 상의에 어울리는 하의는?"
+- "내 퍼스널컬러에 맞는 코디 알려줘"
+
+#### 영양 상담 (K-4 연계)
+
+```typescript
+// lib/coach/nutrition-rag.ts
+export async function searchRecipes(
+  userId: string,
+  query: string,
+  context: { goal: NutritionGoal; pantryItems: string[] }
+): Promise<RecipeSearchResult[]> {
+  // 1. 냉장고 재료 기반 레시피 검색
+  const recipes = await recommendRecipes(userId, context.goal);
+
+  // 2. 질문 의도 분석 (다이어트? 벌크업?)
+  const intent = analyzeNutritionIntent(query);
+
+  // 3. 맞춤 레시피 필터링
+  return filterByIntent(recipes, intent);
+}
+```
+
+**빠른 질문 예시**:
+
+- "냉장고에 있는 재료로 뭐 해먹을까?"
+- "다이어트 중인데 저녁 메뉴 추천해줘"
+- "단백질 높은 레시피 알려줘"
+- "남은 닭가슴살로 뭘 만들 수 있어?"
+
+#### 운동 상담 (기존 강화)
+
+```typescript
+// lib/coach/workout-rag.ts (기존 확장)
+export async function searchWorkouts(
+  userId: string,
+  query: string,
+  context: { recentLogs: WorkoutLog[]; equipment: string[] }
+): Promise<WorkoutSearchResult[]> {
+  // 1. 최근 운동 기록 분석
+  const muscleGroupsTrained = analyzeMuscleGroups(context.recentLogs);
+
+  // 2. 보유 장비 기반 필터링
+  const availableWorkouts = filterByEquipment(context.equipment);
+
+  // 3. 휴식/분할 고려 추천
+  return recommendWithRecovery(availableWorkouts, muscleGroupsTrained);
+}
+```
+
+**빠른 질문 예시**:
+
+- "어제 하체 했는데 오늘 뭐 해?"
+- "집에서 덤벨로 할 수 있는 운동"
+- "허리가 아픈데 할 수 있는 운동"
+- "15분 안에 끝나는 전신 운동"
+
+### 6.5.4 UI 진입점
+
+```
+각 결과 페이지에 AI 상담 CTA 추가:
+
+┌─────────────────────────────────────────┐
+│  [기존 결과 화면]                        │
+│                                         │
+│  ────────────────────────────────────   │
+│                                         │
+│  💬 AI 코치에게 물어보기                 │
+│  ┌─────────────────────────────────┐    │
+│  │  "오늘 코디 어떻게 하면 좋을까요?" │    │
+│  └─────────────────────────────────┘    │
+│  [상담하기]                              │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### 6.5.5 구현 우선순위
+
+| 우선순위 | 도메인     | 이유                              | 예상 추가 작업 |
+| -------- | ---------- | --------------------------------- | -------------- |
+| 1        | 퍼스널컬러 | K-1 핵심, 모든 추천의 기반        | +80줄          |
+| 2        | 패션       | K-2 핵심 기능, 옷장 데이터 활용   | +100줄         |
+| 3        | 영양       | K-4 핵심 기능, 냉장고 데이터 활용 | +100줄         |
+| 4        | 운동       | 기존 기능 강화, 선택적            | +50줄          |
+
+**총 추가 작업**: +330줄 (기존 AI 코치 인프라 재사용)
 
 ---
 
@@ -621,27 +1140,27 @@ export function recommendRecipes(
 
 ### 7.1 파일 생성 목록
 
-| Sub-Phase | 신규 파일                                      |
-| --------- | ---------------------------------------------- |
-| K-1       | `lib/content/gender-adaptive.ts`               |
-| K-1       | `components/common/GenderToggle.tsx`           |
-| K-1       | `lib/mock/accessories-male.ts`                 |
-| K-2       | `lib/fashion/style-categories.ts`              |
-| K-2       | `lib/fashion/size-recommendation.ts`           |
-| K-2       | `lib/fashion/best10-generator.ts`              |
-| K-2       | `components/styling/Best10Card.tsx`            |
-| K-2       | `components/styling/WardrobeCoordinator.tsx`   |
-| K-3       | `lib/body/bmi-calculator.ts`                   |
-| K-3       | `lib/body/posture-correction.ts`               |
-| K-3       | `components/body/MeasurementsInput.tsx`        |
-| K-3       | `components/body/PostureCorrectionGuide.tsx`   |
-| K-4       | `lib/nutrition/ingredient-inventory.ts`        |
-| K-4       | `lib/nutrition/recipe-recommendation.ts`       |
-| K-4       | `lib/nutrition/goal-calculator.ts`             |
-| K-4       | `components/nutrition/IngredientInventory.tsx` |
-| K-4       | `components/nutrition/RecipeCard.tsx`          |
-| K-5       | `app/admin/dashboard/page.tsx` (리디자인)      |
-| K-5       | `app/(main)/profile/page.tsx` (리디자인)       |
+| Sub-Phase | 신규 파일                                          |
+| --------- | -------------------------------------------------- | ------------------------------ |
+| K-1       | `lib/content/gender-adaptive.ts`                   |
+| K-1       | `components/common/GenderToggle.tsx`               |
+| K-1       | `lib/mock/accessories-male.ts`                     |
+| K-2       | `lib/fashion/style-categories.ts`                  |
+| K-2       | `lib/fashion/size-recommendation.ts`               |
+| K-2       | `lib/fashion/best10-generator.ts`                  |
+| K-2       | `components/styling/Best10Card.tsx`                |
+| K-2       | `components/styling/WardrobeCoordinator.tsx`       |
+| K-3       | `lib/body/bmi-calculator.ts`                       |
+| K-3       | `lib/body/posture-correction.ts`                   |
+| K-3       | `components/body/MeasurementsInput.tsx`            |
+| K-3       | `components/body/PostureCorrectionGuide.tsx`       |
+| K-4       | `lib/nutrition/recipe-matcher.ts`                  | `closetMatcher.ts` 패턴 재사용 |
+| K-4       | `lib/nutrition/goal-calculator.ts`                 | 신규                           |
+| K-4       | `components/nutrition/RecipeCard.tsx`              | 신규                           |
+| K-4       | ~~`lib/nutrition/ingredient-inventory.ts`~~        | ❌ 기존 repository 재사용      |
+| K-4       | ~~`components/nutrition/IngredientInventory.tsx`~~ | ❌ 기존 InventoryGrid 재사용   |
+| K-5       | `app/admin/dashboard/page.tsx` (리디자인)          |
+| K-5       | `app/(main)/profile/page.tsx` (리디자인)           |
 
 ### 7.2 기존 파일 수정
 
@@ -655,6 +1174,8 @@ export function recommendRecipes(
 
 ### 7.3 DB 스키마 변경
 
+> **K-4 최적화**: 기존 `user_inventory` 테이블 활용으로 식재료 테이블 불필요
+
 ```sql
 -- users 테이블 확장
 ALTER TABLE users ADD COLUMN gender VARCHAR(10) DEFAULT 'neutral';
@@ -662,41 +1183,37 @@ ALTER TABLE users ADD COLUMN height_cm INTEGER;
 ALTER TABLE users ADD COLUMN weight_kg DECIMAL(5,2);
 ALTER TABLE users ADD COLUMN body_fat_percentage DECIMAL(4,2);
 
--- 식재료 인벤토리 테이블 (신규)
-CREATE TABLE user_ingredient_inventory (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clerk_user_id TEXT NOT NULL,
-  ingredient_id TEXT NOT NULL,
-  quantity DECIMAL(10,2),
-  unit VARCHAR(20),
-  added_at TIMESTAMPTZ DEFAULT NOW(),
-  expires_at TIMESTAMPTZ,
-  FOREIGN KEY (clerk_user_id) REFERENCES users(clerk_user_id)
-);
+-- 식재료 인벤토리: 기존 user_inventory 테이블 사용 (category='pantry')
+-- ❌ user_ingredient_inventory (불필요 - 기존 user_inventory 재사용)
+-- ❌ user_ingredient_preferences (불필요 - 기존 tags, is_favorite 활용)
 
--- 선호 재료 테이블 (신규)
-CREATE TABLE user_ingredient_preferences (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clerk_user_id TEXT NOT NULL,
-  ingredient_id TEXT NOT NULL,
-  preference_type VARCHAR(10), -- 'like' | 'dislike'
-  FOREIGN KEY (clerk_user_id) REFERENCES users(clerk_user_id)
-);
-
--- 레시피 테이블 (신규)
+-- 레시피 테이블만 신규 생성
 CREATE TABLE recipes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(100) NOT NULL,
   description TEXT,
-  ingredients JSONB NOT NULL,
-  steps JSONB NOT NULL,
-  nutrition_info JSONB NOT NULL,
-  cook_time INTEGER,
-  difficulty VARCHAR(20),
-  nutrition_goals TEXT[],
+  ingredients JSONB NOT NULL,       -- [{name, quantity, unit, optional}]
+  steps JSONB NOT NULL,             -- [step1, step2, ...]
+  nutrition_info JSONB NOT NULL,    -- {calories, protein, carbs, fat}
+  cook_time INTEGER,                -- 분
+  difficulty VARCHAR(20),           -- easy | medium | hard
+  nutrition_goals TEXT[],           -- ['diet', 'bulk', 'lean', 'maintenance']
+  source VARCHAR(50),               -- 출처 (공공API, 크롤링 등)
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- 레시피 인덱스
+CREATE INDEX idx_recipes_goals ON recipes USING GIN (nutrition_goals);
+CREATE INDEX idx_recipes_difficulty ON recipes (difficulty);
 ```
+
+#### K-4 테이블 절감 효과
+
+| 제안 테이블                   | 상태    | 절감 이유                                 |
+| ----------------------------- | ------- | ----------------------------------------- |
+| `user_ingredient_inventory`   | ❌ 제거 | `user_inventory` (category='pantry') 사용 |
+| `user_ingredient_preferences` | ❌ 제거 | `user_inventory.tags`, `is_favorite` 활용 |
+| `recipes`                     | ✅ 신규 | 레시피 데이터 저장 필요                   |
 
 ### 7.4 구현 순서
 
@@ -718,12 +1235,11 @@ Phase K-3: 체형 분석 강화 (3일)
 ├── Day 2: 자세 교정 운동 데이터/UI
 └── Day 3: 통합, 테스트
 
-Phase K-4: 영양/레시피 확장 (5일)
-├── Day 1: DB 스키마, 타입 정의
-├── Day 2: 인벤토리 CRUD
-├── Day 3: 레시피 추천 로직
-├── Day 4: UI 컴포넌트
-└── Day 5: 목표별 필터링, 테스트
+Phase K-4: 영양/레시피 확장 (3일) ← 2일 단축
+├── Day 1: PantryMetadata 확장, recipes 테이블, 타입 정의
+├── Day 2: recipe-matcher.ts (closetMatcher 패턴), goal-calculator.ts
+└── Day 3: RecipeCard UI, 기존 인벤토리 페이지에 pantry 탭 활성화, 테스트
+※ 기존 인프라 재사용으로 인벤토리 CRUD 작업 생략
 
 Phase K-5: 관리자/프로필 (2일)
 ├── Day 1: 프로필 리디자인
@@ -732,14 +1248,23 @@ Phase K-5: 관리자/프로필 (2일)
 
 ### 7.5 예상 작업량
 
-| Sub-Phase | 예상 코드량 | 테스트 수 |
-| --------- | ----------- | --------- |
-| K-1       | ~600줄      | ~30개     |
-| K-2       | ~1,500줄    | ~80개     |
-| K-3       | ~800줄      | ~40개     |
-| K-4       | ~1,200줄    | ~60개     |
-| K-5       | ~500줄      | ~20개     |
-| **총합**  | ~4,600줄    | ~230개    |
+| Sub-Phase | 예상 코드량  | 테스트 수  | 비고                               |
+| --------- | ------------ | ---------- | ---------------------------------- |
+| K-1       | ~600줄       | ~30개      |                                    |
+| K-2       | ~1,500줄     | ~80개      |                                    |
+| K-3       | ~800줄       | ~40개      |                                    |
+| K-4       | **~400줄**   | **~25개**  | ⬇️ 800줄 절감 (기존 인프라 재사용) |
+| K-5       | ~500줄       | ~20개      |                                    |
+| **총합**  | **~3,800줄** | **~195개** | ⬇️ 800줄 절감                      |
+
+#### K-4 절감 상세
+
+| 항목        | 원래 예상 | 재사용 후 | 절감                        |
+| ----------- | --------- | --------- | --------------------------- |
+| 식재료 CRUD | 400줄     | 0줄       | -400줄 (기존 repository)    |
+| 인벤토리 UI | 300줄     | 0줄       | -300줄 (기존 InventoryGrid) |
+| 레시피 추천 | 300줄     | 250줄     | -50줄 (패턴 재사용)         |
+| 목표 계산기 | 200줄     | 150줄     | -50줄                       |
 
 ---
 
@@ -759,14 +1284,14 @@ Phase K-5: 관리자/프로필 (2일)
 
 ### 9.1 복잡도 점수
 
-| Sub-Phase | 파일 수 | DB 변경 | 외부 API | 총점 | 트랙     |
-| --------- | ------- | ------- | -------- | ---- | -------- |
-| K-1       | 6       | O       | X        | 50   | Standard |
-| K-2       | 10      | X       | X        | 55   | Standard |
-| K-3       | 6       | O       | X        | 50   | Standard |
-| K-4       | 10      | O       | △        | 70   | Standard |
-| K-5       | 4       | X       | X        | 35   | Light    |
-| **전체**  | 36+     | O       | △        | 85   | **Full** |
+| Sub-Phase | 파일 수 | DB 변경 | 외부 API | 총점   | 트랙     | 비고                |
+| --------- | ------- | ------- | -------- | ------ | -------- | ------------------- |
+| K-1       | 6       | O       | X        | 50     | Standard |                     |
+| K-2       | 8       | X       | X        | 50     | Standard | ⬇️ 기존 인프라 활용 |
+| K-3       | 6       | O       | X        | 50     | Standard |                     |
+| K-4       | **5**   | O       | △        | **55** | Standard | ⬇️ 대폭 간소화      |
+| K-5       | 4       | X       | X        | 35     | Light    |                     |
+| **전체**  | **29**  | O       | △        | **75** | **Full** | ⬇️ 복잡도 감소      |
 
 ### 9.2 권장 전략
 
@@ -774,12 +1299,91 @@ Phase K-5: 관리자/프로필 (2일)
 
 ---
 
-## 10. 변경 이력
+## 10. 기존 인프라 재사용 요약
 
-| 버전 | 날짜       | 변경 내용                                  |
-| ---- | ---------- | ------------------------------------------ |
-| 0.1  | 2026-01-11 | 초안 작성 - 사용자 요구사항 기반 스펙 정의 |
+> **Phase I 인벤토리 시스템을 Phase K에서 최대한 활용**
+
+### 10.1 총 절감 효과
+
+| 항목      | 원래 예상 | 재사용 후 | 절감률    |
+| --------- | --------- | --------- | --------- |
+| 코드량    | 4,600줄   | 3,800줄   | **17% ↓** |
+| 테스트 수 | 230개     | 195개     | **15% ↓** |
+| DB 테이블 | 5개 신규  | 2개 신규  | **60% ↓** |
+| 작업 기간 | 18일      | 16일      | **11% ↓** |
+
+### 10.2 재사용 매핑
+
+```
+Phase I 인벤토리          →    Phase K 활용
+─────────────────────────────────────────────
+user_inventory (pantry)   →    K-4 식재료 인벤토리
+PantryMetadata            →    K-4 식재료 메타데이터
+repository.ts CRUD        →    K-4 식재료 CRUD
+closetMatcher.ts          →    K-2 옷장 연동, K-4 레시피 매칭
+ItemUploader              →    K-4 식재료 스캔
+InventoryGrid             →    K-4 식재료 목록
+CLOTHING_SUB_CATEGORIES   →    K-2 악세서리/신발 확장
+```
 
 ---
 
-**Status**: Planning
+## 11. 구현 현황 (2026-01-12 기준)
+
+### ✅ 완료된 기능
+
+| 기능              | 파일                                             | 상태                   |
+| ----------------- | ------------------------------------------------ | ---------------------- |
+| 퍼스널컬러 RAG    | `lib/coach/personal-color-rag.ts`                | ✅ 구현 완료           |
+| 패션 RAG          | `lib/coach/fashion-rag.ts`                       | ✅ 구현 완료           |
+| 영양 RAG          | `lib/coach/nutrition-rag.ts`                     | ✅ 구현 완료           |
+| 운동 RAG          | `lib/coach/workout-rag.ts`                       | ✅ 구현 완료           |
+| 피부 RAG          | `lib/coach/skin-rag.ts`                          | ✅ 구현 완료 (Phase D) |
+| 범용 CTA 컴포넌트 | `components/coach/ConsultantCTA.tsx`             | ✅ 구현 완료           |
+| 피부 전용 CTA     | `components/skin/SkinConsultantCTA.tsx`          | ✅ 구현 완료           |
+| 채팅 히스토리 DB  | `migrations/202601120100_coach_chat_history.sql` | ✅ 마이그레이션 생성   |
+| 채팅 히스토리 API | `app/api/coach/sessions/*`                       | ✅ CRUD API 구현       |
+| 스트리밍 UI       | `components/coach/ChatInterface.tsx`             | ✅ SSE 스트리밍 지원   |
+
+### 페이지별 CTA 통합 현황
+
+| 페이지          | CTA 카테고리  | 상태         |
+| --------------- | ------------- | ------------ |
+| 퍼스널컬러 결과 | personalColor | ✅ 통합 완료 |
+| 피부 분석 결과  | skin          | ✅ 통합 완료 |
+| 체형 분석 결과  | fashion       | ✅ 통합 완료 |
+| 운동 결과       | workout       | ✅ 통합 완료 |
+| 영양 페이지     | nutrition     | ✅ 통합 완료 |
+
+### 테스트 현황
+
+- `tests/lib/coach/*.test.ts`: RAG 모듈 테스트 (84개)
+- `tests/components/coach/ConsultantCTA.test.tsx`: CTA 컴포넌트 테스트
+- `tests/lib/coach/history.test.ts`: 채팅 히스토리 테스트 (13개)
+- `e2e/coach/coach-cta.spec.ts`: E2E 테스트
+
+### 📋 남은 기능
+
+| 기능            | Sub-Phase | 우선순위                   |
+| --------------- | --------- | -------------------------- |
+| 성별 중립화 UI  | K-1       | 🟡 낮음 (사용자 제외 요청) |
+| 패션 Best 10    | K-2       | 🟠 중간                    |
+| BMI 계산기      | K-3       | ✅ 기존 구현 확인됨        |
+| 레시피 추천     | K-4       | 🟠 중간                    |
+| 프로필 리디자인 | K-5       | 🟡 낮음                    |
+
+---
+
+## 12. 변경 이력
+
+| 버전 | 날짜       | 변경 내용                                                 |
+| ---- | ---------- | --------------------------------------------------------- |
+| 0.5  | 2026-01-12 | AI 도메인 상담 구현 완료 (RAG, CTA, 채팅 히스토리)        |
+| 0.4  | 2026-01-12 | AI 도메인 상담 확장 섹션 추가 (퍼스널컬러/패션/영양/운동) |
+| 0.3  | 2026-01-11 | 기존 인프라 재사용 전략 추가 (K-2, K-4)                   |
+| 0.2  | 2026-01-11 | 리서치 결과 반영 (트렌드, BMI, API, UX)                   |
+| 0.1  | 2026-01-11 | 초안 작성 - 사용자 요구사항 기반 스펙 정의                |
+
+---
+
+**Status**: In Progress (AI 도메인 상담 구현 완료)
