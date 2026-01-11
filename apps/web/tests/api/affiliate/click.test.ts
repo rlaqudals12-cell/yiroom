@@ -50,9 +50,10 @@ describe('POST /api/affiliate/click', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(200);
+    expect(response!.status).toBe(200);
     expect(data.success).toBe(true);
     expect(data.affiliateUrl).toBe('https://link.coupang.com/a/123');
     expect(data.clickId).toBe('click-123');
@@ -68,9 +69,10 @@ describe('POST /api/affiliate/click', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(400);
+    expect(response!.status).toBe(400);
     expect(data.error).toContain('필수 필드');
   });
 
@@ -84,9 +86,10 @@ describe('POST /api/affiliate/click', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(400);
+    expect(response!.status).toBe(400);
     expect(data.error).toContain('필수 필드');
   });
 
@@ -100,9 +103,10 @@ describe('POST /api/affiliate/click', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(400);
+    expect(response!.status).toBe(400);
     expect(data.error).toContain('필수 필드');
   });
 
@@ -120,9 +124,10 @@ describe('POST /api/affiliate/click', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(404);
+    expect(response!.status).toBe(404);
     expect(data.error).toContain('제품을 찾을 수 없습니다');
   });
 
@@ -140,9 +145,10 @@ describe('POST /api/affiliate/click', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(200);
+    expect(response!.status).toBe(200);
     expect(data.success).toBe(true);
     expect(data.affiliateUrl).toBeDefined();
     expect(data.clickId).toBeUndefined();

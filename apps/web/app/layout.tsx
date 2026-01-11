@@ -119,6 +119,14 @@ export default async function RootLayout({
           <link rel="dns-prefetch" href="https://clerk.com" />
           <link rel="dns-prefetch" href="https://img.clerk.com" />
           <link rel="dns-prefetch" href="https://supabase.co" />
+          <link rel="dns-prefetch" href="https://developers.kakao.com" />
+          {/* Kakao SDK for 소셜 공유 */}
+          <script
+            src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
+            integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4"
+            crossOrigin="anonymous"
+            async
+          />
           {/* JSON-LD 구조화 데이터 */}
           <OrganizationJsonLd />
           <WebApplicationJsonLd />

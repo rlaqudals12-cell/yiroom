@@ -128,7 +128,6 @@ describe('checkCameraPermission', () => {
   });
 
   afterEach(() => {
-    // @ts-expect-error - navigator mock restore
     global.navigator = originalNavigator;
   });
 

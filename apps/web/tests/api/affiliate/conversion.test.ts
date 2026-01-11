@@ -48,9 +48,10 @@ describe('POST /api/affiliate/conversion', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(200);
+    expect(response!.status).toBe(200);
     expect(data.success).toBe(true);
     expect(data.clickId).toBe('click-123');
     expect(data.conversionValue).toBe(55000);
@@ -70,9 +71,10 @@ describe('POST /api/affiliate/conversion', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(200);
+    expect(response!.status).toBe(200);
     expect(data.success).toBe(true);
     expect(data.clickId).toBe('click-789');
     expect(data.conversionValue).toBe(35000);
@@ -91,9 +93,10 @@ describe('POST /api/affiliate/conversion', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(200);
+    expect(response!.status).toBe(200);
     expect(data.success).toBe(true);
     expect(data.clickId).toBe('click-abc');
   });
@@ -108,9 +111,10 @@ describe('POST /api/affiliate/conversion', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(400);
+    expect(response!.status).toBe(400);
     expect(data.error).toContain('partner');
   });
 
@@ -124,9 +128,10 @@ describe('POST /api/affiliate/conversion', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(400);
+    expect(response!.status).toBe(400);
     expect(data.error).toContain('partner');
   });
 
@@ -141,9 +146,10 @@ describe('POST /api/affiliate/conversion', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(200);
+    expect(response!.status).toBe(200);
     expect(data.success).toBe(true);
     expect(data.message).toContain('without click');
   });
@@ -162,9 +168,10 @@ describe('POST /api/affiliate/conversion', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(200);
+    expect(response!.status).toBe(200);
     expect(data.success).toBe(false);
     expect(data.message).toContain('not found');
   });
@@ -176,9 +183,10 @@ describe('POST /api/affiliate/conversion', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(400);
+    expect(response!.status).toBe(400);
     expect(data.error).toContain('Invalid JSON');
   });
 
@@ -194,9 +202,10 @@ describe('POST /api/affiliate/conversion', () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    expect(response).toBeDefined();
+    const data = await response!.json();
 
-    expect(response.status).toBe(200);
+    expect(response!.status).toBe(200);
     expect(data.conversionValue).toBe(0);
     expect(data.commission).toBe(0);
   });
