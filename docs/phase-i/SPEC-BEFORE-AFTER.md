@@ -1,15 +1,19 @@
 # SPEC-BEFORE-AFTER.md
 
 > 체형/피부 변화 Before/After 비교 기능
+>
+> **상태**: ✅ 구현 완료 (2026-01-11)
+> **테스트**: 39개 통과
+> **커밋**: 7b374bd
 
 ## 개요
 
-| 항목 | 내용 |
-|------|------|
-| 모듈 | C-1 (체형), S-1 (피부) |
-| 우선순위 | 높음 (Phase I-1) |
-| 예상 기간 | 2-3일 |
-| 의존성 | 기존 분석 데이터 |
+| 항목      | 내용                   |
+| --------- | ---------------------- |
+| 모듈      | C-1 (체형), S-1 (피부) |
+| 우선순위  | 높음 (Phase I-1)       |
+| 예상 기간 | 2-3일                  |
+| 의존성    | 기존 분석 데이터       |
 
 ## 목표
 
@@ -73,10 +77,12 @@ apps/web/
 ### 데이터베이스
 
 기존 테이블 활용:
+
 - `body_analyses` - 체형 분석 이력
 - `skin_analyses` - 피부 분석 이력
 
 추가 필드 (필요시):
+
 ```sql
 -- 분석 테이블에 이미지 URL 추가 (이미 있다면 스킵)
 ALTER TABLE body_analyses ADD COLUMN IF NOT EXISTS image_url TEXT;
@@ -108,11 +114,13 @@ CREATE POLICY "analysis_change_cache_policy" ON analysis_change_cache
 #### GET /api/analysis/history
 
 **Request:**
+
 ```
 GET /api/analysis/history?type=body&limit=10
 ```
 
 **Response:**
+
 ```json
 {
   "analyses": [
@@ -146,11 +154,13 @@ GET /api/analysis/history?type=body&limit=10
 #### GET /api/analysis/compare
 
 **Request:**
+
 ```
 GET /api/analysis/compare?type=body&from=uuid1&to=uuid2
 ```
 
 **Response:**
+
 ```json
 {
   "before": {
@@ -171,10 +181,7 @@ GET /api/analysis/compare?type=body&from=uuid1&to=uuid2
     "posture": +5,
     "period": "14일"
   },
-  "insights": [
-    "근력이 4점 향상되었어요!",
-    "자세 점수가 개선되고 있어요"
-  ]
+  "insights": ["근력이 4점 향상되었어요!", "자세 점수가 개선되고 있어요"]
 }
 ```
 
@@ -230,7 +237,9 @@ export function ChangeTracker({
     <div className="flex items-center justify-between">
       <span>{title}</span>
       <div className={isGood ? 'text-green-500' : 'text-red-500'}>
-        {isPositive ? '+' : ''}{change}{unit}
+        {isPositive ? '+' : ''}
+        {change}
+        {unit}
       </div>
     </div>
   );
@@ -299,20 +308,20 @@ export function ChangeTracker({
 
 ## 성공 지표
 
-| 지표 | 목표 |
-|------|------|
-| 비교 기능 사용률 | 주간 활성 사용자 40% |
-| 재분석 전환율 | 비교 후 30% 재분석 |
-| 공유율 | 월간 1,000회 |
-| 운동/스킨케어 지속율 | 30% 향상 |
+| 지표                 | 목표                 |
+| -------------------- | -------------------- |
+| 비교 기능 사용률     | 주간 활성 사용자 40% |
+| 재분석 전환율        | 비교 후 30% 재분석   |
+| 공유율               | 월간 1,000회         |
+| 운동/스킨케어 지속율 | 30% 향상             |
 
 ## 일정
 
-| 날짜 | 작업 |
-|------|------|
+| 날짜  | 작업                                  |
+| ----- | ------------------------------------- |
 | Day 1 | BeforeAfterSlider, ChangeTracker 구현 |
-| Day 2 | 이력 API, 비교 API 구현 |
-| Day 3 | 페이지 통합, 테스트 |
+| Day 2 | 이력 API, 비교 API 구현               |
+| Day 3 | 페이지 통합, 테스트                   |
 
 ---
 

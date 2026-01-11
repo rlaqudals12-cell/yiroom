@@ -1,15 +1,19 @@
 # SPEC-WEATHER-OUTFIT.md
 
 > 날씨 연동 AI 코디 추천 기능
+>
+> **상태**: ✅ 구현 완료 (2026-01-11)
+> **테스트**: 25개 통과
+> **커밋**: 7b374bd
 
 ## 개요
 
-| 항목 | 내용 |
-|------|------|
-| 모듈 | C-1 (체형), Style (스타일 추천) |
-| 우선순위 | 높음 (Phase I-1) |
-| 예상 기간 | 3-4일 |
-| 의존성 | OpenWeatherMap API |
+| 항목      | 내용                            |
+| --------- | ------------------------------- |
+| 모듈      | C-1 (체형), Style (스타일 추천) |
+| 우선순위  | 높음 (Phase I-1)                |
+| 예상 기간 | 3-4일                           |
+| 의존성    | OpenWeatherMap API              |
 
 ## 목표
 
@@ -20,11 +24,11 @@
 
 ### 선택 이유
 
-| 옵션 | 내용 | 선택 |
-|------|------|------|
-| A (기본) | 정적 계절 4분류 | ❌ |
-| B (중급) | 날씨 API + 기온 기반 추천 | ✅ |
-| C (고급) | AI 실시간 최적화 | 추후 |
+| 옵션     | 내용                      | 선택 |
+| -------- | ------------------------- | ---- |
+| A (기본) | 정적 계절 4분류           | ❌   |
+| B (중급) | 날씨 API + 기온 기반 추천 | ✅   |
+| C (고급) | AI 실시간 최적화          | 추후 |
 
 Option B로 시작하여 사용자 피드백 후 C로 확장.
 
@@ -110,14 +114,14 @@ apps/web/
 export interface WeatherData {
   location: string;
   current: {
-    temp: number;           // 섭씨
-    feelsLike: number;      // 체감온도
-    humidity: number;       // 습도 (%)
-    windSpeed: number;      // 풍속 (m/s)
-    uvi: number;            // UV 지수 (0-11+)
-    description: string;    // "맑음", "흐림" 등
-    icon: string;           // 아이콘 코드
-    precipitation: number;  // 강수 확률 (%)
+    temp: number; // 섭씨
+    feelsLike: number; // 체감온도
+    humidity: number; // 습도 (%)
+    windSpeed: number; // 풍속 (m/s)
+    uvi: number; // UV 지수 (0-11+)
+    description: string; // "맑음", "흐림" 등
+    icon: string; // 아이콘 코드
+    precipitation: number; // 강수 확률 (%)
   };
   forecast: HourlyForecast[];
 }
@@ -145,7 +149,7 @@ export interface LayerItem {
   name: string;
   reason: string;
   imageUrl?: string;
-  productLink?: string;  // 제품 추천 연동
+  productLink?: string; // 제품 추천 연동
 }
 ```
 
@@ -156,13 +160,13 @@ export interface LayerItem {
 
 // 체감온도 기준 레이어링
 const TEMP_LAYERS = {
-  extreme_cold: { min: -Infinity, max: -5, layers: 4 },  // 패딩+니트+내의
-  very_cold: { min: -5, max: 5, layers: 3 },             // 코트+맨투맨+셔츠
-  cold: { min: 5, max: 12, layers: 2 },                  // 가디건+셔츠
-  cool: { min: 12, max: 18, layers: 1.5 },               // 가벼운 아우터
-  mild: { min: 18, max: 23, layers: 1 },                 // 긴팔 or 반팔
-  warm: { min: 23, max: 28, layers: 0.5 },               // 반팔+반바지
-  hot: { min: 28, max: Infinity, layers: 0 },            // 민소매/린넨
+  extreme_cold: { min: -Infinity, max: -5, layers: 4 }, // 패딩+니트+내의
+  very_cold: { min: -5, max: 5, layers: 3 }, // 코트+맨투맨+셔츠
+  cold: { min: 5, max: 12, layers: 2 }, // 가디건+셔츠
+  cool: { min: 12, max: 18, layers: 1.5 }, // 가벼운 아우터
+  mild: { min: 18, max: 23, layers: 1 }, // 긴팔 or 반팔
+  warm: { min: 23, max: 28, layers: 0.5 }, // 반팔+반바지
+  hot: { min: 28, max: Infinity, layers: 0 }, // 민소매/린넨
 };
 
 // 체형별 추천 조정
@@ -185,14 +189,10 @@ export function recommendOutfit(
   const layerInfo = determineLayer(feelsLike);
 
   // 강수 대응
-  const rainItems = precipitation > 50
-    ? ['우산', '방수 아우터', '레인부츠']
-    : [];
+  const rainItems = precipitation > 50 ? ['우산', '방수 아우터', '레인부츠'] : [];
 
   // UV 대응
-  const sunItems = uvi > 5
-    ? ['선글라스', '모자', '자외선 차단 카디건']
-    : [];
+  const sunItems = uvi > 5 ? ['선글라스', '모자', '자외선 차단 카디건'] : [];
 
   // 체형별 조정
   const bodyAdjust = BODY_TYPE_ADJUSTMENTS[bodyType];
@@ -216,11 +216,13 @@ export function recommendOutfit(
 #### GET /api/weather
 
 **Request:**
+
 ```
 GET /api/weather?lat=37.5665&lon=126.9780
 ```
 
 **Response:**
+
 ```json
 {
   "location": "서울특별시 중구",
@@ -236,7 +238,13 @@ GET /api/weather?lat=37.5665&lon=126.9780
   },
   "forecast": [
     { "time": "12:00", "temp": 14, "feelsLike": 12, "precipitation": 0, "description": "맑음" },
-    { "time": "15:00", "temp": 15, "feelsLike": 13, "precipitation": 10, "description": "구름 조금" }
+    {
+      "time": "15:00",
+      "temp": 15,
+      "feelsLike": 13,
+      "precipitation": 10,
+      "description": "구름 조금"
+    }
   ],
   "cachedAt": "2025-01-15T10:30:00Z"
 }
@@ -245,9 +253,12 @@ GET /api/weather?lat=37.5665&lon=126.9780
 #### POST /api/style/recommend
 
 **Request:**
+
 ```json
 {
-  "weather": { /* WeatherData */ },
+  "weather": {
+    /* WeatherData */
+  },
   "bodyType": "S",
   "personalColor": "spring_warm",
   "occasion": "casual"
@@ -255,6 +266,7 @@ GET /api/weather?lat=37.5665&lon=126.9780
 ```
 
 **Response:**
+
 ```json
 {
   "layers": [
@@ -372,21 +384,21 @@ WEATHER_CACHE_TTL=15
 
 ## 성공 지표
 
-| 지표 | 목표 |
-|------|------|
-| 날씨 코디 조회율 | DAU의 30% |
-| 제품 클릭률 | 코디 조회의 15% |
-| 사용자 만족도 | 4.2/5.0 |
-| 재사용률 | 주 3회 이상 |
+| 지표             | 목표            |
+| ---------------- | --------------- |
+| 날씨 코디 조회율 | DAU의 30%       |
+| 제품 클릭률      | 코디 조회의 15% |
+| 사용자 만족도    | 4.2/5.0         |
+| 재사용률         | 주 3회 이상     |
 
 ## 일정
 
-| 날짜 | 작업 |
-|------|------|
+| 날짜  | 작업                     |
+| ----- | ------------------------ |
 | Day 1 | 날씨 API 연동, 타입 정의 |
-| Day 2 | 코디 추천 로직 구현 |
-| Day 3 | UI 컴포넌트 구현 |
-| Day 4 | 통합, 테스트, 버그 수정 |
+| Day 2 | 코디 추천 로직 구현      |
+| Day 3 | UI 컴포넌트 구현         |
+| Day 4 | 통합, 테스트, 버그 수정  |
 
 ---
 

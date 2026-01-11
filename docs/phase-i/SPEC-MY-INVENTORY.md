@@ -1,15 +1,19 @@
 # SPEC-MY-INVENTORY.md
 
 > 내 아이템 통합 인벤토리 시스템
+>
+> **상태**: ✅ 구현 완료 (2026-01-11)
+> **테스트**: 106개 통과
+> **커밋**: 7b374bd
 
 ## 개요
 
-| 항목 | 내용 |
-|------|------|
-| 모듈 | Inventory (신규) |
-| 우선순위 | 높음 (Phase I-2) |
-| 예상 기간 | 5-7일 |
-| 의존성 | C-1 체형, PC-1 퍼스널컬러, 날씨 코디, 바코드 스캔 |
+| 항목      | 내용                                              |
+| --------- | ------------------------------------------------- |
+| 모듈      | Inventory (신규)                                  |
+| 우선순위  | 높음 (Phase I-2)                                  |
+| 예상 기간 | 5-7일                                             |
+| 의존성    | C-1 체형, PC-1 퍼스널컬러, 날씨 코디, 바코드 스캔 |
 
 ## 목표
 
@@ -20,19 +24,19 @@
 
 ### Phase I-2-1: 코어 + 내 옷장 (우선 구현)
 
-| 기능 | 설명 | 우선순위 |
-|------|------|----------|
-| 통합 인벤토리 코어 | DB 스키마, 공통 타입, 공통 컴포넌트 | 필수 |
-| 내 옷장 | 의류 등록, 2D 코디 미리보기, 날씨 연동 | 필수 |
+| 기능               | 설명                                   | 우선순위 |
+| ------------------ | -------------------------------------- | -------- |
+| 통합 인벤토리 코어 | DB 스키마, 공통 타입, 공통 컴포넌트    | 필수     |
+| 내 옷장            | 의류 등록, 2D 코디 미리보기, 날씨 연동 | 필수     |
 
 ### Phase I-2-2: 확장 (추후)
 
-| 기능 | 연동 모듈 |
-|------|----------|
+| 기능         | 연동 모듈                 |
+| ------------ | ------------------------- |
 | 내 뷰티 선반 | S-1 피부분석, 바코드 스캔 |
-| 내 냉장고 | N-1 영양, 바코드 스캔 |
-| 내 운동장비 | W-1 운동 |
-| 내 영양제 | N-1 영양, 상호작용 체크 |
+| 내 냉장고    | N-1 영양, 바코드 스캔     |
+| 내 운동장비  | W-1 운동                  |
+| 내 영양제    | N-1 영양, 상호작용 체크   |
 
 ---
 
@@ -41,6 +45,7 @@
 ### 1. 통합 인벤토리 코어
 
 #### 1.1 아이템 등록
+
 - 사진 촬영/갤러리 업로드
 - 자동 배경 제거 (AI)
 - 카테고리 자동 분류 (선택적 수정)
@@ -48,6 +53,7 @@
 - 바코드 스캔 (화장품, 식품)
 
 #### 1.2 아이템 관리
+
 - 카테고리별 필터링
 - 검색 (이름, 태그, 색상)
 - 정렬 (최근 등록, 자주 사용, 색상별)
@@ -55,18 +61,21 @@
 - 즐겨찾기
 
 #### 1.3 AI 자동 분석
+
 - **배경 제거**: @imgly/background-removal (브라우저, 무료)
 - **색상 추출**: 이미지에서 주요 색상 자동 추출
 - **카테고리 추천**: Gemini Vision으로 의류 종류 자동 분류
 - **중복 감지**: 유사 이미지 등록 시 경고
 
 #### 1.4 이미지 저장소
+
 - **Supabase Storage** 사용 (기존 인프라 활용)
 - 버킷: `inventory-images`
 - 경로: `{userId}/{category}/{itemId}.png`
 - 원본/배경제거 이미지 모두 저장
 
 #### 1.5 공통 UI 컴포넌트
+
 - `InventoryGrid`: 아이템 그리드 뷰
 - `ItemCard`: 개별 아이템 카드
 - `ItemUploader`: 사진 업로드 + 배경 제거
@@ -80,6 +89,7 @@
 #### 2.1 의류 등록
 
 **카테고리:**
+
 ```
 아우터: 코트, 자켓, 패딩, 가디건, 점퍼
 상의: 티셔츠, 셔츠, 블라우스, 니트, 맨투맨, 후드
@@ -91,6 +101,7 @@
 ```
 
 **메타데이터:**
+
 ```typescript
 interface ClothingItem {
   id: string;
@@ -98,15 +109,15 @@ interface ClothingItem {
   category: ClothingCategory;
   subCategory: string;
   name: string;
-  imageUrl: string;           // 배경 제거된 이미지
-  originalImageUrl?: string;  // 원본 이미지
+  imageUrl: string; // 배경 제거된 이미지
+  originalImageUrl?: string; // 원본 이미지
 
   // 스타일 속성
-  color: string[];            // 주요 색상 (복수)
-  pattern?: string;           // 무지, 스트라이프, 체크 등
-  material?: string;          // 면, 울, 폴리에스터 등
-  season: Season[];           // 봄, 여름, 가을, 겨울
-  occasion: Occasion[];       // 캐주얼, 포멀, 운동 등
+  color: string[]; // 주요 색상 (복수)
+  pattern?: string; // 무지, 스트라이프, 체크 등
+  material?: string; // 면, 울, 폴리에스터 등
+  season: Season[]; // 봄, 여름, 가을, 겨울
+  occasion: Occasion[]; // 캐주얼, 포멀, 운동 등
 
   // 추가 정보
   brand?: string;
@@ -115,8 +126,8 @@ interface ClothingItem {
   price?: number;
 
   // 시스템
-  wearCount: number;          // 착용 횟수
-  lastWornAt?: string;        // 마지막 착용일
+  wearCount: number; // 착용 횟수
+  lastWornAt?: string; // 마지막 착용일
   isFavorite: boolean;
   tags: string[];
 
@@ -128,12 +139,14 @@ interface ClothingItem {
 #### 2.2 2D 코디 미리보기
 
 **플랫레이 콜라주:**
+
 - 아우터 → 상의 → 하의 → 신발 수직 배치
 - 액세서리 좌우 배치
 - 드래그 앤 드롭으로 아이템 교체
 - 코디 저장 (이미지 생성)
 
 **레이아웃:**
+
 ```
 ┌─────────────────────────────┐
 │         [아우터]             │
@@ -159,16 +172,19 @@ interface ClothingItem {
 #### 2.3 코디 추천 연동
 
 **날씨 연동:**
+
 - 현재 날씨 기반 → 내 옷장에서 적합한 아이템 필터링
 - 체감온도 → 레이어링 가이드 + 내 아우터/상의 추천
 - 강수 예보 → 방수 아우터, 부츠 추천
 
 **체형(C-1) 연동:**
+
 - S/W/N 체형별 핏 추천
 - 보유 아이템 중 체형에 맞는 아이템 우선 표시
 - "이 아이템은 웨이브 체형에 잘 어울려요" 태그
 
 **퍼스널컬러(PC-1) 연동:**
+
 - 퍼스널컬러 팔레트와 매칭되는 아이템 하이라이트
 - 색상 조합 추천 (보유 아이템 기준)
 - "봄 웜톤에 어울리는 조합이에요" 피드백
@@ -176,17 +192,20 @@ interface ClothingItem {
 #### 2.4 부족 아이템 분석
 
 **Gap Analysis:**
+
 - 카테고리별 아이템 수 분석
 - 계절별 부족 아이템 제안
 - 코디 완성을 위한 추천 ("이 코디에 로퍼가 있으면 완벽해요")
 
 **쇼핑 연동:**
+
 - 부족 아이템 → 쇼핑몰 검색 연동
 - 체형/퍼스널컬러 맞춤 제품 추천
 
 #### 2.5 옷장 통계
 
 **ClosetStats 대시보드:**
+
 - 총 아이템 수 / 카테고리별 분포
 - 가장 많이 입은 아이템 Top 5
 - 안 입은 아이템 (3개월 이상)
@@ -350,11 +369,7 @@ export async function recommendFromCloset(
   const weather = await getWeatherByRegion(region);
 
   // 2. 일반 코디 추천 가져오기 (기존 outfitRecommender 활용)
-  const generalRecommendation = recommendOutfit(
-    weather,
-    userBodyType,
-    userPersonalColor
-  );
+  const generalRecommendation = recommendOutfit(weather, userBodyType, userPersonalColor);
 
   // 3. 내 옷장 아이템 조회
   const myItems = await getInventoryItems(userId, 'closet');
@@ -391,22 +406,10 @@ function matchItemsToLayers(
 // types/inventory.ts
 
 // 카테고리
-export type InventoryCategory =
-  | 'closet'
-  | 'beauty'
-  | 'equipment'
-  | 'supplement'
-  | 'pantry';
+export type InventoryCategory = 'closet' | 'beauty' | 'equipment' | 'supplement' | 'pantry';
 
 // 의류 카테고리
-export type ClothingCategory =
-  | 'outer'
-  | 'top'
-  | 'bottom'
-  | 'dress'
-  | 'shoes'
-  | 'bag'
-  | 'accessory';
+export type ClothingCategory = 'outer' | 'top' | 'bottom' | 'dress' | 'shoes' | 'bag' | 'accessory';
 
 // 계절
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
@@ -459,7 +462,7 @@ export interface SavedOutfit {
   name?: string;
   description?: string;
   itemIds: string[];
-  items?: ClothingItem[];  // 조인된 아이템
+  items?: ClothingItem[]; // 조인된 아이템
   collageImageUrl?: string;
   occasion?: Occasion;
   season: Season[];
@@ -486,7 +489,7 @@ export interface OutfitRecommendResponse {
   outfits: {
     items: ClothingItem[];
     reason: string;
-    matchScore: number;  // 0-100
+    matchScore: number; // 0-100
   }[];
   missingItems: {
     category: ClothingCategory;
@@ -506,7 +509,7 @@ import { removeBackground } from '@imgly/background-removal';
 
 export async function removeBackgroundClient(imageBlob: Blob): Promise<Blob> {
   const result = await removeBackground(imageBlob, {
-    model: 'medium',  // small, medium, large
+    model: 'medium', // small, medium, large
     output: {
       format: 'image/png',
       quality: 0.8,
@@ -516,10 +519,7 @@ export async function removeBackgroundClient(imageBlob: Blob): Promise<Blob> {
 }
 
 // 2. 색상 추출 (Canvas API, 무료)
-export async function extractDominantColors(
-  imageBlob: Blob,
-  count: number = 3
-): Promise<string[]> {
+export async function extractDominantColors(imageBlob: Blob, count: number = 3): Promise<string[]> {
   // Canvas로 이미지 로드 후 픽셀 분석
   // Color Thief 알고리즘 또는 K-means 클러스터링
   const img = await createImageBitmap(imageBlob);
@@ -529,7 +529,7 @@ export async function extractDominantColors(
 
   const imageData = ctx.getImageData(0, 0, img.width, img.height);
   // ... 색상 추출 로직
-  return ['#BEIGE', '#NAVY', '#WHITE'];  // 예시
+  return ['#BEIGE', '#NAVY', '#WHITE']; // 예시
 }
 
 // 3. AI 카테고리 분류 (Gemini Vision)
@@ -574,18 +574,14 @@ export async function uploadInventoryImage(
   const supabase = createClerkSupabaseClient();
   const path = `${userId}/${category}/${itemId}_${type}.png`;
 
-  const { data, error } = await supabase.storage
-    .from(BUCKET_NAME)
-    .upload(path, imageBlob, {
-      contentType: 'image/png',
-      upsert: true,
-    });
+  const { data, error } = await supabase.storage.from(BUCKET_NAME).upload(path, imageBlob, {
+    contentType: 'image/png',
+    upsert: true,
+  });
 
   if (error) throw error;
 
-  const { data: urlData } = supabase.storage
-    .from(BUCKET_NAME)
-    .getPublicUrl(path);
+  const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(path);
 
   return urlData.publicUrl;
 }
@@ -594,9 +590,11 @@ export async function uploadInventoryImage(
 ### API 설계
 
 #### POST /api/inventory
+
 아이템 등록
 
 **Request:**
+
 ```json
 {
   "category": "closet",
@@ -615,6 +613,7 @@ export async function uploadInventoryImage(
 ```
 
 **Response:**
+
 ```json
 {
   "id": "item-123",
@@ -626,9 +625,11 @@ export async function uploadInventoryImage(
 ```
 
 #### GET /api/inventory?category=closet
+
 아이템 목록 조회
 
 **Query Params:**
+
 - `category`: closet, beauty, etc.
 - `subCategory`: outer, top, etc.
 - `season`: spring, summer, etc.
@@ -638,9 +639,11 @@ export async function uploadInventoryImage(
 - `offset`: 0
 
 #### POST /api/inventory/outfits/recommend
+
 코디 추천
 
 **Request:**
+
 ```json
 {
   "occasion": "casual",
@@ -653,6 +656,7 @@ export async function uploadInventoryImage(
 ```
 
 **Response:**
+
 ```json
 {
   "outfits": [
@@ -818,45 +822,48 @@ export async function uploadInventoryImage(
 
 ## 성공 지표
 
-| 지표 | 목표 |
-|------|------|
-| 옷장 등록률 | DAU의 40% |
-| 평균 등록 아이템 | 20개+ |
-| 코디 생성률 | 등록 유저의 60% |
-| 코디 저장률 | 생성의 50% |
-| 추천 클릭률 | 30% |
+| 지표             | 목표            |
+| ---------------- | --------------- |
+| 옷장 등록률      | DAU의 40%       |
+| 평균 등록 아이템 | 20개+           |
+| 코디 생성률      | 등록 유저의 60% |
+| 코디 저장률      | 생성의 50%      |
+| 추천 클릭률      | 30%             |
 
 ---
 
 ## 일정
 
-| 단계 | 작업 | 기간 |
-|------|------|------|
-| Day 1 | DB 스키마, 타입 정의, 코어 API | 1일 |
-| Day 2 | 배경 제거, 이미지 업로드 | 1일 |
-| Day 3 | 공통 컴포넌트 (Grid, Card, Uploader) | 1일 |
-| Day 4 | 내 옷장 페이지, 의류 등록 | 1일 |
-| Day 5 | 코디 빌더, 콜라주 뷰 | 1일 |
-| Day 6 | 날씨/체형/퍼스널컬러 연동 | 1일 |
-| Day 7 | 테스트, 버그 수정 | 1일 |
+| 단계  | 작업                                 | 기간 |
+| ----- | ------------------------------------ | ---- |
+| Day 1 | DB 스키마, 타입 정의, 코어 API       | 1일  |
+| Day 2 | 배경 제거, 이미지 업로드             | 1일  |
+| Day 3 | 공통 컴포넌트 (Grid, Card, Uploader) | 1일  |
+| Day 4 | 내 옷장 페이지, 의류 등록            | 1일  |
+| Day 5 | 코디 빌더, 콜라주 뷰                 | 1일  |
+| Day 6 | 날씨/체형/퍼스널컬러 연동            | 1일  |
+| Day 7 | 테스트, 버그 수정                    | 1일  |
 
 ---
 
 ## 확장 계획
 
 ### Phase I-2-2: 내 뷰티 선반
+
 - 화장품 등록 (바코드 스캔)
 - 루틴 순서 자동 정렬
 - 유통기한 알림
 - S-1 피부타입 연동
 
 ### Phase I-2-3: 내 냉장고
+
 - 식재료 등록 (바코드/직접입력)
 - 가능한 레시피 추천
 - 유통기한 관리
 - N-1 영양 연동
 
 ### Phase I-2-4: 크로스 모듈 통합
+
 - 오늘의 통합 추천 (코디 + 메이크업 + 식단)
 - 부족 아이템 통합 쇼핑 리스트
 

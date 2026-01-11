@@ -1,17 +1,18 @@
 # 이룸 Phase Next 로드맵
 
-> **작성일**: 2025-12-04 | **최종 업데이트**: 2025-12-11
+> **작성일**: 2025-12-04 | **최종 업데이트**: 2026-01-11
 > **목표**: Lite PWA → Product DB v1 → React Native → RAG + Product DB v2
+> **현재 상태**: Phase I/J 완료, 런칭 준비 단계
 
 ---
 
 ## 전체 타임라인 개요
 
-| Phase | 내용 | 주요 작업 |
-|-------|------|----------|
-| **A** | Lite PWA + Product DB v1 | 설치 가능 앱 + 기본 제품 DB |
-| **B** | React Native (iOS/Android) | Expo 기반 네이티브 앱 |
-| **C** | RAG + Product DB v2 | 논문 기반 AI + 확장 제품 DB |
+| Phase | 내용                       | 주요 작업                   |
+| ----- | -------------------------- | --------------------------- |
+| **A** | Lite PWA + Product DB v1   | 설치 가능 앱 + 기본 제품 DB |
+| **B** | React Native (iOS/Android) | Expo 기반 네이티브 앱       |
+| **C** | RAG + Product DB v2        | 논문 기반 AI + 확장 제품 DB |
 
 ---
 
@@ -21,11 +22,11 @@
 
 **완료일**: 2025-12-04
 
-| 항목 | 상태 |
-|------|------|
+| 항목                  | 상태                                     |
+| --------------------- | ---------------------------------------- |
 | globals.css 색상 토큰 | ✅ Stitch #2e5afa → oklch(0.53 0.23 262) |
-| 폰트 | ✅ Geist 유지 (Inter 호환) |
-| 빌드 테스트 | ✅ 통과 |
+| 폰트                  | ✅ Geist 유지 (Inter 호환)               |
+| 빌드 테스트           | ✅ 통과                                  |
 
 ### A-1: Lite PWA 구현 ✅ 완료
 
@@ -34,20 +35,21 @@
 
 #### 구현 항목
 
-| 항목 | 파일 | 상태 |
-|------|------|------|
-| manifest.ts | `app/manifest.ts` | ✅ |
-| next.config.ts PWA 설정 | `next.config.ts` | ✅ |
-| PWA 아이콘 | `public/icons/` | ✅ 이룸 브랜딩 적용 |
-| 로고 교체 | `public/logo.png` | ✅ |
-| OG 이미지 교체 | `public/og-image.png` | ✅ |
-| 파비콘 | `public/favicon-*.png` | ✅ |
-| PWA 매니페스트 | `public/manifest.json` | ✅ |
+| 항목                    | 파일                   | 상태                |
+| ----------------------- | ---------------------- | ------------------- |
+| manifest.ts             | `app/manifest.ts`      | ✅                  |
+| next.config.ts PWA 설정 | `next.config.ts`       | ✅                  |
+| PWA 아이콘              | `public/icons/`        | ✅ 이룸 브랜딩 적용 |
+| 로고 교체               | `public/logo.png`      | ✅                  |
+| OG 이미지 교체          | `public/og-image.png`  | ✅                  |
+| 파비콘                  | `public/favicon-*.png` | ✅                  |
+| PWA 매니페스트          | `public/manifest.json` | ✅                  |
 
 #### manifest.ts 예시
+
 ```typescript
 // app/manifest.ts
-import type { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -65,13 +67,14 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: '/icons/icon-384x384.png', sizes: '384x384', type: 'image/png' },
       { src: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
-  }
+  };
 }
 ```
 
 #### next.config.ts PWA 설정
+
 ```typescript
-import withPWAInit from '@ducanh2912/next-pwa'
+import withPWAInit from '@ducanh2912/next-pwa';
 
 const withPWA = withPWAInit({
   dest: 'public',
@@ -79,15 +82,15 @@ const withPWA = withPWAInit({
   register: true,
   // Lite PWA: 오프라인 캐싱 비활성화
   cacheOnFrontEndNav: false,
-})
+});
 
 const nextConfig = {
   // Turbopack 설정 (Next.js 16 필수)
   turbopack: {},
   // 기존 설정 유지
-}
+};
 
-export default withPWA(nextConfig)
+export default withPWA(nextConfig);
 ```
 
 ---
@@ -99,12 +102,12 @@ export default withPWA(nextConfig)
 
 #### 구현 항목
 
-| 항목 | 파일 | 상태 |
-|------|------|------|
-| DB 마이그레이션 | `supabase/migrations/20251204_product_tables.sql` | ✅ |
-| TypeScript 타입 | `types/product.ts` | ✅ |
-| API 유틸리티 | `lib/products.ts` | ✅ |
-| RLS 정책 | 공개 읽기 + Service Role 쓰기 | ✅ |
+| 항목            | 파일                                              | 상태 |
+| --------------- | ------------------------------------------------- | ---- |
+| DB 마이그레이션 | `supabase/migrations/20251204_product_tables.sql` | ✅   |
+| TypeScript 타입 | `types/product.ts`                                | ✅   |
+| API 유틸리티    | `lib/products.ts`                                 | ✅   |
+| RLS 정책        | 공개 읽기 + Service Role 쓰기                     | ✅   |
 
 #### 데이터베이스 스키마
 
@@ -176,16 +179,16 @@ CREATE POLICY "Public read" ON supplement_products FOR SELECT USING (true);
 
 #### 초기 데이터 수집 계획
 
-| 카테고리 | 목표 수량 | 소스 |
-|----------|----------|------|
-| 클렌저 | 20개 | 올리브영, 화해 |
-| 토너 | 20개 | 올리브영, 화해 |
-| 세럼/에센스 | 30개 | 올리브영, 화해 |
-| 수분크림 | 20개 | 올리브영, 화해 |
-| 선크림 | 15개 | 올리브영, 화해 |
-| 메이크업 | 30개 | 올리브영 |
-| 영양제 | 30개 | 아이허브, 필라이즈 참고 |
-| **총계** | **~165개** | - |
+| 카테고리    | 목표 수량  | 소스                    |
+| ----------- | ---------- | ----------------------- |
+| 클렌저      | 20개       | 올리브영, 화해          |
+| 토너        | 20개       | 올리브영, 화해          |
+| 세럼/에센스 | 30개       | 올리브영, 화해          |
+| 수분크림    | 20개       | 올리브영, 화해          |
+| 선크림      | 15개       | 올리브영, 화해          |
+| 메이크업    | 30개       | 올리브영                |
+| 영양제      | 30개       | 아이허브, 필라이즈 참고 |
+| **총계**    | **~165개** | -                       |
 
 ---
 
@@ -194,6 +197,7 @@ CREATE POLICY "Public read" ON supplement_products FOR SELECT USING (true);
 ### B-1: 프로젝트 구조
 
 **Monorepo 구조** (Turborepo 사용)
+
 ```
 yiroom/
 ├── apps/
@@ -209,25 +213,25 @@ yiroom/
 
 ### B-2: 기술 스택
 
-| 항목 | 선택 | 이유 |
-|------|------|------|
-| Framework | Expo (SDK 52+) | React Native 표준, 빠른 개발 |
-| Auth | Clerk React Native | 공식 SDK 지원 |
-| Database | Supabase | 기존 스키마 재사용 |
-| State | Zustand | 웹과 동일 |
-| Navigation | Expo Router | 파일 기반 라우팅 |
-| Camera | expo-camera | 네이티브 카메라 |
-| Image Picker | expo-image-picker | 갤러리 접근 |
+| 항목         | 선택               | 이유                         |
+| ------------ | ------------------ | ---------------------------- |
+| Framework    | Expo (SDK 52+)     | React Native 표준, 빠른 개발 |
+| Auth         | Clerk React Native | 공식 SDK 지원                |
+| Database     | Supabase           | 기존 스키마 재사용           |
+| State        | Zustand            | 웹과 동일                    |
+| Navigation   | Expo Router        | 파일 기반 라우팅             |
+| Camera       | expo-camera        | 네이티브 카메라              |
+| Image Picker | expo-image-picker  | 갤러리 접근                  |
 
 ### B-3: 코드 공유 전략
 
-| 레이어 | 공유 가능 | 비고 |
-|--------|----------|------|
-| 타입 정의 | ✅ 100% | `packages/shared/types/` |
-| API 클라이언트 | ✅ 100% | `packages/api-client/` |
-| 비즈니스 로직 | ✅ 90% | Zustand stores |
-| UI 컴포넌트 | ❌ 30% | 플랫폼별 구현 필요 |
-| 스타일 | ❌ 별도 | NativeWind 또는 StyleSheet |
+| 레이어         | 공유 가능 | 비고                       |
+| -------------- | --------- | -------------------------- |
+| 타입 정의      | ✅ 100%   | `packages/shared/types/`   |
+| API 클라이언트 | ✅ 100%   | `packages/api-client/`     |
+| 비즈니스 로직  | ✅ 90%    | Zustand stores             |
+| UI 컴포넌트    | ❌ 30%    | 플랫폼별 구현 필요         |
+| 스타일         | ❌ 별도   | NativeWind 또는 StyleSheet |
 
 ### B-4: 주요 구현 항목
 
@@ -283,6 +287,7 @@ Phase B-6 (정식 배포): 🔒 2026/01/17 이후
 **완료일**: 2025-12-04
 
 #### 아키텍처
+
 ```
 사용자 질문
     ↓
@@ -298,6 +303,7 @@ Phase B-6 (정식 배포): 🔒 2026/01/17 이후
 ```
 
 #### 데이터베이스 확장
+
 ```sql
 -- pgvector 확장 활성화
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -331,25 +337,28 @@ WITH (lists = 100);
 ```
 
 #### 데이터 소스
-| 소스 | 카테고리 | 예상 문서 수 |
-|------|----------|-------------|
-| PubMed | 피부과학 | 100+ |
-| 대한피부과학회지 | 피부 | 50+ |
-| 영양학 저널 | 영양 | 50+ |
-| 운동생리학 논문 | 운동 | 50+ |
-| **총계** | - | **250+** |
+
+| 소스             | 카테고리 | 예상 문서 수 |
+| ---------------- | -------- | ------------ |
+| PubMed           | 피부과학 | 100+         |
+| 대한피부과학회지 | 피부     | 50+          |
+| 영양학 저널      | 영양     | 50+          |
+| 운동생리학 논문  | 운동     | 50+          |
+| **총계**         | -        | **250+**     |
 
 ### C-2: Product DB v2 확장
 
 #### 데이터 확장
-| 카테고리 | v1 | v2 목표 |
-|----------|-----|---------|
-| 화장품 | 135개 | 500개+ |
-| 영양제 | 30개 | 200개+ |
-| 운동 기구 | 0 | 50개+ |
-| 건강식품 | 0 | 100개+ |
+
+| 카테고리  | v1    | v2 목표 |
+| --------- | ----- | ------- |
+| 화장품    | 135개 | 500개+  |
+| 영양제    | 30개  | 200개+  |
+| 운동 기구 | 0     | 50개+   |
+| 건강식품  | 0     | 100개+  |
 
 #### 기능 확장
+
 ```yaml
 v2 새 기능:
   [ ] 가격 실시간 업데이트 (크롤링)
@@ -367,16 +376,16 @@ v2 새 기능:
 
 **위치**: `stitch_total_wellness_ai_homepage/`
 
-| 화면 카테고리 | 파일 수 | 상태 |
-|--------------|--------|------|
-| 홈페이지 | 4개 (desktop/mobile) | ✅ 확보 |
-| 대시보드 | 20개 | ✅ 확보 |
-| 피부 분석 리포트 | 4개 | ✅ 확보 |
-| 코디 AI 리포트 | 8개 | ✅ 확보 |
-| 식단 AI 리포트 | 2개 | ✅ 확보 |
-| 운동 AI 리포트 | 2개 | ✅ 확보 |
-| 온보딩 플로우 | 20개+ | ✅ 확보 |
-| 설정/프로필 | 20개+ | ✅ 확보 |
+| 화면 카테고리    | 파일 수              | 상태    |
+| ---------------- | -------------------- | ------- |
+| 홈페이지         | 4개 (desktop/mobile) | ✅ 확보 |
+| 대시보드         | 20개                 | ✅ 확보 |
+| 피부 분석 리포트 | 4개                  | ✅ 확보 |
+| 코디 AI 리포트   | 8개                  | ✅ 확보 |
+| 식단 AI 리포트   | 2개                  | ✅ 확보 |
+| 운동 AI 리포트   | 2개                  | ✅ 확보 |
+| 온보딩 플로우    | 20개+                | ✅ 확보 |
+| 설정/프로필      | 20개+                | ✅ 확보 |
 
 ### 디자인 토큰 (추출됨)
 
@@ -397,30 +406,32 @@ v2 새 기능:
 ```
 
 ### 폰트
+
 - **Primary**: Inter
 - **Fallback**: Noto Sans
 - **Weights**: 400, 500, 700, 900
 
 ### 브랜딩 교체 필요
 
-| 현재 (Stitch) | 변경 (이룸) |
-|--------------|------------|
-| "Total Wellness AI Platform" | "이룸" |
-| "Total Wellness AI" | "이룸 - 온전한 나는?" |
-| 영문 설명 | 한국어 설명 |
-| 반원 로고 아이콘 | 이룸 로고 (필요시 제작) |
+| 현재 (Stitch)                | 변경 (이룸)             |
+| ---------------------------- | ----------------------- |
+| "Total Wellness AI Platform" | "이룸"                  |
+| "Total Wellness AI"          | "이룸 - 온전한 나는?"   |
+| 영문 설명                    | 한국어 설명             |
+| 반원 로고 아이콘             | 이룸 로고 (필요시 제작) |
 
 ### 아이콘/에셋 상태 ✅ 완료
 
-| 항목 | 상태 | 파일 |
-|------|------|------|
-| 앱 아이콘 (192-512px) | ✅ 완료 | public/icons/ (4종) |
-| 로고 | ✅ 완료 | public/logo.png |
-| OG 이미지 | ✅ 완료 | public/og-image.png |
-| 파비콘 | ✅ 완료 | public/favicon-16x16.png, favicon-32x32.png |
-| PWA 매니페스트 | ✅ 완료 | public/manifest.json |
+| 항목                  | 상태    | 파일                                        |
+| --------------------- | ------- | ------------------------------------------- |
+| 앱 아이콘 (192-512px) | ✅ 완료 | public/icons/ (4종)                         |
+| 로고                  | ✅ 완료 | public/logo.png                             |
+| OG 이미지             | ✅ 완료 | public/og-image.png                         |
+| 파비콘                | ✅ 완료 | public/favicon-16x16.png, favicon-32x32.png |
+| PWA 매니페스트        | ✅ 완료 | public/manifest.json                        |
 
 ### 참조 문서
+
 - **디자인 시스템**: [docs/DESIGN-SYSTEM.md](DESIGN-SYSTEM.md)
 
 ---
@@ -428,6 +439,7 @@ v2 새 기능:
 ## 우선순위 체크리스트
 
 ### 1차 진행: A-0 + A-1 (색상 토큰 + PWA) ✅ 완료 (2025-12-11)
+
 ```yaml
 # A-0: 디자인 토큰 적용 ✅
 [x] globals.css에 Stitch 색상 변수 추가 (oklch 형식)
@@ -448,6 +460,7 @@ v2 새 기능:
 ```
 
 ### 2차 진행: A-2 (Product DB) ✅ 완료 (2025-12-04)
+
 ```yaml
 # A-2: Product DB v1
 [x] cosmetic_products 테이블 마이그레이션 생성
@@ -463,17 +476,39 @@ v2 새 기능:
 [ ] 추가 데이터 입력 (~115개) - 수동 작업 필요
 ```
 
-### 현재 단계: Phase F (운영 준비)
+### 현재 단계: Launch (런칭 준비)
 
 > **상세 문서**: [docs/phase-next/PHASE-F-OPERATION.md](phase-next/PHASE-F-OPERATION.md)
 
 ```yaml
-# Phase F: 운영 준비
+# Phase F: 운영 준비 ✅ 완료 (2025-12-25)
 [x] F-1: 관리자 페이지 ✅ 완료
 [x] F-2: UI/UX 개선 ✅ 완료
 [x] F-3: E2E 테스트 확장 ✅ 완료
 [x] F-4: Analytics/모니터링 ✅ 완료
-[ ] F-5: 배포 + 피드백 (진행 중)
+[x] F-5: 배포 준비 ✅ 완료 (환경변수 체크리스트 제공)
+
+# Phase H: 소셜 ✅ 완료 (2025-12-25)
+[x] H-1: 웰니스 스코어 시스템
+[x] H-2: 친구 관리 (추가/삭제/검색)
+[x] H-3: 리더보드 (운동/영양/XP/레벨)
+[x] H-4: 챌린지 (팀/개인)
+[x] H-5: 소셜 피드
+
+# Phase I: 어필리에이트 ✅ 완료 (2026-01-11)
+[x] I-1: iHerb 파트너 연동
+[x] I-2: 쿠팡 파트너스 연동
+[x] I-3: 무신사/에이블리 연동
+[x] I-4: 클릭 트래킹 대시보드
+[x] I-5: 날씨 기반 의상 추천 (25개 테스트)
+[x] I-6: 바코드 스캔 (16개 테스트)
+[x] I-7: Before/After 비교 (39개 테스트)
+[x] I-8: 마이 인벤토리 (373개 테스트)
+
+# Phase J: AI 스타일링 ✅ 완료 (2026-01-11)
+[x] J-P1: 색상 조합 추천 (15개 테스트)
+[x] J-P2: 악세서리/메이크업 (31개 테스트)
+[x] J-P3: 전체 코디/공유 (25개 테스트)
 ```
 
 ---
@@ -484,25 +519,25 @@ v2 새 기능:
 
 기능 점검 완료 후 디자인 수정 시 Cursor Visual Editor + Gemini 3를 활용한 워크플로우를 적용합니다.
 
-| 도구 | 역할 |
-|------|------|
+| 도구                 | 역할                                           |
+| -------------------- | ---------------------------------------------- |
 | Cursor Visual Editor | UI 시각적 조작 (드래그 앤 드롭, 스타일 컨트롤) |
-| Gemini 3 Pro | 디자인 AI (Point-and-Prompt) |
-| Claude Code | 로직 검증, 테스트, 스펙 문서 |
+| Gemini 3 Pro         | 디자인 AI (Point-and-Prompt)                   |
+| Claude Code          | 로직 검증, 테스트, 스펙 문서                   |
 
 ---
 
 ## 의존성 및 리스크
 
-| 항목 | 리스크 | 대응 | 상태 |
-|------|--------|------|------|
-| 디자인 에셋 | 브랜딩 미정 | 임시 에셋으로 진행 | ✅ 완료 |
-| 디자인 시스템 | 문서 구버전 | DESIGN-SYSTEM.md v2.0 업데이트 | ✅ 완료 |
-| 제품 데이터 | 수동 입력 필요 | 크롤러 개발 완료 | ✅ 완료 |
-| **사업자 등록** | **2026/01/17까지 불가** | **B-6 대기, 웹 배포 먼저** | ⏳ 대기 |
-| App Store 심사 | 리젝 가능성 | 가이드라인 사전 검토 (B-6에서) | ⏳ 대기 |
-| RAG 비용 | 임베딩 API 비용 | pgvector 무료, LLM만 유료 | ✅ 구축됨 |
+| 항목            | 리스크                  | 대응                           | 상태      |
+| --------------- | ----------------------- | ------------------------------ | --------- |
+| 디자인 에셋     | 브랜딩 미정             | 임시 에셋으로 진행             | ✅ 완료   |
+| 디자인 시스템   | 문서 구버전             | DESIGN-SYSTEM.md v2.0 업데이트 | ✅ 완료   |
+| 제품 데이터     | 수동 입력 필요          | 크롤러 개발 완료               | ✅ 완료   |
+| **사업자 등록** | **2026/01/17까지 불가** | **B-6 대기, 웹 배포 먼저**     | ⏳ 대기   |
+| App Store 심사  | 리젝 가능성             | 가이드라인 사전 검토 (B-6에서) | ⏳ 대기   |
+| RAG 비용        | 임베딩 API 비용         | pgvector 무료, LLM만 유료      | ✅ 구축됨 |
 
 ---
 
-**Version**: 1.3 | **Updated**: 2025-12-13
+**Version**: 1.4 | **Updated**: 2026-01-11
