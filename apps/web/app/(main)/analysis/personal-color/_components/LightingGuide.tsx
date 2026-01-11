@@ -1,16 +1,20 @@
 'use client';
 
-import { Sun, User, LightbulbOff, Smartphone, Check, ImageIcon } from 'lucide-react';
+import { useState } from 'react';
+import { Sun, User, LightbulbOff, Smartphone, Check, ImageIcon, Shirt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface LightingGuideProps {
-  onContinue: () => void;
+  onContinue: (consentToSaveImage: boolean) => void;
   onSkip?: () => void;
   /** 갤러리에서 선택 핸들러 */
-  onGallery?: () => void;
+  onGallery?: (consentToSaveImage: boolean) => void;
 }
 
 export default function LightingGuide({ onContinue, onSkip, onGallery }: LightingGuideProps) {
+  // 기본값: 체크됨 (드레이핑 기능 활성화)
+  const [consentToSaveImage, setConsentToSaveImage] = useState(true);
   return (
     <div data-testid="lighting-guide" className="space-y-8 animate-fade-in-up">
       {/* 1. 헤더: 전문적인 느낌의 뱃지와 타이포그래피 */}
@@ -109,10 +113,35 @@ export default function LightingGuide({ onContinue, onSkip, onGallery }: Lightin
         </div>
       </div>
 
+      {/* 이미지 저장 동의 체크박스 */}
+      <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <Checkbox
+            id="consent-save-image"
+            checked={consentToSaveImage}
+            onCheckedChange={(checked) => setConsentToSaveImage(checked === true)}
+            className="mt-0.5"
+          />
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <Shirt className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">
+                드레이핑 시뮬레이션 사용
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              분석 이미지를 30일간 저장하여 다양한 색상을 얼굴에 비교해볼 수 있어요.
+              <br />
+              <span className="text-primary/80">미동의 시 드레이핑 기능을 사용할 수 없습니다.</span>
+            </p>
+          </div>
+        </label>
+      </div>
+
       {/* 하단 버튼: 그라디언트 및 그림자 효과 강화 */}
       <div className="pt-4 space-y-3">
         <Button
-          onClick={onContinue}
+          onClick={() => onContinue(consentToSaveImage)}
           className="w-full h-14 text-lg bg-gradient-brand hover:opacity-90 shadow-lg shadow-primary/20 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 font-bold"
         >
           촬영 시작하기
@@ -121,7 +150,7 @@ export default function LightingGuide({ onContinue, onSkip, onGallery }: Lightin
         {onGallery && (
           <Button
             variant="outline"
-            onClick={onGallery}
+            onClick={() => onGallery(consentToSaveImage)}
             className="w-full h-12 text-base gap-2 rounded-xl"
           >
             <ImageIcon className="w-5 h-5" />

@@ -14,6 +14,7 @@ import {
   PERSONAL_COLOR_SUBTYPES,
   SEASON_INFO,
 } from '@/lib/mock/personal-color';
+import type { ImageConsent } from '@/components/analysis/consent/types';
 import LightingGuide from './_components/LightingGuide';
 import PhotoUpload from './_components/PhotoUpload';
 import WristPhotoUpload from './_components/WristPhotoUpload';
@@ -99,6 +100,11 @@ export default function PersonalColorPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const analysisStartedRef = useRef(false);
+  // 이미지 동의 상태 (가이드 체크박스에서 설정됨)
+  const [existingConsent, setExistingConsent] = useState<ImageConsent | null>(null);
+  const consentCheckedRef = useRef(false);
+  // 현재 세션에서의 동의 여부 (비동기 상태 업데이트 타이밍 이슈 해결용)
+  const [currentSessionConsent, setCurrentSessionConsent] = useState(false);
 
   // 기존 분석 결과 확인 및 자동 리디렉트
   useEffect(() => {
@@ -195,17 +201,82 @@ export default function PersonalColorPage() {
     checkExistingAnalysis();
   }, [isLoaded, isSignedIn, supabase, router, forceNew]);
 
-  // 조명 가이드 완료 → 다각도 촬영으로
-  const handleGuideComplete = useCallback(() => {
-    setError(null); // 에러 초기화
-    setStep('multi-angle');
+  // 기존 이미지 저장 동의 확인
+  useEffect(() => {
+    async function checkExistingConsent() {
+      if (!isLoaded || !isSignedIn || consentCheckedRef.current) return;
+
+      consentCheckedRef.current = true;
+
+      try {
+        const { data } = await supabase
+          .from('image_consents')
+          .select('*')
+          .eq('analysis_type', 'personal-color')
+          .maybeSingle();
+
+        if (data) {
+          setExistingConsent(data as ImageConsent);
+        }
+      } catch (err) {
+        console.error('[PC-1] Error checking consent:', err);
+      }
+    }
+
+    checkExistingConsent();
+  }, [isLoaded, isSignedIn, supabase]);
+
+  // 동의 저장 함수 (가이드에서 체크박스로 동의 시)
+  const saveConsent = useCallback(async (consent: boolean) => {
+    if (!consent) return;
+
+    try {
+      const response = await fetch('/api/consent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysisType: 'personal-color' }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setExistingConsent(data.consent);
+        console.log('[PC-1] Consent saved from guide checkbox');
+      }
+    } catch (err) {
+      console.error('[PC-1] Consent save error:', err);
+      // 동의 저장 실패해도 분석은 진행 (saveImage가 false가 됨)
+    }
   }, []);
 
-  // 갤러리에서 선택 → 다각도 갤러리 업로드로
-  const handleGallerySelect = useCallback(() => {
-    setError(null); // 에러 초기화
-    setStep('gallery-upload');
-  }, []);
+  // 조명 가이드 완료 → 동의 저장 후 다각도 촬영으로
+  const handleGuideComplete = useCallback(
+    async (consentToSaveImage: boolean) => {
+      setError(null);
+      // 현재 세션 동의 상태 저장 (타이밍 이슈 해결)
+      setCurrentSessionConsent(consentToSaveImage);
+      // 체크박스 동의 시 DB에도 저장
+      if (consentToSaveImage) {
+        await saveConsent(consentToSaveImage);
+      }
+      setStep('multi-angle');
+    },
+    [saveConsent]
+  );
+
+  // 갤러리에서 선택 → 동의 저장 후 다각도 갤러리 업로드로
+  const handleGallerySelect = useCallback(
+    async (consentToSaveImage: boolean) => {
+      setError(null);
+      // 현재 세션 동의 상태 저장 (타이밍 이슈 해결)
+      setCurrentSessionConsent(consentToSaveImage);
+      // 체크박스 동의 시 DB에도 저장
+      if (consentToSaveImage) {
+        await saveConsent(consentToSaveImage);
+      }
+      setStep('gallery-upload');
+    },
+    [saveConsent]
+  );
 
   // 갤러리 이미지 검증 API 호출
   const handleGalleryValidate = useCallback(
@@ -240,7 +311,7 @@ export default function PersonalColorPage() {
     []
   );
 
-  // 갤러리 다각도 업로드 완료 → 손목 촬영으로
+  // 갤러리 다각도 업로드 완료 → 손목 촬영으로 (동의는 가이드에서 처리됨)
   const handleGalleryUploadComplete = useCallback((images: MultiAngleImages) => {
     setMultiAngleImages(images);
     setStep('wrist');
@@ -252,7 +323,7 @@ export default function PersonalColorPage() {
     setStep('guide');
   }, []);
 
-  // 다각도 촬영 완료 → 손목 촬영으로
+  // 다각도 촬영 완료 → 손목 촬영으로 (동의는 가이드에서 처리됨)
   const handleMultiAngleComplete = useCallback((images: MultiAngleImages) => {
     setMultiAngleImages(images);
     setStep('wrist');
@@ -312,7 +383,7 @@ export default function PersonalColorPage() {
     setStep('guide');
   }, []);
 
-  // 얼굴 사진 선택 → 손목 사진으로
+  // 얼굴 사진 선택 → 손목 사진으로 (레거시 플로우, 동의는 가이드에서 처리됨)
   const handleFacePhotoSelect = useCallback((file: File) => {
     setFaceImageFile(file);
     // 미리보기 URL 생성
@@ -368,6 +439,20 @@ export default function PersonalColorPage() {
       // API 요청 본문 구성
       let requestBody: Record<string, unknown>;
 
+      // 동의가 있을 때만 이미지 저장 (드레이핑용)
+      // currentSessionConsent: 현재 세션에서 체크박스로 동의한 경우
+      // existingConsent: 이전에 이미 동의한 경우
+      const saveImage = currentSessionConsent || !!existingConsent?.consent_given;
+      console.log(
+        '[PC-1] saveImage:',
+        saveImage,
+        '(session:',
+        currentSessionConsent,
+        ', existing:',
+        !!existingConsent?.consent_given,
+        ')'
+      );
+
       if (hasMultiAngle && multiAngleImages) {
         // 다각도 분석 요청
         requestBody = {
@@ -375,6 +460,7 @@ export default function PersonalColorPage() {
           leftImageBase64: multiAngleImages.leftImageBase64,
           rightImageBase64: multiAngleImages.rightImageBase64,
           wristImageBase64,
+          saveImage,
         };
         console.log('[PC-1] Using multi-angle images:', {
           front: !!multiAngleImages.frontImageBase64,
@@ -387,6 +473,7 @@ export default function PersonalColorPage() {
         requestBody = {
           imageBase64: faceImageBase64,
           wristImageBase64,
+          saveImage,
         };
       } else {
         throw new Error('No image available');
@@ -425,7 +512,15 @@ export default function PersonalColorPage() {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [faceImageFile, wristImageFile, multiAngleImages, isSignedIn, router]);
+  }, [
+    faceImageFile,
+    wristImageFile,
+    multiAngleImages,
+    isSignedIn,
+    router,
+    existingConsent,
+    currentSessionConsent,
+  ]);
 
   // 로딩 애니메이션 완료 시 분석 시작
   const handleAnalysisComplete = useCallback(() => {
@@ -445,6 +540,7 @@ export default function PersonalColorPage() {
     setResult(null);
     setStep('guide');
     setError(null);
+    setCurrentSessionConsent(false); // 세션 동의 상태 초기화
     analysisStartedRef.current = false;
   }, [imageUrl]);
 

@@ -10,6 +10,7 @@ import {
   Lightbulb,
   Brush,
   Tag,
+  Droplets,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -62,6 +63,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
     bestColors,
     worstColors,
     lipstickRecommendations,
+    foundationRecommendations,
     clothingRecommendations,
     styleDescription,
     insight,
@@ -414,8 +416,74 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
         </section>
       </FadeInUp>
 
+      {/* 파운데이션 추천 */}
+      {foundationRecommendations && foundationRecommendations.length > 0 && (
+        <FadeInUp delay={7}>
+          <section className="bg-card rounded-xl border p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Droplets className="w-5 h-5 text-amber-500" />
+              <h2 className="text-lg font-semibold text-foreground">추천 파운데이션</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              {result.tone === 'warm'
+                ? '옐로 베이스 (웜톤용) 파운데이션이 잘 어울려요'
+                : '핑크 베이스 (쿨톤용) 파운데이션이 잘 어울려요'}
+            </p>
+            <div className="space-y-3">
+              {foundationRecommendations.map((foundation, index) => (
+                <div key={index} className="p-3 bg-muted rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg shadow-sm border border-border flex-shrink-0 bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 flex items-center justify-center">
+                      <span className="text-lg">💧</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium text-foreground">{foundation.shadeName}</p>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded ${
+                            foundation.undertone === 'warm'
+                              ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                              : foundation.undertone === 'cool'
+                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                          }`}
+                        >
+                          {foundation.undertone === 'warm'
+                            ? '웜'
+                            : foundation.undertone === 'cool'
+                              ? '쿨'
+                              : '뉴트럴'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {foundation.easyDescription}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{foundation.brandExample}</p>
+                    </div>
+                  </div>
+                  {foundation.oliveyoungAlt && (
+                    <div className="mt-2 pl-[52px]">
+                      <p className="text-xs text-green-600 dark:text-green-400">
+                        🏪 올리브영: {foundation.oliveyoungAlt}
+                      </p>
+                    </div>
+                  )}
+                  {foundation.tip && (
+                    <div className="mt-2 pl-[52px]">
+                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                        💡 {foundation.tip}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        </FadeInUp>
+      )}
+
       {/* 의류 추천 */}
-      <FadeInUp delay={7}>
+      <FadeInUp delay={8}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
             <Shirt className="w-5 h-5 text-blue-500" />
@@ -443,7 +511,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
       </FadeInUp>
 
       {/* 통계 정보 */}
-      <FadeInUp delay={8}>
+      <FadeInUp delay={9}>
         <section className="bg-muted rounded-xl border p-4 text-center">
           <p className="text-sm text-muted-foreground">
             전체 사용자 중{' '}
@@ -461,7 +529,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
       </p>
 
       {/* 다시 분석하기 버튼 */}
-      <FadeInUp delay={9}>
+      <FadeInUp delay={10}>
         <Button onClick={onRetry} variant="outline" className="w-full h-12 text-base gap-2">
           <RefreshCw className="w-4 h-4" />
           다시 분석하기
@@ -469,7 +537,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
       </FadeInUp>
 
       {/* 공유 버튼 */}
-      <FadeInUp delay={9}>
+      <FadeInUp delay={10}>
         <ShareButton onShare={share} loading={shareLoading} variant="default" />
       </FadeInUp>
     </div>

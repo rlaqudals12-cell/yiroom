@@ -9,6 +9,7 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { buildFoodAnalysisPrompt as buildFoodAnalysisPromptFromModule } from '@/lib/gemini/prompts/foodAnalysis';
 import { geminiLogger } from '@/lib/utils/logger';
+import { compressBase64Image } from '@/lib/utils/image-compression';
 
 // Mock Fallback 함수 import
 import { generateMockAnalysisResult as generateMockSkinAnalysis } from '@/lib/mock/skin-analysis';
@@ -1535,6 +1536,19 @@ export async function analyzePersonalColor(
   try {
     const model = genAI.getGenerativeModel(modelConfig);
 
+    // 이미지 압축 (타임아웃 감소를 위해 1024px + 80% 품질로 압축)
+    geminiLogger.info('[PC-1] Compressing images...');
+    const compressedFront = await compressBase64Image(input.frontImageBase64);
+    const compressedLeft = input.leftImageBase64
+      ? await compressBase64Image(input.leftImageBase64)
+      : undefined;
+    const compressedRight = input.rightImageBase64
+      ? await compressBase64Image(input.rightImageBase64)
+      : undefined;
+    const compressedWrist = input.wristImageBase64
+      ? await compressBase64Image(input.wristImageBase64)
+      : undefined;
+
     // 이미지 배열 구성
     const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [];
 
@@ -1560,22 +1574,22 @@ ${input.rightImageBase64 ? '- 우측: 측면 피부색, 볼 색조 분석 (좌�
 
     contentParts.push(prompt);
 
-    // 정면 이미지 추가
-    contentParts.push(formatImageForGemini(input.frontImageBase64));
+    // 정면 이미지 추가 (압축됨)
+    contentParts.push(formatImageForGemini(compressedFront));
 
-    // 좌측 이미지 추가
-    if (input.leftImageBase64) {
-      contentParts.push(formatImageForGemini(input.leftImageBase64));
+    // 좌측 이미지 추가 (압축됨)
+    if (compressedLeft) {
+      contentParts.push(formatImageForGemini(compressedLeft));
     }
 
-    // 우측 이미지 추가
-    if (input.rightImageBase64) {
-      contentParts.push(formatImageForGemini(input.rightImageBase64));
+    // 우측 이미지 추가 (압축됨)
+    if (compressedRight) {
+      contentParts.push(formatImageForGemini(compressedRight));
     }
 
-    // 손목 이미지가 있으면 추가
-    if (input.wristImageBase64) {
-      contentParts.push(formatImageForGemini(input.wristImageBase64));
+    // 손목 이미지가 있으면 추가 (압축됨)
+    if (compressedWrist) {
+      contentParts.push(formatImageForGemini(compressedWrist));
       // 프롬프트 업데이트
       const wristNote = `\n\n첨부된 ${hasMultiAngle ? '마지막' : '두 번째'} 이미지는 손목 안쪽 사진입니다. 혈관 색상을 분석하여 웜톤/쿨톤 판단에 활용해주세요. 파란색/보라색 혈관은 쿨톤, 녹색 혈관은 웜톤을 나타냅니다.`;
       contentParts[0] = prompt + wristNote;
@@ -1585,11 +1599,11 @@ ${input.rightImageBase64 ? '- 우측: 측면 피부색, 볼 색조 분석 (좌�
       `[PC-1] Starting analysis with ${imageCount} face image(s)${input.wristImageBase64 ? ' + wrist' : ''}`
     );
 
-    // 타임아웃 (15초) + 재시도 (최대 2회) 적용
+    // 타임아웃 (30초) + 재시도 (최대 5회) 적용 - 안정성 강화
     const result = await withRetry(
-      () => withTimeout(model.generateContent(contentParts), 15000, '[PC-1] Gemini timeout'),
-      2,
-      1000
+      () => withTimeout(model.generateContent(contentParts), 30000, '[PC-1] Gemini timeout'),
+      5,
+      2000
     );
     const response = result.response;
     const text = response.text();
@@ -1597,8 +1611,11 @@ ${input.rightImageBase64 ? '- 우측: 측면 피부색, 볼 색조 분석 (좌�
     geminiLogger.info('[PC-1] Gemini analysis completed');
     return parseJsonResponse<GeminiPersonalColorResult>(text);
   } catch (error) {
-    geminiLogger.error('[PC-1] Gemini error, falling back to mock:', error);
-    return generateMockPersonalColorResult() as unknown as GeminiPersonalColorResult;
+    geminiLogger.error('[PC-1] Gemini error:', error);
+    // 신뢰성 문제로 랜덤 Mock 결과 반환 금지 - 에러를 throw하여 사용자에게 분석 실패 알림
+    throw new Error(
+      'AI 분석에 실패했습니다. 잠시 후 다시 시도해주세요. (네트워크 상태를 확인해주세요)'
+    );
   }
 }
 
@@ -2892,12 +2909,12 @@ export async function validateFaceImage(
     const imagePart = formatImageForGemini(imageBase64);
     const prompt = buildFaceValidationPrompt(expectedAngle);
 
-    // 타임아웃 (2초) + 재시도 (최대 1회) - 검증은 빠르게
+    // 타임아웃 (5초) + 재시도 (최대 2회) - Gemini Pro 대응
     const result = await withRetry(
       () =>
-        withTimeout(model.generateContent([prompt, imagePart]), 2000, '[FACE-VALIDATE] Timeout'),
-      1,
-      500
+        withTimeout(model.generateContent([prompt, imagePart]), 5000, '[FACE-VALIDATE] Timeout'),
+      2,
+      1000
     );
 
     const response = await result.response;

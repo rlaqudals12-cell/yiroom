@@ -68,6 +68,8 @@ export async function POST(req: Request) {
       leftImageBase64,
       rightImageBase64,
       useMock = false,
+      // 이미지 저장 여부 (동의 시만 true)
+      saveImage = false,
     } = body;
 
     // 이미지 입력 검증: 다각도 또는 단일 이미지 필요
@@ -288,41 +290,17 @@ export async function POST(req: Request) {
           );
         }
       } catch (aiError) {
-        // AI 실패 시 Mock으로 폴백
-        console.error('[PC-1] Gemini error, falling back to mock:', aiError);
-        const mockResult = generateMockPersonalColorResult();
-        const isCool = mockResult.tone === 'cool';
-        const reliability = determineReliability(hasMultiAngle, !!wristImageBase64);
-        aiResult = {
-          seasonType: mockResult.seasonType,
-          seasonLabel: mockResult.seasonLabel,
-          seasonDescription: mockResult.seasonDescription,
-          tone: mockResult.tone,
-          depth: mockResult.depth,
-          confidence: mockResult.confidence,
-          bestColors: mockResult.bestColors,
-          worstColors: mockResult.worstColors,
-          lipstickRecommendations: mockResult.lipstickRecommendations,
-          clothingRecommendations: mockResult.clothingRecommendations,
-          styleDescription: mockResult.styleDescription,
-          insight: mockResult.insight,
-          // 분석 근거 데이터 (Mock)
-          analysisEvidence: {
-            veinColor: isCool ? 'blue' : 'green',
-            veinScore: isCool ? 75 : 25,
-            skinUndertone: isCool ? 'pink' : 'yellow',
-            skinHairContrast: 'medium',
-            eyeColor: 'brown',
-            lipNaturalColor: isCool ? 'pink' : 'coral',
+        // 신뢰성 문제로 랜덤 Mock Fallback 금지 - 에러를 사용자에게 전달
+        console.error('[PC-1] Gemini error:', aiError);
+        const errorMessage = aiError instanceof Error ? aiError.message : 'AI 분석에 실패했습니다.';
+        return NextResponse.json(
+          {
+            error: 'AI 분석 실패',
+            message: errorMessage,
+            retryable: true,
           },
-          imageQuality: {
-            lightingCondition: 'artificial',
-            makeupDetected: false,
-            wristImageProvided: !!wristImageBase64,
-            analysisReliability: reliability,
-          },
-        };
-        usedMock = true;
+          { status: 503 }
+        );
       }
     }
 
@@ -340,13 +318,14 @@ export async function POST(req: Request) {
 
     const supabase = createServiceRoleClient();
 
-    // 이미지 업로드 (정면 이미지 우선)
+    // 이미지 업로드 (사용자 동의 시에만 저장 - GDPR/PIPA 준수)
     const primaryImage = frontImageBase64 || imageBase64;
     let faceImageUrl: string | null = null;
     let leftImageUrl: string | null = null;
     let rightImageUrl: string | null = null;
 
-    if (primaryImage) {
+    if (primaryImage && saveImage) {
+      console.log('[PC-1] User consented to image storage, uploading...');
       const timestamp = Date.now();
       const fileName = `${userId}/${timestamp}.jpg`;
 
@@ -393,6 +372,8 @@ export async function POST(req: Request) {
           });
         if (rightUpload) rightImageUrl = rightUpload.path;
       }
+    } else if (primaryImage && !saveImage) {
+      console.log('[PC-1] User did not consent to image storage, skipping upload');
     }
 
     // 계절 타입 변환 (소문자 → DB 형식)

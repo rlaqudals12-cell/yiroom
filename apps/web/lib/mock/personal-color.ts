@@ -201,6 +201,16 @@ export interface LipstickRecommendation {
   oliveyoungAlt?: string; // 올리브영 대안 제품
 }
 
+// 파운데이션 추천
+export interface FoundationRecommendation {
+  shadeName: string; // 쉐이드 이름 (예: "21호 라이트 베이지")
+  undertone: 'warm' | 'cool' | 'neutral'; // 언더톤
+  brandExample: string; // 브랜드 예시
+  easyDescription: string; // 쉬운 설명
+  oliveyoungAlt?: string; // 올리브영 대안 제품
+  tip?: string; // 선택 팁
+}
+
 // 의류 추천
 export interface ClothingRecommendation {
   item: string;
@@ -260,6 +270,7 @@ export interface PersonalColorResult {
   bestColors: ColorInfo[];
   worstColors: ColorInfo[];
   lipstickRecommendations: LipstickRecommendation[];
+  foundationRecommendations?: FoundationRecommendation[]; // 파운데이션 추천 (선택적)
   clothingRecommendations: ClothingRecommendation[];
   styleDescription: StyleDescription; // 연예인 매칭 대체
   insight: string;
@@ -485,6 +496,142 @@ export const LIPSTICK_RECOMMENDATIONS: Record<SeasonType, LipstickRecommendation
       brandExample: '샤넬 피에르',
       easyDescription: '핫핑크 (진한 분홍색)',
       oliveyoungAlt: '클리오 매드매트립 핫핑크',
+    },
+  ],
+};
+
+// 계절별 의류 추천 (Hybrid 데이터용 export)
+export const CLOTHING_RECOMMENDATIONS: Record<SeasonType, ClothingRecommendation[]> = {
+  spring: [
+    { item: '블라우스', colorSuggestion: '피치 핑크', reason: '화사한 느낌을 더해줘요' },
+    { item: '가디건', colorSuggestion: '아이보리', reason: '부드럽고 따뜻한 분위기' },
+    { item: '원피스', colorSuggestion: '코랄', reason: '생기있는 데일리 룩' },
+    { item: '티셔츠', colorSuggestion: '레몬 옐로우', reason: '밝고 활기찬 느낌' },
+    { item: '스커트', colorSuggestion: '민트', reason: '상쾌하고 청순한 분위기' },
+  ],
+  summer: [
+    { item: '셔츠', colorSuggestion: '라벤더', reason: '우아하고 시원한 느낌' },
+    { item: '니트', colorSuggestion: '로즈 핑크', reason: '부드러운 여성스러움' },
+    { item: '스커트', colorSuggestion: '스카이 블루', reason: '청량한 여름 느낌' },
+    { item: '원피스', colorSuggestion: '페일 그레이', reason: '세련되고 시크한 분위기' },
+    { item: '가디건', colorSuggestion: '더스티 핑크', reason: '차분하고 우아한 느낌' },
+  ],
+  autumn: [
+    { item: '재킷', colorSuggestion: '카멜', reason: '시크하고 세련된 느낌' },
+    { item: '팬츠', colorSuggestion: '올리브', reason: '차분하고 멋스러운 분위기' },
+    { item: '코트', colorSuggestion: '브릭', reason: '따뜻하고 고급스러운 느낌' },
+    { item: '니트', colorSuggestion: '머스타드', reason: '깊이있는 가을 분위기' },
+    { item: '스커트', colorSuggestion: '테라코타', reason: '세련되고 차분한 느낌' },
+  ],
+  winter: [
+    { item: '코트', colorSuggestion: '블랙', reason: '도회적이고 시크한 느낌' },
+    { item: '블레이저', colorSuggestion: '네이비', reason: '세련되고 깔끔한 인상' },
+    { item: '드레스', colorSuggestion: '버건디', reason: '강렬하고 우아한 분위기' },
+    { item: '셔츠', colorSuggestion: '퓨어 화이트', reason: '깨끗하고 선명한 느낌' },
+    { item: '팬츠', colorSuggestion: '차콜 그레이', reason: '모던하고 세련된 분위기' },
+  ],
+};
+
+// 계절별 파운데이션 추천
+export const FOUNDATION_RECOMMENDATIONS: Record<SeasonType, FoundationRecommendation[]> = {
+  spring: [
+    {
+      shadeName: '21호 웜 베이지',
+      undertone: 'warm',
+      brandExample: '에스티로더 더블웨어 2W1',
+      easyDescription: '노란 기가 도는 밝은 베이지 (피치빛)',
+      oliveyoungAlt: '클리오 킬커버 파운웨어 03 린넨',
+      tip: '옐로 베이스를 선택하면 피부가 화사해 보여요',
+    },
+    {
+      shadeName: '23호 웜 샌드',
+      undertone: 'warm',
+      brandExample: 'MAC 스튜디오픽스 NC25',
+      easyDescription: '따뜻한 모래색 (자연스러운 누드)',
+      oliveyoungAlt: '이니스프리 노세범 파운데이션 N23',
+      tip: '피부톤이 조금 어두우면 이 쉐이드가 더 자연스러워요',
+    },
+    {
+      shadeName: '21호 피치 베이지',
+      undertone: 'warm',
+      brandExample: '랑콤 땡뜨 이돌 210',
+      easyDescription: '복숭아빛이 도는 밝은 베이지',
+      oliveyoungAlt: '페리페라 잉크래스팅 커버 파운데이션 02',
+    },
+  ],
+  summer: [
+    {
+      shadeName: '21호 쿨 핑크',
+      undertone: 'cool',
+      brandExample: '에스티로더 더블웨어 1C1',
+      easyDescription: '핑크 기가 도는 밝은 베이지 (로즈빛)',
+      oliveyoungAlt: '클리오 킬커버 파운웨어 02 랑제리',
+      tip: '핑크 베이스를 선택하면 피부가 맑아 보여요',
+    },
+    {
+      shadeName: '21호 뉴트럴 로즈',
+      undertone: 'cool',
+      brandExample: 'MAC 스튜디오픽스 NW20',
+      easyDescription: '차분한 로즈빛 베이지',
+      oliveyoungAlt: '라네즈 네오 쿠션 21C',
+      tip: '쿨톤은 옐로 베이스를 피하면 칙칙해 보이지 않아요',
+    },
+    {
+      shadeName: '23호 소프트 핑크',
+      undertone: 'cool',
+      brandExample: '디올 포에버 스킨 글로우 2CR',
+      easyDescription: '부드러운 핑크빛 베이지',
+      oliveyoungAlt: '에뛰드 더블래스팅 쿠션 글로우 23C1',
+    },
+  ],
+  autumn: [
+    {
+      shadeName: '23호 딥 웜',
+      undertone: 'warm',
+      brandExample: '에스티로더 더블웨어 3W1',
+      easyDescription: '깊은 황금빛 베이지 (꿀색)',
+      oliveyoungAlt: '클리오 킬커버 파운웨어 04 진저',
+      tip: '옐로우 골드 베이스가 건강한 피부를 연출해요',
+    },
+    {
+      shadeName: '25호 앰버',
+      undertone: 'warm',
+      brandExample: 'MAC 스튜디오픽스 NC30',
+      easyDescription: '따뜻한 호박색 베이지',
+      oliveyoungAlt: '이니스프리 노세범 파운데이션 N27',
+      tip: '브론저 없이도 건강한 피부톤 연출 가능해요',
+    },
+    {
+      shadeName: '23호 캐러멜',
+      undertone: 'warm',
+      brandExample: '나스 쉬어 글로우 바르셀로나',
+      easyDescription: '카라멜빛이 도는 따뜻한 베이지',
+      oliveyoungAlt: '토니모리 비씨데이션 커버핏 04',
+    },
+  ],
+  winter: [
+    {
+      shadeName: '21호 아이시 핑크',
+      undertone: 'cool',
+      brandExample: '에스티로더 더블웨어 1C0',
+      easyDescription: '차가운 핑크빛 아이보리 (새하얀)',
+      oliveyoungAlt: '클리오 킬커버 파운웨어 01 리넨',
+      tip: '선명한 쿨톤은 회색 기가 살짝 도는 것도 OK',
+    },
+    {
+      shadeName: '21호 포슬린',
+      undertone: 'cool',
+      brandExample: 'MAC 스튜디오픽스 NW15',
+      easyDescription: '도자기 같은 맑은 아이보리',
+      oliveyoungAlt: '라네즈 네오 쿠션 17C',
+      tip: '너무 노란 쉐이드는 피하세요, 칙칙해 보일 수 있어요',
+    },
+    {
+      shadeName: '23호 쿨 뉴트럴',
+      undertone: 'neutral',
+      brandExample: '디올 포에버 스킨 글로우 2N',
+      easyDescription: '차분한 뉴트럴 베이지 (중간)',
+      oliveyoungAlt: '에뛰드 더블래스팅 쿠션 글로우 21N',
     },
   ],
 };
@@ -915,6 +1062,7 @@ export const generateMockPersonalColorResult = (
     bestColors: BEST_COLORS[seasonType],
     worstColors: WORST_COLORS[seasonType],
     lipstickRecommendations: LIPSTICK_RECOMMENDATIONS[seasonType],
+    foundationRecommendations: FOUNDATION_RECOMMENDATIONS[seasonType],
     clothingRecommendations: generateClothingRecommendations(seasonType),
     styleDescription: STYLE_DESCRIPTIONS[seasonType],
     insight: insights[Math.floor(Math.random() * insights.length)],
