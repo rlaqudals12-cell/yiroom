@@ -11,7 +11,7 @@
  * - 설정/공지사항/도움말
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -31,7 +31,6 @@ import {
   FlaskConical,
   User,
   Flame,
-  Calendar,
   QrCode,
 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
@@ -48,6 +47,8 @@ import {
   type UserBadge,
 } from '@/lib/gamification';
 import { getUserChallengeStats, type ChallengeStats } from '@/lib/challenges';
+import { WellnessScoreRing } from '@/components/profile';
+import { getGreetingWithEmoji, TIME_GRADIENTS } from '@/lib/utils/greeting';
 
 // 프로필 데이터 타입
 interface ProfileData {
@@ -254,6 +255,13 @@ export default function ProfilePage() {
     }
   }, [supabase, user?.id, isLoaded]);
 
+  // K-5: 시간대별 인사말 (주변 개인화)
+  // useMemo는 early return 전에 호출되어야 함 (React Hooks 규칙)
+  const greetingInfo = useMemo(() => {
+    const userName = user?.fullName || user?.username || undefined;
+    return getGreetingWithEmoji(userName);
+  }, [user?.fullName, user?.username]);
+
   // 로딩
   if (!isLoaded || isLoading) {
     return (
@@ -288,48 +296,62 @@ export default function ProfilePage() {
   return (
     <div className="bg-background min-h-screen pb-20" data-testid="profile-page">
       <main className="space-y-4 px-4 py-6">
-        {/* 프로필 카드 */}
+        {/* K-5: 시간대별 인사말 헤더 */}
+        <FadeInUp>
+          <section
+            className={`rounded-2xl border bg-gradient-to-r p-4 ${TIME_GRADIENTS[greetingInfo.timeOfDay]}`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{greetingInfo.emoji}</span>
+              <p className="font-medium">{greetingInfo.greeting}</p>
+            </div>
+          </section>
+        </FadeInUp>
+
+        {/* K-5: 프로필 카드 + 웰니스 스코어 링 (벤토 박스) */}
         <FadeInUp>
           <section className="bg-card rounded-2xl border p-6">
-            <div className="flex items-center gap-4">
-              {user.imageUrl ? (
-                <Image
-                  src={user.imageUrl}
-                  alt={user.fullName || '프로필'}
-                  width={80}
-                  height={80}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-indigo-500">
-                  <span className="text-2xl font-bold text-white">
-                    {(user.fullName || user.username || 'U')[0].toUpperCase()}
-                  </span>
-                </div>
-              )}
+            <div className="flex items-start gap-4">
+              {/* 프로필 이미지 */}
+              <div className="flex flex-col items-center gap-2">
+                {user.imageUrl ? (
+                  <Image
+                    src={user.imageUrl}
+                    alt={user.fullName || '프로필'}
+                    width={72}
+                    height={72}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-indigo-500">
+                    <span className="text-2xl font-bold text-white">
+                      {(user.fullName || user.username || 'U')[0].toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                {profileData?.userLevelState && (
+                  <LevelBadgeFilled level={profileData.userLevelState.level} size="sm" showLabel />
+                )}
+              </div>
+
+              {/* 사용자 정보 */}
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold">
-                    {user.fullName || user.username || '사용자'}님
-                  </h2>
-                  {profileData?.userLevelState && (
-                    <LevelBadgeFilled
-                      level={profileData.userLevelState.level}
-                      size="sm"
-                      showLabel
-                    />
-                  )}
-                </div>
+                <h2 className="text-lg font-bold">
+                  {user.fullName || user.username || '사용자'}님
+                </h2>
                 {profileData?.userLevelState && (
                   <p className="text-muted-foreground text-sm">
                     {profileData.userLevelState.totalActivityCount}회 활동
                   </p>
                 )}
-                <div className="mt-2 flex items-center gap-2">
-                  <Trophy className="h-4 w-4 text-yellow-500" />
-                  <span className="text-sm font-medium">웰니스 스코어: {wellnessScore}점</span>
-                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  가입일:{' '}
+                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString('ko-KR') : '-'}
+                </p>
               </div>
+
+              {/* K-5: 웰니스 스코어 링 차트 */}
+              <WellnessScoreRing score={wellnessScore} size="sm" showLabel />
             </div>
           </section>
         </FadeInUp>
@@ -636,24 +658,6 @@ export default function ProfilePage() {
                 <div className="text-muted-foreground text-xs">현재</div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* 가입 정보 */}
-        <section className="bg-card rounded-2xl border p-6">
-          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-            <Calendar className="h-5 w-5 text-gray-500" />
-            가입 정보
-          </h3>
-          <div className="text-muted-foreground text-sm">
-            가입일:{' '}
-            {user.createdAt
-              ? new Date(user.createdAt).toLocaleDateString('ko-KR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })
-              : '-'}
           </div>
         </section>
 
