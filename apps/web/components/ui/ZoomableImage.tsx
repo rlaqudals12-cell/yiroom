@@ -63,13 +63,18 @@ export function ZoomableImage({
     onError?.();
   }, [onError]);
 
-  // focusPoint 변경 시 해당 위치로 이동
+  /**
+   * focusPoint 변경 시 해당 위치로 자동 이동 및 줌
+   * - 문제 영역 마커 클릭 시 해당 위치를 화면 중앙에 표시
+   * - 좌표는 이미지 기준 % (0-100)
+   */
   useEffect(() => {
     if (focusPoint && containerRef.current) {
       const container = containerRef.current;
       const rect = container.getBoundingClientRect();
 
-      // 포커스 포인트를 중앙으로 이동
+      // 포커스 포인트를 컨테이너 중앙으로 이동시키는 위치 계산
+      // 수식: 컨테이너 중앙 위치 - (포커스 포인트 % * 이미지 크기 * 줌)
       const newX = (rect.width / 2 - (focusPoint.x / 100) * rect.width * zoom) * -1;
       const newY = (rect.height / 2 - (focusPoint.y / 100) * rect.height * zoom) * -1;
 
@@ -83,16 +88,19 @@ export function ZoomableImage({
     onZoomChange?.(zoom);
   }, [zoom, onZoomChange]);
 
-  // 줌 설정 (경계 제한 포함)
+  /**
+   * 줌 설정 (경계 제한 포함)
+   * - centerX, centerY가 제공되면 해당 점을 중심으로 줌
+   * - 마우스/터치 위치를 기준으로 자연스러운 줌 효과 구현
+   */
   const handleZoom = useCallback(
     (newZoom: number, centerX?: number, centerY?: number) => {
       const clampedZoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
 
       if (containerRef.current && centerX !== undefined && centerY !== undefined) {
-        const container = containerRef.current;
-        const rect = container.getBoundingClientRect();
-
         // 줌 중심점 기준 위치 조정
+        // 예: 마우스 위치에서 줌하면 그 점이 화면에서 같은 위치에 유지됨
+        // 수식: 새 위치 = 중심점 - (중심점 - 현재 위치) * 줌 비율
         const zoomRatio = clampedZoom / zoom;
         const newX = centerX - (centerX - position.x) * zoomRatio;
         const newY = centerY - (centerY - position.y) * zoomRatio;

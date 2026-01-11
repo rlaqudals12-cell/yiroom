@@ -202,6 +202,14 @@ describe('SolutionPanel', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('calls onClose when ESC key is pressed', () => {
+    const onClose = vi.fn();
+    render(<SolutionPanel area={mockProblemArea} onClose={onClose} />);
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('calls onProductClick when ingredient is clicked', () => {
     const onClose = vi.fn();
     const onProductClick = vi.fn();

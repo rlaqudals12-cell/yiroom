@@ -52,19 +52,25 @@ export const getMockProblemAreasByType = (type: ProblemArea['type']): ProblemAre
   return MOCK_PROBLEM_AREAS.filter((area) => area.type === type);
 };
 
-// AI Fallback용 - 분석 결과 기반 문제 영역 생성
+/**
+ * AI Fallback용 - 분석 결과 기반 문제 영역 자동 생성
+ * - Gemini가 좌표를 반환하지 않았을 때 사용
+ * - 점수가 낮은 지표(60점 미만)를 문제 영역으로 변환
+ */
 export function generateMockProblemAreas(
   metrics: { name: string; score: number }[]
 ): ProblemArea[] {
   const areas: ProblemArea[] = [];
   let areaId = 1;
 
-  // 점수가 낮은 지표를 문제 영역으로 변환
+  // 60점 미만 지표만 문제 영역으로 변환 (60점 이상은 양호로 판단)
   metrics.forEach((metric, index) => {
     if (metric.score < 60) {
+      // 심각도 결정: 30점 미만=심함, 45점 미만=보통, 그 외=가벼움
       const severity: ProblemArea['severity'] =
         metric.score < 30 ? 'severe' : metric.score < 45 ? 'moderate' : 'mild';
 
+      // 분석 지표명 → 문제 유형 매핑 (hydration은 역으로 dryness)
       const typeMap: Record<string, ProblemArea['type']> = {
         hydration: 'dryness',
         oiliness: 'oiliness',
@@ -78,7 +84,9 @@ export function generateMockProblemAreas(
 
       const type = typeMap[metric.name.toLowerCase()] || 'dryness';
 
-      // 위치 분산 (겹치지 않도록)
+      // 위치 분산: 3x2 그리드로 배치하여 마커가 겹치지 않도록 함
+      // baseX: 30, 50, 70 (index % 3 * 20)
+      // baseY: 35, 55 (index / 3 * 20)
       const baseX = 30 + (index % 3) * 20;
       const baseY = 35 + Math.floor(index / 3) * 20;
 
@@ -100,6 +108,11 @@ export function generateMockProblemAreas(
   return areas.slice(0, 4); // 최대 4개
 }
 
+/**
+ * 문제 유형과 심각도에 따른 친근한 한국어 설명 생성
+ * - 사용자가 자신의 피부 상태를 쉽게 이해할 수 있도록 설명
+ * - 심각도에 따라 표현 강도 조절 (가벼운/보통의/심한)
+ */
 function getDescriptionForType(
   type: ProblemArea['type'],
   severity: ProblemArea['severity']
@@ -121,6 +134,11 @@ function getDescriptionForType(
   return descriptions[type];
 }
 
+/**
+ * 문제 유형별 추천 성분/제품 반환
+ * - K-뷰티 트렌드와 피부과학 기반 성분 매핑
+ * - 사용자가 SolutionPanel에서 클릭하면 제품 검색으로 연결됨
+ */
 function getRecommendationsForType(type: ProblemArea['type']): string[] {
   const recommendations: Record<ProblemArea['type'], string[]> = {
     pores: ['BHA 토너', '클레이 마스크', '모공 세럼'],
