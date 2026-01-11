@@ -48,6 +48,9 @@ export interface RoutineStep {
   tips: string[]; // 사용 팁
   recommendedProducts?: AffiliateProduct[];
   isOptional: boolean;
+  // 조건부 루틴 확장 필드
+  conditionalBadge?: string; // "건조할 때 2회" 등 조건부 뱃지
+  shelfProductId?: string; // 제품함 연동 시 제품 ID
 }
 
 /** 시간대 */

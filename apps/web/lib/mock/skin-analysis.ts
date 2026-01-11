@@ -60,7 +60,13 @@ export type SkinConcernId =
   | 'pores'
   | 'dryness'
   | 'redness'
-  | 'dullness';
+  | 'dullness'
+  // 스킨케어 루틴 고도화용 확장 (2026-01-11)
+  | 'dehydration' // 일시적 수분 부족 (건성 피부 타입과 구분)
+  | 'sensitivity' // 민감함 (홍조와 구분)
+  | 'fine_lines' // 잔주름 (주름과 구분)
+  | 'texture' // 피부결
+  | 'excess_oil'; // 과잉 피지
 
 export interface SkinConcernInfo {
   id: SkinConcernId;
@@ -112,6 +118,37 @@ export const SKIN_CONCERNS: SkinConcernInfo[] = [
     label: '칙칙함',
     emoji: '☁️',
     description: '피부 톤이 어둡고 생기가 없어요',
+  },
+  // 스킨케어 루틴 고도화용 확장 (2026-01-11)
+  {
+    id: 'dehydration',
+    label: '수분 부족',
+    emoji: '🏜️',
+    description: '일시적으로 피부에 수분이 부족해요',
+  },
+  {
+    id: 'sensitivity',
+    label: '민감함',
+    emoji: '🌸',
+    description: '외부 자극에 쉽게 반응해요',
+  },
+  {
+    id: 'fine_lines',
+    label: '잔주름',
+    emoji: '📏',
+    description: '눈가, 입가에 가는 주름이 생겼어요',
+  },
+  {
+    id: 'texture',
+    label: '피부결',
+    emoji: '🪨',
+    description: '피부결이 고르지 않고 거칠어요',
+  },
+  {
+    id: 'excess_oil',
+    label: '과잉 피지',
+    emoji: '✨',
+    description: '피지 분비가 과다해요',
   },
 ];
 
