@@ -156,17 +156,18 @@ export const ChartDynamic = dynamic(() => import('./Chart'), { ssr: false, loadi
 
 ## 모듈 구성
 
-| Phase   | 모듈           | 설명                           | 상태    |
-| ------- | -------------- | ------------------------------ | ------- |
-| Phase 1 | PC-1, S-1, C-1 | 퍼스널컬러, 피부, 체형 분석    | ✅ 완료 |
-| Phase 2 | W-1, N-1, R-1  | 운동, 영양, 리포트             | ✅ 완료 |
-| Phase 3 | 앱 고도화      | E2E 테스트, 크로스 모듈        | ✅ 완료 |
-| Phase A | Product DB     | 850+ 제품, 리뷰, RAG           | ✅ 완료 |
-| Phase B | React Native   | 모노레포, Expo 앱, 알림 동기화 | ✅ 완료 |
-| Phase H | 소셜           | 웰니스 스코어, 친구, 리더보드  | ✅ 완료 |
-| Phase I | 어필리에이트   | iHerb, 쿠팡, 무신사, 전환 웹훅 | ✅ 완료 |
-| Launch  | 출시 준비      | 공지사항, FAQ, 알림 DB 연동    | ✅ 완료 |
-| Phase J | AI 스타일링    | 색상 조합, 악세서리, 메이크업  | ✅ 완료 |
+| Phase   | 모듈           | 설명                                            | 상태    |
+| ------- | -------------- | ----------------------------------------------- | ------- |
+| Phase 1 | PC-1, S-1, C-1 | 퍼스널컬러, 피부, 체형 분석                     | ✅ 완료 |
+| Phase 2 | W-1, N-1, R-1  | 운동, 영양, 리포트                              | ✅ 완료 |
+| Phase 3 | 앱 고도화      | E2E 테스트, 크로스 모듈                         | ✅ 완료 |
+| Phase A | Product DB     | 850+ 제품, 리뷰, RAG                            | ✅ 완료 |
+| Phase B | React Native   | 모노레포, Expo 앱, 알림 동기화                  | ✅ 완료 |
+| Phase H | 소셜           | 웰니스 스코어, 친구, 리더보드                   | ✅ 완료 |
+| Phase I | 어필리에이트   | iHerb, 쿠팡, 무신사, 전환 웹훅                  | ✅ 완료 |
+| Launch  | 출시 준비      | 공지사항, FAQ, 알림 DB 연동                     | ✅ 완료 |
+| Phase J | AI 스타일링    | 색상 조합, 악세서리, 메이크업                   | ✅ 완료 |
+| Phase K | UX 고도화      | 성별 중립화, 패션 확장, 레시피, 프로필 리디자인 | ✅ 완료 |
 
 ## Route Groups
 
@@ -185,7 +186,8 @@ app/(main)/
 ├── leaderboard/        # 리더보드 (nutrition, workout)
 ├── help/               # 도움말 (faq, feedback)
 ├── announcements/      # 공지사항
-└── feed/               # 소셜 피드
+├── feed/               # 소셜 피드
+└── profile/            # 프로필 (K-5 리디자인)
 ```
 
 ### 모바일 앱 (Expo Router)
@@ -301,4 +303,4 @@ apps/mobile/app/
 
 ---
 
-**Version**: 10.0 | **Updated**: 2026-01-11 | Phase I/J 완료, 런칭 준비 단계
+**Version**: 11.0 | **Updated**: 2026-01-12 | Phase K 완료, UX 고도화 단계
