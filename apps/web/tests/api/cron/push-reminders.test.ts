@@ -5,18 +5,37 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
-// 모킹
-vi.mock('@/lib/supabase/service-role', () => ({
-  createServiceRoleClient: vi.fn(() => ({
+// Supabase 체이닝을 지원하는 mock builder
+// 실제 코드에서 .eq().eq() 같은 체이닝이 사용되므로 모든 메서드가 자기 자신을 반환해야 함
+function createChainableQueryBuilder(data: unknown[] = [], error: unknown = null) {
+  const builder: Record<string, unknown> = {};
+
+  // 모든 체이닝 메서드는 자기 자신을 반환
+  builder.select = vi.fn(() => builder);
+  builder.eq = vi.fn(() => builder);
+  builder.in = vi.fn(() => builder);
+
+  // Promise-like behavior: await 시 데이터 반환
+  builder.then = (resolve: (value: { data: unknown[]; error: unknown }) => void) =>
+    resolve({ data, error });
+
+  return builder;
+}
+
+function createSupabaseMock() {
+  return {
     from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-      })),
+      ...createChainableQueryBuilder(),
       update: vi.fn(() => ({
         in: vi.fn().mockResolvedValue({ error: null }),
       })),
     })),
-  })),
+  };
+}
+
+// 모킹
+vi.mock('@/lib/supabase/service-role', () => ({
+  createServiceRoleClient: vi.fn(() => createSupabaseMock()),
 }));
 
 vi.mock('@/lib/push/server', () => ({
@@ -70,7 +89,8 @@ describe('GET /api/cron/push-reminders', () => {
 
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
-    expect(data.sent).toBe(0);
+    // API 응답은 totalSent 필드를 사용함
+    expect(data.totalSent).toBe(0);
   });
 
   it('should send push to active subscriptions', async () => {
@@ -93,12 +113,13 @@ describe('GET /api/cron/push-reminders', () => {
       },
     ];
 
+    // 체이닝을 지원하는 mock 생성
+    const chainableBuilder = createChainableQueryBuilder(mockSubscriptions);
+
     const { createServiceRoleClient } = await import('@/lib/supabase/service-role');
     vi.mocked(createServiceRoleClient).mockReturnValue({
       from: vi.fn(() => ({
-        select: vi.fn(() => ({
-          eq: vi.fn().mockResolvedValue({ data: mockSubscriptions, error: null }),
-        })),
+        ...chainableBuilder,
         update: vi.fn(() => ({
           in: vi.fn().mockResolvedValue({ error: null }),
         })),
