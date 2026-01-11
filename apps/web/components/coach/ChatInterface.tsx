@@ -196,10 +196,12 @@ export function ChatInterface({
   };
 
   const categories = [
-    { key: 'general' as const, label: '일반' },
-    { key: 'workout' as const, label: '운동' },
-    { key: 'nutrition' as const, label: '영양' },
-    { key: 'skin' as const, label: '피부' },
+    { key: 'general' as const, label: '일반', icon: '💡' },
+    { key: 'workout' as const, label: '운동', icon: '💪' },
+    { key: 'nutrition' as const, label: '영양', icon: '🥗' },
+    { key: 'skin' as const, label: '피부', icon: '✨' },
+    { key: 'hair' as const, label: '헤어', icon: '💇' },
+    { key: 'makeup' as const, label: '메이크업', icon: '💄' },
   ];
 
   const contextSummary = userContext ? summarizeContext(userContext) : undefined;
@@ -217,22 +219,23 @@ export function ChatInterface({
             <p className="text-muted-foreground mb-6">
               안녕하세요! 저는 이룸 웰니스 코치예요.
               <br />
-              운동, 영양, 피부 관리에 대해 무엇이든 물어보세요.
+              운동, 영양, 피부, 헤어, 메이크업에 대해 무엇이든 물어보세요.
             </p>
 
             {/* 카테고리 탭 */}
-            <div className="flex justify-center gap-2 mb-4">
+            <div className="flex justify-center flex-wrap gap-2 mb-4 px-2">
               {categories.map((cat) => (
                 <button
                   key={cat.key}
                   onClick={() => setActiveCategory(cat.key)}
                   className={cn(
-                    'px-3 py-1.5 text-sm rounded-full transition-colors',
+                    'px-3 py-1.5 text-sm rounded-full transition-colors flex items-center gap-1',
                     activeCategory === cat.key
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted hover:bg-muted/80'
                   )}
                 >
+                  <span>{cat.icon}</span>
                   {cat.label}
                 </button>
               ))}
@@ -311,12 +314,13 @@ export function ChatInterface({
                   key={cat.key}
                   onClick={() => setActiveCategory(cat.key)}
                   className={cn(
-                    'px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors',
+                    'px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors flex items-center gap-1',
                     activeCategory === cat.key
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted hover:bg-muted/80'
                   )}
                 >
+                  <span>{cat.icon}</span>
                   {cat.label}
                 </button>
               ))}

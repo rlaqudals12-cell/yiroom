@@ -20,6 +20,7 @@ import { type SkinAnalysisResult, type SkinTypeId, EASY_SKIN_TIPS } from '@/lib/
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { ShareButton } from '@/components/share';
+import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
 import { SkinConsultantCTA } from '@/components/skin/SkinConsultantCTA';
 import Link from 'next/link';
@@ -770,6 +771,16 @@ export default function SkinAnalysisResultPage() {
                 다시 분석
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+            </div>
+            {/* 소셜 공유 버튼 */}
+            <div className="flex justify-center">
+              <ShareButtons
+                content={{
+                  title: `내 피부 점수 ${result.overallScore}점!`,
+                  description: '이룸에서 AI 피부 분석 받아보세요',
+                  url: typeof window !== 'undefined' ? window.location.href : '',
+                }}
+              />
             </div>
           </div>
         </div>

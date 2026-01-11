@@ -29,6 +29,7 @@ import {
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { ShareButton } from '@/components/share';
+import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
 import { BodyStylingTab } from '@/components/analysis/visual';
 import BodyAnalysisEvidenceReport, {
@@ -508,6 +509,16 @@ export default function BodyAnalysisResultPage() {
                 다시 분석하기
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+            </div>
+            {/* 소셜 공유 버튼 */}
+            <div className="flex justify-center">
+              <ShareButtons
+                content={{
+                  title: `나의 체형은 ${result.bodyTypeLabel} 타입!`,
+                  description: '이룸에서 AI 체형 분석 받아보세요',
+                  url: typeof window !== 'undefined' ? window.location.href : '',
+                }}
+              />
             </div>
           </div>
         </div>
