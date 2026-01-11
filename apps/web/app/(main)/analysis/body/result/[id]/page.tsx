@@ -37,6 +37,7 @@ import BodyAnalysisEvidenceReport, {
   type BodyImageQuality,
 } from '@/components/analysis/BodyAnalysisEvidenceReport';
 import { VisualReportCard } from '@/components/analysis/visual-report';
+import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import Link from 'next/link';
 
 // DB 데이터 타입
@@ -450,8 +451,17 @@ export default function BodyAnalysisResultPage() {
                       .slice(0, 3)
                       .map((r) => r.item),
                   }}
-                  className="mt-8 pb-32"
+                  className="mt-8"
                 />
+
+                {/* AI 코디 상담 CTA */}
+                <div className="mt-6 p-4 bg-card rounded-xl border border-border pb-32">
+                  <ConsultantCTA
+                    category="fashion"
+                    params={{ bodyType: result.bodyType }}
+                    showQuickQuestions
+                  />
+                </div>
               </TabsContent>
 
               {/* 분석 근거 탭 */}

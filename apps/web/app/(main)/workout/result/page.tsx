@@ -29,6 +29,7 @@ import { Dumbbell, Calendar } from 'lucide-react';
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { FadeInUp, ScaleIn, Confetti } from '@/components/animations';
+import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 
 export default function ResultPage() {
   const router = useRouter();
@@ -265,8 +266,19 @@ export default function ResultPage() {
           <RecommendedSupplementCard workoutGoals={goals} concerns={concerns} />
         </FadeInUp>
 
-        {/* 추천 운동 섹션 */}
+        {/* AI 운동 상담 CTA */}
         <FadeInUp delay={8}>
+          <div className="p-4 bg-card rounded-xl border border-border">
+            <ConsultantCTA
+              category="workout"
+              params={{ goal: goals[0] || '' }}
+              showQuickQuestions
+            />
+          </div>
+        </FadeInUp>
+
+        {/* 추천 운동 섹션 */}
+        <FadeInUp delay={9}>
           <div className="bg-card border-border/50 rounded-2xl border p-6 shadow-sm">
             <h3 className="text-foreground mb-4 text-lg font-bold">추천 운동</h3>
             {exercises.length > 0 ? (
@@ -286,7 +298,7 @@ export default function ResultPage() {
         </FadeInUp>
 
         {/* 액션 버튼 */}
-        <FadeInUp delay={9}>
+        <FadeInUp delay={10}>
           <div className="space-y-3">
             <button
               onClick={handleViewPlan}

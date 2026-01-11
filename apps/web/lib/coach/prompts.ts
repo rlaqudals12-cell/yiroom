@@ -199,6 +199,29 @@ export function getQuestionHint(question: string): string {
     return '메이크업 관련 질문입니다. 사용자의 언더톤과 얼굴형을 고려해 답변하세요.';
   }
 
+  // 퍼스널 컬러 관련
+  if (
+    lowerQ.includes('퍼스널컬러') ||
+    lowerQ.includes('퍼스널 컬러') ||
+    lowerQ.includes('웜톤') ||
+    lowerQ.includes('쿨톤') ||
+    lowerQ.includes('시즌') ||
+    lowerQ.includes('어울리는 색')
+  ) {
+    return '퍼스널 컬러 관련 질문입니다. 사용자의 시즌 타입과 톤을 고려해 색상 조언을 해주세요.';
+  }
+
+  // 패션/코디 관련
+  if (
+    lowerQ.includes('옷') ||
+    lowerQ.includes('코디') ||
+    lowerQ.includes('스타일') ||
+    lowerQ.includes('입') ||
+    lowerQ.includes('패션')
+  ) {
+    return '패션 관련 질문입니다. 사용자의 체형, 퍼스널 컬러, TPO를 고려해 답변하세요.';
+  }
+
   // 제품 추천
   if (lowerQ.includes('추천') || lowerQ.includes('어떤')) {
     return '추천 질문입니다. 구체적이고 실행 가능한 제안을 해주세요.';
@@ -263,5 +286,23 @@ export const QUICK_QUESTIONS_BY_CATEGORY = {
     '수면이 건강에 얼마나 중요해요?',
     '스트레스 관리는 어떻게 해요?',
     '건강한 습관 만들려면 어떻게 해요?',
+  ],
+  // Phase K: 퍼스널 컬러 상담 확장
+  personalColor: [
+    '내 퍼스널컬러에 안 어울리는 색이 뭐야?',
+    '웜톤인데 쿨톤 옷 입어도 돼?',
+    '내 시즌에 맞는 립 색상 추천해줘',
+    '염색하려는데 어떤 색이 어울려?',
+    '결혼식 하객룩 색상 추천해줘',
+    '이 색 조합이 나한테 어울려?',
+  ],
+  // Phase K: 패션 상담 확장
+  fashion: [
+    '오늘 면접인데 뭐 입으면 좋을까요?',
+    '내 옷장에서 데이트룩 추천해줘',
+    '이 상의에 어울리는 하의는?',
+    '내 퍼스널컬러에 맞는 코디 알려줘',
+    '체형에 맞는 옷 추천해줘',
+    '계절별로 어떤 스타일이 좋아요?',
   ],
 };

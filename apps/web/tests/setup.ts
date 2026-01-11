@@ -259,6 +259,9 @@ vi.mock('lucide-react', () => ({
   // Charts & Analysis
   LineChart: createIconMock('LineChart'),
 
+  // History
+  History: createIconMock('History'),
+
   // Misc
   Calendar: createIconMock('Calendar'),
   Lock: createIconMock('Lock'),

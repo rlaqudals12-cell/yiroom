@@ -61,6 +61,7 @@ export interface UserContext {
     frequency?: number;
     streak?: number;
     lastWorkout?: string;
+    fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
   };
   nutrition?: {
     goal?: string;

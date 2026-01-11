@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Products Dynamic Import
  * 초기 로드 불필요한 무거운 컴포넌트 지연 로딩

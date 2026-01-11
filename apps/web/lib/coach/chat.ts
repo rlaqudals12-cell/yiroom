@@ -9,6 +9,10 @@ import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import type { UserContext } from './context';
 import { buildCoachSystemPrompt, getQuestionHint } from './prompts';
 import { searchSkinProducts, formatSkinProductsForPrompt } from './skin-rag';
+import { searchByPersonalColor, formatPersonalColorForPrompt } from './personal-color-rag';
+import { searchFashionItems, formatFashionForPrompt } from './fashion-rag';
+import { searchNutritionItems, formatNutritionForPrompt } from './nutrition-rag';
+import { searchWorkoutItems, formatWorkoutForPrompt } from './workout-rag';
 
 // API 키 검증
 const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -70,15 +74,49 @@ const FALLBACK_RESPONSES: Record<string, string> = {
   nutrition:
     '영양에 대한 질문이시네요! 균형 잡힌 식단과 충분한 수분 섭취가 중요해요. 더 맞춤화된 조언을 위해 영양 목표를 설정해보세요.',
   skin: '피부 관련 질문이시군요! 기본적으로 클렌징, 보습, 자외선 차단이 중요해요. 피부 분석 결과를 바탕으로 더 상세한 조언을 드릴 수 있어요.',
+  // Phase K: 퍼스널 컬러 상담
+  personalColor:
+    '퍼스널 컬러에 관한 질문이시군요! 퍼스널 컬러 분석 결과를 바탕으로 어울리는 색상 조합을 추천해드릴 수 있어요. 먼저 분석을 진행해보시는 건 어떨까요?',
+  // Phase K: 패션 상담
+  fashion:
+    '패션에 대한 질문이시네요! 체형과 퍼스널 컬러를 고려한 스타일링 조언을 드릴 수 있어요. 분석 결과를 바탕으로 맞춤 코디를 추천받아보세요.',
   default:
     '좋은 질문이에요! 정확한 답변을 드리기 어려운 상황이에요. 잠시 후 다시 시도해주시거나, 더 구체적인 질문을 해주시면 도움이 될 거예요.',
 };
 
 /**
+ * 질문 카테고리 타입
+ */
+type QuestionCategory = 'workout' | 'nutrition' | 'skin' | 'personalColor' | 'fashion' | 'default';
+
+/**
  * 질문 카테고리 감지
  */
-function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'skin' | 'default' {
+function detectQuestionCategory(question: string): QuestionCategory {
   const lowerQ = question.toLowerCase();
+
+  // Phase K: 퍼스널 컬러 관련 (패션보다 우선)
+  if (
+    lowerQ.includes('퍼스널컬러') ||
+    lowerQ.includes('퍼스널 컬러') ||
+    lowerQ.includes('웜톤') ||
+    lowerQ.includes('쿨톤') ||
+    lowerQ.includes('시즌') ||
+    (lowerQ.includes('어울리는') && lowerQ.includes('색'))
+  ) {
+    return 'personalColor';
+  }
+
+  // Phase K: 패션/코디 관련
+  if (
+    lowerQ.includes('옷') ||
+    lowerQ.includes('코디') ||
+    lowerQ.includes('스타일') ||
+    lowerQ.includes('패션') ||
+    (lowerQ.includes('뭐') && lowerQ.includes('입'))
+  ) {
+    return 'fashion';
+  }
 
   if (
     lowerQ.includes('운동') ||
@@ -153,6 +191,111 @@ function isSkinConsultationQuestion(question: string): boolean {
     routineKeywords.some((kw) => lowerQ.includes(kw)) ||
     ingredientKeywords.some((kw) => lowerQ.includes(kw))
   );
+}
+
+/**
+ * 퍼스널 컬러 상담 질문인지 확인 (Phase K)
+ */
+function isPersonalColorQuestion(question: string): boolean {
+  const lowerQ = question.toLowerCase();
+
+  const personalColorKeywords = [
+    '퍼스널컬러',
+    '퍼스널 컬러',
+    '웜톤',
+    '쿨톤',
+    '시즌',
+    '어울리는 색',
+    '안 어울리는 색',
+    '립 색상',
+    '염색',
+    '헤어 컬러',
+    '색 조합',
+  ];
+
+  return personalColorKeywords.some((kw) => lowerQ.includes(kw));
+}
+
+/**
+ * 패션 상담 질문인지 확인 (Phase K)
+ */
+function isFashionQuestion(question: string): boolean {
+  const lowerQ = question.toLowerCase();
+
+  const fashionKeywords = [
+    '옷',
+    '코디',
+    '스타일',
+    '패션',
+    '입',
+    '면접룩',
+    '데이트룩',
+    '출근룩',
+    '옷장',
+    '상의',
+    '하의',
+    '아우터',
+  ];
+
+  return fashionKeywords.some((kw) => lowerQ.includes(kw));
+}
+
+/**
+ * 영양/레시피 상담 질문인지 확인 (Phase K)
+ */
+function isNutritionQuestion(question: string): boolean {
+  const lowerQ = question.toLowerCase();
+
+  const nutritionKeywords = [
+    '레시피',
+    '요리',
+    '만들',
+    '냉장고',
+    '식재료',
+    '유통기한',
+    '밥',
+    '식사',
+    '점심',
+    '저녁',
+    '아침',
+    '간식',
+    '야식',
+    '다이어트',
+    '벌크업',
+    '식단',
+    '칼로리',
+    '단백질',
+  ];
+
+  return nutritionKeywords.some((kw) => lowerQ.includes(kw));
+}
+
+/**
+ * 운동 상담 질문인지 확인 (Phase K)
+ */
+function isWorkoutQuestion(question: string): boolean {
+  const lowerQ = question.toLowerCase();
+
+  const workoutKeywords = [
+    '운동',
+    '헬스',
+    '근육',
+    '스트레칭',
+    '웨이트',
+    '런닝',
+    '유산소',
+    '홈트',
+    '맨몸',
+    '스쿼트',
+    '플랭크',
+    '덤벨',
+    '요가',
+    '필라테스',
+    '살빼',
+    '체력',
+  ];
+
+  return workoutKeywords.some((kw) => lowerQ.includes(kw));
 }
 
 /**
@@ -333,12 +476,32 @@ export async function generateCoachResponse(request: CoachChatRequest): Promise<
     const questionHint = getQuestionHint(message);
     const historySection = formatChatHistory(chatHistory || []);
 
-    // RAG: 제품 추천 또는 피부 상담이 필요한 경우 관련 제품 검색
+    // RAG: 도메인별 RAG 검색
     let ragContext = '';
     const productType = needsProductRecommendation(message);
 
+    // Phase K: 퍼스널 컬러 상담 질문이면 personal-color-rag 사용
+    if (isPersonalColorQuestion(message)) {
+      const colorMatch = await searchByPersonalColor(userContext, message);
+      ragContext = formatPersonalColorForPrompt(colorMatch);
+    }
+    // Phase K: 패션 상담 질문이면 fashion-rag 사용
+    else if (isFashionQuestion(message)) {
+      const fashionResult = await searchFashionItems(userContext, message);
+      ragContext = formatFashionForPrompt(fashionResult);
+    }
+    // Phase K: 영양/레시피 상담 질문이면 nutrition-rag 사용
+    else if (isNutritionQuestion(message)) {
+      const nutritionResult = await searchNutritionItems(userContext, message);
+      ragContext = formatNutritionForPrompt(nutritionResult);
+    }
+    // Phase K: 운동 상담 질문이면 workout-rag 사용
+    else if (isWorkoutQuestion(message)) {
+      const workoutResult = await searchWorkoutItems(userContext, message);
+      ragContext = formatWorkoutForPrompt(workoutResult);
+    }
     // Phase D: 피부 상담 질문이면 skin-rag 사용
-    if (isSkinConsultationQuestion(message)) {
+    else if (isSkinConsultationQuestion(message)) {
       const skinProducts = await searchSkinProducts(userContext, message);
       ragContext = formatSkinProductsForPrompt(skinProducts);
     } else if (productType) {
@@ -442,6 +605,20 @@ function generateSuggestedQuestions(
       const concern = userContext.skinAnalysis.concerns[0];
       suggestions.push(`${concern} 개선하려면 어떻게 해요?`);
     }
+  } else if (category === 'personalColor') {
+    // Phase K: 퍼스널 컬러 추천 질문
+    suggestions.push('내 시즌에 맞는 립 색상 추천해줘');
+    if (userContext?.personalColor?.season) {
+      suggestions.push(`${userContext.personalColor.season}에 피해야 할 색은?`);
+    }
+    suggestions.push('염색하려는데 어떤 색이 어울려?');
+  } else if (category === 'fashion') {
+    // Phase K: 패션 추천 질문
+    suggestions.push('내 체형에 맞는 옷 추천해줘');
+    if (userContext?.personalColor?.season) {
+      suggestions.push('내 퍼스널컬러에 맞는 코디 알려줘');
+    }
+    suggestions.push('계절별로 어떤 스타일이 좋아요?');
   }
 
   // 기본 추천 질문 추가

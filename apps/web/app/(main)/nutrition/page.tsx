@@ -53,6 +53,7 @@ import { createWorkoutSummary, type WorkoutSummary } from '@/lib/nutrition/worko
 import { convertBodyAnalysisToData, type BodyAnalysisData } from '@/lib/nutrition/bodyInsight';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
+import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 
 // API 응답 타입
 interface MealFood {
@@ -810,6 +811,11 @@ export default function NutritionPage() {
         onNavigateToBodyAnalysis={() => router.push('/analysis/body')}
         onReanalysisClick={() => router.push('/analysis/body')}
       />
+
+      {/* AI 영양 상담 CTA */}
+      <div className="p-4 bg-card rounded-xl border border-border">
+        <ConsultantCTA category="nutrition" params={{ goal: nutritionGoal }} showQuickQuestions />
+      </div>
 
       {/* 새로고침 버튼 */}
       <div className="flex justify-center py-2">

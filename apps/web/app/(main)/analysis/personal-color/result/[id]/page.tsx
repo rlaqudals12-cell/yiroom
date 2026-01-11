@@ -43,6 +43,7 @@ import AnalysisEvidenceReport, {
 } from '@/components/analysis/AnalysisEvidenceReport';
 import { VisualReportCard } from '@/components/analysis/visual-report';
 import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
+import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -398,6 +399,15 @@ export default function PersonalColorResultPage() {
                 className="mt-8"
               />
 
+              {/* AI 컬러 상담 CTA */}
+              <div className="mt-6 p-4 bg-card rounded-xl border border-border">
+                <ConsultantCTA
+                  category="personalColor"
+                  params={{ season: result.seasonType }}
+                  showQuickQuestions
+                />
+              </div>
+
               {/* 액션 버튼 (탭 내부) */}
               <div className="mt-8 mb-4 space-y-2">
                 <Button
@@ -472,6 +482,15 @@ export default function PersonalColorResultPage() {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* AI 컬러 상담 CTA */}
+              <div className="mt-6 p-4 bg-card rounded-xl border border-border">
+                <ConsultantCTA
+                  category="personalColor"
+                  params={{ season: result.seasonType }}
+                  showQuickQuestions
+                />
               </div>
 
               {/* 액션 버튼 */}
