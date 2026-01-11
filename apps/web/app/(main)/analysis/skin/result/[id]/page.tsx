@@ -43,6 +43,9 @@ import {
   type ZoneStatus,
   type FaceZoneMapProps,
 } from '@/components/analysis/visual-report';
+import { SkinZoomViewer } from '@/components/analysis/SkinZoomViewer';
+import type { ProblemArea } from '@/types/skin-problem-area';
+import { MOCK_PROBLEM_AREAS } from '@/lib/mock/skin-problem-areas';
 import { useSwipeTab } from '@/hooks/useSwipeTab';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
 
@@ -154,6 +157,7 @@ interface DbSkinAnalysis {
   }> | null;
   personal_color_season: string | null;
   foundation_recommendation: string | null;
+  problem_areas: ProblemArea[] | null; // Phase E: 문제 영역 좌표
   created_at: string;
 }
 
@@ -167,6 +171,8 @@ export default function SkinAnalysisResultPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [analysisEvidence, setAnalysisEvidence] = useState<SkinAnalysisEvidence | null>(null);
   const [imageQuality, setImageQuality] = useState<SkinImageQuality | null>(null);
+  // Phase E: 문제 영역 데이터 (DB 없으면 Mock 사용)
+  const [problemAreas, setProblemAreas] = useState<ProblemArea[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -349,6 +355,14 @@ export default function SkinAnalysisResultPage() {
       }
       if (dbData.recommendations?.imageQuality) {
         setImageQuality(dbData.recommendations.imageQuality);
+      }
+
+      // Phase E: 문제 영역 (DB에 있으면 사용, 없으면 Mock)
+      if (dbData.problem_areas && dbData.problem_areas.length > 0) {
+        setProblemAreas(dbData.problem_areas);
+      } else {
+        // MVP: Mock 데이터로 데모 (추후 Gemini 응답에서 추출)
+        setProblemAreas(MOCK_PROBLEM_AREAS);
       }
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
@@ -653,6 +667,20 @@ export default function SkinAnalysisResultPage() {
                 <TabsContent value="visual" className="mt-0 pb-32 space-y-6">
                   {/* 트렌드 차트 (과거 분석 이력) */}
                   <TrendChart data={trendData} metric="overall" showGoal goalScore={80} />
+
+                  {/* Phase E: 문제 영역 확대 뷰어 */}
+                  {imageUrl && problemAreas.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-muted-foreground">
+                        문제 영역 상세 (마커를 탭하세요)
+                      </h3>
+                      <SkinZoomViewer
+                        imageUrl={imageUrl}
+                        problemAreas={problemAreas}
+                        className="rounded-xl overflow-hidden"
+                      />
+                    </div>
+                  )}
 
                   {/* 사진 오버레이 맵 (실제 사진 + 존 상태) */}
                   {imageUrl && (
