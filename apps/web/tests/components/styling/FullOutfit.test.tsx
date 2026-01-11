@@ -96,7 +96,7 @@ describe('MakeupSection', () => {
 
 describe('OutfitPreviewCard', () => {
   it('renders outfit preview with all sections', () => {
-    render(<OutfitPreviewCard outfit={mockFullOutfit} />);
+    render(<OutfitPreviewCard outfit={mockFullOutfit} occasion="daily" />);
 
     expect(screen.getByTestId('outfit-preview-card')).toBeInTheDocument();
     expect(screen.getByTestId('clothing-section')).toBeInTheDocument();
@@ -105,29 +105,35 @@ describe('OutfitPreviewCard', () => {
   });
 
   it('shows tip', () => {
-    render(<OutfitPreviewCard outfit={mockFullOutfit} />);
+    render(<OutfitPreviewCard outfit={mockFullOutfit} occasion="daily" />);
 
     expect(screen.getByText('코랄 톤으로 통일감 있게 연출하세요')).toBeInTheDocument();
   });
 
   it('calls onSave when save button clicked', () => {
     const handleSave = vi.fn();
-    render(<OutfitPreviewCard outfit={mockFullOutfit} onSave={handleSave} />);
+    render(<OutfitPreviewCard outfit={mockFullOutfit} occasion="daily" onSave={handleSave} />);
 
     const saveButton = screen.getByText('저장');
     fireEvent.click(saveButton);
 
-    expect(handleSave).toHaveBeenCalledWith('test-outfit-1');
+    expect(handleSave).toHaveBeenCalledWith(mockFullOutfit, 'daily');
   });
 
   it('calls onShare when share button clicked', () => {
     const handleShare = vi.fn();
-    render(<OutfitPreviewCard outfit={mockFullOutfit} onShare={handleShare} />);
+    render(<OutfitPreviewCard outfit={mockFullOutfit} occasion="daily" onShare={handleShare} />);
 
     const shareButton = screen.getByText('공유');
     fireEvent.click(shareButton);
 
-    expect(handleShare).toHaveBeenCalledWith('test-outfit-1');
+    expect(handleShare).toHaveBeenCalledWith(mockFullOutfit);
+  });
+
+  it('shows saved state when isSaved is true', () => {
+    render(<OutfitPreviewCard outfit={mockFullOutfit} occasion="daily" isSaved />);
+
+    expect(screen.getByText('저장됨')).toBeInTheDocument();
   });
 });
 

@@ -7,14 +7,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Sparkles, Info, AlertCircle, Palette } from 'lucide-react';
+import { ArrowLeft, Sparkles, Info, AlertCircle, Palette, Bookmark } from 'lucide-react';
 import { FullOutfit } from '@/components/styling';
+import { useSavedOutfits } from '@/hooks/useSavedOutfits';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useUser } from '@clerk/nextjs';
 import type { SeasonType } from '@/lib/mock/personal-color';
+import type { FullOutfit as FullOutfitType, OutfitOccasion } from '@/types/styling';
 
 // 시즌 타입별 한글 라벨
 const SEASON_LABELS: Record<SeasonType, string> = {
@@ -32,6 +35,9 @@ export default function OutfitPage() {
   const [seasonType, setSeasonType] = useState<SeasonType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 저장된 코디 훅
+  const { savedOutfits, toggleSaveOutfit, fetchSavedOutfits } = useSavedOutfits();
 
   // PC-1 결과 가져오기
   useEffect(() => {
@@ -68,16 +74,29 @@ export default function OutfitPage() {
     fetchPersonalColor();
   }, [isLoaded, user, supabase]);
 
+  // 저장된 코디 가져오기
+  useEffect(() => {
+    if (seasonType) {
+      fetchSavedOutfits();
+    }
+  }, [seasonType, fetchSavedOutfits]);
+
   // 저장 핸들러
-  const handleSave = (outfitId: string) => {
-    console.log('[Outfit] Save outfit:', outfitId);
-    // 향후 저장 기능 구현
+  const handleSave = async (outfit: FullOutfitType, occasion: OutfitOccasion) => {
+    if (!seasonType) return;
+
+    const isSaved = savedOutfits.some((o) => o.outfitId === outfit.id);
+    const success = await toggleSaveOutfit(outfit, seasonType, occasion);
+
+    if (success) {
+      toast.success(isSaved ? '코디가 삭제되었습니다' : '코디가 저장되었습니다');
+    }
   };
 
   // 공유 핸들러
-  const handleShare = (outfitId: string) => {
-    console.log('[Outfit] Share outfit:', outfitId);
-    // 향후 공유 기능 구현
+  const handleShare = (outfit: FullOutfitType) => {
+    // P3-D에서 구현 예정
+    toast.info('공유 기능은 곧 제공될 예정입니다');
   };
 
   // 로딩 상태
@@ -191,8 +210,25 @@ export default function OutfitPage() {
         </CardContent>
       </Card>
 
+      {/* 저장된 코디 바로가기 */}
+      {savedOutfits.length > 0 && (
+        <Button
+          variant="outline"
+          className="w-full mb-4"
+          onClick={() => router.push('/saved-outfits')}
+        >
+          <Bookmark className="w-4 h-4 mr-2" />
+          저장된 코디 ({savedOutfits.length}개)
+        </Button>
+      )}
+
       {/* 전체 코디 컴포넌트 */}
-      <FullOutfit seasonType={seasonType} onSave={handleSave} onShare={handleShare} />
+      <FullOutfit
+        seasonType={seasonType}
+        onSave={handleSave}
+        onShare={handleShare}
+        savedOutfitIds={savedOutfits.map((o) => o.outfitId)}
+      />
     </div>
   );
 }

@@ -19,8 +19,9 @@ import { getOutfitPresets, getOutfitPresetByOccasion } from '@/lib/mock/styling'
 
 interface FullOutfitProps {
   seasonType: SeasonType;
-  onSave?: (outfitId: string) => void;
-  onShare?: (outfitId: string) => void;
+  onSave?: (outfit: FullOutfitType, occasion: OutfitOccasion) => void;
+  onShare?: (outfit: FullOutfitType) => void;
+  savedOutfitIds?: string[]; // 저장된 outfit ID 목록
   className?: string;
 }
 
@@ -143,12 +144,16 @@ function MakeupSection({ outfit }: { outfit: FullOutfitType }) {
 /** 전체 코디 프리뷰 카드 */
 function OutfitPreviewCard({
   outfit,
+  occasion,
+  isSaved,
   onSave,
   onShare,
 }: {
   outfit: FullOutfitType;
-  onSave?: (id: string) => void;
-  onShare?: (id: string) => void;
+  occasion: OutfitOccasion;
+  isSaved?: boolean;
+  onSave?: (outfit: FullOutfitType, occasion: OutfitOccasion) => void;
+  onShare?: (outfit: FullOutfitType) => void;
 }) {
   return (
     <Card className="overflow-hidden" data-testid="outfit-preview-card">
@@ -173,19 +178,19 @@ function OutfitPreviewCard({
         {/* 액션 버튼 */}
         <div className="flex gap-2 pt-2">
           <Button
-            variant="outline"
+            variant={isSaved ? 'default' : 'outline'}
             size="sm"
             className="flex-1 text-xs"
-            onClick={() => onSave?.(outfit.id)}
+            onClick={() => onSave?.(outfit, occasion)}
           >
-            <Bookmark className="w-3 h-3 mr-1" />
-            저장
+            <Bookmark className={cn('w-3 h-3 mr-1', isSaved && 'fill-current')} />
+            {isSaved ? '저장됨' : '저장'}
           </Button>
           <Button
             variant="outline"
             size="sm"
             className="flex-1 text-xs"
-            onClick={() => onShare?.(outfit.id)}
+            onClick={() => onShare?.(outfit)}
           >
             <Share2 className="w-3 h-3 mr-1" />
             공유
@@ -199,7 +204,13 @@ function OutfitPreviewCard({
 /**
  * 전체 코디 메인 컴포넌트
  */
-export default function FullOutfit({ seasonType, onSave, onShare, className }: FullOutfitProps) {
+export default function FullOutfit({
+  seasonType,
+  onSave,
+  onShare,
+  savedOutfitIds = [],
+  className,
+}: FullOutfitProps) {
   const [currentOccasion, setCurrentOccasion] = useState<OutfitOccasion>('daily');
   const presets = getOutfitPresets(seasonType);
   const currentPreset = getOutfitPresetByOccasion(seasonType, currentOccasion);
@@ -247,6 +258,8 @@ export default function FullOutfit({ seasonType, onSave, onShare, className }: F
                     <OutfitPreviewCard
                       key={outfit.id}
                       outfit={outfit}
+                      occasion={occasion}
+                      isSaved={savedOutfitIds.includes(outfit.id)}
                       onSave={onSave}
                       onShare={onShare}
                     />
