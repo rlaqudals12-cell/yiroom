@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzeSkin, type GeminiSkinAnalysisResult } from '@/lib/gemini';
 import { generateMockAnalysisResult } from '@/lib/mock/skin-analysis';
+import { MOCK_PROBLEM_AREAS } from '@/lib/mock/skin-problem-areas';
 import { getWarningIngredientsForSkinType, type SkinType } from '@/lib/ingredients';
 import { generateProductRecommendations, formatProductsForDB } from '@/lib/product-recommendations';
 import {
@@ -114,6 +115,8 @@ export async function POST(req: Request) {
           },
           asymmetryDetected: false,
         },
+        // Phase E: 문제 영역 좌표 (Mock)
+        problemAreas: MOCK_PROBLEM_AREAS,
       };
       usedMock = true;
       console.log('[S-1] Using mock analysis');
@@ -178,6 +181,8 @@ export async function POST(req: Request) {
             },
             asymmetryDetected: false,
           },
+          // Phase E: 문제 영역 좌표 (Mock)
+          problemAreas: MOCK_PROBLEM_AREAS,
         };
         usedMock = true;
       }
@@ -409,6 +414,8 @@ export async function POST(req: Request) {
         // 퍼스널 컬러 연동
         personal_color_season: personalColorSeason,
         foundation_recommendation: foundationRecommendation,
+        // Phase E: 문제 영역 좌표
+        problem_areas: result.problemAreas || [],
       })
       .select()
       .single();

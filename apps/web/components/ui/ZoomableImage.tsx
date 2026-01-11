@@ -13,6 +13,7 @@ interface ZoomableImageProps {
   focusPoint?: { x: number; y: number };
   className?: string;
   onZoomChange?: (zoom: number) => void;
+  onError?: () => void;
 }
 
 /**
@@ -31,6 +32,7 @@ export function ZoomableImage({
   focusPoint,
   className,
   onZoomChange,
+  onError,
 }: ZoomableImageProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(initialZoom);
@@ -38,11 +40,28 @@ export function ZoomableImage({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
+  // 이미지 로딩/에러 상태
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
   // 핀치 줌 상태
   const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(null);
 
   // 더블탭 감지
   const lastTapRef = useRef<number>(0);
+
+  // 이미지 로드 완료 핸들러
+  const handleImageLoad = useCallback(() => {
+    setIsLoading(false);
+    setHasError(false);
+  }, []);
+
+  // 이미지 에러 핸들러
+  const handleImageError = useCallback(() => {
+    setIsLoading(false);
+    setHasError(true);
+    onError?.();
+  }, [onError]);
 
   // focusPoint 변경 시 해당 위치로 이동
   useEffect(() => {
@@ -218,6 +237,23 @@ export function ZoomableImage({
     setIsDragging(false);
   }, []);
 
+  // 에러 상태 UI
+  if (hasError) {
+    return (
+      <div
+        className={cn(
+          'relative overflow-hidden flex items-center justify-center bg-muted',
+          className
+        )}
+        data-testid="zoomable-image-error"
+      >
+        <div className="text-center p-4">
+          <p className="text-muted-foreground text-sm">이미지를 불러올 수 없습니다</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
@@ -234,6 +270,13 @@ export function ZoomableImage({
       style={{ cursor: zoom > minZoom ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
       data-testid="zoomable-image"
     >
+      {/* 로딩 스피너 */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
+          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+        </div>
+      )}
+
       <div
         className="transition-transform duration-100 ease-out"
         style={{
@@ -245,15 +288,17 @@ export function ZoomableImage({
           src={src}
           alt={alt}
           fill
-          className="object-contain pointer-events-none"
+          className={cn('object-contain pointer-events-none', isLoading && 'opacity-0')}
           sizes="100vw"
           priority
           draggable={false}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
         />
       </div>
 
       {/* 줌 레벨 표시 */}
-      {zoom > minZoom && (
+      {zoom > minZoom && !isLoading && (
         <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
           {Math.round(zoom * 100)}%
         </div>

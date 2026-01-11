@@ -13,6 +13,7 @@ import { compressBase64Image } from '@/lib/utils/image-compression';
 
 // Mock Fallback 함수 import
 import { generateMockAnalysisResult as generateMockSkinAnalysis } from '@/lib/mock/skin-analysis';
+import type { ProblemArea } from '@/types/skin-problem-area';
 import { generateMockBodyAnalysis3 as generateMockBodyAnalysis } from '@/lib/mock/body-analysis';
 import { generateMockPersonalColorResult } from '@/lib/mock/personal-color';
 import {
@@ -129,6 +130,8 @@ export interface GeminiSkinAnalysisResult {
     asymmetryDetected: boolean;
     asymmetryDetails?: string;
   };
+  // Phase E: 문제 영역 좌표 (피부 확대 뷰어용)
+  problemAreas?: ProblemArea[];
 }
 
 /**
@@ -455,6 +458,19 @@ const SKIN_ANALYSIS_PROMPT = `당신은 전문 피부과학 기반 AI 분석가�
 - 홍조, 민감성 발적
 - 깨끗: 71-100, 약간: 41-70, 많음: 0-40
 
+📍 문제 영역 좌표 추출 (problemAreas):
+- 피부 문제가 있는 부위를 최대 4개까지 좌표로 지정해주세요
+- 좌표 기준: 이미지 좌상단이 (0,0), 우하단이 (100,100)
+- 얼굴 위치 기준점:
+  * 이마 중앙: x=50, y=15-25
+  * 코: x=50, y=35-45
+  * 왼쪽 볼: x=25-35, y=45-55
+  * 오른쪽 볼: x=65-75, y=45-55
+  * 눈 밑: x=35-40 또는 60-65, y=40-45
+  * 턱: x=50, y=70-80
+- 심각도 기준: mild(가벼움), moderate(보통), severe(심함)
+- 문제 없으면 빈 배열 [] 반환
+
 다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
 
 {
@@ -496,7 +512,21 @@ const SKIN_ANALYSIS_PROMPT = `당신은 전문 피부과학 기반 AI 분석가�
     "pigmentationPattern": "[even|slight_spots|moderate_spots|severe_spots] 색소침착 패턴",
     "wrinkleDepth": "[none|fine_lines|moderate|deep] 주름 깊이",
     "elasticityObservation": "[firm|slightly_loose|loose|very_loose] 탄력 관찰"
-  }
+  },
+  "problemAreas": [
+    {
+      "id": "[고유 ID, 예: area-1]",
+      "type": "[pores|pigmentation|dryness|wrinkles|acne|oiliness|redness|darkCircles]",
+      "severity": "[mild|moderate|severe]",
+      "location": {
+        "x": [0-100 이미지 가로 위치 %],
+        "y": [0-100 이미지 세로 위치 %],
+        "radius": [5-20 영역 크기]
+      },
+      "description": "[해당 문제에 대한 친근한 설명 1-2문장]",
+      "recommendations": ["[추천 성분1]", "[추천 성분2]"]
+    }
+  ]
 }
 
 점수 기준:
