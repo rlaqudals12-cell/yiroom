@@ -222,6 +222,7 @@ vi.mock('lucide-react', () => ({
   // Media & Input
   Camera: createIconMock('Camera'),
   CameraOff: createIconMock('CameraOff'),
+  Image: createIconMock('Image'),
   ImageIcon: createIconMock('ImageIcon'),
   ImagePlus: createIconMock('ImagePlus'),
   ScanBarcode: createIconMock('ScanBarcode'),

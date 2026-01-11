@@ -41,3 +41,6 @@ export * from './photo-reuse';
 
 // 피부 다이어리 상관관계 분석 (Phase 3)
 export * from './skin-correlation';
+
+// Before/After 비교 서비스 (Phase I)
+export * from './historyService';
