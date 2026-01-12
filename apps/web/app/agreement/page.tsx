@@ -13,8 +13,10 @@ import {
   type AgreementItem,
 } from '@/components/agreement';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 type AgreementState = Record<AgreementItem['id'], boolean>;
+type Gender = 'male' | 'female';
 
 /**
  * 서비스 약관동의 페이지
@@ -24,6 +26,9 @@ export default function AgreementPage() {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 성별 선택 상태
+  const [gender, setGender] = useState<Gender | null>(null);
 
   // 개별 동의 상태
   const [agreements, setAgreements] = useState<AgreementState>({
@@ -43,10 +48,13 @@ export default function AgreementPage() {
     return checkedCount > 0 && checkedCount < AGREEMENT_ITEMS.length;
   }, [agreements]);
 
-  // 필수 동의 완료 여부
+  // 필수 동의 완료 여부 (성별 선택 포함)
   const requiredAllChecked = useMemo(() => {
-    return AGREEMENT_ITEMS.filter((item) => item.required).every((item) => agreements[item.id]);
-  }, [agreements]);
+    const agreementsOk = AGREEMENT_ITEMS.filter((item) => item.required).every(
+      (item) => agreements[item.id]
+    );
+    return agreementsOk && gender !== null;
+  }, [agreements, gender]);
 
   // 전체 동의 토글
   const handleAllChange = useCallback((checked: boolean) => {
@@ -67,6 +75,10 @@ export default function AgreementPage() {
 
   // 동의하고 시작하기
   const handleSubmit = useCallback(async () => {
+    if (!gender) {
+      toast.error('성별을 선택해주세요');
+      return;
+    }
     if (!requiredAllChecked) {
       toast.error('필수 약관에 동의해주세요');
       return;
@@ -81,6 +93,7 @@ export default function AgreementPage() {
           termsAgreed: agreements.terms,
           privacyAgreed: agreements.privacy,
           marketingAgreed: agreements.marketing,
+          gender,
         }),
       });
 
@@ -97,7 +110,7 @@ export default function AgreementPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [agreements, requiredAllChecked, router]);
+  }, [agreements, gender, requiredAllChecked, router]);
 
   // 로딩 상태
   if (!isLoaded) {
@@ -130,7 +143,44 @@ export default function AgreementPage() {
               priority
             />
             <h1 className="text-2xl font-bold text-foreground">고객님 환영합니다!</h1>
-            <p className="text-muted-foreground mt-2">서비스 이용을 위해 약관에 동의해주세요.</p>
+            <p className="text-muted-foreground mt-2">맞춤 서비스를 위해 정보를 입력해주세요.</p>
+          </div>
+
+          {/* 성별 선택 */}
+          <div className="bg-card rounded-xl border shadow-sm p-4 mb-4">
+            <p className="text-sm font-medium text-foreground mb-3">
+              성별 <span className="text-destructive">*</span>
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setGender('male')}
+                className={cn(
+                  'p-4 rounded-xl border-2 transition-all flex flex-col items-center',
+                  gender === 'male'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-primary/50'
+                )}
+                data-testid="gender-male"
+              >
+                <span className="text-3xl mb-1">👨</span>
+                <span className="text-sm font-medium">남성</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setGender('female')}
+                className={cn(
+                  'p-4 rounded-xl border-2 transition-all flex flex-col items-center',
+                  gender === 'female'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-primary/50'
+                )}
+                data-testid="gender-female"
+              >
+                <span className="text-3xl mb-1">👩</span>
+                <span className="text-sm font-medium">여성</span>
+              </button>
+            </div>
           </div>
 
           {/* 동의 항목 */}
@@ -157,7 +207,7 @@ export default function AgreementPage() {
 
           {/* 안내 문구 */}
           <p className="text-xs text-muted-foreground text-center mt-4">
-            필수 항목에 동의해야 서비스를 이용할 수 있습니다.
+            성별 선택과 필수 항목에 동의해야 서비스를 이용할 수 있습니다.
           </p>
         </div>
       </div>

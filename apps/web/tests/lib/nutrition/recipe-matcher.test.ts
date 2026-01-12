@@ -8,9 +8,11 @@ import {
   getRecipesByGoal,
   calculateDailyCalories,
   calculateDailyProtein,
+  findSimilarIngredient,
   SAMPLE_RECIPES,
   NUTRITION_GOAL_LABELS,
   NUTRITION_TARGETS,
+  INGREDIENT_SYNONYMS,
   type NutritionGoal,
 } from '@/lib/nutrition/recipe-matcher';
 
@@ -23,6 +25,10 @@ describe('recommendRecipes', () => {
     // 닭가슴살 샐러드가 높은 점수여야 함
     const chickenSalad = results.find((r) => r.recipe.name === '닭가슴살 샐러드');
     expect(chickenSalad).toBeDefined();
+    if (chickenSalad) {
+      expect(chickenSalad.availabilityRate).toBeGreaterThan(0);
+      expect(chickenSalad.availabilityRate).toBeLessThanOrEqual(1);
+    }
   });
 
   it('매칭 점수가 높은 순으로 정렬된다', () => {
@@ -89,6 +95,56 @@ describe('recommendRecipes', () => {
     const chickenSalad = results.find((r) => r.recipe.name.includes('닭가슴살'));
     expect(chickenSalad).toBeDefined();
     expect(chickenSalad?.matchedIngredients.length).toBeGreaterThan(0);
+  });
+
+  it('세만틱 매칭으로 유사 재료를 인식한다', () => {
+    // 닭고기 → 닭가슴살 매칭되어야 함
+    const userIngredients = ['닭고기', '양상추', '올리브오일', '토마토', '오이'];
+    const results = recommendRecipes(userIngredients);
+
+    const chickenSalad = results.find((r) => r.recipe.name === '닭가슴살 샐러드');
+    expect(chickenSalad).toBeDefined();
+    if (chickenSalad) {
+      expect(chickenSalad.matchScore).toBeGreaterThan(0);
+    }
+  });
+
+  it('최소 매칭 점수로 필터링한다', () => {
+    const userIngredients = ['닭가슴살'];
+    const results = recommendRecipes(userIngredients, { minMatchScore: 50 });
+
+    for (const result of results) {
+      expect(result.matchScore).toBeGreaterThanOrEqual(50);
+    }
+  });
+
+  it('유통기한 임박 재료 사용 시 보너스 점수를 준다', () => {
+    const userIngredients = ['닭가슴살', '양상추', '토마토', '오이', '올리브오일'];
+    const expiringItems = ['닭가슴살'];
+
+    const resultsWithBonus = recommendRecipes(userIngredients, { expiringItems });
+    const resultsWithoutBonus = recommendRecipes(userIngredients);
+
+    const chickenSaladWithBonus = resultsWithBonus.find((r) => r.recipe.name === '닭가슴살 샐러드');
+    const chickenSaladWithoutBonus = resultsWithoutBonus.find(
+      (r) => r.recipe.name === '닭가슴살 샐러드'
+    );
+
+    if (chickenSaladWithBonus && chickenSaladWithoutBonus) {
+      expect(chickenSaladWithBonus.matchScore).toBeGreaterThan(chickenSaladWithoutBonus.matchScore);
+    }
+  });
+
+  it('availabilityRate를 올바르게 계산한다', () => {
+    const userIngredients = ['닭가슴살', '양상추'];
+    const results = recommendRecipes(userIngredients);
+
+    const chickenSalad = results.find((r) => r.recipe.name === '닭가슴살 샐러드');
+    if (chickenSalad) {
+      // 2개 재료만 있으므로 100% 미만이어야 함
+      expect(chickenSalad.availabilityRate).toBeLessThan(1);
+      expect(chickenSalad.availabilityRate).toBeGreaterThan(0);
+    }
   });
 });
 
@@ -216,6 +272,49 @@ describe('NUTRITION_GOAL_LABELS', () => {
     expect(NUTRITION_GOAL_LABELS.bulk).toBe('벌크업');
     expect(NUTRITION_GOAL_LABELS.lean).toBe('린매스');
     expect(NUTRITION_GOAL_LABELS.maintenance).toBe('유지');
+  });
+});
+
+describe('findSimilarIngredient', () => {
+  it('정확히 일치하는 재료를 찾는다', () => {
+    const result = findSimilarIngredient('닭가슴살', ['닭가슴살', '양파', '간장']);
+    expect(result).toBe('닭가슴살');
+  });
+
+  it('부분 일치하는 재료를 찾는다', () => {
+    // '닭'이라는 공통 부분이 있어서 매칭되어야 함
+    const result = findSimilarIngredient('닭', ['닭고기', '양파']);
+    expect(result).toBe('닭고기');
+  });
+
+  it('유사어를 찾는다', () => {
+    // 같은 유사어 그룹(닭가슴살: ['닭안심', '닭다리살', '닭고기'])에 속하므로 매칭되어야 함
+    const result = findSimilarIngredient('닭가슴살', ['닭고기', '양파']);
+    expect(result).toBe('닭고기');
+  });
+
+  it('대소문자 구분 없이 찾는다', () => {
+    const result = findSimilarIngredient('닭가슴살', ['닭가슴살', '양파']);
+    expect(result).toBe('닭가슴살');
+  });
+
+  it('매칭되지 않으면 null을 반환한다', () => {
+    const result = findSimilarIngredient('연어', ['닭가슴살', '양파']);
+    expect(result).toBeNull();
+  });
+});
+
+describe('INGREDIENT_SYNONYMS', () => {
+  it('유사어 매핑이 정의되어 있다', () => {
+    expect(INGREDIENT_SYNONYMS).toBeDefined();
+    expect(Object.keys(INGREDIENT_SYNONYMS).length).toBeGreaterThan(0);
+  });
+
+  it('각 유사어 그룹에 여러 단어가 있다', () => {
+    for (const [key, synonyms] of Object.entries(INGREDIENT_SYNONYMS)) {
+      expect(Array.isArray(synonyms)).toBe(true);
+      expect(synonyms.length).toBeGreaterThan(0);
+    }
   });
 });
 

@@ -22,3 +22,6 @@ export {
 export { default as VisualAnalysisTab } from './VisualAnalysisTab';
 export { default as DrapingSimulationTab } from './DrapingSimulationTab';
 export { default as BodyStylingTab } from './BodyStylingTab';
+
+// Phase L-2: 자세 교정 시스템
+export { default as PostureSimulator } from './PostureSimulator';

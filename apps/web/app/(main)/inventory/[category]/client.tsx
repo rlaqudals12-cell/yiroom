@@ -7,21 +7,33 @@
  * - 아이템 추가/수정/삭제
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Search, Plus, Filter, X } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Filter, X, AlertTriangle, ChefHat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { InventoryGrid } from '@/components/inventory/common/InventoryGrid';
 import { ItemUploader, type UploadResult } from '@/components/inventory/common/ItemUploader';
 import { ItemDetailSheet } from '@/components/inventory/common/ItemDetailSheet';
 import { CategoryFilter } from '@/components/inventory/common/CategoryFilter';
 import { useDebounce } from '@/hooks/useDebounce';
-import type { InventoryCategory, InventoryItem } from '@/types/inventory';
+import type { InventoryCategory, InventoryItem, PantryMetadata } from '@/types/inventory';
 
 // 업로드 후 아이템 생성을 위한 폼 상태
 type UploadStep = 'upload' | 'form';
+
+// 보관 위치 타입 (냉장고 전용)
+type StorageType = 'all' | 'refrigerator' | 'freezer' | 'room';
+
+const STORAGE_TYPE_LABELS: Record<StorageType, string> = {
+  all: '전체',
+  refrigerator: '냉장',
+  freezer: '냉동',
+  room: '상온',
+};
 
 interface InventoryCategoryClientProps {
   category: InventoryCategory;
@@ -94,6 +106,33 @@ export function InventoryCategoryClient({
   const debouncedSearch = useDebounce(searchInput, 300);
   const [selectedSub, setSelectedSub] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
+
+  // 냉장고 전용: 보관 위치 필터
+  const [storageType, setStorageType] = useState<StorageType>('all');
+
+  // 냉장고 전용: 임박 아이템 계산 (3일 이내 만료)
+  const expiringItems = useMemo(() => {
+    if (category !== 'pantry') return [];
+
+    const now = new Date();
+    const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+    return items.filter((item) => {
+      if (!item.expiryDate) return false;
+      const expiry = new Date(item.expiryDate);
+      return expiry <= threeDaysLater && expiry >= now;
+    });
+  }, [category, items]);
+
+  // 냉장고 전용: 보관 위치로 필터링된 아이템
+  const filteredByStorage = useMemo(() => {
+    if (category !== 'pantry' || storageType === 'all') return items;
+
+    return items.filter((item) => {
+      const metadata = item.metadata as Partial<PantryMetadata>;
+      return metadata?.storageType === storageType;
+    });
+  }, [category, items, storageType]);
 
   // 모달 상태
   const [showUploader, setShowUploader] = useState(false);
@@ -279,11 +318,52 @@ export function InventoryCategoryClient({
           <h1 className="text-xl font-bold truncate">{title}</h1>
           <p className="text-sm text-muted-foreground truncate">{description}</p>
         </div>
+        {/* 냉장고: 레시피 추천 버튼 */}
+        {category === 'pantry' && (
+          <Link href="/nutrition/recipes">
+            <Button variant="outline" size="sm">
+              <ChefHat className="w-4 h-4 mr-1" />
+              레시피
+            </Button>
+          </Link>
+        )}
         <Button onClick={() => setShowUploader(true)} size="sm">
           <Plus className="w-4 h-4 mr-1" />
           추가
         </Button>
       </div>
+
+      {/* 냉장고 전용: 보관 위치 탭 */}
+      {category === 'pantry' && (
+        <Tabs
+          value={storageType}
+          onValueChange={(v) => setStorageType(v as StorageType)}
+          className="mb-4"
+        >
+          <TabsList className="w-full grid grid-cols-4">
+            {(Object.keys(STORAGE_TYPE_LABELS) as StorageType[]).map((type) => (
+              <TabsTrigger key={type} value={type} className="text-xs">
+                {STORAGE_TYPE_LABELS[type]}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      )}
+
+      {/* 냉장고 전용: 만료 임박 알림 */}
+      {category === 'pantry' && expiringItems.length > 0 && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>{expiringItems.length}개</strong> 식재료가 3일 이내 만료됩니다:{' '}
+            {expiringItems
+              .slice(0, 3)
+              .map((item) => item.name)
+              .join(', ')}
+            {expiringItems.length > 3 && ` 외 ${expiringItems.length - 3}개`}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* 검색 및 필터 */}
       <div className="flex gap-2 mb-4">
@@ -380,7 +460,7 @@ export function InventoryCategoryClient({
 
       {/* 아이템 그리드 */}
       <InventoryGrid
-        items={items}
+        items={category === 'pantry' ? filteredByStorage : items}
         loading={loading}
         hasMore={hasMore}
         onLoadMore={handleLoadMore}

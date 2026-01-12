@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { User, Palette, Eye, Shirt, Star, Sparkles } from 'lucide-react';
+import { User, Palette, Eye, Shirt, Star, Sparkles, Loader2 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
@@ -64,10 +64,40 @@ export default function StylePage() {
   const [height, setHeight] = useState<string | null>(null);
   const [feature, setFeature] = useState<string | null>(null);
 
-  // 분석 결과 가져오기
+  // L-1-2: 키/몸무게 체크 상태
+  const [hasMeasurements, setHasMeasurements] = useState<boolean | null>(null);
+
+  // L-1-2: 키/몸무게 필수 게이트 체크
+  useEffect(() => {
+    const checkMeasurements = async () => {
+      if (!isLoaded || !user?.id) return;
+
+      try {
+        const res = await fetch('/api/user/measurements');
+        const data = await res.json();
+
+        if (!data.hasMeasurements) {
+          // 키/몸무게 없으면 온보딩으로 리다이렉트
+          setHasMeasurements(false);
+          router.push('/style/onboarding');
+          return;
+        }
+
+        setHasMeasurements(true);
+      } catch (err) {
+        console.error('[Style] Measurements check error:', err);
+        // 에러 시에도 페이지 표시 (graceful degradation)
+        setHasMeasurements(true);
+      }
+    };
+
+    checkMeasurements();
+  }, [isLoaded, user?.id, router]);
+
+  // 분석 결과 가져오기 (키/몸무게 체크 후)
   useEffect(() => {
     const fetchAnalysis = async () => {
-      if (!isLoaded || !user?.id) return;
+      if (!isLoaded || !user?.id || hasMeasurements !== true) return;
 
       try {
         const [bodyResult, pcResult] = await Promise.all([
@@ -116,7 +146,7 @@ export default function StylePage() {
     };
 
     fetchAnalysis();
-  }, [isLoaded, user?.id, supabase]);
+  }, [isLoaded, user?.id, supabase, hasMeasurements]);
 
   // 하이브리드 UX 상태
   const [favoriteMaterials, setFavoriteMaterials] = useState<FavoriteItem[]>([]);
@@ -183,6 +213,20 @@ export default function StylePage() {
       createdAt: new Date().toISOString(),
     },
   ]);
+
+  // L-1-2: 키/몸무게 체크 중이면 로딩 표시
+  if (hasMeasurements === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // 키/몸무게 없으면 리다이렉트 중이므로 빈 화면
+  if (hasMeasurements === false) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="style-page">

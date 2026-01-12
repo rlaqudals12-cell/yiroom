@@ -60,6 +60,7 @@ export interface RecipeMatchResult {
   matchScore: number; // 0-100
   matchedIngredients: string[];
   missingIngredients: string[];
+  availabilityRate: number; // 보유 재료 비율 (0-1)
   matchReason: string;
 }
 
@@ -366,8 +367,133 @@ export function getRecipesByGoal(goal: NutritionGoal): Recipe[] {
   return SAMPLE_RECIPES.filter((recipe) => recipe.nutritionGoals.includes(goal));
 }
 
+// 유사 재료 매핑 (세만틱 매칭)
+export const INGREDIENT_SYNONYMS: Record<string, string[]> = {
+  닭가슴살: ['닭안심', '닭다리살', '닭고기'],
+  양파: ['대파', '쪽파', '부추', '양파'],
+  간장: ['진간장', '양조간장', '국간장', '간장'],
+  고추장: ['초고추장', '쌈장', '고추장'],
+  두부: ['순두부', '연두부', '부침두부', '두부'],
+  토마토: ['방울토마토', '대추방울토마토', '토마토'],
+  버섯: ['양송이', '느타리', '팽이버섯', '새송이', '표고버섯', '버섯'],
+  마늘: ['다진마늘', '마늘가루', '마늘'],
+  생강: ['생강즙', '생강가루', '생강'],
+  파: ['대파', '쪽파', '실파', '파'],
+  고기: ['소고기', '돼지고기', '닭고기', '양고기'],
+  새우: ['칵테일새우', '흰다리새우', '왕새우', '새우'],
+  계란: ['달걀', '계란'],
+  우유: ['저지방우유', '무지방우유', '우유'],
+  치즈: ['모짜렐라', '체다치즈', '파마산', '치즈'],
+  밥: ['현미밥', '잡곡밥', '쌀밥', '밥'],
+  면: ['파스타', '국수', '스파게티', '면'],
+  식용유: ['올리브오일', '카놀라유', '해바라기유', '포도씨유', '식용유'],
+};
+
 /**
- * 레시피 매칭 추천
+ * 유사 재료 찾기
+ */
+export function findSimilarIngredient(ingredient: string, pantryItems: string[]): string | null {
+  const lowerIngredient = ingredient.toLowerCase();
+
+  // 정확히 일치하는 항목 찾기
+  const exactMatch = pantryItems.find((item) => item.toLowerCase() === lowerIngredient);
+  if (exactMatch) return exactMatch;
+
+  // 부분 일치 찾기
+  const partialMatch = pantryItems.find(
+    (item) =>
+      item.toLowerCase().includes(lowerIngredient) || lowerIngredient.includes(item.toLowerCase())
+  );
+  if (partialMatch) return partialMatch;
+
+  // 유사어 찾기
+  for (const [key, synonyms] of Object.entries(INGREDIENT_SYNONYMS)) {
+    // ingredient가 이 유사어 그룹에 속하는지 확인 (key 또는 synonyms 배열에 있으면)
+    const ingredientInGroup =
+      key.toLowerCase() === lowerIngredient ||
+      key.toLowerCase().includes(lowerIngredient) ||
+      lowerIngredient.includes(key.toLowerCase()) ||
+      synonyms.some(
+        (syn) =>
+          syn.toLowerCase() === lowerIngredient ||
+          syn.toLowerCase().includes(lowerIngredient) ||
+          lowerIngredient.includes(syn.toLowerCase())
+      );
+
+    if (ingredientInGroup) {
+      // 동의어 그룹의 모든 단어 (key + synonyms)가 pantry에 있는지 확인
+      const allSynonyms = [key, ...synonyms];
+      const match = pantryItems.find((item) =>
+        allSynonyms.some(
+          (syn) =>
+            item.toLowerCase().includes(syn.toLowerCase()) ||
+            syn.toLowerCase().includes(item.toLowerCase())
+        )
+      );
+      if (match) return match;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * 레시피 매칭 점수 계산
+ */
+interface MatchScoreDetails {
+  ingredientScore: number; // 재료 매칭 점수 (50%)
+  essentialScore: number; // 필수 재료 보유 점수 (30%)
+  expiryBonus: number; // 유통기한 임박 재료 사용 보너스 (20%)
+  totalScore: number;
+  availabilityRate: number; // 보유 재료 비율 (0-1)
+}
+
+function calculateMatchScore(
+  recipe: Recipe,
+  pantryItems: string[],
+  expiringItems: string[] = []
+): MatchScoreDetails {
+  const requiredIngredients = recipe.ingredients.filter((ing) => !ing.optional);
+  const totalRequired = requiredIngredients.length;
+
+  // 매칭된 재료 찾기 (세만틱 매칭 포함)
+  const matchedCount = requiredIngredients.filter((ing) =>
+    findSimilarIngredient(ing.name, pantryItems)
+  ).length;
+
+  // 재료 매칭 점수 (50%)
+  const ingredientScore = totalRequired > 0 ? (matchedCount / totalRequired) * 50 : 0;
+
+  // 필수 재료 보유 점수 (30%)
+  // 고기, 해산물, 주재료 카테고리가 있는지 확인
+  const essentialCategories: IngredientCategory[] = ['meat', 'seafood', 'grain'];
+  const hasEssentialIngredient = recipe.ingredients
+    .filter((ing) => !ing.optional && essentialCategories.includes(ing.category))
+    .every((ing) => findSimilarIngredient(ing.name, pantryItems));
+
+  const essentialScore = hasEssentialIngredient ? 30 : 0;
+
+  // 유통기한 임박 재료 사용 보너스 (20%)
+  const usesExpiringIngredients = recipe.ingredients.some((ing) =>
+    expiringItems.some((expiring) => findSimilarIngredient(ing.name, [expiring]))
+  );
+
+  const expiryBonus = usesExpiringIngredients ? 20 : 0;
+
+  const totalScore = ingredientScore + essentialScore + expiryBonus;
+  const availabilityRate = totalRequired > 0 ? matchedCount / totalRequired : 0;
+
+  return {
+    ingredientScore,
+    essentialScore,
+    expiryBonus,
+    totalScore: Math.round(totalScore),
+    availabilityRate,
+  };
+}
+
+/**
+ * 레시피 매칭 추천 (고도화)
  */
 export function recommendRecipes(
   userIngredients: string[],
@@ -375,9 +501,12 @@ export function recommendRecipes(
     goal?: NutritionGoal;
     maxMissingIngredients?: number;
     maxCookTime?: number;
+    minMatchScore?: number;
+    expiringItems?: string[];
   }
 ): RecipeMatchResult[] {
   const normalizedUserIngredients = userIngredients.map((ing) => ing.toLowerCase());
+  const normalizedExpiringItems = (options?.expiringItems || []).map((ing) => ing.toLowerCase());
 
   let recipes = options?.goal ? getRecipesByGoal(options.goal) : SAMPLE_RECIPES;
 
@@ -386,42 +515,49 @@ export function recommendRecipes(
     recipes = recipes.filter((r) => r.cookTime <= options.maxCookTime!);
   }
 
-  const results = recipes.map((recipe) => {
-    // 필수 재료만 고려 (optional 제외)
-    const requiredIngredients = recipe.ingredients.filter((ing) => !ing.optional);
+  const results = recipes
+    .map((recipe) => {
+      const requiredIngredients = recipe.ingredients.filter((ing) => !ing.optional);
 
-    const matched = requiredIngredients.filter((ing) =>
-      normalizedUserIngredients.some(
-        (userIng) =>
-          userIng.includes(ing.name.toLowerCase()) || ing.name.toLowerCase().includes(userIng)
-      )
-    );
+      // 세만틱 매칭 사용
+      const matched = requiredIngredients.filter((ing) =>
+        findSimilarIngredient(ing.name, normalizedUserIngredients)
+      );
 
-    const missing = requiredIngredients.filter(
-      (ing) =>
-        !normalizedUserIngredients.some(
-          (userIng) =>
-            userIng.includes(ing.name.toLowerCase()) || ing.name.toLowerCase().includes(userIng)
-        )
-    );
+      const missing = requiredIngredients.filter(
+        (ing) => !findSimilarIngredient(ing.name, normalizedUserIngredients)
+      );
 
-    const matchScore = Math.round((matched.length / requiredIngredients.length) * 100);
+      // 고도화된 점수 계산
+      const scoreDetails = calculateMatchScore(
+        recipe,
+        normalizedUserIngredients,
+        normalizedExpiringItems
+      );
 
-    return {
-      recipe,
-      matchScore,
-      matchedIngredients: matched.map((i) => i.name),
-      missingIngredients: missing.map((i) => i.name),
-      matchReason: generateMatchReason(matchScore, matched.length),
-    };
-  });
+      return {
+        recipe,
+        matchScore: scoreDetails.totalScore,
+        matchedIngredients: matched.map((i) => i.name),
+        missingIngredients: missing.map((i) => i.name),
+        availabilityRate: scoreDetails.availabilityRate,
+        matchReason: generateMatchReason(scoreDetails.totalScore, matched.length),
+      };
+    })
+    .filter((result) => {
+      // 최소 매칭 점수 필터 (기본 30)
+      const minScore = options?.minMatchScore ?? 30;
+      if (result.matchScore < minScore) return false;
 
-  // 누락 재료 수 필터
-  const maxMissing = options?.maxMissingIngredients ?? 3;
-  const filtered = results.filter((r) => r.missingIngredients.length <= maxMissing);
+      // 최대 누락 재료 수 필터 (기본 3)
+      const maxMissing = options?.maxMissingIngredients ?? 3;
+      if (result.missingIngredients.length > maxMissing) return false;
+
+      return true;
+    });
 
   // 매칭 점수 순 정렬
-  return filtered.sort((a, b) => b.matchScore - a.matchScore);
+  return results.sort((a, b) => b.matchScore - a.matchScore);
 }
 
 /**

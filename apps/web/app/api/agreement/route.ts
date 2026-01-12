@@ -87,10 +87,11 @@ export async function POST(request: NextRequest) {
 
     // Body 파싱
     const body = await request.json();
-    const { termsAgreed, privacyAgreed, marketingAgreed } = body as {
+    const { termsAgreed, privacyAgreed, marketingAgreed, gender } = body as {
       termsAgreed: boolean;
       privacyAgreed: boolean;
       marketingAgreed: boolean;
+      gender?: 'male' | 'female';
     };
 
     // 필수 동의 검증
@@ -103,6 +104,16 @@ export async function POST(request: NextRequest) {
         {
           error: '필수 약관에 동의해주세요',
           missingAgreements,
+        },
+        { status: 400 }
+      );
+    }
+
+    // 성별 검증
+    if (!gender || !['male', 'female'].includes(gender)) {
+      return NextResponse.json(
+        {
+          error: '성별을 선택해주세요',
         },
         { status: 400 }
       );
@@ -136,6 +147,17 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('[Agreement API] POST error:', error);
       return NextResponse.json({ error: 'Failed to save agreement' }, { status: 500 });
+    }
+
+    // 성별 정보를 users 테이블에 저장
+    const { error: userError } = await supabase
+      .from('users')
+      .update({ gender })
+      .eq('clerk_user_id', userId);
+
+    if (userError) {
+      console.error('[Agreement API] User gender update error:', userError);
+      // 성별 저장 실패해도 약관 동의는 성공으로 처리 (비동기 재시도 가능)
     }
 
     return NextResponse.json(

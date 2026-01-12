@@ -4,6 +4,11 @@
  * 1. 동일 브랜드 구매 기록
  * 2. 브랜드 사이즈 차트 + 신체 치수
  * 3. 일반 사이즈 추론
+ *
+ * Phase L-3-2 고도화:
+ * - 체형별 사이즈 조정 규칙
+ * - 상세 치수 기반 정밀 추천
+ * - 선호 핏 반영
  */
 
 import type {
@@ -19,6 +24,22 @@ import { smartMatchingLogger } from '@/lib/utils/logger';
 import { getMeasurements } from './measurements';
 import { getSizeHistoryByBrand, getPerfectFitHistory } from './size-history';
 import { getSizeChart, recommendSizeFromMeasurements, getProductMeasurements } from './size-charts';
+
+// Phase L-3-2: 체형 타입 정의
+type BodyType = 'S' | 'W' | 'N' | 'X' | 'A' | 'V' | 'H' | 'O' | 'I' | 'Y' | '8';
+type PreferredFit = 'tight' | 'regular' | 'loose';
+
+// Phase L-3-2: 강화된 사이즈 추천 결과
+export interface EnhancedSizeRecommendation {
+  size: string;
+  confidence: number;
+  reasoning: string;
+  adjustments?: {
+    reason: string;
+    fromSize: string;
+    toSize: string;
+  };
+}
 
 // ============================================
 // 메인 추천 함수
@@ -540,4 +561,256 @@ function calibrateWithProductMeasurements(
         : '제품 실측 데이터 확인됨',
     },
   };
+}
+
+// ============================================
+// Phase L-3-2: 체형별 사이즈 조정 (고도화)
+// ============================================
+
+/**
+ * 체형별 사이즈 조정 규칙
+ * @description 카테고리별로 체형에 따른 사이즈 조정값 (숫자: 사이즈 단계)
+ */
+const BODY_TYPE_SIZE_ADJUSTMENTS: Record<BodyType, Partial<Record<ClothingCategory, number>>> = {
+  // S/W/N 체형 (새 체형 시스템)
+  S: { top: 0, bottom: 0 }, // 스트레이트: 표준
+  W: { top: 0, bottom: 1 }, // 웨이브: 하의 한 사이즈 업 (하체 볼륨)
+  N: { top: 1, bottom: 0 }, // 내추럴: 상의 한 사이즈 업 (어깨 넓음)
+
+  // 레거시 체형 (8타입)
+  X: { top: 0, bottom: 0 }, // 모래시계: 표준
+  A: { top: -1, bottom: 1 }, // 배형(하체발달): 상의 다운, 하의 업
+  V: { top: 1, bottom: -1 }, // 역삼각(상체발달): 상의 업, 하의 다운
+  H: { top: 0, bottom: 0 }, // 직사각: 표준
+  O: { top: 1, bottom: 1 }, // 원형: 전체 업
+  I: { top: 0, bottom: 0 }, // I자형: 표준
+  Y: { top: 1, bottom: 0 }, // Y자형(어깨 넓음): 상의 업
+  '8': { top: 0, bottom: 0 }, // 8자형: 표준
+};
+
+/**
+ * 체형별 사이즈 조정 라벨
+ */
+const BODY_TYPE_LABELS: Record<BodyType, string> = {
+  S: '스트레이트',
+  W: '웨이브',
+  N: '내추럴',
+  X: 'X자형',
+  A: 'A자형',
+  V: 'V자형',
+  H: 'H자형',
+  O: 'O자형',
+  I: 'I자형',
+  Y: 'Y자형',
+  '8': '8자형',
+};
+
+/**
+ * 강화된 사이즈 추천 (Phase L-3-2)
+ * @description 체형 + 상세 치수 + 선호 핏을 모두 고려한 정밀 추천
+ */
+export function recommendSizeEnhanced(
+  product: {
+    category: ClothingCategory;
+    sizeChart?: any; // 제품별 사이즈 차트 (있는 경우)
+  },
+  userProfile: {
+    height: number;
+    weight: number;
+    bodyType: BodyType;
+    measurements?: UserBodyMeasurements;
+    preferredFit: PreferredFit;
+  }
+): EnhancedSizeRecommendation {
+  const reasoningSteps: string[] = [];
+
+  // 1. 기본 BMI 기반 추론
+  const bmi = userProfile.weight / (userProfile.height / 100) ** 2;
+  let baseSize = bmiToSize(bmi, product.category);
+  reasoningSteps.push(`BMI ${bmi.toFixed(1)} 기준 기본 사이즈: ${baseSize}`);
+
+  const originalSize = baseSize;
+
+  // 2. 체형별 조정
+  const bodyTypeAdjustment = BODY_TYPE_SIZE_ADJUSTMENTS[userProfile.bodyType]?.[product.category];
+  if (bodyTypeAdjustment && bodyTypeAdjustment !== 0) {
+    const beforeAdjust = baseSize;
+    baseSize = adjustSizeBySteps(baseSize, bodyTypeAdjustment);
+    const bodyTypeLabel = BODY_TYPE_LABELS[userProfile.bodyType] || userProfile.bodyType;
+
+    if (bodyTypeAdjustment > 0) {
+      reasoningSteps.push(
+        `${bodyTypeLabel} 체형으로 ${Math.abs(bodyTypeAdjustment)}단계 업 (${beforeAdjust} → ${baseSize})`
+      );
+    } else {
+      reasoningSteps.push(
+        `${bodyTypeLabel} 체형으로 ${Math.abs(bodyTypeAdjustment)}단계 다운 (${beforeAdjust} → ${baseSize})`
+      );
+    }
+  } else {
+    const bodyTypeLabel = BODY_TYPE_LABELS[userProfile.bodyType] || userProfile.bodyType;
+    reasoningSteps.push(`${bodyTypeLabel} 체형은 표준 사이즈 적용`);
+  }
+
+  // 3. 상세 치수 기반 조정 (있는 경우)
+  if (userProfile.measurements && product.sizeChart) {
+    const measurementSize = measurementsToSize(
+      userProfile.measurements,
+      product.category,
+      product.sizeChart
+    );
+
+    if (measurementSize && measurementSize !== baseSize) {
+      reasoningSteps.push(`상세 치수 기준 사이즈: ${measurementSize} (치수 우선 적용)`);
+      baseSize = measurementSize;
+    } else if (userProfile.measurements) {
+      reasoningSteps.push('상세 치수 확인 완료 (조정 불필요)');
+    }
+  }
+
+  // 4. 선호 핏 반영
+  if (userProfile.preferredFit === 'tight') {
+    const beforeFit = baseSize;
+    baseSize = adjustSizeDown(baseSize);
+    if (beforeFit !== baseSize) {
+      reasoningSteps.push(`타이트 핏 선호로 한 사이즈 다운 (${beforeFit} → ${baseSize})`);
+    }
+  } else if (userProfile.preferredFit === 'loose') {
+    const beforeFit = baseSize;
+    baseSize = adjustSizeUp(baseSize);
+    if (beforeFit !== baseSize) {
+      reasoningSteps.push(`루즈 핏 선호로 한 사이즈 업 (${beforeFit} → ${baseSize})`);
+    }
+  } else {
+    reasoningSteps.push('레귤러 핏 적용');
+  }
+
+  // 신뢰도 계산
+  let confidence = 60; // 기본 신뢰도
+
+  // 체형 정보 있으면 +15
+  if (userProfile.bodyType) {
+    confidence += 15;
+  }
+
+  // 상세 치수 있으면 +20
+  if (
+    userProfile.measurements &&
+    (userProfile.measurements.chest || userProfile.measurements.waist)
+  ) {
+    confidence += 20;
+  }
+
+  // 키/몸무게 있으면 +5
+  if (userProfile.height && userProfile.weight) {
+    confidence += 5;
+  }
+
+  confidence = Math.min(confidence, 95); // 최대 95%
+
+  // 조정 내역 기록
+  let adjustments: EnhancedSizeRecommendation['adjustments'] = undefined;
+  if (originalSize !== baseSize) {
+    adjustments = {
+      reason: reasoningSteps.slice(1).join(', '),
+      fromSize: originalSize,
+      toSize: baseSize,
+    };
+  }
+
+  return {
+    size: baseSize,
+    confidence,
+    reasoning: reasoningSteps.join('\n'),
+    adjustments,
+  };
+}
+
+/**
+ * BMI를 기본 사이즈로 변환
+ */
+function bmiToSize(bmi: number, category: ClothingCategory): string {
+  if (category === 'top' || category === 'outer') {
+    if (bmi < 18.5) return 'S';
+    if (bmi < 23) return 'M';
+    if (bmi < 27) return 'L';
+    return 'XL';
+  } else if (category === 'bottom') {
+    // 하의는 BMI보다 허리 치수가 중요하지만, 기본값으로 제공
+    if (bmi < 19) return 'S';
+    if (bmi < 24) return 'M';
+    if (bmi < 28) return 'L';
+    return 'XL';
+  } else if (category === 'shoes') {
+    // 신발은 BMI와 무관, 기본 평균 사이즈
+    return '260';
+  } else if (category === 'dress') {
+    if (bmi < 18.5) return 'S';
+    if (bmi < 23) return 'M';
+    if (bmi < 27) return 'L';
+    return 'XL';
+  }
+
+  return 'M'; // 기본값
+}
+
+/**
+ * 사이즈를 N단계 조정
+ * @param size 현재 사이즈
+ * @param steps 조정 단계 (양수: 업, 음수: 다운)
+ */
+function adjustSizeBySteps(size: string, steps: number): string {
+  if (steps === 0) return size;
+
+  let result = size;
+  const absSteps = Math.abs(steps);
+
+  for (let i = 0; i < absSteps; i++) {
+    result = steps > 0 ? adjustSizeUp(result) : adjustSizeDown(result);
+  }
+
+  return result;
+}
+
+/**
+ * 상세 치수로 사이즈 추론
+ * @description 사용자 치수와 사이즈 차트 비교하여 최적 사이즈 반환
+ */
+function measurementsToSize(
+  measurements: UserBodyMeasurements,
+  category: ClothingCategory,
+  sizeChart: any
+): string | null {
+  // 사이즈 차트가 없으면 null 반환
+  if (!sizeChart || !sizeChart.sizeMappings) {
+    return null;
+  }
+
+  // 카테고리별 주요 치수 확인
+  let primaryMeasurement: number | undefined;
+  let measurementKey: string;
+
+  if (category === 'top' || category === 'outer') {
+    primaryMeasurement = measurements.chest;
+    measurementKey = 'chest';
+  } else if (category === 'bottom') {
+    primaryMeasurement = measurements.waist;
+    measurementKey = 'waist';
+  } else {
+    return null; // 신발이나 드레스는 간단한 차트 필요
+  }
+
+  if (!primaryMeasurement) {
+    return null;
+  }
+
+  // 사이즈 매핑에서 가장 적합한 사이즈 찾기
+  for (const mapping of sizeChart.sizeMappings) {
+    const range = mapping.measurements[measurementKey];
+    if (range && primaryMeasurement >= range.min && primaryMeasurement <= range.max) {
+      return mapping.label;
+    }
+  }
+
+  return null;
 }

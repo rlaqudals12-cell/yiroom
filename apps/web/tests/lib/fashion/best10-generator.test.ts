@@ -47,6 +47,9 @@ describe('getStyleBest10', () => {
       'sporty',
       'classic',
       'preppy',
+      'hiphop',
+      'romantic',
+      'workwear',
     ];
 
     for (const category of categories) {
@@ -61,14 +64,14 @@ describe('getAllStyleBest10', () => {
   it('모든 스타일의 Best 10을 반환한다', () => {
     const results = getAllStyleBest10();
 
-    expect(results).toHaveLength(7); // 7개 스타일 카테고리
+    expect(results).toHaveLength(10); // 10개 스타일 카테고리 (기본 7개 + hiphop, romantic, workwear)
   });
 
-  it('총 70개의 코디를 포함한다', () => {
+  it('총 100개의 코디를 포함한다', () => {
     const results = getAllStyleBest10();
     const totalOutfits = results.reduce((sum, style) => sum + style.outfits.length, 0);
 
-    expect(totalOutfits).toBe(70); // 7개 카테고리 x 10개 코디
+    expect(totalOutfits).toBe(100); // 10개 카테고리 x 10개 코디
   });
 });
 
@@ -192,5 +195,8 @@ describe('STYLE_CATEGORY_LABELS', () => {
     expect(STYLE_CATEGORY_LABELS.sporty).toBe('스포티');
     expect(STYLE_CATEGORY_LABELS.classic).toBe('클래식');
     expect(STYLE_CATEGORY_LABELS.preppy).toBe('프레피');
+    expect(STYLE_CATEGORY_LABELS.hiphop).toBe('힙합');
+    expect(STYLE_CATEGORY_LABELS.romantic).toBe('로맨틱');
+    expect(STYLE_CATEGORY_LABELS.workwear).toBe('워크웨어');
   });
 });

@@ -211,6 +211,7 @@ describe('/api/agreement', () => {
           termsAgreed: true,
           privacyAgreed: false, // 필수 동의 누락
           marketingAgreed: false,
+          gender: 'male',
         }),
       });
 
@@ -220,6 +221,47 @@ describe('/api/agreement', () => {
       expect(response.status).toBe(400);
       expect(data.error).toBe('필수 약관에 동의해주세요');
       expect(data.missingAgreements).toContain('privacy');
+    });
+
+    // L-1-1: 성별 선택 필수 검증
+    it('성별이 누락되면 400을 반환한다', async () => {
+      mockAuth.mockResolvedValue({ userId: 'user_test' });
+
+      const request = new NextRequest('http://localhost/api/agreement', {
+        method: 'POST',
+        body: JSON.stringify({
+          termsAgreed: true,
+          privacyAgreed: true,
+          marketingAgreed: false,
+          // gender 누락
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('성별을 선택해주세요');
+    });
+
+    it('성별이 유효하지 않으면 400을 반환한다', async () => {
+      mockAuth.mockResolvedValue({ userId: 'user_test' });
+
+      const request = new NextRequest('http://localhost/api/agreement', {
+        method: 'POST',
+        body: JSON.stringify({
+          termsAgreed: true,
+          privacyAgreed: true,
+          marketingAgreed: false,
+          gender: 'invalid', // 유효하지 않은 성별
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('성별을 선택해주세요');
     });
 
     it('모든 필수 동의 시 201을 반환한다', async () => {
@@ -249,6 +291,7 @@ describe('/api/agreement', () => {
           termsAgreed: true,
           privacyAgreed: true,
           marketingAgreed: true,
+          gender: 'male',
         }),
       });
 
@@ -275,6 +318,7 @@ describe('/api/agreement', () => {
           termsAgreed: true,
           privacyAgreed: true,
           marketingAgreed: false,
+          gender: 'female',
         }),
       });
 
