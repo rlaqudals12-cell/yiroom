@@ -1,0 +1,31 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 민트→블랙 그라디언트 -->
+    <linearGradient id="neutralGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#A8D5C2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2D2D2D;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- 아이콘 배경 (라운드 사각형) -->
+  <rect x="2" y="2" width="56" height="56" rx="12" ry="12" fill="url(#neutralGradient)"/>
+
+  <!-- 꽃/별 심볼 (흰색) -->
+  <g transform="translate(30, 30)" fill="white">
+    <!-- 꽃잎 6개 -->
+    <ellipse cx="0" cy="-12" rx="5" ry="10"/>
+    <ellipse cx="10.4" cy="-6" rx="5" ry="10" transform="rotate(60)"/>
+    <ellipse cx="10.4" cy="6" rx="5" ry="10" transform="rotate(120)"/>
+    <ellipse cx="0" cy="12" rx="5" ry="10" transform="rotate(180)"/>
+    <ellipse cx="-10.4" cy="6" rx="5" ry="10" transform="rotate(240)"/>
+    <ellipse cx="-10.4" cy="-6" rx="5" ry="10" transform="rotate(300)"/>
+    <!-- 중앙 원 -->
+    <circle cx="0" cy="0" r="6"/>
+  </g>
+
+  <!-- 텍스트: 이룸 -->
+  <text x="72" y="32" font-family="'Pretendard', 'Apple SD Gothic Neo', sans-serif" font-size="22" font-weight="600" fill="#2D2D2D">이룸</text>
+
+  <!-- 텍스트: YIROOM -->
+  <text x="115" y="32" font-family="'Pretendard', 'Inter', sans-serif" font-size="18" font-weight="500" fill="#6B7280">YIROOM</text>
+</svg>
