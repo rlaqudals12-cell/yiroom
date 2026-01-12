@@ -71,33 +71,34 @@
   --radius: 0.625rem;
 
   /* ========================================
-     모듈별 액센트 색상 (2025-12-11)
+     모듈별 액센트 색상 (2026-01-12 Refined Expertise v2)
+     채도 20% 감소로 뮤트 톤 통일
      ======================================== */
-  --module-workout: oklch(0.85 0.15 45);      /* Orange - 운동 모듈 */
-  --module-workout-light: oklch(0.95 0.08 45);
-  --module-workout-dark: oklch(0.65 0.18 45);
+  --module-workout: oklch(0.82 0.12 45);      /* Orange - 운동 모듈 (뮤트) */
+  --module-workout-light: oklch(0.95 0.06 45);
+  --module-workout-dark: oklch(0.62 0.14 45);
 
-  --module-nutrition: oklch(0.75 0.15 150);   /* Green - 영양 모듈 */
-  --module-nutrition-light: oklch(0.92 0.08 150);
-  --module-nutrition-dark: oklch(0.55 0.18 150);
+  --module-nutrition: oklch(0.72 0.12 150);   /* Green - 영양 모듈 (뮤트) */
+  --module-nutrition-light: oklch(0.92 0.06 150);
+  --module-nutrition-dark: oklch(0.52 0.14 150);
 
-  --module-skin: oklch(0.80 0.12 350);        /* Pink - 피부 분석 */
-  --module-skin-light: oklch(0.95 0.06 350);
-  --module-skin-dark: oklch(0.60 0.15 350);
+  --module-skin: oklch(0.78 0.10 350);        /* Pink - 피부 분석 (뮤트) */
+  --module-skin-light: oklch(0.95 0.05 350);
+  --module-skin-dark: oklch(0.58 0.12 350);
 
-  --module-body: oklch(0.75 0.15 250);        /* Blue - 체형 분석 */
-  --module-body-light: oklch(0.92 0.08 250);
-  --module-body-dark: oklch(0.55 0.18 250);
+  --module-body: oklch(0.72 0.12 250);        /* Blue - 체형 분석 (뮤트) */
+  --module-body-light: oklch(0.92 0.06 250);
+  --module-body-dark: oklch(0.52 0.14 250);
 
-  --module-personal-color: oklch(0.70 0.18 300); /* Purple - 퍼스널컬러 */
-  --module-personal-color-light: oklch(0.90 0.10 300);
-  --module-personal-color-dark: oklch(0.50 0.20 300);
+  --module-personal-color: oklch(0.68 0.14 300); /* Purple - 퍼스널컬러 (뮤트) */
+  --module-personal-color-light: oklch(0.90 0.08 300);
+  --module-personal-color-dark: oklch(0.48 0.16 300);
 
   /* ========================================
-     그라디언트 표준화
+     그라디언트 표준화 (2026-01-12 로고 민트 기반 155°)
      ======================================== */
-  --gradient-primary: linear-gradient(135deg, oklch(0.53 0.23 262), oklch(0.55 0.20 280));
-  --gradient-brand: linear-gradient(135deg, oklch(0.60 0.18 240), oklch(0.53 0.23 262));
+  --gradient-primary: linear-gradient(135deg, oklch(0.50 0.12 155), oklch(0.40 0.14 155));
+  --gradient-brand: linear-gradient(135deg, oklch(0.50 0.12 155), oklch(0.38 0.14 160));
   --gradient-workout: linear-gradient(135deg, var(--module-workout), var(--module-workout-dark));
   --gradient-nutrition: linear-gradient(135deg, var(--module-nutrition), var(--module-nutrition-dark));
   --gradient-skin: linear-gradient(135deg, var(--module-skin), var(--module-skin-dark));
@@ -110,38 +111,39 @@
   --status-error: oklch(0.65 0.22 25);
   --status-info: oklch(0.70 0.15 230);
 
-  /* Stitch 디자인 토큰 적용 (2025-12-04) */
-  --background: oklch(0.98 0.005 270);        /* #f8f9fc */
-  --foreground: oklch(0.15 0.02 270);         /* #0d101c */
-  --card: oklch(0.98 0.005 270);              /* #f8f9fc */
-  --card-foreground: oklch(0.15 0.02 270);    /* #0d101c */
-  --popover: oklch(0.98 0.005 270);           /* #f8f9fc */
-  --popover-foreground: oklch(0.15 0.02 270); /* #0d101c */
-  --primary: oklch(0.53 0.23 262);            /* #2e5afa 이룸 블루 */
-  --primary-foreground: oklch(0.98 0.005 270);/* #f8f9fc */
-  --secondary: oklch(0.93 0.02 270);          /* #e6e9f4 */
-  --secondary-foreground: oklch(0.15 0.02 270);/* #0d101c */
-  --muted: oklch(0.93 0.02 270);              /* #e6e9f4 */
-  --muted-foreground: oklch(0.48 0.12 270);   /* #475a9e */
-  --accent: oklch(0.93 0.02 270);             /* #e6e9f4 */
-  --accent-foreground: oklch(0.15 0.02 270);  /* #0d101c */
+  /* Refined Expertise v2 디자인 토큰 (2026-01-12)
+     웜톤 배경 + 로고 민트(155°) 프라이머리로 브랜드 일관성 강화 */
+  --background: oklch(0.99 0.005 90);         /* 웜 화이트 #FDFCFB */
+  --foreground: oklch(0.12 0.02 270);         /* 소프트 블랙 #1C1C1E */
+  --card: oklch(1.0 0 0);                     /* 순백 카드 #FFFFFF */
+  --card-foreground: oklch(0.12 0.02 270);    /* 소프트 블랙 */
+  --popover: oklch(1.0 0 0);                  /* 순백 */
+  --popover-foreground: oklch(0.12 0.02 270); /* 소프트 블랙 */
+  --primary: oklch(0.45 0.12 155);            /* 로고 민트 어두운 버전 - 브랜드 일관성 */
+  --primary-foreground: oklch(0.99 0.005 90); /* 웜 화이트 */
+  --secondary: oklch(0.96 0.01 90);           /* 웜 그레이 #F5F4F2 */
+  --secondary-foreground: oklch(0.12 0.02 270);/* 소프트 블랙 */
+  --muted: oklch(0.96 0.01 90);               /* 웜 그레이 */
+  --muted-foreground: oklch(0.45 0.02 270);   /* 웜 그레이 텍스트 #6B6B6B */
+  --accent: oklch(0.96 0.01 90);              /* 웜 그레이 */
+  --accent-foreground: oklch(0.12 0.02 270);  /* 소프트 블랙 */
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.87 0.03 270);             /* #ced4e9 */
-  --input: oklch(0.87 0.03 270);              /* #ced4e9 */
-  --ring: oklch(0.53 0.23 262);               /* #2e5afa 포커스 링 */
-  --chart-1: oklch(0.53 0.23 262);            /* 차트 프라이머리 */
-  --chart-2: oklch(0.6 0.118 184.704);
+  --border: oklch(0.92 0.01 90);              /* 웜톤 보더 #E8E7E5 */
+  --input: oklch(0.92 0.01 90);               /* 웜톤 인풋 */
+  --ring: oklch(0.45 0.12 155);               /* 로고 민트 포커스 링 */
+  --chart-1: oklch(0.45 0.12 155);            /* 로고 민트 - 차트 프라이머리 */
+  --chart-2: oklch(0.6 0.10 160);             /* 민트 계열 차트 2 */
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.98 0.005 270);           /* #f8f9fc */
-  --sidebar-foreground: oklch(0.15 0.02 270); /* #0d101c */
-  --sidebar-primary: oklch(0.53 0.23 262);    /* #2e5afa */
-  --sidebar-primary-foreground: oklch(0.98 0.005 270);
-  --sidebar-accent: oklch(0.93 0.02 270);     /* #e6e9f4 */
-  --sidebar-accent-foreground: oklch(0.15 0.02 270);
-  --sidebar-border: oklch(0.87 0.03 270);     /* #ced4e9 */
-  --sidebar-ring: oklch(0.53 0.23 262);       /* #2e5afa */
+  --sidebar: oklch(0.99 0.005 90);            /* 웜 화이트 */
+  --sidebar-foreground: oklch(0.12 0.02 270); /* 소프트 블랙 */
+  --sidebar-primary: oklch(0.45 0.12 155);    /* 로고 민트 */
+  --sidebar-primary-foreground: oklch(0.99 0.005 90);
+  --sidebar-accent: oklch(0.96 0.01 90);      /* 웜 그레이 */
+  --sidebar-accent-foreground: oklch(0.12 0.02 270);
+  --sidebar-border: oklch(0.92 0.01 90);      /* 웜톤 보더 */
+  --sidebar-ring: oklch(0.45 0.12 155);       /* 로고 민트 */
 }
 
 .dark {
@@ -151,8 +153,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.58 0.22 262);            /* 이룸 블루 (다크모드 - 약간 밝게) */
-  --primary-foreground: oklch(0.98 0.005 270); /* 흰색 텍스트 유지 */
+  --primary: oklch(0.55 0.12 155);            /* 로고 민트 (다크모드 - 약간 밝게) */
+  --primary-foreground: oklch(0.98 0.005 90); /* 흰색 텍스트 유지 */
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -162,20 +164,20 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.58 0.22 262);               /* 이룸 블루 (포커스 링) */
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
+  --ring: oklch(0.55 0.12 155);               /* 로고 민트 (포커스 링) */
+  --chart-1: oklch(0.55 0.12 155);            /* 로고 민트 */
+  --chart-2: oklch(0.65 0.10 160);            /* 민트 계열 */
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.58 0.22 262);    /* 이룸 블루 */
+  --sidebar-primary: oklch(0.55 0.12 155);    /* 로고 민트 */
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.58 0.22 262);       /* 이룸 블루 */
+  --sidebar-ring: oklch(0.55 0.12 155);       /* 로고 민트 */
 
   /* ========================================
      모듈별 색상 (다크모드)
