@@ -5,7 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 

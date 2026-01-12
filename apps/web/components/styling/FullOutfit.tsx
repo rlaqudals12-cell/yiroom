@@ -6,11 +6,11 @@
  */
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, RefreshCw, Bookmark, Share2 } from 'lucide-react';
+import { Sparkles, Bookmark, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SeasonType } from '@/lib/mock/personal-color';
 import type { FullOutfit as FullOutfitType, OutfitOccasion } from '@/types/styling';
@@ -213,7 +213,8 @@ export default function FullOutfit({
 }: FullOutfitProps) {
   const [currentOccasion, setCurrentOccasion] = useState<OutfitOccasion>('daily');
   const presets = getOutfitPresets(seasonType);
-  const currentPreset = getOutfitPresetByOccasion(seasonType, currentOccasion);
+  // 현재 occasion에 맞는 preset (향후 사용 예정)
+  const _currentPreset = getOutfitPresetByOccasion(seasonType, currentOccasion);
 
   if (!presets || presets.length === 0) {
     return null;

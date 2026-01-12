@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
 
     const body: AnalyzeRequest = await request.json();
-    const { productId, ingredients, category, color } = body;
+    // productId는 향후 제품 DB 연동 시 사용 예정
+    const { productId: _productId, ingredients, category, color } = body;
 
     // 성분 정보 필수
     if (!ingredients || ingredients.length === 0) {

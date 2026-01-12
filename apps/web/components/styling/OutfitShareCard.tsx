@@ -6,7 +6,7 @@
  */
 
 import { forwardRef } from 'react';
-import type { FullOutfit, OutfitOccasion } from '@/types/styling';
+import type { FullOutfit } from '@/types/styling';
 import type { SeasonType } from '@/lib/mock/personal-color';
 import { OUTFIT_OCCASION_LABELS, METAL_TONE_LABELS } from '@/types/styling';
 

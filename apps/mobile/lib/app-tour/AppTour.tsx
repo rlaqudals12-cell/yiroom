@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Modal, View, Text, Pressable, Dimensions } from 'react-native';
+import { Modal, View, Text, Pressable } from 'react-native';
 
 import { useAppTour, type UseAppTourOptions } from './useAppTour';
 

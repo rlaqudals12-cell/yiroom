@@ -292,7 +292,8 @@ export async function searchWorkoutItems(
       const supabase = createClerkSupabaseClient();
 
       // 오늘의 운동 계획 조회
-      const today = new Date().toISOString().split('T')[0];
+      // today는 향후 날짜별 필터링에 사용 예정
+      const _today = new Date().toISOString().split('T')[0];
       const { data: workoutPlan, error: planError } = await supabase
         .from('workout_plans')
         .select('id, exercises, frequency')

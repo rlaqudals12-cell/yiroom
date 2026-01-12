@@ -5,7 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { Plus, Heart, Filter } from 'lucide-react-native';
+import { Plus, Heart } from 'lucide-react-native';
 import React, { useState, useMemo } from 'react';
 import {
   View,
@@ -43,7 +43,13 @@ export default function ClosetScreen() {
   const isDark = colorScheme === 'dark';
   const router = useRouter();
 
-  const { items, isLoading, error, toggleFavorite, refetch } = useCloset();
+  const {
+    items,
+    isLoading,
+    error: _error,
+    toggleFavorite,
+    refetch,
+  } = useCloset();
   const [selectedCategory, setSelectedCategory] =
     useState<FilterCategory>('all');
 

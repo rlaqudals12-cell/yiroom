@@ -54,8 +54,8 @@ export interface StyleBest10 {
   outfits: OutfitRecommendation[];
 }
 
-// 퍼스널컬러별 추천 색상
-const SEASON_COLORS: Record<PersonalColorSeason, string[]> = {
+// 퍼스널컬러별 추천 색상 (향후 색상 매칭 로직에서 활용 예정)
+const _SEASON_COLORS: Record<PersonalColorSeason, string[]> = {
   Spring: ['코랄', '피치', '아이보리', '민트', '베이지', '카키'],
   Summer: ['라벤더', '로즈핑크', '스카이블루', '그레이', '네이비', '화이트'],
   Autumn: ['테라코타', '머스타드', '올리브', '버건디', '캐멀', '브라운'],

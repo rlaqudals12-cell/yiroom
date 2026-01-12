@@ -176,7 +176,8 @@ export async function POST(request: NextRequest) {
  * 전환 이벤트 로깅 (클릭 ID 없는 경우)
  */
 async function logConversionEvent(body: ConversionWebhookBody): Promise<void> {
-  const supabase = createServiceRoleClient();
+  // 향후 DB 로깅 시 사용 예정
+  const _supabase = createServiceRoleClient();
 
   // 별도 로깅 테이블이나 로그 서비스로 전송
   console.log('[Conversion] Orphan conversion event:', {

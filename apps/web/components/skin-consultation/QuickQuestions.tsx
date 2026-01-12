@@ -5,11 +5,7 @@
  */
 
 import { Button } from '@/components/ui/button';
-import {
-  SKIN_CONCERN_ICONS,
-  SKIN_CONCERN_LABELS,
-  type SkinConcern,
-} from '@/types/skin-consultation';
+import { SKIN_CONCERN_ICONS, type SkinConcern } from '@/types/skin-consultation';
 import { QUICK_QUESTIONS } from '@/lib/mock/skin-consultation';
 
 interface QuickQuestionsProps {

@@ -22,6 +22,10 @@ vi.mock('next/navigation', () => ({
 // Mock scrollIntoView
 Element.prototype.scrollIntoView = vi.fn();
 
+// Mock fetch API for /api/coach/chat
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
 // Mock lucide-react
 vi.mock('lucide-react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('lucide-react')>();
@@ -34,6 +38,7 @@ vi.mock('lucide-react', async (importOriginal) => {
     Sparkles: () => <span data-testid="sparkles-icon">Sparkles</span>,
     User: () => <span data-testid="user-icon">User</span>,
     Bot: () => <span data-testid="bot-icon">Bot</span>,
+    AlertCircle: () => <span data-testid="alert-icon">Alert</span>,
   };
 });
 
@@ -131,10 +136,32 @@ describe('SkinConsultationChat', () => {
 
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
+    // API mock 초기화
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          success: true,
+          message:
+            '건조한 피부에는 보습 케어가 중요해요. 세라마이드나 히알루론산 성분을 추천드려요.',
+          suggestedQuestions: ['보습 제품 추천해줘', '수분 크림 어떤 게 좋아?'],
+          products: [
+            {
+              id: 'prod-1',
+              name: '수분 세럼',
+              brand: '테스트 브랜드',
+              category: '세럼',
+              matchScore: 85,
+              matchReasons: ['건성 피부에 적합'],
+            },
+          ],
+        }),
+    });
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    mockFetch.mockReset();
   });
 
   it('renders with data-testid', () => {
@@ -206,16 +233,13 @@ describe('SkinConsultationChat', () => {
     // 사용자 메시지 표시
     expect(screen.getByText('피부가 건조해요')).toBeInTheDocument();
 
-    // 로딩 표시
-    expect(screen.getByText('답변을 생성하고 있어요...')).toBeInTheDocument();
-
-    // 응답 대기 (mock은 800ms 딜레이)
-    await vi.advanceTimersByTimeAsync(1000);
-
-    // AI 응답 표시
+    // AI 응답 대기 (API mock은 즉시 응답)
     await waitFor(() => {
-      expect(screen.queryByText('답변을 생성하고 있어요...')).not.toBeInTheDocument();
+      expect(screen.getByText(/보습 케어가 중요해요/)).toBeInTheDocument();
     });
+
+    // fetch가 호출되었는지 확인
+    expect(mockFetch).toHaveBeenCalledWith('/api/coach/chat', expect.any(Object));
   });
 
   it('handles quick question click', async () => {

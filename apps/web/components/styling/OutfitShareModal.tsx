@@ -14,9 +14,8 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Download, Copy, Share2, X, Loader2, Check } from 'lucide-react';
+import { Download, Copy, Share2, Loader2, Check } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import OutfitShareCard from './OutfitShareCard';
 import { useOutfitShare } from '@/hooks/useOutfitShare';

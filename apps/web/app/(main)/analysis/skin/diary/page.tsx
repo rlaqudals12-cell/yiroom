@@ -24,7 +24,7 @@ import type {
   SkinConditionScore,
 } from '@/types/skin-diary';
 import { analyzeCorrelations } from '@/lib/skincare/correlation';
-import { generateSampleMonthlyReport, DEFAULT_INSIGHTS } from '@/lib/mock/skin-diary';
+import { DEFAULT_INSIGHTS } from '@/lib/mock/skin-diary';
 
 // DB 엔트리를 앱 엔트리로 변환
 function transformDbToEntry(dbEntry: DbSkinDiaryEntry): SkinDiaryEntry {

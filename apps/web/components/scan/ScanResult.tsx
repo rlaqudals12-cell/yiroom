@@ -9,17 +9,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  Package,
-  Star,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
-  ExternalLink,
-  Plus,
-  Share2,
-  ChevronRight,
-} from 'lucide-react';
+import { Package, Star, CheckCircle2, Plus, Share2, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { GlobalProduct, ProductLookupSource } from '@/types/scan';
@@ -62,7 +52,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function ScanResult({
   product,
   source,
-  confidence,
+  confidence: _confidence,
   onAddToShelf,
   onShare,
   onRescan,

@@ -164,7 +164,7 @@ export function sortByLayeringOrder(
 /**
  * 레이어링 순서 이유 생성
  */
-function getLayeringReason(category: ProductCategory, index: number, total: number): string {
+function getLayeringReason(category: ProductCategory, _index: number, _total: number): string {
   const reasons: Record<ProductCategory, string> = {
     cleanser: '세안으로 피부를 깨끗하게 준비해요',
     toner: '피부 pH를 정돈하고 수분을 공급해요',
@@ -315,7 +315,7 @@ function generateSyncNote(
   productCount: number,
   missingCategories: ProductCategory[],
   conflictCount: number,
-  skinType: SkinTypeId
+  _skinType: SkinTypeId
 ): string {
   let note = `보유 중인 ${productCount}개 제품으로 루틴을 구성했어요. `;
 

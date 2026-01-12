@@ -5,7 +5,7 @@
  * 사용자가 저장한 전체 코디 목록 및 관리
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ArrowLeft, Trash2, Calendar, Sparkles, FolderOpen } from 'lucide-react';
 import { useSavedOutfits } from '@/hooks/useSavedOutfits';
-import { OUTFIT_OCCASION_LABELS, OUTFIT_OCCASION_ICONS, METAL_TONE_LABELS } from '@/types/styling';
+import { OUTFIT_OCCASION_LABELS, OUTFIT_OCCASION_ICONS } from '@/types/styling';
 import type { SavedOutfit } from '@/lib/api/outfits';
 
 // 시즌 라벨
@@ -164,15 +164,9 @@ function EmptyState() {
 
 export default function SavedOutfitsPage() {
   const router = useRouter();
-  const {
-    savedOutfits,
-    isLoading,
-    fetchSavedOutfits,
-    deleteOutfit,
-    hasMore,
-    loadMore,
-    totalCount,
-  } = useSavedOutfits({ autoFetch: true });
+  const { savedOutfits, isLoading, deleteOutfit, hasMore, loadMore, totalCount } = useSavedOutfits({
+    autoFetch: true,
+  });
 
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 

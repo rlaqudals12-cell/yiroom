@@ -389,7 +389,7 @@ export function formatPersonalColorForPrompt(match: PersonalColorMatch | null): 
     });
 
   context += '\n### 스타일링 팁\n';
-  match.tips.forEach((tip, i) => {
+  match.tips.forEach((tip) => {
     context += `- ${tip}\n`;
   });
 

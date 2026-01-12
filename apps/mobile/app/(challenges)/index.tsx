@@ -43,7 +43,7 @@ export default function ChallengesScreen() {
   const { challenges, userChallenges, stats, isLoading, refetch } =
     useChallenges();
 
-  const { join, isJoining } = useJoinChallenge((newChallenge) => {
+  const { join, isJoining } = useJoinChallenge((_newChallenge) => {
     // 참여 후 목록 새로고침
     refetch();
     Alert.alert('성공', '챌린지에 참여했습니다!');
@@ -78,8 +78,8 @@ export default function ChallengesScreen() {
     (uc) => uc.status === 'in_progress'
   );
 
-  // 완료된 챌린지
-  const completedChallenges = userChallenges.filter(
+  // 완료된 챌린지 (향후 통계 표시용)
+  const _completedChallenges = userChallenges.filter(
     (uc) => uc.status === 'completed'
   );
 

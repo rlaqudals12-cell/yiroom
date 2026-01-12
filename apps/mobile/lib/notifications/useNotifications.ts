@@ -8,13 +8,12 @@
  * - 오프라인: DB 실패 시 AsyncStorage만 사용
  */
 
-import { useAuth, useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
-
 import { useClerkSupabaseClient } from '../supabase';
 
 import {

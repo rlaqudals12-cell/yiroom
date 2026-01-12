@@ -23,7 +23,7 @@ interface UseOutfitShareReturn {
 
 export function useOutfitShare(
   outfit: FullOutfit | null,
-  seasonType: SeasonType | null
+  _seasonType: SeasonType | null
 ): UseOutfitShareReturn {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);

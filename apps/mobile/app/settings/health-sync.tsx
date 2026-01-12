@@ -5,7 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import { Stack } from 'expo-router';
-import { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -35,7 +35,7 @@ export default function HealthSyncScreen() {
     platform,
     enable,
     disable,
-    refresh,
+    refresh: _refresh,
     sync,
   } = useHealthData();
 

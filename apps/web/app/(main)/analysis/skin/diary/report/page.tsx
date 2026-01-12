@@ -448,7 +448,7 @@ export default function SkinDiaryReportPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      {monthlyReport.topFactors.map((factor, index) => (
+                      {monthlyReport.topFactors.map((factor) => (
                         <div
                           key={factor.factorKey}
                           className={`p-3 rounded-lg ${

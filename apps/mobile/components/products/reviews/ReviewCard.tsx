@@ -69,7 +69,7 @@ export function ReviewCard({
     setIsLoading(true);
     try {
       await onHelpfulToggle(review.id, newIsHelpful);
-    } catch (error) {
+    } catch {
       // 롤백
       setIsHelpful(!newIsHelpful);
       setHelpfulCount((prev) => prev + (newIsHelpful ? -1 : 1));

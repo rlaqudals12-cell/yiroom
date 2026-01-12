@@ -4,7 +4,7 @@
  */
 
 import * as Haptics from 'expo-haptics';
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,

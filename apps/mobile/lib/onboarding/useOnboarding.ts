@@ -12,7 +12,7 @@ import type {
   OnboardingBasicInfo,
   OnboardingPreferences,
 } from './types';
-import { DEFAULT_ONBOARDING_DATA, isOnboardingComplete } from './types';
+import { DEFAULT_ONBOARDING_DATA } from './types';
 
 const STORAGE_KEY = 'yiroom_onboarding_data';
 const COMPLETED_KEY = 'yiroom_onboarding_completed';

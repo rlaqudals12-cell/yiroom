@@ -36,7 +36,7 @@ export function ChatInterface() {
     error,
     suggestedQuestions,
     sendMessage,
-    clearMessages,
+    clearMessages: _clearMessages,
   } = useCoach();
 
   const [input, setInput] = useState('');

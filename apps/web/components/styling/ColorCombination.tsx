@@ -5,7 +5,7 @@
  * PC-1 시즌 타입에 기반한 코디 색상 조합 표시
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Bookmark, ExternalLink, Sparkles } from 'lucide-react';

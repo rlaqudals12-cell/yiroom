@@ -6,12 +6,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, Sparkles, AlertCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  RoutineCard,
-  RoutineStepList,
-  RoutineToggle,
-  RoutineTimeline,
-} from '@/components/skin/routine';
+import { RoutineStepList, RoutineToggle, RoutineTimeline } from '@/components/skin/routine';
 import {
   generateRoutine,
   getSkinTypeLabel,

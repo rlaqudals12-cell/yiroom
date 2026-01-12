@@ -4,29 +4,40 @@
  * Phase D: 피부 상담 채팅 메인 컴포넌트
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Send, Loader2, Droplets, Sun, Sparkles } from 'lucide-react';
+import { Send, Loader2, Droplets, Sun, Sparkles, AlertCircle } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import QuickQuestions from './QuickQuestions';
-import {
-  generateConsultationResponse,
-  GREETING_MESSAGE,
-  NO_ANALYSIS_MESSAGE,
-  CONSULTATION_RESPONSES,
-} from '@/lib/mock/skin-consultation';
+import { GREETING_MESSAGE, NO_ANALYSIS_MESSAGE } from '@/lib/mock/skin-consultation';
 import type {
   ChatMessage as ChatMessageType,
   SkinConcern,
   SkinAnalysisSummary,
+  ProductRecommendation,
 } from '@/types/skin-consultation';
 
 interface SkinConsultationChatProps {
   skinAnalysis?: SkinAnalysisSummary | null;
   onProductClick?: (productId: string) => void;
+}
+
+interface CoachApiResponse {
+  success: boolean;
+  message: string;
+  suggestedQuestions?: string[];
+  products?: Array<{
+    id: string;
+    name: string;
+    brand: string;
+    category: string;
+    matchScore: number;
+    matchReasons: string[];
+  }>;
+  error?: string;
 }
 
 /** 분석 결과 요약 카드 */
@@ -72,7 +83,49 @@ export default function SkinConsultationChat({
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // API 호출 함수
+  const callCoachApi = useCallback(
+    async (message: string, chatHistory: ChatMessageType[]): Promise<CoachApiResponse> => {
+      const response = await fetch('/api/coach/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          chatHistory: chatHistory.slice(-5).map((m) => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            timestamp: m.timestamp,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('API 호출 실패');
+      }
+
+      return response.json();
+    },
+    []
+  );
+
+  // API 응답의 제품 데이터를 ProductRecommendation 형식으로 변환
+  const transformProducts = (
+    products?: CoachApiResponse['products']
+  ): ProductRecommendation[] | undefined => {
+    if (!products || products.length === 0) return undefined;
+    return products.map((p) => ({
+      id: p.id,
+      name: p.name,
+      brand: p.brand,
+      category: p.category,
+      reason: p.matchReasons.join(', '),
+      matchRate: p.matchScore,
+    }));
+  };
 
   // 초기 인사 메시지
   useEffect(() => {
@@ -91,8 +144,11 @@ export default function SkinConsultationChat({
   }, [messages]);
 
   // 질문 처리
-  const handleSendMessage = async (text: string, concern?: SkinConcern) => {
+  const handleSendMessage = async (text: string, _concern?: SkinConcern) => {
     if (!text.trim() || isLoading) return;
+
+    // 에러 초기화
+    setError(null);
 
     // 사용자 메시지 추가
     const userMessage: ChatMessageType = {
@@ -105,25 +161,26 @@ export default function SkinConsultationChat({
     setInput('');
     setIsLoading(true);
 
-    // Mock 응답 생성 (딜레이 추가)
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      // API 호출
+      const response = await callCoachApi(text, [...messages, userMessage]);
 
-    // 고민 카테고리 추론
-    const detectedConcern = concern || detectConcern(text);
-    const skinType = skinAnalysis?.skinType?.toLowerCase();
-    const response = generateConsultationResponse(detectedConcern, skinType);
+      // AI 응답 메시지
+      const aiMessage: ChatMessageType = {
+        id: `ai-${Date.now()}`,
+        role: 'assistant',
+        content: response.message,
+        timestamp: new Date(),
+        productRecommendations: transformProducts(response.products),
+      };
 
-    // AI 응답 메시지
-    const aiMessage: ChatMessageType = {
-      id: `ai-${Date.now()}`,
-      role: 'assistant',
-      content: formatResponse(response),
-      timestamp: new Date(),
-      productRecommendations: response.products.length > 0 ? response.products : undefined,
-    };
-
-    setMessages((prev) => [...prev, aiMessage]);
-    setIsLoading(false);
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (err) {
+      console.error('[SkinConsultationChat] API 호출 실패:', err);
+      setError('답변을 가져오는 데 실패했어요. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 빠른 질문 클릭
@@ -140,6 +197,14 @@ export default function SkinConsultationChat({
         </div>
       )}
 
+      {/* 에러 알림 */}
+      {error && (
+        <div className="mx-4 mt-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
@@ -150,7 +215,7 @@ export default function SkinConsultationChat({
         {isLoading && (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-sm">답변을 생성하고 있어요...</span>
+            <span className="text-sm">AI가 답변을 생성하고 있어요...</span>
           </div>
         )}
 
@@ -187,49 +252,4 @@ export default function SkinConsultationChat({
       </div>
     </div>
   );
-}
-
-/** 텍스트에서 고민 카테고리 감지 */
-function detectConcern(text: string): SkinConcern {
-  const keywords: Record<SkinConcern, string[]> = {
-    dryness: ['건조', '수분', '보습', '당김', '각질'],
-    oiliness: ['유분', '피지', '번들', '기름'],
-    acne: ['트러블', '여드름', '뾰루지', '피부 트러블'],
-    wrinkles: ['주름', '안티에이징', '탄력', '노화'],
-    pigmentation: ['잡티', '색소', '톤', '밝아', '칙칙'],
-    sensitivity: ['민감', '자극', '순한', '붉어'],
-    pores: ['모공', '블랙헤드', '화이트헤드'],
-    general: [],
-  };
-
-  for (const [concern, words] of Object.entries(keywords)) {
-    if (words.some((word) => text.includes(word))) {
-      return concern as SkinConcern;
-    }
-  }
-
-  return 'general';
-}
-
-/** 응답 포맷팅 */
-function formatResponse(response: {
-  message: string;
-  tips: string[];
-  ingredients: string[];
-}): string {
-  let formatted = response.message + '\n\n';
-
-  if (response.tips.length > 0) {
-    formatted += '💡 실천 팁:\n';
-    response.tips.slice(0, 3).forEach((tip, i) => {
-      formatted += `${i + 1}. ${tip}\n`;
-    });
-    formatted += '\n';
-  }
-
-  if (response.ingredients.length > 0) {
-    formatted += `✨ 추천 성분: ${response.ingredients.slice(0, 3).join(', ')}`;
-  }
-
-  return formatted.trim();
 }

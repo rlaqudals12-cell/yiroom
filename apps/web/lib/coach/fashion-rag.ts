@@ -138,7 +138,7 @@ function matchesPersonalColor(itemColors: string[], seasonType: string | undefin
   if (!seasonType) return true; // 정보 없으면 매칭으로 처리
 
   const warmSeasons = ['spring', 'autumn', '봄', '가을'];
-  const coolSeasons = ['summer', 'winter', '여름', '겨울'];
+  // coolSeasons는 isWarm 반대로 계산하므로 명시적 배열 불필요
 
   const isWarm = warmSeasons.some((s) => seasonType.toLowerCase().includes(s.toLowerCase()));
 
@@ -160,7 +160,8 @@ export async function searchFashionItems(
 ): Promise<FashionSearchResult> {
   try {
     const occasion = detectOccasion(query) || 'casual';
-    const intent = analyzeFashionIntent(query);
+    // intent는 향후 카테고리별 필터링에 사용 예정
+    const _intent = analyzeFashionIntent(query);
     const seasonType = userContext?.personalColor?.season;
     const bodyType = userContext?.bodyAnalysis?.bodyType;
 
@@ -321,7 +322,7 @@ export function formatFashionForPrompt(result: FashionSearchResult): string {
 
   let context = '\n\n## 옷장 기반 코디 추천\n';
 
-  result.recommendations.forEach((rec, i) => {
+  result.recommendations.forEach((rec) => {
     context += `\n### ${rec.occasion} 스타일\n`;
     context += `${rec.reason}\n\n`;
 

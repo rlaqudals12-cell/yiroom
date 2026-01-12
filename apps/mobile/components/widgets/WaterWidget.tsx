@@ -37,7 +37,8 @@ export function WaterWidget({
     return Math.floor(progress / 12.5);
   };
 
-  const waterLevel = getWaterLevel();
+  // 향후 물 애니메이션에 사용 예정
+  const _waterLevel = getWaterLevel();
 
   if (size === 'small') {
     return (

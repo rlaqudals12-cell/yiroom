@@ -727,7 +727,7 @@ export function getMakeupStyling(seasonType: SeasonType): MakeupStylingType {
 // Phase J P3: 전체 코디 프리셋 Mock 데이터
 // ============================================
 
-import type { FullOutfit, OutfitPreset, OutfitOccasion } from '@/types/styling';
+import type { OutfitPreset, OutfitOccasion } from '@/types/styling';
 
 /**
  * 시즌별 전체 코디 프리셋

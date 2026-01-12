@@ -172,7 +172,7 @@ export function recommendMasks(skinType: SkinTypeId, concerns: SkinConcernId[]):
 /**
  * 주간 마스크 플랜 생성
  */
-function generateWeeklyPlan(skinType: SkinTypeId, masks: MaskType[]): WeeklyMaskPlan {
+function generateWeeklyPlan(skinType: SkinTypeId, _masks: MaskType[]): WeeklyMaskPlan {
   const plan: WeeklyMaskPlan = {};
 
   // 지성/복합성: 클레이 2회 + 시트 1회
