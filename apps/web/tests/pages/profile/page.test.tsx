@@ -232,7 +232,8 @@ describe('ProfilePage', () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        expect(screen.getByText(/웰니스 스코어/)).toBeInTheDocument();
+        // K-5 리디자인: 웰니스 스코어 텍스트 → 링 차트 컴포넌트
+        expect(screen.getByTestId('wellness-score-ring')).toBeInTheDocument();
       });
     });
 
@@ -260,11 +261,12 @@ describe('ProfilePage', () => {
       });
     });
 
-    it('가입 정보 섹션을 표시한다', async () => {
+    it('가입일 정보를 표시한다', async () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        expect(screen.getByText('가입 정보')).toBeInTheDocument();
+        // K-5 리디자인: '가입 정보' 섹션 → '가입일:' 인라인 표시
+        expect(screen.getByText(/가입일:/)).toBeInTheDocument();
       });
     });
 

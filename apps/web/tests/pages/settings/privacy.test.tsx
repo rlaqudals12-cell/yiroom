@@ -490,7 +490,7 @@ describe('PrivacySettingsPage', () => {
       await waitFor(() => {
         const link = screen.getByText('전체 개인정보 처리방침 보기');
         expect(link).toBeInTheDocument();
-        expect(link.closest('a')).toHaveAttribute('href', '/help/privacy');
+        expect(link.closest('a')).toHaveAttribute('href', '/privacy-policy');
       });
     });
   });
