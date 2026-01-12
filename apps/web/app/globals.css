@@ -65,6 +65,20 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Apple 스타일 여백 (gap-lg, p-xl 등으로 사용) */
+  --spacing-xs: var(--spacing-xs);
+  --spacing-sm: var(--spacing-sm);
+  --spacing-md: var(--spacing-md);
+  --spacing-lg: var(--spacing-lg);
+  --spacing-xl: var(--spacing-xl);
+  --spacing-2xl: var(--spacing-2xl);
+
+  /* Apple 스타일 그림자 (shadow-card 등으로 사용) */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-card: var(--shadow-card);
 }
 
 :root {
@@ -110,6 +124,35 @@
   --status-warning: oklch(0.80 0.16 85);
   --status-error: oklch(0.65 0.22 25);
   --status-info: oklch(0.70 0.15 230);
+
+  /* ========================================
+     Apple 스타일 여백 시스템 (8px 기반)
+     절제된 여유로운 간격으로 고급스러움 표현
+     ======================================== */
+  --spacing-xs: 0.25rem;    /* 4px - 아이콘 내부 */
+  --spacing-sm: 0.5rem;     /* 8px - 텍스트 간격 */
+  --spacing-md: 1rem;       /* 16px - 기본 패딩 */
+  --spacing-lg: 1.5rem;     /* 24px - 카드 간 권장 */
+  --spacing-xl: 2rem;       /* 32px - 섹션 간 권장 */
+  --spacing-2xl: 3rem;      /* 48px - 주요 섹션 간 */
+
+  /* ========================================
+     Apple 스타일 그림자 (은은하게)
+     레이어드 그림자로 자연스러운 깊이감
+     ======================================== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04),
+                 0 4px 12px rgba(0, 0, 0, 0.03);
+
+  /* ========================================
+     버튼/인터랙티브 요소 패딩
+     넉넉한 터치 영역으로 고급스러운 느낌
+     ======================================== */
+  --button-padding-sm: 0.5rem 1rem;      /* 8px 16px */
+  --button-padding-md: 0.75rem 1.5rem;   /* 12px 24px */
+  --button-padding-lg: 1rem 2rem;        /* 16px 32px */
 
   /* Refined Expertise v2 디자인 토큰 (2026-01-12)
      웜톤 배경 + 로고 민트(155°) 프라이머리로 브랜드 일관성 강화 */
