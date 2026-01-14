@@ -75,7 +75,9 @@ describe('createDeeplink', () => {
 
 describe('identifyPartner', () => {
   it('쿠팡 URL을 식별해야 함', () => {
-    expect(identifyPartner('https://www.coupang.com/vp/products/123')).toBe('coupang');
+    expect(identifyPartner('https://www.coupang.com/vp/products/123')).toBe(
+      'coupang'
+    );
   });
 
   it('아이허브 URL을 식별해야 함', () => {
@@ -83,11 +85,15 @@ describe('identifyPartner', () => {
   });
 
   it('무신사 URL을 식별해야 함', () => {
-    expect(identifyPartner('https://www.musinsa.com/app/goods/123')).toBe('musinsa');
+    expect(identifyPartner('https://www.musinsa.com/app/goods/123')).toBe(
+      'musinsa'
+    );
   });
 
   it('대소문자 구분 없이 식별해야 함', () => {
-    expect(identifyPartner('https://WWW.COUPANG.COM/vp/products/123')).toBe('coupang');
+    expect(identifyPartner('https://WWW.COUPANG.COM/vp/products/123')).toBe(
+      'coupang'
+    );
   });
 
   it('알 수 없는 URL은 null을 반환해야 함', () => {
@@ -129,10 +135,14 @@ describe('openAffiliateLink', () => {
   });
 
   it('예외 발생 시 false를 반환해야 함', async () => {
-    (Linking.canOpenURL as jest.Mock).mockRejectedValue(new Error('Network error'));
+    (Linking.canOpenURL as jest.Mock).mockRejectedValue(
+      new Error('Network error')
+    );
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
-    const result = await openAffiliateLink('https://www.coupang.com/vp/products/123');
+    const result = await openAffiliateLink(
+      'https://www.coupang.com/vp/products/123'
+    );
 
     expect(result).toBe(false);
     consoleErrorSpy.mockRestore();

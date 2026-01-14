@@ -360,13 +360,20 @@
       "Skill(qcheck:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nrefactor\\(Phase-E\\): 품질 검사 개선점 적용\n\n- 헬퍼 함수에 한국어 JSDoc 주석 추가\n  - getDescriptionForType: 심각도별 설명 생성 로직\n  - getRecommendationsForType: K-뷰티 성분 매핑 설명\n  - generateMockProblemAreas: AI fallback 좌표 생성 로직\n- ZoomableImage 줌 계산 로직에 \"왜\" 설명 주석 추가\n  - handleZoom: 중심점 기준 줌 위치 계산 수식\n  - focusPoint: 마커 클릭 시 자동 이동 로직\n- SolutionPanel ESC 키 테스트 추가 \\(19개 → 총 34개\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(Phase-F\\): 제품 스캔 및 제품함 기능 구현\n\n- 바코드 스캔 기능 \\(F-1\\): ScanCamera, BarcodeInput 컴포넌트\n- 성분 OCR 분석 \\(F-2\\): IngredientCapture 컴포넌트\n- 사용자 연동 분석 \\(F-3\\): skin-ingredient-match, compatibility\n- 제품함 관리 \\(F-4\\): ShelfList, ShelfItem, RecentScans 컴포넌트\n- 한국 제품 시드 데이터 30개 \\(F-5\\)\n- AI 피부 상담 CTA \\(Phase D\\)\n- E2E 테스트 및 DB 마이그레이션\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(social\\): 카카오 SDK 연동 및 테스트 타입 에러 수정\n\n- layout.tsx에 카카오 SDK 스크립트 추가 \\(소셜 공유 지원\\)\n- affiliate 테스트에서 response undefined 에러 수정\n- barcode 테스트에서 unused ts-expect-error 제거\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 소셜 공유 확장 및 AI 코치 UI 개선\n\n- 피부/체형 분석 결과에 ShareButtons 추가 \\(X, 카카오톡, 링크복사\\)\n- AI 코치에 헤어/메이크업 카테고리 및 아이콘 추가\n- 소셜 공유 E2E 테스트 보강\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: Phase I/J 완료 반영 및 문서 정리\n\n- CLAUDE.md: v10.0 업데이트, Phase J 완료 표시\n- NEXT-TASKS.md: 전면 재정리 \\(Phase 현황, 런칭 체크리스트\\)\n- TODO.md: 현재 상태 반영, 완료된 Phase 정리\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: Phase I/J 스펙 및 ROADMAP 문서 현황 업데이트\n\nPhase I 스펙 문서 \\(4개\\):\n- SPEC-WEATHER-OUTFIT: 25개 테스트 완료 표시\n- SPEC-BARCODE-SCAN: 16개 테스트 완료 표시\n- SPEC-BEFORE-AFTER: 39개 테스트 완료 표시\n- SPEC-MY-INVENTORY: 373개 테스트 완료 표시\n\nPhase J 스펙 문서 \\(3개\\):\n- SDD-PHASE-J-AI-STYLING: 71개 테스트 완료 표시\n- SDD-PHASE-J-P2-ACCESSORY-MAKEUP: 31개 테스트 완료 표시\n- SDD-PHASE-J-P3-FULL-OUTFIT: 25개 테스트 완료 표시\n\nROADMAP 문서 \\(3개\\):\n- ROADMAP-PHASE-NEXT: Phase H/I/J 완료 현황 추가\n- ROADMAP-LAUNCH: 진행률 90% 업데이트\n- ROADMAP-PLATFORM: 어필리에이트 구현 항목 업데이트\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: Phase K 종합 업그레이드 스펙 문서 작성\n\n- 성별 중립화 \\(K-1\\): 온보딩 성별 선택, 남성 추천 추가\n- 패션 확장 \\(K-2\\): 스타일 카테고리, Best 10, 옷장 연동\n- 체형 강화 \\(K-3\\): 키/몸무게/BMI, 자세 교정 운동\n- 영양 확장 \\(K-4\\): 식재료 인벤토리, 레시피 추천\n- 관리자/프로필 \\(K-5\\): 대시보드 및 프로필 리디자인\n\n예상 총 코드량: ~4,600줄, 230개 테스트\n복잡도: 85점 \\(Full 트랙\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(more:*)",
-      "Bash(wmic process where \"commandline like '%vitest%'\" get processid:*)"
+      "Bash(timeout /t 8)",
+      "Bash(wmic process where \"ProcessId=26800\" call terminate)",
+      "Bash(npx supabase start:*)",
+      "Bash(wmic process where processid=25936 delete)",
+      "Bash(wmic process where processid=39516 delete)",
+      "Bash(wmic process where processid=6496 delete)",
+      "Bash(powershell -Command \"Stop-Process -Id 36308 -Force\")",
+      "Bash(powershell -Command \"Stop-Process -Id 45228 -Force\")",
+      "Bash(npx next dev:*)",
+      "Bash(node scripts/preflight-check.js:*)",
+      "Bash(node scripts/server-reset.js:*)",
+      "Bash(npm run preflight:*)",
+      "Bash(git pull:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: SDD-MASTER-REFACTORING-PLAN v1.9 - Part 15-20 추가\n\n- Part 15: W-1/N-1 웰니스 모듈 고도화 스펙\n- Part 16: Products UI/UX 전면 개편 스펙\n- Part 17: Reports 콘텐츠 구현 스펙\n- Part 18: 고도화 로드맵 통합 \\(총 126시간\\)\n- Part 19: Fashion/Closet 모듈 고도화 스펙\n- Part 20: 2026 UX 트렌드 반영 체크리스트\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   },
   "env": {

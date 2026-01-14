@@ -170,8 +170,8 @@ describe('ChallengeStats', () => {
     };
 
     expect(stats.total).toBe(10);
-    expect(stats.inProgress + stats.completed + stats.failed).toBeLessThanOrEqual(
-      stats.total
-    );
+    expect(
+      stats.inProgress + stats.completed + stats.failed
+    ).toBeLessThanOrEqual(stats.total);
   });
 });

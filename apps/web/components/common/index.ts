@@ -1,6 +1,7 @@
 export { EmptyStateCard } from './EmptyStateCard';
 export { EmptyState } from './EmptyState';
 export { CollapsibleSection } from './CollapsibleSection';
+export { ProgressiveDisclosure, type ProgressiveDisclosureProps } from './ProgressiveDisclosure';
 export { InfoTooltip, InlineHelp } from './InfoTooltip';
 export { Footer } from './Footer';
 export { ErrorBoundary } from './ErrorBoundary';

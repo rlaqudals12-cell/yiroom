@@ -15,7 +15,12 @@ import {
   PRODUCT_CATEGORIES,
   getCategoryInfo,
 } from '@/lib/skincare';
-import type { SkinTypeId, SkinConcernId, TimeOfDay, ProductCategory } from '@/lib/skincare';
+import type {
+  SkinTypeId,
+  SkinConcernId,
+  TimeOfDay,
+  ProductCategory,
+} from '@/lib/skincare';
 
 describe('스킨케어 루틴', () => {
   describe('generateRoutine', () => {
@@ -78,8 +83,12 @@ describe('스킨케어 루틴', () => {
         includeOptional: true,
       });
 
-      const hasAmpoule = result.routine.some((step) => step.category === 'ampoule');
-      const hasSpot = result.routine.some((step) => step.category === 'spot_treatment');
+      const hasAmpoule = result.routine.some(
+        (step) => step.category === 'ampoule'
+      );
+      const hasSpot = result.routine.some(
+        (step) => step.category === 'spot_treatment'
+      );
       expect(hasAmpoule).toBe(false);
       expect(hasSpot).toBe(false);
     });
@@ -99,8 +108,12 @@ describe('스킨케어 루틴', () => {
         includeOptional: false,
       });
 
-      expect(withOptional.routine.length).toBeGreaterThan(withoutOptional.routine.length);
-      expect(withoutOptional.routine.every((step) => !step.isOptional)).toBe(true);
+      expect(withOptional.routine.length).toBeGreaterThan(
+        withoutOptional.routine.length
+      );
+      expect(withoutOptional.routine.every((step) => !step.isOptional)).toBe(
+        true
+      );
     });
 
     it('단계 순서가 올바르게 정렬된다', () => {
@@ -132,8 +145,24 @@ describe('스킨케어 루틴', () => {
   describe('calculateEstimatedTime', () => {
     it('분 단위 시간을 정확히 계산한다', () => {
       const steps = [
-        { order: 1, category: 'cleanser' as ProductCategory, name: '클렌저', purpose: '', tips: [], isOptional: false, duration: '1분' },
-        { order: 2, category: 'toner' as ProductCategory, name: '토너', purpose: '', tips: [], isOptional: false, duration: '30초' },
+        {
+          order: 1,
+          category: 'cleanser' as ProductCategory,
+          name: '클렌저',
+          purpose: '',
+          tips: [],
+          isOptional: false,
+          duration: '1분',
+        },
+        {
+          order: 2,
+          category: 'toner' as ProductCategory,
+          name: '토너',
+          purpose: '',
+          tips: [],
+          isOptional: false,
+          duration: '30초',
+        },
       ];
 
       const time = calculateEstimatedTime(steps);
@@ -142,8 +171,23 @@ describe('스킨케어 루틴', () => {
 
     it('duration이 없는 단계는 0으로 처리한다', () => {
       const steps = [
-        { order: 1, category: 'cleanser' as ProductCategory, name: '클렌저', purpose: '', tips: [], isOptional: false },
-        { order: 2, category: 'toner' as ProductCategory, name: '토너', purpose: '', tips: [], isOptional: false, duration: '30초' },
+        {
+          order: 1,
+          category: 'cleanser' as ProductCategory,
+          name: '클렌저',
+          purpose: '',
+          tips: [],
+          isOptional: false,
+        },
+        {
+          order: 2,
+          category: 'toner' as ProductCategory,
+          name: '토너',
+          purpose: '',
+          tips: [],
+          isOptional: false,
+          duration: '30초',
+        },
       ];
 
       const time = calculateEstimatedTime(steps);
@@ -164,7 +208,13 @@ describe('스킨케어 루틴', () => {
 
   describe('getSkinTypeLabel', () => {
     it('모든 피부 타입에 대해 한글 라벨을 반환한다', () => {
-      const types: SkinTypeId[] = ['dry', 'oily', 'combination', 'normal', 'sensitive'];
+      const types: SkinTypeId[] = [
+        'dry',
+        'oily',
+        'combination',
+        'normal',
+        'sensitive',
+      ];
       const labels = ['건성', '지성', '복합성', '중성', '민감성'];
 
       types.forEach((type, index) => {
@@ -206,7 +256,13 @@ describe('스킨케어 루틴', () => {
     });
 
     it('모든 피부 타입에 대한 수정자가 정의되어 있다', () => {
-      const types: SkinTypeId[] = ['dry', 'oily', 'combination', 'normal', 'sensitive'];
+      const types: SkinTypeId[] = [
+        'dry',
+        'oily',
+        'combination',
+        'normal',
+        'sensitive',
+      ];
       types.forEach((type) => {
         expect(SKIN_TYPE_MODIFIERS[type]).toBeDefined();
         expect(SKIN_TYPE_MODIFIERS[type]).toHaveProperty('addCategories');
@@ -218,8 +274,17 @@ describe('스킨케어 루틴', () => {
 
     it('모든 카테고리에 대한 정보가 정의되어 있다', () => {
       const categories: ProductCategory[] = [
-        'cleanser', 'toner', 'essence', 'serum', 'ampoule',
-        'cream', 'sunscreen', 'mask', 'eye_cream', 'oil', 'spot_treatment'
+        'cleanser',
+        'toner',
+        'essence',
+        'serum',
+        'ampoule',
+        'cream',
+        'sunscreen',
+        'mask',
+        'eye_cream',
+        'oil',
+        'spot_treatment',
       ];
 
       categories.forEach((category) => {

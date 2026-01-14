@@ -1,17 +1,17 @@
 'use client';
 
-import { SignedOut, SignInButton, SignedIn, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
-import React from "react";
-import { Heart, ChevronDown, Palette, Sparkles, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { SignedOut, SignInButton, SignedIn, UserButton } from '@clerk/nextjs';
+import Link from 'next/link';
+import React from 'react';
+import { Heart, ChevronDown, Palette, Sparkles, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 const Navbar = () => {
   return (
@@ -53,7 +53,10 @@ const Navbar = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem asChild>
-                  <Link href="/analysis/personal-color" className="flex items-center gap-2 cursor-pointer">
+                  <Link
+                    href="/analysis/personal-color"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <Palette className="h-4 w-4 text-pink-500" />
                     퍼스널 컬러
                   </Link>
@@ -105,7 +108,16 @@ const Navbar = () => {
             <Heart className="h-5 w-5" />
           </Link>
           <ThemeToggle compact />
-          <UserButton />
+          {/* 프로필 영역: 아바타 + "나" 레이블 */}
+          <div className="flex flex-col items-center gap-0.5">
+            <UserButton />
+            <Link
+              href="/profile"
+              className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              나
+            </Link>
+          </div>
         </SignedIn>
       </div>
     </header>

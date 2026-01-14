@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Sun, User, LightbulbOff, Smartphone, Check, ImageIcon, Shirt } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Sun, User, LightbulbOff, Smartphone, Check, ImageIcon, Shirt, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
+import { useUserProfile, type GenderType } from '@/hooks/useUserProfile';
 
 interface LightingGuideProps {
   onContinue: (consentToSaveImage: boolean) => void;
@@ -15,6 +17,32 @@ interface LightingGuideProps {
 export default function LightingGuide({ onContinue, onSkip, onGallery }: LightingGuideProps) {
   // 기본값: 체크됨 (드레이핑 기능 활성화)
   const [consentToSaveImage, setConsentToSaveImage] = useState(true);
+
+  // 사용자 프로필에서 성별 정보 가져오기
+  const { profile, updateGender, isLoading: isProfileLoading } = useUserProfile();
+  const [selectedGender, setSelectedGender] = useState<GenderType | null>(null);
+  const [isGenderSaving, setIsGenderSaving] = useState(false);
+
+  // 프로필에서 성별 로드
+  useEffect(() => {
+    if (!isProfileLoading && profile.gender) {
+      setSelectedGender(profile.gender);
+    }
+  }, [isProfileLoading, profile.gender]);
+
+  // 성별 선택 핸들러
+  const handleGenderSelect = async (gender: GenderType) => {
+    setSelectedGender(gender);
+    setIsGenderSaving(true);
+    try {
+      await updateGender(gender);
+    } finally {
+      setIsGenderSaving(false);
+    }
+  };
+
+  // 성별이 선택되었는지 확인 (진행 가능 여부)
+  const canProceed = selectedGender !== null;
   return (
     <div data-testid="lighting-guide" className="space-y-8 animate-fade-in-up">
       {/* 1. 헤더: 전문적인 느낌의 뱃지와 타이포그래피 */}
@@ -113,6 +141,41 @@ export default function LightingGuide({ onContinue, onSkip, onGallery }: Lightin
         </div>
       </div>
 
+      {/* 성별 선택 */}
+      <div className="p-4 rounded-2xl bg-muted/50 border border-border">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <Users className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">성별 선택</p>
+            <p className="text-xs text-muted-foreground">맞춤 스타일 추천에 활용돼요</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          {[
+            { id: 'male' as GenderType, label: '남성' },
+            { id: 'female' as GenderType, label: '여성' },
+            { id: 'neutral' as GenderType, label: '선택 안함' },
+          ].map((option) => (
+            <button
+              key={option.id}
+              onClick={() => handleGenderSelect(option.id)}
+              disabled={isGenderSaving || isProfileLoading}
+              className={cn(
+                'flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all',
+                selectedGender === option.id
+                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                  : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground',
+                (isGenderSaving || isProfileLoading) && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* 이미지 저장 동의 체크박스 */}
       <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
         <label className="flex items-start gap-3 cursor-pointer">
@@ -140,9 +203,20 @@ export default function LightingGuide({ onContinue, onSkip, onGallery }: Lightin
 
       {/* 하단 버튼: 그라디언트 및 그림자 효과 강화 */}
       <div className="pt-4 space-y-3">
+        {/* 성별 미선택 시 안내 메시지 */}
+        {!canProceed && !isProfileLoading && (
+          <p className="text-xs text-center text-amber-600 dark:text-amber-400">
+            성별을 선택해주세요
+          </p>
+        )}
+
         <Button
           onClick={() => onContinue(consentToSaveImage)}
-          className="w-full h-14 text-lg bg-gradient-brand hover:opacity-90 shadow-lg shadow-primary/20 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 font-bold"
+          disabled={!canProceed || isGenderSaving}
+          className={cn(
+            'w-full h-14 text-lg bg-gradient-brand hover:opacity-90 shadow-lg shadow-primary/20 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 font-bold',
+            (!canProceed || isGenderSaving) && 'opacity-50 cursor-not-allowed'
+          )}
         >
           촬영 시작하기
         </Button>
@@ -151,7 +225,11 @@ export default function LightingGuide({ onContinue, onSkip, onGallery }: Lightin
           <Button
             variant="outline"
             onClick={() => onGallery(consentToSaveImage)}
-            className="w-full h-12 text-base gap-2 rounded-xl"
+            disabled={!canProceed || isGenderSaving}
+            className={cn(
+              'w-full h-12 text-base gap-2 rounded-xl',
+              (!canProceed || isGenderSaving) && 'opacity-50 cursor-not-allowed'
+            )}
           >
             <ImageIcon className="w-5 h-5" />
             갤러리에서 선택

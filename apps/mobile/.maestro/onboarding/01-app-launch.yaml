@@ -3,7 +3,6 @@ appId: com.yiroom.app
 name: App Launch Test
 
 ---
-
 # 앱 실행
 - launchApp:
     appId: ${APP_ID}
@@ -12,15 +11,15 @@ name: App Launch Test
 # 앱 로딩 대기
 - extendedWaitUntil:
     visible:
-      id: "home-screen"
+      id: 'home-screen'
     timeout: 10000
 
 # 홈 화면 확인
 - assertVisible:
-    id: "home-screen"
+    id: 'home-screen'
 
 # 탭 바 확인
 - assertVisible:
-    text: "홈"
+    text: '홈'
 - assertVisible:
-    text: "프로필"
+    text: '프로필'

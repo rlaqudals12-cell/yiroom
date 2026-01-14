@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzeSkin, type GeminiSkinAnalysisResult } from '@/lib/gemini';
-import { generateMockAnalysisResult } from '@/lib/mock/skin-analysis';
+import { generateMockAnalysisResult, FOUNDATION_FORMULAS } from '@/lib/mock/skin-analysis';
 import { MOCK_PROBLEM_AREAS } from '@/lib/mock/skin-problem-areas';
 import { getWarningIngredientsForSkinType, type SkinType } from '@/lib/ingredients';
 import { generateProductRecommendations, formatProductsForDB } from '@/lib/product-recommendations';
@@ -202,6 +202,7 @@ export async function POST(req: Request) {
     console.log(`[S-1] Image consent status: ${hasImageConsent ? 'granted' : 'not granted'}`);
 
     // 이미지 업로드 헬퍼 (동의가 있는 경우에만 사용)
+    // 반환값: Storage 경로 (private bucket이므로 결과 페이지에서 signed URL 생성)
     const uploadImage = async (base64: string, suffix: string): Promise<string | null> => {
       if (!hasImageConsent) return null;
 
@@ -218,6 +219,8 @@ export async function POST(req: Request) {
         console.error(`Image upload error (${suffix}):`, error);
         return null;
       }
+
+      // Private bucket이므로 경로만 저장 (결과 페이지에서 signed URL 생성)
       return data.path;
     };
 
@@ -227,9 +230,11 @@ export async function POST(req: Request) {
     let _rightImageUrl: string | null = null;
 
     if (hasImageConsent) {
+      console.log('[S-1] 동의 있음 - 이미지 업로드 시작');
       // 정면 이미지 업로드
       if (primaryImage) {
         frontImageUrl = await uploadImage(primaryImage, 'front');
+        console.log('[S-1] 정면 이미지 업로드 결과:', frontImageUrl ? '성공' : '실패');
       }
 
       // 좌측 이미지 업로드 (선택) - 미래 다각도 분석용
@@ -241,10 +246,13 @@ export async function POST(req: Request) {
       if (rightImageBase64) {
         _rightImageUrl = await uploadImage(rightImageBase64, 'right');
       }
+    } else {
+      console.log('[S-1] 동의 없음 - 이미지 업로드 건너뜀');
     }
 
     // 하위 호환: 기존 imageUrl은 frontImageUrl 사용
     const imageUrl = frontImageUrl;
+    console.log('[S-1] 최종 imageUrl:', imageUrl || '(없음)');
 
     // 퍼스널 컬러 조회 (자동 연동 + 파운데이션 추천)
     const { data: pcData } = await supabase
@@ -457,15 +465,23 @@ export async function POST(req: Request) {
       console.error('[S-1] Gamification error:', gamificationError);
     }
 
+    // 피부 타입 기반 파운데이션 제형 추천 (S-1 전용)
+    // skinType을 SkinTypeId로 매핑 (SkinType과 SkinTypeId가 동일)
+    const foundationFormula =
+      FOUNDATION_FORMULAS[skinType as keyof typeof FOUNDATION_FORMULAS] || null;
+
     return NextResponse.json({
       success: true,
       data: data,
       result: {
         ...result,
         analyzedAt: new Date().toISOString(),
+        // 피부 타입 기반 파운데이션 제형 추천
+        foundationFormula,
       },
       personalColorSeason,
-      foundationRecommendation,
+      foundationRecommendation, // deprecated, PC-1으로 이동
+      foundationFormula, // 피부 타입 기반 제형 추천 (S-1 전용)
       ingredientWarnings,
       productRecommendations,
       usedMock,

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { useTheme } from '@/components/providers/theme-provider';
+import { useUserProfile, type GenderType } from '@/hooks/useUserProfile';
 import {
   ArrowLeft,
   User,
@@ -22,10 +23,16 @@ import {
   FileText,
   Lock,
   LogOut,
+  Users,
 } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
-import { DeleteAccountDialog, DataExportButton } from '@/components/settings';
+import {
+  DeleteAccountDialog,
+  DataExportButton,
+  PhysicalInfoCard,
+  AllergyInfoCard,
+} from '@/components/settings';
 
 /**
  * 설정 페이지 - UX 리스트럭처링
@@ -78,13 +85,7 @@ const DEFAULT_PRIVACY_SETTINGS = {
 };
 
 // Toggle 컴포넌트
-function Toggle({
-  enabled,
-  onChange,
-}: {
-  enabled: boolean;
-  onChange: (enabled: boolean) => void;
-}) {
+function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (enabled: boolean) => void }) {
   return (
     <button
       type="button"
@@ -131,17 +132,13 @@ function SettingItem({
             danger ? 'bg-destructive/10' : 'bg-muted'
           )}
         >
-          <Icon
-            className={cn('w-5 h-5', danger ? 'text-destructive' : 'text-muted-foreground')}
-          />
+          <Icon className={cn('w-5 h-5', danger ? 'text-destructive' : 'text-muted-foreground')} />
         </div>
         <div className="flex-1">
           <p className={cn('font-medium', danger ? 'text-destructive' : 'text-foreground')}>
             {label}
           </p>
-          {description && (
-            <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
-          )}
+          {description && <p className="text-sm text-muted-foreground mt-0.5">{description}</p>}
         </div>
       </div>
       {action || (onClick && <ChevronRight className="w-5 h-5 text-muted-foreground" />)}
@@ -160,9 +157,7 @@ function SettingItem({
   }
 
   return (
-    <div className="flex items-center justify-between p-4 bg-card rounded-xl border">
-      {content}
-    </div>
+    <div className="flex items-center justify-between p-4 bg-card rounded-xl border">{content}</div>
   );
 }
 
@@ -172,6 +167,14 @@ export default function SettingsPage() {
   const { signOut, openUserProfile } = useClerk();
   const { user } = useUser();
   const { theme, setTheme } = useTheme();
+  const {
+    profile,
+    updateGender,
+    updateHeight,
+    updateWeight,
+    updateAllergies,
+    isLoading: isProfileLoading,
+  } = useUserProfile();
   const initialTab = (searchParams.get('tab') as SettingsTab) || 'account';
 
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
@@ -193,8 +196,13 @@ export default function SettingsPage() {
     const savedNotifications = localStorage.getItem(STORAGE_KEYS.notifications);
     if (savedNotifications) {
       try {
-        setNotificationSettings({ ...DEFAULT_NOTIFICATION_SETTINGS, ...JSON.parse(savedNotifications) });
-      } catch { /* 무시 */ }
+        setNotificationSettings({
+          ...DEFAULT_NOTIFICATION_SETTINGS,
+          ...JSON.parse(savedNotifications),
+        });
+      } catch {
+        /* 무시 */
+      }
     }
 
     // 개인정보 설정 불러오기
@@ -202,7 +210,9 @@ export default function SettingsPage() {
     if (savedPrivacy) {
       try {
         setPrivacySettings({ ...DEFAULT_PRIVACY_SETTINGS, ...JSON.parse(savedPrivacy) });
-      } catch { /* 무시 */ }
+      } catch {
+        /* 무시 */
+      }
     }
 
     // 언어 설정 불러오기
@@ -241,6 +251,11 @@ export default function SettingsPage() {
     localStorage.setItem(STORAGE_KEYS.language, newLanguage);
   };
 
+  // 성별 변경 핸들러
+  const handleGenderChange = async (newGender: GenderType) => {
+    await updateGender(newGender);
+  };
+
   // 현재 테마 (next-themes)
   const currentTheme = (theme as 'light' | 'dark' | 'system') || 'system';
 
@@ -249,26 +264,89 @@ export default function SettingsPage() {
       case 'account':
         return (
           <FadeInUp>
-            <div className="space-y-3">
-              <SettingItem
-                icon={User}
-                label="프로필 편집"
-                description="이름, 프로필 사진 변경"
-                onClick={() => openUserProfile()}
-              />
-              <SettingItem
-                icon={Lock}
-                label="비밀번호 및 보안"
-                description="비밀번호 변경, 2단계 인증"
-                onClick={() => openUserProfile()}
-              />
-              <SettingItem
-                icon={LogOut}
-                label="로그아웃"
-                description="현재 기기에서 로그아웃"
-                onClick={() => signOut({ redirectUrl: '/' })}
-                danger
-              />
+            <div className="space-y-6">
+              {/* 내 정보 섹션 */}
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">내 정보</h3>
+                <div className="space-y-3">
+                  {/* 성별 선택 */}
+                  <div className="p-4 bg-card rounded-xl border">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                        <Users className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">성별</p>
+                        <p className="text-sm text-muted-foreground">맞춤 추천에 활용됩니다</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {[
+                        { id: 'male' as GenderType, label: '남성' },
+                        { id: 'female' as GenderType, label: '여성' },
+                        { id: 'neutral' as GenderType, label: '선택 안함' },
+                      ].map((genderOption) => (
+                        <button
+                          key={genderOption.id}
+                          onClick={() => handleGenderChange(genderOption.id)}
+                          disabled={isProfileLoading}
+                          className={cn(
+                            'flex-1 py-2 rounded-lg border transition-colors',
+                            profile.gender === genderOption.id
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted',
+                            isProfileLoading && 'opacity-50 cursor-not-allowed'
+                          )}
+                        >
+                          <span className="text-sm">{genderOption.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 신체 정보 카드 */}
+                  <PhysicalInfoCard
+                    heightCm={profile.heightCm}
+                    weightKg={profile.weightKg}
+                    onHeightChange={updateHeight}
+                    onWeightChange={updateWeight}
+                    isLoading={isProfileLoading}
+                  />
+
+                  {/* 알러지 정보 카드 */}
+                  <AllergyInfoCard
+                    allergies={profile.allergies}
+                    onAllergiesChange={updateAllergies}
+                    isLoading={isProfileLoading}
+                  />
+                </div>
+              </div>
+
+              {/* 계정 관리 섹션 */}
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">계정 관리</h3>
+                <div className="space-y-3">
+                  <SettingItem
+                    icon={User}
+                    label="프로필 편집"
+                    description="이름, 프로필 사진 변경"
+                    onClick={() => openUserProfile()}
+                  />
+                  <SettingItem
+                    icon={Lock}
+                    label="비밀번호 및 보안"
+                    description="비밀번호 변경, 2단계 인증"
+                    onClick={() => openUserProfile()}
+                  />
+                  <SettingItem
+                    icon={LogOut}
+                    label="로그아웃"
+                    description="현재 기기에서 로그아웃"
+                    onClick={() => signOut({ redirectUrl: '/' })}
+                    danger
+                  />
+                </div>
+              </div>
             </div>
           </FadeInUp>
         );
@@ -279,9 +357,7 @@ export default function SettingsPage() {
             <div className="space-y-6">
               {/* 일반 알림 */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">
-                  일반
-                </h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">일반</h3>
                 <div className="space-y-3">
                   <SettingItem
                     icon={Bell}
@@ -321,9 +397,7 @@ export default function SettingsPage() {
 
               {/* 활동 알림 */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">
-                  활동
-                </h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">활동</h3>
                 <div className="space-y-3">
                   <SettingItem
                     icon={User}
@@ -384,7 +458,9 @@ export default function SettingsPage() {
                   ].map((themeOption) => (
                     <button
                       key={themeOption.id}
-                      onClick={() => handleThemeChange(themeOption.id as 'light' | 'dark' | 'system')}
+                      onClick={() =>
+                        handleThemeChange(themeOption.id as 'light' | 'dark' | 'system')
+                      }
                       className={cn(
                         'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors',
                         currentTheme === themeOption.id
@@ -502,16 +578,8 @@ export default function SettingsPage() {
         return (
           <FadeInUp>
             <div className="space-y-3">
-              <SettingItem
-                icon={Info}
-                label="앱 버전"
-                description="1.0.0"
-              />
-              <SettingItem
-                icon={FileText}
-                label="이용약관"
-                onClick={() => router.push('/terms')}
-              />
+              <SettingItem icon={Info} label="앱 버전" description="1.0.0" />
+              <SettingItem icon={FileText} label="이용약관" onClick={() => router.push('/terms')} />
               <SettingItem
                 icon={Shield}
                 label="개인정보처리방침"

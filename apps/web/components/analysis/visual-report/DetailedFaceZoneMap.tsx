@@ -11,7 +11,13 @@ import type {
   ZoneId,
   ZoneMap,
 } from '@/types/skin-zones';
-import { aggregateToSixZones, ZONE_LABELS, DETAILED_ZONE_LABELS } from '@/types/skin-zones';
+import {
+  aggregateToSixZones,
+  ZONE_LABELS,
+  DETAILED_ZONE_LABELS,
+  DETAILED_ZONE_SVG_AREAS,
+  ZONE_SVG_AREAS,
+} from '@/types/skin-zones';
 
 // 세부 존 색상 매핑 (5단계)
 const DETAILED_ZONE_COLORS: Record<DetailedStatusLevel, { fill: string; stroke: string }> = {
@@ -179,7 +185,7 @@ export function DetailedFaceZoneMap({
     onViewModeChange?.(mode);
   };
 
-  // 12존 렌더링
+  // 12존 렌더링 (터치 타겟 최소 44px 보장)
   const renderDetailedZone = (zoneId: DetailedZoneId) => {
     const zone = zones[zoneId];
     if (!zone) return null;
@@ -189,9 +195,11 @@ export function DetailedFaceZoneMap({
     const isHovered = hoveredZone === zoneId;
     const isInteractive = !!onZoneClick;
     const pos = DETAILED_ZONE_LABEL_POS[zoneId];
+    const touchArea = DETAILED_ZONE_SVG_AREAS[zoneId];
 
     return (
-      <g key={zoneId} data-zone={zoneId}>
+      <g key={zoneId} data-zone={zoneId} data-testid={`zone-${zoneId}`}>
+        {/* 시각적 영역 */}
         <path
           d={DETAILED_ZONE_PATHS[zoneId]}
           className={cn(
@@ -199,13 +207,33 @@ export function DetailedFaceZoneMap({
             colors.stroke,
             'stroke-[1.5] transition-all duration-200',
             isWorst && 'stroke-2 animate-pulse',
-            isHovered && 'brightness-110',
-            isInteractive && 'cursor-pointer hover:brightness-110'
+            isHovered && 'brightness-110'
           )}
-          onClick={() => onZoneClick?.(zoneId)}
-          onMouseEnter={() => setHoveredZone(zoneId)}
-          onMouseLeave={() => setHoveredZone(null)}
         />
+
+        {/* 투명 터치 영역 (44px 최소 터치 타겟 보장) */}
+        {isInteractive && touchArea && (
+          <rect
+            x={touchArea.x}
+            y={touchArea.y}
+            width={touchArea.width}
+            height={touchArea.height}
+            fill="transparent"
+            className="cursor-pointer"
+            onClick={() => onZoneClick?.(zoneId)}
+            onMouseEnter={() => setHoveredZone(zoneId)}
+            onMouseLeave={() => setHoveredZone(null)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onZoneClick?.(zoneId);
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label={DETAILED_ZONE_LABELS[zoneId]}
+          />
+        )}
 
         {/* 점수 표시 */}
         {showScores && pos && (
@@ -230,7 +258,7 @@ export function DetailedFaceZoneMap({
     );
   };
 
-  // 6존 렌더링
+  // 6존 렌더링 (터치 타겟 최소 44px 보장)
   const renderSixZone = (zoneId: ZoneId) => {
     const zone = sixZoneData[zoneId];
     if (!zone) return null;
@@ -239,12 +267,13 @@ export function DetailedFaceZoneMap({
     const isHovered = hoveredZone === zoneId;
     const isInteractive = !!onZoneClick;
     const pos = SIX_ZONE_LABEL_POS[zoneId];
+    const touchArea = ZONE_SVG_AREAS[zoneId];
 
     // 볼은 양쪽 렌더링
     if (zoneId === 'cheeks') {
       return (
-        <g key={zoneId} data-zone={zoneId}>
-          {/* 왼쪽 볼 */}
+        <g key={zoneId} data-zone={zoneId} data-testid={`zone-${zoneId}`}>
+          {/* 왼쪽 볼 시각적 영역 */}
           <ellipse
             cx="50"
             cy="145"
@@ -254,14 +283,10 @@ export function DetailedFaceZoneMap({
               colors.fill,
               colors.stroke,
               'stroke-[1.5] transition-all duration-200',
-              isHovered && 'brightness-110',
-              isInteractive && 'cursor-pointer hover:brightness-110'
+              isHovered && 'brightness-110'
             )}
-            onClick={() => onZoneClick?.(zoneId)}
-            onMouseEnter={() => setHoveredZone(zoneId)}
-            onMouseLeave={() => setHoveredZone(null)}
           />
-          {/* 오른쪽 볼 */}
+          {/* 오른쪽 볼 시각적 영역 */}
           <ellipse
             cx="150"
             cy="145"
@@ -271,13 +296,32 @@ export function DetailedFaceZoneMap({
               colors.fill,
               colors.stroke,
               'stroke-[1.5] transition-all duration-200',
-              isHovered && 'brightness-110',
-              isInteractive && 'cursor-pointer hover:brightness-110'
+              isHovered && 'brightness-110'
             )}
-            onClick={() => onZoneClick?.(zoneId)}
-            onMouseEnter={() => setHoveredZone(zoneId)}
-            onMouseLeave={() => setHoveredZone(null)}
           />
+          {/* 터치 영역 (양쪽 볼 포함) */}
+          {isInteractive && touchArea && (
+            <rect
+              x={touchArea.x}
+              y={touchArea.y}
+              width={touchArea.width}
+              height={touchArea.height}
+              fill="transparent"
+              className="cursor-pointer"
+              onClick={() => onZoneClick?.(zoneId)}
+              onMouseEnter={() => setHoveredZone(zoneId)}
+              onMouseLeave={() => setHoveredZone(null)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onZoneClick?.(zoneId);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={ZONE_LABELS[zoneId]}
+            />
+          )}
           {showScores && (
             <text
               x={50}
@@ -294,20 +338,40 @@ export function DetailedFaceZoneMap({
     }
 
     return (
-      <g key={zoneId} data-zone={zoneId}>
+      <g key={zoneId} data-zone={zoneId} data-testid={`zone-${zoneId}`}>
+        {/* 시각적 영역 */}
         <path
           d={SIX_ZONE_PATHS[zoneId]}
           className={cn(
             colors.fill,
             colors.stroke,
             'stroke-[1.5] transition-all duration-200',
-            isHovered && 'brightness-110',
-            isInteractive && 'cursor-pointer hover:brightness-110'
+            isHovered && 'brightness-110'
           )}
-          onClick={() => onZoneClick?.(zoneId)}
-          onMouseEnter={() => setHoveredZone(zoneId)}
-          onMouseLeave={() => setHoveredZone(null)}
         />
+        {/* 투명 터치 영역 (44px 최소 터치 타겟 보장) */}
+        {isInteractive && touchArea && (
+          <rect
+            x={touchArea.x}
+            y={touchArea.y}
+            width={touchArea.width}
+            height={touchArea.height}
+            fill="transparent"
+            className="cursor-pointer"
+            onClick={() => onZoneClick?.(zoneId)}
+            onMouseEnter={() => setHoveredZone(zoneId)}
+            onMouseLeave={() => setHoveredZone(null)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onZoneClick?.(zoneId);
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label={ZONE_LABELS[zoneId]}
+          />
+        )}
         {showScores && pos && (
           <text
             x={pos.x}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { LATEST_CONSENT_VERSION } from '@/components/analysis/consent';
 import { checkConsentEligibility } from '@/lib/consent/version-check';
@@ -26,15 +26,10 @@ const ANALYSIS_STORAGE_BUCKETS: Record<AnalysisType, string> = {
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClerkSupabaseClient();
+    // Clerk 인증 확인
+    const { userId } = await auth();
 
-    // 사용자 인증 확인
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -46,10 +41,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid analysis type' }, { status: 400 });
     }
 
-    // 동의 상태 조회
+    // Service Role로 동의 상태 조회
+    const supabase = createServiceRoleClient();
     const { data, error } = await supabase
       .from('image_consents')
       .select('*')
+      .eq('clerk_user_id', userId)
       .eq('analysis_type', analysisType)
       .maybeSingle();
 
@@ -72,15 +69,10 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClerkSupabaseClient();
+    // Clerk 인증 확인
+    const { userId } = await auth();
 
-    // 사용자 인증 확인
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -92,16 +84,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid analysis type' }, { status: 400 });
     }
 
+    const supabase = createServiceRoleClient();
+
     // 14세 미만 동의 자격 검증 (PIPA 준수)
-    const { data: userProfile } = await supabase
+    const { data: userProfile, error: profileError } = await supabase
       .from('users')
       .select('birth_date')
-      .eq('clerk_user_id', user.id)
+      .eq('clerk_user_id', userId)
       .single();
 
+    console.log('[Consent API] User profile:', userProfile, 'Error:', profileError);
+
     const eligibility = checkConsentEligibility(userProfile?.birth_date);
+    console.log('[Consent API] Eligibility check:', eligibility);
 
     if (!eligibility.canConsent) {
+      console.log('[Consent API] 동의 불가:', eligibility.reason);
       return NextResponse.json(
         {
           error:
@@ -124,7 +122,7 @@ export async function POST(request: NextRequest) {
       .from('image_consents')
       .upsert(
         {
-          clerk_user_id: user.id,
+          clerk_user_id: userId,
           analysis_type: analysisType,
           consent_given: true,
           consent_version: LATEST_CONSENT_VERSION,
@@ -157,15 +155,10 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createClerkSupabaseClient();
+    // Clerk 인증 확인
+    const { userId } = await auth();
 
-    // 사용자 인증 확인
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -178,26 +171,24 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Service Role 클라이언트로 스토리지 접근 (RLS 우회)
-    const serviceSupabase = createServiceRoleClient();
+    const supabase = createServiceRoleClient();
     const bucketName = ANALYSIS_STORAGE_BUCKETS[analysisType];
 
     // 사용자 이미지 폴더 조회 및 삭제
     let deletedImagesCount = 0;
     try {
-      const { data: files, error: listError } = await serviceSupabase.storage
+      const { data: files, error: listError } = await supabase.storage
         .from(bucketName)
-        .list(user.id);
+        .list(userId);
 
       if (listError) {
         console.warn(`[Consent API] Storage list error (${bucketName}):`, listError);
         // 버킷이 없거나 빈 경우 무시하고 계속 진행
       } else if (files && files.length > 0) {
         // 파일 경로 생성
-        const filePaths = files.map((file) => `${user.id}/${file.name}`);
+        const filePaths = files.map((file) => `${userId}/${file.name}`);
 
-        const { error: deleteError } = await serviceSupabase.storage
-          .from(bucketName)
-          .remove(filePaths);
+        const { error: deleteError } = await supabase.storage.from(bucketName).remove(filePaths);
 
         if (deleteError) {
           console.error(`[Consent API] Storage delete error:`, deleteError);
@@ -219,6 +210,7 @@ export async function DELETE(request: NextRequest) {
         consent_given: false,
         withdrawal_at: new Date().toISOString(),
       })
+      .eq('clerk_user_id', userId)
       .eq('analysis_type', analysisType);
 
     if (error) {

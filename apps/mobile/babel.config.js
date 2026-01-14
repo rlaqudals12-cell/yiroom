@@ -7,7 +7,10 @@ module.exports = function (api) {
   // (react-native-worklets/plugin 의존성 문제 회피)
   const presets = isTest
     ? [['babel-preset-expo', { jsxImportSource: 'nativewind' }]]
-    : [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'];
+    : [
+        ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
+        'nativewind/babel',
+      ];
 
   return {
     presets,

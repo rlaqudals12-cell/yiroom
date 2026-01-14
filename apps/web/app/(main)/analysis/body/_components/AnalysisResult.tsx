@@ -73,6 +73,7 @@ export default function AnalysisResult({
     personalColorSeason,
     colorRecommendations,
     colorTips,
+    easyBodyTip,
   } = result;
 
   // 3타입 시스템 지원
@@ -251,6 +252,69 @@ export default function AnalysisResult({
                 <p className="text-sm font-medium text-amber-800 mb-1">알고 계셨나요?</p>
                 <p className="text-sm text-amber-700 leading-relaxed">{typeInfo3.selfCheckTip}</p>
               </div>
+            </div>
+          </section>
+        </FadeInUp>
+      )}
+
+      {/* 초보자 친화 스타일 가이드 (EASY_BODY_TIPS) */}
+      {easyBodyTip && (
+        <FadeInUp delay={2}>
+          <section className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-xl border border-teal-200 dark:border-teal-800 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Lightbulb className="w-5 h-5 text-teal-500" />
+              <h2 className="text-lg font-semibold text-foreground">초보자를 위한 스타일 가이드</h2>
+            </div>
+
+            {/* 요약 */}
+            <p className="text-teal-800 dark:text-teal-200 font-medium mb-3">
+              {easyBodyTip.summary}
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">{easyBodyTip.easyExplanation}</p>
+
+            {/* DO / DON'T 리스트 */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {/* 추천 스타일 */}
+              <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="text-green-600">✓</span>
+                  <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                    추천
+                  </span>
+                </div>
+                <ul className="text-xs text-green-700 dark:text-green-300 space-y-1">
+                  {easyBodyTip.doList.map((item, i) => (
+                    <li key={i} className="flex items-start gap-1">
+                      <span className="text-green-500">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* 피해야 할 스타일 */}
+              <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Ban className="w-3.5 h-3.5 text-red-500" />
+                  <span className="text-sm font-medium text-red-800 dark:text-red-200">피하기</span>
+                </div>
+                <ul className="text-xs text-red-700 dark:text-red-300 space-y-1">
+                  {easyBodyTip.dontList.map((item, i) => (
+                    <li key={i} className="flex items-start gap-1">
+                      <span className="text-red-500">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* 핵심 팁 */}
+            <div className="flex items-start gap-2 p-2.5 bg-teal-100 dark:bg-teal-900/50 rounded-lg">
+              <Sparkles className="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-teal-800 dark:text-teal-200">
+                <span className="font-medium">핵심 팁:</span> {easyBodyTip.styleTip}
+              </p>
             </div>
           </section>
         </FadeInUp>

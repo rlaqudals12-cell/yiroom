@@ -47,7 +47,7 @@ import {
   type UserBadge,
 } from '@/lib/gamification';
 import { getUserChallengeStats, type ChallengeStats } from '@/lib/challenges';
-import { WellnessScoreRing } from '@/components/profile';
+import { WellnessScoreRing, MyInfoSummaryCard } from '@/components/profile';
 import { getGreetingWithEmoji, TIME_GRADIENTS } from '@/lib/utils/greeting';
 
 // 프로필 데이터 타입
@@ -383,8 +383,13 @@ export default function ProfilePage() {
           </section>
         </FadeInUp>
 
-        {/* 내 분석 결과 */}
+        {/* 내 정보 요약 */}
         <FadeInUp delay={1}>
+          <MyInfoSummaryCard />
+        </FadeInUp>
+
+        {/* 내 분석 결과 */}
+        <FadeInUp delay={2}>
           <section className="bg-card rounded-2xl border p-4">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-foreground font-semibold">📊 내 분석 결과</h3>
@@ -413,7 +418,7 @@ export default function ProfilePage() {
         </FadeInUp>
 
         {/* 친구 */}
-        <FadeInUp delay={2}>
+        <FadeInUp delay={3}>
           <section className="bg-card rounded-2xl border p-4">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-foreground flex items-center gap-2 font-semibold">
@@ -455,7 +460,7 @@ export default function ProfilePage() {
         </FadeInUp>
 
         {/* 리더보드 */}
-        <FadeInUp delay={3}>
+        <FadeInUp delay={4}>
           <section className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -662,7 +667,7 @@ export default function ProfilePage() {
         </section>
 
         {/* 설정/도움말 링크들 */}
-        <FadeInUp delay={6}>
+        <FadeInUp delay={7}>
           <section className="bg-card overflow-hidden rounded-2xl border">
             <Link
               href="/profile/settings"

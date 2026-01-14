@@ -15,10 +15,16 @@ import {
 import { Button } from '@/components/ui/button';
 import {
   type PersonalColorResult,
+  type GroomingRecommendation,
+  type ClothingRecommendation,
+  type StyleDescription,
   SEASON_INFO,
   getSeasonColor,
   getSeasonLightBgColor,
   getSeasonBorderColor,
+  GROOMING_RECOMMENDATIONS,
+  MALE_CLOTHING_RECOMMENDATIONS,
+  MALE_STYLE_DESCRIPTIONS,
 } from '@/lib/mock/personal-color';
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
@@ -27,6 +33,8 @@ import {
   PersonalColorEvidenceSummary,
   type PersonalColorEvidenceSummaryProps,
 } from '@/components/analysis/EvidenceSummary';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { getGenderAdaptiveTerm } from '@/lib/content/gender-adaptive';
 
 // 분석 근거 타입 (AnalysisEvidenceReport와 호환)
 interface AnalysisEvidence {
@@ -72,6 +80,21 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
   } = result;
 
   const info = SEASON_INFO[seasonType];
+
+  // 사용자 프로필에서 성별 가져오기 (스타일 키워드 적응에 사용)
+  const { profile } = useUserProfile();
+  const userGender = profile.gender || 'neutral';
+  const isMale = userGender === 'male';
+
+  // 성별에 따른 데이터 선택
+  const genderStyleDescription: StyleDescription = isMale
+    ? MALE_STYLE_DESCRIPTIONS[seasonType]
+    : styleDescription;
+  const genderClothingRecommendations: ClothingRecommendation[] = isMale
+    ? MALE_CLOTHING_RECOMMENDATIONS[seasonType]
+    : clothingRecommendations;
+  const groomingRecommendations: GroomingRecommendation[] = GROOMING_RECOMMENDATIONS[seasonType];
+
   const {
     ref: shareRef,
     share,
@@ -240,7 +263,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
         </section>
       </FadeInUp>
 
-      {/* 스타일 키워드 */}
+      {/* 스타일 키워드 - 성별 적응형 */}
       <FadeInUp delay={4}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -248,19 +271,20 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
             <h2 className="text-lg font-semibold text-foreground">나의 스타일 키워드</h2>
           </div>
           <div className="flex flex-wrap gap-2">
-            {styleDescription.imageKeywords.map((keyword, index) => (
+            {genderStyleDescription.imageKeywords.map((keyword, index) => (
               <span
                 key={index}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium ${getSeasonLightBgColor(seasonType)} ${getSeasonColor(seasonType)} border ${getSeasonBorderColor(seasonType)}`}
               >
-                {keyword}
+                {/* 성별에 따라 키워드 변환 (화사한→깔끔한, 청순한→단정한 등) */}
+                {getGenderAdaptiveTerm(keyword, userGender)}
               </span>
             ))}
           </div>
         </section>
       </FadeInUp>
 
-      {/* 메이크업 & 패션 스타일 가이드 (초보자 친화) */}
+      {/* 메이크업/그루밍 & 패션 스타일 가이드 (초보자 친화, 성별 적응형) */}
       <FadeInUp delay={5}>
         <section className="bg-card rounded-xl border p-6 space-y-4">
           <div className="flex items-center gap-2 mb-2">
@@ -268,49 +292,98 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
             <h2 className="text-lg font-semibold text-foreground">스타일 가이드</h2>
           </div>
 
-          {/* 메이크업 - 초보자 친화 */}
-          <div className="p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg space-y-3">
-            <p className="text-sm font-medium text-pink-700 dark:text-pink-300">💄 메이크업</p>
-            {styleDescription.easyMakeup ? (
-              <div className="space-y-2">
-                <div className="flex items-start gap-2">
-                  <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
-                    립
-                  </span>
-                  <p className="text-sm text-foreground/80">{styleDescription.easyMakeup.lip}</p>
+          {/* 남성: 그루밍 가이드 / 여성: 메이크업 가이드 */}
+          {isMale ? (
+            // 남성용 그루밍 가이드
+            <div className="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-lg space-y-3">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">✨ 그루밍</p>
+              {genderStyleDescription.easyGrooming ? (
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">
+                      피부
+                    </span>
+                    <p className="text-sm text-foreground/80">
+                      {genderStyleDescription.easyGrooming.skin}
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">
+                      헤어
+                    </span>
+                    <p className="text-sm text-foreground/80">
+                      {genderStyleDescription.easyGrooming.hair}
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">
+                      향수
+                    </span>
+                    <p className="text-sm text-foreground/80">
+                      {genderStyleDescription.easyGrooming.scent}
+                    </p>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 p-2 bg-slate-100 dark:bg-slate-900/30 rounded">
+                    💡 {genderStyleDescription.easyGrooming.tip}
+                  </p>
                 </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
-                    눈
-                  </span>
-                  <p className="text-sm text-foreground/80">{styleDescription.easyMakeup.eye}</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
-                    볼
-                  </span>
-                  <p className="text-sm text-foreground/80">{styleDescription.easyMakeup.cheek}</p>
-                </div>
-                <p className="text-xs text-pink-600 dark:text-pink-400 mt-2 p-2 bg-pink-100 dark:bg-pink-900/30 rounded">
-                  💡 {styleDescription.easyMakeup.tip}
+              ) : (
+                <p className="text-sm text-foreground/80 leading-relaxed">
+                  {genderStyleDescription.makeupStyle}
                 </p>
-              </div>
-            ) : (
-              <p className="text-sm text-foreground/80 leading-relaxed">
-                {styleDescription.makeupStyle}
-              </p>
-            )}
-          </div>
+              )}
+            </div>
+          ) : (
+            // 여성용 메이크업 가이드
+            <div className="p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg space-y-3">
+              <p className="text-sm font-medium text-pink-700 dark:text-pink-300">💄 메이크업</p>
+              {genderStyleDescription.easyMakeup ? (
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
+                      립
+                    </span>
+                    <p className="text-sm text-foreground/80">
+                      {genderStyleDescription.easyMakeup.lip}
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
+                      눈
+                    </span>
+                    <p className="text-sm text-foreground/80">
+                      {genderStyleDescription.easyMakeup.eye}
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
+                      볼
+                    </span>
+                    <p className="text-sm text-foreground/80">
+                      {genderStyleDescription.easyMakeup.cheek}
+                    </p>
+                  </div>
+                  <p className="text-xs text-pink-600 dark:text-pink-400 mt-2 p-2 bg-pink-100 dark:bg-pink-900/30 rounded">
+                    💡 {genderStyleDescription.easyMakeup.tip}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-foreground/80 leading-relaxed">
+                  {genderStyleDescription.makeupStyle}
+                </p>
+              )}
+            </div>
+          )}
 
-          {/* 패션 - 초보자 친화 */}
+          {/* 패션 - 초보자 친화 (성별 공통, 데이터만 다름) */}
           <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg space-y-3">
             <p className="text-sm font-medium text-blue-700 dark:text-blue-300">👕 패션</p>
-            {styleDescription.easyFashion ? (
+            {genderStyleDescription.easyFashion ? (
               <div className="space-y-2">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">추천 컬러</p>
                   <div className="flex flex-wrap gap-1">
-                    {styleDescription.easyFashion.colors.map((color, idx) => (
+                    {genderStyleDescription.easyFashion.colors.map((color, idx) => (
                       <span
                         key={idx}
                         className="text-xs bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded"
@@ -323,7 +396,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">피해야 할 컬러</p>
                   <div className="flex flex-wrap gap-1">
-                    {styleDescription.easyFashion.avoid.map((color, idx) => (
+                    {genderStyleDescription.easyFashion.avoid.map((color, idx) => (
                       <span
                         key={idx}
                         className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded line-through"
@@ -333,29 +406,33 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
                     ))}
                   </div>
                 </div>
-                <p className="text-sm text-foreground/80">{styleDescription.easyFashion.style}</p>
+                <p className="text-sm text-foreground/80">
+                  {genderStyleDescription.easyFashion.style}
+                </p>
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 p-2 bg-blue-100 dark:bg-blue-900/30 rounded">
-                  💡 {styleDescription.easyFashion.tip}
+                  💡 {genderStyleDescription.easyFashion.tip}
                 </p>
               </div>
             ) : (
               <p className="text-sm text-foreground/80 leading-relaxed">
-                {styleDescription.fashionStyle}
+                {genderStyleDescription.fashionStyle}
               </p>
             )}
           </div>
 
-          {/* 액세서리 - 초보자 친화 */}
+          {/* 액세서리 - 초보자 친화 (성별 공통, 데이터만 다름) */}
           <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg space-y-3">
-            <p className="text-sm font-medium text-amber-700 dark:text-amber-300">💍 액세서리</p>
-            {styleDescription.easyAccessory ? (
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+              {isMale ? '⌚ 액세서리' : '💍 액세서리'}
+            </p>
+            {genderStyleDescription.easyAccessory ? (
               <div className="space-y-2">
                 <p className="text-sm text-foreground/80">
-                  <span className="font-medium">{styleDescription.easyAccessory.metal}</span>이 잘
-                  어울려요
+                  <span className="font-medium">{genderStyleDescription.easyAccessory.metal}</span>
+                  이 잘 어울려요
                 </p>
                 <div className="flex flex-wrap gap-1">
-                  {styleDescription.easyAccessory.examples.map((item, idx) => (
+                  {genderStyleDescription.easyAccessory.examples.map((item, idx) => (
                     <span
                       key={idx}
                       className="text-xs bg-amber-200 dark:bg-amber-800 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded"
@@ -367,52 +444,102 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
               </div>
             ) : (
               <p className="text-sm text-foreground/80 leading-relaxed">
-                {styleDescription.accessories}
+                {genderStyleDescription.accessories}
               </p>
             )}
           </div>
         </section>
       </FadeInUp>
 
-      {/* 립스틱 추천 (초보자 친화) */}
+      {/* 남성: 그루밍 제품 추천 / 여성: 립스틱 추천 */}
       <FadeInUp delay={6}>
         <section className="bg-card rounded-xl border p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Heart className="w-5 h-5 text-red-400" />
-            <h2 className="text-lg font-semibold text-foreground">추천 립스틱</h2>
-          </div>
-          <div className="space-y-3">
-            {lipstickRecommendations.map((lip, index) => (
-              <div key={index} className="p-3 bg-muted rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-full shadow-sm border border-border flex-shrink-0"
-                    style={{ backgroundColor: lip.hex }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-foreground">{lip.colorName}</p>
-                      {lip.easyDescription && (
-                        <span className="text-xs text-muted-foreground">
-                          = {lip.easyDescription}
-                        </span>
-                      )}
+          {isMale ? (
+            // 남성용 그루밍 제품 추천
+            <>
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-slate-500" />
+                <h2 className="text-lg font-semibold text-foreground">추천 그루밍 아이템</h2>
+              </div>
+              <div className="space-y-3">
+                {groomingRecommendations.map((item, index) => (
+                  <div key={index} className="p-3 bg-muted rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-lg shadow-sm border border-border flex-shrink-0 flex items-center justify-center"
+                        style={{ backgroundColor: item.hex }}
+                      >
+                        <span className="text-xs text-foreground/50">{index + 1}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium text-foreground">{item.itemName}</p>
+                          <span className="text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded">
+                            {item.colorTone}
+                          </span>
+                        </div>
+                        {item.easyDescription && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {item.easyDescription}
+                          </p>
+                        )}
+                        {item.brandExample && (
+                          <p className="text-xs text-muted-foreground">{item.brandExample}</p>
+                        )}
+                      </div>
                     </div>
-                    {lip.brandExample && (
-                      <p className="text-xs text-muted-foreground">{lip.brandExample}</p>
+                    {item.oliveyoungAlt && (
+                      <div className="mt-2 pl-[52px]">
+                        <p className="text-xs text-green-600 dark:text-green-400">
+                          🏪 올리브영: {item.oliveyoungAlt}
+                        </p>
+                      </div>
                     )}
                   </div>
-                </div>
-                {lip.oliveyoungAlt && (
-                  <div className="mt-2 ml-13 pl-[52px]">
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      🏪 올리브영: {lip.oliveyoungAlt}
-                    </p>
-                  </div>
-                )}
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          ) : (
+            // 여성용 립스틱 추천
+            <>
+              <div className="flex items-center gap-2 mb-4">
+                <Heart className="w-5 h-5 text-red-400" />
+                <h2 className="text-lg font-semibold text-foreground">추천 립스틱</h2>
+              </div>
+              <div className="space-y-3">
+                {lipstickRecommendations.map((lip, index) => (
+                  <div key={index} className="p-3 bg-muted rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-full shadow-sm border border-border flex-shrink-0"
+                        style={{ backgroundColor: lip.hex }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-foreground">{lip.colorName}</p>
+                          {lip.easyDescription && (
+                            <span className="text-xs text-muted-foreground">
+                              = {lip.easyDescription}
+                            </span>
+                          )}
+                        </div>
+                        {lip.brandExample && (
+                          <p className="text-xs text-muted-foreground">{lip.brandExample}</p>
+                        )}
+                      </div>
+                    </div>
+                    {lip.oliveyoungAlt && (
+                      <div className="mt-2 pl-[52px]">
+                        <p className="text-xs text-green-600 dark:text-green-400">
+                          🏪 올리브영: {lip.oliveyoungAlt}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </section>
       </FadeInUp>
 
@@ -482,7 +609,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
         </FadeInUp>
       )}
 
-      {/* 의류 추천 */}
+      {/* 의류 추천 (성별 적응형) */}
       <FadeInUp delay={8}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -490,7 +617,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
             <h2 className="text-lg font-semibold text-foreground">추천 스타일링</h2>
           </div>
           <div className="space-y-3">
-            {clothingRecommendations.map((rec, index) => (
+            {genderClothingRecommendations.map((rec, index) => (
               <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
                 <span
                   className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${getSeasonLightBgColor(seasonType)} ${getSeasonColor(seasonType)}`}

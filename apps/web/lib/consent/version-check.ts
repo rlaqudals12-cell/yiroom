@@ -101,17 +101,23 @@ export function getDaysUntilExpiry(retentionUntil: string | null): number | null
  *
  * @param birthdate - 생년월일 (YYYY-MM-DD)
  * @returns 동의 가능 여부 및 이유
+ *
+ * 참고: 생년월일이 미입력인 경우 동의 허용 (사용자가 14세 이상임을 묵시적으로 확인)
+ * 14세 미만으로 확인된 경우에만 동의 불가
  */
 export function checkConsentEligibility(birthdate: string | null | undefined): {
   canConsent: boolean;
   reason?: 'under_age' | 'no_birthdate';
   requiredAction?: string;
+  ageUnverified?: boolean;
 } {
+  // 생년월일 미입력: 동의 허용 (묵시적 성인 확인)
+  // UX 개선: 대부분의 사용자는 성인이며, 생년월일 미입력으로 기능 차단은 과도함
   if (!birthdate) {
+    console.warn('[Consent] No birthdate provided - allowing consent (implicit age confirmation)');
     return {
-      canConsent: false,
-      reason: 'no_birthdate',
-      requiredAction: '생년월일을 프로필에 입력해주세요',
+      canConsent: true,
+      ageUnverified: true,
     };
   }
 

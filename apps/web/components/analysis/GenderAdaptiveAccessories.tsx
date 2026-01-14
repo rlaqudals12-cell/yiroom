@@ -3,9 +3,10 @@
 /**
  * 성별 적응형 악세서리 추천 컴포넌트
  * @description K-1 성별 중립화: 퍼스널컬러 결과에서 성별에 맞는 악세서리 추천
+ * - 사용자 프로필에 저장된 성별을 기본값으로 사용
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Watch, Glasses, Shirt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SeasonType } from '@/lib/mock/personal-color';
@@ -14,10 +15,13 @@ import {
   type GenderPreference,
   type AccessoryRecommendation,
 } from '@/lib/content/gender-adaptive';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface GenderAdaptiveAccessoriesProps {
   seasonType: SeasonType;
   className?: string;
+  /** 기본 성별 (프로필에서 가져온 값으로 오버라이드) */
+  defaultGender?: GenderPreference;
 }
 
 // 카테고리별 아이콘
@@ -34,8 +38,19 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 export function GenderAdaptiveAccessories({
   seasonType,
   className,
+  defaultGender,
 }: GenderAdaptiveAccessoriesProps) {
-  const [selectedGender, setSelectedGender] = useState<GenderPreference>('neutral');
+  const { profile, isLoading: isProfileLoading } = useUserProfile();
+  const [selectedGender, setSelectedGender] = useState<GenderPreference>(
+    defaultGender || 'neutral'
+  );
+
+  // 사용자 프로필의 성별이 로드되면 기본값으로 설정
+  useEffect(() => {
+    if (!isProfileLoading && profile.gender && !defaultGender) {
+      setSelectedGender(profile.gender);
+    }
+  }, [isProfileLoading, profile.gender, defaultGender]);
 
   const accessories = getAccessoryRecommendations(seasonType, {
     gender: selectedGender,

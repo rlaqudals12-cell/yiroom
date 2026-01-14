@@ -13,20 +13,23 @@ import {
   Lightbulb,
   Sun,
   Droplets,
+  Plus,
+  X,
+  Share2,
+  ChevronRight,
 } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { type SkinAnalysisResult, type SkinTypeId, EASY_SKIN_TIPS } from '@/lib/mock/skin-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
-import { ShareButton } from '@/components/share';
-import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
 import { SkinConsultantCTA } from '@/components/skin/SkinConsultantCTA';
 import Link from 'next/link';
 import type { SkinType as ProductSkinType, SkinConcern } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { VisualAnalysisTab } from '@/components/analysis/visual';
+import { VisualAnalysisTab, DrapingSimulationTab } from '@/components/analysis/visual';
+import { Palette, Camera } from 'lucide-react';
 import SkinAnalysisEvidenceReport, {
   type SkinAnalysisEvidence,
   type SkinImageQuality,
@@ -36,7 +39,6 @@ import {
   FaceZoneMap,
   SkinVitalityScore,
   ZoneDetailCard,
-  PhotoOverlayMap,
   TrendChart,
   CircularProgress,
   ScoreChangeBadge,
@@ -49,6 +51,14 @@ import type { ProblemArea } from '@/types/skin-problem-area';
 import { MOCK_PROBLEM_AREAS } from '@/lib/mock/skin-problem-areas';
 import { useSwipeTab } from '@/hooks/useSwipeTab';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
+import {
+  PhotoMetricOverlayV2,
+  type MetricScore,
+  type SkinMetricType,
+  FaceLandmarkHeatMap,
+  type ZoneScore,
+  type FaceZoneType,
+} from '@/components/analysis/skin';
 
 // 존 ID 타입 (FaceZoneMapProps에서 추출)
 type FaceZoneId = keyof NonNullable<FaceZoneMapProps['zones']>;
@@ -92,6 +102,12 @@ function transformDbToResult(dbData: DbSkinAnalysis): SkinAnalysisResult {
       createMetric('wrinkles', '주름', dbData.wrinkles),
       createMetric('sensitivity', '민감도', dbData.sensitivity),
       createMetric('elasticity', '탄력', Math.round((dbData.hydration + dbData.pores) / 2)),
+      // 다크서클: 색소침착(60%) + 수분도(40%) 기반 (눈가 피부 상태 반영)
+      createMetric(
+        'darkCircles',
+        '다크서클',
+        Math.round(dbData.pigmentation * 0.6 + dbData.hydration * 0.4)
+      ),
     ],
     insight: dbData.recommendations?.insight || '피부 관리에 도움이 필요해요!',
     recommendedIngredients: dbData.recommendations?.ingredients || [],
@@ -179,15 +195,19 @@ export default function SkinAnalysisResultPage() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
   const [selectedZone, setSelectedZone] = useState<FaceZoneId | null>(null);
+  // PC-1 연동: 드레이핑 시뮬레이션용 이미지 URL
+  const [pcImageUrl, setPcImageUrl] = useState<string | null>(null);
   // 트렌드 데이터 (과거 분석 기록)
   const [trendData, setTrendData] = useState<Array<{ date: Date; score: number }>>([]);
+  // 하단 FAB 접이식 상태
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
   // 이전 분석 비교용
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const fetchedRef = useRef(false);
 
   // 탭 스와이프 훅
   const { containerRef: swipeContainerRef, handlers: swipeHandlers } = useSwipeTab({
-    tabs: ['basic', 'evidence', 'visual'],
+    tabs: ['basic', 'evidence', 'visual', 'draping'],
     activeTab,
     onTabChange: setActiveTab,
   });
@@ -247,6 +267,81 @@ export default function SkinAnalysisResultPage() {
 
     return { score, factors: { positive, negative } };
   }, [result]);
+
+  // PhotoMetricOverlay용 메트릭 변환 (경쟁사 스타일 8개 지표)
+  const photoMetrics = useMemo((): MetricScore[] => {
+    if (!result) return [];
+
+    const getMetricValue = (id: string) => result.metrics.find((m) => m.id === id)?.value ?? 50;
+
+    // DB 지표 → 경쟁사 스타일 지표 매핑
+    return [
+      { type: 'wrinkles' as SkinMetricType, score: getMetricValue('wrinkles') },
+      {
+        type: 'darkCircles' as SkinMetricType,
+        score: Math.round((getMetricValue('pigmentation') + getMetricValue('hydration')) / 2),
+      },
+      { type: 'texture' as SkinMetricType, score: getMetricValue('elasticity') },
+      { type: 'spots' as SkinMetricType, score: getMetricValue('pigmentation') },
+      { type: 'redness' as SkinMetricType, score: getMetricValue('sensitivity') },
+      { type: 'hydration' as SkinMetricType, score: getMetricValue('hydration') },
+      { type: 'oil' as SkinMetricType, score: getMetricValue('oil') },
+      { type: 'acne' as SkinMetricType, score: getMetricValue('pores') },
+    ];
+  }, [result]);
+
+  // FaceLandmarkHeatMap용 존 점수 (face-api.js 68포인트 기반)
+  const heatMapZoneScores = useMemo((): ZoneScore[] => {
+    if (!result) return [];
+
+    const getMetricValue = (id: string) => result.metrics.find((m) => m.id === id)?.value ?? 50;
+
+    // 얼굴 영역별 점수 매핑 (T존/U존 기반)
+    return [
+      {
+        zone: 'forehead' as FaceZoneType,
+        score: Math.round((getMetricValue('oil') + getMetricValue('pores')) / 2),
+        label: '이마',
+        concerns: getMetricValue('oil') < 50 ? ['유분 과다'] : undefined,
+      },
+      {
+        zone: 'tZone' as FaceZoneType,
+        score: Math.round((getMetricValue('oil') + getMetricValue('pores')) / 2),
+        label: 'T존',
+        concerns: getMetricValue('pores') < 50 ? ['모공 관리 필요'] : undefined,
+      },
+      {
+        zone: 'leftCheek' as FaceZoneType,
+        score: Math.round((getMetricValue('hydration') + getMetricValue('sensitivity')) / 2),
+        label: '왼쪽 볼',
+      },
+      {
+        zone: 'rightCheek' as FaceZoneType,
+        score: Math.round((getMetricValue('hydration') + getMetricValue('sensitivity')) / 2),
+        label: '오른쪽 볼',
+      },
+      {
+        zone: 'leftEye' as FaceZoneType,
+        score: Math.round((getMetricValue('wrinkles') + getMetricValue('pigmentation')) / 2),
+        label: '왼쪽 눈가',
+        concerns: getMetricValue('wrinkles') < 50 ? ['잔주름'] : undefined,
+      },
+      {
+        zone: 'rightEye' as FaceZoneType,
+        score: Math.round((getMetricValue('wrinkles') + getMetricValue('pigmentation')) / 2),
+        label: '오른쪽 눈가',
+        concerns: getMetricValue('pigmentation') < 50 ? ['다크서클'] : undefined,
+      },
+      {
+        zone: 'chin' as FaceZoneType,
+        score: Math.round((getMetricValue('pores') + getMetricValue('sensitivity')) / 2),
+        label: '턱',
+      },
+    ];
+  }, [result]);
+
+  // 히트맵용 선택 영역 상태
+  const [selectedHeatMapZone, setSelectedHeatMapZone] = useState<FaceZoneType | null>(null);
 
   // 선택된 존 상세 정보
   const selectedZoneDetail = useMemo(() => {
@@ -348,7 +443,43 @@ export default function SkinAnalysisResultPage() {
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setSkinType(dbData.skin_type);
-      setImageUrl(dbData.image_url);
+
+      // 이미지 URL 처리 (private bucket이므로 API로 signed URL 생성)
+      console.log('[S-1] DB image_url:', dbData.image_url);
+      if (dbData.image_url && dbData.image_url.length > 0) {
+        // 이미 전체 URL인지 확인 (구버전 호환)
+        if (dbData.image_url.startsWith('http')) {
+          console.log('[S-1] Using direct HTTP URL');
+          setImageUrl(dbData.image_url);
+        } else {
+          // API를 통해 signed URL 생성 (서버에서 service role 사용)
+          try {
+            console.log('[S-1] Requesting signed URL for:', dbData.image_url);
+            const response = await fetch('/api/storage/signed-url', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                bucket: 'skin-images',
+                path: dbData.image_url,
+                expiresIn: 3600,
+              }),
+            });
+
+            if (response.ok) {
+              const { signedUrl } = await response.json();
+              console.log('[S-1] Signed URL 생성 성공');
+              setImageUrl(signedUrl);
+            } else {
+              const errorText = await response.text();
+              console.error('[S-1] Signed URL API 실패:', response.status, errorText);
+            }
+          } catch (urlError) {
+            console.error('[S-1] Signed URL 요청 실패:', urlError);
+          }
+        }
+      } else {
+        console.warn('[S-1] DB에 image_url이 없습니다');
+      }
 
       // 분석 근거 데이터 추출
       if (dbData.recommendations?.analysisEvidence) {
@@ -400,6 +531,18 @@ export default function SkinAnalysisResultPage() {
 
       if (previousAnalysis) {
         setPreviousScore(previousAnalysis.overall_score);
+      }
+
+      // PC-1 (퍼스널 컬러) 결과 조회 - 드레이핑 시뮬레이션용
+      const { data: pcData } = await supabase
+        .from('personal_color_assessments')
+        .select('face_image_url')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (pcData?.face_image_url) {
+        setPcImageUrl(pcData.face_image_url);
       }
     } catch (err) {
       console.error('[S-1] Fetch error:', err);
@@ -524,18 +667,22 @@ export default function SkinAnalysisResultPage() {
           {result && (
             <div ref={swipeContainerRef} {...swipeHandlers} className="touch-pan-y">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
-                  <TabsTrigger value="basic" className="gap-1">
+                <TabsList className="grid w-full grid-cols-4 mb-4 sticky top-0 z-10 bg-muted">
+                  <TabsTrigger value="basic" className="gap-1 text-xs">
                     <Sparkles className="w-4 h-4" />
                     기본 분석
                   </TabsTrigger>
-                  <TabsTrigger value="evidence" className="gap-1">
+                  <TabsTrigger value="evidence" className="gap-1 text-xs">
                     <ClipboardList className="w-4 h-4" />
                     분석 근거
                   </TabsTrigger>
-                  <TabsTrigger value="visual" className="gap-1">
+                  <TabsTrigger value="visual" className="gap-1 text-xs">
                     <Eye className="w-4 h-4" />
                     시각화
+                  </TabsTrigger>
+                  <TabsTrigger value="draping" className="gap-1 text-xs">
+                    <Palette className="w-4 h-4" />
+                    드레이핑
                   </TabsTrigger>
                 </TabsList>
 
@@ -564,6 +711,33 @@ export default function SkinAnalysisResultPage() {
                     showDetails
                     className="mb-6"
                   />
+
+                  {/* 맞춤 클렌징 가이드 CTA 카드 */}
+                  <Link
+                    href={`/analysis/skin/solution?skinType=${skinType || ''}`}
+                    className="block mb-6"
+                  >
+                    <div className="p-4 bg-gradient-to-r from-sky-50 to-cyan-50 dark:from-sky-950/30 dark:to-cyan-950/30 rounded-xl border border-sky-100 dark:border-sky-900/50 hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0">
+                          <Droplets
+                            className="w-5 h-5 text-sky-600 dark:text-sky-400"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm text-foreground">
+                            맞춤 클렌징 가이드
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {skinType ? `${skinType} 피부에 맞는` : '내 피부 타입에 맞는'} 클렌저와
+                            pH 관리법
+                          </p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    </div>
+                  </Link>
 
                   {/* 환경 요인 안내 카드 */}
                   <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
@@ -608,6 +782,7 @@ export default function SkinAnalysisResultPage() {
                     onRetry={handleNewAnalysis}
                     evidence={analysisEvidence}
                     skinType={skinType || undefined}
+                    imageUrl={imageUrl || pcImageUrl}
                   />
 
                   {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
@@ -641,13 +816,16 @@ export default function SkinAnalysisResultPage() {
                           })
                           .filter((c): c is SkinConcern => c !== undefined),
                       }}
-                      className="mt-8 pb-32"
+                      className="mt-8"
                     />
                   )}
+
+                  {/* FAB 여백 */}
+                  <div className="pb-40" />
                 </TabsContent>
 
                 {/* 분석 근거 탭 */}
-                <TabsContent value="evidence" className="mt-0 pb-32">
+                <TabsContent value="evidence" className="mt-0 pb-40">
                   {analysisEvidence || imageQuality ? (
                     <SkinAnalysisEvidenceReport
                       evidence={analysisEvidence}
@@ -665,36 +843,63 @@ export default function SkinAnalysisResultPage() {
                 </TabsContent>
 
                 {/* 상세 시각화 탭 (S-1+) */}
-                <TabsContent value="visual" className="mt-0 pb-32 space-y-6">
+                <TabsContent value="visual" className="mt-0 pb-40 space-y-6">
+                  {/* 이미지가 없을 때 안내 */}
+                  {!imageUrl && !pcImageUrl && (
+                    <div className="text-center py-12 px-4 bg-muted/30 rounded-2xl border border-dashed border-border">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                        <Camera className="w-8 h-8 text-muted-foreground/50" />
+                      </div>
+                      <p className="font-medium text-foreground mb-2">얼굴 이미지가 없습니다</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        이미지 저장 동의 후 분석하면
+                        <br />
+                        AI 시각화 기능을 사용할 수 있어요
+                      </p>
+                      <button
+                        onClick={handleNewAnalysis}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        다시 분석하기
+                      </button>
+                    </div>
+                  )}
+
+                  {/* AI 정밀 피부 분석 (face-api.js 68포인트 랜드마크 기반) */}
+                  {(imageUrl || pcImageUrl) && (
+                    <FaceLandmarkHeatMap
+                      imageUrl={(imageUrl || pcImageUrl)!}
+                      zoneScores={heatMapZoneScores}
+                      showHeatMap
+                      showLabels
+                      selectedZone={selectedHeatMapZone}
+                      onZoneClick={setSelectedHeatMapZone}
+                    />
+                  )}
+
+                  {/* 경쟁사 스타일 피부 분석 결과 (face-api.js 68포인트 랜드마크 기반) */}
+                  {(imageUrl || pcImageUrl) && (
+                    <PhotoMetricOverlayV2
+                      imageUrl={(imageUrl || pcImageUrl)!}
+                      metrics={photoMetrics}
+                      showConnectors
+                    />
+                  )}
+
                   {/* 트렌드 차트 (과거 분석 이력) */}
                   <TrendChart data={trendData} metric="overall" showGoal goalScore={80} />
 
                   {/* Phase E: 문제 영역 확대 뷰어 */}
-                  {imageUrl && problemAreas.length > 0 && (
+                  {(imageUrl || pcImageUrl) && problemAreas.length > 0 && (
                     <div className="space-y-2">
                       <h3 className="text-sm font-medium text-muted-foreground">
                         문제 영역 상세 (마커를 탭하세요)
                       </h3>
                       <SkinZoomViewer
-                        imageUrl={imageUrl}
+                        imageUrl={(imageUrl || pcImageUrl)!}
                         problemAreas={problemAreas}
                         className="rounded-xl overflow-hidden"
-                      />
-                    </div>
-                  )}
-
-                  {/* 사진 오버레이 맵 (실제 사진 + 존 상태) */}
-                  {imageUrl && (
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-muted-foreground">
-                        사진 기반 분석 결과
-                      </h3>
-                      <PhotoOverlayMap
-                        imageUrl={imageUrl}
-                        zones={zoneStatuses as Record<string, ZoneStatus>}
-                        onZoneClick={(zoneId) => setSelectedZone(zoneId as FaceZoneId)}
-                        showLabels
-                        opacity={0.5}
                       />
                     </div>
                   )}
@@ -736,53 +941,123 @@ export default function SkinAnalysisResultPage() {
                     </div>
                   )}
                 </TabsContent>
+
+                {/* 드레이핑 시뮬레이션 탭 (PC-1 연동) */}
+                <TabsContent value="draping" className="mt-0 pb-40" data-testid="draping-tab">
+                  {pcImageUrl ? (
+                    <DrapingSimulationTab imageUrl={pcImageUrl} className="w-full" />
+                  ) : (
+                    <div className="p-6 bg-card rounded-xl border text-center">
+                      <Palette className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                      <h3 className="font-semibold text-foreground mb-2">드레이핑 시뮬레이션</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        퍼스널 컬러 분석을 먼저 완료하면
+                        <br />
+                        나에게 어울리는 색상을 미리 볼 수 있어요.
+                      </p>
+                      <Button variant="outline" asChild>
+                        <Link href="/analysis/personal-color">
+                          <Palette className="w-4 h-4 mr-2" />
+                          퍼스널 컬러 분석하기
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
               </Tabs>
             </div>
           )}
         </div>
       </main>
 
-      {/* 하단 고정 버튼 */}
+      {/* 하단 접이식 FAB 메뉴 - 중앙 배치 (UX 최적화) */}
       {result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
-          <div className="max-w-md mx-auto space-y-2">
-            {/* 제품 추천 + AI 상담 버튼 (Phase D) */}
-            <div className="flex gap-2">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999]">
+          {/* 펼쳐진 메뉴 - 중앙 정렬 */}
+          {isActionMenuOpen && (
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col gap-2 items-center animate-in fade-in slide-in-from-bottom-2 duration-200">
+              {/* 클렌징 가이드 */}
               <Button
-                className="flex-1"
-                onClick={() =>
-                  router.push(`/products?skinType=${skinType || ''}&category=skincare`)
-                }
+                size="sm"
+                className="shadow-lg whitespace-nowrap bg-sky-500 hover:bg-sky-600"
+                onClick={() => {
+                  router.push(`/analysis/skin/solution?skinType=${skinType || ''}`);
+                  setIsActionMenuOpen(false);
+                }}
+              >
+                <Droplets className="w-4 h-4 mr-2" />
+                클렌징 가이드
+              </Button>
+
+              {/* 맞춤 제품 */}
+              <Button
+                size="sm"
+                className="shadow-lg whitespace-nowrap"
+                onClick={() => {
+                  router.push(`/products?skinType=${skinType || ''}&category=skincare`);
+                  setIsActionMenuOpen(false);
+                }}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 맞춤 제품
               </Button>
+
+              {/* AI 피부 상담 */}
               <SkinConsultantCTA
                 skinType={skinType || undefined}
                 concerns={result.metrics.filter((m) => m.status === 'warning').map((m) => m.name)}
                 variant="default"
-                className="flex-1"
+                className="shadow-lg h-9 px-3 text-sm whitespace-nowrap"
               />
-            </div>
-            {/* 다시 분석하기 + 공유 */}
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
+
+              {/* 다시 분석 */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="shadow-lg bg-card whitespace-nowrap"
+                onClick={() => {
+                  handleNewAnalysis();
+                  setIsActionMenuOpen(false);
+                }}
+              >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 다시 분석
               </Button>
-              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
-            </div>
-            {/* 소셜 공유 버튼 */}
-            <div className="flex justify-center">
-              <ShareButtons
-                content={{
-                  title: `내 피부 점수 ${result.overallScore}점!`,
-                  description: '이룸에서 AI 피부 분석 받아보세요',
-                  url: typeof window !== 'undefined' ? window.location.href : '',
+
+              {/* 공유 */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="shadow-lg bg-card whitespace-nowrap"
+                onClick={() => {
+                  share();
+                  setIsActionMenuOpen(false);
                 }}
-              />
+                disabled={shareLoading}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                공유하기
+              </Button>
             </div>
-          </div>
+          )}
+
+          {/* FAB 메인 버튼 - 56px (Material Design 권장) */}
+          <button
+            type="button"
+            className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 ${
+              isActionMenuOpen
+                ? 'bg-gray-600 hover:bg-gray-700'
+                : 'bg-emerald-500 hover:bg-emerald-600'
+            }`}
+            onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
+            aria-label={isActionMenuOpen ? '메뉴 닫기' : '액션 메뉴 열기'}
+          >
+            {isActionMenuOpen ? (
+              <X className="w-6 h-6 text-white" />
+            ) : (
+              <Plus className="w-6 h-6 text-white" />
+            )}
+          </button>
         </div>
       )}
     </>

@@ -3,7 +3,6 @@ appId: com.yiroom.app
 name: Product Browse Flow
 
 ---
-
 # 앱 실행
 - launchApp:
     appId: ${APP_ID}
@@ -11,52 +10,52 @@ name: Product Browse Flow
 # 홈 화면 대기
 - extendedWaitUntil:
     visible:
-      id: "home-screen"
+      id: 'home-screen'
     timeout: 10000
 
 # 제품 추천 카드 탭
 - tapOn:
-    text: "제품 추천"
+    text: '제품 추천'
 
 # 제품 리스트 확인
 - extendedWaitUntil:
     visible:
-      id: "product-list"
+      id: 'product-list'
     timeout: 5000
 
 # 첫 번째 제품 탭
 - tapOn:
     index: 0
-    id: "product-card"
+    id: 'product-card'
 
 # 제품 상세 화면 확인
 - extendedWaitUntil:
     visible:
-      id: "product-detail"
+      id: 'product-detail'
     timeout: 5000
 
 # 제품 정보 확인
 - assertVisible:
-    text: "구매하러 가기"
+    text: '구매하러 가기'
 
 # 뒤로 가기
 - back
 
 # 검색 버튼 탭
 - tapOn:
-    id: "search-button"
+    id: 'search-button'
 
 # 검색 화면 확인
 - extendedWaitUntil:
     visible:
-      id: "product-search"
+      id: 'product-search'
     timeout: 5000
 
 # 검색어 입력
-- inputText: "비타민"
+- inputText: '비타민'
 
 # 검색 결과 확인
 - extendedWaitUntil:
     visible:
-      text: "비타민"
+      text: '비타민'
     timeout: 5000

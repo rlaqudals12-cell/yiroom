@@ -3,7 +3,6 @@ appId: com.yiroom.app
 name: Water Tracking Flow
 
 ---
-
 # 앱 실행
 - launchApp:
     appId: ${APP_ID}
@@ -11,36 +10,36 @@ name: Water Tracking Flow
 # 홈 화면 대기
 - extendedWaitUntil:
     visible:
-      id: "home-screen"
+      id: 'home-screen'
     timeout: 10000
 
 # 영양 탭 이동
 - tapOn:
-    text: "영양"
+    text: '영양'
 
 # 영양 대시보드 확인
 - extendedWaitUntil:
     visible:
-      id: "nutrition-dashboard"
+      id: 'nutrition-dashboard'
     timeout: 5000
 
 # 물 섭취 카드 탭
 - tapOn:
-    text: "물 섭취"
+    text: '물 섭취'
 
 # 물 섭취 화면 확인
 - extendedWaitUntil:
     visible:
-      id: "water-tracking"
+      id: 'water-tracking'
     timeout: 5000
 
 # 빠른 추가 버튼 탭 (+200ml)
 - tapOn:
-    text: "+200"
+    text: '+200'
 
 # 물 섭취량 증가 확인
 - assertVisible:
-    text: "200"
+    text: '200'
 
 # 뒤로 가기
 - back

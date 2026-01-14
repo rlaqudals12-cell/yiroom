@@ -39,7 +39,9 @@ describe('useProductFilterStore', () => {
 
       setCategory('cosmetic');
 
-      expect(useProductFilterStore.getState().selectedCategory).toBe('cosmetic');
+      expect(useProductFilterStore.getState().selectedCategory).toBe(
+        'cosmetic'
+      );
     });
 
     it('기본 카테고리는 all', () => {
@@ -100,7 +102,10 @@ describe('useProductFilterStore', () => {
 
       setSkinTypeFilter(['dry', 'sensitive']);
 
-      expect(useProductFilterStore.getState().skinTypeFilter).toEqual(['dry', 'sensitive']);
+      expect(useProductFilterStore.getState().skinTypeFilter).toEqual([
+        'dry',
+        'sensitive',
+      ]);
     });
   });
 
@@ -110,7 +115,10 @@ describe('useProductFilterStore', () => {
 
       setConcernFilter(['acne', 'wrinkle']);
 
-      expect(useProductFilterStore.getState().concernFilter).toEqual(['acne', 'wrinkle']);
+      expect(useProductFilterStore.getState().concernFilter).toEqual([
+        'acne',
+        'wrinkle',
+      ]);
     });
   });
 

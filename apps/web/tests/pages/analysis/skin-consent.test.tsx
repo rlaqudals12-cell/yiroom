@@ -48,6 +48,17 @@ vi.mock('@clerk/nextjs', () => ({
   }),
 }));
 
+// Mock useUserProfile 훅 (성별 선택 자동 건너뛰기용)
+vi.mock('@/hooks/useUserProfile', () => ({
+  useUserProfile: () => ({
+    profile: { gender: 'male', heightCm: null, weightKg: null, allergies: [] },
+    isLoading: false,
+    updateGender: vi.fn().mockResolvedValue(undefined),
+    updatePhysicalInfo: vi.fn().mockResolvedValue(undefined),
+    updateAllergies: vi.fn().mockResolvedValue(undefined),
+  }),
+}));
+
 // Mock photo-reuse (Phase 2 기능)
 vi.mock('@/lib/analysis/photo-reuse', () => ({
   checkPhotoReuseEligibility: vi.fn().mockResolvedValue({ eligible: false, reason: 'no_image' }),
@@ -95,11 +106,16 @@ vi.mock('@/components/analysis/consent', () => ({
 
 // Mock 컴포넌트들
 vi.mock('@/app/(main)/analysis/skin/_components/LightingGuide', () => ({
-  default: ({ onContinue }: { onContinue: () => void; onSkip?: () => void }) => (
+  default: ({ onContinue, onGallery }: { onContinue: () => void; onGallery?: () => void }) => (
     <div data-testid="lighting-guide">
       <button onClick={onContinue} data-testid="guide-continue">
         계속하기
       </button>
+      {onGallery && (
+        <button onClick={onGallery} data-testid="guide-gallery">
+          갤러리에서 선택
+        </button>
+      )}
     </div>
   ),
 }));
@@ -112,6 +128,34 @@ vi.mock('@/app/(main)/analysis/skin/_components/PhotoUpload', () => ({
         data-testid="select-photo"
       >
         사진 선택
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock('@/app/(main)/analysis/skin/_components/GalleryMultiAngleSkinUpload', () => ({
+  default: ({
+    onComplete,
+  }: {
+    onComplete: (images: {
+      frontImageBase64: string;
+      leftImageBase64?: string;
+      rightImageBase64?: string;
+    }) => void;
+    onCancel?: () => void;
+  }) => (
+    <div data-testid="gallery-multi-angle-upload">
+      <button
+        onClick={() =>
+          onComplete({
+            frontImageBase64: 'data:image/jpeg;base64,gallery-front',
+            leftImageBase64: 'data:image/jpeg;base64,gallery-left',
+            rightImageBase64: 'data:image/jpeg;base64,gallery-right',
+          })
+        }
+        data-testid="gallery-upload-complete"
+      >
+        업로드 완료
       </button>
     </div>
   ),
@@ -345,9 +389,9 @@ describe('SkinAnalysisPage - 이미지 저장 동의', () => {
     render(<SkinAnalysisPage />);
     await waitForLoading();
 
-    await user.click(screen.getByTestId('guide-continue'));
-    await user.click(screen.getByTestId('gallery-mode-button'));
-    await user.click(screen.getByTestId('select-photo'));
+    // 갤러리에서 선택 버튼 클릭으로 갤러리 모드 진입
+    await user.click(screen.getByTestId('guide-gallery'));
+    await user.click(screen.getByTestId('gallery-upload-complete'));
 
     // 동의 모달이 표시되어야 함
     await waitFor(() => {

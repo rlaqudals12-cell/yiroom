@@ -37,7 +37,9 @@ import BodyAnalysisEvidenceReport, {
   type BodyImageQuality,
 } from '@/components/analysis/BodyAnalysisEvidenceReport';
 import { VisualReportCard } from '@/components/analysis/visual-report';
+import { DrapingSimulationTab } from '@/components/analysis/visual';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
+import { Palette } from 'lucide-react';
 import Link from 'next/link';
 
 // DB 데이터 타입
@@ -192,6 +194,8 @@ export default function BodyAnalysisResultPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
+  // PC-1 연동: 드레이핑 시뮬레이션용 이미지 URL
+  const [pcImageUrl, setPcImageUrl] = useState<string | null>(null);
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;
@@ -254,6 +258,18 @@ export default function BodyAnalysisResultPage() {
         if (styleRecs.matchedFeatures) {
           setMatchedFeatures(styleRecs.matchedFeatures);
         }
+      }
+
+      // PC-1 (퍼스널 컬러) 결과 조회 - 드레이핑 시뮬레이션용
+      const { data: pcData } = await supabase
+        .from('personal_color_assessments')
+        .select('face_image_url')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (pcData?.face_image_url) {
+        setPcImageUrl(pcData.face_image_url);
       }
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
@@ -357,18 +373,22 @@ export default function BodyAnalysisResultPage() {
           {/* 탭 기반 결과 */}
           {result && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
-                <TabsTrigger value="basic" className="gap-1">
+              <TabsList className="grid w-full grid-cols-4 mb-4 sticky top-0 z-10 bg-muted">
+                <TabsTrigger value="basic" className="gap-1 text-xs">
                   <BarChart3 className="w-4 h-4" />
                   기본 분석
                 </TabsTrigger>
-                <TabsTrigger value="evidence" className="gap-1">
+                <TabsTrigger value="evidence" className="gap-1 text-xs">
                   <ClipboardList className="w-4 h-4" />
                   분석 근거
                 </TabsTrigger>
-                <TabsTrigger value="styling" className="gap-1">
+                <TabsTrigger value="styling" className="gap-1 text-xs">
                   <Shirt className="w-4 h-4" />
-                  스타일 가이드
+                  스타일
+                </TabsTrigger>
+                <TabsTrigger value="draping" className="gap-1 text-xs">
+                  <Palette className="w-4 h-4" />
+                  드레이핑
                 </TabsTrigger>
               </TabsList>
 
@@ -490,6 +510,29 @@ export default function BodyAnalysisResultPage() {
                   measurements={result.measurements}
                   personalColorSeason={result.personalColorSeason}
                 />
+              </TabsContent>
+
+              {/* 드레이핑 시뮬레이션 탭 (PC-1 연동) */}
+              <TabsContent value="draping" className="mt-0 pb-32" data-testid="draping-tab">
+                {pcImageUrl ? (
+                  <DrapingSimulationTab imageUrl={pcImageUrl} className="w-full" />
+                ) : (
+                  <div className="p-6 bg-card rounded-xl border text-center">
+                    <Palette className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold text-foreground mb-2">드레이핑 시뮬레이션</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      퍼스널 컬러 분석을 먼저 완료하면
+                      <br />
+                      나에게 어울리는 색상을 미리 볼 수 있어요.
+                    </p>
+                    <Button variant="outline" asChild>
+                      <Link href="/analysis/personal-color">
+                        <Palette className="w-4 h-4 mr-2" />
+                        퍼스널 컬러 분석하기
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           )}

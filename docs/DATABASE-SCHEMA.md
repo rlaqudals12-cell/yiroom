@@ -1,10 +1,18 @@
-# 🗄️ Database 스키마 v5.1 (Phase H + Launch + Notifications)
+# 🗄️ Database 스키마 v5.2 (Phase H + Launch + 정합성 검토)
 
-**버전**: v5.1 (Phase H 게이미피케이션 + Launch 운영 + 알림 설정)
-**업데이트**: 2026년 1월 11일
+**버전**: v5.2 (정합성 검토 반영)
+**업데이트**: 2026년 1월 12일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템
+
+> ⚠️ **주의**: 이 문서는 실제 마이그레이션 파일과 약 40% 불일치가 있습니다.
+> 최신 테이블 목록은 `supabase/migrations/` 폴더의 SQL 파일을 참조하세요.
+> 미문서화 테이블: workout_analyses, workout_plans, workout_logs, workout_streaks,
+> user_preferences, user_agreements, user_challenges, image_consents, push_subscriptions,
+> affiliate_products, skin_diary_entries, nutrition_streaks, smart_notifications,
+> makeup_analyses, user_size_history, user_shopping_preferences, price_watches,
+> hair_analyses, mental_health_logs, product_shelf 등
 
 ---
 
@@ -1622,6 +1630,6 @@ CREATE POLICY "Users can delete own push tokens"
 
 ---
 
-**버전**: v5.1 (알림 설정 테이블 추가)
-**최종 업데이트**: 2026년 1월 11일
-**상태**: Phase 1 + Phase 2 + Admin + Phase G + Checkin + Notifications 완료 ✅
+**버전**: v5.2 (정합성 검토 반영)
+**최종 업데이트**: 2026년 1월 12일
+**상태**: Phase 1 + Phase 2 + Admin + Phase G + Checkin + 정합성 검토 필요 ⚠️

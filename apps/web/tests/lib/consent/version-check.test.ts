@@ -142,20 +142,20 @@ describe('version-check', () => {
   });
 
   describe('checkConsentEligibility', () => {
-    describe('생년월일 없음', () => {
-      it('생년월일이 null일 때 동의 불가', () => {
+    describe('생년월일 없음 (묵시적 성인 확인)', () => {
+      it('생년월일이 null일 때 동의 가능 (묵시적 성인 확인)', () => {
         const result = checkConsentEligibility(null);
 
-        expect(result.canConsent).toBe(false);
-        expect(result.reason).toBe('no_birthdate');
-        expect(result.requiredAction).toBe('생년월일을 프로필에 입력해주세요');
+        expect(result.canConsent).toBe(true);
+        expect(result.ageUnverified).toBe(true);
+        expect(result.reason).toBeUndefined();
       });
 
-      it('생년월일이 undefined일 때 동의 불가', () => {
+      it('생년월일이 undefined일 때 동의 가능 (묵시적 성인 확인)', () => {
         const result = checkConsentEligibility(undefined);
 
-        expect(result.canConsent).toBe(false);
-        expect(result.reason).toBe('no_birthdate');
+        expect(result.canConsent).toBe(true);
+        expect(result.ageUnverified).toBe(true);
       });
     });
 

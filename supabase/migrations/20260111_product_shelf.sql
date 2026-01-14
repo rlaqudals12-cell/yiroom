@@ -5,8 +5,8 @@ CREATE TABLE user_product_shelf (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   clerk_user_id TEXT NOT NULL,
 
-  -- 제품 정보
-  product_id UUID REFERENCES cosmetic_products(id) ON DELETE SET NULL,
+  -- 제품 정보 (cosmetic_products FK는 프로덕션에서만 적용)
+  product_id UUID,
   product_name TEXT NOT NULL,
   product_brand TEXT,
   product_barcode TEXT,

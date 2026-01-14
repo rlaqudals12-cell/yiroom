@@ -25,6 +25,14 @@
   --color-module-personal-color: var(--module-personal-color);
   --color-module-personal-color-light: var(--module-personal-color-light);
   --color-module-personal-color-dark: var(--module-personal-color-dark);
+  --color-module-face: var(--module-face);
+  --color-module-face-light: var(--module-face-light);
+  --color-module-face-dark: var(--module-face-dark);
+
+  /* 전문성 색상 */
+  --color-professional-primary: var(--professional-primary);
+  --color-professional-accent: var(--professional-accent);
+  --color-professional-highlight: var(--professional-highlight);
 
   /* 상태 색상 */
   --color-status-success: var(--status-success);
@@ -108,6 +116,39 @@
   --module-personal-color-light: oklch(0.90 0.08 300);
   --module-personal-color-dark: oklch(0.48 0.16 300);
 
+  /* F-1 얼굴형 분석 모듈 (2026-01-13) */
+  --module-face: oklch(0.75 0.16 30);            /* Coral - 얼굴형 분석 */
+  --module-face-light: oklch(0.92 0.08 30);
+  --module-face-dark: oklch(0.55 0.19 30);
+
+  /* H-1 헤어 분석 모듈 (2026-01-15) */
+  --module-hair: oklch(0.78 0.14 55);            /* Amber - 헤어 분석 */
+  --module-hair-light: oklch(0.93 0.07 55);
+  --module-hair-dark: oklch(0.58 0.17 55);
+
+  /* ========================================
+     전문성 강조 색상 (2026-01-13)
+     의료/컨설팅 앱 수준 신뢰감
+     ======================================== */
+  --professional-primary: oklch(0.45 0.12 220);   /* 신뢰감 있는 네이비 */
+  --professional-accent: oklch(0.60 0.10 180);    /* 차분한 청록 */
+  --professional-highlight: oklch(0.85 0.08 80);  /* 부드러운 골드 */
+
+  /* ========================================
+     Monk Scale 스킨톤 팔레트 (2026-01-13)
+     Google 2022 표준, 10단계
+     ======================================== */
+  --skin-tone-1: #f6ede4;   /* 가장 밝음 */
+  --skin-tone-2: #f3e7db;
+  --skin-tone-3: #f7ead0;
+  --skin-tone-4: #eadaba;
+  --skin-tone-5: #d7bd96;
+  --skin-tone-6: #a07e56;
+  --skin-tone-7: #825c43;
+  --skin-tone-8: #604134;
+  --skin-tone-9: #3a312a;
+  --skin-tone-10: #292420;  /* 가장 어두움 */
+
   /* ========================================
      그라디언트 표준화 (2026-01-12 로고 민트 기반 155°)
      ======================================== */
@@ -118,6 +159,9 @@
   --gradient-skin: linear-gradient(135deg, var(--module-skin), var(--module-skin-dark));
   --gradient-body: linear-gradient(135deg, var(--module-body), var(--module-body-dark));
   --gradient-personal-color: linear-gradient(135deg, var(--module-personal-color), var(--module-personal-color-dark));
+  --gradient-face: linear-gradient(135deg, var(--module-face), var(--module-face-dark));
+  --gradient-hair: linear-gradient(135deg, var(--module-hair), var(--module-hair-dark));
+  --gradient-professional: linear-gradient(135deg, var(--professional-primary), var(--professional-accent));
 
   /* 상태 색상 */
   --status-success: oklch(0.72 0.17 142);
@@ -244,6 +288,21 @@
   --module-personal-color: oklch(0.60 0.15 300);
   --module-personal-color-light: oklch(0.20 0.08 300);
   --module-personal-color-dark: oklch(0.70 0.18 300);
+
+  /* F-1 얼굴형 분석 (다크모드) */
+  --module-face: oklch(0.65 0.14 30);
+  --module-face-light: oklch(0.20 0.05 30);
+  --module-face-dark: oklch(0.75 0.16 30);
+
+  /* H-1 헤어 분석 (다크모드) */
+  --module-hair: oklch(0.68 0.12 55);
+  --module-hair-light: oklch(0.20 0.05 55);
+  --module-hair-dark: oklch(0.78 0.14 55);
+
+  /* 전문성 색상 (다크모드) */
+  --professional-primary: oklch(0.55 0.10 220);
+  --professional-accent: oklch(0.65 0.08 180);
+  --professional-highlight: oklch(0.75 0.06 80);
 
   /* 상태 색상 (다크모드) */
   --status-success: oklch(0.65 0.15 142);
@@ -435,6 +494,14 @@
 
 .bg-gradient-personal-color {
   background: var(--gradient-personal-color);
+}
+
+.bg-gradient-face {
+  background: var(--gradient-face);
+}
+
+.bg-gradient-professional {
+  background: var(--gradient-professional);
 }
 
 /* 텍스트 그라디언트 */

@@ -414,7 +414,10 @@ describe('알림 액션 라우트', () => {
   });
 
   it('소셜 관련 알림은 social 라우트로 이동해야 함', () => {
-    const socialTypes: NotificationType[] = ['friend_request', 'friend_accepted'];
+    const socialTypes: NotificationType[] = [
+      'friend_request',
+      'friend_accepted',
+    ];
 
     socialTypes.forEach((type) => {
       const route = NOTIFICATION_TEMPLATES[type].action?.route;

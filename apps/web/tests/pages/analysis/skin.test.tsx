@@ -104,16 +104,32 @@ vi.mock('@/components/analysis/consent', () => ({
   },
 }));
 
+// Mock useUserProfile 훅 (성별 선택 자동 건너뛰기용)
+vi.mock('@/hooks/useUserProfile', () => ({
+  useUserProfile: () => ({
+    profile: { gender: 'male', heightCm: null, weightKg: null, allergies: [] },
+    isLoading: false,
+    error: null,
+    updateGender: vi.fn().mockResolvedValue(true),
+    updateHeight: vi.fn().mockResolvedValue(true),
+    updateWeight: vi.fn().mockResolvedValue(true),
+    updatePhysicalInfo: vi.fn().mockResolvedValue(true),
+    updateAllergies: vi.fn().mockResolvedValue(true),
+    updateProfile: vi.fn().mockResolvedValue(true),
+    refetch: vi.fn(),
+  }),
+}));
+
 // Mock 컴포넌트들
 vi.mock('@/app/(main)/analysis/skin/_components/LightingGuide', () => ({
-  default: ({ onContinue, onSkip }: { onContinue: () => void; onSkip?: () => void }) => (
+  default: ({ onContinue, onGallery }: { onContinue: () => void; onGallery?: () => void }) => (
     <div data-testid="lighting-guide">
       <button onClick={onContinue} data-testid="guide-continue">
         계속하기
       </button>
-      {onSkip && (
-        <button onClick={onSkip} data-testid="guide-skip">
-          건너뛰기
+      {onGallery && (
+        <button onClick={onGallery} data-testid="guide-gallery">
+          갤러리에서 선택
         </button>
       )}
     </div>
@@ -177,21 +193,36 @@ vi.mock('@/app/(main)/analysis/skin/_components/MultiAngleSkinCapture', () => ({
   ),
 }));
 
-vi.mock('@/app/(main)/analysis/skin/_components/KnownSkinTypeInput', () => ({
+vi.mock('@/app/(main)/analysis/skin/_components/GalleryMultiAngleSkinUpload', () => ({
   default: ({
-    onSelect,
-    onBack,
+    onComplete,
+    onCancel,
   }: {
-    onSelect: (skinType: string, concerns: string[]) => void;
-    onBack: () => void;
+    onComplete: (images: {
+      frontImageBase64: string;
+      leftImageBase64?: string;
+      rightImageBase64?: string;
+    }) => void;
+    onCancel?: () => void;
   }) => (
-    <div data-testid="known-skin-type-input">
-      <button onClick={() => onSelect('oily', ['acne'])} data-testid="select-skin-type">
-        피부 타입 선택
+    <div data-testid="gallery-multi-angle-upload">
+      <button
+        onClick={() =>
+          onComplete({
+            frontImageBase64: 'data:image/jpeg;base64,gallery-front',
+            leftImageBase64: 'data:image/jpeg;base64,gallery-left',
+            rightImageBase64: 'data:image/jpeg;base64,gallery-right',
+          })
+        }
+        data-testid="gallery-upload-complete"
+      >
+        업로드 완료
       </button>
-      <button onClick={onBack} data-testid="known-input-back">
-        돌아가기
-      </button>
+      {onCancel && (
+        <button onClick={onCancel} data-testid="gallery-upload-cancel">
+          취소
+        </button>
+      )}
     </div>
   ),
 }));
@@ -449,7 +480,7 @@ describe('SkinAnalysisPage', () => {
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('gallery-mode-button'));
 
-      expect(screen.getByTestId('photo-upload')).toBeInTheDocument();
+      expect(screen.getByTestId('gallery-multi-angle-upload')).toBeInTheDocument();
       expect(screen.getByText('피부 사진을 선택해주세요')).toBeInTheDocument();
     });
 
@@ -475,7 +506,7 @@ describe('SkinAnalysisPage', () => {
 
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('gallery-mode-button'));
-      await user.click(screen.getByTestId('select-photo'));
+      await user.click(screen.getByTestId('gallery-upload-complete'));
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith('/api/analyze/skin', expect.any(Object));
@@ -483,20 +514,7 @@ describe('SkinAnalysisPage', () => {
     });
   });
 
-  describe('기존 피부 타입 입력 모드', () => {
-    it('건너뛰기 클릭 시 피부 타입 입력 화면으로 전환된다', async () => {
-      const user = userEvent.setup();
-      render(<SkinAnalysisPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
-      });
-
-      await user.click(screen.getByTestId('guide-skip'));
-
-      expect(screen.getByTestId('known-skin-type-input')).toBeInTheDocument();
-    });
-  });
+  // "기존 피부 타입 입력 모드" 테스트 제거됨 - AI가 피부 타입을 자동 판단하므로 해당 기능 삭제
 
   describe('분석 결과', () => {
     // 분석 결과 테스트에서는 동의가 이미 있다고 가정
@@ -619,10 +637,10 @@ describe('SkinAnalysisPage', () => {
 
       await user.click(screen.getByTestId('guide-continue'));
 
+      expect(screen.getByText(/실시간 카메라로 정면 \+ 좌\/우측 다각도 촬영/)).toBeInTheDocument();
       expect(
-        screen.getByText(/정면 \+ 좌\/우측 다각도 촬영으로 더 정확한 분석/)
+        screen.getByText(/기존에 찍은 사진으로 정면 \+ 좌\/우측 다각도 업로드/)
       ).toBeInTheDocument();
-      expect(screen.getByText(/기존에 찍은 정면 사진으로 간편하게 분석/)).toBeInTheDocument();
     });
   });
 
@@ -799,7 +817,7 @@ describe('SkinAnalysisPage', () => {
 
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('gallery-mode-button'));
-      await user.click(screen.getByTestId('select-photo'));
+      await user.click(screen.getByTestId('gallery-upload-complete'));
 
       // 동의 모달이 표시되어야 함
       await waitFor(() => {

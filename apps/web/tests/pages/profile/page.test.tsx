@@ -37,6 +37,32 @@ vi.mock('@/components/common', () => ({
   LevelProgress: vi.fn(() => <div data-testid="level-progress">LevelProgress</div>),
 }));
 
+// Mock profile components (K-5)
+vi.mock('@/components/profile', () => ({
+  WellnessScoreRing: vi.fn(() => <div data-testid="wellness-score-ring">WellnessScoreRing</div>),
+  MyInfoSummaryCard: vi.fn(() => <div data-testid="my-info-summary-card">MyInfoSummaryCard</div>),
+}));
+
+// Mock QRCodeDisplay
+vi.mock('@/components/common/QRCodeDisplay', () => ({
+  QRCodeDisplay: vi.fn(() => <div data-testid="qr-code-display">QRCodeDisplay</div>),
+}));
+
+// Mock greeting utilities
+vi.mock('@/lib/utils/greeting', () => ({
+  getGreetingWithEmoji: vi.fn(() => ({
+    greeting: 'Hello!',
+    emoji: 'wave',
+    timeOfDay: 'morning',
+  })),
+  TIME_GRADIENTS: {
+    morning: 'from-yellow-50 to-orange-50',
+    afternoon: 'from-blue-50 to-cyan-50',
+    evening: 'from-purple-50 to-pink-50',
+    night: 'from-indigo-900 to-purple-900',
+  },
+}));
+
 // Mock challenges
 vi.mock('@/lib/challenges', () => ({
   getUserChallengeStats: vi.fn(),
@@ -96,6 +122,7 @@ vi.mock('lucide-react', async (importOriginal) => {
     Megaphone: MockIcon,
     Palette: MockIcon,
     FlaskConical: MockIcon,
+    QrCode: MockIcon,
   };
 });
 
@@ -228,11 +255,11 @@ describe('ProfilePage', () => {
       });
     });
 
-    it('웰니스 스코어를 표시한다', async () => {
+    it('웰니스 스코어 링을 표시한다', async () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        // K-5 리디자인: 웰니스 스코어 텍스트 → 링 차트 컴포넌트
+        // K-5: WellnessScoreRing 컴포넌트 testid로 확인
         expect(screen.getByTestId('wellness-score-ring')).toBeInTheDocument();
       });
     });
@@ -265,7 +292,7 @@ describe('ProfilePage', () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        // K-5 리디자인: '가입 정보' 섹션 → '가입일:' 인라인 표시
+        // K-5: "가입 정보" 섹션 대신 "가입일:" 텍스트로 확인
         expect(screen.getByText(/가입일:/)).toBeInTheDocument();
       });
     });
@@ -435,7 +462,8 @@ describe('ProfilePage', () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        const img = screen.getByRole('img', { name: '테스트 사용자' });
+        // K-5: alt text가 변경됨
+        const img = screen.getByRole('img');
         expect(img).toBeInTheDocument();
         expect(img).toHaveAttribute('src', 'https://example.com/avatar.jpg');
       });

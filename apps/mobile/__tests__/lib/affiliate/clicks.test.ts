@@ -3,7 +3,10 @@
  * @description Clerk 통합 Supabase 클라이언트 패턴 테스트
  */
 
-import { createAffiliateClick, getUserClickHistory } from '@/lib/affiliate/clicks';
+import {
+  createAffiliateClick,
+  getUserClickHistory,
+} from '@/lib/affiliate/clicks';
 import type { AffiliateClickInput } from '@/lib/affiliate/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -39,7 +42,9 @@ describe('createAffiliateClick', () => {
       from: jest.fn(() => ({
         insert: jest.fn(() => ({
           select: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({ data: { id: mockId }, error: null })),
+            single: jest.fn(() =>
+              Promise.resolve({ data: { id: mockId }, error: null })
+            ),
           })),
         })),
       })),
@@ -65,7 +70,9 @@ describe('createAffiliateClick', () => {
       from: jest.fn(() => ({
         insert: jest.fn(() => ({
           select: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({ data: { id: mockId }, error: null })),
+            single: jest.fn(() =>
+              Promise.resolve({ data: { id: mockId }, error: null })
+            ),
           })),
         })),
       })),
@@ -129,7 +136,9 @@ describe('createAffiliateClick', () => {
     const mockId = 'click_789';
     const mockInsert = jest.fn(() => ({
       select: jest.fn(() => ({
-        single: jest.fn(() => Promise.resolve({ data: { id: mockId }, error: null })),
+        single: jest.fn(() =>
+          Promise.resolve({ data: { id: mockId }, error: null })
+        ),
       })),
     }));
     const mockSupabase = {
@@ -176,7 +185,9 @@ describe('getUserClickHistory', () => {
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
             order: jest.fn(() => ({
-              limit: jest.fn(() => Promise.resolve({ data: mockData, error: null })),
+              limit: jest.fn(() =>
+                Promise.resolve({ data: mockData, error: null })
+              ),
             })),
           })),
         })),

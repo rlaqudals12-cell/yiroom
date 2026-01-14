@@ -1,11 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { Palette, Sparkles, Activity, Scissors, ChevronRight } from 'lucide-react';
+import { Palette, Sparkles, Activity, Scissors, ChevronRight, ScanFace } from 'lucide-react';
 
 /**
  * /analysis 메인 페이지
  * 분석 모듈 메뉴 목록
+ *
+ * 색상은 globals.css의 모듈 색상 변수 사용 (하드코딩 금지)
+ * @see globals.css --module-* 변수
  */
 
 interface AnalysisModule {
@@ -14,8 +17,8 @@ interface AnalysisModule {
   description: string;
   href: string;
   icon: React.ReactNode;
-  color: string;
-  bgColor: string;
+  /** CSS 변수명 (--module-xxx에서 xxx 부분) */
+  moduleVar: string;
 }
 
 const ANALYSIS_MODULES: AnalysisModule[] = [
@@ -25,8 +28,15 @@ const ANALYSIS_MODULES: AnalysisModule[] = [
     description: '나에게 어울리는 컬러를 찾아보세요',
     href: '/analysis/personal-color',
     icon: <Palette className="w-6 h-6" />,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-50',
+    moduleVar: 'personal-color',
+  },
+  {
+    id: 'face',
+    title: '얼굴형 분석',
+    description: '얼굴형과 이목구비를 정밀 분석해요',
+    href: '/analysis/face',
+    icon: <ScanFace className="w-6 h-6" />,
+    moduleVar: 'face',
   },
   {
     id: 'skin',
@@ -34,8 +44,7 @@ const ANALYSIS_MODULES: AnalysisModule[] = [
     description: 'AI가 피부 상태를 정밀 분석해요',
     href: '/analysis/skin',
     icon: <Sparkles className="w-6 h-6" />,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    moduleVar: 'skin',
   },
   {
     id: 'body',
@@ -43,8 +52,7 @@ const ANALYSIS_MODULES: AnalysisModule[] = [
     description: '체형에 맞는 스타일을 추천해요',
     href: '/analysis/body',
     icon: <Activity className="w-6 h-6" />,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
+    moduleVar: 'body',
   },
   {
     id: 'hair',
@@ -52,8 +60,7 @@ const ANALYSIS_MODULES: AnalysisModule[] = [
     description: '두피와 모발 상태를 분석해요',
     href: '/analysis/hair',
     icon: <Scissors className="w-6 h-6" />,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-50',
+    moduleVar: 'hair',
   },
 ];
 
@@ -73,12 +80,16 @@ export default function AnalysisPage() {
             <Link
               key={module.id}
               href={module.href}
-              className="block bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+              className="block bg-white dark:bg-card rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
               data-testid={`analysis-module-${module.id}`}
             >
               <div className="flex items-center gap-4">
                 <div
-                  className={`w-12 h-12 rounded-full ${module.bgColor} ${module.color} flex items-center justify-center`}
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{
+                    backgroundColor: `var(--module-${module.moduleVar}-light)`,
+                    color: `var(--module-${module.moduleVar})`,
+                  }}
                 >
                   {module.icon}
                 </div>
@@ -92,8 +103,13 @@ export default function AnalysisPage() {
           ))}
         </div>
 
-        {/* 추가 안내 */}
-        <div className="mt-8 p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl">
+        {/* 추가 안내 - 모듈 그라디언트 사용 */}
+        <div
+          className="mt-8 p-4 rounded-xl"
+          style={{
+            background: `linear-gradient(to right, var(--module-personal-color-light), var(--module-body-light))`,
+          }}
+        >
           <p className="text-sm text-muted-foreground text-center">
             모든 분석은 AI 기반으로 진행되며,
             <br />

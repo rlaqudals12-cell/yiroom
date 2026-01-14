@@ -2,7 +2,11 @@
  * 즐겨찾기 스토어 테스트
  */
 
-import { useFavoritesStore, getFavoritesCount, getFavoritesCountByType } from '@/lib/stores';
+import {
+  useFavoritesStore,
+  getFavoritesCount,
+  getFavoritesCountByType,
+} from '@/lib/stores';
 
 describe('useFavoritesStore', () => {
   beforeEach(() => {
@@ -129,7 +133,9 @@ describe('useFavoritesStore', () => {
         brand: '브랜드B',
       });
 
-      const cosmetics = useFavoritesStore.getState().getFavoritesByType('cosmetic');
+      const cosmetics = useFavoritesStore
+        .getState()
+        .getFavoritesByType('cosmetic');
       expect(cosmetics).toHaveLength(1);
       expect(cosmetics[0].productId).toBe('cosmetic_1');
     });

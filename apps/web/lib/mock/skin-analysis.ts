@@ -1,5 +1,12 @@
 // S-1 피부 분석 Mock 데이터 및 타입 정의
 
+import type {
+  DetailedZoneId,
+  DetailedZoneStatus,
+  DetailedZoneMap,
+  DetailedStatusLevel,
+} from '@/types/skin-zones';
+
 export type MetricStatus = 'good' | 'normal' | 'warning';
 
 // 피부 타입 정의
@@ -209,6 +216,7 @@ export interface ProductRecommendations {
   routine: Array<{
     step: number;
     category: string;
+    categoryLabel?: string;
     products: string[];
     tip: string;
   }>;
@@ -231,6 +239,21 @@ export interface ProductRecommendations {
   };
 }
 
+/**
+ * 파운데이션 제형 추천 (피부 타입 기반)
+ * PC-1과 역할 분리: PC-1은 색상/쉐이드, S-1은 제형/텍스처
+ */
+export interface FoundationFormula {
+  finish: 'matte' | 'satin' | 'glow' | 'dewy';
+  finishLabel: string; // "매트", "새틴", "글로우", "듀이"
+  coverage: 'light' | 'medium' | 'full';
+  coverageLabel: string; // "라이트", "미디엄", "풀"
+  texture: 'liquid' | 'cushion' | 'powder' | 'stick';
+  textureLabel: string; // "리퀴드", "쿠션", "파우더", "스틱"
+  tip: string; // 피부 타입별 맞춤 팁
+  avoidTip?: string; // 피해야 할 제형
+}
+
 export interface SkinAnalysisResult {
   overallScore: number;
   metrics: SkinMetric[];
@@ -239,7 +262,10 @@ export interface SkinAnalysisResult {
   analyzedAt: Date;
   // Week 6: 성분 분석 + 제품 추천 + PC 연동
   personalColorSeason?: string | null;
+  /** @deprecated PC-1에서 색상 추천, S-1은 foundationFormula로 제형 추천 */
   foundationRecommendation?: string | null;
+  /** 피부 타입 기반 파운데이션 제형 추천 (S-1 전용) */
+  foundationFormula?: FoundationFormula | null;
   ingredientWarnings?: IngredientWarning[];
   productRecommendations?: ProductRecommendations | null;
   // Hybrid 데이터용 초보자 친화 필드 (선택적, 하위 호환)
@@ -346,6 +372,59 @@ export const EASY_SKIN_TIPS: Record<SkinTypeId, EasySkinTip> = {
   },
 };
 
+// 피부 타입별 파운데이션 제형 추천 (Hybrid 데이터용)
+export const FOUNDATION_FORMULAS: Record<SkinTypeId, FoundationFormula> = {
+  oily: {
+    finish: 'matte',
+    finishLabel: '매트',
+    coverage: 'medium',
+    coverageLabel: '미디엄',
+    texture: 'powder',
+    textureLabel: '파우더',
+    tip: '지성 피부는 매트 피니쉬가 번들거림을 잡아줘요. 오일 컨트롤 성분이 들어간 파우더나 쿠션을 추천해요!',
+    avoidTip: '글로우/듀이 타입은 번들거림이 심해질 수 있어요',
+  },
+  dry: {
+    finish: 'dewy',
+    finishLabel: '듀이',
+    coverage: 'light',
+    coverageLabel: '라이트',
+    texture: 'cushion',
+    textureLabel: '쿠션',
+    tip: '건성 피부는 촉촉한 듀이 피니쉬가 잘 어울려요. 보습 성분이 들어간 쿠션이나 리퀴드를 선택하세요!',
+    avoidTip: '파우더 타입은 건조함을 악화시킬 수 있어요',
+  },
+  combination: {
+    finish: 'satin',
+    finishLabel: '새틴',
+    coverage: 'medium',
+    coverageLabel: '미디엄',
+    texture: 'liquid',
+    textureLabel: '리퀴드',
+    tip: '복합성 피부는 새틴 피니쉬가 자연스러워요. T존에는 파우더로 가볍게 마무리하면 완벽!',
+    avoidTip: 'T존에 글로우 제품은 피하세요',
+  },
+  normal: {
+    finish: 'satin',
+    finishLabel: '새틴',
+    coverage: 'light',
+    coverageLabel: '라이트',
+    texture: 'cushion',
+    textureLabel: '쿠션',
+    tip: '중성 피부는 대부분의 제형이 잘 맞아요. 자연스러운 새틴 피니쉬로 건강한 피부결을 살려보세요!',
+  },
+  sensitive: {
+    finish: 'satin',
+    finishLabel: '새틴',
+    coverage: 'light',
+    coverageLabel: '라이트',
+    texture: 'cushion',
+    textureLabel: '쿠션',
+    tip: '민감 피부는 무향료, 저자극 제품을 선택하세요. 가벼운 커버력의 쿠션이 피부 부담을 줄여줘요!',
+    avoidTip: '알코올, 향료가 들어간 제품은 자극이 될 수 있어요',
+  },
+};
+
 // 로딩 화면 팁 목록
 export const LOADING_TIPS = [
   '7가지 피부 지표를 분석합니다',
@@ -436,6 +515,215 @@ export const generateMockAnalysisResult = (): SkinAnalysisResult => {
     analyzedAt: new Date(),
   };
 };
+
+// ============================================
+// 12존 세부 분석 Mock 데이터 (Phase 3)
+// ============================================
+
+/** 12존 ID 목록 */
+export const ALL_DETAILED_ZONE_IDS: DetailedZoneId[] = [
+  'forehead_center',
+  'forehead_left',
+  'forehead_right',
+  'eye_left',
+  'eye_right',
+  'cheek_left',
+  'cheek_right',
+  'nose_bridge',
+  'nose_tip',
+  'chin_center',
+  'chin_left',
+  'chin_right',
+];
+
+/** 12존별 주요 관심사 풀 */
+const ZONE_CONCERN_POOLS: Record<DetailedZoneId, string[]> = {
+  forehead_center: ['T존 피지 과다', '번들거림', '여드름', '블랙헤드'],
+  forehead_left: ['헤어라인 트러블', '각질', '건조함'],
+  forehead_right: ['헤어라인 트러블', '각질', '건조함'],
+  eye_left: ['다크서클', '잔주름', '건조함', '부기'],
+  eye_right: ['다크서클', '잔주름', '건조함', '부기'],
+  cheek_left: ['홍조', '모공 확대', '색소침착', '건조함'],
+  cheek_right: ['홍조', '모공 확대', '색소침착', '건조함'],
+  nose_bridge: ['블랙헤드', '모공', '피지', '각질'],
+  nose_tip: ['피지 과다', '넓은 모공', '블랙헤드'],
+  chin_center: ['여드름', '트러블', '피지'],
+  chin_left: ['턱선 탄력 저하', '건조함'],
+  chin_right: ['턱선 탄력 저하', '건조함'],
+};
+
+/** 12존별 추천 관리법 풀 */
+const ZONE_RECOMMENDATION_POOLS: Record<DetailedZoneId, string[]> = {
+  forehead_center: ['가벼운 수분 케어', 'BHA 토너 사용', '피지 조절 세럼'],
+  forehead_left: ['헤어라인 세안 주의', '가벼운 보습', '두피 관리 연계'],
+  forehead_right: ['헤어라인 세안 주의', '가벼운 보습', '두피 관리 연계'],
+  eye_left: ['아이크림 사용', '냉찜질', '충분한 수면', '비타민K 함유 제품'],
+  eye_right: ['아이크림 사용', '냉찜질', '충분한 수면', '비타민K 함유 제품'],
+  cheek_left: ['진정 케어', '보습 강화', '선크림 필수', '센텔라 성분'],
+  cheek_right: ['진정 케어', '보습 강화', '선크림 필수', '센텔라 성분'],
+  nose_bridge: ['클레이 마스크 주 1회', 'BHA 각질 케어', '딥 클렌징'],
+  nose_tip: ['피지 조절 토너', '논코메도제닉 제품', '모공 수렴 팩'],
+  chin_center: ['스팟 트리트먼트', '저자극 세안', '유분 조절'],
+  chin_left: ['리프팅 마사지', '탄력 세럼', '콜라겐 부스팅'],
+  chin_right: ['리프팅 마사지', '탄력 세럼', '콜라겐 부스팅'],
+};
+
+/** 점수 → 5단계 상태 변환 */
+function getDetailedStatus(score: number): DetailedStatusLevel {
+  if (score >= 85) return 'excellent';
+  if (score >= 70) return 'good';
+  if (score >= 50) return 'normal';
+  if (score >= 30) return 'warning';
+  return 'critical';
+}
+
+/** 랜덤 값 생성 헬퍼 */
+function randomValue(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/** 배열에서 랜덤 N개 선택 */
+function pickRandom<T>(arr: T[], count: number): T[] {
+  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
+
+/**
+ * 12존 Mock 분석 데이터 생성
+ * @description 각 존별 점수, 상태, 우려사항, 추천 관리법 생성
+ */
+export function generateMockDetailedZoneAnalysis(): DetailedZoneMap {
+  const result: Partial<DetailedZoneMap> = {};
+
+  for (const zoneId of ALL_DETAILED_ZONE_IDS) {
+    // T존/코 영역은 점수가 상대적으로 낮은 경향
+    const isTZone =
+      zoneId === 'forehead_center' || zoneId === 'nose_bridge' || zoneId === 'nose_tip';
+    const baseScore = isTZone ? randomValue(45, 75) : randomValue(55, 90);
+
+    const status = getDetailedStatus(baseScore);
+    const concernCount = status === 'excellent' || status === 'good' ? 1 : randomValue(2, 3);
+    const recommendationCount = concernCount + 1;
+
+    const zone: DetailedZoneStatus = {
+      zoneId,
+      score: baseScore,
+      status,
+      concerns: pickRandom(ZONE_CONCERN_POOLS[zoneId], concernCount),
+      recommendations: pickRandom(ZONE_RECOMMENDATION_POOLS[zoneId], recommendationCount),
+    };
+
+    // 20% 확률로 이전 분석 대비 변화 정보 추가
+    if (Math.random() < 0.2) {
+      const changeTypes: Array<'improved' | 'same' | 'declined'> = ['improved', 'same', 'declined'];
+      const change = changeTypes[Math.floor(Math.random() * 3)];
+      const scoreDiff =
+        change === 'same' ? 0 : change === 'improved' ? randomValue(3, 10) : -randomValue(3, 10);
+
+      zone.comparedToPrevious = { change, scoreDiff };
+    }
+
+    result[zoneId] = zone;
+  }
+
+  return result as DetailedZoneMap;
+}
+
+/**
+ * 특정 피부 타입에 맞는 12존 Mock 분석 데이터 생성
+ * @param skinTypeId 피부 타입
+ */
+export function generateMockDetailedZoneAnalysisBySkinType(
+  skinTypeId: SkinTypeId
+): DetailedZoneMap {
+  const result: Partial<DetailedZoneMap> = {};
+
+  for (const zoneId of ALL_DETAILED_ZONE_IDS) {
+    let baseScore: number;
+
+    // 피부 타입별 영역 점수 조정
+    switch (skinTypeId) {
+      case 'oily':
+        // 지성: T존 점수 낮음, 볼은 괜찮음
+        baseScore =
+          zoneId.includes('nose') || zoneId.includes('forehead')
+            ? randomValue(35, 60)
+            : randomValue(60, 85);
+        break;
+      case 'dry':
+        // 건성: 볼, 턱 영역 점수 낮음
+        baseScore =
+          zoneId.includes('cheek') || zoneId.includes('chin')
+            ? randomValue(40, 65)
+            : randomValue(55, 80);
+        break;
+      case 'combination':
+        // 복합성: T존 낮음, U존 괜찮음
+        baseScore =
+          zoneId.includes('nose') || zoneId === 'forehead_center'
+            ? randomValue(40, 60)
+            : randomValue(55, 80);
+        break;
+      case 'sensitive':
+        // 민감성: 볼 영역 점수 낮음 (홍조)
+        baseScore = zoneId.includes('cheek') ? randomValue(35, 60) : randomValue(50, 75);
+        break;
+      default:
+        // 중성: 전체적으로 균일하고 높음
+        baseScore = randomValue(65, 90);
+    }
+
+    const status = getDetailedStatus(baseScore);
+    const concernCount = status === 'excellent' || status === 'good' ? 1 : randomValue(2, 3);
+    const recommendationCount = concernCount + 1;
+
+    result[zoneId] = {
+      zoneId,
+      score: baseScore,
+      status,
+      concerns: pickRandom(ZONE_CONCERN_POOLS[zoneId], concernCount),
+      recommendations: pickRandom(ZONE_RECOMMENDATION_POOLS[zoneId], recommendationCount),
+    };
+  }
+
+  return result as DetailedZoneMap;
+}
+
+/** 12존 분석 결과에서 전체 평균 점수 계산 */
+export function calculateDetailedZoneAverageScore(zones: DetailedZoneMap): number {
+  const scores = Object.values(zones).map((z) => z.score);
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+}
+
+/** 12존 분석 결과에서 최악의 존 찾기 */
+export function findWorstDetailedZone(
+  zones: DetailedZoneMap
+): { zoneId: DetailedZoneId; zone: DetailedZoneStatus } | null {
+  let worst: { zoneId: DetailedZoneId; zone: DetailedZoneStatus } | null = null;
+
+  for (const [zoneId, zone] of Object.entries(zones)) {
+    if (!worst || zone.score < worst.zone.score) {
+      worst = { zoneId: zoneId as DetailedZoneId, zone };
+    }
+  }
+
+  return worst;
+}
+
+/** 12존 분석 결과에서 최상의 존 찾기 */
+export function findBestDetailedZone(
+  zones: DetailedZoneMap
+): { zoneId: DetailedZoneId; zone: DetailedZoneStatus } | null {
+  let best: { zoneId: DetailedZoneId; zone: DetailedZoneStatus } | null = null;
+
+  for (const [zoneId, zone] of Object.entries(zones)) {
+    if (!best || zone.score > best.zone.score) {
+      best = { zoneId: zoneId as DetailedZoneId, zone };
+    }
+  }
+
+  return best;
+}
 
 // 점수 색상 유틸리티
 export const getScoreColor = (score: number): string => {

@@ -95,14 +95,33 @@ describe('ScoreChangeBadge 색상 시스템', () => {
 
 describe('ScoreChangeBadge 크기 설정', () => {
   const SIZE_CONFIG = {
-    sm: { paddingHorizontal: 6, paddingVertical: 2, fontSize: 11, iconSize: 12 },
-    md: { paddingHorizontal: 8, paddingVertical: 4, fontSize: 13, iconSize: 14 },
-    lg: { paddingHorizontal: 12, paddingVertical: 6, fontSize: 15, iconSize: 18 },
+    sm: {
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      fontSize: 11,
+      iconSize: 12,
+    },
+    md: {
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      fontSize: 13,
+      iconSize: 14,
+    },
+    lg: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      fontSize: 15,
+      iconSize: 18,
+    },
   };
 
   it('크기가 커질수록 padding이 증가해야 한다', () => {
-    expect(SIZE_CONFIG.sm.paddingHorizontal).toBeLessThan(SIZE_CONFIG.md.paddingHorizontal);
-    expect(SIZE_CONFIG.md.paddingHorizontal).toBeLessThan(SIZE_CONFIG.lg.paddingHorizontal);
+    expect(SIZE_CONFIG.sm.paddingHorizontal).toBeLessThan(
+      SIZE_CONFIG.md.paddingHorizontal
+    );
+    expect(SIZE_CONFIG.md.paddingHorizontal).toBeLessThan(
+      SIZE_CONFIG.lg.paddingHorizontal
+    );
   });
 
   it('크기가 커질수록 fontSize가 증가해야 한다', () => {

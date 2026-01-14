@@ -86,9 +86,7 @@ export const mockSupplementProduct = {
   rating: 4.7,
   reviewCount: 256,
   benefits: ['bone_health', 'immunity'],
-  mainIngredients: [
-    { name: 'Vitamin D3', amount: 5000, unit: 'IU' },
-  ],
+  mainIngredients: [{ name: 'Vitamin D3', amount: 5000, unit: 'IU' }],
   dosage: '하루 1정',
   matchScore: 90,
 };

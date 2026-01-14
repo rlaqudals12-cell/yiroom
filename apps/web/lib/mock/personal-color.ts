@@ -201,6 +201,16 @@ export interface LipstickRecommendation {
   oliveyoungAlt?: string; // 올리브영 대안 제품
 }
 
+// 남성용 그루밍 추천 (립스틱 대신)
+export interface GroomingRecommendation {
+  itemName: string; // "립밤", "선크림", "톤업 크림" 등
+  colorTone: string; // "무색", "자연스러운 베이지" 등
+  hex: string;
+  brandExample?: string;
+  easyDescription?: string;
+  oliveyoungAlt?: string;
+}
+
 // 파운데이션 추천
 export interface FoundationRecommendation {
   shadeName: string; // 쉐이드 이름 (예: "21호 라이트 베이지")
@@ -224,6 +234,14 @@ export interface EasyMakeupGuide {
   eye: string; // "검정 아이라이너로 눈매만 살짝"
   cheek: string; // "핑크빛 블러셔를 살짝"
   tip: string; // "립이 진하면 눈 화장은 가볍게!"
+}
+
+// 남성용 그루밍 가이드 (메이크업 대신)
+export interface EasyGroomingGuide {
+  skin: string; // "깨끗하고 건강한 피부 유지"
+  hair: string; // "깔끔하게 정돈된 헤어스타일"
+  scent: string; // "톤에 맞는 향수 계열"
+  tip: string; // "기본 스킨케어만 해도 충분해요"
 }
 
 // 초보자 친화 패션 가이드
@@ -250,6 +268,8 @@ export interface StyleDescription {
   easyMakeup?: EasyMakeupGuide;
   easyFashion?: EasyFashionGuide;
   easyAccessory?: EasyAccessoryGuide;
+  // 남성용 그루밍 가이드 (선택적)
+  easyGrooming?: EasyGroomingGuide;
 }
 
 // 초보자 친화 인사이트
@@ -530,6 +550,240 @@ export const CLOTHING_RECOMMENDATIONS: Record<SeasonType, ClothingRecommendation
     { item: '셔츠', colorSuggestion: '퓨어 화이트', reason: '깨끗하고 선명한 느낌' },
     { item: '팬츠', colorSuggestion: '차콜 그레이', reason: '모던하고 세련된 분위기' },
   ],
+};
+
+// 남성용 의류 추천
+export const MALE_CLOTHING_RECOMMENDATIONS: Record<SeasonType, ClothingRecommendation[]> = {
+  spring: [
+    { item: '셔츠', colorSuggestion: '아이보리', reason: '밝고 깔끔한 인상' },
+    { item: '치노 팬츠', colorSuggestion: '베이지', reason: '따뜻하고 편안한 분위기' },
+    { item: '가디건', colorSuggestion: '라이트 그린', reason: '생기있는 캐주얼 룩' },
+    { item: '면 재킷', colorSuggestion: '연한 카키', reason: '봄철 스마트 캐주얼' },
+    { item: '폴로 셔츠', colorSuggestion: '살몬 핑크', reason: '활기차고 화사한 느낌' },
+  ],
+  summer: [
+    { item: '린넨 셔츠', colorSuggestion: '라벤더', reason: '시원하고 세련된 느낌' },
+    { item: '슬랙스', colorSuggestion: '라이트 그레이', reason: '깔끔하고 모던한 인상' },
+    { item: '니트 폴로', colorSuggestion: '스카이 블루', reason: '청량한 여름 느낌' },
+    { item: '반팔 셔츠', colorSuggestion: '민트', reason: '상쾌하고 시원한 분위기' },
+    { item: '면 팬츠', colorSuggestion: '더스티 블루', reason: '차분하고 우아한 느낌' },
+  ],
+  autumn: [
+    { item: '트위드 재킷', colorSuggestion: '카멜', reason: '고급스럽고 세련된 느낌' },
+    { item: '울 팬츠', colorSuggestion: '올리브', reason: '차분하고 멋스러운 분위기' },
+    { item: '니트', colorSuggestion: '버건디', reason: '깊이있는 가을 분위기' },
+    { item: '코트', colorSuggestion: '브라운', reason: '따뜻하고 클래식한 느낌' },
+    { item: '터틀넥', colorSuggestion: '머스타드', reason: '포인트 있는 스타일링' },
+  ],
+  winter: [
+    { item: '코트', colorSuggestion: '블랙', reason: '도회적이고 시크한 느낌' },
+    { item: '블레이저', colorSuggestion: '네이비', reason: '세련되고 깔끔한 인상' },
+    { item: '정장 팬츠', colorSuggestion: '차콜 그레이', reason: '모던하고 세련된 분위기' },
+    { item: '셔츠', colorSuggestion: '퓨어 화이트', reason: '깨끗하고 선명한 느낌' },
+    { item: '터틀넥', colorSuggestion: '딥 퍼플', reason: '강렬하고 세련된 분위기' },
+  ],
+};
+
+// 남성용 그루밍 추천 (립스틱 대신)
+export const GROOMING_RECOMMENDATIONS: Record<SeasonType, GroomingRecommendation[]> = {
+  spring: [
+    {
+      itemName: '컬러 립밤',
+      colorTone: '내추럴 피치',
+      hex: '#FFDAB9',
+      brandExample: '버츠비 틴티드 립밤',
+      easyDescription: '자연스러운 혈색 (건조함 방지)',
+      oliveyoungAlt: '바닐라코 립 에센셜',
+    },
+    {
+      itemName: '톤업 선크림',
+      colorTone: '웜 베이지',
+      hex: '#F5DEB3',
+      brandExample: '닥터지 톤업 선',
+      easyDescription: '피부톤 보정 + 자외선 차단',
+      oliveyoungAlt: '라운드랩 자작나무 선크림',
+    },
+    {
+      itemName: '컨실러',
+      colorTone: '라이트 베이지',
+      hex: '#FFE4B5',
+      brandExample: '더샘 컨실러',
+      easyDescription: '다크서클/잡티 커버용',
+      oliveyoungAlt: '더샘 팁 컨실러 01호',
+    },
+  ],
+  summer: [
+    {
+      itemName: '무색 립밤',
+      colorTone: '투명',
+      hex: '#F0F0F0',
+      brandExample: '니베아 립케어',
+      easyDescription: '촉촉한 입술 유지',
+      oliveyoungAlt: '바세린 립 테라피',
+    },
+    {
+      itemName: '톤업 선크림',
+      colorTone: '쿨 핑크',
+      hex: '#FFE4E1',
+      brandExample: '이니스프리 톤업 선',
+      easyDescription: '맑은 피부톤 연출',
+      oliveyoungAlt: '아이소이 선크림',
+    },
+    {
+      itemName: '컨실러',
+      colorTone: '쿨 베이지',
+      hex: '#F5F5DC',
+      brandExample: 'NARS 컨실러',
+      easyDescription: '칙칙함 커버용',
+      oliveyoungAlt: '클리오 킬커버 컨실러',
+    },
+  ],
+  autumn: [
+    {
+      itemName: '틴티드 립밤',
+      colorTone: '웜 브라운',
+      hex: '#D2B48C',
+      brandExample: '키엘 립밤',
+      easyDescription: '자연스러운 갈색빛 혈색',
+      oliveyoungAlt: '바닐라코 립 에센셜 브라운',
+    },
+    {
+      itemName: 'BB크림',
+      colorTone: '내추럴 베이지',
+      hex: '#D2691E',
+      brandExample: '랩시리즈 BB',
+      easyDescription: '건강한 피부톤 연출',
+      oliveyoungAlt: '아이오페 맨 BB크림',
+    },
+    {
+      itemName: '컨실러',
+      colorTone: '웜 샌드',
+      hex: '#C4A484',
+      brandExample: '맥 컨실러',
+      easyDescription: '깊이있는 피부톤 커버',
+      oliveyoungAlt: '더샘 팁 컨실러 02호',
+    },
+  ],
+  winter: [
+    {
+      itemName: '무색 립밤',
+      colorTone: '투명',
+      hex: '#F8F8FF',
+      brandExample: '라로슈포제 립밤',
+      easyDescription: '깨끗하고 건강한 입술',
+      oliveyoungAlt: '바세린 오리지널',
+    },
+    {
+      itemName: '톤업 선크림',
+      colorTone: '쿨 화이트',
+      hex: '#FFFAFA',
+      brandExample: '설화수 자외선차단',
+      easyDescription: '맑고 깨끗한 피부 연출',
+      oliveyoungAlt: '비오템 옴므 선크림',
+    },
+    {
+      itemName: '컨실러',
+      colorTone: '아이시 베이지',
+      hex: '#FAEBD7',
+      brandExample: '조르지오아르마니 컨실러',
+      easyDescription: '선명한 피부톤 커버',
+      oliveyoungAlt: '클리오 킬커버 컨실러 쿨톤',
+    },
+  ],
+};
+
+// 남성용 스타일 설명
+export const MALE_STYLE_DESCRIPTIONS: Record<SeasonType, StyleDescription> = {
+  spring: {
+    imageKeywords: ['밝은', '활기찬', '친근한', '건강한', '부드러운'],
+    makeupStyle:
+      '자연스러운 톤업과 깔끔한 피부 관리가 핵심이에요. 립밤으로 촉촉한 입술을 유지하세요.',
+    fashionStyle:
+      '밝고 따뜻한 톤의 캐주얼 스타일이 잘 어울려요. 베이지, 아이보리, 연한 카키 컬러 추천.',
+    accessories: '로즈골드, 옐로우골드 시계나 안경테가 피부를 더욱 화사하게 만들어줘요.',
+    easyGrooming: {
+      skin: '톤업 선크림으로 건강한 피부톤 유지',
+      hair: '밝은 갈색 계열 염색도 잘 어울려요',
+      scent: '시트러스, 그린 계열 상쾌한 향수',
+      tip: '깔끔한 피부 관리만 해도 화사해 보여요',
+    },
+    easyFashion: {
+      colors: ['아이보리', '베이지', '연한 카키', '라이트 그린'],
+      avoid: ['검정', '진회색', '진한 남색'],
+      style: '밝고 편안한 느낌의 스마트 캐주얼',
+      tip: '밝은 색 셔츠 하나로 인상이 확 달라져요',
+    },
+    easyAccessory: {
+      metal: '금색 계열 (로즈골드, 옐로우골드)',
+      examples: ['골드 시계', '갈색 가죽 벨트', '브라운 안경테'],
+    },
+  },
+  summer: {
+    imageKeywords: ['세련된', '차분한', '지적인', '우아한', '시원한'],
+    makeupStyle: '깔끔하고 맑은 피부가 포인트예요. 쿨톤 선크림으로 칙칙함을 방지하세요.',
+    fashionStyle: '시원하고 세련된 색상이 잘 어울려요. 라벤더, 스카이블루, 그레이 컬러 추천.',
+    accessories: '실버, 화이트골드 시계나 안경테가 쿨한 피부톤과 조화를 이뤄요.',
+    easyGrooming: {
+      skin: '쿨톤 톤업으로 맑은 피부 연출',
+      hair: '애쉬 브라운, 블랙 계열이 잘 어울려요',
+      scent: '아쿠아, 우디 계열 차분한 향수',
+      tip: '피부가 맑아 보이면 세련돼 보여요',
+    },
+    easyFashion: {
+      colors: ['라벤더', '스카이블루', '라이트그레이', '민트'],
+      avoid: ['주황색', '카키', '진한 갈색'],
+      style: '시원하고 깔끔한 느낌의 미니멀 룩',
+      tip: '파스텔 셔츠가 피부를 맑아 보이게 해요',
+    },
+    easyAccessory: {
+      metal: '은색 계열 (실버, 화이트골드)',
+      examples: ['실버 시계', '검정 가죽 벨트', '실버 안경테'],
+    },
+  },
+  autumn: {
+    imageKeywords: ['시크한', '성숙한', '고급스러운', '남성적인', '깊이있는'],
+    makeupStyle: '건강하고 따뜻한 피부톤이 매력이에요. BB크림으로 자연스러운 커버를 하세요.',
+    fashionStyle: '깊고 따뜻한 어스톤이 잘 어울려요. 카멜, 브라운, 올리브, 버건디 컬러 추천.',
+    accessories: '골드, 앤틱골드 시계나 가죽 소품이 따뜻한 피부톤을 돋보이게 해요.',
+    easyGrooming: {
+      skin: 'BB크림으로 건강한 피부 연출',
+      hair: '웜브라운, 다크브라운 염색 추천',
+      scent: '우디, 스파이시 계열 깊이있는 향수',
+      tip: '깔끔하게 정돈된 수염도 잘 어울려요',
+    },
+    easyFashion: {
+      colors: ['카멜', '브라운', '올리브', '버건디'],
+      avoid: ['핑크', '하늘색', '연보라'],
+      style: '클래식하고 고급스러운 느낌',
+      tip: '갈색 계열 재킷이 남성미를 살려줘요',
+    },
+    easyAccessory: {
+      metal: '금색 계열 (골드, 앤틱골드)',
+      examples: ['골드 시계', '브라운 가죽 가방', '호피 스카프'],
+    },
+  },
+  winter: {
+    imageKeywords: ['도회적인', '시크한', '선명한', '강렬한', '모던한'],
+    makeupStyle: '깔끔하고 선명한 인상이 매력이에요. 맑은 피부톤을 유지하는 것이 핵심.',
+    fashionStyle: '모노톤과 선명한 색상이 잘 어울려요. 블랙, 네이비, 화이트, 레드 포인트 추천.',
+    accessories: '실버, 플래티넘 시계나 메탈 소품이 쿨한 피부톤과 잘 맞아요.',
+    easyGrooming: {
+      skin: '깨끗한 피부 유지가 핵심',
+      hair: '블랙, 애쉬 블랙 계열이 잘 어울려요',
+      scent: '머스크, 우디 계열 세련된 향수',
+      tip: '피부 관리만 잘 해도 시크해 보여요',
+    },
+    easyFashion: {
+      colors: ['블랙', '네이비', '화이트', '차콜'],
+      avoid: ['베이지', '카키', '살구색'],
+      style: '깔끔하고 세련된 모던 룩',
+      tip: '검정 코트 하나면 스타일 완성!',
+    },
+    easyAccessory: {
+      metal: '은색 계열 (실버, 플래티넘)',
+      examples: ['실버 시계', '메탈 팔찌', '블랙 가죽 벨트'],
+    },
+  },
 };
 
 // 계절별 파운데이션 추천

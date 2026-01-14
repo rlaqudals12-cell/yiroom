@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { ProblemMarker } from './ProblemMarker';
 import type { ProblemArea } from '@/types/skin-problem-area';
@@ -57,18 +56,16 @@ export function SkinImageViewer({
       data-testid="skin-image-viewer"
     >
       {/* 피부 이미지 */}
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={imageUrl}
         alt="피부 분석 이미지"
-        fill
         className={cn(
-          'object-cover transition-opacity duration-300',
+          'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
           isImageLoaded ? 'opacity-100' : 'opacity-0'
         )}
         onLoad={handleImageLoad}
         onError={handleImageError}
-        sizes="(max-width: 768px) 100vw, 50vw"
-        priority
       />
 
       {/* 로딩 플레이스홀더 */}

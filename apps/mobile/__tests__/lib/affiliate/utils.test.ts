@@ -84,12 +84,12 @@ describe('calculateSkinMatchScore', () => {
   });
 
   it('피부 타입이 매칭되지 않으면 0점을 반환해야 함', () => {
-    const product = { skinTypes: ['dry'] as ('dry')[] };
+    const product = { skinTypes: ['dry'] as 'dry'[] };
     expect(calculateSkinMatchScore(product, 'oily')).toBe(0);
   });
 
   it('사용자 피부 타입이 없으면 0점을 반환해야 함', () => {
-    const product = { skinTypes: ['dry'] as ('dry')[] };
+    const product = { skinTypes: ['dry'] as 'dry'[] };
     expect(calculateSkinMatchScore(product, undefined)).toBe(0);
   });
 
@@ -101,23 +101,28 @@ describe('calculateSkinMatchScore', () => {
 
 describe('calculateColorMatchScore', () => {
   it('퍼스널 컬러가 매칭되면 15점을 반환해야 함', () => {
-    const product = { personalColors: ['spring_warm', 'autumn_warm'] as ('spring_warm' | 'autumn_warm')[] };
+    const product = {
+      personalColors: ['spring_warm', 'autumn_warm'] as (
+        | 'spring_warm'
+        | 'autumn_warm'
+      )[],
+    };
     expect(calculateColorMatchScore(product, 'Spring')).toBe(15);
     expect(calculateColorMatchScore(product, 'Autumn')).toBe(15);
   });
 
   it('퍼스널 컬러가 매칭되지 않으면 0점을 반환해야 함', () => {
-    const product = { personalColors: ['spring_warm'] as ('spring_warm')[] };
+    const product = { personalColors: ['spring_warm'] as 'spring_warm'[] };
     expect(calculateColorMatchScore(product, 'Winter')).toBe(0);
   });
 
   it('사용자 시즌이 없으면 0점을 반환해야 함', () => {
-    const product = { personalColors: ['spring_warm'] as ('spring_warm')[] };
+    const product = { personalColors: ['spring_warm'] as 'spring_warm'[] };
     expect(calculateColorMatchScore(product, undefined)).toBe(0);
   });
 
   it('DB 키 형식의 시즌도 처리해야 함', () => {
-    const product = { personalColors: ['summer_cool'] as ('summer_cool')[] };
+    const product = { personalColors: ['summer_cool'] as 'summer_cool'[] };
     expect(calculateColorMatchScore(product, 'summer_cool')).toBe(15);
   });
 });
@@ -142,8 +147,8 @@ describe('calculateRatingBonus', () => {
 describe('calculateProductMatchScore', () => {
   it('모든 조건 매칭 시 최대 100점을 반환해야 함', () => {
     const product = {
-      skinTypes: ['dry'] as ('dry')[],
-      personalColors: ['spring_warm'] as ('spring_warm')[],
+      skinTypes: ['dry'] as 'dry'[],
+      personalColors: ['spring_warm'] as 'spring_warm'[],
       rating: 4.8,
     };
     expect(calculateProductMatchScore(product, 'dry', 'Spring')).toBe(100);
@@ -156,14 +161,14 @@ describe('calculateProductMatchScore', () => {
 
   it('피부 타입만 매칭 시 85점을 반환해야 함', () => {
     const product = {
-      skinTypes: ['dry'] as ('dry')[],
+      skinTypes: ['dry'] as 'dry'[],
     };
     expect(calculateProductMatchScore(product, 'dry')).toBe(85);
   });
 
   it('퍼스널 컬러만 매칭 시 85점을 반환해야 함', () => {
     const product = {
-      personalColors: ['winter_cool'] as ('winter_cool')[],
+      personalColors: ['winter_cool'] as 'winter_cool'[],
     };
     expect(calculateProductMatchScore(product, undefined, 'Winter')).toBe(85);
   });

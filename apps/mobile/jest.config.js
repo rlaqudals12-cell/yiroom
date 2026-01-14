@@ -14,7 +14,8 @@ module.exports = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
-    '^react-native-reanimated$': '<rootDir>/__mocks__/react-native-reanimated.js',
+    '^react-native-reanimated$':
+      '<rootDir>/__mocks__/react-native-reanimated.js',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   collectCoverageFrom: [

@@ -122,8 +122,12 @@ jest.mock('@supabase/supabase-js', () => ({
     },
     storage: {
       from: jest.fn(() => ({
-        upload: jest.fn().mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
-        getPublicUrl: jest.fn(() => ({ data: { publicUrl: 'https://example.com/test.jpg' } })),
+        upload: jest
+          .fn()
+          .mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
+        getPublicUrl: jest.fn(() => ({
+          data: { publicUrl: 'https://example.com/test.jpg' },
+        })),
       })),
     },
     rpc: jest.fn().mockResolvedValue({ data: null, error: null }),
@@ -149,7 +153,10 @@ jest.mock('@/lib/gemini', () => ({
 // =============================================================================
 jest.mock('nativewind', () => ({
   styled: (Component) => Component,
-  useColorScheme: jest.fn(() => ({ colorScheme: 'light', setColorScheme: jest.fn() })),
+  useColorScheme: jest.fn(() => ({
+    colorScheme: 'light',
+    setColorScheme: jest.fn(),
+  })),
   cssInterop: jest.fn(),
 }));
 
@@ -168,14 +175,17 @@ jest.mock('react-native/Libraries/Utilities/Platform', () => ({
 // =============================================================================
 // AccessibilityInfo 모킹
 // =============================================================================
-jest.mock('react-native/Libraries/Components/AccessibilityInfo/AccessibilityInfo', () => ({
-  isScreenReaderEnabled: jest.fn().mockResolvedValue(false),
-  isReduceMotionEnabled: jest.fn().mockResolvedValue(false),
-  isBoldTextEnabled: jest.fn().mockResolvedValue(false),
-  addEventListener: jest.fn(() => ({ remove: jest.fn() })),
-  announceForAccessibility: jest.fn(),
-  setAccessibilityFocus: jest.fn(),
-}));
+jest.mock(
+  'react-native/Libraries/Components/AccessibilityInfo/AccessibilityInfo',
+  () => ({
+    isScreenReaderEnabled: jest.fn().mockResolvedValue(false),
+    isReduceMotionEnabled: jest.fn().mockResolvedValue(false),
+    isBoldTextEnabled: jest.fn().mockResolvedValue(false),
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+    announceForAccessibility: jest.fn(),
+    setAccessibilityFocus: jest.fn(),
+  })
+);
 
 // =============================================================================
 // AsyncStorage 모킹
@@ -199,7 +209,9 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
     return Promise.resolve();
   }),
   multiGet: jest.fn((keys) => {
-    return Promise.resolve(keys.map((key) => [key, mockAsyncStorage.get(key) || null]));
+    return Promise.resolve(
+      keys.map((key) => [key, mockAsyncStorage.get(key) || null])
+    );
   }),
   getAllKeys: jest.fn(() => {
     return Promise.resolve(Array.from(mockAsyncStorage.keys()));
@@ -253,10 +265,14 @@ jest.mock('expo-linking', () => ({
 jest.mock('expo-notifications', () => ({
   getPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
   requestPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
-  getExpoPushTokenAsync: jest.fn().mockResolvedValue({ data: 'ExponentPushToken[mock]' }),
+  getExpoPushTokenAsync: jest
+    .fn()
+    .mockResolvedValue({ data: 'ExponentPushToken[mock]' }),
   setNotificationHandler: jest.fn(),
   addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
-  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  addNotificationResponseReceivedListener: jest.fn(() => ({
+    remove: jest.fn(),
+  })),
   scheduleNotificationAsync: jest.fn().mockResolvedValue('notification_id'),
   cancelScheduledNotificationAsync: jest.fn().mockResolvedValue(undefined),
   AndroidImportance: { MAX: 5, HIGH: 4, DEFAULT: 3, LOW: 2, MIN: 1 },
@@ -272,8 +288,12 @@ jest.mock('expo-image-picker', () => ({
     assets: [{ uri: 'file://mock-camera.jpg', width: 100, height: 100 }],
   }),
   MediaTypeOptions: { Images: 'Images', Videos: 'Videos', All: 'All' },
-  requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
-  requestCameraPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  requestMediaLibraryPermissionsAsync: jest
+    .fn()
+    .mockResolvedValue({ status: 'granted' }),
+  requestCameraPermissionsAsync: jest
+    .fn()
+    .mockResolvedValue({ status: 'granted' }),
 }));
 
 // =============================================================================

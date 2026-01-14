@@ -1,14 +1,57 @@
 'use client';
 
-import { User, ZapOff, Smartphone, Check, Lightbulb } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, ZapOff, Smartphone, Check, Lightbulb, ImageIcon, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useUserProfile, type GenderType } from '@/hooks/useUserProfile';
 
 interface LightingGuideProps {
   onContinue: () => void;
-  onSkip?: () => void;
+  /** 갤러리에서 선택 핸들러 */
+  onGallery?: () => void;
 }
 
-export default function LightingGuide({ onContinue, onSkip }: LightingGuideProps) {
+export default function LightingGuide({ onContinue, onGallery }: LightingGuideProps) {
+  // 사용자 프로필에서 성별 정보 가져오기
+  const { profile, updateGender, isLoading: isProfileLoading } = useUserProfile();
+  const [selectedGender, setSelectedGender] = useState<GenderType | null>(null);
+  const [isGenderSaving, setIsGenderSaving] = useState(false);
+  const [autoSkipped, setAutoSkipped] = useState(false);
+
+  // 프로필에서 성별 로드 및 자동 진행
+  useEffect(() => {
+    if (!isProfileLoading && profile.gender && !autoSkipped) {
+      setSelectedGender(profile.gender);
+      // 성별이 이미 설정되어 있으면 자동으로 다음 단계로
+      setAutoSkipped(true);
+      onContinue();
+    }
+  }, [isProfileLoading, profile.gender, autoSkipped, onContinue]);
+
+  // 성별 선택 핸들러
+  const handleGenderSelect = async (gender: GenderType) => {
+    setSelectedGender(gender);
+    setIsGenderSaving(true);
+    try {
+      await updateGender(gender);
+    } finally {
+      setIsGenderSaving(false);
+    }
+  };
+
+  // 성별이 선택되었는지 확인 (진행 가능 여부)
+  const canProceed = selectedGender !== null;
+
+  // 로딩 중이면 로딩 표시
+  if (isProfileLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
   return (
     <div data-testid="skin-lighting-guide" className="space-y-8 animate-fade-in-up">
       {/* 1. 헤더: 전문적인 느낌 */}
@@ -104,22 +147,74 @@ export default function LightingGuide({ onContinue, onSkip }: LightingGuideProps
         </div>
       </div>
 
+      {/* 성별 선택 */}
+      <div className="p-4 rounded-2xl bg-muted/50 border border-border">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+            <Users className="w-4 h-4 text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">성별 선택</p>
+            <p className="text-xs text-muted-foreground">맞춤 스킨케어 추천에 활용돼요</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          {[
+            { id: 'male' as GenderType, label: '남성' },
+            { id: 'female' as GenderType, label: '여성' },
+            { id: 'neutral' as GenderType, label: '선택 안함' },
+          ].map((option) => (
+            <button
+              key={option.id}
+              onClick={() => handleGenderSelect(option.id)}
+              disabled={isGenderSaving || isProfileLoading}
+              className={cn(
+                'flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all',
+                selectedGender === option.id
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                  : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground',
+                (isGenderSaving || isProfileLoading) && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* 하단 버튼 */}
       <div className="pt-2 space-y-3">
+        {/* 성별 미선택 시 안내 메시지 */}
+        {!canProceed && !isProfileLoading && (
+          <p className="text-xs text-center text-amber-600 dark:text-amber-400">
+            성별을 선택해주세요
+          </p>
+        )}
+
         <Button
           onClick={onContinue}
-          className="w-full h-14 text-lg bg-emerald-600 hover:bg-emerald-700 hover:opacity-90 shadow-lg shadow-emerald-500/20 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 font-bold text-white"
+          disabled={!canProceed || isGenderSaving}
+          className={cn(
+            'w-full h-14 text-lg bg-emerald-600 hover:bg-emerald-700 hover:opacity-90 shadow-lg shadow-emerald-500/20 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 font-bold text-white',
+            (!canProceed || isGenderSaving) && 'opacity-50 cursor-not-allowed'
+          )}
         >
           촬영하기
         </Button>
 
-        {onSkip && (
-          <button
-            onClick={onSkip}
-            className="w-full text-center text-sm text-muted-foreground hover:text-emerald-600 transition-colors py-2"
+        {onGallery && (
+          <Button
+            variant="outline"
+            onClick={onGallery}
+            disabled={!canProceed || isGenderSaving}
+            className={cn(
+              'w-full h-12 text-base gap-2 rounded-xl',
+              (!canProceed || isGenderSaving) && 'opacity-50 cursor-not-allowed'
+            )}
           >
-            이미 피부 타입을 알고 있어요
-          </button>
+            <ImageIcon className="w-5 h-5" />
+            갤러리에서 선택
+          </Button>
         )}
       </div>
     </div>

@@ -14,11 +14,16 @@ import {
   getPopularAffiliateProducts,
   getProductsByCategory,
 } from '@/lib/affiliate/products';
-import type { AffiliateProductFilter, AffiliateProductRow } from '@/lib/affiliate/types';
+import type {
+  AffiliateProductFilter,
+  AffiliateProductRow,
+} from '@/lib/affiliate/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 // Mock 제품 데이터 (실제 DB 스키마 반영)
-const createMockProductRow = (overrides: Partial<AffiliateProductRow> = {}): AffiliateProductRow => ({
+const createMockProductRow = (
+  overrides: Partial<AffiliateProductRow> = {}
+): AffiliateProductRow => ({
   id: 'product_1',
   partner_id: 'partner_1',
   external_product_id: 'ext_1',
@@ -49,7 +54,10 @@ const createMockProductRow = (overrides: Partial<AffiliateProductRow> = {}): Aff
 });
 
 // Mock Supabase 쿼리 빌더
-const createMockQueryBuilder = (data: AffiliateProductRow[] | null, error: { message: string } | null = null) => {
+const createMockQueryBuilder = (
+  data: AffiliateProductRow[] | null,
+  error: { message: string } | null = null
+) => {
   const mockBuilder = {
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
@@ -61,10 +69,12 @@ const createMockQueryBuilder = (data: AffiliateProductRow[] | null, error: { mes
     order: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     range: jest.fn(() => Promise.resolve({ data, error })),
-    single: jest.fn(() => Promise.resolve({
-      data: data && data.length > 0 ? data[0] : null,
-      error: data && data.length > 0 ? null : error,
-    })),
+    single: jest.fn(() =>
+      Promise.resolve({
+        data: data && data.length > 0 ? data[0] : null,
+        error: data && data.length > 0 ? null : error,
+      })
+    ),
     gte: jest.fn().mockReturnThis(),
     lte: jest.fn().mockReturnThis(),
   };
@@ -72,9 +82,12 @@ const createMockQueryBuilder = (data: AffiliateProductRow[] | null, error: { mes
   return mockBuilder;
 };
 
-const createMockSupabase = (queryBuilder: ReturnType<typeof createMockQueryBuilder>) => ({
-  from: jest.fn(() => queryBuilder),
-}) as unknown as SupabaseClient;
+const createMockSupabase = (
+  queryBuilder: ReturnType<typeof createMockQueryBuilder>
+) =>
+  ({
+    from: jest.fn(() => queryBuilder),
+  }) as unknown as SupabaseClient;
 
 describe('getAffiliateProducts', () => {
   beforeEach(() => {
@@ -82,7 +95,10 @@ describe('getAffiliateProducts', () => {
   });
 
   it('제품 목록을 성공적으로 조회해야 함', async () => {
-    const mockProducts = [createMockProductRow(), createMockProductRow({ id: 'product_2' })];
+    const mockProducts = [
+      createMockProductRow(),
+      createMockProductRow({ id: 'product_2' }),
+    ];
     const queryBuilder = createMockQueryBuilder(mockProducts);
     const mockSupabase = createMockSupabase(queryBuilder);
 
@@ -122,7 +138,10 @@ describe('getAffiliateProducts', () => {
 
     await getAffiliateProducts(mockSupabase, undefined, 'price_asc');
 
-    expect(queryBuilder.order).toHaveBeenCalledWith('price_krw', { ascending: true, nullsFirst: false });
+    expect(queryBuilder.order).toHaveBeenCalledWith('price_krw', {
+      ascending: true,
+      nullsFirst: false,
+    });
   });
 
   it('DB 오류 시 빈 배열을 반환해야 함', async () => {
@@ -153,7 +172,10 @@ describe('getAffiliateProducts', () => {
 
     await getAffiliateProducts(mockSupabase);
 
-    expect(queryBuilder.order).toHaveBeenCalledWith('rating', { ascending: false, nullsFirst: false });
+    expect(queryBuilder.order).toHaveBeenCalledWith('rating', {
+      ascending: false,
+      nullsFirst: false,
+    });
   });
 });
 
@@ -187,7 +209,9 @@ describe('getAffiliateProductsByPartner', () => {
     const partnerQueryBuilder = {
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      single: jest.fn(() => Promise.resolve({ data: { id: 'partner_uuid' }, error: null })),
+      single: jest.fn(() =>
+        Promise.resolve({ data: { id: 'partner_uuid' }, error: null })
+      ),
     };
     const productQueryBuilder = createMockQueryBuilder(mockProducts);
 
@@ -210,7 +234,9 @@ describe('getAffiliateProductsByPartner', () => {
     const partnerQueryBuilder = {
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      single: jest.fn(() => Promise.resolve({ data: null, error: { message: 'Not found' } })),
+      single: jest.fn(() =>
+        Promise.resolve({ data: null, error: { message: 'Not found' } })
+      ),
     };
 
     const mockSupabase = {
@@ -225,7 +251,9 @@ describe('getAffiliateProductsByPartner', () => {
 
 describe('getRecommendedProductsBySkin', () => {
   it('피부 타입으로 제품을 추천해야 함', async () => {
-    const mockProducts = [createMockProductRow({ skin_types: ['dry', 'sensitive'] })];
+    const mockProducts = [
+      createMockProductRow({ skin_types: ['dry', 'sensitive'] }),
+    ];
     const queryBuilder = createMockQueryBuilder(mockProducts);
     const mockSupabase = createMockSupabase(queryBuilder);
 
@@ -242,7 +270,10 @@ describe('getRecommendedProductsBySkin', () => {
 
     await getRecommendedProductsBySkin(mockSupabase, 'oily', ['acne', 'pore']);
 
-    expect(queryBuilder.overlaps).toHaveBeenCalledWith('skin_concerns', ['acne', 'pore']);
+    expect(queryBuilder.overlaps).toHaveBeenCalledWith('skin_concerns', [
+      'acne',
+      'pore',
+    ]);
   });
 
   it('결과 개수를 제한해야 함', async () => {
@@ -258,14 +289,21 @@ describe('getRecommendedProductsBySkin', () => {
 
 describe('getRecommendedProductsByColor', () => {
   it('퍼스널 컬러로 제품을 추천해야 함', async () => {
-    const mockProducts = [createMockProductRow({ personal_colors: ['spring_warm'] })];
+    const mockProducts = [
+      createMockProductRow({ personal_colors: ['spring_warm'] }),
+    ];
     const queryBuilder = createMockQueryBuilder(mockProducts);
     const mockSupabase = createMockSupabase(queryBuilder);
 
-    const result = await getRecommendedProductsByColor(mockSupabase, 'spring_warm');
+    const result = await getRecommendedProductsByColor(
+      mockSupabase,
+      'spring_warm'
+    );
 
     expect(result).toHaveLength(1);
-    expect(queryBuilder.contains).toHaveBeenCalledWith('personal_colors', ['spring_warm']);
+    expect(queryBuilder.contains).toHaveBeenCalledWith('personal_colors', [
+      'spring_warm',
+    ]);
   });
 
   it('카테고리로 추가 필터링해야 함', async () => {
@@ -285,10 +323,15 @@ describe('getRecommendedProductsByBodyType', () => {
     const queryBuilder = createMockQueryBuilder(mockProducts);
     const mockSupabase = createMockSupabase(queryBuilder);
 
-    const result = await getRecommendedProductsByBodyType(mockSupabase, 'straight');
+    const result = await getRecommendedProductsByBodyType(
+      mockSupabase,
+      'straight'
+    );
 
     expect(result).toHaveLength(1);
-    expect(queryBuilder.contains).toHaveBeenCalledWith('body_types', ['straight']);
+    expect(queryBuilder.contains).toHaveBeenCalledWith('body_types', [
+      'straight',
+    ]);
   });
 });
 
@@ -326,7 +369,10 @@ describe('getPopularAffiliateProducts', () => {
     const result = await getPopularAffiliateProducts(mockSupabase);
 
     expect(result).toHaveLength(2);
-    expect(queryBuilder.order).toHaveBeenCalledWith('review_count', { ascending: false, nullsFirst: false });
+    expect(queryBuilder.order).toHaveBeenCalledWith('review_count', {
+      ascending: false,
+      nullsFirst: false,
+    });
   });
 
   it('카테고리로 필터링해야 함', async () => {
@@ -401,7 +447,10 @@ describe('mapProductRow', () => {
   });
 
   it('isAvailable은 is_in_stock && is_active의 결과여야 함', async () => {
-    const mockRowAvailable = createMockProductRow({ is_in_stock: true, is_active: true });
+    const mockRowAvailable = createMockProductRow({
+      is_in_stock: true,
+      is_active: true,
+    });
 
     const queryBuilder = createMockQueryBuilder([mockRowAvailable]);
     const mockSupabase = createMockSupabase(queryBuilder);

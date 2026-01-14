@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, SkipForward } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -164,9 +164,7 @@ export function TutorialStep({
         </CardHeader>
 
         <CardContent className="pb-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {step.description}
-          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
         </CardContent>
 
         <CardFooter className="flex items-center justify-between pt-2 border-t">
@@ -186,25 +184,20 @@ export function TutorialStep({
           {/* 네비게이션 버튼 */}
           <div className="flex items-center gap-2">
             {!isFirstStep && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onPrev}
-                className="h-8 px-2"
-              >
+              <Button variant="ghost" size="sm" onClick={onPrev} className="h-8 px-2">
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 이전
               </Button>
             )}
 
-            {isFirstStep && (
+            {/* 건너뛰기: 마지막 스텝 제외 모든 스텝에서 표시 */}
+            {!isLastStep && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onSkip}
                 className="h-8 px-2 text-muted-foreground"
               >
-                <SkipForward className="h-4 w-4 mr-1" />
                 건너뛰기
               </Button>
             )}

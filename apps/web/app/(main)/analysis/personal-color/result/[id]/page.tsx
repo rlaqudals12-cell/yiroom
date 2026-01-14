@@ -42,9 +42,11 @@ import AnalysisEvidenceReport, {
   type ImageQuality,
 } from '@/components/analysis/AnalysisEvidenceReport';
 import { VisualReportCard } from '@/components/analysis/visual-report';
+import { DrapingSimulationTab } from '@/components/analysis/visual';
 import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
+import { Shirt } from 'lucide-react';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -144,6 +146,7 @@ export default function PersonalColorResultPage() {
   const [result, setResult] = useState<PersonalColorResult | null>(null);
   const [analysisEvidence, setAnalysisEvidence] = useState<AnalysisEvidence | null>(null);
   const [imageQuality, setImageQuality] = useState<ImageQuality | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -198,6 +201,11 @@ export default function PersonalColorResultPage() {
       }
       if (dbData.image_analysis?.imageQuality) {
         setImageQuality(dbData.image_analysis.imageQuality);
+      }
+
+      // 이미지 URL 저장 (드레이핑 시뮬레이션용)
+      if (dbData.face_image_url) {
+        setImageUrl(dbData.face_image_url);
       }
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
@@ -326,10 +334,14 @@ export default function PersonalColorResultPage() {
         {/* 탭 기반 결과 */}
         {result && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4 sticky top-0 z-10 bg-muted">
+            <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
               <TabsTrigger value="basic" className="gap-1">
                 <Palette className="w-4 h-4" />
                 기본 분석
+              </TabsTrigger>
+              <TabsTrigger value="draping" className="gap-1">
+                <Shirt className="w-4 h-4" />
+                드레이핑
               </TabsTrigger>
               <TabsTrigger value="detailed" className="gap-1">
                 <ClipboardList className="w-4 h-4" />
@@ -440,6 +452,24 @@ export default function PersonalColorResultPage() {
                   />
                 </div>
               </div>
+            </TabsContent>
+
+            {/* 드레이핑 시뮬레이션 탭 */}
+            <TabsContent value="draping" className="mt-0" data-testid="draping-tab">
+              {imageUrl ? (
+                <DrapingSimulationTab imageUrl={imageUrl} className="w-full" />
+              ) : (
+                <div className="p-6 bg-card rounded-xl border text-center">
+                  <Shirt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="font-semibold text-foreground mb-2">드레이핑 시뮬레이션</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    분석 이미지가 없어 드레이핑을 미리볼 수 없어요.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    다시 분석하면 드레이핑 시뮬레이션을 사용할 수 있어요.
+                  </p>
+                </div>
+              )}
             </TabsContent>
 
             {/* 상세 리포트 탭 */}

@@ -25,8 +25,20 @@ describe('useWorkoutSessionStore', () => {
             exerciseId: 'ex_1',
             name: '벤치 프레스',
             sets: [
-              { setNumber: 1, targetReps: 10, targetWeight: 60, isCompleted: false, skipped: false },
-              { setNumber: 2, targetReps: 10, targetWeight: 60, isCompleted: false, skipped: false },
+              {
+                setNumber: 1,
+                targetReps: 10,
+                targetWeight: 60,
+                isCompleted: false,
+                skipped: false,
+              },
+              {
+                setNumber: 2,
+                targetReps: 10,
+                targetWeight: 60,
+                isCompleted: false,
+                skipped: false,
+              },
             ],
           },
         ],
@@ -49,7 +61,13 @@ describe('useWorkoutSessionStore', () => {
             exerciseId: 'ex_1',
             name: '벤치 프레스',
             sets: [
-              { setNumber: 1, targetReps: 10, targetWeight: 60, isCompleted: false, skipped: false },
+              {
+                setNumber: 1,
+                targetReps: 10,
+                targetWeight: 60,
+                isCompleted: false,
+                skipped: false,
+              },
             ],
           },
         ],
@@ -78,7 +96,8 @@ describe('useWorkoutSessionStore', () => {
     });
 
     it('resumeSession으로 세션 재개', () => {
-      const { startSession, pauseSession, resumeSession } = useWorkoutSessionStore.getState();
+      const { startSession, pauseSession, resumeSession } =
+        useWorkoutSessionStore.getState();
 
       startSession();
       pauseSession();
@@ -90,7 +109,8 @@ describe('useWorkoutSessionStore', () => {
     });
 
     it('completeSession으로 세션 완료', () => {
-      const { startSession, completeSession } = useWorkoutSessionStore.getState();
+      const { startSession, completeSession } =
+        useWorkoutSessionStore.getState();
 
       startSession();
       completeSession();
@@ -110,8 +130,20 @@ describe('useWorkoutSessionStore', () => {
             exerciseId: 'ex_1',
             name: '벤치 프레스',
             sets: [
-              { setNumber: 1, targetReps: 10, targetWeight: 60, isCompleted: false, skipped: false },
-              { setNumber: 2, targetReps: 10, targetWeight: 60, isCompleted: false, skipped: false },
+              {
+                setNumber: 1,
+                targetReps: 10,
+                targetWeight: 60,
+                isCompleted: false,
+                skipped: false,
+              },
+              {
+                setNumber: 2,
+                targetReps: 10,
+                targetWeight: 60,
+                isCompleted: false,
+                skipped: false,
+              },
             ],
           },
         ],
@@ -169,7 +201,8 @@ describe('useWorkoutSessionStore', () => {
     });
 
     it('updateRestTimer로 시간 감소', () => {
-      const { startRestTimer, updateRestTimer } = useWorkoutSessionStore.getState();
+      const { startRestTimer, updateRestTimer } =
+        useWorkoutSessionStore.getState();
 
       startRestTimer(60);
       updateRestTimer();
@@ -179,7 +212,8 @@ describe('useWorkoutSessionStore', () => {
     });
 
     it('휴식 시간 0이 되면 휴식 종료', () => {
-      const { startRestTimer, updateRestTimer } = useWorkoutSessionStore.getState();
+      const { startRestTimer, updateRestTimer } =
+        useWorkoutSessionStore.getState();
 
       startRestTimer(1);
       updateRestTimer();
@@ -211,12 +245,26 @@ describe('useWorkoutSessionStore', () => {
           {
             exerciseId: 'ex_1',
             name: '운동 1',
-            sets: [{ setNumber: 1, targetReps: 10, isCompleted: false, skipped: false }],
+            sets: [
+              {
+                setNumber: 1,
+                targetReps: 10,
+                isCompleted: false,
+                skipped: false,
+              },
+            ],
           },
           {
             exerciseId: 'ex_2',
             name: '운동 2',
-            sets: [{ setNumber: 1, targetReps: 10, isCompleted: false, skipped: false }],
+            sets: [
+              {
+                setNumber: 1,
+                targetReps: 10,
+                isCompleted: false,
+                skipped: false,
+              },
+            ],
           },
         ],
       });

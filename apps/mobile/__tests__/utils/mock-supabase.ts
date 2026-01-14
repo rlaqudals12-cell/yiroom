@@ -62,8 +62,18 @@ export function createMockQueryBuilder(data: MockData = []): MockQueryBuilder {
     order: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     range: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({ data: Array.isArray(data) ? data[0] : data, error: null }),
-    maybeSingle: jest.fn().mockResolvedValue({ data: Array.isArray(data) ? data[0] : data, error: null }),
+    single: jest
+      .fn()
+      .mockResolvedValue({
+        data: Array.isArray(data) ? data[0] : data,
+        error: null,
+      }),
+    maybeSingle: jest
+      .fn()
+      .mockResolvedValue({
+        data: Array.isArray(data) ? data[0] : data,
+        error: null,
+      }),
     then: jest.fn((resolve) => resolve({ data, error: null })),
   };
 
@@ -73,7 +83,9 @@ export function createMockQueryBuilder(data: MockData = []): MockQueryBuilder {
 /**
  * Supabase 클라이언트 Mock 생성
  */
-export function createMockSupabaseClient(tableData: Record<string, MockData> = {}) {
+export function createMockSupabaseClient(
+  tableData: Record<string, MockData> = {}
+) {
   return {
     from: jest.fn((tableName: string) => {
       const data = tableData[tableName] ?? [];
@@ -81,7 +93,12 @@ export function createMockSupabaseClient(tableData: Record<string, MockData> = {
     }),
     auth: {
       getSession: jest.fn().mockResolvedValue({
-        data: { session: { access_token: 'mock_token', user: { id: 'test_user_123' } } },
+        data: {
+          session: {
+            access_token: 'mock_token',
+            user: { id: 'test_user_123' },
+          },
+        },
         error: null,
       }),
       getUser: jest.fn().mockResolvedValue({
@@ -99,9 +116,15 @@ export function createMockSupabaseClient(tableData: Record<string, MockData> = {
     },
     storage: {
       from: jest.fn(() => ({
-        upload: jest.fn().mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
-        download: jest.fn().mockResolvedValue({ data: new Blob(), error: null }),
-        getPublicUrl: jest.fn(() => ({ data: { publicUrl: 'https://example.com/test.jpg' } })),
+        upload: jest
+          .fn()
+          .mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
+        download: jest
+          .fn()
+          .mockResolvedValue({ data: new Blob(), error: null }),
+        getPublicUrl: jest.fn(() => ({
+          data: { publicUrl: 'https://example.com/test.jpg' },
+        })),
         remove: jest.fn().mockResolvedValue({ data: [], error: null }),
         list: jest.fn().mockResolvedValue({ data: [], error: null }),
       })),

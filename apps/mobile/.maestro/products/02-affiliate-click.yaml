@@ -3,7 +3,6 @@ appId: com.yiroom.app
 name: Affiliate Product Click Flow
 
 ---
-
 # 앱 실행
 - launchApp:
     appId: ${APP_ID}
@@ -12,78 +11,78 @@ name: Affiliate Product Click Flow
 # 홈 화면 대기
 - extendedWaitUntil:
     visible:
-      id: "home-screen"
+      id: 'home-screen'
     timeout: 10000
 
 # 제품 추천 영역으로 이동
 - tapOn:
-    text: "제품 추천"
+    text: '제품 추천'
 
 # 제품 리스트 대기
 - extendedWaitUntil:
     visible:
-      id: "product-list"
+      id: 'product-list'
     timeout: 5000
 
 # 카테고리 필터 확인
 - assertVisible:
-    text: "전체"
+    text: '전체'
 
 - assertVisible:
-    text: "스킨케어"
+    text: '스킨케어'
 
 - assertVisible:
-    text: "메이크업"
+    text: '메이크업'
 
 # 스킨케어 카테고리 선택
 - tapOn:
-    text: "스킨케어"
+    text: '스킨케어'
 
 # 제품 카드 탭
 - tapOn:
     index: 0
-    id: "product-card"
+    id: 'product-card'
 
 # 제품 상세 화면 대기
 - extendedWaitUntil:
     visible:
-      id: "product-detail"
+      id: 'product-detail'
     timeout: 5000
 
 # 매칭 점수 배지 확인
 - assertVisible:
-    id: "match-badge"
+    id: 'match-badge'
 
 # 가격 정보 확인
 - assertVisible:
-    id: "product-price"
+    id: 'product-price'
 
 # 구매 버튼 확인 (탭하지 않음 - 외부 링크)
 - assertVisible:
-    text: "구매하러 가기"
+    text: '구매하러 가기'
 
 # 제품 정보 확인
 - assertVisible:
-    id: "product-brand"
+    id: 'product-brand'
 
 - assertVisible:
-    id: "product-name"
+    id: 'product-name'
 
 # 리뷰 정보 확인
 - assertVisible:
-    id: "product-rating"
+    id: 'product-rating'
 
 # 뒤로 가기
 - back
 
 # 다른 카테고리 테스트 - 영양제
 - tapOn:
-    text: "영양제"
+    text: '영양제'
 
 # 제품 카드 확인
 - extendedWaitUntil:
     visible:
-      id: "product-card"
+      id: 'product-card'
     timeout: 5000
 
 # 스크린샷 저장

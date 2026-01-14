@@ -57,9 +57,48 @@ const ANALYSIS_CARDS = [
   },
 ];
 
+// 분석 카드 공통 컴포넌트
+function AnalysisCard({
+  card,
+  onClick,
+}: {
+  card: (typeof ANALYSIS_CARDS)[0];
+  onClick: () => void;
+}) {
+  const Icon = card.icon;
+
+  return (
+    <button
+      onClick={onClick}
+      className="group relative flex flex-col items-center p-3 rounded-xl hover:bg-slate-50/50 dark:hover:bg-slate-700/30 hover:scale-105 transition-all duration-200"
+      data-testid={`home-analysis-card-${card.id}`}
+    >
+      {/* 추천 배지 */}
+      {card.recommended && (
+        <span className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-amber-400 text-amber-900 text-[10px] font-bold rounded-full z-10">
+          추천
+        </span>
+      )}
+
+      {/* 아이콘 */}
+      <div
+        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-2 shadow-lg ${card.shadow} group-hover:scale-110 transition-transform`}
+      >
+        <Icon className="w-6 h-6 text-white" />
+      </div>
+
+      {/* 텍스트 */}
+      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{card.title}</span>
+      <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+        {card.description}
+      </span>
+    </button>
+  );
+}
+
 /**
  * 홈 - 신규 사용자용 분석 시작 CTA
- * Glassmorphism 스타일
+ * Option C: 5개 카드 동일 스타일 + 3+2 중앙 정렬 + 하단 CTA
  */
 export default function HomeAnalysisPrompt() {
   const router = useRouter();
@@ -77,71 +116,17 @@ export default function HomeAnalysisPrompt() {
         <p className="text-sm text-slate-500 dark:text-slate-400">AI가 맞춤 분석을 해드려요</p>
       </div>
 
-      {/* 분석 카드 그리드 */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        {ANALYSIS_CARDS.slice(0, 3).map((card) => {
-          const Icon = card.icon;
-          return (
-            <button
-              key={card.id}
-              onClick={() => router.push(card.href)}
-              className="group relative flex flex-col items-center p-3 rounded-xl hover:scale-105 transition-all duration-200"
-              data-testid={`home-analysis-card-${card.id}`}
-            >
-              {/* 추천 배지 */}
-              {card.recommended && (
-                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-amber-400 text-amber-900 text-[10px] font-bold rounded-full">
-                  추천
-                </span>
-              )}
-
-              {/* 아이콘 */}
-              <div
-                className={`w-12 h-12 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-2 shadow-lg ${card.shadow}`}
-              >
-                <Icon className="w-6 h-6 text-white" />
-              </div>
-
-              {/* 텍스트 */}
-              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                {card.title}
-              </span>
-            </button>
-          );
-        })}
+      {/* 분석 카드 그리드 - 5개 균등 배치 */}
+      <div className="grid grid-cols-5 gap-1 mb-5">
+        {ANALYSIS_CARDS.map((card) => (
+          <AnalysisCard key={card.id} card={card} onClick={() => router.push(card.href)} />
+        ))}
       </div>
 
-      {/* 더보기 (나머지 2개) */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        {ANALYSIS_CARDS.slice(3).map((card) => {
-          const Icon = card.icon;
-          return (
-            <button
-              key={card.id}
-              onClick={() => router.push(card.href)}
-              className="group flex items-center gap-3 p-3 rounded-xl bg-slate-50/50 dark:bg-slate-700/30 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 transition-colors"
-              data-testid={`home-analysis-card-${card.id}`}
-            >
-              <div
-                className={`w-10 h-10 rounded-lg bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-md ${card.shadow}`}
-              >
-                <Icon className="w-5 h-5 text-white" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {card.title}
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{card.description}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 추천 안내 */}
+      {/* 하단 CTA 버튼 */}
       <button
         onClick={() => router.push('/analysis/personal-color')}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium hover:shadow-lg hover:shadow-violet-500/30 transition-all"
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium hover:shadow-lg hover:shadow-violet-500/30 hover:scale-[1.02] transition-all"
       >
         퍼스널 컬러부터 시작하기
         <ArrowRight className="w-4 h-4" />

@@ -104,7 +104,9 @@ describe('deepEqual', () => {
   });
 
   it('동일한 중첩 값의 객체를 비교해야 함', () => {
-    expect(deepEqual({ a: { b: { c: 1 } } }, { a: { b: { c: 1 } } })).toBe(true);
+    expect(deepEqual({ a: { b: { c: 1 } } }, { a: { b: { c: 1 } } })).toBe(
+      true
+    );
   });
 
   it('다른 중첩 값의 객체를 비교해야 함', () => {
@@ -119,7 +121,10 @@ describe('deepEqual', () => {
 
   it('혼합 타입을 비교해야 함', () => {
     expect(
-      deepEqual({ a: [1, { b: 2 }], c: 'test' }, { a: [1, { b: 2 }], c: 'test' })
+      deepEqual(
+        { a: [1, { b: 2 }], c: 'test' },
+        { a: [1, { b: 2 }], c: 'test' }
+      )
     ).toBe(true);
   });
 

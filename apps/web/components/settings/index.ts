@@ -9,3 +9,5 @@ export { DataExportButton } from './DataExportButton';
 export { DataExportCard } from './DataExportCard';
 export { MarketingConsentToggle } from './MarketingConsentToggle';
 export { AgreementHistory } from './AgreementHistory';
+export { PhysicalInfoCard } from './PhysicalInfoCard';
+export { AllergyInfoCard } from './AllergyInfoCard';

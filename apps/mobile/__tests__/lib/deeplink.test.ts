@@ -39,7 +39,9 @@ const DEEP_LINK_ROUTES: Record<DeepLinkPath, string> = {
 };
 
 // URL 파싱 함수
-function parseDeepLinkUrl(url: string): { path: string; params: Record<string, string> } | null {
+function parseDeepLinkUrl(
+  url: string
+): { path: string; params: Record<string, string> } | null {
   if (!url || !url.startsWith('yiroom://')) {
     return null;
   }

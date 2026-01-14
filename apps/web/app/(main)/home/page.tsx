@@ -3,17 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import {
-  Bell,
-  Search,
-  ChevronRight,
-  Sparkles,
-  Droplet,
-  Shirt,
-  Flame,
-  Dumbbell,
-  BarChart3,
-} from 'lucide-react';
+import { Bell, Search, ChevronRight, Sparkles, Droplet, Shirt } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { HomeSkeleton } from '@/components/skeletons';
 import { RecentlyViewed } from '@/components/products/RecentlyViewed';
@@ -26,7 +16,7 @@ import HomeAnalysisSummary from './_components/HomeAnalysisSummary';
  * - 시간 기반 인사
  * - AI 분석 섹션 (조건부)
  * - 오늘의 추천 (뷰티/스타일)
- * - 오늘 기록 요약
+ * - 최근 본 제품
  */
 
 // 시간 기반 인사말
@@ -156,80 +146,8 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* 오늘 기록 요약 - Glassmorphism */}
-        <section className="animate-fade-in-up animation-delay-400">
-          <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 shadow-xl shadow-slate-200/50 dark:shadow-none">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-blue-500" aria-hidden="true" />
-                오늘 기록
-              </h3>
-              <button
-                onClick={() => router.push('/record')}
-                className="text-sm text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1 transition-colors"
-              >
-                상세보기
-                <ChevronRight className="w-4 h-4" aria-hidden="true" />
-              </button>
-            </div>
-            <div className="space-y-3">
-              {/* 칼로리 */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
-                  <Flame className="w-5 h-5 text-white" aria-hidden="true" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">칼로리</span>
-                    <span className="text-sm font-medium text-slate-900 dark:text-white">
-                      1,200 / 2,000
-                    </span>
-                  </div>
-                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full w-[60%] bg-gradient-to-r from-orange-400 to-red-500 rounded-full" />
-                  </div>
-                </div>
-              </div>
-              {/* 운동 */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30">
-                  <Dumbbell className="w-5 h-5 text-white" aria-hidden="true" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">운동</span>
-                    <span className="text-sm font-medium text-slate-900 dark:text-white">
-                      30 / 60분
-                    </span>
-                  </div>
-                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full w-[50%] bg-gradient-to-r from-green-400 to-emerald-500 rounded-full" />
-                  </div>
-                </div>
-              </div>
-              {/* 수분 */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                  <Droplet className="w-5 h-5 text-white" aria-hidden="true" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">수분</span>
-                    <span className="text-sm font-medium text-slate-900 dark:text-white">
-                      6 / 8잔
-                    </span>
-                  </div>
-                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full w-[75%] bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* 최근 본 제품 */}
-        <section className="animate-fade-in-up animation-delay-600">
+        <section className="animate-fade-in-up animation-delay-400">
           <RecentlyViewed limit={6} />
         </section>
       </main>

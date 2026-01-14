@@ -57,10 +57,7 @@ describe('i18n', () => {
     it('로케일을 변경하고 저장해야 함', async () => {
       await setLocale('en');
 
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        '@yiroom/locale',
-        'en'
-      );
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith('@yiroom/locale', 'en');
     });
 
     it('지원되는 로케일만 설정해야 함', async () => {

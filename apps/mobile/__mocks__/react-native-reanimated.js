@@ -15,7 +15,9 @@ module.exports = {
   },
   useSharedValue: jest.fn((init) => ({ value: init })),
   useAnimatedStyle: jest.fn(() => ({})),
-  useDerivedValue: jest.fn((fn) => ({ value: typeof fn === 'function' ? fn() : fn })),
+  useDerivedValue: jest.fn((fn) => ({
+    value: typeof fn === 'function' ? fn() : fn,
+  })),
   useAnimatedGestureHandler: jest.fn(() => ({})),
   useAnimatedScrollHandler: jest.fn(() => ({})),
   useAnimatedRef: jest.fn(() => ({ current: null })),
