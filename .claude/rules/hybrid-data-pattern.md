@@ -1,3 +1,10 @@
+---
+paths:
+  - '**/mock/**'
+  - '**/result/**'
+  - '**/lib/analysis/**'
+---
+
 # Hybrid 데이터 패턴
 
 > DB 핵심 데이터 + 최신 Mock 표시 데이터 조합 전략

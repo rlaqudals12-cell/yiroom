@@ -1,3 +1,11 @@
+---
+paths:
+  - '**/gemini*'
+  - '**/ai/**'
+  - '**/analysis/**'
+  - '**/mock/**'
+---
+
 # AI 통합 규칙
 
 > Gemini AI 사용 패턴 및 Fallback 전략

@@ -1,0 +1,438 @@
+# API 설계 규칙
+
+> Next.js API 라우트 및 REST API 설계 표준
+
+## API 버전 관리
+
+### URL 기반 버전
+
+```
+/api/v1/analyze/skin      # 레거시
+/api/v2/analyze/skin      # 현재 버전
+/api/analyze/skin         # 버전 없음 → v2 리다이렉트
+```
+
+### 버전 지원 정책
+
+| 버전 | 상태   | 지원 종료  |
+| ---- | ------ | ---------- |
+| v1   | 레거시 | v3 출시 시 |
+| v2   | 현재   | -          |
+
+### 폐기 예정 헤더
+
+```http
+HTTP/1.1 200 OK
+X-API-Version: 1.0
+X-Deprecated-At: 2026-06-01
+X-Sunset: 2026-09-01
+X-Upgrade-To: /api/v2/analyze/skin
+```
+
+## 라우트 구조
+
+### 폴더 구성
+
+```
+app/api/
+├── v1/                      # 레거시 API
+│   └── analyze/
+│       └── skin/
+│           └── route.ts
+├── v2/                      # 현재 API
+│   └── analyze/
+│       └── skin/
+│           └── route.ts
+├── analyze/                 # 버전 없는 요청
+│   └── skin/
+│       └── route.ts         # v2로 리다이렉트
+├── webhooks/                # 외부 웹훅
+│   └── clerk/
+│       └── route.ts
+└── cron/                    # Cron Job
+    └── cleanup-images/
+        └── route.ts
+```
+
+### 라우트 핸들러 패턴
+
+```typescript
+// app/api/v2/analyze/skin/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
+
+// 요청 스키마
+const requestSchema = z.object({
+  imageBase64: z.string().min(1),
+  options: z
+    .object({
+      includeRecommendations: z.boolean().optional(),
+    })
+    .optional(),
+});
+
+// 응답 타입
+interface SkinAnalysisResponse {
+  success: boolean;
+  data?: {
+    skinType: string;
+    scores: Record<string, number>;
+    recommendations: string[];
+  };
+  error?: {
+    code: string;
+    message: string;
+  };
+}
+
+export async function POST(request: NextRequest): Promise<NextResponse<SkinAnalysisResponse>> {
+  try {
+    // 1. 인증 확인
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: { code: 'AUTH_ERROR', message: 'Unauthorized' } },
+        { status: 401 }
+      );
+    }
+
+    // 2. 요청 검증
+    const body = await request.json();
+    const validated = requestSchema.safeParse(body);
+
+    if (!validated.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid request body',
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // 3. 비즈니스 로직
+    const result = await analyzeSkin(userId, validated.data);
+
+    // 4. 성공 응답
+    return NextResponse.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error('[API] POST /analyze/skin error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
+      },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## 응답 형식
+
+### 성공 응답
+
+```typescript
+// 단일 리소스
+{
+  "success": true,
+  "data": {
+    "id": "123",
+    "name": "Example",
+    "createdAt": "2026-01-15T10:00:00Z"
+  }
+}
+
+// 리스트
+{
+  "success": true,
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "pageSize": 20,
+    "total": 100,
+    "totalPages": 5
+  }
+}
+```
+
+### 에러 응답
+
+```typescript
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "입력 정보를 확인해주세요.",
+    "details": {
+      "field": "email",
+      "issue": "Invalid email format"
+    }
+  }
+}
+```
+
+### HTTP 상태 코드
+
+| 코드 | 용도                  |
+| ---- | --------------------- |
+| 200  | 성공                  |
+| 201  | 생성 성공             |
+| 204  | 삭제 성공 (본문 없음) |
+| 400  | 요청 오류 (검증 실패) |
+| 401  | 인증 필요             |
+| 403  | 권한 없음             |
+| 404  | 리소스 없음           |
+| 409  | 충돌 (중복)           |
+| 429  | 요청 제한 초과        |
+| 500  | 서버 오류             |
+
+## 입력 검증
+
+### Zod 스키마
+
+```typescript
+// types/api/schemas.ts
+import { z } from 'zod';
+
+export const paginationSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+export const skinAnalysisInputSchema = z.object({
+  imageBase64: z
+    .string()
+    .min(1, '이미지가 필요합니다')
+    .refine((val) => val.startsWith('data:image/'), '올바른 이미지 형식이 아닙니다'),
+  options: z
+    .object({
+      includeRecommendations: z.boolean().default(true),
+      zone: z.enum(['full', 't-zone', 'u-zone']).default('full'),
+    })
+    .optional(),
+});
+```
+
+### 사용 예시
+
+```typescript
+const input = skinAnalysisInputSchema.safeParse(body);
+
+if (!input.success) {
+  return NextResponse.json(
+    {
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: input.error.errors[0].message,
+        details: input.error.flatten(),
+      },
+    },
+    { status: 400 }
+  );
+}
+
+// input.data는 타입 안전
+const { imageBase64, options } = input.data;
+```
+
+## 인증 및 권한
+
+### 인증 패턴
+
+```typescript
+// 인증 필수 API
+export async function GET(request: NextRequest) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return NextResponse.json(
+      { success: false, error: { code: 'AUTH_ERROR', message: 'Unauthorized' } },
+      { status: 401 }
+    );
+  }
+
+  // ...
+}
+```
+
+### 공개 API
+
+```typescript
+// 인증 불필요 API (proxy.ts에서 제외)
+// /api/webhooks/*, /api/public/*
+
+export async function POST(request: NextRequest) {
+  // 웹훅 서명 검증
+  const signature = request.headers.get('x-webhook-signature');
+  if (!verifyWebhookSignature(signature, body)) {
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+  }
+
+  // ...
+}
+```
+
+## Rate Limiting
+
+### 구현
+
+```typescript
+// lib/api/rate-limit.ts
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(50, '24 h'),
+  analytics: true,
+});
+
+export async function checkRateLimit(identifier: string) {
+  const { success, limit, remaining, reset } = await ratelimit.limit(identifier);
+
+  return {
+    success,
+    headers: {
+      'X-RateLimit-Limit': limit.toString(),
+      'X-RateLimit-Remaining': remaining.toString(),
+      'X-RateLimit-Reset': reset.toString(),
+    },
+  };
+}
+```
+
+### 사용
+
+```typescript
+export async function POST(request: NextRequest) {
+  const { userId } = await auth();
+
+  const { success, headers } = await checkRateLimit(userId);
+
+  if (!success) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'RATE_LIMIT_ERROR', message: '요청 한도를 초과했습니다' },
+      },
+      { status: 429, headers }
+    );
+  }
+
+  // ...
+}
+```
+
+## 페이지네이션
+
+### 커서 기반 (권장)
+
+```typescript
+// 요청
+GET /api/products?cursor=abc123&limit=20
+
+// 응답
+{
+  "success": true,
+  "data": [...],
+  "pagination": {
+    "nextCursor": "xyz789",
+    "hasMore": true
+  }
+}
+```
+
+### 오프셋 기반
+
+```typescript
+// 요청
+GET /api/products?page=2&pageSize=20
+
+// 응답
+{
+  "success": true,
+  "data": [...],
+  "pagination": {
+    "page": 2,
+    "pageSize": 20,
+    "total": 150,
+    "totalPages": 8
+  }
+}
+```
+
+## API 문서화
+
+### JSDoc 주석
+
+```typescript
+/**
+ * 피부 분석 API
+ *
+ * @route POST /api/v2/analyze/skin
+ * @auth required
+ * @rateLimit 50 requests per 24 hours
+ *
+ * @param {string} imageBase64 - Base64 인코딩된 이미지
+ * @param {object} [options] - 분석 옵션
+ * @param {boolean} [options.includeRecommendations=true] - 추천 포함 여부
+ *
+ * @returns {object} 분석 결과
+ * @returns {string} returns.skinType - 피부 타입
+ * @returns {object} returns.scores - 점수 객체
+ *
+ * @throws {401} 인증 실패
+ * @throws {400} 입력 검증 실패
+ * @throws {429} 요청 제한 초과
+ */
+export async function POST(request: NextRequest) {
+  // ...
+}
+```
+
+## Cron Job 패턴
+
+```typescript
+// app/api/cron/cleanup-images/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(request: NextRequest) {
+  // Vercel Cron 인증
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // 작업 실행
+  const result = await cleanupOldImages();
+
+  return NextResponse.json({
+    success: true,
+    processed: result.count,
+  });
+}
+
+// vercel.json
+{
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-images",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}
+```
+
+---
+
+**Version**: 1.0 | **Updated**: 2026-01-15 | ADR-020 보완
