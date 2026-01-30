@@ -71,7 +71,7 @@ describe('GET /api/smart-matching/size-history', () => {
     );
 
     const response = await GET(request);
-    const data = await response.json();
+    await response.json();
 
     expect(response.status).toBe(200);
     expect(getSizeHistoryByBrand).toHaveBeenCalledWith('test-user-id', 'nike');

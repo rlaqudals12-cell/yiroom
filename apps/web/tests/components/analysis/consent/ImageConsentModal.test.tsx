@@ -155,7 +155,7 @@ describe('ImageConsentModal', () => {
     });
 
     it('외부 클릭으로 모달이 닫히지 않는다', () => {
-      const { container } = render(<ImageConsentModal {...defaultProps} />);
+      render(<ImageConsentModal {...defaultProps} />);
 
       const modal = screen.getByTestId('image-consent-modal');
       expect(modal).toBeInTheDocument();

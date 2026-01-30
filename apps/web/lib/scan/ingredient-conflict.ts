@@ -5,12 +5,7 @@
  * @date 2026-01-11
  */
 
-// 향후 스펙 확장 시 직접 사용 예정
-import {
-  detectInteractions as _detectInteractions,
-  categorizeInteractions as _categorizeInteractions,
-  type InteractionWarning,
-} from './ingredient-interactions';
+import { type InteractionWarning } from './ingredient-interactions';
 
 // ================================================
 // 타입 정의 (스펙 준수)

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "lib/**/*.ts",
+    "hooks/**/*.ts"
+  ],
+  "project": ["**/*.{ts,tsx}"],
+  "ignore": [
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "tests/**",
+    "e2e/**",
+    ".next/**",
+    "coverage/**",
+    "scripts/**",
+    "**/*.stories.{ts,tsx}",
+    "*.config.{js,mjs,ts}"
+  ],
+  "ignoreDependencies": [
+    "@storybook/*",
+    "storybook",
+    "@playwright/test",
+    "@axe-core/playwright",
+    "babel-plugin-react-compiler",
+    "tw-animate-css"
+  ],
+  "ignoreBinaries": ["playwright"],
+  "next": {
+    "entry": ["app/**/*.{ts,tsx}", "proxy.ts"]
+  }
+}

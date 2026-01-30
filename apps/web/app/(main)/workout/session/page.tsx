@@ -105,7 +105,7 @@ function SessionPageContent() {
   const MAX_RETRY_COUNT = 3;
 
   // 공유 기능
-  const { share: handleShare, loading: _isSharing } = useShare('이룸-운동기록');
+  const { share: handleShare } = useShare('이룸-운동기록');
 
   // 세션 초기화
   useEffect(() => {

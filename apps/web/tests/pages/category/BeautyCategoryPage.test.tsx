@@ -3,7 +3,7 @@
  * @description 뷰티 카테고리 페이지 테스트
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Next.js 라우터 모킹

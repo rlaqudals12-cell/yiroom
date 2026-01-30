@@ -55,19 +55,48 @@ vi.mock('@/lib/color-recommendations', () => ({
   getColorTipsForBodyType: vi.fn(),
 }));
 
+// Rate Limit 모킹 - 항상 통과
+vi.mock('@/lib/security/rate-limit', () => ({
+  applyRateLimit: vi.fn().mockReturnValue({ success: true }),
+}));
+
+// 이미지 동의 확인 모킹
+vi.mock('@/lib/api/image-consent', () => ({
+  checkImageConsent: vi.fn().mockResolvedValue({
+    hasConsent: false,
+    consentId: null,
+  }),
+  checkConsentAndUploadImages: vi.fn().mockResolvedValue({
+    hasConsent: false,
+    consentId: null,
+    uploadedImages: { front: null },
+  }),
+}));
+
+// 게이미피케이션 스트릭 연동 모킹
+vi.mock('@/lib/gamification/streak-integration', () => ({
+  checkAndAwardAllAnalysisBadge: vi.fn().mockResolvedValue(null),
+}));
+
 import { GET, POST } from '@/app/api/analyze/body/route';
 import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzeBody } from '@/lib/gemini';
 import { generateMockBodyAnalysis3 } from '@/lib/mock/body-analysis';
 import { generateColorRecommendations, getColorTipsForBodyType } from '@/lib/color-recommendations';
+import { NextRequest } from 'next/server';
 
-// Mock 요청 헬퍼
-function createMockPostRequest(body: unknown): Request {
-  return {
-    url: 'http://localhost/api/analyze/body',
-    json: () => Promise.resolve(body),
-  } as Request;
+// Mock 요청 헬퍼 (NextRequest 호환)
+function createMockPostRequest(body: unknown): NextRequest {
+  const url = 'http://localhost/api/analyze/body';
+  const req = new NextRequest(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return req;
 }
 
 // Mock 데이터 (3타입 시스템)
@@ -204,7 +233,7 @@ describe('POST /api/analyze/body', () => {
       const json = await response.json();
 
       expect(response.status).toBe(401);
-      expect(json.error).toBe('Unauthorized');
+      expect(json.error).toBe('인증이 필요합니다.');
     });
   });
 
@@ -214,7 +243,7 @@ describe('POST /api/analyze/body', () => {
       const json = await response.json();
 
       expect(response.status).toBe(400);
-      expect(json.error).toBe('Image is required');
+      expect(json.error).toBe('이미지가 필요합니다.');
     });
   });
 
@@ -451,7 +480,7 @@ describe('POST /api/analyze/body', () => {
       const json = await response.json();
 
       expect(response.status).toBe(500);
-      expect(json.error).toBe('Failed to save analysis');
+      expect(json.error).toBe('분석 결과 저장에 실패했습니다.');
     });
   });
 
@@ -504,7 +533,7 @@ describe('GET /api/analyze/body', () => {
       const json = await response.json();
 
       expect(response.status).toBe(401);
-      expect(json.error).toBe('Unauthorized');
+      expect(json.error).toBe('인증이 필요합니다.');
     });
   });
 
@@ -540,7 +569,7 @@ describe('GET /api/analyze/body', () => {
       const json = await response.json();
 
       expect(response.status).toBe(500);
-      expect(json.error).toBe('Failed to fetch analyses');
+      expect(json.error).toBe('분석 기록 조회에 실패했습니다.');
     });
   });
 });

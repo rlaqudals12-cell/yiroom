@@ -6,7 +6,6 @@ import {
   updateSyncItemStatus,
   removeCompletedItems,
   clearSyncQueue,
-  type SyncQueueItem,
 } from '@/lib/offline/sync-queue';
 
 describe('sync-queue', () => {
@@ -187,7 +186,7 @@ describe('sync-queue', () => {
 
     it('pending/failed 유지', () => {
       const item1 = addToSyncQueue('CREATE_MEAL', {});
-      const item2 = addToSyncQueue('CREATE_WATER', {});
+      addToSyncQueue('CREATE_WATER', {});
       updateSyncItemStatus(item1.id, 'failed', 'error');
       // item2는 pending 상태 유지
 

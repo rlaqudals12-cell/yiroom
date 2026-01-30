@@ -71,10 +71,13 @@ export function ShareButtons({ content, showInstagram = false, className }: Shar
       {/* 카카오톡 */}
       <button
         onClick={handleKakao}
-        className={cn(
-          'p-3 rounded-full transition-colors',
-          'bg-[#FEE500] text-[#191919] hover:bg-[#FDD835]'
-        )}
+        className="p-3 rounded-full transition-colors"
+        style={{
+          backgroundColor: 'var(--social-kakao)',
+          color: 'var(--social-kakao-text)',
+        }}
+        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--social-kakao-hover)')}
+        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--social-kakao)')}
         aria-label="카카오톡 공유"
       >
         <KakaoIcon className="w-5 h-5" />

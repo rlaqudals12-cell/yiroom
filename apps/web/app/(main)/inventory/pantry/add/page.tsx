@@ -56,8 +56,8 @@ export default function AddPantryItemPage() {
   const [unit, setUnit] = useState<UnitType>('g');
   const [storageType, setStorageType] = useState<StorageType>('refrigerator');
   const [expiryDate, setExpiryDate] = useState<string>('');
-  // 선택적 이미지 업로드는 추후 구현
-  const [_imageUrl, _setImageUrl] = useState<string>('');
+  // 선택적 이미지 업로드는 추후 구현 (setter는 추후 이미지 업로드 기능 구현 시 사용)
+  const [_imageUrl] = useState<string>('');
 
   // 유효성 검사
   const isValid = useMemo(() => {

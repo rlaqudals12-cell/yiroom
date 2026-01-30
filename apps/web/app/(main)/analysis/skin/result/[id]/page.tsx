@@ -21,6 +21,8 @@ import {
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { type SkinAnalysisResult, type SkinTypeId, EASY_SKIN_TIPS } from '@/lib/mock/skin-analysis';
+import { generateSynergyFromGeminiResult } from '@/lib/analysis/synergy-insight';
+import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
@@ -28,8 +30,8 @@ import { SkinConsultantCTA } from '@/components/skin/SkinConsultantCTA';
 import Link from 'next/link';
 import type { SkinType as ProductSkinType, SkinConcern } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { VisualAnalysisTab, DrapingSimulationTab } from '@/components/analysis/visual';
-import { Palette, Camera } from 'lucide-react';
+import { VisualAnalysisTab, DrapingSimulationTab, SynergyInline } from '@/components/analysis/visual';
+import { Palette, Camera, MessageCircle } from 'lucide-react';
 import SkinAnalysisEvidenceReport, {
   type SkinAnalysisEvidence,
   type SkinImageQuality,
@@ -59,6 +61,10 @@ import {
   type ZoneScore,
   type FaceZoneType,
 } from '@/components/analysis/skin';
+import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { MockDataNotice } from '@/components/common/MockDataNotice';
+import { SkinConsultationChat } from '@/components/skin-consultation';
+import type { SkinAnalysisSummary } from '@/types/skin-consultation';
 
 // 존 ID 타입 (FaceZoneMapProps에서 추출)
 type FaceZoneId = keyof NonNullable<FaceZoneMapProps['zones']>;
@@ -161,6 +167,7 @@ interface DbSkinAnalysis {
     weekly_care?: string[];
     analysisEvidence?: SkinAnalysisEvidence;
     imageQuality?: SkinImageQuality;
+    usedMock?: boolean;  // AI 분석 실패 시 Mock 데이터 사용 여부
   } | null;
   products: {
     routine?: Array<{ step: number; category: string; products: string[] }>;
@@ -197,8 +204,14 @@ export default function SkinAnalysisResultPage() {
   const [selectedZone, setSelectedZone] = useState<FaceZoneId | null>(null);
   // PC-1 연동: 드레이핑 시뮬레이션용 이미지 URL
   const [pcImageUrl, setPcImageUrl] = useState<string | null>(null);
+  // PC-1 시즌 정보 (시너지 인사이트용)
+  const [pcSeason, setPcSeason] = useState<string | null>(null);
+  // S-1 + PC-1 시너지 인사이트
+  const [synergyInsight, setSynergyInsight] = useState<SynergyInsight | null>(null);
   // 트렌드 데이터 (과거 분석 기록)
   const [trendData, setTrendData] = useState<Array<{ date: Date; score: number }>>([]);
+  // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
+  const [usedMock, setUsedMock] = useState(false);
   // 하단 FAB 접이식 상태
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
   // 이전 분석 비교용
@@ -207,7 +220,7 @@ export default function SkinAnalysisResultPage() {
 
   // 탭 스와이프 훅
   const { containerRef: swipeContainerRef, handlers: swipeHandlers } = useSwipeTab({
-    tabs: ['basic', 'evidence', 'visual', 'draping'],
+    tabs: ['basic', 'evidence', 'visual', 'draping', 'consultation'],
     activeTab,
     onTabChange: setActiveTab,
   });
@@ -488,6 +501,10 @@ export default function SkinAnalysisResultPage() {
       if (dbData.recommendations?.imageQuality) {
         setImageQuality(dbData.recommendations.imageQuality);
       }
+      // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
+      if (dbData.recommendations?.usedMock) {
+        setUsedMock(true);
+      }
 
       // Phase E: 문제 영역 (DB에 있으면 사용, 없으면 Mock)
       if (dbData.problem_areas && dbData.problem_areas.length > 0) {
@@ -533,10 +550,10 @@ export default function SkinAnalysisResultPage() {
         setPreviousScore(previousAnalysis.overall_score);
       }
 
-      // PC-1 (퍼스널 컬러) 결과 조회 - 드레이핑 시뮬레이션용
+      // PC-1 (퍼스널 컬러) 결과 조회 - 드레이핑 시뮬레이션 + 시너지 인사이트용
       const { data: pcData } = await supabase
         .from('personal_color_assessments')
-        .select('face_image_url')
+        .select('face_image_url, season')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -544,6 +561,18 @@ export default function SkinAnalysisResultPage() {
       if (pcData?.face_image_url) {
         setPcImageUrl(pcData.face_image_url);
       }
+      if (pcData?.season) {
+        setPcSeason(pcData.season);
+      }
+
+      // S-1 + PC-1 시너지 인사이트 생성 (피부 메트릭 기반)
+      const synergyMetrics = [
+        { id: 'hydration', value: dbData.hydration },
+        { id: 'oiliness', value: dbData.oil_level },
+        { id: 'redness', value: dbData.sensitivity }, // sensitivity를 redness로 매핑
+      ];
+      const insight = generateSynergyFromGeminiResult(synergyMetrics);
+      setSynergyInsight(insight);
     } catch (err) {
       console.error('[S-1] Fetch error:', err);
       setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
@@ -632,9 +661,19 @@ export default function SkinAnalysisResultPage() {
                 뒤로
               </Link>
             </Button>
-            <h1 className="text-lg font-bold text-foreground">피부 분석 결과</h1>
+            <div className="flex flex-col items-center gap-1">
+              <h1 className="text-lg font-bold text-foreground">피부 분석 결과</h1>
+              <AIBadge variant="small" />
+            </div>
             <div className="w-16" /> {/* 균형용 */}
           </header>
+
+          {/* AI 분석 실패 시 Mock 데이터 알림 */}
+          {usedMock && (
+            <div className="mb-6">
+              <MockDataNotice />
+            </div>
+          )}
 
           {/* 히어로 섹션: 점수 원형 게이지 + 변화 배지 */}
           {result && (
@@ -667,22 +706,26 @@ export default function SkinAnalysisResultPage() {
           {result && (
             <div ref={swipeContainerRef} {...swipeHandlers} className="touch-pan-y">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-4 sticky top-0 z-10 bg-muted">
-                  <TabsTrigger value="basic" className="gap-1 text-xs">
-                    <Sparkles className="w-4 h-4" />
-                    기본 분석
+                <TabsList className="grid w-full grid-cols-5 mb-4 sticky top-0 z-10 bg-muted">
+                  <TabsTrigger value="basic" className="gap-1 text-xs px-1">
+                    <Sparkles className="w-3 h-3" />
+                    분석
                   </TabsTrigger>
-                  <TabsTrigger value="evidence" className="gap-1 text-xs">
-                    <ClipboardList className="w-4 h-4" />
-                    분석 근거
+                  <TabsTrigger value="evidence" className="gap-1 text-xs px-1">
+                    <ClipboardList className="w-3 h-3" />
+                    근거
                   </TabsTrigger>
-                  <TabsTrigger value="visual" className="gap-1 text-xs">
-                    <Eye className="w-4 h-4" />
+                  <TabsTrigger value="visual" className="gap-1 text-xs px-1">
+                    <Eye className="w-3 h-3" />
                     시각화
                   </TabsTrigger>
-                  <TabsTrigger value="draping" className="gap-1 text-xs">
-                    <Palette className="w-4 h-4" />
+                  <TabsTrigger value="draping" className="gap-1 text-xs px-1">
+                    <Palette className="w-3 h-3" />
                     드레이핑
+                  </TabsTrigger>
+                  <TabsTrigger value="consultation" className="gap-1 text-xs px-1">
+                    <MessageCircle className="w-3 h-3" />
+                    상담
                   </TabsTrigger>
                 </TabsList>
 
@@ -712,6 +755,55 @@ export default function SkinAnalysisResultPage() {
                     className="mb-6"
                   />
 
+                  {/* S-1 + PC-1 시너지 인사이트 */}
+                  {synergyInsight && pcSeason && (
+                    <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0">
+                          <Palette
+                            className="w-5 h-5 text-violet-600 dark:text-violet-400"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm text-foreground mb-1">
+                            피부 + 퍼스널컬러 시너지
+                          </p>
+                          <SynergyInline insight={synergyInsight} className="text-xs" />
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {pcSeason} 시즌과 함께 분석한 결과예요
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PC-1 분석 유도 CTA (퍼스널컬러 미완료 시) */}
+                  {synergyInsight && !pcSeason && (
+                    <Link href="/analysis/personal-color" className="block mb-6">
+                      <div className="p-4 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50 hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0">
+                            <Palette
+                              className="w-5 h-5 text-violet-600 dark:text-violet-400"
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm text-foreground">
+                              퍼스널 컬러와 함께 분석하면?
+                            </p>
+                            <SynergyInline insight={synergyInsight} className="text-xs mt-1" />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              더 정확한 컬러 추천을 받을 수 있어요
+                            </p>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                        </div>
+                      </div>
+                    </Link>
+                  )}
+
                   {/* 맞춤 클렌징 가이드 CTA 카드 */}
                   <Link
                     href={`/analysis/skin/solution?skinType=${skinType || ''}`}
@@ -740,7 +832,10 @@ export default function SkinAnalysisResultPage() {
                   </Link>
 
                   {/* 환경 요인 안내 카드 */}
-                  <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
+                  <div
+                    data-testid="environment-info-card"
+                    className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50"
+                  >
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
                         <Lightbulb
@@ -819,6 +914,9 @@ export default function SkinAnalysisResultPage() {
                       className="mt-8"
                     />
                   )}
+
+                  {/* AI 투명성 고지 */}
+                  <AITransparencyNotice compact className="mt-8" />
 
                   {/* FAB 여백 */}
                   <div className="pb-40" />
@@ -963,6 +1061,28 @@ export default function SkinAnalysisResultPage() {
                       </Button>
                     </div>
                   )}
+                </TabsContent>
+
+                {/* AI 피부 상담 탭 (Phase D) */}
+                <TabsContent value="consultation" className="mt-0 pb-40" data-testid="consultation-tab">
+                  <div className="h-[calc(100vh-280px)] min-h-[400px]">
+                    <SkinConsultationChat
+                      skinAnalysis={
+                        result
+                          ? ({
+                              skinType: skinType || '복합성',
+                              hydration: result.metrics.find((m) => m.id === 'hydration')?.value || 50,
+                              oiliness: result.metrics.find((m) => m.id === 'oil')?.value || 50,
+                              sensitivity: result.metrics.find((m) => m.id === 'sensitivity')?.value || 50,
+                              analyzedAt: result.analyzedAt,
+                            } as SkinAnalysisSummary)
+                          : null
+                      }
+                      onProductClick={(productId) => {
+                        router.push(`/products/${productId}`);
+                      }}
+                    />
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>

@@ -3,7 +3,7 @@
  * F-3 Task 3.4
  */
 
-import { test, expect, devices } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { ROUTES, waitForLoadingToFinish } from './fixtures';
 
 // 모바일 뷰포트 설정
@@ -190,11 +190,6 @@ test.describe('모바일 UI - 오리엔테이션', () => {
     // 페이지가 정상 렌더링되는지 확인
     const body = page.locator('body');
     await expect(body).toBeVisible();
-
-    // 가로 스크롤이 없어야 함
-    const hasHorizontalScroll = await page.evaluate(() => {
-      return document.documentElement.scrollWidth > document.documentElement.clientWidth;
-    });
 
     // 수평 가로 스크롤은 없어야 함 (10px 오차)
     const scrollDiff = await page.evaluate(() => {

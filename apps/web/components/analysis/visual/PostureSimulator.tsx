@@ -175,21 +175,21 @@ export default function PostureSimulator({
           <p className="text-xs font-medium mb-2 text-foreground">가이드 라인</p>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-0.5 bg-[#22c55e]" />
+              <div className="w-4 h-0.5" style={{ backgroundColor: 'var(--posture-good)' }} />
               <span className="text-muted-foreground">수직 기준선</span>
             </div>
             {measurements.headForwardAngle > 15 && (
               <div className="flex items-center gap-2">
-                <div className="w-4 h-0.5 bg-[#ef4444]" />
+                <div className="w-4 h-0.5" style={{ backgroundColor: 'var(--posture-bad)' }} />
                 <span className="text-muted-foreground">머리 전방 각도</span>
               </div>
             )}
             <div className="flex items-center gap-2">
-              <div className="w-4 h-0.5 bg-[#3b82f6]" />
+              <div className="w-4 h-0.5" style={{ backgroundColor: 'var(--posture-neutral)' }} />
               <span className="text-muted-foreground">어깨 수평선</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-0.5 bg-[#f59e0b]" />
+              <div className="w-4 h-0.5" style={{ backgroundColor: 'var(--posture-warning)' }} />
               <span className="text-muted-foreground">골반선</span>
             </div>
           </div>

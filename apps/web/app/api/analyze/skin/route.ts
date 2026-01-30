@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { applyRateLimit } from '@/lib/security/rate-limit';
 import { analyzeSkin, type GeminiSkinAnalysisResult } from '@/lib/gemini';
 import { generateMockAnalysisResult, FOUNDATION_FORMULAS } from '@/lib/mock/skin-analysis';
 import { MOCK_PROBLEM_AREAS } from '@/lib/mock/skin-problem-areas';
@@ -39,13 +40,19 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *   usedMock: boolean            // Mock 사용 여부
  * }
  */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // Clerk 인증 확인
     const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Rate Limit 체크
+    const rateLimitResult = applyRateLimit(req, userId);
+    if (!rateLimitResult.success) {
+      return rateLimitResult.response!;
     }
 
     const body = await req.json();
@@ -72,7 +79,7 @@ export async function POST(req: Request) {
 
     // 분석 신뢰도 결정
     const analysisReliability =
-      imagesCount === 3 ? 'high' : imagesCount === 2 ? 'medium' : 'medium';
+      imagesCount === 3 ? 'high' : imagesCount === 2 ? 'medium' : 'low';
 
     // AI 분석 실행 (Real AI 또는 Mock)
     let result: GeminiSkinAnalysisResult;

@@ -5,7 +5,7 @@
  * @date 2025-12-09
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import type { PriceFetchRequest } from '@/lib/crawler/types';
 import { PREFERRED_SOURCES_BY_TYPE } from '@/lib/crawler/types';
 import {

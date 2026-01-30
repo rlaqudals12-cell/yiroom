@@ -401,7 +401,7 @@ describe('PhotoOverlayMap', () => {
 
   describe('opacity prop', () => {
     it('기본 opacity는 0.6이어야 함', async () => {
-      const { container } = render(<PhotoOverlayMap imageUrl={mockImageUrl} zones={mockZones} />);
+      render(<PhotoOverlayMap imageUrl={mockImageUrl} zones={mockZones} />);
 
       const image = screen.getByRole('img', { name: '분석 사진' });
       fireEvent.load(image);
@@ -413,7 +413,7 @@ describe('PhotoOverlayMap', () => {
     });
 
     it('커스텀 opacity가 적용되어야 함', async () => {
-      const { container } = render(
+      render(
         <PhotoOverlayMap imageUrl={mockImageUrl} zones={mockZones} opacity={0.8} />
       );
 

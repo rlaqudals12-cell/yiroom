@@ -131,8 +131,7 @@ function PriceOptionRow({
   isBestValue,
   onSelect,
 }: PriceOptionRowProps) {
-  // 총 가격 (배송비 포함)
-  const _totalPrice = option.salePrice + option.deliveryFee;
+  // 총 가격 (배송비 포함): option.salePrice + option.deliveryFee
 
   return (
     <div

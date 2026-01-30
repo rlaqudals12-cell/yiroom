@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BarcodeInput } from '@/components/scan/BarcodeInput';
 
@@ -115,7 +115,6 @@ describe('BarcodeInput', () => {
 
   it('빈 입력으로 제출 불가', async () => {
     const handleSubmit = vi.fn();
-    const user = userEvent.setup();
     render(<BarcodeInput onSubmit={handleSubmit} />);
 
     const submitButton = screen.getByRole('button', { name: /제품 조회/i });

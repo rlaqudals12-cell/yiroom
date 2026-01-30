@@ -282,7 +282,7 @@ describe('POST /api/workout/recommend', () => {
         location,
         useMock: true,
       }));
-      const json = await response.json();
+      await response.json();
 
       expect(response.status).toBe(200);
     });
@@ -309,7 +309,7 @@ describe('POST /api/workout/recommend', () => {
         userLevel: level,
         useMock: true,
       }));
-      const json = await response.json();
+      await response.json();
 
       expect(response.status).toBe(200);
     });

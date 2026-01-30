@@ -191,9 +191,9 @@ test.describe('공지사항 - 읽음 상태', () => {
     const hasCard = await announcementCard.isVisible().catch(() => false);
 
     if (hasCard) {
-      // 클릭 전 읽지 않은 수 확인
+      // 클릭 전 읽지 않은 수 확인 (비교용)
       const unreadCount = page.locator('[data-testid="unread-count"]');
-      const beforeText = await unreadCount.textContent().catch(() => null);
+      await unreadCount.textContent().catch(() => null);
 
       // 공지사항 클릭
       await announcementCard.click();

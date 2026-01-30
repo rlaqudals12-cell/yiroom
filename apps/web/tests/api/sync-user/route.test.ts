@@ -169,7 +169,7 @@ describe('사용자 동기화 API (POST /api/sync-user)', () => {
 
       // When: API 호출
       const response = await POST();
-      const data = await response.json();
+      await response.json();
 
       // Then: 성공 (email은 null)
       expect(response.status).toBe(200);
@@ -204,7 +204,7 @@ describe('사용자 동기화 API (POST /api/sync-user)', () => {
 
       // When: API 호출
       const response = await POST();
-      const data = await response.json();
+      await response.json();
 
       // Then: 성공 (이름은 null)
       expect(response.status).toBe(200);
@@ -240,7 +240,7 @@ describe('사용자 동기화 API (POST /api/sync-user)', () => {
 
       // When: API 호출
       const response = await POST();
-      const data = await response.json();
+      await response.json();
 
       // Then: 성공 (이미지는 null)
       expect(response.status).toBe(200);
@@ -280,7 +280,7 @@ describe('사용자 동기화 API (POST /api/sync-user)', () => {
 
       // When: API 호출
       const response = await POST();
-      const data = await response.json();
+      await response.json();
 
       // Then: 성공 및 onConflict 설정 확인
       expect(response.status).toBe(200);

@@ -3,7 +3,7 @@
  * 공통 테스트 설정 및 유틸리티
  */
 
-import { test as base, expect, type Page } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
 
 // 확장된 테스트 타입 정의 (추후 인증된 사용자 fixture 추가 예정)
 export const test = base.extend<Record<string, never>>({

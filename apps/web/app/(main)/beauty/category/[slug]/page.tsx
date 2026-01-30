@@ -61,7 +61,7 @@ export default function BeautyCategoryPage() {
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [matchFilterOn, setMatchFilterOn] = useState(true);
-  const [minMatchRate, _setMinMatchRate] = useState(80);
+  const [minMatchRate] = useState(80);
 
   const category = categoryInfo[slug] || { name: slug, description: '' };
 

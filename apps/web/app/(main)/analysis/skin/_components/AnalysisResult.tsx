@@ -17,6 +17,19 @@ import {
   Lightbulb,
   Info,
 } from 'lucide-react';
+
+// zoneId 기반 deterministic 변화값 생성 (Math.random() 대체)
+function getDeterministicVariation(zoneId: string, seed: number): number {
+  let hash = 0;
+  const str = `${zoneId}-${seed}`;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // 32비트 정수로 변환
+  }
+  // -10 ~ +10 범위의 정수 반환
+  return (Math.abs(hash) % 21) - 10;
+}
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
@@ -26,7 +39,6 @@ import {
   type SkinConcernId,
   getScoreColor,
   getScoreBgColor,
-  getStatusLabel,
 } from '@/lib/mock/skin-analysis';
 import { recommendMasks, MASK_TYPES } from '@/lib/skincare/mask-recommendation';
 import { FadeInUp, ScaleIn, CountUp } from '@/components/animations';
@@ -156,7 +168,6 @@ export default function AnalysisResult({
     recommendedIngredients,
     analyzedAt,
     personalColorSeason,
-    foundationRecommendation: _foundationRecommendation, // deprecated, PC-1으로 이동
     foundationFormula, // 피부 타입 기반 제형 추천
     ingredientWarnings,
     productRecommendations,
@@ -218,8 +229,8 @@ export default function AnalysisResult({
         const avgScore = Math.round(
           relatedMetrics.reduce((sum, m) => sum + m.value, 0) / relatedMetrics.length
         );
-        // ±10% 랜덤 변화 추가 (자연스러운 분포)
-        const variation = Math.round((Math.random() - 0.5) * 20);
+        // ±10 범위의 deterministic 변화 추가 (zoneId 기반)
+        const variation = getDeterministicVariation(zoneId, overallScore);
         const finalScore = Math.max(0, Math.min(100, avgScore + variation));
 
         zones[zoneId] = {
@@ -230,9 +241,9 @@ export default function AnalysisResult({
           recommendations: relatedMetrics.slice(0, 2).map((m) => `${m.name} 관리 필요`),
         };
       } else {
-        // 관련 메트릭이 없으면 전체 평균 사용
-        const avgScore = Math.round(overallScore + (Math.random() - 0.5) * 20);
-        const finalScore = Math.max(0, Math.min(100, avgScore));
+        // 관련 메트릭이 없으면 전체 평균 + deterministic 변화 사용
+        const variation = getDeterministicVariation(zoneId, overallScore);
+        const finalScore = Math.max(0, Math.min(100, overallScore + variation));
         zones[zoneId] = {
           zoneId,
           score: finalScore,

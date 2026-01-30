@@ -1,3 +1,12 @@
+/**
+ * Feature Flags 관리 API (Admin 전용)
+ *
+ * GET /api/admin/features - 모든 Feature Flag 조회
+ * PATCH /api/admin/features - Feature Flag 토글
+ *
+ * @auth Admin 권한 필수
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrThrow, getAllFeatureFlags, toggleFeatureFlag } from '@/lib/admin';
 import type { FeatureFlagKey } from '@/lib/admin';
@@ -5,7 +14,12 @@ import type { FeatureFlagKey } from '@/lib/admin';
 // Dynamic route - 빌드 시 정적 생성 방지
 export const dynamic = 'force-dynamic';
 
-// GET: 모든 Feature Flags 조회
+/**
+ * GET /api/admin/features
+ * 모든 Feature Flag 목록 조회
+ *
+ * @returns {{ flags: FeatureFlag[] }} Feature Flag 목록
+ */
 export async function GET() {
   try {
     await requireAdminOrThrow();
@@ -23,7 +37,13 @@ export async function GET() {
   }
 }
 
-// PATCH: Feature Flag 토글
+/**
+ * PATCH /api/admin/features
+ * Feature Flag 토글 (활성화/비활성화)
+ *
+ * @body {{ key: FeatureFlagKey, enabled: boolean }}
+ * @returns {{ success: boolean, flag: FeatureFlag }}
+ */
 export async function PATCH(request: NextRequest) {
   try {
     await requireAdminOrThrow();

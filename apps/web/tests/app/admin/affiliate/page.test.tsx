@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import AdminAffiliatePage from '@/app/admin/affiliate/page';
 
 // scrollIntoView 모킹

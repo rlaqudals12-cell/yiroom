@@ -10,8 +10,6 @@ import {
   uniformityToDbFormat,
   generateMockUniformityResult,
   type SkinUniformityResult,
-  type ProblemArea,
-  type UniformityGrade,
 } from '@/lib/analysis/uniformity-measure';
 import type { PigmentMaps, FaceLandmark } from '@/types/visual-analysis';
 

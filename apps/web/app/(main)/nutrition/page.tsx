@@ -124,10 +124,9 @@ export default function NutritionPage() {
   const [isWaterSaving, setIsWaterSaving] = useState(false); // 수분 저장 중 상태
   const [isManualInputOpen, setIsManualInputOpen] = useState(false); // 음식 직접 입력 시트 열림 상태 (Task 2.11)
   const [isManualSaving, setIsManualSaving] = useState(false); // 음식 직접 입력 저장 중 상태
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- 향후 MealSection에서 직접 입력 연결 시 사용
-  const [selectedMealTypeForManual, setSelectedMealTypeForManual] = useState<
+  const [selectedMealTypeForManual] = useState<
     'breakfast' | 'lunch' | 'dinner' | 'snack'
-  >('lunch'); // 직접 입력 시 선택된 식사 타입
+  >('lunch'); // 직접 입력 시 선택된 식사 타입 (향후 MealSection 연결 시 setter 사용)
 
   // 간헐적 단식 설정 상태 (Task 2.17)
   const [fastingSettings, setFastingSettings] = useState<{

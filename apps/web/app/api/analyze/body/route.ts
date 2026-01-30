@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { applyRateLimit } from '@/lib/security/rate-limit';
 import { analyzeBody, type GeminiBodyAnalysisResult } from '@/lib/gemini';
 import { generateMockBodyAnalysis3, BODY_TYPES_3, type BodyType3 } from '@/lib/mock/body-analysis';
 import { generateColorRecommendations, getColorTipsForBodyType } from '@/lib/color-recommendations';
@@ -10,6 +11,13 @@ import {
   addXp,
   type BadgeAwardResult,
 } from '@/lib/gamification';
+import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
+import {
+  unauthorizedError,
+  badRequestError,
+  dbError,
+  internalError,
+} from '@/lib/api/error-response';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -39,13 +47,19 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *   usedMock: boolean             // Mock 사용 여부
  * }
  */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // Clerk 인증 확인
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedError();
+    }
+
+    // Rate Limit 체크
+    const rateLimitResult = applyRateLimit(req, userId);
+    if (!rateLimitResult.success) {
+      return rateLimitResult.response!;
     }
 
     const body = await req.json();
@@ -55,7 +69,7 @@ export async function POST(req: Request) {
     const primaryImage = frontImageBase64 || imageBase64;
 
     if (!primaryImage) {
-      return NextResponse.json({ error: 'Image is required' }, { status: 400 });
+      return badRequestError('이미지가 필요합니다.');
     }
 
     // 분석에 사용된 이미지 현황
@@ -178,28 +192,22 @@ export async function POST(req: Request) {
 
     const supabase = createServiceRoleClient();
 
-    // 이미지 업로드 (정면 이미지만 저장)
-    let imageUrl: string | null = null;
-    if (primaryImage) {
-      const fileName = `${userId}/${Date.now()}.jpg`;
-
-      // Base64 데이터 정리
-      const base64Data = primaryImage.replace(/^data:image\/\w+;base64,/, '');
-      const buffer = Buffer.from(base64Data, 'base64');
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('body-images')
-        .upload(fileName, buffer, {
-          contentType: 'image/jpeg',
-          upsert: false,
-        });
-
-      if (uploadError) {
-        console.error('Image upload error:', uploadError);
-      } else {
-        imageUrl = uploadData.path;
+    // 이미지 저장 동의 확인 + 업로드 (PIPA 준수)
+    const { hasConsent, uploadedImages } = await checkConsentAndUploadImages(
+      supabase,
+      userId,
+      'body',
+      'body-images',
+      {
+        front: primaryImage,
+        side: sideImageBase64,
+        back: backImageBase64,
       }
-    }
+    );
+
+    // 정면 이미지 URL (하위 호환성)
+    const imageUrl = uploadedImages.front || null;
+    console.log(`[C-1] Image consent: ${hasConsent ? 'granted' : 'not granted'}, frontImage: ${imageUrl ? 'uploaded' : 'none'}`);
 
     // 퍼스널 컬러 조회 (자동 연동)
     const { data: pcData } = await supabase
@@ -257,11 +265,8 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      console.error('Database insert error:', error);
-      return NextResponse.json(
-        { error: 'Failed to save analysis', details: error.message },
-        { status: 500 }
-      );
+      console.error('[C-1] Database insert error:', error);
+      return dbError('분석 결과 저장에 실패했습니다.', error.message);
     }
 
     // BMI 계산 (userInput이 있는 경우)
@@ -332,8 +337,11 @@ export async function POST(req: Request) {
       gamification: gamificationResult,
     });
   } catch (error) {
-    console.error('Body analysis error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[C-1] Body analysis error:', error);
+    return internalError(
+      '체형 분석 중 오류가 발생했습니다.',
+      error instanceof Error ? error.message : undefined
+    );
   }
 }
 
@@ -347,7 +355,7 @@ export async function GET() {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedError();
     }
 
     const supabase = createServiceRoleClient();
@@ -360,8 +368,8 @@ export async function GET() {
       .limit(10);
 
     if (error) {
-      console.error('Database query error:', error);
-      return NextResponse.json({ error: 'Failed to fetch analyses' }, { status: 500 });
+      console.error('[C-1] Database query error:', error);
+      return dbError('분석 기록 조회에 실패했습니다.', error.message);
     }
 
     return NextResponse.json({
@@ -370,7 +378,10 @@ export async function GET() {
       count: data?.length || 0,
     });
   } catch (error) {
-    console.error('Get body analyses error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[C-1] Get body analyses error:', error);
+    return internalError(
+      '체형 분석 기록 조회 중 오류가 발생했습니다.',
+      error instanceof Error ? error.message : undefined
+    );
   }
 }

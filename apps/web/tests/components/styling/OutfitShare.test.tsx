@@ -2,8 +2,8 @@
  * Phase J P3-D: 코디 공유 컴포넌트 테스트
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import OutfitShareCard from '@/components/styling/OutfitShareCard';
 import OutfitShareModal from '@/components/styling/OutfitShareModal';
 import type { FullOutfit } from '@/types/styling';

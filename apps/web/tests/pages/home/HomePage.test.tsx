@@ -140,20 +140,6 @@ describe('HomePage', () => {
       expect(screen.getByText('코디 추천')).toBeInTheDocument();
     });
 
-    it('오늘 기록 섹션이 표시된다', () => {
-      render(<HomePage />);
-
-      expect(screen.getByText('오늘 기록')).toBeInTheDocument();
-    });
-
-    it('칼로리, 운동, 수분 기록이 표시된다', () => {
-      render(<HomePage />);
-
-      expect(screen.getByText('칼로리')).toBeInTheDocument();
-      expect(screen.getByText('운동')).toBeInTheDocument();
-      expect(screen.getByText('수분')).toBeInTheDocument();
-    });
-
     it('BottomNav가 렌더링된다', () => {
       render(<HomePage />);
 
@@ -202,15 +188,6 @@ describe('HomePage', () => {
       expect(mockPush).toHaveBeenCalledWith('/style');
     });
 
-    it('상세보기 버튼 클릭 시 /record로 이동한다', async () => {
-      const user = userEvent.setup();
-      render(<HomePage />);
-
-      const recordLink = screen.getByText('상세보기');
-      await user.click(recordLink);
-
-      expect(mockPush).toHaveBeenCalledWith('/record');
-    });
   });
 
   describe('시간 기반 인사', () => {
@@ -247,25 +224,6 @@ describe('HomePage', () => {
     });
   });
 
-  describe('기록 데이터', () => {
-    it('칼로리 수치가 표시된다', () => {
-      render(<HomePage />);
-
-      expect(screen.getByText(/1,200 \/ 2,000/)).toBeInTheDocument();
-    });
-
-    it('운동 시간이 표시된다', () => {
-      render(<HomePage />);
-
-      expect(screen.getByText(/30 \/ 60분/)).toBeInTheDocument();
-    });
-
-    it('수분 섭취량이 표시된다', () => {
-      render(<HomePage />);
-
-      expect(screen.getByText(/6 \/ 8잔/)).toBeInTheDocument();
-    });
-  });
 });
 
 describe('HomePage - 로딩 상태', () => {

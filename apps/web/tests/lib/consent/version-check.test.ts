@@ -93,7 +93,6 @@ describe('version-check', () => {
     it('인자가 없을 때 현재 날짜 기준으로 계산', () => {
       const before = new Date();
       const retentionUntil = calculateRetentionUntil();
-      const after = new Date();
 
       const retention = new Date(retentionUntil);
       const expectedYear = before.getFullYear() + 1;

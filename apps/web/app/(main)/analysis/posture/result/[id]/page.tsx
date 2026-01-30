@@ -19,6 +19,7 @@ import AnalysisResult from '../../_components/AnalysisResult';
 import { ShareButton } from '@/components/share';
 import { useShare } from '@/hooks/useShare';
 import Link from 'next/link';
+import { AIBadge } from '@/components/common/AIBadge';
 
 // DB 데이터 타입
 interface DbPostureAnalysis {
@@ -217,7 +218,10 @@ export default function PostureAnalysisResultPage() {
                 뒤로
               </Link>
             </Button>
-            <h1 className="text-lg font-bold text-foreground">자세 분석 결과</h1>
+            <div className="flex flex-col items-center gap-1">
+              <h1 className="text-lg font-bold text-foreground">자세 분석 결과</h1>
+              <AIBadge variant="small" />
+            </div>
             <div className="w-16" />
           </header>
 

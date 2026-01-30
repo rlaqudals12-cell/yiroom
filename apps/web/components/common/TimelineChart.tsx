@@ -216,7 +216,7 @@ export function TimelineChart({
         </CardHeader>
       )}
 
-      <CardContent className={cn(hideHeader ? 'pt-4' : 'pt-4')}>
+      <CardContent className={"pt-4"}>
         <div style={{ height }} className="w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart

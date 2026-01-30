@@ -385,3 +385,19 @@ vi.mock('@/lib/supabase/clerk-client', () => ({
     },
   }),
 }));
+
+// Mock server-only (Next.js Server Component 전용 모듈)
+// Clerk의 auth()가 내부적으로 사용하므로 테스트 환경에서 모킹 필요
+vi.mock('server-only', () => ({}));
+
+// Mock @clerk/nextjs/server (API Route 테스트용)
+// 개별 테스트에서 vi.mocked(auth).mockResolvedValue()로 오버라이드 가능
+vi.mock('@clerk/nextjs/server', () => ({
+  auth: vi.fn().mockResolvedValue({ userId: null }),
+  currentUser: vi.fn().mockResolvedValue(null),
+  clerkClient: vi.fn(() => ({
+    users: {
+      getUser: vi.fn().mockResolvedValue(null),
+    },
+  })),
+}));

@@ -5,7 +5,7 @@
  * Sprint D Day 9: 운영 기능
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MessageSquare, Filter, RefreshCw, ChevronDown } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,16 +59,18 @@ export default function AdminFeedbackPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // 피드백 로드
-  useEffect(() => {
-    const loadFeedbacks = async () => {
-      setIsLoading(true);
-      const data = await fetchFeedbacks();
-      setFeedbacks(data);
-      setIsLoading(false);
-    };
-    loadFeedbacks();
+  // 피드백 로드 (초기 로드 및 새로고침에서 재사용)
+  const loadFeedbackData = useCallback(async () => {
+    setIsLoading(true);
+    const data = await fetchFeedbacks();
+    setFeedbacks(data);
+    setIsLoading(false);
   }, []);
+
+  // 초기 로드
+  useEffect(() => {
+    loadFeedbackData();
+  }, [loadFeedbackData]);
 
   // 필터링된 피드백
   const filteredFeedbacks = sortFeedbackByDate(
@@ -77,14 +79,6 @@ export default function AdminFeedbackPage() {
 
   // 통계
   const stats = getFeedbackStats(feedbacks);
-
-  // 새로고침
-  const handleRefresh = async () => {
-    setIsLoading(true);
-    const data = await fetchFeedbacks();
-    setFeedbacks(data);
-    setIsLoading(false);
-  };
 
   return (
     <div className="container mx-auto py-8 px-4" data-testid="admin-feedback-page">
@@ -97,7 +91,7 @@ export default function AdminFeedbackPage() {
             <p className="text-muted-foreground">사용자 피드백을 확인하고 처리합니다.</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
+        <Button variant="outline" size="sm" onClick={loadFeedbackData} disabled={isLoading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           새로고침
         </Button>

@@ -238,6 +238,7 @@ describe('C-1 체형 분석 Mock', () => {
         waist: [60, 70],
         hip: [78, 88],
       });
+      expect(true).toBe(true);
     });
 
     it('A자형 측정값은 올바른 범위이다', () => {

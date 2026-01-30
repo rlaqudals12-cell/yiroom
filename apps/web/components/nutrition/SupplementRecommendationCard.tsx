@@ -191,7 +191,10 @@ function SupplementItem({
               href={links.coupang}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-[#e01d2c] text-white rounded hover:bg-[#c41926] transition-colors"
+              className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 text-white rounded transition-colors"
+              style={{ backgroundColor: 'var(--affiliate-coupang)' }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-coupang-hover)')}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-coupang)')}
               data-testid="coupang-link"
             >
               쿠팡
@@ -201,7 +204,10 @@ function SupplementItem({
               href={links.oliveyoung}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-[#9bce26] text-white rounded hover:bg-[#8ab820] transition-colors"
+              className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 text-white rounded transition-colors"
+              style={{ backgroundColor: 'var(--affiliate-oliveyoung)' }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-oliveyoung-hover)')}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-oliveyoung)')}
               data-testid="oliveyoung-link"
             >
               올리브영
@@ -211,7 +217,10 @@ function SupplementItem({
               href={links.iherb}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-[#2e7d32] text-white rounded hover:bg-[#1b5e20] transition-colors"
+              className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 text-white rounded transition-colors"
+              style={{ backgroundColor: 'var(--affiliate-iherb)' }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-iherb-hover)')}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-iherb)')}
               data-testid="iherb-link"
             >
               iHerb

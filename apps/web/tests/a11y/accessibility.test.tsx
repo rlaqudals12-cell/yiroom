@@ -7,7 +7,6 @@
 /// <reference types="vitest-axe/extend-expect" />
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import type { AxeResults } from 'axe-core';
 import { axe } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
 

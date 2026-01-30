@@ -2,11 +2,10 @@
  * 피부 다이어리 상관관계 분석 테스트
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   analyzeSkinCorrelation,
   type DiaryEntryForAnalysis,
-  type CorrelationAnalysisResult,
 } from '@/lib/analysis/skin-correlation';
 
 // Supabase 클라이언트 Mock

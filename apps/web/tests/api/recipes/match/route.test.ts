@@ -2,7 +2,7 @@
  * 레시피 매칭 API 테스트
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { POST } from '@/app/api/recipes/match/route';
 import { NextRequest } from 'next/server';
 

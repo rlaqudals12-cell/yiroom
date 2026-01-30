@@ -10,10 +10,11 @@ import AnalysisSummarySection from './_components/AnalysisSummarySection';
 import CompactActivityWidget from './_components/CompactActivityWidget';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
+import { CrossModuleCard } from '@/components/insights';
 
 export default function DashboardPage() {
   const { user, isLoaded: isUserLoaded } = useUser();
-  const { isLoading, analyses, isNewUser } = useAnalysisStatus();
+  const { isLoading, analyses, isNewUser, hasPersonalColor, hasSkin, hasBody } = useAnalysisStatus();
 
   // 로딩 상태
   if (!isUserLoaded || isLoading) {
@@ -53,6 +54,18 @@ export default function DashboardPage() {
             <AnalysisSummarySection analyses={analyses} />
           )}
         </div>
+
+        {/* Zone 2.5: Cross Module Insights (분석 1개 이상 완료 시) */}
+        {!isNewUser && (
+          <div className="opacity-0 animate-fade-in-up animation-delay-150">
+            <CrossModuleCard
+              analyses={analyses}
+              hasPersonalColor={hasPersonalColor}
+              hasSkin={hasSkin}
+              hasBody={hasBody}
+            />
+          </div>
+        )}
 
         {/* Zone 3: Activity Summary (축소형) */}
         <div className="opacity-0 animate-fade-in-up animation-delay-200">

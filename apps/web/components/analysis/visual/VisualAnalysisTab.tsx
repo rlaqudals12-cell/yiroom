@@ -34,7 +34,7 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
 
   // 분석 결과
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-  const [_landmarks, setLandmarks] = useState<FaceLandmark[] | null>(null);
+  const [, setLandmarks] = useState<FaceLandmark[] | null>(null);
   const [faceMask, setFaceMask] = useState<Uint8Array | null>(null);
   const [pigmentMaps, setPigmentMaps] = useState<PigmentMaps | null>(null);
   const [pigmentSummary, setPigmentSummary] = useState<{

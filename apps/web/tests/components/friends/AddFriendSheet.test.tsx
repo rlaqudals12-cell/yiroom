@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import type { UserSearchResult } from '@/types/friends';
 
 // Mock 데이터

@@ -21,7 +21,6 @@ import {
   paletteToHexArray,
   METAL_OPTICAL_PROPERTIES,
   type SkinToneCharacteristics,
-  type DrapeOpticalProperties,
 } from '@/lib/analysis/drape-palette';
 
 describe('drape-palette', () => {

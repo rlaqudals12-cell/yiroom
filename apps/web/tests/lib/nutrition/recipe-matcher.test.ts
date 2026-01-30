@@ -311,7 +311,7 @@ describe('INGREDIENT_SYNONYMS', () => {
   });
 
   it('각 유사어 그룹에 여러 단어가 있다', () => {
-    for (const [key, synonyms] of Object.entries(INGREDIENT_SYNONYMS)) {
+    for (const [, synonyms] of Object.entries(INGREDIENT_SYNONYMS)) {
       expect(Array.isArray(synonyms)).toBe(true);
       expect(synonyms.length).toBeGreaterThan(0);
     }

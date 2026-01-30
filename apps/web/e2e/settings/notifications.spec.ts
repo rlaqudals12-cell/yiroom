@@ -4,7 +4,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { ROUTES, waitForLoadingToFinish } from '../fixtures';
+import { waitForLoadingToFinish } from '../fixtures';
 
 test.describe('알림 설정', () => {
   test.beforeEach(async ({ page }) => {

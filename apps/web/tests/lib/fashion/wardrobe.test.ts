@@ -7,7 +7,6 @@ import {
   generateOutfitCombinations,
   SAMPLE_WARDROBE,
   type WardrobeItem,
-  type ClothingCategory,
 } from '@/lib/fashion/wardrobe';
 
 describe('generateOutfitCombinations', () => {

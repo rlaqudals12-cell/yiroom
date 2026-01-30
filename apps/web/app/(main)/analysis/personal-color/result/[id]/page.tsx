@@ -47,6 +47,8 @@ import DetailedEvidenceReport from '@/components/analysis/personal-color/Detaile
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
 import { Shirt } from 'lucide-react';
+import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { MockDataNotice } from '@/components/common/MockDataNotice';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -69,6 +71,7 @@ interface DbPersonalColorAssessment {
     insight?: string;
     analysisEvidence?: AnalysisEvidence;
     imageQuality?: ImageQuality;
+    usedMock?: boolean;  // AI 분석 실패 시 Mock 데이터 사용 여부
   } | null;
   face_image_url?: string; // DB 컬럼명과 일치
   created_at: string;
@@ -151,6 +154,8 @@ export default function PersonalColorResultPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
+  // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
+  const [usedMock, setUsedMock] = useState(false);
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;
@@ -206,6 +211,10 @@ export default function PersonalColorResultPage() {
       // 이미지 URL 저장 (드레이핑 시뮬레이션용)
       if (dbData.face_image_url) {
         setImageUrl(dbData.face_image_url);
+      }
+      // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
+      if (dbData.image_analysis?.usedMock) {
+        setUsedMock(true);
       }
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
@@ -301,9 +310,19 @@ export default function PersonalColorResultPage() {
               뒤로
             </Link>
           </Button>
-          <h1 className="text-lg font-bold text-foreground">퍼스널 컬러 결과</h1>
+          <div className="flex flex-col items-center gap-1">
+              <h1 className="text-lg font-bold text-foreground">퍼스널 컬러 결과</h1>
+              <AIBadge variant="small" />
+            </div>
           <div className="w-16" />
         </header>
+
+        {/* AI 분석 실패 시 Mock 데이터 알림 */}
+        {usedMock && (
+          <div className="mb-6">
+            <MockDataNotice />
+          </div>
+        )}
 
         {/* 낮은 신뢰도 경고 배너 */}
         {result && result.confidence < LOW_CONFIDENCE_THRESHOLD && (
@@ -423,6 +442,9 @@ export default function PersonalColorResultPage() {
                   showQuickQuestions
                 />
               </div>
+
+              {/* AI 투명성 고지 */}
+              <AITransparencyNotice compact className="mt-8" />
 
               {/* 액션 버튼 (탭 내부) */}
               <div className="mt-8 mb-4 space-y-2">

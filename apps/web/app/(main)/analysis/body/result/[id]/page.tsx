@@ -41,6 +41,8 @@ import { DrapingSimulationTab } from '@/components/analysis/visual';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { Palette } from 'lucide-react';
 import Link from 'next/link';
+import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { MockDataNotice } from '@/components/common/MockDataNotice';
 
 // DB 데이터 타입
 interface DbBodyAnalysis {
@@ -64,6 +66,7 @@ interface DbBodyAnalysis {
         imageQuality?: BodyImageQuality;
         confidence?: number;
         matchedFeatures?: number;
+        usedMock?: boolean;  // AI 분석 실패 시 Mock 데이터 사용 여부
       }
     | Array<{
         category: string;
@@ -194,6 +197,8 @@ export default function BodyAnalysisResultPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
+  // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
+  const [usedMock, setUsedMock] = useState(false);
   // PC-1 연동: 드레이핑 시뮬레이션용 이미지 URL
   const [pcImageUrl, setPcImageUrl] = useState<string | null>(null);
   const fetchedRef = useRef(false);
@@ -257,6 +262,10 @@ export default function BodyAnalysisResultPage() {
         }
         if (styleRecs.matchedFeatures) {
           setMatchedFeatures(styleRecs.matchedFeatures);
+        }
+        // AI Fallback 사용 여부
+        if (styleRecs.usedMock) {
+          setUsedMock(true);
         }
       }
 
@@ -366,9 +375,19 @@ export default function BodyAnalysisResultPage() {
                 뒤로
               </Link>
             </Button>
-            <h1 className="text-lg font-bold text-foreground">체형 분석 결과</h1>
+            <div className="flex flex-col items-center gap-1">
+              <h1 className="text-lg font-bold text-foreground">체형 분석 결과</h1>
+              <AIBadge variant="small" />
+            </div>
             <div className="w-16" />
           </header>
+
+          {/* AI 분석 실패 시 Mock 데이터 알림 */}
+          {usedMock && (
+            <div className="mb-6">
+              <MockDataNotice />
+            </div>
+          )}
 
           {/* 탭 기반 결과 */}
           {result && (
@@ -407,7 +426,10 @@ export default function BodyAnalysisResultPage() {
                 />
 
                 {/* 환경 요인 안내 카드 */}
-                <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50">
+                <div
+                  data-testid="environment-info-card"
+                  className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50"
+                >
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0">
                       <Lightbulb
@@ -473,6 +495,9 @@ export default function BodyAnalysisResultPage() {
                   }}
                   className="mt-8"
                 />
+
+                {/* AI 투명성 고지 */}
+                <AITransparencyNotice compact className="mt-8" />
 
                 {/* AI 코디 상담 CTA */}
                 <div className="mt-6 p-4 bg-card rounded-xl border border-border pb-32">

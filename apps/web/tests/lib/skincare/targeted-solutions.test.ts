@@ -9,7 +9,6 @@ import {
   checkSolutionCompatibility,
   TARGETED_SOLUTIONS,
 } from '@/lib/skincare/targeted-solutions';
-import type { SkinConcernId } from '@/lib/mock/skin-analysis';
 
 describe('targeted-solutions', () => {
   describe('recommendSolutions', () => {

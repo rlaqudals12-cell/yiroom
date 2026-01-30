@@ -251,11 +251,6 @@ describe('HairResultCard', () => {
     });
 
     it('필수 필드 누락 시 (overallScore 없음)', () => {
-      // Given: overallScore 누락
-      const mockResult: HairAnalysisResult = {
-        hairType: 'wavy',
-        overallScore: 0, // 0은 falsy이지만 유효한 점수
-      };
       // overallScore가 undefined인 경우를 테스트하려면 타입 캐스팅 필요
       const invalidResult = { hairType: 'wavy' } as HairAnalysisResult;
 

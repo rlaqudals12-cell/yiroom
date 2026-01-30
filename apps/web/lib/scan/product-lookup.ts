@@ -174,7 +174,9 @@ import { findProductByBarcode } from './korean-products-seed';
  * 2. 한국 제품 시드 데이터 fallback
  */
 async function lookupFromInternalDb(barcode: string): Promise<ProductLookupResult> {
-  // TODO: Supabase 연동 (마이그레이션 후 활성화)
+  // [DEFERRED] Supabase 연동 - global_products 테이블 마이그레이션 필요
+  // 선행 조건: supabase/migrations/에 global_products 테이블 생성
+  // 재검토 트리거: 시드 데이터 30개 초과 시
   // const supabase = createClerkSupabaseClient();
   // const { data, error } = await supabase
   //   .from('global_products')
@@ -239,7 +241,9 @@ export async function lookupProduct(barcode: string): Promise<ProductLookupResul
  * 제품 검색 (이름/브랜드/성분)
  */
 export async function searchProducts(query: string, limit: number = 10): Promise<GlobalProduct[]> {
-  // TODO: Supabase 연동 (마이그레이션 후 활성화)
+  // [DEFERRED] Supabase 연동 - global_products 테이블 마이그레이션 필요
+  // 선행 조건: supabase/migrations/에 global_products 테이블 생성
+  // 재검토 트리거: 검색 기능 요청 시
   // const supabase = createClerkSupabaseClient();
   // const { data } = await supabase
   //   .from('global_products')

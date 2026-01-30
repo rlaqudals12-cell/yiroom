@@ -242,9 +242,9 @@ export function CollageView({
 function getStackPositions(
   total: number,
   index: number,
-  size: 'sm' | 'md' | 'lg'
+  _size: 'sm' | 'md' | 'lg'
 ): React.CSSProperties {
-  const _baseSize = size === 'sm' ? 20 : size === 'md' ? 30 : 40;
+  // baseSize는 향후 동적 크기 조정 시 사용: size === 'sm' ? 20 : size === 'md' ? 30 : 40
 
   // 2개 이하: 위아래 배치
   if (total <= 2) {

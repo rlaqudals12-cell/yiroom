@@ -146,6 +146,7 @@ const ANALYSIS_BADGE_CODES = {
   'personal-color': 'analysis_pc_complete',
   skin: 'analysis_skin_complete',
   body: 'analysis_body_complete',
+  posture: 'analysis_posture_complete',
 } as const;
 
 /**
@@ -154,7 +155,7 @@ const ANALYSIS_BADGE_CODES = {
 export async function awardAnalysisBadge(
   supabase: SupabaseClient,
   clerkUserId: string,
-  analysisType: 'personal-color' | 'skin' | 'body'
+  analysisType: 'personal-color' | 'skin' | 'body' | 'posture'
 ): Promise<BadgeAwardResult | null> {
   const badgeCode = ANALYSIS_BADGE_CODES[analysisType];
   return awardStreakBadge(supabase, clerkUserId, badgeCode);
@@ -222,7 +223,7 @@ export async function checkFirstNutritionBadge(
 // ============================================================
 
 /**
- * 모든 분석(PC, Skin, Body) 완료 시 통합 배지 부여
+ * 모든 분석(PC, Skin, Body, Posture) 완료 시 통합 배지 부여
  */
 export async function checkAndAwardAllAnalysisBadge(
   supabase: SupabaseClient,
@@ -230,7 +231,7 @@ export async function checkAndAwardAllAnalysisBadge(
 ): Promise<BadgeAwardResult | null> {
   try {
     // 각 분석 완료 여부 확인
-    const [pcResult, skinResult, bodyResult] = await Promise.all([
+    const [pcResult, skinResult, bodyResult, postureResult] = await Promise.all([
       supabase
         .from('personal_color_assessments')
         .select('id')
@@ -238,14 +239,16 @@ export async function checkAndAwardAllAnalysisBadge(
         .limit(1),
       supabase.from('skin_analyses').select('id').eq('clerk_user_id', clerkUserId).limit(1),
       supabase.from('body_analyses').select('id').eq('clerk_user_id', clerkUserId).limit(1),
+      supabase.from('posture_analyses').select('id').eq('clerk_user_id', clerkUserId).limit(1),
     ]);
 
     const hasPC = pcResult.data && pcResult.data.length > 0;
     const hasSkin = skinResult.data && skinResult.data.length > 0;
     const hasBody = bodyResult.data && bodyResult.data.length > 0;
+    const hasPosture = postureResult.data && postureResult.data.length > 0;
 
     // 모든 분석 완료 시 통합 배지 부여
-    if (hasPC && hasSkin && hasBody) {
+    if (hasPC && hasSkin && hasBody && hasPosture) {
       return awardStreakBadge(supabase, clerkUserId, 'analysis_all_complete');
     }
 

@@ -131,7 +131,10 @@ function ClothingItemCard({
               href={links.ably}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-[#ff4081] text-white rounded hover:bg-[#e91e63] transition-colors"
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 text-white rounded transition-colors"
+              style={{ backgroundColor: 'var(--affiliate-musinsa)' }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-musinsa-hover)')}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-musinsa)')}
               data-testid="ably-link"
             >
               에이블리
@@ -141,7 +144,10 @@ function ClothingItemCard({
               href={links.coupang}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-[#e01d2c] text-white rounded hover:bg-[#c41926] transition-colors"
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 text-white rounded transition-colors"
+              style={{ backgroundColor: 'var(--affiliate-coupang)' }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-coupang-hover)')}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-coupang)')}
               data-testid="coupang-link"
             >
               쿠팡

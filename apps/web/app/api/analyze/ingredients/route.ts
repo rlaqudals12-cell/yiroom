@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { applyRateLimit } from "@/lib/security/rate-limit";
 import {
   analyzeIngredients,
   getWarningIngredientsForSkinType,
@@ -23,13 +24,19 @@ import {
  *   warningCount: number             // 주의 성분 수
  * }
  */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // Clerk 인증 확인
     const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate Limit 체크
+    const rateLimitResult = applyRateLimit(req, userId);
+    if (!rateLimitResult.success) {
+      return rateLimitResult.response!;
     }
 
     const body = await req.json();
@@ -102,12 +109,18 @@ export async function POST(req: Request) {
  *   count: number
  * }
  */
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate Limit 체크
+    const rateLimitResult = applyRateLimit(req, userId);
+    if (!rateLimitResult.success) {
+      return rateLimitResult.response!;
     }
 
     const { searchParams } = new URL(req.url);

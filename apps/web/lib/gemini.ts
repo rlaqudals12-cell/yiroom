@@ -239,6 +239,14 @@ export interface GeminiBodyAnalysisResult {
     clothingFit: 'fitted' | 'loose' | 'oversized';
     analysisReliability: 'high' | 'medium' | 'low';
   };
+  // 좌우 비대칭 분석 (자세 교정 피드백용)
+  asymmetryAnalysis?: {
+    detected: boolean;
+    shoulderDifference: 'none' | 'slight' | 'moderate' | 'significant';
+    hipAlignment: 'level' | 'tilted_left' | 'tilted_right' | 'tilted_forward';
+    legAlignment: 'straight' | 'o_shaped' | 'x_shaped';
+    notes: string | null;
+  };
 }
 
 /**
@@ -840,6 +848,12 @@ N (내추럴/Natural) - 자연스럽고 골격감 있는 실루엣
 3. 5개 특징 중 4개 이상 일치해야 확정 판정
 4. 3개 이하 일치 시 → 가장 많이 일치하는 타입 + 낮은 신뢰도
 
+📐 좌우 비대칭 감지:
+- 어깨 높이: 왼쪽/오른쪽 어깨 높이 차이 관찰
+- 골반 기울기: 좌우 골반 높이 및 전후 기울기
+- 무릎/발목 정렬: O자형/X자형 다리 확인
+- 비대칭이 발견되면 asymmetryAnalysis 필드에 기록
+
 다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
 
 {
@@ -881,6 +895,13 @@ N (내추럴/Natural) - 자연스럽고 골격감 있는 실루엣
     "poseNatural": [true|false],
     "clothingFit": "[fitted|loose|oversized]",
     "analysisReliability": "[high|medium|low]"
+  },
+  "asymmetryAnalysis": {
+    "detected": [true|false],
+    "shoulderDifference": "[none|slight|moderate|significant]",
+    "hipAlignment": "[level|tilted_left|tilted_right|tilted_forward]",
+    "legAlignment": "[straight|o_shaped|x_shaped]",
+    "notes": "[비대칭 관련 상세 설명, 없으면 null]"
   }
 }
 

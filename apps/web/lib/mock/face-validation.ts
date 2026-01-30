@@ -32,20 +32,12 @@ export function generateMockFaceValidation(expectedAngle: FaceAngle): ValidateFa
 
 /**
  * 항상 적합한 결과 반환 (테스트용)
+ * @description generateMockFaceValidation과 동일한 결과를 반환 (별칭)
  */
 export function generateMockFaceValidationSuccess(
   expectedAngle: FaceAngle
 ): ValidateFaceImageResponse {
-  return {
-    suitable: true,
-    detectedAngle: expectedAngle,
-    quality: {
-      lighting: 'good',
-      makeupDetected: false,
-      faceDetected: true,
-      blur: false,
-    },
-  };
+  return generateMockFaceValidation(expectedAngle);
 }
 
 /**

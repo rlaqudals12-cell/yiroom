@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import LifestyleFactors from '@/components/skin/diary/LifestyleFactors';
-import type { LifestyleFactorsInput } from '@/types/skin-diary';
 
 describe('LifestyleFactors', () => {
   it('renders with test id', () => {

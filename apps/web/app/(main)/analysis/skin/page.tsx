@@ -5,11 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Camera, ImageIcon } from 'lucide-react';
-import { type SkinAnalysisResult, generateMockAnalysisResult } from '@/lib/mock/skin-analysis';
+import type { SkinAnalysisResult } from '@/lib/mock/skin-analysis';
 import type { MultiAngleImages } from '@/types/visual-analysis';
 import type { ImageConsent } from '@/components/analysis/consent/types';
 import LightingGuide from './_components/LightingGuide';
-import PhotoUpload from './_components/PhotoUpload';
 import GalleryMultiAngleSkinUpload from './_components/GalleryMultiAngleSkinUpload';
 import MultiAngleSkinCapture from './_components/MultiAngleSkinCapture';
 // KnownSkinTypeInput 제거됨 - AI가 피부 타입 자동 판단
@@ -228,21 +227,6 @@ export default function SkinAnalysisPage() {
     setStep('mode-select');
     setCaptureMode('select');
   }, []);
-
-  // 사진 선택 시 동의 모달 표시 또는 분석 진행
-  const handlePhotoSelect = useCallback(
-    (file: File) => {
-      // 기존 동의가 있으면 바로 분석 진행
-      if (existingConsent?.consent_given) {
-        proceedToAnalysis(file, null);
-        return;
-      }
-      // 동의가 없으면 모달 표시
-      setPendingImageFile(file);
-      setShowConsentModal(true);
-    },
-    [existingConsent, proceedToAnalysis]
-  );
 
   // 동의 저장 핸들러
   const handleConsentAgree = useCallback(async () => {

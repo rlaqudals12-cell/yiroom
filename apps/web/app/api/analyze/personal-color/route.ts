@@ -1,6 +1,13 @@
 import { auth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { applyRateLimit } from '@/lib/security/rate-limit';
+import {
+  unauthorizedError,
+  validationError,
+  internalError,
+  dbError,
+} from '@/lib/api/error-response';
 import {
   analyzePersonalColor,
   type GeminiPersonalColorResult,
@@ -49,13 +56,19 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *   analysisReliability: string      // 분석 신뢰도 (high/medium/low)
  * }
  */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // Clerk 인증 확인
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedError();
+    }
+
+    // Rate Limit 체크
+    const rateLimitResult = applyRateLimit(req, userId);
+    if (!rateLimitResult.success) {
+      return rateLimitResult.response!;
     }
 
     const body = await req.json();
@@ -77,7 +90,7 @@ export async function POST(req: Request) {
     const hasLegacyImage = !!imageBase64;
 
     if (!hasFrontImage && !hasLegacyImage) {
-      return NextResponse.json({ error: 'Image is required' }, { status: 400 });
+      return validationError('이미지가 필요합니다.');
     }
 
     // 분석용 이미지 입력 구성
@@ -514,8 +527,11 @@ export async function POST(req: Request) {
       gamification: gamificationResult,
     });
   } catch (error) {
-    console.error('Personal color analysis error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[PC-1] Personal color analysis error:', error);
+    return internalError(
+      '분석 중 오류가 발생했습니다.',
+      error instanceof Error ? error.message : undefined
+    );
   }
 }
 
@@ -529,7 +545,7 @@ export async function GET() {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedError();
     }
 
     const supabase = createServiceRoleClient();
@@ -544,8 +560,8 @@ export async function GET() {
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = no rows returned
-      console.error('Database query error:', error);
-      return NextResponse.json({ error: 'Failed to fetch analysis' }, { status: 500 });
+      console.error('[PC-1] Database query error:', error);
+      return dbError('분석 결과를 불러오는데 실패했습니다.', error.message);
     }
 
     return NextResponse.json({
@@ -554,7 +570,10 @@ export async function GET() {
       hasResult: !!data,
     });
   } catch (error) {
-    console.error('Get personal color error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[PC-1] Get personal color error:', error);
+    return internalError(
+      '분석 결과 조회 중 오류가 발생했습니다.',
+      error instanceof Error ? error.message : undefined
+    );
   }
 }

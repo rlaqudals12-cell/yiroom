@@ -551,7 +551,7 @@ describe('GET /api/reports/monthly', () => {
   describe('체형 분석 연동', () => {
     it('체형 분석 데이터가 있으면 체중 변화가 포함된다', async () => {
       const response = await GET(createMockGetRequest('http://localhost/api/reports/monthly'));
-      const json = await response.json();
+      await response.json();
 
       expect(response.status).toBe(200);
       expect(generateMonthlyReport).toHaveBeenCalled();

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { LeaderboardTabs } from '@/components/leaderboard/LeaderboardTabs';
 import type { LeaderboardPeriod, LeaderboardCategory } from '@/types/leaderboard';
 

@@ -3,7 +3,6 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { locales } from '@/i18n/config';
 
 // 메시지 파일 로드
 let koMessages: Record<string, unknown>;

@@ -70,9 +70,11 @@ export default function ScanPage() {
     setMode('camera');
   }, []);
 
-  // 제품함 추가 (TODO: 실제 구현)
+  // 제품함 추가
+  // [DEFERRED] 실제 API 구현 - user_product_shelves 테이블 필요
+  // 선행 조건: 사용자 제품함 DB 스키마 설계
+  // 재검토 트리거: 제품함 기능 요청 시
   const handleAddToShelf = useCallback(() => {
-    // TODO: 제품함 추가 API 호출
     alert('내 제품함에 추가되었습니다.');
   }, []);
 

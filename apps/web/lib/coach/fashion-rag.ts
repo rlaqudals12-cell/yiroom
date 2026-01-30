@@ -160,8 +160,7 @@ export async function searchFashionItems(
 ): Promise<FashionSearchResult> {
   try {
     const occasion = detectOccasion(query) || 'casual';
-    // intent는 향후 카테고리별 필터링에 사용 예정
-    const _intent = analyzeFashionIntent(query);
+    // intent는 향후 카테고리별 필터링에 사용 예정: analyzeFashionIntent(query)
     const seasonType = userContext?.personalColor?.season;
     const bodyType = userContext?.bodyAnalysis?.bodyType;
 

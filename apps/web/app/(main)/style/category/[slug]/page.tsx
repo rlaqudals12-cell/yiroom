@@ -156,7 +156,7 @@ export default function StyleCategoryPage() {
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [matchFilterOn, setMatchFilterOn] = useState(true);
-  const [minMatchRate, _setMinMatchRate] = useState(80);
+  const [minMatchRate] = useState(80);
   const [userBodyType, setUserBodyType] = useState<string>('미분석');
   const [userBodyTypeRaw, setUserBodyTypeRaw] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);

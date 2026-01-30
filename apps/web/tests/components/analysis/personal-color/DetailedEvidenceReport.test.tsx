@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
 import type { AnalysisEvidence, ImageQuality } from '@/components/analysis/AnalysisEvidenceReport';
-import type { ColorInfo, SeasonType } from '@/lib/mock/personal-color';
+import type { ColorInfo } from '@/lib/mock/personal-color';
 
 // 테스트용 Mock 데이터
 const mockEvidence: AnalysisEvidence = {

@@ -9,6 +9,46 @@
   --font-sans: var(--font-inter), var(--font-noto-sans-kr), sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
+  /* ========================================
+     타이포그래피 시스템 (2026-01-19)
+     Apple HIG + Material Design 3 참조
+     ======================================== */
+
+  /* 폰트 크기 스케일 (Major Third 1.25 비율) */
+  --text-xs: 0.75rem;      /* 12px - 캡션, 라벨 */
+  --text-sm: 0.875rem;     /* 14px - 보조 텍스트 */
+  --text-base: 1rem;       /* 16px - 본문 기본 */
+  --text-lg: 1.125rem;     /* 18px - 강조 본문 */
+  --text-xl: 1.25rem;      /* 20px - 소제목 */
+  --text-2xl: 1.5rem;      /* 24px - 섹션 제목 */
+  --text-3xl: 1.875rem;    /* 30px - 페이지 제목 */
+  --text-4xl: 2.25rem;     /* 36px - 히어로 제목 */
+  --text-5xl: 3rem;        /* 48px - 대형 디스플레이 */
+
+  /* 줄 높이 (가독성 최적화) */
+  --leading-none: 1;
+  --leading-tight: 1.25;   /* 제목용 */
+  --leading-snug: 1.375;   /* 짧은 문단 */
+  --leading-normal: 1.5;   /* 본문 기본 */
+  --leading-relaxed: 1.625; /* 긴 문단 */
+  --leading-loose: 2;      /* 넓은 간격 */
+
+  /* 글자 간격 */
+  --tracking-tighter: -0.05em;  /* 대형 제목 */
+  --tracking-tight: -0.025em;   /* 제목 */
+  --tracking-normal: 0;         /* 본문 */
+  --tracking-wide: 0.025em;     /* 강조 */
+  --tracking-wider: 0.05em;     /* 캡션 */
+
+  /* 폰트 무게 */
+  --font-thin: 100;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
   /* 모듈별 색상 (Tailwind에서 bg-module-workout 등으로 사용) */
   --color-module-workout: var(--module-workout);
   --color-module-workout-light: var(--module-workout-light);
@@ -93,28 +133,28 @@
   --radius: 0.625rem;
 
   /* ========================================
-     모듈별 액센트 색상 (2026-01-12 Refined Expertise v2)
-     채도 20% 감소로 뮤트 톤 통일
+     모듈별 액센트 색상 (2026-01-24 YIROOM IDENTITY v3)
+     ADR-057 design-tokens.json 참조
      ======================================== */
-  --module-workout: oklch(0.82 0.12 45);      /* Orange - 운동 모듈 (뮤트) */
-  --module-workout-light: oklch(0.95 0.06 45);
-  --module-workout-dark: oklch(0.62 0.14 45);
+  --module-workout: #4ADE80;                  /* Green - 운동 모듈 (웰니스) */
+  --module-workout-light: #86EFAC;
+  --module-workout-dark: #22C55E;
 
-  --module-nutrition: oklch(0.72 0.12 150);   /* Green - 영양 모듈 (뮤트) */
-  --module-nutrition-light: oklch(0.92 0.06 150);
-  --module-nutrition-dark: oklch(0.52 0.14 150);
+  --module-nutrition: #4ADE80;                /* Green - 영양 모듈 (웰니스) */
+  --module-nutrition-light: #86EFAC;
+  --module-nutrition-dark: #22C55E;
 
-  --module-skin: oklch(0.78 0.10 350);        /* Pink - 피부 분석 (뮤트) */
-  --module-skin-light: oklch(0.95 0.05 350);
-  --module-skin-dark: oklch(0.58 0.12 350);
+  --module-skin: #60A5FA;                     /* Blue - 피부 분석 (S-1) */
+  --module-skin-light: #93C5FD;
+  --module-skin-dark: #3B82F6;
 
-  --module-body: oklch(0.72 0.12 250);        /* Blue - 체형 분석 (뮤트) */
-  --module-body-light: oklch(0.92 0.06 250);
-  --module-body-dark: oklch(0.52 0.14 250);
+  --module-body: #A78BFA;                     /* Purple - 체형 분석 (C-1) */
+  --module-body-light: #C4B5FD;
+  --module-body-dark: #8B5CF6;
 
-  --module-personal-color: oklch(0.68 0.14 300); /* Purple - 퍼스널컬러 (뮤트) */
-  --module-personal-color-light: oklch(0.90 0.08 300);
-  --module-personal-color-dark: oklch(0.48 0.16 300);
+  --module-personal-color: #F472B6;           /* Pink - 퍼스널컬러 (PC-1) */
+  --module-personal-color-light: #F9A8D4;
+  --module-personal-color-dark: #EC4899;
 
   /* F-1 얼굴형 분석 모듈 (2026-01-13) */
   --module-face: oklch(0.75 0.16 30);            /* Coral - 얼굴형 분석 */
@@ -150,10 +190,11 @@
   --skin-tone-10: #292420;  /* 가장 어두움 */
 
   /* ========================================
-     그라디언트 표준화 (2026-01-12 로고 민트 기반 155°)
+     그라디언트 표준화 (2026-01-24 YIROOM IDENTITY v3 핑크 기반)
+     ADR-057: 핑크 그라디언트 (#F8C8DC → #FFB6C1)
      ======================================== */
-  --gradient-primary: linear-gradient(135deg, oklch(0.50 0.12 155), oklch(0.40 0.14 155));
-  --gradient-brand: linear-gradient(135deg, oklch(0.50 0.12 155), oklch(0.38 0.14 160));
+  --gradient-primary: linear-gradient(135deg, #F8C8DC 0%, #FFB6C1 100%);
+  --gradient-brand: linear-gradient(135deg, #F8C8DC 0%, #FFB6C1 100%);
   --gradient-workout: linear-gradient(135deg, var(--module-workout), var(--module-workout-dark));
   --gradient-nutrition: linear-gradient(135deg, var(--module-nutrition), var(--module-nutrition-dark));
   --gradient-skin: linear-gradient(135deg, var(--module-skin), var(--module-skin-dark));
@@ -168,6 +209,30 @@
   --status-warning: oklch(0.80 0.16 85);
   --status-error: oklch(0.65 0.22 25);
   --status-info: oklch(0.70 0.15 230);
+
+  /* ========================================
+     어필리에이트 파트너 브랜드 색상
+     하드코딩 방지용 CSS 변수 (2026-01-15)
+     ======================================== */
+  --affiliate-coupang: #e01d2c;
+  --affiliate-coupang-hover: #c41926;
+  --affiliate-musinsa: #ff4081;
+  --affiliate-musinsa-hover: #e91e63;
+  --affiliate-oliveyoung: #9bce26;
+  --affiliate-oliveyoung-hover: #8ab820;
+  --affiliate-iherb: #2e7d32;
+  --affiliate-iherb-hover: #1b5e20;
+
+  /* 소셜 미디어 브랜드 색상 */
+  --social-kakao: #FEE500;
+  --social-kakao-hover: #FDD835;
+  --social-kakao-text: #191919;
+
+  /* 자세 분석 상태 색상 (PostureSimulator) */
+  --posture-good: #22c55e;
+  --posture-bad: #ef4444;
+  --posture-neutral: #3b82f6;
+  --posture-warning: #f59e0b;
 
   /* ========================================
      Apple 스타일 여백 시스템 (8px 기반)
@@ -198,16 +263,17 @@
   --button-padding-md: 0.75rem 1.5rem;   /* 12px 24px */
   --button-padding-lg: 1rem 2rem;        /* 16px 32px */
 
-  /* Refined Expertise v2 디자인 토큰 (2026-01-12)
-     웜톤 배경 + 로고 민트(155°) 프라이머리로 브랜드 일관성 강화 */
+  /* YIROOM IDENTITY v3 디자인 토큰 (2026-01-24)
+     ADR-057: 핑크 기반 프리미엄 뷰티 앱 테마
+     프라이머리: #F8C8DC (핑크), 배경: 웜톤 유지 */
   --background: oklch(0.99 0.005 90);         /* 웜 화이트 #FDFCFB */
   --foreground: oklch(0.12 0.02 270);         /* 소프트 블랙 #1C1C1E */
   --card: oklch(1.0 0 0);                     /* 순백 카드 #FFFFFF */
   --card-foreground: oklch(0.12 0.02 270);    /* 소프트 블랙 */
   --popover: oklch(1.0 0 0);                  /* 순백 */
   --popover-foreground: oklch(0.12 0.02 270); /* 소프트 블랙 */
-  --primary: oklch(0.45 0.12 155);            /* 로고 민트 어두운 버전 - 브랜드 일관성 */
-  --primary-foreground: oklch(0.99 0.005 90); /* 웜 화이트 */
+  --primary: #F8C8DC;                         /* YIROOM 핑크 - 브랜드 프라이머리 */
+  --primary-foreground: #0A0A0A;              /* 다크 텍스트 (핑크 배경 위) */
   --secondary: oklch(0.96 0.01 90);           /* 웜 그레이 #F5F4F2 */
   --secondary-foreground: oklch(0.12 0.02 270);/* 소프트 블랙 */
   --muted: oklch(0.96 0.01 90);               /* 웜 그레이 */
@@ -217,77 +283,79 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.92 0.01 90);              /* 웜톤 보더 #E8E7E5 */
   --input: oklch(0.92 0.01 90);               /* 웜톤 인풋 */
-  --ring: oklch(0.45 0.12 155);               /* 로고 민트 포커스 링 */
-  --chart-1: oklch(0.45 0.12 155);            /* 로고 민트 - 차트 프라이머리 */
-  --chart-2: oklch(0.6 0.10 160);             /* 민트 계열 차트 2 */
+  --ring: #F8C8DC;                            /* YIROOM 핑크 포커스 링 */
+  --chart-1: #F8C8DC;                         /* YIROOM 핑크 - 차트 프라이머리 */
+  --chart-2: #FFB6C1;                         /* 핑크 계열 차트 2 */
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.99 0.005 90);            /* 웜 화이트 */
   --sidebar-foreground: oklch(0.12 0.02 270); /* 소프트 블랙 */
-  --sidebar-primary: oklch(0.45 0.12 155);    /* 로고 민트 */
-  --sidebar-primary-foreground: oklch(0.99 0.005 90);
+  --sidebar-primary: #F8C8DC;                 /* YIROOM 핑크 */
+  --sidebar-primary-foreground: #0A0A0A;
   --sidebar-accent: oklch(0.96 0.01 90);      /* 웜 그레이 */
   --sidebar-accent-foreground: oklch(0.12 0.02 270);
   --sidebar-border: oklch(0.92 0.01 90);      /* 웜톤 보더 */
-  --sidebar-ring: oklch(0.45 0.12 155);       /* 로고 민트 */
+  --sidebar-ring: #F8C8DC;                    /* YIROOM 핑크 */
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.55 0.12 155);            /* 로고 민트 (다크모드 - 약간 밝게) */
-  --primary-foreground: oklch(0.98 0.005 90); /* 흰색 텍스트 유지 */
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.55 0.12 155);               /* 로고 민트 (포커스 링) */
-  --chart-1: oklch(0.55 0.12 155);            /* 로고 민트 */
-  --chart-2: oklch(0.65 0.10 160);            /* 민트 계열 */
+  /* YIROOM IDENTITY v3 다크 모드 (2026-01-24)
+     ADR-057: 핑크 기반 프리미엄 뷰티 앱 다크 테마 */
+  --background: #0F0F0F;                      /* Deep Black - 프라이머리 배경 */
+  --foreground: #FFFFFF;                      /* 순백 텍스트 */
+  --card: #1A1A1A;                            /* 카드 배경 */
+  --card-foreground: #FFFFFF;
+  --popover: #1A1A1A;                         /* 팝오버 배경 */
+  --popover-foreground: #FFFFFF;
+  --primary: #F8C8DC;                         /* YIROOM 핑크 - 브랜드 프라이머리 */
+  --primary-foreground: #0A0A0A;              /* 다크 텍스트 (핑크 배경 위) */
+  --secondary: #242424;                       /* Elevated 배경 */
+  --secondary-foreground: #FFFFFF;
+  --muted: #242424;
+  --muted-foreground: #9CA3AF;                /* 보조 텍스트 */
+  --accent: #242424;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF4444;                     /* 에러 색상 */
+  --border: #2A2A2A;                          /* 보더 색상 */
+  --input: #2A2A2A;                           /* 인풋 배경 */
+  --ring: #F8C8DC;                            /* YIROOM 핑크 (포커스 링) */
+  --chart-1: #F8C8DC;                         /* YIROOM 핑크 */
+  --chart-2: #FFB6C1;                         /* 핑크 계열 */
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.55 0.12 155);    /* 로고 민트 */
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.55 0.12 155);       /* 로고 민트 */
+  --sidebar: #1A1A1A;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #F8C8DC;                 /* YIROOM 핑크 */
+  --sidebar-primary-foreground: #0A0A0A;
+  --sidebar-accent: #242424;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #2A2A2A;
+  --sidebar-ring: #F8C8DC;                    /* YIROOM 핑크 */
 
   /* ========================================
-     모듈별 색상 (다크모드)
+     모듈별 색상 (다크모드) - YIROOM IDENTITY v3
      ======================================== */
-  --module-workout: oklch(0.75 0.12 45);
-  --module-workout-light: oklch(0.25 0.05 45);
-  --module-workout-dark: oklch(0.85 0.15 45);
+  --module-workout: #4ADE80;                  /* Green - 운동 모듈 */
+  --module-workout-light: #14532D;            /* 다크 배경용 */
+  --module-workout-dark: #86EFAC;
 
-  --module-nutrition: oklch(0.65 0.12 150);
-  --module-nutrition-light: oklch(0.20 0.05 150);
-  --module-nutrition-dark: oklch(0.75 0.15 150);
+  --module-nutrition: #4ADE80;                /* Green - 영양 모듈 */
+  --module-nutrition-light: #14532D;
+  --module-nutrition-dark: #86EFAC;
 
-  --module-skin: oklch(0.70 0.10 350);
-  --module-skin-light: oklch(0.25 0.04 350);
-  --module-skin-dark: oklch(0.80 0.12 350);
+  --module-skin: #60A5FA;                     /* Blue - 피부 분석 */
+  --module-skin-light: #1E3A5F;
+  --module-skin-dark: #93C5FD;
 
-  --module-body: oklch(0.65 0.12 250);
-  --module-body-light: oklch(0.20 0.05 250);
-  --module-body-dark: oklch(0.75 0.15 250);
+  --module-body: #A78BFA;                     /* Purple - 체형 분석 */
+  --module-body-light: #2E1065;
+  --module-body-dark: #C4B5FD;
 
-  --module-personal-color: oklch(0.60 0.15 300);
-  --module-personal-color-light: oklch(0.20 0.08 300);
-  --module-personal-color-dark: oklch(0.70 0.18 300);
+  --module-personal-color: #F472B6;           /* Pink - 퍼스널컬러 */
+  --module-personal-color-light: #500724;
+  --module-personal-color-dark: #F9A8D4;
 
   /* F-1 얼굴형 분석 (다크모드) */
   --module-face: oklch(0.65 0.14 30);
@@ -498,6 +566,10 @@
 
 .bg-gradient-face {
   background: var(--gradient-face);
+}
+
+.bg-gradient-hair {
+  background: var(--gradient-hair);
 }
 
 .bg-gradient-professional {

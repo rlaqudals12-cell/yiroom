@@ -21,7 +21,6 @@ function createMockSupabase(options: {
   const mockSelect = vi.fn();
   const mockEq = vi.fn();
   const mockUpdate = vi.fn();
-  const mockSingle = vi.fn();
 
   // 체이닝 설정
   mockFrom.mockReturnValue({

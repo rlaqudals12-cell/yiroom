@@ -14,6 +14,17 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+// 이미지 로드 시뮬레이션 헬퍼
+// JSDOM에서는 이미지가 실제로 로드되지 않으므로 load 이벤트를 수동으로 발생시킴
+async function simulateImageLoad() {
+  const img = document.querySelector('img[alt="피부 분석 이미지"]');
+  if (img) {
+    fireEvent.load(img);
+    // React 상태 업데이트 대기
+    await waitFor(() => {});
+  }
+}
+
 // Mock Next.js Image - auto trigger onLoad
 vi.mock('next/image', () => ({
   default: ({
@@ -115,6 +126,9 @@ describe('SkinImageViewer', () => {
       />
     );
 
+    // 이미지 로드 시뮬레이션
+    await simulateImageLoad();
+
     await waitFor(() => {
       expect(screen.getByTestId('problem-marker-test-area-1')).toBeInTheDocument();
       expect(screen.getByTestId('problem-marker-test-area-2')).toBeInTheDocument();
@@ -130,6 +144,9 @@ describe('SkinImageViewer', () => {
         onAreaClick={onAreaClick}
       />
     );
+
+    // 이미지 로드 시뮬레이션
+    await simulateImageLoad();
 
     await waitFor(() => {
       expect(screen.getByTestId('problem-marker-test-area-1')).toBeInTheDocument();
@@ -149,6 +166,9 @@ describe('SkinImageViewer', () => {
         selectedAreaId={null}
       />
     );
+
+    // 이미지 로드 시뮬레이션
+    await simulateImageLoad();
 
     await waitFor(() => {
       expect(screen.getByText('마커를 탭하여 상세 정보 확인')).toBeInTheDocument();
@@ -236,7 +256,9 @@ describe('SkinZoomViewer', () => {
   it('opens solution panel when marker is clicked', async () => {
     render(<SkinZoomViewer imageUrl="/test-image.jpg" problemAreas={mockProblemAreas} />);
 
-    // 이미지 로드 대기
+    // 이미지 로드 시뮬레이션
+    await simulateImageLoad();
+
     await waitFor(() => {
       expect(screen.getByTestId('problem-marker-test-area-1')).toBeInTheDocument();
     });
@@ -253,7 +275,9 @@ describe('SkinZoomViewer', () => {
   it('navigates to products page when ingredient is clicked', async () => {
     render(<SkinZoomViewer imageUrl="/test-image.jpg" problemAreas={mockProblemAreas} />);
 
-    // 이미지 로드 대기
+    // 이미지 로드 시뮬레이션
+    await simulateImageLoad();
+
     await waitFor(() => {
       expect(screen.getByTestId('problem-marker-test-area-1')).toBeInTheDocument();
     });

@@ -94,7 +94,7 @@ describe('updateLeaderboardCache', () => {
     mockLimit.mockResolvedValue({ data: null, error: { message: 'Query Error' } });
 
     const supabase = createMockSupabase();
-    const result = await updateLeaderboardCache(supabase as any, 'weekly', 'xp');
+    await updateLeaderboardCache(supabase as any, 'weekly', 'xp');
 
     // 빈 배열로도 캐시 업데이트는 진행됨
     expect(mockUpsert).toHaveBeenCalled();

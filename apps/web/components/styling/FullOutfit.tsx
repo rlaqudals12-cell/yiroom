@@ -213,8 +213,7 @@ export default function FullOutfit({
 }: FullOutfitProps) {
   const [currentOccasion, setCurrentOccasion] = useState<OutfitOccasion>('daily');
   const presets = getOutfitPresets(seasonType);
-  // 현재 occasion에 맞는 preset (향후 사용 예정)
-  const _currentPreset = getOutfitPresetByOccasion(seasonType, currentOccasion);
+  // currentPreset은 향후 occasion별 세부 추천에 사용 예정: getOutfitPresetByOccasion(seasonType, currentOccasion)
 
   if (!presets || presets.length === 0) {
     return null;

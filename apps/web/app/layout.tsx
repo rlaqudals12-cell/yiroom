@@ -15,6 +15,7 @@ import { SyncUserProvider } from '@/components/providers/sync-user-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { GamificationProvider } from '@/components/gamification';
 import { I18nProvider } from '@/components/providers/i18n-provider';
+import { WebVitalsProvider } from '@/components/providers/web-vitals-provider';
 import './globals.css';
 
 // Clerk 로컬라이제이션 맵
@@ -174,6 +175,7 @@ export default async function RootLayout({
             </I18nProvider>
             <Analytics />
             <SpeedInsights />
+            <WebVitalsProvider />
           </ThemeProvider>
         </body>
       </html>

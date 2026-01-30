@@ -82,6 +82,10 @@ export {
   durationTrackers,
 } from './duration';
 
+// Web Vitals (Core Web Vitals 추적)
+export { initWebVitals } from './web-vitals';
+export type { Metric as WebVitalsMetric } from './web-vitals';
+
 // Types re-export
 export type {
   AnalyticsEventType,

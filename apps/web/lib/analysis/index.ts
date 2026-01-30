@@ -44,3 +44,9 @@ export * from './skin-correlation';
 
 // Before/After 비교 서비스 (Phase I)
 export * from './historyService';
+
+// ITA 기반 피부톤 분석 및 T-zone/U-zone 분석 (S-1/S-2)
+export * from './skin';
+
+// PC-2: 12-Tone 퍼스널컬러 분류 시스템
+export * from "./personal-color";

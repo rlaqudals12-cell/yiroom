@@ -51,7 +51,6 @@ function HairProductRecommendations({
   );
 
   // 페이지네이션 (20개씩)
-  const displayProducts = products.slice(0, 20);
   const hasMore = products.length > 20;
 
   return (

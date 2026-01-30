@@ -9,7 +9,6 @@ import {
   recommendMultiMasking,
   MASK_TYPES,
 } from '@/lib/skincare/mask-recommendation';
-import type { SkinTypeId, SkinConcernId } from '@/lib/mock/skin-analysis';
 
 describe('mask-recommendation', () => {
   describe('recommendMasks', () => {

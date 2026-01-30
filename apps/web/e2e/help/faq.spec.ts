@@ -71,7 +71,6 @@ test.describe('FAQ - 아코디언', () => {
       const hasTrigger = await trigger.isVisible().catch(() => false);
 
       if (hasTrigger) {
-        const beforeExpanded = await trigger.getAttribute('aria-expanded');
         await trigger.click();
         await page.waitForTimeout(300);
 

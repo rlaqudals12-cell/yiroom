@@ -6,7 +6,7 @@ import { Home, RefreshCcw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import * as Sentry from '@sentry/nextjs';
 
-export default function Error({
+export default function ErrorPage({
   error,
   reset,
 }: {

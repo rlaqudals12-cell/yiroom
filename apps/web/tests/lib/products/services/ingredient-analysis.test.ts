@@ -7,7 +7,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   generateMockIngredientSummary,
   analyzeIngredientsWithAI,
-  type AIIngredientSummary,
 } from '@/lib/products/services/ingredient-analysis';
 import type { CosmeticIngredient } from '@/types/ingredient';
 

@@ -3,7 +3,7 @@
  * @description 사용자 프로필 기반 제품 매칭 훅
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import type { CosmeticProduct } from '@/types/product';
 
 // Clerk useUser 모킹

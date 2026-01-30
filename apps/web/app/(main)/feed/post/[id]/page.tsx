@@ -54,7 +54,7 @@ export default function PostDetailPage() {
   const router = useRouter();
   const params = useParams();
   const postId = params.id as string;
-  const { userId: _userId } = useAuth();
+  useAuth();
 
   const [post, setPost] = useState<FeedPostWithAuthor | null>(null);
   const [comments, setComments] = useState<FeedCommentWithAuthor[]>([]);

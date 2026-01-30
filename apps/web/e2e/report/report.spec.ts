@@ -328,8 +328,8 @@ test.describe('월간 리포트 조회', () => {
     const reportPage = page.locator('[data-testid="monthly-report-page"]');
     const emptyState = page.locator('text=/기록이 없|데이터가 없/');
 
-    const hasReport = await reportPage.isVisible({ timeout: 5000 }).catch(() => false);
-    const hasEmpty = await emptyState.isVisible({ timeout: 3000 }).catch(() => false);
+    await reportPage.isVisible({ timeout: 5000 }).catch(() => false);
+    await emptyState.isVisible({ timeout: 3000 }).catch(() => false);
 
     // 로딩이 끝난 후 무언가는 표시되어야 함
     const url = page.url();

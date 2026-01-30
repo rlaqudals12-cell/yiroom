@@ -3,7 +3,7 @@
  * @description 현실적 After 시뮬레이션 모듈 테스트
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   SIMULATION_PRESETS,
   DEFAULT_CONFIG,

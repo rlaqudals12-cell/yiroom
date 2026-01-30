@@ -14,7 +14,6 @@ import {
   updatePreference,
   removePreference,
   preferenceExists,
-  upsertPreferences,
 } from '@/lib/preferences/repository';
 import type { UserPreferenceRow } from '@/types/preferences';
 

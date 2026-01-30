@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import DiaryEntryForm from '@/components/skin/diary/DiaryEntryForm';
-import type { SkinDiaryEntry, SkinDiaryEntryInput } from '@/types/skin-diary';
+import type { SkinDiaryEntry } from '@/types/skin-diary';
 
 describe('DiaryEntryForm', () => {
   const mockDate = new Date('2026-01-10');

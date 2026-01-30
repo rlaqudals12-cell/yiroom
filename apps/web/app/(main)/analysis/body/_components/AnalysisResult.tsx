@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import {
   type BodyAnalysisResult,
   type BodyType3,
-  BODY_TYPES,
+
   BODY_TYPES_3,
   getBodyTypeColor,
   getBodyTypeBgColor,
@@ -82,9 +82,6 @@ export default function AnalysisResult({
     ? bodyType
     : mapBodyTypeTo3Type(bodyType as import('@/lib/mock/body-analysis').BodyType);
   const typeInfo3 = BODY_TYPES_3[type3];
-  const _typeInfoLegacy = !is3Type
-    ? BODY_TYPES[bodyType as import('@/lib/mock/body-analysis').BodyType]
-    : null;
 
   // 색상 헬퍼
   const getColor = () =>
@@ -100,9 +97,6 @@ export default function AnalysisResult({
   const keywords = (result as { keywords?: string[] }).keywords || typeInfo3.keywords;
   // 피해야 할 스타일
   const avoidStyles = (result as { avoidStyles?: string[] }).avoidStyles || typeInfo3.avoidStyles;
-  // 특징
-  const _characteristics =
-    (result as { characteristics?: string }).characteristics || typeInfo3.characteristics;
 
   // 체형 + 퍼스널 컬러 조합 코디 예시
   const outfitExamples = getOutfitExamples(type3, personalColorSeason || null);

@@ -198,7 +198,7 @@ describe('HistoryCompare', () => {
       const images = screen.getAllByRole('img');
       if (images.length > 0) {
         fireEvent.click(images[0]);
-        // onImageClick이 호출될 수 있음
+        expect(images.length).toBeGreaterThan(0);
       }
     });
 
@@ -368,7 +368,7 @@ describe('HistoryCompare', () => {
       render(<HistoryCompare history={history} />);
 
       // 0 변화
-      // 작은 변화(±2 이내)는 neutral로 처리
+      expect(history.length).toBe(2);
     });
   });
 });

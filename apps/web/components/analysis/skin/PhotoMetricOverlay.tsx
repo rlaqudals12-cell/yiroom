@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { ImageOff, User } from 'lucide-react';
+import { User } from 'lucide-react';
 
 /**
  * 피부 분석 지표 타입 (경쟁사 스타일)
@@ -144,13 +144,6 @@ export function PhotoMetricOverlay({
 }: PhotoMetricOverlayProps) {
   const [hoveredMetric, setHoveredMetric] = useState<SkinMetricType | null>(null);
   const [imageError, setImageError] = useState(false);
-
-  // 지표 맵 생성
-  const metricMap = useMemo(() => {
-    const map = new Map<SkinMetricType, number>();
-    metrics.forEach((m) => map.set(m.type, m.score));
-    return map;
-  }, [metrics]);
 
   // 현재 강조 중인 지표
   const activeMetric = hoveredMetric || selectedMetric;

@@ -1,11 +1,16 @@
 /**
  * 운동 전용 RAG 검색
  * @description Phase K - 사용자 운동 계획/기록 기반 맞춤 운동 추천을 위한 RAG 시스템
+ *
+ * 실제 운동 데이터베이스 (lib/workout/exercises.ts)와 연결됨.
+ * 총 60+ 운동 데이터 (upper-body, lower-core-cardio, pilates, yoga, stretching)
  */
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { coachLogger } from '@/lib/utils/logger';
 import type { UserContext } from './types';
+import { getAllExercises, getRecommendedExercises } from '@/lib/workout/exercises';
+import type { Exercise } from '@/types/workout';
 
 /** 운동 목표 */
 type WorkoutGoal = 'strength' | 'cardio' | 'flexibility' | 'weight_loss' | 'muscle_gain';
@@ -159,83 +164,89 @@ const INTENT_TIPS: Record<WorkoutIntent, string[]> = {
   general: ['규칙적인 운동 습관이 가장 중요해요', '무리하지 말고 꾸준히 하세요'],
 };
 
-/** Mock 운동 데이터 */
-const MOCK_EXERCISES: ExerciseRecommendation[] = [
-  {
-    id: '1',
-    name: '스쿼트',
-    category: 'strength',
-    targetMuscle: ['하체', '대퇴사두', '엉덩이'],
-    difficulty: 'beginner',
-    duration: 15,
-    calories: 120,
-    matchScore: 0,
-    matchReason: '',
-    equipment: ['바벨', '덤벨'],
-  },
-  {
-    id: '2',
-    name: '런닝',
-    category: 'cardio',
-    targetMuscle: ['전신', '심폐'],
-    difficulty: 'beginner',
-    duration: 30,
-    calories: 300,
-    matchScore: 0,
-    matchReason: '',
-    equipment: [],
-  },
-  {
-    id: '3',
-    name: '플랭크',
-    category: 'core',
-    targetMuscle: ['코어', '복근'],
-    difficulty: 'beginner',
-    duration: 5,
-    calories: 30,
-    matchScore: 0,
-    matchReason: '',
-    equipment: [],
-  },
-  {
-    id: '4',
-    name: '버피',
-    category: 'hiit',
-    targetMuscle: ['전신'],
-    difficulty: 'intermediate',
-    duration: 20,
-    calories: 250,
-    matchScore: 0,
-    matchReason: '',
-    equipment: [],
-  },
-  {
-    id: '5',
-    name: '요가 플로우',
-    category: 'flexibility',
-    targetMuscle: ['전신', '유연성'],
-    difficulty: 'beginner',
-    duration: 30,
-    calories: 100,
-    matchScore: 0,
-    matchReason: '',
-    equipment: ['요가매트'],
-  },
-  {
-    id: '6',
-    name: '덤벨 프레스',
-    category: 'strength',
-    targetMuscle: ['가슴', '어깨', '삼두'],
-    difficulty: 'intermediate',
-    duration: 15,
-    calories: 100,
-    matchScore: 0,
-    matchReason: '',
-    equipment: ['덤벨', '벤치'],
-  },
-];
+// ============================================
+// 운동 DB → RAG 변환 함수
+// ============================================
 
-/** 운동 필터링 */
+/**
+ * Exercise 카테고리 → RAG 카테고리 매핑
+ * DB: 'upper' | 'lower' | 'core' | 'cardio'
+ * RAG: 'strength' | 'cardio' | 'core' | 'hiit' | 'flexibility'
+ */
+function mapCategoryToRAG(category: string): string {
+  const mapping: Record<string, string> = {
+    upper: 'strength',
+    lower: 'strength',
+    core: 'core',
+    cardio: 'cardio',
+  };
+  return mapping[category] || 'general';
+}
+
+/**
+ * BodyPart → 한국어 부위명 매핑
+ */
+function mapBodyPartsToKorean(bodyParts: string[]): string[] {
+  const mapping: Record<string, string> = {
+    chest: '가슴',
+    back: '등',
+    shoulder: '어깨',
+    arm: '팔',
+    thigh: '허벅지',
+    calf: '종아리',
+    hip: '엉덩이',
+    abs: '복근',
+    waist: '허리',
+  };
+  return bodyParts.map((part) => mapping[part] || part);
+}
+
+/**
+ * Exercise → ExerciseRecommendation 변환
+ */
+function convertToRecommendation(exercise: Exercise): ExerciseRecommendation {
+  // 예상 운동 시간 (기본 15분, 카테고리별 조정)
+  const durationMap: Record<string, number> = {
+    upper: 15,
+    lower: 15,
+    core: 10,
+    cardio: 30,
+  };
+  const duration = durationMap[exercise.category] || 15;
+
+  // 칼로리 계산 (MET * 체중(60kg 기준) * 시간(분) / 60)
+  const calories = Math.round(exercise.met * 60 * (duration / 60));
+
+  return {
+    id: exercise.id,
+    name: exercise.name,
+    category: mapCategoryToRAG(exercise.category),
+    targetMuscle: mapBodyPartsToKorean(exercise.bodyParts),
+    difficulty: exercise.difficulty,
+    duration,
+    calories,
+    matchScore: 0, // 나중에 계산
+    matchReason: '',
+    equipment: exercise.equipment,
+  };
+}
+
+/**
+ * 운동 DB에서 RAG용 운동 목록 가져오기
+ */
+function getExercisesForRAG(): ExerciseRecommendation[] {
+  const exercises = getAllExercises();
+  return exercises.map(convertToRecommendation);
+}
+
+/**
+ * 운동 필터링 (목표/의도 기반)
+ *
+ * @param exercises - 전체 운동 목록
+ * @param goal - 사용자 운동 목표
+ * @param intent - 질문 의도
+ * @returns 필터링된 운동 목록
+ */
 function filterExercisesByGoal(
   exercises: ExerciseRecommendation[],
   goal: WorkoutGoal | null,
@@ -247,23 +258,43 @@ function filterExercisesByGoal(
     switch (goal) {
       case 'strength':
       case 'muscle_gain':
+        // 근력: strength, core 카테고리
         filtered = exercises.filter((e) => e.category === 'strength' || e.category === 'core');
         break;
       case 'cardio':
       case 'weight_loss':
-        filtered = exercises.filter(
-          (e) => e.category === 'cardio' || e.category === 'hiit' || e.calories > 200
-        );
+        // 유산소/다이어트: cardio, 또는 고칼로리 운동
+        filtered = exercises.filter((e) => e.category === 'cardio' || e.calories > 150);
         break;
       case 'flexibility':
-        filtered = exercises.filter((e) => e.category === 'flexibility');
+        // 유연성: core (스트레칭류 포함) 또는 저강도 운동
+        filtered = exercises.filter(
+          (e) => e.category === 'core' || e.difficulty === 'beginner'
+        );
         break;
     }
   }
 
   // 의도에 따른 추가 필터링
-  if (intent === 'home') {
-    filtered = filtered.filter((e) => !e.equipment || e.equipment.length === 0);
+  switch (intent) {
+    case 'home':
+      // 홈트: 장비 없는 운동만
+      filtered = filtered.filter((e) => !e.equipment || e.equipment.length === 0);
+      break;
+    case 'stretch':
+      // 스트레칭: 저강도, 코어 카테고리
+      filtered = filtered.filter(
+        (e) => e.difficulty === 'beginner' || e.category === 'core'
+      );
+      break;
+    case 'muscle':
+      // 근육: 근력 운동
+      filtered = filtered.filter((e) => e.category === 'strength');
+      break;
+    case 'cardio':
+      // 유산소: cardio 카테고리
+      filtered = filtered.filter((e) => e.category === 'cardio');
+      break;
   }
 
   return filtered.length > 0 ? filtered : exercises;
@@ -292,8 +323,7 @@ export async function searchWorkoutItems(
       const supabase = createClerkSupabaseClient();
 
       // 오늘의 운동 계획 조회
-      // today는 향후 날짜별 필터링에 사용 예정
-      const _today = new Date().toISOString().split('T')[0];
+      // today는 향후 날짜별 필터링에 사용 예정: new Date().toISOString().split('T')[0]
       const { data: workoutPlan, error: planError } = await supabase
         .from('workout_plans')
         .select('id, exercises, frequency')
@@ -350,8 +380,9 @@ export async function searchWorkoutItems(
       }
     }
 
-    // 추천 운동 생성
-    const filtered = filterExercisesByGoal(MOCK_EXERCISES, goal, intent);
+    // 추천 운동 생성 (실제 운동 DB에서 가져오기)
+    const allExercisesForRAG = getExercisesForRAG();
+    const filtered = filterExercisesByGoal(allExercisesForRAG, goal, intent);
 
     result.recommendations = filtered
       .map((exercise) => {

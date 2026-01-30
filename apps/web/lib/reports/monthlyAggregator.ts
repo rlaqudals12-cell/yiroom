@@ -338,13 +338,13 @@ export function generateMonthlyInsights(
     }
   }
 
-  // 체중 변화
-  if (bodyProgress.weightChange !== 0) {
-    if (goalProgress.goal === 'weight_loss' && bodyProgress.weightChange < 0) {
-      achievements.push(bodyProgress.message);
-    } else if (goalProgress.goal === 'muscle' && bodyProgress.weightChange > 0) {
-      achievements.push(bodyProgress.message);
-    }
+  // 체중 변화 (목표에 부합하는 변화인 경우)
+  const isWeightChangePositive =
+    (goalProgress.goal === 'weight_loss' && bodyProgress.weightChange < 0) ||
+    (goalProgress.goal === 'muscle' && bodyProgress.weightChange > 0);
+
+  if (bodyProgress.weightChange !== 0 && isWeightChangePositive) {
+    achievements.push(bodyProgress.message);
   }
 
   // 개선 필요 사항

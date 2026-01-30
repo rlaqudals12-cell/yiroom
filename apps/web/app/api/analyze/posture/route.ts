@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { applyRateLimit } from '@/lib/security/rate-limit';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzePosture, type GeminiPostureAnalysisResult } from '@/lib/gemini';
 import {
@@ -8,6 +9,13 @@ import {
   type PostureType,
 } from '@/lib/mock/posture-analysis';
 import { awardAnalysisBadge, addXp, type BadgeAwardResult } from '@/lib/gamification';
+import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
+import {
+  unauthorizedError,
+  badRequestError,
+  dbError,
+  internalError,
+} from '@/lib/api/error-response';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -34,20 +42,26 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *   usedMock: boolean
  * }
  */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // Clerk 인증 확인
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedError();
+    }
+
+    // Rate Limit 체크
+    const rateLimitResult = applyRateLimit(req, userId);
+    if (!rateLimitResult.success) {
+      return rateLimitResult.response!;
     }
 
     const body = await req.json();
     const { frontImageBase64, sideImageBase64, bodyType, useMock = false } = body;
 
     if (!frontImageBase64) {
-      return NextResponse.json({ error: 'Front image is required' }, { status: 400 });
+      return badRequestError('정면 이미지가 필요합니다.');
     }
 
     // 분석에 사용된 이미지 현황
@@ -125,26 +139,21 @@ export async function POST(req: Request) {
 
     const supabase = createServiceRoleClient();
 
-    // 이미지 업로드 (정면 이미지만 저장)
-    let frontImageUrl: string | null = null;
-    if (frontImageBase64) {
-      const fileName = `${userId}/posture/${Date.now()}_front.jpg`;
-      const base64Data = frontImageBase64.replace(/^data:image\/\w+;base64,/, '');
-      const buffer = Buffer.from(base64Data, 'base64');
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('posture-images')
-        .upload(fileName, buffer, {
-          contentType: 'image/jpeg',
-          upsert: false,
-        });
-
-      if (uploadError) {
-        console.error('[A-1] Image upload error:', uploadError);
-      } else {
-        frontImageUrl = uploadData.path;
+    // 이미지 저장 동의 확인 + 업로드 (PIPA 준수)
+    const { hasConsent, uploadedImages } = await checkConsentAndUploadImages(
+      supabase,
+      userId,
+      'posture',
+      'posture-images',
+      {
+        front: frontImageBase64,
+        side: sideImageBase64,
       }
-    }
+    );
+
+    // 정면 이미지 URL (하위 호환성)
+    const frontImageUrl = uploadedImages.front || null;
+    console.log(`[A-1] Image consent: ${hasConsent ? 'granted' : 'not granted'}, frontImage: ${frontImageUrl ? 'uploaded' : 'none'}`);
 
     // C-1 체형 정보 조회 (bodyType이 제공되지 않은 경우)
     let finalBodyType = bodyType;
@@ -190,10 +199,7 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error('[A-1] Database insert error:', error);
-      return NextResponse.json(
-        { error: 'Failed to save analysis', details: error.message },
-        { status: 500 }
-      );
+      return dbError('분석 결과 저장에 실패했습니다.', error.message);
     }
 
     // 게이미피케이션 연동
@@ -210,10 +216,10 @@ export async function POST(req: Request) {
       await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
       gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
 
-      // 자세 분석 완료 배지 (body 분석 배지로 대체 - 추후 posture 배지 추가 시 변경)
-      const bodyBadge = await awardAnalysisBadge(supabase, userId, 'body');
-      if (bodyBadge) {
-        gamificationResult.badgeResults.push(bodyBadge);
+      // 자세 분석 완료 배지
+      const postureBadge = await awardAnalysisBadge(supabase, userId, 'posture');
+      if (postureBadge) {
+        gamificationResult.badgeResults.push(postureBadge);
       }
     } catch (gamificationError) {
       console.error('[A-1] Gamification error:', gamificationError);
@@ -235,7 +241,10 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('[A-1] Posture analysis error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return internalError(
+      '자세 분석 중 오류가 발생했습니다.',
+      error instanceof Error ? error.message : undefined
+    );
   }
 }
 
@@ -249,7 +258,7 @@ export async function GET() {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedError();
     }
 
     const supabase = createServiceRoleClient();
@@ -263,7 +272,7 @@ export async function GET() {
 
     if (error) {
       console.error('[A-1] Database query error:', error);
-      return NextResponse.json({ error: 'Failed to fetch analyses' }, { status: 500 });
+      return dbError('분석 기록 조회에 실패했습니다.', error.message);
     }
 
     return NextResponse.json({
@@ -273,6 +282,9 @@ export async function GET() {
     });
   } catch (error) {
     console.error('[A-1] Get posture analyses error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return internalError(
+      '자세 분석 기록 조회 중 오류가 발생했습니다.',
+      error instanceof Error ? error.message : undefined
+    );
   }
 }

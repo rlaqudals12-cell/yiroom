@@ -90,12 +90,8 @@ export function TutorialStep({
           top = rect.top + rect.height / 2 - cardHeight / 2;
           left = rect.right + margin;
           break;
-        default:
-          top = rect.bottom + margin;
-          left = rect.left + rect.width / 2 - cardWidth / 2;
       }
 
-      // 화면 경계 보정
       top = Math.max(margin, Math.min(top, window.innerHeight - cardHeight - margin));
       left = Math.max(margin, Math.min(left, window.innerWidth - cardWidth - margin));
 
@@ -105,7 +101,6 @@ export function TutorialStep({
     calculatePosition();
     window.addEventListener('resize', calculatePosition);
     window.addEventListener('scroll', calculatePosition);
-
     return () => {
       window.removeEventListener('resize', calculatePosition);
       window.removeEventListener('scroll', calculatePosition);
@@ -120,7 +115,6 @@ export function TutorialStep({
         data-testid="tutorial-overlay"
         onClick={onSkip}
       />
-
       {/* 스포트라이트 (타겟 요소 하이라이트) */}
       {targetRect && (
         <div

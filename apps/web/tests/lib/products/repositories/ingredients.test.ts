@@ -7,7 +7,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   getIngredientById,
   searchIngredients,
-  getProductIngredients,
   getCaution20Ingredients,
   getAllergenIngredients,
   getIngredientsByCategory,

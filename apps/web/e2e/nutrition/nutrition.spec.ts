@@ -159,8 +159,6 @@ test.describe('음식 등록 플로우', () => {
     // 식사 타입 선택 버튼 확인
     const breakfastOption = page.locator('text=아침');
     const lunchOption = page.locator('text=점심');
-    const dinnerOption = page.locator('text=저녁');
-    const snackOption = page.locator('text=간식');
 
     // 최소 하나의 옵션이 표시되어야 함
     const hasBreakfast = await breakfastOption.isVisible({ timeout: 3000 }).catch(() => false);
@@ -262,10 +260,6 @@ test.describe('수분 섭취 기록', () => {
         const hasAddButton = await addWaterButton.isVisible({ timeout: 2000 }).catch(() => false);
 
         if (hasAddButton) {
-          // 현재 수분량 확인
-          const waterAmountText = page.locator('text=/\\d+.*ml/i').first();
-          const initialAmount = await waterAmountText.textContent().catch(() => '0');
-
           // 물 추가
           await addWaterButton.click();
           await page.waitForTimeout(1000); // API 응답 대기

@@ -397,7 +397,7 @@ function calculatePriceAccessibilityBonus(product: AnyProduct): { score: number;
       label = '합리적 가격';
       break;
     case 'premium':
-      bonus = 0;
+      // premium은 기본값(0) 사용
       break;
   }
 

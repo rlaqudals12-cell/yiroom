@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 // Mock dependencies
 vi.mock('@clerk/nextjs/server', () => ({
@@ -25,6 +25,20 @@ vi.mock('@/lib/mock/posture-analysis', () => ({
 vi.mock('@/lib/gamification', () => ({
   awardAnalysisBadge: vi.fn(),
   addXp: vi.fn(),
+}));
+
+// Rate Limit 모킹 - 항상 통과
+vi.mock('@/lib/security/rate-limit', () => ({
+  applyRateLimit: vi.fn().mockReturnValue({ success: true }),
+}));
+
+// 이미지 동의 확인 모킹 (복잡한 Supabase 체인 회피)
+vi.mock('@/lib/api/image-consent', () => ({
+  checkConsentAndUploadImages: vi.fn().mockResolvedValue({
+    hasConsent: false,
+    consentId: null,
+    uploadedImages: { front: null, side: null },
+  }),
 }));
 
 import { auth } from '@clerk/nextjs/server';
@@ -73,7 +87,7 @@ describe('POST /api/analyze/posture', () => {
     it('미인증 시 401 에러', async () => {
       vi.mocked(auth).mockResolvedValue({ userId: null } as any);
 
-      const req = new Request('http://localhost/api/analyze/posture', {
+      const req = new NextRequest('http://localhost/api/analyze/posture', {
         method: 'POST',
         body: JSON.stringify({ frontImageBase64: 'data:image/jpeg;base64,abc' }),
       });
@@ -82,7 +96,7 @@ describe('POST /api/analyze/posture', () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error).toBe('인증이 필요합니다.');
     });
 
     it('인증된 사용자 - 처리 진행', async () => {
@@ -116,7 +130,7 @@ describe('POST /api/analyze/posture', () => {
         analyzedAt: new Date(),
       } as any);
 
-      const req = new Request('http://localhost/api/analyze/posture', {
+      const req = new NextRequest('http://localhost/api/analyze/posture', {
         method: 'POST',
         body: JSON.stringify({ frontImageBase64: 'data:image/jpeg;base64,abc', useMock: true }),
       });
@@ -130,7 +144,7 @@ describe('POST /api/analyze/posture', () => {
     it('정면 이미지 없으면 400 에러', async () => {
       vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as any);
 
-      const req = new Request('http://localhost/api/analyze/posture', {
+      const req = new NextRequest('http://localhost/api/analyze/posture', {
         method: 'POST',
         body: JSON.stringify({}),
       });
@@ -139,7 +153,7 @@ describe('POST /api/analyze/posture', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe('Front image is required');
+      expect(data.error).toBe('정면 이미지가 필요합니다.');
     });
 
     it('정면 이미지만 있어도 정상 처리', async () => {
@@ -150,7 +164,7 @@ describe('POST /api/analyze/posture', () => {
         confidence: 90,
       } as any);
 
-      const req = new Request('http://localhost/api/analyze/posture', {
+      const req = new NextRequest('http://localhost/api/analyze/posture', {
         method: 'POST',
         body: JSON.stringify({ frontImageBase64: 'data:image/jpeg;base64,abc', useMock: true }),
       });
@@ -168,7 +182,7 @@ describe('POST /api/analyze/posture', () => {
         overallScore: 85,
       } as any);
 
-      const req = new Request('http://localhost/api/analyze/posture', {
+      const req = new NextRequest('http://localhost/api/analyze/posture', {
         method: 'POST',
         body: JSON.stringify({
           frontImageBase64: 'data:image/jpeg;base64,abc',
@@ -193,7 +207,7 @@ describe('POST /api/analyze/posture', () => {
         overallScore: 85,
       } as any);
 
-      const req = new Request('http://localhost/api/analyze/posture', {
+      const req = new NextRequest('http://localhost/api/analyze/posture', {
         method: 'POST',
         body: JSON.stringify({ frontImageBase64: 'data:image/jpeg;base64,abc' }),
       });
@@ -214,7 +228,7 @@ describe('POST /api/analyze/posture', () => {
         overallScore: 85,
       } as any);
 
-      const req = new Request('http://localhost/api/analyze/posture', {
+      const req = new NextRequest('http://localhost/api/analyze/posture', {
         method: 'POST',
         body: JSON.stringify({
           frontImageBase64: 'data:image/jpeg;base64,abc',
@@ -246,7 +260,7 @@ describe('POST /api/analyze/posture', () => {
           error: null,
         });
 
-      const req = new Request('http://localhost/api/analyze/posture', {
+      const req = new NextRequest('http://localhost/api/analyze/posture', {
         method: 'POST',
         body: JSON.stringify({
           frontImageBase64: 'data:image/jpeg;base64,abc',
@@ -271,7 +285,7 @@ describe('POST /api/analyze/posture', () => {
 
       vi.mocked(addXp).mockResolvedValue(null);
 
-      const req = new Request('http://localhost/api/analyze/posture', {
+      const req = new NextRequest('http://localhost/api/analyze/posture', {
         method: 'POST',
         body: JSON.stringify({
           frontImageBase64: 'data:image/jpeg;base64,abc',
@@ -293,7 +307,7 @@ describe('POST /api/analyze/posture', () => {
 
       vi.mocked(awardAnalysisBadge).mockResolvedValue(null);
 
-      const req = new Request('http://localhost/api/analyze/posture', {
+      const req = new NextRequest('http://localhost/api/analyze/posture', {
         method: 'POST',
         body: JSON.stringify({
           frontImageBase64: 'data:image/jpeg;base64,abc',
@@ -303,7 +317,7 @@ describe('POST /api/analyze/posture', () => {
 
       await POST(req);
 
-      expect(awardAnalysisBadge).toHaveBeenCalledWith(mockSupabase, 'user-1', 'body');
+      expect(awardAnalysisBadge).toHaveBeenCalledWith(mockSupabase, 'user-1', 'posture');
     });
   });
 });
@@ -335,7 +349,7 @@ describe('GET /api/analyze/posture', () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error).toBe('인증이 필요합니다.');
     });
   });
 

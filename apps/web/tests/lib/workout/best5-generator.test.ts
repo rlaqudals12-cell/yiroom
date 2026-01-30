@@ -62,10 +62,6 @@ describe('best5-generator', () => {
         postureType: 'rounded_shoulders',
       });
 
-      // 자세 타입에 따라 추천 운동이 달라야 함
-      const forwardHeadIds = forwardHead.exercises.map((e) => e.exercise.id);
-      const roundedShouldersIds = roundedShoulders.exercises.map((e) => e.exercise.id);
-
       // 각 자세 타입에 맞는 운동이 추천되어야 함
       // (운동 데이터가 없을 수 있으므로 최소한 시도는 했는지 확인)
       expect(forwardHead.exercises.length).toBeGreaterThan(0);

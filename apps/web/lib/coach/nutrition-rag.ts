@@ -1,6 +1,18 @@
 /**
  * 영양/레시피 전용 RAG 검색
+ *
  * @description Phase K - 냉장고 인벤토리 기반 레시피 추천을 위한 RAG 시스템
+ *
+ * ## 데이터 소스 현황
+ * - **user_inventory**: 실 데이터 연결 완료 (냉장고 재료 조회)
+ * - **recipes**: Mock 데이터 사용 (recipes 테이블 미생성 - 향후 확장 예정)
+ *
+ * ## 향후 확장
+ * 1. recipes 테이블 생성 시 MOCK_RECIPES → DB 조회로 전환
+ * 2. 사용자 선호 레시피 저장 기능 추가
+ * 3. 외부 레시피 API 연동 (만개의 레시피 등)
+ *
+ * @see docs/specs/SDD-N1-NUTRITION.md
  */
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
@@ -138,7 +150,16 @@ const INTENT_TIPS: Record<NutritionIntent, string[]> = {
   general: ['균형 잡힌 식단이 가장 중요해요', '규칙적인 식사 시간을 유지하세요'],
 };
 
-/** Mock 레시피 데이터 (실제로는 DB에서 조회) */
+/**
+ * Mock 레시피 데이터
+ *
+ * @description
+ * recipes 테이블이 아직 생성되지 않아 Mock 데이터 사용.
+ * 향후 recipes 테이블 생성 시 DB 조회로 전환 예정.
+ *
+ * @todo recipes 테이블 생성 후 DB 연동
+ * @see SDD-N1-NUTRITION.md "레시피 데이터베이스" 섹션
+ */
 const MOCK_RECIPES: RecipeRecommendation[] = [
   {
     id: '1',

@@ -282,7 +282,7 @@ export default function BeforeAfterSlider({
           draggable={false}
         />
         {showLabels && allLoaded && (
-          <div className={cn('absolute top-3', isHorizontal ? 'right-3' : 'right-3')}>
+          <div className={"absolute top-3 right-3"}>
             <span className="px-2 py-1 text-xs font-medium bg-primary text-primary-foreground rounded">
               {afterLabel}
             </span>

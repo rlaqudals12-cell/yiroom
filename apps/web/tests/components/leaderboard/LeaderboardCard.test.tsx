@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { LeaderboardCard, LeaderboardPodium } from '@/components/leaderboard/LeaderboardCard';
-import type { RankingEntry, LeaderboardCategory } from '@/types/leaderboard';
+import type { RankingEntry } from '@/types/leaderboard';
 
 const mockEntry: RankingEntry = {
   rank: 1,

@@ -1,6 +1,96 @@
+/**
+ * Next.js 16 Proxy (Middleware 대체)
+ *
+ * @description Clerk 인증 + Rate Limiting + 보안 헤더 미들웨어
+ * @see SDD-RATE-LIMITING.md
+ */
+
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import { checkRateLimit, getRateLimitHeaders, rateLimitConfigs } from '@/lib/security/rate-limit';
+import type { NextRequest } from 'next/server';
+import {
+  applyRateLimitMiddleware,
+  addRateLimitHeaders,
+  isRateLimitedPath,
+} from '@/lib/rate-limit';
+
+/**
+ * 보안 헤더 설정
+ *
+ * @description OWASP 권장 보안 헤더
+ * @see https://owasp.org/www-project-secure-headers/
+ */
+const SECURITY_HEADERS = {
+  // XSS 방지
+  'X-XSS-Protection': '1; mode=block',
+  // 클릭재킹 방지
+  'X-Frame-Options': 'DENY',
+  // MIME 스니핑 방지
+  'X-Content-Type-Options': 'nosniff',
+  // Referrer 정보 제한
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  // 권한 정책 (카메라, 마이크 등 제한)
+  'Permissions-Policy': 'camera=(self), microphone=(), geolocation=(self), interest-cohort=()',
+};
+
+/**
+ * CSP(Content Security Policy) 생성
+ *
+ * @description 환경별 CSP 설정
+ */
+function generateCSP(isDev: boolean): string {
+  const directives = [
+    // 기본 소스
+    "default-src 'self'",
+    // 스크립트 소스
+    isDev
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://clerk.yiroom.app"
+      : "script-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://clerk.yiroom.app",
+    // 스타일 소스 (inline style 허용 - Tailwind)
+    "style-src 'self' 'unsafe-inline'",
+    // 이미지 소스
+    "img-src 'self' data: blob: https://*.supabase.co https://*.clerk.accounts.dev https://img.clerk.com",
+    // 폰트 소스
+    "font-src 'self'",
+    // 연결 소스 (API, Supabase, Clerk)
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://api.clerk.dev https://*.google.com https://*.googleapis.com",
+    // 프레임 조상 (클릭재킹 방지)
+    "frame-ancestors 'none'",
+    // 폼 액션
+    "form-action 'self'",
+    // base-uri 제한
+    "base-uri 'self'",
+    // 객체 소스 금지
+    "object-src 'none'",
+    // 업그레이드 요청
+    !isDev ? "upgrade-insecure-requests" : null,
+  ];
+
+  return directives.filter(Boolean).join('; ');
+}
+
+/**
+ * 응답에 보안 헤더 추가
+ */
+function addSecurityHeaders(response: NextResponse): void {
+  const isDev = process.env.NODE_ENV === 'development';
+
+  // 정적 보안 헤더
+  Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+
+  // CSP 헤더 (개발/프로덕션 분리)
+  response.headers.set('Content-Security-Policy', generateCSP(isDev));
+
+  // HSTS (프로덕션만)
+  if (!isDev) {
+    response.headers.set(
+      'Strict-Transport-Security',
+      'max-age=63072000; includeSubDomains; preload'
+    );
+  }
+}
 
 // 인증 없이 접근 가능한 공개 라우트
 const isPublicRoute = createRouteMatcher([
@@ -19,21 +109,14 @@ const isPublicRoute = createRouteMatcher([
   '/help(.*)',
   '/offline',
   '/licenses(.*)',
+  // 연령 검증 관련 페이지 (로그인 후 접근 가능하지만 인증 보호 제외)
+  '/age-restricted',
+  '/complete-profile',
   // API 웹훅 (외부 서비스 콜백)
   '/api/webhooks(.*)',
   '/api/affiliate/(.*)',
-]);
-
-// API 라우트 매처
-const isApiRoute = createRouteMatcher(['/api(.*)']);
-
-// Rate Limiting이 적용되는 API 라우트
-const isRateLimitedRoute = createRouteMatcher([
-  '/api/analysis(.*)',
-  '/api/gemini(.*)',
-  '/api/feedback(.*)',
-  '/api/nutrition(.*)',
-  '/api/workout(.*)',
+  // Health check
+  '/api/health',
 ]);
 
 // Next.js 16: middleware → proxy 마이그레이션
@@ -44,48 +127,49 @@ export const proxy = clerkMiddleware(
   async (auth, req) => {
     const pathname = req.nextUrl.pathname;
 
-    // API 라우트에 Rate Limiting 적용
-    if (isApiRoute(req) && isRateLimitedRoute(req)) {
-      // IP 주소 가져오기 (Vercel/Cloudflare 헤더 우선)
-      const forwardedFor = req.headers.get('x-forwarded-for');
-      const realIp = req.headers.get('x-real-ip');
-      const ip = forwardedFor?.split(',')[0]?.trim() || realIp || 'unknown';
-
-      const { success, remaining, resetTime } = checkRateLimit(ip, pathname);
-
-      // Rate Limit 초과 시 429 응답
-      if (!success) {
-        const config = rateLimitConfigs[pathname] || rateLimitConfigs.default;
-        return new NextResponse(
-          JSON.stringify({
-            error: 'Too Many Requests',
-            message: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
-            retryAfter: Math.ceil((resetTime - Date.now()) / 1000),
-          }),
-          {
-            status: 429,
-            headers: {
-              'Content-Type': 'application/json',
-              ...getRateLimitHeaders(remaining, resetTime, config.maxRequests),
-              'Retry-After': Math.ceil((resetTime - Date.now()) / 1000).toString(),
-            },
-          }
-        );
+    // Rate Limiting 적용 (API 경로만)
+    if (isRateLimitedPath(pathname)) {
+      // 사용자 ID 가져오기 (로그인 시)
+      let userId: string | null = null;
+      try {
+        const session = await auth();
+        userId = session?.userId ?? null;
+      } catch {
+        // 인증되지 않은 요청 - IP 기반 Rate Limiting
       }
 
-      // Rate Limit 헤더 추가 (성공 시에도)
+      // Rate Limit 검사
+      const rateLimitResult = await applyRateLimitMiddleware(req, userId);
+
+      // Rate Limit 초과 시 429 응답 (보안 헤더 추가)
+      if (!rateLimitResult.allowed && rateLimitResult.response) {
+        addSecurityHeaders(rateLimitResult.response);
+        return rateLimitResult.response;
+      }
+
+      // Rate Limit 통과 시 헤더 추가
       const response = NextResponse.next();
-      const config = rateLimitConfigs[pathname] || rateLimitConfigs.default;
-      const headers = getRateLimitHeaders(remaining, resetTime, config.maxRequests);
-      Object.entries(headers).forEach(([key, value]) => {
-        response.headers.set(key, value);
-      });
+      addRateLimitHeaders(response, rateLimitResult.headers);
+      addSecurityHeaders(response);
+
+      // 공개 라우트가 아닌 경우 인증 보호
+      if (!isPublicRoute(req)) {
+        await auth.protect();
+      }
+
+      return response;
     }
 
+    // Rate Limiting 대상이 아닌 경우
     // 공개 라우트가 아닌 경우에만 인증 보호
     if (!isPublicRoute(req)) {
       await auth.protect();
     }
+
+    // 모든 응답에 보안 헤더 추가
+    const response = NextResponse.next();
+    addSecurityHeaders(response);
+    return response;
   },
   { debug: clerkDebug }
 );

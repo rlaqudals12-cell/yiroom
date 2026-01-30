@@ -3,7 +3,7 @@
  * @description 뷰티 제품 데이터 훅 - 인터페이스 및 반환값 검증
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 
 // Clerk useUser 모킹
 vi.mock('@clerk/nextjs', () => ({

@@ -1,8 +1,8 @@
 /**
  * PC-1 퍼스널 컬러 분석 API 테스트
  * @description POST/GET /api/analyze/personal-color 테스트
- * @version 1.0
- * @date 2025-12-09
+ * @version 2.0
+ * @date 2026-01-22
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -36,25 +36,37 @@ vi.mock('@/lib/gamification', () => ({
   addXp: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Rate Limit 모킹 - 항상 통과
+vi.mock('@/lib/security/rate-limit', () => ({
+  applyRateLimit: vi.fn().mockReturnValue({ success: true }),
+}));
+
 import { GET, POST } from '@/app/api/analyze/personal-color/route';
 import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzePersonalColor } from '@/lib/gemini';
 import { generateMockPersonalColorResult } from '@/lib/mock/personal-color';
+import { NextRequest } from 'next/server';
 
-// Mock 요청 헬퍼
-function createMockPostRequest(body: unknown): Request {
-  return {
-    url: 'http://localhost/api/analyze/personal-color',
-    json: () => Promise.resolve(body),
-  } as Request;
+// Mock 요청 헬퍼 (NextRequest 호환)
+function createMockPostRequest(body: unknown): NextRequest {
+  const url = 'http://localhost/api/analyze/personal-color';
+  const req = new NextRequest(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return req;
 }
 
-function createMockGetRequest(): Request {
-  return {
-    url: 'http://localhost/api/analyze/personal-color',
-    json: () => Promise.resolve({}),
-  } as Request;
+function createMockGetRequest(): NextRequest {
+  const url = 'http://localhost/api/analyze/personal-color';
+  const req = new NextRequest(url, {
+    method: 'GET',
+  });
+  return req;
 }
 
 // Mock 데이터
@@ -225,7 +237,7 @@ describe('POST /api/analyze/personal-color', () => {
       const json = await response.json();
 
       expect(response.status).toBe(401);
-      expect(json.error).toBe('Unauthorized');
+      expect(json.error).toBe('인증이 필요합니다.');
     });
   });
 
@@ -235,12 +247,12 @@ describe('POST /api/analyze/personal-color', () => {
       const json = await response.json();
 
       expect(response.status).toBe(400);
-      expect(json.error).toBe('Image is required');
+      expect(json.error).toBe('이미지가 필요합니다.');
     });
 
     it('imageBase64가 빈 문자열이면 400을 반환한다', async () => {
       const response = await POST(createMockPostRequest({ imageBase64: '' }));
-      const json = await response.json();
+      await response.json();
 
       expect(response.status).toBe(400);
     });
@@ -298,7 +310,7 @@ describe('POST /api/analyze/personal-color', () => {
       expect(json.usedMock).toBe(false);
     });
 
-    it('AI 분석 실패 시 Mock으로 폴백한다', async () => {
+    it('AI 분석 실패 시 503을 반환한다', async () => {
       vi.mocked(analyzePersonalColor).mockRejectedValue(new Error('API Error'));
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
@@ -309,9 +321,9 @@ describe('POST /api/analyze/personal-color', () => {
       );
       const json = await response.json();
 
-      expect(response.status).toBe(200);
-      expect(json.success).toBe(true);
-      expect(json.usedMock).toBe(true);
+      expect(response.status).toBe(503);
+      expect(json.error).toBe('AI 분석 실패');
+      expect(json.retryable).toBe(true);
     });
 
     it('veinColor가 blue인데 tone이 warm이면 cool로 수정한다', async () => {
@@ -439,23 +451,38 @@ describe('POST /api/analyze/personal-color', () => {
       const json = await response.json();
 
       expect(response.status).toBe(500);
-      expect(json.error).toBe('Failed to save analysis');
+      expect(json.error).toBe('Failed to save analysis');  // 이 에러는 API에서 직접 반환
     });
   });
 
   describe('이미지 업로드', () => {
-    it('이미지가 Storage에 업로드된다', async () => {
+    it('saveImage=true일 때 이미지가 Storage에 업로드된다', async () => {
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
       await POST(
         createMockPostRequest({
           imageBase64: 'data:image/jpeg;base64,/9j/test',
           useMock: true,
+          saveImage: true,
         })
       );
 
       expect(mockSupabase.storage.from).toHaveBeenCalledWith('personal-color-images');
       expect(mockStorageUpload).toHaveBeenCalled();
+    });
+
+    it('saveImage=false일 때 이미지가 업로드되지 않는다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+          saveImage: false,
+        })
+      );
+
+      expect(mockStorageUpload).not.toHaveBeenCalled();
     });
 
     it('이미지 업로드 실패해도 분석은 계속된다', async () => {
@@ -466,6 +493,7 @@ describe('POST /api/analyze/personal-color', () => {
         createMockPostRequest({
           imageBase64: 'data:image/jpeg;base64,/9j/test',
           useMock: true,
+          saveImage: true,
         })
       );
       const json = await response.json();
@@ -524,7 +552,7 @@ describe('GET /api/analyze/personal-color', () => {
       const json = await response.json();
 
       expect(response.status).toBe(401);
-      expect(json.error).toBe('Unauthorized');
+      expect(json.error).toBe('인증이 필요합니다.');
     });
   });
 
@@ -563,7 +591,7 @@ describe('GET /api/analyze/personal-color', () => {
       const json = await response.json();
 
       expect(response.status).toBe(500);
-      expect(json.error).toBe('Failed to fetch analysis');
+      expect(json.error).toBe('분석 결과를 불러오는데 실패했습니다.');
     });
   });
 });

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ProductQASection } from '@/components/products/ProductQASection';
-import type { CosmeticProduct, ProductType } from '@/types/product';
+import type { CosmeticProduct } from '@/types/product';
 
 // RAG 모킹
 vi.mock('@/lib/rag/product-qa', () => ({

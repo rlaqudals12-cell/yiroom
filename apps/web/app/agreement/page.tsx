@@ -12,6 +12,7 @@ import {
   AGREEMENT_ITEMS,
   type AgreementItem,
 } from '@/components/agreement';
+import { AITransparencyNotice } from '@/components/common/AIBadge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -21,6 +22,7 @@ type Gender = 'male' | 'female';
 /**
  * 서비스 약관동의 페이지
  * SDD-TERMS-AGREEMENT.md §6.1
+ * AI 기본법 제31조 준수: AI 기술 사용 고지
  */
 export default function AgreementPage() {
   const router = useRouter();
@@ -145,6 +147,9 @@ export default function AgreementPage() {
             <h1 className="text-2xl font-bold text-foreground">고객님 환영합니다!</h1>
             <p className="text-muted-foreground mt-2">맞춤 서비스를 위해 정보를 입력해주세요.</p>
           </div>
+
+          {/* AI 기술 사용 고지 (AI 기본법 제31조 준수) */}
+          <AITransparencyNotice className="mb-4" />
 
           {/* 성별 선택 */}
           <div className="bg-card rounded-xl border shadow-sm p-4 mb-4">

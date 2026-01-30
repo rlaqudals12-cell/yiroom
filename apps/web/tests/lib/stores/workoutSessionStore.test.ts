@@ -5,9 +5,9 @@
  * @date 2025-12-09
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useWorkoutSessionStore } from '@/lib/stores/workoutSessionStore';
-import type { DayPlan, Exercise, WorkoutType } from '@/types/workout';
+import type { DayPlan, Exercise } from '@/types/workout';
 
 // Mock 운동 데이터
 const mockExercises: Exercise[] = [

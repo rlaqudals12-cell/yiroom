@@ -12,6 +12,18 @@ import type { PersonalColorResult } from '@/lib/mock/personal-color';
 
 // lucide-react mock은 setup.ts에서 글로벌로 제공됨
 
+// useUserProfile mock - 성별에 따른 키워드 변환 테스트용
+vi.mock('@/hooks/useUserProfile', () => ({
+  useUserProfile: () => ({
+    profile: { gender: 'female', heightCm: null, weightKg: null, allergies: [] },
+    isLoading: false,
+    error: null,
+    updateGender: vi.fn().mockResolvedValue(true),
+    updateProfile: vi.fn().mockResolvedValue(true),
+    refetch: vi.fn(),
+  }),
+}));
+
 describe('AnalysisResult', () => {
   const mockResult: PersonalColorResult = {
     seasonType: 'spring',

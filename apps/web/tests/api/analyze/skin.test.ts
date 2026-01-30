@@ -22,6 +22,22 @@ vi.mock('@/lib/gemini', () => ({
 
 vi.mock('@/lib/mock/skin-analysis', () => ({
   generateMockAnalysisResult: vi.fn(),
+  FOUNDATION_FORMULAS: {
+    dry: { name: '수분 진정 파운데이션', matchPercentage: 85 },
+    oily: { name: '매트 세미 파운데이션', matchPercentage: 90 },
+    combination: { name: '밸런싱 파운데이션', matchPercentage: 88 },
+    normal: { name: '내추럴 파운데이션', matchPercentage: 92 },
+    sensitive: { name: '진정 파운데이션', matchPercentage: 80 },
+  },
+}));
+
+vi.mock('@/lib/mock/skin-problem-areas', () => ({
+  MOCK_PROBLEM_AREAS: [
+    { id: 'forehead', name: '이마', score: 70 },
+    { id: 'nose', name: '코', score: 65 },
+    { id: 'cheeks', name: '볼', score: 75 },
+    { id: 'chin', name: '턱', score: 72 },
+  ],
 }));
 
 vi.mock('@/lib/ingredients', () => ({
@@ -39,6 +55,11 @@ vi.mock('@/lib/gamification', () => ({
   addXp: vi.fn(),
 }));
 
+// Rate Limit 모킹 - 항상 통과
+vi.mock('@/lib/security/rate-limit', () => ({
+  applyRateLimit: vi.fn().mockReturnValue({ success: true }),
+}));
+
 import { GET, POST } from '@/app/api/analyze/skin/route';
 import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
@@ -46,13 +67,19 @@ import { analyzeSkin } from '@/lib/gemini';
 import { generateMockAnalysisResult } from '@/lib/mock/skin-analysis';
 import { getWarningIngredientsForSkinType } from '@/lib/ingredients';
 import { generateProductRecommendations, formatProductsForDB } from '@/lib/product-recommendations';
+import { NextRequest } from 'next/server';
 
-// Mock 요청 헬퍼
-function createMockPostRequest(body: unknown): Request {
-  return {
-    url: 'http://localhost/api/analyze/skin',
-    json: () => Promise.resolve(body),
-  } as Request;
+// Mock 요청 헬퍼 (NextRequest 호환)
+function createMockPostRequest(body: unknown): NextRequest {
+  const url = 'http://localhost/api/analyze/skin';
+  const req = new NextRequest(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return req;
 }
 
 // Mock 데이터

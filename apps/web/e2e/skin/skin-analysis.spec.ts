@@ -4,7 +4,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { setupClerkTestingToken, clerk } from '@clerk/testing/playwright';
+import { setupClerkTestingToken } from '@clerk/testing/playwright';
 import { ROUTES, waitForLoadingToFinish } from '../fixtures';
 import { loginAsTestUser, hasTestUserCredentials, gotoWithAuth } from '../utils/auth';
 

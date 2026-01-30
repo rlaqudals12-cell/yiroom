@@ -61,7 +61,7 @@ describe('ScanResult', () => {
   });
 
   it('EWG 등급 표시', () => {
-    const { container } = render(
+    render(
       <ScanResult product={mockProduct} source="internal_db" confidence={95} />
     );
 

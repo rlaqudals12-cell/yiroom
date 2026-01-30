@@ -260,19 +260,19 @@ function inferSizeFromBasicMeasurements(
 
     if (category === 'top' || category === 'outer') {
       if (bmi < 18.5) baseSize = 'S';
-      else if (bmi < 23) baseSize = 'M';
-      else if (bmi < 27) baseSize = 'L';
-      else baseSize = 'XL';
+      else if (bmi >= 23 && bmi < 27) baseSize = 'L';
+      else if (bmi >= 27) baseSize = 'XL';
+      // bmi 18.5~23: 기본값 'M' 유지
     } else if (category === 'bottom') {
       // 하의는 키 고려
       if (height < 165) {
         if (bmi < 20) baseSize = 'S';
-        else if (bmi < 24) baseSize = 'M';
-        else baseSize = 'L';
+        else if (bmi >= 24) baseSize = 'L';
+        // bmi 20~24: 기본값 'M' 유지
       } else if (height < 175) {
-        if (bmi < 21) baseSize = 'M';
-        else if (bmi < 25) baseSize = 'L';
-        else baseSize = 'XL';
+        if (bmi >= 21 && bmi < 25) baseSize = 'L';
+        else if (bmi >= 25) baseSize = 'XL';
+        // bmi < 21: 기본값 'M' 유지
       } else {
         if (bmi < 22) baseSize = 'L';
         else baseSize = 'XL';
@@ -281,7 +281,7 @@ function inferSizeFromBasicMeasurements(
       // 신발은 발 길이 또는 키 기반
       if (measurements.footLength) {
         baseSize = String(Math.round(measurements.footLength * 10)); // mm → 사이즈
-      } else if (height) {
+      } else {
         // 키 기반 추정 (매우 대략적)
         baseSize = String(Math.round(height * 0.152 + 10) * 5); // 예: 170cm → 260~270
       }
@@ -730,7 +730,8 @@ export function recommendSizeEnhanced(
  * BMI를 기본 사이즈로 변환
  */
 function bmiToSize(bmi: number, category: ClothingCategory): string {
-  if (category === 'top' || category === 'outer') {
+  // 상의/아우터/드레스는 동일한 BMI 기준 적용
+  if (category === 'top' || category === 'outer' || category === 'dress') {
     if (bmi < 18.5) return 'S';
     if (bmi < 23) return 'M';
     if (bmi < 27) return 'L';
@@ -744,11 +745,6 @@ function bmiToSize(bmi: number, category: ClothingCategory): string {
   } else if (category === 'shoes') {
     // 신발은 BMI와 무관, 기본 평균 사이즈
     return '260';
-  } else if (category === 'dress') {
-    if (bmi < 18.5) return 'S';
-    if (bmi < 23) return 'M';
-    if (bmi < 27) return 'L';
-    return 'XL';
   }
 
   return 'M'; // 기본값
