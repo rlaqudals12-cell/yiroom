@@ -1,7 +1,7 @@
 # 이룸 프로젝트 진행 상황
 
-> **마지막 업데이트**: 2026-01-08
-> **현재 버전**: v2.8 (PC-1 UX 고도화)
+> **마지막 업데이트**: 2026-01-30
+> **현재 버전**: v3.0 (Plan v8.0 완료)
 
 ---
 
@@ -40,6 +40,132 @@
 | Launch  | 출시 준비    | 온보딩, 도움말, 알림   | ✅ 완료    |
 | Phase V | Visual       | S-1+/PC-1+ 시각 분석   | ✅ 완료    |
 | Phase P | Preferences  | 통합 선호/기피 시스템  | ✅ 완료    |
+
+---
+
+## Plan v8.0 완료 ✅ (2026-01-30)
+
+### 개요
+
+코드베이스 전면 탐색 기반 실제 구현 갭 및 보안 개선 사항 도출 후 구현.
+P1(Critical), P2(High), P3(Medium) 우선순위별 작업 완료.
+
+### 완료 항목
+
+```yaml
+[x] P1: OH-1 이미지 파이프라인 구현
+    - gum-health-analyzer.ts: extractGumPixelsFromImage() 구현
+    - tooth-color-analyzer.ts: extractToothLabFromImage() 구현
+    - CIE 파이프라인 연결 완료
+
+[x] P1: 보안 헤더 추가
+    - proxy.ts: CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+    - Vercel 배포 환경 보안 강화
+
+[x] P1: Insights 모듈 생성
+    - lib/insights/index.ts (Barrel Export)
+    - lib/insights/types.ts (InsightType, InsightPriority, AnalysisDataBundle)
+    - lib/insights/generator.ts (6개 인사이트 생성 함수)
+    - lib/insights/scoring.ts (우선순위 점수 계산)
+    - lib/insights/cross-module-insights.ts (DB 연동, 진행률, 추천 분석 순서)
+
+[x] P2: Coach RAG 실 데이터 연결
+    - workout-rag.ts: 실제 운동 DB 연결 (60+ exercises, MET 기반 칼로리)
+    - nutrition-rag.ts: user_inventory 연결, recipes Mock (테이블 미존재)
+
+[x] P2: Webhook 서명 검증
+    - Clerk webhook: Svix 기반 서명 검증 (이미 구현 확인)
+    - affiliate/conversion: HMAC-SHA256 서명 검증 (이미 구현 확인)
+
+[x] P3: IMPLEMENTATION-STATUS.md 동기화
+    - v1.8 → v1.9 업데이트
+    - 섹션 4.5 (크로스 모듈), 4.6 (보안) 신규 추가
+    - Changelog 섹션 추가
+
+[x] P3: 레거시 스펙 작성 (PC-1, S-1)
+    - SDD-PC-1-PERSONAL-COLOR.md: v1.1 (389줄) - 이미 존재 확인
+    - SDD-S-1-SKIN-ANALYSIS.md: v1.1 (502줄) - 이미 존재 확인
+```
+
+### 보안 현황 (8.5/10 → 9.5/10)
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| Rate Limiting | ✅ | Upstash Redis + in-memory fallback |
+| Audit Logging | ✅ | v2.0, 14+ event types, 90일 보존 |
+| PII Redaction | ✅ | 26+ 필드 자동 마스킹 |
+| RLS Policies | ✅ | 모든 사용자 테이블 적용 |
+| GDPR/PIPA | ✅ | 30일 soft delete, 5일 hard delete |
+| **Security Headers** | ✅ **신규** | CSP, X-Frame-Options 추가 |
+| **Webhook 서명** | ✅ **확인** | Clerk(Svix), affiliate(HMAC-SHA256) |
+
+### 관련 문서
+
+- [IMPLEMENTATION-STATUS.md](./IMPLEMENTATION-STATUS.md) v1.9 - 구현 현황
+- [Plan file](../.claude/plans/shiny-spinning-pudding.md) v8.0 - 계획 문서
+
+---
+
+## 문서화 갭 보완 ✅ (2026-01-23)
+
+### 개요
+
+ENGINEERING-ROADMAP-v3.md 대비 누락된 문서 작성 및 README 동기화.
+P7 워크플로우 준수 (리서치 → 원리 → ADR → 스펙 → 구현).
+
+### 완료 항목
+
+```yaml
+[x] Wave 1: README 동기화
+    - principles/README.md: fashion-matching, hair-makeup-analysis, accessibility 추가
+    - ENGINEERING-ROADMAP-v3.md: ADR 개수 7→51 수정, CIE-4 설명 정정
+
+[x] Wave 2: P1 접근성 문서
+    - docs/principles/accessibility.md: WCAG 2.1 AA, WAI-ARIA, POUR 원칙
+    - docs/specs/SDD-ACCESSIBILITY.md: 접근성 구현 스펙
+
+[x] Wave 3: Phase 2 ADR
+    - ADR-042-pc2-v2-architecture.md: PC-2 v2 아키텍처
+    - ADR-043-s2-v2-architecture.md: S-2 v2 아키텍처
+    - ADR-044-c2-v2-architecture.md: C-2 v2 아키텍처
+
+[x] Wave 4: Phase 3 ADR
+    - ADR-045-sk1-procedure-recommendation.md: SK-1 피부시술 정보
+    - ADR-046-oh1-oral-health-analysis.md: OH-1 구강건강 분석
+    - ADR-047-w2-advanced-stretching.md: W-2 고급 스트레칭
+
+[x] Wave 5: SDD 문서
+    - SDD-CI-CD-PIPELINE.md: CI/CD 파이프라인
+    - SDD-MONITORING.md: 모니터링/관측성
+    - SDD-FASHION-CLOSET-INTEGRATION.md: Fashion-Closet 통합
+    - SDD-2026-UX-TRENDS.md: 2026 UX 트렌드
+
+[x] Wave 6: 선택적 ADR
+    - ADR-048-accessibility-strategy.md: 접근성 전략
+    - ADR-049-cicd-pipeline.md: CI/CD 파이프라인
+    - ADR-050-fashion-closet-crossmodule.md: Fashion-Closet 크로스모듈
+    - ADR-051-2026-ux-trends.md: 2026 UX 트렌드
+
+[x] 인덱스 업데이트
+    - docs/adr/README.md: ADR-045~051 추가, 카테고리 정리
+    - docs/specs/README.md: 인프라/DevOps, 크로스 모듈 섹션 추가
+    - docs/INDEX.md: 문서 현황 업데이트
+```
+
+### 문서 현황
+
+| 카테고리 | 이전 | 이후 | 변경 |
+|----------|------|------|------|
+| ADR | 44개 | 51개 | +7 |
+| 스펙 | 56개 | 61개 | +5 |
+| 원리 | 23개 | 24개 | +1 |
+| **총계** | 123개 | 136개 | +13 |
+
+### 관련 문서
+
+- [docs/adr/README.md](./adr/README.md) - ADR 인덱스
+- [docs/specs/README.md](./specs/README.md) - 스펙 인덱스
+- [docs/principles/README.md](./principles/README.md) - 원리 인덱스
 
 ---
 
@@ -279,7 +405,7 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
 [x] 성분 분석 UI 추가 (Week 6에서 완료)
 ```
 
-**상세 스펙**: [specs/features/S-1-skin-analysis-page.md](../specs/features/S-1-skin-analysis-page.md)
+**상세 스펙**: `specs/features/S-1-skin-analysis-page.md` *(아카이브됨)*
 
 ---
 
@@ -299,7 +425,7 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
 [x] 반응형 확인 (max-w-lg mx-auto px-4 적용됨)
 ```
 
-**상세 스펙**: [specs/features/C-1-body-analysis-page.md](../specs/features/C-1-body-analysis-page.md)
+**상세 스펙**: `specs/features/C-1-body-analysis-page.md` *(아카이브됨)*
 
 ---
 
@@ -321,7 +447,7 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
 [x] 데이터 저장 로직 (Week 4에서 완료)
 ```
 
-**상세 스펙**: [specs/templates/PC-1-feature-spec-template.md](../specs/templates/PC-1-feature-spec-template.md)
+**상세 스펙**: `specs/templates/PC-1-feature-spec-template.md` *(아카이브됨)*
 
 ---
 
@@ -386,11 +512,13 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
 [x] FORCE_MOCK_AI 환경변수 지원
 ```
 
-**구현 파일**:
+**구현 파일** *(레거시 경로)*:
 
-- [lib/gemini.ts](../lib/gemini.ts) - Gemini AI 클라이언트
-- [app/api/analyze/skin/route.ts](../app/api/analyze/skin/route.ts) - S-1 API (Real AI)
-- [app/api/analyze/body/route.ts](../app/api/analyze/body/route.ts) - C-1 API (Real AI)
+```
+- lib/gemini.ts - Gemini AI 클라이언트
+- app/api/analyze/skin/route.ts - S-1 API (Real AI)
+- app/api/analyze/body/route.ts - C-1 API (Real AI)
+```
 
 ---
 
@@ -459,24 +587,26 @@ MediaPipe Face Mesh 기반 얼굴 랜드마크 추출 및 Canvas 렌더링.
     - PC-1 클라이언트 UI 검증 완료 (기존 구현 정상)
 ```
 
-**구현 파일**:
+**구현 파일** *(레거시 경로)*:
 
-- [lib/gemini.ts](../lib/gemini.ts) - analyzePersonalColor() 추가
-- [app/api/analyze/personal-color/route.ts](../app/api/analyze/personal-color/route.ts) - PC-1 API (Real AI)
-- [app/(main)/analysis/personal-color/page.tsx](<../app/(main)/analysis/personal-color/page.tsx>) - API 호출 방식으로 변경
-- [lib/ingredients.ts](../lib/ingredients.ts) - 성분 분석 하이브리드 로직
-- [app/api/analyze/ingredients/route.ts](../app/api/analyze/ingredients/route.ts) - 성분 분석 API
-- [supabase/migrations/20251126_ingredients_table.sql](../supabase/migrations/20251126_ingredients_table.sql) - ingredients 테이블 + 시드 데이터
-- [app/api/analyze/skin/route.ts](../app/api/analyze/skin/route.ts) - S-1 API (성분 분석 + 제품 추천 통합)
-- [lib/product-recommendations.ts](../lib/product-recommendations.ts) - 제품 추천 로직
-- [lib/color-recommendations.ts](../lib/color-recommendations.ts) - 퍼스널 컬러 + 체형 기반 색상 추천
-- [app/api/analyze/body/route.ts](../app/api/analyze/body/route.ts) - C-1 API (PC 연동 통합)
-- [lib/mock/skin-analysis.ts](../lib/mock/skin-analysis.ts) - S-1 타입에 ingredientWarnings, productRecommendations 추가
-- [lib/mock/body-analysis.ts](../lib/mock/body-analysis.ts) - C-1 타입에 colorRecommendations 추가
-- [app/(main)/analysis/skin/page.tsx](<../app/(main)/analysis/skin/page.tsx>) - S-1 API 응답 연동
-- [app/(main)/analysis/skin/\_components/AnalysisResult.tsx](<../app/(main)/analysis/skin/_components/AnalysisResult.tsx>) - S-1 성분경고/제품추천 UI
-- [app/(main)/analysis/body/page.tsx](<../app/(main)/analysis/body/page.tsx>) - C-1 API 응답 연동
-- [app/(main)/analysis/body/\_components/AnalysisResult.tsx](<../app/(main)/analysis/body/_components/AnalysisResult.tsx>) - C-1 색상추천 UI
+```
+- lib/gemini.ts - analyzePersonalColor() 추가
+- app/api/analyze/personal-color/route.ts - PC-1 API (Real AI)
+- app/(main)/analysis/personal-color/page.tsx - API 호출 방식으로 변경
+- lib/ingredients.ts - 성분 분석 하이브리드 로직
+- app/api/analyze/ingredients/route.ts - 성분 분석 API
+- supabase/migrations/20251126_ingredients_table.sql - ingredients 테이블 + 시드 데이터
+- app/api/analyze/skin/route.ts - S-1 API (성분 분석 + 제품 추천 통합)
+- lib/product-recommendations.ts - 제품 추천 로직
+- lib/color-recommendations.ts - 퍼스널 컬러 + 체형 기반 색상 추천
+- app/api/analyze/body/route.ts - C-1 API (PC 연동 통합)
+- lib/mock/skin-analysis.ts - S-1 타입에 ingredientWarnings, productRecommendations 추가
+- lib/mock/body-analysis.ts - C-1 타입에 colorRecommendations 추가
+- app/(main)/analysis/skin/page.tsx - S-1 API 응답 연동
+- app/(main)/analysis/skin/_components/AnalysisResult.tsx - S-1 성분경고/제품추천 UI
+- app/(main)/analysis/body/page.tsx - C-1 API 응답 연동
+- app/(main)/analysis/body/_components/AnalysisResult.tsx - C-1 색상추천 UI
+```
 
 ---
 
