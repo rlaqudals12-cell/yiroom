@@ -64,6 +64,14 @@
     {
       "path": "/api/cron/cleanup-consents",
       "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-images",
+      "schedule": "0 19 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-audit-logs",
+      "schedule": "0 19 * * *"
     }
   ]
 }
