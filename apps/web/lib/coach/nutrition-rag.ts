@@ -5,12 +5,11 @@
  *
  * ## 데이터 소스 현황
  * - **user_inventory**: 실 데이터 연결 완료 (냉장고 재료 조회)
- * - **recipes**: Mock 데이터 사용 (recipes 테이블 미생성 - 향후 확장 예정)
+ * - **recipes**: DB 연결 완료 (v8.2) - Mock fallback 유지
  *
  * ## 향후 확장
- * 1. recipes 테이블 생성 시 MOCK_RECIPES → DB 조회로 전환
- * 2. 사용자 선호 레시피 저장 기능 추가
- * 3. 외부 레시피 API 연동 (만개의 레시피 등)
+ * 1. 사용자 선호 레시피 저장 기능 추가
+ * 2. 외부 레시피 API 연동 (만개의 레시피 등)
  *
  * @see docs/specs/SDD-N1-NUTRITION.md
  */
@@ -55,6 +54,21 @@ export interface NutritionSearchResult {
   recommendations: RecipeRecommendation[];
   goalTips: string[];
   expiringItems: PantryItem[];
+}
+
+/** DB 레시피 Row 타입 */
+interface RecipeRow {
+  id: string;
+  name: string;
+  description: string | null;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  cook_time: number;
+  difficulty: 'easy' | 'medium' | 'hard';
+  ingredients: string[];
+  goal: string | null;
 }
 
 /** 질문 의도 분석 */
@@ -151,16 +165,86 @@ const INTENT_TIPS: Record<NutritionIntent, string[]> = {
 };
 
 /**
- * Mock 레시피 데이터
+ * DB에서 레시피 조회
  *
  * @description
- * recipes 테이블이 아직 생성되지 않아 Mock 데이터 사용.
- * 향후 recipes 테이블 생성 시 DB 조회로 전환 예정.
- *
- * @todo recipes 테이블 생성 후 DB 연동
- * @see SDD-N1-NUTRITION.md "레시피 데이터베이스" 섹션
+ * recipes 테이블에서 goal 기반 필터링하여 조회.
+ * DB 오류 시 FALLBACK_RECIPES 반환.
  */
-const MOCK_RECIPES: RecipeRecommendation[] = [
+async function fetchRecipesFromDB(
+  goal: NutritionGoal | null
+): Promise<{ recipes: RecipeRow[]; usedFallback: boolean }> {
+  try {
+    const supabase = createClerkSupabaseClient();
+
+    let query = supabase
+      .from('recipes')
+      .select(
+        'id, name, description, calories, protein, carbs, fat, cook_time, difficulty, ingredients, goal'
+      )
+      .limit(20);
+
+    // goal 필터링 (DB에서)
+    if (goal) {
+      query = query.eq('goal', goal);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      coachLogger.warn('[NutritionRAG] DB query error, using fallback:', error.message);
+      return { recipes: [], usedFallback: true };
+    }
+
+    if (!data || data.length === 0) {
+      coachLogger.info('[NutritionRAG] No recipes found in DB, using fallback');
+      return { recipes: [], usedFallback: true };
+    }
+
+    coachLogger.info(`[NutritionRAG] Fetched ${data.length} recipes from DB`);
+    return { recipes: data as RecipeRow[], usedFallback: false };
+  } catch (error) {
+    coachLogger.error('[NutritionRAG] fetchRecipesFromDB error:', error);
+    return { recipes: [], usedFallback: true };
+  }
+}
+
+/** RecipeRow → RecipeRecommendation 변환 */
+function mapRecipeRowToRecommendation(row: RecipeRow): RecipeRecommendation {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description || '',
+    calories: row.calories,
+    protein: row.protein,
+    carbs: row.carbs,
+    fat: row.fat,
+    cookTime: row.cook_time,
+    difficulty: row.difficulty,
+    matchScore: 0,
+    matchedIngredients: [],
+    missingIngredients: [],
+    matchReason: '',
+  };
+}
+
+/** DB 레시피의 ingredients 필드 조회 */
+function getIngredientsFromRecipe(recipe: RecipeRecommendation, dbRecipes: RecipeRow[]): string[] {
+  const dbRecipe = dbRecipes.find((r) => r.id === recipe.id);
+  if (dbRecipe && dbRecipe.ingredients) {
+    return dbRecipe.ingredients;
+  }
+  // Fallback: 기존 로직 (레시피명 기반)
+  return getRecipeIngredientsByName(recipe.name);
+}
+
+/**
+ * Fallback 레시피 데이터
+ *
+ * @description
+ * DB 연결 실패 또는 데이터 없을 때 사용하는 폴백.
+ */
+const FALLBACK_RECIPES: RecipeRecommendation[] = [
   {
     id: '1',
     name: '닭가슴살 샐러드',
@@ -265,6 +349,14 @@ export async function searchNutritionItems(
       expiringItems: [],
     };
 
+    // DB에서 레시피 조회 (goal 필터링 포함)
+    const { recipes: dbRecipes, usedFallback } = await fetchRecipesFromDB(goal);
+
+    // DB 또는 Fallback 레시피 사용
+    const baseRecipes: RecipeRecommendation[] = usedFallback
+      ? filterRecipesByGoal(FALLBACK_RECIPES, goal)
+      : dbRecipes.map(mapRecipeRowToRecommendation);
+
     // userId가 있으면 냉장고에서 검색
     if (userId) {
       const supabase = createClerkSupabaseClient();
@@ -277,7 +369,7 @@ export async function searchNutritionItems(
         .limit(30);
 
       if (error) {
-        coachLogger.error('[NutritionRAG] DB query error:', error);
+        coachLogger.error('[NutritionRAG] Pantry query error:', error);
       }
 
       if (pantryItems && pantryItems.length > 0) {
@@ -307,14 +399,14 @@ export async function searchNutritionItems(
         // 보유 재료명 추출
         const ingredientNames = result.pantryItems.map((item) => item.name.toLowerCase());
 
-        // 레시피 매칭
-        const recipes = filterRecipesByGoal(MOCK_RECIPES, goal);
-
         // 매칭 점수 계산
-        result.recommendations = recipes
+        result.recommendations = baseRecipes
           .map((recipe) => {
-            // 간단한 재료 매칭 (실제로는 레시피별 재료 목록 필요)
-            const recipeIngredients = getRecipeIngredients(recipe.name);
+            // DB 레시피 ingredients 사용, 없으면 이름 기반 fallback
+            const recipeIngredients = usedFallback
+              ? getRecipeIngredientsByName(recipe.name)
+              : getIngredientsFromRecipe(recipe, dbRecipes);
+
             const matched = recipeIngredients.filter((ing) =>
               ingredientNames.some((name) => name.includes(ing) || ing.includes(name))
             );
@@ -342,13 +434,11 @@ export async function searchNutritionItems(
 
     // 냉장고 아이템이 없으면 기본 추천
     if (result.recommendations.length === 0) {
-      result.recommendations = filterRecipesByGoal(MOCK_RECIPES, goal)
-        .slice(0, 3)
-        .map((recipe) => ({
-          ...recipe,
-          matchScore: 50,
-          matchReason: '기본 추천 레시피',
-        }));
+      result.recommendations = baseRecipes.slice(0, 3).map((recipe) => ({
+        ...recipe,
+        matchScore: 50,
+        matchReason: usedFallback ? '기본 추천 레시피 (Mock)' : '기본 추천 레시피',
+      }));
     }
 
     return result;
@@ -364,8 +454,8 @@ export async function searchNutritionItems(
   }
 }
 
-/** 레시피별 재료 목록 (Mock) */
-function getRecipeIngredients(recipeName: string): string[] {
+/** 레시피별 재료 목록 (이름 기반 fallback) */
+function getRecipeIngredientsByName(recipeName: string): string[] {
   const ingredientMap: Record<string, string[]> = {
     닭가슴살샐러드: ['닭가슴살', '양상추', '토마토', '오이', '드레싱'],
     '닭가슴살 샐러드': ['닭가슴살', '양상추', '토마토', '오이', '드레싱'],
