@@ -9,6 +9,7 @@ import { AppState, AppStateStatus } from 'react-native';
 import { getSyncQueueCount, processSyncQueue } from './syncQueue';
 import { OfflineState, SyncStatus, SyncQueueItem } from './types';
 import { useNetworkStatus } from './useNetworkStatus';
+import { offlineLogger } from '../utils/logger';
 
 interface UseOfflineOptions {
   // 자동 동기화 활성화
@@ -50,19 +51,19 @@ export function useOffline(options: UseOfflineOptions = {}): UseOfflineReturn {
   // 동기화 실행
   const sync = useCallback(async () => {
     if (!isConnected || !syncProcessor) {
-      console.log('[Offline] Cannot sync: not connected or no processor');
+      offlineLogger.info('Cannot sync: not connected or no processor');
       return;
     }
 
     const count = await updatePendingCount();
     if (count === 0) {
-      console.log('[Offline] Nothing to sync');
+      offlineLogger.info('Nothing to sync');
       setSyncStatus('synced');
       return;
     }
 
     setSyncStatus('syncing');
-    console.log('[Offline] Starting sync...');
+    offlineLogger.info('Starting sync...');
 
     try {
       const result = await processSyncQueue(syncProcessor);
@@ -76,7 +77,7 @@ export function useOffline(options: UseOfflineOptions = {}): UseOfflineReturn {
 
       await updatePendingCount();
     } catch (error) {
-      console.error('[Offline] Sync failed:', error);
+      offlineLogger.error('Sync failed:', error);
       setSyncStatus('error');
     }
   }, [isConnected, syncProcessor, updatePendingCount]);
@@ -100,7 +101,7 @@ export function useOffline(options: UseOfflineOptions = {}): UseOfflineReturn {
   // 온라인 복귀 시 자동 동기화
   useEffect(() => {
     if (autoSync && isConnected && syncStatus === 'pending') {
-      console.log('[Offline] Online detected, auto-syncing...');
+      offlineLogger.info('Online detected, auto-syncing...');
       sync();
     }
   }, [autoSync, isConnected, syncStatus, sync]);
@@ -111,7 +112,7 @@ export function useOffline(options: UseOfflineOptions = {}): UseOfflineReturn {
 
     const handleAppStateChange = (nextState: AppStateStatus) => {
       if (nextState === 'active' && isConnected && pendingCount > 0) {
-        console.log('[Offline] App active, syncing...');
+        offlineLogger.info('App active, syncing...');
         sync();
       }
     };

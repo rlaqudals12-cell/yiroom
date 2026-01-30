@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Linking } from 'react-native';
 
+import { widgetLogger } from '../../lib/utils/logger';
 import { WIDGET_DEEP_LINKS, QuickActionType } from '../../lib/widgets/types';
 
 interface QuickActionsWidgetProps {
@@ -46,7 +47,7 @@ export function QuickActionsWidget({
       try {
         await Linking.openURL(deepLink);
       } catch (error) {
-        console.error('[Widget] Failed to open deep link:', error);
+        widgetLogger.error('Failed to open deep link:', error);
       }
     }
   };

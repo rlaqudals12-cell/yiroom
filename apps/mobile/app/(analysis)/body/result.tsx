@@ -4,7 +4,7 @@
 import type { BodyType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -104,12 +104,8 @@ export default function BodyResultScreen() {
   const [bodyType, setBodyType] = useState<BodyType | null>(null);
   const [bmi, setBmi] = useState<number | null>(null);
 
-  useEffect(() => {
-    analyzeBody();
-  }, []);
-
   // 체형 분석 (Mock)
-  const analyzeBody = async () => {
+  const analyzeBody = useCallback(async () => {
     setIsLoading(true);
 
     // TODO: 실제 Gemini AI 분석 연동
@@ -134,7 +130,11 @@ export default function BodyResultScreen() {
     setBodyType(randomType);
 
     setIsLoading(false);
-  };
+  }, [height, weight]);
+
+  useEffect(() => {
+    analyzeBody();
+  }, [analyzeBody]);
 
   // 운동 추천으로 이동
   const handleWorkoutRecommendation = () => {

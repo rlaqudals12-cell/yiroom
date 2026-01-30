@@ -10,6 +10,7 @@ import type {
   DeeplinkOptions,
   DeeplinkResult,
 } from './types';
+import { affiliateLogger } from '../utils/logger';
 
 // 환경변수 (app.config.ts에서 설정)
 const IHERB_AFFILIATE_CODE =
@@ -47,7 +48,7 @@ export function createDeeplink(options: DeeplinkOptions): DeeplinkResult {
 
     return { url, partner, success: true };
   } catch (error) {
-    console.error(`[Affiliate] ${partner} 딥링크 생성 실패:`, error);
+    affiliateLogger.error(`${partner} 딥링크 생성 실패:`, error);
     return {
       url: productUrl,
       partner,
@@ -67,11 +68,11 @@ export async function openAffiliateLink(url: string): Promise<boolean> {
       await Linking.openURL(url);
       return true;
     } else {
-      console.warn('[Affiliate] URL을 열 수 없음:', url);
+      affiliateLogger.warn(' URL을 열 수 없음:', url);
       return false;
     }
   } catch (error) {
-    console.error('[Affiliate] 링크 열기 실패:', error);
+    affiliateLogger.error(' 링크 열기 실패:', error);
     return false;
   }
 }

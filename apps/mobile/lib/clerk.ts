@@ -4,6 +4,8 @@
 import { TokenCache } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store';
 
+import { authLogger } from './utils/logger';
+
 /**
  * SecureStore 기반 토큰 캐시
  * 앱 재시작 후에도 인증 상태 유지
@@ -13,7 +15,7 @@ export const tokenCache: TokenCache = {
     try {
       return await SecureStore.getItemAsync(key);
     } catch (error) {
-      console.error('SecureStore getToken error:', error);
+      authLogger.error('SecureStore getToken error:', error);
       return null;
     }
   },
@@ -21,14 +23,14 @@ export const tokenCache: TokenCache = {
     try {
       await SecureStore.setItemAsync(key, value);
     } catch (error) {
-      console.error('SecureStore saveToken error:', error);
+      authLogger.error('SecureStore saveToken error:', error);
     }
   },
   async clearToken(key: string) {
     try {
       await SecureStore.deleteItemAsync(key);
     } catch (error) {
-      console.error('SecureStore clearToken error:', error);
+      authLogger.error('SecureStore clearToken error:', error);
     }
   },
 };

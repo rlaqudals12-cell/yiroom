@@ -18,6 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
+import { waterLogger } from '../../../lib/utils/logger';
 
 // 빠른 추가 옵션 (ml)
 const QUICK_ADD_OPTIONS = [
@@ -82,7 +83,7 @@ export default function WaterTrackingScreen() {
       );
       setTotalIntake(total);
     } catch (error) {
-      console.error('[Mobile] Failed to fetch water records:', error);
+      waterLogger.error('Failed to fetch water records:', error);
     } finally {
       setIsLoading(false);
     }
@@ -126,7 +127,7 @@ export default function WaterTrackingScreen() {
 
       await fetchTodayRecords();
     } catch (error) {
-      console.error('[Mobile] Failed to add water record:', error);
+      waterLogger.error('Failed to add water record:', error);
       Alert.alert('오류', '물 기록 추가에 실패했습니다.');
     } finally {
       setIsAdding(false);
@@ -150,7 +151,7 @@ export default function WaterTrackingScreen() {
             if (error) throw error;
             await fetchTodayRecords();
           } catch (error) {
-            console.error('[Mobile] Failed to delete water record:', error);
+            waterLogger.error('Failed to delete water record:', error);
           }
         },
       },

@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from './types';
+import { widgetLogger } from '../utils/logger';
 
 // 위젯 데이터 키
 const WIDGET_DATA_KEY = '@yiroom_widget_data';
@@ -45,9 +46,9 @@ export async function saveWidgetData(
       // AppWidgetManager.updateAppWidget();
     }
 
-    console.log('[Widget] Data saved:', updatedData);
+    widgetLogger.info('Data saved:', updatedData);
   } catch (error) {
-    console.error('[Widget] Failed to save data:', error);
+    widgetLogger.error('Failed to save data:', error);
   }
 }
 
@@ -62,7 +63,7 @@ export async function getWidgetData(): Promise<TodaySummaryData> {
     }
     return DEFAULT_SUMMARY_DATA;
   } catch (error) {
-    console.error('[Widget] Failed to get data:', error);
+    widgetLogger.error('Failed to get data:', error);
     return DEFAULT_SUMMARY_DATA;
   }
 }
@@ -75,7 +76,7 @@ export async function getLastSyncTime(): Promise<Date | null> {
     const timestamp = await AsyncStorage.getItem(WIDGET_LAST_SYNC_KEY);
     return timestamp ? new Date(timestamp) : null;
   } catch (error) {
-    console.error('[Widget] Failed to get last sync time:', error);
+    widgetLogger.error('Failed to get last sync time:', error);
     return null;
   }
 }

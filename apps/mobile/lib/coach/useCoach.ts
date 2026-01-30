@@ -7,6 +7,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import { useCallback, useState } from 'react';
 
 import { useNetworkStatus } from '../offline';
+import { coachLogger } from '../utils/logger';
 
 import {
   sendCoachMessage,
@@ -86,7 +87,7 @@ export function useCoach(): UseCoachResult {
           setSuggestedQuestions(response.suggestedQuestions);
         }
       } catch (err) {
-        console.error('[Mobile] Coach error:', err);
+        coachLogger.error(' Coach error:', err);
         setError('메시지 전송에 실패했어요. 다시 시도해주세요.');
 
         // 에러 시 Mock 응답 사용

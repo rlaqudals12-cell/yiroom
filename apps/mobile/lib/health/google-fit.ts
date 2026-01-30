@@ -20,7 +20,7 @@ import type {
   SyncResult,
 } from './types';
 
-interface GoogleFitSample {
+interface _GoogleFitSample {
   value: number;
   startDate: string;
   endDate: string;

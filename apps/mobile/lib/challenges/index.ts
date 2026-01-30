@@ -5,6 +5,8 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { challengeLogger } from '../utils/logger';
+
 // ============================================
 // 타입 정의
 // ============================================
@@ -183,7 +185,7 @@ export async function getActiveChallenges(
     .order('sort_order');
 
   if (error) {
-    console.error('[Mobile] 챌린지 조회 실패:', error);
+    challengeLogger.error(' 챌린지 조회 실패:', error);
     return [];
   }
 
@@ -204,7 +206,7 @@ export async function getUserChallenges(
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('[Mobile] 사용자 챌린지 조회 실패:', error);
+    challengeLogger.error(' 사용자 챌린지 조회 실패:', error);
     return [];
   }
 
@@ -311,7 +313,7 @@ export async function joinChallenge(
     .single();
 
   if (error) {
-    console.error('[Mobile] 챌린지 참여 실패:', error);
+    challengeLogger.error(' 챌린지 참여 실패:', error);
     return { success: false, error: '참여에 실패했습니다' };
   }
 

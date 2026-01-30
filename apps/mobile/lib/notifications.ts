@@ -5,6 +5,8 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
+import { notificationLogger } from './utils/logger';
+
 // 알림 핸들러 설정
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -29,7 +31,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
   }
 
   if (finalStatus !== 'granted') {
-    console.warn('알림 권한이 거부되었습니다.');
+    notificationLogger.warn('알림 권한이 거부되었습니다.');
     return false;
   }
 
@@ -82,7 +84,7 @@ export async function scheduleWorkoutReminder(
     });
     return id;
   } catch (error) {
-    console.error('운동 리마인더 스케줄 실패:', error);
+    notificationLogger.error('운동 리마인더 스케줄 실패:', error);
     return null;
   }
 }
@@ -117,7 +119,7 @@ export async function scheduleMealReminder(
     });
     return id;
   } catch (error) {
-    console.error('식단 리마인더 스케줄 실패:', error);
+    notificationLogger.error('식단 리마인더 스케줄 실패:', error);
     return null;
   }
 }
@@ -149,7 +151,7 @@ export async function sendStreakReminder(
     });
     return id;
   } catch (error) {
-    console.error('Streak 알림 전송 실패:', error);
+    notificationLogger.error('Streak 알림 전송 실패:', error);
     return null;
   }
 }
@@ -173,7 +175,7 @@ export async function sendWorkoutCompleteNotification(
     });
     return id;
   } catch (error) {
-    console.error('운동 완료 알림 전송 실패:', error);
+    notificationLogger.error('운동 완료 알림 전송 실패:', error);
     return null;
   }
 }
@@ -199,7 +201,7 @@ export async function sendCalorieWarningNotification(
     });
     return id;
   } catch (error) {
-    console.error('칼로리 경고 알림 전송 실패:', error);
+    notificationLogger.error('칼로리 경고 알림 전송 실패:', error);
     return null;
   }
 }

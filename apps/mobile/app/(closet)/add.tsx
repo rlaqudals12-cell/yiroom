@@ -21,6 +21,7 @@ import {
 
 import { useCloset, type ClothingCategory, type Season } from '@/lib/inventory';
 import { useAppPreferencesStore } from '@/lib/stores';
+import { closetLogger } from '@/lib/utils/logger';
 
 // 카테고리 옵션
 const CATEGORIES = [
@@ -223,7 +224,7 @@ export default function ClosetAddScreen() {
         Alert.alert('오류', '저장에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
-      console.error('[Closet] Add item error:', error);
+      closetLogger.error('Add item error:', error);
       Alert.alert('오류', '저장 중 문제가 발생했습니다.');
     } finally {
       setIsSubmitting(false);

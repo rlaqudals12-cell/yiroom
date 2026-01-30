@@ -15,6 +15,7 @@ import type {
   QuickActionsWidgetData,
   AnyWidgetData,
 } from './types';
+import { widgetLogger } from '../utils/logger';
 
 const WIDGET_DATA_KEY = '@yiroom/widget_data';
 
@@ -26,7 +27,7 @@ export async function saveWidgetData(data: AnyWidgetData): Promise<void> {
     const key = `${WIDGET_DATA_KEY}_${data.type}`;
     await AsyncStorage.setItem(key, JSON.stringify(data));
   } catch (error) {
-    console.error('[Widget] Failed to save widget data:', error);
+    widgetLogger.error(' Failed to save widget data:', error);
   }
 }
 
@@ -41,7 +42,7 @@ export async function getWidgetData<T extends AnyWidgetData>(
     const stored = await AsyncStorage.getItem(key);
     return stored ? JSON.parse(stored) : null;
   } catch (error) {
-    console.error('[Widget] Failed to get widget data:', error);
+    widgetLogger.error(' Failed to get widget data:', error);
     return null;
   }
 }
@@ -240,5 +241,5 @@ export async function updateAllWidgets(): Promise<void> {
     })
   );
 
-  console.log('[Widget] All widgets updated');
+  widgetLogger.info(' All widgets updated');
 }

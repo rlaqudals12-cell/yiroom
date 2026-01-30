@@ -25,14 +25,8 @@ import {
   getTodayHeartRate as getGoogleHeartRate,
   getLastNightSleep as getGoogleSleep,
 } from './google-fit';
-import type {
-  SyncState,
-  SyncResult,
-  HealthDataSummary,
-  StepCountData,
-  SleepSummary,
-  HeartRateSummary,
-} from './types';
+import type { SyncState, SyncResult, HealthDataSummary } from './types';
+import { healthLogger } from '../utils/logger';
 
 const SYNC_STATE_KEY = '@yiroom/health_sync_state';
 const SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15분
@@ -54,7 +48,7 @@ export async function getLocalSyncState(): Promise<SyncState> {
       return JSON.parse(stored);
     }
   } catch (error) {
-    console.error('[HealthSync] Failed to get sync state:', error);
+    healthLogger.error(' Failed to get sync state:', error);
   }
   return DEFAULT_SYNC_STATE;
 }
@@ -68,7 +62,7 @@ export async function setSyncState(state: Partial<SyncState>): Promise<void> {
     const updated = { ...current, ...state };
     await AsyncStorage.setItem(SYNC_STATE_KEY, JSON.stringify(updated));
   } catch (error) {
-    console.error('[HealthSync] Failed to save sync state:', error);
+    healthLogger.error(' Failed to save sync state:', error);
   }
 }
 
@@ -102,17 +96,17 @@ export async function enableSync(): Promise<boolean> {
   if (platform === 'apple') {
     const initialized = await initializeHealthKit();
     if (!initialized) {
-      console.log('[HealthSync] Failed to initialize HealthKit');
+      healthLogger.info(' Failed to initialize HealthKit');
       return false;
     }
   } else if (platform === 'google') {
     const initialized = await initializeGoogleFit();
     if (!initialized) {
-      console.log('[HealthSync] Failed to initialize Google Fit');
+      healthLogger.info(' Failed to initialize Google Fit');
       return false;
     }
   } else {
-    console.log('[HealthSync] No health platform available');
+    healthLogger.info(' No health platform available');
     return false;
   }
 
@@ -201,7 +195,7 @@ export async function collectTodayHealthData(): Promise<HealthDataSummary | null
       lastUpdated: new Date().toISOString(),
     };
   } catch (error) {
-    console.error('[HealthSync] Failed to collect health data:', error);
+    healthLogger.error(' Failed to collect health data:', error);
     return null;
   }
 }
@@ -272,7 +266,7 @@ export async function syncToServer(
     // 동기화 시간 업데이트
     await setSyncState({ lastSyncTime: result.syncedAt });
   } catch (error) {
-    console.error('[HealthSync] Server sync error:', error);
+    healthLogger.error(' Server sync error:', error);
     result.errors = [error instanceof Error ? error.message : 'Unknown error'];
   }
 

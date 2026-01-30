@@ -22,6 +22,7 @@ import { SizeRecommendation } from '../../components/products/SizeRecommendation
 import { useAffiliateClick, identifyPartner } from '../../lib/affiliate';
 import type { ClothingCategory } from '../../lib/smart-matching';
 import { useClerkSupabaseClient } from '../../lib/supabase';
+import { shareLogger } from '../../lib/utils/logger';
 
 interface ProductDetail {
   id: string;
@@ -264,7 +265,7 @@ export default function ProductDetailScreen() {
         message: `${product.brand} ${product.name} - ₩${product.price.toLocaleString()}\n${product.purchaseUrl}`,
       });
     } catch (error) {
-      console.error('[Mobile] Share error:', error);
+      shareLogger.error('Share error:', error);
     }
   };
 

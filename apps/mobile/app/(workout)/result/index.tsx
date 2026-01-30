@@ -3,7 +3,7 @@
  */
 import type { WorkoutType } from '@yiroom/shared';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -78,12 +78,8 @@ export default function WorkoutResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [workoutType, setWorkoutType] = useState<WorkoutType | null>(null);
 
-  useEffect(() => {
-    analyzeWorkoutType();
-  }, []);
-
   // 운동 타입 분석 (Mock)
-  const analyzeWorkoutType = async () => {
+  const analyzeWorkoutType = useCallback(async () => {
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -106,7 +102,11 @@ export default function WorkoutResultScreen() {
 
     setWorkoutType(type);
     setIsLoading(false);
-  };
+  }, [goals]);
+
+  useEffect(() => {
+    analyzeWorkoutType();
+  }, [analyzeWorkoutType]);
 
   const handleStartSession = () => {
     router.push('/(workout)/session');

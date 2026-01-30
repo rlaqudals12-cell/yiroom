@@ -9,6 +9,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { PushTokenInfo } from './types';
+import { pushLogger } from '../utils/logger';
 
 // 저장 키
 const PUSH_TOKEN_KEY = '@yiroom/push_token';
@@ -40,7 +41,7 @@ export async function getExpoPushToken(): Promise<string | null> {
   // 시뮬레이터/에뮬레이터 체크
   const isDevice = Constants.isDevice ?? true;
   if (!isDevice) {
-    console.warn('[Push] 푸시 알림은 물리적 디바이스에서만 동작합니다.');
+    pushLogger.warn('푸시 알림은 물리적 디바이스에서만 동작합니다.');
     return null;
   }
 
@@ -56,7 +57,7 @@ export async function getExpoPushToken(): Promise<string | null> {
     }
 
     if (finalStatus !== 'granted') {
-      console.warn('[Push] 알림 권한이 거부되었습니다.');
+      pushLogger.warn('알림 권한이 거부되었습니다.');
       return null;
     }
 
@@ -68,10 +69,10 @@ export async function getExpoPushToken(): Promise<string | null> {
       projectId,
     });
 
-    console.log('[Push] Expo 푸시 토큰:', tokenData.data);
+    pushLogger.info('Expo 푸시 토큰:', tokenData.data);
     return tokenData.data;
   } catch (error) {
-    console.error('[Push] 토큰 획득 실패:', error);
+    pushLogger.error('토큰 획득 실패:', error);
     return null;
   }
 }
@@ -145,10 +146,10 @@ export async function registerPushTokenWithServer(
       throw new Error(`서버 응답 오류: ${response.status}`);
     }
 
-    console.log('[Push] 서버에 토큰 등록 완료');
+    pushLogger.info('서버에 토큰 등록 완료');
     return true;
   } catch (error) {
-    console.error('[Push] 서버 등록 실패:', error);
+    pushLogger.error('서버 등록 실패:', error);
     return false;
   }
 }
@@ -180,10 +181,10 @@ export async function unregisterPushTokenFromServer(
       throw new Error(`서버 응답 오류: ${response.status}`);
     }
 
-    console.log('[Push] 서버에서 토큰 제거 완료');
+    pushLogger.info('서버에서 토큰 제거 완료');
     return true;
   } catch (error) {
-    console.error('[Push] 서버 제거 실패:', error);
+    pushLogger.error('서버 제거 실패:', error);
     return false;
   }
 }

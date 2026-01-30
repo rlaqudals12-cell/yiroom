@@ -20,6 +20,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
+import { nutritionLogger } from '../../../lib/utils/logger';
 
 // 스톱라이트 타입
 type TrafficLight = 'green' | 'yellow' | 'red';
@@ -423,7 +424,7 @@ export default function FoodSearchScreen() {
         { text: '확인', onPress: () => router.back() },
       ]);
     } catch (error) {
-      console.error('[Mobile] Failed to save meal record:', error);
+      nutritionLogger.error('Failed to save meal record:', error);
       Alert.alert('오류', '식사 기록 저장에 실패했습니다.');
     } finally {
       setIsSaving(false);

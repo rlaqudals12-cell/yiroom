@@ -25,6 +25,8 @@ import type {
   SyncResult,
 } from '@/lib/health/types';
 
+import { healthLogger } from '../lib/utils/logger';
+
 interface UseHealthDataResult {
   // 상태
   isAvailable: boolean;
@@ -66,7 +68,7 @@ export function useHealthData(): UseHealthDataResult {
           setTodayData(data);
         }
       } catch (err) {
-        console.error('[useHealthData] Init error:', err);
+        healthLogger.error(' Init error:', err);
         setError(err instanceof Error ? err.message : 'Failed to initialize');
       } finally {
         setIsLoading(false);
@@ -143,7 +145,7 @@ export function useHealthData(): UseHealthDataResult {
       }
       return success;
     } catch (err) {
-      console.error('[useHealthData] Enable error:', err);
+      healthLogger.error(' Enable error:', err);
       setError(err instanceof Error ? err.message : 'Failed to enable');
       return false;
     } finally {
@@ -158,7 +160,7 @@ export function useHealthData(): UseHealthDataResult {
       setSyncState((prev) => (prev ? { ...prev, isEnabled: false } : null));
       setTodayData(null);
     } catch (err) {
-      console.error('[useHealthData] Disable error:', err);
+      healthLogger.error(' Disable error:', err);
       setError(err instanceof Error ? err.message : 'Failed to disable');
     }
   }, []);
@@ -172,7 +174,7 @@ export function useHealthData(): UseHealthDataResult {
       const data = await collectTodayHealthData();
       setTodayData(data);
     } catch (err) {
-      console.error('[useHealthData] Refresh error:', err);
+      healthLogger.error(' Refresh error:', err);
       setError(err instanceof Error ? err.message : 'Failed to refresh');
     } finally {
       setIsLoading(false);
@@ -200,7 +202,7 @@ export function useHealthData(): UseHealthDataResult {
 
         return result;
       } catch (err) {
-        console.error('[useHealthData] Sync error:', err);
+        healthLogger.error(' Sync error:', err);
         return {
           success: false,
           syncedAt: new Date().toISOString(),

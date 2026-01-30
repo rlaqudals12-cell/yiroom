@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { AppTourStep, UseAppTourReturn } from './types';
 import { DEFAULT_APP_TOUR_STEPS, STORAGE_KEY, CURRENT_STEP_KEY } from './types';
+import { tourLogger } from '../utils/logger';
 
 // ============================================================
 // 옵션 타입
@@ -30,12 +31,7 @@ export function useAppTour(options: UseAppTourOptions = {}): UseAppTourReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
-  // 초기 로드
-  useEffect(() => {
-    loadTourState();
-  }, []);
-
-  const loadTourState = async () => {
+  const loadTourState = useCallback(async () => {
     try {
       const [completed, savedStep] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEY),
@@ -58,18 +54,23 @@ export function useAppTour(options: UseAppTourOptions = {}): UseAppTourReturn {
         setIsCompleted(false);
       }
     } catch (error) {
-      console.error('[AppTour] Load error:', error);
+      tourLogger.error(' Load error:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [autoStart, steps.length]);
+
+  // 초기 로드
+  useEffect(() => {
+    loadTourState();
+  }, [loadTourState]);
 
   // 현재 스텝 저장
   useEffect(() => {
     if (isActive && !isLoading) {
       AsyncStorage.setItem(CURRENT_STEP_KEY, currentStepIndex.toString()).catch(
         (error) => {
-          console.error('[AppTour] Save step error:', error);
+          tourLogger.error(' Save step error:', error);
         }
       );
     }
@@ -81,7 +82,7 @@ export function useAppTour(options: UseAppTourOptions = {}): UseAppTourReturn {
     setIsActive(true);
     setIsCompleted(false);
     AsyncStorage.removeItem(STORAGE_KEY).catch((error) => {
-      console.error('[AppTour] Start error:', error);
+      tourLogger.error(' Start error:', error);
     });
   }, []);
 
@@ -97,7 +98,7 @@ export function useAppTour(options: UseAppTourOptions = {}): UseAppTourReturn {
         AsyncStorage.setItem(STORAGE_KEY, 'true'),
         AsyncStorage.removeItem(CURRENT_STEP_KEY),
       ]).catch((error) => {
-        console.error('[AppTour] Complete error:', error);
+        tourLogger.error(' Complete error:', error);
       });
     }
   }, [currentStepIndex, steps.length]);
@@ -117,7 +118,7 @@ export function useAppTour(options: UseAppTourOptions = {}): UseAppTourReturn {
       AsyncStorage.setItem(STORAGE_KEY, 'true'),
       AsyncStorage.removeItem(CURRENT_STEP_KEY),
     ]).catch((error) => {
-      console.error('[AppTour] Skip error:', error);
+      tourLogger.error(' Skip error:', error);
     });
   }, []);
 
@@ -129,7 +130,7 @@ export function useAppTour(options: UseAppTourOptions = {}): UseAppTourReturn {
       AsyncStorage.setItem(STORAGE_KEY, 'true'),
       AsyncStorage.removeItem(CURRENT_STEP_KEY),
     ]).catch((error) => {
-      console.error('[AppTour] Complete error:', error);
+      tourLogger.error(' Complete error:', error);
     });
   }, []);
 
@@ -143,7 +144,7 @@ export function useAppTour(options: UseAppTourOptions = {}): UseAppTourReturn {
       setIsCompleted(false);
       setCurrentStepIndex(0);
     } catch (error) {
-      console.error('[AppTour] Reset error:', error);
+      tourLogger.error(' Reset error:', error);
     }
   }, []);
 

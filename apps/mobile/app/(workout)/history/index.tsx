@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
+import { workoutLogger } from '../../../lib/utils/logger';
 
 interface WorkoutLog {
   id: string;
@@ -92,7 +93,7 @@ export default function WorkoutHistoryScreen() {
           weekLogs.length > 0 ? Math.round(totalDuration / weekLogs.length) : 0,
       });
     } catch (error) {
-      console.error('[Mobile] Failed to fetch workout logs:', error);
+      workoutLogger.error('Failed to fetch workout logs:', error);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);

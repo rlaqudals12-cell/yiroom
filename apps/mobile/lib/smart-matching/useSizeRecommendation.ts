@@ -6,6 +6,8 @@
 import { useAuth } from '@clerk/clerk-expo';
 import { useState, useEffect, useCallback } from 'react';
 
+import { productLogger } from '../utils/logger';
+
 import {
   getSizeRecommendation,
   getConfidenceLabel,
@@ -73,7 +75,7 @@ export function useSizeRecommendation({
 
       setRecommendation(result);
     } catch (err) {
-      console.error('[Mobile] SizeRecommendation error:', err);
+      productLogger.error(' SizeRecommendation error:', err);
       setError(
         err instanceof Error ? err.message : '사이즈 추천을 불러올 수 없습니다.'
       );

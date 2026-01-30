@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
 import type { FeedItem, FeedTab } from './types';
+import { feedLogger } from '../utils/logger';
 
 import { getFriendsFeed, getMyFeed, getAllFeed, toggleLike } from './index';
 
@@ -87,7 +88,7 @@ export function useFeed(): UseFeedResult {
         setHasMore(data.length === PAGE_SIZE);
         setOffset(currentOffset + data.length);
       } catch (err) {
-        console.error('[Mobile] useFeed error:', err);
+        feedLogger.error('useFeed error:', err);
         setError('피드를 불러올 수 없습니다.');
       } finally {
         setIsLoading(false);
@@ -100,7 +101,7 @@ export function useFeed(): UseFeedResult {
   // 탭 변경 시 새로 조회
   useEffect(() => {
     fetchFeed(activeTab, true);
-  }, [activeTab, user?.id]);
+  }, [activeTab, user?.id, fetchFeed]);
 
   // 탭 변경 핸들러
   const handleTabChange = useCallback(

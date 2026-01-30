@@ -13,6 +13,7 @@ import type {
   OnboardingPreferences,
 } from './types';
 import { DEFAULT_ONBOARDING_DATA } from './types';
+import { onboardingLogger } from '../utils/logger';
 
 const STORAGE_KEY = 'yiroom_onboarding_data';
 const COMPLETED_KEY = 'yiroom_onboarding_completed';
@@ -68,7 +69,7 @@ export function useOnboarding(): UseOnboardingResult {
 
       setIsCompleted(completed === 'true');
     } catch (error) {
-      console.error('[Onboarding] Load error:', error);
+      onboardingLogger.error(' Load error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +79,7 @@ export function useOnboarding(): UseOnboardingResult {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
     } catch (error) {
-      console.error('[Onboarding] Save error:', error);
+      onboardingLogger.error(' Save error:', error);
     }
   };
 
@@ -171,7 +172,7 @@ export function useOnboarding(): UseOnboardingResult {
       // 메인 탭으로 이동
       router.replace('/(tabs)' as never);
     } catch (error) {
-      console.error('[Onboarding] Complete error:', error);
+      onboardingLogger.error(' Complete error:', error);
     }
   }, [data, router]);
 
@@ -187,7 +188,7 @@ export function useOnboarding(): UseOnboardingResult {
       setCurrentStep(1);
       setIsCompleted(false);
     } catch (error) {
-      console.error('[Onboarding] Reset error:', error);
+      onboardingLogger.error(' Reset error:', error);
     }
   }, []);
 
@@ -227,7 +228,7 @@ export function useOnboardingCheck(): {
       setIsCompleted(result);
       return result;
     } catch (error) {
-      console.error('[Onboarding] Check error:', error);
+      onboardingLogger.error(' Check error:', error);
       return false;
     } finally {
       setIsLoading(false);
@@ -268,7 +269,7 @@ export function useOnboardingData(): {
           setData({ ...DEFAULT_ONBOARDING_DATA, ...JSON.parse(storedData) });
         }
       } catch (error) {
-        console.error('[Onboarding] Load data error:', error);
+        onboardingLogger.error(' Load data error:', error);
       } finally {
         setIsLoading(false);
       }

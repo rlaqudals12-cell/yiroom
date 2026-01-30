@@ -23,6 +23,7 @@ import type {
   TimeOfDay,
   RoutineStep,
 } from './types';
+import { skincareLogger } from '../utils/logger';
 
 // Hook 반환 타입
 interface UseSkincareRoutineReturn {
@@ -100,7 +101,7 @@ export function useSkincareRoutine(): UseSkincareRoutineReturn {
 
       setSkinData(analysisData);
     } catch (err) {
-      console.error('[Skincare Routine] Error fetching skin analysis:', err);
+      skincareLogger.error('Error fetching skin analysis:', err);
       setError('피부 분석 데이터를 불러오는데 실패했어요.');
     } finally {
       setLoading(false);

@@ -27,6 +27,7 @@ import {
   type FeedTab,
 } from '../../../lib/feed';
 import { useFeed } from '../../../lib/feed/useFeed';
+import { shareLogger } from '../../../lib/utils/logger';
 
 const TABS: { id: FeedTab; label: string }[] = [
   { id: 'my', label: '내 피드' },
@@ -58,7 +59,7 @@ export default function FeedScreen() {
         message: `${item.userName}님: ${item.content}${item.detail ? '\n' + item.detail : ''}`,
       });
     } catch (error) {
-      console.error('[Mobile] Share error:', error);
+      shareLogger.error('Share error:', error);
     }
   }, []);
 

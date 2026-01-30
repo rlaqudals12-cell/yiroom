@@ -5,6 +5,8 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { socialLogger } from '../utils/logger';
+
 // ============================================
 // 타입 정의
 // ============================================
@@ -81,7 +83,7 @@ export async function getFriends(
     .eq('status', 'accepted');
 
   if (error || !friendships) {
-    console.error('[Mobile] 친구 목록 조회 실패:', error);
+    socialLogger.error(' 친구 목록 조회 실패:', error);
     return [];
   }
 
@@ -309,7 +311,7 @@ export async function sendFriendRequest(
   });
 
   if (error) {
-    console.error('[Mobile] 친구 요청 실패:', error);
+    socialLogger.error(' 친구 요청 실패:', error);
     return { success: false, error: error.message };
   }
 
@@ -329,7 +331,7 @@ export async function acceptFriendRequest(
     .eq('id', friendshipId);
 
   if (error) {
-    console.error('[Mobile] 친구 요청 수락 실패:', error);
+    socialLogger.error(' 친구 요청 수락 실패:', error);
     return { success: false, error: error.message };
   }
 
@@ -349,7 +351,7 @@ export async function rejectFriendRequest(
     .eq('id', friendshipId);
 
   if (error) {
-    console.error('[Mobile] 친구 요청 거절 실패:', error);
+    socialLogger.error(' 친구 요청 거절 실패:', error);
     return { success: false, error: error.message };
   }
 
@@ -374,7 +376,7 @@ export async function getXpLeaderboard(
     .limit(limit);
 
   if (error || !data) {
-    console.error('[Mobile] XP 리더보드 조회 실패:', error);
+    socialLogger.error(' XP 리더보드 조회 실패:', error);
     return [];
   }
 
@@ -434,7 +436,7 @@ export async function getFriendsLeaderboard(
     .order(category === 'level' ? 'level' : 'total_xp', { ascending: false });
 
   if (error || !levels) {
-    console.error('[Mobile] 친구 리더보드 조회 실패:', error);
+    socialLogger.error(' 친구 리더보드 조회 실패:', error);
     return [];
   }
 

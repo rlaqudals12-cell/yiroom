@@ -6,6 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { SyncQueueItem, CACHE_KEYS, MAX_SYNC_RETRIES } from './types';
+import { syncLogger } from '../utils/logger';
 
 /**
  * 동기화 큐에 항목 추가
@@ -27,10 +28,10 @@ export async function addToSyncQueue(
     queue.push(newItem);
     await AsyncStorage.setItem(CACHE_KEYS.SYNC_QUEUE, JSON.stringify(queue));
 
-    console.log('[SyncQueue] Added:', newItem.type, newItem.action);
+    syncLogger.info('Added:', newItem.type, newItem.action);
     return id;
   } catch (error) {
-    console.error('[SyncQueue] Failed to add item:', error);
+    syncLogger.error('Failed to add item:', error);
     throw error;
   }
 }
@@ -46,7 +47,7 @@ export async function getSyncQueue(): Promise<SyncQueueItem[]> {
     }
     return JSON.parse(stored);
   } catch (error) {
-    console.error('[SyncQueue] Failed to get queue:', error);
+    syncLogger.error('Failed to get queue:', error);
     return [];
   }
 }
@@ -59,9 +60,9 @@ export async function removeFromSyncQueue(id: string): Promise<void> {
     const queue = await getSyncQueue();
     const filtered = queue.filter((item) => item.id !== id);
     await AsyncStorage.setItem(CACHE_KEYS.SYNC_QUEUE, JSON.stringify(filtered));
-    console.log('[SyncQueue] Removed:', id);
+    syncLogger.info('Removed:', id);
   } catch (error) {
-    console.error('[SyncQueue] Failed to remove item:', error);
+    syncLogger.error('Failed to remove item:', error);
   }
 }
 
@@ -85,14 +86,14 @@ export async function incrementRetryCount(
 
     // 최대 재시도 초과 시 제거
     if (queue[index].retryCount >= MAX_SYNC_RETRIES) {
-      console.log('[SyncQueue] Max retries exceeded, removing:', id);
+      syncLogger.info('Max retries exceeded, removing:', id);
       queue.splice(index, 1);
     }
 
     await AsyncStorage.setItem(CACHE_KEYS.SYNC_QUEUE, JSON.stringify(queue));
     return queue[index]?.retryCount < MAX_SYNC_RETRIES;
   } catch (error) {
-    console.error('[SyncQueue] Failed to increment retry:', error);
+    syncLogger.error('Failed to increment retry:', error);
     return false;
   }
 }
@@ -111,9 +112,9 @@ export async function getSyncQueueCount(): Promise<number> {
 export async function clearSyncQueue(): Promise<void> {
   try {
     await AsyncStorage.removeItem(CACHE_KEYS.SYNC_QUEUE);
-    console.log('[SyncQueue] Cleared');
+    syncLogger.info('Cleared');
   } catch (error) {
-    console.error('[SyncQueue] Failed to clear:', error);
+    syncLogger.error('Failed to clear:', error);
   }
 }
 
@@ -128,7 +129,7 @@ export async function processSyncQueue(
   let success = 0;
   let failed = 0;
 
-  console.log('[SyncQueue] Processing', queue.length, 'items');
+  syncLogger.info('Processing', queue.length, 'items');
 
   for (const item of queue) {
     try {
@@ -145,13 +146,13 @@ export async function processSyncQueue(
         error instanceof Error ? error.message : 'Unknown error';
       const shouldRetry = await incrementRetryCount(item.id, errorMessage);
       if (!shouldRetry) {
-        console.log('[SyncQueue] Giving up on item:', item.id);
+        syncLogger.info('Giving up on item:', item.id);
       }
       failed++;
     }
   }
 
-  console.log('[SyncQueue] Processed:', { success, failed });
+  syncLogger.info('Processed:', { success, failed });
   return { success, failed };
 }
 

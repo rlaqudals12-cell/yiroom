@@ -7,6 +7,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
+import { closetLogger } from '../utils/logger';
 
 import type {
   InventoryItem,
@@ -66,7 +67,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
 
       setItems((data as InventoryItemRow[]).map(rowToInventoryItem));
     } catch (err) {
-      console.error('[Mobile] useInventory error:', err);
+      closetLogger.error(' useInventory error:', err);
       setError('아이템을 불러올 수 없습니다');
     } finally {
       setIsLoading(false);
@@ -113,7 +114,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
         setItems((prev) => [newItem, ...prev]);
         return newItem;
       } catch (err) {
-        console.error('[Mobile] addItem error:', err);
+        closetLogger.error(' addItem error:', err);
         return null;
       }
     },
@@ -150,7 +151,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
         );
         return true;
       } catch (err) {
-        console.error('[Mobile] updateItem error:', err);
+        closetLogger.error(' updateItem error:', err);
         return false;
       }
     },
@@ -172,7 +173,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
         setItems((prev) => prev.filter((item) => item.id !== id));
         return true;
       } catch (err) {
-        console.error('[Mobile] deleteItem error:', err);
+        closetLogger.error(' deleteItem error:', err);
         return false;
       }
     },
@@ -275,7 +276,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
 
       setOutfits((data as SavedOutfitRow[]).map(rowToSavedOutfit));
     } catch (err) {
-      console.error('[Mobile] useSavedOutfits error:', err);
+      closetLogger.error(' useSavedOutfits error:', err);
       setError('코디를 불러올 수 없습니다');
     } finally {
       setIsLoading(false);
@@ -318,7 +319,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
         setOutfits((prev) => [newOutfit, ...prev]);
         return newOutfit;
       } catch (err) {
-        console.error('[Mobile] saveOutfit error:', err);
+        closetLogger.error(' saveOutfit error:', err);
         return null;
       }
     },
@@ -340,7 +341,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
         setOutfits((prev) => prev.filter((outfit) => outfit.id !== id));
         return true;
       } catch (err) {
-        console.error('[Mobile] deleteOutfit error:', err);
+        closetLogger.error(' deleteOutfit error:', err);
         return false;
       }
     },
@@ -378,7 +379,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
         );
         return true;
       } catch (err) {
-        console.error('[Mobile] recordWear error:', err);
+        closetLogger.error(' recordWear error:', err);
         return false;
       }
     },

@@ -4,7 +4,7 @@
 import type { PersonalColorSeason } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -69,12 +69,8 @@ export default function PersonalColorResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<PersonalColorSeason | null>(null);
 
-  useEffect(() => {
-    analyzePersonalColor();
-  }, []);
-
   // 퍼스널 컬러 분석 (Mock)
-  const analyzePersonalColor = async () => {
+  const analyzePersonalColor = useCallback(async () => {
     setIsLoading(true);
 
     // TODO: 실제 Gemini AI 분석 연동
@@ -98,7 +94,11 @@ export default function PersonalColorResultScreen() {
 
     setResult(season);
     setIsLoading(false);
-  };
+  }, [answers]);
+
+  useEffect(() => {
+    analyzePersonalColor();
+  }, [analyzePersonalColor]);
 
   const handleRetry = () => {
     router.replace('/(analysis)/personal-color');

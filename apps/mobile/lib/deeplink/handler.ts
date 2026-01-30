@@ -13,6 +13,7 @@ import {
   ParsedDeepLink,
   DeepLinkParams,
 } from './types';
+import { deepLinkLogger } from '../utils/logger';
 
 /**
  * 딥링크 URL 파싱
@@ -43,7 +44,7 @@ export function parseDeepLink(url: string): ParsedDeepLink {
 
     return { path, params, isValid: true };
   } catch (error) {
-    console.error('[DeepLink] Failed to parse URL:', url, error);
+    deepLinkLogger.error('Failed to parse URL:', url, error);
     return { path: '', params: {}, isValid: false };
   }
 }
@@ -53,7 +54,7 @@ export function parseDeepLink(url: string): ParsedDeepLink {
  */
 export function navigateToDeepLink(parsed: ParsedDeepLink): boolean {
   if (!parsed.isValid) {
-    console.log('[DeepLink] Invalid deep link');
+    deepLinkLogger.info('Invalid deep link');
     return false;
   }
 
@@ -71,7 +72,7 @@ export function navigateToDeepLink(parsed: ParsedDeepLink): boolean {
   }
 
   if (!targetPath) {
-    console.log('[DeepLink] Unknown path:', parsed.path);
+    deepLinkLogger.info('Unknown path:', parsed.path);
     return false;
   }
 
@@ -79,7 +80,7 @@ export function navigateToDeepLink(parsed: ParsedDeepLink): boolean {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
   // 네비게이션
-  console.log('[DeepLink] Navigating to:', targetPath, parsed.params);
+  deepLinkLogger.info('Navigating to:', targetPath, parsed.params);
 
   // 파라미터가 있는 경우 쿼리스트링으로 전달
   if (Object.keys(parsed.params).length > 0) {
@@ -109,12 +110,12 @@ export async function getInitialDeepLink(): Promise<ParsedDeepLink | null> {
   try {
     const url = await Linking.getInitialURL();
     if (url) {
-      console.log('[DeepLink] Initial URL:', url);
+      deepLinkLogger.info('Initial URL:', url);
       return parseDeepLink(url);
     }
     return null;
   } catch (error) {
-    console.error('[DeepLink] Failed to get initial URL:', error);
+    deepLinkLogger.error('Failed to get initial URL:', error);
     return null;
   }
 }

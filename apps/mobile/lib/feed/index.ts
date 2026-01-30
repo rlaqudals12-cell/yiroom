@@ -6,6 +6,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { FeedItem, FeedItemType } from './types';
+import { feedLogger } from '../utils/logger';
 
 // 피드 아이템 타입별 아이콘
 export const feedTypeConfig: Record<
@@ -54,7 +55,7 @@ export async function getFriendsFeed(
     .range(offset, offset + limit - 1);
 
   if (error || !activities) {
-    console.error('[Mobile] 친구 피드 조회 실패:', error);
+    feedLogger.error(' 친구 피드 조회 실패:', error);
     return [];
   }
 
@@ -113,7 +114,7 @@ export async function getMyFeed(
     .range(offset, offset + limit - 1);
 
   if (error || !activities) {
-    console.error('[Mobile] 내 피드 조회 실패:', error);
+    feedLogger.error(' 내 피드 조회 실패:', error);
     return [];
   }
 
@@ -162,7 +163,7 @@ export async function getAllFeed(
     .range(offset, offset + limit - 1);
 
   if (error || !activities) {
-    console.error('[Mobile] 전체 피드 조회 실패:', error);
+    feedLogger.error(' 전체 피드 조회 실패:', error);
     return [];
   }
 
@@ -240,7 +241,7 @@ export async function toggleLike(
     .eq('id', activityId);
 
   if (updateError) {
-    console.error('[Mobile] 좋아요 토글 실패:', updateError);
+    feedLogger.error(' 좋아요 토글 실패:', updateError);
     return { success: false, isLiked: isCurrentlyLiked };
   }
 

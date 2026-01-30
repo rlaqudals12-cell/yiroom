@@ -8,6 +8,8 @@ import * as Haptics from 'expo-haptics';
 import * as StoreReview from 'expo-store-review';
 import { Platform, Linking } from 'react-native';
 
+import { appLogger } from '../utils/logger';
+
 // 저장 키
 const REVIEW_DATA_KEY = '@yiroom/review_data';
 
@@ -147,7 +149,7 @@ export async function requestReviewIfEligible(): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error('[Review] 리뷰 요청 실패:', error);
+    appLogger.error('리뷰 요청 실패:', error);
     return false;
   }
 }

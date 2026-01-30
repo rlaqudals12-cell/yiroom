@@ -7,6 +7,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
+import { socialLogger } from '../utils/logger';
 
 import {
   getXpLeaderboard,
@@ -27,7 +28,7 @@ interface UseLeaderboardResult {
  * 전체 리더보드 훅
  */
 export function useLeaderboard(
-  category: LeaderboardCategory = 'xp',
+  _category: LeaderboardCategory = 'xp',
   limit: number = 50
 ): UseLeaderboardResult {
   const supabase = useClerkSupabaseClient();
@@ -46,12 +47,12 @@ export function useLeaderboard(
       const data = await getXpLeaderboard(supabase, limit);
       setRankings(data);
     } catch (err) {
-      console.error('[Mobile] useLeaderboard error:', err);
+      socialLogger.error(' useLeaderboard error:', err);
       setError('리더보드를 불러올 수 없습니다.');
     } finally {
       setIsLoading(false);
     }
-  }, [supabase, category, limit]);
+  }, [supabase, limit]);
 
   useEffect(() => {
     fetchLeaderboard();
@@ -89,7 +90,7 @@ export function useFriendsLeaderboard(
       const data = await getFriendsLeaderboard(supabase, user.id, category);
       setRankings(data);
     } catch (err) {
-      console.error('[Mobile] useFriendsLeaderboard error:', err);
+      socialLogger.error(' useFriendsLeaderboard error:', err);
       setError('친구 리더보드를 불러올 수 없습니다.');
     } finally {
       setIsLoading(false);
@@ -133,7 +134,7 @@ export function useMyRanking(): UseMyRankingResult {
         setTotalUsers(data.totalUsers);
       }
     } catch (err) {
-      console.error('[Mobile] useMyRanking error:', err);
+      socialLogger.error(' useMyRanking error:', err);
     } finally {
       setIsLoading(false);
     }

@@ -10,6 +10,7 @@ import { useClerkSupabaseClient } from '../supabase';
 import { createAffiliateClick } from './clicks';
 import { trackAndOpenLink, identifyPartner } from './deeplink';
 import type { AffiliatePartnerName } from './types';
+import { affiliateLogger } from '../utils/logger';
 
 interface UseAffiliateClickOptions {
   productId: string;
@@ -55,7 +56,7 @@ export function useAffiliateClick(
       // 1. 파트너 식별
       const partner = providedPartner || identifyPartner(productUrl);
       if (!partner) {
-        console.warn('[Mobile Affiliate] 파트너 식별 불가, 원본 URL 사용');
+        affiliateLogger.warn(' 파트너 식별 불가, 원본 URL 사용');
       }
 
       // 2. 클릭 트래킹 (백그라운드, Clerk 통합 Supabase 사용)
@@ -66,7 +67,7 @@ export function useAffiliateClick(
         sourceComponent,
         recommendationType,
       }).catch((err) => {
-        console.error('[Mobile Affiliate] 클릭 트래킹 실패:', err);
+        affiliateLogger.error(' 클릭 트래킹 실패:', err);
       });
 
       // 3. 링크 열기
@@ -78,7 +79,7 @@ export function useAffiliateClick(
         setError('링크를 열 수 없습니다');
       }
     } catch (err) {
-      console.error('[Mobile Affiliate] 클릭 처리 오류:', err);
+      affiliateLogger.error(' 클릭 처리 오류:', err);
       setError(err instanceof Error ? err.message : '오류가 발생했습니다');
     } finally {
       setIsLoading(false);

@@ -7,6 +7,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
+import { socialLogger } from '../utils/logger';
 
 import {
   getFriends,
@@ -49,7 +50,7 @@ export function useFriends(): UseFriendsResult {
       const data = await getFriends(supabase, user.id);
       setFriends(data);
     } catch (err) {
-      console.error('[Mobile] useFriends error:', err);
+      socialLogger.error(' useFriends error:', err);
       setError('친구 목록을 불러올 수 없습니다.');
     } finally {
       setIsLoading(false);
@@ -92,7 +93,7 @@ export function useFriendRequests(): UseFriendRequestsResult {
       const data = await getReceivedRequests(supabase, user.id);
       setRequests(data);
     } catch (err) {
-      console.error('[Mobile] useFriendRequests error:', err);
+      socialLogger.error(' useFriendRequests error:', err);
       setError('친구 요청을 불러올 수 없습니다.');
     } finally {
       setIsLoading(false);
@@ -157,7 +158,7 @@ export function useFriendStats(): UseFriendStatsResult {
       const data = await getFriendStats(supabase, user.id);
       setStats(data);
     } catch (err) {
-      console.error('[Mobile] useFriendStats error:', err);
+      socialLogger.error(' useFriendStats error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -205,7 +206,7 @@ export function useUserSearch(): UseUserSearchResult {
         const data = await searchUsers(supabase, user.id, query);
         setResults(data);
       } catch (err) {
-        console.error('[Mobile] useUserSearch error:', err);
+        socialLogger.error(' useUserSearch error:', err);
         setError('검색에 실패했습니다.');
       } finally {
         setIsLoading(false);

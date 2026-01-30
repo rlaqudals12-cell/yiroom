@@ -6,6 +6,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { useState, useEffect, useCallback } from 'react';
 
 import { useClerkSupabaseClient } from '../lib/supabase';
+import { nutritionLogger } from '../lib/utils/logger';
 
 export interface NutritionSettings {
   dailyCalorieGoal: number;
@@ -151,7 +152,7 @@ export function useNutritionData(): UseNutritionDataReturn {
     } catch (err) {
       // AbortError는 정상적인 취소이므로 무시
       if (err instanceof Error && err.name === 'AbortError') return;
-      console.error('[Mobile] Failed to fetch nutrition data:', err);
+      nutritionLogger.error('Failed to fetch nutrition data:', err);
       setError(
         err instanceof Error ? err : new Error('Failed to fetch nutrition data')
       );

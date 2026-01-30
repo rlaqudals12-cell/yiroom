@@ -2,7 +2,7 @@
  * W-1 운동 세션 화면 (타이머 포함)
  */
 import { router } from 'expo-router';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -37,6 +37,21 @@ export default function WorkoutSessionScreen() {
 
   const currentExercise = SAMPLE_EXERCISES[currentExerciseIndex];
 
+  // handleRestEnd를 먼저 정의 (useEffect에서 사용)
+  const handleRestEnd = useCallback(() => {
+    if (currentSet < currentExercise.sets) {
+      setCurrentSet((prev) => prev + 1);
+      setSessionState('exercising');
+    } else if (currentExerciseIndex < SAMPLE_EXERCISES.length - 1) {
+      setCurrentExerciseIndex((prev) => prev + 1);
+      setCurrentSet(1);
+      setSessionState('exercising');
+    } else {
+      setSessionState('completed');
+    }
+    setTimer(0);
+  }, [currentSet, currentExercise.sets, currentExerciseIndex]);
+
   // 타이머 효과
   useEffect(() => {
     if (sessionState === 'exercising' || sessionState === 'resting') {
@@ -60,21 +75,7 @@ export default function WorkoutSessionScreen() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [sessionState]);
-
-  const handleRestEnd = () => {
-    if (currentSet < currentExercise.sets) {
-      setCurrentSet((prev) => prev + 1);
-      setSessionState('exercising');
-    } else if (currentExerciseIndex < SAMPLE_EXERCISES.length - 1) {
-      setCurrentExerciseIndex((prev) => prev + 1);
-      setCurrentSet(1);
-      setSessionState('exercising');
-    } else {
-      setSessionState('completed');
-    }
-    setTimer(0);
-  };
+  }, [sessionState, handleRestEnd]);
 
   const handleStartSession = () => {
     setSessionState('exercising');

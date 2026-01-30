@@ -28,6 +28,7 @@ import {
   type TrafficLight,
 } from '../../../lib/gemini';
 import { useClerkSupabaseClient } from '../../../lib/supabase';
+import { cameraLogger, nutritionLogger } from '../../../lib/utils/logger';
 
 // 식사 타입
 const MEAL_TYPES = [
@@ -95,7 +96,7 @@ export default function FoodCameraScreen() {
         await analyzeFood(photo.base64 || '');
       }
     } catch (error) {
-      console.error('[Mobile] Camera capture error:', error);
+      cameraLogger.error('Camera capture error:', error);
       Alert.alert('오류', '사진 촬영에 실패했습니다.');
     }
   };
@@ -142,7 +143,7 @@ export default function FoodCameraScreen() {
       setAiInsight(result.insight || null);
       setScreenState('result');
     } catch (error) {
-      console.error('[Mobile] Food analysis failed:', error);
+      nutritionLogger.error('Food analysis failed:', error);
       Alert.alert('분석 실패', '음식 분석에 실패했습니다. 다시 시도해주세요.');
       setScreenState('camera');
     }
@@ -217,7 +218,7 @@ export default function FoodCameraScreen() {
         { text: '확인', onPress: () => router.back() },
       ]);
     } catch (error) {
-      console.error('[Mobile] Failed to save meal record:', error);
+      nutritionLogger.error('Failed to save meal record:', error);
       Alert.alert('오류', '식사 기록 저장에 실패했습니다.');
     } finally {
       setIsSaving(false);

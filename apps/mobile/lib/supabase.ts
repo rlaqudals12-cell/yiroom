@@ -5,6 +5,8 @@ import { useAuth } from '@clerk/clerk-expo';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { useMemo, useRef, useEffect } from 'react';
 
+import { dbLogger } from './utils/logger';
+
 // Supabase 설정
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -64,11 +66,11 @@ export function useClerkSupabaseClient(): SupabaseClient {
  */
 export function validateSupabaseConfig(): boolean {
   if (!SUPABASE_URL) {
-    console.warn('Missing EXPO_PUBLIC_SUPABASE_URL');
+    dbLogger.warn('Missing EXPO_PUBLIC_SUPABASE_URL');
     return false;
   }
   if (!SUPABASE_ANON_KEY) {
-    console.warn('Missing EXPO_PUBLIC_SUPABASE_ANON_KEY');
+    dbLogger.warn('Missing EXPO_PUBLIC_SUPABASE_ANON_KEY');
     return false;
   }
   return true;

@@ -10,6 +10,7 @@ import NetInfo, {
 import { useState, useEffect, useCallback } from 'react';
 
 import { NetworkStatus } from './types';
+import { offlineLogger } from '../utils/logger';
 
 interface UseNetworkStatusReturn {
   // 현재 네트워크 상태
@@ -40,7 +41,7 @@ export function useNetworkStatus(): UseNetworkStatusReturn {
     setStatus(newStatus);
     setConnectionType(state.type);
 
-    console.log('[Network] Status updated:', {
+    offlineLogger.info('Status updated:', {
       status: newStatus,
       type: state.type,
       isConnected: state.isConnected,
@@ -54,7 +55,7 @@ export function useNetworkStatus(): UseNetworkStatusReturn {
       const state = await NetInfo.fetch();
       updateNetworkStatus(state);
     } catch (error) {
-      console.error('[Network] Failed to refresh status:', error);
+      offlineLogger.error('Failed to refresh status:', error);
       setStatus('unknown');
     }
   }, [updateNetworkStatus]);

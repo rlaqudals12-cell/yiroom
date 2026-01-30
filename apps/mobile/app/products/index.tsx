@@ -26,6 +26,7 @@ import {
   type AffiliateProductFilter,
 } from '../../lib/affiliate';
 import { useClerkSupabaseClient } from '../../lib/supabase';
+import { productLogger } from '../../lib/utils/logger';
 
 // 카테고리
 const CATEGORIES = [
@@ -87,7 +88,7 @@ export default function ProductsScreen() {
         setUserSeason(colorData.season);
       }
     } catch (error) {
-      console.error('[Mobile] Failed to fetch user data:', error);
+      productLogger.error('Failed to fetch user data:', error);
     }
   }, [user?.id, supabase]);
 
@@ -215,7 +216,7 @@ export default function ProductsScreen() {
 
       setProducts(displayProducts);
     } catch (error) {
-      console.error('[Mobile] Failed to fetch products:', error);
+      productLogger.error('Failed to fetch products:', error);
       setProducts([]);
     } finally {
       setIsLoading(false);

@@ -6,6 +6,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { useState, useEffect, useCallback } from 'react';
 
 import { useClerkSupabaseClient } from '../lib/supabase';
+import { workoutLogger } from '../lib/utils/logger';
 
 // 운동 타입
 export type WorkoutType = 'toner' | 'builder' | 'burner' | 'mover' | 'flexer';
@@ -154,7 +155,7 @@ export function useWorkoutData(): UseWorkoutDataReturn {
     } catch (err) {
       // AbortError는 정상적인 취소이므로 무시
       if (err instanceof Error && err.name === 'AbortError') return;
-      console.error('[Mobile] Failed to fetch workout data:', err);
+      workoutLogger.error('Failed to fetch workout data:', err);
       setError(
         err instanceof Error ? err : new Error('Failed to fetch workout data')
       );

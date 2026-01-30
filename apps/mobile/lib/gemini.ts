@@ -4,6 +4,8 @@
  */
 import type { PersonalColorSeason, SkinType, BodyType } from '@yiroom/shared';
 
+import { geminiLogger } from './utils/logger';
+
 // Gemini API 설정
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
 const GEMINI_API_URL =
@@ -136,7 +138,7 @@ async function callGeminiAPI(
 
     // 재시도
     if (retryCount < MAX_RETRIES) {
-      console.warn(`Gemini API retry ${retryCount + 1}/${MAX_RETRIES}`);
+      geminiLogger.warn(`API retry ${retryCount + 1}/${MAX_RETRIES}`);
       return callGeminiAPI(prompt, imageBase64, retryCount + 1);
     }
 
@@ -496,10 +498,7 @@ export async function analyzeFood(
       insight: parsed.insight,
     };
   } catch (error) {
-    console.error(
-      '[Mobile] Gemini food analysis error, falling back to mock:',
-      error
-    );
+    geminiLogger.error('Food analysis error, falling back to mock:', error);
     // AI 실패 시 Mock Fallback
     return generateMockFoodResult();
   }
@@ -687,7 +686,7 @@ export function getConfidenceFeedback(confidence: number): {
  */
 export function validateGeminiConfig(): boolean {
   if (!GEMINI_API_KEY) {
-    console.warn('Missing EXPO_PUBLIC_GEMINI_API_KEY');
+    geminiLogger.warn('Missing EXPO_PUBLIC_GEMINI_API_KEY');
     return false;
   }
   return true;

@@ -6,6 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { CacheMetadata, DEFAULT_CACHE_TTL } from './types';
+import { offlineLogger } from '../utils/logger';
 
 // 캐시 항목 구조
 interface CacheItem<T> {
@@ -34,9 +35,9 @@ export async function setCache<T>(
     };
 
     await AsyncStorage.setItem(key, JSON.stringify(item));
-    console.log('[Cache] Saved:', key);
+    offlineLogger.info('Cache saved:', key);
   } catch (error) {
-    console.error('[Cache] Failed to save:', key, error);
+    offlineLogger.error('Cache failed to save:', key, error);
     throw error;
   }
 }
@@ -57,16 +58,16 @@ export async function getCache<T>(key: string): Promise<T | null> {
     if (item.metadata.expiresAt) {
       const expiresAt = new Date(item.metadata.expiresAt);
       if (expiresAt < new Date()) {
-        console.log('[Cache] Expired:', key);
+        offlineLogger.info('Cache expired:', key);
         await removeCache(key);
         return null;
       }
     }
 
-    console.log('[Cache] Hit:', key);
+    offlineLogger.info('Cache hit:', key);
     return item.data;
   } catch (error) {
-    console.error('[Cache] Failed to get:', key, error);
+    offlineLogger.error('Cache failed to get:', key, error);
     return null;
   }
 }
@@ -77,9 +78,9 @@ export async function getCache<T>(key: string): Promise<T | null> {
 export async function removeCache(key: string): Promise<void> {
   try {
     await AsyncStorage.removeItem(key);
-    console.log('[Cache] Removed:', key);
+    offlineLogger.info('Cache removed:', key);
   } catch (error) {
-    console.error('[Cache] Failed to remove:', key, error);
+    offlineLogger.error('Cache failed to remove:', key, error);
   }
 }
 
@@ -98,7 +99,7 @@ export async function getCacheMetadata(
     const item = JSON.parse(stored);
     return item.metadata || null;
   } catch (error) {
-    console.error('[Cache] Failed to get metadata:', key, error);
+    offlineLogger.error('Cache failed to get metadata:', key, error);
     return null;
   }
 }
@@ -141,10 +142,14 @@ export async function clearCacheByPrefix(prefix: string): Promise<void> {
 
     if (keysToRemove.length > 0) {
       await AsyncStorage.multiRemove(keysToRemove);
-      console.log('[Cache] Cleared by prefix:', prefix, keysToRemove.length);
+      offlineLogger.info(
+        'Cache cleared by prefix:',
+        prefix,
+        keysToRemove.length
+      );
     }
   } catch (error) {
-    console.error('[Cache] Failed to clear by prefix:', prefix, error);
+    offlineLogger.error('Cache failed to clear by prefix:', prefix, error);
   }
 }
 
@@ -158,10 +163,10 @@ export async function clearAllCache(): Promise<void> {
 
     if (cacheKeys.length > 0) {
       await AsyncStorage.multiRemove(cacheKeys);
-      console.log('[Cache] Cleared all:', cacheKeys.length);
+      offlineLogger.info('Cache cleared all:', cacheKeys.length);
     }
   } catch (error) {
-    console.error('[Cache] Failed to clear all:', error);
+    offlineLogger.error('Cache failed to clear all:', error);
   }
 }
 
@@ -181,7 +186,7 @@ export async function getCacheOrFetch<T>(
     fetchFn()
       .then((data) => setCache(key, data, ttl))
       .catch((error) =>
-        console.error('[Cache] Background refresh failed:', error)
+        offlineLogger.error('Cache background refresh failed:', error)
       );
 
     return cached;

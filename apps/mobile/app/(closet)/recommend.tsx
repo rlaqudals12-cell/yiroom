@@ -44,6 +44,12 @@ export default function RecommendScreen() {
   const [outfit, setOutfit] = useState<OutfitSuggestion | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // generateOutfit을 먼저 정의 (useEffect에서 사용)
+  const generateOutfit = useCallback(() => {
+    const suggestion = getOutfitSuggestion({ temp });
+    setOutfit(suggestion);
+  }, [getOutfitSuggestion, temp]);
+
   // Mock 날씨 설정 (계절에 맞는 온도)
   useEffect(() => {
     const month = new Date().getMonth();
@@ -62,12 +68,7 @@ export default function RecommendScreen() {
     if (!isLoading && items.length > 0) {
       generateOutfit();
     }
-  }, [isLoading, items, temp]);
-
-  const generateOutfit = useCallback(() => {
-    const suggestion = getOutfitSuggestion({ temp });
-    setOutfit(suggestion);
-  }, [getOutfitSuggestion, temp]);
+  }, [isLoading, items, generateOutfit]);
 
   const handleRefresh = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

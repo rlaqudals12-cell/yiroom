@@ -20,6 +20,7 @@ import {
   DEFAULT_NOTIFICATION_SETTINGS,
 } from './types';
 import { handleDeepLinkUrl } from '../deeplink';
+import { pushLogger } from '../utils/logger';
 
 // 알림 설정 저장 키
 const NOTIFICATION_SETTINGS_KEY = '@yiroom/notification_settings';
@@ -64,7 +65,7 @@ export function usePush(userId?: string): UsePushReturn {
         setSettings({ ...DEFAULT_NOTIFICATION_SETTINGS, ...JSON.parse(data) });
       }
     } catch (error) {
-      console.error('[Push] 설정 로드 실패:', error);
+      pushLogger.error('설정 로드 실패:', error);
     }
   }, []);
 
@@ -86,7 +87,7 @@ export function usePush(userId?: string): UsePushReturn {
     (response: Notifications.NotificationResponse) => {
       const data = response.notification.request.content
         .data as NotificationData;
-      console.log('[Push] 알림 응답:', data);
+      pushLogger.info('알림 응답:', data);
 
       // 딥링크 처리
       if (data.deepLink) {
@@ -153,7 +154,7 @@ export function usePush(userId?: string): UsePushReturn {
     // 알림 수신 리스너
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log('[Push] 알림 수신:', notification);
+        pushLogger.info('알림 수신:', notification);
         setLastNotification(notification);
       });
 

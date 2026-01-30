@@ -6,6 +6,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
+import { challengeLogger } from '../utils/logger';
 
 import {
   getActiveChallenges,
@@ -58,7 +59,7 @@ export function useChallenges(): UseChallengesResult {
         setStats(myStats);
       }
     } catch (err) {
-      console.error('[Mobile] useChallenges error:', err);
+      challengeLogger.error(' useChallenges error:', err);
       setError('챌린지를 불러올 수 없습니다');
     } finally {
       setIsLoading(false);
@@ -113,7 +114,7 @@ export function useJoinChallenge(
 
         return { success: result.success, error: result.error };
       } catch (err) {
-        console.error('[Mobile] useJoinChallenge error:', err);
+        challengeLogger.error(' useJoinChallenge error:', err);
         return { success: false, error: '참여에 실패했습니다' };
       } finally {
         setIsJoining(false);
@@ -151,7 +152,7 @@ export function useActiveChallenges(): UseActiveChallengesResult {
       const data = await getUserChallenges(supabase, user.id);
       setUserChallenges(data);
     } catch (err) {
-      console.error('[Mobile] useActiveChallenges error:', err);
+      challengeLogger.error(' useActiveChallenges error:', err);
     } finally {
       setIsLoading(false);
     }

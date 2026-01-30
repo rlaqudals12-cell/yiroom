@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
+import { profileLogger } from '../../lib/utils/logger';
 
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
@@ -36,7 +37,7 @@ export default function ProfileScreen() {
     try {
       await signOut();
     } catch (error) {
-      console.error('Sign out error:', error);
+      profileLogger.error('Sign out error:', error);
     }
   };
 

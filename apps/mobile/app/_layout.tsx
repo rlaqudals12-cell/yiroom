@@ -8,13 +8,14 @@ import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
+import { appLogger } from '../lib/utils/logger';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   // Clerk key가 없으면 에러 표시 (개발 중에는 무시)
   if (!CLERK_PUBLISHABLE_KEY) {
-    console.warn('Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY');
+    appLogger.warn('Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY');
   }
 
   return (

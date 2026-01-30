@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { settingsLogger } from '../../lib/utils/logger';
 import { setGoals as setWidgetGoals } from '../../lib/widgets';
 
 // 목표 설정 타입
@@ -64,7 +65,7 @@ export default function GoalsSettingsScreen() {
         setCustomCalories(parsed.caloriesGoal.toString());
       }
     } catch (error) {
-      console.error('[Goals] Failed to load goals:', error);
+      settingsLogger.error('Failed to load goals:', error);
     }
   };
 
@@ -77,9 +78,9 @@ export default function GoalsSettingsScreen() {
       // 위젯 데이터도 업데이트
       await setWidgetGoals(newGoals.waterGoal, newGoals.caloriesGoal);
 
-      console.log('[Goals] Saved goals:', newGoals);
+      settingsLogger.info('Saved goals:', newGoals);
     } catch (error) {
-      console.error('[Goals] Failed to save goals:', error);
+      settingsLogger.error('Failed to save goals:', error);
     }
   }, []);
 

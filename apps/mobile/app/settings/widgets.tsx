@@ -4,7 +4,7 @@
  */
 
 import * as Haptics from 'expo-haptics';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -36,14 +36,14 @@ export default function WidgetSettingsScreen() {
     'small' | 'medium' | 'large'
   >('medium');
 
-  useEffect(() => {
-    loadWidgetData();
-  }, []);
-
-  const loadWidgetData = async () => {
+  const loadWidgetData = useCallback(async () => {
     const data = await getData();
     setWidgetData(data);
-  };
+  }, [getData]);
+
+  useEffect(() => {
+    loadWidgetData();
+  }, [loadWidgetData]);
 
   const handleSizeChange = (size: 'small' | 'medium' | 'large') => {
     Haptics.selectionAsync();

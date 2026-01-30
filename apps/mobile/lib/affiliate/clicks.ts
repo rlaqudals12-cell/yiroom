@@ -6,6 +6,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { AffiliateClickInput } from './types';
+import { affiliateLogger } from '../utils/logger';
 
 /**
  * 클릭 기록 생성
@@ -31,13 +32,13 @@ export async function createAffiliateClick(
       .single();
 
     if (error) {
-      console.error('[Mobile Affiliate] 클릭 기록 실패:', error);
+      affiliateLogger.error(' 클릭 기록 실패:', error);
       return null;
     }
 
     return data.id;
   } catch (error) {
-    console.error('[Mobile Affiliate] 클릭 기록 오류:', error);
+    affiliateLogger.error(' 클릭 기록 오류:', error);
     return null;
   }
 }
@@ -62,7 +63,7 @@ export async function getUserClickHistory(
       .limit(limit);
 
     if (error) {
-      console.error('[Mobile Affiliate] 히스토리 조회 실패:', error);
+      affiliateLogger.error(' 히스토리 조회 실패:', error);
       return [];
     }
 
@@ -71,7 +72,7 @@ export async function getUserClickHistory(
       clickedAt: new Date(row.clicked_at),
     }));
   } catch (error) {
-    console.error('[Mobile Affiliate] 히스토리 조회 오류:', error);
+    affiliateLogger.error(' 히스토리 조회 오류:', error);
     return [];
   }
 }

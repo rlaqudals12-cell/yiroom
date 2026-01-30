@@ -20,6 +20,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
+import { workoutLogger } from '../../../lib/utils/logger';
 
 // 추천 운동 목록
 const RECOMMENDED_EXERCISES = [
@@ -136,7 +137,7 @@ export default function WorkoutLogScreen() {
         { text: '확인', onPress: () => router.replace('/(tabs)/records') },
       ]);
     } catch (error) {
-      console.error('[Mobile] Failed to save workout log:', error);
+      workoutLogger.error('Failed to save workout log:', error);
       Alert.alert('오류', '운동 기록 저장에 실패했습니다.');
     } finally {
       setIsLoading(false);
@@ -193,7 +194,7 @@ export default function WorkoutLogScreen() {
         });
       }
     } catch (error) {
-      console.error('[Mobile] Failed to update streak:', error);
+      workoutLogger.error('Failed to update streak:', error);
     }
   };
 

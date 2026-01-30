@@ -15,6 +15,7 @@ import type {
   AffiliatePersonalColor,
   AffiliateBodyType,
 } from './types';
+import { affiliateLogger } from '../utils/logger';
 
 /**
  * DB Row → 앱 타입 변환
@@ -142,7 +143,7 @@ export async function getAffiliateProducts(
   const { data, error } = await query;
 
   if (error) {
-    console.error('[Mobile Affiliate] 제품 조회 실패:', error);
+    affiliateLogger.error(' 제품 조회 실패:', error);
     return [];
   }
 
@@ -164,7 +165,7 @@ export async function getAffiliateProductById(
     .single();
 
   if (error || !data) {
-    console.error('[Mobile Affiliate] 제품 조회 실패:', error);
+    affiliateLogger.error(' 제품 조회 실패:', error);
     return null;
   }
 
@@ -187,7 +188,7 @@ export async function getAffiliateProductsByPartner(
     .single();
 
   if (partnerError || !partner) {
-    console.error('[Mobile Affiliate] 파트너 조회 실패:', partnerError);
+    affiliateLogger.error(' 파트너 조회 실패:', partnerError);
     return [];
   }
 
@@ -200,7 +201,7 @@ export async function getAffiliateProductsByPartner(
     .limit(limit);
 
   if (error) {
-    console.error('[Mobile Affiliate] 제품 조회 실패:', error);
+    affiliateLogger.error(' 제품 조회 실패:', error);
     return [];
   }
 
@@ -232,7 +233,7 @@ export async function getRecommendedProductsBySkin(
     .limit(limit);
 
   if (error) {
-    console.error('[Mobile Affiliate] 추천 제품 조회 실패:', error);
+    affiliateLogger.error(' 추천 제품 조회 실패:', error);
     return [];
   }
 
@@ -264,7 +265,7 @@ export async function getRecommendedProductsByColor(
     .limit(limit);
 
   if (error) {
-    console.error('[Mobile Affiliate] 추천 제품 조회 실패:', error);
+    affiliateLogger.error(' 추천 제품 조회 실패:', error);
     return [];
   }
 
@@ -296,7 +297,7 @@ export async function getRecommendedProductsByBodyType(
     .limit(limit);
 
   if (error) {
-    console.error('[Mobile Affiliate] 추천 제품 조회 실패:', error);
+    affiliateLogger.error(' 추천 제품 조회 실패:', error);
     return [];
   }
 
@@ -323,7 +324,7 @@ export async function searchAffiliateProducts(
     .limit(limit);
 
   if (error) {
-    console.error('[Mobile Affiliate] 제품 검색 실패:', error);
+    affiliateLogger.error(' 제품 검색 실패:', error);
     return [];
   }
 
@@ -353,7 +354,7 @@ export async function getPopularAffiliateProducts(
     .limit(limit);
 
   if (error) {
-    console.error('[Mobile Affiliate] 인기 제품 조회 실패:', error);
+    affiliateLogger.error(' 인기 제품 조회 실패:', error);
     return [];
   }
 

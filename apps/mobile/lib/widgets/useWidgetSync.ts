@@ -16,6 +16,7 @@ import {
   resetDailyData,
 } from './storage';
 import { TodaySummaryData } from './types';
+import { widgetLogger } from '../utils/logger';
 
 interface UseWidgetSyncOptions {
   // 자동 동기화 활성화
@@ -57,7 +58,7 @@ export function useWidgetSync(
     const handleAppStateChange = async (nextState: AppStateStatus) => {
       // 앱이 백그라운드로 갈 때 동기화
       if (nextState === 'background') {
-        console.log('[Widget] App going to background, syncing...');
+        widgetLogger.info('App going to background, syncing...');
         // 현재 데이터 저장 (위젯 갱신 트리거)
         const data = await getWidgetData();
         await saveWidgetData(data);
@@ -79,7 +80,7 @@ export function useWidgetSync(
     if (!autoSync || syncInterval <= 0) return;
 
     const interval = setInterval(async () => {
-      console.log('[Widget] Periodic sync...');
+      widgetLogger.info('Periodic sync...');
       const data = await getWidgetData();
       await saveWidgetData(data);
     }, syncInterval);

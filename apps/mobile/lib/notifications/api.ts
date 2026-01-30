@@ -7,6 +7,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
 import type { NotificationSettings } from './types';
+import { pushLogger } from '../utils/logger';
 
 // ============================================================
 // DB 타입 정의
@@ -70,7 +71,7 @@ export async function getUserNotificationSettings(
     if (error.code === 'PGRST116') {
       return null;
     }
-    console.error('[Notifications] getUserNotificationSettings error:', error);
+    pushLogger.error('getUserNotificationSettings error:', error);
     throw error;
   }
 
@@ -97,7 +98,7 @@ export async function saveUserNotificationSettings(
     });
 
   if (error) {
-    console.error('[Notifications] saveUserNotificationSettings error:', error);
+    pushLogger.error('saveUserNotificationSettings error:', error);
     throw error;
   }
 }
@@ -137,7 +138,7 @@ export async function savePushToken(
   );
 
   if (error) {
-    console.error('[Notifications] savePushToken error:', error);
+    pushLogger.error('savePushToken error:', error);
     throw error;
   }
 }
@@ -160,7 +161,7 @@ export async function deactivatePushToken(
     .eq('push_token', token);
 
   if (error) {
-    console.error('[Notifications] deactivatePushToken error:', error);
+    pushLogger.error('deactivatePushToken error:', error);
     throw error;
   }
 }
@@ -181,7 +182,7 @@ export async function getActivePushTokens(
     .eq('is_active', true);
 
   if (error) {
-    console.error('[Notifications] getActivePushTokens error:', error);
+    pushLogger.error('getActivePushTokens error:', error);
     throw error;
   }
 

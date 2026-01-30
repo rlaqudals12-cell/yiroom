@@ -14,6 +14,7 @@ import {
   getInitialDeepLink,
 } from './handler';
 import { ParsedDeepLink } from './types';
+import { deepLinkLogger } from '../utils/logger';
 
 interface UseDeepLinkOptions {
   // 자동 처리 활성화
@@ -54,13 +55,13 @@ export function useDeepLink(
       setLastDeepLink(parsed);
 
       if (!parsed.isValid) {
-        console.log('[DeepLink] Invalid URL:', url);
+        deepLinkLogger.info('Invalid URL:', url);
         return false;
       }
 
       // 처리 전 콜백
       if (onBeforeNavigate && !onBeforeNavigate(parsed)) {
-        console.log('[DeepLink] Navigation cancelled by callback');
+        deepLinkLogger.info('Navigation cancelled by callback');
         return false;
       }
 
@@ -96,7 +97,7 @@ export function useDeepLink(
     if (!autoHandle) return;
 
     const subscription = Linking.addEventListener('url', ({ url }) => {
-      console.log('[DeepLink] Received URL:', url);
+      deepLinkLogger.info('Received URL:', url);
       handleUrl(url);
     });
 

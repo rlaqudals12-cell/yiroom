@@ -10,6 +10,7 @@ import {
   AnalyticsEventProperties,
   UserProperties,
 } from './types';
+import { analyticsLogger } from '../utils/logger';
 
 // 개발 모드 여부
 const IS_DEV = __DEV__;
@@ -29,16 +30,16 @@ interface QueuedEvent {
  */
 export async function initAnalytics(): Promise<void> {
   if (IS_DEV) {
-    console.log('[Analytics] 개발 모드 - 콘솔 로깅만 활성화');
+    analyticsLogger.info(' 개발 모드 - 콘솔 로깅만 활성화');
     return;
   }
 
   try {
     // 저장된 이벤트 전송 시도
     await flushEventQueue();
-    console.log('[Analytics] 초기화 완료');
+    analyticsLogger.info(' 초기화 완료');
   } catch (error) {
-    console.error('[Analytics] 초기화 실패:', error);
+    analyticsLogger.error(' 초기화 실패:', error);
   }
 }
 
@@ -53,7 +54,7 @@ export async function logEvent(
 
   // 개발 모드: 콘솔 로깅
   if (IS_DEV) {
-    console.log(`[Analytics] ${eventType}`, properties);
+    analyticsLogger.info(`${eventType}`, properties);
     return;
   }
 
@@ -64,7 +65,7 @@ export async function logEvent(
     // 바로 전송 시도
     await sendEvent(eventType, properties, timestamp);
   } catch (error) {
-    console.error('[Analytics] 이벤트 로깅 실패:', error);
+    analyticsLogger.error(' 이벤트 로깅 실패:', error);
   }
 }
 
@@ -146,7 +147,7 @@ export async function setUserProperties(
   properties: UserProperties
 ): Promise<void> {
   if (IS_DEV) {
-    console.log('[Analytics] 사용자 속성:', properties);
+    analyticsLogger.info(' 사용자 속성:', properties);
     return;
   }
 
@@ -158,7 +159,7 @@ export async function setUserProperties(
       body: JSON.stringify(properties),
     });
   } catch (error) {
-    console.error('[Analytics] 사용자 속성 설정 실패:', error);
+    analyticsLogger.error(' 사용자 속성 설정 실패:', error);
   }
 }
 
@@ -167,7 +168,7 @@ export async function setUserProperties(
  */
 export async function setUserId(userId: string | null): Promise<void> {
   if (IS_DEV) {
-    console.log('[Analytics] 사용자 ID:', userId);
+    analyticsLogger.info(' 사용자 ID:', userId);
     return;
   }
 
@@ -195,7 +196,7 @@ async function addToQueue(event: QueuedEvent): Promise<void> {
     queue.push(event);
     await AsyncStorage.setItem(ANALYTICS_QUEUE_KEY, JSON.stringify(queue));
   } catch (error) {
-    console.error('[Analytics] 큐 추가 실패:', error);
+    analyticsLogger.error(' 큐 추가 실패:', error);
   }
 }
 
@@ -211,7 +212,7 @@ async function removeFromQueue(timestamp: string): Promise<void> {
     const filtered = queue.filter((e) => e.timestamp !== timestamp);
     await AsyncStorage.setItem(ANALYTICS_QUEUE_KEY, JSON.stringify(filtered));
   } catch (error) {
-    console.error('[Analytics] 큐 제거 실패:', error);
+    analyticsLogger.error(' 큐 제거 실패:', error);
   }
 }
 
@@ -261,6 +262,6 @@ async function flushEventQueue(): Promise<void> {
       await sendEvent(event.type, event.properties, event.timestamp);
     }
   } catch (error) {
-    console.error('[Analytics] 큐 플러시 실패:', error);
+    analyticsLogger.error(' 큐 플러시 실패:', error);
   }
 }

@@ -6,6 +6,7 @@
 import Constants from 'expo-constants';
 
 import { ErrorContext, ErrorSeverity } from './types';
+import { sentryLogger, errorLogger } from '../utils/logger';
 
 // Sentry DSN (환경변수에서 로드)
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
@@ -22,12 +23,12 @@ let isInitialized = false;
  */
 export async function initSentry(): Promise<void> {
   if (IS_DEV) {
-    console.log('[Sentry] 개발 모드에서는 비활성화됩니다.');
+    sentryLogger.info('개발 모드에서는 비활성화됩니다.');
     return;
   }
 
   if (!SENTRY_DSN) {
-    console.warn('[Sentry] DSN이 설정되지 않았습니다.');
+    sentryLogger.warn('DSN이 설정되지 않았습니다.');
     return;
   }
 
@@ -59,9 +60,9 @@ export async function initSentry(): Promise<void> {
     });
 
     isInitialized = true;
-    console.log('[Sentry] 초기화 완료');
+    sentryLogger.info('초기화 완료');
   } catch (error) {
-    console.error('[Sentry] 초기화 실패:', error);
+    sentryLogger.error('초기화 실패:', error);
   }
 }
 
@@ -72,7 +73,7 @@ export async function captureError(
   error: Error,
   context?: ErrorContext
 ): Promise<void> {
-  console.error('[Error]', error.message, context);
+  errorLogger.error(error.message, context);
 
   if (!isInitialized || IS_DEV) return;
 
@@ -107,7 +108,7 @@ export async function captureError(
       Sentry.captureException(error);
     });
   } catch (e) {
-    console.error('[Sentry] 에러 캡처 실패:', e);
+    sentryLogger.error('에러 캡처 실패:', e);
   }
 }
 
@@ -119,7 +120,7 @@ export async function captureMessage(
   severity: ErrorSeverity = 'info',
   context?: ErrorContext
 ): Promise<void> {
-  console.log(`[${severity.toUpperCase()}]`, message);
+  sentryLogger.info(`[${severity.toUpperCase()}] ${message}`);
 
   if (!isInitialized || IS_DEV) return;
 
@@ -142,7 +143,7 @@ export async function captureMessage(
       Sentry.captureMessage(message);
     });
   } catch (e) {
-    console.error('[Sentry] 메시지 캡처 실패:', e);
+    sentryLogger.error('메시지 캡처 실패:', e);
   }
 }
 
@@ -161,7 +162,7 @@ export async function setUser(userId: string | null): Promise<void> {
       Sentry.setUser(null);
     }
   } catch (e) {
-    console.error('[Sentry] 사용자 설정 실패:', e);
+    sentryLogger.error('사용자 설정 실패:', e);
   }
 }
 
@@ -185,7 +186,7 @@ export async function addBreadcrumb(
       level: 'info',
     });
   } catch (e) {
-    console.error('[Sentry] 브레드크럼 추가 실패:', e);
+    sentryLogger.error('브레드크럼 추가 실패:', e);
   }
 }
 
@@ -199,7 +200,7 @@ export async function setTag(key: string, value: string): Promise<void> {
     const Sentry = await import('@sentry/react-native');
     Sentry.setTag(key, value);
   } catch (e) {
-    console.error('[Sentry] 태그 설정 실패:', e);
+    sentryLogger.error('태그 설정 실패:', e);
   }
 }
 
@@ -216,6 +217,6 @@ export async function setContext(
     const Sentry = await import('@sentry/react-native');
     Sentry.setContext(name, context);
   } catch (e) {
-    console.error('[Sentry] 컨텍스트 설정 실패:', e);
+    sentryLogger.error('컨텍스트 설정 실패:', e);
   }
 }
