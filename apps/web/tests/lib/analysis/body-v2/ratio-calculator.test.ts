@@ -5,16 +5,14 @@
  * @see apps/web/lib/analysis/body-v2/ratio-calculator.ts
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { Landmark33, PoseDetectionResult, BodyRatios } from '@/lib/analysis/body-v2/types';
 import { POSE_LANDMARK_INDEX } from '@/lib/analysis/body-v2/types';
 
 // 모듈 모킹 (pose-detector 의존성)
 vi.mock('@/lib/analysis/body-v2/pose-detector', () => ({
   calculateLandmarkDistance: (a: Landmark33, b: Landmark33): number => {
-    return Math.sqrt(
-      Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2) + Math.pow(b.z - a.z, 2)
-    );
+    return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2) + Math.pow(b.z - a.z, 2));
   },
   calculateMidpoint: (a: Landmark33, b: Landmark33): Landmark33 => ({
     x: (a.x + b.x) / 2,
@@ -32,7 +30,7 @@ vi.mock('@/lib/analysis/body-v2/pose-detector', () => ({
       POSE_LANDMARK_INDEX.LEFT_ANKLE,
       POSE_LANDMARK_INDEX.RIGHT_ANKLE,
     ];
-    return keyIndices.every(idx => landmarks[idx]?.visibility >= 0.5);
+    return keyIndices.every((idx) => landmarks[idx]?.visibility >= 0.5);
   },
 }));
 
@@ -617,7 +615,7 @@ describe('calculateRatioConfidence', () => {
     it('모든 요소가 최소값일 때 0 이상이어야 한다', () => {
       const landmarks = createStandardLandmarks();
       // 모든 가시성 0으로 설정
-      landmarks.forEach(l => (l.visibility = 0));
+      landmarks.forEach((l) => (l.visibility = 0));
 
       const poseResult = createPoseResult(landmarks, 0);
       const ratios = createMockRatios({

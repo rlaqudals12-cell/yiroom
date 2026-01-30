@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import {
   Sparkles,
   Palette,
@@ -13,8 +14,19 @@ import {
   Activity,
   ChevronRight,
   Lightbulb,
+  Heart,
+  ShoppingBag,
+  Zap,
+  AlertCircle,
 } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
+import {
+  generateInsights,
+  analysisToDataBundle,
+  type Insight,
+  type InsightCategory,
+  type InsightPriority,
+} from '@/lib/insights';
 
 interface CrossModuleCardProps {
   analyses: AnalysisSummary[];
@@ -52,69 +64,106 @@ const ANALYSIS_MODULES = [
   },
 ] as const;
 
-// 크로스 인사이트 생성
-function generateCrossInsights(analyses: AnalysisSummary[]): {
-  title: string;
-  description: string;
-  icon: typeof Sparkles;
-}[] {
-  const insights: { title: string; description: string; icon: typeof Sparkles }[] = [];
+// 카테고리별 아이콘/색상 매핑
+const CATEGORY_CONFIG: Record<
+  InsightCategory,
+  { icon: typeof Sparkles; color: string; bgColor: string; label: string }
+> = {
+  color_match: {
+    icon: Palette,
+    color: 'text-violet-600 dark:text-violet-400',
+    bgColor: 'bg-violet-100 dark:bg-violet-900/50',
+    label: '컬러 매칭',
+  },
+  skin_care: {
+    icon: Heart,
+    color: 'text-rose-600 dark:text-rose-400',
+    bgColor: 'bg-rose-100 dark:bg-rose-900/50',
+    label: '스킨케어',
+  },
+  style_tip: {
+    icon: Sparkles,
+    color: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-amber-100 dark:bg-amber-900/50',
+    label: '스타일 팁',
+  },
+  product_recommendation: {
+    icon: ShoppingBag,
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-100 dark:bg-blue-900/50',
+    label: '제품 추천',
+  },
+  health_alert: {
+    icon: AlertCircle,
+    color: 'text-red-600 dark:text-red-400',
+    bgColor: 'bg-red-100 dark:bg-red-900/50',
+    label: '건강 알림',
+  },
+  routine_suggestion: {
+    icon: Lightbulb,
+    color: 'text-teal-600 dark:text-teal-400',
+    bgColor: 'bg-teal-100 dark:bg-teal-900/50',
+    label: '루틴 제안',
+  },
+  synergy: {
+    icon: Zap,
+    color: 'text-fuchsia-600 dark:text-fuchsia-400',
+    bgColor: 'bg-fuchsia-100 dark:bg-fuchsia-900/50',
+    label: '시너지',
+  },
+};
 
-  const pc = analyses.find((a) => a.type === 'personal-color');
-  const skin = analyses.find((a) => a.type === 'skin');
-  const body = analyses.find((a) => a.type === 'body');
+// 우선순위 배지 색상
+const PRIORITY_BADGE_COLORS: Record<InsightPriority, string> = {
+  critical: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  high: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  low: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
+};
 
-  // PC + Skin 조합
-  if (pc && skin) {
-    const isCool = pc.seasonType?.toLowerCase().includes('summer') ||
-                   pc.seasonType?.toLowerCase().includes('winter');
-    const skinScore = skin.skinScore || 50;
+/**
+ * 인사이트 카드 컴포넌트
+ */
+function InsightItem({ insight }: { insight: Insight }) {
+  const config = CATEGORY_CONFIG[insight.category];
+  const IconComponent = config.icon;
 
-    if (isCool && skinScore < 60) {
-      insights.push({
-        title: '쿨톤 + 민감 피부',
-        description: '차분한 핑크, 라벤더 계열이 피부 붉은기를 커버해요',
-        icon: Palette,
-      });
-    } else if (!isCool && skinScore >= 70) {
-      insights.push({
-        title: '웜톤 + 건강 피부',
-        description: '코랄, 피치 계열로 화사함을 강조해보세요',
-        icon: Sparkles,
-      });
-    }
-  }
-
-  // PC + Body 조합
-  if (pc && body) {
-    const seasonLabel = pc.seasonType?.toLowerCase() || '';
-    const bodyType = body.bodyType?.toLowerCase() || '';
-
-    if (seasonLabel && bodyType) {
-      insights.push({
-        title: '컬러 + 체형 스타일링',
-        description: `${pc.summary} 톤의 ${body.summary} 체형에 맞는 스타일을 확인해보세요`,
-        icon: Activity,
-      });
-    }
-  }
-
-  // 기본 인사이트 (분석이 2개 이상일 때)
-  if (insights.length === 0 && analyses.length >= 2) {
-    insights.push({
-      title: '통합 분석 완료',
-      description: '여러 분석 결과를 바탕으로 맞춤 추천을 받아보세요',
-      icon: Lightbulb,
-    });
-  }
-
-  return insights;
+  return (
+    <div
+      className={cn(
+        'flex items-start gap-3 p-3 rounded-lg transition-colors',
+        'bg-gradient-to-r from-muted/50 to-muted/30',
+        'hover:from-muted/70 hover:to-muted/50'
+      )}
+    >
+      <div
+        className={cn(
+          'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0',
+          config.bgColor
+        )}
+      >
+        <IconComponent className={cn('w-4 h-4', config.color)} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <p className="font-medium text-sm text-foreground truncate">{insight.title}</p>
+          <Badge
+            variant="secondary"
+            className={cn('text-[10px] px-1.5 py-0 h-4', PRIORITY_BADGE_COLORS[insight.priority])}
+          >
+            {insight.priorityScore}점
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground line-clamp-2">{insight.description}</p>
+      </div>
+    </div>
+  );
 }
 
 /**
  * 크로스모듈 인사이트 카드
  * - 분석 진행률 표시
- * - 모듈 간 통합 인사이트
+ * - lib/insights 모듈 기반 통합 인사이트
  * - 미완료 분석 CTA
  */
 export default function CrossModuleCard({
@@ -139,11 +188,16 @@ export default function CrossModuleCard({
     [hasPersonalColor, hasSkin, hasBody]
   );
 
-  // 크로스 인사이트 생성
-  const crossInsights = useMemo(
-    () => generateCrossInsights(analyses),
-    [analyses]
-  );
+  // lib/insights 모듈을 통한 인사이트 생성
+  const insights = useMemo(() => {
+    const dataBundle = analysisToDataBundle(analyses);
+    const result = generateInsights(dataBundle, {
+      maxInsights: 4,
+      minPriorityScore: 20,
+      language: 'ko',
+    });
+    return result.insights;
+  }, [analyses]);
 
   // 다음 추천 분석
   const nextAnalysis = useMemo(() => {
@@ -154,7 +208,7 @@ export default function CrossModuleCard({
     return null;
   }, [hasPersonalColor, hasSkin, hasBody]);
 
-  // 모든 분석 완료 시 간단한 완료 상태 표시
+  // 모든 분석 완료 시 인사이트 중심 표시
   if (completedModules === totalModules) {
     return (
       <Card className={cn('overflow-hidden', className)} data-testid="cross-module-card">
@@ -164,31 +218,29 @@ export default function CrossModuleCard({
               <Sparkles className="w-4 h-4 text-emerald-500" />
             </div>
             통합 분석 인사이트
+            {insights.length > 0 && (
+              <Badge variant="secondary" className="ml-auto text-xs">
+                {insights.length}개 발견
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* 크로스 인사이트 */}
-          {crossInsights.length > 0 && (
-            <div className="space-y-3">
-              {crossInsights.map((insight, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 p-3 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30 rounded-lg"
-                >
-                  <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0">
-                    <insight.icon className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm text-foreground">{insight.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{insight.description}</p>
-                  </div>
-                </div>
+        <CardContent className="space-y-3">
+          {/* 인사이트 목록 */}
+          {insights.length > 0 ? (
+            <div className="space-y-2">
+              {insights.map((insight) => (
+                <InsightItem key={insight.id} insight={insight} />
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-muted-foreground text-sm">
+              분석 데이터를 기반으로 인사이트를 생성 중입니다...
             </div>
           )}
 
           {/* 분석 완료 상태 */}
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-sm pt-2 border-t">
             <span className="text-muted-foreground">모든 분석 완료</span>
             <span className="font-medium text-emerald-600 dark:text-emerald-400">
               {completedModules}/{totalModules} 완료
@@ -233,9 +285,7 @@ export default function CrossModuleCard({
                 href={isCompleted ? `/analysis/${module.key}/result` : module.href}
                 className={cn(
                   'flex flex-col items-center gap-1.5 p-3 rounded-lg transition-colors',
-                  isCompleted
-                    ? 'bg-muted/50'
-                    : 'bg-muted/30 hover:bg-muted/50'
+                  isCompleted ? 'bg-muted/50' : 'bg-muted/30 hover:bg-muted/50'
                 )}
               >
                 <div
@@ -245,19 +295,14 @@ export default function CrossModuleCard({
                   )}
                 >
                   <ModuleIcon
-                    className={cn(
-                      'w-4 h-4',
-                      isCompleted ? module.color : 'text-muted-foreground'
-                    )}
+                    className={cn('w-4 h-4', isCompleted ? module.color : 'text-muted-foreground')}
                   />
                 </div>
                 <span className="text-xs text-center">{module.label}</span>
                 <span
                   className={cn(
                     'text-[10px]',
-                    isCompleted
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-muted-foreground'
+                    isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
                   )}
                 >
                   {isCompleted ? '완료' : '미완료'}
@@ -267,19 +312,19 @@ export default function CrossModuleCard({
           })}
         </div>
 
-        {/* 크로스 인사이트 (2개 이상 완료 시) */}
-        {crossInsights.length > 0 && (
+        {/* 인사이트 (2개 이상 완료 시) */}
+        {insights.length > 0 && (
           <div className="pt-2 border-t space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">통합 인사이트</p>
-            {crossInsights.slice(0, 2).map((insight, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-2 text-sm"
-              >
-                <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                <p className="text-muted-foreground">{insight.description}</p>
-              </div>
-            ))}
+            <p className="text-xs font-medium text-muted-foreground">발견된 인사이트</p>
+            {insights.slice(0, 2).map((insight) => {
+              const config = CATEGORY_CONFIG[insight.category];
+              return (
+                <div key={insight.id} className="flex items-start gap-2 text-sm">
+                  <config.icon className={cn('w-4 h-4 flex-shrink-0 mt-0.5', config.color)} />
+                  <p className="text-muted-foreground line-clamp-2">{insight.description}</p>
+                </div>
+              );
+            })}
           </div>
         )}
 

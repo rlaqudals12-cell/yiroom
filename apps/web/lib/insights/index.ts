@@ -97,3 +97,8 @@ export {
   // PC-1 이미지 재사용
   canReusePersonalColorImage,
 } from './cross-module-insights';
+
+// ============================================
+// 어댑터 (UI ↔ 인사이트 변환)
+// ============================================
+export { analysisToDataBundle, calculateProgressFromFlags } from './adapters';

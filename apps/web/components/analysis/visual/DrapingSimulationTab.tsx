@@ -5,11 +5,16 @@ import type { DrapeResult, MetalType } from '@/types/visual-analysis';
 import { analyzeDeviceCapability } from '@/lib/analysis/device-capability';
 import { extractFaceLandmarks, createFaceMask } from '@/lib/analysis/face-landmark';
 import { preloadFaceMesh } from '@/lib/analysis/mediapipe-loader';
-import { generateSynergyInsight, applyInsightToDraping } from '@/lib/analysis/synergy-insight';
+import {
+  generateSynergyInsight,
+  generateSynergyFromGeminiResult,
+  applyInsightToDraping,
+} from '@/lib/analysis/synergy-insight';
 import {
   generateMockPigmentAnalysis,
   generateMockDrapingResults,
 } from '@/lib/mock/visual-analysis';
+import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import DrapeColorPalette from './DrapeColorPalette';
 import DrapeSimulator from './DrapeSimulator';
 import SynergyInsightCard from './SynergyInsightCard';
@@ -38,9 +43,10 @@ type AnalysisState = 'idle' | 'loading' | 'analyzing' | 'ready' | 'error';
  */
 export default function DrapingSimulationTab({
   imageUrl,
-  skinAnalysisId: _skinAnalysisId,
+  skinAnalysisId,
   className,
 }: DrapingSimulationTabProps) {
+  const supabase = useClerkSupabaseClient();
   const [state, setState] = useState<AnalysisState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'palette' | 'simulator'>('palette');
@@ -106,10 +112,35 @@ export default function DrapingSimulationTab({
       );
       setFaceMask(mask);
 
-      // 4. 시너지 인사이트 생성 (Mock 피부 분석 사용)
-      // TODO: skinAnalysisId로 실제 피부 분석 결과 연동
-      const mockPigment = generateMockPigmentAnalysis();
-      const insight = generateSynergyInsight(mockPigment);
+      // 4. 시너지 인사이트 생성
+      let insight;
+
+      if (skinAnalysisId) {
+        // 실제 피부 분석 결과 조회
+        const { data: skinAnalysis } = await supabase
+          .from('skin_analyses')
+          .select('hydration, oil_level, sensitivity, metrics')
+          .eq('id', skinAnalysisId)
+          .single();
+
+        if (skinAnalysis) {
+          // DB 데이터를 generateSynergyFromGeminiResult 형식으로 변환
+          const skinMetrics: Array<{ id: string; value: number }> = [
+            { id: 'hydration', value: skinAnalysis.hydration ?? 50 },
+            { id: 'oiliness', value: skinAnalysis.oil_level ?? 50 },
+            // sensitivity를 redness 대리값으로 사용 (피부 민감도 높으면 붉은기 경향)
+            { id: 'redness', value: skinAnalysis.sensitivity ?? 50 },
+          ];
+          insight = generateSynergyFromGeminiResult(skinMetrics);
+        }
+      }
+
+      // Fallback: 실제 데이터가 없으면 Mock 사용
+      if (!insight) {
+        const mockPigment = generateMockPigmentAnalysis();
+        insight = generateSynergyInsight(mockPigment);
+      }
+
       setSynergyInsight(insight);
 
       setState('ready');
@@ -118,7 +149,7 @@ export default function DrapingSimulationTab({
       setError(err instanceof Error ? err.message : '초기화에 실패했습니다');
       setState('error');
     }
-  }, [imageUrl, loadImage, deviceCapability.tier]);
+  }, [imageUrl, loadImage, deviceCapability.tier, skinAnalysisId, supabase]);
 
   /**
    * 드레이프 분석 완료 핸들러

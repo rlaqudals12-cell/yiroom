@@ -5,13 +5,13 @@
  * @description AWB 보정 통합 프로세서 테스트
  * @see lib/image-engine/cie-3/processor.ts
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   selectAndApplyAWB,
   processAWBCorrection,
   processAWBCorrectionWithTimeout,
 } from '@/lib/image-engine/cie-3/processor';
-import type { RGBImageData, AWBCorrectionResult, CIE3Output } from '@/lib/image-engine/types';
+import type { RGBImageData } from '@/lib/image-engine/types';
 
 // =============================================================================
 // 테스트 헬퍼 함수
@@ -97,11 +97,12 @@ describe('selectAndApplyAWB', () => {
       // result가 null이 아니고 method가 'none'이거나
       // 또는 보정이 적용되어도 gains가 1에 가까움
       if (result) {
-        expect(result.method === 'none' || (
-          Math.abs(result.gains.r - 1) < 0.3 &&
-          Math.abs(result.gains.g - 1) < 0.3 &&
-          Math.abs(result.gains.b - 1) < 0.3
-        )).toBe(true);
+        expect(
+          result.method === 'none' ||
+            (Math.abs(result.gains.r - 1) < 0.3 &&
+              Math.abs(result.gains.g - 1) < 0.3 &&
+              Math.abs(result.gains.b - 1) < 0.3)
+        ).toBe(true);
       }
     });
   });
@@ -356,11 +357,7 @@ describe('processAWBCorrectionWithTimeout', () => {
       const imageData = createTestImageData(100, 100);
       const veryShortTimeout = 1; // 1ms
 
-      const result = await processAWBCorrectionWithTimeout(
-        imageData,
-        undefined,
-        veryShortTimeout
-      );
+      const result = await processAWBCorrectionWithTimeout(imageData, undefined, veryShortTimeout);
 
       // 타임아웃이든 정상처리든 결과는 항상 반환
       expect(result).toBeDefined();
@@ -372,11 +369,7 @@ describe('processAWBCorrectionWithTimeout', () => {
       const largeImageData = createTestImageData(1000, 1000);
       const shortTimeout = 1; // 1ms
 
-      const result = await processAWBCorrectionWithTimeout(
-        largeImageData,
-        undefined,
-        shortTimeout
-      );
+      const result = await processAWBCorrectionWithTimeout(largeImageData, undefined, shortTimeout);
 
       // 타임아웃되면 fallback, 아니면 정상 결과
       expect(result.success).toBe(true);

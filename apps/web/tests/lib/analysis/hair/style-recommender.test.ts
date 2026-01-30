@@ -11,14 +11,22 @@ import {
   generateCareTips,
   getStylesToAvoid,
 } from '@/lib/analysis/hair/style-recommender';
-import type { FaceShapeType, HairLength, HairTexture } from '@/lib/analysis/hair/types';
+import type { FaceShapeType, HairLength } from '@/lib/analysis/hair/types';
 
 // =============================================================================
 // recommendHairstyles 테스트
 // =============================================================================
 
 describe('recommendHairstyles', () => {
-  const faceShapes: FaceShapeType[] = ['oval', 'round', 'square', 'heart', 'oblong', 'diamond', 'rectangle'];
+  const faceShapes: FaceShapeType[] = [
+    'oval',
+    'round',
+    'square',
+    'heart',
+    'oblong',
+    'diamond',
+    'rectangle',
+  ];
 
   it.each(faceShapes)('should return recommendations for %s face shape', (faceShape) => {
     const recommendations = recommendHairstyles(faceShape);
@@ -27,7 +35,7 @@ describe('recommendHairstyles', () => {
     expect(recommendations.length).toBeGreaterThan(0);
 
     // 각 추천에 필수 필드 확인
-    recommendations.forEach(rec => {
+    recommendations.forEach((rec) => {
       expect(rec).toHaveProperty('name');
       expect(rec).toHaveProperty('description');
       expect(rec).toHaveProperty('length');
@@ -40,7 +48,9 @@ describe('recommendHairstyles', () => {
     const recommendations = recommendHairstyles('oval');
 
     for (let i = 1; i < recommendations.length; i++) {
-      expect(recommendations[i - 1].suitability).toBeGreaterThanOrEqual(recommendations[i].suitability);
+      expect(recommendations[i - 1].suitability).toBeGreaterThanOrEqual(
+        recommendations[i].suitability
+      );
     }
   });
 
@@ -56,7 +66,7 @@ describe('recommendHairstyles', () => {
     const recommendations = recommendHairstyles('oval', { preferredLength });
 
     // 선호 길이 스타일에 보너스가 적용되어 상위에 나타나야 함
-    const shortStyles = recommendations.filter(r => r.length === 'short');
+    const shortStyles = recommendations.filter((r) => r.length === 'short');
     expect(shortStyles.length).toBeGreaterThan(0);
   });
 
@@ -65,18 +75,20 @@ describe('recommendHairstyles', () => {
     const withoutTexture = recommendHairstyles('round');
 
     // 웨이브 헤어는 웨이브 태그 스타일에 보너스
-    const wavyStyleWithBonus = withWavy.find(s => s.tags.includes('웨이브'));
-    const wavyStyleWithoutBonus = withoutTexture.find(s => s.tags.includes('웨이브'));
+    const wavyStyleWithBonus = withWavy.find((s) => s.tags.includes('웨이브'));
+    const wavyStyleWithoutBonus = withoutTexture.find((s) => s.tags.includes('웨이브'));
 
     if (wavyStyleWithBonus && wavyStyleWithoutBonus) {
-      expect(wavyStyleWithBonus.suitability).toBeGreaterThanOrEqual(wavyStyleWithoutBonus.suitability);
+      expect(wavyStyleWithBonus.suitability).toBeGreaterThanOrEqual(
+        wavyStyleWithoutBonus.suitability
+      );
     }
   });
 
   it('should return suitability scores between 0 and 100', () => {
     const recommendations = recommendHairstyles('square');
 
-    recommendations.forEach(rec => {
+    recommendations.forEach((rec) => {
       expect(rec.suitability).toBeGreaterThanOrEqual(0);
       expect(rec.suitability).toBeLessThanOrEqual(100);
     });
@@ -97,8 +109,8 @@ describe('recommendHairstyles', () => {
     const recommendations = recommendHairstyles('round');
 
     // 둥근형에는 세로 볼륨 스타일 추천
-    const hasVerticalVolumeStyle = recommendations.some(r =>
-      r.tags.includes('레이어드') || r.length === 'long'
+    const hasVerticalVolumeStyle = recommendations.some(
+      (r) => r.tags.includes('레이어드') || r.length === 'long'
     );
     expect(hasVerticalVolumeStyle).toBe(true);
   });
@@ -107,8 +119,8 @@ describe('recommendHairstyles', () => {
     const recommendations = recommendHairstyles('square');
 
     // 사각형에는 부드러운 웨이브 스타일 추천
-    const hasSoftStyle = recommendations.some(r =>
-      r.tags.includes('웨이브') || r.tags.includes('레이어드')
+    const hasSoftStyle = recommendations.some(
+      (r) => r.tags.includes('웨이브') || r.tags.includes('레이어드')
     );
     expect(hasSoftStyle).toBe(true);
   });
@@ -125,7 +137,7 @@ describe('recommendHairColors', () => {
     expect(colors).toBeInstanceOf(Array);
     expect(colors.length).toBeGreaterThan(0);
 
-    colors.forEach(color => {
+    colors.forEach((color) => {
       expect(color).toHaveProperty('name');
       expect(color).toHaveProperty('hexColor');
       expect(color).toHaveProperty('suitability');
@@ -139,10 +151,10 @@ describe('recommendHairColors', () => {
     const winterColors = recommendHairColors('winter');
 
     // 봄 시즌 컬러는 웜톤
-    expect(springColors.every(c => c.seasonMatch === 'spring')).toBe(true);
+    expect(springColors.every((c) => c.seasonMatch === 'spring')).toBe(true);
 
     // 겨울 시즌 컬러는 쿨톤
-    expect(winterColors.every(c => c.seasonMatch === 'winter')).toBe(true);
+    expect(winterColors.every((c) => c.seasonMatch === 'winter')).toBe(true);
   });
 
   it('should return default colors when season not provided', () => {
@@ -162,7 +174,7 @@ describe('recommendHairColors', () => {
   it('should return valid hex colors', () => {
     const colors = recommendHairColors('autumn');
 
-    colors.forEach(color => {
+    colors.forEach((color) => {
       expect(color.hexColor).toMatch(/^#[0-9A-Fa-f]{6}$/);
     });
   });
@@ -170,21 +182,21 @@ describe('recommendHairColors', () => {
   it('should return warm tone colors for spring', () => {
     const colors = recommendHairColors('spring');
 
-    const hasWarmTag = colors.some(c => c.tags.includes('웜톤'));
+    const hasWarmTag = colors.some((c) => c.tags.includes('웜톤'));
     expect(hasWarmTag).toBe(true);
   });
 
   it('should return cool tone colors for summer', () => {
     const colors = recommendHairColors('summer');
 
-    const hasCoolTag = colors.some(c => c.tags.includes('쿨톤'));
+    const hasCoolTag = colors.some((c) => c.tags.includes('쿨톤'));
     expect(hasCoolTag).toBe(true);
   });
 
   it('should return colors for all four seasons', () => {
     const seasons = ['spring', 'summer', 'autumn', 'winter'];
 
-    seasons.forEach(season => {
+    seasons.forEach((season) => {
       const colors = recommendHairColors(season);
       expect(colors.length).toBeGreaterThan(0);
       expect(colors[0].seasonMatch).toBe(season);
@@ -197,14 +209,22 @@ describe('recommendHairColors', () => {
 // =============================================================================
 
 describe('generateCareTips', () => {
-  const faceShapes: FaceShapeType[] = ['oval', 'round', 'square', 'heart', 'oblong', 'diamond', 'rectangle'];
+  const faceShapes: FaceShapeType[] = [
+    'oval',
+    'round',
+    'square',
+    'heart',
+    'oblong',
+    'diamond',
+    'rectangle',
+  ];
 
   it.each(faceShapes)('should generate tips for %s face shape', (faceShape) => {
     const tips = generateCareTips(faceShape);
 
     expect(tips).toBeInstanceOf(Array);
     expect(tips.length).toBeGreaterThan(0);
-    tips.forEach(tip => {
+    tips.forEach((tip) => {
       expect(typeof tip).toBe('string');
       expect(tip.length).toBeGreaterThan(5);
     });
@@ -214,7 +234,7 @@ describe('generateCareTips', () => {
     const tips = generateCareTips('round');
 
     // 둥근형에 맞는 스타일링 팁
-    const hasVolumeAdvice = tips.some(t => t.includes('볼륨') || t.includes('드라이'));
+    const hasVolumeAdvice = tips.some((t) => t.includes('볼륨') || t.includes('드라이'));
     expect(hasVolumeAdvice).toBe(true);
   });
 
@@ -222,7 +242,9 @@ describe('generateCareTips', () => {
     const tips = generateCareTips('square');
 
     // 사각형에 맞는 부드러운 스타일링 팁
-    const hasSoftAdvice = tips.some(t => t.includes('부드러운') || t.includes('웨이브') || t.includes('컬링'));
+    const hasSoftAdvice = tips.some(
+      (t) => t.includes('부드러운') || t.includes('웨이브') || t.includes('컬링')
+    );
     expect(hasSoftAdvice).toBe(true);
   });
 
@@ -232,13 +254,19 @@ describe('generateCareTips', () => {
     const curlyTips = generateCareTips('oval', { texture: 'curly' });
 
     // 직모 팁
-    expect(straightTips.some(t => t.includes('볼륨 스프레이') || t.includes('움직임'))).toBe(true);
+    expect(straightTips.some((t) => t.includes('볼륨 스프레이') || t.includes('움직임'))).toBe(
+      true
+    );
 
     // 웨이브 팁
-    expect(wavyTips.some(t => t.includes('웨이브') || t.includes('크림') || t.includes('무스'))).toBe(true);
+    expect(
+      wavyTips.some((t) => t.includes('웨이브') || t.includes('크림') || t.includes('무스'))
+    ).toBe(true);
 
     // 곱슬 팁
-    expect(curlyTips.some(t => t.includes('곱슬') || t.includes('오일') || t.includes('세럼'))).toBe(true);
+    expect(
+      curlyTips.some((t) => t.includes('곱슬') || t.includes('오일') || t.includes('세럼'))
+    ).toBe(true);
   });
 
   it('should add scalp condition tips', () => {
@@ -247,21 +275,21 @@ describe('generateCareTips', () => {
     const sensitiveTips = generateCareTips('oval', { scalpCondition: 'sensitive' });
 
     // 건성 두피 팁
-    expect(dryTips.some(t => t.includes('보습') || t.includes('에센스'))).toBe(true);
+    expect(dryTips.some((t) => t.includes('보습') || t.includes('에센스'))).toBe(true);
 
     // 지성 두피 팁
-    expect(oilyTips.some(t => t.includes('샴푸') || t.includes('딥클렌징'))).toBe(true);
+    expect(oilyTips.some((t) => t.includes('샴푸') || t.includes('딥클렌징'))).toBe(true);
 
     // 민감성 두피 팁
-    expect(sensitiveTips.some(t => t.includes('저자극'))).toBe(true);
+    expect(sensitiveTips.some((t) => t.includes('저자극'))).toBe(true);
   });
 
   it('should always include general tips', () => {
     const tips = generateCareTips('oval');
 
     // 일반적인 헤어케어 팁
-    const hasTrimmingTip = tips.some(t => t.includes('트리밍'));
-    const hasHeatProtectionTip = tips.some(t => t.includes('열 보호') || t.includes('스타일링'));
+    const hasTrimmingTip = tips.some((t) => t.includes('트리밍'));
+    const hasHeatProtectionTip = tips.some((t) => t.includes('열 보호') || t.includes('스타일링'));
 
     expect(hasTrimmingTip).toBe(true);
     expect(hasHeatProtectionTip).toBe(true);
@@ -271,7 +299,7 @@ describe('generateCareTips', () => {
     const tips = generateCareTips('oblong');
 
     // 긴 형에 맞는 사이드 볼륨 팁
-    const hasSideVolumeTip = tips.some(t => t.includes('사이드') || t.includes('볼륨'));
+    const hasSideVolumeTip = tips.some((t) => t.includes('사이드') || t.includes('볼륨'));
     expect(hasSideVolumeTip).toBe(true);
   });
 });
@@ -281,13 +309,21 @@ describe('generateCareTips', () => {
 // =============================================================================
 
 describe('getStylesToAvoid', () => {
-  const faceShapes: FaceShapeType[] = ['oval', 'round', 'square', 'heart', 'oblong', 'diamond', 'rectangle'];
+  const faceShapes: FaceShapeType[] = [
+    'oval',
+    'round',
+    'square',
+    'heart',
+    'oblong',
+    'diamond',
+    'rectangle',
+  ];
 
   it.each(faceShapes)('should return styles to avoid for %s', (faceShape) => {
     const styles = getStylesToAvoid(faceShape);
 
     expect(styles).toBeInstanceOf(Array);
-    styles.forEach(style => {
+    styles.forEach((style) => {
       expect(typeof style).toBe('string');
     });
   });
@@ -303,8 +339,8 @@ describe('getStylesToAvoid', () => {
     const styles = getStylesToAvoid('round');
 
     // 둥근형은 뭉툭한 단발, 일자 뱅 피해야 함
-    const hasShortWarning = styles.some(s =>
-      s.includes('단발') || s.includes('일자') || s.includes('턱선')
+    const hasShortWarning = styles.some(
+      (s) => s.includes('단발') || s.includes('일자') || s.includes('턱선')
     );
     expect(hasShortWarning).toBe(true);
   });
@@ -313,8 +349,8 @@ describe('getStylesToAvoid', () => {
     const styles = getStylesToAvoid('square');
 
     // 사각형은 각진 보브, 일자 뱅 피해야 함
-    const hasAngularWarning = styles.some(s =>
-      s.includes('일자') || s.includes('각진') || s.includes('직선')
+    const hasAngularWarning = styles.some(
+      (s) => s.includes('일자') || s.includes('각진') || s.includes('직선')
     );
     expect(hasAngularWarning).toBe(true);
   });
@@ -323,8 +359,8 @@ describe('getStylesToAvoid', () => {
     const styles = getStylesToAvoid('heart');
 
     // 하트형은 탑 볼륨 과다 피해야 함
-    const hasTopVolumeWarning = styles.some(s =>
-      s.includes('탑 볼륨') || s.includes('풀 프린지') || s.includes('숏 뱅')
+    const hasTopVolumeWarning = styles.some(
+      (s) => s.includes('탑 볼륨') || s.includes('풀 프린지') || s.includes('숏 뱅')
     );
     expect(hasTopVolumeWarning).toBe(true);
   });
@@ -333,8 +369,8 @@ describe('getStylesToAvoid', () => {
     const styles = getStylesToAvoid('oblong');
 
     // 긴 형은 롱 스트레이트 피해야 함
-    const hasLongWarning = styles.some(s =>
-      s.includes('롱 스트레이트') || s.includes('센터 파트') || s.includes('탑 볼륨')
+    const hasLongWarning = styles.some(
+      (s) => s.includes('롱 스트레이트') || s.includes('센터 파트') || s.includes('탑 볼륨')
     );
     expect(hasLongWarning).toBe(true);
   });
@@ -362,9 +398,9 @@ describe('Hair Style Recommendation Integration', () => {
     const careTips = generateCareTips(faceShape);
 
     // 추천 스타일은 피해야 할 스타일과 겹치지 않아야 함
-    const recommendedNames = recommendations.map(r => r.name);
-    const hasOverlap = avoidStyles.some(avoid =>
-      recommendedNames.some(name => name.includes(avoid))
+    const recommendedNames = recommendations.map((r) => r.name);
+    const hasOverlap = avoidStyles.some((avoid) =>
+      recommendedNames.some((name) => name.includes(avoid))
     );
     expect(hasOverlap).toBe(false);
 
@@ -373,9 +409,17 @@ describe('Hair Style Recommendation Integration', () => {
   });
 
   it('should provide complete style guidance for any face shape', () => {
-    const faceShapes: FaceShapeType[] = ['oval', 'round', 'square', 'heart', 'oblong', 'diamond', 'rectangle'];
+    const faceShapes: FaceShapeType[] = [
+      'oval',
+      'round',
+      'square',
+      'heart',
+      'oblong',
+      'diamond',
+      'rectangle',
+    ];
 
-    faceShapes.forEach(faceShape => {
+    faceShapes.forEach((faceShape) => {
       const recommendations = recommendHairstyles(faceShape);
       const avoidStyles = getStylesToAvoid(faceShape);
       const careTips = generateCareTips(faceShape);
@@ -389,7 +433,7 @@ describe('Hair Style Recommendation Integration', () => {
   it('should provide color recommendations for all personal color seasons', () => {
     const seasons = ['spring', 'summer', 'autumn', 'winter'];
 
-    seasons.forEach(season => {
+    seasons.forEach((season) => {
       const colors = recommendHairColors(season);
 
       expect(colors.length).toBeGreaterThan(0);

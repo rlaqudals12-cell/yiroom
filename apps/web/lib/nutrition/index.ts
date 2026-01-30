@@ -27,13 +27,7 @@ export {
   getAllNutrientIds,
 } from './rda-database';
 
-export type {
-  RDAGender,
-  NutrientId,
-  NutrientRDA,
-  GenderRDA,
-  RDADatabase,
-} from './rda-database';
+export type { RDAGender, NutrientId, NutrientRDA, GenderRDA, RDADatabase } from './rda-database';
 
 // ============================================
 // BMR/TDEE 계산 (Mifflin-St Jeor)
@@ -49,12 +43,7 @@ export {
   validateProfile,
 } from './bmr-calculator';
 
-export type {
-  Gender,
-  ActivityLevel,
-  UserProfile,
-  EnergyExpenditureResult,
-} from './bmr-calculator';
+export type { Gender, ActivityLevel, UserProfile, EnergyExpenditureResult } from './bmr-calculator';
 
 // ============================================
 // 영양소 시너지/길항 매트릭스
@@ -70,11 +59,7 @@ export {
   getInteractionInfo,
 } from './nutrient-synergy';
 
-export type {
-  InteractionFactor,
-  InteractionType,
-  NutrientInteraction,
-} from './nutrient-synergy';
+export type { InteractionFactor, InteractionType, NutrientInteraction } from './nutrient-synergy';
 
 // ============================================
 // 영양소 섭취량 평가
@@ -131,3 +116,28 @@ export {
   calculateTDEE as calculateTDEELegacy,
   ACTIVITY_LEVEL_LABELS as ACTIVITY_LEVEL_LABELS_LEGACY,
 } from './calculateBMR';
+
+// ============================================
+// 레시피 매칭 시스템 (Phase K-4)
+// ============================================
+
+export {
+  recommendRecipes,
+  getRecipesByGoal,
+  findSimilarIngredient,
+  calculateDailyCalories,
+  calculateDailyProtein,
+  SAMPLE_RECIPES,
+  NUTRITION_GOAL_LABELS,
+  NUTRITION_TARGETS,
+  INGREDIENT_SYNONYMS,
+  INGREDIENT_CATEGORY_LABELS,
+} from './recipe-matcher';
+
+export type {
+  NutritionGoal,
+  IngredientCategory,
+  RecipeIngredient,
+  Recipe,
+  RecipeMatchResult,
+} from './recipe-matcher';

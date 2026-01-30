@@ -17,7 +17,7 @@ import {
   calculateLabDistance,
   calculateCIEDE2000,
 } from '@/lib/analysis/personal-color-v2';
-import type { LabColor, RGBColor } from '@/lib/analysis/personal-color-v2';
+import type { LabColor } from '@/lib/analysis/personal-color-v2';
 
 describe('PC-2 Lab Utils', () => {
   // ==========================================================================

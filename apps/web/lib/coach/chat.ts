@@ -639,13 +639,20 @@ function generateSuggestedQuestions(
 }
 
 /**
- * 스트리밍 응답 생성 (향후 확장용)
+ * 스트리밍 응답 생성 (RAG, 히스토리, 힌트 포함)
+ *
+ * generateCoachResponse와 동일한 기능 제공:
+ * - 도메인별 RAG 컨텍스트 (skin, personal-color, fashion, nutrition, workout)
+ * - 채팅 히스토리 컨텍스트
+ * - 질문 힌트
  */
 export async function* generateCoachResponseStream(
   request: CoachChatRequest
 ): AsyncGenerator<string, void, unknown> {
+  const { message, userContext, chatHistory } = request;
+
   if (!genAI) {
-    yield FALLBACK_RESPONSES[detectQuestionCategory(request.message)];
+    yield FALLBACK_RESPONSES[detectQuestionCategory(message)];
     return;
   }
 
@@ -655,8 +662,49 @@ export async function* generateCoachResponseStream(
       safetySettings,
     });
 
-    const systemPrompt = buildCoachSystemPrompt(request.userContext);
-    const fullPrompt = `${systemPrompt}\n\n## 사용자 질문\n"${request.message}"\n\n위 질문에 대해 200자 이내로 친근하고 간결하게 답변해주세요.`;
+    // 시스템 프롬프트 구성
+    const systemPrompt = buildCoachSystemPrompt(userContext);
+    const questionHint = getQuestionHint(message);
+    const historySection = formatChatHistory(chatHistory || []);
+
+    // RAG: 도메인별 RAG 검색
+    let ragContext = '';
+    const productType = needsProductRecommendation(message);
+
+    // 퍼스널 컬러 상담 질문이면 personal-color-rag 사용
+    if (isPersonalColorQuestion(message)) {
+      const colorMatch = await searchByPersonalColor(userContext, message);
+      ragContext = formatPersonalColorForPrompt(colorMatch);
+    }
+    // 패션 상담 질문이면 fashion-rag 사용
+    else if (isFashionQuestion(message)) {
+      const fashionResult = await searchFashionItems(userContext, message);
+      ragContext = formatFashionForPrompt(fashionResult);
+    }
+    // 영양/레시피 상담 질문이면 nutrition-rag 사용
+    else if (isNutritionQuestion(message)) {
+      const nutritionResult = await searchNutritionItems(userContext, message);
+      ragContext = formatNutritionForPrompt(nutritionResult);
+    }
+    // 운동 상담 질문이면 workout-rag 사용
+    else if (isWorkoutQuestion(message)) {
+      const workoutResult = await searchWorkoutItems(userContext, message);
+      ragContext = formatWorkoutForPrompt(workoutResult);
+    }
+    // 피부 상담 질문이면 skin-rag 사용
+    else if (isSkinConsultationQuestion(message)) {
+      const skinProducts = await searchSkinProducts(userContext, message);
+      ragContext = formatSkinProductsForPrompt(skinProducts);
+    } else if (productType) {
+      ragContext = await searchRelatedProducts(productType, userContext);
+    }
+
+    const fullPrompt = `${systemPrompt}${historySection}${ragContext}
+
+${questionHint ? `참고: ${questionHint}\n` : ''}## 사용자 질문
+"${message}"
+
+위 질문에 대해 200자 이내로 친근하고 간결하게 답변해주세요.${ragContext ? ' 추천 제품 정보가 있다면 활용해서 구체적으로 추천해주세요.' : ''}`;
 
     const result = await model.generateContentStream(fullPrompt);
 
@@ -668,6 +716,6 @@ export async function* generateCoachResponseStream(
     }
   } catch (error) {
     coachLogger.error('Streaming error:', error);
-    yield FALLBACK_RESPONSES[detectQuestionCategory(request.message)];
+    yield FALLBACK_RESPONSES[detectQuestionCategory(message)];
   }
 }

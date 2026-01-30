@@ -5,6 +5,7 @@
  * @see SDD-RATE-LIMITING.md
  */
 
+import * as Sentry from '@sentry/nextjs';
 import { RateLimitCategory, RateLimitResult } from '@/types/rate-limit';
 
 /**
@@ -71,17 +72,18 @@ export function logRateLimitExceeded(
 
   logToConsole('warn', 'Rate limit exceeded', event);
 
-  // TODO: Sentry 또는 다른 모니터링 서비스로 전송
-  // if (process.env.NODE_ENV === 'production') {
-  //   Sentry.captureMessage('Rate limit exceeded', {
-  //     level: 'warning',
-  //     extra: event,
-  //     tags: {
-  //       category,
-  //       limitType,
-  //     },
-  //   });
-  // }
+  // Sentry 모니터링 - 프로덕션에서만 전송
+  if (process.env.NODE_ENV === 'production') {
+    Sentry.captureMessage('Rate limit exceeded', {
+      level: 'warning',
+      extra: { ...event },
+      tags: {
+        category,
+        limitType,
+        usedFallback: String(event.usedFallback),
+      },
+    });
+  }
 }
 
 /**
@@ -99,8 +101,7 @@ export function logRateLimitUsage(
   // 80% 이상 사용 시에만 로깅 (노이즈 감소)
   const minuteUsagePercent =
     ((result.minuteLimit - result.minuteRemaining) / result.minuteLimit) * 100;
-  const dailyUsagePercent =
-    ((result.dailyLimit - result.dailyRemaining) / result.dailyLimit) * 100;
+  const dailyUsagePercent = ((result.dailyLimit - result.dailyRemaining) / result.dailyLimit) * 100;
 
   if (minuteUsagePercent >= 80 || dailyUsagePercent >= 80) {
     const event = {
@@ -113,6 +114,21 @@ export function logRateLimitUsage(
     };
 
     logToConsole('info', 'Rate limit approaching threshold', event);
+
+    // 90% 이상일 때만 Sentry에 경고 전송 (노이즈 최소화)
+    if (
+      process.env.NODE_ENV === 'production' &&
+      (minuteUsagePercent >= 90 || dailyUsagePercent >= 90)
+    ) {
+      Sentry.captureMessage('Rate limit approaching critical threshold', {
+        level: 'info',
+        extra: { ...event },
+        tags: {
+          category,
+          thresholdType: minuteUsagePercent >= 90 ? 'minute' : 'daily',
+        },
+      });
+    }
   }
 }
 
@@ -123,6 +139,20 @@ export function logRateLimitUsage(
  */
 export function logFallbackUsed(reason: string): void {
   logToConsole('warn', 'Using in-memory fallback', { reason });
+
+  // Fallback 사용은 운영 이슈이므로 Sentry에 기록
+  if (process.env.NODE_ENV === 'production') {
+    Sentry.captureMessage('Rate limit fallback activated', {
+      level: 'warning',
+      extra: {
+        reason,
+        timestamp: new Date().toISOString(),
+      },
+      tags: {
+        type: 'rate-limit-fallback',
+      },
+    });
+  }
 }
 
 /**
