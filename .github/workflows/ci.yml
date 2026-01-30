@@ -6,48 +6,244 @@ on:
   pull_request:
     branches: [main]
 
+# 동일 브랜치의 중복 실행 취소
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  TURBO_REMOTE_ONLY: true
+  SKIP_ENV_VALIDATION: true
+
 jobs:
+  # 변경 파일 감지
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+      docs: ${{ steps.filter.outputs.docs }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'turbo.json'
+            mobile:
+              - 'apps/mobile/**'
+              - 'packages/**'
+            docs:
+              - 'docs/**'
+              - '.claude/**'
+              - 'CLAUDE.md'
+
+  # Lint (병렬)
   lint:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
 
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-lint-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-lint-${{ runner.os }}-
+
+      - run: npm ci
+
+      - name: Lint
+        run: npx turbo run lint --filter=@yiroom/web
+
+  # Typecheck (병렬)
   typecheck:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
-      - run: npm ci
-      - run: npm run typecheck
 
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-typecheck-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-typecheck-${{ runner.os }}-
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx turbo run typecheck --filter=@yiroom/web
+
+  # 테스트 (샤딩으로 병렬화)
   test:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
-      - run: npm ci
-      - run: npm run test -- --run
 
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-test-${{ runner.os }}-${{ github.sha }}-shard-${{ matrix.shard }}
+          restore-keys: |
+            turbo-test-${{ runner.os }}-${{ github.sha }}-
+            turbo-test-${{ runner.os }}-
+
+      - run: npm ci
+
+      - name: Run Tests (Shard ${{ matrix.shard }}/3)
+        run: npm run test -w @yiroom/web -- --run --shard=${{ matrix.shard }}/3
+        env:
+          FORCE_MOCK_AI: true
+
+  # 접근성 테스트 (병렬)
+  accessibility:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-a11y-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-a11y-${{ runner.os }}-
+
+      - run: npm ci
+
+      - name: Run Accessibility Tests (Unit)
+        run: npm run test -w @yiroom/web -- --run tests/lib/a11y/
+        env:
+          FORCE_MOCK_AI: true
+
+  # 코드 품질 (병렬, non-blocking)
+  quality:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Dead code detection (Knip)
+        run: npm run quality:deadcode -w @yiroom/web
+        continue-on-error: true
+
+      - name: Duplicate code detection (jscpd)
+        run: npm run quality:duplicates -w @yiroom/web
+        continue-on-error: true
+
+  # 빌드 (lint, typecheck, test 완료 후)
   build:
     needs: [lint, typecheck, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
+
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-build-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-build-${{ runner.os }}-
+
+      - name: Cache Next.js
+        uses: actions/cache@v4
+        with:
+          path: apps/web/.next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('apps/web/**/*.ts', 'apps/web/**/*.tsx') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
+            nextjs-${{ runner.os }}-
+
       - run: npm ci
-      - run: npm run build:web
+
+      - name: Build
+        run: npx turbo run build --filter=@yiroom/web
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: apps/web/.next
+          retention-days: 1
+
+  # CI 요약 리포트
+  summary:
+    needs: [lint, typecheck, test, accessibility, build, quality]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate CI Summary
+        run: |
+          echo "## CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result == 'success' && '✅ Passed' || needs.lint.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Typecheck | ${{ needs.typecheck.result == 'success' && '✅ Passed' || needs.typecheck.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | ${{ needs.test.result == 'success' && '✅ Passed' || needs.test.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Accessibility | ${{ needs.accessibility.result == 'success' && '✅ Passed' || needs.accessibility.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || needs.build.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Quality | ${{ needs.quality.result == 'success' && '✅ Passed' || needs.quality.result == 'skipped' && '⏭️ Skipped' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Environment" >> $GITHUB_STEP_SUMMARY
+          echo "- **Node.js**: 22" >> $GITHUB_STEP_SUMMARY
+          echo "- **Turborepo Remote Cache**: Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Test Shards**: 3" >> $GITHUB_STEP_SUMMARY
+          echo "- **Accessibility**: axe-core (WCAG 2.1 AA)" >> $GITHUB_STEP_SUMMARY

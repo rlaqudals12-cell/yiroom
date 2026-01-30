@@ -1,0 +1,107 @@
+name: Documentation QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.claude/**'
+      - 'CLAUDE.md'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.claude/**'
+      - 'CLAUDE.md'
+
+jobs:
+  broken-links:
+    name: Check Broken Links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check broken links in docs
+        run: node scripts/check-broken-links.js
+        continue-on-error: true
+
+      - name: Upload broken links report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: broken-links-report
+          path: broken-links-report.txt
+          retention-days: 7
+
+  p3-scores:
+    name: Validate P3 Scores
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate P3 scores consistency
+        run: node scripts/validate-p3-scores.js
+        continue-on-error: true
+
+  index-sync:
+    name: Check INDEX.md Sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check INDEX.md synchronization
+        run: node scripts/index-sync-check.js
+
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Lint markdown files
+        run: npx markdownlint-cli2 "docs/**/*.md" --config .markdownlint.json
+        continue-on-error: true
+
+  docs-summary:
+    name: Documentation Summary
+    runs-on: ubuntu-latest
+    needs: [broken-links, p3-scores, index-sync]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate docs summary
+        run: |
+          echo "## 📚 Documentation QA Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Broken Links | ${{ needs.broken-links.result == 'success' && '✅' || '⚠️' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| P3 Scores | ${{ needs.p3-scores.result == 'success' && '✅' || '⚠️' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| INDEX.md Sync | ${{ needs.index-sync.result == 'success' && '✅' || '⚠️' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Document Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Markdown Files**: $(find docs -name '*.md' | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Specs (SDD)**: $(find docs/specs -name 'SDD-*.md' 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- **ADRs**: $(find docs/adr -name 'ADR-*.md' 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Principles**: $(find docs/principles -name '*.md' 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY

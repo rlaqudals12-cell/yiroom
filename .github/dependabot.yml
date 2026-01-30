@@ -1,7 +1,136 @@
 version: 2
 updates:
+  # 루트 package.json 및 워크스페이스
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - "dependencies"
+      - "automated"
+    # 중요 보안 업데이트는 더 빠르게
+    allow:
+      - dependency-type: "all"
+    # 패키지 그룹화 - 관련 패키지 함께 업데이트
+    groups:
+      # React 생태계
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+        update-types:
+          - "minor"
+          - "patch"
+      # Next.js 생태계
+      nextjs:
+        patterns:
+          - "next"
+          - "next-*"
+          - "@next/*"
+          - "eslint-config-next"
+        update-types:
+          - "minor"
+          - "patch"
+      # Radix UI 컴포넌트
+      radix:
+        patterns:
+          - "@radix-ui/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # 테스팅 도구
+      testing:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@testing-library/*"
+          - "@playwright/test"
+          - "playwright"
+        update-types:
+          - "minor"
+          - "patch"
+      # Clerk 인증
+      clerk:
+        patterns:
+          - "@clerk/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Supabase
+      supabase:
+        patterns:
+          - "@supabase/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # 개발 도구
+      dev-tools:
+        patterns:
+          - "typescript"
+          - "eslint"
+          - "eslint-*"
+          - "prettier"
+          - "prettier-*"
+          - "husky"
+          - "lint-staged"
+        update-types:
+          - "minor"
+          - "patch"
+      # Storybook
+      storybook:
+        patterns:
+          - "storybook"
+          - "@storybook/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Sentry
+      sentry:
+        patterns:
+          - "@sentry/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Tailwind CSS
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "tailwind-*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Major 버전 업데이트는 개별 PR
+    ignore:
+      # 수동 검토가 필요한 major 업데이트는 별도 처리
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions 워크플로우
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci(deps)"
+    labels:
+      - "dependencies"
+      - "ci"
+      - "automated"
+    groups:
+      # 모든 GitHub Actions 그룹화
+      actions:
+        patterns:
+          - "*"

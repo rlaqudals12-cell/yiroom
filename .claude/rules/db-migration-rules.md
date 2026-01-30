@@ -298,4 +298,4 @@ npx supabase db reset --db-url $DATABASE_URL
 
 ---
 
-**Version**: 1.0 | **Updated**: 2026-01-15 | ADR-004, db-api-sync.md 보완
+**Version**: 1.1 | **Updated**: 2026-01-28 | ADR-004 보완, 깨진 참조 제거

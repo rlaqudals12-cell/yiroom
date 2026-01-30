@@ -72,7 +72,7 @@ const requestSchema = z.object({
     .optional(),
 });
 
-// 응답 타입
+// 응답 타입 - AppError 표준 참조 (error-handling-patterns.md)
 interface SkinAnalysisResponse {
   success: boolean;
   data?: {
@@ -82,7 +82,9 @@ interface SkinAnalysisResponse {
   };
   error?: {
     code: string;
-    message: string;
+    message: string;        // 기술 메시지 (로깅용)
+    userMessage: string;    // 사용자 메시지 (UI 표시)
+    details?: Record<string, unknown>;
   };
 }
 
@@ -92,7 +94,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<SkinAnaly
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(
-        { success: false, error: { code: 'AUTH_ERROR', message: 'Unauthorized' } },
+        {
+          success: false,
+          error: {
+            code: 'AUTH_ERROR',
+            message: 'User not authenticated',
+            userMessage: '로그인이 필요합니다.',
+          },
+        },
         { status: 401 }
       );
     }
@@ -108,6 +117,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<SkinAnaly
           error: {
             code: 'VALIDATION_ERROR',
             message: 'Invalid request body',
+            userMessage: '입력 정보를 확인해주세요.',
+            details: validated.error.flatten(),
           },
         },
         { status: 400 }
@@ -128,7 +139,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<SkinAnaly
     return NextResponse.json(
       {
         success: false,
-        error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Internal server error',
+          userMessage: '서버 오류가 발생했습니다.',
+        },
       },
       { status: 500 }
     );
@@ -166,12 +181,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<SkinAnaly
 
 ### 에러 응답
 
+> **표준 에러 타입**: [error-handling-patterns.md](./error-handling-patterns.md) 참조
+
 ```typescript
 {
   "success": false,
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "입력 정보를 확인해주세요.",
+    "message": "Invalid email format",         // 기술 메시지 (로깅용)
+    "userMessage": "입력 정보를 확인해주세요.", // 사용자 메시지 (UI 표시)
     "details": {
       "field": "email",
       "issue": "Invalid email format"
@@ -256,7 +274,14 @@ export async function GET(request: NextRequest) {
 
   if (!userId) {
     return NextResponse.json(
-      { success: false, error: { code: 'AUTH_ERROR', message: 'Unauthorized' } },
+      {
+        success: false,
+        error: {
+          code: 'AUTH_ERROR',
+          message: 'Unauthorized',
+          userMessage: '로그인이 필요합니다.',
+        },
+      },
       { status: 401 }
     );
   }
@@ -323,7 +348,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: { code: 'RATE_LIMIT_ERROR', message: '요청 한도를 초과했습니다' },
+        error: {
+          code: 'RATE_LIMIT_ERROR',
+          message: 'Rate limit exceeded',
+          userMessage: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+        },
       },
       { status: 429, headers }
     );
@@ -433,6 +462,11 @@ export async function GET(request: NextRequest) {
 }
 ```
 
+## 관련 문서
+
+- [error-handling-patterns.md](./error-handling-patterns.md) - AppError 타입, createAppError 함수
+- [ADR-020](../../docs/adr/ADR-020-api-design.md) - API 설계 결정
+
 ---
 
-**Version**: 1.0 | **Updated**: 2026-01-15 | ADR-020 보완
+**Version**: 1.1 | **Updated**: 2026-01-28 | 에러 응답 형식 표준화 (userMessage 필수)

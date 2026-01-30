@@ -170,6 +170,11 @@ export interface PersonalColorResult {
 2. **타입 일관성**: Mock과 Result 타입 동기화 유지
 3. **Fallback 처리**: 새 필드는 선택적으로, UI에서 null 체크
 
+## 관련 문서
+
+> **AI Mock Fallback 전략**: [ADR-007](../../docs/adr/ADR-007-mock-fallback-strategy.md) 참조
+> (타임아웃, 재시도, Mock 파일 구조 등)
+
 ---
 
-**Version**: 1.0 | **Updated**: 2026-01-08 | **Applies to**: PC-1, S-1, C-1, H-1
+**Version**: 1.1 | **Updated**: 2026-01-28 | **Applies to**: PC-1, S-1, C-1, H-1

@@ -328,10 +328,43 @@ function sendToAnalytics(name: string, metric: Metric) {
 
 ### 배포 전
 
-- [ ] Lighthouse 점수 90+ 유지
+- [ ] Lighthouse 점수 85+ 유지 (CI 기준)
 - [ ] 번들 크기 증가 확인
 - [ ] 느린 API 엔드포인트 없음
 
 ---
 
-**Version**: 1.0 | **Updated**: 2026-01-15
+## CI 연동 현황
+
+### Lighthouse CI 설정 파일
+
+| 파일 | 위치 | 용도 |
+|------|------|------|
+| `lighthouse.yml` | `.github/workflows/` | CI 워크플로우 |
+| `lighthouse-budget.json` | `apps/web/` | 성능 예산 정의 |
+| `lighthouserc.json` | `apps/web/` | Lighthouse 설정 |
+
+### CI 임계값 (실제 적용)
+
+```json
+// lighthouserc.json 발췌
+{
+  "assertions": {
+    "categories:performance": ["error", { "minScore": 0.85 }],
+    "categories:accessibility": ["warn", { "minScore": 0.9 }],
+    "first-contentful-paint": ["error", { "maxNumericValue": 1800 }],
+    "largest-contentful-paint": ["error", { "maxNumericValue": 2500 }],
+    "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }]
+  }
+}
+```
+
+### 측정 URL
+
+- `/home` - 홈 페이지
+- `/analysis/skin` - 피부 분석
+- `/beauty` - 뷰티 카테고리
+
+---
+
+**Version**: 1.1 | **Updated**: 2026-01-29 | CI 연동 현황 추가

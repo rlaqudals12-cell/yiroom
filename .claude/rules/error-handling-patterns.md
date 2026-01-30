@@ -106,38 +106,12 @@ export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions =
 
 ### Level 2: 대체 처리 (Fallback)
 
-```typescript
-// lib/gemini/with-fallback.ts
-export async function analyzeWithFallback<T>(
-  analyze: () => Promise<T>,
-  generateMock: () => T,
-  options: { timeout?: number; maxRetries?: number } = {}
-): Promise<{ result: T; usedFallback: boolean }> {
-  const { timeout = 3000, maxRetries = 2 } = options;
+> **AI Mock Fallback 상세**: [ADR-007](../../docs/adr/ADR-007-mock-fallback-strategy.md) 참조
+> (타임아웃 3초, 재시도 2회, Mock 파일 구조, UI 신뢰도 표시)
 
-  try {
-    const result = await withRetry(
-      () =>
-        Promise.race([
-          analyze(),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('AI analysis timeout')), timeout)
-          ),
-        ]),
-      { maxRetries }
-    );
-
-    return { result, usedFallback: false };
-  } catch (error) {
-    console.error('[AI] Analysis failed, using fallback:', error);
-
-    return {
-      result: generateMock(),
-      usedFallback: true,
-    };
-  }
-}
-```
+**핵심 패턴**: `analyzeWithFallback<T>(analyze, generateMock, options)`
+- 성공 시: `{ result, usedFallback: false }`
+- 실패 시: `{ result: mockResult, usedFallback: true }`
 
 ### Level 3: 우아한 실패 (Graceful Degradation)
 
@@ -413,6 +387,11 @@ export function FormField({ error, ...props }: FormFieldProps) {
 }
 ```
 
+## 관련 문서
+
+- [api-design.md](./api-design.md) - API 에러 응답 형식, HTTP 상태 코드
+- [ADR-007](../../docs/adr/ADR-007-mock-fallback-strategy.md) - Mock Fallback 전략
+
 ---
 
-**Version**: 1.0 | **Updated**: 2026-01-15
+**Version**: 1.1 | **Updated**: 2026-01-28 | 관련 문서 섹션 추가

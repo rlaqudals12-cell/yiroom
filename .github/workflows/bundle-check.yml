@@ -1,0 +1,182 @@
+name: Bundle Size Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+
+# 동일 브랜치의 중복 실행 취소
+concurrency:
+  group: bundle-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SKIP_ENV_VALIDATION: true
+
+jobs:
+  bundle-size:
+    name: Analyze Bundle Size
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build PR branch
+        run: npm run build:web
+        env:
+          ANALYZE: false
+
+      - name: Get PR bundle stats
+        id: pr_stats
+        run: |
+          # .next/static 폴더의 JS 파일 크기 계산
+          if [ -d "apps/web/.next/static" ]; then
+            PR_SIZE=$(find apps/web/.next/static -name "*.js" -exec gzip -c {} \; | wc -c)
+            PR_SIZE_KB=$((PR_SIZE / 1024))
+            echo "size_kb=$PR_SIZE_KB" >> $GITHUB_OUTPUT
+            echo "PR bundle size: ${PR_SIZE_KB}KB (gzipped)"
+          else
+            echo "size_kb=0" >> $GITHUB_OUTPUT
+            echo "No build output found"
+          fi
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+          clean: false
+
+      - name: Install base dependencies
+        run: npm ci
+
+      - name: Build base branch
+        run: npm run build:web
+        env:
+          ANALYZE: false
+
+      - name: Get base bundle stats
+        id: base_stats
+        run: |
+          if [ -d "apps/web/.next/static" ]; then
+            BASE_SIZE=$(find apps/web/.next/static -name "*.js" -exec gzip -c {} \; | wc -c)
+            BASE_SIZE_KB=$((BASE_SIZE / 1024))
+            echo "size_kb=$BASE_SIZE_KB" >> $GITHUB_OUTPUT
+            echo "Base bundle size: ${BASE_SIZE_KB}KB (gzipped)"
+          else
+            echo "size_kb=0" >> $GITHUB_OUTPUT
+            echo "No build output found"
+          fi
+
+      - name: Calculate diff and comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prSize = parseInt('${{ steps.pr_stats.outputs.size_kb }}') || 0;
+            const baseSize = parseInt('${{ steps.base_stats.outputs.size_kb }}') || 0;
+            const diff = prSize - baseSize;
+            const diffPercent = baseSize > 0 ? ((diff / baseSize) * 100).toFixed(2) : 0;
+
+            // 상태 아이콘 결정
+            let statusIcon = '✅';
+            let statusText = 'Size decreased or unchanged';
+            if (diff > 50) {
+              statusIcon = '⚠️';
+              statusText = 'Size increased significantly';
+            } else if (diff > 100) {
+              statusIcon = '🚨';
+              statusText = 'Large size increase detected';
+            } else if (diff > 0) {
+              statusIcon = '📊';
+              statusText = 'Minor size increase';
+            } else if (diff < 0) {
+              statusIcon = '🎉';
+              statusText = 'Size decreased';
+            }
+
+            // 예산 체크 (500KB gzipped 기준)
+            const BUDGET_KB = 500;
+            const budgetStatus = prSize <= BUDGET_KB
+              ? `✅ Within budget (${BUDGET_KB}KB)`
+              : `❌ Over budget by ${prSize - BUDGET_KB}KB`;
+
+            const comment = `## ${statusIcon} Bundle Size Report
+
+            | Metric | Value |
+            |--------|-------|
+            | **PR Bundle Size** | ${prSize}KB (gzipped) |
+            | **Base Bundle Size** | ${baseSize}KB (gzipped) |
+            | **Difference** | ${diff > 0 ? '+' : ''}${diff}KB (${diffPercent}%) |
+            | **Budget Check** | ${budgetStatus} |
+            | **Status** | ${statusText} |
+
+            <details>
+            <summary>What does this mean?</summary>
+
+            - **Bundle Size**: Total size of JavaScript files after gzip compression
+            - **Budget**: Maximum allowed size is ${BUDGET_KB}KB (gzipped)
+            - **Goal**: Keep bundle size as small as possible for faster page loads
+
+            ### Tips for reducing bundle size:
+            - Use dynamic imports for heavy components
+            - Check for unused dependencies with \`npm run quality:deadcode\`
+            - Avoid importing entire libraries when only specific functions are needed
+            </details>
+
+            ---
+            *Measured from \`.next/static/**/*.js\` files*`;
+
+            // 기존 코멘트 찾기
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Bundle Size Report')
+            );
+
+            // 코멘트 업데이트 또는 생성
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment,
+              });
+            }
+
+            // 예산 초과 시 실패 (warning으로만, 블록하지 않음)
+            if (prSize > BUDGET_KB) {
+              core.warning(`Bundle size (${prSize}KB) exceeds budget (${BUDGET_KB}KB)`);
+            }
+
+            // 큰 증가 시 경고
+            if (diff > 100) {
+              core.warning(`Bundle size increased by ${diff}KB (${diffPercent}%)`);
+            }

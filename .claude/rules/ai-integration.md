@@ -31,37 +31,13 @@ model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 
 ## Fallback 전략
 
-### 필수 패턴
+> **상세 가이드**: Mock Fallback 전략은 [ADR-007](../../docs/adr/ADR-007-mock-fallback-strategy.md) 참조
+> (타임아웃 3초, 재시도 2회, Mock 파일 구조, UI 신뢰도 표시 등)
 
-모든 AI 호출은 Mock Fallback 필수:
-
-```typescript
-try {
-  const result = await analyzeWithGemini(input);
-  return result;
-} catch (error) {
-  console.error('[Module] Gemini error, falling back to mock:', error);
-  return generateMockResult(input);
-}
-```
-
-### Mock 파일 위치
-
-```
-lib/mock/
-├── workout-analysis.ts   # W-1 Mock
-├── skin-analysis.ts      # S-1 Mock
-├── body-analysis.ts      # C-1 Mock
-└── food-analysis.ts      # N-1 Mock
-```
-
-## 타임아웃 설정
-
-```typescript
-// 권장: 3초 타임아웃 + 2회 재시도
-const TIMEOUT_MS = 3000;
-const MAX_RETRIES = 2;
-```
+**핵심 원칙**:
+- 모든 AI 호출에 Mock Fallback 필수
+- 타임아웃: 3초 / 재시도: 2회
+- Mock 사용 시 `isMock: true` + 낮은 `confidence` 반환
 
 ## 프롬프트 규칙
 
@@ -156,3 +132,7 @@ console.error('[S-1] Gemini error:', error);
 console.error('[W-1] API timeout, using mock');
 console.log('[N-1] Analysis completed');
 ```
+
+---
+
+**Version**: 1.0 | **Updated**: 2026-01-28 | ADR-003, ADR-007 참조

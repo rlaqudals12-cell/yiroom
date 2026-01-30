@@ -1,5 +1,43 @@
 {
   "permissions": {
-    "allow": ["Bash(git add:*)"]
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(dir:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(grep '`')",
+      "Bash(git rm:*)",
+      "Bash(for file in docs/specs/SDD-*.md)",
+      "Bash(do if grep -q \"## 0. 궁극의 형태\" \"$file\")",
+      "Bash(then echo \"HAS_P1: $file\")",
+      "Bash(else echo \"NO_P1: $file\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(do if grep -q \"## 0\\\\. 궁극의 형태\" \"$file\")",
+      "Bash(ls:*)",
+      "Bash(xargs:*)",
+      "Bash(comm:*)",
+      "Bash(find:*)",
+      "Bash(do if grep -q \"원자 분해\\\\|Atomic Decomposition\\\\|## 3\\\\.\" \"$file\")",
+      "Bash(for file in \"c:\\\\dev\\\\yiroom\\\\docs\\\\principles\"/*.md)",
+      "Bash(do)",
+      "Bash(if grep -q \"^## 0\\\\. 궁극의 형태\" \"$file\")",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(npx vitest:*)",
+      "Bash(git commit:*)"
+    ]
   }
 }
