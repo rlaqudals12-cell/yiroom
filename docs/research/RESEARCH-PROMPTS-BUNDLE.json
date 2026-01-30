@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created": "2026-01-18",
+    "description": "이룸 프로젝트 통합 리서치 프롬프트 번들",
+    "total_bundles": 15,
+    "estimated_prompts": 15
+  },
+  "gap_analysis": {
+    "status": "RESOLVED",
+    "resolved_date": "2026-01-18",
+    "added_items": [
+      {
+        "category": "AA. AI/ML 심화",
+        "items": ["#128 AI-ETHICS-BIAS", "#129 AI-PROMPT-ENGINEERING", "#130 AI-VLM-OPTIMIZATION", "#131 AI-CONFIDENCE-CALIBRATION"]
+      },
+      {
+        "category": "AB. 보안 심화",
+        "items": ["#132 SEC-OWASP-NEXTJS", "#133 SEC-IMAGE-SECURITY", "#134 SEC-MALICIOUS-UPLOAD"]
+      },
+      {
+        "category": "AC. 한국 시장 특화",
+        "items": ["#135 KR-BEAUTY-TREND", "#136 KR-PAYMENT-SYSTEM", "#137 KR-PIPA-DETAIL"]
+      },
+      {
+        "category": "AD. 디자인/UX 심화",
+        "items": ["#138 DESIGN-KBEAUTY-TREND", "#139 DESIGN-COLOR-PSYCHOLOGY"]
+      }
+    ],
+    "total_items": 139,
+    "note": "갭 분석 결과 12개 항목이 DEEP-RESEARCH-REQUESTS.md v3.3에 추가됨"
+  },
+  "bundles": [
+    {
+      "id": "BUNDLE-01",
+      "name": "Next.js 기술 스택 통합",
+      "priority": "P0",
+      "includes": ["SEO-NEXTJS-2026", "RATE-LIMIT-REDIS", "PERFORMANCE-2026", "DATA-FETCHING-2026"],
+      "estimated_time": "3시간",
+      "prompt": "아래에서 계속..."
+    },
+    {
+      "id": "BUNDLE-02",
+      "name": "수익화 및 비즈니스 모델",
+      "priority": "P0",
+      "includes": ["BIZ-MONETIZATION", "BIZ-PRICING", "BIZ-PAYMENT", "OPS-COST-MODEL"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-03",
+      "name": "사용자 획득 및 성장",
+      "priority": "P1",
+      "includes": ["BIZ-ACQUISITION-ORGANIC", "BIZ-VIRAL-GROWTH", "BIZ-ASO-STRATEGY", "USER-HABIT-FORMATION"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-04",
+      "name": "UX/접근성 통합",
+      "priority": "P1",
+      "includes": ["A11Y-WCAG22", "APP-PROGRESSIVE-DISCLOSURE", "APP-ACCESSIBILITY-DEPTH", "USER-ACCESSIBILITY-REAL"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-05",
+      "name": "플랫폼 전략 (웹/앱)",
+      "priority": "P0",
+      "includes": ["PLATFORM-WEB-VS-APP", "PLATFORM-PWA", "PLATFORM-NATIVE", "PLATFORM-CROSS"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-06",
+      "name": "크로스 도메인 시너지",
+      "priority": "P1",
+      "includes": ["PRINCIPLE-CROSS-DOMAIN-SYNERGY", "COMBO-PC-SKINCARE", "COMBO-SKIN-NUTRITION", "CAPSULE-MULTI-DOMAIN"],
+      "estimated_time": "3시간"
+    },
+    {
+      "id": "BUNDLE-07",
+      "name": "운영 및 인프라",
+      "priority": "P1",
+      "includes": ["OPS-SCALING-STRATEGY", "OPS-CANARY-DEPLOY", "OPS-SLO-SLI", "QUALITY-SCALABILITY", "QUALITY-RELIABILITY"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-08",
+      "name": "사용자 심리 및 경험",
+      "priority": "P1",
+      "includes": ["USER-PAIN-POINTS", "USER-MENTAL-MODEL", "USER-EMOTIONAL-JOURNEY", "USER-TRUST-BUILDING", "USER-VALUE-PERCEPTION"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-09",
+      "name": "개인화 및 추천",
+      "priority": "P1",
+      "includes": ["APP-PERSONALIZATION", "USER-PERSONALIZATION-FEEL", "APP-AB-TESTING", "BIZ-ANALYTICS"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-10",
+      "name": "스타트업 재무/투자",
+      "priority": "P1",
+      "includes": ["FIN-FUNDRAISING", "FIN-MODELING", "FIN-CASHFLOW", "COMPANY-EXIT-STRATEGY"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-11",
+      "name": "법률/규정 준수",
+      "priority": "P2",
+      "includes": ["BIZ-LEGAL-COMPLIANCE", "OPS-COMPLIANCE-AUTO", "USER-PRIVACY-CONCERN", "CORP-IP"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-12",
+      "name": "팀/조직 역량",
+      "priority": "P2",
+      "includes": ["TEAM-SKILL-GAP", "TEAM-VELOCITY", "ORG-HIRING", "ORG-CULTURE"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-13",
+      "name": "경쟁 및 시장 분석",
+      "priority": "P1",
+      "includes": ["PROD-COMPETITOR", "COMPANY-MARKET-POSITION", "COMPANY-COMPETITIVE-MOAT", "COMPANY-GROWTH-LEVER"],
+      "estimated_time": "2시간"
+    },
+    {
+      "id": "BUNDLE-14",
+      "name": "도메인 원리 (뷰티/웰니스)",
+      "priority": "P1",
+      "includes": ["PRINCIPLE-NUTRITION-SCIENCE", "PRINCIPLE-EXERCISE-PHYSIOLOGY", "W-2-REHAB-BUNDLE", "W-2-POSTURE-PROTOCOL"],
+      "estimated_time": "3시간"
+    },
+    {
+      "id": "BUNDLE-15",
+      "name": "위기 관리 및 보안",
+      "priority": "P2",
+      "includes": ["CRISIS-PR", "CRISIS-DATA-BREACH", "OPS-DR", "OPS-INCIDENT"],
+      "estimated_time": "2시간"
+    }
+  ]
+}

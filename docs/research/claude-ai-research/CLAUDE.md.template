@@ -1,0 +1,155 @@
+# CLAUDE.md Template (150줄 최적화 버전)
+
+> 이 템플릿을 기반으로 프로젝트에 맞게 수정하세요.
+> 🎯 목표: 150줄 이하, 범용 규칙만 포함
+
+---
+
+## 사용법
+
+1. 이 파일을 프로젝트 루트에 `CLAUDE.md`로 복사
+2. `[PLACEHOLDER]` 부분을 프로젝트에 맞게 수정
+3. 앱별 규칙은 `apps/*/CLAUDE.md`로 분리
+4. 복잡한 패턴은 `.claude/rules/` 또는 `.claude/skills/`로 이동
+
+---
+
+```markdown
+# [프로젝트명] Development Guide
+
+## Project Overview
+[프로젝트 한 줄 설명]
+
+- **Stack**: [Next.js 16, React 19, TypeScript, Supabase, Clerk]
+- **Structure**: Turborepo monorepo
+- **Apps**: `apps/web` (Next.js), `apps/mobile` (Expo)
+
+## Critical Rules (절대 규칙)
+
+### 코드 품질
+- TypeScript strict mode 필수
+- 모든 함수에 명시적 반환 타입
+- `any` 타입 사용 금지 → `unknown` 또는 구체적 타입 사용
+- 파일당 200줄 이하 유지
+
+### Git 워크플로우
+- 커밋 메시지: Conventional Commits 형식
+- 브랜치: `feature/`, `fix/`, `refactor/` 접두사
+- PR 전 반드시 `pnpm lint && pnpm typecheck` 실행
+
+### 보안
+- 환경변수는 `.env.local`에만 저장 (절대 커밋 금지)
+- API 키는 서버 사이드에서만 접근
+- 사용자 입력은 항상 Zod로 검증
+
+## Architecture Decisions
+
+### 모노레포 구조
+```
+apps/
+├── web/          # Next.js 16 (App Router)
+└── mobile/       # Expo SDK 54
+packages/
+├── ui/           # 공유 컴포넌트
+├── database/     # Supabase 클라이언트
+└── shared/       # 유틸리티, 타입
+```
+
+### 상태 관리
+- 서버 상태: TanStack Query
+- 클라이언트 상태: Zustand (필요시에만)
+- 폼 상태: React Hook Form + Zod
+
+### 데이터 페칭
+- 서버 컴포넌트에서 직접 Supabase 쿼리 (가능한 경우)
+- 클라이언트에서는 Server Actions 사용
+- API Routes는 외부 웹훅용으로만 사용
+
+## File Conventions
+
+### 네이밍
+- 컴포넌트: `PascalCase.tsx`
+- 유틸리티: `camelCase.ts`
+- 상수: `SCREAMING_SNAKE_CASE`
+- 타입 파일: `*.types.ts`
+
+### 디렉토리 구조 (앱별)
+```
+src/
+├── app/              # App Router 페이지
+├── components/       # UI 컴포넌트
+│   ├── ui/          # 재사용 가능한 기본 UI
+│   └── features/    # 기능별 컴포넌트
+├── lib/             # 유틸리티, 클라이언트
+├── hooks/           # 커스텀 훅
+└── types/           # 타입 정의
+```
+
+## Testing Strategy
+
+- 단위 테스트: Vitest (`*.test.ts`)
+- 컴포넌트 테스트: Testing Library (`*.test.tsx`)
+- E2E 테스트: Playwright (`e2e/*.spec.ts`)
+- 테스트 커버리지 목표: 80%+
+
+## Available Commands
+
+프로젝트에서 사용 가능한 슬래시 명령어:
+
+| 명령어 | 용도 |
+|--------|------|
+| `/qplan` | 기능 계획 수립 (제1원칙 분석) |
+| `/qcode` | 코드 구현 시작 |
+| `/sisyphus` | 반복 작업 완료까지 실행 |
+| [추가 명령어...] | |
+
+## Agent Delegation
+
+복잡한 작업은 전문 에이전트에게 위임:
+
+- **Planner**: 아키텍처 설계, 작업 분해
+- **Reviewer**: 코드 리뷰, 보안 검토
+- **Tester**: 테스트 작성, 커버리지 확인
+
+## What NOT to Do
+
+❌ 하지 말아야 할 것:
+- `console.log` 디버깅 코드 커밋
+- 하드코딩된 URL 또는 설정값
+- 주석 처리된 코드 방치
+- 500줄 이상의 단일 파일
+- 테스트 없는 비즈니스 로직
+
+## Quick Reference
+
+### 자주 쓰는 경로
+- 환경변수: `apps/web/.env.local`
+- DB 스키마: `packages/database/schema.sql`
+- 공유 타입: `packages/shared/src/types/`
+
+### 자주 쓰는 명령어
+```bash
+pnpm dev          # 개발 서버 시작
+pnpm build        # 프로덕션 빌드
+pnpm lint         # ESLint 실행
+pnpm typecheck    # TypeScript 검사
+pnpm test         # 테스트 실행
+```
+
+---
+
+> 📁 앱별 상세 규칙: `apps/web/CLAUDE.md`, `apps/mobile/CLAUDE.md`
+> 📁 기술별 패턴: `.claude/rules/`, `.claude/skills/`
+```
+
+---
+
+## 체크리스트
+
+이 템플릿 적용 후 확인사항:
+
+- [ ] 총 줄 수가 150줄 이하인가?
+- [ ] 앱별 규칙이 분리되었는가?
+- [ ] 복잡한 패턴이 rules/skills로 이동했는가?
+- [ ] 린터로 강제 가능한 규칙이 제거되었는가?
+- [ ] 더 이상 유효하지 않은 규칙이 제거되었는가?

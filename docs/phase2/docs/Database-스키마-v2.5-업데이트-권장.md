@@ -269,6 +269,9 @@ async function getUserProfile(userId: string) {
 
 ## 📎 관련 문서
 
-- [N-1 기능 스펙 v1.0.2](./N-1-feature-spec-template-v1.0.2.md)
-- [W-1 기능 스펙 v1.1](./yiroom-final-docs/W-1/W-1-feature-spec-template-v1.1.md)
-- [Database 스키마 v2.4](./yiroom-final-docs/project/Database-스키마-v2.4-Updated.md)
+> ⚠️ **참고**: 아래 문서들은 레거시 아카이브로 이동되었습니다.
+> 최신 스펙은 [docs/specs/](../../specs/) 폴더를 참조하세요.
+
+- N-1 기능 스펙 → [SDD-N1-NUTRITION.md](../../specs/SDD-N1-NUTRITION.md)
+- W-1 기능 스펙 → [SDD-W1-WORKOUT.md](../../specs/SDD-W1-WORKOUT.md)
+- Database 스키마 → [DATABASE-SCHEMA.md](../../DATABASE-SCHEMA.md)

@@ -24,6 +24,22 @@
 - 상세 분석 리포트 시각화 컴포넌트 추가
 - 동의 여부에 따른 하이브리드 UI 구현
 
+### 1.4 관련 문서
+
+#### 원리 문서
+
+- [원리: 색채학](../principles/color-science.md) - Lab 색공간, 웜톤/쿨톤 분류, 시즌 타입
+
+#### ADR
+
+- [ADR-001: Core Image Engine](../adr/ADR-001-core-image-engine.md)
+- [ADR-003: AI 모델 선택](../adr/ADR-003-ai-model-selection.md)
+- [ADR-010: AI 파이프라인](../adr/ADR-010-ai-pipeline.md)
+
+#### 관련 스펙
+
+- [SDD-PHASE-J-AI-STYLING](./SDD-PHASE-J-AI-STYLING.md) - AI 스타일링 기능
+
 ---
 
 ## 2. 요구사항
@@ -280,4 +296,140 @@ describe('PC-1 Result Page', () => {
 
 ---
 
-**Status**: Ready for Review
+## 11. P3 원자 분해 (Atomic Decomposition)
+
+> P3 원칙: 모든 원자는 2시간 이내, 독립 테스트 가능, 입출력 명확
+
+### 11.1 의존성 그래프
+
+```mermaid
+graph TD
+    subgraph Phase1["Phase 1: 탭 구조 변경"]
+        A1[ATOM-1: 드레이핑 탭 제거]
+    end
+
+    subgraph Phase2["Phase 2: 시각화 컴포넌트"]
+        A2[ATOM-2: ToneSpectrumBar]
+        A3[ATOM-3: ColorCompareVisual]
+        A4[ATOM-4: MetalToneCompare]
+        A5[ATOM-5: AnalysisFactorsVisual]
+    end
+
+    subgraph Phase3["Phase 3: 하이브리드 UI"]
+        A6[ATOM-6: FaceDrapingPreview]
+        A7[ATOM-7: DetailedEvidenceReport 통합]
+    end
+
+    subgraph Phase4["Phase 4: 테스트"]
+        A8[ATOM-8: 테스트 작성]
+    end
+
+    A1 --> A7
+    A2 --> A7
+    A3 --> A7
+    A4 --> A7
+    A5 --> A7
+    A6 --> A7
+    A7 --> A8
+```
+
+### 11.2 ATOM 정의
+
+#### ATOM-1: 드레이핑 탭 제거
+
+- **소요시간**: 0.5시간
+- **의존성**: 없음
+- **입력**: 기존 3탭 구조
+- **출력**: 2탭 구조 ([기본 분석] [상세 리포트])
+- **성공 기준**: 탭 전환 동작, typecheck 통과
+
+#### ATOM-2: ToneSpectrumBar 컴포넌트
+
+- **소요시간**: 1시간
+- **의존성**: 없음
+- **입력**: `veinScore` (0-100)
+- **출력**: 웜톤/쿨톤 스펙트럼 바 UI
+- **성공 기준**: 그라디언트 표시, 포인터 위치 정확
+
+#### ATOM-3: ColorCompareVisual 컴포넌트
+
+- **소요시간**: 1시간
+- **의존성**: 없음
+- **입력**: `bestColors`, `worstColors`
+- **출력**: Best vs Worst 색상 비교 카드
+- **성공 기준**: 색상 팔레트 렌더링, 시즌별 정확한 색상
+
+#### ATOM-4: MetalToneCompare 컴포넌트
+
+- **소요시간**: 0.5시간
+- **의존성**: 없음
+- **입력**: `toneType` (warm/cool)
+- **출력**: 골드/실버 추천 카드
+- **성공 기준**: 웜톤→골드, 쿨톤→실버 추천
+
+#### ATOM-5: AnalysisFactorsVisual 컴포넌트
+
+- **소요시간**: 1시간
+- **의존성**: 없음
+- **입력**: `analysisEvidence`
+- **출력**: 분석 요소별 프로그레스 바
+- **성공 기준**: 각 요소 점수 표시
+
+#### ATOM-6: FaceDrapingPreview 컴포넌트
+
+- **소요시간**: 1.5시간
+- **의존성**: 없음
+- **입력**: `imageUrl`, `bestColors`
+- **출력**: 얼굴+색상 오버레이 (미니 드레이핑)
+- **성공 기준**: 이미지 동의 시만 표시, 상위 3색 오버레이
+
+#### ATOM-7: DetailedEvidenceReport 통합
+
+- **소요시간**: 1.5시간
+- **의존성**: ATOM-1~6
+- **입력**: 모든 컴포넌트 + 동의 상태
+- **출력**: 통합된 상세 리포트
+- **성공 기준**: 하이브리드 UI (동의/미동의 분기)
+
+#### ATOM-8: 테스트 작성
+
+- **소요시간**: 1.5시간
+- **의존성**: ATOM-7
+- **입력**: 모든 구현 완료
+- **출력**: 테스트 파일
+- **성공 기준**: 커버리지 80%+, npm run test 통과
+
+### 11.3 총 소요시간
+
+| Phase | ATOM | 소요시간 |
+|-------|------|----------|
+| Phase 1 | A1 | 0.5시간 |
+| Phase 2 | A2, A3, A4, A5 | 3.5시간 |
+| Phase 3 | A6, A7 | 3시간 |
+| Phase 4 | A8 | 1.5시간 |
+| **총합** | **8개** | **8.5시간** |
+
+### 11.4 P3 점수 검증
+
+| 항목 | 배점 | 달성 | 근거 |
+|------|------|------|------|
+| 소요시간 명시 | 20 | 20 | 모든 ATOM에 명시 |
+| 입출력 스펙 | 20 | 20 | 모든 ATOM에 정의 |
+| 성공 기준 | 20 | 20 | 체크 가능 기준 |
+| 의존성 그래프 | 20 | 20 | Mermaid 시각화 |
+| 파일 배치 | 10 | 10 | 섹션 6에 명시 |
+| 테스트 케이스 | 10 | 10 | ATOM-8에 정의 |
+| **총점** | **100** | **100** | P3 달성 ✅ |
+
+---
+
+## 변경 이력
+
+| 버전 | 날짜 | 변경 내용 |
+|------|------|----------|
+| 0.1 | 2026-01-11 | 초안 작성 |
+| 2.0 | 2026-01-19 | P3 원자 분해 추가 |
+
+---
+
+**Version**: 2.0 | **Status**: Ready for Review

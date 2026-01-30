@@ -324,7 +324,7 @@ const summary = await getPreferenceSummary(supabase, userId);
 
 - [SDD-USER-PREFERENCES.md](./SDD-USER-PREFERENCES.md) - 통합 Preference 시스템 설계
 - [DATABASE-SCHEMA.md](./DATABASE-SCHEMA.md) - user_preferences 테이블 스키마
-- [CODING-STANDARDS.md](../.claude/rules/coding-standards.md) - 코딩 규칙
+- [code-style.md](../.claude/rules/code-style.md) - 코딩 규칙
 
 ---
 

@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "2.0.0",
+  "name": "Yiroom Design Tokens",
+  "description": "확정 디자인 (YIROOM IDENTITY ✨) 기반 디자인 토큰",
+  "updated": "2026-01-21",
+
+  "brand": {
+    "name": "이룸 (Yiroom)",
+    "headerTitle": "YIROOM IDENTITY ✨",
+    "subTitle": "YIROOM INTELLIGENCE",
+    "slogan": "Absolute Singularity - 당신만의 아름다움을 발견하세요",
+    "defaultTheme": "dark"
+  },
+
+  "colors": {
+    "primary": {
+      "gradient": {
+        "start": "#F8C8DC",
+        "end": "#FFB6C1",
+        "css": "linear-gradient(135deg, #F8C8DC 0%, #FFB6C1 100%)"
+      },
+      "solid": "#F8C8DC"
+    },
+
+    "accent": {
+      "blue": {
+        "value": "#60A5FA",
+        "usage": "피부 분석 (S-1)"
+      },
+      "purple": {
+        "value": "#A78BFA",
+        "usage": "체형 분석 (C-1)"
+      },
+      "pink": {
+        "value": "#F472B6",
+        "usage": "퍼스널컬러 (PC-1)"
+      },
+      "green": {
+        "value": "#4ADE80",
+        "usage": "웰니스 (N-1, W-1)"
+      }
+    },
+
+    "background": {
+      "primary": "#0F0F0F",
+      "card": "#1A1A1A",
+      "elevated": "#242424",
+      "border": "#2A2A2A"
+    },
+
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#9CA3AF",
+      "muted": "#6B7280",
+      "inverse": "#0A0A0A"
+    },
+
+    "semantic": {
+      "success": "#22C55E",
+      "warning": "#F59E0B",
+      "error": "#EF4444",
+      "info": "#3B82F6"
+    },
+
+    "badge": {
+      "background": "rgba(255, 255, 255, 0.1)",
+      "text": "#E5E7EB"
+    }
+  },
+
+  "typography": {
+    "fontFamily": {
+      "sans": "Pretendard, -apple-system, system-ui, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "fontSize": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "base": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.25rem",
+      "2xl": "1.5rem",
+      "3xl": "1.875rem",
+      "4xl": "2.25rem"
+    },
+    "fontWeight": {
+      "normal": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    },
+    "lineHeight": {
+      "tight": "1.25",
+      "normal": "1.5",
+      "relaxed": "1.75"
+    }
+  },
+
+  "spacing": {
+    "1": "0.25rem",
+    "2": "0.5rem",
+    "3": "0.75rem",
+    "4": "1rem",
+    "5": "1.25rem",
+    "6": "1.5rem",
+    "8": "2rem",
+    "10": "2.5rem",
+    "12": "3rem",
+    "16": "4rem"
+  },
+
+  "borderRadius": {
+    "sm": "0.25rem",
+    "md": "0.5rem",
+    "lg": "0.75rem",
+    "xl": "1rem",
+    "2xl": "1.5rem",
+    "full": "9999px"
+  },
+
+  "shadows": {
+    "sm": "0 1px 2px rgba(0,0,0,0.3)",
+    "md": "0 4px 6px rgba(0,0,0,0.4)",
+    "lg": "0 10px 15px rgba(0,0,0,0.5)",
+    "card": "0 2px 8px rgba(248, 200, 220, 0.1)"
+  },
+
+  "components": {
+    "button": {
+      "cta": {
+        "background": "linear-gradient(135deg, #F8C8DC 0%, #FFB6C1 100%)",
+        "text": "#0A0A0A",
+        "borderRadius": "9999px",
+        "padding": "1rem 2rem",
+        "fontWeight": "600"
+      },
+      "secondary": {
+        "background": "transparent",
+        "border": "1px solid #2A2A2A",
+        "text": "#FFFFFF",
+        "borderRadius": "0.5rem"
+      }
+    },
+
+    "card": {
+      "background": "#1A1A1A",
+      "border": "1px solid #2A2A2A",
+      "borderRadius": "1rem",
+      "padding": "1.5rem"
+    },
+
+    "progressBar": {
+      "background": "#2A2A2A",
+      "fill": "linear-gradient(90deg, #F8C8DC 0%, #FFB6C1 100%)",
+      "height": "0.5rem",
+      "borderRadius": "9999px"
+    },
+
+    "badge": {
+      "trust": {
+        "background": "rgba(255, 255, 255, 0.1)",
+        "text": "#E5E7EB",
+        "borderRadius": "9999px",
+        "padding": "0.25rem 0.75rem",
+        "fontSize": "0.75rem"
+      },
+      "ad": {
+        "background": "#374151",
+        "text": "#9CA3AF",
+        "position": "top-right"
+      }
+    },
+
+    "subCard": {
+      "iconSize": "2rem",
+      "iconColors": {
+        "skin": "#60A5FA",
+        "body": "#A78BFA",
+        "personalColor": "#F472B6"
+      },
+      "titleFontSize": "0.875rem",
+      "descriptionFontSize": "0.75rem"
+    }
+  },
+
+  "patterns": {
+    "header": {
+      "title": "YIROOM IDENTITY ✨",
+      "subtitle": "YIROOM INTELLIGENCE",
+      "alignment": "center"
+    },
+
+    "progress": {
+      "format": "{current}/{total} 완료 ({percent}%)",
+      "icons": {
+        "completed": "⬡",
+        "pending": "◯"
+      }
+    },
+
+    "trustBadge": {
+      "position": "top-right",
+      "examples": [
+        "10만+ 사용자 신뢰",
+        "AI 정확도 92%"
+      ]
+    }
+  },
+
+  "breakpoints": {
+    "mobile": "375px",
+    "tablet": "768px",
+    "desktop": "1024px",
+    "wide": "1280px"
+  },
+
+  "accessibility": {
+    "minTouchTarget": "44px",
+    "minContrastRatio": 4.5,
+    "focusRingColor": "#F8C8DC",
+    "focusRingWidth": "2px"
+  }
+}

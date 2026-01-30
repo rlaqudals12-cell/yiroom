@@ -1,7 +1,91 @@
 # SDD: 전문 컨설팅 고도화 보완 문서
 
+> **Status**: 📋 Planned (보완 문서)
+> **Version**: 2.1
+> **Created**: 2026-01-13
+> **Updated**: 2026-01-28
+
 > 자료 조사 결과 + 빠진 부분 검토 + 설정 가이드
-> Version: 1.0 | Created: 2026-01-13
+> 메인 스펙: [SDD-PROFESSIONAL-ENHANCEMENT](./SDD-PROFESSIONAL-ENHANCEMENT.md)
+
+---
+
+## 0. 궁극의 형태 (P1)
+
+### 이상적 최종 상태
+
+```
+"원활한 분석 경험 - 이미지 재사용 + 순서 가이드 + 완벽한 오류 처리"
+
+9개 누락 항목 완전 구현:
+1. 이미지 재사용 흐름: PC-1 → F-1 → S-1 자동 연계
+2. 분석 순서 가이드: 최적 순서 추천 + 인터랙티브 진행
+3. 웹-모바일 동기화: 어느 기기에서든 동일한 분석 결과
+4. 다국어 지원: 성분명 10개 언어 자동 번역
+5. 오프라인 모드: 성분 DB 로컬 캐싱으로 무중단 분석
+6. 히스토리 관리: 모든 분석 결과 타임라인 + 비교 기능
+7. 접근성 완벽 지원: WCAG 2.1 AAA 달성
+8. 에러 핸들링: 모든 실패 케이스에 대한 우아한 복구
+9. 성능 최적화: 모든 분석 3초 이내 완료
+```
+
+### 물리적 한계
+
+| 한계 | 설명 |
+|------|------|
+| 이미지 품질 의존 | 저화질 이미지 재사용 불가 |
+| 네트워크 필요 | AI 분석은 온라인 필수 |
+| 번역 정확도 | 전문 성분명 자동 번역 한계 |
+| 플랫폼 제약 | iOS/Android 오프라인 동기화 차이 |
+
+### 100점 기준
+
+| 항목 | 100% 기준 | 현재 | 달성률 |
+|------|----------|------|--------|
+| 이미지 재사용 흐름 | PC-1→F-1→S-1 자동 연계 | 미구현 | 0% |
+| 분석 순서 가이드 | 인터랙티브 가이드 UI | 미구현 | 0% |
+| 웹-모바일 동기화 | 실시간 동기화 | ADR 작성됨 | 15% |
+| 다국어 지원 | 10개 언어 성분명 | 미정 | 0% |
+| 오프라인 모드 | 완전 오프라인 분석 | 미정 | 0% |
+| 히스토리 관리 | 타임라인 + 비교 | 일부 존재 | 30% |
+| 접근성 (a11y) | WCAG AAA | 부분 구현 | 40% |
+| 에러 핸들링 | 모든 케이스 처리 | 미구현 | 0% |
+| 성능 지표 | 3초 이내 응답 | 미설정 | 0% |
+
+### 현재 목표
+
+**종합 달성률**: **10%** (보완 항목 식별 및 설계 단계)
+
+- MVP: 이미지 재사용 + 에러 핸들링 (40%)
+- 중기: 히스토리 관리 + 성능 최적화 (70%)
+- 장기: 다국어 + 오프라인 + 접근성 AAA (100%)
+
+### 의도적 제외
+
+| 제외 항목 | 이유 | 재검토 시점 |
+|----------|------|------------|
+| 실시간 다국어 음성 안내 | 비용/복잡도 | 사용자 요청 시 |
+| AI 기반 분석 순서 최적화 | 과도한 복잡성 | 데이터 축적 후 |
+| AR 이미지 가이드 | 기술 성숙도 | 2027년 |
+
+---
+
+### 관련 문서
+
+#### 원리 문서
+
+- [원리: 크로스 도메인 시너지](../principles/cross-domain-synergy.md) - 모듈 간 데이터 공유
+- [원리: AI 추론](../principles/ai-inference.md) - 분석 정확도
+
+#### ADR
+
+- [ADR-003: AI 모델 선택](../adr/ADR-003-ai-model-selection.md)
+- [ADR-011: Cross-Module 데이터 흐름](../adr/ADR-011-cross-module-data-flow.md)
+- [ADR-016: 웹-모바일 데이터 동기화](../adr/ADR-016-web-mobile-sync.md)
+
+#### 관련 스펙
+
+- [SDD-PROFESSIONAL-ENHANCEMENT](./SDD-PROFESSIONAL-ENHANCEMENT.md) - 메인 스펙
 
 ---
 
@@ -1019,6 +1103,377 @@ FORCE_MOCK_AI=false
 ☐ PDF 리포트 생성
   └─ lib/reports/pdf-generator.ts
 ```
+
+---
+
+## Part 8: P3 원자 분해 (Atomic Decomposition)
+
+> 각 원자는 2시간 이내, 독립적으로 테스트 가능
+
+### 8.1 의존성 그래프
+
+```mermaid
+graph TD
+    subgraph Phase1["Phase 1: 공통 컴포넌트"]
+        ATOM1[ATOM-1: ProgressiveDisclosure]
+        ATOM2[ATOM-2: SkeletonLoading]
+        ATOM3[ATOM-3: AnalysisError]
+    end
+
+    subgraph Phase2["Phase 2: 이미지 재사용"]
+        ATOM4[ATOM-4: 타입 정의]
+        ATOM5[ATOM-5: API 확장]
+        ATOM6[ATOM-6: ImageReusePrompt UI]
+    end
+
+    subgraph Phase3["Phase 3: 분석 순서 가이드"]
+        ATOM7[ATOM-7: AnalysisOrderGuide]
+    end
+
+    subgraph Phase4["Phase 4: 시각화 확장"]
+        ATOM8[ATOM-8: ZoomableOverlay]
+    end
+
+    ATOM1 --> ATOM7
+    ATOM2 --> ATOM6
+    ATOM3 --> ATOM5
+    ATOM4 --> ATOM5
+    ATOM5 --> ATOM6
+```
+
+### 8.2 원자 상세
+
+---
+
+#### ATOM-1: ProgressiveDisclosure 컴포넌트
+
+##### 메타데이터
+- **소요시간**: 1.5시간
+- **의존성**: 없음
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| level1 | ReactNode | Y | 기본 표시 콘텐츠 |
+| level2 | ReactNode | Y | 펼쳤을 때 콘텐츠 |
+| level3 | ReactNode | N | 더 자세히 콘텐츠 |
+| defaultLevel | 1 \| 2 \| 3 | N | 초기 표시 레벨 |
+
+##### 출력 스펙
+
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| component | JSX.Element | 3단계 정보 공개 컴포넌트 |
+
+##### 성공 기준
+
+- [ ] 3단계 펼치기/접기 동작
+- [ ] 애니메이션 200-300ms
+- [ ] 키보드 접근성 (Enter/Space)
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `components/common/ProgressiveDisclosure.tsx` | 신규 | 메인 컴포넌트 |
+| `components/common/ProgressiveDisclosure.test.tsx` | 신규 | 테스트 |
+
+---
+
+#### ATOM-2: SkeletonLoading 컴포넌트
+
+##### 메타데이터
+- **소요시간**: 1시간
+- **의존성**: 없음
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| variant | 'card' \| 'image' \| 'text' \| 'chart' | Y | 스켈레톤 유형 |
+| lines | number | N | 텍스트 라인 수 |
+| className | string | N | 추가 스타일 |
+
+##### 출력 스펙
+
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| component | JSX.Element | 심머 애니메이션 스켈레톤 |
+
+##### 성공 기준
+
+- [ ] 심머 애니메이션 적용
+- [ ] 4가지 variant 지원
+- [ ] 다크모드 대응
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `components/common/SkeletonLoading.tsx` | 신규 | 메인 컴포넌트 |
+| `app/globals.css` | 수정 | shimmer 키프레임 추가 |
+
+---
+
+#### ATOM-3: AnalysisError 컴포넌트
+
+##### 메타데이터
+- **소요시간**: 1.5시간
+- **의존성**: 없음
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| errorType | 'no_face' \| 'low_quality' \| 'timeout' \| 'server_error' | Y | 에러 유형 |
+| onRetry | () => void | Y | 재시도 콜백 |
+| onUseMock | () => void | N | Mock 사용 콜백 |
+
+##### 출력 스펙
+
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| component | JSX.Element | 에러 유형별 UX 컴포넌트 |
+
+##### 성공 기준
+
+- [ ] 4가지 에러 타입별 메시지
+- [ ] 재시도 버튼 동작
+- [ ] Mock 옵션 (개발 모드만)
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `components/analysis/common/AnalysisError.tsx` | 신규 | 메인 컴포넌트 |
+| `components/analysis/common/AnalysisError.test.tsx` | 신규 | 테스트 |
+
+---
+
+#### ATOM-4: 이미지 재사용 타입 정의
+
+##### 메타데이터
+- **소요시간**: 0.5시간
+- **의존성**: 없음
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| - | - | - | 타입 정의 작업 |
+
+##### 출력 스펙
+
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| FaceAnalysisRequest | interface | API 요청 타입 |
+| ReuseOptions | interface | 재사용 옵션 타입 |
+
+##### 성공 기준
+
+- [ ] FaceAnalysisRequest 인터페이스 정의
+- [ ] ReuseOptions 인터페이스 정의
+- [ ] typecheck 통과
+
+##### 파일 배치
+
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `types/face-analysis.ts` | 수정 | 타입 추가 |
+
+---
+
+#### ATOM-5: 이미지 재사용 API 확장
+
+##### 메타데이터
+- **소요시간**: 2시간
+- **의존성**: ATOM-4, ATOM-3
+- **병렬 가능**: No
+
+##### 입력 스펙
+
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| imageUrl | string | N | 새 이미지 URL |
+| reuseFromPcId | string | N | PC-1 재사용 ID |
+| reuseOptions | ReuseOptions | N | 재사용 옵션 |
+
+##### 출력 스펙
+
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| response | FaceAnalysisResponse | 분석 결과 |
+| reusedImage | boolean | 재사용 여부 플래그 |
+
+##### 성공 기준
+
+- [ ] PC-1 이미지 조회 로직
+- [ ] 재사용/새 업로드 분기
+- [ ] 에러 핸들링 (이미지 없음)
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `app/api/analyze/face/route.ts` | 수정 | 재사용 로직 추가 |
+| `lib/supabase/face-analysis.ts` | 수정 | DB 함수 확장 |
+
+---
+
+#### ATOM-6: ImageReusePrompt UI
+
+##### 메타데이터
+- **소요시간**: 1.5시간
+- **의존성**: ATOM-5, ATOM-2
+- **병렬 가능**: No
+
+##### 입력 스펙
+
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| pcImageUrl | string | Y | PC-1 이미지 URL |
+| onReuse | () => void | Y | 재사용 선택 콜백 |
+| onNewCapture | () => void | Y | 새 촬영 선택 콜백 |
+
+##### 출력 스펙
+
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| component | JSX.Element | 이미지 재사용 선택 Dialog |
+
+##### 성공 기준
+
+- [ ] PC-1 이미지 미리보기 표시
+- [ ] "예"/"아니오" 버튼 동작
+- [ ] 스켈레톤 로딩 상태
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `components/analysis/face/ImageReusePrompt.tsx` | 신규 | 메인 컴포넌트 |
+| `components/analysis/face/ImageReusePrompt.test.tsx` | 신규 | 테스트 |
+
+---
+
+#### ATOM-7: AnalysisOrderGuide 컴포넌트
+
+##### 메타데이터
+- **소요시간**: 1시간
+- **의존성**: ATOM-1
+- **병렬 가능**: No
+
+##### 입력 스펙
+
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| completedAnalyses | string[] | Y | 완료된 분석 목록 |
+| onDismiss | () => void | N | 닫기 콜백 |
+
+##### 출력 스펙
+
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| component | JSX.Element | 분석 순서 가이드 배너 |
+
+##### 성공 기준
+
+- [ ] 권장 순서 표시 (PC-1 → F-1 → S-1 → C-1)
+- [ ] 완료된 분석 체크 표시
+- [ ] 다음 권장 분석 하이라이트
+- [ ] 닫기/다시 보지 않기 옵션
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `components/analysis/common/AnalysisOrderGuide.tsx` | 신규 | 메인 컴포넌트 |
+| `app/(main)/analysis/page.tsx` | 수정 | 가이드 배너 통합 |
+
+---
+
+#### ATOM-8: ZoomableOverlay 컴포넌트
+
+##### 메타데이터
+- **소요시간**: 1.5시간
+- **의존성**: 없음
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| children | ReactNode | Y | 줌/팬 대상 콘텐츠 |
+| initialScale | number | N | 초기 배율 (기본 1) |
+| minScale | number | N | 최소 배율 (기본 0.5) |
+| maxScale | number | N | 최대 배율 (기본 3) |
+
+##### 출력 스펙
+
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| component | JSX.Element | 줌/팬 가능한 래퍼 |
+
+##### 성공 기준
+
+- [ ] react-zoom-pan-pinch 통합
+- [ ] 핀치 줌 지원 (모바일)
+- [ ] 더블탭 줌 지원
+- [ ] 리셋 버튼
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `components/analysis/visual/ZoomableOverlay.tsx` | 신규 | 메인 컴포넌트 |
+| `package.json` | 수정 | react-zoom-pan-pinch 의존성 |
+
+---
+
+### 8.3 작업 시간 요약
+
+| 원자 | 작업 | 소요시간 | 병렬 가능 |
+|------|------|----------|----------|
+| ATOM-1 | ProgressiveDisclosure | 1.5시간 | Yes |
+| ATOM-2 | SkeletonLoading | 1시간 | Yes |
+| ATOM-3 | AnalysisError | 1.5시간 | Yes |
+| ATOM-4 | 이미지 재사용 타입 | 0.5시간 | Yes |
+| ATOM-5 | 이미지 재사용 API | 2시간 | No |
+| ATOM-6 | ImageReusePrompt UI | 1.5시간 | No |
+| ATOM-7 | AnalysisOrderGuide | 1시간 | No |
+| ATOM-8 | ZoomableOverlay | 1.5시간 | Yes |
+| **총합** | | **10.5시간** | **병렬 시 ~7시간** |
+
+### 8.4 P3 점수 검증
+
+| 항목 | 배점 | 달성 |
+|------|------|------|
+| 소요시간 명시 | 20점 | ✅ 20점 (모든 원자 2시간 이내) |
+| 입출력 스펙 | 20점 | ✅ 20점 (모든 원자에 명시) |
+| 성공 기준 | 20점 | ✅ 20점 (테스트 가능한 기준) |
+| 의존성 그래프 | 20점 | ✅ 20점 (Mermaid 시각화) |
+| 파일 배치 | 10점 | ✅ 10점 (모든 원자에 명시) |
+| 테스트 케이스 | 10점 | ✅ 10점 (성공 기준에 포함) |
+| **총점** | **100점** | **100점** |
 
 ---
 

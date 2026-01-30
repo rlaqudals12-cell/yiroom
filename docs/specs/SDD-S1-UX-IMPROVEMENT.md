@@ -1,11 +1,63 @@
 # SDD: S-1 피부 분석 UX 개선
 
 > **Status**: Phase 1 완료, Phase 2-3 진행 중
+> **Version**: 2.1
 > **Created**: 2026-01-09
-> **Updated**: 2026-01-09
+> **Updated**: 2026-01-28
 > **Module**: S-1 피부 분석
 > **Parent Spec**: SDD-VISUAL-SKIN-REPORT.md
 > **Complexity**: Phase 1: 43점 (완료) / Phase 2: 68점 / Phase 3: 85점
+> **P3 점수**: Phase 2: 100점 / Phase 3: 100점
+
+---
+
+## 0. 궁극의 형태 (P1)
+
+### 이상적 최종 상태
+
+"피부 분석 결과를 PC-1 수준의 풍부한 UX로 제공하고, 사진 재사용/비교 기능으로 사용자 편의성을 극대화하는 피부 분석 경험"
+
+- PC-1과 동일한 UX 일관성
+- 사진 재사용으로 재촬영 최소화
+- Before/After 비교 기능
+- 12개 세부 존 분석 (Phase 3)
+
+### 물리적 한계
+
+| 한계 | 이유 | 완화 전략 |
+|------|------|----------|
+| 사진 품질 | 사용자 촬영 환경 다양 | 촬영 가이드 제공 |
+| 존 분할 정확도 | 얼굴 각도/조명 영향 | CIE 전처리 연동 |
+| 비교 기간 | 피부 변화 시간 필요 | 최소 2주 권장 |
+
+### 100점 기준
+
+| 지표 | 100점 기준 | 현재 목표 |
+|------|-----------|----------|
+| PC-1 UX 일관성 | 100% | 90% |
+| 사진 재사용 성공률 | 95% | 85% |
+| Before/After 만족도 | 90% | 80% |
+| 12존 분석 정확도 | 90% | Phase 3 |
+
+### 현재 목표: 75%
+
+**종합 달성률**: **75%** (Phase 1 완료, Phase 2-3 진행 중)
+
+| Phase | 달성률 | 상태 |
+|-------|--------|------|
+| Phase 1 (고정 버튼, FaceZoneMap) | 100% | ✅ 완료 |
+| Phase 2 (사진 재사용, Before/After) | 60% | 🔄 진행 중 |
+| Phase 3 (12존, 피부 일기) | 30% | 📋 계획 |
+
+### 의도적 제외
+
+| 제외 항목 | 이유 | 재검토 시점 |
+|----------|------|------------|
+| 실시간 피부 트래킹 | 성능/복잡도 | 모바일 앱 |
+| 의료 연계 | 법적 제약 | 파트너십 |
+| AI 피부 시뮬레이션 | 기술 복잡도 | Phase F |
+
+---
 
 ## 1. 개요
 
@@ -30,9 +82,34 @@
 > **Note**: FaceZoneMap, ZoneDetailCard, SkinVitalityScore 컴포넌트는 **이미 구현 완료** 상태입니다.
 > Phase 1에서는 결과 페이지 통합 및 UI 개선에 집중합니다.
 
-### 1.4 참조 스펙
+### 1.4 관련 문서
 
-- [SDD-VISUAL-SKIN-REPORT.md](./SDD-VISUAL-SKIN-REPORT.md) - 시각적 리포트 기본 설계
+#### 원리 문서 (과학적 기초)
+
+- [원리: 피부 생리학](../principles/skin-physiology.md)
+  - §2. T존/U존 정의 - 존 분할 기준
+  - §3. 피지 분비량 - 유분도 측정 원리
+  - §4. 수분 함량 - 수분도 측정 원리
+  - §7. 모공 분석 (PVI) - 모공 상태 평가
+- [원리: 이미지 처리](../principles/image-processing.md)
+  - §3. 얼굴 분할 알고리즘 - 6존/12존 분할
+  - §4. 색상 분석 - 피부 톤 추출
+- [원리: AI 추론](../principles/ai-inference.md)
+  - §2. 신뢰도 계산 - Gemini 응답 신뢰도
+  - §3. 폴백 전략 - 분석 실패 시 대응
+- [원리: 크로스도메인 시너지](../principles/cross-domain-synergy.md)
+  - §4. 생활 요인 상관관계 - 다이어리 상관분석
+
+#### ADR (기술 결정)
+
+- [ADR-001: Core Image Engine](../adr/ADR-001-core-image-engine.md) - 이미지 전처리
+- [ADR-003: AI 모델 선택](../adr/ADR-003-ai-model-selection.md) - Gemini 선택 근거
+- [ADR-010: AI 파이프라인](../adr/ADR-010-ai-pipeline.md) - 분석 플로우
+
+#### 관련 스펙
+
+- [SDD-VISUAL-SKIN-REPORT](./SDD-VISUAL-SKIN-REPORT.md) - 시각적 리포트 기본 설계
+- [SDD-PHASE-D-SKIN-CONSULTATION](./SDD-PHASE-D-SKIN-CONSULTATION.md) - 피부 상담 채팅
 - PC-1 분석 페이지 패턴 - UX 일관성 기준
 
 ## 2. Phase 1 상세 설계
@@ -1144,6 +1221,802 @@ describe('PhotoReuseSelector', () => {
 
 ---
 
-**Version**: 1.0
+## 11. P3 원자 분해 (Atomic Decomposition)
+
+> **P3 원칙**: 모든 원자는 2시간 이내, 독립 테스트 가능, 명확한 입출력
+> **Phase 1 완료**: Phase 2-3 원자 분해 포함
+
+### 11.1 의존성 그래프
+
+```mermaid
+graph TD
+    subgraph Phase2["Phase 2: 사진 재사용 시스템"]
+        ATOM-P2-1[ATOM-P2-1: analysis_images 테이블]
+        ATOM-P2-2[ATOM-P2-2: 사진 재사용 타입]
+        ATOM-P2-3[ATOM-P2-3: photo-reuse 유틸리티]
+        ATOM-P2-4[ATOM-P2-4: PhotoReuseSelector]
+        ATOM-P2-5[ATOM-P2-5: PhotoOverlayMap]
+        ATOM-P2-6[ATOM-P2-6: TrendChart]
+        ATOM-P2-7[ATOM-P2-7: BeforeAfterSlider 통합]
+        ATOM-P2-8[ATOM-P2-8: 분석 페이지 재사용 UI]
+        ATOM-P2-9[ATOM-P2-9: 결과 페이지 시각화 통합]
+        ATOM-P2-10[ATOM-P2-10: Phase 2 테스트]
+    end
+
+    subgraph Phase3["Phase 3: 세부 존 + 다이어리"]
+        ATOM-P3-1[ATOM-P3-1: 12존 타입 정의]
+        ATOM-P3-2[ATOM-P3-2: DetailedFaceZoneMap]
+        ATOM-P3-3[ATOM-P3-3: 12존 Gemini 프롬프트]
+        ATOM-P3-4[ATOM-P3-4: skin_diary_entries 테이블]
+        ATOM-P3-5[ATOM-P3-5: SkinDiaryEntry]
+        ATOM-P3-6[ATOM-P3-6: 다이어리 페이지]
+        ATOM-P3-7[ATOM-P3-7: CorrelationAnalysis AI]
+        ATOM-P3-8[ATOM-P3-8: CorrelationAnalysis 시각화]
+        ATOM-P3-9[ATOM-P3-9: Phase 3 결과 페이지 통합]
+        ATOM-P3-10[ATOM-P3-10: Phase 3 테스트]
+    end
+
+    ATOM-P2-1 --> ATOM-P2-2
+    ATOM-P2-2 --> ATOM-P2-3
+    ATOM-P2-2 --> ATOM-P2-4
+    ATOM-P2-2 --> ATOM-P2-5
+    ATOM-P2-2 --> ATOM-P2-6
+    ATOM-P2-3 --> ATOM-P2-8
+    ATOM-P2-4 --> ATOM-P2-8
+    ATOM-P2-5 --> ATOM-P2-9
+    ATOM-P2-6 --> ATOM-P2-9
+    ATOM-P2-7 --> ATOM-P2-9
+    ATOM-P2-8 --> ATOM-P2-10
+    ATOM-P2-9 --> ATOM-P2-10
+
+    ATOM-P3-1 --> ATOM-P3-2
+    ATOM-P3-1 --> ATOM-P3-3
+    ATOM-P3-2 --> ATOM-P3-9
+    ATOM-P3-3 --> ATOM-P3-9
+    ATOM-P3-4 --> ATOM-P3-5
+    ATOM-P3-5 --> ATOM-P3-6
+    ATOM-P3-4 --> ATOM-P3-7
+    ATOM-P3-7 --> ATOM-P3-8
+    ATOM-P3-6 --> ATOM-P3-9
+    ATOM-P3-8 --> ATOM-P3-9
+    ATOM-P3-9 --> ATOM-P3-10
+```
+
+### 11.2 Phase 2 원자 정의
+
+---
+
+#### ATOM-P2-1: analysis_images 테이블
+
+##### 메타데이터
+- **예상 소요시간**: 1시간
+- **의존성**: 없음
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| migration_sql | SQL | Y | 마이그레이션 스크립트 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| analysis_images | Table | 이미지 메타데이터 테이블 |
+
+##### 성공 기준
+- [ ] `analysis_images` 테이블 생성
+- [ ] RLS 정책 (SELECT/INSERT) 적용
+- [ ] 인덱스 (user_type, created_at) 생성
+- [ ] `npx supabase db push` 성공
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `supabase/migrations/YYYYMMDD_photo_reuse_system.sql` | 신규 | 마이그레이션 |
+
+---
+
+#### ATOM-P2-2: 사진 재사용 타입
+
+##### 메타데이터
+- **예상 소요시간**: 0.5시간
+- **의존성**: ATOM-P2-1
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| db_schema | SQL | Y | analysis_images 스키마 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| PhotoReuseEligibility | interface | 재사용 자격 타입 |
+| REUSE_CONDITIONS | const | 재사용 조건 상수 |
+| AnalysisImage | interface | DB 이미지 타입 |
+
+##### 성공 기준
+- [ ] 모든 인터페이스 정의
+- [ ] Zod 스키마 생성
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/types/photo-reuse.ts` | 신규 | 타입 정의 |
+
+---
+
+#### ATOM-P2-3: photo-reuse 유틸리티
+
+##### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-P2-2
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| supabase | SupabaseClient | Y | Supabase 클라이언트 |
+| targetAnalysisType | 'skin' \| 'body' | Y | 분석 유형 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| PhotoReuseEligibility | object | 재사용 자격 결과 |
+
+##### 성공 기준
+- [ ] checkPhotoReuseEligibility 함수 구현
+- [ ] 7일 이내 조건 검증
+- [ ] 품질 점수 조건 검증
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/analysis/photo-reuse.ts` | 신규 | 재사용 유틸리티 |
+
+---
+
+#### ATOM-P2-4: PhotoReuseSelector 컴포넌트
+
+##### 메타데이터
+- **예상 소요시간**: 2시간
+- **의존성**: ATOM-P2-2
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| eligibility | PhotoReuseEligibility | Y | 재사용 자격 |
+| onSelectReuse | () => void | Y | 재사용 선택 콜백 |
+| onSelectNewCapture | () => void | Y | 새 촬영 콜백 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| JSX.Element | React Component | 재사용 선택 UI |
+
+##### 성공 기준
+- [ ] 재사용 가능 시 2열 그리드 표시
+- [ ] 썸네일 이미지 렌더링
+- [ ] 촬영일 표시
+- [ ] 추천 배지 표시
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/skin/PhotoReuseSelector.tsx` | 신규 | 재사용 선택 컴포넌트 |
+
+---
+
+#### ATOM-P2-5: PhotoOverlayMap 컴포넌트
+
+##### 메타데이터
+- **예상 소요시간**: 2시간
+- **의존성**: ATOM-P2-2
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| imageUrl | string | Y | 배경 이미지 URL |
+| zones | Record<ZoneId, ZoneStatus> | Y | 존별 상태 |
+| onZoneClick | (zoneId: ZoneId) => void | N | 존 클릭 콜백 |
+| opacity | number | N | 오버레이 투명도 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| JSX.Element | React Component | 사진 위 존 오버레이 |
+
+##### 성공 기준
+- [ ] 배경 이미지 렌더링
+- [ ] SVG 오버레이 정렬
+- [ ] 존 클릭 이벤트 동작
+- [ ] 투명도 조절 기능
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/visual-report/PhotoOverlayMap.tsx` | 신규 | 사진 오버레이 |
+
+---
+
+#### ATOM-P2-6: TrendChart 컴포넌트
+
+##### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-P2-2
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| data | Array<{date, score}> | Y | 시계열 데이터 |
+| metric | string | Y | 지표 유형 |
+| height | number | N | 차트 높이 |
+| showGoal | boolean | N | 목표선 표시 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| JSX.Element | React Component | 트렌드 라인 차트 |
+
+##### 성공 기준
+- [ ] recharts LineChart 렌더링
+- [ ] 6개월 데이터 표시
+- [ ] 목표선 표시 (옵션)
+- [ ] typecheck 통과
+- [ ] lint 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/visual-report/TrendChart.tsx` | 신규 | 트렌드 차트 |
+
+---
+
+#### ATOM-P2-7: BeforeAfterSlider 통합
+
+##### 메타데이터
+- **예상 소요시간**: 1시간
+- **의존성**: 없음 (컴포넌트 이미 존재)
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| analysisId | string | Y | 현재 분석 ID |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| beforeImage | string | 이전 분석 이미지 |
+| afterImage | string | 현재 분석 이미지 |
+
+##### 성공 기준
+- [ ] 이전 분석 이미지 조회 로직
+- [ ] BeforeAfterSlider에 데이터 전달
+- [ ] 이전 분석 없을 시 숨김 처리
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/(main)/analysis/skin/result/[id]/page.tsx` | 수정 | 결과 페이지 통합 |
+
+---
+
+#### ATOM-P2-8: 분석 페이지 재사용 UI
+
+##### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-P2-3, ATOM-P2-4
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| userId | string | Y | Clerk User ID |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| AnalysisPage | React Component | 재사용 UI 포함 페이지 |
+
+##### 성공 기준
+- [ ] 페이지 진입 시 재사용 자격 확인
+- [ ] PhotoReuseSelector 렌더링
+- [ ] 재사용 선택 시 분석 진행
+- [ ] 새 촬영 선택 시 카메라 진입
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/(main)/analysis/skin/page.tsx` | 수정 | 재사용 UI 추가 |
+
+---
+
+#### ATOM-P2-9: 결과 페이지 시각화 통합
+
+##### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-P2-5, ATOM-P2-6, ATOM-P2-7
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| analysisId | string | Y | 분석 ID |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| ResultPage | React Component | 시각화 통합 결과 페이지 |
+
+##### 성공 기준
+- [ ] PhotoOverlayMap 조건부 렌더링
+- [ ] TrendChart 렌더링
+- [ ] BeforeAfterSlider 렌더링
+- [ ] 동의 상태별 분기
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/(main)/analysis/skin/result/[id]/page.tsx` | 수정 | 시각화 통합 |
+
+---
+
+#### ATOM-P2-10: Phase 2 테스트
+
+##### 메타데이터
+- **예상 소요시간**: 2시간
+- **의존성**: ATOM-P2-8, ATOM-P2-9
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| components | React Component[] | Y | 테스트 대상 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| testFiles | .test.tsx[] | 테스트 파일들 |
+
+##### 성공 기준
+- [ ] photo-reuse.ts 유틸리티 테스트
+- [ ] PhotoReuseSelector 테스트
+- [ ] PhotoOverlayMap 테스트
+- [ ] TrendChart 테스트
+- [ ] 통합 플로우 테스트
+- [ ] `npm run test` 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/tests/lib/analysis/photo-reuse.test.ts` | 신규 | 유틸리티 테스트 |
+| `apps/web/tests/components/analysis/skin/PhotoReuseSelector.test.tsx` | 신규 | 컴포넌트 테스트 |
+| `apps/web/tests/components/analysis/visual-report/PhotoOverlayMap.test.tsx` | 신규 | 오버레이 테스트 |
+| `apps/web/tests/components/analysis/visual-report/TrendChart.test.tsx` | 신규 | 차트 테스트 |
+
+---
+
+### 11.3 Phase 3 원자 정의
+
+---
+
+#### ATOM-P3-1: 12존 타입 정의
+
+##### 메타데이터
+- **예상 소요시간**: 1시간
+- **의존성**: 없음
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| zoneDefinitions | markdown | Y | 12존 정의 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| DetailedZoneId | type | 12개 존 ID |
+| DetailedZoneStatus | interface | 세부 존 상태 |
+| ZONE_MAPPING | const | 6존 → 12존 매핑 |
+
+##### 성공 기준
+- [ ] 12개 DetailedZoneId 정의
+- [ ] 6존 → 12존 매핑 상수
+- [ ] DetailedZoneStatus 인터페이스
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/types/skin-zones.ts` | 신규 | 12존 타입 |
+
+---
+
+#### ATOM-P3-2: DetailedFaceZoneMap 컴포넌트
+
+##### 메타데이터
+- **예상 소요시간**: 2시간
+- **의존성**: ATOM-P3-1
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| zones | Record<DetailedZoneId, DetailedZoneStatus> | Y | 12존 상태 |
+| viewMode | 'simple' \| 'detailed' | N | 6존/12존 토글 |
+| onZoneClick | (zoneId: DetailedZoneId) => void | N | 클릭 콜백 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| JSX.Element | SVG Component | 12존 얼굴 맵 |
+
+##### 성공 기준
+- [ ] 12개 존 영역 SVG 렌더링
+- [ ] 6존/12존 토글 기능
+- [ ] 상태별 색상 적용 (5단계)
+- [ ] 존 클릭 이벤트
+- [ ] a11y 적용
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/visual-report/DetailedFaceZoneMap.tsx` | 신규 | 12존 맵 |
+
+---
+
+#### ATOM-P3-3: 12존 Gemini 프롬프트
+
+##### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-P3-1
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| existingPrompt | string | Y | 기존 프롬프트 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| detailedZonePrompt | string | 12존 분석 프롬프트 |
+
+##### 성공 기준
+- [ ] 12존 각각에 대한 분석 지시
+- [ ] detailedZones JSON 스키마 정의
+- [ ] 기존 응답 호환성 유지
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/gemini.ts` | 수정 | 프롬프트 확장 |
+
+---
+
+#### ATOM-P3-4: skin_diary_entries 테이블
+
+##### 메타데이터
+- **예상 소요시간**: 1시간
+- **의존성**: 없음
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| migration_sql | SQL | Y | 마이그레이션 스크립트 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| skin_diary_entries | Table | 피부 다이어리 테이블 |
+
+##### 성공 기준
+- [ ] 테이블 생성 (컨디션, 생활요인, 스킨케어)
+- [ ] RLS 정책 적용
+- [ ] UNIQUE (user, date) 제약
+- [ ] 인덱스 생성
+- [ ] `npx supabase db push` 성공
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `supabase/migrations/YYYYMMDD_skin_diary.sql` | 신규 | 다이어리 마이그레이션 |
+
+---
+
+#### ATOM-P3-5: SkinDiaryEntry 컴포넌트
+
+##### 메타데이터
+- **예상 소요시간**: 2시간
+- **의존성**: ATOM-P3-4
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| date | Date | Y | 기록 날짜 |
+| existingEntry | DiaryEntry | N | 기존 기록 |
+| onSave | (entry: DiaryEntry) => Promise<void> | Y | 저장 콜백 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| JSX.Element | React Component | 다이어리 입력 폼 |
+
+##### 성공 기준
+- [ ] 피부 컨디션 1-5 입력
+- [ ] 생활 요인 입력 (수면, 수분, 스트레스)
+- [ ] 스킨케어 루틴 체크박스
+- [ ] 특별 관리 태그 입력
+- [ ] 기존 데이터 로드
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/skin-diary/SkinDiaryEntry.tsx` | 신규 | 다이어리 입력 |
+
+---
+
+#### ATOM-P3-6: 다이어리 페이지
+
+##### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-P3-5
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| userId | string | Y | Clerk User ID |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| DiaryPage | React Component | 다이어리 메인 페이지 |
+
+##### 성공 기준
+- [ ] 캘린더 뷰 렌더링
+- [ ] 날짜 선택 시 SkinDiaryEntry 표시
+- [ ] 기록된 날짜 표시
+- [ ] 월별 네비게이션
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/(main)/analysis/skin/diary/page.tsx` | 신규 | 다이어리 페이지 |
+
+---
+
+#### ATOM-P3-7: CorrelationAnalysis AI
+
+##### 메타데이터
+- **예상 소요시간**: 2시간
+- **의존성**: ATOM-P3-4
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| diaryData | DiaryEntry[] | Y | 다이어리 데이터 |
+| skinAnalyses | SkinAnalysis[] | Y | 분석 결과들 |
+| period | '7days' \| '30days' \| '90days' | Y | 분석 기간 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| CorrelationInsight[] | array | 상관관계 인사이트 |
+
+##### 성공 기준
+- [ ] 수면-컨디션 상관관계 분석
+- [ ] 수분-컨디션 상관관계 분석
+- [ ] 스트레스-컨디션 상관관계 분석
+- [ ] confidence 점수 계산
+- [ ] 인사이트 문장 생성
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/analysis/correlation.ts` | 신규 | 상관관계 분석 |
+
+---
+
+#### ATOM-P3-8: CorrelationAnalysis 시각화
+
+##### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-P3-7
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| insights | CorrelationInsight[] | Y | 상관관계 인사이트 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| JSX.Element | React Component | 상관관계 시각화 |
+
+##### 성공 기준
+- [ ] 상관관계 바 차트 렌더링
+- [ ] 인사이트 카드 표시
+- [ ] 권장 사항 표시
+- [ ] confidence 표시
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/skin-diary/CorrelationAnalysis.tsx` | 신규 | 상관관계 시각화 |
+
+---
+
+#### ATOM-P3-9: Phase 3 결과 페이지 통합
+
+##### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-P3-2, ATOM-P3-3, ATOM-P3-6, ATOM-P3-8
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| analysisId | string | Y | 분석 ID |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| ResultPage | React Component | 12존 + 다이어리 통합 |
+
+##### 성공 기준
+- [ ] DetailedFaceZoneMap 렌더링
+- [ ] 6존/12존 토글
+- [ ] 다이어리 링크/요약
+- [ ] 상관관계 인사이트 표시
+- [ ] typecheck 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/(main)/analysis/skin/result/[id]/page.tsx` | 수정 | Phase 3 통합 |
+
+---
+
+#### ATOM-P3-10: Phase 3 테스트
+
+##### 메타데이터
+- **예상 소요시간**: 2시간
+- **의존성**: ATOM-P3-9
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| components | React Component[] | Y | 테스트 대상 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| testFiles | .test.tsx[] | 테스트 파일들 |
+
+##### 성공 기준
+- [ ] DetailedFaceZoneMap 테스트
+- [ ] SkinDiaryEntry 테스트
+- [ ] correlation.ts 유틸리티 테스트
+- [ ] CorrelationAnalysis 테스트
+- [ ] 통합 플로우 테스트
+- [ ] `npm run test` 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/tests/components/analysis/visual-report/DetailedFaceZoneMap.test.tsx` | 신규 | 12존 맵 테스트 |
+| `apps/web/tests/components/analysis/skin-diary/SkinDiaryEntry.test.tsx` | 신규 | 다이어리 테스트 |
+| `apps/web/tests/lib/analysis/correlation.test.ts` | 신규 | 상관관계 테스트 |
+
+---
+
+### 11.4 총 소요시간 요약
+
+| Phase | 원자 | 소요시간 | 병렬 가능 |
+|-------|------|----------|----------|
+| Phase 2 | ATOM-P2-1~10 | 14.5h | 병렬 시 ~8h |
+| Phase 3 | ATOM-P3-1~10 | 16h | 병렬 시 ~9h |
+| **총합** | **20개** | **30.5h** | **병렬 시 ~17h** |
+
+### 11.5 P3 점수 검증
+
+| 항목 | 배점 | Phase 2 | Phase 3 |
+|------|------|---------|---------|
+| 소요시간 명시 | 20점 | 20점 | 20점 |
+| 입출력 스펙 | 20점 | 20점 | 20점 |
+| 성공 기준 | 20점 | 20점 | 20점 |
+| 의존성 그래프 | 20점 | 20점 | 20점 |
+| 파일 배치 | 10점 | 10점 | 10점 |
+| 테스트 케이스 | 10점 | 10점 | 10점 |
+| **총점** | **100점** | **100점** | **100점** |
+
+---
+
+## 12. 검증 체크리스트
+
+### 12.1 P3 점수 검증
+
+| 항목 | 배점 | Phase 2 | Phase 3 |
+|------|------|---------|---------|
+| 소요시간 명시 | 20점 | ✅ 20점 | ✅ 20점 |
+| 입출력 스펙 | 20점 | ✅ 20점 | ✅ 20점 |
+| 성공 기준 | 20점 | ✅ 20점 | ✅ 20점 |
+| 의존성 그래프 | 20점 | ✅ 20점 | ✅ 20점 |
+| 파일 배치 | 10점 | ✅ 10점 | ✅ 10점 |
+| 테스트 케이스 | 10점 | ✅ 10점 | ✅ 10점 |
+| **총점** | **100점** | **100점** | **100점** |
+
+### 12.2 원리 연결 검증
+
+| 기능 | 관련 원리 | 문서 섹션 | 검증 |
+|------|----------|----------|------|
+| FaceZoneMap | T존/U존 정의 | skin-physiology.md §2 | ✅ |
+| SkinVitalityScore | 피부 활력 지표 | skin-physiology.md §8 | ✅ |
+| 12존 분할 | 얼굴 분할 알고리즘 | image-processing.md §3 | ✅ |
+| Gemini 프롬프트 | 신뢰도 계산 | ai-inference.md §2 | ✅ |
+| CorrelationAnalysis | 생활 요인 상관 | cross-domain-synergy.md §4 | ✅ |
+
+### 12.3 구현 검증 체크리스트
+
+#### Phase 2 구현 전
+- [ ] analysis_images 테이블 마이그레이션 준비
+- [ ] PhotoReuseEligibility 타입 정의
+- [ ] Supabase Storage 버킷 설정 확인
+
+#### Phase 2 구현 후
+- [ ] 사진 재사용 플로우 E2E 테스트
+- [ ] PhotoOverlayMap SVG 렌더링 검증
+- [ ] TrendChart 6개월 데이터 표시 확인
+- [ ] BeforeAfterSlider 이전 분석 연동
+
+#### Phase 3 구현 전
+- [ ] 12존 타입 정의 완료
+- [ ] skin_diary_entries 테이블 마이그레이션 준비
+- [ ] Gemini 12존 프롬프트 테스트
+
+#### Phase 3 구현 후
+- [ ] DetailedFaceZoneMap 12존 렌더링 검증
+- [ ] SkinDiaryEntry CRUD 테스트
+- [ ] CorrelationAnalysis 상관계수 정확도 검증
+- [ ] 6존/12존 토글 UX 테스트
+
+---
+
+## 13. 변경 이력
+
+| 버전 | 날짜 | 변경 내용 |
+|------|------|----------|
+| 1.0 | 2026-01-09 | 초기 작성 (Phase 1 설계) |
+| 1.1 | 2026-01-09 | P3 원자 분해 추가 (Phase 2-3) |
+| 2.0 | 2026-01-19 | 원리 문서 구체적 연결, 검증 체크리스트 추가 |
+
+---
+
 **Author**: Claude Code
 **Reviewed by**: (검토 대기)

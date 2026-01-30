@@ -1,0 +1,317 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "updated": "2026-01-18",
+    "description": "이룸 프로젝트 통합 리서치 마스터 인덱스",
+    "total_items": 128,
+    "completed": 46,
+    "remaining": 82,
+    "duplicates_removed": 15,
+    "new_items_added": 4,
+    "source_file": "DEEP-RESEARCH-REQUESTS.md v3.4"
+  },
+  "categories": [
+    {
+      "id": "A",
+      "name": "도메인 지식",
+      "count": 2,
+      "items": ["W-2-REHAB-BUNDLE", "W-2-POSTURE-PROTOCOL"]
+    },
+    {
+      "id": "B",
+      "name": "기술 Critical",
+      "count": 2,
+      "priority": "P0",
+      "items": ["SEO-NEXTJS-2026", "RATE-LIMIT-REDIS"]
+    },
+    {
+      "id": "C-E",
+      "name": "기술 High/Medium/Low",
+      "count": 10,
+      "items": ["FORM-PATTERNS-2026", "A11Y-WCAG22", "DESIGN-TOKENS-2026", "ANIMATION-MOTION-2026", "DATA-FETCHING-2026", "STATE-MANAGEMENT-2026", "PERFORMANCE-2026", "TESTING-E2E-2026", "I18N-NEXTJS", "MONITORING-SENTRY"]
+    },
+    {
+      "id": "F-J",
+      "name": "비즈니스",
+      "count": 14,
+      "items": ["BIZ-ACQUISITION-ORGANIC", "BIZ-ACQUISITION-PAID", "BIZ-ASO-STRATEGY", "BIZ-ONBOARDING", "BIZ-RETENTION", "BIZ-ENGAGEMENT", "BIZ-MONETIZATION", "BIZ-PAYMENT", "BIZ-PRICING", "BIZ-COST-OPTIMIZATION", "BIZ-CUSTOMER-SUPPORT", "BIZ-ANALYTICS", "BIZ-VIRAL-GROWTH", "BIZ-LEGAL-COMPLIANCE"]
+    },
+    {
+      "id": "K-Q",
+      "name": "회사 운영",
+      "count": 24,
+      "items": ["ORG-HIRING", "ORG-CULTURE", "ORG-REMOTE", "ORG-PERFORMANCE", "FIN-FUNDRAISING", "FIN-MODELING", "FIN-CASHFLOW", "FIN-TAX", "OPS-DR", "OPS-INCIDENT", "OPS-DEVOPS", "OPS-SECURITY-AUDIT", "CORP-INCORPORATION", "CORP-STOCK-OPTION", "CORP-IP", "CORP-CONTRACT", "PROD-COMPETITOR", "PROD-USER-RESEARCH", "PROD-ROADMAP", "PROD-PIVOT", "PARTNER-B2B", "PARTNER-ECOSYSTEM", "CRISIS-PR", "CRISIS-DATA-BREACH"]
+    },
+    {
+      "id": "R",
+      "name": "플랫폼 전략",
+      "count": 5,
+      "items": ["PLATFORM-WEB-VS-APP", "PLATFORM-PWA", "PLATFORM-NATIVE", "PLATFORM-CROSS", "PLATFORM-BACKEND"]
+    },
+    {
+      "id": "S",
+      "name": "품질 속성",
+      "count": 6,
+      "items": ["QUALITY-SCALABILITY", "QUALITY-RELIABILITY", "QUALITY-MAINTAINABILITY", "QUALITY-TECH-DEBT", "QUALITY-CODE-METRICS", "QUALITY-RELEASE"]
+    },
+    {
+      "id": "T",
+      "name": "원리 문서",
+      "count": 3,
+      "items": ["PRINCIPLE-NUTRITION-SCIENCE", "PRINCIPLE-EXERCISE-PHYSIOLOGY", "PRINCIPLE-CROSS-DOMAIN-SYNERGY"]
+    },
+    {
+      "id": "U",
+      "name": "크로스 도메인 조합",
+      "count": 10,
+      "items": ["COMBO-PC-SKINCARE", "COMBO-SKIN-NUTRITION", "COMBO-BODY-NUTRITION", "COMBO-POSTURE-CLOTHING", "COMBO-NUTRITION-EXERCISE", "COMBO-SKIN-EXERCISE", "COMBO-BODY-EXERCISE", "COMBO-SKIN-PROCEDURE", "COMBO-ORAL-NUTRITION", "COMBO-NUTRITION-PROCEDURE"]
+    },
+    {
+      "id": "V",
+      "name": "캡슐 알고리즘",
+      "count": 3,
+      "items": ["CAPSULE-MULTI-DOMAIN", "CAPSULE-SUBSTITUTION-MATRIX", "CAPSULE-CONSTRAINT-SOLVER"]
+    },
+    {
+      "id": "W",
+      "name": "앱 완성 관점",
+      "count": 15,
+      "items": ["APP-USER-JOURNEY-GAP", "APP-FEATURE-PARITY", "APP-DATA-FLOW", "APP-PERSONALIZATION", "APP-FEEDBACK-LOOP", "APP-OFFLINE-FIRST", "APP-NOTIFICATION", "APP-GAMIFICATION", "APP-SOCIAL-FEATURES", "APP-CONTENT-STRATEGY", "APP-ERROR-RECOVERY", "APP-PROGRESSIVE-DISCLOSURE", "APP-ACCESSIBILITY-DEPTH", "APP-ANALYTICS-DEPTH", "APP-AB-TESTING"]
+    },
+    {
+      "id": "X",
+      "name": "운영 심화",
+      "count": 15,
+      "items": ["OPS-COST-MODEL", "OPS-SCALING-STRATEGY", "OPS-SUPPORT-AUTOMATION", "OPS-DATA-PIPELINE", "OPS-FEATURE-FLAG-OPS", "OPS-CANARY-DEPLOY", "OPS-LOG-MANAGEMENT", "OPS-ALERT-STRATEGY", "OPS-BACKUP-STRATEGY", "OPS-COMPLIANCE-AUTO", "OPS-VENDOR-MANAGEMENT", "OPS-CAPACITY-PLANNING", "OPS-RUNBOOK", "OPS-CHAOS-ENGINEERING", "OPS-SLO-SLI"]
+    },
+    {
+      "id": "Y",
+      "name": "사용자 관점",
+      "count": 12,
+      "items": ["USER-PAIN-POINTS", "USER-MENTAL-MODEL", "USER-EMOTIONAL-JOURNEY", "USER-TRUST-BUILDING", "USER-VALUE-PERCEPTION", "USER-HABIT-FORMATION", "USER-PERSONALIZATION-FEEL", "USER-PROGRESS-TRACKING", "USER-COMMUNITY-NEED", "USER-PRIVACY-CONCERN", "USER-MULTI-DEVICE", "USER-ACCESSIBILITY-REAL"]
+    },
+    {
+      "id": "Z",
+      "name": "회사/팀 관점",
+      "count": 10,
+      "items": ["TEAM-SKILL-GAP", "TEAM-VELOCITY", "TEAM-TECHNICAL-DEBT-RATIO", "TEAM-DOCUMENTATION-HEALTH", "TEAM-KNOWLEDGE-SHARING", "TEAM-TOOL-EFFICIENCY", "COMPANY-MARKET-POSITION", "COMPANY-COMPETITIVE-MOAT", "COMPANY-GROWTH-LEVER", "COMPANY-EXIT-STRATEGY"]
+    },
+    {
+      "id": "AA-AD",
+      "name": "심화 (AI, 보안, 한국, 디자인)",
+      "count": 12,
+      "items": ["AI-ETHICS-BIAS", "AI-PROMPT-ENGINEERING", "AI-VLM-OPTIMIZATION", "AI-CONFIDENCE-CALIBRATION", "SEC-OWASP-NEXTJS", "SEC-IMAGE-SECURITY", "SEC-MALICIOUS-UPLOAD", "KR-BEAUTY-TREND", "KR-PAYMENT-SYSTEM", "KR-PIPA-DETAIL", "DESIGN-KBEAUTY-TREND", "DESIGN-COLOR-PSYCHOLOGY"]
+    }
+  ],
+  "bundles": [
+    {
+      "id": "BUNDLE-01",
+      "name": "Next.js 기술 스택",
+      "priority": "P0",
+      "items": ["SEO-NEXTJS-2026", "RATE-LIMIT-REDIS", "PERFORMANCE-2026", "DATA-FETCHING-2026"],
+      "estimated_time": "3h",
+      "dependencies": [],
+      "enables": ["BUNDLE-04", "BUNDLE-07", "BUNDLE-09"],
+      "output_file": "docs/research/bundles/BUNDLE-01-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-02",
+      "name": "수익화 및 비즈니스",
+      "priority": "P0",
+      "items": ["BIZ-MONETIZATION", "BIZ-PRICING", "BIZ-PAYMENT", "OPS-COST-MODEL"],
+      "estimated_time": "2h",
+      "dependencies": [],
+      "enables": ["BUNDLE-03", "BUNDLE-10", "BUNDLE-13"],
+      "output_file": "docs/research/bundles/BUNDLE-02-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-03",
+      "name": "사용자 획득 및 성장",
+      "priority": "P1",
+      "items": ["BIZ-ACQUISITION-ORGANIC", "BIZ-VIRAL-GROWTH", "BIZ-ASO-STRATEGY", "USER-HABIT-FORMATION"],
+      "estimated_time": "2h",
+      "dependencies": ["BUNDLE-02"],
+      "enables": [],
+      "output_file": "docs/research/bundles/BUNDLE-03-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-04",
+      "name": "UX/접근성",
+      "priority": "P1",
+      "items": ["A11Y-WCAG22", "APP-PROGRESSIVE-DISCLOSURE", "APP-ACCESSIBILITY-DEPTH", "USER-ACCESSIBILITY-REAL"],
+      "estimated_time": "2h",
+      "dependencies": ["BUNDLE-01"],
+      "enables": ["BUNDLE-08"],
+      "output_file": "docs/research/bundles/BUNDLE-04-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-05",
+      "name": "플랫폼 전략",
+      "priority": "P0",
+      "items": ["PLATFORM-WEB-VS-APP", "PLATFORM-PWA", "PLATFORM-NATIVE", "PLATFORM-CROSS"],
+      "estimated_time": "2h",
+      "dependencies": [],
+      "enables": [],
+      "output_file": "docs/research/bundles/BUNDLE-05-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-06",
+      "name": "크로스 도메인 시너지",
+      "priority": "P1",
+      "items": ["PRINCIPLE-CROSS-DOMAIN-SYNERGY", "COMBO-PC-SKINCARE", "COMBO-SKIN-NUTRITION", "COMBO-BODY-EXERCISE", "COMBO-SKIN-PROCEDURE", "CAPSULE-MULTI-DOMAIN"],
+      "estimated_time": "3h",
+      "dependencies": [],
+      "enables": ["BUNDLE-08"],
+      "output_file": "docs/research/bundles/BUNDLE-06-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-07",
+      "name": "운영 및 인프라",
+      "priority": "P1",
+      "items": ["OPS-SCALING-STRATEGY", "OPS-CANARY-DEPLOY", "OPS-SLO-SLI", "QUALITY-SCALABILITY", "QUALITY-RELIABILITY"],
+      "estimated_time": "2h",
+      "dependencies": ["BUNDLE-01"],
+      "enables": [],
+      "output_file": "docs/research/bundles/BUNDLE-07-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-08",
+      "name": "사용자 심리 및 경험",
+      "priority": "P1",
+      "items": ["USER-PAIN-POINTS", "USER-MENTAL-MODEL", "USER-EMOTIONAL-JOURNEY", "USER-TRUST-BUILDING", "USER-VALUE-PERCEPTION"],
+      "estimated_time": "2h",
+      "dependencies": ["BUNDLE-04", "BUNDLE-06"],
+      "enables": [],
+      "output_file": "docs/research/bundles/BUNDLE-08-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-09",
+      "name": "개인화 및 추천",
+      "priority": "P1",
+      "items": ["APP-PERSONALIZATION", "USER-PERSONALIZATION-FEEL", "APP-AB-TESTING", "BIZ-ANALYTICS"],
+      "estimated_time": "2h",
+      "dependencies": ["BUNDLE-01"],
+      "enables": [],
+      "output_file": "docs/research/bundles/BUNDLE-09-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-10",
+      "name": "스타트업 재무/투자",
+      "priority": "P1",
+      "items": ["FIN-FUNDRAISING", "FIN-MODELING", "FIN-CASHFLOW", "COMPANY-EXIT-STRATEGY"],
+      "estimated_time": "2h",
+      "dependencies": ["BUNDLE-02"],
+      "enables": [],
+      "output_file": "docs/research/bundles/BUNDLE-10-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-11",
+      "name": "법률/규정 준수",
+      "priority": "P2",
+      "items": ["BIZ-LEGAL-COMPLIANCE", "OPS-COMPLIANCE-AUTO", "USER-PRIVACY-CONCERN", "CORP-IP"],
+      "estimated_time": "2h",
+      "dependencies": [],
+      "enables": ["BUNDLE-15"],
+      "output_file": "docs/research/bundles/BUNDLE-11-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-12",
+      "name": "팀/조직 역량",
+      "priority": "P2",
+      "items": ["TEAM-SKILL-GAP", "TEAM-VELOCITY", "ORG-HIRING", "ORG-CULTURE"],
+      "estimated_time": "2h",
+      "dependencies": [],
+      "enables": [],
+      "output_file": "docs/research/bundles/BUNDLE-12-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-13",
+      "name": "경쟁 및 시장 분석",
+      "priority": "P1",
+      "items": ["PROD-COMPETITOR", "COMPANY-MARKET-POSITION", "COMPANY-COMPETITIVE-MOAT", "COMPANY-GROWTH-LEVER"],
+      "estimated_time": "2h",
+      "dependencies": ["BUNDLE-02"],
+      "enables": [],
+      "output_file": "docs/research/bundles/BUNDLE-13-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-14",
+      "name": "도메인 원리",
+      "priority": "P1",
+      "items": ["PRINCIPLE-NUTRITION-SCIENCE", "PRINCIPLE-EXERCISE-PHYSIOLOGY", "W-2-REHAB-BUNDLE", "W-2-POSTURE-PROTOCOL"],
+      "estimated_time": "3h",
+      "dependencies": [],
+      "enables": [],
+      "output_file": "docs/research/bundles/BUNDLE-14-PROMPT.md"
+    },
+    {
+      "id": "BUNDLE-15",
+      "name": "위기 관리 및 보안",
+      "priority": "P2",
+      "items": ["CRISIS-PR", "CRISIS-DATA-BREACH", "OPS-DR", "OPS-INCIDENT", "SEC-OWASP-NEXTJS"],
+      "estimated_time": "2h",
+      "dependencies": ["BUNDLE-11"],
+      "enables": [],
+      "output_file": "docs/research/bundles/BUNDLE-15-PROMPT.md"
+    }
+  ],
+  "dependency_graph": {
+    "phases": [
+      {
+        "phase": "A",
+        "name": "기반 (동시 시작)",
+        "bundles": ["BUNDLE-01", "BUNDLE-02", "BUNDLE-05", "BUNDLE-11", "BUNDLE-14"],
+        "parallel": true
+      },
+      {
+        "phase": "B",
+        "name": "확장 (Phase A 완료 후)",
+        "bundles": ["BUNDLE-03", "BUNDLE-04", "BUNDLE-07", "BUNDLE-09", "BUNDLE-10", "BUNDLE-12", "BUNDLE-13", "BUNDLE-15"],
+        "parallel": true,
+        "requires": ["BUNDLE-01", "BUNDLE-02", "BUNDLE-11"]
+      },
+      {
+        "phase": "C",
+        "name": "통합 (Phase B 완료 후)",
+        "bundles": ["BUNDLE-06", "BUNDLE-08"],
+        "parallel": true,
+        "requires": ["BUNDLE-04"]
+      }
+    ],
+    "execution_order": [
+      ["BUNDLE-01", "BUNDLE-02", "BUNDLE-05", "BUNDLE-11", "BUNDLE-14"],
+      ["BUNDLE-03", "BUNDLE-04", "BUNDLE-07", "BUNDLE-09", "BUNDLE-10", "BUNDLE-12", "BUNDLE-13", "BUNDLE-15"],
+      ["BUNDLE-06", "BUNDLE-08"]
+    ]
+  },
+  "time_estimates": {
+    "sequential": "33h",
+    "parallel_optimized": "17h",
+    "per_bundle_avg": "2.2h"
+  },
+  "completed_research": [
+    "CIE-1-R1", "CIE-2-R1", "CIE-3-R1", "CIE-4-R1",
+    "PC-2-R1", "S-2-R1", "C-2-R1",
+    "N-1-R1", "N-2-R1", "N-3-R1", "N-4-R1",
+    "P0-3-R1", "P0-4-R1", "P0-5-R1", "P0-6-R1", "P0-7-R1",
+    "INF-1-R1", "INF-2-R1", "INF-3-R1", "INF-4-R1",
+    "QA-1-R1", "QA-2-R1", "QA-3-R1", "QA-4-R1", "QA-5-R1",
+    "DOC-1-R1", "DOC-2-R1", "DOC-3-R1",
+    "MOD-5-1", "MOD-5-2", "MOD-5-3",
+    "SK-1-1", "SK-1-2", "SK-1-3", "SK-1-4", "SK-1-5", "SK-1-6",
+    "OH-1-DAILY", "OH-1-WHITE",
+    "W-2-FOUNDATION", "W-2-SPORT-v1", "W-2-SPORT-v2-KR", "W-2-POSTURE-SAFETY"
+  ],
+  "duplicates_integrated": [
+    {"original": "RATE-LIMIT-REDIS", "merged_with": "P0-6-R1", "note": "Rate Limiting 통합"},
+    {"original": "TESTING-E2E-2026", "merged_with": "QA-1-R1", "note": "E2E 테스트 통합"},
+    {"original": "PERFORMANCE-2026", "merged_with": "QA-3-R1", "note": "성능 최적화 확장"},
+    {"original": "BIZ-LEGAL-COMPLIANCE", "merged_with": "N-1~N-4", "note": "법적 규제 참조"}
+  ],
+  "new_items_v34": [
+    {"id": "COMBO-BODY-EXERCISE", "priority": "P0", "domain": "체형 × 운동"},
+    {"id": "COMBO-SKIN-PROCEDURE", "priority": "P0", "domain": "피부 × 시술"},
+    {"id": "COMBO-ORAL-NUTRITION", "priority": "P1", "domain": "구강 × 영양"},
+    {"id": "COMBO-NUTRITION-PROCEDURE", "priority": "P2", "domain": "영양 × 시술"}
+  ]
+}

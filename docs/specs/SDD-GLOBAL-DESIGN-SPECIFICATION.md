@@ -1,7 +1,626 @@
 # SDD: 글로벌 다민족 지원 및 디자인 시스템 사양
 
+> **Status**: 📋 Planned
+> **Version**: 2.1
+> **Created**: 2026-01-13
+> **Updated**: 2026-01-28
+> **Phase**: 글로벌 확장
+
 > 전 세계 사용자를 위한 다민족 지원 + 안전한 디자인 변경 가이드
-> Version: 1.0 | Created: 2026-01-13
+
+## 관련 문서
+
+### 원리 문서
+
+- [원리: 색채학](../principles/color-science.md) - Monk Scale 스킨 톤
+- [원리: 디자인 시스템](../principles/design-system.md) - 토큰 시스템
+
+### ADR
+
+- [ADR-001: Core Image Engine](../adr/ADR-001-core-image-engine.md) - 다민족 얼굴 분석
+
+---
+
+## 0. 궁극의 형태 (P1)
+
+### 이상적 최종 상태
+
+"모든 인종/민족에 정확한 AI 분석 + 포용적 디자인 시스템"
+
+- **Monk Scale**: 10단계 스킨톤 완벽 지원
+- **다민족 분석**: 8개 인종 그룹별 최적화된 분석
+- **포용적 UI**: 문화권별 적응형 컴포넌트
+- **다국어**: 10개+ 언어 지원
+- **접근성**: WCAG 2.1 AA 전체 준수
+
+### 물리적 한계
+
+| 한계 | 설명 |
+|------|------|
+| 학습 데이터 | 인종별 균형 잡힌 데이터셋 확보 어려움 |
+| 문화적 차이 | 미의 기준이 문화권별로 상이 |
+| 법적 제약 | 일부 국가 인종 분류 데이터 수집 제한 |
+
+### 100점 기준
+
+| 항목 | 100점 기준 | 현재 | 달성률 |
+|------|-----------|------|--------|
+| Monk Scale | 10단계 | 미적용 | 0% |
+| 다민족 타입 | 8종 인종 | 동아시아 중심 | 25% |
+| 얼굴 특징 | 글로벌 8+종 | 한국 기준 | 20% |
+| 디자인 토큰 | 적응형 | 고정 | 40% |
+| 다국어 | 10개 | 한국어 | 10% |
+
+### 현재 목표
+
+**종합 달성률**: **30%** (계획 단계)
+
+### 의도적 제외 (이번 버전)
+
+- 중동/아프리카 특화 분석 (Phase 2)
+- RTL(우→좌) 레이아웃 (Phase 2)
+- 10개 언어 전체 번역 (한국어/영어 우선)
+- 문화권별 미의 기준 적용 (Phase 3)
+
+---
+
+## P3 원자 분해
+
+### 의존성 그래프
+
+```mermaid
+graph TD
+    subgraph Phase1["Phase 1: 기반 (Day 1-2)"]
+        A1[ATOM-1: 다민족 타입 정의]
+        A2[ATOM-2: Monk Scale 유틸리티]
+        A3[ATOM-3: 디자인 토큰 추가]
+    end
+
+    subgraph Phase2["Phase 2: DB & API (Day 3-4)"]
+        A4[ATOM-4: face_analyses 스키마 확장]
+        A5[ATOM-5: user_ui_preferences 테이블]
+        A6[ATOM-6: Gemini 프롬프트 확장]
+        A7[ATOM-7: 다민족 분석 API]
+    end
+
+    subgraph Phase3["Phase 3: 컴포넌트 (Day 5-7)"]
+        A8[ATOM-8: SkinTonePicker]
+        A9[ATOM-9: EthnicitySelector]
+        A10[ATOM-10: GlobalEyelidGuide]
+        A11[ATOM-11: ProfessionalResultCard]
+        A12[ATOM-12: ConfidenceMeter]
+    end
+
+    subgraph Phase4["Phase 4: 페이지 통합 (Day 8-10)"]
+        A13[ATOM-13: /settings/accessibility]
+        A14[ATOM-14: /analysis/face 결과 페이지]
+        A15[ATOM-15: 테스트 작성]
+    end
+
+    A1 --> A2
+    A1 --> A4
+    A1 --> A6
+    A2 --> A8
+    A3 --> A8
+    A3 --> A11
+    A4 --> A7
+    A5 --> A13
+    A6 --> A7
+    A7 --> A14
+    A8 --> A14
+    A9 --> A14
+    A10 --> A14
+    A11 --> A14
+    A12 --> A14
+    A13 --> A15
+    A14 --> A15
+```
+
+### 예상 소요시간
+
+| Phase | 시간 | 병렬 시 |
+|-------|------|---------|
+| Phase 1: 기반 | 4시간 | 3시간 |
+| Phase 2: DB & API | 6시간 | 4시간 |
+| Phase 3: 컴포넌트 | 7.5시간 | 4시간 |
+| Phase 4: 페이지 통합 | 4시간 | 3시간 |
+| **총합** | **21.5시간** | **14시간** |
+
+---
+
+### ATOM-1: 다민족 타입 정의
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: 없음
+- **병렬 가능**: Yes
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| 기존 타입 분석 | - | O | types/analysis.ts 검토 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| MonkSkinTone | type | 10단계 스킨톤 |
+| Ethnicity | type | 8종 인종 분류 |
+| GlobalEyelidType | type | 8종 쌍꺼풀 유형 |
+| GlobalNoseType | type | 9종 코 유형 |
+| GlobalLipType | type | 6종 입술 유형 |
+
+#### 성공 기준
+- [ ] 모든 타입 정의 완료
+- [ ] 기존 타입과 하위 호환성 유지
+- [ ] typecheck 통과
+- [ ] JSDoc 주석 포함
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/types/global-face.ts` | 신규 | 다민족 타입 정의 |
+| `apps/web/types/index.ts` | 수정 | export 추가 |
+
+---
+
+### ATOM-2: Monk Scale 유틸리티
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-1
+- **병렬 가능**: No (ATOM-1 후)
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| MonkSkinTone | type | O | ATOM-1 타입 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| MONK_SCALE_HEX | Record | 10단계 HEX 색상 |
+| getMonkToneLabel | function | 한국어 라벨 반환 |
+| getMonkToneGroup | function | 밝음/중간/어두움 분류 |
+
+#### 성공 기준
+- [ ] 10단계 색상 매핑 완료
+- [ ] 한국어 라벨 지원
+- [ ] 단위 테스트 3개 이상
+- [ ] typecheck 통과
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/utils/monk-scale.ts` | 신규 | Monk Scale 유틸리티 |
+| `apps/web/tests/lib/utils/monk-scale.test.ts` | 신규 | 테스트 |
+
+---
+
+### ATOM-3: 디자인 토큰 추가
+
+#### 메타데이터
+- **예상 소요시간**: 1시간
+- **의존성**: 없음
+- **병렬 가능**: Yes
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| globals.css 분석 | - | O | 기존 토큰 구조 파악 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| --module-face-* | CSS var | 얼굴형 모듈 색상 |
+| --professional-* | CSS var | 전문성 강조 색상 |
+| --skin-tone-* | CSS var | Monk Scale 10단계 |
+| --gradient-* | CSS var | 새 그라디언트 |
+
+#### 성공 기준
+- [ ] 새 토큰 추가 완료
+- [ ] .dark 클래스에도 동일 토큰 추가
+- [ ] 기존 토큰 값 변경 없음
+- [ ] lint 통과
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/globals.css` | 수정 | 토큰 추가 |
+
+---
+
+### ATOM-4: face_analyses 스키마 확장
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-1
+- **병렬 가능**: Yes (ATOM-5와)
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| GlobalFaceTypes | types | O | ATOM-1 타입 |
+| 기존 face_analyses | schema | O | 현재 스키마 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| ethnicity 컬럼 | TEXT | 8종 인종 |
+| skin_tone 컬럼 | TEXT | Monk Scale 10단계 |
+| nose_type 컬럼 | TEXT | 9종 코 유형 |
+| lip_fullness 컬럼 | TEXT | 3종 입술 두께 |
+
+#### 성공 기준
+- [ ] 마이그레이션 SQL 작성 완료
+- [ ] CHECK 제약조건 적용
+- [ ] 인덱스 생성
+- [ ] 로컬 supabase에서 적용 테스트
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/supabase/migrations/20260120_global_face_support.sql` | 신규 | 마이그레이션 |
+
+---
+
+### ATOM-5: user_ui_preferences 테이블
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: 없음
+- **병렬 가능**: Yes (ATOM-4와)
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| users 테이블 | schema | O | FK 참조 대상 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| font_size_multiplier | FLOAT | 0.8~1.5 배율 |
+| high_contrast_mode | BOOLEAN | 고대비 모드 |
+| reduced_motion | BOOLEAN | 애니메이션 감소 |
+| color_blind_mode | TEXT | 색맹 모드 유형 |
+| preferred_theme | TEXT | 테마 선호도 |
+
+#### 성공 기준
+- [ ] 테이블 생성 SQL 완료
+- [ ] RLS 정책 적용
+- [ ] FK 제약조건 설정
+- [ ] 로컬 supabase에서 적용 테스트
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/supabase/migrations/20260120_user_accessibility.sql` | 신규 | 마이그레이션 |
+
+---
+
+### ATOM-6: Gemini 프롬프트 다민족 확장
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-1
+- **병렬 가능**: Yes (ATOM-4, 5와)
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| GlobalFaceTypes | types | O | 타입 정의 |
+| 기존 프롬프트 | string | O | 현재 분석 프롬프트 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| GLOBAL_FACE_PROMPT | const | 다민족 분석 프롬프트 |
+| parseGlobalFaceResponse | function | 응답 파싱 함수 |
+
+#### 성공 기준
+- [ ] 인종 편향 방지 지침 포함
+- [ ] Monk Scale 10단계 가이드 포함
+- [ ] 글로벌 8종 쌍꺼풀 가이드 포함
+- [ ] JSON 응답 스키마 정의
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/gemini/prompts/global-face.ts` | 신규 | 프롬프트 |
+| `apps/web/lib/gemini/parsers/global-face.ts` | 신규 | 파서 |
+
+---
+
+### ATOM-7: 다민족 분석 API
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-4, ATOM-6
+- **병렬 가능**: No
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| imageBase64 | string | O | 얼굴 이미지 |
+| options | object | X | 분석 옵션 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| ethnicity | Ethnicity | 감지된 인종 |
+| skinTone | MonkSkinTone | Monk Scale 톤 |
+| eyelidType | GlobalEyelidType | 쌍꺼풀 유형 |
+| noseType | GlobalNoseType | 코 유형 |
+| lipType | GlobalLipType | 입술 유형 |
+| confidence | number | 신뢰도 0-100 |
+
+#### 성공 기준
+- [ ] API 라우트 생성
+- [ ] Zod 스키마 검증 적용
+- [ ] 에러 핸들링 (timeout, fallback)
+- [ ] Rate limiting 적용
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/api/analyze/face/route.ts` | 신규 | API 라우트 |
+
+---
+
+### ATOM-8: SkinTonePicker 컴포넌트
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-2, ATOM-3
+- **병렬 가능**: Yes (ATOM-9~12와)
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| value | MonkSkinTone | X | 선택된 값 |
+| onChange | function | O | 변경 핸들러 |
+| disabled | boolean | X | 비활성화 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| SkinTonePicker | component | 10단계 색상 선택 UI |
+
+#### 성공 기준
+- [ ] Monk Scale 10단계 시각적 표시
+- [ ] 키보드 접근성 지원
+- [ ] 선택 시 시각적 피드백
+- [ ] data-testid 속성 필수
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/global-face/SkinTonePicker.tsx` | 신규 | 컴포넌트 |
+
+---
+
+### ATOM-9: EthnicitySelector 컴포넌트
+
+#### 메타데이터
+- **예상 소요시간**: 1시간
+- **의존성**: ATOM-1
+- **병렬 가능**: Yes
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| value | Ethnicity | X | 선택된 값 |
+| onChange | function | O | 변경 핸들러 |
+| optional | boolean | X | 선택적 입력 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| EthnicitySelector | component | 인종 선택 드롭다운 |
+
+#### 성공 기준
+- [ ] 8종 인종 선택 가능
+- [ ] "자동 감지" 옵션 포함
+- [ ] 한국어 라벨 지원
+- [ ] data-testid 속성 필수
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/global-face/EthnicitySelector.tsx` | 신규 | 컴포넌트 |
+
+---
+
+### ATOM-10: GlobalEyelidGuide 컴포넌트
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-1
+- **병렬 가능**: Yes
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| selectedType | GlobalEyelidType | X | 현재 선택 |
+| onSelect | function | X | 선택 핸들러 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| GlobalEyelidGuide | component | 8종 쌍꺼풀 가이드 UI |
+
+#### 성공 기준
+- [ ] 8종 쌍꺼풀 유형 시각적 가이드
+- [ ] 각 유형별 설명 텍스트
+- [ ] 선택 가능 모드 지원
+- [ ] 반응형 레이아웃
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/global-face/GlobalEyelidGuide.tsx` | 신규 | 컴포넌트 |
+
+---
+
+### ATOM-11: ProfessionalResultCard 컴포넌트
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-3
+- **병렬 가능**: Yes
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| title | string | O | 카드 제목 |
+| confidence | number | X | 신뢰도 0-100 |
+| children | ReactNode | O | 콘텐츠 |
+| showEvidence | boolean | X | 근거 링크 표시 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| ProfessionalResultCard | component | 전문성 있는 결과 카드 |
+
+#### 성공 기준
+- [ ] --professional-* 토큰 사용
+- [ ] 신뢰도 배지 표시
+- [ ] 근거 보기 링크 (선택)
+- [ ] 다크모드 지원
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/ProfessionalResultCard.tsx` | 신규 | 컴포넌트 |
+
+---
+
+### ATOM-12: ConfidenceMeter 컴포넌트
+
+#### 메타데이터
+- **예상 소요시간**: 1시간
+- **의존성**: ATOM-3
+- **병렬 가능**: Yes
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| value | number | O | 신뢰도 0-100 |
+| size | 'sm' \| 'md' \| 'lg' | X | 크기 |
+| showLabel | boolean | X | 라벨 표시 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| ConfidenceMeter | component | 신뢰도 시각화 |
+
+#### 성공 기준
+- [ ] 0-100 범위 시각화
+- [ ] 색상 단계 표시 (낮음/중간/높음)
+- [ ] 애니메이션 지원
+- [ ] prefers-reduced-motion 존중
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/ConfidenceMeter.tsx` | 신규 | 컴포넌트 |
+
+---
+
+### ATOM-13: /settings/accessibility 페이지
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-5
+- **병렬 가능**: No
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| user_ui_preferences | table | O | DB 테이블 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| AccessibilityPage | page | 접근성 설정 페이지 |
+
+#### 성공 기준
+- [ ] 글꼴 크기 조절 UI
+- [ ] 고대비 모드 토글
+- [ ] 애니메이션 감소 토글
+- [ ] 색맹 모드 선택
+- [ ] 설정 저장 및 불러오기
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/(main)/settings/accessibility/page.tsx` | 신규 | 페이지 |
+| `apps/web/app/api/user/preferences/route.ts` | 신규 | API |
+
+---
+
+### ATOM-14: /analysis/face 결과 페이지
+
+#### 메타데이터
+- **예상 소요시간**: 2시간
+- **의존성**: ATOM-7~12
+- **병렬 가능**: No
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| 분석 결과 API | response | O | ATOM-7 결과 |
+| 컴포넌트들 | components | O | ATOM-8~12 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| FaceResultPage | page | 얼굴 분석 결과 페이지 |
+
+#### 성공 기준
+- [ ] 다민족 분석 결과 표시
+- [ ] SkinTonePicker로 톤 확인
+- [ ] GlobalEyelidGuide로 쌍꺼풀 유형 확인
+- [ ] ProfessionalResultCard 적용
+- [ ] 반응형 레이아웃
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/(main)/analysis/face/result/[id]/page.tsx` | 신규 | 페이지 |
+
+---
+
+### ATOM-15: 테스트 작성
+
+#### 메타데이터
+- **예상 소요시간**: 2시간
+- **의존성**: ATOM-13, ATOM-14
+- **병렬 가능**: No
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| 전체 구현물 | - | O | 모든 ATOM 결과물 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| 단위 테스트 | files | 유틸리티, 파서 테스트 |
+| 컴포넌트 테스트 | files | UI 컴포넌트 테스트 |
+| API 테스트 | files | 엔드포인트 테스트 |
+
+#### 성공 기준
+- [ ] 유틸리티 함수 테스트 커버리지 90%+
+- [ ] 컴포넌트 스냅샷 테스트
+- [ ] API 응답 검증 테스트
+- [ ] npm run test 전체 통과
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/tests/lib/utils/monk-scale.test.ts` | 신규 | 유틸리티 테스트 |
+| `apps/web/tests/components/global-face/*.test.tsx` | 신규 | 컴포넌트 테스트 |
+| `apps/web/tests/api/analyze/face.test.ts` | 신규 | API 테스트 |
 
 ---
 
@@ -765,10 +1384,20 @@ interface DesignMetrics {
 
 ---
 
-**Document Version**: 1.0
+**Document Version**: 2.0
 **Created**: 2026-01-13
+**Updated**: 2026-01-19
 **Author**: Claude Code (Opus 4.5)
 **Related Documents**:
 
 - [SDD-PROFESSIONAL-ENHANCEMENT.md](./SDD-PROFESSIONAL-ENHANCEMENT.md)
 - [SDD-PROFESSIONAL-ENHANCEMENT-SUPPLEMENT.md](./SDD-PROFESSIONAL-ENHANCEMENT-SUPPLEMENT.md)
+
+---
+
+## 변경 이력
+
+| 버전 | 날짜 | 변경 내용 |
+|------|------|----------|
+| 1.0 | 2026-01-13 | 초기 버전 |
+| 2.0 | 2026-01-19 | P3 원자 분해 섹션 추가 (15개 ATOM, 의존성 그래프) |

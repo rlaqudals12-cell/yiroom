@@ -7,6 +7,17 @@
 **버전**: v1.0.0
 **상태**: [ ] Draft / [ ] Review / [ ] Approved / [x] Implemented
 
+### 관련 문서
+
+#### 원리 문서
+
+- [원리: 크로스 도메인 시너지](../principles/cross-domain-synergy.md) - 모듈 간 연동 패턴
+- [원리: 영양학](../principles/nutrition-science.md) - 영양 추천 기준
+
+#### ADR
+
+- [ADR-011: Cross-Module 데이터 흐름](../adr/ADR-011-cross-module-data-flow.md) - 모듈 간 알림 패턴
+
 ---
 
 ## 1. 개요
@@ -286,16 +297,261 @@ export function createSkinToneNutritionAlert(
 
 ---
 
-## 6. 구현 체크리스트
+## 6. 원자 분해 (P3)
 
-### 6.1 타입 확장
+### 의존성 그래프
+
+```mermaid
+graph TD
+    A[ATOM-1: ModuleType 확장] --> B[ATOM-2: AlertType 확장]
+    B --> C[ATOM-3: ALERT_TYPE_CONFIG 확장]
+    C --> D[ATOM-4: 알림 생성 함수]
+    D --> E[ATOM-5: H-1 트리거 연동]
+    D --> F[ATOM-6: M-1 트리거 연동]
+    E --> G[ATOM-7: 테스트 작성]
+    F --> G
+```
+
+### ATOM-1: ModuleType 확장
+
+#### 메타데이터
+- **예상 소요시간**: 0.5시간
+- **의존성**: 없음
+- **병렬 가능**: No
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| 기존 ModuleType | union type | Yes | 확장 대상 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| ModuleType | union | 'hair', 'makeup' 추가 |
+
+#### 성공 기준
+- [x] 'hair', 'makeup' ModuleType에 추가
+- [x] MODULE_LABELS에 한글 라벨 추가
+- [x] typecheck 통과
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/alerts/types.ts` | modify | ModuleType 확장 |
+
+---
+
+### ATOM-2: CrossModuleAlertType 확장
+
+#### 메타데이터
+- **예상 소요시간**: 0.5시간
+- **의존성**: ATOM-1
+- **병렬 가능**: No
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| 기존 CrossModuleAlertType | union | Yes | 확장 대상 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| CrossModuleAlertType | union | 5개 타입 추가 |
+
+#### 성공 기준
+- [x] scalp_health_nutrition 추가
+- [x] hair_loss_prevention 추가
+- [x] hair_shine_boost 추가
+- [x] skin_tone_nutrition 추가
+- [x] collagen_boost 추가
+- [x] typecheck 통과
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/alerts/types.ts` | modify | AlertType 확장 |
+
+---
+
+### ATOM-3: ALERT_TYPE_CONFIG 확장
+
+#### 메타데이터
+- **예상 소요시간**: 1시간
+- **의존성**: ATOM-2
+- **병렬 가능**: No
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| CrossModuleAlertType | union | Yes | 설정 대상 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| ALERT_TYPE_CONFIG | Record | 5개 설정 추가 |
+
+#### 성공 기준
+- [x] sourceModule, targetModule 정의
+- [x] priority, defaultLevel 정의
+- [x] icon, ctaText, ctaHref 정의
+- [x] typecheck 통과
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/alerts/types.ts` | modify | CONFIG 확장 |
+
+---
+
+### ATOM-4: 알림 생성 함수 구현
+
+#### 메타데이터
+- **예상 소요시간**: 2시간
+- **의존성**: ATOM-3
+- **병렬 가능**: No
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| scalpHealthScore | number | Conditional | 두피 점수 |
+| hairDensityScore | number | Conditional | 모발 밀도 |
+| undertone | string | Conditional | 피부톤 |
+| skinConcerns | string[] | Conditional | 피부 고민 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| CrossModuleAlertData | object | 알림 데이터 |
+
+#### 성공 기준
+- [x] createScalpHealthNutritionAlert 구현
+- [x] createHairLossPreventionAlert 구현
+- [x] createHairShineBoostAlert 구현
+- [x] createSkinToneNutritionAlert 구현
+- [x] createCollagenBoostAlert 구현
+- [x] typecheck 통과
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/alerts/crossModuleAlerts.ts` | modify | 함수 추가 |
+
+---
+
+### ATOM-5: H-1 트리거 연동
+
+#### 메타데이터
+- **예상 소요시간**: 1시간
+- **의존성**: ATOM-4
+- **병렬 가능**: Yes (ATOM-6과 병렬)
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| hairAnalysisResult | object | Yes | H-1 분석 결과 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| alerts | CrossModuleAlertData[] | 생성된 알림 목록 |
+
+#### 성공 기준
+- [x] 두피 건강 < 60 시 알림 생성
+- [x] 모발 밀도 < 50 시 알림 생성
+- [x] 손상도 > 70 시 알림 생성
+- [x] typecheck 통과
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/api/analyze/hair/route.ts` | modify | 트리거 추가 |
+
+---
+
+### ATOM-6: M-1 트리거 연동
+
+#### 메타데이터
+- **예상 소요시간**: 1시간
+- **의존성**: ATOM-4
+- **병렬 가능**: Yes (ATOM-5와 병렬)
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| makeupAnalysisResult | object | Yes | M-1 분석 결과 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| alerts | CrossModuleAlertData[] | 생성된 알림 목록 |
+
+#### 성공 기준
+- [x] 피부톤 칙칙함 감지 시 알림 생성
+- [x] 피부 탄력 부족 시 알림 생성
+- [x] typecheck 통과
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/api/analyze/makeup/route.ts` | modify | 트리거 추가 |
+
+---
+
+### ATOM-7: 테스트 작성
+
+#### 메타데이터
+- **예상 소요시간**: 1.5시간
+- **의존성**: ATOM-5, ATOM-6
+- **병렬 가능**: No
+
+#### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| 알림 생성 함수 | function | Yes | 테스트 대상 |
+
+#### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| 테스트 파일 | .test.ts | 29개 테스트 케이스 |
+
+#### 성공 기준
+- [x] 모든 알림 생성 함수 테스트
+- [x] 경계값 테스트 (점수 기준)
+- [x] 우선순위/레벨 테스트
+- [x] 테스트 통과율 100%
+
+#### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/tests/lib/alerts/crossModuleAlerts.test.ts` | modify | 테스트 추가 |
+
+---
+
+### 총 소요시간 요약
+
+| 원자 | 소요시간 | 병렬 가능 | 상태 |
+|------|----------|----------|------|
+| ATOM-1 | 0.5시간 | No | ✅ 완료 |
+| ATOM-2 | 0.5시간 | No | ✅ 완료 |
+| ATOM-3 | 1시간 | No | ✅ 완료 |
+| ATOM-4 | 2시간 | No | ✅ 완료 |
+| ATOM-5 | 1시간 | Yes | ✅ 완료 |
+| ATOM-6 | 1시간 | Yes | ✅ 완료 |
+| ATOM-7 | 1.5시간 | No | ✅ 완료 |
+| **총합** | **7.5시간** | 병렬 시 **6.5시간** | **완료** |
+
+---
+
+## 7. 구현 체크리스트
+
+### 7.1 타입 확장
 
 - [x] `lib/alerts/types.ts` - ModuleType에 'hair', 'makeup' 추가
 - [x] `lib/alerts/types.ts` - 새 CrossModuleAlertType 추가
 - [x] `lib/alerts/types.ts` - ALERT_TYPE_CONFIG 확장
 - [x] `lib/alerts/types.ts` - MODULE_LABELS 확장
 
-### 6.2 알림 생성 함수
+### 7.2 알림 생성 함수
 
 - [x] `lib/alerts/crossModuleAlerts.ts` - createScalpHealthNutritionAlert
 - [x] `lib/alerts/crossModuleAlerts.ts` - createHairLossPreventionAlert
@@ -303,22 +559,22 @@ export function createSkinToneNutritionAlert(
 - [x] `lib/alerts/crossModuleAlerts.ts` - createSkinToneNutritionAlert
 - [x] `lib/alerts/crossModuleAlerts.ts` - createCollagenBoostAlert
 
-### 6.3 트리거 연동
+### 7.3 트리거 연동
 
 - [x] `app/api/analyze/hair/route.ts` - 분석 완료 후 알림 생성
 - [x] `app/api/analyze/makeup/route.ts` - 분석 완료 후 알림 생성
 - [x] `app/(main)/nutrition/page.tsx` - 알림 표시 영역 추가
 
-### 6.4 테스트
+### 7.4 테스트
 
 - [x] `tests/lib/alerts/crossModuleAlerts.test.ts` - 새 알림 함수 테스트 (29개)
 - [x] `e2e/nutrition/nutrition.spec.ts` - 크로스 모듈 알림 E2E 테스트 (4개)
 
 ---
 
-## 7. 영양소-뷰티 연관 데이터
+## 8. 영양소-뷰티 연관 데이터
 
-### 7.1 모발 건강 관련 영양소
+### 8.1 모발 건강 관련 영양소
 
 | 영양소      | 효능                 | 권장 식품               |
 | ----------- | -------------------- | ----------------------- |
@@ -328,7 +584,7 @@ export function createSkinToneNutritionAlert(
 | 단백질      | 케라틴 생성          | 닭가슴살, 두부, 생선    |
 | 오메가-3    | 두피 보습, 모발 윤기 | 연어, 호두, 아마씨      |
 
-### 7.2 피부톤 관련 영양소
+### 8.2 피부톤 관련 영양소
 
 | 영양소     | 효능                   | 권장 식품                       |
 | ---------- | ---------------------- | ------------------------------- |
@@ -340,29 +596,31 @@ export function createSkinToneNutritionAlert(
 
 ---
 
-## 8. 향후 확장
+## 9. 향후 확장
 
-### 8.1 Phase 2 목표
+### 9.1 Phase 2 목표
 
 - AI 코치 통합: 헤어/메이크업 분석 결과 기반 맞춤 영양 코칭
 - 주간 리포트: 뷰티-영양 상관관계 분석 제공
 - 제품 추천 연동: 뷰티 보조 영양제 추천
 
-### 8.2 데이터 분석
+### 9.2 데이터 분석
 
 - 헤어 건강 점수 ↔ 단백질 섭취량 상관관계 추적
 - 피부톤 변화 ↔ 비타민C 섭취량 상관관계 추적
 
 ---
 
-## 9. 버전 관리
+## 10. 버전 관리
 
 | 버전   | 날짜       | 변경 내용                      |
 | ------ | ---------- | ------------------------------ |
 | v1.0.0 | 2026-01-07 | 초기 스펙 작성                 |
 | v1.1.0 | 2026-01-08 | 구현 완료 (6.1-6.4 체크리스트) |
+| v2.0.0 | 2026-01-19 | P3 원자 분해 고도화, 의존성 그래프 추가 |
 
 ---
 
 **작성 완료**: 2026-01-07
 **구현 완료**: 2026-01-08
+**P3 고도화**: 2026-01-19

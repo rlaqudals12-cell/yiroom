@@ -1110,7 +1110,7 @@ DB 변경: 스키마 확장 → 10점
 ## 연관 문서
 
 - [SDD-PRODUCT-SCAN.md](./SDD-PRODUCT-SCAN.md) - 바코드/성분 스캔 기능 (별도)
-- [SDD-PHASE-E-SKIN-ZOOM.md](./SDD-PHASE-E-SKIN-ZOOM.md) - 피부 분석 확대 (운동 참조)
+- [SDD-PHASE-E-SKIN-ZOOM.md](./specs/SDD-PHASE-E-SKIN-ZOOM.md) - 피부 분석 확대 (운동 참조)
 - [DATABASE-SCHEMA.md](./DATABASE-SCHEMA.md) - DB 스키마
 
 ---

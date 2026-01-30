@@ -2,6 +2,54 @@
 
 > 피부 분석 결과의 전문성 강화 및 사용자 맞춤 정보 깊이 제공
 
+---
+
+## 0. 궁극의 형태 (P1)
+
+### 이상적 최종 상태
+
+"초보자와 전문가 모두 만족하는 3-Layer 피부 분석 시스템 - 시각화(WHERE), 기본 분석(WHAT), 상세 설명(WHY+HOW)을 Progressive Disclosure로 제공하여 사용자가 원하는 깊이만큼 정보를 탐색할 수 있는 맞춤형 분석 경험"
+
+### 물리적 한계
+
+| 한계 | 이유 | 완화 전략 |
+|------|------|----------|
+| 과학적 근거 제한 | 학술 자료 접근성 | 피어리뷰 논문 우선 |
+| 개인화 한계 | 충분한 데이터 필요 | 피부 타입 기반 일반화 |
+| 정보 과부하 | 사용자 이탈 위험 | Progressive Disclosure |
+
+### 100점 기준
+
+| 지표 | 100점 기준 | 현재 목표 |
+|------|-----------|----------|
+| 지표 상세 설명 | 7개 지표 × 과학적 근거 | 100% |
+| 존 상세 설명 | 12개 존 × 맞춤 솔루션 | 100% |
+| 전문 용어 설명 | 20+ 용어 툴팁 | 80% |
+| 참고 문헌 | 각 지표별 논문 출처 | 70% |
+| Progressive Disclosure | 3-Layer 완전 구현 | 90% |
+
+### 현재 목표: 85%
+
+**종합 달성률**: **85%** (Layer 1-2 완성, Layer 3 진행 중)
+
+| 기능 | 달성률 | 상태 |
+|------|--------|------|
+| Layer 1: 12존 시각화 | 100% | ✅ |
+| Layer 2: 7지표 분석 | 100% | ✅ |
+| Layer 3: 상세 설명 (WHY) | 80% | ⏳ |
+| 과학적 배경 토글 | 70% | ⏳ |
+| 전문 용어 툴팁 | 60% | ⏳ |
+
+### 의도적 제외
+
+| 제외 항목 | 이유 | 재검토 시점 |
+|----------|------|------------|
+| 실시간 피부과 상담 | 의료 규제 | 향후 파트너십 |
+| 384개 세부 존 | 기술적 복잡도 | Phase 3 |
+| AI 예측 모델 | 데이터 축적 필요 | 1년 데이터 후 |
+
+---
+
 ## 1. 개요
 
 ### 1.1 목적
@@ -22,6 +70,24 @@
 - S-1 피부 분석 결과 페이지 개선
 - 12존 시각화 + 7지표 기본 분석 + Progressive Disclosure 상세 설명
 - 과학적 근거 및 용어 설명 추가
+
+### 1.4 관련 문서
+
+#### 원리 문서
+
+- [원리: 피부 생리학](../principles/skin-physiology.md) - 피부 구조, 지표 과학적 근거
+- [원리: AI 추론](../principles/ai-inference.md) - 분석 신뢰도
+
+#### ADR
+
+- [ADR-001: Core Image Engine](../adr/ADR-001-core-image-engine.md)
+- [ADR-003: AI 모델 선택](../adr/ADR-003-ai-model-selection.md)
+- [ADR-010: AI 파이프라인](../adr/ADR-010-ai-pipeline.md)
+
+#### 관련 스펙
+
+- [SDD-VISUAL-SKIN-REPORT](./SDD-VISUAL-SKIN-REPORT.md) - 시각적 리포트 기본 설계
+- [SDD-S1-UX-IMPROVEMENT](./SDD-S1-UX-IMPROVEMENT.md) - UX 개선
 
 ---
 
@@ -382,4 +448,415 @@ export function MetricDetailCard({ metric, explanation, onClose }: MetricDetailC
 
 ---
 
-**Version**: 1.0 | **Created**: 2026-01-13 | **Author**: Claude Code
+## 9. P3 원자 분해 (Atomic Decomposition)
+
+> P3 원칙: 독립적으로 테스트 가능한 최소 단위 (각 2시간 이내)
+
+### 9.1 의존성 그래프
+
+```mermaid
+graph TD
+    subgraph Phase1["Phase 1: 데이터 준비 (Day 1)"]
+        A1[ATOM-1: 타입 정의]
+        A2[ATOM-2: 지표 상세 설명 Mock]
+        A3[ATOM-3: 존 상세 설명 Mock]
+    end
+
+    subgraph Phase2["Phase 2: UI 컴포넌트 (Day 2)"]
+        A4[ATOM-4: ScientificTermTooltip]
+        A5[ATOM-5: ProgressiveDisclosure]
+        A6[ATOM-6: MetricDetailCard]
+        A7[ATOM-7: ZoneDetailCard]
+    end
+
+    subgraph Phase3["Phase 3: 통합 (Day 3)"]
+        A8[ATOM-8: AnalysisResult 통합]
+        A9[ATOM-9: 결과 페이지 연동]
+    end
+
+    subgraph Phase4["Phase 4: 테스트"]
+        A10[ATOM-10: 테스트 작성]
+    end
+
+    A1 --> A2
+    A1 --> A3
+    A2 --> A6
+    A3 --> A7
+    A4 --> A6
+    A5 --> A6
+    A5 --> A7
+    A6 --> A8
+    A7 --> A8
+    A8 --> A9
+    A9 --> A10
+```
+
+### 9.2 Phase 1: 데이터 준비
+
+#### ATOM-1: 타입 정의
+
+##### 메타데이터
+- **소요시간**: 0.5시간
+- **의존성**: 없음
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| 기존 스킨 타입 | `SkinMetric`, `DetailedZoneId` | Yes | `types/skin.ts`에서 import |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| `MetricDetailedExplanation` | interface | 지표별 상세 설명 타입 |
+| `ZoneDetailedExplanation` | interface | 존별 상세 설명 타입 |
+| `ScientificTerm` | interface | 과학 용어 타입 |
+
+##### 성공 기준
+- [ ] `MetricDetailedExplanation` 타입에 7개 지표 커버
+- [ ] `ZoneDetailedExplanation` 타입에 12개 존 커버
+- [ ] `npm run typecheck` 통과
+- [ ] 기존 `types/skin.ts`와 호환
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/types/skin-detailed.ts` | 생성 | 상세 설명 타입 정의 |
+| `apps/web/types/skin.ts` | 수정 | export 추가 |
+
+---
+
+#### ATOM-2: 지표 상세 설명 Mock 데이터
+
+##### 메타데이터
+- **소요시간**: 1.5시간
+- **의존성**: ATOM-1
+- **병렬 가능**: Yes (ATOM-3과 병렬)
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `MetricDetailedExplanation` | type | Yes | ATOM-1에서 정의 |
+| 피부과학 참조 | markdown | Yes | `docs/principles/skin-physiology.md` |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| `METRIC_EXPLANATIONS` | Record | 7개 지표별 상세 설명 객체 |
+
+##### 성공 기준
+- [ ] 7개 지표 모두 커버 (hydration, oil, pores, wrinkles, elasticity, pigmentation, trouble)
+- [ ] 각 지표에 `detailedAnalysis`, `scientificBackground`, `solutions` 포함
+- [ ] 과학적 용어 최소 2개/지표
+- [ ] 참고 문헌 출처 명시
+- [ ] `npm run typecheck` 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/mock/skin-metric-explanations.ts` | 생성 | 7개 지표 상세 데이터 |
+
+---
+
+#### ATOM-3: 존 상세 설명 Mock 데이터
+
+##### 메타데이터
+- **소요시간**: 1.5시간
+- **의존성**: ATOM-1
+- **병렬 가능**: Yes (ATOM-2와 병렬)
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `ZoneDetailedExplanation` | type | Yes | ATOM-1에서 정의 |
+| `DetailedZoneId` | enum | Yes | 12존 ID |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| `ZONE_EXPLANATIONS` | Record | 12개 존별 상세 설명 객체 |
+
+##### 성공 기준
+- [ ] 12개 존 모두 커버
+- [ ] 각 존에 `concerns`, `measurementDetails`, `recommendations`, `avoidance` 포함
+- [ ] T존/U존 특성 반영
+- [ ] `npm run typecheck` 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/lib/mock/skin-zone-explanations.ts` | 생성 | 12개 존 상세 데이터 |
+
+---
+
+### 9.3 Phase 2: UI 컴포넌트
+
+#### ATOM-4: ScientificTermTooltip 컴포넌트
+
+##### 메타데이터
+- **소요시간**: 0.5시간
+- **의존성**: ATOM-1
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `term` | `ScientificTerm` | Yes | 용어와 정의 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| `ScientificTermTooltip` | React.FC | 전문 용어 툴팁 컴포넌트 |
+
+##### 성공 기준
+- [ ] 호버 시 정의 표시
+- [ ] 모바일에서 탭으로 작동
+- [ ] `data-testid="scientific-term-tooltip"` 존재
+- [ ] 접근성: `role="tooltip"`, `aria-describedby`
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/skin/ScientificTermTooltip.tsx` | 생성 | 툴팁 컴포넌트 |
+
+---
+
+#### ATOM-5: ProgressiveDisclosure 컴포넌트
+
+##### 메타데이터
+- **소요시간**: 0.5시간
+- **의존성**: 없음
+- **병렬 가능**: Yes
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `children` | ReactNode | Yes | 숨겨질 콘텐츠 |
+| `trigger` | string | Yes | 열기/닫기 버튼 텍스트 |
+| `defaultOpen` | boolean | No | 기본 열림 상태 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| `ProgressiveDisclosure` | React.FC | 토글 래퍼 컴포넌트 |
+
+##### 성공 기준
+- [ ] Collapsible 기반 구현
+- [ ] 열림/닫힘 애니메이션 (200ms)
+- [ ] `data-testid="progressive-disclosure"` 존재
+- [ ] 접근성: `aria-expanded`
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/common/ProgressiveDisclosure.tsx` | 생성 | 공통 토글 컴포넌트 |
+
+---
+
+#### ATOM-6: MetricDetailCard 컴포넌트
+
+##### 메타데이터
+- **소요시간**: 1.5시간
+- **의존성**: ATOM-2, ATOM-4, ATOM-5
+- **병렬 가능**: Yes (ATOM-7과 병렬)
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `metric` | `SkinMetric` | Yes | 지표 정보 |
+| `explanation` | `MetricDetailedExplanation` | Yes | 상세 설명 |
+| `onClose` | `() => void` | Yes | 닫기 콜백 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| `MetricDetailCard` | React.FC | 지표 상세 카드 |
+
+##### 성공 기준
+- [ ] 4개 섹션: 기본정보, 분석근거, 과학적배경(토글), 솔루션
+- [ ] 과학적 배경은 ProgressiveDisclosure로 숨김
+- [ ] 전문 용어에 ScientificTermTooltip 적용
+- [ ] `data-testid="metric-detail-card"` 존재
+- [ ] 닫기 버튼 동작
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/skin/MetricDetailCard.tsx` | 생성 | 지표 상세 카드 |
+
+---
+
+#### ATOM-7: ZoneDetailCard 컴포넌트
+
+##### 메타데이터
+- **소요시간**: 1.5시간
+- **의존성**: ATOM-3, ATOM-5
+- **병렬 가능**: Yes (ATOM-6과 병렬)
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `zone` | `DetailedZoneId` | Yes | 존 ID |
+| `explanation` | `ZoneDetailedExplanation` | Yes | 상세 설명 |
+| `onClose` | `() => void` | Yes | 닫기 콜백 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| `ZoneDetailCard` | React.FC | 존 상세 카드 |
+
+##### 성공 기준
+- [ ] 주요문제점, 측정상세, 추천/피해야할것 섹션
+- [ ] 12존 모두 표시 가능
+- [ ] `data-testid="zone-detail-card"` 존재
+- [ ] 닫기 버튼 동작
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/components/analysis/skin/ZoneDetailCard.tsx` | 생성 | 존 상세 카드 |
+
+---
+
+### 9.4 Phase 3: 통합
+
+#### ATOM-8: AnalysisResult 통합
+
+##### 메타데이터
+- **소요시간**: 1.5시간
+- **의존성**: ATOM-6, ATOM-7
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| 기존 `AnalysisResult.tsx` | 컴포넌트 | Yes | 통합 대상 |
+| `MetricDetailCard` | 컴포넌트 | Yes | ATOM-6 |
+| `ZoneDetailCard` | 컴포넌트 | Yes | ATOM-7 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| 수정된 `AnalysisResult.tsx` | React.FC | Progressive Disclosure 통합 |
+
+##### 성공 기준
+- [ ] 지표 클릭 시 MetricDetailCard 표시
+- [ ] 존 클릭 시 ZoneDetailCard 표시
+- [ ] 한 번에 하나의 상세 카드만 표시
+- [ ] 기존 기능 유지 (12존 맵, 7지표 바)
+- [ ] `npm run typecheck` 통과
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/(main)/analysis/skin/_components/AnalysisResult.tsx` | 수정 | 통합 |
+
+---
+
+#### ATOM-9: 결과 페이지 연동
+
+##### 메타데이터
+- **소요시간**: 1시간
+- **의존성**: ATOM-8
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| 결과 페이지 | page.tsx | Yes | 연동 대상 |
+| Mock 데이터 | `METRIC_EXPLANATIONS`, `ZONE_EXPLANATIONS` | Yes | ATOM-2, ATOM-3 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| 수정된 결과 페이지 | page.tsx | 데이터 연결 완료 |
+
+##### 성공 기준
+- [ ] 결과 페이지에서 상세 설명 데이터 로드
+- [ ] 분석 결과와 설명 매칭
+- [ ] 빌드 성공
+- [ ] 수동 테스트: 지표/존 클릭 → 상세 카드 표시
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/app/(main)/analysis/skin/result/[id]/page.tsx` | 수정 | 데이터 연결 |
+
+---
+
+### 9.5 Phase 4: 테스트
+
+#### ATOM-10: 테스트 작성
+
+##### 메타데이터
+- **소요시간**: 2시간
+- **의존성**: ATOM-9
+- **병렬 가능**: No
+
+##### 입력 스펙
+| 항목 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| 모든 컴포넌트 | tsx | Yes | ATOM-4~7 |
+| Mock 데이터 | ts | Yes | ATOM-2, ATOM-3 |
+
+##### 출력 스펙
+| 항목 | 타입 | 설명 |
+|------|------|------|
+| 컴포넌트 테스트 | test.tsx | 4개 컴포넌트 테스트 |
+| 통합 테스트 | test.tsx | Progressive Disclosure 흐름 |
+
+##### 성공 기준
+- [ ] `ScientificTermTooltip.test.tsx` - 호버/탭 동작
+- [ ] `ProgressiveDisclosure.test.tsx` - 열기/닫기
+- [ ] `MetricDetailCard.test.tsx` - 렌더링, 닫기
+- [ ] `ZoneDetailCard.test.tsx` - 렌더링, 닫기
+- [ ] 통합 테스트: 지표 클릭 → 카드 표시 → 닫기
+- [ ] `npm run test` 통과 (관련 파일)
+
+##### 파일 배치
+| 파일 경로 | 변경 유형 | 설명 |
+|-----------|----------|------|
+| `apps/web/tests/components/analysis/skin/ScientificTermTooltip.test.tsx` | 생성 | 툴팁 테스트 |
+| `apps/web/tests/components/analysis/skin/ProgressiveDisclosure.test.tsx` | 생성 | 토글 테스트 |
+| `apps/web/tests/components/analysis/skin/MetricDetailCard.test.tsx` | 생성 | 지표 카드 테스트 |
+| `apps/web/tests/components/analysis/skin/ZoneDetailCard.test.tsx` | 생성 | 존 카드 테스트 |
+| `apps/web/tests/integration/skin-progressive-disclosure.test.tsx` | 생성 | 통합 테스트 |
+
+---
+
+### 9.6 총 예상 소요시간
+
+| Phase | 원자 | 소요시간 | 병렬 시 |
+|-------|------|----------|---------|
+| Phase 1 | ATOM-1~3 | 3.5시간 | 2시간 |
+| Phase 2 | ATOM-4~7 | 4시간 | 2시간 |
+| Phase 3 | ATOM-8~9 | 2.5시간 | 2.5시간 |
+| Phase 4 | ATOM-10 | 2시간 | 2시간 |
+| **총합** | **10개** | **12시간** | **8.5시간** |
+
+---
+
+### 9.7 P3 점수 검증
+
+| 항목 | 배점 | 달성 | 근거 |
+|------|------|------|------|
+| 소요시간 명시 | 20 | 20 | 모든 ATOM에 시간 명시 |
+| 입출력 스펙 | 20 | 20 | 모든 ATOM에 I/O 테이블 |
+| 성공 기준 | 20 | 20 | 체크리스트 형태로 명시 |
+| 의존성 그래프 | 20 | 20 | Mermaid 다이어그램 |
+| 파일 배치 | 10 | 10 | 모든 ATOM에 파일 위치 |
+| 테스트 케이스 | 10 | 10 | ATOM-10에 상세 명시 |
+| **총점** | **100** | **100** | P3 완전 달성 |
+
+---
+
+## 변경 이력
+
+| 버전 | 날짜 | 변경 내용 |
+|------|------|----------|
+| 1.0 | 2026-01-13 | 초기 버전 |
+| 2.0 | 2026-01-19 | P3 원자 분해 추가 (10개 ATOM, 의존성 그래프) |
+
+---
+
+**Version**: 2.0 | **Created**: 2026-01-13 | **Updated**: 2026-01-19 | **Author**: Claude Code
