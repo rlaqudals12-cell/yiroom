@@ -149,29 +149,9 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(self), microphone=(), geolocation=(self), interest-cohort=()',
           },
-          // CSP (Content Security Policy)
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com https://va.vercel-scripts.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https: http:",
-              // 개발 환경: 로컬 Supabase 허용
-              process.env.NODE_ENV === 'development'
-                ? "connect-src 'self' http://127.0.0.1:* http://localhost:* https://*.clerk.com https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.supabase.co wss://*.supabase.co https://generativelanguage.googleapis.com https://va.vercel-scripts.com https://*.sentry.io"
-                : "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://*.supabase.co wss://*.supabase.co https://generativelanguage.googleapis.com https://va.vercel-scripts.com https://*.sentry.io",
-              "frame-src 'self' https://clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com",
-              "worker-src 'self' blob:",
-              "manifest-src 'self'",
-              "media-src 'self' https:",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "frame-ancestors 'none'",
-            ].join('; '),
-          },
+          // CSP (Content Security Policy) - proxy.ts에서 통합 관리
+          // proxy.ts의 generateCSP() 함수가 실제 CSP를 설정합니다.
+          // 여기서는 proxy가 적용되지 않는 정적 파일용 기본 CSP만 설정합니다.
         ],
       },
     ];
@@ -192,12 +172,9 @@ const nextConfig: NextConfig = {
         destination: '/profile/settings',
         permanent: true,
       },
-      // 루트 → 홈
-      {
-        source: '/',
-        destination: '/home',
-        permanent: false,
-      },
+      // 루트 → 홈 리다이렉트 제거 (2026-01-31)
+      // LCP 1.7s 지연 유발 - 랜딩 페이지가 이미 SignedIn/SignedOut 로직 포함
+      // 로그인 사용자는 랜딩 페이지에서 "대시보드로 이동" 버튼으로 /home 접근
       // 제품 → 뷰티 (기본값)
       {
         source: '/products',

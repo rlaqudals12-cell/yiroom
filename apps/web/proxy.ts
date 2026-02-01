@@ -7,12 +7,7 @@
 
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import {
-  applyRateLimitMiddleware,
-  addRateLimitHeaders,
-  isRateLimitedPath,
-} from '@/lib/rate-limit';
+import { applyRateLimitMiddleware, addRateLimitHeaders, isRateLimitedPath } from '@/lib/rate-limit';
 
 /**
  * 보안 헤더 설정
@@ -42,18 +37,22 @@ function generateCSP(isDev: boolean): string {
   const directives = [
     // 기본 소스
     "default-src 'self'",
-    // 스크립트 소스
+    // 스크립트 소스 (Clerk, Kakao SDK, Vercel Analytics 포함)
     isDev
-      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://clerk.yiroom.app"
-      : "script-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://clerk.yiroom.app",
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://clerk.yiroom.app https://*.kakaocdn.net https://va.vercel-scripts.com"
+      : "script-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://clerk.yiroom.app https://*.kakaocdn.net https://va.vercel-scripts.com",
     // 스타일 소스 (inline style 허용 - Tailwind)
     "style-src 'self' 'unsafe-inline'",
     // 이미지 소스
-    "img-src 'self' data: blob: https://*.supabase.co https://*.clerk.accounts.dev https://img.clerk.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://*.clerk.accounts.dev https://img.clerk.com https:",
     // 폰트 소스
     "font-src 'self'",
-    // 연결 소스 (API, Supabase, Clerk)
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://api.clerk.dev https://*.google.com https://*.googleapis.com",
+    // 연결 소스 (API, Supabase, Clerk, Gemini, Sentry)
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://api.clerk.dev https://clerk-telemetry.com https://*.google.com https://*.googleapis.com https://generativelanguage.googleapis.com https://va.vercel-scripts.com https://*.sentry.io",
+    // Worker 소스 (Clerk에서 blob workers 사용)
+    "worker-src 'self' blob:",
+    // 프레임 소스 (Clerk, Cloudflare Turnstile)
+    "frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com",
     // 프레임 조상 (클릭재킹 방지)
     "frame-ancestors 'none'",
     // 폼 액션
@@ -62,8 +61,10 @@ function generateCSP(isDev: boolean): string {
     "base-uri 'self'",
     // 객체 소스 금지
     "object-src 'none'",
+    // 매니페스트 소스 (PWA)
+    "manifest-src 'self'",
     // 업그레이드 요청
-    !isDev ? "upgrade-insecure-requests" : null,
+    !isDev ? 'upgrade-insecure-requests' : null,
   ];
 
   return directives.filter(Boolean).join('; ');
