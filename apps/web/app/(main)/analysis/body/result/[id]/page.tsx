@@ -43,6 +43,7 @@ import { Palette } from 'lucide-react';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
+import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 
 // DB 데이터 타입
 interface DbBodyAnalysis {
@@ -66,7 +67,7 @@ interface DbBodyAnalysis {
         imageQuality?: BodyImageQuality;
         confidence?: number;
         matchedFeatures?: number;
-        usedMock?: boolean;  // AI 분석 실패 시 Mock 데이터 사용 여부
+        usedMock?: boolean; // AI 분석 실패 시 Mock 데이터 사용 여부
       }
     | Array<{
         category: string;
@@ -471,6 +472,9 @@ export default function BodyAnalysisResultPage() {
                   onRetry={handleNewAnalysis}
                   evidence={analysisEvidence}
                 />
+
+                {/* 다음 분석 추천 */}
+                <ContextLinkingCard currentModule="body" />
 
                 {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
                 {(analysisEvidence || imageQuality) && (

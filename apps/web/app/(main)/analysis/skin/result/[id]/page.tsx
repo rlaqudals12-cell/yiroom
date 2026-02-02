@@ -30,7 +30,11 @@ import { SkinConsultantCTA } from '@/components/skin/SkinConsultantCTA';
 import Link from 'next/link';
 import type { SkinType as ProductSkinType, SkinConcern } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { VisualAnalysisTab, DrapingSimulationTab, SynergyInline } from '@/components/analysis/visual';
+import {
+  VisualAnalysisTab,
+  DrapingSimulationTab,
+  SynergyInline,
+} from '@/components/analysis/visual';
 import { Palette, Camera, MessageCircle } from 'lucide-react';
 import SkinAnalysisEvidenceReport, {
   type SkinAnalysisEvidence,
@@ -65,6 +69,7 @@ import {
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { SkinConsultationChat } from '@/components/skin-consultation';
+import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import type { SkinAnalysisSummary } from '@/types/skin-consultation';
 
 // 존 ID 타입 (FaceZoneMapProps에서 추출)
@@ -168,7 +173,7 @@ interface DbSkinAnalysis {
     weekly_care?: string[];
     analysisEvidence?: SkinAnalysisEvidence;
     imageQuality?: SkinImageQuality;
-    usedMock?: boolean;  // AI 분석 실패 시 Mock 데이터 사용 여부
+    usedMock?: boolean; // AI 분석 실패 시 Mock 데이터 사용 여부
   } | null;
   products: {
     routine?: Array<{ step: number; category: string; products: string[] }>;
@@ -881,6 +886,9 @@ export default function SkinAnalysisResultPage() {
                     imageUrl={imageUrl || pcImageUrl}
                   />
 
+                  {/* 다음 분석 추천 */}
+                  <ContextLinkingCard currentModule="skin" />
+
                   {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
                   {(analysisEvidence || imageQuality) && (
                     <SkinAnalysisEvidenceReport
@@ -1065,16 +1073,22 @@ export default function SkinAnalysisResultPage() {
                 </TabsContent>
 
                 {/* AI 피부 상담 탭 (Phase D) */}
-                <TabsContent value="consultation" className="mt-0 pb-40" data-testid="consultation-tab">
+                <TabsContent
+                  value="consultation"
+                  className="mt-0 pb-40"
+                  data-testid="consultation-tab"
+                >
                   <div className="h-[calc(100vh-280px)] min-h-[400px]">
                     <SkinConsultationChat
                       skinAnalysis={
                         result
                           ? ({
                               skinType: skinType || '복합성',
-                              hydration: result.metrics.find((m) => m.id === 'hydration')?.value || 50,
+                              hydration:
+                                result.metrics.find((m) => m.id === 'hydration')?.value || 50,
                               oiliness: result.metrics.find((m) => m.id === 'oil')?.value || 50,
-                              sensitivity: result.metrics.find((m) => m.id === 'sensitivity')?.value || 50,
+                              sensitivity:
+                                result.metrics.find((m) => m.id === 'sensitivity')?.value || 50,
                               analyzedAt: result.analyzedAt,
                             } as SkinAnalysisSummary)
                           : null

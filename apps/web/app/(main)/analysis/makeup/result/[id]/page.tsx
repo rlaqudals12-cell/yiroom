@@ -11,6 +11,7 @@ import { ShareButton } from '@/components/share';
 import { useAnalysisShare, createMakeupShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 import { AIBadge } from '@/components/common/AIBadge';
+import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -523,6 +524,9 @@ export default function MakeupAnalysisResultPage() {
               </TabsContent>
             </Tabs>
           )}
+
+          {/* 다음 분석 추천 */}
+          <ContextLinkingCard currentModule="makeup" />
         </div>
       </main>
 

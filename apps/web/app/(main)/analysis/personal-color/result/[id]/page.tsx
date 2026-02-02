@@ -46,6 +46,7 @@ import { DrapingSimulationTab } from '@/components/analysis/visual';
 import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
+import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { Shirt } from 'lucide-react';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
@@ -71,7 +72,7 @@ interface DbPersonalColorAssessment {
     insight?: string;
     analysisEvidence?: AnalysisEvidence;
     imageQuality?: ImageQuality;
-    usedMock?: boolean;  // AI 분석 실패 시 Mock 데이터 사용 여부
+    usedMock?: boolean; // AI 분석 실패 시 Mock 데이터 사용 여부
   } | null;
   face_image_url?: string; // DB 컬럼명과 일치
   created_at: string;
@@ -311,9 +312,9 @@ export default function PersonalColorResultPage() {
             </Link>
           </Button>
           <div className="flex flex-col items-center gap-1">
-              <h1 className="text-lg font-bold text-foreground">퍼스널 컬러 결과</h1>
-              <AIBadge variant="small" />
-            </div>
+            <h1 className="text-lg font-bold text-foreground">퍼스널 컬러 결과</h1>
+            <AIBadge variant="small" />
+          </div>
           <div className="w-16" />
         </header>
 
@@ -409,6 +410,9 @@ export default function PersonalColorResultPage() {
                 onRetry={handleNewAnalysis}
                 evidence={analysisEvidence}
               />
+
+              {/* 다음 분석 추천 */}
+              <ContextLinkingCard currentModule="personal-color" />
 
               {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
               {(analysisEvidence || imageQuality) && (

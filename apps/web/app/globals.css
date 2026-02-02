@@ -6,7 +6,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), var(--font-noto-sans-kr), sans-serif;
+  --font-sans: Inter, "Noto Sans KR", system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* ========================================
@@ -166,6 +166,21 @@
   --module-hair-light: oklch(0.93 0.07 55);
   --module-hair-dark: oklch(0.58 0.17 55);
 
+  /* M-1 메이크업 분석 모듈 (2026-02-03) */
+  --module-makeup: oklch(0.75 0.20 320);          /* Fuchsia - 메이크업 */
+  --module-makeup-light: oklch(0.93 0.10 320);
+  --module-makeup-dark: oklch(0.55 0.22 320);
+
+  /* 자세 분석 모듈 (2026-02-03) */
+  --module-posture: oklch(0.78 0.15 195);         /* Cyan - 자세 분석 */
+  --module-posture-light: oklch(0.93 0.08 195);
+  --module-posture-dark: oklch(0.55 0.18 195);
+
+  /* OH-1 구강 건강 모듈 (2026-02-03) */
+  --module-oral-health: oklch(0.75 0.18 145);     /* Mint Green - 구강 건강 */
+  --module-oral-health-light: oklch(0.93 0.09 145);
+  --module-oral-health-dark: oklch(0.55 0.20 145);
+
   /* ========================================
      전문성 강조 색상 (2026-01-13)
      의료/컨설팅 앱 수준 신뢰감
@@ -195,6 +210,7 @@
      ======================================== */
   --gradient-primary: linear-gradient(135deg, #F8C8DC 0%, #FFB6C1 100%);
   --gradient-brand: linear-gradient(135deg, #F8C8DC 0%, #FFB6C1 100%);
+  --gradient-brand-extended: linear-gradient(135deg, #F8C8DC 0%, #E879F9 50%, #A855F7 100%);
   --gradient-workout: linear-gradient(135deg, var(--module-workout), var(--module-workout-dark));
   --gradient-nutrition: linear-gradient(135deg, var(--module-nutrition), var(--module-nutrition-dark));
   --gradient-skin: linear-gradient(135deg, var(--module-skin), var(--module-skin-dark));
@@ -202,6 +218,9 @@
   --gradient-personal-color: linear-gradient(135deg, var(--module-personal-color), var(--module-personal-color-dark));
   --gradient-face: linear-gradient(135deg, var(--module-face), var(--module-face-dark));
   --gradient-hair: linear-gradient(135deg, var(--module-hair), var(--module-hair-dark));
+  --gradient-makeup: linear-gradient(135deg, var(--module-makeup), var(--module-makeup-dark));
+  --gradient-posture: linear-gradient(135deg, var(--module-posture), var(--module-posture-dark));
+  --gradient-oral-health: linear-gradient(135deg, var(--module-oral-health), var(--module-oral-health-dark));
   --gradient-professional: linear-gradient(135deg, var(--professional-primary), var(--professional-accent));
 
   /* 상태 색상 */
@@ -367,6 +386,21 @@
   --module-hair-light: oklch(0.20 0.05 55);
   --module-hair-dark: oklch(0.78 0.14 55);
 
+  /* M-1 메이크업 분석 (다크모드) */
+  --module-makeup: oklch(0.68 0.18 320);
+  --module-makeup-light: oklch(0.20 0.08 320);
+  --module-makeup-dark: oklch(0.78 0.20 320);
+
+  /* 자세 분석 (다크모드) */
+  --module-posture: oklch(0.70 0.13 195);
+  --module-posture-light: oklch(0.20 0.06 195);
+  --module-posture-dark: oklch(0.80 0.15 195);
+
+  /* OH-1 구강 건강 (다크모드) */
+  --module-oral-health: oklch(0.68 0.16 145);
+  --module-oral-health-light: oklch(0.20 0.07 145);
+  --module-oral-health-dark: oklch(0.78 0.18 145);
+
   /* 전문성 색상 (다크모드) */
   --professional-primary: oklch(0.55 0.10 220);
   --professional-accent: oklch(0.65 0.08 180);
@@ -404,6 +438,28 @@
 /* 마우스 클릭 시 outline 제거 (키보드 사용자만 표시) */
 :focus:not(:focus-visible) {
   outline: none;
+}
+
+/* 다크 모드 포커스 표시 (YIROOM IDENTITY 핑크) */
+.dark :focus-visible {
+  outline: 2px solid #F8C8DC;
+  outline-offset: 2px;
+}
+
+.dark button:focus-visible,
+.dark a:focus-visible {
+  outline: 2px solid #F8C8DC;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* 다크 모드 텍스트 대비 개선 (WCAG AA 4.5:1 충족) */
+.dark .text-zinc-400 {
+  color: #A1A1AA;
+}
+
+.dark .text-muted-foreground {
+  color: #A1A1AA;
 }
 
 /* 고대비 모드 지원 */
@@ -501,6 +557,73 @@
 }
 
 /* ========================================
+   YIROOM IDENTITY 순차 등장 애니메이션
+   ======================================== */
+
+@keyframes fade-in-up-stagger {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up-stagger {
+  animation: fade-in-up-stagger 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.stagger-1 { animation-delay: 100ms; }
+.stagger-2 { animation-delay: 200ms; }
+.stagger-3 { animation-delay: 300ms; }
+.stagger-4 { animation-delay: 400ms; }
+.stagger-5 { animation-delay: 500ms; }
+.stagger-6 { animation-delay: 600ms; }
+
+/* ========================================
+   YIROOM IDENTITY 펄스 글로우 애니메이션
+   ======================================== */
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(248, 200, 220, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(248, 200, 220, 0.2);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-purple {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.2);
+  }
+}
+
+.animate-pulse-glow-purple {
+  animation: pulse-glow-purple 3s ease-in-out infinite;
+}
+
+/* 펄스 글로우 접근성 */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up-stagger,
+  .animate-pulse-glow,
+  .animate-pulse-glow-purple {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ========================================
    iOS Safe Area 유틸리티
    ======================================== */
 
@@ -582,6 +705,30 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* YIROOM IDENTITY 확장 그라디언트 (핑크→보라) */
+.text-gradient-brand-extended {
+  background: var(--gradient-brand-extended);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ========================================
+   글로우 보더 유틸리티 (YIROOM IDENTITY)
+   ======================================== */
+
+.border-glow-pink {
+  border: 1px solid rgba(248, 200, 220, 0.3);
+  box-shadow: 0 0 20px rgba(248, 200, 220, 0.1),
+              inset 0 0 20px rgba(248, 200, 220, 0.05);
+}
+
+.border-glow-purple {
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.1),
+              inset 0 0 20px rgba(168, 85, 247, 0.05);
 }
 
 /* ========================================
@@ -770,6 +917,59 @@
   .animate-bounce-slow,
   .animate-medal-drop,
   .animate-scan-line {
+    animation: none;
+  }
+}
+
+/* ========================================
+   직조(Weaving) 애니메이션 - Archive 디자인 요소
+   분석 결과 로딩 시 브랜드 특성 강조
+   ======================================== */
+
+@keyframes weave {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes weave-stagger {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-6px) scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.animate-weave {
+  animation: weave 1.5s ease-in-out infinite;
+}
+
+.animate-weave-fast {
+  animation: weave 0.8s ease-in-out infinite;
+}
+
+.animate-weave-stagger {
+  animation: weave-stagger 2s ease-in-out infinite;
+}
+
+/* 순차 직조 효과 (여러 요소에 적용) */
+.weave-delay-1 { animation-delay: 0ms; }
+.weave-delay-2 { animation-delay: 150ms; }
+.weave-delay-3 { animation-delay: 300ms; }
+.weave-delay-4 { animation-delay: 450ms; }
+.weave-delay-5 { animation-delay: 600ms; }
+
+/* 직조 애니메이션 접근성 */
+@media (prefers-reduced-motion: reduce) {
+  .animate-weave,
+  .animate-weave-fast,
+  .animate-weave-stagger {
     animation: none;
   }
 }
