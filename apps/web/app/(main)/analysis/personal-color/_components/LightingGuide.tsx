@@ -63,12 +63,12 @@ export default function LightingGuide({ onContinue, onSkip, onGallery }: Lightin
       </div>
 
       {/* 2. 메인 비주얼: 유치한 그림 대신 세련된 뷰파인더 UI 적용 */}
-      <div className="relative mx-auto w-64 h-64 bg-zinc-50 dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-xl border-4 border-white dark:border-zinc-800 ring-1 ring-black/5">
+      <div className="relative mx-auto w-[min(16rem,85vw)] aspect-square bg-zinc-50 dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-xl border-4 border-white dark:border-zinc-800 ring-1 ring-black/5">
         {/* 배경: 부드러운 그라디언트 (피부톤 암시) */}
         <div className="absolute inset-0 bg-gradient-to-br from-rose-100/50 via-amber-50/50 to-sky-100/50 dark:from-rose-900/20 dark:via-amber-900/20 dark:to-sky-900/20" />
 
         {/* 가이드 라인 (뷰파인더) */}
-        <div className="absolute inset-6 border-2 border-dashed border-primary/30 rounded-3xl" />
+        <div className="absolute inset-[8%] border-2 border-dashed border-primary/30 rounded-3xl" />
         <div className="absolute top-8 left-0 right-0 text-center">
           <span className="text-[10px] font-medium text-muted-foreground bg-white/50 dark:bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm tracking-wider">
             NATURAL LIGHT ONLY

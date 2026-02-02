@@ -36,14 +36,14 @@ export function calculateGLCM(
   switch (angle) {
     case 0:
       dx = distance;
-      dy = 0;
+      // dy remains 0
       break;
     case 45:
       dx = distance;
       dy = -distance;
       break;
     case 90:
-      dx = 0;
+      // dx remains 0
       dy = distance;
       break;
     case 135:

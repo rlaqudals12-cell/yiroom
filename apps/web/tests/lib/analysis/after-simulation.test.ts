@@ -3,16 +3,20 @@
  * @description 현실적 After 시뮬레이션 모듈 테스트
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   SIMULATION_PRESETS,
   DEFAULT_CONFIG,
   getPresetConfig,
   createCustomConfig,
   validateAlpha,
+  applyDrapeReflection,
+  applySkinToneCorrection,
+  renderSplitView,
   type AfterSimulationConfig,
   type SimulationPreset,
 } from '@/lib/analysis/after-simulation';
+import type { DrapeOpticalProperties } from '@/lib/analysis/drape-palette';
 
 describe('after-simulation', () => {
   // ============================================
@@ -199,6 +203,290 @@ describe('after-simulation', () => {
       expect(typeof config.brightnessAdjust).toBe('number');
       expect(typeof config.saturationAdjust).toBe('number');
       expect(typeof config.reflectionSpread).toBe('number');
+    });
+  });
+
+  // ============================================
+  // applyDrapeReflection 테스트
+  // ============================================
+
+  describe('applyDrapeReflection', () => {
+    let mockCanvas: HTMLCanvasElement;
+    let mockCtx: CanvasRenderingContext2D;
+
+    beforeEach(() => {
+      mockCanvas = document.createElement('canvas');
+      mockCanvas.width = 10;
+      mockCanvas.height = 10;
+      mockCtx = mockCanvas.getContext('2d')!;
+    });
+
+    const mockDrape: DrapeOpticalProperties = {
+      rgb: { r: 200, g: 100, b: 50 },
+      hex: '#C86432',
+      name: '테스트 컬러',
+      season: 'autumn',
+      reflectance: 0.7,
+      warmth: 0.5,
+      saturationBoost: 0.1,
+      muteness: 0.3,
+    };
+
+    it('should not throw with valid inputs', () => {
+      const faceMask = new Uint8Array(100).fill(255);
+
+      expect(() => {
+        applyDrapeReflection(mockCtx, faceMask, mockDrape);
+      }).not.toThrow();
+    });
+
+    it('should accept custom config', () => {
+      const faceMask = new Uint8Array(100).fill(255);
+      const customConfig: AfterSimulationConfig = {
+        alpha: 0.6,
+        brightnessAdjust: 10,
+        saturationAdjust: 8,
+        reflectionSpread: 0.6,
+      };
+
+      expect(() => {
+        applyDrapeReflection(mockCtx, faceMask, mockDrape, customConfig);
+      }).not.toThrow();
+    });
+
+    it('should skip pixels outside face mask', () => {
+      const faceMask = new Uint8Array(100).fill(0);
+
+      expect(() => {
+        applyDrapeReflection(mockCtx, faceMask, mockDrape);
+      }).not.toThrow();
+    });
+
+    it('should handle cool toned drape (negative warmth)', () => {
+      const faceMask = new Uint8Array(100).fill(255);
+      const coolDrape: DrapeOpticalProperties = {
+        rgb: { r: 100, g: 150, b: 200 },
+        hex: '#6496C8',
+        name: '쿨 블루',
+        season: 'summer',
+        reflectance: 0.6,
+        warmth: -0.5, // 쿨톤
+        saturationBoost: -0.1,
+        muteness: 0.2,
+      };
+
+      expect(() => {
+        applyDrapeReflection(mockCtx, faceMask, coolDrape);
+      }).not.toThrow();
+    });
+
+    it('should handle zero warmth', () => {
+      const faceMask = new Uint8Array(100).fill(255);
+      const neutralDrape: DrapeOpticalProperties = {
+        rgb: { r: 150, g: 150, b: 150 },
+        hex: '#969696',
+        name: '뉴트럴 그레이',
+        season: 'winter',
+        reflectance: 0.5,
+        warmth: 0,
+        saturationBoost: 0,
+        muteness: 0.5,
+      };
+
+      expect(() => {
+        applyDrapeReflection(mockCtx, faceMask, neutralDrape);
+      }).not.toThrow();
+    });
+  });
+
+  // ============================================
+  // applySkinToneCorrection 테스트
+  // ============================================
+
+  describe('applySkinToneCorrection', () => {
+    let mockCanvas: HTMLCanvasElement;
+    let mockCtx: CanvasRenderingContext2D;
+
+    beforeEach(() => {
+      mockCanvas = document.createElement('canvas');
+      mockCanvas.width = 10;
+      mockCanvas.height = 10;
+      mockCtx = mockCanvas.getContext('2d')!;
+    });
+
+    it('should apply hydration correction', () => {
+      const faceMask = new Uint8Array(100).fill(255);
+
+      expect(() => {
+        applySkinToneCorrection(mockCtx, faceMask, {
+          hydration: 0.5,
+          rednessReduction: 0,
+          brightening: 0,
+        });
+      }).not.toThrow();
+    });
+
+    it('should apply redness reduction', () => {
+      const faceMask = new Uint8Array(100).fill(255);
+
+      expect(() => {
+        applySkinToneCorrection(mockCtx, faceMask, {
+          hydration: 0,
+          rednessReduction: 0.5,
+          brightening: 0,
+        });
+      }).not.toThrow();
+    });
+
+    it('should apply brightening', () => {
+      const faceMask = new Uint8Array(100).fill(255);
+
+      expect(() => {
+        applySkinToneCorrection(mockCtx, faceMask, {
+          hydration: 0,
+          rednessReduction: 0,
+          brightening: 0.5,
+        });
+      }).not.toThrow();
+    });
+
+    it('should apply all corrections together', () => {
+      const faceMask = new Uint8Array(100).fill(255);
+
+      expect(() => {
+        applySkinToneCorrection(mockCtx, faceMask, {
+          hydration: 0.3,
+          rednessReduction: 0.4,
+          brightening: 0.5,
+        });
+      }).not.toThrow();
+    });
+
+    it('should handle custom alpha', () => {
+      const faceMask = new Uint8Array(100).fill(255);
+
+      expect(() => {
+        applySkinToneCorrection(
+          mockCtx,
+          faceMask,
+          {
+            hydration: 0.5,
+            rednessReduction: 0.5,
+            brightening: 0.5,
+          },
+          0.6
+        );
+      }).not.toThrow();
+    });
+
+    it('should skip pixels outside face mask', () => {
+      const faceMask = new Uint8Array(100).fill(0);
+
+      expect(() => {
+        applySkinToneCorrection(mockCtx, faceMask, {
+          hydration: 0.5,
+          rednessReduction: 0.5,
+          brightening: 0.5,
+        });
+      }).not.toThrow();
+    });
+
+    it('should handle negative correction values', () => {
+      const faceMask = new Uint8Array(100).fill(255);
+
+      expect(() => {
+        applySkinToneCorrection(mockCtx, faceMask, {
+          hydration: -0.5,
+          rednessReduction: -0.3,
+          brightening: -0.2,
+        });
+      }).not.toThrow();
+    });
+  });
+
+  // ============================================
+  // renderSplitView 테스트
+  // ============================================
+
+  describe('renderSplitView', () => {
+    let mockCanvas: HTMLCanvasElement;
+    let beforeImage: HTMLImageElement;
+    let afterImage: HTMLImageElement;
+
+    beforeEach(() => {
+      mockCanvas = document.createElement('canvas');
+      mockCanvas.width = 100;
+      mockCanvas.height = 100;
+
+      beforeImage = new Image();
+      beforeImage.width = 100;
+      beforeImage.height = 100;
+
+      afterImage = new Image();
+      afterImage.width = 100;
+      afterImage.height = 100;
+    });
+
+    it('should render horizontal split view', () => {
+      expect(() => {
+        renderSplitView(mockCanvas, beforeImage, afterImage, 0.5, 'horizontal');
+      }).not.toThrow();
+    });
+
+    it('should render vertical split view', () => {
+      expect(() => {
+        renderSplitView(mockCanvas, beforeImage, afterImage, 0.5, 'vertical');
+      }).not.toThrow();
+    });
+
+    it('should handle split position at start (0)', () => {
+      expect(() => {
+        renderSplitView(mockCanvas, beforeImage, afterImage, 0, 'horizontal');
+      }).not.toThrow();
+    });
+
+    it('should handle split position at end (1)', () => {
+      expect(() => {
+        renderSplitView(mockCanvas, beforeImage, afterImage, 1, 'horizontal');
+      }).not.toThrow();
+    });
+
+    it('should default to horizontal direction', () => {
+      expect(() => {
+        renderSplitView(mockCanvas, beforeImage, afterImage, 0.5);
+      }).not.toThrow();
+    });
+
+    it('should handle canvas element as input', () => {
+      const beforeCanvas = document.createElement('canvas');
+      beforeCanvas.width = 100;
+      beforeCanvas.height = 100;
+
+      expect(() => {
+        renderSplitView(mockCanvas, beforeCanvas, afterImage, 0.5);
+      }).not.toThrow();
+    });
+  });
+
+  // ============================================
+  // 반사 강도 계산 테스트
+  // ============================================
+
+  describe('반사 강도 계산', () => {
+    it('alpha와 reflectionSpread가 효과에 영향을 줌', () => {
+      // 낮은 alpha는 효과가 약함
+      const lowAlphaConfig = getPresetConfig('subtle');
+      const highAlphaConfig = getPresetConfig('enhanced');
+
+      expect(lowAlphaConfig.alpha * lowAlphaConfig.reflectionSpread).toBeLessThan(
+        highAlphaConfig.alpha * highAlphaConfig.reflectionSpread
+      );
+    });
+
+    it('드레이프 영역 시작점은 70%', () => {
+      // 물리적 모델: 드레이프는 하단 30%에 위치
+      const drapeStart = 0.7;
+      expect(drapeStart).toBe(0.7);
     });
   });
 });

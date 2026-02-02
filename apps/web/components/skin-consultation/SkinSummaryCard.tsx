@@ -9,7 +9,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Droplets, Sparkles, Sun, AlertCircle } from 'lucide-react';
-import type { SkinAnalysisSummary, SkinConcern, SKIN_CONCERN_LABELS } from '@/types/skin-consultation';
+import type { SkinAnalysisSummary } from '@/types/skin-consultation';
 
 interface SkinSummaryCardProps {
   /** S-1 분석 결과 요약 */

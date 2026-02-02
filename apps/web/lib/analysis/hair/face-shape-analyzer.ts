@@ -151,8 +151,8 @@ function classifyFaceShape(
   const cheekboneToJaw = jawWidth > 0 ? cheekboneWidth / jawWidth : 1;
   const foreheadToCheekbone = cheekboneWidth > 0 ? foreheadWidth / cheekboneWidth : 1;
 
-  let faceShape: FaceShapeType = 'oval';
-  let confidence = 70;
+  let faceShape: FaceShapeType;
+  let confidence: number;
 
   // 분류 로직
   // 1. 길이/너비 비율로 1차 분류

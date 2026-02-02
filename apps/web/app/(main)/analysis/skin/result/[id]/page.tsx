@@ -53,14 +53,15 @@ import type { ProblemArea } from '@/types/skin-problem-area';
 import { MOCK_PROBLEM_AREAS } from '@/lib/mock/skin-problem-areas';
 import { useSwipeTab } from '@/hooks/useSwipeTab';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
+// face-api.js 사용 컴포넌트 - 동적 import (번들 최적화)
 import {
-  PhotoMetricOverlayV2,
+  PhotoMetricOverlayV2Dynamic,
+  FaceLandmarkHeatMapDynamic,
   type MetricScore,
   type SkinMetricType,
-  FaceLandmarkHeatMap,
   type ZoneScore,
   type FaceZoneType,
-} from '@/components/analysis/skin';
+} from '@/components/analysis/skin/dynamic';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { SkinConsultationChat } from '@/components/skin-consultation';
@@ -706,7 +707,7 @@ export default function SkinAnalysisResultPage() {
           {result && (
             <div ref={swipeContainerRef} {...swipeHandlers} className="touch-pan-y">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-4 sticky top-0 z-10 bg-muted">
+                <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 mb-4 sticky top-0 z-10 bg-muted">
                   <TabsTrigger value="basic" className="gap-1 text-xs px-1">
                     <Sparkles className="w-3 h-3" />
                     분석
@@ -964,9 +965,9 @@ export default function SkinAnalysisResultPage() {
                     </div>
                   )}
 
-                  {/* AI 정밀 피부 분석 (face-api.js 68포인트 랜드마크 기반) */}
+                  {/* AI 정밀 피부 분석 (face-api.js 68포인트 랜드마크 기반) - 동적 로딩 */}
                   {(imageUrl || pcImageUrl) && (
-                    <FaceLandmarkHeatMap
+                    <FaceLandmarkHeatMapDynamic
                       imageUrl={(imageUrl || pcImageUrl)!}
                       zoneScores={heatMapZoneScores}
                       showHeatMap
@@ -976,9 +977,9 @@ export default function SkinAnalysisResultPage() {
                     />
                   )}
 
-                  {/* 경쟁사 스타일 피부 분석 결과 (face-api.js 68포인트 랜드마크 기반) */}
+                  {/* 경쟁사 스타일 피부 분석 결과 (face-api.js 68포인트 랜드마크 기반) - 동적 로딩 */}
                   {(imageUrl || pcImageUrl) && (
-                    <PhotoMetricOverlayV2
+                    <PhotoMetricOverlayV2Dynamic
                       imageUrl={(imageUrl || pcImageUrl)!}
                       metrics={photoMetrics}
                       showConnectors

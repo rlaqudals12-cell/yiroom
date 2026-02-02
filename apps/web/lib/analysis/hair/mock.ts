@@ -12,8 +12,6 @@ import type {
   FaceShapeType,
   FaceShapeAnalysis,
   HairColorAnalysis,
-  HairstyleRecommendation,
-  HairColorRecommendation,
 } from './types';
 import { FACE_SHAPE_LABELS } from './types';
 import { recommendHairstyles, recommendHairColors, generateCareTips } from './style-recommender';

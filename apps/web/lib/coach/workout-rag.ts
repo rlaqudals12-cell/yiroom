@@ -9,7 +9,7 @@
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { coachLogger } from '@/lib/utils/logger';
 import type { UserContext } from './types';
-import { getAllExercises, getRecommendedExercises } from '@/lib/workout/exercises';
+import { getAllExercises } from '@/lib/workout';
 import type { Exercise } from '@/types/workout';
 
 /** 운동 목표 */

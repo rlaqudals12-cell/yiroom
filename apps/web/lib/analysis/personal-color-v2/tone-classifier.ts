@@ -23,7 +23,6 @@ import {
   calculateChroma,
   calculateHue,
   calculateITA,
-  calculateLabDistance,
   calculateCIEDE2000,
 } from './lab-utils';
 

@@ -351,3 +351,70 @@ export function filterCategoriesByGender(categories: string[], gender: GenderPre
 
   return categories;
 }
+
+/**
+ * 성별에 따른 제품 카테고리 라벨 반환
+ * 남성: 그루밍 아이템, 여성: 뷰티 제품
+ */
+export function getProductCategoryLabel(gender: GenderPreference): string {
+  if (gender === 'male') {
+    return '그루밍 아이템';
+  }
+  if (gender === 'female') {
+    return '뷰티 제품';
+  }
+  return '뷰티/그루밍 제품';
+}
+
+/**
+ * 성별에 따른 스타일 섹션 제목 반환
+ */
+export function getStyleSectionTitle(gender: GenderPreference): string {
+  if (gender === 'male') {
+    return '남성 스타일 가이드';
+  }
+  if (gender === 'female') {
+    return '여성 스타일 가이드';
+  }
+  return '스타일 가이드';
+}
+
+/**
+ * 성별 프로필 검증
+ */
+export function isValidGenderProfile(profile: unknown): profile is UserGenderProfile {
+  if (typeof profile !== 'object' || profile === null) {
+    return false;
+  }
+
+  const p = profile as Record<string, unknown>;
+
+  const validGenders: GenderPreference[] = ['male', 'female', 'neutral'];
+  const validStyles: StylePreference[] = ['masculine', 'feminine', 'unisex'];
+
+  return (
+    typeof p.gender === 'string' &&
+    validGenders.includes(p.gender as GenderPreference) &&
+    typeof p.stylePreference === 'string' &&
+    validStyles.includes(p.stylePreference as StylePreference)
+  );
+}
+
+/**
+ * 기본 성별 프로필 생성
+ */
+export function createDefaultGenderProfile(gender?: GenderPreference): UserGenderProfile {
+  const g = gender || 'neutral';
+
+  let stylePreference: StylePreference = 'unisex';
+  if (g === 'male') {
+    stylePreference = 'masculine';
+  } else if (g === 'female') {
+    stylePreference = 'feminine';
+  }
+
+  return {
+    gender: g,
+    stylePreference,
+  };
+}

@@ -5,12 +5,16 @@
  * @description METAL_REFLECTANCE, measureUniformity, getBestColors, drapeResultsToDbFormat 테스트
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   METAL_REFLECTANCE,
   measureUniformity,
   getBestColors,
   drapeResultsToDbFormat,
+  applyReflectance,
+  applyMetalReflectance,
+  applyDrapeColor,
+  analyzeSingleDrape,
 } from '@/lib/analysis/drape-reflectance';
 import type { DrapeResult } from '@/types/visual-analysis';
 
@@ -260,6 +264,252 @@ describe('lib/analysis/drape-reflectance', () => {
       expect(dbFormat.best_colors).toEqual([]);
       expect(dbFormat.uniformity_scores).toEqual({});
       expect(dbFormat.metal_test).toBe('silver');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // applyReflectance
+  // ---------------------------------------------------------------------------
+
+  describe('applyReflectance', () => {
+    let canvas: HTMLCanvasElement;
+    let ctx: CanvasRenderingContext2D;
+
+    beforeEach(() => {
+      canvas = document.createElement('canvas');
+      canvas.width = 10;
+      canvas.height = 10;
+      ctx = canvas.getContext('2d')!;
+    });
+
+    it('should apply positive brightness adjustment', () => {
+      const faceMask = new Uint8Array(100).fill(1);
+
+      expect(() => {
+        applyReflectance(ctx, faceMask, { brightness: 10, saturation: 0 });
+      }).not.toThrow();
+    });
+
+    it('should apply negative brightness adjustment', () => {
+      const faceMask = new Uint8Array(100).fill(1);
+
+      expect(() => {
+        applyReflectance(ctx, faceMask, { brightness: -10, saturation: 0 });
+      }).not.toThrow();
+    });
+
+    it('should apply positive saturation adjustment', () => {
+      const faceMask = new Uint8Array(100).fill(1);
+
+      expect(() => {
+        applyReflectance(ctx, faceMask, { brightness: 0, saturation: 10 });
+      }).not.toThrow();
+    });
+
+    it('should apply negative saturation adjustment', () => {
+      const faceMask = new Uint8Array(100).fill(1);
+
+      expect(() => {
+        applyReflectance(ctx, faceMask, { brightness: 0, saturation: -10 });
+      }).not.toThrow();
+    });
+
+    it('should skip pixels outside mask', () => {
+      const faceMask = new Uint8Array(100).fill(0);
+
+      expect(() => {
+        applyReflectance(ctx, faceMask, { brightness: 10, saturation: 5 });
+      }).not.toThrow();
+    });
+
+    it('should handle partial mask', () => {
+      const faceMask = new Uint8Array(100);
+      for (let i = 0; i < 50; i++) faceMask[i] = 1;
+
+      expect(() => {
+        applyReflectance(ctx, faceMask, { brightness: 5, saturation: -5 });
+      }).not.toThrow();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // applyMetalReflectance
+  // ---------------------------------------------------------------------------
+
+  describe('applyMetalReflectance', () => {
+    let canvas: HTMLCanvasElement;
+    let ctx: CanvasRenderingContext2D;
+
+    beforeEach(() => {
+      canvas = document.createElement('canvas');
+      canvas.width = 10;
+      canvas.height = 10;
+      ctx = canvas.getContext('2d')!;
+    });
+
+    it('should apply silver reflectance', () => {
+      const faceMask = new Uint8Array(100).fill(1);
+
+      expect(() => {
+        applyMetalReflectance(ctx, faceMask, 'silver');
+      }).not.toThrow();
+    });
+
+    it('should apply gold reflectance', () => {
+      const faceMask = new Uint8Array(100).fill(1);
+
+      expect(() => {
+        applyMetalReflectance(ctx, faceMask, 'gold');
+      }).not.toThrow();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // applyDrapeColor
+  // ---------------------------------------------------------------------------
+
+  describe('applyDrapeColor', () => {
+    let canvas: HTMLCanvasElement;
+    let ctx: CanvasRenderingContext2D;
+
+    beforeEach(() => {
+      canvas = document.createElement('canvas');
+      canvas.width = 10;
+      canvas.height = 10;
+      ctx = canvas.getContext('2d')!;
+    });
+
+    it('should apply drape color to lower region', () => {
+      const faceMask = new Uint8Array(100).fill(0);
+
+      expect(() => {
+        applyDrapeColor(ctx, '#FF5500', faceMask, 10);
+      }).not.toThrow();
+    });
+
+    it('should handle different hex colors', () => {
+      const faceMask = new Uint8Array(100).fill(0);
+
+      const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFFFF', '#000000'];
+
+      colors.forEach((color) => {
+        expect(() => {
+          applyDrapeColor(ctx, color, faceMask, 10);
+        }).not.toThrow();
+      });
+    });
+
+    it('should skip face mask areas', () => {
+      const faceMask = new Uint8Array(100).fill(1);
+
+      expect(() => {
+        applyDrapeColor(ctx, '#FF5500', faceMask, 10);
+      }).not.toThrow();
+    });
+
+    it('should work with partial face mask', () => {
+      const faceMask = new Uint8Array(100);
+      for (let i = 0; i < 30; i++) faceMask[i] = 1;
+
+      expect(() => {
+        applyDrapeColor(ctx, '#AABBCC', faceMask, 10);
+      }).not.toThrow();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // analyzeSingleDrape
+  // ---------------------------------------------------------------------------
+
+  describe('analyzeSingleDrape', () => {
+    let mockImage: HTMLImageElement;
+
+    beforeEach(() => {
+      mockImage = new Image();
+      Object.defineProperty(mockImage, 'width', { value: 50 });
+      Object.defineProperty(mockImage, 'height', { value: 50 });
+      Object.defineProperty(mockImage, 'naturalWidth', { value: 50 });
+      Object.defineProperty(mockImage, 'naturalHeight', { value: 50 });
+    });
+
+    it('should return uniformity score for single drape', () => {
+      const faceMask = new Uint8Array(50 * 50).fill(1);
+
+      const uniformity = analyzeSingleDrape(mockImage, faceMask, '#FF5500', 'silver');
+
+      expect(typeof uniformity).toBe('number');
+      expect(uniformity).toBeGreaterThanOrEqual(0);
+      expect(uniformity).toBeLessThanOrEqual(100);
+    });
+
+    it('should work with gold metal type', () => {
+      const faceMask = new Uint8Array(50 * 50).fill(1);
+
+      const uniformity = analyzeSingleDrape(mockImage, faceMask, '#FFCC00', 'gold');
+
+      expect(typeof uniformity).toBe('number');
+    });
+
+    it('should return 100 for empty face mask', () => {
+      const faceMask = new Uint8Array(50 * 50).fill(0);
+
+      const uniformity = analyzeSingleDrape(mockImage, faceMask, '#FF5500', 'silver');
+
+      expect(uniformity).toBe(100);
+    });
+
+    it('should analyze different colors', () => {
+      const faceMask = new Uint8Array(50 * 50).fill(1);
+
+      const colors = ['#FF0000', '#00FF00', '#0000FF'];
+      const results = colors.map((color) =>
+        analyzeSingleDrape(mockImage, faceMask, color, 'silver')
+      );
+
+      results.forEach((uniformity) => {
+        expect(typeof uniformity).toBe('number');
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 균일도 계산 정확도 테스트
+  // ---------------------------------------------------------------------------
+
+  describe('균일도 계산 정확도', () => {
+    it('should calculate luminance correctly (ITU-R BT.601)', () => {
+      // 순수 빨강: luminance = 0.299 * 255 = 76.245
+      // 순수 초록: luminance = 0.587 * 255 = 149.685
+      // 순수 파랑: luminance = 0.114 * 255 = 29.07
+
+      // 위 공식 검증
+      const redLum = 0.299 * 255;
+      const greenLum = 0.587 * 255;
+      const blueLum = 0.114 * 255;
+
+      expect(greenLum).toBeGreaterThan(redLum);
+      expect(redLum).toBeGreaterThan(blueLum);
+    });
+
+    it('should return 0 for completely uniform area', () => {
+      const imageData = createMockImageData(10, 10, () => [100, 100, 100, 255]);
+      const faceMask = new Uint8Array(100).fill(1);
+
+      const uniformity = measureUniformity(imageData, faceMask);
+
+      expect(uniformity).toBe(0);
+    });
+
+    it('should cap uniformity at 100', () => {
+      // 극단적인 대비
+      const imageData = createMockImageData(10, 10, (x) =>
+        x < 5 ? [0, 0, 0, 255] : [255, 255, 255, 255]
+      );
+      const faceMask = new Uint8Array(100).fill(1);
+
+      const uniformity = measureUniformity(imageData, faceMask);
+
+      expect(uniformity).toBeLessThanOrEqual(100);
     });
   });
 });

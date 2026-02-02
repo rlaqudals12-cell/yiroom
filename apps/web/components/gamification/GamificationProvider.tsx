@@ -1,12 +1,16 @@
 'use client';
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, lazy, Suspense } from 'react';
 import {
   useGamificationNotification,
   type GamificationResult,
 } from '@/hooks/useGamificationNotification';
-import { LevelUpModal } from './LevelUpModal';
 import type { BadgeAwardResult, LevelUpResult } from '@/types/gamification';
+
+// LevelUpModal 동적 import - LCP 최적화 (레벨업 이벤트 시에만 로드)
+const LevelUpModal = lazy(() =>
+  import('./LevelUpModal').then((mod) => ({ default: mod.LevelUpModal }))
+);
 
 /**
  * 게이미피케이션 Context 타입
@@ -43,13 +47,15 @@ export function GamificationProvider({ children }: { children: ReactNode }) {
     >
       {children}
 
-      {/* 레벨업 모달 (전역) */}
+      {/* 레벨업 모달 (전역) - Suspense로 동적 로딩 */}
       {levelUpResult && (
-        <LevelUpModal
-          result={levelUpResult}
-          isOpen={isLevelUpModalOpen}
-          onClose={closeLevelUpModal}
-        />
+        <Suspense fallback={null}>
+          <LevelUpModal
+            result={levelUpResult}
+            isOpen={isLevelUpModalOpen}
+            onClose={closeLevelUpModal}
+          />
+        </Suspense>
       )}
     </GamificationContext.Provider>
   );

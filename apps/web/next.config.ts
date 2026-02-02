@@ -107,9 +107,15 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-select',
       '@radix-ui/react-tabs',
       '@radix-ui/react-tooltip',
+      '@radix-ui/react-scroll-area',
+      '@radix-ui/react-accordion',
       'framer-motion',
       'zod',
+      'sonner',
+      '@clerk/nextjs',
     ],
+    // PPR (Partial Prerendering) - LCP 최적화
+    // ppr: true, // Next.js 16에서 stable 시 활성화
   },
 
   // 보안 헤더 설정

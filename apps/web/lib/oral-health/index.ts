@@ -51,8 +51,8 @@ export {
   generateProductRecommendationSummary,
 } from './product-recommender';
 
-// Gemini 브릿지 (캐시 관리)
-export { clearGeminiCache } from './internal/gemini-bridge';
+// Note: clearGeminiCache는 internal 함수이므로 export하지 않음 (P8 모듈 경계 원칙)
+// 캐시 관리가 필요한 경우 별도 public API 설계 필요
 
 // 공개 타입
 export type {

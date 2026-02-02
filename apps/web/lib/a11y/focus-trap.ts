@@ -10,7 +10,7 @@
  * @see docs/specs/SDD-ACCESSIBILITY-GUIDELINES.md - A11Y-A4
  */
 
-import { KEYS, getFocusableElements, focusFirst, focusLast } from './keyboard-utils';
+import { KEYS, getFocusableElements, focusFirst } from './keyboard-utils';
 
 /**
  * 포커스 트랩 옵션
@@ -111,7 +111,6 @@ export function createFocusTrap(
     if (!event.shiftKey && activeElement === lastElement) {
       event.preventDefault();
       firstElement.focus();
-      return;
     }
   }
 

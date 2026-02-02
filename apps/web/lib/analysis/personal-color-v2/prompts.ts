@@ -52,7 +52,7 @@ export function generateAnalysisPrompt(options?: {
   language?: 'ko' | 'en';
 }): string {
   const includeDetailed = options?.includeDetailedAnalysis ?? true;
-  const lang = options?.language ?? 'ko';
+  // Note: language option reserved for future i18n support
 
   const basePrompt = `## 분석 요청
 첨부된 얼굴 이미지의 퍼스널컬러를 분석해주세요.

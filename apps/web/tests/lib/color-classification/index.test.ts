@@ -12,13 +12,11 @@ import {
   rgbToHex,
   hexToRgb,
   labDistanceCIE76,
-  rgbDistance,
   getChroma,
   getHue,
 } from '@/lib/color-classification/color-utils';
 import {
   kMeansClustering,
-  extractPixelsFromImageData,
 } from '@/lib/color-classification/extract-colors';
 import {
   isBackgroundColor,

@@ -18,7 +18,7 @@ import type {
   GLCMResult,
   LBPResult,
 } from './types';
-import { ZONE_GROUP_MAPPING, ZONE_LABELS } from './types';
+import { ZONE_GROUP_MAPPING } from './types';
 import {
   calculateZoneScore,
   calculateGroupAverages,

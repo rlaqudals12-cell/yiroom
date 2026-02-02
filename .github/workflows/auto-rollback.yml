@@ -1,0 +1,247 @@
+name: Auto Rollback
+
+# 자동 롤백 워크플로우
+# - 수동 트리거: workflow_dispatch
+# - 자동 트리거: repository_dispatch (모니터링 시스템에서 호출)
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_id:
+        description: 'Vercel Deployment ID to rollback (optional, defaults to previous)'
+        required: false
+        type: string
+      reason:
+        description: 'Rollback reason'
+        required: true
+        type: string
+        default: 'Manual rollback'
+      notify_slack:
+        description: 'Send Slack notification'
+        required: false
+        type: boolean
+        default: true
+
+  repository_dispatch:
+    types: [rollback-trigger]
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Get deployment info
+        id: deployment
+        run: |
+          # repository_dispatch에서 호출된 경우
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            DEPLOYMENT_ID="${{ github.event.client_payload.deployment_id }}"
+            REASON="${{ github.event.client_payload.reason }}"
+            ERROR_RATE="${{ github.event.client_payload.error_rate }}"
+          else
+            DEPLOYMENT_ID="${{ inputs.deployment_id }}"
+            REASON="${{ inputs.reason }}"
+            ERROR_RATE="N/A"
+          fi
+
+          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          echo "reason=$REASON" >> $GITHUB_OUTPUT
+          echo "error_rate=$ERROR_RATE" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+      - name: Get previous stable deployment
+        id: previous
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          # 최근 프로덕션 배포 목록 가져오기
+          DEPLOYMENTS=$(vercel list --prod --limit 10 --token=$VERCEL_TOKEN 2>/dev/null || echo "")
+
+          if [ -z "$DEPLOYMENTS" ]; then
+            echo "::error::Failed to fetch deployment list"
+            exit 1
+          fi
+
+          # 현재 배포 제외하고 가장 최근 성공 배포 찾기
+          echo "Recent deployments:"
+          echo "$DEPLOYMENTS"
+
+          # 이전 배포 URL 저장 (수동 확인용)
+          echo "previous_available=true" >> $GITHUB_OUTPUT
+
+      - name: Execute rollback
+        id: rollback
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          echo "🔄 Starting rollback process..."
+
+          DEPLOYMENT_ID="${{ steps.deployment.outputs.deployment_id }}"
+
+          if [ -n "$DEPLOYMENT_ID" ]; then
+            # 특정 배포로 롤백
+            echo "Rolling back to specific deployment: $DEPLOYMENT_ID"
+            vercel rollback "$DEPLOYMENT_ID" --token=$VERCEL_TOKEN --yes
+          else
+            # 이전 배포로 자동 롤백
+            echo "Rolling back to previous deployment..."
+            vercel rollback --token=$VERCEL_TOKEN --yes
+          fi
+
+          ROLLBACK_STATUS=$?
+
+          if [ $ROLLBACK_STATUS -eq 0 ]; then
+            echo "✅ Rollback completed successfully"
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Rollback failed with status $ROLLBACK_STATUS"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Verify rollback
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          echo "🔍 Verifying rollback..."
+
+          # 프로덕션 URL로 헬스체크
+          sleep 10  # 배포 전파 대기
+
+          # 헬스 체크 (3번 재시도)
+          for i in 1 2 3; do
+            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://yiroom.app/api/health" || echo "000")
+
+            if [ "$HEALTH_STATUS" = "200" ]; then
+              echo "✅ Health check passed (attempt $i)"
+              break
+            else
+              echo "⚠️ Health check failed (attempt $i): HTTP $HEALTH_STATUS"
+              if [ $i -lt 3 ]; then
+                sleep 5
+              fi
+            fi
+          done
+
+          if [ "$HEALTH_STATUS" != "200" ]; then
+            echo "::warning::Health check failed after rollback"
+          fi
+
+      - name: Generate rollback report
+        run: |
+          echo "## 🔄 Rollback Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ steps.rollback.outputs.status == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Timestamp** | ${{ steps.deployment.outputs.timestamp }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Reason** | ${{ steps.deployment.outputs.reason }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Error Rate** | ${{ steps.deployment.outputs.error_rate }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Deployment ID** | ${{ steps.deployment.outputs.deployment_id || 'Auto (previous)' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered By** | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Trigger Type** | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Investigate the root cause of the issue" >> $GITHUB_STEP_SUMMARY
+          echo "2. Create a fix and test thoroughly" >> $GITHUB_STEP_SUMMARY
+          echo "3. Deploy the fix with monitoring enabled" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify Slack (if enabled)
+        if: ${{ (github.event.inputs.notify_slack == 'true' || github.event_name == 'repository_dispatch') && secrets.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          STATUS_EMOJI="${{ steps.rollback.outputs.status == 'success' && '✅' || '❌' }}"
+          STATUS_TEXT="${{ steps.rollback.outputs.status == 'success' && 'Success' || 'Failed' }}"
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "'"$STATUS_EMOJI"' Deployment Rollback '"$STATUS_TEXT"'"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Reason:*\n${{ steps.deployment.outputs.reason }}"},
+                    {"type": "mrkdwn", "text": "*Error Rate:*\n${{ steps.deployment.outputs.error_rate }}"},
+                    {"type": "mrkdwn", "text": "*Triggered By:*\n${{ github.actor }}"},
+                    {"type": "mrkdwn", "text": "*Timestamp:*\n${{ steps.deployment.outputs.timestamp }}"}
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {"type": "plain_text", "text": "View Workflow"},
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }' \
+            "$SLACK_WEBHOOK_URL" || echo "Slack notification failed (non-critical)"
+
+  # 롤백 후 추가 검증 (선택적)
+  post-rollback-validation:
+    name: Post-Rollback Validation
+    needs: rollback
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Run smoke tests
+        run: |
+          echo "🧪 Running post-rollback smoke tests..."
+
+          # 주요 엔드포인트 테스트
+          ENDPOINTS=(
+            "https://yiroom.app/home"
+            "https://yiroom.app/api/health"
+          )
+
+          ALL_PASSED=true
+
+          for endpoint in "${ENDPOINTS[@]}"; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$endpoint")
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "307" ]; then
+              echo "✅ $endpoint - HTTP $STATUS"
+            else
+              echo "❌ $endpoint - HTTP $STATUS"
+              ALL_PASSED=false
+            fi
+          done
+
+          if [ "$ALL_PASSED" = false ]; then
+            echo "::warning::Some smoke tests failed after rollback"
+          fi
+
+      - name: Check error rates (placeholder)
+        run: |
+          # 향후 Sentry/모니터링 API 연동 시 에러율 확인
+          echo "📊 Error rate monitoring - placeholder for Sentry/monitoring integration"
+          echo "TODO: Integrate with Sentry API to verify error rates decreased"

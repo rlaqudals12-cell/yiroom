@@ -1,0 +1,2192 @@
+openapi: 3.0.3
+info:
+  title: 이룸 (Yiroom) API
+  description: |
+    온전한 나를 위한 통합 웰니스 AI 플랫폼 API
+
+    ## 개요
+    이룸은 AI 기반 뷰티/헬스 분석 및 개인화 추천 서비스를 제공합니다.
+    - 퍼스널컬러 분석 (12톤 시스템)
+    - 피부 분석 (7존 분석)
+    - 체형 분석 (MediaPipe 33 랜드마크)
+    - 헤어 분석 (얼굴형 기반)
+    - 구강건강 분석 (VITA 셰이드)
+    - AI 웰니스 코치
+
+    ## 인증
+    모든 API는 Clerk 인증이 필요합니다. Authorization 헤더에 Bearer 토큰을 포함하세요.
+    ```
+    Authorization: Bearer <clerk_jwt_token>
+    ```
+
+    ## Rate Limiting
+    - 분석 API: 50 requests / 24h / user
+    - 일반 API: 100 requests / 1min / user
+    - Rate Limit 초과 시 429 응답과 함께 `Retry-After` 헤더 반환
+
+    ## Mock Fallback
+    모든 AI 분석 API는 3초 타임아웃 + 2회 재시도 후 Mock 데이터로 폴백합니다.
+    응답의 `usedFallback` 필드로 확인 가능합니다.
+
+    ## 에러 응답 형식
+    ```json
+    {
+      "error": "사용자 친화적 에러 메시지",
+      "code": "ERROR_CODE",
+      "details": "상세 정보 (개발 환경에서만)",
+      "retryAfter": 3600
+    }
+    ```
+
+    ## 에러 코드
+    | 코드 | HTTP | 설명 |
+    |------|------|------|
+    | UNAUTHORIZED | 401 | 인증 필요 |
+    | FORBIDDEN | 403 | 권한 없음 |
+    | VALIDATION_ERROR | 400 | 입력값 검증 실패 |
+    | NOT_FOUND | 404 | 리소스 없음 |
+    | RATE_LIMIT_EXCEEDED | 429 | 요청 제한 초과 |
+    | IMAGE_QUALITY_ERROR | 422 | 이미지 품질 부적합 |
+    | AI_SERVICE_ERROR | 500 | AI 서비스 오류 |
+    | DB_ERROR | 500 | 데이터베이스 오류 |
+    | INTERNAL_ERROR | 500 | 서버 오류 |
+  version: 2.1.0
+  contact:
+    name: Yiroom Team
+    url: https://yiroom.app
+    email: dev@yiroom.app
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://yiroom.app/api
+    description: Production
+  - url: http://localhost:3000/api
+    description: Development
+
+tags:
+  - name: Analysis
+    description: AI 분석 API (퍼스널컬러, 피부, 체형, 헤어)
+  - name: Nutrition
+    description: 영양 관리 API
+  - name: Workout
+    description: 운동 관리 API
+  - name: Coach
+    description: AI 웰니스 코치 API
+  - name: Products
+    description: 제품 추천 및 매칭 API
+  - name: User
+    description: 사용자 관리 API
+
+paths:
+  # ============================================================================
+  # Analysis APIs
+  # ============================================================================
+  /analyze/personal-color-v2:
+    post:
+      tags: [Analysis]
+      summary: 퍼스널컬러 분석 (PC-2)
+      description: |
+        Lab 색공간 기반 12톤 퍼스널컬러 분석을 수행합니다.
+
+        ## 분석 방식
+        - 얼굴 이미지 또는 피부색 RGB 값을 입력으로 사용
+        - Gemini Vision API로 피부색 추출 후 Lab 색공간 변환
+        - 12톤 시스템으로 분류 (4계절 x 3서브톤)
+
+        ## 12톤 시스템
+        - Spring: light-spring, true-spring, bright-spring
+        - Summer: light-summer, true-summer, muted-summer
+        - Autumn: muted-autumn, true-autumn, deep-autumn
+        - Winter: bright-winter, true-winter, deep-winter
+
+        ## 응답 내용
+        - 톤 분류 및 신뢰도
+        - 추천/피해야 할 컬러 팔레트
+        - 메이크업 컬러 추천 (립, 아이섀도, 블러셔)
+        - 스타일링 추천 (의류, 액세서리, 금속)
+        - 게이미피케이션 결과 (XP, 배지)
+      operationId: analyzePersonalColorV2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                imageBase64:
+                  type: string
+                  description: Base64 인코딩된 얼굴 이미지
+                  example: "data:image/jpeg;base64,/9j/4AAQ..."
+                skinRgb:
+                  type: object
+                  description: 피부색 RGB 값 (이미지 대신 사용 가능)
+                  properties:
+                    r:
+                      type: integer
+                      minimum: 0
+                      maximum: 255
+                    g:
+                      type: integer
+                      minimum: 0
+                      maximum: 255
+                    b:
+                      type: integer
+                      minimum: 0
+                      maximum: 255
+                useMock:
+                  type: boolean
+                  default: false
+                  description: Mock 결과 사용 여부 (개발용)
+                skipQualityCheck:
+                  type: boolean
+                  default: false
+                  description: 이미지 품질 검사 생략
+      responses:
+        '200':
+          description: 분석 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalColorResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '422':
+          $ref: '#/components/responses/ImageQualityError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      security:
+        - ClerkAuth: []
+    get:
+      tags: [Analysis]
+      summary: 최근 퍼스널컬러 분석 결과 조회
+      description: 사용자의 가장 최근 퍼스널컬러 분석 결과를 조회합니다.
+      operationId: getLatestPersonalColorAnalysis
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/PersonalColorAssessment'
+                  hasResult:
+                    type: boolean
+                    description: 분석 결과 존재 여부
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  /analyze/skin-v2:
+    post:
+      tags: [Analysis]
+      summary: 피부 분석 (S-2)
+      description: |
+        7존 기반 고도화 피부 분석. 아시아인 피부 기준 적용.
+
+        ## 분석 존
+        - T존: 이마, 코, 턱
+        - U존: 좌/우 볼
+        - 기타: 눈가, 입술
+
+        ## 분석 항목
+        - 피부 타입 (건성, 지성, 복합성, 중성, 민감성)
+        - 바이탈리티 점수 (0-100)
+        - 존별 세부 점수 (수분, 유분, 민감도, 주름, 모공)
+        - T존/U존 차이 분석
+        - 주요 피부 고민 식별
+        - 스킨케어 루틴 추천
+
+        ## 응답 내용
+        - 피부 타입 및 바이탈리티 등급
+        - 7존별 세부 분석 결과
+        - 추천 성분 및 피해야 할 성분
+        - 게이미피케이션 결과 (XP, 배지)
+      operationId: analyzeSkinV2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [imageBase64]
+              properties:
+                imageBase64:
+                  type: string
+                  description: Base64 인코딩된 얼굴 이미지
+                useMock:
+                  type: boolean
+                  default: false
+                  description: Mock 결과 사용 여부 (개발용)
+                skipQualityCheck:
+                  type: boolean
+                  default: false
+                  description: 이미지 품질 검사 생략
+      responses:
+        '200':
+          description: 분석 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkinAnalysisResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '422':
+          $ref: '#/components/responses/ImageQualityError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      security:
+        - ClerkAuth: []
+    get:
+      tags: [Analysis]
+      summary: 최근 피부 분석 결과 조회
+      operationId: getLatestSkinAnalysis
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/SkinAssessment'
+                  hasResult:
+                    type: boolean
+                  isV2:
+                    type: boolean
+                    description: v2 분석 결과 여부
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  /analyze/body-v2:
+    post:
+      tags: [Analysis]
+      summary: 체형 분석 (C-2)
+      description: |
+        MediaPipe Pose 33 랜드마크 기반 체형 분석을 수행합니다.
+
+        ## 분석 방식
+        - 전신 이미지 또는 클라이언트에서 추출한 랜드마크 입력
+        - Gemini Vision API로 체형 비율 추정
+        - 5가지 체형으로 분류
+
+        ## 체형 분류
+        - rectangle (직선형)
+        - inverted-triangle (역삼각형)
+        - triangle (삼각형)
+        - oval (타원형)
+        - hourglass (모래시계)
+
+        ## 분석 항목
+        - 어깨/허리/엉덩이 비율
+        - 상체/하체 비율
+        - 체형 분류 및 신뢰도
+        - 맞춤 스타일링 추천
+
+        ## 응답 내용
+        - 체형 분류 및 설명
+        - 비율 측정값
+        - 상의/하의/아우터/실루엣 추천
+        - 피해야 할 스타일
+        - 게이미피케이션 결과 (XP, 배지)
+      operationId: analyzeBodyV2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                imageBase64:
+                  type: string
+                  description: Base64 인코딩된 전신 이미지
+                landmarks:
+                  type: array
+                  description: MediaPipe 33 랜드마크 (클라이언트에서 추출 시)
+                  items:
+                    type: object
+                    properties:
+                      x:
+                        type: number
+                      y:
+                        type: number
+                      z:
+                        type: number
+                      visibility:
+                        type: number
+                useMock:
+                  type: boolean
+                  default: false
+                  description: Mock 결과 사용 여부 (개발용)
+                skipQualityCheck:
+                  type: boolean
+                  default: false
+                  description: 이미지 품질 검사 생략
+      responses:
+        '200':
+          description: 분석 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BodyAnalysisResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '422':
+          $ref: '#/components/responses/ImageQualityError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      security:
+        - ClerkAuth: []
+    get:
+      tags: [Analysis]
+      summary: 최근 체형 분석 결과 조회
+      operationId: getLatestBodyAnalysis
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/BodyAssessment'
+                  hasResult:
+                    type: boolean
+                  isV2:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  /analyze/hair-v2:
+    post:
+      tags: [Analysis]
+      summary: 헤어 분석 (H-1)
+      description: |
+        얼굴형 분석 기반 헤어스타일 추천을 제공합니다.
+
+        ## 분석 방식
+        - 얼굴 이미지 또는 Face Mesh 랜드마크 입력
+        - Pose 33 랜드마크로 대체 분석 가능
+        - Gemini Vision API로 얼굴형 분석
+
+        ## 얼굴형 분류 (7가지)
+        - oval (타원형)
+        - round (둥근형)
+        - square (사각형)
+        - oblong (긴형)
+        - heart (하트형)
+        - diamond (다이아몬드형)
+        - triangle (삼각형)
+
+        ## 응답 내용
+        - 얼굴형 분류 및 신뢰도
+        - 얼굴 비율 측정값
+        - 추천 헤어스타일 (적합도 점수 포함)
+        - 퍼스널컬러 연계 헤어컬러 추천
+        - 헤어 케어 팁
+        - 게이미피케이션 결과 (XP)
+      operationId: analyzeHairV2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                imageBase64:
+                  type: string
+                  description: Base64 인코딩된 얼굴 이미지
+                faceLandmarks:
+                  type: array
+                  description: MediaPipe Face Mesh 랜드마크 (468+)
+                  items:
+                    type: object
+                poseLandmarks:
+                  type: array
+                  description: MediaPipe Pose 33 랜드마크 (대체 분석용)
+                  items:
+                    type: object
+                currentHair:
+                  type: object
+                  description: 현재 헤어 정보
+                  properties:
+                    length:
+                      type: string
+                      enum: [short, medium, long]
+                    texture:
+                      type: string
+                      enum: [straight, wavy, curly]
+                    thickness:
+                      type: string
+                    density:
+                      type: string
+                    scalpCondition:
+                      type: string
+                personalColorSeason:
+                  type: string
+                  enum: [spring, summer, autumn, winter]
+                  description: 퍼스널컬러 시즌 (컬러 추천 연계)
+                useMock:
+                  type: boolean
+                  default: false
+                skipQualityCheck:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: 분석 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HairAnalysisResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '422':
+          $ref: '#/components/responses/ImageQualityError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      security:
+        - ClerkAuth: []
+    get:
+      tags: [Analysis]
+      summary: 최근 헤어 분석 결과 조회
+      operationId: getLatestHairAnalysis
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/HairAssessment'
+                  hasResult:
+                    type: boolean
+                  isV2:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  /analyze/oral-health:
+    post:
+      tags: [Analysis]
+      summary: 구강건강 분석 (OH-1)
+      description: |
+        VITA 셰이드 기반 치아 색상 분석 및 잇몸 건강 분석을 수행합니다.
+
+        ## 분석 유형
+        - tooth_color: 치아 색상만 분석
+        - gum_health: 잇몸 건강만 분석
+        - full: 전체 분석
+
+        ## VITA Classical 셰이드 (16 + 3 Bleached)
+        - A 시리즈: A1, A2, A3, A3.5, A4 (갈색-황색계)
+        - B 시리즈: B1, B2, B3, B4 (황색계)
+        - C 시리즈: C1, C2, C3, C4 (회색계)
+        - D 시리즈: D2, D3, D4 (분홍-회색계)
+        - Bleached: 0M1, 0M2, 0M3 (미백 셰이드)
+
+        ## 응답 내용
+        - 치아 색상 (VITA 셰이드 매칭, 밝기/황색도 해석)
+        - 잇몸 건강 (염증 점수, 영향 부위, 치과 방문 필요 여부)
+        - 퍼스널컬러 연계 미백 목표 (선택적)
+        - 종합 점수 및 추천사항
+      operationId: analyzeOralHealth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [imageBase64, analysisType]
+              properties:
+                imageBase64:
+                  type: string
+                  description: Base64 인코딩된 구강 이미지
+                analysisType:
+                  type: string
+                  enum: [tooth_color, gum_health, full]
+                  description: 분석 유형
+                personalColorSeason:
+                  type: string
+                  enum: [spring, summer, autumn, winter]
+                  description: 퍼스널컬러 시즌 (미백 목표 계산용)
+                oralProfile:
+                  type: object
+                  description: 구강 프로필 정보
+                  properties:
+                    sensitivity:
+                      type: string
+                      enum: [none, mild, severe]
+                    gumHealth:
+                      type: string
+                      enum: [healthy, gingivitis, periodontitis]
+                    cavityRisk:
+                      type: string
+                      enum: [low, medium, high]
+                    calculus:
+                      type: string
+                      enum: [none, mild, heavy]
+                    halitosis:
+                      type: boolean
+                    dentalWork:
+                      type: array
+                      items:
+                        type: string
+                        enum: [braces, implant, bridge, crown, veneer]
+      responses:
+        '200':
+          description: 분석 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OralHealthResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      security:
+        - ClerkAuth: []
+
+  # ============================================================================
+  # Nutrition APIs
+  # ============================================================================
+  /nutrition/meals:
+    post:
+      tags: [Nutrition]
+      summary: 식사 기록 저장 (N-1)
+      description: |
+        식사 분석 결과를 저장합니다.
+
+        ## 기록 유형
+        - photo: 사진 분석
+        - search: 음식 검색
+        - barcode: 바코드 스캔
+        - manual: 수동 입력
+
+        ## 게이미피케이션 연동
+        - 식단 기록 시 XP 획득
+        - 연속 기록 스트릭 배지
+        - 챌린지 진행 업데이트
+      operationId: addMeal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [foods]
+              properties:
+                foods:
+                  type: array
+                  items:
+                    type: object
+                    required: [name, calories, protein, carbs, fat]
+                    properties:
+                      name:
+                        type: string
+                        description: 음식명
+                      portion:
+                        type: string
+                        default: 1인분
+                      calories:
+                        type: number
+                      protein:
+                        type: number
+                      carbs:
+                        type: number
+                      fat:
+                        type: number
+                      trafficLight:
+                        type: string
+                        enum: [green, yellow, red]
+                      confidence:
+                        type: number
+                        description: AI 인식 신뢰도 (0-1)
+                mealType:
+                  type: string
+                  enum: [breakfast, lunch, dinner, snack]
+                  default: lunch
+                mealDate:
+                  type: string
+                  format: date
+                  description: 식사 날짜 (미지정 시 오늘)
+                recordType:
+                  type: string
+                  enum: [photo, search, barcode, manual]
+                  default: photo
+      responses:
+        '200':
+          description: 저장 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  record:
+                    $ref: '#/components/schemas/MealRecord'
+                  gamification:
+                    type: object
+                    properties:
+                      badgeResults:
+                        type: array
+                        items:
+                          type: object
+                      xpResult:
+                        type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+      security:
+        - ClerkAuth: []
+    get:
+      tags: [Nutrition]
+      summary: 식사 기록 조회
+      description: |
+        특정 날짜의 식단 기록을 조회합니다.
+        식사 타입별로 그룹화되어 반환됩니다.
+      operationId: getMeals
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 조회 날짜 (YYYY-MM-DD). 미지정 시 오늘 날짜
+          example: '2026-02-02'
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  summary:
+                    type: object
+                    properties:
+                      totalCalories:
+                        type: integer
+                      totalProtein:
+                        type: number
+                      totalCarbs:
+                        type: number
+                      totalFat:
+                        type: number
+                      mealCount:
+                        type: integer
+                  meals:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [breakfast, lunch, dinner, snack]
+                        label:
+                          type: string
+                        icon:
+                          type: string
+                        order:
+                          type: integer
+                        records:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/MealRecord'
+                        subtotal:
+                          type: object
+                          properties:
+                            calories:
+                              type: integer
+                            protein:
+                              type: number
+                            carbs:
+                              type: number
+                            fat:
+                              type: number
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+      security:
+        - ClerkAuth: []
+
+  /nutrition/summary/daily:
+    get:
+      tags: [Nutrition]
+      summary: 일일 영양 섭취 요약
+      operationId: getDailyNutritionSummary
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NutritionSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  /nutrition/foods/search:
+    get:
+      tags: [Nutrition]
+      summary: 음식 검색
+      operationId: searchFoods
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 검색어
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: 검색 성공
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  /nutrition/foods/analyze:
+    post:
+      tags: [Nutrition]
+      summary: 음식 이미지 분석
+      description: AI를 활용한 음식 사진 분석 및 영양소 추정
+      operationId: analyzeFoodImage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [imageBase64]
+              properties:
+                imageBase64:
+                  type: string
+      responses:
+        '200':
+          description: 분석 성공
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  # ============================================================================
+  # Workout APIs
+  # ============================================================================
+  /workout/recommend:
+    post:
+      tags: [Workout]
+      summary: 운동 추천 (W-1)
+      description: |
+        사용자 프로필 기반 맞춤 운동을 추천합니다.
+
+        ## 운동 타입 (5가지)
+        - toner: 근력 운동 (탄탄한 몸매)
+        - builder: 근육 증가
+        - burner: 지방 연소
+        - mover: 유산소/기능성 운동
+        - flexer: 유연성/스트레칭
+
+        ## 분석 연계
+        - 체형 분석 (C-1/C-2) 결과 활용
+        - MET 기반 칼로리 계산
+
+        ## 응답 내용
+        - 운동별 세트/반복/휴식 시간
+        - 워밍업/쿨다운 운동
+        - 예상 소모 칼로리
+        - 집중 부위
+      operationId: recommendWorkout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workoutType, goals]
+              properties:
+                workoutType:
+                  type: string
+                  enum: [toner, builder, burner, mover, flexer]
+                  description: 운동 타입
+                bodyType:
+                  type: string
+                  description: 체형 (C-1/C-2 분석 결과)
+                goals:
+                  type: array
+                  items:
+                    type: string
+                  description: 운동 목표
+                concerns:
+                  type: array
+                  items:
+                    type: string
+                  description: 집중 부위
+                injuries:
+                  type: array
+                  items:
+                    type: string
+                  description: 부상/통증 부위
+                equipment:
+                  type: array
+                  items:
+                    type: string
+                  description: 사용 가능 장비
+                location:
+                  type: string
+                  enum: [home, gym, outdoor]
+                  default: home
+                  description: 운동 장소
+                userLevel:
+                  type: string
+                  enum: [beginner, intermediate, advanced]
+                  default: beginner
+                  description: 운동 레벨
+                sessionMinutes:
+                  type: integer
+                  default: 30
+                  description: 목표 운동 시간 (분)
+                userWeight:
+                  type: number
+                  description: 체중 (칼로리 계산용, kg)
+                useMock:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: 추천 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutRecommendation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+      security:
+        - ClerkAuth: []
+
+  /workout/stretching:
+    post:
+      tags: [Workout]
+      summary: 스트레칭 루틴 생성
+      description: 자세 분석 결과 기반 맞춤 스트레칭 루틴
+      operationId: generateStretchingRoutine
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                postureIssues:
+                  type: array
+                  items:
+                    type: string
+                duration:
+                  type: integer
+                  default: 15
+      responses:
+        '200':
+          description: 생성 성공
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  # ============================================================================
+  # Coach API
+  # ============================================================================
+  /coach/stream:
+    post:
+      tags: [Coach]
+      summary: AI 코치 스트리밍 채팅
+      description: |
+        AI 웰니스 코치와 실시간 대화.
+        Server-Sent Events (SSE) 형식으로 응답.
+      operationId: streamCoachChat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [messages]
+              properties:
+                messages:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChatMessage'
+                context:
+                  type: object
+                  description: 사용자 컨텍스트 (분석 결과, 선호도 등)
+      responses:
+        '200':
+          description: 스트리밍 응답
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  # ============================================================================
+  # Products & Matching APIs
+  # ============================================================================
+  /smart-matching/size-recommend:
+    post:
+      tags: [Products]
+      summary: 사이즈 추천
+      description: 체형 분석 기반 의류 사이즈 추천
+      operationId: recommendSize
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                brand:
+                  type: string
+                category:
+                  type: string
+                  enum: [top, bottom, dress, outer]
+                measurements:
+                  $ref: '#/components/schemas/BodyMeasurements'
+      responses:
+        '200':
+          description: 추천 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SizeRecommendation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  /affiliate/products:
+    get:
+      tags: [Products]
+      summary: 추천 제품 조회
+      description: 분석 결과 기반 맞춤 제품 추천
+      operationId: getRecommendedProducts
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [skincare, makeup, haircare, fashion, supplement]
+        - name: analysisType
+          in: query
+          schema:
+            type: string
+            enum: [personal-color, skin, body, hair]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  # ============================================================================
+  # User APIs
+  # ============================================================================
+  /user/account:
+    get:
+      tags: [User]
+      summary: 사용자 정보 조회
+      operationId: getUserAccount
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAccount'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+    delete:
+      tags: [User]
+      summary: 계정 삭제
+      description: 사용자 계정 및 모든 데이터 삭제 (30일 후 영구 삭제)
+      operationId: deleteUserAccount
+      responses:
+        '200':
+          description: 삭제 요청 성공
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  /user/export:
+    get:
+      tags: [User]
+      summary: 데이터 내보내기
+      description: 사용자의 모든 데이터를 JSON 형식으로 내보내기
+      operationId: exportUserData
+      responses:
+        '200':
+          description: 내보내기 성공
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+  /user/level:
+    get:
+      tags: [User]
+      summary: 사용자 레벨 정보
+      description: 경험치, 레벨, 뱃지 정보
+      operationId: getUserLevel
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLevel'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - ClerkAuth: []
+
+components:
+  securitySchemes:
+    ClerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk JWT Token
+
+  responses:
+    Unauthorized:
+      description: 인증 필요
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: AUTH_ERROR
+              message: User not authenticated
+              userMessage: 로그인이 필요합니다.
+
+    ValidationError:
+      description: 입력 검증 실패
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: VALIDATION_ERROR
+              message: Invalid request body
+              userMessage: 입력 정보를 확인해주세요.
+              details:
+                field: imageBase64
+                issue: Required field is missing
+
+    ImageQualityError:
+      description: 이미지 품질 부적합
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: IMAGE_QUALITY_ERROR
+              message: Image quality check failed
+              userMessage: 이미지 품질이 분석에 적합하지 않습니다. 밝은 곳에서 다시 촬영해주세요.
+              details:
+                sharpnessScore: 25
+                minRequired: 40
+                issues:
+                  - 이미지가 흐릿합니다
+                  - 조명이 부족합니다
+
+    RateLimited:
+      description: 요청 제한 초과
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: RATE_LIMIT_ERROR
+              message: Rate limit exceeded
+              userMessage: 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          required: [code, message, userMessage]
+          properties:
+            code:
+              type: string
+              enum:
+                - AUTH_ERROR
+                - VALIDATION_ERROR
+                - RATE_LIMIT_ERROR
+                - AI_TIMEOUT_ERROR
+                - DB_ERROR
+                - INTERNAL_ERROR
+            message:
+              type: string
+            userMessage:
+              type: string
+            details:
+              type: object
+
+    PersonalColorResult:
+      type: object
+      description: 퍼스널컬러 분석 API 응답
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/PersonalColorAssessment'
+        result:
+          type: object
+          description: 상세 분석 결과
+          properties:
+            id:
+              type: string
+            classification:
+              type: object
+              properties:
+                season:
+                  type: string
+                  enum: [spring, summer, autumn, winter]
+                tone:
+                  type: string
+                  enum:
+                    - light-spring
+                    - true-spring
+                    - bright-spring
+                    - light-summer
+                    - true-summer
+                    - muted-summer
+                    - muted-autumn
+                    - true-autumn
+                    - deep-autumn
+                    - bright-winter
+                    - true-winter
+                    - deep-winter
+                subtype:
+                  type: string
+                  enum: [light, true, bright, muted, deep]
+                undertone:
+                  type: string
+                  enum: [warm, cool, neutral]
+                confidence:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                measuredLab:
+                  type: object
+                  properties:
+                    L:
+                      type: number
+                    a:
+                      type: number
+                    b:
+                      type: number
+            palette:
+              type: object
+              properties:
+                mainColors:
+                  type: array
+                  items:
+                    type: string
+                  description: 추천 메인 컬러 (Hex)
+                  example: ["#FFE4C4", "#F0E68C", "#DEB887"]
+                accentColors:
+                  type: array
+                  items:
+                    type: string
+                avoidColors:
+                  type: array
+                  items:
+                    type: string
+                  description: 피해야 할 컬러
+                lipColors:
+                  type: array
+                  items:
+                    type: string
+                  description: 추천 립 컬러
+                eyeshadowColors:
+                  type: array
+                  items:
+                    type: string
+                blushColors:
+                  type: array
+                  items:
+                    type: string
+            detailedAnalysis:
+              type: object
+              properties:
+                skinToneLab:
+                  type: object
+                  properties:
+                    L:
+                      type: number
+                    a:
+                      type: number
+                    b:
+                      type: number
+                contrastLevel:
+                  type: string
+                  enum: [low, medium, high]
+                saturationLevel:
+                  type: string
+                  enum: [low, medium, high]
+                valueLevel:
+                  type: string
+                  enum: [light, medium, dark]
+            stylingRecommendations:
+              type: object
+              properties:
+                clothing:
+                  type: array
+                  items:
+                    type: string
+                metals:
+                  type: array
+                  items:
+                    type: string
+                    enum: [gold, silver, rose-gold]
+                jewelry:
+                  type: array
+                  items:
+                    type: string
+            analyzedAt:
+              type: string
+              format: date-time
+        usedFallback:
+          type: boolean
+          description: Mock 데이터 사용 여부
+        gamification:
+          $ref: '#/components/schemas/GamificationResult'
+
+    PersonalColorAssessment:
+      type: object
+      description: DB에 저장된 퍼스널컬러 분석 결과
+      properties:
+        id:
+          type: string
+          format: uuid
+        clerk_user_id:
+          type: string
+        season:
+          type: string
+          enum: [Spring, Summer, Autumn, Winter]
+        undertone:
+          type: string
+          enum: [Warm, Cool, Neutral]
+        confidence:
+          type: number
+        season_scores:
+          type: object
+          additionalProperties:
+            type: number
+        image_analysis:
+          type: object
+          description: v2 분석 상세 정보
+          properties:
+            version:
+              type: integer
+              example: 2
+            tone:
+              type: string
+            toneLabel:
+              type: string
+            subtype:
+              type: string
+            skinLab:
+              type: object
+            palette:
+              type: object
+        best_colors:
+          type: array
+          items:
+            type: string
+        worst_colors:
+          type: array
+          items:
+            type: string
+        makeup_recommendations:
+          type: object
+          properties:
+            lipstick:
+              type: array
+              items:
+                type: string
+            eyeshadow:
+              type: array
+              items:
+                type: string
+            blush:
+              type: array
+              items:
+                type: string
+        fashion_recommendations:
+          type: object
+          properties:
+            clothing:
+              type: array
+              items:
+                type: string
+            accessories:
+              type: array
+              items:
+                type: string
+        created_at:
+          type: string
+          format: date-time
+
+    SkinAnalysisResult:
+      type: object
+      description: 피부 분석 API 응답
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/SkinAssessment'
+        result:
+          type: object
+          description: 상세 분석 결과
+          properties:
+            skinType:
+              type: string
+              enum: [dry, oily, combination, normal, sensitive]
+            vitalityScore:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: 피부 활력 점수
+            vitalityGrade:
+              type: string
+              enum: [A, B, C, D, F]
+              description: 피부 활력 등급
+            scoreBreakdown:
+              type: object
+              properties:
+                hydration:
+                  type: integer
+                oilControl:
+                  type: integer
+                sensitivity:
+                  type: integer
+                wrinkles:
+                  type: integer
+                pores:
+                  type: integer
+            zoneAnalysis:
+              type: object
+              properties:
+                zones:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      zone:
+                        type: string
+                        enum: [forehead, nose, chin, leftCheek, rightCheek, eyeArea, lips]
+                      scores:
+                        type: object
+                        properties:
+                          hydration:
+                            type: integer
+                          oiliness:
+                            type: integer
+                          sensitivity:
+                            type: integer
+                          wrinkles:
+                            type: integer
+                          pores:
+                            type: integer
+                groupAverages:
+                  type: object
+                  properties:
+                    tZone:
+                      type: object
+                    uZone:
+                      type: object
+                tUzoneDifference:
+                  type: number
+                  description: T존과 U존의 유분 차이
+            primaryConcerns:
+              type: array
+              items:
+                type: string
+                enum:
+                  - dryness
+                  - oiliness
+                  - sensitivity
+                  - wrinkles
+                  - pores
+                  - acne
+                  - pigmentation
+                  - redness
+            routineRecommendations:
+              type: array
+              items:
+                type: object
+                properties:
+                  step:
+                    type: integer
+                  category:
+                    type: string
+                  reason:
+                    type: string
+                  ingredients:
+                    type: array
+                    items:
+                      type: string
+                  avoidIngredients:
+                    type: array
+                    items:
+                      type: string
+        usedFallback:
+          type: boolean
+        gamification:
+          $ref: '#/components/schemas/GamificationResult'
+
+    SkinAssessment:
+      type: object
+      description: DB에 저장된 피부 분석 결과
+      properties:
+        id:
+          type: string
+          format: uuid
+        clerk_user_id:
+          type: string
+        skin_type:
+          type: string
+        scores:
+          type: object
+          properties:
+            version:
+              type: integer
+            vitalityScore:
+              type: integer
+            vitalityGrade:
+              type: string
+            scoreBreakdown:
+              type: object
+        zone_details:
+          type: object
+          properties:
+            zones:
+              type: array
+              items:
+                type: object
+            groupAverages:
+              type: object
+            tUzoneDifference:
+              type: number
+        concerns:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            type: object
+        created_at:
+          type: string
+          format: date-time
+
+    BodyAnalysisResult:
+      type: object
+      description: 체형 분석 API 응답
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/BodyAssessment'
+        result:
+          type: object
+          properties:
+            bodyType:
+              type: string
+              enum: [rectangle, inverted-triangle, triangle, oval, hourglass]
+              description: 체형 분류
+            bodyTypeKorean:
+              type: string
+              description: 체형 한글명
+              example: 직선형
+            confidence:
+              type: number
+            proportions:
+              type: object
+              properties:
+                shoulderWidth:
+                  type: number
+                waistWidth:
+                  type: number
+                hipWidth:
+                  type: number
+                shoulderToWaistRatio:
+                  type: number
+                waistToHipRatio:
+                  type: number
+                upperToLowerRatio:
+                  type: number
+            styleRecommendations:
+              type: object
+              properties:
+                tops:
+                  type: array
+                  items:
+                    type: string
+                  description: 추천 상의 스타일
+                bottoms:
+                  type: array
+                  items:
+                    type: string
+                  description: 추천 하의 스타일
+                dresses:
+                  type: array
+                  items:
+                    type: string
+                outers:
+                  type: array
+                  items:
+                    type: string
+                silhouettes:
+                  type: array
+                  items:
+                    type: string
+                  description: 추천 실루엣
+                avoid:
+                  type: array
+                  items:
+                    type: string
+                  description: 피해야 할 스타일
+            strengthAreas:
+              type: array
+              items:
+                type: string
+              description: 강조할 부위
+            balanceAreas:
+              type: array
+              items:
+                type: string
+              description: 균형을 맞출 부위
+        usedFallback:
+          type: boolean
+        gamification:
+          $ref: '#/components/schemas/GamificationResult'
+
+    BodyAssessment:
+      type: object
+      description: DB에 저장된 체형 분석 결과
+      properties:
+        id:
+          type: string
+          format: uuid
+        clerk_user_id:
+          type: string
+        body_type:
+          type: string
+        proportions:
+          type: object
+        measurements:
+          type: object
+        style_recommendations:
+          type: object
+        confidence:
+          type: number
+        version:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    HairAnalysisResult:
+      type: object
+      description: 헤어 분석 API 응답
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/HairAssessment'
+        result:
+          type: object
+          properties:
+            faceShape:
+              type: string
+              enum: [oval, round, square, oblong, heart, diamond, triangle]
+              description: 얼굴형 분류
+            faceShapeKorean:
+              type: string
+              description: 얼굴형 한글명
+              example: 타원형
+            confidence:
+              type: number
+            faceProportions:
+              type: object
+              properties:
+                faceLength:
+                  type: number
+                faceWidth:
+                  type: number
+                foreheadWidth:
+                  type: number
+                cheekboneWidth:
+                  type: number
+                jawWidth:
+                  type: number
+                lengthToWidthRatio:
+                  type: number
+            recommendedStyles:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: 스타일명
+                  nameKorean:
+                    type: string
+                  description:
+                    type: string
+                  suitability:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+                    description: 적합도 점수
+                  lengths:
+                    type: array
+                    items:
+                      type: string
+                      enum: [short, medium, long]
+                  bangs:
+                    type: string
+                    description: 추천 앞머리 스타일
+                  volumeAreas:
+                    type: array
+                    items:
+                      type: string
+                    description: 볼륨 강조 부위
+            avoidStyles:
+              type: array
+              items:
+                type: string
+              description: 피해야 할 스타일
+            hairColorRecommendations:
+              type: array
+              items:
+                type: object
+                properties:
+                  color:
+                    type: string
+                  hexCode:
+                    type: string
+                  suitability:
+                    type: integer
+              description: 퍼스널컬러 연계 헤어컬러 추천
+            careTips:
+              type: array
+              items:
+                type: string
+              description: 헤어 케어 팁
+        usedFallback:
+          type: boolean
+        gamification:
+          $ref: '#/components/schemas/GamificationResult'
+
+    HairAssessment:
+      type: object
+      description: DB에 저장된 헤어 분석 결과
+      properties:
+        id:
+          type: string
+          format: uuid
+        clerk_user_id:
+          type: string
+        face_shape:
+          type: string
+        face_proportions:
+          type: object
+        recommended_styles:
+          type: array
+          items:
+            type: object
+        hair_colors:
+          type: array
+          items:
+            type: object
+        confidence:
+          type: number
+        version:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    OralHealthResult:
+      type: object
+      description: 구강건강 분석 API 응답
+      properties:
+        success:
+          type: boolean
+        result:
+          type: object
+          properties:
+            analysisType:
+              type: string
+              enum: [tooth_color, gum_health, full]
+            toothColorAnalysis:
+              type: object
+              description: 치아 색상 분석 결과
+              properties:
+                vitaShade:
+                  type: string
+                  description: VITA Classical 셰이드 코드
+                  example: A2
+                vitaShadeGroup:
+                  type: string
+                  enum: [A, B, C, D, Bleached]
+                  description: 셰이드 그룹 (A=갈색-황색, B=황색, C=회색, D=분홍-회색)
+                brightness:
+                  type: number
+                  description: 밝기 값 (0-100)
+                yellowness:
+                  type: number
+                  description: 황색도 (-50 ~ 50)
+                interpretation:
+                  type: object
+                  properties:
+                    brightnessLevel:
+                      type: string
+                      enum: [very-bright, bright, medium, dark]
+                    yellowLevel:
+                      type: string
+                      enum: [low, medium, high]
+                    description:
+                      type: string
+            gumHealthAnalysis:
+              type: object
+              description: 잇몸 건강 분석 결과
+              properties:
+                inflammationScore:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                  description: 염증 점수 (0=건강, 100=심각)
+                affectedAreas:
+                  type: array
+                  items:
+                    type: string
+                  description: 영향받은 부위
+                healthStatus:
+                  type: string
+                  enum: [healthy, mild, moderate, severe]
+                dentistVisitRecommended:
+                  type: boolean
+                description:
+                  type: string
+            whiteningGoal:
+              type: object
+              description: 퍼스널컬러 연계 미백 목표
+              properties:
+                targetShade:
+                  type: string
+                  description: 목표 VITA 셰이드
+                currentDifference:
+                  type: number
+                  description: 현재 셰이드와의 차이
+                achievability:
+                  type: string
+                  enum: [easy, moderate, challenging]
+                recommendations:
+                  type: array
+                  items:
+                    type: string
+            overallScore:
+              type: integer
+              minimum: 0
+              maximum: 100
+            recommendations:
+              type: array
+              items:
+                type: string
+        usedFallback:
+          type: boolean
+
+    MealRecord:
+      type: object
+      description: 식사 기록
+      properties:
+        id:
+          type: string
+          format: uuid
+        clerk_user_id:
+          type: string
+        meal_type:
+          type: string
+          enum: [breakfast, lunch, dinner, snack]
+        meal_date:
+          type: string
+          format: date
+        record_type:
+          type: string
+          enum: [photo, search, barcode, manual]
+        foods:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              portion:
+                type: string
+              calories:
+                type: number
+              protein:
+                type: number
+              carbs:
+                type: number
+              fat:
+                type: number
+              trafficLight:
+                type: string
+                enum: [green, yellow, red]
+              confidence:
+                type: number
+        total_calories:
+          type: number
+        total_protein:
+          type: number
+        total_carbs:
+          type: number
+        total_fat:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+
+    GamificationResult:
+      type: object
+      description: 게이미피케이션 결과
+      properties:
+        badgeResults:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              imageUrl:
+                type: string
+              isNew:
+                type: boolean
+                description: 새로 획득한 배지 여부
+        xpAwarded:
+          type: integer
+          description: 획득한 XP
+        levelUp:
+          type: boolean
+          description: 레벨업 여부
+        newLevel:
+          type: integer
+          description: 새 레벨 (레벨업 시)
+        streakUpdated:
+          type: boolean
+        currentStreak:
+          type: integer
+
+    MealInput:
+      type: object
+      required: [mealType, foods]
+      properties:
+        mealType:
+          type: string
+          enum: [breakfast, lunch, dinner, snack]
+        foods:
+          type: array
+          items:
+            type: object
+            properties:
+              foodId:
+                type: string
+              name:
+                type: string
+              amount:
+                type: number
+              unit:
+                type: string
+        date:
+          type: string
+          format: date
+        note:
+          type: string
+
+    NutritionSummary:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        calories:
+          type: object
+          properties:
+            consumed:
+              type: number
+            target:
+              type: number
+            remaining:
+              type: number
+        macros:
+          type: object
+          properties:
+            protein:
+              type: number
+            carbs:
+              type: number
+            fat:
+              type: number
+        meals:
+          type: array
+          items:
+            type: object
+
+    WorkoutRecommendation:
+      type: object
+      properties:
+        exercises:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              sets:
+                type: integer
+              reps:
+                type: integer
+              duration:
+                type: integer
+              met:
+                type: number
+        estimatedCalories:
+          type: number
+        totalDuration:
+          type: integer
+
+    ChatMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+
+    BodyMeasurements:
+      type: object
+      properties:
+        height:
+          type: number
+          description: 키 (cm)
+        weight:
+          type: number
+          description: 체중 (kg)
+        chest:
+          type: number
+          description: 가슴둘레 (cm)
+        waist:
+          type: number
+          description: 허리둘레 (cm)
+        hip:
+          type: number
+          description: 엉덩이둘레 (cm)
+
+    SizeRecommendation:
+      type: object
+      properties:
+        recommendedSize:
+          type: string
+          enum: [XS, S, M, L, XL, XXL]
+        confidence:
+          type: number
+        alternatives:
+          type: array
+          items:
+            type: object
+            properties:
+              size:
+                type: string
+              fitType:
+                type: string
+                enum: [slim, regular, relaxed]
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        brand:
+          type: string
+        price:
+          type: number
+        currency:
+          type: string
+          default: KRW
+        imageUrl:
+          type: string
+        affiliateUrl:
+          type: string
+        matchScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        matchReasons:
+          type: array
+          items:
+            type: string
+
+    UserAccount:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        preferences:
+          type: object
+        analysisCount:
+          type: object
+          properties:
+            personalColor:
+              type: integer
+            skin:
+              type: integer
+            body:
+              type: integer
+
+    UserLevel:
+      type: object
+      properties:
+        level:
+          type: integer
+        xp:
+          type: integer
+        xpToNextLevel:
+          type: integer
+        badges:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              earnedAt:
+                type: string
+                format: date-time
+        streak:
+          type: object
+          properties:
+            current:
+              type: integer
+            longest:
+              type: integer

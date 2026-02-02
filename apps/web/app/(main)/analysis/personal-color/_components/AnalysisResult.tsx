@@ -140,7 +140,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
             <h2 className="text-lg font-semibold text-foreground">베스트 컬러</h2>
             <span className="text-xs text-muted-foreground ml-auto">TOP 10</span>
           </div>
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
             {bestColors.map((color, index) => (
               <div key={index} className="text-center">
                 <div
@@ -168,7 +168,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
           <div className="grid grid-cols-2 gap-4 mb-6">
             {/* 베스트 컬러 */}
             <div className="text-center">
-              <div className="relative w-20 h-24 mx-auto mb-2">
+              <div className="relative w-16 h-20 sm:w-20 sm:h-24 mx-auto mb-2">
                 <FaceAvatar className="w-full h-full text-stone-300 dark:text-stone-600" />
                 <div
                   className="absolute inset-0 mix-blend-multiply opacity-50 dark:mix-blend-screen dark:opacity-30"
@@ -176,7 +176,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
                 />
               </div>
               <div
-                className="w-10 h-10 mx-auto rounded-lg shadow-sm border-2 border-pink-300 dark:border-pink-700"
+                className="w-8 h-8 sm:w-10 sm:h-10 mx-auto rounded-lg shadow-sm border-2 border-pink-300 dark:border-pink-700"
                 style={{ backgroundColor: bestColors[0]?.hex }}
               />
               <p className="text-xs text-muted-foreground mt-1">{bestColors[0]?.name}</p>
@@ -188,7 +188,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
 
             {/* 워스트 컬러 */}
             <div className="text-center">
-              <div className="relative w-20 h-24 mx-auto mb-2">
+              <div className="relative w-16 h-20 sm:w-20 sm:h-24 mx-auto mb-2">
                 <FaceAvatar className="w-full h-full text-stone-300 dark:text-stone-600" />
                 <div
                   className="absolute inset-0 mix-blend-multiply opacity-50 dark:mix-blend-screen dark:opacity-30"
@@ -196,7 +196,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
                 />
               </div>
               <div
-                className="w-10 h-10 mx-auto rounded-lg shadow-sm border border-muted opacity-70"
+                className="w-8 h-8 sm:w-10 sm:h-10 mx-auto rounded-lg shadow-sm border border-muted opacity-70"
                 style={{ backgroundColor: worstColors[0]?.hex }}
               />
               <p className="text-xs text-muted-foreground mt-1">{worstColors[0]?.name}</p>
@@ -489,7 +489,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
                       </div>
                     </div>
                     {item.oliveyoungAlt && (
-                      <div className="mt-2 pl-[52px]">
+                      <div className="mt-2 pl-12 sm:pl-12 sm:pl-[52px]">
                         <p className="text-xs text-green-600 dark:text-green-400">
                           🏪 올리브영: {item.oliveyoungAlt}
                         </p>
@@ -529,7 +529,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
                       </div>
                     </div>
                     {lip.oliveyoungAlt && (
-                      <div className="mt-2 pl-[52px]">
+                      <div className="mt-2 pl-12 sm:pl-12 sm:pl-[52px]">
                         <p className="text-xs text-green-600 dark:text-green-400">
                           🏪 올리브영: {lip.oliveyoungAlt}
                         </p>
@@ -589,14 +589,14 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
                     </div>
                   </div>
                   {foundation.oliveyoungAlt && (
-                    <div className="mt-2 pl-[52px]">
+                    <div className="mt-2 pl-12 sm:pl-[52px]">
                       <p className="text-xs text-green-600 dark:text-green-400">
                         🏪 올리브영: {foundation.oliveyoungAlt}
                       </p>
                     </div>
                   )}
                   {foundation.tip && (
-                    <div className="mt-2 pl-[52px]">
+                    <div className="mt-2 pl-12 sm:pl-[52px]">
                       <p className="text-xs text-amber-600 dark:text-amber-400">
                         💡 {foundation.tip}
                       </p>

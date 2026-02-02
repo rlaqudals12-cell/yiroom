@@ -16,7 +16,7 @@ import type {
   PostureAnalysis,
   PostureIssue,
 } from './types';
-import { BODY_SHAPE_INFO, POSE_LANDMARK_INDEX } from './types';
+import { BODY_SHAPE_INFO } from './types';
 
 // =============================================================================
 // 내부 유틸리티

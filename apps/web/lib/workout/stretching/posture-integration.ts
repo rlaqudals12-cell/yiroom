@@ -17,7 +17,7 @@ import type {
   PostureAnalysis,
   PostureIssue,
   BodyAnalysisV2Result,
-} from '@/lib/analysis/body-v2/types';
+} from '@/lib/analysis/body-v2';
 
 import type {
   PostureImbalanceType,
@@ -34,7 +34,6 @@ import type {
 
 import {
   generatePostureCorrectionPrescription,
-  ACSM_GUIDELINES,
 } from './routine-generator';
 
 // ============================================
@@ -490,4 +489,4 @@ export type {
   PostureAnalysis,
   PostureIssue,
   BodyAnalysisV2Result,
-} from '@/lib/analysis/body-v2/types';
+} from '@/lib/analysis/body-v2';

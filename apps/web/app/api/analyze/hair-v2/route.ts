@@ -29,13 +29,11 @@ import {
   generateMockHairAnalysisResult,
   type HairAnalysisResult,
   type FaceShapeType,
-  type HairLength,
   type HairTexture,
   FACE_SHAPE_LABELS,
 } from '@/lib/analysis/hair';
 import type { Landmark33 } from '@/lib/analysis/body-v2';
 import {
-  awardAnalysisBadge,
   checkAndAwardAllAnalysisBadge,
   addXp,
   type BadgeAwardResult,

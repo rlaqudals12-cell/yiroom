@@ -3,10 +3,11 @@
 /**
  * Phase J P3-D: 코디 공유 훅
  * 이미지 생성 + Web Share API / 다운로드
+ *
+ * 성능 최적화: html-to-image 동적 import (~30KB 번들 분리)
  */
 
 import { useRef, useState, useCallback } from 'react';
-import { toPng } from 'html-to-image';
 import type { FullOutfit } from '@/types/styling';
 import type { SeasonType } from '@/lib/mock/personal-color';
 
@@ -32,7 +33,7 @@ export function useOutfitShare(
   // Web Share API 지원 여부
   const canShare = typeof navigator !== 'undefined' && !!navigator.share;
 
-  // 이미지 생성
+  // 이미지 생성 (html-to-image 동적 import)
   const generateImage = useCallback(async (): Promise<string | null> => {
     if (!cardRef.current) {
       setError('카드 요소를 찾을 수 없습니다');
@@ -43,6 +44,8 @@ export function useOutfitShare(
     setError(null);
 
     try {
+      // 동적 import로 번들 크기 최적화
+      const { toPng } = await import('html-to-image');
       const dataUrl = await toPng(cardRef.current, {
         quality: 0.95,
         pixelRatio: 2, // 고해상도

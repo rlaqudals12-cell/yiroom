@@ -15,7 +15,6 @@ import {
   getModuleChecklist,
   getCheckItemById,
   type WCAGCheckItem,
-  type CheckStatus,
 } from '@/lib/a11y/wcag-checklist';
 
 describe('wcag-checklist', () => {

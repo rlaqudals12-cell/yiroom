@@ -13,7 +13,6 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type {
   SkinAnalysisV2Result,
   SkinZoneType,
@@ -114,7 +113,7 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
           </div>
 
           {/* 점수 구성 */}
-          <div className="grid grid-cols-4 gap-2 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
             <ScoreItem label="수분" value={result.scoreBreakdown.hydration} />
             <ScoreItem label="탄력" value={result.scoreBreakdown.elasticity} />
             <ScoreItem label="맑음" value={result.scoreBreakdown.clarity} />
@@ -130,9 +129,9 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
             <CardTitle className="text-lg">6존 분석</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               {/* SVG 얼굴 맵 */}
-              <div className="relative w-48 h-64 bg-muted rounded-lg">
+              <div className="relative w-40 h-56 sm:w-48 sm:h-64 mx-auto sm:mx-0 flex-shrink-0 bg-muted rounded-lg">
                 <svg
                   viewBox="0 0 100 100"
                   className="w-full h-full"
@@ -222,7 +221,7 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
             {/* T존-U존 차이 */}
             <div className="mt-4 p-3 bg-muted rounded-lg">
               <h4 className="text-sm font-medium mb-2">T존-U존 분석</h4>
-              <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">유분 차이</p>
                   <p className="font-medium">{result.zoneAnalysis.tUzoneDifference.oilinessDiff}%</p>
@@ -405,7 +404,6 @@ function MetricBar({
   inverted?: boolean;
 }) {
   // 민감도 같은 경우 낮을수록 좋음 (반전)
-  const displayValue = inverted ? 100 - value : value;
   const getColor = () => {
     const v = inverted ? 100 - value : value;
     if (v >= 70) return 'bg-emerald-500';

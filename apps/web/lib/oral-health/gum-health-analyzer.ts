@@ -194,7 +194,7 @@ export function getGumHealthGrade(inflammationScore: number): {
  * 잇몸 건강 결과 요약 텍스트 생성
  */
 export function generateGumHealthSummary(result: GumHealthResult): string {
-  const { healthStatus, inflammationScore, needsDentalVisit } = result;
+  const { inflammationScore, needsDentalVisit } = result;
   const grade = getGumHealthGrade(inflammationScore);
 
   let summary = `잇몸 건강 등급: ${grade.grade} (${grade.label})\n`;

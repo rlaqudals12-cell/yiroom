@@ -12,7 +12,6 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Tooltip,
@@ -20,8 +19,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import type { PersonalColorV2Result, TwelveTone, Season } from '@/lib/analysis/personal-color-v2';
+import { Watch, Glasses, Gem } from 'lucide-react';
+import type { PersonalColorV2Result, Season } from '@/lib/analysis/personal-color-v2';
 import { TWELVE_TONE_LABELS, SEASON_DESCRIPTIONS } from '@/lib/analysis/personal-color-v2';
+import { useGenderProfile } from '@/components/providers/gender-provider';
+import { getAccessoryRecommendations, type AccessoryRecommendation } from '@/lib/content/gender-adaptive';
+import type { SeasonType } from '@/lib/mock/personal-color';
 
 interface ResultCardV2Props {
   result: PersonalColorV2Result;
@@ -51,10 +54,43 @@ const SEASON_LABELS: Record<Season, string> = {
   winter: '겨울',
 };
 
+// 악세서리 카테고리 라벨
+const ACCESSORY_CATEGORY_LABELS: Record<AccessoryRecommendation['category'], string> = {
+  watch: '시계',
+  tie: '넥타이',
+  sunglasses: '선글라스',
+  belt: '벨트',
+  bag: '가방',
+  jewelry: '주얼리',
+  scarf: '스카프',
+};
+
+// 악세서리 카테고리 아이콘
+function AccessoryCategoryIcon({ category }: { category: AccessoryRecommendation['category'] }) {
+  switch (category) {
+    case 'watch':
+      return <Watch className="w-4 h-4" />;
+    case 'sunglasses':
+      return <Glasses className="w-4 h-4" />;
+    case 'jewelry':
+      return <Gem className="w-4 h-4" />;
+    default:
+      return null;
+  }
+}
+
 export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) {
   // classification에서 season 접근
   const season = result.classification.season;
   const seasonStyle = SEASON_COLORS[season] || SEASON_COLORS.spring;
+
+  // 성별 프로필 가져오기 (K-1 성별 중립화)
+  const { genderProfile } = useGenderProfile();
+
+  // 성별에 따른 악세서리 추천
+  const accessoryRecommendations = useMemo(() => {
+    return getAccessoryRecommendations(season as SeasonType, genderProfile);
+  }, [season, genderProfile]);
 
   // 신뢰도 등급
   const confidenceGrade = useMemo(() => {
@@ -104,10 +140,11 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
 
         {/* 탭 컨텐츠 */}
         <Tabs defaultValue="palette" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="palette">컬러 팔레트</TabsTrigger>
-            <TabsTrigger value="makeup">메이크업</TabsTrigger>
-            <TabsTrigger value="styling">스타일링</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+            <TabsTrigger value="palette" className="text-xs sm:text-sm">팔레트</TabsTrigger>
+            <TabsTrigger value="accessory" className="text-xs sm:text-sm">악세서리</TabsTrigger>
+            <TabsTrigger value="makeup" className="text-xs sm:text-sm">메이크업</TabsTrigger>
+            <TabsTrigger value="styling" className="text-xs sm:text-sm">스타일링</TabsTrigger>
           </TabsList>
 
           {/* 컬러 팔레트 탭 */}
@@ -122,7 +159,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
                       <Tooltip key={idx}>
                         <TooltipTrigger asChild>
                           <div
-                            className="w-10 h-10 rounded-lg shadow-sm cursor-pointer hover:scale-110 transition-transform border border-gray-200"
+                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shadow-sm cursor-pointer hover:scale-110 transition-transform border border-gray-200"
                             style={{ backgroundColor: color }}
                             data-testid={`best-color-${idx}`}
                           />
@@ -147,7 +184,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
                       <Tooltip key={idx}>
                         <TooltipTrigger asChild>
                           <div
-                            className="w-8 h-8 rounded-lg opacity-60 cursor-pointer hover:opacity-100 transition-opacity border border-gray-200"
+                            className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg opacity-60 cursor-pointer hover:opacity-100 transition-opacity border border-gray-200"
                             style={{ backgroundColor: color }}
                             data-testid={`worst-color-${idx}`}
                           />
@@ -176,6 +213,74 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
                   </div>
                 </div>
               )}
+            </div>
+          </TabsContent>
+
+          {/* 악세서리 탭 (K-1 성별 중립화) */}
+          <TabsContent value="accessory" className="mt-4">
+            <div className="space-y-4" data-testid="accessory-recommendations">
+              {/* 성별 안내 */}
+              <p className="text-xs text-muted-foreground">
+                {genderProfile.gender === 'male' && '남성용 악세서리 추천'}
+                {genderProfile.gender === 'female' && '여성용 악세서리 추천'}
+                {genderProfile.gender === 'neutral' && '전체 악세서리 추천'}
+              </p>
+
+              {/* 악세서리 목록 */}
+              <div className="grid gap-3">
+                {accessoryRecommendations.map((accessory, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                    data-testid={`accessory-item-${idx}`}
+                  >
+                    {/* 컬러 스와치 */}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div
+                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shadow-sm border border-gray-200 flex-shrink-0"
+                            style={{ backgroundColor: accessory.hex }}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{accessory.hex}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    {/* 악세서리 정보 */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <AccessoryCategoryIcon category={accessory.category} />
+                        <span className="font-medium text-sm truncate">{accessory.name}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {accessory.easyDescription}
+                      </p>
+                    </div>
+
+                    {/* 카테고리 뱃지 */}
+                    <Badge variant="outline" className="flex-shrink-0">
+                      {ACCESSORY_CATEGORY_LABELS[accessory.category]}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+
+              {/* 브랜드 예시 (접을 수 있음) */}
+              <details className="text-sm">
+                <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                  브랜드 예시 보기
+                </summary>
+                <div className="mt-2 space-y-1 pl-4">
+                  {accessoryRecommendations.map((accessory, idx) => (
+                    <p key={idx} className="text-xs text-muted-foreground">
+                      • {accessory.name}: {accessory.brandExample}
+                    </p>
+                  ))}
+                </div>
+              </details>
             </div>
           </TabsContent>
 

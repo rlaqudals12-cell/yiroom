@@ -107,8 +107,6 @@ interface StretchingResponse {
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse<StretchingResponse>> {
-  const startTime = Date.now();
-
   try {
     // 1. 인증 확인
     const { userId } = await auth();

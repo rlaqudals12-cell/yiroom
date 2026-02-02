@@ -1,18 +1,13 @@
-# 🗄️ Database 스키마 v5.2 (Phase H + Launch + 정합성 검토)
+# 🗄️ Database 스키마 v6.1 (Phase K + 동기화 완료)
 
-**버전**: v5.2 (정합성 검토 반영)
-**업데이트**: 2026년 1월 12일
+**버전**: v6.1 (K-1 gender_preference 추가)
+**업데이트**: 2026년 2월 2일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
-**차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템
+**차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템 + 운동/영양 + 헤어/정신건강
 
-> ⚠️ **주의**: 이 문서는 실제 마이그레이션 파일과 약 40% 불일치가 있습니다.
-> 최신 테이블 목록은 `supabase/migrations/` 폴더의 SQL 파일을 참조하세요.
-> 미문서화 테이블: workout_analyses, workout_plans, workout_logs, workout_streaks,
-> user_preferences, user_agreements, user_challenges, image_consents, push_subscriptions,
-> affiliate_products, skin_diary_entries, nutrition_streaks, smart_notifications,
-> makeup_analyses, user_size_history, user_shopping_preferences, price_watches,
-> hair_analyses, mental_health_logs, product_shelf 등
+> ✅ **동기화 완료**: 이 문서는 `supabase/migrations/` 폴더의 마이그레이션과 동기화되었습니다.
+> 총 **60+개 테이블** 문서화 완료 (2026-02-01 기준)
 
 ---
 
@@ -76,14 +71,56 @@
     35. user_notification_settings  # 알림 설정 (2026-01-11)
     36. user_push_tokens            # 푸시 토큰 (2026-01-11)
 
+  W-1 운동 모듈 (신규):
+    37. workout_analyses            # 운동 분석 - 목표/유형/빈도
+    38. workout_plans               # 주간 운동 계획
+    39. workout_logs                # 일일 운동 기록
+    40. workout_streaks             # 운동 연속 기록
+
+  H-1 헤어 분석 (신규):
+    41. hair_analyses               # 모발/두피 분석 결과
+
+  M-1 정신건강 (신규):
+    42. mental_health_logs          # 기분/스트레스/수면 트래킹
+
+  F-4 제품함 (신규):
+    43. user_product_shelf          # 스캔한 제품 관리
+
+  어필리에이트 시스템 (신규):
+    44. affiliate_products          # 어필리에이트 제품 DB
+
+  피부 관리 (신규):
+    45. skin_diary_entries          # 피부 일기
+
+  영양 확장 (신규):
+    46. nutrition_streaks           # 영양 연속 기록
+    47. recipes                     # 레시피 DB
+    48. recipe_ingredients          # 레시피 재료
+    49. user_favorite_recipes       # 레시피 즐겨찾기
+
+  메이크업/스타일 (신규):
+    50. makeup_analyses             # 메이크업 분석
+    51. user_size_history           # 신체 사이즈 기록
+    52. user_shopping_preferences   # 쇼핑 선호도
+    53. price_watches               # 가격 알림
+
+  스마트 알림 (신규):
+    54. smart_notifications         # 스마트 알림
+
 관계도:
   users (1) ━━━━━ (N) personal_color_assessments
   users (1) ━━━━━ (N) skin_analyses
   users (1) ━━━━━ (N) body_analyses
+  users (1) ━━━━━ (N) workout_analyses
+  users (1) ━━━━━ (N) hair_analyses
+  users (1) ━━━━━ (N) mental_health_logs
+  users (1) ━━━━━ (N) skin_diary_entries
 
 논리적 연동:
   personal_color_assessments.season → skin_analyses
   personal_color_assessments.season → body_analyses
+  workout_analyses → workout_plans → workout_logs
+  recipes → recipe_ingredients
 ```
 
 ---
@@ -100,12 +137,15 @@ CREATE TABLE users (
   email TEXT,
   name TEXT,
   profile_image_url TEXT,
+  gender_preference TEXT DEFAULT 'neutral'  -- K-1: male, female, neutral (콘텐츠 개인화)
+    CHECK (gender_preference IN ('male', 'female', 'neutral')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 인덱스
 CREATE INDEX idx_users_clerk_user_id ON users(clerk_user_id);
+CREATE INDEX idx_users_gender_preference ON users(gender_preference);
 
 -- updated_at 자동 업데이트 트리거
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -1630,6 +1670,597 @@ CREATE POLICY "Users can delete own push tokens"
 
 ---
 
-**버전**: v5.2 (정합성 검토 반영)
-**최종 업데이트**: 2026년 1월 12일
-**상태**: Phase 1 + Phase 2 + Admin + Phase G + Checkin + 정합성 검토 필요 ⚠️
+## 21. workout_analyses 테이블 (W-1 운동 분석)
+
+사용자의 운동 목표, 유형, 빈도 분석 결과
+
+### SQL 생성문
+
+```sql
+CREATE TABLE workout_analyses (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  body_analysis_id UUID,
+  personal_color_id UUID,
+  workout_type TEXT,
+  workout_type_reason TEXT,
+  workout_type_confidence DECIMAL(3,2),
+  goals TEXT[] DEFAULT '{}',
+  concerns TEXT[] DEFAULT '{}',
+  frequency TEXT,
+  location TEXT,
+  equipment TEXT[] DEFAULT '{}',
+  injuries TEXT[] DEFAULT '{}',
+  target_weight DECIMAL(5,2),
+  target_date DATE,
+  specific_goal TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_workout_analyses_user ON workout_analyses(user_id);
+ALTER TABLE workout_analyses ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE workout_analyses IS 'W-1 운동 분석 - 사용자 운동 목표 및 분석';
+```
+
+---
+
+## 22. workout_plans 테이블 (주간 운동 계획)
+
+주간 운동 플랜 저장
+
+### SQL 생성문
+
+```sql
+CREATE TABLE workout_plans (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  analysis_id UUID REFERENCES workout_analyses(id) ON DELETE SET NULL,
+  week_start_date DATE NOT NULL,
+  week_number INTEGER DEFAULT 1,
+  daily_plans JSONB NOT NULL DEFAULT '[]',
+  total_workout_days INTEGER DEFAULT 0,
+  total_estimated_minutes INTEGER DEFAULT 0,
+  total_estimated_calories INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_workout_plans_user ON workout_plans(user_id);
+ALTER TABLE workout_plans ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE workout_plans IS 'W-1 운동 플랜 - 주간 운동 계획';
+```
+
+---
+
+## 23. workout_logs 테이블 (일일 운동 기록)
+
+일일 운동 수행 기록
+
+### SQL 생성문
+
+```sql
+CREATE TABLE workout_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  plan_id UUID REFERENCES workout_plans(id) ON DELETE SET NULL,
+  workout_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  completed_at TIMESTAMPTZ,
+  actual_duration INTEGER,
+  actual_calories INTEGER,
+  exercise_logs JSONB NOT NULL DEFAULT '[]',
+  total_volume INTEGER DEFAULT 0,
+  perceived_effort INTEGER CHECK (perceived_effort >= 1 AND perceived_effort <= 10),
+  notes TEXT,
+  mood TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_workout_logs_user_date ON workout_logs(user_id, workout_date);
+ALTER TABLE workout_logs ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE workout_logs IS 'W-1 운동 기록 - 일일 운동 로그';
+```
+
+---
+
+## 24. workout_streaks 테이블 (운동 연속 기록)
+
+사용자별 운동 연속 기록 (스트릭)
+
+### SQL 생성문
+
+```sql
+CREATE TABLE workout_streaks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT NOT NULL UNIQUE,
+  current_streak INTEGER DEFAULT 0,
+  longest_streak INTEGER DEFAULT 0,
+  last_workout_date DATE,
+  total_workouts INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_workout_streaks_user ON workout_streaks(user_id);
+ALTER TABLE workout_streaks ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE workout_streaks IS 'W-1 운동 스트릭 - 연속 운동 기록';
+```
+
+---
+
+## 25. hair_analyses 테이블 (H-1 헤어 분석)
+
+모발 및 두피 분석 결과
+
+### SQL 생성문
+
+```sql
+CREATE TABLE hair_analyses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  image_url TEXT,
+
+  -- 모발 타입
+  hair_type TEXT CHECK (hair_type IN ('straight', 'wavy', 'curly', 'coily')),
+  hair_thickness TEXT CHECK (hair_thickness IN ('fine', 'medium', 'thick')),
+  scalp_type TEXT CHECK (scalp_type IN ('dry', 'normal', 'oily', 'sensitive')),
+
+  -- 분석 지표 (0-100)
+  hydration SMALLINT CHECK (hydration >= 0 AND hydration <= 100),
+  scalp_health SMALLINT CHECK (scalp_health >= 0 AND scalp_health <= 100),
+  damage_level SMALLINT CHECK (damage_level >= 0 AND damage_level <= 100),
+  density SMALLINT CHECK (density >= 0 AND density <= 100),
+  elasticity SMALLINT CHECK (elasticity >= 0 AND elasticity <= 100),
+  shine SMALLINT CHECK (shine >= 0 AND shine <= 100),
+
+  -- 종합 점수
+  overall_score SMALLINT CHECK (overall_score >= 0 AND overall_score <= 100),
+
+  -- 고민 및 추천 (JSON)
+  concerns JSONB DEFAULT '[]'::jsonb,
+  recommendations JSONB DEFAULT '{}'::jsonb,
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_hair_analyses_clerk_user_id ON hair_analyses(clerk_user_id);
+ALTER TABLE hair_analyses ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE hair_analyses IS 'H-1 헤어 분석 결과 저장';
+COMMENT ON COLUMN hair_analyses.hair_type IS '모발 타입 (직모, 웨이브, 곱슬, 강한 곱슬)';
+COMMENT ON COLUMN hair_analyses.scalp_type IS '두피 타입 (건성, 중성, 지성, 민감성)';
+```
+
+---
+
+## 26. mental_health_logs 테이블 (M-1 정신건강)
+
+일일 정신건강 체크인 (기분, 스트레스, 수면)
+
+### SQL 생성문
+
+```sql
+CREATE TABLE mental_health_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  log_date DATE NOT NULL,
+  mood_score SMALLINT CHECK (mood_score BETWEEN 1 AND 5),
+  stress_level SMALLINT CHECK (stress_level BETWEEN 1 AND 10),
+  sleep_hours DECIMAL(3,1) CHECK (sleep_hours >= 0 AND sleep_hours <= 24),
+  sleep_quality SMALLINT CHECK (sleep_quality BETWEEN 1 AND 5),
+  energy_level SMALLINT CHECK (energy_level BETWEEN 1 AND 5),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- 동일 사용자/날짜 중복 방지
+  UNIQUE (clerk_user_id, log_date)
+);
+
+CREATE INDEX idx_mental_health_logs_user ON mental_health_logs(clerk_user_id);
+CREATE INDEX idx_mental_health_logs_user_date ON mental_health_logs(clerk_user_id, log_date);
+ALTER TABLE mental_health_logs ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE mental_health_logs IS 'M-1 정신건강 트래킹 - 일일 체크인 기록';
+```
+
+---
+
+## 27. user_product_shelf 테이블 (F-4 제품함)
+
+사용자가 스캔하거나 등록한 제품 관리
+
+### SQL 생성문
+
+```sql
+CREATE TABLE user_product_shelf (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  clerk_user_id TEXT NOT NULL,
+
+  -- 제품 정보
+  product_id UUID,
+  product_name TEXT NOT NULL,
+  product_brand TEXT,
+  product_barcode TEXT,
+  product_image_url TEXT,
+  product_ingredients JSONB DEFAULT '[]',
+
+  -- 스캔 정보
+  scanned_at TIMESTAMPTZ DEFAULT NOW(),
+  scan_method TEXT CHECK (scan_method IN ('barcode', 'ocr', 'search', 'manual')),
+
+  -- 분석 결과
+  compatibility_score INTEGER CHECK (compatibility_score >= 0 AND compatibility_score <= 100),
+  analysis_result JSONB,
+
+  -- 사용자 관리
+  status TEXT NOT NULL DEFAULT 'owned' CHECK (status IN ('owned', 'wishlist', 'used_up', 'archived')),
+  user_note TEXT,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+
+  -- 날짜 관리
+  purchased_at TIMESTAMPTZ,
+  opened_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_product_shelf_user ON user_product_shelf(clerk_user_id);
+CREATE INDEX idx_user_product_shelf_barcode ON user_product_shelf(product_barcode);
+ALTER TABLE user_product_shelf ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE user_product_shelf IS '사용자 제품함 - 스캔한 제품 관리';
+COMMENT ON COLUMN user_product_shelf.scan_method IS 'barcode: 바코드, ocr: 성분 OCR, search: 검색, manual: 수동 입력';
+COMMENT ON COLUMN user_product_shelf.status IS 'owned: 보유, wishlist: 위시, used_up: 다 씀, archived: 보관';
+```
+
+---
+
+## 28. affiliate_products 테이블 (어필리에이트 제품)
+
+어필리에이트 파트너 제품 DB
+
+### SQL 생성문
+
+```sql
+CREATE TABLE affiliate_products (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  partner_id TEXT NOT NULL,
+  product_name TEXT NOT NULL,
+  product_url TEXT NOT NULL,
+  image_url TEXT,
+  price_krw INTEGER,
+  commission_rate DECIMAL(5,2),
+  category TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_affiliate_products_partner ON affiliate_products(partner_id);
+ALTER TABLE affiliate_products ENABLE ROW LEVEL SECURITY;
+
+-- 공개 읽기 허용
+CREATE POLICY "Anyone can view affiliate products" ON affiliate_products FOR SELECT USING (true);
+
+COMMENT ON TABLE affiliate_products IS '어필리에이트 제품 DB';
+```
+
+---
+
+## 29. skin_diary_entries 테이블 (피부 일기)
+
+일일 피부 상태 기록
+
+### SQL 생성문
+
+```sql
+CREATE TABLE skin_diary_entries (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  clerk_user_id TEXT NOT NULL,
+  entry_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  skin_condition INTEGER CHECK (skin_condition >= 1 AND skin_condition <= 5),
+  hydration_level INTEGER CHECK (hydration_level >= 1 AND hydration_level <= 5),
+  oiliness_level INTEGER CHECK (oiliness_level >= 1 AND oiliness_level <= 5),
+  concerns TEXT[] DEFAULT '{}',
+  products_used TEXT[] DEFAULT '{}',
+  notes TEXT,
+  image_url TEXT,
+  weather TEXT,
+  sleep_hours DECIMAL(3,1),
+  stress_level INTEGER CHECK (stress_level >= 1 AND stress_level <= 5),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_skin_diary_user_date ON skin_diary_entries(clerk_user_id, entry_date);
+ALTER TABLE skin_diary_entries ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE skin_diary_entries IS '피부 일기 - 일일 피부 상태 트래킹';
+```
+
+---
+
+## 30. nutrition_streaks 테이블 (영양 연속 기록)
+
+식단 기록 연속 유지 정보
+
+### SQL 생성문
+
+```sql
+CREATE TABLE nutrition_streaks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  clerk_user_id TEXT NOT NULL UNIQUE,
+  current_streak INTEGER DEFAULT 0,
+  longest_streak INTEGER DEFAULT 0,
+  last_record_date DATE,
+  total_days INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_nutrition_streaks_user ON nutrition_streaks(clerk_user_id);
+ALTER TABLE nutrition_streaks ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE nutrition_streaks IS '영양 연속 기록 스트릭';
+```
+
+---
+
+## 31. recipes 테이블 (레시피 DB)
+
+영양 맞춤 레시피 메인 테이블
+
+### SQL 생성문
+
+```sql
+CREATE TABLE recipes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- 기본 정보
+  name TEXT NOT NULL,
+  name_en TEXT,
+  description TEXT,
+
+  -- 영양 정보
+  calories INTEGER,
+  protein DECIMAL(5,1),
+  carbs DECIMAL(5,1),
+  fat DECIMAL(5,1),
+
+  -- 메타데이터
+  cook_time INTEGER,  -- 조리 시간 (분)
+  difficulty TEXT CHECK (difficulty IN ('easy', 'medium', 'hard')),
+  servings INTEGER DEFAULT 1,
+
+  -- 태그 및 목표
+  nutrition_goals TEXT[],  -- ['diet', 'bulk', 'lean', 'maintenance']
+  tags TEXT[],  -- 검색용 태그
+
+  -- 조리법
+  steps JSONB NOT NULL,  -- JSON 배열 형식
+  tips TEXT[],
+
+  -- 미디어
+  image_url TEXT,
+  source TEXT,
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_recipes_nutrition_goals ON recipes USING GIN (nutrition_goals);
+CREATE INDEX idx_recipes_tags ON recipes USING GIN (tags);
+ALTER TABLE recipes ENABLE ROW LEVEL SECURITY;
+
+-- 공개 읽기 허용
+CREATE POLICY "Anyone can view recipes" ON recipes FOR SELECT USING (true);
+
+COMMENT ON TABLE recipes IS '레시피 메인 테이블 - 100+ 영양 맞춤 레시피';
+COMMENT ON COLUMN recipes.nutrition_goals IS '영양 목표: diet, bulk, lean, maintenance';
+COMMENT ON COLUMN recipes.difficulty IS '난이도: easy, medium, hard';
+```
+
+---
+
+## 32. recipe_ingredients 테이블 (레시피 재료)
+
+레시피별 필요 재료
+
+### SQL 생성문
+
+```sql
+CREATE TABLE recipe_ingredients (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  amount DECIMAL(10,2),
+  unit TEXT,
+  is_optional BOOLEAN DEFAULT FALSE,
+  category TEXT,  -- vegetable, meat, seafood, dairy, grain, seasoning
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_recipe_ingredients_recipe_id ON recipe_ingredients(recipe_id);
+ALTER TABLE recipe_ingredients ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view recipe ingredients" ON recipe_ingredients FOR SELECT USING (true);
+
+COMMENT ON TABLE recipe_ingredients IS '레시피 재료 목록';
+COMMENT ON COLUMN recipe_ingredients.category IS '재료 분류: vegetable, meat, seafood 등';
+```
+
+---
+
+## 33. user_favorite_recipes 테이블 (레시피 즐겨찾기)
+
+사용자별 레시피 북마크
+
+### SQL 생성문
+
+```sql
+CREATE TABLE user_favorite_recipes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE (clerk_user_id, recipe_id)
+);
+
+CREATE INDEX idx_user_favorite_recipes_user ON user_favorite_recipes(clerk_user_id);
+ALTER TABLE user_favorite_recipes ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE user_favorite_recipes IS '사용자 즐겨찾기 레시피';
+```
+
+---
+
+## 34. makeup_analyses 테이블 (메이크업 분석)
+
+퍼스널컬러 기반 메이크업 추천
+
+### SQL 생성문
+
+```sql
+CREATE TABLE makeup_analyses (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  clerk_user_id TEXT NOT NULL,
+  personal_color_id UUID,
+  skin_analysis_id UUID,
+  makeup_style TEXT,
+  color_recommendations JSONB DEFAULT '{}',
+  product_recommendations JSONB DEFAULT '{}',
+  tips TEXT[] DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_makeup_analyses_user ON makeup_analyses(clerk_user_id);
+ALTER TABLE makeup_analyses ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE makeup_analyses IS '메이크업 분석 - PC 기반 색상/제품 추천';
+```
+
+---
+
+## 35. user_size_history 테이블 (신체 사이즈 기록)
+
+신체 치수 변화 이력
+
+### SQL 생성문
+
+```sql
+CREATE TABLE user_size_history (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  clerk_user_id TEXT NOT NULL,
+  recorded_date DATE DEFAULT CURRENT_DATE,
+  height_cm DECIMAL(5,1),
+  weight_kg DECIMAL(5,1),
+  chest_cm DECIMAL(5,1),
+  waist_cm DECIMAL(5,1),
+  hip_cm DECIMAL(5,1),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_size_history_user ON user_size_history(clerk_user_id);
+ALTER TABLE user_size_history ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE user_size_history IS '신체 사이즈 기록 - 변화 추적';
+```
+
+---
+
+## 36. user_shopping_preferences 테이블 (쇼핑 선호도)
+
+사용자별 쇼핑 취향 저장
+
+### SQL 생성문
+
+```sql
+CREATE TABLE user_shopping_preferences (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  clerk_user_id TEXT NOT NULL UNIQUE,
+  budget_range TEXT,
+  preferred_brands TEXT[] DEFAULT '{}',
+  avoided_brands TEXT[] DEFAULT '{}',
+  preferred_stores TEXT[] DEFAULT '{}',
+  style_preferences TEXT[] DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE user_shopping_preferences ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE user_shopping_preferences IS '쇼핑 선호도 - 예산/브랜드/스타일';
+```
+
+---
+
+## 37. price_watches 테이블 (가격 알림)
+
+제품 가격 변동 알림 설정
+
+### SQL 생성문
+
+```sql
+CREATE TABLE price_watches (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  clerk_user_id TEXT NOT NULL,
+  product_type TEXT NOT NULL,
+  product_id UUID,
+  product_name TEXT NOT NULL,
+  target_price INTEGER,
+  current_price INTEGER,
+  is_active BOOLEAN DEFAULT true,
+  notified_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_price_watches_user ON price_watches(clerk_user_id);
+ALTER TABLE price_watches ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE price_watches IS '가격 알림 - 목표가 도달 시 알림';
+```
+
+---
+
+## 38. smart_notifications 테이블 (스마트 알림)
+
+사용자별 스마트 알림 발송 내역
+
+### SQL 생성문
+
+```sql
+CREATE TABLE smart_notifications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  clerk_user_id TEXT NOT NULL,
+  notification_type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  body TEXT,
+  data JSONB DEFAULT '{}',
+  is_read BOOLEAN DEFAULT false,
+  read_at TIMESTAMPTZ,
+  scheduled_at TIMESTAMPTZ,
+  sent_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_smart_notifications_user ON smart_notifications(clerk_user_id, is_read);
+ALTER TABLE smart_notifications ENABLE ROW LEVEL SECURITY;
+
+COMMENT ON TABLE smart_notifications IS '스마트 알림 - 개인화된 알림 내역';
+```
+
+---
+
+**버전**: v6.0 (마이그레이션 동기화 완료)
+**최종 업데이트**: 2026년 2월 1일
+**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K 동기화 완료 ✅

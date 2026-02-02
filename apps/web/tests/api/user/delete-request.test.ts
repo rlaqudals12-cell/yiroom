@@ -8,7 +8,6 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { NextRequest } from 'next/server';
 import { GDPR_CONFIG } from '@/types/gdpr';
 
 // Supabase mock

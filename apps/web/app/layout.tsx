@@ -14,6 +14,7 @@ import { PWAInstallPrompt, OrganizationJsonLd, WebApplicationJsonLd } from '@/co
 import { SyncUserProvider } from '@/components/providers/sync-user-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { GamificationProvider } from '@/components/gamification';
+import { GenderProvider } from '@/components/providers/gender-provider';
 import { I18nProvider } from '@/components/providers/i18n-provider';
 import { WebVitalsProvider } from '@/components/providers/web-vitals-provider';
 import './globals.css';
@@ -24,16 +25,20 @@ const clerkLocalizations = {
   en: enUS,
 } as const;
 
+// 폰트 최적화: preload + display swap + subset 최소화
 const inter = Inter({
   variable: '--font-inter',
   subsets: ['latin'],
   display: 'swap',
   preload: true,
+  // LCP 최적화: 필수 weight만 로드
+  weight: ['400', '500', '600', '700'],
 });
 
 const notoSansKR = Noto_Sans_KR({
   variable: '--font-noto-sans-kr',
   subsets: ['latin'],
+  // LCP 최적화: 필수 weight만 로드
   weight: ['400', '500', '700'],
   display: 'swap',
   preload: true,
@@ -95,8 +100,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: 'cover',
   themeColor: '#2e5afa',
 };
@@ -117,17 +122,12 @@ export default async function RootLayout({
           {/* Preconnect hints for external domains - Lighthouse Performance */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          {/* Supabase - critical for home page data fetching */}
+          <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />
           <link rel="dns-prefetch" href="https://clerk.com" />
           <link rel="dns-prefetch" href="https://img.clerk.com" />
-          <link rel="dns-prefetch" href="https://supabase.co" />
           <link rel="dns-prefetch" href="https://developers.kakao.com" />
-          {/* Kakao SDK for 소셜 공유 */}
-          <script
-            src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
-            integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4"
-            crossOrigin="anonymous"
-            async
-          />
+          {/* Kakao SDK: 공유 기능 호출 시 동적 로드 (lib/kakao/lazy-sdk.ts) - LCP 최적화 */}
           {/* JSON-LD 구조화 데이터 */}
           <OrganizationJsonLd />
           <WebApplicationJsonLd />
@@ -146,14 +146,16 @@ export default async function RootLayout({
                 {locale === 'ko' ? '본문으로 건너뛰기' : 'Skip to main content'}
               </a>
               <SyncUserProvider>
-                <GamificationProvider>
-                  <Navbar />
-                  <main id="main-content" className="pb-bottom-nav md:pb-0">
-                    {children}
-                  </main>
-                  <BottomNav />
-                  <PWAInstallPrompt />
-                </GamificationProvider>
+                <GenderProvider>
+                  <GamificationProvider>
+                    <Navbar />
+                    <main id="main-content" className="pb-bottom-nav md:pb-0">
+                      {children}
+                    </main>
+                    <BottomNav />
+                    <PWAInstallPrompt />
+                  </GamificationProvider>
+                </GenderProvider>
                 <Toaster
                   position="top-center"
                   theme="system"

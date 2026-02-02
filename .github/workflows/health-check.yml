@@ -1,0 +1,301 @@
+name: Post-Deploy Health Check
+
+# 배포 후 자동 헬스체크
+# - Vercel 배포 완료 시 트리거
+# - 실패 시 자동 롤백 트리거 가능
+
+on:
+  # Vercel 배포 완료 웹훅 (Vercel 설정 필요)
+  repository_dispatch:
+    types: [vercel-deploy-complete]
+
+  # 수동 트리거
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: 'Deployment URL to check (default: production)'
+        required: false
+        type: string
+        default: 'https://yiroom.app'
+      auto_rollback:
+        description: 'Automatically trigger rollback on failure'
+        required: false
+        type: boolean
+        default: false
+      error_threshold:
+        description: 'Error rate threshold (%) to trigger rollback'
+        required: false
+        type: number
+        default: 10
+
+  # 정기 헬스체크 (15분마다)
+  schedule:
+    - cron: '*/15 * * * *'
+
+env:
+  PRODUCTION_URL: https://yiroom.app
+  # 헬스체크 설정
+  MAX_RETRIES: 3
+  RETRY_DELAY: 5
+  TIMEOUT: 30
+
+jobs:
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check.outputs.status }}
+      error_count: ${{ steps.check.outputs.error_count }}
+      response_time: ${{ steps.check.outputs.avg_response_time }}
+
+    steps:
+      - name: Determine target URL
+        id: url
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            URL="${{ github.event.client_payload.url || env.PRODUCTION_URL }}"
+            DEPLOYMENT_ID="${{ github.event.client_payload.deployment_id }}"
+          elif [ -n "${{ inputs.deployment_url }}" ]; then
+            URL="${{ inputs.deployment_url }}"
+            DEPLOYMENT_ID="manual"
+          else
+            URL="${{ env.PRODUCTION_URL }}"
+            DEPLOYMENT_ID="scheduled"
+          fi
+
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+      - name: Run health checks
+        id: check
+        run: |
+          URL="${{ steps.url.outputs.url }}"
+          ERROR_COUNT=0
+          TOTAL_RESPONSE_TIME=0
+          CHECK_COUNT=0
+
+          echo "🏥 Starting health checks for $URL"
+          echo ""
+
+          # 헬스체크 엔드포인트 목록
+          declare -A ENDPOINTS
+          ENDPOINTS["API Health"]="/api/health"
+          ENDPOINTS["Home Page"]="/home"
+          ENDPOINTS["Sign In"]="/sign-in"
+
+          RESULTS=""
+
+          for name in "${!ENDPOINTS[@]}"; do
+            endpoint="${ENDPOINTS[$name]}"
+            full_url="${URL}${endpoint}"
+
+            echo "Checking: $name ($full_url)"
+
+            # 여러 번 시도
+            SUCCESS=false
+            for attempt in $(seq 1 ${{ env.MAX_RETRIES }}); do
+              START_TIME=$(date +%s%N)
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+                --max-time ${{ env.TIMEOUT }} \
+                "$full_url" 2>/dev/null || echo "000")
+              END_TIME=$(date +%s%N)
+
+              RESPONSE_TIME=$(( (END_TIME - START_TIME) / 1000000 ))
+
+              # 성공 코드: 200, 307 (리다이렉트), 308
+              if [[ "$HTTP_CODE" =~ ^(200|307|308)$ ]]; then
+                echo "  ✅ Attempt $attempt: HTTP $HTTP_CODE (${RESPONSE_TIME}ms)"
+                TOTAL_RESPONSE_TIME=$((TOTAL_RESPONSE_TIME + RESPONSE_TIME))
+                CHECK_COUNT=$((CHECK_COUNT + 1))
+                SUCCESS=true
+                RESULTS="$RESULTS| $name | ✅ $HTTP_CODE | ${RESPONSE_TIME}ms |\n"
+                break
+              else
+                echo "  ⚠️ Attempt $attempt: HTTP $HTTP_CODE"
+                if [ $attempt -lt ${{ env.MAX_RETRIES }} ]; then
+                  sleep ${{ env.RETRY_DELAY }}
+                fi
+              fi
+            done
+
+            if [ "$SUCCESS" = false ]; then
+              echo "  ❌ All attempts failed"
+              ERROR_COUNT=$((ERROR_COUNT + 1))
+              RESULTS="$RESULTS| $name | ❌ Failed | - |\n"
+            fi
+
+            echo ""
+          done
+
+          # 평균 응답 시간 계산
+          if [ $CHECK_COUNT -gt 0 ]; then
+            AVG_RESPONSE_TIME=$((TOTAL_RESPONSE_TIME / CHECK_COUNT))
+          else
+            AVG_RESPONSE_TIME=0
+          fi
+
+          # 결과 저장
+          TOTAL_CHECKS=${#ENDPOINTS[@]}
+          if [ $ERROR_COUNT -eq 0 ]; then
+            STATUS="healthy"
+          elif [ $ERROR_COUNT -lt $TOTAL_CHECKS ]; then
+            STATUS="degraded"
+          else
+            STATUS="unhealthy"
+          fi
+
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "error_count=$ERROR_COUNT" >> $GITHUB_OUTPUT
+          echo "total_checks=$TOTAL_CHECKS" >> $GITHUB_OUTPUT
+          echo "avg_response_time=$AVG_RESPONSE_TIME" >> $GITHUB_OUTPUT
+          echo "results<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$RESULTS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # 요약 출력
+          echo "📊 Summary:"
+          echo "  Status: $STATUS"
+          echo "  Errors: $ERROR_COUNT / $TOTAL_CHECKS"
+          echo "  Avg Response Time: ${AVG_RESPONSE_TIME}ms"
+
+      - name: Generate health report
+        run: |
+          STATUS="${{ steps.check.outputs.status }}"
+          STATUS_EMOJI="✅"
+          if [ "$STATUS" = "degraded" ]; then
+            STATUS_EMOJI="⚠️"
+          elif [ "$STATUS" = "unhealthy" ]; then
+            STATUS_EMOJI="❌"
+          fi
+
+          echo "## $STATUS_EMOJI Health Check Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | $STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| **URL** | ${{ steps.url.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Timestamp** | ${{ steps.url.outputs.timestamp }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Errors** | ${{ steps.check.outputs.error_count }} / ${{ steps.check.outputs.total_checks }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Avg Response Time** | ${{ steps.check.outputs.avg_response_time }}ms |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Endpoint Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Endpoint | Status | Response Time |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|---------------|" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.check.outputs.results }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check if rollback needed
+        id: rollback_check
+        run: |
+          STATUS="${{ steps.check.outputs.status }}"
+          AUTO_ROLLBACK="${{ inputs.auto_rollback || 'false' }}"
+
+          # repository_dispatch에서는 항상 자동 롤백 고려
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            AUTO_ROLLBACK="${{ github.event.client_payload.auto_rollback || 'true' }}"
+          fi
+
+          if [ "$STATUS" = "unhealthy" ] && [ "$AUTO_ROLLBACK" = "true" ]; then
+            echo "needs_rollback=true" >> $GITHUB_OUTPUT
+            echo "::warning::Health check failed - rollback will be triggered"
+          else
+            echo "needs_rollback=false" >> $GITHUB_OUTPUT
+          fi
+
+  # 자동 롤백 트리거
+  trigger-rollback:
+    name: Trigger Auto Rollback
+    needs: health-check
+    if: needs.health-check.outputs.status == 'unhealthy' && (github.event.inputs.auto_rollback == 'true' || github.event_name == 'repository_dispatch')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger rollback workflow
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('🔄 Triggering auto-rollback due to health check failure');
+
+            await github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'rollback-trigger',
+              client_payload: {
+                reason: 'Automatic rollback triggered by failed health check',
+                error_rate: '${{ needs.health-check.outputs.error_count }} errors',
+                deployment_id: '${{ needs.health-check.outputs.deployment_id }}',
+                triggered_by: 'health-check-workflow',
+                timestamp: new Date().toISOString()
+              }
+            });
+
+            console.log('✅ Rollback workflow triggered');
+
+      - name: Alert - Rollback Triggered
+        run: |
+          echo "## ⚠️ Auto Rollback Triggered" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Health check failed with status: **${{ needs.health-check.outputs.status }}**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Auto-rollback workflow has been triggered." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[View Rollback Workflow](${{ github.server_url }}/${{ github.repository }}/actions/workflows/auto-rollback.yml)" >> $GITHUB_STEP_SUMMARY
+
+  # Slack 알림 (실패 시)
+  notify-failure:
+    name: Notify on Failure
+    needs: health-check
+    if: needs.health-check.outputs.status != 'healthy' && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          STATUS="${{ needs.health-check.outputs.status }}"
+          STATUS_EMOJI="⚠️"
+          if [ "$STATUS" = "unhealthy" ]; then
+            STATUS_EMOJI="🚨"
+          fi
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "'"$STATUS_EMOJI"' Health Check Alert: '"$STATUS"'"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Status:*\n'"$STATUS"'"},
+                    {"type": "mrkdwn", "text": "*Errors:*\n${{ needs.health-check.outputs.error_count }}"},
+                    {"type": "mrkdwn", "text": "*Avg Response Time:*\n${{ needs.health-check.outputs.response_time }}ms"},
+                    {"type": "mrkdwn", "text": "*URL:*\n${{ env.PRODUCTION_URL }}"}
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {"type": "plain_text", "text": "View Details"},
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    },
+                    {
+                      "type": "button",
+                      "text": {"type": "plain_text", "text": "Manual Rollback"},
+                      "style": "danger",
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/workflows/auto-rollback.yml"
+                    }
+                  ]
+                }
+              ]
+            }' \
+            "$SLACK_WEBHOOK_URL" || echo "Slack notification failed (non-critical)"

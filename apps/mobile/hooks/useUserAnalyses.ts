@@ -175,8 +175,8 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
         setIsLoading(false);
       }
     },
-    [user?.id]
-  ); // supabase 제거 - 클라이언트는 안정적
+    [user?.id, supabase]
+  );
 
   useEffect(() => {
     if (!isLoaded) return;

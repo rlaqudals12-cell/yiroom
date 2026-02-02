@@ -10,7 +10,6 @@ import {
   announce,
   announceAnalysisComplete,
   announceProgress,
-  announceError,
   createLabelledBy,
   createDescribedBy,
   getAnalysisCardAriaProps,

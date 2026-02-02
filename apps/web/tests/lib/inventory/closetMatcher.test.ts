@@ -6,6 +6,7 @@ import {
   getRecommendationSummary,
 } from '@/lib/inventory/closetMatcher';
 import type { InventoryItem } from '@/types/inventory';
+import type { StyleCategory } from '@/lib/fashion/style-categories';
 
 // 테스트용 아이템 생성 헬퍼
 function createMockItem(overrides: Partial<InventoryItem> = {}): InventoryItem {
@@ -292,6 +293,286 @@ describe('closetMatcher', () => {
 
       // 블랙 아이템은 개선 필요 (needsImprovement)로 분류됨
       expect(summary.needsImprovement).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  // ============================================================================
+  // K-2 확장: 스타일 카테고리 및 트렌드 매칭
+  // ============================================================================
+
+  describe('K-2: 스타일 매칭', () => {
+    describe('calculateMatchScore with style option', () => {
+      it('스타일 옵션이 있으면 styleScore를 반환해야 한다', () => {
+        const item = createMockItem({
+          name: '오버사이즈 후드티',
+          metadata: { color: [], season: [], occasion: [] },
+        });
+        const score = calculateMatchScore(item, { style: 'street' });
+
+        expect(score.styleScore).toBeDefined();
+        expect(score.styleScore).toBeGreaterThan(0);
+      });
+
+      it('스타일 키워드와 매칭되면 높은 점수를 받아야 한다', () => {
+        const streetItem = createMockItem({
+          name: '오버사이즈 그래픽 티셔츠',
+          metadata: { color: [], season: [], occasion: [] },
+        });
+        const casualItem = createMockItem({
+          name: '데님 청바지 스니커즈',
+          metadata: { color: [], season: [], occasion: [] },
+        });
+
+        const streetScore = calculateMatchScore(streetItem, { style: 'street' });
+        const casualScore = calculateMatchScore(casualItem, { style: 'casual' });
+
+        expect(streetScore.styleScore).toBeGreaterThan(60);
+        expect(casualScore.styleScore).toBeGreaterThan(60);
+      });
+
+      it('매칭되지 않는 스타일은 기본 점수를 받아야 한다', () => {
+        const item = createMockItem({
+          name: '일반 상품',
+          metadata: { color: [], season: [], occasion: [] },
+        });
+        const score = calculateMatchScore(item, { style: 'formal' });
+
+        expect(score.styleScore).toBe(50);
+      });
+
+      it('스타일 옵션이 있으면 가중치가 변경되어야 한다', () => {
+        const item = createMockItem({
+          name: '블레이저 자켓',
+          metadata: { color: ['네이비'], season: ['spring'], occasion: ['formal'] },
+        });
+
+        const withStyle = calculateMatchScore(item, {
+          personalColor: 'Summer',
+          style: 'formal',
+        });
+        const withoutStyle = calculateMatchScore(item, {
+          personalColor: 'Summer',
+        });
+
+        // 스타일 옵션이 있으면 styleScore가 total에 영향
+        expect(withStyle.styleScore).toBeDefined();
+        expect(withoutStyle.styleScore).toBeUndefined();
+      });
+    });
+
+    describe('calculateMatchScore with trend bonus', () => {
+      it('2026 트렌드 아이템은 trendBonus를 받아야 한다', () => {
+        const trendItem = createMockItem({
+          name: '폴로 셔츠', // 2026 트렌드 아이템
+          metadata: { color: [], season: [], occasion: [] },
+        });
+        const score = calculateMatchScore(trendItem, {});
+
+        expect(score.trendBonus).toBeDefined();
+        expect(score.trendBonus).toBeGreaterThan(0);
+      });
+
+      it('일반 아이템은 trendBonus가 없어야 한다', () => {
+        const normalItem = createMockItem({
+          name: '일반 티셔츠',
+          metadata: { color: [], season: [], occasion: [] },
+        });
+        const score = calculateMatchScore(normalItem, {});
+
+        expect(score.trendBonus).toBeUndefined();
+      });
+
+      it('트렌드 보너스가 total 점수에 반영되어야 한다', () => {
+        const trendItem = createMockItem({
+          name: '새깅 팬츠', // 2026 트렌드 아이템
+          metadata: { color: [], season: [], occasion: [] },
+        });
+        const normalItem = createMockItem({
+          name: '일반 팬츠',
+          metadata: { color: [], season: [], occasion: [] },
+        });
+
+        const trendScore = calculateMatchScore(trendItem, {});
+        const normalScore = calculateMatchScore(normalItem, {});
+
+        expect(trendScore.total).toBeGreaterThan(normalScore.total);
+      });
+
+      it('여러 트렌드 아이템이 인식되어야 한다', () => {
+        const trendItems = [
+          '폴로 셔츠',
+          '새깅 팬츠',
+          '테크웨어',
+          '니트 베스트',
+          '고프코어 아이템',
+        ];
+
+        for (const itemName of trendItems) {
+          const item = createMockItem({
+            name: itemName,
+            metadata: { color: [], season: [], occasion: [] },
+          });
+          const score = calculateMatchScore(item, {});
+
+          expect(score.trendBonus).toBeDefined();
+          expect(score.trendBonus).toBeGreaterThan(0);
+        }
+      });
+    });
+
+    describe('recommendFromCloset with style option', () => {
+      const items: InventoryItem[] = [
+        createMockItem({
+          id: 'street-1',
+          name: '오버사이즈 후드티',
+          subCategory: 'top',
+          metadata: { color: [], season: ['spring'], occasion: [] },
+        }),
+        createMockItem({
+          id: 'formal-1',
+          name: '슬림핏 블레이저',
+          subCategory: 'outer',
+          metadata: { color: ['네이비'], season: ['spring', 'autumn'], occasion: ['formal'] },
+        }),
+        createMockItem({
+          id: 'casual-1',
+          name: '데님 청바지',
+          subCategory: 'bottom',
+          metadata: { color: ['블루'], season: ['spring', 'summer'], occasion: ['casual'] },
+        }),
+      ];
+
+      it('스타일 옵션으로 필터링/정렬되어야 한다', () => {
+        const streetRecs = recommendFromCloset(items, { style: 'street' });
+        const formalRecs = recommendFromCloset(items, { style: 'formal' });
+
+        // street 스타일 추천에서 오버사이즈 후드티가 상위
+        expect(streetRecs[0].item.name).toContain('오버사이즈');
+
+        // formal 스타일 추천에서 블레이저가 상위
+        expect(formalRecs[0].item.name).toContain('블레이저');
+      });
+
+      it('스타일 매칭 이유가 생성되어야 한다', () => {
+        const recommendations = recommendFromCloset(items, { style: 'street' });
+        const streetItem = recommendations.find((r) => r.item.id === 'street-1');
+
+        // styleScore가 높으면 스타일 관련 이유 생성
+        if (streetItem && streetItem.score.styleScore && streetItem.score.styleScore >= 70) {
+          expect(streetItem.reasons.some((r) => r.includes('스트릿'))).toBe(true);
+        }
+      });
+
+      it('트렌드 아이템에 대한 이유가 생성되어야 한다', () => {
+        const trendItems: InventoryItem[] = [
+          createMockItem({
+            id: 'trend-1',
+            name: '폴로 셔츠',
+            subCategory: 'top',
+            metadata: { color: [], season: ['spring'], occasion: [] },
+          }),
+        ];
+
+        const recommendations = recommendFromCloset(trendItems, {});
+        const trendRec = recommendations[0];
+
+        if (trendRec.score.trendBonus && trendRec.score.trendBonus > 0) {
+          expect(trendRec.reasons.some((r) => r.includes('2026') || r.includes('트렌드'))).toBe(true);
+        }
+      });
+    });
+
+    describe('모든 스타일 카테고리 지원', () => {
+      const allStyles: StyleCategory[] = [
+        'casual',
+        'formal',
+        'street',
+        'minimal',
+        'sporty',
+        'classic',
+        'preppy',
+        'hiphop',
+        'romantic',
+        'workwear',
+      ];
+
+      it.each(allStyles)('스타일 "%s"가 calculateMatchScore에서 지원되어야 한다', (style) => {
+        const item = createMockItem({
+          name: '테스트 아이템',
+          metadata: { color: [], season: [], occasion: [] },
+        });
+        const score = calculateMatchScore(item, { style });
+
+        expect(score.styleScore).toBeDefined();
+        expect(score.styleScore).toBeGreaterThanOrEqual(0);
+        expect(score.styleScore).toBeLessThanOrEqual(100);
+      });
+
+      it.each(allStyles)('스타일 "%s"가 recommendFromCloset에서 지원되어야 한다', (style) => {
+        const items = [
+          createMockItem({ id: 'test-1', name: '테스트 아이템' }),
+        ];
+
+        const recommendations = recommendFromCloset(items, { style });
+
+        expect(recommendations).toBeDefined();
+        expect(Array.isArray(recommendations)).toBe(true);
+      });
+    });
+
+    describe('복합 옵션 조합', () => {
+      it('personalColor + style 조합이 작동해야 한다', () => {
+        const item = createMockItem({
+          name: '오버사이즈 그래픽 티셔츠',
+          metadata: { color: ['화이트', '블랙'], season: ['summer'], occasion: [] },
+        });
+
+        const score = calculateMatchScore(item, {
+          personalColor: 'Winter',
+          style: 'street',
+        });
+
+        expect(score.colorScore).toBeGreaterThan(0);
+        expect(score.styleScore).toBeGreaterThan(50);
+      });
+
+      it('bodyType + style 조합이 작동해야 한다', () => {
+        const item = createMockItem({
+          name: '오버사이즈 스트릿 후드티',
+          subCategory: 'top',
+          metadata: { color: [], season: [], occasion: [] },
+        });
+
+        const score = calculateMatchScore(item, {
+          bodyType: 'N', // Natural 체형 - 루즈핏 추천
+          style: 'street',
+        });
+
+        expect(score.bodyTypeScore).toBeGreaterThanOrEqual(50);
+        expect(score.styleScore).toBeGreaterThan(50);
+      });
+
+      it('season + style + personalColor 전체 조합이 작동해야 한다', () => {
+        const item = createMockItem({
+          name: '아이보리 오버사이즈 니트',
+          subCategory: 'top',
+          metadata: { color: ['아이보리'], season: ['autumn'], occasion: [] },
+        });
+
+        const score = calculateMatchScore(item, {
+          personalColor: 'Spring',
+          bodyType: 'N',
+          season: 'autumn',
+          style: 'street',
+        });
+
+        expect(score.total).toBeGreaterThan(0);
+        expect(score.total).toBeLessThanOrEqual(100);
+        expect(score.colorScore).toBeDefined();
+        expect(score.bodyTypeScore).toBeDefined();
+        expect(score.seasonScore).toBeDefined();
+        expect(score.styleScore).toBeDefined();
+      });
     });
   });
 });

@@ -140,7 +140,6 @@ export function getToneRecommendation(
   userSeason: 'spring' | 'summer' | 'autumn' | 'winter'
 ): string {
   const warmSeasons = ['spring', 'autumn'];
-  const coolSeasons = ['summer', 'winter'];
 
   const isUserWarm = warmSeasons.includes(userSeason);
 

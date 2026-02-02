@@ -123,6 +123,8 @@ Architecture Decision Records는 프로젝트에서 내린 중요한 아키텍�
 | [ADR-057](./ADR-057-design-system-v2.md)              | 디자인 시스템 v2 (YIROOM IDENTITY) | accepted | 2026-01-24 |
 | [ADR-058](./ADR-058-hub-pattern-deferral.md)          | Hub 패턴 연기 결정                 | accepted | 2026-01-24 |
 | [ADR-059](./ADR-059-contextual-retrieval-deferral.md) | Contextual Retrieval 적용 보류     | deferred | 2026-01-31 |
+| [ADR-060](./ADR-060-claude-code-headless-mode.md)      | Claude Code Headless Mode 도입 보류 | deferred | 2026-01-31 |
+| [ADR-061](./ADR-061-data-platform-architecture.md)     | 데이터 플랫폼 아키텍처              | accepted | 2026-02-01 |
 
 ## ADR 카테고리
 
@@ -138,6 +140,7 @@ Architecture Decision Records는 프로젝트에서 내린 중요한 아키텍�
 - ADR-008: Repository-Service 계층
 - ADR-011: Cross-Module 데이터 흐름
 - ADR-014: 캐싱 전략
+- ADR-061: 데이터 플랫폼 아키텍처
 
 ### AI/외부 서비스 (AI/External Services)
 
@@ -219,6 +222,7 @@ Architecture Decision Records는 프로젝트에서 내린 중요한 아키텍�
 ### DevOps/인프라 (DevOps/Infrastructure)
 
 - ADR-049: CI/CD 파이프라인
+- ADR-060: Claude Code Headless Mode 도입 보류 (deferred)
 
 ### 크로스 모듈 (Cross-Module)
 
@@ -274,4 +278,4 @@ Architecture Decision Records는 프로젝트에서 내린 중요한 아키텍�
 
 ---
 
-**Version**: 7.7 | **Updated**: 2026-01-31 | ADR-059 추가 (Contextual Retrieval 보류), deferred 상태 추가
+**Version**: 7.9 | **Updated**: 2026-02-01 | ADR-061 추가 (데이터 플랫폼 아키텍처)

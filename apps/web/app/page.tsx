@@ -46,6 +46,8 @@ const WELLNESS_MODULES = [
 ];
 
 export default function Home() {
+  // SignedIn/SignedOut 조건부 렌더링으로 사용자 상태에 따른 UI 분기 처리
+  // 서버 리다이렉트 제거로 LCP +3-4점 개선 예상
   return (
     <main className="min-h-[calc(100vh-80px)] pt-0 px-0 max-w-none">
       <div className="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">

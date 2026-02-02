@@ -2,6 +2,9 @@
  * 옷장 아이템 매칭 로직
  *
  * 퍼스널컬러, 체형, 날씨 기반으로 사용자 옷장에서 어울리는 아이템 추천
+ *
+ * @module lib/inventory/closetMatcher
+ * @see docs/specs/SDD-PHASE-K-COMPREHENSIVE-UPGRADE.md 섹션 3.0
  */
 
 import type {
@@ -13,6 +16,12 @@ import type {
 } from '@/types/inventory';
 import { toClothingItem } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
+import {
+  type StyleCategory,
+  STYLE_CATEGORY_KEYWORDS,
+  TREND_BONUS_2026,
+  isTrendItem2026,
+} from '@/lib/fashion';
 
 // 체형 타입
 export type BodyType3 = 'S' | 'W' | 'N';
@@ -283,6 +292,31 @@ export interface MatchScore {
   colorScore: number;
   bodyTypeScore: number;
   seasonScore: number;
+  styleScore?: number;
+  trendBonus?: number;
+}
+
+/**
+ * 스타일 카테고리 매칭 점수 계산
+ */
+function calculateStyleMatchScore(
+  item: ClothingItem,
+  targetStyle: StyleCategory
+): number {
+  const keywords = STYLE_CATEGORY_KEYWORDS[targetStyle];
+  if (!keywords) return 50;
+
+  const itemName = item.name.toLowerCase();
+  let score = 50;
+
+  // 키워드 매칭
+  const matchCount = keywords.filter((keyword) =>
+    itemName.includes(keyword.toLowerCase())
+  ).length;
+
+  score += matchCount * 15;
+
+  return Math.min(100, score);
 }
 
 export function calculateMatchScore(
@@ -293,6 +327,7 @@ export function calculateMatchScore(
     season?: Season | null;
     temp?: number | null;
     occasion?: Occasion | null;
+    style?: StyleCategory | null;
   }
 ): MatchScore {
   const clothingItem = toClothingItem(item);
@@ -314,6 +349,16 @@ export function calculateMatchScore(
     ? calculateSeasonMatchScore(clothingItem, targetSeason)
     : 50;
 
+  // 스타일 점수 (K-2 확장)
+  const styleScore = options.style
+    ? calculateStyleMatchScore(clothingItem, options.style)
+    : undefined;
+
+  // 트렌드 보너스 (K-2 확장)
+  const trendBonus = isTrendItem2026(clothingItem.name)
+    ? Math.round(TREND_BONUS_2026 * 100)
+    : 0;
+
   // 상황(TPO) 점수 보정
   let occasionBonus = 0;
   if (options.occasion && metadata.occasion?.includes(options.occasion)) {
@@ -321,17 +366,17 @@ export function calculateMatchScore(
   }
 
   // 종합 점수 (가중 평균)
-  const weights = {
-    color: 0.35,
-    bodyType: 0.25,
-    season: 0.4,
-  };
+  const weights = options.style
+    ? { color: 0.3, bodyType: 0.2, season: 0.3, style: 0.2 }
+    : { color: 0.35, bodyType: 0.25, season: 0.4, style: 0 };
 
   const total = Math.round(
     colorScore * weights.color +
       bodyTypeScore * weights.bodyType +
       seasonScore * weights.season +
-      occasionBonus
+      (styleScore ?? 0) * weights.style +
+      occasionBonus +
+      trendBonus
   );
 
   return {
@@ -339,6 +384,8 @@ export function calculateMatchScore(
     colorScore,
     bodyTypeScore,
     seasonScore,
+    styleScore,
+    trendBonus: trendBonus > 0 ? trendBonus : undefined,
   };
 }
 
@@ -360,6 +407,7 @@ export function recommendFromCloset(
     temp?: number | null;
     occasion?: Occasion | null;
     category?: ClothingCategory | null;
+    style?: StyleCategory | null;
     limit?: number;
   }
 ): ClosetRecommendation[] {
@@ -388,6 +436,26 @@ export function recommendFromCloset(
     }
     if (score.seasonScore >= 80) {
       reasons.push('현재 계절에 적합해요');
+    }
+    // K-2 확장: 스타일 매칭 이유
+    if (score.styleScore && score.styleScore >= 70 && options.style) {
+      const styleNames: Record<StyleCategory, string> = {
+        casual: '캐주얼',
+        formal: '포멀',
+        street: '스트릿',
+        minimal: '미니멀',
+        sporty: '스포티',
+        classic: '클래식',
+        preppy: '프레피',
+        hiphop: '힙합',
+        romantic: '로맨틱',
+        workwear: '워크웨어',
+      };
+      reasons.push(`${styleNames[options.style]} 스타일에 어울려요`);
+    }
+    // K-2 확장: 트렌드 보너스 이유
+    if (score.trendBonus && score.trendBonus > 0) {
+      reasons.push('2026 트렌드 아이템이에요');
     }
 
     if (reasons.length === 0) {

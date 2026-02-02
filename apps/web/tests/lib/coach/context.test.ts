@@ -331,5 +331,195 @@ describe('lib/coach/context', () => {
       expect(result?.personalColor).toBeUndefined();
       expect(result?.bodyAnalysis).toBeUndefined();
     });
+
+    it('should handle recent activity when today workout exists', async () => {
+      const mockSupabase = createSupabaseMock({
+        workout_logs: {
+          data: {
+            exercise_name: '스쿼트',
+            duration_minutes: 30,
+          },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      expect(result).not.toBeNull();
+      expect(result?.recentActivity?.todayWorkout).toBeDefined();
+    });
+
+    it('should handle recent activity when today nutrition exists', async () => {
+      const mockSupabase = createSupabaseMock({
+        daily_nutrition_summary: {
+          data: {
+            total_calories: 1800,
+            water_ml: 2000,
+          },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      expect(result).not.toBeNull();
+      expect(result?.recentActivity?.todayCalories).toBe(1800);
+      expect(result?.recentActivity?.waterIntake).toBe(2000);
+    });
+
+    it('should handle weekly summary data', async () => {
+      // 복잡한 체이닝을 위한 특수 mock
+      const weeklyNutritionData = [
+        { total_calories: 1800, protein_g: 80, carbs_g: 200, fat_g: 60 },
+        { total_calories: 1900, protein_g: 85, carbs_g: 220, fat_g: 65 },
+        { total_calories: 2000, protein_g: 90, carbs_g: 250, fat_g: 70 },
+      ];
+
+      const mockSupabase = createSupabaseMock({
+        daily_nutrition_summary: {
+          data: weeklyNutritionData,
+          error: null,
+        },
+        workout_logs: {
+          data: null,
+          error: null,
+          count: 5,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      // 주간 요약 검증은 복잡한 쿼리 체이닝으로 인해 실제 통합 테스트에서 확인 필요
+      expect(result).toBeDefined();
+    });
+
+    it('should handle personal color without tone', async () => {
+      const mockSupabase = createSupabaseMock({
+        personal_color_assessments: {
+          data: { result: { season: '여름 쿨톤' } },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      expect(result).not.toBeNull();
+      expect(result?.personalColor?.season).toBe('여름 쿨톤');
+      expect(result?.personalColor?.tone).toBeUndefined();
+    });
+
+    it('should return null when personal color result has no season', async () => {
+      const mockSupabase = createSupabaseMock({
+        personal_color_assessments: {
+          data: { result: {} },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      // result에 season이 없으면 personalColor가 설정되지 않음
+      expect(result?.personalColor).toBeUndefined();
+    });
+
+    it('should handle workout streak only (without workout analysis)', async () => {
+      const mockSupabase = createSupabaseMock({
+        workout_streaks: {
+          data: { current_streak: 20 },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      expect(result).not.toBeNull();
+      expect(result?.workout?.streak).toBe(20);
+      expect(result?.workout?.workoutType).toBeUndefined();
+    });
+
+    it('should handle nutrition streak only (without nutrition settings)', async () => {
+      const mockSupabase = createSupabaseMock({
+        nutrition_streaks: {
+          data: { current_streak: 5 },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      expect(result).not.toBeNull();
+      expect(result?.nutrition?.streak).toBe(5);
+      expect(result?.nutrition?.goal).toBeUndefined();
+    });
+
+    it('should handle hair analysis without concerns', async () => {
+      const mockSupabase = createSupabaseMock({
+        hair_analyses: {
+          data: {
+            hair_type: '곱슬',
+            scalp_type: '건성',
+            overall_score: 60,
+          },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      expect(result).not.toBeNull();
+      expect(result?.hairAnalysis?.hairType).toBe('곱슬');
+      expect(result?.hairAnalysis?.scalpType).toBe('건성');
+      expect(result?.hairAnalysis?.concerns).toBeUndefined();
+    });
+
+    it('should handle makeup analysis without eye shape and styles', async () => {
+      const mockSupabase = createSupabaseMock({
+        makeup_analyses: {
+          data: {
+            undertone: '쿨톤',
+            face_shape: '네모형',
+            overall_score: 70,
+          },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      expect(result).not.toBeNull();
+      expect(result?.makeupAnalysis?.undertone).toBe('쿨톤');
+      expect(result?.makeupAnalysis?.faceShape).toBe('네모형');
+      expect(result?.makeupAnalysis?.eyeShape).toBeUndefined();
+      expect(result?.makeupAnalysis?.recommendedStyles).toBeUndefined();
+    });
+
+    it('should handle body analysis without BMI', async () => {
+      const mockSupabase = createSupabaseMock({
+        body_analyses: {
+          data: {
+            body_type: '역삼각형',
+            height: 180,
+            weight: 75,
+          },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      expect(result).not.toBeNull();
+      expect(result?.bodyAnalysis?.bodyType).toBe('역삼각형');
+      expect(result?.bodyAnalysis?.bmi).toBeUndefined();
+    });
   });
 });

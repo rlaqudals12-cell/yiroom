@@ -132,3 +132,48 @@ export {
   cobbAngleToSymmetry,
   symmetryToCobbAngle,
 } from './posture-score';
+
+// ============================================
+// K-3: BMI 계산기 (아시아 기준) export
+// ============================================
+
+export type {
+  BMICategory,
+  BMIResult,
+  AbdominalObesityResult,
+  BodyMassAnalysis,
+} from './bmi-calculator';
+
+export {
+  calculateBMI,
+  classifyBMI,
+  checkAbdominalObesity,
+  analyzeBodyMass,
+  getBMICategoryLabel,
+  getBMILabelFromValue,
+  calculateTargetWeight,
+  getBMIColor,
+} from './bmi-calculator';
+
+// ============================================
+// K-3: 자세 교정 운동 추천 export
+// ============================================
+
+export type {
+  PostureIssue,
+  CorrectionExercise,
+  PostureIssueDetail,
+  PostureCorrectionGuide,
+} from './posture-correction';
+
+export {
+  POSTURE_ISSUES,
+  CORRECTION_EXERCISES,
+  getExercisesForIssue,
+  getPostureCorrectionGuide,
+  getPostureIssueDetail,
+  getExerciseById,
+  filterExercisesByDifficulty,
+  getAllPostureIssues,
+  getAllExercises,
+} from './posture-correction';

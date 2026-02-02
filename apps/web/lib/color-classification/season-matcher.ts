@@ -7,7 +7,7 @@
  * @see docs/adr/ADR-034-product-color-classification.md
  */
 
-import type { LabColor, Season, SeasonMatchScores, SeasonLabRange } from './types';
+import type { LabColor, Season, SeasonMatchScores } from './types';
 import { SEASON_LAB_RANGES } from './types';
 
 /**

@@ -37,6 +37,7 @@
 | [risk-exercise-criteria.md](risk-exercise-criteria.md) | 위험 운동 기준 | W-2, 금기사항, PAR-Q+ | **1.0 (신규)** |
 | [color-matching-theory.md](color-matching-theory.md) | 색상 매칭 이론 | PC-1, PC-2, 색상 조화 | **1.0 (신규)** |
 | [3d-face-shape.md](3d-face-shape.md) | 3D 얼굴 형태 분석 | C-1, C-2, MediaPipe | **1.0 (신규)** |
+| [data-platform.md](data-platform.md) | 데이터 플랫폼 | ADR-061, Phase L | **1.0 (신규)** |
 
 ## 폴더 구조
 
@@ -71,7 +72,8 @@ docs/principles/
 ├── stretching-physiology.md # 스트레칭 생리학 (W-2, ROM) ✅ 신규
 ├── risk-exercise-criteria.md # 위험 운동 기준 (W-2, PAR-Q+) ✅ 신규
 ├── color-matching-theory.md # 색상 매칭 이론 (PC-1, PC-2) ✅ 신규
-└── 3d-face-shape.md         # 3D 얼굴 형태 분석 (C-1, C-2) ✅ 신규
+├── 3d-face-shape.md         # 3D 얼굴 형태 분석 (C-1, C-2) ✅ 신규
+└── data-platform.md         # 데이터 플랫폼 (ADR-061, Phase L) ✅ 신규
 ```
 
 ## 원리 문서 템플릿
@@ -171,6 +173,7 @@ docs/principles/
 | body-mechanics.md | SDD-BODY-ANALYSIS-v2 | ADR-005 |
 | image-processing.md | SDD-CIE-1~4 | ADR-001, ADR-033 |
 | ai-inference.md | - | ADR-003, ADR-007, ADR-010, ADR-024 |
+| data-platform.md | SDD-DATA-PLATFORM-L1 | ADR-061 |
 
 ### 관련 문서 섹션 표준 구조
 
@@ -195,12 +198,13 @@ docs/principles/
 
 ---
 
-**Version**: 5.0 | **Created**: 2026-01-15 | **Updated**: 2026-01-29
+**Version**: 5.1 | **Created**: 2026-01-15 | **Updated**: 2026-02-01
 
 ### 변경 이력
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
+| 5.1 | 2026-02-01 | data-platform.md 신규 추가 (ADR-061, Phase L 데이터 플랫폼) |
 | 5.0 | 2026-01-29 | P3 원리 문서 5개 신규 추가 (lesion-analysis, stretching-physiology, risk-exercise-criteria, color-matching-theory, 3d-face-shape) |
 | 4.4 | 2026-01-23 | accessibility.md 신규 추가 (WCAG 2.1 AA, WAI-ARIA, POUR 원칙) |
 | 4.3 | 2026-01-23 | fashion-matching.md, hair-makeup-analysis.md 인덱스 추가 |

@@ -4,6 +4,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import * as Sentry from '@sentry/nextjs';
 
 interface Props {
   children: ReactNode;
@@ -30,7 +31,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // 에러 로깅 (Sentry 등 연동 시 여기서 전송)
+    // Sentry 에러 리포팅
+    Sentry.captureException(error, {
+      tags: { type: 'error-boundary' },
+      extra: { componentStack: errorInfo.componentStack },
+    });
     console.error('[ErrorBoundary] Caught error:', error);
     console.error('[ErrorBoundary] Error info:', errorInfo.componentStack);
   }

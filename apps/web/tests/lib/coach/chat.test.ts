@@ -371,6 +371,116 @@ describe('lib/coach/chat', () => {
 
         expect(response.message).toBeDefined();
       });
+
+      it('should handle mixed category keywords', async () => {
+        const request: CoachChatRequest = {
+          message: '운동하면서 피부관리 어떻게 해요?',
+          userContext: null,
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.message).toBeDefined();
+        expect(response.suggestedQuestions).toBeDefined();
+      });
+
+      it('should handle nutrition context with todayCalories', async () => {
+        const request: CoachChatRequest = {
+          message: '오늘 칼로리 어떻게 되나요?',
+          userContext: {
+            nutrition: {
+              targetCalories: 2000,
+              todayCalories: 1500,
+            },
+          },
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.message).toBeDefined();
+      });
+    });
+
+    describe('Suggested questions generation', () => {
+      it('should generate workout-related suggestions for workout questions', async () => {
+        const request: CoachChatRequest = {
+          message: '오늘 운동 뭐하면 좋을까요?',
+          userContext: {
+            workout: {
+              streak: 10,
+              workoutType: '근력',
+            },
+          },
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.suggestedQuestions).toBeDefined();
+        expect(response.suggestedQuestions!.length).toBeLessThanOrEqual(3);
+      });
+
+      it('should generate nutrition-related suggestions for nutrition questions', async () => {
+        const request: CoachChatRequest = {
+          message: '다이어트 식단 추천해줘',
+          userContext: {
+            nutrition: {
+              targetCalories: 1800,
+              goal: '체중 감량',
+            },
+          },
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.suggestedQuestions).toBeDefined();
+      });
+
+      it('should generate skin-related suggestions for skin questions', async () => {
+        const request: CoachChatRequest = {
+          message: '피부가 건조해요',
+          userContext: {
+            skinAnalysis: {
+              skinType: '건성',
+              concerns: ['건조', '당김'],
+            },
+          },
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.suggestedQuestions).toBeDefined();
+      });
+
+      it('should generate personal color suggestions for color questions', async () => {
+        const request: CoachChatRequest = {
+          message: '퍼스널컬러에 맞는 립 추천해줘',
+          userContext: {
+            personalColor: {
+              season: '봄 웜톤',
+              tone: 'bright',
+            },
+          },
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.suggestedQuestions).toBeDefined();
+      });
+
+      it('should generate fashion suggestions for fashion questions', async () => {
+        const request: CoachChatRequest = {
+          message: '오늘 뭐 입을까요?',
+          userContext: {
+            personalColor: {
+              season: '가을 웜톤',
+            },
+          },
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.suggestedQuestions).toBeDefined();
+      });
     });
   });
 });

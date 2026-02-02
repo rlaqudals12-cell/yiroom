@@ -21,14 +21,12 @@ import type {
   OH1ToN1IntegrationData,
   CIE3ToAnalysisData,
   CIE4ToAnalysisData,
-  IntegrationDataMap,
 } from './integration-types';
 
 import { DEFAULT_INTEGRATION_DATA } from './integration-types';
 
 import {
   IntegrationDataNotFoundError,
-  IntegrationDataExpiredError,
   IntegrationTimeoutError,
   handleIntegrationError,
   type IntegrationResult,

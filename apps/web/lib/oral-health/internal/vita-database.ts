@@ -156,13 +156,9 @@ export function calculateShadeSteps(shade1: VitaShade, shade2: VitaShade): numbe
 
   if (!ref1 || !ref2) return 0;
 
-  // Bleached는 특수 처리
-  const rank1 = ref1.brightnessRank === 0
-    ? VITA_BRIGHTNESS_ORDER.indexOf(shade1)
-    : VITA_BRIGHTNESS_ORDER.indexOf(shade1);
-  const rank2 = ref2.brightnessRank === 0
-    ? VITA_BRIGHTNESS_ORDER.indexOf(shade2)
-    : VITA_BRIGHTNESS_ORDER.indexOf(shade2);
+  // 밝기 순위 기반 비교
+  const rank1 = VITA_BRIGHTNESS_ORDER.indexOf(shade1);
+  const rank2 = VITA_BRIGHTNESS_ORDER.indexOf(shade2);
 
   return rank1 - rank2;  // 양수면 shade2가 더 밝음 (순위가 낮음)
 }

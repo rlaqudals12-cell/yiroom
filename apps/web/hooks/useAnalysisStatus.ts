@@ -1,8 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+
+// 캐시 TTL: 5분 (밀리초)
+const CACHE_TTL = 5 * 60 * 1000;
+
+// 글로벌 캐시 (컴포넌트 간 공유)
+interface CacheEntry {
+  data: AnalysisSummary[];
+  timestamp: number;
+}
+const analysisCache = new Map<string, CacheEntry>();
 
 // 분석 타입 정의
 export type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
@@ -89,19 +99,45 @@ function getUndertoneLabel(undertone: string): string {
  * - 각 분석 타입별 완료 여부
  * - 분석 요약 정보
  * - 사용자 상태 판단 (신규/부분/활성)
+ * - 5분 캐싱으로 불필요한 API 호출 방지
  */
 export function useAnalysisStatus(): AnalysisStatus {
   const { user, isLoaded: isUserLoaded } = useUser();
   const supabase = useClerkSupabaseClient();
   const [analyses, setAnalyses] = useState<AnalysisSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const fetchingRef = useRef(false);
+
+  // 캐시 유효성 검사
+  const getCachedData = useCallback((userId: string): AnalysisSummary[] | null => {
+    const cached = analysisCache.get(userId);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return cached.data;
+    }
+    return null;
+  }, []);
+
+  // 캐시 저장
+  const setCachedData = useCallback((userId: string, data: AnalysisSummary[]) => {
+    analysisCache.set(userId, { data, timestamp: Date.now() });
+  }, []);
 
   useEffect(() => {
     async function fetchAnalyses() {
-      if (!user?.id) {
+      if (!user?.id || fetchingRef.current) {
+        if (!user?.id) setIsLoading(false);
+        return;
+      }
+
+      // 캐시 확인
+      const cachedData = getCachedData(user.id);
+      if (cachedData) {
+        setAnalyses(cachedData);
         setIsLoading(false);
         return;
       }
+
+      fetchingRef.current = true;
 
       try {
         // 병렬로 모든 분석 결과 조회
@@ -192,18 +228,21 @@ export function useAnalysisStatus(): AnalysisStatus {
           });
         }
 
+        // 캐시 저장
+        setCachedData(user.id, results);
         setAnalyses(results);
       } catch (error) {
         console.error('[useAnalysisStatus] Failed to fetch analyses:', error);
       } finally {
         setIsLoading(false);
+        fetchingRef.current = false;
       }
     }
 
     if (isUserLoaded) {
       fetchAnalyses();
     }
-  }, [user?.id, isUserLoaded, supabase]);
+  }, [user?.id, isUserLoaded, supabase, getCachedData, setCachedData]);
 
   // 각 분석 타입 존재 여부
   const hasPersonalColor = analyses.some((a) => a.type === 'personal-color');

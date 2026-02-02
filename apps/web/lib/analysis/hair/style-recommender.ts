@@ -14,7 +14,6 @@ import type {
   HairColorRecommendation,
   HairLength,
   HairTexture,
-  FaceShapeAnalysis,
 } from './types';
 import { FACE_SHAPE_STYLE_MAPPING } from './types';
 

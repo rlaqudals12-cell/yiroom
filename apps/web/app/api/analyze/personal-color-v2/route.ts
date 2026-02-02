@@ -28,7 +28,6 @@ import {
   getToneLabel,
   type TwelveTone,
   type PersonalColorV2Result,
-  SEASON_DESCRIPTIONS,
 } from '@/lib/analysis/personal-color-v2';
 import {
   extractSkinColorWithGemini,
@@ -195,7 +194,6 @@ export async function POST(req: NextRequest) {
             result.palette.eyeshadowColors = makeup.eyeColors;
             result.palette.blushColors = makeup.blushColors;
 
-            usedFallback = false;
             console.log('[PC-2] Gemini color extraction successful:', classification.tone);
           } else {
             // Gemini 실패: Mock으로 폴백

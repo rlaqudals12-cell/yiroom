@@ -18,7 +18,6 @@ import {
   Pause,
   SkipForward,
   RotateCcw,
-  Timer,
   AlertTriangle,
   CheckCircle,
   Info,

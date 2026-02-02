@@ -107,6 +107,7 @@ vi.mock('lucide-react', () => ({
   ArrowLeft: createIconMock('ArrowLeft'),
   ArrowRight: createIconMock('ArrowRight'),
   ArrowUp: createIconMock('ArrowUp'),
+  ArrowDown: createIconMock('ArrowDown'),
   X: createIconMock('X'),
   Check: createIconMock('Check'),
   Plus: createIconMock('Plus'),
@@ -144,6 +145,7 @@ vi.mock('lucide-react', () => ({
   MoreHorizontal: createIconMock('MoreHorizontal'),
   Edit2: createIconMock('Edit2'),
   Bookmark: createIconMock('Bookmark'),
+  BookmarkPlus: createIconMock('BookmarkPlus'),
   Reply: createIconMock('Reply'),
 
   // Workout & Activity
@@ -255,6 +257,8 @@ vi.mock('lucide-react', () => ({
   HardDrive: createIconMock('HardDrive'),
   ToggleLeft: createIconMock('ToggleLeft'),
   ToggleRight: createIconMock('ToggleRight'),
+  Eye: createIconMock('Eye'),
+  EyeOff: createIconMock('EyeOff'),
 
   // Charts & Analysis
   LineChart: createIconMock('LineChart'),
@@ -281,6 +285,13 @@ vi.mock('lucide-react', () => ({
   Megaphone: createIconMock('Megaphone'),
   MessageSquare: createIconMock('MessageSquare'),
   Filter: createIconMock('Filter'),
+
+  // Fashion K-2
+  Grid3X3: createIconMock('Grid3X3'),
+  Briefcase: createIconMock('Briefcase'),
+  SortAsc: createIconMock('SortAsc'),
+  ArrowUpDown: createIconMock('ArrowUpDown'),
+  Store: createIconMock('Store'),
 
   // Product Shelf
   Archive: createIconMock('Archive'),
@@ -401,3 +412,150 @@ vi.mock('@clerk/nextjs/server', () => ({
     },
   })),
 }));
+
+// ============================================================================
+// Canvas API Mock (브라우저 환경 시뮬레이션)
+// ============================================================================
+
+// Mock ImageData 클래스 (ImageData 인터페이스와 호환)
+class MockImageData {
+  readonly data: Uint8ClampedArray;
+  readonly width: number;
+  readonly height: number;
+  readonly colorSpace: PredefinedColorSpace = 'srgb';
+
+  constructor(width: number, height: number);
+  constructor(data: Uint8ClampedArray, width: number, height?: number);
+  constructor(
+    dataOrWidth: Uint8ClampedArray | number,
+    widthOrHeight: number,
+    height?: number
+  ) {
+    if (typeof dataOrWidth === 'number') {
+      this.width = dataOrWidth;
+      this.height = widthOrHeight;
+      this.data = new Uint8ClampedArray(this.width * this.height * 4);
+    } else {
+      this.data = dataOrWidth;
+      this.width = widthOrHeight;
+      this.height = height ?? Math.floor(dataOrWidth.length / (widthOrHeight * 4));
+    }
+  }
+}
+
+global.ImageData = MockImageData as unknown as typeof ImageData;
+
+// Mock CanvasRenderingContext2D
+class MockCanvasRenderingContext2D {
+  canvas: HTMLCanvasElement;
+  private _imageData: MockImageData | null = null;
+  fillStyle: string = '#000000';
+  strokeStyle: string = '#000000';
+  lineWidth: number = 1;
+  shadowBlur: number = 0;
+  shadowColor: string = 'transparent';
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+  }
+
+  getImageData(sx: number, sy: number, sw: number, sh: number): ImageData {
+    const data = new Uint8ClampedArray(sw * sh * 4);
+    // 기본값으로 회색 픽셀 채우기
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = 128;     // R
+      data[i + 1] = 128; // G
+      data[i + 2] = 128; // B
+      data[i + 3] = 255; // A
+    }
+    return new MockImageData(data, sw, sh) as unknown as ImageData;
+  }
+
+  putImageData(_imageData: ImageData, _dx: number, _dy: number): void {
+    // No-op in mock
+  }
+
+  drawImage(..._args: unknown[]): void {
+    // No-op in mock
+  }
+
+  clearRect(_x: number, _y: number, _w: number, _h: number): void {
+    // No-op in mock
+  }
+
+  fillRect(_x: number, _y: number, _w: number, _h: number): void {
+    // No-op in mock
+  }
+
+  scale(_x: number, _y: number): void {
+    // No-op in mock
+  }
+
+  save(): void {
+    // No-op in mock
+  }
+
+  restore(): void {
+    // No-op in mock
+  }
+
+  beginPath(): void {
+    // No-op in mock
+  }
+
+  rect(_x: number, _y: number, _w: number, _h: number): void {
+    // No-op in mock
+  }
+
+  clip(): void {
+    // No-op in mock
+  }
+
+  moveTo(_x: number, _y: number): void {
+    // No-op in mock
+  }
+
+  lineTo(_x: number, _y: number): void {
+    // No-op in mock
+  }
+
+  stroke(): void {
+    // No-op in mock
+  }
+}
+
+// HTMLCanvasElement의 getContext 모킹
+const originalCreateElement = document.createElement.bind(document);
+document.createElement = function <K extends keyof HTMLElementTagNameMap>(
+  tagName: K,
+  options?: ElementCreationOptions
+): HTMLElementTagNameMap[K] {
+  const element = originalCreateElement(tagName, options);
+
+  if (tagName === 'canvas') {
+    const canvas = element as HTMLCanvasElement;
+    const mockCtx = new MockCanvasRenderingContext2D(canvas);
+
+    canvas.getContext = vi.fn((_contextId: string, _options?: unknown) => {
+      return mockCtx as unknown as CanvasRenderingContext2D;
+    }) as unknown as typeof canvas.getContext;
+
+    canvas.toDataURL = vi.fn(
+      (_type?: string, _quality?: number) => 'data:image/png;base64,mock'
+    );
+
+    canvas.toBlob = vi.fn((callback: BlobCallback, _type?: string, _quality?: number) => {
+      callback(new Blob(['mock'], { type: 'image/png' }));
+    });
+  }
+
+  return element;
+};
+
+// performance.now() mock (노드 환경)
+if (typeof performance === 'undefined' || !performance.now) {
+  global.performance = {
+    ...global.performance,
+    now: () => Date.now(),
+  } as Performance;
+}

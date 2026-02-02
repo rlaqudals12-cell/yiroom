@@ -23,8 +23,6 @@ import {
 } from '@/lib/analysis/personal-color-v2';
 import type {
   LabColor,
-  Season,
-  Subtype,
   TwelveTone,
 } from '@/lib/analysis/personal-color-v2';
 

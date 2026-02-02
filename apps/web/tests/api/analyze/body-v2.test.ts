@@ -318,7 +318,6 @@ describe('POST /api/analyze/body-v2', () => {
           landmarks,
         })
       );
-      const json = await response.json();
 
       expect(response.status).toBe(200);
       expect(analyzeBodyWithGemini).toHaveBeenCalled();
@@ -425,7 +424,6 @@ describe('POST /api/analyze/body-v2', () => {
           useMock: true,
         })
       );
-      const json = await response.json();
 
       expect(response.status).toBe(200);
       // DB 저장 시 body_type 필드에 레거시 값이 저장됨

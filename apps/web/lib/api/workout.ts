@@ -1,7 +1,7 @@
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { workoutLogger, gamificationLogger } from '@/lib/utils/logger';
 import { WorkoutInputData, WorkoutType } from '@/types/workout';
-import { getNewBadges, STREAK_MILESTONES, getDaysDifference } from '@/lib/workout/streak';
+import { getNewBadges, STREAK_MILESTONES, getDaysDifference } from '@/lib/workout';
 import {
   checkAndAwardStreakBadges,
   checkWorkoutCountBadges,

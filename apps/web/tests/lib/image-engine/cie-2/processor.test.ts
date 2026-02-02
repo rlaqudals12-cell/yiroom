@@ -5,7 +5,7 @@
  * @description 얼굴 감지 통합 프로세서 테스트
  * @see lib/image-engine/cie-2/processor.ts
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   processMediaPipeResults,
   isMediaPipeAvailable,

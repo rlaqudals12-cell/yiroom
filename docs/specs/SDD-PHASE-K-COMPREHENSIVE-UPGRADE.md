@@ -2,8 +2,8 @@
 
 > **Status**: In Progress (AI 도메인 상담 구현 완료)
 > **Created**: 2026-01-11
-> **Updated**: 2026-01-28
-> **Version**: 0.7
+> **Updated**: 2026-01-31
+> **Version**: 0.8
 > **Author**: Claude Code
 > **Phase**: K (종합 업그레이드)
 > **Complexity**: 75점 (Full 트랙) ← 기존 인프라 재사용으로 감소
@@ -49,7 +49,7 @@
 | K-2 패션 확장 | 50% | 📋 계획 |
 | K-3 체형 분석 강화 | 40% | 📋 계획 |
 | K-4 영양/레시피 확장 | 30% | 📋 계획 |
-| K-5 관리자/프로필 | 20% | 📋 계획 |
+| K-5 관리자/프로필 | 100% | ✅ 완료 |
 
 ### 의도적 제외
 
@@ -91,11 +91,19 @@
 - [원리: 체형 역학](../principles/body-mechanics.md) - 체형 분석
 - [원리: 영양학](../principles/nutrition-science.md) - 영양/레시피 추천
 - [원리: 크로스 도메인 시너지](../principles/cross-domain-synergy.md) - 모듈 간 연동
+- [원리: 패션 매칭](../principles/fashion-matching.md) - K-2 스타일링 매칭
 
-#### ADR
+#### ADR (Phase K 관련)
 
-- [ADR-003: AI 모델 선택](../adr/ADR-003-ai-model-selection.md)
-- [ADR-011: Cross-Module 데이터 흐름](../adr/ADR-011-cross-module-data-flow.md)
+| ADR | 영역 | 설명 |
+|-----|------|------|
+| [ADR-003: AI 모델 선택](../adr/ADR-003-ai-model-selection.md) | 전체 | Gemini 분석 모델 |
+| [ADR-011: Cross-Module 데이터 흐름](../adr/ADR-011-cross-module-data-flow.md) | 전체 | 모듈 간 데이터 연동 |
+| [ADR-048: 접근성 전략](../adr/ADR-048-accessibility-strategy.md) | **K-1** | 포용적 디자인, WCAG 준수 |
+| [ADR-050: Fashion-Closet 크로스모듈](../adr/ADR-050-fashion-closet-crossmodule.md) | **K-2** | 옷장-스타일 연동 아키텍처 |
+| [ADR-051: 2026 UX 트렌드](../adr/ADR-051-2026-ux-trends.md) | **K-5** | 적응형 인터페이스, 개인화 |
+| [ADR-030: 영양 모듈](../adr/ADR-030-nutrition-module.md) | **K-4** | BMR/TDEE, 영양 추천 |
+| [ADR-032: 스마트 매칭](../adr/ADR-032-smart-matching.md) | **K-2, K-4** | 점수 기반 매칭 알고리즘 |
 
 #### 관련 스펙
 
@@ -104,6 +112,9 @@
 ---
 
 ## 2. K-1: 성별 중립화
+
+> **관련 ADR**: [ADR-048: 접근성 전략](../adr/ADR-048-accessibility-strategy.md) - 포용적 디자인 원칙
+> **구현 파일**: `lib/content/gender-adaptive.ts`
 
 ### 2.1 현황 분석
 
@@ -173,6 +184,9 @@ export function getGenderAdaptiveContent(
 
 ## 3. K-2: 패션 확장
 
+> **관련 ADR**: [ADR-050: Fashion-Closet 크로스모듈](../adr/ADR-050-fashion-closet-crossmodule.md), [ADR-032: 스마트 매칭](../adr/ADR-032-smart-matching.md)
+> **원리 문서**: [패션 매칭](../principles/fashion-matching.md)
+
 ### 3.0 기존 인프라 재사용 전략
 
 > **핵심**: Phase I의 closetMatcher가 이미 퍼스널컬러/체형 기반 매칭 지원
@@ -186,6 +200,51 @@ export function getGenderAdaptiveContent(
 | `ClothingCategory`        | `types/inventory.ts`             | 의류 카테고리       |
 | `Occasion`                | `types/inventory.ts`             | TPO 분류            |
 | `OutfitRecommendResponse` | `types/inventory.ts:320-324`     | 코디 추천 응답      |
+
+#### 3.0.1 closetMatcher 확장 항목 (P1)
+
+> **P1 이슈**: 기존 closetMatcher 재사용 범위와 신규 개발 범위 명확화 필요
+
+| 항목 | 현재 상태 | K-2 필요 작업 | 파일 위치 |
+|------|----------|---------------|----------|
+| **StyleCategory 매칭** | 없음 | `STYLE_CATEGORY_KEYWORDS` 상수 추가 | closetMatcher.ts 확장 |
+| **HeightFit 로직** | 없음 | `determineHeightFit(height, gender)` 함수 추가 | size-recommendation.ts 신규 |
+| **Best 10 생성** | 없음 | 카테고리별 상위 조합 생성 | best10-generator.ts 신규 |
+| **사이즈 추천** | 없음 | 체형+키 기반 사이즈 계산 | size-recommendation.ts 신규 |
+| **트렌드 매칭** | 없음 | `TREND_ITEMS_2026` 상수 추가 | closetMatcher.ts 확장 |
+
+#### closetMatcher.ts 확장 범위
+
+```typescript
+// lib/inventory/closetMatcher.ts에 추가 필요한 항목
+
+// 1. 스타일 카테고리별 키워드 (신규)
+export const STYLE_CATEGORY_KEYWORDS: Record<StyleCategory, string[]> = {
+  casual: ['데님', '티셔츠', '스니커즈', '후디'],
+  formal: ['셔츠', '블레이저', '슬랙스', '구두'],
+  street: ['오버사이즈', '조거팬츠', '하이탑'],
+  minimal: ['모노톤', '베이직', '클린'],
+  'hip-hop': ['체인', '와이드팬츠', '청키'],
+  sporty: ['테크웨어', '윈드브레이커'],
+  classic: ['옥스포드', '카멜코트'],
+  preppy: ['니트베스트', '플리츠'],
+};
+
+// 2. 기존 calculateMatchScore() 확장
+// - StyleCategory 파라미터 추가
+// - 스타일별 가중치 적용
+
+// 3. 트렌드 아이템 가산점
+export const TREND_BONUS_2026 = 0.1; // 트렌드 아이템 10% 가산
+```
+
+#### 신규 파일 목록
+
+| 파일 | 책임 | 주요 함수 |
+|------|------|----------|
+| `lib/fashion/size-recommendation.ts` | 사이즈 추천 | `recommendSize()`, `determineHeightFit()` |
+| `lib/fashion/best10-generator.ts` | Best 10 생성 | `generateBest10()`, `rankOutfits()` |
+| `lib/fashion/style-categories.ts` | 스타일 상수 | `STYLE_CATEGORIES_DETAIL` |
 
 ### 3.1 요구사항
 
@@ -503,6 +562,55 @@ export function calculateBMI(height: number, weight: number): BMIResult {
 }
 ```
 
+### 4.4.1 기존 BMI 로직 마이그레이션
+
+> **P0 이슈**: 기존 컴포넌트에 로컬 BMI 함수 존재, 중복 방지 필요
+
+#### 기존 구현 현황
+
+| 파일 | 함수 | 분류 체계 |
+|------|------|----------|
+| `components/settings/PhysicalInfoCard.tsx` | `calculateBMI()`, `getBMICategory()` | 4단계 (저체중/정상/과체중/비만) |
+| `components/profile/MyInfoSummaryCard.tsx` | import 사용 | - |
+| `app/(main)/style/onboarding/page.tsx` | import 사용 | - |
+
+#### 마이그레이션 계획
+
+```typescript
+// 기존 (PhysicalInfoCard.tsx 내부 함수)
+const getBMICategory = (bmi: number): { label: string; color: string } => {
+  if (bmi < 18.5) return { label: '저체중', color: 'text-blue-600' };
+  if (bmi < 23) return { label: '정상', color: 'text-green-600' };
+  if (bmi < 25) return { label: '과체중', color: 'text-amber-600' };
+  return { label: '비만', color: 'text-red-600' };
+};
+
+// 신규 (lib/body/bmi-calculator.ts)
+// → 6단계 분류 + healthyRange + disclaimer 추가
+```
+
+#### 변경 사항
+
+| 단계 | 작업 | 영향 범위 |
+|------|------|----------|
+| 1 | `lib/body/bmi-calculator.ts` 생성 | 신규 파일 |
+| 2 | `PhysicalInfoCard.tsx`에서 로컬 함수 제거, import 방식으로 변경 | 설정 페이지 |
+| 3 | 4단계 → 6단계 UI 업데이트 (색상, 라벨 확장) | 설정, 프로필 페이지 |
+| 4 | 기존 컴포넌트 테스트 업데이트 | 테스트 파일 |
+
+#### 하위 호환성
+
+```typescript
+// lib/body/bmi-calculator.ts에 하위 호환 헬퍼 추가
+export function getBMICategorySimple(bmi: number): '저체중' | '정상' | '과체중' | '비만' {
+  const result = calculateBMI(170, bmi * 2.89); // 역산용 임시 값
+  if (result.category === 'underweight') return '저체중';
+  if (result.category === 'normal') return '정상';
+  if (result.category === 'overweight') return '과체중';
+  return '비만'; // obese1, obese2, obese3 모두 비만으로 매핑
+}
+```
+
 ### 4.5 자세 교정 운동 데이터 (연구 기반)
 
 > **참고**: [PHASE-K-RESEARCH.md](../research/PHASE-K-RESEARCH.md) 섹션 2.3
@@ -703,6 +811,64 @@ export const POSTURE_CORRECTIONS: Record<BodyType, PostureCorrection> = {
 | ReCook          | 재료 선택→추천, 취향 분석, 연관 레시피 | https://github.com/dudcheol/ReCook              |
 | KoreanRecipeGPT | 음식명+식재료→레시피 생성 (GPT 기반)   | https://github.com/skku-taehwan/KoreanRecipeGPT |
 
+#### 5.2.1 레시피 데이터 확보 전략 (P2)
+
+> **P2 이슈**: 레시피 데이터 소스와 확보 전략 명확화 필요
+
+| 단계 | 데이터 소스 | 확보 방식 | 레시피 수 | 시점 |
+|------|------------|----------|----------|------|
+| **MVP** | 수동 입력 Mock | JSON 파일 | 50개 | K-4 구현 시 |
+| **Phase 1** | 공공데이터포털 API | 배치 크롤링 (1회/월) | 500개 | 정식 출시 후 |
+| **Phase 2** | 만개의레시피 | API 또는 파트너십 협의 | 2,000개+ | MAU 1만+ 도달 시 |
+| **Phase 3** | 사용자 제출 | UGC 기능 추가 | 무제한 | 커뮤니티 활성화 시 |
+
+#### MVP Mock 데이터 구조
+
+```typescript
+// lib/mock/recipes.ts (MVP: 50개)
+export const MOCK_RECIPES: Recipe[] = [
+  {
+    id: 'recipe_001',
+    name: '닭가슴살 샐러드',
+    category: 'diet', // diet | bulkup | leanmass | general
+    difficulty: 'easy',
+    cookTime: 15, // 분
+    servings: 1,
+    calories: 320,
+    protein: 35,
+    carbs: 15,
+    fat: 12,
+    ingredients: [
+      { name: '닭가슴살', amount: 150, unit: 'g', essential: true },
+      { name: '로메인', amount: 100, unit: 'g', essential: true },
+      { name: '방울토마토', amount: 50, unit: 'g', essential: false },
+    ],
+    steps: ['닭가슴살을 굽는다', '채소를 씻어 준비한다', '...'],
+    tags: ['고단백', '저탄수화물', '다이어트'],
+  },
+  // ... 49개 더
+];
+```
+
+#### 목표별 레시피 비율 (MVP)
+
+| 목표 | 레시피 수 | 주요 특징 |
+|------|----------|----------|
+| 다이어트 | 20개 | 저칼로리 (<400kcal), 고단백 |
+| 벌크업 | 15개 | 고칼로리 (>600kcal), 고탄수 |
+| 린매스 | 10개 | 중칼로리, 고단백/저지방 |
+| 일반 | 5개 | 균형 잡힌 영양 |
+
+#### 데이터 품질 기준
+
+| 필드 | 필수 여부 | 검증 규칙 |
+|------|----------|----------|
+| `name` | 필수 | 2-50자 한글 |
+| `calories` | 필수 | 100-1500kcal 범위 |
+| `ingredients` | 필수 | 최소 2개, 최대 20개 |
+| `steps` | 필수 | 최소 2단계 |
+| `imageUrl` | 선택 | MVP는 placeholder |
+
 ### 5.3 데이터 모델 (기존 확장)
 
 > **전략**: 새 테이블 생성 대신 기존 `PantryMetadata` 확장
@@ -839,64 +1005,217 @@ export const NUTRITION_GOALS: Record<NutritionGoal, NutritionTarget> = {
 ### 5.4 레시피 추천 로직 (closetMatcher 패턴 재사용)
 
 > **패턴**: `lib/inventory/closetMatcher.ts`의 스코어링 로직을 레시피에 적용
+> **위치**: `lib/nutrition/recipe-matcher.ts`
+
+#### 5.4.1 동의어 기반 시맨틱 매칭
 
 ```typescript
 // lib/nutrition/recipe-matcher.ts
-// closetMatcher.ts 패턴 재사용
 
-import { getItems } from '@/lib/inventory/repository';
+/**
+ * 재료 동의어 맵 - 유사 재료 그룹화
+ * 닭가슴살 ↔ 닭안심, 닭다리살, 닭고기 등 호환 가능한 재료 매칭
+ */
+export const INGREDIENT_SYNONYMS: Record<string, string[]> = {
+  닭가슴살: ['닭안심', '닭다리살', '닭고기', '치킨'],
+  소고기: ['쇠고기', '한우', '소불고기', '차돌박이'],
+  돼지고기: ['삼겹살', '목살', '앞다리살', '돈육'],
+  양배추: ['양배추잎', '양배추채', '코울슬로'],
+  시금치: ['시금치나물', '데친시금치', '어린시금치'],
+  당근: ['당근채', '미니당근', '베이비당근'],
+  양파: ['양파슬라이스', '다진양파', '적양파'],
+  파프리카: ['피망', '빨간파프리카', '노란파프리카', '초록파프리카'],
+  토마토: ['방울토마토', '대추토마토', '완숙토마토'],
+  우유: ['저지방우유', '무지방우유', '일반우유'],
+  치즈: ['슬라이스치즈', '모짜렐라', '체다치즈', '파마산'],
+  요거트: ['그릭요거트', '플레인요거트', '저지방요거트'],
+  밥: ['현미밥', '백미밥', '잡곡밥', '쌀밥'],
+  파스타: ['스파게티', '펜네', '링귀네', '페투치네'],
+  두부: ['순두부', '단단한두부', '부침두부', '연두부'],
+  계란: ['달걀', '삶은계란', '계란흰자', '전란'],
+};
 
+/**
+ * 유사 재료 찾기 - 동의어 매칭
+ * @param ingredient 찾을 재료명
+ * @param pantryItems 사용자 보유 재료 목록
+ * @returns 매칭된 보유 재료 또는 null
+ */
+export function findSimilarIngredient(
+  ingredient: string,
+  pantryItems: string[]
+): string | null {
+  const normalizedIngredient = ingredient.toLowerCase().trim();
+  const normalizedPantry = pantryItems.map(p => p.toLowerCase().trim());
+
+  // 1. 직접 매칭
+  if (normalizedPantry.includes(normalizedIngredient)) {
+    return ingredient;
+  }
+
+  // 2. 동의어 매칭
+  for (const [key, synonyms] of Object.entries(INGREDIENT_SYNONYMS)) {
+    const allVariants = [key.toLowerCase(), ...synonyms.map(s => s.toLowerCase())];
+
+    if (allVariants.includes(normalizedIngredient)) {
+      const found = normalizedPantry.find(p => allVariants.includes(p));
+      if (found) {
+        return pantryItems[normalizedPantry.indexOf(found)];
+      }
+    }
+  }
+
+  return null;
+}
+```
+
+#### 5.4.2 매칭 결과 인터페이스
+
+```typescript
 export interface RecipeMatchResult {
   recipe: Recipe;
-  matchScore: number; // 0-100 (closetMatcher와 동일)
-  matchedIngredients: string[];
-  missingIngredients: string[];
-  matchReason: string;
+  matchScore: number;           // 0-100 (closetMatcher와 동일)
+  matchedIngredients: string[]; // 보유 재료 중 매칭된 것
+  missingIngredients: string[]; // 필요하지만 없는 재료
+  availabilityRate: number;     // 재료 보유율 (0-1)
+  matchReason: string;          // 매칭 이유 설명
+}
+```
+
+#### 5.4.3 레시피 추천 함수 (동기)
+
+```typescript
+export interface RecommendRecipesOptions {
+  goal?: NutritionGoal;           // 영양 목표
+  maxMissingIngredients?: number; // 부족 재료 최대 개수 (기본: 3)
+  maxCookTime?: number;           // 최대 조리시간 (분)
+  minMatchScore?: number;         // 최소 매칭 점수 (기본: 30)
+  expiringItems?: string[];       // 우선 소진 재료 (유통기한 임박)
 }
 
-export async function recommendRecipes(
-  userId: string,
-  goal: NutritionGoal,
-  options?: {
-    preferEasyToFind?: boolean;
-    maxMissingIngredients?: number;
-    maxCookTime?: number;
+/**
+ * 레시피 추천 - 사용자 보유 재료 기반
+ *
+ * @param userIngredients 사용자 보유 재료 목록
+ * @param options 추천 옵션
+ * @returns 매칭 점수 순 정렬된 레시피 목록
+ *
+ * @example
+ * const results = recommendRecipes(
+ *   ['닭가슴살', '양배추', '당근', '계란'],
+ *   { goal: 'diet', maxMissingIngredients: 2 }
+ * );
+ */
+export function recommendRecipes(
+  userIngredients: string[],
+  options?: RecommendRecipesOptions
+): RecipeMatchResult[] {
+  const {
+    goal,
+    maxMissingIngredients = 3,
+    maxCookTime,
+    minMatchScore = 30,
+    expiringItems = [],
+  } = options ?? {};
+
+  // 1. 목표에 맞는 레시피 필터링
+  let recipes = goal ? getRecipesByGoal(goal) : SAMPLE_RECIPES;
+
+  // 2. 조리시간 필터링
+  if (maxCookTime) {
+    recipes = recipes.filter(r => r.cookTime <= maxCookTime);
   }
-): Promise<RecipeMatchResult[]> {
-  // 1. 기존 repository로 pantry 아이템 조회
-  const pantryItems = await getItems(userId, { category: 'pantry' });
 
-  // 2. 사용자 보유 재료명 추출
-  const userIngredients = pantryItems.map((item) => item.name.toLowerCase());
+  // 3. 매칭 스코어 계산 (시맨틱 매칭 포함)
+  const results = recipes.map(recipe => {
+    const requiredIngredients = recipe.ingredients.map(i => i.name);
+    const matched: string[] = [];
+    const missing: string[] = [];
 
-  // 3. 목표에 맞는 레시피 필터링
-  const recipes = await getRecipesByGoal(goal);
+    for (const required of requiredIngredients) {
+      const similarItem = findSimilarIngredient(required, userIngredients);
+      if (similarItem) {
+        matched.push(required);
+      } else {
+        missing.push(required);
+      }
+    }
 
-  // 4. 매칭 스코어 계산 (closetMatcher.ts 패턴)
-  const results = recipes.map((recipe) => {
-    const matched = recipe.ingredients.filter((ing) =>
-      userIngredients.includes(ing.name.toLowerCase())
-    );
-    const missing = recipe.ingredients.filter(
-      (ing) => !userIngredients.includes(ing.name.toLowerCase())
-    );
+    const availabilityRate = matched.length / requiredIngredients.length;
+    const matchScore = Math.round(availabilityRate * 100);
 
-    const matchScore = Math.round((matched.length / recipe.ingredients.length) * 100);
+    // 유통기한 임박 재료 사용 보너스
+    const expiringBonus = expiringItems.some(e =>
+      matched.some(m => findSimilarIngredient(e, [m]))
+    ) ? 10 : 0;
 
     return {
       recipe,
-      matchScore,
-      matchedIngredients: matched.map((i) => i.name),
-      missingIngredients: missing.map((i) => i.name),
-      matchReason: generateMatchReason(matchScore, matched.length),
+      matchScore: Math.min(100, matchScore + expiringBonus),
+      matchedIngredients: matched,
+      missingIngredients: missing,
+      availabilityRate,
+      matchReason: generateMatchReason(matchScore, matched.length, expiringBonus > 0),
     };
   });
 
-  // 5. 옵션 필터링 및 정렬
+  // 4. 필터링 및 정렬
   return results
-    .filter((r) => r.missingIngredients.length <= (options?.maxMissingIngredients ?? 3))
+    .filter(r => r.matchScore >= minMatchScore)
+    .filter(r => r.missingIngredients.length <= maxMissingIngredients)
     .sort((a, b) => b.matchScore - a.matchScore);
 }
+
+function generateMatchReason(
+  score: number,
+  matchedCount: number,
+  usesExpiring: boolean
+): string {
+  const parts: string[] = [];
+
+  if (score === 100) {
+    parts.push('모든 재료 보유');
+  } else if (score >= 70) {
+    parts.push(`${matchedCount}개 재료 보유`);
+  } else {
+    parts.push('일부 재료 보유');
+  }
+
+  if (usesExpiring) {
+    parts.push('유통기한 임박 재료 활용');
+  }
+
+  return parts.join(', ');
+}
+```
+
+#### 5.4.4 목표별 레시피 조회
+
+```typescript
+export function getRecipesByGoal(goal: NutritionGoal): Recipe[] {
+  return SAMPLE_RECIPES.filter(recipe =>
+    recipe.nutritionGoals.includes(goal)
+  );
+}
+```
+
+#### 5.4.5 공개 API (lib/nutrition/index.ts)
+
+```typescript
+export {
+  recommendRecipes,
+  getRecipesByGoal,
+  findSimilarIngredient,
+  SAMPLE_RECIPES,
+  NUTRITION_TARGETS,
+  INGREDIENT_SYNONYMS,
+} from './recipe-matcher';
+
+export type {
+  NutritionGoal,
+  Recipe,
+  RecipeMatchResult,
+} from './recipe-matcher';
 ```
 
 ### 5.5 UI: 식재료 인벤토리
@@ -1027,6 +1346,319 @@ export async function recommendRecipes(
 ```
 
 > **디자인 원칙**: 벤토 박스 레이아웃으로 정보 밀도를 높이면서 시각적 정리 유지
+
+### 6.4 K-5 API 스펙
+
+> **P7 준수**: 구현 → 스펙 역순이므로 소급 문서화
+> **구현 위치**: `lib/admin/`
+
+#### 6.4.1 모듈 구조
+
+```
+lib/admin/
+├── index.ts              # Barrel Export (공개 API)
+├── auth.ts               # 관리자 인증
+├── stats.ts              # 대시보드 통계
+├── feature-flags.ts      # Feature Flags 관리
+├── user-activity-stats.ts # DAU/WAU/MAU 통계
+└── affiliate-stats.ts    # 어필리에이트 통계
+```
+
+#### 6.4.2 타입 정의
+
+```typescript
+// AdminRole - 관리자 역할
+export type AdminRole = 'admin' | 'super_admin';
+
+// DashboardStats - 대시보드 통계
+export interface DashboardStats {
+  users: { total: number; today: number; thisWeek: number; thisMonth: number };
+  analyses: { personalColor: number; skin: number; body: number; workout: number; nutrition: number };
+  products: { cosmetics: number; supplements: number; equipment: number; healthFoods: number };
+  activity: { workoutLogs: number; mealRecords: number; wishlists: number };
+}
+
+// UserListItem - 사용자 목록 항목
+export interface UserListItem {
+  id: string;
+  clerkUserId: string;
+  email: string | null;
+  name: string | null;
+  createdAt: Date;
+  hasPersonalColor: boolean;
+  hasSkin: boolean;
+  hasBody: boolean;
+  hasWorkout: boolean;
+  hasNutrition: boolean;
+}
+
+// ActiveUserStats - DAU/WAU/MAU
+export interface ActiveUserStats {
+  dau: number;
+  wau: number;
+  mau: number;
+  dauChange: number; // 전일 대비 변화율 (%)
+  wauChange: number; // 전주 대비 변화율 (%)
+  mauChange: number; // 전월 대비 변화율 (%)
+}
+
+// FeatureFlag - 기능 플래그
+export interface FeatureFlag {
+  id: string;
+  key: FeatureFlagKey;
+  name: string;
+  description: string | null;
+  enabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// FeatureFlagKey - 기능 플래그 키 (타입 안전)
+export type FeatureFlagKey =
+  | 'analysis_personal_color'
+  | 'analysis_skin'
+  | 'analysis_body'
+  | 'workout_module'
+  | 'nutrition_module'
+  | 'reports_module'
+  | 'product_recommendations'
+  | 'product_wishlist'
+  | 'ai_qa'
+  | 'ingredient_warning'
+  | 'price_crawler'
+  | 'share_results';
+```
+
+#### 6.4.3 공개 API 함수
+
+**인증 (auth.ts)**
+
+| 함수 | 시그니처 | 설명 |
+|------|----------|------|
+| `isAdmin` | `() => Promise<boolean>` | 현재 사용자 관리자 여부 |
+| `getAdminRole` | `() => Promise<AdminRole \| null>` | 관리자 역할 조회 |
+| `requireAdmin` | `() => Promise<void>` | 관리자 아니면 리다이렉트 |
+| `requireAdminOrThrow` | `() => Promise<void>` | 관리자 아니면 에러 |
+| `getAdminInfo` | `() => Promise<AdminInfo \| null>` | 관리자 상세 정보 |
+
+**통계 (stats.ts)**
+
+| 함수 | 시그니처 | 설명 |
+|------|----------|------|
+| `getDashboardStats` | `() => Promise<DashboardStats>` | 전체 대시보드 통계 |
+| `getUserList` | `(page, limit) => Promise<{users, total}>` | 페이지네이션 사용자 목록 |
+| `getRecentActivities` | `(limit) => Promise<RecentActivity[]>` | 최근 활동 로그 |
+
+**DAU/WAU/MAU (user-activity-stats.ts)**
+
+| 함수 | 시그니처 | 설명 |
+|------|----------|------|
+| `getActiveUserStats` | `() => Promise<ActiveUserStats>` | 활성 사용자 통계 |
+| `getFeatureUsageStats` | `() => Promise<FeatureUsageStats>` | 기능별 사용 현황 |
+| `getDailyActiveUserTrend` | `(days) => Promise<DailyActiveUserTrend[]>` | 일별 활성 사용자 추이 |
+| `getDailyFeatureUsageTrend` | `(days) => Promise<DailyFeatureUsageTrend[]>` | 일별 기능 사용 추이 |
+
+**Feature Flags (feature-flags.ts)**
+
+| 함수 | 시그니처 | 설명 |
+|------|----------|------|
+| `getAllFeatureFlags` | `() => Promise<FeatureFlag[]>` | 모든 플래그 조회 |
+| `getFeatureFlag` | `(key) => Promise<FeatureFlag \| null>` | 특정 플래그 조회 |
+| `isFeatureEnabled` | `(key) => Promise<boolean>` | 플래그 활성화 여부 |
+| `toggleFeatureFlag` | `(key, enabled) => Promise<FeatureFlag \| null>` | 플래그 토글 |
+| `createFeatureFlag` | `(flag) => Promise<FeatureFlag \| null>` | 플래그 생성 |
+| `deleteFeatureFlag` | `(key) => Promise<boolean>` | 플래그 삭제 |
+
+#### 6.4.4 DB 테이블 참조
+
+| 테이블 | 용도 | RLS |
+|--------|------|-----|
+| `feature_flags` | 기능 플래그 저장 | 관리자 전용 |
+| `users` | 사용자 통계 집계 | clerk_user_id 기반 |
+| `workout_logs` | DAU 계산 (활동 기준) | clerk_user_id 기반 |
+| `meal_records` | DAU 계산 (활동 기준) | clerk_user_id 기반 |
+| `*_analyses` | 분석 통계 집계 | clerk_user_id 기반 |
+
+#### 6.4.5 보안 요구사항
+
+```typescript
+// 관리자 API 접근 패턴
+export async function GET(request: Request) {
+  // 1. 관리자 권한 확인 (필수)
+  await requireAdminOrThrow();
+
+  // 2. Service Role 클라이언트 사용 (RLS 우회)
+  const supabase = createServiceRoleClient();
+
+  // 3. 통계 조회
+  const stats = await getDashboardStats();
+
+  return Response.json(stats);
+}
+```
+
+#### 6.4.6 테스트 기준
+
+| 테스트 유형 | 대상 | 기준 |
+|-------------|------|------|
+| 단위 테스트 | auth.ts | isAdmin, requireAdmin 동작 검증 |
+| 단위 테스트 | stats.ts | getDashboardStats 반환값 구조 |
+| 단위 테스트 | feature-flags.ts | CRUD 동작, 캐시 동작 |
+| 통합 테스트 | /api/admin/* | 권한 체크, 응답 형식 |
+
+**커버리지 목표**: 80%+
+
+#### 6.4.7 API 라우트 스펙
+
+> **위치**: `app/api/admin/`
+
+| 라우트 | 메서드 | 설명 | 인증 |
+|--------|--------|------|------|
+| `/api/admin/features` | GET | 모든 Feature Flag 조회 | Clerk 관리자 |
+| `/api/admin/features` | PATCH | Feature Flag 토글 | Clerk 관리자 |
+| `/api/admin/analytics` | GET | 사용자 활동 통계 (DAU/WAU/MAU) | Clerk 관리자 |
+| `/api/admin/seed-products` | POST | 제품 DB 시드 (1회성) | SEED_SECRET |
+| `/api/admin/price-update` | GET/POST | 제품 가격 업데이트 | ADMIN_API_KEY |
+
+**요청/응답 예시**
+
+```typescript
+// GET /api/admin/features
+// Response
+{
+  flags: FeatureFlag[]
+}
+
+// PATCH /api/admin/features
+// Request
+{
+  key: FeatureFlagKey,
+  enabled: boolean
+}
+// Response
+{
+  success: true,
+  flag: FeatureFlag
+}
+
+// GET /api/admin/analytics?type=all&days=14
+// Response
+{
+  success: true,
+  data: {
+    activeUserStats: ActiveUserStats,
+    featureUsageStats: FeatureUsageStats,
+    activeUserTrend: DailyActiveUserTrend[],
+    featureUsageTrend: DailyFeatureUsageTrend[]
+  }
+}
+```
+
+#### 6.4.8 UI 컴포넌트 스펙
+
+> **위치**: `components/admin/`
+
+**컴포넌트 구조**
+
+```
+components/admin/
+├── AdminDashboard.tsx           # 메인 대시보드 (통계, 최근활동)
+├── UserManagement.tsx           # 사용자 관리 (목록, 상세, 검색)
+├── AffiliateChart.tsx           # 어필리에이트 클릭 차트 (recharts)
+├── dynamic.tsx                  # AdminDashboard Dynamic Import
+└── analytics/
+    ├── ActiveUserStatsCard.tsx      # DAU/WAU/MAU 카드
+    ├── FeatureUsageCard.tsx         # 기능별 사용 현황 카드
+    ├── ActiveUserTrendChart.tsx     # 활성 사용자 추이 차트
+    ├── FeatureUsageTrendChart.tsx   # 기능 사용 추이 차트
+    └── dynamic.tsx                  # 차트 Dynamic Import (recharts 분리)
+```
+
+**AdminDashboard 컴포넌트**
+
+| Props | 타입 | 설명 |
+|-------|------|------|
+| `initialStats` | `DashboardStats \| null` | 서버에서 fetch한 초기 통계 |
+| `initialActivities` | `RecentActivity[] \| null` | 초기 최근 활동 |
+| `fetchStats` | `() => Promise<DashboardStats>` | 통계 갱신 함수 |
+| `fetchActivities` | `(limit?) => Promise<RecentActivity[]>` | 활동 갱신 함수 |
+
+**내부 섹션 구성**
+1. **UserStatsSection**: 사용자 현황 (전체, 오늘, 이번주, 이번달)
+2. **AnalysisStatsSection**: 분석 현황 (퍼스널컬러, 피부, 체형, 운동, 영양)
+3. **ProductStatsSection**: 제품 DB 현황 (화장품, 영양제, 운동기구, 건강식품)
+4. **RecentActivitiesSection**: 최근 활동 타임라인 (운동, 식사, 위시리스트)
+
+**UserManagement 컴포넌트**
+
+| Props | 타입 | 설명 |
+|-------|------|------|
+| `fetchUsers` | `(page, limit) => Promise<{users, total}>` | 사용자 목록 fetch |
+| `pageSize` | `number` | 페이지당 항목 수 (기본값: 10) |
+
+**기능**
+- 페이지네이션 지원
+- 클라이언트 사이드 검색 (이름, 이메일, ID)
+- 사용자 상세 모달 (분석 완료 현황 표시)
+
+**Analytics 카드 컴포넌트**
+
+| 컴포넌트 | 표시 데이터 | 변화율 표시 |
+|----------|-------------|-------------|
+| `ActiveUserStatsCard` | DAU, WAU, MAU | 전일/전주/전월 대비 % |
+| `FeatureUsageCard` | 분석별 누적 수, 기록 수 | 전일 대비 증감 표시 |
+
+**차트 컴포넌트 (recharts)**
+
+| 컴포넌트 | 차트 타입 | 데이터 소스 |
+|----------|----------|-------------|
+| `ActiveUserTrendChart` | AreaChart | `DailyActiveUserTrend[]` |
+| `FeatureUsageTrendChart` | BarChart (Stacked) | `DailyFeatureUsageTrend[]` |
+| `AffiliateChart` | AreaChart | 어필리에이트 클릭 데이터 |
+
+> **성능 최적화**: recharts 차트는 Dynamic Import로 분리 (~40-50KB 번들 감소)
+
+#### 6.4.9 접근 권한 정책
+
+| 역할 | Clerk 메타데이터 | 접근 가능 기능 |
+|------|-----------------|----------------|
+| `admin` | `publicMetadata.role = 'admin'` | 대시보드, 통계 조회, Feature Flag 조회 |
+| `super_admin` | `publicMetadata.role = 'super_admin'` | 전체 기능 + Feature Flag 생성/삭제 |
+| 일반 사용자 | - | 접근 불가 (리다이렉트) |
+
+**권한 체크 흐름**
+
+```
+사용자 요청
+    ↓
+currentUser() 호출 (Clerk)
+    ↓
+publicMetadata.role 확인
+    ↓
+ [admin/super_admin] → 접근 허용
+ [그 외]             → 리다이렉트 or 에러
+```
+
+#### 6.4.10 구현 완료 체크리스트
+
+| 항목 | 파일 | 상태 |
+|------|------|------|
+| **인증 모듈** | `lib/admin/auth.ts` | ✅ 완료 |
+| **대시보드 통계** | `lib/admin/stats.ts` | ✅ 완료 |
+| **Feature Flags** | `lib/admin/feature-flags.ts` | ✅ 완료 |
+| **DAU/WAU/MAU** | `lib/admin/user-activity-stats.ts` | ✅ 완료 |
+| **어필리에이트 통계** | `lib/admin/affiliate-stats.ts` | ✅ 완료 |
+| **Barrel Export** | `lib/admin/index.ts` | ✅ 완료 |
+| **Features API** | `app/api/admin/features/route.ts` | ✅ 완료 |
+| **Analytics API** | `app/api/admin/analytics/route.ts` | ✅ 완료 |
+| **AdminDashboard** | `components/admin/AdminDashboard.tsx` | ✅ 완료 |
+| **UserManagement** | `components/admin/UserManagement.tsx` | ✅ 완료 |
+| **Analytics 카드** | `components/admin/analytics/*.tsx` | ✅ 완료 |
+| **차트 컴포넌트** | `components/admin/analytics/*Chart.tsx` | ✅ 완료 |
+| **Dynamic Import** | `components/admin/*/dynamic.tsx` | ✅ 완료 |
+| **통계 테스트** | `tests/lib/admin/stats.test.ts` | ✅ 완료 |
+
+**P7 소급 문서화 완료**: 2026-02-01
 
 ---
 
@@ -1495,7 +2127,18 @@ graph TD
     K1A5 --> K2A1
     K2A6 --> K4A3
     K3A6 --> K2A2
+
+    %% P1 이슈: 누락된 타입 의존성 추가 (2026-01-31)
+    K1A2 -.->|성별 타입 필요| K2A2
+    K1A2 -.->|성별 기반 BMI 범위| K3A2
 ```
+
+#### 12.1.1 추가 의존성 설명 (P1)
+
+| 의존성 | 이유 |
+|--------|------|
+| `K1A2 → K2A2` | `determineHeightFit(height, gender)` 함수에서 성별 파라미터 필요 (남성/여성 키 기준 다름) |
+| `K1A2 → K3A2` | 복부비만 기준이 성별에 따라 다름 (남성 ≥90cm, 여성 ≥85cm) |
 
 ### 12.2 K-1: 성별 중립화 (6 ATOMs)
 

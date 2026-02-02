@@ -12,7 +12,6 @@
 import { useMemo, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { BodyAnalysisV2Result, Landmark33, BodyShapeType } from '@/lib/analysis/body-v2';
 

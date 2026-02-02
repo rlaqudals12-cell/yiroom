@@ -94,7 +94,7 @@ export function classifyGumHealth(metrics: GumHealthMetrics): {
   // 상태 분류
   let status: GumHealthStatus;
   let needsDentalVisit = false;
-  let confidence = 85;  // 기본 신뢰도
+  let confidence: number;
 
   if (aStarMean < 10 && inflammationScore < 25) {
     status = 'healthy';

@@ -22,10 +22,7 @@ import {
 } from '@/lib/api/image-quality';
 import {
   generateMockSkinAnalysisV2Result,
-  calculateVitalityGrade,
   type SkinAnalysisV2Result,
-  type SkinTypeV2,
-  SKIN_TYPE_LABELS,
 } from '@/lib/analysis/skin-v2';
 import { analyzeSkinV2WithGemini } from '@/lib/gemini/v2-analysis';
 import {

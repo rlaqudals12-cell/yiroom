@@ -29,7 +29,6 @@ import {
   STRETCH_DATABASE,
   mapPostureToStretches,
   getStretchesForSport,
-  POSTURE_PROTOCOLS,
   MUSCLE_NAME_KO,
 } from './posture-mapping';
 
@@ -240,7 +239,7 @@ export function generatePostureCorrectionPrescription(
   availableMinutes: number = 15
 ): StretchingPrescription {
   // 1. 자세 분석에서 스트레칭 매핑
-  const { imbalances, stretches, activations, priorityOrder } =
+  const { imbalances, stretches, activations } =
     mapPostureToStretches(postureAnalysis);
 
   // 2. 특수 조건/장비로 필터링
@@ -329,8 +328,6 @@ export function generateSportStretchingPrescription(
     swimming: '수영',
     tennis: '테니스',
   };
-
-  const phaseKo = phase === 'warmup' ? '워밍업' : '쿨다운';
 
   const prescription: StretchingPrescription = {
     prescriptionId: `pres_${Date.now()}`,

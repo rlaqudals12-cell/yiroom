@@ -13,7 +13,7 @@ import {
   recommendTargetShade,
   getWhiteningMethodsForSeason,
 } from './internal/season-shade-map';
-import { calculateShadeSteps, getShadeReference } from './internal/vita-database';
+import { calculateShadeSteps } from './internal/vita-database';
 
 /**
  * 미백 목표 계산

@@ -24,6 +24,30 @@
     <strong>테스트:</strong> 2,776개 통과 |
     <strong>코드 품질:</strong> SRP 95%, Repository 90%
   </p>
+
+  <!-- 런칭 마일스톤 -->
+  <table>
+    <tr>
+      <th>🎯 마일스톤</th>
+      <th>📅 날짜</th>
+      <th>📊 상태</th>
+    </tr>
+    <tr>
+      <td><strong>비공개 테스트</strong></td>
+      <td>2026-02-12</td>
+      <td>🔄 준비 중</td>
+    </tr>
+    <tr>
+      <td><strong>정식 출시</strong></td>
+      <td>2026-02-25</td>
+      <td>📋 계획</td>
+    </tr>
+    <tr>
+      <td><strong>구글 액셀러레이터</strong></td>
+      <td>2026-02-28</td>
+      <td>📋 준비</td>
+    </tr>
+  </table>
 </div>
 
 ---

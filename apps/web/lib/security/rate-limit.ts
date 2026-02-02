@@ -12,9 +12,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Upstash Redis 동적 import 타입 (any로 처리하여 패키지 미설치 시에도 컴파일 가능)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 let RedisRateLimit: any = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 let Redis: any = null;
 
 // Upstash 사용 가능 여부 체크
@@ -51,9 +51,9 @@ const rateLimitStore = new Map<string, RateLimitEntry>();
 const dailyLimitStore = new Map<string, DailyLimitEntry>();
 
 // Upstash Redis 인스턴스 (지연 초기화)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 let redisClient: any = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 let dailyRateLimiter: any = null;
 
 function getRedisClient() {

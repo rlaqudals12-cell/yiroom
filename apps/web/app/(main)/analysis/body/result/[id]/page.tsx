@@ -392,7 +392,7 @@ export default function BodyAnalysisResultPage() {
           {/* 탭 기반 결과 */}
           {result && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-4 sticky top-0 z-10 bg-muted">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-4 sticky top-0 z-10 bg-muted">
                 <TabsTrigger value="basic" className="gap-1 text-xs">
                   <BarChart3 className="w-4 h-4" />
                   기본 분석

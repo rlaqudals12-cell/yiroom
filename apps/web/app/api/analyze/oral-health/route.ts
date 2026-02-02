@@ -19,7 +19,6 @@ import type {
   OralHealthAssessment,
   PersonalColorSeason,
   VitaShade,
-  GumHealthStatus,
   ToothColorResult,
   GumHealthResult,
   LabColor,
@@ -52,8 +51,6 @@ const requestSchema = z.object({
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse<OralHealthAnalysisResponse>> {
-  const startTime = Date.now();
-
   try {
     // 1. 인증 확인
     const { userId } = await auth();
@@ -366,7 +363,7 @@ function calculateTargetShade(
 /**
  * 필요한 셰이드 단계 수 계산
  */
-function calculateShadeSteps(currentShade: VitaShade, season: PersonalColorSeason): number {
+function calculateShadeSteps(currentShade: VitaShade, _season: PersonalColorSeason): number {
   const shadeRanks: Record<VitaShade, number> = {
     'B1': 1, 'A1': 2, 'B2': 3, 'D2': 4, 'A2': 5, 'C1': 6, 'C2': 7, 'D4': 8,
     'A3': 9, 'D3': 10, 'B3': 11, 'A3.5': 12, 'B4': 13, 'C3': 14, 'A4': 15, 'C4': 16,
@@ -382,7 +379,7 @@ function calculateShadeSteps(currentShade: VitaShade, season: PersonalColorSeaso
 /**
  * 과도한 미백 여부 확인
  */
-function checkOverWhitening(currentShade: VitaShade, season: PersonalColorSeason): boolean {
+function checkOverWhitening(currentShade: VitaShade, _season: PersonalColorSeason): boolean {
   // 이미 매우 밝은 셰이드이거나 Bleached 셰이드면 과도한 미백 경고
   const brightShades: VitaShade[] = ['B1', 'A1', '0M1', '0M2', '0M3'];
   return brightShades.includes(currentShade);

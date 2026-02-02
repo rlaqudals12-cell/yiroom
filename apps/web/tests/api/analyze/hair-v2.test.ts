@@ -401,7 +401,6 @@ describe('POST /api/analyze/hair-v2', () => {
           useMock: true,
         })
       );
-      const json = await response.json();
 
       expect(response.status).toBe(200);
       expect(generateMockHairAnalysisResult).toHaveBeenCalledWith(

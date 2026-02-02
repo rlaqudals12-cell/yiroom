@@ -1,7 +1,7 @@
 # 이룸 문서 인덱스
 
 > **문서 허브** - 모든 프로젝트 문서의 진입점
-> **Version**: 2.5 | **Updated**: 2026-01-29
+> **Version**: 2.7 | **Updated**: 2026-02-02
 
 ---
 
@@ -33,6 +33,8 @@ P7 워크플로우 순서:
 | [DATABASE-SCHEMA.md](./DATABASE-SCHEMA.md) | DB 스키마, RLS 정책 | ✅ 참조 |
 | [TECH-DECISIONS.md](./TECH-DECISIONS.md) | 기술 선택 요약 | ✅ 참조 |
 | [DEVELOPER-ONBOARDING.md](./DEVELOPER-ONBOARDING.md) | **새 개발자 온보딩** - 24시간 내 첫 PR | ✅ 참조 |
+| [TECH-ADOPTION-ROADMAP.md](./TECH-ADOPTION-ROADMAP.md) | **기술 채택 로드맵** - AI 도구, MCP, 인프라 | ✅ NEW |
+| [TOOL-INTEGRATION-PLAN.md](./TOOL-INTEGRATION-PLAN.md) | 도구 통합 계획 (Cursor, MCP) | ✅ 참조 |
 
 ---
 
@@ -229,14 +231,14 @@ P7 워크플로우 순서:
 
 | 카테고리 | 문서 수 | 완성도 |
 |----------|---------|--------|
-| 핵심 문서 | 5 | 100% |
+| 핵심 문서 | 9 | 100% |
 | 비즈니스 | 8 | 100% |
 | 법무/규제 | 4 | 100% |
-| 운영 | 3 | 100% |
-| 원리 | 24 | 95% |
-| ADR | 53 | 95% |
-| 스펙 | 60 | 90% |
-| **총계** | **150+** | **~95%** |
+| 운영 | 4 | 100% |
+| 원리 | 31 | 95% |
+| ADR | 61 | 95% |
+| 스펙 | 63 | 90% |
+| **총계** | **180+** | **~95%** |
 
 ---
 

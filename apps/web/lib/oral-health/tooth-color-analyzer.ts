@@ -7,7 +7,7 @@
  */
 
 import type { ToothColorInput, ToothColorResult, LabColor, VitaSeries } from '@/types/oral-health';
-import { rgbToLab, calculateAverageLabFromPixels } from './internal/lab-converter';
+// lab-converter functions can be used for local pixel analysis in future
 import { findBestShadeMatch, interpretBrightness, interpretYellowness } from './internal/vita-database';
 import { interpretColorDifference } from './internal/ciede2000';
 import {
@@ -113,10 +113,9 @@ async function extractToothLabFromImage(
  * 신뢰도 계산
  */
 function calculateConfidence(deltaE: number, isAcceptableMatch: boolean): number {
-  // 기본 신뢰도
-  let confidence = 85;
+  // 색차에 따른 신뢰도 결정
+  let confidence: number;
 
-  // 색차에 따른 조정
   if (deltaE < 1.0) {
     confidence = 95;
   } else if (deltaE < 2.0) {

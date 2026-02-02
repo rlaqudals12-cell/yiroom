@@ -15,7 +15,7 @@ import type {
   GumHealthMetrics,
 } from '@/types/oral-health';
 import { analyzeOralWithGemini, type GeminiOralHealthResponse } from '@/lib/gemini/v2-analysis';
-import { getShadeReference, findBestShadeMatch } from './vita-database';
+import { getShadeReference } from './vita-database';
 import { calculateCIEDE2000 } from './ciede2000';
 
 /**

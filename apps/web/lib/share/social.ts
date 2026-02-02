@@ -1,7 +1,52 @@
 /**
  * 소셜 미디어 공유 유틸리티
  * - X (Twitter), 카카오톡, 링크 복사, Instagram 이미지 저장
+ *
+ * Kakao SDK는 초기 로딩에서 제외되고 공유 기능 호출 시 동적 로드됨 (LCP 최적화)
  */
+
+// Kakao SDK 로딩 상태 추적
+let kakaoLoadPromise: Promise<boolean> | null = null;
+
+/**
+ * Kakao SDK 동적 로드
+ * 초기 페이지 로드에서 제외하여 LCP 개선 (약 +2-3점)
+ */
+export async function loadKakaoSDK(): Promise<boolean> {
+  // 이미 로드 중이면 기존 Promise 반환
+  if (kakaoLoadPromise) {
+    return kakaoLoadPromise;
+  }
+
+  // 이미 로드되어 있으면 즉시 반환
+  const existingKakao = (window as unknown as { Kakao?: KakaoSDK }).Kakao;
+  if (existingKakao) {
+    return true;
+  }
+
+  kakaoLoadPromise = new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
+    script.integrity = 'sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4';
+    script.crossOrigin = 'anonymous';
+    script.async = true;
+
+    script.onload = () => {
+      console.log('[Share] Kakao SDK loaded dynamically');
+      resolve(true);
+    };
+
+    script.onerror = () => {
+      console.error('[Share] Failed to load Kakao SDK');
+      kakaoLoadPromise = null; // 재시도 허용
+      resolve(false);
+    };
+
+    document.head.appendChild(script);
+  });
+
+  return kakaoLoadPromise;
+}
 
 export interface ShareContent {
   title: string;
@@ -31,15 +76,17 @@ export function shareToX(content: ShareContent): void {
 
 /**
  * 카카오톡 공유
- * Kakao SDK 필요 (window.Kakao)
+ * Kakao SDK가 없으면 동적으로 로드 후 공유 실행
  */
 export async function shareToKakao(content: ShareContent): Promise<boolean> {
-  const { Kakao } = window as unknown as { Kakao: KakaoSDK };
-
-  if (!Kakao) {
-    console.warn('[Share] Kakao SDK not loaded');
+  // SDK 동적 로드 (없는 경우)
+  const loaded = await loadKakaoSDK();
+  if (!loaded) {
+    console.warn('[Share] Failed to load Kakao SDK');
     return false;
   }
+
+  const { Kakao } = window as unknown as { Kakao: KakaoSDK };
 
   // SDK 초기화 (이미 초기화된 경우 스킵)
   if (!Kakao.isInitialized()) {

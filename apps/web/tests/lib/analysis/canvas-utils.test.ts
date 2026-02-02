@@ -5,12 +5,19 @@
  * @description Canvas 색상 변환 및 유틸리티 함수 테스트
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   rgbaToHsl,
   hslToRgba,
   getHeatmapColor,
   supportsOffscreenCanvas,
+  createOptimizedContext,
+  createOffscreenCanvas,
+  setupCanvasSize,
+  drawImageCentered,
+  extractRegion,
+  canvasToDataURL,
+  clearCanvas,
 } from '@/lib/analysis/canvas-utils';
 
 // =============================================================================
@@ -280,6 +287,311 @@ describe('lib/analysis/canvas-utils', () => {
 
       // Vitest/Node 환경에서는 false
       expect(result).toBe(false);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // createOptimizedContext
+  // ---------------------------------------------------------------------------
+
+  describe('createOptimizedContext', () => {
+    let canvas: HTMLCanvasElement;
+
+    beforeEach(() => {
+      canvas = document.createElement('canvas');
+      canvas.width = 100;
+      canvas.height = 100;
+    });
+
+    it('should create a 2D context', () => {
+      const ctx = createOptimizedContext(canvas);
+
+      expect(ctx).not.toBeNull();
+    });
+
+    it('should accept willReadFrequently option', () => {
+      const ctx = createOptimizedContext(canvas, { willReadFrequently: true });
+
+      expect(ctx).not.toBeNull();
+    });
+
+    it('should accept alpha option', () => {
+      const ctx = createOptimizedContext(canvas, { alpha: false });
+
+      expect(ctx).not.toBeNull();
+    });
+
+    it('should accept desynchronized option', () => {
+      const ctx = createOptimizedContext(canvas, { desynchronized: true });
+
+      expect(ctx).not.toBeNull();
+    });
+
+    it('should accept all options together', () => {
+      const ctx = createOptimizedContext(canvas, {
+        willReadFrequently: true,
+        alpha: true,
+        desynchronized: false,
+      });
+
+      expect(ctx).not.toBeNull();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // createOffscreenCanvas
+  // ---------------------------------------------------------------------------
+
+  describe('createOffscreenCanvas', () => {
+    it('should create a canvas with specified dimensions', () => {
+      const canvas = createOffscreenCanvas(200, 150);
+
+      expect(canvas.width).toBe(200);
+      expect(canvas.height).toBe(150);
+    });
+
+    it('should create HTMLCanvasElement as fallback in test environment', () => {
+      // Node/JSDOM 환경에서는 OffscreenCanvas가 없으므로 HTMLCanvasElement 반환
+      const canvas = createOffscreenCanvas(100, 100);
+
+      // HTMLCanvasElement 인스턴스 확인
+      expect(canvas.width).toBe(100);
+      expect(canvas.height).toBe(100);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // setupCanvasSize
+  // ---------------------------------------------------------------------------
+
+  describe('setupCanvasSize', () => {
+    let canvas: HTMLCanvasElement;
+
+    beforeEach(() => {
+      canvas = document.createElement('canvas');
+    });
+
+    it('should set canvas dimensions', () => {
+      setupCanvasSize(canvas, 400, 300);
+
+      // DPR이 적용된 크기 (최대 2배)
+      expect(canvas.width).toBeGreaterThanOrEqual(400);
+      expect(canvas.height).toBeGreaterThanOrEqual(300);
+    });
+
+    it('should set CSS dimensions', () => {
+      setupCanvasSize(canvas, 400, 300);
+
+      expect(canvas.style.width).toBe('400px');
+      expect(canvas.style.height).toBe('300px');
+    });
+
+    it('should respect maxDpr parameter', () => {
+      setupCanvasSize(canvas, 400, 300, 1);
+
+      // maxDpr=1이면 실제 크기와 동일
+      expect(canvas.width).toBe(400);
+      expect(canvas.height).toBe(300);
+    });
+
+    it('should handle zero dimensions gracefully', () => {
+      expect(() => {
+        setupCanvasSize(canvas, 0, 0);
+      }).not.toThrow();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // drawImageCentered
+  // ---------------------------------------------------------------------------
+
+  describe('drawImageCentered', () => {
+    let canvas: HTMLCanvasElement;
+    let ctx: CanvasRenderingContext2D;
+
+    beforeEach(() => {
+      canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      ctx = canvas.getContext('2d')!;
+    });
+
+    // 이미지 mock 생성 헬퍼
+    function createMockImage(width: number, height: number): HTMLImageElement {
+      const image = new Image();
+      Object.defineProperty(image, 'width', { value: width, configurable: true });
+      Object.defineProperty(image, 'height', { value: height, configurable: true });
+      return image;
+    }
+
+    it('should return scale and offset for square image in square canvas', () => {
+      const image = createMockImage(100, 100);
+      const result = drawImageCentered(ctx, image, 200, 200);
+
+      expect(result.scale).toBe(2); // 100 -> 200
+      expect(result.offsetX).toBe(0);
+      expect(result.offsetY).toBe(0);
+    });
+
+    it('should center wide image vertically', () => {
+      const image = createMockImage(200, 100);
+      const result = drawImageCentered(ctx, image, 200, 200);
+
+      expect(result.scale).toBe(1);
+      expect(result.offsetX).toBe(0);
+      expect(result.offsetY).toBeGreaterThan(0); // 세로 중앙 정렬
+    });
+
+    it('should center tall image horizontally', () => {
+      const image = createMockImage(100, 200);
+      const result = drawImageCentered(ctx, image, 200, 200);
+
+      expect(result.scale).toBe(1);
+      expect(result.offsetX).toBeGreaterThan(0); // 가로 중앙 정렬
+      expect(result.offsetY).toBe(0);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // extractRegion
+  // ---------------------------------------------------------------------------
+
+  describe('extractRegion', () => {
+    it('should extract region from ImageData', () => {
+      const width = 20;
+      const height = 20;
+      const data = new Uint8ClampedArray(width * height * 4).fill(128);
+      const imageData = new ImageData(data, width, height);
+
+      const region = extractRegion(imageData, 5, 5, 10, 10);
+
+      expect(region.width).toBe(10);
+      expect(region.height).toBe(10);
+      expect(region.data.length).toBe(10 * 10 * 4);
+    });
+
+    it('should extract full image when region equals dimensions', () => {
+      const width = 10;
+      const height = 10;
+      const data = new Uint8ClampedArray(width * height * 4).fill(200);
+      const imageData = new ImageData(data, width, height);
+
+      const region = extractRegion(imageData, 0, 0, width, height);
+
+      expect(region.width).toBe(width);
+      expect(region.height).toBe(height);
+    });
+
+    it('should extract corner region', () => {
+      const width = 20;
+      const height = 20;
+      const data = new Uint8ClampedArray(width * height * 4).fill(100);
+      const imageData = new ImageData(data, width, height);
+
+      const region = extractRegion(imageData, 0, 0, 5, 5);
+
+      expect(region.width).toBe(5);
+      expect(region.height).toBe(5);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // canvasToDataURL
+  // ---------------------------------------------------------------------------
+
+  describe('canvasToDataURL', () => {
+    let canvas: HTMLCanvasElement;
+
+    beforeEach(() => {
+      canvas = document.createElement('canvas');
+      canvas.width = 50;
+      canvas.height = 50;
+    });
+
+    it('should return data URL string', () => {
+      const dataURL = canvasToDataURL(canvas);
+
+      expect(typeof dataURL).toBe('string');
+      expect(dataURL.startsWith('data:')).toBe(true);
+    });
+
+    it('should support PNG format', () => {
+      const dataURL = canvasToDataURL(canvas, 'image/png');
+
+      expect(dataURL).toContain('data:');
+    });
+
+    it('should support JPEG format', () => {
+      const dataURL = canvasToDataURL(canvas, 'image/jpeg');
+
+      expect(dataURL).toContain('data:');
+    });
+
+    it('should accept quality parameter', () => {
+      const dataURL = canvasToDataURL(canvas, 'image/jpeg', 0.5);
+
+      expect(typeof dataURL).toBe('string');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // clearCanvas
+  // ---------------------------------------------------------------------------
+
+  describe('clearCanvas', () => {
+    it('should clear canvas without error', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 100;
+      canvas.height = 100;
+
+      expect(() => {
+        clearCanvas(canvas);
+      }).not.toThrow();
+    });
+
+    it('should work with empty canvas', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 0;
+      canvas.height = 0;
+
+      expect(() => {
+        clearCanvas(canvas);
+      }).not.toThrow();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 색상 변환 정밀도 테스트
+  // ---------------------------------------------------------------------------
+
+  describe('색상 변환 정밀도', () => {
+    it('should handle edge case colors correctly', () => {
+      // 어두운 색상
+      const dark = rgbaToHsl(10, 10, 10);
+      expect(dark.l).toBeLessThan(0.1);
+
+      // 밝은 색상
+      const bright = rgbaToHsl(245, 245, 245);
+      expect(bright.l).toBeGreaterThan(0.9);
+    });
+
+    it('should preserve color in round-trip conversion', () => {
+      const testColors = [
+        [255, 128, 64],
+        [64, 128, 255],
+        [128, 255, 64],
+        [200, 50, 150],
+        [100, 100, 100],
+      ];
+
+      testColors.forEach(([r, g, b]) => {
+        const hsl = rgbaToHsl(r, g, b);
+        const rgb = hslToRgba(hsl.h, hsl.s, hsl.l);
+
+        expect(rgb.r).toBeCloseTo(r, 0);
+        expect(rgb.g).toBeCloseTo(g, 0);
+        expect(rgb.b).toBeCloseTo(b, 0);
+      });
     });
   });
 });

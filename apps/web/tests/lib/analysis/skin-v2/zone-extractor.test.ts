@@ -14,11 +14,9 @@ import {
   generateZoneRecommendations,
   calculateZoneScore,
   type FaceLandmarks,
-  type ZoneRegion,
 } from '@/lib/analysis/skin-v2/zone-extractor';
 import type {
   SkinZoneType,
-  ZoneGroup,
   ZoneMetricsV2,
   ZoneAnalysisV2,
   TextureAnalysis,
