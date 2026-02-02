@@ -1,47 +1,46 @@
-import Link from "next/link";
-import Image from "next/image";
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
-import { Footer } from "@/components/common";
-import { Heart, Brain, Dumbbell, Sparkles, Palette, User } from "lucide-react";
+import Link from 'next/link';
+import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import { Button } from '@/components/ui/button';
+import { Footer } from '@/components/common';
+import { Heart, Brain, Dumbbell, Sparkles, Palette, User } from 'lucide-react';
 
-// 웰니스 모듈 데이터
+// 웰니스 모듈 데이터 (아이콘 + 그라디언트 기반 UI)
 const WELLNESS_MODULES = [
   {
-    id: "personal-color",
-    title: "퍼스널컬러 AI",
-    description: "AI 이미지 분석으로 나에게 어울리는 계절 타입을 찾아드려요.",
-    href: "/analysis/personal-color",
-    image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=80",
+    id: 'personal-color',
+    title: '퍼스널컬러 AI',
+    description: 'AI 이미지 분석으로 나에게 어울리는 계절 타입을 찾아드려요.',
+    href: '/analysis/personal-color',
+    gradient: 'from-pink-400 to-rose-500',
     icon: Palette,
-    tagColor: "bg-module-personal-color-light text-module-personal-color-dark",
+    tagColor: 'bg-module-personal-color-light text-module-personal-color-dark',
   },
   {
-    id: "skin",
-    title: "피부 AI",
-    description: "피부 상태를 분석하고 맞춤 화장품을 추천해요.",
-    href: "/analysis/skin",
-    image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&q=80",
+    id: 'skin',
+    title: '피부 AI',
+    description: '피부 상태를 분석하고 맞춤 화장품을 추천해요.',
+    href: '/analysis/skin',
+    gradient: 'from-amber-400 to-orange-500',
     icon: Sparkles,
-    tagColor: "bg-module-skin-light text-module-skin-dark",
+    tagColor: 'bg-module-skin-light text-module-skin-dark',
   },
   {
-    id: "body",
-    title: "체형 AI",
-    description: "체형을 분석하고 맞춤 스타일링을 제안해요.",
-    href: "/analysis/body",
-    image: "https://images.unsplash.com/photo-1483721310020-03333e577078?w=400&q=80",
+    id: 'body',
+    title: '체형 AI',
+    description: '체형을 분석하고 맞춤 스타일링을 제안해요.',
+    href: '/analysis/body',
+    gradient: 'from-blue-400 to-indigo-500',
     icon: User,
-    tagColor: "bg-module-body-light text-module-body-dark",
+    tagColor: 'bg-module-body-light text-module-body-dark',
   },
   {
-    id: "workout",
-    title: "운동 AI",
-    description: "AI 기반 맞춤 운동 플랜을 제공해요.",
-    href: "/workout/onboarding/step1",
-    image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80",
+    id: 'workout',
+    title: '운동 AI',
+    description: 'AI 기반 맞춤 운동 플랜을 제공해요.',
+    href: '/workout/onboarding/step1',
+    gradient: 'from-green-400 to-emerald-500',
     icon: Dumbbell,
-    tagColor: "bg-module-workout-light text-module-workout-dark",
+    tagColor: 'bg-module-workout-light text-module-workout-dark',
   },
 ];
 
@@ -49,23 +48,21 @@ export default function Home() {
   // SignedIn/SignedOut 조건부 렌더링으로 사용자 상태에 따른 UI 분기 처리
   // 서버 리다이렉트 제거로 LCP +3-4점 개선 예상
   return (
-    <main className="min-h-[calc(100vh-80px)] pt-0 px-0 max-w-none">
+    <main
+      className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/20 dark:to-indigo-950/30"
+      data-testid="landing-page"
+    >
       <div className="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
         <div className="flex flex-col max-w-[960px] flex-1">
-          {/* 히어로 섹션 */}
+          {/* 히어로 섹션 - 그라디언트 배경 */}
           <div className="p-0 md:p-4">
-            <div className="relative min-h-[480px] md:rounded-xl overflow-hidden">
-              {/* 배경 이미지 */}
-              <Image
-                src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1200&q=80"
-                alt="이룸 웰니스 - 온전한 나를 찾는 여정"
-                fill
-                priority
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 960px"
-              />
-              {/* 그라디언트 오버레이 - 다크모드에서 더 진하게 */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/50 dark:from-black/30 dark:to-black/70" />
+            <div className="relative min-h-[480px] md:rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-900/50 to-purple-900/30">
+              {/* Trust Badge */}
+              <div className="absolute top-4 right-4 flex gap-2 z-10">
+                <span className="px-3 py-1 bg-white/10 backdrop-blur-sm text-white/90 rounded-full text-sm font-medium">
+                  10만+ 사용자 신뢰
+                </span>
+              </div>
 
               {/* 콘텐츠 */}
               <div className="absolute inset-0 flex flex-col gap-6 md:gap-8 items-start justify-end px-4 pb-10 md:px-10">
@@ -74,7 +71,8 @@ export default function Home() {
                     온전한 나를 찾는 여정
                   </h1>
                   <h2 className="text-white text-sm md:text-base font-normal leading-normal">
-                    AI 기반 통합 웰니스 플랫폼. 퍼스널 컬러, 피부, 체형, 운동까지 당신만을 위한 맞춤 분석을 제공합니다.
+                    AI 기반 통합 웰니스 플랫폼. 퍼스널 컬러, 피부, 체형, 운동까지 당신만을 위한 맞춤
+                    분석을 제공합니다.
                   </h2>
                 </div>
                 <SignedOut>
@@ -115,17 +113,15 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
             {WELLNESS_MODULES.map((module) => (
               <Link key={module.id} href={module.href} className="flex flex-col gap-3 pb-3 group">
-                <div className="relative w-full aspect-square rounded-xl overflow-hidden">
-                  <Image
-                    src={module.image}
-                    alt={module.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                  />
+                <div
+                  className={`w-full aspect-square rounded-xl bg-gradient-to-br ${module.gradient} flex items-center justify-center group-hover:scale-105 transition-transform duration-300 shadow-lg`}
+                >
+                  <module.icon className="w-12 h-12 text-white" />
                 </div>
                 <div>
-                  <p className="text-foreground text-base font-medium leading-normal">{module.title}</p>
+                  <p className="text-foreground text-base font-medium leading-normal">
+                    {module.title}
+                  </p>
                   <p className="text-muted-foreground text-sm font-normal leading-normal">
                     {module.description}
                   </p>
@@ -172,7 +168,9 @@ export default function Home() {
                 <Heart className="w-6 h-6" />
               </div>
               <div className="flex flex-col gap-1">
-                <h3 className="text-foreground text-base font-bold leading-tight">개인 맞춤 인사이트</h3>
+                <h3 className="text-foreground text-base font-bold leading-tight">
+                  개인 맞춤 인사이트
+                </h3>
                 <p className="text-muted-foreground text-sm font-normal leading-normal">
                   당신만의 건강 데이터와 목표에 기반한 맞춤형 추천을 받아보세요.
                 </p>
@@ -210,8 +208,7 @@ export default function Home() {
               </h2>
               <p className="text-muted-foreground mb-8">
                 회원가입 후 퍼스널 컬러 진단부터 시작하면
-                <br />
-                더 정확한 맞춤 분석을 받을 수 있어요
+                <br />더 정확한 맞춤 분석을 받을 수 있어요
               </p>
               <SignedOut>
                 <SignInButton mode="modal">
