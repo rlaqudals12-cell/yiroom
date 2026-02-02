@@ -1,8 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Palette, Sparkles, User, Scissors, Heart, ChevronRight, Plus } from 'lucide-react';
+import { Palette, Sparkles, User, Scissors, Heart, ChevronRight } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
+import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
+import { NextLevelCard } from '@/components/home/NextLevelCard';
 
 // 분석 타입별 메타 정보
 const ANALYSIS_META = {
@@ -65,7 +67,7 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
       data-testid="home-analysis-summary"
     >
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-amber-500" />내 분석 결과
         </h3>
@@ -77,6 +79,13 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
+
+      {/* 진행도 바 - Archive 디자인 요소 */}
+      <AnalysisProgressBar
+        completed={analyses.length}
+        total={allTypes.length}
+        completedTypes={analyses.map((a) => a.type)}
+      />
 
       {/* 완료된 분석 요약 */}
       <div className="grid grid-cols-2 gap-2 mb-4">
@@ -111,40 +120,8 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
         })}
       </div>
 
-      {/* 미완료 분석 유도 */}
-      {incompleteTypes.length > 0 && (
-        <div className="flex items-center justify-between pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {incompleteTypes.length}개 분석 남음
-          </p>
-          <div className="flex items-center gap-2">
-            {incompleteTypes.slice(0, 2).map((type) => {
-              const meta = ANALYSIS_META[type];
-              const Icon = meta.icon;
-              const analysisHref =
-                type === 'personal-color' ? '/analysis/personal-color' : `/analysis/${type}`;
-
-              return (
-                <button
-                  key={type}
-                  onClick={() => router.push(analysisHref)}
-                  className={`w-8 h-8 rounded-lg bg-gradient-to-br ${meta.gradient} flex items-center justify-center shadow-md ${meta.shadow} hover:scale-110 transition-transform`}
-                  title={`${meta.label} 분석하기`}
-                >
-                  <Icon className="w-4 h-4 text-white" />
-                </button>
-              );
-            })}
-            <button
-              onClick={() => router.push('/analysis')}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              추가
-            </button>
-          </div>
-        </div>
-      )}
+      {/* 다음 레벨 카드 - Archive 디자인 요소 */}
+      <NextLevelCard completedCount={analyses.length} incompleteTypes={incompleteTypes} />
     </section>
   );
 }
