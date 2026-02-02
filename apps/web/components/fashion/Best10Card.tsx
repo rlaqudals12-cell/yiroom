@@ -7,7 +7,7 @@
 'use client';
 
 import { useState } from 'react';
-import { TrendingUp, Sparkles, ChevronRight, Shirt, Briefcase } from 'lucide-react';
+import { TrendingUp, Sparkles, ChevronRight, Shirt, Briefcase, Sun } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import type { OutfitRecommendation, StyleCategory, OutfitItem } from '@/lib/fashion';
+import type { OutfitRecommendation, StyleCategory } from '@/lib/fashion';
 import { STYLE_CATEGORY_LABELS, isTrendItem2026 } from '@/lib/fashion';
 
 interface Best10CardProps {
@@ -155,10 +155,7 @@ export function Best10Card({
               </h4>
               <div className="space-y-2">
                 {recommendation.items.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 rounded-lg border p-2"
-                  >
+                  <div key={idx} className="flex items-center gap-3 rounded-lg border p-2">
                     <div
                       className="h-8 w-8 rounded-lg border shadow-sm"
                       style={{ backgroundColor: item.color }}
@@ -229,11 +226,7 @@ export function Best10Card({
             )}
 
             {/* 닫기 버튼 */}
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsDialogOpen(false)}
-            >
+            <Button variant="outline" className="w-full" onClick={() => setIsDialogOpen(false)}>
               닫기
             </Button>
           </div>
@@ -264,7 +257,8 @@ export function Best10List({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          {title || (styleCategory ? `${STYLE_CATEGORY_LABELS[styleCategory]} Best 10` : 'Best 10 코디')}
+          {title ||
+            (styleCategory ? `${STYLE_CATEGORY_LABELS[styleCategory]} Best 10` : 'Best 10 코디')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">

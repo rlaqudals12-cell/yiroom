@@ -323,12 +323,17 @@ export function getGenderAdaptiveTerm(term: string, gender: GenderPreference): s
   // 남성/중립용 용어 매핑
   const termMap: Record<string, string> = {
     화사한: '깔끔한',
+    화사해요: '깔끔해요',
     여성스러운: '세련된',
+    여성스러움: '세련됨',
     귀여운: '캐주얼한',
     청순한: '단정한',
     러블리한: '스마트한',
     우아한: '품격있는',
     발랄한: '활동적인',
+    사랑스러운: '매력적인',
+    로맨틱한: '감각적인',
+    페미닌한: '모던한',
   };
 
   return termMap[term] || term;

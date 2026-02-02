@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import {
   calculateBMI,
   calculateTargetWeight,
+  getBMIColor,
   type BMIResult,
   type BMICategory,
 } from '@/lib/body/bmi-calculator';
