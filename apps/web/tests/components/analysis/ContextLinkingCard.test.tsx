@@ -2,6 +2,14 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 
+// lucide-react 아이콘 모킹
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lucide-react')>();
+  return {
+    ...actual,
+  };
+});
+
 // Next.js Link 컴포넌트 모킹
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: { children: React.ReactNode; href: string }) => (
