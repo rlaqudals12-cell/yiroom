@@ -182,7 +182,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
               <p className="text-xs text-muted-foreground mt-1">{bestColors[0]?.name}</p>
               <p className="text-sm font-medium text-pink-600 dark:text-pink-400 mt-1 flex items-center justify-center gap-1">
                 <Sparkles className="w-3 h-3" />
-                화사해요
+                {getGenderAdaptiveTerm('화사해요', userGender)}
               </p>
             </div>
 
@@ -228,7 +228,7 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
           {/* 안내 텍스트 */}
           <p className="text-xs text-muted-foreground mt-4">
             위의 <span className="font-medium text-foreground">베스트 컬러</span>를 활용하면 피부가
-            더 화사해 보여요
+            더 {isMale ? '깔끔해' : '화사해'} 보여요
           </p>
         </section>
       </FadeInUp>

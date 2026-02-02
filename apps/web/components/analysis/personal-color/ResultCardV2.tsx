@@ -9,21 +9,22 @@
  * @see docs/specs/SDD-PERSONAL-COLOR-v2.md
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Watch, Glasses, Gem } from 'lucide-react';
 import type { PersonalColorV2Result, Season } from '@/lib/analysis/personal-color-v2';
 import { TWELVE_TONE_LABELS, SEASON_DESCRIPTIONS } from '@/lib/analysis/personal-color-v2';
 import { useGenderProfile } from '@/components/providers/gender-provider';
-import { getAccessoryRecommendations, type AccessoryRecommendation } from '@/lib/content/gender-adaptive';
+import {
+  getAccessoryRecommendations,
+  MALE_ACCESSORY_RECOMMENDATIONS,
+  FEMALE_ACCESSORY_RECOMMENDATIONS,
+  UNISEX_ACCESSORY_RECOMMENDATIONS,
+  type AccessoryRecommendation,
+} from '@/lib/content/gender-adaptive';
 import type { SeasonType } from '@/lib/mock/personal-color';
 
 interface ResultCardV2Props {
@@ -87,10 +88,33 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
   // 성별 프로필 가져오기 (K-1 성별 중립화)
   const { genderProfile } = useGenderProfile();
 
-  // 성별에 따른 악세서리 추천
+  // 악세서리 필터 상태 (K-1: 공용/남성/여성 탭)
+  const [accessoryFilter, setAccessoryFilter] = useState<'all' | 'male' | 'female' | 'unisex'>(
+    'all'
+  );
+
+  // 성별에 따른 악세서리 추천 (기본)
   const accessoryRecommendations = useMemo(() => {
     return getAccessoryRecommendations(season as SeasonType, genderProfile);
   }, [season, genderProfile]);
+
+  // 필터된 악세서리 추천 (K-1: 탭 필터링)
+  const filteredAccessoryRecommendations = useMemo(() => {
+    const s = season as SeasonType;
+    if (accessoryFilter === 'all') {
+      return accessoryRecommendations;
+    }
+    if (accessoryFilter === 'male') {
+      return MALE_ACCESSORY_RECOMMENDATIONS[s] || [];
+    }
+    if (accessoryFilter === 'female') {
+      return FEMALE_ACCESSORY_RECOMMENDATIONS[s] || [];
+    }
+    if (accessoryFilter === 'unisex') {
+      return UNISEX_ACCESSORY_RECOMMENDATIONS[s] || [];
+    }
+    return accessoryRecommendations;
+  }, [season, accessoryFilter, accessoryRecommendations]);
 
   // 신뢰도 등급
   const confidenceGrade = useMemo(() => {
@@ -112,9 +136,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
       <CardHeader className={`${seasonStyle.bg} rounded-t-lg`}>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className={`text-2xl ${seasonStyle.text}`}>
-              {toneLabel}
-            </CardTitle>
+            <CardTitle className={`text-2xl ${seasonStyle.text}`}>{toneLabel}</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               {seasonLabel} - {UNDERTONE_LABELS[result.classification.undertone]}
             </p>
@@ -123,9 +145,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
             <Badge variant="secondary" className={confidenceGrade.color}>
               신뢰도 {result.classification.confidence.toFixed(0)}%
             </Badge>
-            <p className="text-xs text-muted-foreground mt-1">
-              {confidenceGrade.label}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{confidenceGrade.label}</p>
           </div>
         </div>
       </CardHeader>
@@ -133,18 +153,24 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
       <CardContent className="pt-6">
         {/* 시즌 설명 */}
         {seasonDescription && (
-          <p className="text-sm text-muted-foreground mb-6">
-            {seasonDescription}
-          </p>
+          <p className="text-sm text-muted-foreground mb-6">{seasonDescription}</p>
         )}
 
         {/* 탭 컨텐츠 */}
         <Tabs defaultValue="palette" className="w-full">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-            <TabsTrigger value="palette" className="text-xs sm:text-sm">팔레트</TabsTrigger>
-            <TabsTrigger value="accessory" className="text-xs sm:text-sm">악세서리</TabsTrigger>
-            <TabsTrigger value="makeup" className="text-xs sm:text-sm">메이크업</TabsTrigger>
-            <TabsTrigger value="styling" className="text-xs sm:text-sm">스타일링</TabsTrigger>
+            <TabsTrigger value="palette" className="text-xs sm:text-sm">
+              팔레트
+            </TabsTrigger>
+            <TabsTrigger value="accessory" className="text-xs sm:text-sm">
+              악세서리
+            </TabsTrigger>
+            <TabsTrigger value="makeup" className="text-xs sm:text-sm">
+              메이크업
+            </TabsTrigger>
+            <TabsTrigger value="styling" className="text-xs sm:text-sm">
+              스타일링
+            </TabsTrigger>
           </TabsList>
 
           {/* 컬러 팔레트 탭 */}
@@ -175,9 +201,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
 
               {/* 워스트 컬러 (avoidColors) */}
               <div>
-                <h4 className="text-sm font-medium mb-2 text-muted-foreground">
-                  피해야 할 컬러
-                </h4>
+                <h4 className="text-sm font-medium mb-2 text-muted-foreground">피해야 할 컬러</h4>
                 <div className="flex flex-wrap gap-2">
                   <TooltipProvider>
                     {result.palette?.avoidColors?.map((color: string, idx: number) => (
@@ -219,16 +243,53 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
           {/* 악세서리 탭 (K-1 성별 중립화) */}
           <TabsContent value="accessory" className="mt-4">
             <div className="space-y-4" data-testid="accessory-recommendations">
-              {/* 성별 안내 */}
-              <p className="text-xs text-muted-foreground">
-                {genderProfile.gender === 'male' && '남성용 악세서리 추천'}
-                {genderProfile.gender === 'female' && '여성용 악세서리 추천'}
-                {genderProfile.gender === 'neutral' && '전체 악세서리 추천'}
-              </p>
+              {/* K-1: 공용/남성/여성 필터 버튼 */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setAccessoryFilter('all')}
+                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                    accessoryFilter === 'all'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background text-muted-foreground border-border hover:border-primary/50'
+                  }`}
+                >
+                  전체
+                </button>
+                <button
+                  onClick={() => setAccessoryFilter('unisex')}
+                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                    accessoryFilter === 'unisex'
+                      ? 'bg-emerald-500 text-white border-emerald-500'
+                      : 'bg-background text-muted-foreground border-border hover:border-emerald-300'
+                  }`}
+                >
+                  🌿 공용
+                </button>
+                <button
+                  onClick={() => setAccessoryFilter('male')}
+                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                    accessoryFilter === 'male'
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'bg-background text-muted-foreground border-border hover:border-blue-300'
+                  }`}
+                >
+                  👔 남성
+                </button>
+                <button
+                  onClick={() => setAccessoryFilter('female')}
+                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                    accessoryFilter === 'female'
+                      ? 'bg-pink-500 text-white border-pink-500'
+                      : 'bg-background text-muted-foreground border-border hover:border-pink-300'
+                  }`}
+                >
+                  💎 여성
+                </button>
+              </div>
 
               {/* 악세서리 목록 */}
               <div className="grid gap-3">
-                {accessoryRecommendations.map((accessory, idx) => (
+                {filteredAccessoryRecommendations.map((accessory, idx) => (
                   <div
                     key={idx}
                     className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
@@ -274,7 +335,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
                   브랜드 예시 보기
                 </summary>
                 <div className="mt-2 space-y-1 pl-4">
-                  {accessoryRecommendations.map((accessory, idx) => (
+                  {filteredAccessoryRecommendations.map((accessory, idx) => (
                     <p key={idx} className="text-xs text-muted-foreground">
                       • {accessory.name}: {accessory.brandExample}
                     </p>
@@ -375,15 +436,21 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
             <h4 className="text-sm font-medium mb-3">피부색 Lab 분석</h4>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-2xl font-bold">{result.detailedAnalysis.skinToneLab.L.toFixed(1)}</p>
+                <p className="text-2xl font-bold">
+                  {result.detailedAnalysis.skinToneLab.L.toFixed(1)}
+                </p>
                 <p className="text-xs text-muted-foreground">L* (밝기)</p>
               </div>
               <div>
-                <p className="text-2xl font-bold">{result.detailedAnalysis.skinToneLab.a.toFixed(1)}</p>
+                <p className="text-2xl font-bold">
+                  {result.detailedAnalysis.skinToneLab.a.toFixed(1)}
+                </p>
                 <p className="text-xs text-muted-foreground">a* (적-녹)</p>
               </div>
               <div>
-                <p className="text-2xl font-bold">{result.detailedAnalysis.skinToneLab.b.toFixed(1)}</p>
+                <p className="text-2xl font-bold">
+                  {result.detailedAnalysis.skinToneLab.b.toFixed(1)}
+                </p>
                 <p className="text-xs text-muted-foreground">b* (황-청)</p>
               </div>
             </div>
@@ -394,8 +461,8 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
         {result.usedFallback && (
           <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-sm text-amber-800">
-              AI 분석이 지연되어 예측 결과를 표시하고 있습니다.
-              정확한 분석을 위해 재분석을 권장합니다.
+              AI 분석이 지연되어 예측 결과를 표시하고 있습니다. 정확한 분석을 위해 재분석을
+              권장합니다.
             </p>
           </div>
         )}
