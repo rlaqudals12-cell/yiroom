@@ -14,16 +14,14 @@ import { cn } from '@/lib/utils';
 import {
   calculateBMI,
   calculateTargetWeight,
-  getBMIColor,
   type BMIResult,
   type BMICategory,
 } from '@/lib/body/bmi-calculator';
 
 // BMI 게이지 컴포넌트
-function BMIGauge({ bmi, category }: { bmi: number; category: BMICategory }) {
+function BMIGauge({ bmi, category: _category }: { bmi: number; category: BMICategory }) {
   // BMI 15-40 범위를 0-100%로 변환
-  const percentage = Math.min(Math.max((bmi - 15) / 25 * 100, 0), 100);
-  const _color = getBMIColor(category);
+  const percentage = Math.min(Math.max(((bmi - 15) / 25) * 100, 0), 100);
 
   return (
     <div className="relative h-4 bg-gradient-to-r from-blue-400 via-green-400 via-yellow-400 to-red-500 rounded-full overflow-hidden">
@@ -135,9 +133,10 @@ export default function WeightGoalTrackingPage() {
     const goal = parseFloat(goalWeight);
     if (isNaN(current) || isNaN(goal) || !bmiResult) return 0;
 
-    const startWeight = bmiResult.weightDifference > 0
-      ? current + bmiResult.weightDifference // 감량 시작점
-      : current - Math.abs(bmiResult.weightDifference); // 증량 시작점
+    const startWeight =
+      bmiResult.weightDifference > 0
+        ? current + bmiResult.weightDifference // 감량 시작점
+        : current - Math.abs(bmiResult.weightDifference); // 증량 시작점
 
     const totalChange = Math.abs(startWeight - goal);
     const currentChange = Math.abs(startWeight - current);
@@ -192,9 +191,7 @@ export default function WeightGoalTrackingPage() {
                     onClick={() => setGender(g)}
                     className={cn(
                       'flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all',
-                      gender === g
-                        ? 'bg-violet-600 text-white'
-                        : 'bg-muted hover:bg-muted/80'
+                      gender === g ? 'bg-violet-600 text-white' : 'bg-muted hover:bg-muted/80'
                     )}
                   >
                     {g === 'male' ? '남성' : '여성'}
@@ -263,8 +260,8 @@ export default function WeightGoalTrackingPage() {
                 bmiResult.category === 'normal'
                   ? 'bg-green-50 dark:bg-green-900/20'
                   : bmiResult.category === 'underweight'
-                  ? 'bg-blue-50 dark:bg-blue-900/20'
-                  : 'bg-orange-50 dark:bg-orange-900/20'
+                    ? 'bg-blue-50 dark:bg-blue-900/20'
+                    : 'bg-orange-50 dark:bg-orange-900/20'
               )}
             >
               <p className="text-2xl font-bold" style={{ color: getBMIColor(bmiResult.category) }}>
@@ -358,8 +355,8 @@ export default function WeightGoalTrackingPage() {
                   {parseFloat(currentWeight) > parseFloat(goalWeight)
                     ? `${(parseFloat(currentWeight) - parseFloat(goalWeight)).toFixed(1)}kg 더 감량하면 목표 달성!`
                     : parseFloat(currentWeight) < parseFloat(goalWeight)
-                    ? `${(parseFloat(goalWeight) - parseFloat(currentWeight)).toFixed(1)}kg 더 증량하면 목표 달성!`
-                    : '목표를 달성했어요!'}
+                      ? `${(parseFloat(goalWeight) - parseFloat(currentWeight)).toFixed(1)}kg 더 증량하면 목표 달성!`
+                      : '목표를 달성했어요!'}
                 </p>
               </div>
             )}
@@ -377,20 +374,32 @@ export default function WeightGoalTrackingPage() {
               {bmiResult.category === 'normal' && (
                 <>
                   <li className="text-sm text-foreground">• 현재 건강한 체중을 유지하고 계세요!</li>
-                  <li className="text-sm text-foreground">• 규칙적인 운동과 균형 잡힌 식단을 계속 유지해주세요.</li>
+                  <li className="text-sm text-foreground">
+                    • 규칙적인 운동과 균형 잡힌 식단을 계속 유지해주세요.
+                  </li>
                 </>
               )}
               {bmiResult.category === 'underweight' && (
                 <>
-                  <li className="text-sm text-foreground">• 균형 잡힌 식단으로 건강한 체중 증가를 권장합니다.</li>
-                  <li className="text-sm text-foreground">• 근력 운동을 통해 근육량을 늘려보세요.</li>
+                  <li className="text-sm text-foreground">
+                    • 균형 잡힌 식단으로 건강한 체중 증가를 권장합니다.
+                  </li>
+                  <li className="text-sm text-foreground">
+                    • 근력 운동을 통해 근육량을 늘려보세요.
+                  </li>
                 </>
               )}
               {['overweight', 'obese1', 'obese2', 'obese3'].includes(bmiResult.category) && (
                 <>
-                  <li className="text-sm text-foreground">• 가벼운 식단 조절과 규칙적인 운동을 권장합니다.</li>
-                  <li className="text-sm text-foreground">• 하루 30분 이상 걷기부터 시작해보세요.</li>
-                  <li className="text-sm text-foreground">• 급격한 다이어트보다 점진적인 생활습관 개선이 효과적입니다.</li>
+                  <li className="text-sm text-foreground">
+                    • 가벼운 식단 조절과 규칙적인 운동을 권장합니다.
+                  </li>
+                  <li className="text-sm text-foreground">
+                    • 하루 30분 이상 걷기부터 시작해보세요.
+                  </li>
+                  <li className="text-sm text-foreground">
+                    • 급격한 다이어트보다 점진적인 생활습관 개선이 효과적입니다.
+                  </li>
                 </>
               )}
             </ul>
@@ -399,7 +408,8 @@ export default function WeightGoalTrackingPage() {
 
         {/* 면책조항 */}
         <p className="text-xs text-muted-foreground text-center px-4">
-          {bmiResult?.disclaimer || '이 결과는 참고용이며, 정확한 건강 상태 평가는 전문 의료인과 상담하시기 바랍니다.'}
+          {bmiResult?.disclaimer ||
+            '이 결과는 참고용이며, 정확한 건강 상태 평가는 전문 의료인과 상담하시기 바랍니다.'}
         </p>
       </main>
     </div>
