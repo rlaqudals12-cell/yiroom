@@ -220,6 +220,8 @@ vi.mock('lucide-react', () => ({
   Tag: createIconMock('Tag'),
   Brush: createIconMock('Brush'),
   Scissors: createIconMock('Scissors'),
+  Wand2: createIconMock('Wand2'),
+  ScanFace: createIconMock('ScanFace'),
 
   // Media & Input
   Camera: createIconMock('Camera'),
@@ -426,11 +428,7 @@ class MockImageData {
 
   constructor(width: number, height: number);
   constructor(data: Uint8ClampedArray, width: number, height?: number);
-  constructor(
-    dataOrWidth: Uint8ClampedArray | number,
-    widthOrHeight: number,
-    height?: number
-  ) {
+  constructor(dataOrWidth: Uint8ClampedArray | number, widthOrHeight: number, height?: number) {
     if (typeof dataOrWidth === 'number') {
       this.width = dataOrWidth;
       this.height = widthOrHeight;
@@ -463,7 +461,7 @@ class MockCanvasRenderingContext2D {
     const data = new Uint8ClampedArray(sw * sh * 4);
     // 기본값으로 회색 픽셀 채우기
     for (let i = 0; i < data.length; i += 4) {
-      data[i] = 128;     // R
+      data[i] = 128; // R
       data[i + 1] = 128; // G
       data[i + 2] = 128; // B
       data[i + 3] = 255; // A
@@ -540,9 +538,7 @@ document.createElement = function <K extends keyof HTMLElementTagNameMap>(
       return mockCtx as unknown as CanvasRenderingContext2D;
     }) as unknown as typeof canvas.getContext;
 
-    canvas.toDataURL = vi.fn(
-      (_type?: string, _quality?: number) => 'data:image/png;base64,mock'
-    );
+    canvas.toDataURL = vi.fn((_type?: string, _quality?: number) => 'data:image/png;base64,mock');
 
     canvas.toBlob = vi.fn((callback: BlobCallback, _type?: string, _quality?: number) => {
       callback(new Blob(['mock'], { type: 'image/png' }));
