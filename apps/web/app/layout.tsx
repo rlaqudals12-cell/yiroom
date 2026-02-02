@@ -85,7 +85,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
     ],
@@ -133,10 +133,10 @@ export default async function RootLayout({
           <WebApplicationJsonLd />
         </head>
         <body
-          className={`${inter.variable} ${notoSansKR.variable} antialiased font-sans bg-background text-foreground`}
-          style={{ fontFamily: 'Inter, "Noto Sans KR", sans-serif' }}
+          className={`${inter.variable} ${notoSansKR.variable} antialiased bg-background text-foreground`}
+          style={{ fontFamily: 'Inter, "Noto Sans KR", system-ui, sans-serif' }}
         >
-          <ThemeProvider defaultTheme="system">
+          <ThemeProvider defaultTheme="dark">
             <I18nProvider locale={locale} messages={messages}>
               <OfflineBanner />
               <a

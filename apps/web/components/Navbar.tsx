@@ -21,8 +21,14 @@ const Navbar = () => {
     >
       <Link
         href="/"
-        className="text-2xl font-bold text-gradient-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
+        className="text-2xl font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
         aria-label="이룸 홈으로 이동"
+        style={{
+          background: 'linear-gradient(to right, #f9a8d4, #e879f9, #a855f7)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+        }}
       >
         이룸
       </Link>
