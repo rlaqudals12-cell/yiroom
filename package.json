@@ -40,5 +40,9 @@
   "dependencies": {
     "@rollup/rollup-win32-x64-msvc": "^4.56.0",
     "yiroom": "file:"
+  },
+  "optionalDependencies": {
+    "@next/swc-win32-x64-msvc": "^16.1.6",
+    "@parcel/watcher-win32-x64": "^2.5.6"
   }
 }
