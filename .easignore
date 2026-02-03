@@ -2,39 +2,45 @@
 # Format: gitignore-style patterns
 
 # Node modules - all levels
-**/node_modules
+**/node_modules/
 
 # Git
-.git
+.git/
 
 # Development tools
-.beads
-.claude
-.tmp.driveupload
+.beads/
+.claude/
+.tmp.driveupload/
 
-# Web app (not needed for mobile build)
-apps/web
+# Web app (not needed for mobile build) - multiple patterns for compatibility
+apps/web/
+apps/web/**
 
 # Build caches
-**/.next
-**/.expo
-**/dist
-**/out
+**/.next/
+**/.expo/
+**/dist/
+**/out/
 
 # Test files
-**/__tests__
-**/__mocks__
+**/__tests__/
+**/__mocks__/
 **/*.test.*
 **/*.spec.*
-**/coverage
+**/coverage/
 **/jest.config.*
+**/vitest.config.*
+**/playwright.config.*
+**/e2e/
 
-# Documentation
-docs/research
+# Documentation (large research folder)
+docs/research/
+docs/claude-archive/
+docs/.archive/
 
 # IDE
-.vscode
-.idea
+.vscode/
+.idea/
 
 # OS
 **/.DS_Store
@@ -44,3 +50,15 @@ docs/research
 *.log
 **/*-debug.log*
 **/*-error.log*
+
+# Turbo cache
+.turbo/
+**/.turbo/
+
+# Lock files (will be regenerated)
+pnpm-lock.yaml
+yarn.lock
+
+# Other large/unnecessary folders
+supabase/.branches/
+**/.cache/
