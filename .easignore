@@ -1,44 +1,46 @@
-# EAS Build Ignore File
+# EAS Build Ignore
+# Format: gitignore-style patterns
 
-# Local development files
-.beads/
-.claude/
-.tmp.driveupload/
-.git/
+# Node modules - all levels
+**/node_modules
 
-# Node modules (will be installed during build)
-node_modules/
-**/node_modules/
+# Git
+.git
 
-# Build outputs
-apps/web/.next/
-apps/web/out/
-apps/mobile/.expo/
-apps/mobile/android/
-apps/mobile/ios/
+# Development tools
+.beads
+.claude
+.tmp.driveupload
+
+# Web app (not needed for mobile build)
+apps/web
+
+# Build caches
+**/.next
+**/.expo
+**/dist
+**/out
 
 # Test files
-**/__tests__/
-**/*.test.ts
-**/*.test.tsx
-**/*.spec.ts
-**/*.spec.tsx
-coverage/
-.nyc_output/
+**/__tests__
+**/__mocks__
+**/*.test.*
+**/*.spec.*
+**/coverage
+**/jest.config.*
+
+# Documentation
+docs/research
 
 # IDE
-.vscode/
-.idea/
+.vscode
+.idea
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Large documentation (not needed for build)
-docs/research/
+# OS
+**/.DS_Store
+**/Thumbs.db
 
 # Logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+**/*-debug.log*
+**/*-error.log*
