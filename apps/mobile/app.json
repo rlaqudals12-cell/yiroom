@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "scheme": "yiroom",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -64,22 +64,20 @@
           "icon": "./assets/notification-icon.png",
           "color": "#2e5afa"
         }
-      ]
+      ],
+      "expo-web-browser",
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "eas": {
-        "projectId": ""
-      }
+        "projectId": "0e876253-c0e1-4cbe-a9e1-33207bae230a"
+      },
+      "router": {}
     },
-    "owner": "yiroom",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/your-project-id"
-    }
+    "owner": "rlaqudals12",
+    "runtimeVersion": "0.1.0"
   }
 }

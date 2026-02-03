@@ -41,21 +41,6 @@
       "android": {
         "buildType": "app-bundle"
       }
-    },
-    "widget-development": {
-      "extends": "development",
-      "ios": {
-        "buildConfiguration": "Debug"
-      },
-      "android": {
-        "gradleCommand": ":app:assembleDebug"
-      }
-    },
-    "widget-production": {
-      "extends": "production",
-      "ios": {
-        "buildConfiguration": "Release"
-      }
     }
   },
   "submit": {

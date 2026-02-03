@@ -12,10 +12,22 @@ import {
   ScrollView,
   useColorScheme,
   Image,
-  TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import {
+  AnalysisLoadingState,
+  AnalysisErrorState,
+  AnalysisTrustBadge,
+  AnalysisResultButtons,
+  commonAnalysisStyles,
+  ANALYSIS_COLORS,
+} from '@/components/analysis';
+import {
+  analyzeBody as analyzeWithGemini,
+  imageToBase64,
+  type BodyAnalysisResult,
+} from '@/lib/gemini';
 
 // 체형 타입 데이터
 const BODY_TYPE_DATA: Record<
@@ -93,7 +105,7 @@ const BODY_TYPE_DATA: Record<
 export default function BodyResultScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const { height, weight, imageUri } = useLocalSearchParams<{
+  const { height, weight, imageUri, imageBase64 } = useLocalSearchParams<{
     height: string;
     weight: string;
     imageUri: string;
@@ -103,34 +115,66 @@ export default function BodyResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [bodyType, setBodyType] = useState<BodyType | null>(null);
   const [bmi, setBmi] = useState<number | null>(null);
+  const [usedFallback, setUsedFallback] = useState(false);
+  const [_recommendations, setRecommendations] = useState<string[]>([]);
+  const [_avoidItems, setAvoidItems] = useState<string[]>([]);
 
-  // 체형 분석 (Mock)
+  // 체형 분석 (lib/gemini.ts 연동)
   const analyzeBody = useCallback(async () => {
     setIsLoading(true);
+    setUsedFallback(false);
 
-    // TODO: 실제 Gemini AI 분석 연동
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // imageBase64가 없으면 imageUri에서 변환
+      let base64Data = imageBase64;
+      if (!base64Data && imageUri) {
+        base64Data = await imageToBase64(imageUri);
+      }
 
-    // BMI 계산
-    const heightM = parseFloat(height) / 100;
-    const weightKg = parseFloat(weight);
-    const calculatedBmi = weightKg / (heightM * heightM);
-    setBmi(Math.round(calculatedBmi * 10) / 10);
+      if (!base64Data) {
+        throw new Error('이미지 데이터가 없습니다.');
+      }
 
-    // Mock 체형 결정
-    const types: BodyType[] = [
-      'Rectangle',
-      'Triangle',
-      'InvertedTriangle',
-      'Hourglass',
-      'Oval',
-      'Athletic',
-    ];
-    const randomType = types[Math.floor(Math.random() * types.length)];
-    setBodyType(randomType);
+      const heightNum = parseFloat(height);
+      const weightNum = parseFloat(weight);
 
-    setIsLoading(false);
-  }, [height, weight]);
+      // lib/gemini.ts의 analyzeBody 호출
+      const analysisResult: BodyAnalysisResult = await analyzeWithGemini(
+        base64Data,
+        heightNum,
+        weightNum
+      );
+
+      // 결과 매핑 (BodyType 대소문자 변환)
+      const bodyTypeMap: Record<string, BodyType> = {
+        rectangle: 'Rectangle',
+        triangle: 'Triangle',
+        inverted_triangle: 'InvertedTriangle',
+        hourglass: 'Hourglass',
+        oval: 'Oval',
+        diamond: 'Diamond',
+        pear: 'Pear',
+        athletic: 'Athletic',
+      };
+
+      const mappedBodyType =
+        bodyTypeMap[analysisResult.bodyType] || 'Rectangle';
+      setBodyType(mappedBodyType);
+      setBmi(analysisResult.bmi);
+      setRecommendations(analysisResult.recommendations || []);
+      setAvoidItems(analysisResult.avoidItems || []);
+
+      // Mock fallback 감지
+      if (analysisResult.proportions?.shoulderHipRatio === 1.0) {
+        setUsedFallback(true);
+      }
+    } catch (error) {
+      console.error('[C-1] Analysis error:', error);
+      setBodyType(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [height, weight, imageUri, imageBase64]);
 
   useEffect(() => {
     analyzeBody();
@@ -166,25 +210,23 @@ export default function BodyResultScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, isDark && styles.containerDark]}>
-        <ActivityIndicator size="large" color="#2e5afa" />
-        <Text style={[styles.loadingText, isDark && styles.textLight]}>
-          체형을 분석 중이에요...
-        </Text>
-      </View>
+      <AnalysisLoadingState
+        message="체형을 분석 중이에요..."
+        isDark={isDark}
+        testID="body-analysis-loading"
+      />
     );
   }
 
   if (!bodyType || bmi === null) {
     return (
-      <View style={[styles.errorContainer, isDark && styles.containerDark]}>
-        <Text style={[styles.errorText, isDark && styles.textLight]}>
-          분석에 실패했습니다.
-        </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-          <Text style={styles.retryButtonText}>다시 시도하기</Text>
-        </TouchableOpacity>
-      </View>
+      <AnalysisErrorState
+        message="분석에 실패했습니다."
+        onRetry={handleRetry}
+        onGoHome={handleGoHome}
+        isDark={isDark}
+        testID="body-analysis-error"
+      />
     );
   }
 
@@ -193,20 +235,26 @@ export default function BodyResultScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
+        {/* AI 분석 신뢰도 표시 */}
+        <AnalysisTrustBadge
+          type={usedFallback ? 'fallback' : 'ai'}
+          testID="body-trust-badge"
+        />
+
         {/* 결과 이미지 */}
         {imageUri && (
-          <View style={styles.imageContainer}>
+          <View style={commonAnalysisStyles.imageContainer}>
             <Image source={{ uri: imageUri }} style={styles.resultImage} />
           </View>
         )}
 
         {/* BMI 카드 */}
-        <View style={[styles.bmiCard, isDark && styles.cardDark]}>
-          <Text style={[styles.bmiLabel, isDark && styles.textMuted]}>BMI</Text>
+        <View style={[styles.bmiCard, isDark && commonAnalysisStyles.cardDark]}>
+          <Text style={[styles.bmiLabel, isDark && commonAnalysisStyles.textMuted]}>BMI</Text>
           <View style={styles.bmiValue}>
             <Text style={[styles.bmiNumber, { color: bmiStatus.color }]}>
               {bmi}
@@ -217,27 +265,27 @@ export default function BodyResultScreen() {
               <Text style={styles.bmiStatusText}>{bmiStatus.label}</Text>
             </View>
           </View>
-          <Text style={[styles.bmiInfo, isDark && styles.textMuted]}>
+          <Text style={[styles.bmiInfo, isDark && commonAnalysisStyles.textMuted]}>
             키 {height}cm / 체중 {weight}kg
           </Text>
         </View>
 
         {/* 체형 결과 */}
-        <View style={[styles.resultCard, isDark && styles.cardDark]}>
-          <Text style={[styles.typeLabel, isDark && styles.textMuted]}>
+        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
+          <Text style={[styles.typeLabel, isDark && commonAnalysisStyles.textMuted]}>
             당신의 체형은
           </Text>
-          <Text style={[styles.typeName, isDark && styles.textLight]}>
+          <Text style={[styles.typeName, isDark && commonAnalysisStyles.textLight]}>
             {typeData.name}
           </Text>
-          <Text style={[styles.description, isDark && styles.textMuted]}>
+          <Text style={[commonAnalysisStyles.description, isDark && commonAnalysisStyles.textMuted]}>
             {typeData.description}
           </Text>
         </View>
 
         {/* 추천 스타일 */}
-        <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
+          <Text style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}>
             추천 스타일
           </Text>
           <View style={styles.tagContainer}>
@@ -250,8 +298,8 @@ export default function BodyResultScreen() {
         </View>
 
         {/* 피해야 할 스타일 */}
-        <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
+          <Text style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}>
             피하면 좋은 스타일
           </Text>
           <View style={styles.tagContainer}>
@@ -264,98 +312,39 @@ export default function BodyResultScreen() {
         </View>
 
         {/* 버튼 */}
-        <View style={styles.buttons}>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleWorkoutRecommendation}
-          >
-            <Text style={styles.primaryButtonText}>
-              🏃 나에게 맞는 운동 추천
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={handleGoHome}
-          >
-            <Text style={styles.secondaryButtonText}>홈으로 돌아가기</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.retryLink} onPress={handleRetry}>
-            <Text style={styles.retryLinkText}>다시 분석하기</Text>
-          </TouchableOpacity>
-        </View>
+        <AnalysisResultButtons
+          primaryText="🏃 나에게 맞는 운동 추천"
+          onPrimaryPress={handleWorkoutRecommendation}
+          onGoHome={handleGoHome}
+          onRetry={handleRetry}
+          testID="body-result-buttons"
+        />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// 이 파일 전용 스타일 (공통 스타일은 commonAnalysisStyles 사용)
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
-  },
-  content: {
-    padding: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: '#2e5afa',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
+  // 결과 이미지
   resultImage: {
     width: 140,
     height: 180,
     borderRadius: 12,
     borderWidth: 3,
-    borderColor: '#2e5afa',
+    borderColor: ANALYSIS_COLORS.primary,
   },
+  // BMI 카드
   bmiCard: {
-    backgroundColor: '#fff',
+    backgroundColor: ANALYSIS_COLORS.cardBackground,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     alignItems: 'center',
   },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
-  },
   bmiLabel: {
     fontSize: 14,
-    color: '#666',
+    color: ANALYSIS_COLORS.textSecondary,
     marginBottom: 8,
   },
   bmiValue: {
@@ -380,10 +369,11 @@ const styles = StyleSheet.create({
   },
   bmiInfo: {
     fontSize: 14,
-    color: '#666',
+    color: ANALYSIS_COLORS.textSecondary,
   },
+  // 체형 결과 카드
   resultCard: {
-    backgroundColor: '#fff',
+    backgroundColor: ANALYSIS_COLORS.cardBackground,
     borderRadius: 16,
     padding: 24,
     marginBottom: 16,
@@ -391,33 +381,16 @@ const styles = StyleSheet.create({
   },
   typeLabel: {
     fontSize: 14,
-    color: '#666',
+    color: ANALYSIS_COLORS.textSecondary,
     marginBottom: 8,
   },
   typeName: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#2e5afa',
+    color: ANALYSIS_COLORS.primary,
     marginBottom: 12,
   },
-  description: {
-    fontSize: 15,
-    color: '#666',
-    lineHeight: 24,
-    textAlign: 'center',
-  },
-  section: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111',
-    marginBottom: 16,
-  },
+  // 태그 스타일
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -444,46 +417,5 @@ const styles = StyleSheet.create({
     color: '#c62828',
     fontSize: 14,
     fontWeight: '500',
-  },
-  buttons: {
-    marginTop: 8,
-    gap: 12,
-  },
-  primaryButton: {
-    backgroundColor: '#2e5afa',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: '#666',
-    fontSize: 16,
-  },
-  retryLink: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  retryLinkText: {
-    color: '#999',
-    fontSize: 14,
-    textDecorationLine: 'underline',
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

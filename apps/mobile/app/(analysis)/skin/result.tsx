@@ -6,7 +6,7 @@
 import type { SkinType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,106 +14,31 @@ import {
   ScrollView,
   useColorScheme,
   Image,
-  TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// 새로운 분석 컴포넌트
 import {
   CircularProgress,
   ScoreChangeBadge,
-  MetricDelta,
+  MetricBar,
+  AnalysisLoadingState,
+  AnalysisErrorState,
+  AnalysisTrustBadge,
+  AnalysisResultButtons,
 } from '@/components/analysis';
+import {
+  analyzeSkin as analyzeWithGemini,
+  imageToBase64,
+  type SkinAnalysisResult,
+} from '@/lib/gemini';
 
-// 피부 지표 타입
-interface SkinMetrics {
-  moisture: number;
-  oil: number;
-  pores: number;
-  wrinkles: number;
-  pigmentation: number;
-  sensitivity: number;
-  elasticity: number;
-}
-
-// 이전 분석 대비 변화량 (Mock 데이터)
-interface SkinMetricsDelta {
-  moisture: number;
-  oil: number;
-  pores: number;
-  wrinkles: number;
-  pigmentation: number;
-  sensitivity: number;
-  elasticity: number;
-  overall: number;
-}
-
-// 피부 타입 데이터
-const SKIN_TYPE_DATA: Record<
-  SkinType,
-  {
-    name: string;
-    description: string;
-    tips: string[];
-  }
-> = {
-  dry: {
-    name: '건성 피부',
-    description:
-      '수분이 부족한 피부 타입입니다. 보습에 집중하는 스킨케어를 추천드려요.',
-    tips: [
-      '고보습 크림 사용을 권장해요',
-      '클렌징 후 바로 토너를 발라주세요',
-      '수분 마스크팩을 주 2-3회 사용해보세요',
-    ],
-  },
-  oily: {
-    name: '지성 피부',
-    description:
-      '피지 분비가 활발한 피부 타입입니다. 유수분 밸런스 관리가 중요해요.',
-    tips: [
-      '가벼운 젤 타입 보습제를 사용하세요',
-      '주 1-2회 모공 관리를 해주세요',
-      '자극적인 클렌징은 피해주세요',
-    ],
-  },
-  combination: {
-    name: '복합성 피부',
-    description:
-      'T존은 지성, 볼은 건성인 피부 타입입니다. 부위별 맞춤 케어가 필요해요.',
-    tips: [
-      'T존과 볼을 다른 제품으로 케어하세요',
-      '수분 공급과 유분 조절을 동시에 해주세요',
-      '자극적인 각질 제거는 피해주세요',
-    ],
-  },
-  sensitive: {
-    name: '민감성 피부',
-    description:
-      '자극에 예민한 피부 타입입니다. 순한 성분의 제품을 사용하세요.',
-    tips: [
-      '무향료, 저자극 제품을 선택하세요',
-      '새 제품은 패치 테스트 후 사용하세요',
-      '피부 장벽 강화 제품을 사용해보세요',
-    ],
-  },
-  normal: {
-    name: '정상 피부',
-    description:
-      '유수분 밸런스가 좋은 피부 타입입니다. 현재 상태를 유지해주세요.',
-    tips: [
-      '기본적인 보습 케어를 유지하세요',
-      '자외선 차단은 꼭 해주세요',
-      '계절에 따라 제품을 조절해보세요',
-    ],
-  },
-};
+import { SKIN_TYPE_DATA, SCORE_WEIGHTS } from './constants';
+import type { SkinMetrics, SkinMetricsDelta } from './types';
 
 export default function SkinResultScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const { imageUri } = useLocalSearchParams<{
+  const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
   }>();
@@ -124,75 +49,80 @@ export default function SkinResultScreen() {
   const [overallScore, setOverallScore] = useState<number>(0);
   const [delta, setDelta] = useState<SkinMetricsDelta | null>(null);
   const [previousScore, setPreviousScore] = useState<number | null>(null);
+  const [usedFallback, setUsedFallback] = useState(false);
+
+  // 피부 분석 (lib/gemini.ts 연동)
+  const analyzeSkin = useCallback(async () => {
+    setIsLoading(true);
+    setUsedFallback(false);
+
+    try {
+      // imageBase64가 없으면 imageUri에서 변환
+      let base64Data = imageBase64;
+      if (!base64Data && imageUri) {
+        base64Data = await imageToBase64(imageUri);
+      }
+
+      if (!base64Data) {
+        throw new Error('이미지 데이터가 없습니다.');
+      }
+
+      // lib/gemini.ts의 analyzeSkin 호출
+      const analysisResult: SkinAnalysisResult =
+        await analyzeWithGemini(base64Data);
+
+      // 결과 매핑
+      setSkinType(analysisResult.skinType);
+      setMetrics(analysisResult.metrics);
+
+      // 종합 점수 계산 (가중 평균)
+      const score = Math.round(
+        analysisResult.metrics.moisture * 0.2 +
+          analysisResult.metrics.elasticity * 0.2 +
+          analysisResult.metrics.pores * 0.15 +
+          analysisResult.metrics.wrinkles * 0.15 +
+          analysisResult.metrics.pigmentation * 0.1 +
+          analysisResult.metrics.oil * 0.1 +
+          (100 - analysisResult.metrics.sensitivity) * 0.1
+      );
+      setOverallScore(score);
+
+      // Mock fallback 감지 (기본 Mock 값인 경우)
+      if (analysisResult.metrics.moisture === 65) {
+        setUsedFallback(true);
+      }
+
+      // Mock 이전 분석 데이터 (실제 구현 시 DB에서 가져옴)
+      const hasPreviousAnalysis = Math.random() > 0.5;
+      const mockPreviousScore = hasPreviousAnalysis
+        ? Math.floor(Math.random() * 30) + 50
+        : null;
+
+      // 변화량 계산
+      const mockDelta: SkinMetricsDelta = {
+        moisture: Math.floor(Math.random() * 10) - 5,
+        oil: Math.floor(Math.random() * 10) - 5,
+        pores: Math.floor(Math.random() * 8) - 4,
+        wrinkles: Math.floor(Math.random() * 6) - 3,
+        pigmentation: Math.floor(Math.random() * 8) - 4,
+        sensitivity: Math.floor(Math.random() * 10) - 5,
+        elasticity: Math.floor(Math.random() * 8) - 4,
+        overall: mockPreviousScore ? score - mockPreviousScore : 0,
+      };
+
+      setDelta(mockDelta);
+      setPreviousScore(mockPreviousScore);
+    } catch (error) {
+      console.error('[S-1] Analysis error:', error);
+      setSkinType(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [imageUri, imageBase64]);
 
   useEffect(() => {
     analyzeSkin();
-  }, []);
-
-  // 피부 분석 (Mock)
-  const analyzeSkin = async () => {
-    setIsLoading(true);
-
-    // TODO: 실제 Gemini AI 분석 연동
-    await new Promise((resolve) => setTimeout(resolve, 2500));
-
-    // Mock 결과
-    const types: SkinType[] = [
-      'dry',
-      'oily',
-      'combination',
-      'sensitive',
-      'normal',
-    ];
-    const randomType = types[Math.floor(Math.random() * types.length)];
-
-    // Mock 지표 생성
-    const mockMetrics = {
-      moisture: Math.floor(Math.random() * 40) + 40,
-      oil: Math.floor(Math.random() * 40) + 30,
-      pores: Math.floor(Math.random() * 30) + 50,
-      wrinkles: Math.floor(Math.random() * 30) + 60,
-      pigmentation: Math.floor(Math.random() * 30) + 50,
-      sensitivity: Math.floor(Math.random() * 40) + 30,
-      elasticity: Math.floor(Math.random() * 30) + 55,
-    };
-
-    // 종합 점수 계산 (가중 평균)
-    const score = Math.round(
-      mockMetrics.moisture * 0.2 +
-        mockMetrics.elasticity * 0.2 +
-        mockMetrics.pores * 0.15 +
-        mockMetrics.wrinkles * 0.15 +
-        mockMetrics.pigmentation * 0.1 +
-        mockMetrics.oil * 0.1 +
-        (100 - mockMetrics.sensitivity) * 0.1
-    );
-
-    // Mock 이전 분석 데이터 (50% 확률로 존재)
-    const hasPreviousAnalysis = Math.random() > 0.5;
-    const mockPreviousScore = hasPreviousAnalysis
-      ? Math.floor(Math.random() * 30) + 50
-      : null;
-
-    // 변화량 계산
-    const mockDelta: SkinMetricsDelta = {
-      moisture: Math.floor(Math.random() * 10) - 5,
-      oil: Math.floor(Math.random() * 10) - 5,
-      pores: Math.floor(Math.random() * 8) - 4,
-      wrinkles: Math.floor(Math.random() * 6) - 3,
-      pigmentation: Math.floor(Math.random() * 8) - 4,
-      sensitivity: Math.floor(Math.random() * 10) - 5,
-      elasticity: Math.floor(Math.random() * 8) - 4,
-      overall: mockPreviousScore ? score - mockPreviousScore : 0,
-    };
-
-    setSkinType(randomType);
-    setMetrics(mockMetrics);
-    setOverallScore(score);
-    setDelta(mockDelta);
-    setPreviousScore(mockPreviousScore);
-    setIsLoading(false);
-  };
+  }, [analyzeSkin]);
 
   // 피부 맞춤 제품 추천으로 이동
   const handleProductRecommendation = () => {
@@ -216,25 +146,20 @@ export default function SkinResultScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, isDark && styles.containerDark]}>
-        <ActivityIndicator size="large" color="#2e5afa" />
-        <Text style={[styles.loadingText, isDark && styles.textLight]}>
-          피부 상태를 분석 중이에요...
-        </Text>
-      </View>
+      <AnalysisLoadingState
+        message="피부 상태를 분석 중이에요..."
+        testID="skin-analysis-loading"
+      />
     );
   }
 
   if (!skinType || !metrics) {
     return (
-      <View style={[styles.errorContainer, isDark && styles.containerDark]}>
-        <Text style={[styles.errorText, isDark && styles.textLight]}>
-          분석에 실패했습니다.
-        </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-          <Text style={styles.retryButtonText}>다시 시도하기</Text>
-        </TouchableOpacity>
-      </View>
+      <AnalysisErrorState
+        message="분석에 실패했습니다."
+        onRetry={handleRetry}
+        testID="skin-analysis-error"
+      />
     );
   }
 
@@ -246,6 +171,12 @@ export default function SkinResultScreen() {
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={styles.content}>
+        {/* AI 분석 신뢰도 표시 */}
+        <AnalysisTrustBadge
+          type={usedFallback ? 'fallback' : 'ai'}
+          testID="skin-analysis-trust-badge"
+        />
+
         {/* 종합 점수 카드 */}
         <View style={[styles.scoreCard, isDark && styles.cardDark]}>
           <View style={styles.scoreHeader}>
@@ -360,72 +291,15 @@ export default function SkinResultScreen() {
         </View>
 
         {/* 버튼 */}
-        <View style={styles.buttons}>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleProductRecommendation}
-          >
-            <Text style={styles.primaryButtonText}>🧴 피부 맞춤 제품 보기</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={handleGoHome}
-          >
-            <Text style={styles.secondaryButtonText}>홈으로 돌아가기</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.retryLink} onPress={handleRetry}>
-            <Text style={styles.retryLinkText}>다시 분석하기</Text>
-          </TouchableOpacity>
-        </View>
+        <AnalysisResultButtons
+          primaryText="🧴 피부 맞춤 제품 보기"
+          onPrimaryPress={handleProductRecommendation}
+          onGoHome={handleGoHome}
+          onRetry={handleRetry}
+          testID="skin-analysis-buttons"
+        />
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function MetricBar({
-  label,
-  value,
-  delta,
-  isDark,
-}: {
-  label: string;
-  value: number;
-  delta?: number;
-  isDark: boolean;
-}) {
-  const getColor = (val: number) => {
-    if (val >= 70) return '#22c55e';
-    if (val >= 50) return '#eab308';
-    return '#ef4444';
-  };
-
-  return (
-    <View
-      style={styles.metricItem}
-      accessibilityLabel={`${label}: ${value}%${delta ? `, 변화: ${delta > 0 ? '+' : ''}${delta}` : ''}`}
-    >
-      <View style={styles.metricHeader}>
-        <Text style={[styles.metricLabel, isDark && styles.textLight]}>
-          {label}
-        </Text>
-        <View style={styles.metricValueContainer}>
-          <Text style={[styles.metricValue, isDark && styles.textMuted]}>
-            {value}%
-          </Text>
-          {delta !== undefined && delta !== 0 && (
-            <MetricDelta delta={delta} size="sm" isDark={isDark} />
-          )}
-        </View>
-      </View>
-      <View style={[styles.metricBarBg, isDark && styles.metricBarBgDark]}>
-        <View
-          style={[
-            styles.metricBarFill,
-            { width: `${value}%`, backgroundColor: getColor(value) },
-          ]}
-        />
-      </View>
-    </View>
   );
 }
 
@@ -439,39 +313,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: '#2e5afa',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   scoreCard: {
     backgroundColor: '#fff',
@@ -505,17 +346,6 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     borderWidth: 3,
-    borderColor: '#22c55e',
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  resultImage: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    borderWidth: 4,
     borderColor: '#22c55e',
   },
   resultCard: {
@@ -560,40 +390,6 @@ const styles = StyleSheet.create({
   metricsContainer: {
     gap: 14,
   },
-  metricItem: {
-    gap: 6,
-  },
-  metricHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  metricValueContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  metricLabel: {
-    fontSize: 14,
-    color: '#333',
-  },
-  metricValue: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  metricBarBg: {
-    height: 8,
-    backgroundColor: '#e5e5e5',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  metricBarBgDark: {
-    backgroundColor: '#333',
-  },
-  metricBarFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
   tipsList: {
     gap: 10,
   },
@@ -610,41 +406,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     lineHeight: 22,
-  },
-  buttons: {
-    marginTop: 8,
-    gap: 12,
-  },
-  primaryButton: {
-    backgroundColor: '#2e5afa',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: '#666',
-    fontSize: 16,
-  },
-  retryLink: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  retryLinkText: {
-    color: '#999',
-    fontSize: 14,
-    textDecorationLine: 'underline',
   },
   textLight: {
     color: '#ffffff',

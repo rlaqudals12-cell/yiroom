@@ -12,10 +12,22 @@ import {
   ScrollView,
   useColorScheme,
   Image,
-  TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import {
+  AnalysisLoadingState,
+  AnalysisErrorState,
+  AnalysisTrustBadge,
+  AnalysisResultButtons,
+  commonAnalysisStyles,
+  ANALYSIS_COLORS,
+} from '@/components/analysis';
+import {
+  analyzePersonalColor as analyzeWithGemini,
+  imageToBase64,
+  type PersonalColorAnalysisResult,
+} from '@/lib/gemini';
 
 // 퍼스널 컬러 결과 데이터
 const SEASON_DATA: Record<
@@ -60,41 +72,53 @@ const SEASON_DATA: Record<
 export default function PersonalColorResultScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const { imageUri, answers } = useLocalSearchParams<{
+  const { imageUri, imageBase64, answers } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
     answers: string;
   }>();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [result, setResult] = useState<PersonalColorSeason | null>(null);
+  const [result, setResult] = useState<PersonalColorAnalysisResult | null>(
+    null
+  );
+  const [usedFallback, setUsedFallback] = useState(false);
 
-  // 퍼스널 컬러 분석 (Mock)
+  // 퍼스널 컬러 분석 (lib/gemini.ts 연동)
   const analyzePersonalColor = useCallback(async () => {
     setIsLoading(true);
+    setUsedFallback(false);
 
-    // TODO: 실제 Gemini AI 분석 연동
-    // 현재는 문진 결과 기반 Mock 분석
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // imageBase64가 없으면 imageUri에서 변환
+      let base64Data = imageBase64;
+      if (!base64Data && imageUri) {
+        base64Data = await imageToBase64(imageUri);
+      }
 
-    const parsedAnswers = JSON.parse(answers || '{}');
-    const warmCount = Object.values(parsedAnswers).filter(
-      (v) => v === 'warm'
-    ).length;
-    const coolCount = Object.values(parsedAnswers).filter(
-      (v) => v === 'cool'
-    ).length;
+      if (!base64Data) {
+        throw new Error('이미지 데이터가 없습니다.');
+      }
 
-    let season: PersonalColorSeason;
-    if (warmCount > coolCount) {
-      season = Math.random() > 0.5 ? 'Spring' : 'Autumn';
-    } else {
-      season = Math.random() > 0.5 ? 'Summer' : 'Winter';
+      // 문진 결과 파싱 (Record<number, string> 형식으로 변환)
+      const parsedAnswers: Record<number, string> = JSON.parse(answers || '{}');
+
+      // lib/gemini.ts의 analyzePersonalColor 호출
+      const analysisResult = await analyzeWithGemini(base64Data, parsedAnswers);
+
+      // Mock fallback 사용 여부 확인 (confidence가 0.75이면 Mock)
+      if (analysisResult.confidence === 0.75) {
+        setUsedFallback(true);
+      }
+
+      setResult(analysisResult);
+    } catch (error) {
+      console.error('[PC-1] Analysis error:', error);
+      setResult(null);
+    } finally {
+      setIsLoading(false);
     }
-
-    setResult(season);
-    setIsLoading(false);
-  }, [answers]);
+  }, [imageUri, imageBase64, answers]);
 
   useEffect(() => {
     analyzePersonalColor();
@@ -110,7 +134,7 @@ export default function PersonalColorResultScreen() {
     router.push({
       pathname: '/products',
       params: {
-        season: result || '',
+        season: result?.season || '',
         category: 'makeup',
       },
     });
@@ -122,59 +146,63 @@ export default function PersonalColorResultScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, isDark && styles.containerDark]}>
-        <ActivityIndicator size="large" color="#2e5afa" />
-        <Text style={[styles.loadingText, isDark && styles.textLight]}>
-          퍼스널 컬러를 분석 중이에요...
-        </Text>
-      </View>
+      <AnalysisLoadingState
+        message="퍼스널 컬러를 분석 중이에요..."
+        isDark={isDark}
+        testID="personal-color-loading"
+      />
     );
   }
 
   if (!result) {
     return (
-      <View style={[styles.errorContainer, isDark && styles.containerDark]}>
-        <Text style={[styles.errorText, isDark && styles.textLight]}>
-          분석에 실패했습니다.
-        </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-          <Text style={styles.retryButtonText}>다시 시도하기</Text>
-        </TouchableOpacity>
-      </View>
+      <AnalysisErrorState
+        message="분석에 실패했습니다."
+        onRetry={handleRetry}
+        onGoHome={handleGoHome}
+        isDark={isDark}
+        testID="personal-color-error"
+      />
     );
   }
 
-  const seasonData = SEASON_DATA[result];
+  const seasonData = SEASON_DATA[result.season];
 
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
         {/* 결과 이미지 */}
         {imageUri && (
-          <View style={styles.imageContainer}>
+          <View style={commonAnalysisStyles.imageContainer}>
             <Image source={{ uri: imageUri }} style={styles.resultImage} />
           </View>
         )}
 
         {/* 결과 카드 */}
-        <View style={[styles.resultCard, isDark && styles.cardDark]}>
-          <Text style={[styles.seasonLabel, isDark && styles.textMuted]}>
+        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
+          {/* AI 분석 신뢰도 표시 */}
+          <AnalysisTrustBadge
+            type={usedFallback ? 'questionnaire' : 'ai'}
+            confidence={usedFallback ? undefined : result.confidence}
+            testID="personal-color-trust-badge"
+          />
+          <Text style={[styles.seasonLabel, isDark && commonAnalysisStyles.textMuted]}>
             당신의 퍼스널 컬러는
           </Text>
-          <Text style={[styles.seasonName, isDark && styles.textLight]}>
+          <Text style={[styles.seasonName, isDark && commonAnalysisStyles.textLight]}>
             {seasonData.name}
           </Text>
-          <Text style={[styles.description, isDark && styles.textMuted]}>
-            {seasonData.description}
+          <Text style={[commonAnalysisStyles.description, isDark && commonAnalysisStyles.textMuted]}>
+            {result.description || seasonData.description}
           </Text>
         </View>
 
         {/* 추천 컬러 팔레트 */}
-        <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
+          <Text style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}>
             추천 컬러 팔레트
           </Text>
           <View style={styles.colorPalette}>
@@ -188,8 +216,8 @@ export default function PersonalColorResultScreen() {
         </View>
 
         {/* 비슷한 연예인 */}
-        <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
+          <Text style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}>
             같은 타입의 연예인
           </Text>
           <View style={styles.celebrities}>
@@ -202,122 +230,48 @@ export default function PersonalColorResultScreen() {
         </View>
 
         {/* 버튼 */}
-        <View style={styles.buttons}>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleProductRecommendation}
-          >
-            <Text style={styles.primaryButtonText}>💄 내 색상에 맞는 제품</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={handleGoHome}
-          >
-            <Text style={styles.secondaryButtonText}>홈으로 돌아가기</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleRetry}>
-            <Text style={styles.retryLink}>다시 진단하기</Text>
-          </TouchableOpacity>
-        </View>
+        <AnalysisResultButtons
+          primaryText="💄 내 색상에 맞는 제품"
+          onPrimaryPress={handleProductRecommendation}
+          onGoHome={handleGoHome}
+          onRetry={handleRetry}
+          testID="personal-color-result-buttons"
+        />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// 이 파일 전용 스타일 (공통 스타일은 commonAnalysisStyles 사용)
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
-  },
-  content: {
-    padding: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: '#2e5afa',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
+  // 결과 이미지 (원형)
   resultImage: {
     width: 200,
     height: 200,
     borderRadius: 100,
     borderWidth: 4,
-    borderColor: '#2e5afa',
+    borderColor: ANALYSIS_COLORS.primary,
   },
+  // 결과 카드
   resultCard: {
-    backgroundColor: '#fff',
+    backgroundColor: ANALYSIS_COLORS.cardBackground,
     borderRadius: 16,
     padding: 24,
     marginBottom: 16,
     alignItems: 'center',
   },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
-  },
   seasonLabel: {
     fontSize: 14,
-    color: '#666',
+    color: ANALYSIS_COLORS.textSecondary,
     marginBottom: 8,
   },
   seasonName: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#2e5afa',
+    color: ANALYSIS_COLORS.primary,
     marginBottom: 16,
   },
-  description: {
-    fontSize: 15,
-    color: '#666',
-    lineHeight: 24,
-    textAlign: 'center',
-  },
-  section: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111',
-    marginBottom: 16,
-  },
+  // 컬러 팔레트
   colorPalette: {
     flexDirection: 'row',
     gap: 12,
@@ -332,6 +286,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  // 연예인 태그
   celebrities: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -344,47 +299,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   celebrityText: {
-    color: '#2e5afa',
+    color: ANALYSIS_COLORS.primary,
     fontSize: 14,
     fontWeight: '500',
-  },
-  buttons: {
-    marginTop: 8,
-    gap: 12,
-  },
-  primaryButton: {
-    backgroundColor: '#2e5afa',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: '#666',
-    fontSize: 16,
-  },
-  retryLink: {
-    color: '#666',
-    fontSize: 14,
-    textDecorationLine: 'underline',
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });
