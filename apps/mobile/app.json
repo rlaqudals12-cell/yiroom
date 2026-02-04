@@ -58,13 +58,6 @@
           "photosPermission": "체형 분석 및 음식 기록을 위해 사진 접근이 필요합니다."
         }
       ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#2e5afa"
-        }
-      ],
       "expo-web-browser"
     ],
     "experiments": {
@@ -77,6 +70,8 @@
       "router": {}
     },
     "owner": "rlaqudals12",
-    "runtimeVersion": "0.1.0"
+    "updates": {
+      "enabled": false
+    }
   }
 }
