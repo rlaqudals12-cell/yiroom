@@ -3,6 +3,25 @@
 > **작성일**: 2026-02-04
 > **목표**: Android APK 배포 (Google Play)
 > **우선순위**: Android > iOS (iOS는 Apple Developer 계정 확보 후)
+> **대안**: PWA (빌드 실패 시)
+
+---
+
+## 빠른 시작 (다음 대화용)
+
+```bash
+# 1. 문서 확인
+cat apps/mobile/docs/MOBILE-BUILD-PLAN.md
+
+# 2. 현재 Phase 확인 후 해당 작업 진행
+cd apps/mobile
+
+# Phase 1: 로컬 테스트
+npx expo start
+
+# Phase 2: EAS 빌드
+npx eas build --platform android --profile development --non-interactive
+```
 
 ---
 
@@ -29,9 +48,14 @@
 | T2.7 | **대시보드**        | 분석 결과 요약 표시                 | ⏳   |
 | T2.8 | **네비게이션**      | 탭/스택 네비게이션 정상 동작        | ⏳   |
 
-### 1.3 테스트 체크리스트
+### 1.3 테스트 환경 설정
 
 ```bash
+# 환경 변수 확인 (apps/mobile/.env.local)
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+EXPO_PUBLIC_SUPABASE_URL=https://...supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+
 # 테스트 실행 명령
 cd apps/mobile
 npx expo start
@@ -41,6 +65,18 @@ npx expo start
 # 2. Android: Play Store에서 Expo Go 설치
 # 3. QR 코드 스캔하여 연결
 ```
+
+### 1.4 Expo Go 제한사항
+
+| 기능                 | Expo Go | Development Build |
+| -------------------- | ------- | ----------------- |
+| 기본 UI/네비게이션   | ✅      | ✅                |
+| Clerk 인증           | ✅      | ✅                |
+| 카메라               | ✅      | ✅                |
+| 푸시 알림            | ❌      | ✅                |
+| 커스텀 네이티브 모듈 | ❌      | ✅                |
+
+> **참고**: 대부분 기능은 Expo Go에서 테스트 가능. 푸시 알림은 Development Build 필요.
 
 ---
 
@@ -77,6 +113,27 @@ Unknown error. See logs of the Build complete hook build phase for more informat
 1. 모노레포 `@yiroom/shared` 패키지 해석 문제
 2. metro.config.js의 monorepoRoot 경로가 EAS 서버에서 다르게 해석
 3. 일부 네이티브 모듈 호환성 문제
+
+**실패한 빌드 로그** (Expo 대시보드에서 확인):
+
+- `0880eabf-d7c4-48b1-bb8b-9d8898449531`
+- `9fe8b0fc-7258-441a-a612-4e948c04b48e`
+- `e6f123d5-c2a8-479f-ad14-dd6942c5dd41`
+- `5b028666-cb39-4a59-81b6-687703929a64`
+- `f57f8758-9066-4e87-846d-8c08e24d8ceb`
+
+```bash
+# 빌드 상세 확인
+npx eas build:view <BUILD_ID>
+
+# Expo 대시보드
+# https://expo.dev/accounts/rlaqudals12/projects/yiroom/builds/<BUILD_ID>
+```
+
+**미해결 의존성 문제**:
+
+- `@sentry/react-native` - app.json에서 플러그인 제거했으나 package.json에 여전히 존재
+- 완전 제거 필요: `npm uninstall @sentry/react-native`
 
 ### 2.3 다음 시도할 해결책
 
@@ -150,6 +207,52 @@ npx eas build --platform ios --profile production
 
 # TestFlight 제출
 npx eas submit --platform ios
+```
+
+---
+
+## iOS vs Android 비교
+
+### 빌드 시간 차이 이유
+
+| 요소          | Android              | iOS                           |
+| ------------- | -------------------- | ----------------------------- |
+| **컴파일러**  | Gradle (Java/Kotlin) | Xcode (Swift/Obj-C)           |
+| **빌드 환경** | Linux VM             | macOS VM (비용 높음)          |
+| **코드 서명** | 단순 (Keystore)      | 복잡 (Provisioning Profile)   |
+| **아키텍처**  | 단일 APK             | 여러 아키텍처 (arm64, x86_64) |
+| **예상 시간** | 10-15분              | 15-20분                       |
+
+### 코드 동일성
+
+- **99% 동일**: React Native 코드는 플랫폼 공유
+- **플랫폼별 분기**: `Platform.OS === 'ios'` 또는 `*.ios.tsx` / `*.android.tsx`
+- **현재 이룸**: 플랫폼별 코드 거의 없음 (공통 코드로 충분)
+
+---
+
+## Plan B: PWA 대안
+
+EAS 빌드가 계속 실패할 경우 PWA로 우선 배포 가능.
+
+### PWA 장점
+
+- 스토어 심사 불필요
+- 즉시 배포 가능
+- 웹앱 (`apps/web`)은 이미 PWA 지원
+
+### PWA 단점
+
+- 푸시 알림 제한 (iOS Safari)
+- 일부 네이티브 기능 제한
+- 홈 화면 추가 필요
+
+### PWA 배포 명령
+
+```bash
+cd apps/web
+npm run build
+# Vercel에 자동 배포됨
 ```
 
 ---
