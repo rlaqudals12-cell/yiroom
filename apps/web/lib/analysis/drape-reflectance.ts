@@ -235,7 +235,97 @@ export function analyzeSingleDrape(
 }
 
 /**
+ * 단일 Canvas에서 드레이프+반사광+균일도를 한번의 ImageData로 처리
+ * - getImageData 3회 → 1회로 통합 (Canvas→CPU 전송 비용 절감)
+ * - Canvas 생성/파괴 0회 (외부에서 재사용)
+ */
+function analyzeColorOnCanvas(
+  ctx: CanvasRenderingContext2D,
+  originalImage: HTMLImageElement,
+  faceMask: Uint8Array,
+  drapeColor: string,
+  metalType: MetalType,
+  width: number,
+  height: number
+): number {
+  // 원본 이미지로 리셋 (이전 색상 결과 덮어쓰기)
+  ctx.drawImage(originalImage, 0, 0, width, height);
+
+  // HEX → RGB
+  const dr = parseInt(drapeColor.slice(1, 3), 16);
+  const dg = parseInt(drapeColor.slice(3, 5), 16);
+  const db = parseInt(drapeColor.slice(5, 7), 16);
+
+  // 전체 캔버스에서 1회 getImageData (드레이프+반사광+균일도 통합)
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const { data } = imageData;
+
+  const reflConfig = METAL_REFLECTANCE[metalType];
+  const drapeStartY = Math.floor(height * 0.65);
+  const fadeZone = Math.floor(height * 0.08);
+
+  // 노이즈 함수 (주름 효과)
+  const getNoiseValue = (x: number, y: number): number => {
+    const seed = (x * 12.9898 + y * 78.233) * 43758.5453;
+    return (seed - Math.floor(seed)) * 0.12 - 0.06;
+  };
+
+  // 균일도 측정용 휘도 수집
+  const luminances: number[] = [];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixelIndex = y * width + x;
+      const i = pixelIndex * 4;
+
+      // === 1단계: 드레이프 색상 적용 (하단 35%, 얼굴 마스크 외부) ===
+      if (y >= drapeStartY && faceMask[pixelIndex] === 0) {
+        const localY = y - drapeStartY;
+        let blendRatio = 0.85;
+        if (localY < fadeZone) {
+          blendRatio = 0.2 + (localY / fadeZone) * 0.65;
+        }
+        const noise = getNoiseValue(x, localY);
+        const foldEffect = 1 + noise;
+        const fdr = Math.min(255, Math.round(dr * foldEffect));
+        const fdg = Math.min(255, Math.round(dg * foldEffect));
+        const fdb = Math.min(255, Math.round(db * foldEffect));
+        data[i] = Math.round(data[i] * (1 - blendRatio) + fdr * blendRatio);
+        data[i + 1] = Math.round(data[i + 1] * (1 - blendRatio) + fdg * blendRatio);
+        data[i + 2] = Math.round(data[i + 2] * (1 - blendRatio) + fdb * blendRatio);
+      }
+
+      // === 2단계: 반사광 적용 (얼굴 마스크 내부) ===
+      if (faceMask[pixelIndex] !== 0) {
+        const { h, s, l } = rgbaToHsl(data[i], data[i + 1], data[i + 2]);
+        const newL = Math.max(0, Math.min(1, l + reflConfig.brightness / 100));
+        const newS = Math.max(0, Math.min(1, s + reflConfig.saturation / 100));
+        const { r, g, b } = hslToRgba(h, newS, newL);
+        data[i] = r;
+        data[i + 1] = g;
+        data[i + 2] = b;
+
+        // === 3단계: 균일도 측정 (얼굴 마스크 내부 휘도 수집) ===
+        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        luminances.push(luminance);
+      }
+    }
+  }
+
+  // putImageData 불필요 (균일도만 측정, 화면 표시 안 함)
+
+  // 균일도 계산
+  if (luminances.length === 0) return 100;
+  const mean = luminances.reduce((a, b) => a + b, 0) / luminances.length;
+  const variance = luminances.reduce((sum, val) => sum + (val - mean) ** 2, 0) / luminances.length;
+  return Math.min(100, Math.round(Math.sqrt(variance) * 2));
+}
+
+/**
  * 전체 드레이프 팔레트 분석
+ * - Canvas 1회 생성, N색상 재사용 (메모리/GPU 효율)
+ * - 색상당 getImageData 1회 (기존 3회에서 통합)
+ *
  * @param originalImage - 원본 이미지
  * @param faceMask - 얼굴 마스크
  * @param colors - 분석할 색상 배열
@@ -266,17 +356,36 @@ export async function analyzeFullPalette(
     }
   }
 
+  // Canvas 1회 생성 (모든 색상에 재사용)
+  const canvas = document.createElement('canvas');
+  const { width, height } = getConstrainedCanvasSize(
+    originalImage.naturalWidth || originalImage.width,
+    originalImage.naturalHeight || originalImage.height
+  );
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = createOptimizedContext(canvas, { willReadFrequently: true });
+  if (!ctx) return [];
+
   for (let i = 0; i < colors.length; i++) {
     const color = colors[i];
-    const uniformity = analyzeSingleDrape(originalImage, faceMask, color, metalType);
+    const uniformity = analyzeColorOnCanvas(
+      ctx,
+      originalImage,
+      faceMask,
+      color,
+      metalType,
+      width,
+      height
+    );
 
     results.push({
       color,
       uniformity,
-      rank: 0, // 나중에 설정
+      rank: 0,
     });
 
-    // 진행률 콜백
     if (onProgress) {
       onProgress(Math.round(((i + 1) / colors.length) * 100));
     }
@@ -286,6 +395,10 @@ export async function analyzeFullPalette(
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }
+
+  // Canvas 정리 (1회)
+  canvas.width = 0;
+  canvas.height = 0;
 
   // 균일도 기준 정렬 (낮을수록 좋음)
   results.sort((a, b) => a.uniformity - b.uniformity);

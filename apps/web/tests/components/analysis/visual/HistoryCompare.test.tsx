@@ -127,7 +127,7 @@ describe('HistoryCompare', () => {
       expect(screen.getByText('종합 점수')).toBeInTheDocument();
       expect(screen.getByText('수분')).toBeInTheDocument();
       expect(screen.getByText('탄력')).toBeInTheDocument();
-      expect(screen.getByText('균일도')).toBeInTheDocument();
+      expect(screen.getByText('어울림 점수')).toBeInTheDocument();
       expect(screen.getByText('트러블')).toBeInTheDocument();
       expect(screen.getByText('모공')).toBeInTheDocument();
     });
