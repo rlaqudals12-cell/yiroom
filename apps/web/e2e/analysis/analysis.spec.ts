@@ -420,7 +420,7 @@ test.describe('분석 결과 - 탭 UI (S-1+, PC-1+)', () => {
 
       if (hasTabs) {
         await expect(page.locator('button:has-text("기본 분석")')).toBeVisible();
-        await expect(page.locator('button:has-text("드레이핑")')).toBeVisible();
+        await expect(page.locator('button:has-text("색상 입혀보기")')).toBeVisible();
       }
     }
   });
@@ -444,13 +444,13 @@ test.describe('분석 결과 - 탭 UI (S-1+, PC-1+)', () => {
     }
   });
 
-  test('퍼스널컬러 드레이핑 탭 전환이 작동한다', async ({ page }) => {
+  test('퍼스널컬러 색상 입혀보기 탭 전환이 작동한다', async ({ page }) => {
     const mockId = 'test-analysis';
     await page.goto(`/analysis/personal-color/result/${mockId}`);
     await waitForLoadingToFinish(page);
 
     if (!page.url().includes('sign-in')) {
-      const drapingTab = page.locator('button:has-text("드레이핑")');
+      const drapingTab = page.locator('button:has-text("색상 입혀보기")');
       const isVisible = await drapingTab.isVisible().catch(() => false);
 
       if (isVisible) {
