@@ -4,7 +4,12 @@
  */
 
 import type { MetalType, ReflectanceConfig, DrapeResult } from '@/types/visual-analysis';
-import { rgbaToHsl, hslToRgba, createOptimizedContext } from './canvas-utils';
+import {
+  rgbaToHsl,
+  hslToRgba,
+  createOptimizedContext,
+  getConstrainedCanvasSize,
+} from './canvas-utils';
 
 // ============================================
 // 금속 반사광 설정
@@ -76,7 +81,11 @@ export function applyMetalReflectance(
 // ============================================
 
 /**
- * 드레이프 색상을 얼굴 하단에 적용
+ * 드레이프 색상을 얼굴 하단에 자연스럽게 적용
+ * - 상단 경계 그라데이션으로 부드러운 전환
+ * - 약간의 천 주름 효과 (밝기 변화)
+ * - 얼굴 영역 주변 부드러운 블렌딩
+ *
  * @param ctx - Canvas 2D 컨텍스트
  * @param drapeColor - 드레이프 색상 (HEX)
  * @param faceMask - 얼굴 마스크
@@ -95,12 +104,19 @@ export function applyDrapeColor(
   const g = parseInt(drapeColor.slice(3, 5), 16);
   const b = parseInt(drapeColor.slice(5, 7), 16);
 
-  // 드레이프 영역 (하단 30%)
-  const drapeStartY = Math.floor(canvasHeight * 0.7);
+  // 드레이프 영역 (하단 35% - 목/어깨 덮도록)
+  const drapeStartY = Math.floor(canvasHeight * 0.65);
+  const fadeZone = Math.floor(canvasHeight * 0.08); // 페이드 영역 8%
 
   // 드레이프 색상 적용
   const imageData = ctx.getImageData(0, drapeStartY, canvasWidth, canvasHeight - drapeStartY);
   const { data } = imageData;
+
+  // 간단한 시드 기반 노이즈 (주름 효과용)
+  const getNoiseValue = (x: number, y: number): number => {
+    const seed = (x * 12.9898 + y * 78.233) * 43758.5453;
+    return (seed - Math.floor(seed)) * 0.12 - 0.06; // -0.06 ~ +0.06 범위
+  };
 
   for (let i = 0; i < data.length; i += 4) {
     const localY = Math.floor(i / 4 / canvasWidth);
@@ -110,10 +126,26 @@ export function applyDrapeColor(
 
     // 마스크 영역 외부만 드레이프 적용
     if (faceMask[pixelIndex] === 0) {
-      // 블렌딩 (드레이프 색상 80%)
-      data[i] = Math.round(data[i] * 0.2 + r * 0.8);
-      data[i + 1] = Math.round(data[i + 1] * 0.2 + g * 0.8);
-      data[i + 2] = Math.round(data[i + 2] * 0.2 + b * 0.8);
+      // 상단 페이드 (부드러운 경계)
+      let blendRatio = 0.85;
+      if (localY < fadeZone) {
+        // 0 ~ fadeZone 사이: 0.2 → 0.85 그라데이션
+        blendRatio = 0.2 + (localY / fadeZone) * 0.65;
+      }
+
+      // 주름 효과 (밝기 미세 변화)
+      const noise = getNoiseValue(x, localY);
+      const foldEffect = 1 + noise;
+
+      // 드레이프 색상 (주름 효과 적용)
+      const drapeR = Math.min(255, Math.round(r * foldEffect));
+      const drapeG = Math.min(255, Math.round(g * foldEffect));
+      const drapeB = Math.min(255, Math.round(b * foldEffect));
+
+      // 블렌딩
+      data[i] = Math.round(data[i] * (1 - blendRatio) + drapeR * blendRatio);
+      data[i + 1] = Math.round(data[i + 1] * (1 - blendRatio) + drapeG * blendRatio);
+      data[i + 2] = Math.round(data[i + 2] * (1 - blendRatio) + drapeB * blendRatio);
     }
   }
 
@@ -170,16 +202,20 @@ export function analyzeSingleDrape(
   drapeColor: string,
   metalType: MetalType
 ): number {
-  // 임시 캔버스 생성
+  // 임시 캔버스 생성 (크기 제한으로 레이아웃 overflow 방지)
   const canvas = document.createElement('canvas');
-  canvas.width = originalImage.naturalWidth || originalImage.width;
-  canvas.height = originalImage.naturalHeight || originalImage.height;
+  const { width, height } = getConstrainedCanvasSize(
+    originalImage.naturalWidth || originalImage.width,
+    originalImage.naturalHeight || originalImage.height
+  );
+  canvas.width = width;
+  canvas.height = height;
 
   const ctx = createOptimizedContext(canvas, { willReadFrequently: true });
   if (!ctx) return 100;
 
-  // 원본 이미지 그리기
-  ctx.drawImage(originalImage, 0, 0);
+  // 원본 이미지 그리기 (스케일 적용)
+  ctx.drawImage(originalImage, 0, 0, width, height);
 
   // 드레이프 색상 적용
   applyDrapeColor(ctx, drapeColor, faceMask, canvas.height);
@@ -215,6 +251,20 @@ export async function analyzeFullPalette(
   onProgress?: (progress: number) => void
 ): Promise<DrapeResult[]> {
   const results: DrapeResult[] = [];
+
+  // 메모리 안전 체크 (Chrome performance.memory API 지원 시)
+  const perfMemory = (
+    performance as unknown as { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number } }
+  ).memory;
+  if (perfMemory) {
+    const usageRatio = perfMemory.usedJSHeapSize / perfMemory.jsHeapSizeLimit;
+    if (usageRatio > 0.85) {
+      console.warn(
+        `[DrapeAnalysis] 메모리 사용률 ${(usageRatio * 100).toFixed(0)}% - 분석 색상 수 제한`
+      );
+      colors = colors.slice(0, Math.min(colors.length, 16));
+    }
+  }
 
   for (let i = 0; i < colors.length; i++) {
     const color = colors[i];

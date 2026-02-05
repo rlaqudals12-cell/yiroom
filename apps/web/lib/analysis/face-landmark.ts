@@ -138,38 +138,57 @@ export function createFaceMask(
   width: number,
   height: number
 ): Uint8Array {
-  const mask = new Uint8Array(width * height);
+  // 방어적 바운드 체크: 최대 2048px, 4MB 메모리 예산
+  const MAX_MASK_DIMENSION = 2048;
+  const MAX_MASK_BYTES = 4 * 1024 * 1024; // 4MB
+  const clampedWidth = Math.min(Math.max(1, Math.round(width)), MAX_MASK_DIMENSION);
+  const clampedHeight = Math.min(Math.max(1, Math.round(height)), MAX_MASK_DIMENSION);
+  const requiredBytes = clampedWidth * clampedHeight;
+
+  if (requiredBytes > MAX_MASK_BYTES) {
+    console.warn(
+      `[FaceMask] 메모리 예산 초과: ${requiredBytes} bytes > ${MAX_MASK_BYTES}. 축소 적용.`
+    );
+    const scale = Math.sqrt(MAX_MASK_BYTES / requiredBytes);
+    return createFaceMask(
+      landmarks,
+      Math.floor(clampedWidth * scale),
+      Math.floor(clampedHeight * scale)
+    );
+  }
+
+  const mask = new Uint8Array(clampedWidth * clampedHeight);
 
   // 얼굴 윤곽 폴리곤 생성
   const faceOvalPoints = FACE_OVAL_INDICES.map((idx) => {
     const landmark = landmarks[idx];
     return {
-      x: Math.round(landmark.x * width),
-      y: Math.round(landmark.y * height),
+      x: Math.round(landmark.x * clampedWidth),
+      y: Math.round(landmark.y * clampedHeight),
     };
   });
 
   // 폴리곤 내부 채우기 (Scanline Fill)
-  fillPolygon(mask, width, height, faceOvalPoints);
+  fillPolygon(mask, clampedWidth, clampedHeight, faceOvalPoints);
 
   // 눈, 입 영역 제외 (피부만 남기기)
   const excludeRegions = [
     LEFT_EYE_INDICES.map((idx) => ({
-      x: Math.round(landmarks[idx].x * width),
-      y: Math.round(landmarks[idx].y * height),
+      x: Math.round(landmarks[idx].x * clampedWidth),
+      y: Math.round(landmarks[idx].y * clampedHeight),
     })),
     RIGHT_EYE_INDICES.map((idx) => ({
-      x: Math.round(landmarks[idx].x * width),
-      y: Math.round(landmarks[idx].y * height),
+      x: Math.round(landmarks[idx].x * clampedWidth),
+      y: Math.round(landmarks[idx].y * clampedHeight),
     })),
     LIPS_INDICES.map((idx) => ({
-      x: Math.round(landmarks[idx].x * width),
-      y: Math.round(landmarks[idx].y * height),
+      x: Math.round(landmarks[idx].x * clampedWidth),
+      y: Math.round(landmarks[idx].y * clampedHeight),
     })),
   ];
 
   excludeRegions.forEach((region) => {
-    clearPolygon(mask, width, height, region);
+    clearPolygon(mask, clampedWidth, clampedHeight, region);
   });
 
   return mask;

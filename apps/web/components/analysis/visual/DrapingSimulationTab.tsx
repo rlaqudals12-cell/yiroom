@@ -2,14 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { DrapeResult, MetalType } from '@/types/visual-analysis';
-import { analyzeDeviceCapability } from '@/lib/analysis/device-capability';
-import { extractFaceLandmarks, createFaceMask } from '@/lib/analysis/face-landmark';
-import { preloadFaceMesh } from '@/lib/analysis/mediapipe-loader';
 import {
+  analyzeDeviceCapability,
+  extractFaceLandmarks,
+  createFaceMask,
+  getConstrainedCanvasSize,
+  preloadFaceMesh,
   generateSynergyInsight,
   generateSynergyFromGeminiResult,
   applyInsightToDraping,
-} from '@/lib/analysis/synergy-insight';
+} from '@/lib/analysis';
 import {
   generateMockPigmentAnalysis,
   generateMockDrapingResults,
@@ -17,15 +19,19 @@ import {
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import DrapeColorPalette from './DrapeColorPalette';
 import DrapeSimulator from './DrapeSimulator';
-import SynergyInsightCard from './SynergyInsightCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
+/** 퍼스널컬러 시즌 타입 */
+type Season = 'spring' | 'summer' | 'autumn' | 'winter';
+
 interface DrapingSimulationTabProps {
   /** 분석 이미지 URL */
   imageUrl: string;
+  /** 사용자 퍼스널컬러 시즌 (기본 필터로 사용) */
+  userSeason?: Season;
   /** 피부 분석 ID (시너지 연동용) */
   skinAnalysisId?: string;
   /** 추가 클래스 */
@@ -35,7 +41,7 @@ interface DrapingSimulationTabProps {
 type AnalysisState = 'idle' | 'loading' | 'analyzing' | 'ready' | 'error';
 
 /**
- * PC-1+ 드레이핑 시뮬레이션 탭 컴포넌트
+ * PC-1+ 색상 입혀보기 탭 컴포넌트
  * - 퍼스널 컬러 결과 페이지에 탭으로 통합
  * - 드레이프 색상 팔레트
  * - 실시간 미리보기
@@ -43,6 +49,7 @@ type AnalysisState = 'idle' | 'loading' | 'analyzing' | 'ready' | 'error';
  */
 export default function DrapingSimulationTab({
   imageUrl,
+  userSeason,
   skinAnalysisId,
   className,
 }: DrapingSimulationTabProps) {
@@ -56,7 +63,6 @@ export default function DrapingSimulationTab({
   const [faceMask, setFaceMask] = useState<Uint8Array | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [metalType, setMetalType] = useState<MetalType>('gold');
-  const [drapeResults, setDrapeResults] = useState<DrapeResult[]>([]);
 
   // 시너지 인사이트
   const [synergyInsight, setSynergyInsight] = useState<ReturnType<
@@ -104,12 +110,12 @@ export default function DrapingSimulationTab({
         throw new Error('얼굴을 감지할 수 없습니다');
       }
 
-      // 3. 얼굴 마스크 생성
-      const mask = createFaceMask(
-        landmarkResult.landmarks,
+      // 3. 얼굴 마스크 생성 (canvas와 동일한 제한된 크기 사용)
+      const { width: constrainedWidth, height: constrainedHeight } = getConstrainedCanvasSize(
         loadedImage.naturalWidth || loadedImage.width,
         loadedImage.naturalHeight || loadedImage.height
       );
+      const mask = createFaceMask(landmarkResult.landmarks, constrainedWidth, constrainedHeight);
       setFaceMask(mask);
 
       // 4. 시너지 인사이트 생성
@@ -156,8 +162,6 @@ export default function DrapingSimulationTab({
    */
   const handleAnalysisComplete = useCallback(
     (results: DrapeResult[]) => {
-      setDrapeResults(results);
-
       // 시너지 적용
       if (synergyInsight && results.length > 0) {
         const mockDraping = generateMockDrapingResults();
@@ -181,13 +185,13 @@ export default function DrapingSimulationTab({
     return (
       <Card className={cn('overflow-hidden', className)}>
         <CardHeader>
-          <CardTitle className="text-base">드레이핑 시뮬레이션</CardTitle>
+          <CardTitle className="text-base">색상 입혀보기</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="w-full aspect-[3/4] rounded-lg" />
           <Skeleton className="h-10 w-full" />
           <p className="text-sm text-center text-muted-foreground">
-            {state === 'loading' ? '이미지 로드 중...' : '드레이핑 준비 중...'}
+            {state === 'loading' ? '이미지 로드 중...' : '준비 중...'}
           </p>
         </CardContent>
       </Card>
@@ -199,7 +203,7 @@ export default function DrapingSimulationTab({
     return (
       <Card className={cn('overflow-hidden', className)}>
         <CardHeader>
-          <CardTitle className="text-base">드레이핑 시뮬레이션</CardTitle>
+          <CardTitle className="text-base">색상 입혀보기</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
@@ -213,49 +217,45 @@ export default function DrapingSimulationTab({
   // 준비 완료
   if (state === 'ready' && image && faceMask) {
     return (
-      <Card className={cn('overflow-hidden', className)} data-testid="draping-simulation-tab">
-        <CardHeader>
+      <Card className={cn(className)} data-testid="draping-simulation-tab">
+        <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <span>드레이핑 시뮬레이션</span>
+            <span>색상 입혀보기</span>
             <span className="text-xs font-normal text-muted-foreground">
               ({deviceCapability.drapeColors}색 팔레트)
             </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* 시너지 인사이트 */}
-          {synergyInsight && drapeResults.length > 0 && (
-            <SynergyInsightCard
-              insight={synergyInsight}
-              bestColors={drapeResults.slice(0, 5)}
-              className="mb-4"
-            />
-          )}
-
+        <CardContent>
           {/* 탭 전환 */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'palette' | 'simulator')}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="palette">색상 팔레트</TabsTrigger>
-              <TabsTrigger value="simulator">시뮬레이터</TabsTrigger>
+              <TabsTrigger value="palette">나의 색상</TabsTrigger>
+              <TabsTrigger value="simulator">미리보기</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="palette" className="mt-4">
+            {/* 색상 팔레트 탭 */}
+            <TabsContent value="palette" className="mt-3">
               <DrapeColorPalette
                 deviceCapability={deviceCapability}
                 selectedColor={selectedColor}
                 onColorSelect={setSelectedColor}
                 metalType={metalType}
                 onMetalTypeChange={setMetalType}
+                userSeason={userSeason}
               />
             </TabsContent>
 
-            <TabsContent value="simulator" className="mt-4">
+            {/* 시뮬레이터 탭 */}
+            <TabsContent value="simulator" className="mt-3">
               <DrapeSimulator
                 image={image}
                 faceMask={faceMask}
                 deviceCapability={deviceCapability}
                 metalType={metalType}
                 onAnalysisComplete={handleAnalysisComplete}
+                skinInsight={synergyInsight?.message}
+                externalSelectedColor={selectedColor}
               />
             </TabsContent>
           </Tabs>

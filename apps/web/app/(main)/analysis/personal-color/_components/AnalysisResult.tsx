@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  RefreshCw,
   Sparkles,
   Palette,
   Shirt,
@@ -12,7 +11,6 @@ import {
   Tag,
   Droplets,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
   type PersonalColorResult,
   type GroomingRecommendation,
@@ -26,8 +24,6 @@ import {
   MALE_CLOTHING_RECOMMENDATIONS,
   MALE_STYLE_DESCRIPTIONS,
 } from '@/lib/mock/personal-color';
-import { useShare } from '@/hooks/useShare';
-import { ShareButton } from '@/components/share';
 import { FadeInUp, ScaleIn } from '@/components/animations';
 import {
   PersonalColorEvidenceSummary,
@@ -44,7 +40,7 @@ interface AnalysisEvidence {
 
 interface AnalysisResultProps {
   result: PersonalColorResult;
-  onRetry: () => void;
+  onRetry?: () => void;
   evidence?: AnalysisEvidence | null;
 }
 
@@ -62,7 +58,11 @@ function FaceAvatar({ className }: { className?: string }) {
   );
 }
 
-export default function AnalysisResult({ result, onRetry, evidence }: AnalysisResultProps) {
+export default function AnalysisResult({
+  result,
+  onRetry: _onRetry,
+  evidence,
+}: AnalysisResultProps) {
   const {
     seasonType,
     seasonLabel,
@@ -95,14 +95,8 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
     : clothingRecommendations;
   const groomingRecommendations: GroomingRecommendation[] = GROOMING_RECOMMENDATIONS[seasonType];
 
-  const {
-    ref: shareRef,
-    share,
-    loading: shareLoading,
-  } = useShare(`이룸-퍼스널컬러-${seasonLabel}`);
-
   return (
-    <div ref={shareRef} className="space-y-6">
+    <div className="space-y-6">
       {/* 퍼스널 컬러 타입 카드 - 메인 결과로 ScaleIn 강조 */}
       <ScaleIn>
         <section
@@ -654,19 +648,6 @@ export default function AnalysisResult({ result, onRetry, evidence }: AnalysisRe
       <p className="text-center text-sm text-muted-foreground">
         분석 시간: {analyzedAt.toLocaleString('ko-KR')}
       </p>
-
-      {/* 다시 분석하기 버튼 */}
-      <FadeInUp delay={10}>
-        <Button onClick={onRetry} variant="outline" className="w-full h-12 text-base gap-2">
-          <RefreshCw className="w-4 h-4" />
-          다시 분석하기
-        </Button>
-      </FadeInUp>
-
-      {/* 공유 버튼 */}
-      <FadeInUp delay={10}>
-        <ShareButton onShare={share} loading={shareLoading} variant="default" />
-      </FadeInUp>
     </div>
   );
 }

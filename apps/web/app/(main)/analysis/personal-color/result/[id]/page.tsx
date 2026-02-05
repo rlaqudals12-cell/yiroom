@@ -13,7 +13,7 @@ import {
   Sun,
   Sparkles,
 } from 'lucide-react';
-import { CelebrationEffect } from '@/components/animations';
+
 import { Button } from '@/components/ui/button';
 import {
   type PersonalColorResult,
@@ -153,11 +153,14 @@ export default function PersonalColorResultPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCelebration, setShowCelebration] = useState(false);
+  // 일시적 에러(5xx) 시 재시도 가능 여부
+  const [isRetryable, setIsRetryable] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
   // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
   const [usedMock, setUsedMock] = useState(false);
   const fetchedRef = useRef(false);
+  // 현재 URL (hydration 불일치 방지를 위해 클라이언트에서만 설정)
+  const [currentUrl, setCurrentUrl] = useState('');
 
   const analysisId = params.id as string;
 
@@ -190,7 +193,13 @@ export default function PersonalColorResultPage() {
       const json = await response.json();
 
       if (!response.ok) {
-        throw new Error(json.error || '결과를 불러올 수 없습니다');
+        // 5xx 에러는 일시적 실패 → 재시도 가능
+        const retryable = response.status >= 500;
+        setIsRetryable(retryable);
+        throw new Error(
+          json.error ||
+            (retryable ? '서버에 일시적인 문제가 있습니다' : '결과를 불러올 수 없습니다')
+        );
       }
 
       if (!json.data) {
@@ -217,13 +226,6 @@ export default function PersonalColorResultPage() {
       if (dbData.image_analysis?.usedMock) {
         setUsedMock(true);
       }
-
-      // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
-      const celebrationKey = `celebration-pc-${analysisId}`;
-      if (!sessionStorage.getItem(celebrationKey)) {
-        sessionStorage.setItem(celebrationKey, 'shown');
-        setShowCelebration(true);
-      }
     } catch (err) {
       console.error('[PC-1] Fetch error:', err);
       setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
@@ -238,6 +240,19 @@ export default function PersonalColorResultPage() {
     }
   }, [isLoaded, isSignedIn, fetchAnalysis]);
 
+  // 클라이언트에서만 URL 설정 (hydration 불일치 방지)
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+  }, []);
+
+  // 다시 시도 (일시적 에러 시 재조회)
+  const handleRetry = useCallback(() => {
+    fetchedRef.current = false;
+    setError(null);
+    setIsRetryable(false);
+    fetchAnalysis();
+  }, [fetchAnalysis]);
+
   // 새로 분석하기 (forceNew 파라미터로 자동 리디렉트 방지)
   const handleNewAnalysis = useCallback(() => {
     router.push('/analysis/personal-color?forceNew=true');
@@ -246,31 +261,31 @@ export default function PersonalColorResultPage() {
   // 로딩 상태
   if (!isLoaded || isLoading) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">결과를 불러오는 중...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 비로그인 상태
   if (!isSignedIn) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
           <p className="text-muted-foreground">분석 결과를 확인하려면 먼저 로그인해주세요</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 에러 상태
   if (error) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error}</p>
@@ -281,27 +296,26 @@ export default function PersonalColorResultPage() {
                   대시보드로
                 </Link>
               </Button>
-              <Button onClick={handleNewAnalysis}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                새로 분석하기
-              </Button>
+              {isRetryable ? (
+                <Button onClick={handleRetry}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  다시 시도
+                </Button>
+              ) : (
+                <Button onClick={handleNewAnalysis}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  새로 분석하기
+                </Button>
+              )}
             </div>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-muted">
-      {/* 분석 완료 축하 효과 */}
-      <CelebrationEffect
-        type="analysis_complete"
-        trigger={showCelebration}
-        message="퍼스널 컬러 분석 완료!"
-        onComplete={() => setShowCelebration(false)}
-      />
-
+    <div className="min-h-[calc(100vh-80px)] bg-muted">
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="flex items-center justify-between mb-6">
@@ -361,7 +375,7 @@ export default function PersonalColorResultPage() {
               </TabsTrigger>
               <TabsTrigger value="draping" className="gap-1">
                 <Shirt className="w-4 h-4" />
-                드레이핑
+                색상 입혀보기
               </TabsTrigger>
               <TabsTrigger value="detailed" className="gap-1">
                 <ClipboardList className="w-4 h-4" />
@@ -370,7 +384,11 @@ export default function PersonalColorResultPage() {
             </TabsList>
 
             {/* 기본 분석 탭 */}
-            <TabsContent value="basic" className="mt-0">
+            <TabsContent
+              value="basic"
+              className="mt-0 data-[state=inactive]:hidden"
+              data-testid="basic-tab"
+            >
               {/* 비주얼 리포트 카드 */}
               <VisualReportCard
                 analysisType="personal-color"
@@ -473,33 +491,47 @@ export default function PersonalColorResultPage() {
                     content={{
                       title: `나의 퍼스널 컬러는 ${result?.seasonType?.toUpperCase() || ''} 타입!`,
                       description: '이룸에서 AI 퍼스널 컬러 진단 받아보세요',
-                      url: typeof window !== 'undefined' ? window.location.href : '',
+                      url: currentUrl,
                     }}
                   />
                 </div>
               </div>
             </TabsContent>
 
-            {/* 드레이핑 시뮬레이션 탭 */}
-            <TabsContent value="draping" className="mt-0" data-testid="draping-tab">
-              {imageUrl ? (
-                <DrapingSimulationTab imageUrl={imageUrl} className="w-full" />
-              ) : (
-                <div className="p-6 bg-card rounded-xl border text-center">
-                  <Shirt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-semibold text-foreground mb-2">드레이핑 시뮬레이션</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    분석 이미지가 없어 드레이핑을 미리볼 수 없어요.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    다시 분석하면 드레이핑 시뮬레이션을 사용할 수 있어요.
-                  </p>
-                </div>
-              )}
+            {/* 드레이핑 시뮬레이션 탭 - 조건부 렌더링으로 canvas 오버플로우 방지 */}
+            <TabsContent
+              value="draping"
+              className="mt-0 data-[state=inactive]:hidden"
+              data-testid="draping-tab"
+            >
+              {activeTab === 'draping' ? (
+                imageUrl ? (
+                  <DrapingSimulationTab
+                    imageUrl={imageUrl}
+                    userSeason={result.seasonType}
+                    className="w-full"
+                  />
+                ) : (
+                  <div className="p-6 bg-card rounded-xl border text-center">
+                    <Shirt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold text-foreground mb-2">색상 입혀보기</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      분석 이미지가 없어 색상을 입혀볼 수 없어요.
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      다시 분석하면 내 얼굴에 색상을 입혀볼 수 있어요.
+                    </p>
+                  </div>
+                )
+              ) : null}
             </TabsContent>
 
             {/* 상세 리포트 탭 */}
-            <TabsContent value="detailed" className="mt-0">
+            <TabsContent
+              value="detailed"
+              className="mt-0 data-[state=inactive]:hidden"
+              data-testid="detailed-tab"
+            >
               {/* 시각적 상세 리포트 */}
               <DetailedEvidenceReport
                 evidence={analysisEvidence}
@@ -509,17 +541,6 @@ export default function PersonalColorResultPage() {
                 bestColors={result.bestColors}
                 worstColors={result.worstColors}
               />
-
-              {/* 기존 분석 근거 (텍스트) */}
-              {(analysisEvidence || imageQuality) && (
-                <AnalysisEvidenceReport
-                  evidence={analysisEvidence}
-                  imageQuality={imageQuality}
-                  seasonType={result.seasonType}
-                  tone={result.tone}
-                  className="mt-4"
-                />
-              )}
 
               {/* 분석 정확도 안내 */}
               <div className="mt-6 p-5 bg-card rounded-xl border border-border">
@@ -543,48 +564,10 @@ export default function PersonalColorResultPage() {
                   </div>
                 </div>
               </div>
-
-              {/* AI 컬러 상담 CTA */}
-              <div className="mt-6 p-4 bg-card rounded-xl border border-border">
-                <ConsultantCTA
-                  category="personalColor"
-                  params={{ season: result.seasonType }}
-                  showQuickQuestions
-                />
-              </div>
-
-              {/* 액션 버튼 */}
-              <div className="mt-8 mb-4 space-y-2">
-                <Button
-                  className="w-full"
-                  onClick={() =>
-                    router.push(`/products?season=${result.seasonType}&category=makeup`)
-                  }
-                >
-                  <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
-                </Button>
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    다시 분석하기
-                  </Button>
-                  <ShareButton onShare={share} loading={shareLoading} variant="outline" />
-                </div>
-                {/* 소셜 공유 버튼 */}
-                <div className="flex justify-center">
-                  <ShareButtons
-                    content={{
-                      title: `나의 퍼스널 컬러는 ${result?.seasonType?.toUpperCase() || ''} 타입!`,
-                      description: '이룸에서 AI 퍼스널 컬러 진단 받아보세요',
-                      url: typeof window !== 'undefined' ? window.location.href : '',
-                    }}
-                  />
-                </div>
-              </div>
             </TabsContent>
           </Tabs>
         )}
       </div>
-    </main>
+    </div>
   );
 }

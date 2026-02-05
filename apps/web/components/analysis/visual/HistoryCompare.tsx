@@ -80,7 +80,7 @@ const METRIC_CONFIG: Record<
   overall: { label: '종합 점수', positiveIsGood: true, unit: '점' },
   hydration: { label: '수분', positiveIsGood: true, unit: '%' },
   elasticity: { label: '탄력', positiveIsGood: true, unit: '%' },
-  uniformity: { label: '균일도', positiveIsGood: true, unit: '%' },
+  uniformity: { label: '어울림 점수', positiveIsGood: true, unit: '%' },
   trouble: { label: '트러블', positiveIsGood: false, unit: '점' },
   pore: { label: '모공', positiveIsGood: false, unit: '점' },
 };

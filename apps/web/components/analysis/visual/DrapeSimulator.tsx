@@ -7,9 +7,11 @@ import {
   getBestColors,
   applyDrapeColor,
   applyMetalReflectance,
-} from '@/lib/analysis/drape-reflectance';
-import { createOptimizedContext } from '@/lib/analysis/canvas-utils';
-import { releaseCanvas } from '@/lib/analysis/memory-manager';
+  createOptimizedContext,
+  getConstrainedCanvasSize,
+  applyVignette,
+  releaseCanvas,
+} from '@/lib/analysis';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -26,8 +28,10 @@ export default function DrapeSimulator({
   deviceCapability,
   metalType,
   onAnalysisComplete,
+  skinInsight,
+  externalSelectedColor,
   className,
-}: DrapeSimulatorProps) {
+}: DrapeSimulatorProps & { skinInsight?: string; externalSelectedColor?: string | null }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -45,18 +49,25 @@ export default function DrapeSimulator({
       const ctx = createOptimizedContext(canvas, { willReadFrequently: true });
       if (!ctx) return;
 
-      // 캔버스 크기 설정
-      canvas.width = image.naturalWidth || image.width;
-      canvas.height = image.naturalHeight || image.height;
+      // 캔버스 크기 설정 (제한된 크기 사용)
+      const { width, height } = getConstrainedCanvasSize(
+        image.naturalWidth || image.width,
+        image.naturalHeight || image.height
+      );
+      canvas.width = width;
+      canvas.height = height;
 
-      // 원본 이미지 그리기
-      ctx.drawImage(image, 0, 0);
+      // 원본 이미지 그리기 (리사이징 적용)
+      ctx.drawImage(image, 0, 0, width, height);
 
       // 드레이프 색상 적용
       applyDrapeColor(ctx, color, faceMask, canvas.height);
 
       // 금속 반사광 적용
       applyMetalReflectance(ctx, faceMask, metalType);
+
+      // 비네팅 효과 (가장자리 부드럽게 어둡게)
+      applyVignette(ctx, width, height, 0.3);
 
       setSelectedColor(color);
     },
@@ -110,6 +121,13 @@ export default function DrapeSimulator({
     previewDrape,
   ]);
 
+  // 외부 색상 변경 시 미리보기 자동 적용
+  useEffect(() => {
+    if (externalSelectedColor && image && faceMask) {
+      previewDrape(externalSelectedColor);
+    }
+  }, [externalSelectedColor, image, faceMask, previewDrape]);
+
   // 컴포넌트 언마운트 시 캔버스 정리
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -128,22 +146,30 @@ export default function DrapeSimulator({
     const ctx = createOptimizedContext(canvas);
     if (!ctx) return;
 
-    canvas.width = image.naturalWidth || image.width;
-    canvas.height = image.naturalHeight || image.height;
-    ctx.drawImage(image, 0, 0);
+    // 캔버스 크기 설정 (제한된 크기 사용)
+    const { width, height } = getConstrainedCanvasSize(
+      image.naturalWidth || image.width,
+      image.naturalHeight || image.height
+    );
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(image, 0, 0, width, height);
+
+    // 비네팅 효과 (가장자리 부드럽게 어둡게)
+    applyVignette(ctx, width, height, 0.3);
   }, [image]);
 
   return (
-    <div className={cn('space-y-4', className)} data-testid="drape-simulator">
-      {/* 캔버스 */}
-      <div className="relative w-full aspect-[3/4] bg-muted rounded-lg overflow-hidden">
+    <div className={cn('space-y-3', className)} data-testid="drape-simulator">
+      {/* 1. 이미지 - 높이 제한으로 버튼 항상 보이도록 */}
+      <div className="relative w-full aspect-[3/4] max-h-[25vh] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
         <canvas
           ref={canvasRef}
-          className="w-full h-full object-contain"
+          className="max-w-full max-h-full object-contain"
           aria-label="드레이프 시뮬레이션"
         />
 
-        {/* 분석 진행률 */}
+        {/* 분석 진행률 오버레이 */}
         {isAnalyzing && (
           <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-4">
             <p className="text-sm font-medium">분석 중...</p>
@@ -153,19 +179,20 @@ export default function DrapeSimulator({
         )}
       </div>
 
-      {/* 분석 시작 버튼 */}
-      <Button onClick={runFullAnalysis} disabled={isAnalyzing || !image} className="w-full">
-        {isAnalyzing ? '분석 중...' : '전체 컬러 분석 시작'}
-      </Button>
-
-      {/* 베스트 컬러 결과 */}
+      {/* 2. 베스트 컬러 결과 (분석 완료 시 - 이미지 바로 아래) */}
       {bestResults.length > 0 && (
         <BestColorsSection
           results={bestResults}
           selectedColor={selectedColor}
           onColorSelect={previewDrape}
+          skinInsight={skinInsight}
         />
       )}
+
+      {/* 3. 분석 버튼 */}
+      <Button onClick={runFullAnalysis} disabled={isAnalyzing || !image} className="w-full">
+        {isAnalyzing ? '분석 중...' : bestResults.length > 0 ? '다시 분석' : '전체 컬러 분석 시작'}
+      </Button>
     </div>
   );
 }
@@ -177,14 +204,18 @@ function BestColorsSection({
   results,
   selectedColor,
   onColorSelect,
+  skinInsight,
 }: {
   results: DrapeResult[];
   selectedColor: string | null;
   onColorSelect: (color: string) => void;
+  skinInsight?: string;
 }) {
   return (
     <div className="space-y-2" data-testid="best-colors-section">
       <h4 className="text-sm font-medium">베스트 컬러 TOP 5</h4>
+      {/* 피부 상태 인사이트 (한 줄) */}
+      {skinInsight && <p className="text-xs text-muted-foreground">{skinInsight}</p>}
       <div className="flex gap-2">
         {results.map((result, index) => (
           <button
@@ -214,7 +245,7 @@ function BestColorsSection({
           <div className="flex-1">
             <p className="text-sm font-medium">{selectedColor}</p>
             <p className="text-xs text-muted-foreground">
-              균일도: {results.find((r) => r.color === selectedColor)?.uniformity.toFixed(1)}점
+              어울림 점수: {results.find((r) => r.color === selectedColor)?.uniformity.toFixed(1)}점
             </p>
           </div>
         </div>

@@ -3,6 +3,34 @@
  * @description Canvas 렌더링 최적화 및 이미지 처리 유틸
  */
 
+// 캔버스 최대 해상도 (레이아웃 overflow 방지, 성능과 품질 균형)
+// - 폰 카메라 이미지가 4032x5376px 등 매우 클 수 있음
+// - 이를 그대로 사용하면 28558px 같은 레이아웃 문제 발생
+export const MAX_CANVAS_SIZE = 1024;
+
+/**
+ * 이미지 비율을 유지하면서 캔버스 크기 계산 (최대 크기 제한)
+ * @param originalWidth - 원본 이미지 너비
+ * @param originalHeight - 원본 이미지 높이
+ * @param maxSize - 최대 허용 크기 (기본값: MAX_CANVAS_SIZE)
+ * @returns 제한된 크기와 스케일 비율
+ */
+export function getConstrainedCanvasSize(
+  originalWidth: number,
+  originalHeight: number,
+  maxSize: number = MAX_CANVAS_SIZE
+): { width: number; height: number; scale: number } {
+  const safeWidth = originalWidth || 400;
+  const safeHeight = originalHeight || 533;
+  const scale = Math.min(1, maxSize / Math.max(safeWidth, safeHeight));
+
+  return {
+    width: Math.round(safeWidth * scale),
+    height: Math.round(safeHeight * scale),
+    scale,
+  };
+}
+
 /**
  * 최적화된 2D 컨텍스트 생성
  * - willReadFrequently: getImageData 최적화
@@ -299,4 +327,47 @@ export function clearCanvas(canvas: HTMLCanvasElement): void {
   if (ctx) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
+}
+
+/**
+ * 비네팅 효과 적용 (가장자리 부드럽게 어둡게)
+ * - 마스크 불필요, 자연스러운 집중 효과
+ * @param ctx - Canvas 2D 컨텍스트
+ * @param width - 캔버스 너비
+ * @param height - 캔버스 높이
+ * @param intensity - 비네팅 강도 (0.0~1.0, 기본 0.4)
+ */
+export function applyVignette(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  intensity: number = 0.4
+): void {
+  // 중심점
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  // 타원형 그라데이션 (세로가 더 긴 얼굴 형태 고려)
+  const radiusX = width * 0.6;
+  const radiusY = height * 0.7;
+
+  // 방사형 그라데이션 생성
+  const gradient = ctx.createRadialGradient(
+    centerX,
+    centerY,
+    0,
+    centerX,
+    centerY,
+    Math.max(radiusX, radiusY)
+  );
+
+  // 중앙은 투명, 가장자리는 어둡게
+  gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0)');
+  gradient.addColorStop(0.8, `rgba(0, 0, 0, ${intensity * 0.5})`);
+  gradient.addColorStop(1, `rgba(0, 0, 0, ${intensity})`);
+
+  // 오버레이 적용
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
 }
