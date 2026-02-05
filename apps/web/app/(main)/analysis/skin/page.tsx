@@ -19,7 +19,7 @@ import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { Confetti } from '@/components/animations';
 import { PhotoReuseSelector } from '@/components/analysis/skin/PhotoReuseSelector';
-import { checkPhotoReuseEligibility, type PhotoReuseEligibility } from '@/lib/analysis/photo-reuse';
+import { checkPhotoReuseEligibility, type PhotoReuseEligibility } from '@/lib/analysis';
 
 // 새 플로우: 조명가이드 → 모드선택 → 사진촬영 → AI분석 → 결과
 // 또는: 기존 피부 타입 입력 → 결과

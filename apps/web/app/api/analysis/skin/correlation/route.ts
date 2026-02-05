@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
-import { analyzeSkinCorrelation } from '@/lib/analysis/skin-correlation';
+import { analyzeSkinCorrelation } from '@/lib/analysis';
 
 export const dynamic = 'force-dynamic';
 

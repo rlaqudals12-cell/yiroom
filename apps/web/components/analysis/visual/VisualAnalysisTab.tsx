@@ -2,10 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { LightMode, PigmentMaps, FaceLandmark } from '@/types/visual-analysis';
-import { analyzeDeviceCapability } from '@/lib/analysis/device-capability';
-import { extractFaceLandmarks, createFaceMask } from '@/lib/analysis/face-landmark';
-import { analyzeSkingPigments } from '@/lib/analysis/skin-heatmap';
-import { preloadFaceMesh } from '@/lib/analysis/mediapipe-loader';
+import {
+  analyzeDeviceCapability,
+  extractFaceLandmarks,
+  createFaceMask,
+  analyzeSkingPigments,
+  preloadFaceMesh,
+} from '@/lib/analysis';
 import LightModeTab, { LightModeLegend } from './LightModeTab';
 import SkinHeatmapCanvas, { HeatmapMetrics } from './SkinHeatmapCanvas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

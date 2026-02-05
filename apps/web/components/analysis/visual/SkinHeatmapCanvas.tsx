@@ -2,8 +2,7 @@
 
 import { useRef, useEffect, useCallback, useState } from 'react';
 import type { SkinHeatmapCanvasProps, LightMode } from '@/types/visual-analysis';
-import { renderHeatmapOverlay } from '@/lib/analysis/skin-heatmap';
-import { releaseCanvas } from '@/lib/analysis/memory-manager';
+import { renderHeatmapOverlay, releaseCanvas } from '@/lib/analysis';
 import { cn } from '@/lib/utils';
 
 /**

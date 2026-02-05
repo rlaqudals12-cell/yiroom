@@ -21,7 +21,7 @@ import {
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { type SkinAnalysisResult, type SkinTypeId, EASY_SKIN_TIPS } from '@/lib/mock/skin-analysis';
-import { generateSynergyFromGeminiResult } from '@/lib/analysis/synergy-insight';
+import { generateSynergyFromGeminiResult } from '@/lib/analysis';
 import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';

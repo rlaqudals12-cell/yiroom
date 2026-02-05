@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { PhotoReuseEligibility } from '@/lib/analysis/photo-reuse';
+import type { PhotoReuseEligibility } from '@/lib/analysis';
 
 interface PhotoReuseSelectorProps {
   eligibility: PhotoReuseEligibility;
