@@ -17,32 +17,48 @@ const SHADE_COLORS: Record<VitaShade, string> = {
   '0M2': '#FBF8F0',
   '0M3': '#F8F4E8',
   // B 계열 (밝은 황색)
-  'B1': '#F5EFE0',
-  'B2': '#EDE5D0',
-  'B3': '#E2D8C0',
-  'B4': '#D5C8AD',
+  B1: '#F5EFE0',
+  B2: '#EDE5D0',
+  B3: '#E2D8C0',
+  B4: '#D5C8AD',
   // A 계열 (적갈색)
-  'A1': '#F0E8D5',
-  'A2': '#E8DCC5',
-  'A3': '#DDD0B5',
+  A1: '#F0E8D5',
+  A2: '#E8DCC5',
+  A3: '#DDD0B5',
   'A3.5': '#D5C5A5',
-  'A4': '#C8B898',
+  A4: '#C8B898',
   // C 계열 (회색)
-  'C1': '#E8E4D8',
-  'C2': '#DDD8CC',
-  'C3': '#D0CABC',
-  'C4': '#C2BBAB',
+  C1: '#E8E4D8',
+  C2: '#DDD8CC',
+  C3: '#D0CABC',
+  C4: '#C2BBAB',
   // D 계열 (적회색)
-  'D2': '#E5DFD0',
-  'D3': '#D8D0C0',
-  'D4': '#CCC3B0',
+  D2: '#E5DFD0',
+  D3: '#D8D0C0',
+  D4: '#CCC3B0',
 };
 
 // 셰이드 밝기 순서 (1=가장 밝음)
 const BRIGHTNESS_ORDER: VitaShade[] = [
-  '0M1', '0M2', '0M3',
-  'B1', 'A1', 'B2', 'D2', 'A2', 'C1', 'C2', 'D4',
-  'A3', 'D3', 'B3', 'A3.5', 'B4', 'C3', 'A4', 'C4',
+  '0M1',
+  '0M2',
+  '0M3',
+  'B1',
+  'A1',
+  'B2',
+  'D2',
+  'A2',
+  'C1',
+  'C2',
+  'D4',
+  'A3',
+  'D3',
+  'B3',
+  'A3.5',
+  'B4',
+  'C3',
+  'A4',
+  'C4',
 ];
 
 interface VitaShadeDisplayProps {
@@ -78,9 +94,7 @@ export function VitaShadeDisplay({
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold">치아 색상</h3>
         {result && (
-          <span className="text-sm text-muted-foreground">
-            신뢰도 {result.confidence}%
-          </span>
+          <span className="text-sm text-muted-foreground">신뢰도 {result.confidence}%</span>
         )}
       </div>
 
@@ -94,9 +108,7 @@ export function VitaShadeDisplay({
         </div>
         <div>
           <p className="font-medium">현재 셰이드</p>
-          <p className="text-sm text-muted-foreground">
-            {getShadeDescription(currentShade)}
-          </p>
+          <p className="text-sm text-muted-foreground">{getShadeDescription(currentShade)}</p>
         </div>
       </div>
 
@@ -155,7 +167,7 @@ export function VitaShadeDisplay({
             </span>
           </div>
           <div className="rounded bg-muted/50 p-2">
-            <span className="text-muted-foreground">황색도:</span>
+            <span className="text-muted-foreground">누런 정도:</span>
             <span className="ml-1 font-medium">
               {getYellownessLabel(result.interpretation.yellowness)}
             </span>
@@ -171,14 +183,14 @@ export function VitaShadeDisplay({
  */
 function getShadeDescription(shade: VitaShade): string {
   if (shade.startsWith('0M')) {
-    return 'Bleached (미백)';
+    return '미백 처리';
   }
   const series = shade.charAt(0);
   const seriesDescriptions: Record<string, string> = {
-    'A': '적갈색 계열',
-    'B': '적황색 계열',
-    'C': '회색 계열',
-    'D': '적회색 계열',
+    A: '따뜻한 갈색 계열',
+    B: '밝은 노란 계열',
+    C: '차분한 회색 계열',
+    D: '자연스러운 회갈색 계열',
   };
   return seriesDescriptions[series] || '';
 }
@@ -188,11 +200,11 @@ function getShadeDescription(shade: VitaShade): string {
  */
 function getBrightnessLabel(brightness: string): string {
   const labels: Record<string, string> = {
-    'very_bright': '매우 밝음',
-    'bright': '밝음',
-    'medium': '보통',
-    'dark': '어두움',
-    'very_dark': '매우 어두움',
+    very_bright: '매우 밝음',
+    bright: '밝음',
+    medium: '보통',
+    dark: '어두움',
+    very_dark: '매우 어두움',
   };
   return labels[brightness] || brightness;
 }
@@ -202,10 +214,10 @@ function getBrightnessLabel(brightness: string): string {
  */
 function getYellownessLabel(yellowness: string): string {
   const labels: Record<string, string> = {
-    'minimal': '최소',
-    'mild': '경미',
-    'moderate': '보통',
-    'significant': '상당',
+    minimal: '최소',
+    mild: '경미',
+    moderate: '보통',
+    significant: '상당',
   };
   return labels[yellowness] || yellowness;
 }

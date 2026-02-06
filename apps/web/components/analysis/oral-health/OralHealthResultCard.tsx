@@ -120,11 +120,7 @@ export function OralHealthResultCard({
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <span className="font-medium">추천 사항</span>
-          {isExpanded ? (
-            <ChevronUp className="h-4 w-4" />
-          ) : (
-            <ChevronDown className="h-4 w-4" />
-          )}
+          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </Button>
         {isExpanded && (
           <ul className="space-y-2 pl-4">
@@ -245,12 +241,7 @@ function EffectivenessBadge({ level }: { level: 'low' | 'medium' | 'high' }) {
   };
 
   return (
-    <span
-      className={cn(
-        'rounded-full px-2 py-0.5 text-xs font-medium',
-        config[level].className
-      )}
-    >
+    <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', config[level].className)}>
       {config[level].label}
     </span>
   );
@@ -261,10 +252,10 @@ function EffectivenessBadge({ level }: { level: 'low' | 'medium' | 'high' }) {
  */
 function getMethodLabel(method: string): string {
   const labels: Record<string, string> = {
-    'whitening_toothpaste': '미백 치약',
-    'strips': '미백 스트립',
-    'professional_bleaching': '전문 블리칭',
-    'in_office': '인오피스 미백',
+    whitening_toothpaste: '미백 치약',
+    strips: '미백 스트립',
+    professional_bleaching: '전문가 미백',
+    in_office: '병원 미백',
   };
   return labels[method] || method;
 }

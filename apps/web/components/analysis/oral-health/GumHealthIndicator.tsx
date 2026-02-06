@@ -37,28 +37,28 @@ const STATUS_CONFIG: Record<
     color: 'text-green-600',
     bgColor: 'bg-green-100',
     icon: CheckCircle,
-    description: '잇몸 건강 상태가 양호합니다.',
+    description: '잇몸 건강 상태가 양호해요.',
   },
   mild_gingivitis: {
     label: '경미한 염증',
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-100',
     icon: AlertCircle,
-    description: '경미한 잇몸 염증이 관찰됩니다.',
+    description: '경미한 잇몸 염증이 관찰돼요.',
   },
   moderate_gingivitis: {
     label: '중등도 염증',
     color: 'text-orange-600',
     bgColor: 'bg-orange-100',
     icon: AlertTriangle,
-    description: '중등도 잇몸 염증이 있습니다. 관리가 필요합니다.',
+    description: '잇몸 염증이 있어요. 관리가 필요해요.',
   },
   severe_inflammation: {
     label: '심한 염증',
     color: 'text-red-600',
     bgColor: 'bg-red-100',
     icon: XCircle,
-    description: '심한 잇몸 염증입니다. 치과 방문을 권장합니다.',
+    description: '잇몸 염증이 심해요. 치과 방문을 권해 드려요.',
   },
 };
 
@@ -123,7 +123,7 @@ export function GumHealthIndicator({
             status={result.metrics.rednessPercentage > 20 ? 'warning' : 'normal'}
           />
           <MetricItem
-            label="a* 평균"
+            label="붉은기 수치"
             value={result.metrics.aStarMean.toFixed(1)}
             status={result.metrics.aStarMean > 15 ? 'warning' : 'normal'}
           />
@@ -185,12 +185,7 @@ function MetricItem({
   return (
     <div className="rounded bg-muted/50 p-2">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <p
-        className={cn(
-          'text-sm font-medium',
-          status === 'warning' ? 'text-orange-600' : ''
-        )}
-      >
+      <p className={cn('text-sm font-medium', status === 'warning' ? 'text-orange-600' : '')}>
         {value}
       </p>
     </div>
@@ -212,10 +207,10 @@ function getProgressColor(score: number): string {
  */
 function getAreaLabel(region: string): string {
   const labels: Record<string, string> = {
-    'upper_front': '상악 앞니',
-    'upper_back': '상악 어금니',
-    'lower_front': '하악 앞니',
-    'lower_back': '하악 어금니',
+    upper_front: '윗니 앞쪽',
+    upper_back: '윗니 뒤쪽',
+    lower_front: '아랫니 앞쪽',
+    lower_back: '아랫니 뒤쪽',
   };
   return labels[region] || region;
 }
