@@ -14,6 +14,12 @@ import {
   createCollagenBoostAlert,
   type CrossModuleAlertData,
 } from '@/lib/alerts';
+import {
+  unauthorizedError,
+  validationError,
+  internalError,
+  dbError,
+} from '@/lib/api/error-response';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 15;
@@ -36,7 +42,7 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedError();
     }
 
     // Rate Limit 체크
@@ -49,7 +55,7 @@ export async function POST(req: NextRequest) {
     const { imageBase64, useMock = false } = body;
 
     if (!imageBase64) {
-      return NextResponse.json({ error: 'Image is required' }, { status: 400 });
+      return validationError('이미지가 필요합니다.');
     }
 
     // AI 분석 실행
@@ -163,10 +169,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error('[M-1] Database insert error:', error);
-      return NextResponse.json(
-        { error: 'Failed to save analysis', details: error.message },
-        { status: 500 }
-      );
+      return dbError('분석 결과 저장에 실패했습니다.');
     }
 
     // 게이미피케이션 연동
@@ -221,7 +224,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('[M-1] Makeup analysis error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return internalError('메이크업 분석 중 오류가 발생했습니다.');
   }
 }
 
@@ -235,7 +238,7 @@ export async function GET() {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedError();
     }
 
     const supabase = createServiceRoleClient();
@@ -249,7 +252,7 @@ export async function GET() {
 
     if (error) {
       console.error('[M-1] Database query error:', error);
-      return NextResponse.json({ error: 'Failed to fetch analyses' }, { status: 500 });
+      return dbError('분석 목록을 불러올 수 없습니다.');
     }
 
     return NextResponse.json({
@@ -259,6 +262,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('[M-1] Get makeup analyses error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return internalError();
   }
 }

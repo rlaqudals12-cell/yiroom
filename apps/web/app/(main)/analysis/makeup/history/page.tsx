@@ -130,7 +130,7 @@ export default function MakeupHistoryPage() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* 기간 필터 */}
         <Tabs value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
           <TabsList className="w-full grid grid-cols-4">
@@ -239,7 +239,7 @@ export default function MakeupHistoryPage() {
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {undertoneLabel} | 점수: {item.overallScore}점
+                          {undertoneLabel} | {item.overallScore}점
                         </p>
                         <div className="flex gap-3 mt-2">
                           <div className="flex items-center gap-1 text-xs text-rose-600">
@@ -272,7 +272,7 @@ export default function MakeupHistoryPage() {
             두 개의 기록을 선택하면 비교할 수 있어요
           </p>
         )}
-      </main>
+      </div>
 
       <BottomNav />
     </div>

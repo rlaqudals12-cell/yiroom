@@ -15,7 +15,6 @@ import {
   MAKEUP_CONCERNS,
 } from '@/lib/mock/makeup-analysis';
 import { Button } from '@/components/ui/button';
-import { Confetti } from '@/components/animations';
 
 type AnalysisStep = 'guide' | 'upload' | 'known-input' | 'loading' | 'result';
 
@@ -51,7 +50,6 @@ export default function MakeupAnalysisPage() {
   const [result, setResult] = useState<MakeupAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const existingCheckedRef = useRef(false);
 
@@ -125,7 +123,7 @@ export default function MakeupAnalysisPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Analysis failed');
+        throw new Error(errorData.error || '분석에 실패했어요');
       }
 
       const data = await response.json();
@@ -135,10 +133,9 @@ export default function MakeupAnalysisPage() {
         analyzedAt: new Date(data.result.analyzedAt),
       });
       setStep('result');
-      setShowConfetti(true);
     } catch (err) {
       console.error('[M-1] Analysis error:', err);
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      setError('분석 중 문제가 발생했어요');
       setStep('upload');
     } finally {
       setIsAnalyzing(false);
@@ -157,7 +154,6 @@ export default function MakeupAnalysisPage() {
     setResult(null);
     setStep('guide');
     setError(null);
-    setShowConfetti(false);
   }, []);
 
   // 단계별 서브타이틀
@@ -185,192 +181,187 @@ export default function MakeupAnalysisPage() {
   };
 
   return (
-    <>
-      <Confetti trigger={showConfetti} />
+    <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="makeup-analysis-page">
+      <div className="max-w-lg mx-auto px-4 py-8">
+        {/* 헤더 */}
+        <header className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-foreground">💄 메이크업 분석</h1>
+          <p className="text-muted-foreground mt-2">{subtitle}</p>
+        </header>
 
-      <main className="min-h-[calc(100vh-80px)] bg-muted" data-testid="makeup-analysis-page">
-        <div className="max-w-lg mx-auto px-4 py-8">
-          {/* 헤더 */}
-          <header className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground">💄 메이크업 분석</h1>
-            <p className="text-muted-foreground mt-2">{subtitle}</p>
-          </header>
+        {/* 에러 메시지 */}
+        {error && (
+          <div
+            className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
+            role="alert"
+          >
+            {error}. 다시 시도해주세요.
+          </div>
+        )}
 
-          {/* 에러 메시지 */}
-          {error && (
-            <div
-              className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
-              role="alert"
-            >
-              {error}. 다시 시도해주세요.
-            </div>
-          )}
-
-          {/* 기존 분석 결과 배너 */}
-          {step === 'guide' && existingAnalysis && !checkingExisting && (
-            <Link
-              href={`/analysis/makeup/result/${existingAnalysis.id}`}
-              className="block mb-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl border border-pink-200 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center">
-                    <span className="text-lg font-bold text-pink-600">
-                      {existingAnalysis.overall_score}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">기존 분석 결과 보기</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      {formatDate(new Date(existingAnalysis.created_at))} ·{' '}
-                      {undertoneLabels[existingAnalysis.undertone] || existingAnalysis.undertone}
-                    </div>
+        {/* 기존 분석 결과 배너 */}
+        {step === 'guide' && existingAnalysis && !checkingExisting && (
+          <Link
+            href={`/analysis/makeup/result/${existingAnalysis.id}`}
+            className="block mb-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl border border-pink-200 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center">
+                  <span className="text-lg font-bold text-pink-600">
+                    {existingAnalysis.overall_score}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">기존 분석 결과 보기</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="w-3 h-3" />
+                    {formatDate(new Date(existingAnalysis.created_at))} ·{' '}
+                    {undertoneLabels[existingAnalysis.undertone] || existingAnalysis.undertone}
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-pink-500" />
               </div>
-            </Link>
-          )}
-
-          {/* 촬영 가이드 */}
-          {step === 'guide' && (
-            <div className="space-y-6">
-              <div className="bg-card rounded-xl p-6 shadow-sm">
-                <h2 className="font-semibold text-lg mb-4">📸 촬영 가이드</h2>
-                <ul className="space-y-3 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="text-pink-500">✓</span>
-                    밝은 자연광 아래에서 촬영해주세요
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-pink-500">✓</span>
-                    정면에서 얼굴 전체가 보이도록 촬영해주세요
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-pink-500">✓</span>
-                    민낯 상태에서 촬영하면 더 정확해요
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-400">✗</span>
-                    필터나 보정된 사진은 피해주세요
-                  </li>
-                </ul>
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => setStep('upload')}
-                  className="flex-1 bg-pink-500 hover:bg-pink-600"
-                >
-                  사진 선택하기
-                </Button>
-                <Button variant="outline" onClick={handleSkipToKnownInput}>
-                  알고 있어요
-                </Button>
-              </div>
+              <ArrowRight className="w-5 h-5 text-pink-500" />
             </div>
-          )}
+          </Link>
+        )}
 
-          {/* 사진 업로드 */}
-          {step === 'upload' && (
-            <div className="space-y-6">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
+        {/* 촬영 가이드 */}
+        {step === 'guide' && (
+          <div className="space-y-6">
+            <div className="bg-card rounded-xl p-6 shadow-sm">
+              <h2 className="font-semibold text-lg mb-4">📸 촬영 가이드</h2>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-pink-500">✓</span>
+                  밝은 자연광 아래에서 촬영해주세요
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-pink-500">✓</span>
+                  정면에서 얼굴 전체가 보이도록 촬영해주세요
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-pink-500">✓</span>
+                  민낯 상태에서 촬영하면 더 정확해요
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-red-400">✗</span>
+                  필터나 보정된 사진은 피해주세요
+                </li>
+              </ul>
+            </div>
 
-              {imagePreview ? (
-                <div className="space-y-4">
-                  <div className="aspect-square rounded-xl overflow-hidden bg-muted">
-                    <img
-                      src={imagePreview}
-                      alt="선택된 이미지"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex gap-3">
-                    <Button variant="outline" onClick={handleUploadClick} className="flex-1">
-                      다른 사진 선택
-                    </Button>
-                    <Button
-                      onClick={handleStartAnalysis}
-                      disabled={isAnalyzing}
-                      className="flex-1 bg-pink-500 hover:bg-pink-600"
-                    >
-                      {isAnalyzing ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          분석 중...
-                        </>
-                      ) : (
-                        '분석 시작'
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={handleUploadClick}
-                  className="w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-pink-500/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
-                >
-                  <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center">
-                    <Upload className="w-8 h-8 text-pink-600" />
-                  </div>
-                  <div className="text-center">
-                    <p className="font-medium text-foreground">사진을 선택해주세요</p>
-                    <p className="text-sm text-muted-foreground mt-1">탭하여 갤러리에서 선택</p>
-                  </div>
-                </button>
-              )}
-
-              <Button variant="ghost" onClick={() => setStep('guide')} className="w-full">
-                ← 가이드로 돌아가기
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setStep('upload')}
+                className="flex-1 bg-pink-500 hover:bg-pink-600"
+              >
+                사진 선택하기
+              </Button>
+              <Button variant="outline" onClick={handleSkipToKnownInput}>
+                알고 있어요
               </Button>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* 알고있는 타입 입력 */}
-          {step === 'known-input' && (
-            <KnownTypeInput
-              onSubmit={(undertone, concerns) => {
-                const mockResult = generateMockMakeupAnalysisResult();
-                setResult({
-                  ...mockResult,
-                  undertone,
-                  undertoneLabel: UNDERTONES.find((t) => t.id === undertone)?.label || '',
-                  concerns,
-                  analyzedAt: new Date(),
-                });
-                setStep('result');
-                setShowConfetti(true);
-              }}
-              onBack={() => setStep('guide')}
+        {/* 사진 업로드 */}
+        {step === 'upload' && (
+          <div className="space-y-6">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
             />
-          )}
 
-          {/* 로딩 */}
-          {step === 'loading' && (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center mb-6 animate-pulse">
-                <span className="text-4xl">💄</span>
+            {imagePreview ? (
+              <div className="space-y-4">
+                <div className="aspect-square rounded-xl overflow-hidden bg-muted">
+                  <img
+                    src={imagePreview}
+                    alt="선택된 이미지"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={handleUploadClick} className="flex-1">
+                    다른 사진 선택
+                  </Button>
+                  <Button
+                    onClick={handleStartAnalysis}
+                    disabled={isAnalyzing}
+                    className="flex-1 bg-pink-500 hover:bg-pink-600"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        분석 중...
+                      </>
+                    ) : (
+                      '분석 시작'
+                    )}
+                  </Button>
+                </div>
               </div>
-              <p className="text-lg font-medium text-foreground">AI가 얼굴을 분석하고 있어요</p>
-              <p className="text-sm text-muted-foreground mt-2">잠시만 기다려주세요...</p>
-              <Loader2 className="w-8 h-8 mt-6 animate-spin text-pink-500" />
-            </div>
-          )}
+            ) : (
+              <button
+                onClick={handleUploadClick}
+                className="w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-pink-500/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
+              >
+                <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-pink-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-medium text-foreground">사진을 선택해주세요</p>
+                  <p className="text-sm text-muted-foreground mt-1">탭하여 갤러리에서 선택</p>
+                </div>
+              </button>
+            )}
 
-          {/* 결과 */}
-          {step === 'result' && result && (
-            <AnalysisResultView result={result} onRetry={handleRetry} />
-          )}
-        </div>
-      </main>
-    </>
+            <Button variant="ghost" onClick={() => setStep('guide')} className="w-full">
+              ← 가이드로 돌아가기
+            </Button>
+          </div>
+        )}
+
+        {/* 알고있는 타입 입력 */}
+        {step === 'known-input' && (
+          <KnownTypeInput
+            onSubmit={(undertone, concerns) => {
+              const mockResult = generateMockMakeupAnalysisResult();
+              setResult({
+                ...mockResult,
+                undertone,
+                undertoneLabel: UNDERTONES.find((t) => t.id === undertone)?.label || '',
+                concerns,
+                analyzedAt: new Date(),
+              });
+              setStep('result');
+            }}
+            onBack={() => setStep('guide')}
+          />
+        )}
+
+        {/* 로딩 */}
+        {step === 'loading' && (
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center mb-6 animate-pulse">
+              <span className="text-4xl">💄</span>
+            </div>
+            <p className="text-lg font-medium text-foreground">AI가 얼굴을 분석하고 있어요</p>
+            <p className="text-sm text-muted-foreground mt-2">잠시만 기다려주세요...</p>
+            <Loader2 className="w-8 h-8 mt-6 animate-spin text-pink-500" />
+          </div>
+        )}
+
+        {/* 결과 */}
+        {step === 'result' && result && (
+          <AnalysisResultView result={result} onRetry={handleRetry} />
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -395,7 +386,7 @@ function KnownTypeInput({
     <div className="space-y-6">
       {/* 언더톤 선택 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">피부 언더톤을 선택해주세요</h3>
+        <h3 className="font-semibold mb-4">피부 톤을 선택해주세요</h3>
         <div className="grid grid-cols-3 gap-3">
           {UNDERTONES.map((tone) => (
             <button
@@ -497,7 +488,7 @@ function AnalysisResultView({
       <div className="bg-card rounded-xl p-6 shadow-sm">
         <h3 className="font-semibold mb-3 flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-pink-500" />
-          분석 인사이트
+          분석 요약
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
       </div>

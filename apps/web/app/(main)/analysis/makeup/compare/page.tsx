@@ -67,7 +67,7 @@ function MakeupCompareContent() {
 
   useEffect(() => {
     if (!fromId || !toId) {
-      setError('비교할 분석 정보가 없습니다.');
+      setError('비교할 분석 정보가 없어요.');
       setLoading(false);
       return;
     }
@@ -76,13 +76,13 @@ function MakeupCompareContent() {
       try {
         const res = await fetch(`/api/analysis/compare?type=makeup&from=${fromId}&to=${toId}`);
         if (!res.ok) {
-          throw new Error('비교 데이터를 불러오지 못했습니다.');
+          throw new Error('비교 결과를 불러올 수 없어요.');
         }
         const result: AnalysisCompareResponse = await res.json();
         setData(result);
       } catch (err) {
         console.error('[Makeup Compare] Error:', err);
-        setError('비교 데이터를 불러오지 못했습니다.');
+        setError('비교 결과를 불러올 수 없어요.');
       } finally {
         setLoading(false);
       }
@@ -157,7 +157,7 @@ function MakeupCompareContent() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* 기간 요약 */}
         <div className="text-center py-2">
           <p className="text-sm text-muted-foreground">
@@ -260,7 +260,7 @@ function MakeupCompareContent() {
         >
           새로운 메이크업 분석하기
         </Button>
-      </main>
+      </div>
 
       <BottomNav />
     </div>
