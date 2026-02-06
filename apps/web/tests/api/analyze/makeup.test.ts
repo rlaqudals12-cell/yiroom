@@ -221,12 +221,12 @@ describe('POST /api/analyze/makeup', () => {
     vi.mocked(createServiceRoleClient).mockReturnValue(
       mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
     );
-    vi.mocked(applyRateLimit).mockReturnValue({ success: true, response: null });
+    vi.mocked(applyRateLimit).mockReturnValue({ success: true, headers: {} });
     vi.mocked(generateMockMakeupAnalysisResult).mockReturnValue(mockMakeupAnalysisResult);
     vi.mocked(analyzeMakeup).mockResolvedValue(
       mockGeminiResponse as Awaited<ReturnType<typeof analyzeMakeup>>
     );
-    vi.mocked(addXp).mockResolvedValue(undefined);
+    vi.mocked(addXp).mockResolvedValue(null);
     vi.mocked(createSkinToneNutritionAlert).mockReturnValue({
       type: 'skin_tone_nutrition',
       priority: 'medium',

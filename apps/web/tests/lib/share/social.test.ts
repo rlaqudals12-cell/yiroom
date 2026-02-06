@@ -6,6 +6,7 @@ import {
   downloadShareImage,
   getHashtagsForResult,
   DEFAULT_HASHTAGS,
+  _resetKakaoLoadPromise,
 } from '@/lib/share/social';
 
 describe('Social Share Utils', () => {
@@ -66,6 +67,7 @@ describe('Social Share Utils', () => {
     };
 
     beforeEach(() => {
+      _resetKakaoLoadPromise();
       vi.stubGlobal('Kakao', mockKakao);
     });
 
@@ -75,6 +77,16 @@ describe('Social Share Utils', () => {
 
     it('Kakao SDK가 없으면 false를 반환한다', async () => {
       vi.stubGlobal('Kakao', undefined);
+
+      // jsdom에서 script onload가 발생하지 않으므로 appendChild를 mock하여 onerror 즉시 발생
+      const originalAppendChild = document.head.appendChild.bind(document.head);
+      vi.spyOn(document.head, 'appendChild').mockImplementation((node: Node) => {
+        if (node instanceof HTMLScriptElement && node.src.includes('kakao')) {
+          setTimeout(() => node.onerror?.(new Event('error')), 0);
+          return node;
+        }
+        return originalAppendChild(node);
+      });
 
       const result = await shareToKakao(mockContent);
       expect(result).toBe(false);

@@ -67,22 +67,64 @@ function createMockPostRequest(body: unknown): NextRequest {
 
 // Mock 헤어 분석 결과
 const mockHairAnalysisResult = {
-  hairType: 'normal',
-  hairTypeLabel: '정상 모발',
-  hairThickness: 'medium',
+  hairType: 'straight' as const,
+  hairTypeLabel: '직모',
+  hairThickness: 'medium' as const,
   hairThicknessLabel: '보통 모발',
-  scalpType: 'normal',
+  scalpType: 'normal' as const,
   scalpTypeLabel: '정상 두피',
   overallScore: 75,
   metrics: [
-    { id: 'hydration', label: '수분', value: 70, barColor: '#3b82f6' },
-    { id: 'scalp', label: '두피 건강', value: 80, barColor: '#10b981' },
-    { id: 'damage', label: '손상도', value: 20, barColor: '#f59e0b' },
-    { id: 'density', label: '밀도', value: 75, barColor: '#8b5cf6' },
-    { id: 'elasticity', label: '탄력', value: 70, barColor: '#ec4899' },
-    { id: 'shine', label: '윤기', value: 65, barColor: '#f97316' },
+    {
+      id: 'hydration',
+      label: '수분',
+      value: 70,
+      barColor: '#3b82f6',
+      status: 'normal' as const,
+      description: '수분 상태',
+    },
+    {
+      id: 'scalp',
+      label: '두피 건강',
+      value: 80,
+      barColor: '#10b981',
+      status: 'good' as const,
+      description: '두피 건강 상태',
+    },
+    {
+      id: 'damage',
+      label: '손상도',
+      value: 20,
+      barColor: '#f59e0b',
+      status: 'good' as const,
+      description: '손상도 상태',
+    },
+    {
+      id: 'density',
+      label: '밀도',
+      value: 75,
+      barColor: '#8b5cf6',
+      status: 'normal' as const,
+      description: '밀도 상태',
+    },
+    {
+      id: 'elasticity',
+      label: '탄력',
+      value: 70,
+      barColor: '#ec4899',
+      status: 'normal' as const,
+      description: '탄력 상태',
+    },
+    {
+      id: 'shine',
+      label: '윤기',
+      value: 65,
+      barColor: '#f97316',
+      status: 'normal' as const,
+      description: '윤기 상태',
+    },
   ],
-  concerns: ['dryness', 'frizz'] as const,
+  concerns: ['dry-scalp', 'frizz'] as const,
   insight:
     '전반적으로 건강한 모발 상태입니다. 약간의 건조함과 부스스함이 관찰되어 보습 케어가 필요합니다.',
   recommendedIngredients: ['히알루론산', '세라마이드', '아르간오일'],
@@ -113,15 +155,15 @@ const mockHairAnalysisResult = {
 
 // Mock Gemini 응답
 const mockGeminiResponse = {
-  hairType: 'normal',
-  hairTypeLabel: '정상 모발',
+  hairType: 'straight',
+  hairTypeLabel: '직모',
   hairThickness: 'medium',
   hairThicknessLabel: '보통 모발',
   scalpType: 'normal',
   scalpTypeLabel: '정상 두피',
   overallScore: 75,
   metrics: mockHairAnalysisResult.metrics,
-  concerns: ['dryness', 'frizz'],
+  concerns: ['dry-scalp', 'frizz'],
   insight:
     '전반적으로 건강한 모발 상태입니다. 약간의 건조함과 부스스함이 관찰되어 보습 케어가 필요합니다.',
   recommendedIngredients: ['히알루론산', '세라마이드', '아르간오일'],
@@ -174,34 +216,35 @@ describe('POST /api/analyze/hair', () => {
     vi.mocked(createServiceRoleClient).mockReturnValue(
       mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
     );
-    vi.mocked(applyRateLimit).mockReturnValue({ success: true, response: null });
-    vi.mocked(generateMockHairAnalysisResult).mockReturnValue(mockHairAnalysisResult);
-    vi.mocked(analyzeHair).mockResolvedValue(mockGeminiResponse);
-    vi.mocked(addXp).mockResolvedValue(undefined);
+    vi.mocked(applyRateLimit).mockReturnValue({ success: true, headers: {} });
+    vi.mocked(generateMockHairAnalysisResult).mockReturnValue(
+      mockHairAnalysisResult as unknown as ReturnType<typeof generateMockHairAnalysisResult>
+    );
+    vi.mocked(analyzeHair).mockResolvedValue(
+      mockGeminiResponse as unknown as Awaited<ReturnType<typeof analyzeHair>>
+    );
+    vi.mocked(addXp).mockResolvedValue(null);
     vi.mocked(createScalpHealthNutritionAlert).mockReturnValue({
       type: 'scalp_health_nutrition',
       priority: 'high',
       title: '두피 건강 알림',
       message: '두피 건강 개선을 위한 영양소를 추천합니다.',
-      data: {},
       targetModules: ['nutrition'],
-    });
+    } as unknown as ReturnType<typeof createScalpHealthNutritionAlert>);
     vi.mocked(createHairLossPreventionAlert).mockReturnValue({
       type: 'hair_loss_prevention',
       priority: 'medium',
       title: '탈모 예방 알림',
       message: '탈모 예방을 위한 권장사항입니다.',
-      data: {},
       targetModules: ['nutrition'],
-    });
+    } as unknown as ReturnType<typeof createHairLossPreventionAlert>);
     vi.mocked(createHairShineBoostAlert).mockReturnValue({
       type: 'hair_shine_boost',
       priority: 'medium',
       title: '모발 윤기 알림',
       message: '모발 윤기 개선을 위한 권장사항입니다.',
-      data: {},
       targetModules: ['nutrition'],
-    });
+    } as unknown as ReturnType<typeof createHairShineBoostAlert>);
 
     // Default supabase mock
     mockSupabase.from = vi.fn().mockImplementation((table: string) => {
@@ -287,7 +330,7 @@ describe('POST /api/analyze/hair', () => {
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(false);
       expect(analyzeHair).toHaveBeenCalledWith('data:image/jpeg;base64,/9j/test');
-      expect(json.result.hairType).toBe('normal');
+      expect(json.result.hairType).toBe('straight');
     });
 
     it('Gemini 분석 실패 시 Mock으로 폴백한다', async () => {
@@ -407,7 +450,9 @@ describe('POST /api/analyze/hair', () => {
           m.id === 'scalp' ? { ...m, value: 65 } : m
         ),
       };
-      vi.mocked(generateMockHairAnalysisResult).mockReturnValue(customResult);
+      vi.mocked(generateMockHairAnalysisResult).mockReturnValue(
+        customResult as unknown as ReturnType<typeof generateMockHairAnalysisResult>
+      );
 
       const response = await POST(
         createMockPostRequest({
@@ -435,7 +480,9 @@ describe('POST /api/analyze/hair', () => {
           m.id === 'density' ? { ...m, value: 50 } : m
         ),
       };
-      vi.mocked(generateMockHairAnalysisResult).mockReturnValue(customResult);
+      vi.mocked(generateMockHairAnalysisResult).mockReturnValue(
+        customResult as unknown as ReturnType<typeof generateMockHairAnalysisResult>
+      );
 
       const response = await POST(
         createMockPostRequest({
@@ -458,7 +505,9 @@ describe('POST /api/analyze/hair', () => {
           m.id === 'damage' ? { ...m, value: 50 } : m
         ),
       };
-      vi.mocked(generateMockHairAnalysisResult).mockReturnValue(customResult);
+      vi.mocked(generateMockHairAnalysisResult).mockReturnValue(
+        customResult as unknown as ReturnType<typeof generateMockHairAnalysisResult>
+      );
 
       const response = await POST(
         createMockPostRequest({

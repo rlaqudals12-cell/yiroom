@@ -13,15 +13,15 @@ let kakaoLoadPromise: Promise<boolean> | null = null;
  * 초기 페이지 로드에서 제외하여 LCP 개선 (약 +2-3점)
  */
 export async function loadKakaoSDK(): Promise<boolean> {
-  // 이미 로드 중이면 기존 Promise 반환
-  if (kakaoLoadPromise) {
-    return kakaoLoadPromise;
-  }
-
-  // 이미 로드되어 있으면 즉시 반환
+  // 이미 로드되어 있으면 즉시 반환 (캐시보다 우선 — 외부에서 SDK가 추가된 경우)
   const existingKakao = (window as unknown as { Kakao?: KakaoSDK }).Kakao;
   if (existingKakao) {
     return true;
+  }
+
+  // 이미 로드 중이면 기존 Promise 반환
+  if (kakaoLoadPromise) {
+    return kakaoLoadPromise;
   }
 
   kakaoLoadPromise = new Promise((resolve) => {
@@ -46,6 +46,11 @@ export async function loadKakaoSDK(): Promise<boolean> {
   });
 
   return kakaoLoadPromise;
+}
+
+/** @internal 테스트 전용: 모듈 상태 리셋 */
+export function _resetKakaoLoadPromise(): void {
+  kakaoLoadPromise = null;
 }
 
 export interface ShareContent {

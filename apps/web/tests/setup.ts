@@ -520,6 +520,44 @@ class MockCanvasRenderingContext2D {
   stroke(): void {
     // No-op in mock
   }
+
+  fill(): void {
+    // No-op in mock
+  }
+
+  arc(
+    _x: number,
+    _y: number,
+    _radius: number,
+    _startAngle: number,
+    _endAngle: number,
+    _counterclockwise?: boolean
+  ): void {
+    // No-op in mock
+  }
+
+  quadraticCurveTo(_cpx: number, _cpy: number, _x: number, _y: number): void {
+    // No-op in mock
+  }
+
+  setLineDash(_segments: number[]): void {
+    // No-op in mock
+  }
+
+  fillText(_text: string, _x: number, _y: number, _maxWidth?: number): void {
+    // No-op in mock
+  }
+
+  font: string = '10px sans-serif';
+
+  measureText(_text: string): TextMetrics {
+    return { width: 0 } as TextMetrics;
+  }
+
+  globalAlpha: number = 1;
+  globalCompositeOperation: string = 'source-over';
+  textAlign: string = 'start';
+  textBaseline: string = 'alphabetic';
 }
 
 // HTMLCanvasElement의 getContext 모킹
