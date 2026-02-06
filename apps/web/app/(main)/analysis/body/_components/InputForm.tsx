@@ -108,7 +108,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
   const canProceed = selectedGender !== null && height && weight;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="body-input-form">
       <div className="text-center">
         <p className="text-muted-foreground">
           정확한 체형 분석을 위해
@@ -272,7 +272,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
       <p className="text-center text-xs text-muted-foreground">
         입력하신 정보는 체형 분석에만 사용되며
         <br />
-        다른 용도로 활용되지 않습니다
+        다른 용도로 활용되지 않아요
       </p>
     </div>
   );

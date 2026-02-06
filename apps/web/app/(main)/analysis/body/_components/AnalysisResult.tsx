@@ -21,7 +21,6 @@ import { Button } from '@/components/ui/button';
 import {
   type BodyAnalysisResult,
   type BodyType3,
-
   BODY_TYPES_3,
   getBodyTypeColor,
   getBodyTypeBgColor,
@@ -102,7 +101,13 @@ export default function AnalysisResult({
   const outfitExamples = getOutfitExamples(type3, personalColorSeason || null);
 
   return (
-    <div ref={shareRef} className="space-y-6" role="region" aria-label="체형 분석 결과">
+    <div
+      ref={shareRef}
+      className="space-y-6"
+      role="region"
+      aria-label="체형 분석 결과"
+      data-testid="body-analysis-result"
+    >
       {/* 기본 정보 (사용자 입력) */}
       {userInput && (
         <FadeInUp>

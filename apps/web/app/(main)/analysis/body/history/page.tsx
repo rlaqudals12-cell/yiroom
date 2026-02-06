@@ -8,7 +8,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { BottomNav } from '@/components/BottomNav';
-import type { BodyAnalysisHistoryItem, PeriodFilter, AnalysisHistoryResponse } from '@/types/analysis-history';
+import type {
+  BodyAnalysisHistoryItem,
+  PeriodFilter,
+  AnalysisHistoryResponse,
+} from '@/types/analysis-history';
 import { PERIOD_LABELS } from '@/types/analysis-history';
 
 export default function BodyHistoryPage() {
@@ -66,9 +70,16 @@ export default function BodyHistoryPage() {
     });
   };
 
-  const TrendIcon = trend === 'improving' ? TrendingUp : trend === 'declining' ? TrendingDown : Minus;
-  const trendColor = trend === 'improving' ? 'text-green-600' : trend === 'declining' ? 'text-red-600' : 'text-muted-foreground';
-  const trendLabel = trend === 'improving' ? '개선 중' : trend === 'declining' ? '주의 필요' : '유지 중';
+  const TrendIcon =
+    trend === 'improving' ? TrendingUp : trend === 'declining' ? TrendingDown : Minus;
+  const trendColor =
+    trend === 'improving'
+      ? 'text-green-600'
+      : trend === 'declining'
+        ? 'text-red-600'
+        : 'text-muted-foreground';
+  const trendLabel =
+    trend === 'improving' ? '개선 중' : trend === 'declining' ? '주의 필요' : '유지 중';
 
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="body-history-page">
@@ -93,7 +104,7 @@ export default function BodyHistoryPage() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* 기간 필터 */}
         <Tabs value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
           <TabsList className="w-full grid grid-cols-4">
@@ -129,7 +140,10 @@ export default function BodyHistoryPage() {
         ) : analyses.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
-              <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" aria-hidden="true" />
+              <Calendar
+                className="h-12 w-12 mx-auto text-muted-foreground mb-4"
+                aria-hidden="true"
+              />
               <p className="text-muted-foreground">아직 체형 분석 기록이 없어요</p>
               <Button
                 variant="outline"
@@ -184,10 +198,14 @@ export default function BodyHistoryPage() {
                                   scoreChange > 0 ? 'text-green-600' : 'text-red-600'
                                 )}
                               >
-                                {scoreChange > 0 ? '+' : ''}{scoreChange}점
+                                {scoreChange > 0 ? '+' : ''}
+                                {scoreChange}점
                               </span>
                             )}
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                            <ChevronRight
+                              className="h-4 w-4 text-muted-foreground"
+                              aria-hidden="true"
+                            />
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground">
@@ -219,7 +237,7 @@ export default function BodyHistoryPage() {
             두 개의 기록을 선택하면 비교할 수 있어요
           </p>
         )}
-      </main>
+      </div>
 
       <BottomNav />
     </div>

@@ -42,18 +42,44 @@ const BODY_SHAPE_COLORS: Record<BodyShapeType, { bg: string; text: string }> = {
 // MediaPipe Pose 랜드마크 연결 (뼈대)
 const POSE_CONNECTIONS: [number, number][] = [
   // 얼굴
-  [0, 1], [1, 2], [2, 3], [3, 7],
-  [0, 4], [4, 5], [5, 6], [6, 8],
+  [0, 1],
+  [1, 2],
+  [2, 3],
+  [3, 7],
+  [0, 4],
+  [4, 5],
+  [5, 6],
+  [6, 8],
   [9, 10],
   // 상체
-  [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
-  [11, 23], [12, 24], [23, 24],
+  [11, 12],
+  [11, 13],
+  [13, 15],
+  [12, 14],
+  [14, 16],
+  [11, 23],
+  [12, 24],
+  [23, 24],
   // 손
-  [15, 17], [15, 19], [15, 21], [17, 19],
-  [16, 18], [16, 20], [16, 22], [18, 20],
+  [15, 17],
+  [15, 19],
+  [15, 21],
+  [17, 19],
+  [16, 18],
+  [16, 20],
+  [16, 22],
+  [18, 20],
   // 하체
-  [23, 25], [25, 27], [27, 29], [27, 31], [29, 31],
-  [24, 26], [26, 28], [28, 30], [28, 32], [30, 32],
+  [23, 25],
+  [25, 27],
+  [27, 29],
+  [27, 31],
+  [29, 31],
+  [24, 26],
+  [26, 28],
+  [28, 30],
+  [28, 32],
+  [30, 32],
 ];
 
 // 주요 랜드마크 라벨
@@ -109,13 +135,7 @@ export function BodyVisualization({
     landmarks.forEach((landmark: Landmark33, idx: number) => {
       const isKey = KEY_LANDMARKS[idx];
       ctx.beginPath();
-      ctx.arc(
-        landmark.x * scale,
-        landmark.y * scale,
-        isKey ? 6 : 4,
-        0,
-        2 * Math.PI
-      );
+      ctx.arc(landmark.x * scale, landmark.y * scale, isKey ? 6 : 4, 0, 2 * Math.PI);
       ctx.fillStyle = isKey ? '#ef4444' : '#3b82f6';
       ctx.fill();
 
@@ -171,9 +191,7 @@ export function BodyVisualization({
               <Badge variant="secondary" className={confidenceGrade.color}>
                 신뢰도 {result.measurementConfidence.toFixed(0)}%
               </Badge>
-              <p className="text-xs text-muted-foreground mt-1">
-                {confidenceGrade.label}
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{confidenceGrade.label}</p>
             </div>
           </div>
         </CardHeader>
@@ -190,11 +208,7 @@ export function BodyVisualization({
             <CardContent>
               <div className="relative bg-muted rounded-lg overflow-hidden">
                 {imageUrl && (
-                  <img
-                    src={imageUrl}
-                    alt="Body analysis"
-                    className="w-full h-auto opacity-50"
-                  />
+                  <img src={imageUrl} alt="Body analysis" className="w-full h-auto opacity-50" />
                 )}
                 <canvas
                   ref={canvasRef}
@@ -243,9 +257,7 @@ export function BodyVisualization({
               {/* 수치 표시 */}
               <div className="grid grid-cols-2 gap-2 pt-2 border-t">
                 <div className="text-center">
-                  <p className="text-2xl font-bold">
-                    {shoulderToHipRatio.toFixed(2)}
-                  </p>
+                  <p className="text-2xl font-bold">{shoulderToHipRatio.toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground">어깨/힙</p>
                 </div>
                 <div className="text-center">
@@ -266,7 +278,9 @@ export function BodyVisualization({
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">자세 분석</CardTitle>
-              <Badge variant={result.postureAnalysis.spineAlignment >= 70 ? 'default' : 'secondary'}>
+              <Badge
+                variant={result.postureAnalysis.spineAlignment >= 70 ? 'default' : 'secondary'}
+              >
                 척추 정렬 {result.postureAnalysis.spineAlignment}점
               </Badge>
             </div>
@@ -285,8 +299,13 @@ export function BodyVisualization({
               />
               <PostureItem
                 label="머리 위치"
-                value={result.postureAnalysis.headPosition === 'neutral' ? '정상' :
-                       result.postureAnalysis.headPosition === 'forward' ? '전방' : '후방'}
+                value={
+                  result.postureAnalysis.headPosition === 'neutral'
+                    ? '정상'
+                    : result.postureAnalysis.headPosition === 'forward'
+                      ? '전방'
+                      : '후방'
+                }
                 isNormal={result.postureAnalysis.headPosition === 'neutral'}
               />
               {result.postureAnalysis.issues.length > 0 && (
@@ -319,10 +338,7 @@ export function BodyVisualization({
             <TabsContent value="recommend" className="mt-4">
               <div className="space-y-2">
                 {stylingRecommendationsList.map((rec, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-2 p-2 rounded-lg bg-emerald-50"
-                  >
+                  <div key={idx} className="flex items-start gap-2 p-2 rounded-lg bg-emerald-50">
                     <span className="text-emerald-600">✓</span>
                     <span className="text-sm">{rec}</span>
                   </div>
@@ -333,10 +349,7 @@ export function BodyVisualization({
             <TabsContent value="avoid" className="mt-4">
               <div className="space-y-2">
                 {result.stylingRecommendations?.avoid?.map((style: string, idx: number) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-2 p-2 rounded-lg bg-red-50"
-                  >
+                  <div key={idx} className="flex items-start gap-2 p-2 rounded-lg bg-red-50">
                     <span className="text-red-600">✗</span>
                     <span className="text-sm">{style}</span>
                   </div>
@@ -351,8 +364,7 @@ export function BodyVisualization({
       {result.usedFallback && (
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
           <p className="text-sm text-amber-800">
-            AI 분석이 지연되어 예측 결과를 표시하고 있습니다.
-            정확한 분석을 위해 재분석을 권장합니다.
+            AI 분석이 지연되어 예측 결과를 표시하고 있어요. 정확한 분석을 위해 재분석을 권장해요.
           </p>
         </div>
       )}

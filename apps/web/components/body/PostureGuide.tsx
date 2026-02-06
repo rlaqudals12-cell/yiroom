@@ -42,7 +42,6 @@ import {
   getPostureCorrectionGuide,
   getPostureIssueDetail,
   filterExercisesByDifficulty,
-  POSTURE_ISSUES,
 } from '@/lib/body';
 
 interface PostureGuideProps {
@@ -109,12 +108,8 @@ export function PostureGuide({
     [guide.exercises, selectedDifficulty]
   );
 
-  // 진행률 계산 (예시: 완료된 운동 수 / 전체 운동 수)
-  const progressPercentage = useMemo(() => {
-    if (guide.exercises.length === 0) return 0;
-    // 실제로는 완료 상태를 추적해야 함 - 여기서는 예시
-    return 0;
-  }, [guide.exercises.length]);
+  // 진행률: 추후 완료 상태 추적 시 구현
+  const progressPercentage = 0;
 
   return (
     <div className={cn('space-y-4', className)} data-testid="posture-guide">
@@ -128,9 +123,7 @@ export function PostureGuide({
               </div>
               <div>
                 <CardTitle className="text-lg">자세 교정 가이드</CardTitle>
-                <CardDescription>
-                  {BODY_TYPE_NAMES[bodyType]} 체형을 위한 맞춤 운동
-                </CardDescription>
+                <CardDescription>{BODY_TYPE_NAMES[bodyType]} 체형을 위한 맞춤 운동</CardDescription>
               </div>
             </div>
             <Badge variant="outline" className="text-sm">
@@ -221,22 +214,12 @@ export function PostureGuide({
           <div className="space-y-3">
             {filteredExercises.length > 0 ? (
               filteredExercises.map((exercise) => (
-                <ExerciseCard
-                  key={exercise.id}
-                  exercise={exercise}
-                  onSelect={onExerciseSelect}
-                />
+                <ExerciseCard key={exercise.id} exercise={exercise} onSelect={onExerciseSelect} />
               ))
             ) : (
               <Card className="p-6 text-center">
-                <p className="text-muted-foreground">
-                  선택한 난이도에 해당하는 운동이 없습니다.
-                </p>
-                <Button
-                  variant="link"
-                  onClick={() => setSelectedDifficulty(3)}
-                  className="mt-2"
-                >
+                <p className="text-muted-foreground">선택한 난이도에 해당하는 운동이 없어요.</p>
+                <Button variant="link" onClick={() => setSelectedDifficulty(3)} className="mt-2">
                   모든 난이도 보기
                 </Button>
               </Card>
@@ -351,9 +334,7 @@ function ExerciseCard({
                 {difficultyStyle.label}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {exercise.description}
-            </p>
+            <p className="text-sm text-muted-foreground line-clamp-2">{exercise.description}</p>
           </div>
           <ChevronRight
             className={cn(

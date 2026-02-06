@@ -25,13 +25,15 @@ const BODY_TIPS = [
 
 export default function PhotoUpload({ onPhotoSelect }: PhotoUploadProps) {
   return (
-    <PhotoUploadBase
-      onPhotoSelect={onPhotoSelect}
-      guideElement={<BodyGuideOverlay />}
-      tips={BODY_TIPS}
-      captureMode="environment"
-      guideText="전신이 가이드 안에 오도록"
-      guideSubText="맞춰주세요"
-    />
+    <div data-testid="body-photo-upload">
+      <PhotoUploadBase
+        onPhotoSelect={onPhotoSelect}
+        guideElement={<BodyGuideOverlay />}
+        tips={BODY_TIPS}
+        captureMode="environment"
+        guideText="전신이 가이드 안에 오도록"
+        guideSubText="맞춰주세요"
+      />
+    </div>
   );
 }

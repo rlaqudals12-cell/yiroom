@@ -11,10 +11,10 @@ import { BottomNav } from '@/components/BottomNav';
 import type { AnalysisCompareResponse, BodyAnalysisHistoryItem } from '@/types/analysis-history';
 
 // BeforeAfterViewer 동적 import
-const BeforeAfterViewer = dynamic(
-  () => import('@/components/common/BeforeAfterViewer'),
-  { ssr: false, loading: () => <div className="h-72 bg-muted animate-pulse rounded-xl" /> }
-);
+const BeforeAfterViewer = dynamic(() => import('@/components/common/BeforeAfterViewer'), {
+  ssr: false,
+  loading: () => <div className="h-72 bg-muted animate-pulse rounded-xl" />,
+});
 
 // 변화 아이템 컴포넌트
 function ChangeItem({
@@ -39,7 +39,9 @@ function ChangeItem({
     <div className="flex items-center justify-between py-2 border-b last:border-0">
       <span className="text-sm text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2">
-        <span className="text-sm">{before} → {after}</span>
+        <span className="text-sm">
+          {before} → {after}
+        </span>
         <span
           className={cn(
             'flex items-center gap-1 text-sm font-medium',
@@ -47,7 +49,9 @@ function ChangeItem({
           )}
         >
           <Icon className="h-3 w-3" aria-hidden="true" />
-          {change > 0 ? '+' : ''}{change}{unit}
+          {change > 0 ? '+' : ''}
+          {change}
+          {unit}
         </span>
       </div>
     </div>
@@ -66,7 +70,7 @@ function BodyCompareContent() {
 
   useEffect(() => {
     if (!fromId || !toId) {
-      setError('비교할 분석 정보가 없습니다.');
+      setError('비교할 분석 정보가 없어요.');
       setLoading(false);
       return;
     }
@@ -75,13 +79,13 @@ function BodyCompareContent() {
       try {
         const res = await fetch(`/api/analysis/compare?type=body&from=${fromId}&to=${toId}`);
         if (!res.ok) {
-          throw new Error('비교 데이터를 불러오지 못했습니다.');
+          throw new Error('비교 데이터를 불러오지 못했어요.');
         }
         const result: AnalysisCompareResponse = await res.json();
         setData(result);
       } catch (err) {
         console.error('[Body Compare] Error:', err);
-        setError('비교 데이터를 불러오지 못했습니다.');
+        setError('비교 데이터를 불러오지 못했어요.');
       } finally {
         setLoading(false);
       }
@@ -157,15 +161,13 @@ function BodyCompareContent() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* 기간 요약 */}
         <div className="text-center py-2">
           <p className="text-sm text-muted-foreground">
             {formatDate(before.date)} → {formatDate(after.date)}
           </p>
-          <p className="text-lg font-semibold">
-            {data.changes.period} 간의 변화
-          </p>
+          <p className="text-lg font-semibold">{data.changes.period} 간의 변화</p>
         </div>
 
         {/* Before/After 이미지 비교 */}
@@ -196,10 +198,15 @@ function BodyCompareContent() {
                 <p
                   className={cn(
                     'text-2xl font-bold',
-                    overallChange > 0 ? 'text-green-600' : overallChange < 0 ? 'text-red-600' : 'text-muted-foreground'
+                    overallChange > 0
+                      ? 'text-green-600'
+                      : overallChange < 0
+                        ? 'text-red-600'
+                        : 'text-muted-foreground'
                   )}
                 >
-                  {overallChange > 0 ? '+' : ''}{overallChange}
+                  {overallChange > 0 ? '+' : ''}
+                  {overallChange}
                 </p>
                 <p className="text-xs text-muted-foreground">변화</p>
               </div>
@@ -222,16 +229,8 @@ function BodyCompareContent() {
               before={before.details.shoulder}
               after={after.details.shoulder}
             />
-            <ChangeItem
-              label="허리"
-              before={before.details.waist}
-              after={after.details.waist}
-            />
-            <ChangeItem
-              label="힙"
-              before={before.details.hip}
-              after={after.details.hip}
-            />
+            <ChangeItem label="허리" before={before.details.waist} after={after.details.waist} />
+            <ChangeItem label="힙" before={before.details.hip} after={after.details.hip} />
             {before.details.weight && after.details.weight && (
               <ChangeItem
                 label="체중"
@@ -263,13 +262,10 @@ function BodyCompareContent() {
         )}
 
         {/* 새 분석 버튼 */}
-        <Button
-          className="w-full"
-          onClick={() => router.push('/analysis/body')}
-        >
+        <Button className="w-full" onClick={() => router.push('/analysis/body')}>
           새로운 체형 분석하기
         </Button>
-      </main>
+      </div>
 
       <BottomNav />
     </div>
@@ -278,11 +274,13 @@ function BodyCompareContent() {
 
 export default function BodyComparePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
       <BodyCompareContent />
     </Suspense>
   );

@@ -242,7 +242,7 @@ export default function BodyAnalysisResultPage() {
       }
 
       if (!data) {
-        throw new Error('분석 결과를 찾을 수 없습니다');
+        throw new Error('분석 결과를 찾을 수 없어요');
       }
 
       const dbData = data as DbBodyAnalysis;
@@ -290,7 +290,7 @@ export default function BodyAnalysisResultPage() {
       }
     } catch (err) {
       console.error('[C-1] Fetch error:', err);
-      setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
+      setError('결과를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -310,31 +310,31 @@ export default function BodyAnalysisResultPage() {
   // 로딩 상태
   if (!isLoaded || isLoading) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">결과를 불러오는 중...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 비로그인 상태
   if (!isSignedIn) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
           <p className="text-muted-foreground">분석 결과를 확인하려면 먼저 로그인해주세요</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 에러 상태
   if (error) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error}</p>
@@ -352,7 +352,7 @@ export default function BodyAnalysisResultPage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -366,7 +366,7 @@ export default function BodyAnalysisResultPage() {
         onComplete={() => setShowCelebration(false)}
       />
 
-      <main className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="body-result-page">
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
           <header className="flex items-center justify-between mb-6">
@@ -526,7 +526,7 @@ export default function BodyAnalysisResultPage() {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>분석 근거 데이터가 없습니다</p>
+                    <p>분석 근거 데이터가 없어요</p>
                     <p className="text-sm mt-1">새로 분석하면 상세 근거가 제공됩니다</p>
                   </div>
                 )}
@@ -566,7 +566,7 @@ export default function BodyAnalysisResultPage() {
             </Tabs>
           )}
         </div>
-      </main>
+      </div>
 
       {/* 하단 고정 버튼 */}
       {result && (

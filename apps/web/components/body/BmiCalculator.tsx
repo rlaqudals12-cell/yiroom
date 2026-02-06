@@ -13,12 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { calculateBMI, type BMIResult, type BMICategory } from '@/lib/body/bmi-calculator';
 
@@ -99,9 +94,7 @@ export function BmiCalculator({
           <Scale className="h-5 w-5" />
           BMI 계산기
         </CardTitle>
-        <CardDescription>
-          아시아 기준 (대한비만학회, KSSO)으로 BMI를 계산합니다
-        </CardDescription>
+        <CardDescription>아시아 기준 (대한비만학회, KSSO)으로 BMI를 계산해요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* 입력 폼 */}

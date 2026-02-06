@@ -23,11 +23,13 @@ function BodyAnalysisItems() {
 
 export default function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
   return (
-    <AnalysisLoadingBase
-      onComplete={onComplete}
-      tips={LOADING_TIPS}
-      analysisItems={<BodyAnalysisItems />}
-      accentColor="purple"
-    />
+    <div data-testid="body-analysis-loading">
+      <AnalysisLoadingBase
+        onComplete={onComplete}
+        tips={LOADING_TIPS}
+        analysisItems={<BodyAnalysisItems />}
+        accentColor="purple"
+      />
+    </div>
   );
 }
