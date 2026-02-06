@@ -10,12 +10,9 @@
  * @see https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum
  */
 
-// RGB 색상 타입
-export interface RGBColor {
-  r: number;
-  g: number;
-  b: number;
-}
+// SSOT: RGB 색상 타입은 @/lib/color에서 가져와 re-export
+import type { RGBColor as _RGBColor } from '@/lib/color';
+export type RGBColor = _RGBColor;
 
 // 대비율 검증 결과
 export interface ContrastResult {
@@ -102,9 +99,7 @@ export function getRelativeLuminance(rgb: RGBColor): number {
   const srgb = [rgb.r, rgb.g, rgb.b].map((c) => {
     const normalized = c / 255;
     // sRGB 감마 보정
-    return normalized <= 0.03928
-      ? normalized / 12.92
-      : Math.pow((normalized + 0.055) / 1.055, 2.4);
+    return normalized <= 0.03928 ? normalized / 12.92 : Math.pow((normalized + 0.055) / 1.055, 2.4);
   });
 
   // WCAG 휘도 공식
@@ -129,10 +124,8 @@ export function getContrastRatio(
   foreground: string | RGBColor,
   background: string | RGBColor
 ): number {
-  const fgRgb =
-    typeof foreground === 'string' ? hexToRgb(foreground) : foreground;
-  const bgRgb =
-    typeof background === 'string' ? hexToRgb(background) : background;
+  const fgRgb = typeof foreground === 'string' ? hexToRgb(foreground) : foreground;
+  const bgRgb = typeof background === 'string' ? hexToRgb(background) : background;
 
   const fgLuminance = getRelativeLuminance(fgRgb);
   const bgLuminance = getRelativeLuminance(bgRgb);
@@ -229,10 +222,7 @@ export function getReadableTextColor(background: string | RGBColor): string {
  * adjustBrightness('#4F46E5', 20) // 밝게
  * adjustBrightness('#4F46E5', -20) // 어둡게
  */
-export function adjustBrightness(
-  color: string | RGBColor,
-  amount: number
-): string {
+export function adjustBrightness(color: string | RGBColor, amount: number): string {
   const rgb = typeof color === 'string' ? hexToRgb(color) : color;
 
   const adjusted: RGBColor = {
@@ -259,14 +249,12 @@ export function adjustForContrast(
   background: string | RGBColor,
   targetRatio: number = CONTRAST_THRESHOLDS.AA
 ): string | null {
-  const bgRgb =
-    typeof background === 'string' ? hexToRgb(background) : background;
+  const bgRgb = typeof background === 'string' ? hexToRgb(background) : background;
   const bgLuminance = getRelativeLuminance(bgRgb);
 
   // 배경이 밝으면 전경을 어둡게, 어두우면 밝게
   const shouldDarken = bgLuminance > 0.5;
-  let currentColor =
-    typeof foreground === 'string' ? hexToRgb(foreground) : { ...foreground };
+  let currentColor = typeof foreground === 'string' ? hexToRgb(foreground) : { ...foreground };
 
   for (let i = 0; i < 100; i++) {
     const currentRatio = getContrastRatio(currentColor, bgRgb);
@@ -285,7 +273,12 @@ export function adjustForContrast(
     if (shouldDarken && currentColor.r === 0 && currentColor.g === 0 && currentColor.b === 0) {
       break;
     }
-    if (!shouldDarken && currentColor.r === 255 && currentColor.g === 255 && currentColor.b === 255) {
+    if (
+      !shouldDarken &&
+      currentColor.r === 255 &&
+      currentColor.g === 255 &&
+      currentColor.b === 255
+    ) {
       break;
     }
   }

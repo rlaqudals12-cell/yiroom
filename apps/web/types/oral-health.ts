@@ -7,8 +7,10 @@
  */
 
 // =============================================================================
-// 색공간 타입
+// 색공간 타입 (SSOT: @/lib/color에서 import + re-export)
 // =============================================================================
+
+import type { LabColor as _LabColor, RGBColor as _RGBColor } from '@/lib/color';
 
 /**
  * CIE Lab 색공간 좌표
@@ -16,20 +18,12 @@
  * - a*: 녹색(-) ~ 빨간색(+)
  * - b*: 파란색(-) ~ 노란색(+)
  */
-export interface LabColor {
-  L: number;
-  a: number;
-  b: number;
-}
+export type LabColor = _LabColor;
 
 /**
  * RGB 색공간 (0-255)
  */
-export interface RGBColor {
-  r: number;
-  g: number;
-  b: number;
-}
+export type RGBColor = _RGBColor;
 
 // =============================================================================
 // VITA 셰이드 시스템
@@ -44,9 +38,25 @@ export interface RGBColor {
  * - 0M: Bleached (추가 셰이드)
  */
 export type VitaShade =
-  | 'B1' | 'A1' | 'B2' | 'D2' | 'A2' | 'C1' | 'C2' | 'D4'
-  | 'A3' | 'D3' | 'B3' | 'A3.5' | 'B4' | 'C3' | 'A4' | 'C4'
-  | '0M1' | '0M2' | '0M3';
+  | 'B1'
+  | 'A1'
+  | 'B2'
+  | 'D2'
+  | 'A2'
+  | 'C1'
+  | 'C2'
+  | 'D4'
+  | 'A3'
+  | 'D3'
+  | 'B3'
+  | 'A3.5'
+  | 'B4'
+  | 'C3'
+  | 'A4'
+  | 'C4'
+  | '0M1'
+  | '0M2'
+  | '0M3';
 
 /**
  * VITA 시리즈
@@ -60,7 +70,7 @@ export interface VitaShadeReference {
   shade: VitaShade;
   lab: LabColor;
   series: VitaSeries;
-  brightnessRank: number;  // 1 = 가장 밝음, 16 = 가장 어두움, 0 = Bleached
+  brightnessRank: number; // 1 = 가장 밝음, 16 = 가장 어두움, 0 = Bleached
   description?: string;
 }
 
@@ -87,8 +97,8 @@ export interface ToothColorInput {
 export interface ToothColorResult {
   measuredLab: LabColor;
   matchedShade: VitaShade;
-  deltaE: number;  // CIEDE2000 색차
-  confidence: number;  // 0-100
+  deltaE: number; // CIEDE2000 색차
+  confidence: number; // 0-100
   alternativeMatches: Array<{
     shade: VitaShade;
     deltaE: number;
@@ -117,10 +127,10 @@ export type GumHealthStatus =
  * 잇몸 건강 지표
  */
 export interface GumHealthMetrics {
-  aStarMean: number;  // a* 평균값 (붉은기)
-  aStarStd: number;   // a* 표준편차
-  rednessPercentage: number;  // 붉은 영역 비율 (%)
-  swellingIndicator: number;  // 부종 지표
+  aStarMean: number; // a* 평균값 (붉은기)
+  aStarStd: number; // a* 표준편차
+  rednessPercentage: number; // 붉은 영역 비율 (%)
+  swellingIndicator: number; // 부종 지표
 }
 
 /**
@@ -136,7 +146,7 @@ export interface GumHealthInput {
  */
 export interface GumHealthResult {
   healthStatus: GumHealthStatus;
-  inflammationScore: number;  // 0-100
+  inflammationScore: number; // 0-100
   needsDentalVisit: boolean;
   metrics: GumHealthMetrics;
   recommendations: string[];
@@ -215,7 +225,13 @@ export interface ProductPreferences {
  */
 export interface InterdentalRecommendation {
   primary: Array<{
-    type: 'floss_waxed' | 'floss_unwaxed' | 'floss_ptfe' | 'interdental_brush' | 'water_flosser' | 'superfloss';
+    type:
+      | 'floss_waxed'
+      | 'floss_unwaxed'
+      | 'floss_ptfe'
+      | 'interdental_brush'
+      | 'water_flosser'
+      | 'superfloss';
     reason: string;
   }>;
   alternative: Array<{
@@ -283,7 +299,7 @@ export interface OralHealthAssessment {
     harmonySuggestion: string;
   };
 
-  overallScore: number;  // 0-100
+  overallScore: number; // 0-100
   recommendations: string[];
 }
 
