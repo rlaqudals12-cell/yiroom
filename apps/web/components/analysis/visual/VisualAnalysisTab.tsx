@@ -6,7 +6,7 @@ import {
   analyzeDeviceCapability,
   extractFaceLandmarks,
   createFaceMask,
-  analyzeSkingPigments,
+  analyzeSkinPigments,
   preloadFaceMesh,
 } from '@/lib/analysis';
 import LightModeTab, { LightModeLegend } from './LightModeTab';
@@ -97,7 +97,7 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
       setFaceMask(mask);
 
       // 4. 색소 분석
-      const { pigmentMaps: maps, summary } = await analyzeSkingPigments(
+      const { pigmentMaps: maps, summary } = await analyzeSkinPigments(
         loadedImage,
         landmarkResult.landmarks
       );

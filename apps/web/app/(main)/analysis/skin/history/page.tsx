@@ -2,13 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, TrendingUp, TrendingDown, Minus, ChevronRight, Droplet, Sun, Sparkles } from 'lucide-react';
+import {
+  ArrowLeft,
+  Calendar,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  ChevronRight,
+  Droplet,
+  Sun,
+  Sparkles,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { BottomNav } from '@/components/BottomNav';
-import type { SkinAnalysisHistoryItem, PeriodFilter, AnalysisHistoryResponse } from '@/types/analysis-history';
+import type {
+  SkinAnalysisHistoryItem,
+  PeriodFilter,
+  AnalysisHistoryResponse,
+} from '@/types/analysis-history';
 import { PERIOD_LABELS } from '@/types/analysis-history';
 
 // 피부 타입 라벨
@@ -75,9 +89,16 @@ export default function SkinHistoryPage() {
     });
   };
 
-  const TrendIcon = trend === 'improving' ? TrendingUp : trend === 'declining' ? TrendingDown : Minus;
-  const trendColor = trend === 'improving' ? 'text-green-600' : trend === 'declining' ? 'text-red-600' : 'text-muted-foreground';
-  const trendLabel = trend === 'improving' ? '개선 중' : trend === 'declining' ? '주의 필요' : '유지 중';
+  const TrendIcon =
+    trend === 'improving' ? TrendingUp : trend === 'declining' ? TrendingDown : Minus;
+  const trendColor =
+    trend === 'improving'
+      ? 'text-green-600'
+      : trend === 'declining'
+        ? 'text-red-600'
+        : 'text-muted-foreground';
+  const trendLabel =
+    trend === 'improving' ? '개선 중' : trend === 'declining' ? '주의 필요' : '유지 중';
 
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="skin-history-page">
@@ -102,7 +123,7 @@ export default function SkinHistoryPage() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* 기간 필터 */}
         <Tabs value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
           <TabsList className="w-full grid grid-cols-4">
@@ -138,7 +159,10 @@ export default function SkinHistoryPage() {
         ) : analyses.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
-              <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" aria-hidden="true" />
+              <Calendar
+                className="h-12 w-12 mx-auto text-muted-foreground mb-4"
+                aria-hidden="true"
+              />
               <p className="text-muted-foreground">아직 피부 분석 기록이 없어요</p>
               <Button
                 variant="outline"
@@ -155,7 +179,8 @@ export default function SkinHistoryPage() {
               const isSelected = selectedIds.includes(item.id);
               const prevItem = analyses[index + 1];
               const scoreChange = prevItem ? item.overallScore - prevItem.overallScore : 0;
-              const skinTypeLabel = SKIN_TYPE_LABELS[item.details.skinType.toLowerCase()] || item.details.skinType;
+              const skinTypeLabel =
+                SKIN_TYPE_LABELS[item.details.skinType.toLowerCase()] || item.details.skinType;
 
               return (
                 <Card
@@ -194,10 +219,14 @@ export default function SkinHistoryPage() {
                                   scoreChange > 0 ? 'text-green-600' : 'text-red-600'
                                 )}
                               >
-                                {scoreChange > 0 ? '+' : ''}{scoreChange}점
+                                {scoreChange > 0 ? '+' : ''}
+                                {scoreChange}점
                               </span>
                             )}
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                            <ChevronRight
+                              className="h-4 w-4 text-muted-foreground"
+                              aria-hidden="true"
+                            />
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground">
@@ -234,7 +263,7 @@ export default function SkinHistoryPage() {
             두 개의 기록을 선택하면 비교할 수 있어요
           </p>
         )}
-      </main>
+      </div>
 
       <BottomNav />
     </div>

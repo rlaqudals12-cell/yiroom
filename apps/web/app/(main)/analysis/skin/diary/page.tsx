@@ -90,7 +90,7 @@ export default function SkinDiaryPage() {
         setEntries(transformedEntries);
       } catch (err) {
         console.error('[Diary] Load entries error:', err);
-        setError('다이어리를 불러오는데 실패했습니다.');
+        setError('다이어리를 불러오지 못했어요.');
       } finally {
         setLoading(false);
       }
@@ -163,7 +163,7 @@ export default function SkinDiaryPage() {
         setSelectedEntry(undefined);
       } catch (err) {
         console.error('[Diary] Save error:', err);
-        setError('저장에 실패했습니다. 다시 시도해주세요.');
+        setError('저장에 실패했어요. 다시 시도해주세요.');
       } finally {
         setSaving(false);
       }
@@ -243,25 +243,25 @@ export default function SkinDiaryPage() {
   // 로딩/인증 체크
   if (!isLoaded) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-muted-foreground">로딩 중...</div>
-      </main>
+      </div>
     );
   }
 
   if (!isSignedIn) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">로그인이 필요합니다.</p>
+          <p className="text-muted-foreground mb-4">로그인이 필요해요.</p>
           <Button onClick={() => router.push('/sign-in')}>로그인</Button>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-muted" data-testid="skin-diary-page">
+    <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="skin-diary-page">
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* 헤더 */}
         <header className="flex items-center gap-3 mb-6">
@@ -373,6 +373,6 @@ export default function SkinDiaryPage() {
           </Tabs>
         )}
       </div>
-    </main>
+    </div>
   );
 }

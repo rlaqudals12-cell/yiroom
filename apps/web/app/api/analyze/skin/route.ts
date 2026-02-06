@@ -13,6 +13,12 @@ import {
   addXp,
   type BadgeAwardResult,
 } from '@/lib/gamification';
+import {
+  unauthorizedError,
+  validationError,
+  internalError,
+  dbError,
+} from '@/lib/api/error-response';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -46,7 +52,7 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedError();
     }
 
     // Rate Limit 체크
@@ -68,7 +74,7 @@ export async function POST(req: NextRequest) {
     const primaryImage = frontImageBase64 || imageBase64;
 
     if (!primaryImage) {
-      return NextResponse.json({ error: 'Image is required' }, { status: 400 });
+      return validationError('이미지가 필요해요');
     }
 
     // 다각도 이미지 수 계산
@@ -78,8 +84,7 @@ export async function POST(req: NextRequest) {
     );
 
     // 분석 신뢰도 결정
-    const analysisReliability =
-      imagesCount === 3 ? 'high' : imagesCount === 2 ? 'medium' : 'low';
+    const analysisReliability = imagesCount === 3 ? 'high' : imagesCount === 2 ? 'medium' : 'low';
 
     // AI 분석 실행 (Real AI 또는 Mock)
     let result: GeminiSkinAnalysisResult;
@@ -436,11 +441,8 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Database insert error:', error);
-      return NextResponse.json(
-        { error: 'Failed to save analysis', details: error.message },
-        { status: 500 }
-      );
+      console.error('[S-1] Database insert error:', error);
+      return dbError();
     }
 
     // 게이미피케이션 연동
@@ -495,8 +497,8 @@ export async function POST(req: NextRequest) {
       gamification: gamificationResult,
     });
   } catch (error) {
-    console.error('Skin analysis error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[S-1] Skin analysis error:', error);
+    return internalError();
   }
 }
 
@@ -510,7 +512,7 @@ export async function GET() {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedError();
     }
 
     const supabase = createServiceRoleClient();
@@ -523,8 +525,8 @@ export async function GET() {
       .limit(10);
 
     if (error) {
-      console.error('Database query error:', error);
-      return NextResponse.json({ error: 'Failed to fetch analyses' }, { status: 500 });
+      console.error('[S-1] Database query error:', error);
+      return dbError();
     }
 
     return NextResponse.json({
@@ -533,7 +535,7 @@ export async function GET() {
       count: data?.length || 0,
     });
   } catch (error) {
-    console.error('Get skin analyses error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[S-1] Get skin analyses error:', error);
+    return internalError();
   }
 }

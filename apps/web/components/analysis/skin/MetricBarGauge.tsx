@@ -239,7 +239,7 @@ export function MetricBarGaugeList({
                   {overallStats.avgPercentile >= 50
                     ? 100 - overallStats.avgPercentile
                     : overallStats.avgPercentile}
-                  %에 해당합니다.
+                  %에 해당해요.
                 </p>
               </TooltipContent>
             </Tooltip>

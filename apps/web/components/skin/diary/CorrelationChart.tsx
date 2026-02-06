@@ -19,7 +19,7 @@ const CorrelationChart = memo(function CorrelationChart({
     return (
       <Card className={className} data-testid="correlation-chart">
         <CardContent className="py-8 text-center">
-          <p className="text-muted-foreground">상관관계 데이터가 없습니다</p>
+          <p className="text-muted-foreground">상관관계 데이터가 없어요</p>
           <p className="text-sm text-muted-foreground mt-1">
             7일 이상 기록하면 분석 결과를 확인할 수 있어요
           </p>

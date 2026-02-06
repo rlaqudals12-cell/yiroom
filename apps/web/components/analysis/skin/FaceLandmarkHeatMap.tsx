@@ -165,7 +165,7 @@ export function FaceLandmarkHeatMap({
           console.log('[FaceLandmarkHeatMap] Face detected with 68 landmarks');
         } else {
           console.log('[FaceLandmarkHeatMap] No face detected');
-          setError('얼굴을 감지할 수 없습니다');
+          setError('얼굴을 감지할 수 없어요');
         }
       } catch (err) {
         console.error('[FaceLandmarkHeatMap] Detection error:', err);

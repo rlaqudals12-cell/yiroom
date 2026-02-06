@@ -23,15 +23,15 @@ type LightMode = 'normal' | 'uv' | 'polarized';
 const LIGHT_MODE_INFO: Record<LightMode, { label: string; description: string }> = {
   normal: {
     label: '일반',
-    description: '육안으로 관찰되는 피부 상태입니다.',
+    description: '육안으로 관찰되는 피부 상태예요.',
   },
   uv: {
     label: 'UV',
-    description: '자외선 조명 하에서 색소침착과 자외선 손상을 시뮬레이션합니다.',
+    description: '자외선 조명으로 색소침착과 자외선 손상을 시뮬레이션해요.',
   },
   polarized: {
     label: '편광',
-    description: '편광 조명으로 피부결과 모공 상태를 강조합니다.',
+    description: '편광 조명으로 피부결과 모공 상태를 강조해요.',
   },
 };
 
@@ -191,8 +191,8 @@ export function ProfessionalSkinMap({
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
                   <p>
-                    피부과 측정 장비 방식으로 12개 부위를 분석합니다. 각 부위를 클릭하면 상세 정보를
-                    확인할 수 있습니다.
+                    피부과 측정 장비 방식으로 12개 부위를 분석해요. 각 부위를 클릭하면 상세 정보를
+                    확인할 수 있어요.
                   </p>
                 </TooltipContent>
               </Tooltip>

@@ -103,7 +103,7 @@ export function generateInsight(
       .replace('{percent}', String(percent));
   }
 
-  return `${factor.name}과 피부 상태 간에 약한 상관관계가 있습니다`;
+  return `${factor.name}과 피부 상태 간에 약한 상관관계가 있어요`;
 }
 
 /**

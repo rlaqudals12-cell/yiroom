@@ -138,19 +138,19 @@ export default function SkincareRoutinePage() {
   // 로딩 상태
   if (loading || !isLoaded) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">루틴을 준비하고 있어요...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 에러 상태 (분석 결과 없음)
   if (error) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
           <header className="flex items-center gap-4 mb-8">
@@ -172,12 +172,12 @@ export default function SkincareRoutinePage() {
             피부 분석하러 가기
           </Button>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-muted" data-testid="skincare-routine-page">
+    <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="skincare-routine-page">
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="flex items-center gap-4 mb-6">
@@ -241,6 +241,6 @@ export default function SkincareRoutinePage() {
           </p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

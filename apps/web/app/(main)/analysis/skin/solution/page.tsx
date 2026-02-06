@@ -57,17 +57,17 @@ export default function SkinSolutionPage() {
   // 로딩 상태
   if (!isLoaded || isLoading) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">로딩 중...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-muted">
+    <div className="min-h-[calc(100vh-80px)] bg-muted">
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="flex items-center justify-between mb-6">
@@ -94,6 +94,6 @@ export default function SkinSolutionPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

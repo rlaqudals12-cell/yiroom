@@ -88,7 +88,7 @@ export function SolutionTabs({ userSkinType, className }: SolutionTabsProps) {
             <TabsContent value="routine" className="mt-4">
               <ComingSoon
                 title="나만의 루틴 저장"
-                description="내가 사용하는 제품들로 맞춤 루틴을 만들고 관리할 수 있습니다. 제품 사용 순서와 빈도를 기록해보세요."
+                description="내가 사용하는 제품들로 맞춤 루틴을 만들고 관리할 수 있어요. 제품 사용 순서와 빈도를 기록해보세요."
               />
             </TabsContent>
           </Tabs>

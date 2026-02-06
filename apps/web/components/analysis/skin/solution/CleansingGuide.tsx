@@ -99,7 +99,7 @@ export function CleansingGuide({ userSkinType, className }: CleansingGuideProps)
                         ? '민감성'
                         : '중성'}
               </span>
-              <span className="text-muted-foreground ml-2">추천 클렌저가 상단에 표시됩니다</span>
+              <span className="text-muted-foreground ml-2">추천 클렌저가 상단에 표시돼요</span>
             </div>
           )}
 
@@ -117,7 +117,7 @@ export function CleansingGuide({ userSkinType, className }: CleansingGuideProps)
               ))
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                &apos;{searchTerm}&apos;에 해당하는 클렌저가 없습니다
+                &apos;{searchTerm}&apos;에 해당하는 클렌저가 없어요
               </div>
             )}
           </div>
@@ -135,9 +135,9 @@ export function CleansingGuide({ userSkinType, className }: CleansingGuideProps)
           ) : (
             <div className="text-center py-12">
               <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-medium mb-2">피부 타입 분석이 필요합니다</h3>
+              <h3 className="font-medium mb-2">피부 타입 분석이 필요해요</h3>
               <p className="text-sm text-muted-foreground">
-                피부 분석을 완료하면 맞춤 클렌징 루틴을 추천해드립니다
+                피부 분석을 완료하면 맞춤 클렌징 루틴을 추천해드려요
               </p>
             </div>
           )}

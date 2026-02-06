@@ -84,9 +84,9 @@ function getStatus(value: number): 'good' | 'normal' | 'warning' {
 
 // 점수에 따른 설명 생성
 function getDescription(name: string, value: number): string {
-  if (value >= 71) return `${name}(이)가 좋은 상태입니다`;
-  if (value >= 41) return `${name}(이)가 보통 수준입니다`;
-  return `${name} 관리가 필요합니다`;
+  if (value >= 71) return `${name}(이)가 좋은 상태예요`;
+  if (value >= 41) return `${name}(이)가 보통 수준이에요`;
+  return `${name} 관리가 필요해요`;
 }
 
 // DB 데이터 → AnalysisResult props 변환 (Hybrid: DB는 핵심 데이터만, 표시용은 최신 Mock 사용)
@@ -454,7 +454,7 @@ export default function SkinAnalysisResultPage() {
       }
 
       if (!data) {
-        throw new Error('분석 결과를 찾을 수 없습니다');
+        throw new Error('분석 결과를 찾을 수 없어요');
       }
 
       // DB 데이터 → 컴포넌트 props 변환
@@ -581,7 +581,7 @@ export default function SkinAnalysisResultPage() {
       setSynergyInsight(insight);
     } catch (err) {
       console.error('[S-1] Fetch error:', err);
-      setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
+      setError('결과를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -601,31 +601,31 @@ export default function SkinAnalysisResultPage() {
   // 로딩 상태
   if (!isLoaded || isLoading) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">결과를 불러오는 중...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 비로그인 상태
   if (!isSignedIn) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
           <p className="text-muted-foreground">분석 결과를 확인하려면 먼저 로그인해주세요</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 에러 상태
   if (error) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error}</p>
@@ -643,7 +643,7 @@ export default function SkinAnalysisResultPage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -657,7 +657,7 @@ export default function SkinAnalysisResultPage() {
         onComplete={() => setShowCelebration(false)}
       />
 
-      <main className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
           <header className="flex items-center justify-between mb-6">
@@ -943,8 +943,8 @@ export default function SkinAnalysisResultPage() {
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                      <p>분석 근거 데이터가 없습니다</p>
-                      <p className="text-sm mt-1">새로 분석하면 상세 근거가 제공됩니다</p>
+                      <p>분석 근거 데이터가 없어요</p>
+                      <p className="text-sm mt-1">새로 분석하면 상세 근거를 볼 수 있어요</p>
                     </div>
                   )}
                 </TabsContent>
@@ -957,7 +957,7 @@ export default function SkinAnalysisResultPage() {
                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                         <Camera className="w-8 h-8 text-muted-foreground/50" />
                       </div>
-                      <p className="font-medium text-foreground mb-2">얼굴 이미지가 없습니다</p>
+                      <p className="font-medium text-foreground mb-2">얼굴 이미지가 없어요</p>
                       <p className="text-sm text-muted-foreground mb-4">
                         이미지 저장 동의 후 분석하면
                         <br />
@@ -1044,7 +1044,7 @@ export default function SkinAnalysisResultPage() {
                     <VisualAnalysisTab imageUrl={imageUrl} />
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
-                      시각화에 필요한 이미지가 없습니다
+                      시각화에 필요한 이미지가 없어요
                     </div>
                   )}
                 </TabsContent>
@@ -1103,7 +1103,7 @@ export default function SkinAnalysisResultPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
 
       {/* 하단 접이식 FAB 메뉴 - 중앙 배치 (UX 최적화) */}
       {result && (

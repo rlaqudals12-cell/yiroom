@@ -50,7 +50,7 @@ const FactorTrendChart = memo(function FactorTrendChart({
     return (
       <Card className={className} data-testid="factor-trend-chart">
         <CardContent className="py-8 text-center">
-          <p className="text-muted-foreground">{periodLabel} 동안 기록이 없습니다</p>
+          <p className="text-muted-foreground">{periodLabel} 동안 기록이 없어요</p>
         </CardContent>
       </Card>
     );

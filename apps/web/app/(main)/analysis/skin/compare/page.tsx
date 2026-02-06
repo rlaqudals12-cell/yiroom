@@ -3,7 +3,18 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { ArrowLeft, Share2, TrendingUp, TrendingDown, Minus, Loader2, Droplet, Sun, Eye, Sparkles } from 'lucide-react';
+import {
+  ArrowLeft,
+  Share2,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Loader2,
+  Droplet,
+  Sun,
+  Eye,
+  Sparkles,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -11,10 +22,10 @@ import { BottomNav } from '@/components/BottomNav';
 import type { AnalysisCompareResponse, SkinAnalysisHistoryItem } from '@/types/analysis-history';
 
 // BeforeAfterViewer 동적 import
-const BeforeAfterViewer = dynamic(
-  () => import('@/components/common/BeforeAfterViewer'),
-  { ssr: false, loading: () => <div className="h-72 bg-muted animate-pulse rounded-xl" /> }
-);
+const BeforeAfterViewer = dynamic(() => import('@/components/common/BeforeAfterViewer'), {
+  ssr: false,
+  loading: () => <div className="h-72 bg-muted animate-pulse rounded-xl" />,
+});
 
 // 변화 아이템 컴포넌트
 function ChangeItem({
@@ -46,7 +57,9 @@ function ChangeItem({
         <span className="text-sm text-muted-foreground">{label}</span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-sm">{before} → {after}</span>
+        <span className="text-sm">
+          {before} → {after}
+        </span>
         <span
           className={cn(
             'flex items-center gap-1 text-sm font-medium',
@@ -54,7 +67,9 @@ function ChangeItem({
           )}
         >
           <TrendIcon className="h-3 w-3" aria-hidden="true" />
-          {change > 0 ? '+' : ''}{change}{unit}
+          {change > 0 ? '+' : ''}
+          {change}
+          {unit}
         </span>
       </div>
     </div>
@@ -73,7 +88,7 @@ function SkinCompareContent() {
 
   useEffect(() => {
     if (!fromId || !toId) {
-      setError('비교할 분석 정보가 없습니다.');
+      setError('비교할 분석 정보가 없어요.');
       setLoading(false);
       return;
     }
@@ -82,13 +97,13 @@ function SkinCompareContent() {
       try {
         const res = await fetch(`/api/analysis/compare?type=skin&from=${fromId}&to=${toId}`);
         if (!res.ok) {
-          throw new Error('비교 데이터를 불러오지 못했습니다.');
+          throw new Error('비교 데이터를 불러오지 못했어요.');
         }
         const result: AnalysisCompareResponse = await res.json();
         setData(result);
       } catch (err) {
         console.error('[Skin Compare] Error:', err);
-        setError('비교 데이터를 불러오지 못했습니다.');
+        setError('비교 데이터를 불러오지 못했어요.');
       } finally {
         setLoading(false);
       }
@@ -164,15 +179,13 @@ function SkinCompareContent() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* 기간 요약 */}
         <div className="text-center py-2">
           <p className="text-sm text-muted-foreground">
             {formatDate(before.date)} → {formatDate(after.date)}
           </p>
-          <p className="text-lg font-semibold">
-            {data.changes.period} 간의 변화
-          </p>
+          <p className="text-lg font-semibold">{data.changes.period} 간의 변화</p>
         </div>
 
         {/* Before/After 이미지 비교 */}
@@ -206,10 +219,15 @@ function SkinCompareContent() {
                 <p
                   className={cn(
                     'text-2xl font-bold',
-                    overallChange > 0 ? 'text-green-600' : overallChange < 0 ? 'text-red-600' : 'text-muted-foreground'
+                    overallChange > 0
+                      ? 'text-green-600'
+                      : overallChange < 0
+                        ? 'text-red-600'
+                        : 'text-muted-foreground'
                   )}
                 >
-                  {overallChange > 0 ? '+' : ''}{overallChange}
+                  {overallChange > 0 ? '+' : ''}
+                  {overallChange}
                 </p>
                 <p className="text-xs text-muted-foreground">변화</p>
               </div>
@@ -293,7 +311,7 @@ function SkinCompareContent() {
         >
           새로운 피부 분석하기
         </Button>
-      </main>
+      </div>
 
       <BottomNav />
     </div>
@@ -302,11 +320,13 @@ function SkinCompareContent() {
 
 export default function SkinComparePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
       <SkinCompareContent />
     </Suspense>
   );

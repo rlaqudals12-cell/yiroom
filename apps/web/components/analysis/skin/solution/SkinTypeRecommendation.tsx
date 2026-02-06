@@ -111,7 +111,7 @@ export function SkinTypeRecommendation({ skinType, className }: SkinTypeRecommen
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            메이크업이나 선크림을 사용했다면 더블 클렌징을 권장합니다.
+            메이크업이나 선크림을 사용했다면 더블 클렌징을 권장해요.
           </p>
         </div>
 

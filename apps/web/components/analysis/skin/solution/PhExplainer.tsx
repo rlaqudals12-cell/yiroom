@@ -85,8 +85,8 @@ export function PhExplainer({ className }: PhExplainerProps) {
                 건강한 피부 pH: 4.5-5.5
               </h4>
               <p className="text-sm text-muted-foreground mt-1">
-                피부는 약산성 상태에서 가장 건강합니다. 이 pH 범위에서 피부 장벽이 최적의 상태를
-                유지하고, 유해균의 성장을 억제합니다.
+                피부는 약산성 상태에서 가장 건강해요. 이 pH 범위에서 피부 장벽이 최적의 상태를
+                유지하고, 유해균의 성장을 억제해요.
               </p>
             </div>
           </div>

@@ -9,7 +9,12 @@ import type {
   PigmentAnalysisSummary,
   LightMode,
 } from '@/types/visual-analysis';
-import { createOptimizedContext, getHeatmapColor, rgbaToHsl } from './canvas-utils';
+import {
+  createOptimizedContext,
+  getHeatmapColor,
+  rgbaToHsl,
+  getConstrainedCanvasSize,
+} from './canvas-utils';
 import { createFaceMask, FACE_OVAL_INDICES } from './face-landmark';
 import { releaseTypedArray, releaseCanvas } from './memory-manager';
 import { generateMockPigmentAnalysis } from '@/lib/mock/visual-analysis';
@@ -185,12 +190,16 @@ export function renderHeatmapOverlay(
   const ctx = createOptimizedContext(canvas, { willReadFrequently: true });
   if (!ctx) return;
 
-  const { width, height } = originalImage;
+  // 캔버스 크기 제한 (28558px 같은 레이아웃 overflow 방지)
+  const { width, height } = getConstrainedCanvasSize(
+    originalImage.naturalWidth || originalImage.width,
+    originalImage.naturalHeight || originalImage.height
+  );
   canvas.width = width;
   canvas.height = height;
 
-  // 원본 이미지 그리기
-  ctx.drawImage(originalImage, 0, 0);
+  // 원본 이미지 그리기 (스케일 적용)
+  ctx.drawImage(originalImage, 0, 0, width, height);
 
   // normal 모드면 히트맵 없이 원본만
   if (lightMode === 'normal') {
@@ -267,7 +276,7 @@ function combineMapsForSebum(pigmentMaps: PigmentMaps): Float32Array {
  * @param landmarks - 얼굴 랜드마크
  * @returns 색소 맵 및 요약
  */
-export async function analyzeSkingPigments(
+export async function analyzeSkinPigments(
   image: HTMLImageElement,
   landmarks: FaceLandmark[]
 ): Promise<{
@@ -276,18 +285,22 @@ export async function analyzeSkingPigments(
   faceMask: Uint8Array;
 }> {
   try {
-    // 임시 캔버스 생성
+    // 임시 캔버스 생성 (크기 제한으로 레이아웃 overflow 방지)
     const canvas = document.createElement('canvas');
-    canvas.width = image.naturalWidth || image.width;
-    canvas.height = image.naturalHeight || image.height;
+    const { width, height } = getConstrainedCanvasSize(
+      image.naturalWidth || image.width,
+      image.naturalHeight || image.height
+    );
+    canvas.width = width;
+    canvas.height = height;
 
     const ctx = createOptimizedContext(canvas, { willReadFrequently: true });
     if (!ctx) {
       throw new Error('Canvas 컨텍스트 생성 실패');
     }
 
-    // 이미지 그리기 및 ImageData 추출
-    ctx.drawImage(image, 0, 0);
+    // 이미지 그리기 및 ImageData 추출 (스케일 적용)
+    ctx.drawImage(image, 0, 0, width, height);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
     // 얼굴 마스크 생성
@@ -304,9 +317,13 @@ export async function analyzeSkingPigments(
   } catch (error) {
     console.error('[SkinHeatmap] 분석 실패, Mock Fallback:', error);
 
-    // Mock Fallback
+    // Mock Fallback (제한된 크기 사용)
     const mockSummary = generateMockPigmentAnalysis();
-    const pixelCount = (image.naturalWidth || image.width) * (image.naturalHeight || image.height);
+    const constrainedSize = getConstrainedCanvasSize(
+      image.naturalWidth || image.width,
+      image.naturalHeight || image.height
+    );
+    const pixelCount = constrainedSize.width * constrainedSize.height;
 
     return {
       pigmentMaps: {

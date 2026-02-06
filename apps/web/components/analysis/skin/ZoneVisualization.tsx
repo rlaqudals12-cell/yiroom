@@ -13,11 +13,7 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import type {
-  SkinAnalysisV2Result,
-  SkinZoneType,
-  ZoneAnalysisV2,
-} from '@/lib/analysis/skin-v2';
+import type { SkinAnalysisV2Result, SkinZoneType, ZoneAnalysisV2 } from '@/lib/analysis/skin-v2';
 
 interface ZoneVisualizationProps {
   result: SkinAnalysisV2Result;
@@ -62,7 +58,10 @@ const SKIN_TYPE_LABELS: Record<string, string> = {
 };
 
 // 존 위치 (SVG 좌표, 퍼센트)
-const ZONE_POSITIONS: Record<SkinZoneType, { x: number; y: number; width: number; height: number }> = {
+const ZONE_POSITIONS: Record<
+  SkinZoneType,
+  { x: number; y: number; width: number; height: number }
+> = {
   forehead: { x: 25, y: 5, width: 50, height: 20 },
   eyeArea: { x: 15, y: 28, width: 70, height: 12 },
   nose: { x: 38, y: 40, width: 24, height: 25 },
@@ -149,31 +148,34 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
                   />
 
                   {/* 각 존 영역 */}
-                  {(Object.entries(ZONE_POSITIONS) as [SkinZoneType, typeof ZONE_POSITIONS.forehead][]).map(
-                    ([zone, pos]) => {
-                      const zoneData = result.zoneAnalysis.zones[zone];
-                      const isSelected = selectedZone === zone;
-                      const opacity = zoneData ? Math.min(0.8, zoneData.score / 100) : 0.3;
+                  {(
+                    Object.entries(ZONE_POSITIONS) as [
+                      SkinZoneType,
+                      typeof ZONE_POSITIONS.forehead,
+                    ][]
+                  ).map(([zone, pos]) => {
+                    const zoneData = result.zoneAnalysis.zones[zone];
+                    const isSelected = selectedZone === zone;
+                    const opacity = zoneData ? Math.min(0.8, zoneData.score / 100) : 0.3;
 
-                      return (
-                        <rect
-                          key={zone}
-                          x={pos.x}
-                          y={pos.y}
-                          width={pos.width}
-                          height={pos.height}
-                          rx="4"
-                          fill={getScoreColor(zoneData?.score || 0)}
-                          fillOpacity={opacity}
-                          stroke={isSelected ? '#000' : 'transparent'}
-                          strokeWidth={isSelected ? 2 : 0}
-                          className="cursor-pointer transition-all hover:stroke-gray-500 hover:stroke-1"
-                          onClick={() => setSelectedZone(zone)}
-                          data-testid={`zone-${zone}`}
-                        />
-                      );
-                    }
-                  )}
+                    return (
+                      <rect
+                        key={zone}
+                        x={pos.x}
+                        y={pos.y}
+                        width={pos.width}
+                        height={pos.height}
+                        rx="4"
+                        fill={getScoreColor(zoneData?.score || 0)}
+                        fillOpacity={opacity}
+                        stroke={isSelected ? '#000' : 'transparent'}
+                        strokeWidth={isSelected ? 2 : 0}
+                        className="cursor-pointer transition-all hover:stroke-gray-500 hover:stroke-1"
+                        onClick={() => setSelectedZone(zone)}
+                        data-testid={`zone-${zone}`}
+                      />
+                    );
+                  })}
                 </svg>
               </div>
 
@@ -224,11 +226,15 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
               <div className="grid grid-cols-3 gap-2 sm:gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">유분 차이</p>
-                  <p className="font-medium">{result.zoneAnalysis.tUzoneDifference.oilinessDiff}%</p>
+                  <p className="font-medium">
+                    {result.zoneAnalysis.tUzoneDifference.oilinessDiff}%
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">수분 차이</p>
-                  <p className="font-medium">{result.zoneAnalysis.tUzoneDifference.hydrationDiff}%</p>
+                  <p className="font-medium">
+                    {result.zoneAnalysis.tUzoneDifference.hydrationDiff}%
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">복합성 판정</p>
@@ -266,10 +272,7 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
         <CardContent>
           <div className="space-y-3">
             {result.routineRecommendations?.map((routine) => (
-              <div
-                key={routine.step}
-                className="flex items-start gap-3 p-3 rounded-lg bg-muted"
-              >
+              <div key={routine.step} className="flex items-start gap-3 p-3 rounded-lg bg-muted">
                 <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
                   {routine.step}
                 </div>
@@ -305,8 +308,7 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
       {result.usedFallback && (
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
           <p className="text-sm text-amber-800">
-            ⚠️ AI 분석이 지연되어 예측 결과를 표시하고 있습니다.
-            정확한 분석을 위해 재분석을 권장합니다.
+            ⚠️ AI 분석이 지연되어 예측 결과를 표시하고 있어요. 정확한 분석을 위해 재분석을 권장해요.
           </p>
         </div>
       )}
@@ -338,10 +340,7 @@ function ZoneDetailPanel({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="font-medium">{ZONE_LABELS[zone]}</h4>
-        <button
-          onClick={onClose}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
+        <button onClick={onClose} className="text-sm text-muted-foreground hover:text-foreground">
           ✕ 닫기
         </button>
       </div>
@@ -415,10 +414,7 @@ function MetricBar({
     <div className="flex items-center gap-2">
       <span className="text-xs w-16 text-muted-foreground">{label}</span>
       <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-        <div
-          className={`h-full ${getColor()} transition-all`}
-          style={{ width: `${value}%` }}
-        />
+        <div className={`h-full ${getColor()} transition-all`} style={{ width: `${value}%` }} />
       </div>
       <span className="text-xs w-8 text-right">{value}</span>
     </div>
