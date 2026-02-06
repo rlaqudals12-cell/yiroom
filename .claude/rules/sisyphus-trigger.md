@@ -98,7 +98,7 @@
 | 51-70  | **Standard** | standard | code-quality + test-writer |
 | 71-100 | **Full**     | full     | 전체 에이전트 파이프라인   |
 
-**모델**: Opus 4.5 전용 (품질 일관성 보장)
+**모델**: Opus 4.6 전용 (품질 일관성 보장)
 **참조**: `.claude/lib/complexity-analyzer.md`에서 상세 점수 기준 확인
 
 ## 주의사항

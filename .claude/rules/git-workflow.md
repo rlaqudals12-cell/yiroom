@@ -37,7 +37,7 @@ main                    # 프로덕션 (보호됨)
 
 <body>
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 ```
 
 ### Types

@@ -1,6 +1,6 @@
 # 규칙 인덱스 (Rules Index)
 
-> **Version**: 2.0 | **Updated**: 2026-01-28
+> **Version**: 2.1 | **Updated**: 2026-02-06
 
 > 이룸 프로젝트 코딩 규칙 및 표준 가이드
 
@@ -13,13 +13,13 @@
 | [제1원칙](#1-제1원칙-최우선)  | 3개     | 모든 규칙의 기반            |
 | [코드 스타일](#2-코드-스타일) | 5개     | 코딩 표준, 패턴             |
 | [프레임워크](#3-프레임워크)   | 3개     | Next.js, React, Mobile      |
-| [데이터](#4-데이터)           | 2개     | 마이그레이션, Mock Fallback  |
+| [데이터](#4-데이터)           | 2개     | 마이그레이션, Mock Fallback |
 | [AI/ML](#5-aiml)              | 4개     | AI 통합, 프롬프트, Hybrid   |
 | [품질](#6-품질)               | 3개     | 테스트, 보안, 코드 리뷰     |
 | [운영](#7-운영)               | 4개     | Git, Feature Flags, 디버깅  |
 | [설계 원칙](#8-설계-원칙)     | 1개     | OCP, 확장성                 |
 
-**총 규칙 파일**: 25개
+**총 규칙 파일**: 26개
 
 ---
 
@@ -37,13 +37,13 @@
 
 ## 2. 코드 스타일
 
-| 파일                                                       | 용도                           | 관련 원칙  |
-| ---------------------------------------------------------- | ------------------------------ | ---------- |
-| [code-style.md](./code-style.md)                           | TypeScript, 네이밍, 주석 규칙  | P4: 단순화 |
-| [typescript-strict.md](./typescript-strict.md)             | TypeScript Strict 모드, 타입 안전성 | P4     |
-| [react-patterns.md](./react-patterns.md)                   | 컴포넌트, Hooks, 상태 관리     | P3, P4     |
-| [error-handling-patterns.md](./error-handling-patterns.md) | 3단계 폴백, 에러 분류          | P4         |
-| [api-design.md](./api-design.md)                           | REST API, 버전 관리, 응답 형식 | P3, P4     |
+| 파일                                                       | 용도                                | 관련 원칙  |
+| ---------------------------------------------------------- | ----------------------------------- | ---------- |
+| [code-style.md](./code-style.md)                           | TypeScript, 네이밍, 주석 규칙       | P4: 단순화 |
+| [typescript-strict.md](./typescript-strict.md)             | TypeScript Strict 모드, 타입 안전성 | P4         |
+| [react-patterns.md](./react-patterns.md)                   | 컴포넌트, Hooks, 상태 관리          | P3, P4     |
+| [error-handling-patterns.md](./error-handling-patterns.md) | 3단계 폴백, 에러 분류               | P4         |
+| [api-design.md](./api-design.md)                           | REST API, 버전 관리, 응답 형식      | P3, P4     |
 
 ---
 
@@ -68,33 +68,34 @@
 
 ## 5. AI/ML
 
-| 파일                                             | 용도                     | 관련 원칙 |
-| ------------------------------------------------ | ------------------------ | --------- |
-| [ai-integration.md](./ai-integration.md)         | Gemini 통합, 폴백 전략   | P2        |
-| [prompt-engineering.md](./prompt-engineering.md) | 프롬프트 작성, 출력 검증 | P2        |
-| [ai-code-review.md](./ai-code-review.md)         | AI 생성 코드 리뷰, Vibe Coding 방지 | P0, P3 |
-| [feature-flags.md](./feature-flags.md)           | 점진적 출시, 롤백 트리거 | P5, P6    |
+| 파일                                             | 용도                                | 관련 원칙 |
+| ------------------------------------------------ | ----------------------------------- | --------- |
+| [ai-integration.md](./ai-integration.md)         | Gemini 통합, 폴백 전략              | P2        |
+| [prompt-engineering.md](./prompt-engineering.md) | 프롬프트 작성, 출력 검증            | P2        |
+| [ai-code-review.md](./ai-code-review.md)         | AI 생성 코드 리뷰, Vibe Coding 방지 | P0, P3    |
+| [feature-flags.md](./feature-flags.md)           | 점진적 출시, 롤백 트리거            | P5, P6    |
 
 ---
 
 ## 6. 품질
 
-| 파일                                               | 용도                             | 관련 원칙 |
-| -------------------------------------------------- | -------------------------------- | --------- |
-| [testing-patterns.md](./testing-patterns.md)       | 단위/통합/E2E 테스트             | P3        |
-| [security-checklist.md](./security-checklist.md)   | OWASP Top 10, RLS, Rate Limiting | P0        |
-| [performance-guidelines.md](./performance-guidelines.md) | Core Web Vitals, 번들 최적화 | P5        |
+| 파일                                                             | 용도                             | 관련 원칙 |
+| ---------------------------------------------------------------- | -------------------------------- | --------- |
+| [testing-patterns.md](./testing-patterns.md)                     | 단위/통합/E2E 테스트             | P3        |
+| [security-checklist.md](./security-checklist.md)                 | OWASP Top 10, RLS, Rate Limiting | P0        |
+| [performance-guidelines.md](./performance-guidelines.md)         | Core Web Vitals, 번들 최적화     | P5        |
+| [quality-improvement-cycles.md](./quality-improvement-cycles.md) | 3-Cycle 모듈 품질 개선 패턴      | P3, P4    |
 
 ---
 
 ## 7. 운영
 
-| 파일                                           | 용도                              | 관련 원칙 |
-| ---------------------------------------------- | --------------------------------- | --------- |
-| [git-workflow.md](./git-workflow.md)           | 브랜치 전략, Conventional Commits | P6, P7    |
-| [server-debugging.md](./server-debugging.md)   | Next.js 16 서버 디버깅 가이드     | P5        |
-| [sisyphus-trigger.md](./sisyphus-trigger.md)   | 시지푸스 자동 트리거 규칙         | P3        |
-| [agent-roadmap.md](./agent-roadmap.md)         | 에이전트 로드맵, 도입 기준        | P6        |
+| 파일                                         | 용도                              | 관련 원칙 |
+| -------------------------------------------- | --------------------------------- | --------- |
+| [git-workflow.md](./git-workflow.md)         | 브랜치 전략, Conventional Commits | P6, P7    |
+| [server-debugging.md](./server-debugging.md) | Next.js 16 서버 디버깅 가이드     | P5        |
+| [sisyphus-trigger.md](./sisyphus-trigger.md) | 시지푸스 자동 트리거 규칙         | P3        |
+| [agent-roadmap.md](./agent-roadmap.md)       | 에이전트 로드맵, 도입 기준        | P6        |
 
 ---
 

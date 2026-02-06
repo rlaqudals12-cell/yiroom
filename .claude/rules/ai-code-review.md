@@ -68,7 +68,7 @@ if (error) {
 Claude Code가 생성한 코드는 커밋 메시지에 자동 포함:
 
 ```
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 ```
 
 ### 수동 태그 (선택)

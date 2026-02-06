@@ -6,12 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > **모든 의사결정 전에 [FIRST-PRINCIPLES.md](docs/FIRST-PRINCIPLES.md) 확인**
 
-| 상황 | 질문 |
-|------|------|
+| 상황      | 질문                             |
+| --------- | -------------------------------- |
 | 기능 추가 | "통합된 자기 이해에 기여하는가?" |
-| 기술 선택 | "불필요한 복잡도는 없는가?" |
-| 버그 수정 | "근본 원인인가, 증상인가?" |
-| 코드 유지 | "사용되고 있고, 가치가 있는가?" |
+| 기술 선택 | "불필요한 복잡도는 없는가?"      |
+| 버그 수정 | "근본 원인인가, 증상인가?"       |
+| 코드 유지 | "사용되고 있고, 가치가 있는가?"  |
 
 ---
 
@@ -52,36 +52,37 @@ yiroom/
 
 ## 기술 스택 요약
 
-| 앱 | 기술 |
-|----|------|
-| **웹** | Next.js 16, React 19, Supabase, Clerk, Gemini 3 Flash |
-| **모바일** | Expo SDK 54, React Native, NativeWind |
-| **공통** | TypeScript, Turborepo, Zod |
+| 앱         | 기술                                                  |
+| ---------- | ----------------------------------------------------- |
+| **웹**     | Next.js 16, React 19, Supabase, Clerk, Gemini 3 Flash |
+| **모바일** | Expo SDK 54, React Native, NativeWind                 |
+| **공통**   | TypeScript, Turborepo, Zod                            |
 
 > 상세 → [apps/web/CLAUDE.md](apps/web/CLAUDE.md)
 
 ## 모듈 현황
 
-| Phase | 모듈 | 상태 |
-|-------|------|------|
-| 1 | PC-1, S-1, C-1 (퍼스널컬러, 피부, 체형) | ✅ |
-| 2 | W-1, N-1, R-1 (운동, 영양, 리포트) | ✅ |
-| A-H | 제품DB, 소셜, 어필리에이트, AI상담, 온보딩, 영양고도화 | ✅ |
-| I | 날씨코디, 바코드스캔, 비포애프터, 인벤토리 | ✅ |
-| J | AI 색상조합, 악세서리, 메이크업 스타일링 | ✅ |
-| K | 성별 중립화, 패션 확장, 체형 강화, 레시피 | 🔄 60% |
-| 특화 | H-1 (헤어), M-1 (메이크업), OH-1 (구강건강) | ✅ |
+| Phase | 모듈                                                   | 상태   |
+| ----- | ------------------------------------------------------ | ------ |
+| 1     | PC-1, S-1, C-1 (퍼스널컬러, 피부, 체형)                | ✅     |
+| 2     | W-1, N-1, R-1 (운동, 영양, 리포트)                     | ✅     |
+| A-H   | 제품DB, 소셜, 어필리에이트, AI상담, 온보딩, 영양고도화 | ✅     |
+| I     | 날씨코디, 바코드스캔, 비포애프터, 인벤토리             | ✅     |
+| J     | AI 색상조합, 악세서리, 메이크업 스타일링               | ✅     |
+| K     | 성별 중립화, 패션 확장, 체형 강화, 레시피              | 🔄 95% |
+| 특화  | H-1 (헤어), M-1 (메이크업), OH-1 (구강건강)            | ✅     |
 
 ## 슬래시 명령어
 
-| 명령어 | 용도 |
-|--------|------|
-| `/qplan` | 계획 분석 및 검토 |
-| `/qcode` | 구현 + 테스트 + 포맷팅 |
-| `/qcheck` | 코드 품질 검사 |
-| `/test` | 테스트 실행 |
-| `/review` | 코드 리뷰 |
-| `/sisyphus` | 적응형 오케스트레이터 |
+| 명령어             | 용도                     |
+| ------------------ | ------------------------ |
+| `/qplan`           | 계획 분석 및 검토        |
+| `/qcode`           | 구현 + 테스트 + 포맷팅   |
+| `/qcheck`          | 코드 품질 검사           |
+| `/test`            | 테스트 실행              |
+| `/review`          | 코드 리뷰                |
+| `/sisyphus`        | 적응형 오케스트레이터    |
+| `/quality-improve` | 모듈 품질 개선 (3-Cycle) |
 
 ## 핵심 규칙
 
@@ -92,13 +93,13 @@ yiroom/
 
 ## 참조 문서
 
-| 문서 | 내용 |
-|------|------|
+| 문서                                               | 내용                    |
+| -------------------------------------------------- | ----------------------- |
 | [docs/DATABASE-SCHEMA.md](docs/DATABASE-SCHEMA.md) | 테이블 구조, RLS, JSONB |
-| [docs/SDD-WORKFLOW.md](docs/SDD-WORKFLOW.md) | Spec-Driven Development |
-| [apps/web/CLAUDE.md](apps/web/CLAUDE.md) | 웹 앱 상세 규칙 |
-| `.claude/rules/` | 코딩 표준, AI 통합 규칙 |
-| `.claude/agents/` | 전문 에이전트 설정 |
+| [docs/SDD-WORKFLOW.md](docs/SDD-WORKFLOW.md)       | Spec-Driven Development |
+| [apps/web/CLAUDE.md](apps/web/CLAUDE.md)           | 웹 앱 상세 규칙         |
+| `.claude/rules/`                                   | 코딩 표준, AI 통합 규칙 |
+| `.claude/agents/`                                  | 전문 에이전트 설정      |
 
 ## 시지푸스 트리거
 
@@ -109,4 +110,4 @@ yiroom/
 
 ---
 
-**Version**: 13.0 | **Updated**: 2026-02-02 | Phase I/J/K 및 특화 모듈 반영
+**Version**: 14.0 | **Updated**: 2026-02-06 | 규칙 정비, /quality-improve 추가, Phase K 95%
