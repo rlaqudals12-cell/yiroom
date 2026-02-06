@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Sparkles, ClipboardList } from 'lucide-react';
-import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { ShareButton } from '@/components/share';
 import { useAnalysisShare, createHairShareData } from '@/hooks/useAnalysisShare';
@@ -35,9 +34,9 @@ function getStatus(value: number): 'good' | 'normal' | 'warning' {
 
 // 점수에 따른 설명 생성
 function getDescription(name: string, value: number): string {
-  if (value >= 71) return `${name}(이)가 좋은 상태입니다`;
-  if (value >= 41) return `${name}(이)가 보통 수준입니다`;
-  return `${name} 관리가 필요합니다`;
+  if (value >= 71) return `${name} 상태가 좋아요`;
+  if (value >= 41) return `${name} 상태가 보통이에요`;
+  return `${name} 관리가 필요해요`;
 }
 
 // DB 타입 정의
@@ -124,7 +123,7 @@ function transformDbToResult(dbData: DbHairAnalysis): HairAnalysisResultView {
     scalpType: dbData.scalp_type,
     scalpTypeLabel,
     concerns: dbData.concerns || [],
-    insight: dbData.recommendations?.insight || '헤어 케어에 도움이 필요해요!',
+    insight: dbData.recommendations?.insight || '더 나은 헤어 케어를 위한 팁을 확인해보세요',
     recommendedIngredients: dbData.recommendations?.ingredients || [],
     careTips: dbData.recommendations?.careTips || [],
     analyzedAt: new Date(dbData.created_at),
@@ -140,7 +139,6 @@ export default function HairAnalysisResultPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCelebration, setShowCelebration] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
   const fetchedRef = useRef(false);
 
@@ -183,7 +181,7 @@ export default function HairAnalysisResultPage() {
       }
 
       if (!data) {
-        throw new Error('분석 결과를 찾을 수 없습니다');
+        throw new Error('분석 결과를 찾을 수 없어요');
       }
 
       const dbData = data as DbHairAnalysis;
@@ -192,14 +190,12 @@ export default function HairAnalysisResultPage() {
       setImageUrl(dbData.image_url);
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
+      // 분석 완료 기록 (재진입 구분)
       const celebrationKey = `celebration-hair-${analysisId}`;
-      if (!sessionStorage.getItem(celebrationKey)) {
-        sessionStorage.setItem(celebrationKey, 'shown');
-        setShowCelebration(true);
-      }
+      sessionStorage.setItem(celebrationKey, 'shown');
     } catch (err) {
       console.error('[H-1] Fetch error:', err);
-      setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
+      setError('결과를 불러오는 데 문제가 발생했어요');
     } finally {
       setIsLoading(false);
     }
@@ -231,31 +227,31 @@ export default function HairAnalysisResultPage() {
   // 로딩 상태
   if (!isLoaded || isLoading) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">결과를 불러오는 중...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 비로그인 상태
   if (!isSignedIn) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
           <p className="text-muted-foreground">분석 결과를 확인하려면 먼저 로그인해주세요</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 에러 상태
   if (error) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error}</p>
@@ -273,21 +269,13 @@ export default function HairAnalysisResultPage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
     <>
-      {/* 분석 완료 축하 효과 */}
-      <CelebrationEffect
-        type="analysis_complete"
-        trigger={showCelebration}
-        message="헤어 분석 완료!"
-        onComplete={() => setShowCelebration(false)}
-      />
-
-      <main className="min-h-[calc(100vh-80px)] bg-muted" data-testid="hair-result-page">
+      <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="hair-result-page">
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
           <header className="flex items-center justify-between mb-6">
@@ -333,13 +321,13 @@ export default function HairAnalysisResultPage() {
 
                 {/* 인사이트 */}
                 <div className="bg-card rounded-xl p-6 shadow-sm">
-                  <h3 className="font-semibold mb-3">분석 인사이트</h3>
+                  <h3 className="font-semibold mb-3">분석 요약</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
                 </div>
 
-                {/* 상세 지표 */}
+                {/* 항목별 점수 */}
                 <div className="bg-card rounded-xl p-6 shadow-sm">
-                  <h3 className="font-semibold mb-4">상세 지표</h3>
+                  <h3 className="font-semibold mb-4">항목별 점수</h3>
                   <div className="space-y-4">
                     {result.metrics.map((metric) => (
                       <div key={metric.id}>
@@ -392,10 +380,10 @@ export default function HairAnalysisResultPage() {
 
               {/* 상세 정보 탭 */}
               <TabsContent value="details" className="mt-0 space-y-6 pb-32">
-                {/* 추천 성분 */}
+                {/* 추천 케어 성분 */}
                 {result.recommendedIngredients.length > 0 && (
                   <div className="bg-card rounded-xl p-6 shadow-sm">
-                    <h3 className="font-semibold mb-3">추천 성분</h3>
+                    <h3 className="font-semibold mb-3">추천 케어 성분</h3>
                     <div className="flex flex-wrap gap-2">
                       {result.recommendedIngredients.map((ingredient, i) => (
                         <span
@@ -409,10 +397,10 @@ export default function HairAnalysisResultPage() {
                   </div>
                 )}
 
-                {/* 케어 팁 */}
+                {/* 관리 방법 */}
                 {result.careTips.length > 0 && (
                   <div className="bg-card rounded-xl p-6 shadow-sm">
-                    <h3 className="font-semibold mb-3">케어 팁</h3>
+                    <h3 className="font-semibold mb-3">관리 방법</h3>
                     <ul className="space-y-2">
                       {result.careTips.map((tip, i) => (
                         <li
@@ -447,7 +435,7 @@ export default function HairAnalysisResultPage() {
           {/* 다음 분석 추천 */}
           <ContextLinkingCard currentModule="hair" />
         </div>
-      </main>
+      </div>
 
       {/* 하단 고정 버튼 */}
       {result && (

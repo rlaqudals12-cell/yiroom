@@ -88,7 +88,7 @@ function HairCompareContent() {
 
   useEffect(() => {
     if (!fromId || !toId) {
-      setError('비교할 분석 정보가 없습니다.');
+      setError('비교할 분석 기록이 없어요');
       setLoading(false);
       return;
     }
@@ -97,13 +97,13 @@ function HairCompareContent() {
       try {
         const res = await fetch(`/api/analysis/compare?type=hair&from=${fromId}&to=${toId}`);
         if (!res.ok) {
-          throw new Error('비교 데이터를 불러오지 못했습니다.');
+          throw new Error('비교 데이터를 불러오지 못했어요');
         }
         const result: AnalysisCompareResponse = await res.json();
         setData(result);
       } catch (err) {
         console.error('[Hair Compare] Error:', err);
-        setError('비교 데이터를 불러오지 못했습니다.');
+        setError('비교 데이터를 불러오지 못했어요');
       } finally {
         setLoading(false);
       }
@@ -179,7 +179,7 @@ function HairCompareContent() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* 기간 요약 */}
         <div className="text-center py-2">
           <p className="text-sm text-muted-foreground">
@@ -302,7 +302,7 @@ function HairCompareContent() {
         >
           새로운 헤어 분석하기
         </Button>
-      </main>
+      </div>
 
       <BottomNav />
     </div>

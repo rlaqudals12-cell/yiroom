@@ -14,7 +14,6 @@ import {
   HAIR_CONCERNS,
 } from '@/lib/mock/hair-analysis';
 import { Button } from '@/components/ui/button';
-import { Confetti } from '@/components/animations';
 
 type AnalysisStep = 'guide' | 'upload' | 'known-input' | 'loading' | 'result';
 
@@ -50,7 +49,6 @@ export default function HairAnalysisPage() {
   const [result, setResult] = useState<HairAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const existingCheckedRef = useRef(false);
 
@@ -134,10 +132,9 @@ export default function HairAnalysisPage() {
         analyzedAt: new Date(data.result.analyzedAt),
       });
       setStep('result');
-      setShowConfetti(true);
     } catch (err) {
       console.error('[H-1] Analysis error:', err);
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      setError('분석 중 문제가 발생했어요');
       setStep('upload');
     } finally {
       setIsAnalyzing(false);
@@ -156,12 +153,11 @@ export default function HairAnalysisPage() {
     setResult(null);
     setStep('guide');
     setError(null);
-    setShowConfetti(false);
   }, []);
 
   // 단계별 서브타이틀
   const subtitle = useMemo(() => {
-    if (error) return '분석 중 오류가 발생했어요';
+    if (error) return '분석 중 문제가 발생했어요';
     switch (step) {
       case 'guide':
         return '정확한 분석을 위한 촬영 가이드';
@@ -177,184 +173,179 @@ export default function HairAnalysisPage() {
   }, [step, error]);
 
   return (
-    <>
-      <Confetti trigger={showConfetti} />
+    <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="hair-analysis-page">
+      <div className="max-w-lg mx-auto px-4 py-8">
+        {/* 헤더 */}
+        <header className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-foreground">💇 헤어 분석</h1>
+          <p className="text-muted-foreground mt-2">{subtitle}</p>
+        </header>
 
-      <main className="min-h-[calc(100vh-80px)] bg-muted" data-testid="hair-analysis-page">
-        <div className="max-w-lg mx-auto px-4 py-8">
-          {/* 헤더 */}
-          <header className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground">💇 헤어 분석</h1>
-            <p className="text-muted-foreground mt-2">{subtitle}</p>
-          </header>
+        {/* 에러 메시지 */}
+        {error && (
+          <div
+            className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
+            role="alert"
+          >
+            {error}
+          </div>
+        )}
 
-          {/* 에러 메시지 */}
-          {error && (
-            <div
-              className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
-              role="alert"
-            >
-              {error}. 다시 시도해주세요.
-            </div>
-          )}
-
-          {/* 기존 분석 결과 배너 */}
-          {step === 'guide' && existingAnalysis && !checkingExisting && (
-            <Link
-              href={`/analysis/hair/result/${existingAnalysis.id}`}
-              className="block mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                    <span className="text-lg font-bold text-amber-600">
-                      {existingAnalysis.overall_score}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">기존 분석 결과 보기</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      {formatDate(new Date(existingAnalysis.created_at))}
-                    </div>
+        {/* 기존 분석 결과 배너 */}
+        {step === 'guide' && existingAnalysis && !checkingExisting && (
+          <Link
+            href={`/analysis/hair/result/${existingAnalysis.id}`}
+            className="block mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                  <span className="text-lg font-bold text-amber-600">
+                    {existingAnalysis.overall_score}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">기존 분석 결과 보기</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="w-3 h-3" />
+                    {formatDate(new Date(existingAnalysis.created_at))}
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-amber-500" />
               </div>
-            </Link>
-          )}
-
-          {/* 촬영 가이드 */}
-          {step === 'guide' && (
-            <div className="space-y-6">
-              <div className="bg-card rounded-xl p-6 shadow-sm">
-                <h2 className="font-semibold text-lg mb-4">📸 촬영 가이드</h2>
-                <ul className="space-y-3 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-500">✓</span>
-                    밝은 자연광 아래에서 촬영해주세요
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-500">✓</span>
-                    두피가 보이도록 가르마 부분을 촬영해주세요
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-500">✓</span>
-                    모발 전체가 잘 보이는 사진도 좋아요
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-400">✗</span>
-                    젖은 머리나 스타일링 제품 사용 후 촬영은 피해주세요
-                  </li>
-                </ul>
-              </div>
-
-              <div className="flex gap-3">
-                <Button onClick={() => setStep('upload')} className="flex-1">
-                  사진 선택하기
-                </Button>
-                <Button variant="outline" onClick={handleSkipToKnownInput}>
-                  알고 있어요
-                </Button>
-              </div>
+              <ArrowRight className="w-5 h-5 text-amber-500" />
             </div>
-          )}
+          </Link>
+        )}
 
-          {/* 사진 업로드 */}
-          {step === 'upload' && (
-            <div className="space-y-6">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
+        {/* 촬영 가이드 */}
+        {step === 'guide' && (
+          <div className="space-y-6">
+            <div className="bg-card rounded-xl p-6 shadow-sm">
+              <h2 className="font-semibold text-lg mb-4">📸 촬영 가이드</h2>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-500">✓</span>
+                  밝은 자연광 아래에서 촬영해주세요
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-500">✓</span>
+                  두피가 보이도록 가르마 부분을 촬영해주세요
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-500">✓</span>
+                  모발 전체가 잘 보이는 사진도 좋아요
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-red-400">✗</span>
+                  젖은 머리나 스타일링 제품 사용 후 촬영은 피해주세요
+                </li>
+              </ul>
+            </div>
 
-              {imagePreview ? (
-                <div className="space-y-4">
-                  <div className="aspect-square rounded-xl overflow-hidden bg-muted">
-                    <img
-                      src={imagePreview}
-                      alt="선택된 이미지"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex gap-3">
-                    <Button variant="outline" onClick={handleUploadClick} className="flex-1">
-                      다른 사진 선택
-                    </Button>
-                    <Button onClick={handleStartAnalysis} disabled={isAnalyzing} className="flex-1">
-                      {isAnalyzing ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          분석 중...
-                        </>
-                      ) : (
-                        '분석 시작'
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={handleUploadClick}
-                  className="w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
-                >
-                  <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center">
-                    <Upload className="w-8 h-8 text-amber-600" />
-                  </div>
-                  <div className="text-center">
-                    <p className="font-medium text-foreground">사진을 선택해주세요</p>
-                    <p className="text-sm text-muted-foreground mt-1">탭하여 갤러리에서 선택</p>
-                  </div>
-                </button>
-              )}
-
-              <Button variant="ghost" onClick={() => setStep('guide')} className="w-full">
-                ← 가이드로 돌아가기
+            <div className="flex gap-3">
+              <Button onClick={() => setStep('upload')} className="flex-1">
+                사진 선택하기
+              </Button>
+              <Button variant="outline" onClick={handleSkipToKnownInput}>
+                이미 알고 있어요
               </Button>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* 알고있는 타입 입력 */}
-          {step === 'known-input' && (
-            <KnownTypeInput
-              onSubmit={(type, concerns) => {
-                const mockResult = generateMockHairAnalysisResult();
-                setResult({
-                  ...mockResult,
-                  hairType: type,
-                  hairTypeLabel: HAIR_TYPES.find((t) => t.id === type)?.label || '',
-                  concerns,
-                  analyzedAt: new Date(),
-                });
-                setStep('result');
-                setShowConfetti(true);
-              }}
-              onBack={() => setStep('guide')}
+        {/* 사진 업로드 */}
+        {step === 'upload' && (
+          <div className="space-y-6">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
             />
-          )}
 
-          {/* 로딩 */}
-          {step === 'loading' && (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mb-6 animate-pulse">
-                <span className="text-4xl">💇</span>
+            {imagePreview ? (
+              <div className="space-y-4">
+                <div className="aspect-square rounded-xl overflow-hidden bg-muted">
+                  <img
+                    src={imagePreview}
+                    alt="선택된 이미지"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={handleUploadClick} className="flex-1">
+                    다른 사진 선택
+                  </Button>
+                  <Button onClick={handleStartAnalysis} disabled={isAnalyzing} className="flex-1">
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        분석 중...
+                      </>
+                    ) : (
+                      '분석 시작'
+                    )}
+                  </Button>
+                </div>
               </div>
-              <p className="text-lg font-medium text-foreground">AI가 헤어를 분석하고 있어요</p>
-              <p className="text-sm text-muted-foreground mt-2">잠시만 기다려주세요...</p>
-              <Loader2 className="w-8 h-8 mt-6 animate-spin text-amber-500" />
-            </div>
-          )}
+            ) : (
+              <button
+                onClick={handleUploadClick}
+                className="w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
+              >
+                <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-amber-600" />
+                </div>
+                <div className="text-center">
+                  <p className="font-medium text-foreground">사진을 선택해주세요</p>
+                  <p className="text-sm text-muted-foreground mt-1">탭하여 갤러리에서 선택</p>
+                </div>
+              </button>
+            )}
 
-          {/* 결과 */}
-          {step === 'result' && result && (
-            <AnalysisResultView result={result} onRetry={handleRetry} />
-          )}
-        </div>
-      </main>
-    </>
+            <Button variant="ghost" onClick={() => setStep('guide')} className="w-full">
+              ← 가이드로 돌아가기
+            </Button>
+          </div>
+        )}
+
+        {/* 알고있는 타입 입력 */}
+        {step === 'known-input' && (
+          <KnownTypeInput
+            onSubmit={(type, concerns) => {
+              const mockResult = generateMockHairAnalysisResult();
+              setResult({
+                ...mockResult,
+                hairType: type,
+                hairTypeLabel: HAIR_TYPES.find((t) => t.id === type)?.label || '',
+                concerns,
+                analyzedAt: new Date(),
+              });
+              setStep('result');
+            }}
+            onBack={() => setStep('guide')}
+          />
+        )}
+
+        {/* 로딩 */}
+        {step === 'loading' && (
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mb-6 animate-pulse">
+              <span className="text-4xl">💇</span>
+            </div>
+            <p className="text-lg font-medium text-foreground">AI가 헤어를 분석하고 있어요</p>
+            <p className="text-sm text-muted-foreground mt-2">잠시만 기다려주세요...</p>
+            <Loader2 className="w-8 h-8 mt-6 animate-spin text-amber-500" />
+          </div>
+        )}
+
+        {/* 결과 */}
+        {step === 'result' && result && (
+          <AnalysisResultView result={result} onRetry={handleRetry} />
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -400,7 +391,7 @@ function KnownTypeInput({
 
       {/* 고민 선택 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">주요 고민을 선택해주세요 (복수 선택)</h3>
+        <h3 className="font-semibold mb-4">주요 고민을 선택해주세요 (여러 개 선택 가능)</h3>
         <div className="flex flex-wrap gap-2">
           {HAIR_CONCERNS.map((concern) => (
             <button
@@ -468,13 +459,13 @@ function AnalysisResultView({
 
       {/* 인사이트 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3">💡 분석 인사이트</h3>
+        <h3 className="font-semibold mb-3">💡 분석 요약</h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
       </div>
 
       {/* 지표 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">📊 상세 지표</h3>
+        <h3 className="font-semibold mb-4">📊 항목별 점수</h3>
         <div className="space-y-4">
           {result.metrics.map((metric) => (
             <div key={metric.id}>

@@ -96,7 +96,11 @@ export default function HairHistoryPage() {
         ? 'text-red-600'
         : 'text-muted-foreground';
   const trendLabel =
-    trend === 'improving' ? '개선 중' : trend === 'declining' ? '주의 필요' : '유지 중';
+    trend === 'improving'
+      ? '개선되고 있어요'
+      : trend === 'declining'
+        ? '관리가 필요해요'
+        : '유지 중이에요';
 
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="hair-history-page">
@@ -121,7 +125,7 @@ export default function HairHistoryPage() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* 기간 필터 */}
         <Tabs value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
           <TabsList className="w-full grid grid-cols-4">
@@ -245,7 +249,7 @@ export default function HairHistoryPage() {
 
                     {isSelected && (
                       <div className="mt-2 pt-2 border-t">
-                        <p className="text-xs text-amber-600">✓ 비교 대상으로 선택됨</p>
+                        <p className="text-xs text-amber-600">비교 대상으로 선택했어요</p>
                       </div>
                     )}
                   </CardContent>
@@ -261,7 +265,7 @@ export default function HairHistoryPage() {
             두 개의 기록을 선택하면 비교할 수 있어요
           </p>
         )}
-      </main>
+      </div>
 
       <BottomNav />
     </div>
