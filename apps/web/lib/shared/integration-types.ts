@@ -23,6 +23,20 @@ export interface LabColor {
   b: number; // -128 to +127 (황-청)
 }
 
+/** RGB 색상 (0-255) */
+export interface RGBColor {
+  r: number;
+  g: number;
+  b: number;
+}
+
+/** XYZ 색공간 (중간 변환용, D65 정규화) */
+export interface XYZColor {
+  X: number;
+  Y: number;
+  Z: number;
+}
+
 /** 퍼스널컬러 시즌 */
 export type PersonalColorSeason = 'spring' | 'summer' | 'autumn' | 'winter';
 
@@ -560,9 +574,9 @@ export interface CIE2ToAnalysisData {
 
   /** 얼굴 각도 (roll, pitch, yaw) */
   faceAngle: {
-    roll: number;   // 좌우 기울기 (도)
-    pitch: number;  // 상하 기울기 (도)
-    yaw: number;    // 좌우 회전 (도)
+    roll: number; // 좌우 기울기 (도)
+    pitch: number; // 상하 기울기 (도)
+    yaw: number; // 좌우 회전 (도)
   };
 
   /** 감지 신뢰도 (0-100) */
@@ -780,13 +794,7 @@ export type SourceModule =
 /**
  * 타겟 모듈 식별자
  */
-export type TargetModule =
-  | 'M-1'
-  | 'H-1'
-  | 'SK-1'
-  | 'W-2'
-  | 'N-1'
-  | 'Report';
+export type TargetModule = 'M-1' | 'H-1' | 'SK-1' | 'W-2' | 'N-1' | 'Report';
 
 /**
  * 모듈 의존성 정의
