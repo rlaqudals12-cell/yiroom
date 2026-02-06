@@ -15,16 +15,8 @@ import type {
   TwelveToneClassificationResult,
   TonePalette,
 } from './types';
-import {
-  TWELVE_TONE_REFERENCE_LAB,
-  KOREAN_ADJUSTMENTS,
-  TWELVE_TONE_LABELS,
-} from './types';
-import {
-  labDistanceCIEDE2000,
-  getChroma,
-  getHue,
-} from './color-space';
+import { TWELVE_TONE_REFERENCE_LAB, KOREAN_ADJUSTMENTS, TWELVE_TONE_LABELS } from './types';
+import { calculateCIEDE2000, calculateChroma, calculateHue } from '@/lib/color';
 
 /**
  * 12톤에서 시즌 추출
@@ -51,7 +43,7 @@ export function getToneSubtype(tone: TwelveTone): Subtype {
  * 언더톤 판정 (웜/쿨/뉴트럴)
  */
 export function classifyUndertone(lab: LabColor): Undertone {
-  const hue = getHue(lab);
+  const hue = calculateHue(lab);
   const { warmCoolThresholdB, warmCoolThresholdHue } = KOREAN_ADJUSTMENTS;
 
   // b값과 Hue 각도 기반 판정
@@ -72,7 +64,7 @@ export function classifyUndertone(lab: LabColor): Undertone {
  */
 export function classifySeason(lab: LabColor): Season {
   const undertone = classifyUndertone(lab);
-  const chroma = getChroma(lab);
+  const chroma = calculateChroma(lab);
 
   // 웜톤 계열
   if (undertone === 'warm' || (undertone === 'neutral' && lab.b > 15)) {
@@ -94,16 +86,17 @@ export function classifySeason(lab: LabColor): Season {
 /**
  * 12톤 분류 (CIEDE2000 거리 기반)
  */
-export function classifyTwelveTone(
-  skinLab: LabColor
-): TwelveToneClassificationResult {
+export function classifyTwelveTone(skinLab: LabColor): TwelveToneClassificationResult {
   const toneScores: Record<TwelveTone, number> = {} as Record<TwelveTone, number>;
   let minDistance = Infinity;
   let bestTone: TwelveTone = 'true-summer';
 
   // 각 12톤 기준 Lab과의 거리 계산
-  for (const [tone, refLab] of Object.entries(TWELVE_TONE_REFERENCE_LAB) as [TwelveTone, LabColor][]) {
-    const distance = labDistanceCIEDE2000(skinLab, refLab);
+  for (const [tone, refLab] of Object.entries(TWELVE_TONE_REFERENCE_LAB) as [
+    TwelveTone,
+    LabColor,
+  ][]) {
+    const distance = calculateCIEDE2000(skinLab, refLab);
     toneScores[tone] = 100 - Math.min(distance, 100);
 
     if (distance < minDistance) {

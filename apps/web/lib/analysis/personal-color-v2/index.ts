@@ -46,7 +46,7 @@ export {
 } from './types';
 
 // ============================================
-// Lab 유틸리티
+// Lab 유틸리티 (SSOT: lib/color)
 // ============================================
 
 export {
@@ -63,7 +63,7 @@ export {
   // 색차 계산
   calculateLabDistance,
   calculateCIEDE2000,
-} from './lab-utils';
+} from '@/lib/color';
 
 // ============================================
 // 12톤 분류

@@ -43,44 +43,47 @@ describe('RGB <-> XYZ 변환', () => {
       const white: RGBColor = { r: 255, g: 255, b: 255 };
       const xyz = rgbToXyz(white);
 
-      // D65 white point: X=95.047, Y=100.0, Z=108.883
-      expect(xyz.X).toBeCloseTo(95.047, 0);
-      expect(xyz.Y).toBeCloseTo(100.0, 0);
-      expect(xyz.Z).toBeCloseTo(108.883, 0);
+      // D65 white point (normalized 0-1 scale): X=0.95047, Y=1.0, Z=1.08883
+      expect(xyz.X).toBeCloseTo(0.95047, 3);
+      expect(xyz.Y).toBeCloseTo(1.0, 3);
+      expect(xyz.Z).toBeCloseTo(1.08883, 3);
     });
 
     it('should convert red correctly', () => {
       const red: RGBColor = { r: 255, g: 0, b: 0 };
       const xyz = rgbToXyz(red);
 
-      // sRGB 빨강의 XYZ 값
-      expect(xyz.X).toBeCloseTo(41.24, 0);
-      expect(xyz.Y).toBeCloseTo(21.27, 0);
-      expect(xyz.Z).toBeCloseTo(1.93, 0);
+      // sRGB 빨강의 XYZ 값 (normalized 0-1 scale)
+      expect(xyz.X).toBeCloseTo(0.4124, 2);
+      expect(xyz.Y).toBeCloseTo(0.2127, 2);
+      expect(xyz.Z).toBeCloseTo(0.0193, 2);
     });
 
     it('should convert green correctly', () => {
       const green: RGBColor = { r: 0, g: 255, b: 0 };
       const xyz = rgbToXyz(green);
 
-      expect(xyz.X).toBeCloseTo(35.76, 0);
-      expect(xyz.Y).toBeCloseTo(71.52, 0);
-      expect(xyz.Z).toBeCloseTo(11.92, 0);
+      // normalized 0-1 scale
+      expect(xyz.X).toBeCloseTo(0.3576, 2);
+      expect(xyz.Y).toBeCloseTo(0.7152, 2);
+      expect(xyz.Z).toBeCloseTo(0.1192, 2);
     });
 
     it('should convert blue correctly', () => {
       const blue: RGBColor = { r: 0, g: 0, b: 255 };
       const xyz = rgbToXyz(blue);
 
-      expect(xyz.X).toBeCloseTo(18.05, 0);
-      expect(xyz.Y).toBeCloseTo(7.22, 0);
-      expect(xyz.Z).toBeCloseTo(95.03, 0);
+      // normalized 0-1 scale
+      expect(xyz.X).toBeCloseTo(0.1805, 2);
+      expect(xyz.Y).toBeCloseTo(0.0722, 2);
+      expect(xyz.Z).toBeCloseTo(0.9503, 2);
     });
   });
 
   describe('xyzToRgb', () => {
     it('should convert D65 white point to white', () => {
-      const white: XYZColor = { X: 95.047, Y: 100.0, Z: 108.883 };
+      // normalized 0-1 scale
+      const white: XYZColor = { X: 0.95047, Y: 1.0, Z: 1.08883 };
       const rgb = xyzToRgb(white);
 
       expect(rgb.r).toBeCloseTo(255, 0);
@@ -98,8 +101,8 @@ describe('RGB <-> XYZ 변환', () => {
     });
 
     it('should clamp values to valid RGB range', () => {
-      // 아주 밝은 XYZ 값
-      const brightXyz: XYZColor = { X: 150, Y: 150, Z: 150 };
+      // 아주 밝은 XYZ 값 (normalized scale)
+      const brightXyz: XYZColor = { X: 1.5, Y: 1.5, Z: 1.5 };
       const rgb = xyzToRgb(brightXyz);
 
       expect(rgb.r).toBeLessThanOrEqual(255);
@@ -131,7 +134,8 @@ describe('RGB <-> XYZ 변환', () => {
 describe('XYZ <-> Lab 변환', () => {
   describe('xyzToLab', () => {
     it('should convert D65 white point to L*=100', () => {
-      const white: XYZColor = { X: 95.047, Y: 100.0, Z: 108.883 };
+      // normalized 0-1 scale
+      const white: XYZColor = { X: 0.95047, Y: 1.0, Z: 1.08883 };
       const lab = xyzToLab(white);
 
       expect(lab.L).toBeCloseTo(100, 0);
@@ -147,8 +151,8 @@ describe('XYZ <-> Lab 변환', () => {
     });
 
     it('should convert mid-gray correctly', () => {
-      // Y=50 → L* ≈ 76.07
-      const midGray: XYZColor = { X: 47.52, Y: 50.0, Z: 54.44 };
+      // Y=0.50 (normalized) → L* ≈ 76.07
+      const midGray: XYZColor = { X: 0.4752, Y: 0.5, Z: 0.5444 };
       const lab = xyzToLab(midGray);
 
       expect(lab.L).toBeCloseTo(76, 0);
@@ -162,9 +166,10 @@ describe('XYZ <-> Lab 변환', () => {
       const whiteLab: LabColor = { L: 100, a: 0, b: 0 };
       const xyz = labToXyz(whiteLab);
 
-      expect(xyz.X).toBeCloseTo(95.047, 0);
-      expect(xyz.Y).toBeCloseTo(100.0, 0);
-      expect(xyz.Z).toBeCloseTo(108.883, 0);
+      // normalized 0-1 scale
+      expect(xyz.X).toBeCloseTo(0.95047, 3);
+      expect(xyz.Y).toBeCloseTo(1.0, 3);
+      expect(xyz.Z).toBeCloseTo(1.08883, 3);
     });
 
     it('should convert L*=0 to black', () => {
@@ -179,13 +184,14 @@ describe('XYZ <-> Lab 변환', () => {
 
   describe('XYZ <-> Lab 왕복 변환', () => {
     it('should roundtrip XYZ values', () => {
-      const originalXyz: XYZColor = { X: 50, Y: 60, Z: 70 };
+      // normalized 0-1 scale
+      const originalXyz: XYZColor = { X: 0.5, Y: 0.6, Z: 0.7 };
       const lab = xyzToLab(originalXyz);
       const roundtrippedXyz = labToXyz(lab);
 
-      expect(roundtrippedXyz.X).toBeCloseTo(originalXyz.X, 1);
-      expect(roundtrippedXyz.Y).toBeCloseTo(originalXyz.Y, 1);
-      expect(roundtrippedXyz.Z).toBeCloseTo(originalXyz.Z, 1);
+      expect(roundtrippedXyz.X).toBeCloseTo(originalXyz.X, 3);
+      expect(roundtrippedXyz.Y).toBeCloseTo(originalXyz.Y, 3);
+      expect(roundtrippedXyz.Z).toBeCloseTo(originalXyz.Z, 3);
     });
   });
 });

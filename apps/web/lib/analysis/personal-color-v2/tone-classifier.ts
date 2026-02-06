@@ -15,16 +15,8 @@ import type {
   Undertone,
   TwelveToneClassificationResult,
 } from './types';
-import {
-  KOREAN_ADJUSTMENTS,
-  TWELVE_TONE_REFERENCE_LAB,
-} from './types';
-import {
-  calculateChroma,
-  calculateHue,
-  calculateITA,
-  calculateCIEDE2000,
-} from './lab-utils';
+import { KOREAN_ADJUSTMENTS, TWELVE_TONE_REFERENCE_LAB } from './types';
+import { calculateChroma, calculateHue, calculateITA, calculateCIEDE2000 } from '@/lib/color';
 
 // ============================================
 // 서브타입 임계값 (한국인 기준 최적화)
@@ -128,10 +120,7 @@ export function determineUndertone(lab: LabColor): UndertoneResult {
  * @param undertoneResult - 언더톤 판정 결과
  * @returns 계절 타입
  */
-export function determineSeason(
-  lab: LabColor,
-  undertoneResult: UndertoneResult
-): Season {
+export function determineSeason(lab: LabColor, undertoneResult: UndertoneResult): Season {
   // 웜톤/쿨톤별 밝기 경계값 (한국인 피부톤 기준)
   const SPRING_AUTUMN_BOUNDARY_L = 60;
   const SUMMER_WINTER_BOUNDARY_L = 58;
@@ -143,13 +132,9 @@ export function determineSeason(
   } else {
     // 뉴트럴: Hue 각도로 추가 판정
     if (lab.L > SPRING_AUTUMN_BOUNDARY_L) {
-      return undertoneResult.hue > KOREAN_ADJUSTMENTS.warmCoolThresholdHue
-        ? 'spring'
-        : 'summer';
+      return undertoneResult.hue > KOREAN_ADJUSTMENTS.warmCoolThresholdHue ? 'spring' : 'summer';
     } else {
-      return undertoneResult.hue > KOREAN_ADJUSTMENTS.warmCoolThresholdHue
-        ? 'autumn'
-        : 'winter';
+      return undertoneResult.hue > KOREAN_ADJUSTMENTS.warmCoolThresholdHue ? 'autumn' : 'winter';
     }
   }
 }
@@ -315,9 +300,7 @@ export function classifyTone(lab: LabColor): TwelveToneClassificationResult {
   // 거리 기반 신뢰도: deltaE 0=100점, 40=0점
   const distanceConfidence = Math.max(0, 100 - labDistance * 2.5);
   // 언더톤 신뢰도와 거리 신뢰도의 평균
-  const confidence = Math.round(
-    (undertoneResult.confidence + distanceConfidence) / 2
-  );
+  const confidence = Math.round((undertoneResult.confidence + distanceConfidence) / 2);
 
   return {
     tone,
@@ -377,10 +360,7 @@ export function classifySkinBrightness(
  * @param tone2 - 두 번째 톤
  * @returns 유사도 (0-100, 높을수록 유사)
  */
-export function calculateToneSimilarity(
-  tone1: TwelveTone,
-  tone2: TwelveTone
-): number {
+export function calculateToneSimilarity(tone1: TwelveTone, tone2: TwelveTone): number {
   const lab1 = TWELVE_TONE_REFERENCE_LAB[tone1];
   const lab2 = TWELVE_TONE_REFERENCE_LAB[tone2];
   const deltaE = calculateCIEDE2000(lab1, lab2);
@@ -395,10 +375,7 @@ export function calculateToneSimilarity(
  * @param count - 추천할 개수 (기본 2)
  * @returns 유사 톤 배열 (유사도 내림차순)
  */
-export function getAdjacentTones(
-  tone: TwelveTone,
-  count: number = 2
-): TwelveTone[] {
+export function getAdjacentTones(tone: TwelveTone, count: number = 2): TwelveTone[] {
   const tones = Object.keys(TWELVE_TONE_REFERENCE_LAB) as TwelveTone[];
 
   const similarities = tones

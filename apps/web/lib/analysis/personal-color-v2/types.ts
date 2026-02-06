@@ -7,29 +7,19 @@
  * @see docs/principles/color-science.md
  */
 
-/** Lab 색공간 좌표 */
-export interface LabColor {
-  /** 밝기 (0-100) */
-  L: number;
-  /** 녹색-빨강 축 (-128 ~ 127) */
-  a: number;
-  /** 파랑-노랑 축 (-128 ~ 127) */
-  b: number;
-}
+// ============================================
+// 색공간 타입 (SSOT: lib/color)
+// ============================================
 
-/** RGB 색상 */
-export interface RGBColor {
-  r: number;
-  g: number;
-  b: number;
-}
+import type {
+  LabColor as _LabColor,
+  RGBColor as _RGBColor,
+  XYZColor as _XYZColor,
+} from '@/lib/color';
 
-/** XYZ 색공간 (중간 변환용) */
-export interface XYZColor {
-  X: number;
-  Y: number;
-  Z: number;
-}
+export type LabColor = _LabColor;
+export type RGBColor = _RGBColor;
+export type XYZColor = _XYZColor;
 
 /** 시즌 타입 */
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
