@@ -6,22 +6,10 @@
  * @see docs/principles/color-science.md
  */
 
-/** RGB 색상 */
-export interface RGBColor {
-  r: number;
-  g: number;
-  b: number;
-}
-
-/** Lab 색공간 */
-export interface LabColor {
-  /** 밝기 (0-100) */
-  L: number;
-  /** 녹색-빨강 축 (-128 ~ 127) */
-  a: number;
-  /** 파랑-노랑 축 (-128 ~ 127) */
-  b: number;
-}
+// SSOT: 색공간 기본 타입은 @/lib/color에서 가져와 로컬 사용 + re-export
+import type { RGBColor as _RGBColor, LabColor as _LabColor } from '@/lib/color';
+export type RGBColor = _RGBColor;
+export type LabColor = _LabColor;
 
 /** 톤 분류 */
 export type Tone = 'warm' | 'cool' | 'neutral';

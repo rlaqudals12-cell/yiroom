@@ -6,7 +6,8 @@
  * @see {@link docs/principles/skin-physiology.md} 존 정의 및 피지선 밀도
  */
 
-import type { LabColor } from '@/lib/shared/integration-types';
+import type { LabColor } from '@/lib/color';
+import { rgbToLab } from '@/lib/color';
 
 /**
  * 얼굴 영역 좌표
@@ -74,12 +75,7 @@ export interface SkinAnalysis {
 /**
  * 전체 피부 타입 (5가지)
  */
-export type OverallSkinType =
-  | 'dry'
-  | 'normal'
-  | 'oily'
-  | 'combination'
-  | 'sensitive';
+export type OverallSkinType = 'dry' | 'normal' | 'oily' | 'combination' | 'sensitive';
 
 /**
  * 피지량 임계값 (docs/principles/skin-physiology.md)
@@ -98,10 +94,7 @@ export const SEBUM_THRESHOLDS = {
 /**
  * ImageData에서 특정 영역의 픽셀 데이터 추출
  */
-function extractRegionPixels(
-  imageData: ImageData,
-  box: BoundingBox
-): Uint8ClampedArray {
+function extractRegionPixels(imageData: ImageData, box: BoundingBox): Uint8ClampedArray {
   const { width: imgWidth, data } = imageData;
   const { x, y, width, height } = box;
 
@@ -120,59 +113,6 @@ function extractRegionPixels(
   }
 
   return pixels;
-}
-
-/**
- * RGB를 Lab 색공간으로 변환
- */
-function rgbToLab(r: number, g: number, b: number): LabColor {
-  // sRGB to linear RGB
-  let rLinear = r / 255;
-  let gLinear = g / 255;
-  let bLinear = b / 255;
-
-  rLinear = rLinear > 0.04045
-    ? Math.pow((rLinear + 0.055) / 1.055, 2.4)
-    : rLinear / 12.92;
-  gLinear = gLinear > 0.04045
-    ? Math.pow((gLinear + 0.055) / 1.055, 2.4)
-    : gLinear / 12.92;
-  bLinear = bLinear > 0.04045
-    ? Math.pow((bLinear + 0.055) / 1.055, 2.4)
-    : bLinear / 12.92;
-
-  // Linear RGB to XYZ (D65)
-  const xVal = rLinear * 0.4124564 + gLinear * 0.3575761 + bLinear * 0.1804375;
-  const yVal = rLinear * 0.2126729 + gLinear * 0.7151522 + bLinear * 0.0721750;
-  const zVal = rLinear * 0.0193339 + gLinear * 0.1191920 + bLinear * 0.9503041;
-
-  // XYZ to Lab (D65 reference white)
-  const xRef = 0.95047;
-  const yRef = 1.00000;
-  const zRef = 1.08883;
-
-  let xRatio = xVal / xRef;
-  let yRatio = yVal / yRef;
-  let zRatio = zVal / zRef;
-
-  const epsilon = 0.008856;
-  const kappa = 903.3;
-
-  xRatio = xRatio > epsilon
-    ? Math.pow(xRatio, 1/3)
-    : (kappa * xRatio + 16) / 116;
-  yRatio = yRatio > epsilon
-    ? Math.pow(yRatio, 1/3)
-    : (kappa * yRatio + 16) / 116;
-  zRatio = zRatio > epsilon
-    ? Math.pow(zRatio, 1/3)
-    : (kappa * zRatio + 16) / 116;
-
-  const L = 116 * yRatio - 16;
-  const a = 500 * (xRatio - yRatio);
-  const labB = 200 * (yRatio - zRatio);
-
-  return { L, a, b: labB };
 }
 
 /**
@@ -222,13 +162,8 @@ function estimateHydrationFromColor(labL: number, labB: number): number {
 /**
  * 피지량으로 존 피부 상태 분류
  */
-function classifyZoneCondition(
-  sebum: number,
-  zoneType: 'T-zone' | 'U-zone'
-): ZoneSkinCondition {
-  const thresholds = zoneType === 'T-zone'
-    ? SEBUM_THRESHOLDS.T_ZONE
-    : SEBUM_THRESHOLDS.U_ZONE;
+function classifyZoneCondition(sebum: number, zoneType: 'T-zone' | 'U-zone'): ZoneSkinCondition {
+  const thresholds = zoneType === 'T-zone' ? SEBUM_THRESHOLDS.T_ZONE : SEBUM_THRESHOLDS.U_ZONE;
 
   if (sebum < thresholds.DRY) {
     return 'dry';
@@ -248,16 +183,11 @@ function classifyZoneCondition(
  *
  * @see docs/principles/skin-physiology.md#t-zone
  */
-export function analyzeTZone(
-  imageData: ImageData,
-  faceRegion: FaceRegion
-): ZoneAnalysis {
+export function analyzeTZone(imageData: ImageData, faceRegion: FaceRegion): ZoneAnalysis {
   const foreheadPixels = extractRegionPixels(imageData, faceRegion.forehead);
   const nosePixels = extractRegionPixels(imageData, faceRegion.nose);
 
-  const combinedPixels = new Uint8ClampedArray(
-    foreheadPixels.length + nosePixels.length
-  );
+  const combinedPixels = new Uint8ClampedArray(foreheadPixels.length + nosePixels.length);
   combinedPixels.set(foreheadPixels, 0);
   combinedPixels.set(nosePixels, foreheadPixels.length);
 
@@ -285,10 +215,7 @@ export function analyzeTZone(
  *
  * @see docs/principles/skin-physiology.md#u-zone
  */
-export function analyzeUZone(
-  imageData: ImageData,
-  faceRegion: FaceRegion
-): ZoneAnalysis {
+export function analyzeUZone(imageData: ImageData, faceRegion: FaceRegion): ZoneAnalysis {
   const leftCheekPixels = extractRegionPixels(imageData, faceRegion.leftCheek);
   const rightCheekPixels = extractRegionPixels(imageData, faceRegion.rightCheek);
   const chinPixels = extractRegionPixels(imageData, faceRegion.chin);
@@ -327,10 +254,7 @@ export function analyzeUZone(
  * @param uZone - U-zone 분석 결과
  * @returns 통합 피부 분석 결과
  */
-export function combineZoneAnalysis(
-  tZone: ZoneAnalysis,
-  uZone: ZoneAnalysis
-): SkinAnalysis {
+export function combineZoneAnalysis(tZone: ZoneAnalysis, uZone: ZoneAnalysis): SkinAnalysis {
   const tCondition = tZone.skinCondition;
   const uCondition = uZone.skinCondition;
 
@@ -345,13 +269,17 @@ export function combineZoneAnalysis(
     skinTypeRationale = 'T-zone과 U-zone 모두 유분이 많아 지성으로 분류';
   } else if (tCondition === 'oily' && (uCondition === 'dry' || uCondition === 'normal')) {
     overallSkinType = 'combination';
-    skinTypeRationale = 'T-zone은 유분이 많고 U-zone은 ' + (uCondition === 'dry' ? '건조' : '정상') + '하여 복합성으로 분류';
+    skinTypeRationale =
+      'T-zone은 유분이 많고 U-zone은 ' +
+      (uCondition === 'dry' ? '건조' : '정상') +
+      '하여 복합성으로 분류';
   } else if (tCondition === 'normal' && uCondition === 'normal') {
     overallSkinType = 'normal';
     skinTypeRationale = 'T-zone과 U-zone 모두 정상 범위로 중성으로 분류';
   } else {
     overallSkinType = 'combination';
-    skinTypeRationale = 'T-zone: ' + tCondition + ', U-zone: ' + uCondition + ' 조합으로 복합성으로 분류';
+    skinTypeRationale =
+      'T-zone: ' + tCondition + ', U-zone: ' + uCondition + ' 조합으로 복합성으로 분류';
   }
 
   return {

@@ -14,7 +14,8 @@
  * 6. 눈가 (Eye Area): 민감, 얇은 피부
  */
 
-import type { LabColor } from '@/lib/shared/integration-types';
+import type { LabColor } from '@/lib/color';
+import { rgbToLab } from '@/lib/color';
 import type {
   SkinZone,
   ZoneMetrics,
@@ -25,10 +26,7 @@ import type {
   ZoneConcern,
   SkinType,
 } from './types';
-import {
-  ZONE_OILINESS_THRESHOLDS,
-  ZONE_SENSITIVITY_THRESHOLDS,
-} from './types';
+import { ZONE_OILINESS_THRESHOLDS, ZONE_SENSITIVITY_THRESHOLDS } from './types';
 
 // =============================================================================
 // 영역 추출 함수
@@ -54,10 +52,7 @@ export function extractZoneRegion(
 /**
  * BoundingBox 영역을 ImageData로 추출
  */
-function extractRegionAsImageData(
-  imageData: ImageData,
-  box: BoundingBox
-): ImageData {
+function extractRegionAsImageData(imageData: ImageData, box: BoundingBox): ImageData {
   const { width: imgWidth, data: srcData } = imageData;
   const { x, y, width, height } = box;
 
@@ -73,7 +68,7 @@ function extractRegionAsImageData(
   for (let row = safeY; row < safeY + safeHeight; row++) {
     for (let col = safeX; col < safeX + safeWidth; col++) {
       const srcIndex = (row * imgWidth + col) * 4;
-      regionData[destIndex++] = srcData[srcIndex];     // R
+      regionData[destIndex++] = srcData[srcIndex]; // R
       regionData[destIndex++] = srcData[srcIndex + 1]; // G
       regionData[destIndex++] = srcData[srcIndex + 2]; // B
       regionData[destIndex++] = srcData[srcIndex + 3]; // A
@@ -92,60 +87,6 @@ function extractRegionAsImageData(
 // 색상 변환 유틸리티
 // =============================================================================
 
-/**
- * RGB를 Lab 색공간으로 변환
- *
- * @see docs/principles/color-science.md
- */
-function rgbToLab(r: number, g: number, b: number): LabColor {
-  // sRGB to linear RGB
-  let rLinear = r / 255;
-  let gLinear = g / 255;
-  let bLinear = b / 255;
-
-  rLinear = rLinear > 0.04045
-    ? Math.pow((rLinear + 0.055) / 1.055, 2.4)
-    : rLinear / 12.92;
-  gLinear = gLinear > 0.04045
-    ? Math.pow((gLinear + 0.055) / 1.055, 2.4)
-    : gLinear / 12.92;
-  bLinear = bLinear > 0.04045
-    ? Math.pow((bLinear + 0.055) / 1.055, 2.4)
-    : bLinear / 12.92;
-
-  // Linear RGB to XYZ (D65)
-  const xVal = rLinear * 0.4124564 + gLinear * 0.3575761 + bLinear * 0.1804375;
-  const yVal = rLinear * 0.2126729 + gLinear * 0.7151522 + bLinear * 0.0721750;
-  const zVal = rLinear * 0.0193339 + gLinear * 0.1191920 + bLinear * 0.9503041;
-
-  // XYZ to Lab (D65 reference white)
-  const xRef = 0.95047;
-  const yRef = 1.00000;
-  const zRef = 1.08883;
-
-  let xRatio = xVal / xRef;
-  let yRatio = yVal / yRef;
-  let zRatio = zVal / zRef;
-
-  const epsilon = 0.008856;
-  const kappa = 903.3;
-
-  xRatio = xRatio > epsilon
-    ? Math.pow(xRatio, 1 / 3)
-    : (kappa * xRatio + 16) / 116;
-  yRatio = yRatio > epsilon
-    ? Math.pow(yRatio, 1 / 3)
-    : (kappa * yRatio + 16) / 116;
-  zRatio = zRatio > epsilon
-    ? Math.pow(zRatio, 1 / 3)
-    : (kappa * zRatio + 16) / 116;
-
-  const L = 116 * yRatio - 16;
-  const a = 500 * (xRatio - yRatio);
-  const labB = 200 * (yRatio - zRatio);
-
-  return { L, a, b: labB };
-}
 /**
  * 픽셀 데이터에서 평균 Lab 색상 계산
  */
@@ -217,7 +158,9 @@ function estimateSensitivity(labA: number, zone: SkinZone): number {
     return Math.round((labA / thresholds.normal) * 30);
   }
   if (labA < thresholds.high) {
-    return Math.round(30 + ((labA - thresholds.normal) / (thresholds.high - thresholds.normal)) * 40);
+    return Math.round(
+      30 + ((labA - thresholds.normal) / (thresholds.high - thresholds.normal)) * 40
+    );
   }
   return Math.round(70 + Math.min(((labA - thresholds.high) / 10) * 30, 30));
 }
@@ -241,10 +184,10 @@ function estimatePoreSize(data: Uint8ClampedArray, zone: SkinZone): PoreSize {
   }
 
   const mean = sumBrightness / pixelCount;
-  const variance = (sumSqBrightness / pixelCount) - (mean * mean);
+  const variance = sumSqBrightness / pixelCount - mean * mean;
   const stdDev = Math.sqrt(variance);
 
-  const zoneMultiplier = (zone === 'forehead' || zone === 'nose') ? 1.2 : 1.0;
+  const zoneMultiplier = zone === 'forehead' || zone === 'nose' ? 1.2 : 1.0;
   const adjustedStdDev = stdDev * zoneMultiplier;
 
   if (adjustedStdDev < 15) return 'small';
@@ -310,10 +253,7 @@ function identifyConcerns(
  * @param zone - 존 식별자
  * @returns 존별 분석 메트릭
  */
-export function analyzeZone(
-  zoneData: ImageData,
-  zone: SkinZone
-): ZoneMetrics {
+export function analyzeZone(zoneData: ImageData, zone: SkinZone): ZoneMetrics {
   const { data, width, height } = zoneData;
   const pixelCount = width * height;
 
@@ -351,14 +291,7 @@ export function analyzeSixZones(
   imageData: ImageData,
   faceRegion: SixZoneFaceRegion
 ): SixZoneAnalysis {
-  const zones: SkinZone[] = [
-    'forehead',
-    'nose',
-    'leftCheek',
-    'rightCheek',
-    'chin',
-    'eyeArea',
-  ];
+  const zones: SkinZone[] = ['forehead', 'nose', 'leftCheek', 'rightCheek', 'chin', 'eyeArea'];
 
   // 각 존 분석
   const zoneResults = {} as Record<SkinZone, ZoneMetrics>;
@@ -369,15 +302,9 @@ export function analyzeSixZones(
 
   // T-zone 평균 (이마 + 코)
   const tZoneAverage = {
-    oiliness: Math.round(
-      (zoneResults.forehead.oiliness + zoneResults.nose.oiliness) / 2
-    ),
-    hydration: Math.round(
-      (zoneResults.forehead.hydration + zoneResults.nose.hydration) / 2
-    ),
-    sensitivity: Math.round(
-      (zoneResults.forehead.sensitivity + zoneResults.nose.sensitivity) / 2
-    ),
+    oiliness: Math.round((zoneResults.forehead.oiliness + zoneResults.nose.oiliness) / 2),
+    hydration: Math.round((zoneResults.forehead.hydration + zoneResults.nose.hydration) / 2),
+    sensitivity: Math.round((zoneResults.forehead.sensitivity + zoneResults.nose.sensitivity) / 2),
   };
 
   // U-zone 평균 (양 볼 + 턱)
@@ -385,17 +312,20 @@ export function analyzeSixZones(
     oiliness: Math.round(
       (zoneResults.leftCheek.oiliness +
         zoneResults.rightCheek.oiliness +
-        zoneResults.chin.oiliness) / 3
+        zoneResults.chin.oiliness) /
+        3
     ),
     hydration: Math.round(
       (zoneResults.leftCheek.hydration +
         zoneResults.rightCheek.hydration +
-        zoneResults.chin.hydration) / 3
+        zoneResults.chin.hydration) /
+        3
     ),
     sensitivity: Math.round(
       (zoneResults.leftCheek.sensitivity +
         zoneResults.rightCheek.sensitivity +
-        zoneResults.chin.sensitivity) / 3
+        zoneResults.chin.sensitivity) /
+        3
     ),
   };
 
@@ -407,10 +337,7 @@ export function analyzeSixZones(
   });
 
   // 신뢰도 계산 (샘플 수 기반)
-  const totalSamples = Object.values(zoneResults).reduce(
-    (sum, z) => sum + z.sampleCount,
-    0
-  );
+  const totalSamples = Object.values(zoneResults).reduce((sum, z) => sum + z.sampleCount, 0);
   const confidence = Math.min(100, Math.round((totalSamples / 10000) * 100));
 
   return {
@@ -452,7 +379,10 @@ export function determineSkinTypeFrom6Zones(
   if (avgSensitivity >= 50) {
     return {
       skinType: 'sensitive',
-      rationale: '전체 민감도 평균 ' + avgSensitivity + '점으로 민감성 피부로 분류. 붉은기와 자극 반응 주의 필요.',
+      rationale:
+        '전체 민감도 평균 ' +
+        avgSensitivity +
+        '점으로 민감성 피부로 분류. 붉은기와 자극 반응 주의 필요.',
     };
   }
 
@@ -466,7 +396,12 @@ export function determineSkinTypeFrom6Zones(
   if (tZoneDry && uZoneDry) {
     return {
       skinType: 'dry',
-      rationale: 'T-zone 유분도 ' + tZoneAverage.oiliness + '점, U-zone 유분도 ' + uZoneAverage.oiliness + '점으로 건성 피부로 분류. 보습 케어 필요.',
+      rationale:
+        'T-zone 유분도 ' +
+        tZoneAverage.oiliness +
+        '점, U-zone 유분도 ' +
+        uZoneAverage.oiliness +
+        '점으로 건성 피부로 분류. 보습 케어 필요.',
     };
   }
 
@@ -474,7 +409,12 @@ export function determineSkinTypeFrom6Zones(
   if (tZoneOily && uZoneOily) {
     return {
       skinType: 'oily',
-      rationale: 'T-zone 유분도 ' + tZoneAverage.oiliness + '점, U-zone 유분도 ' + uZoneAverage.oiliness + '점으로 지성 피부로 분류. 유분 컨트롤 필요.',
+      rationale:
+        'T-zone 유분도 ' +
+        tZoneAverage.oiliness +
+        '점, U-zone 유분도 ' +
+        uZoneAverage.oiliness +
+        '점으로 지성 피부로 분류. 유분 컨트롤 필요.',
     };
   }
 
@@ -482,13 +422,23 @@ export function determineSkinTypeFrom6Zones(
   if (tZoneOily && !uZoneOily) {
     return {
       skinType: 'combination',
-      rationale: 'T-zone 유분도 ' + tZoneAverage.oiliness + '점(높음), U-zone 유분도 ' + uZoneAverage.oiliness + '점으로 복합성 피부로 분류. 존별 맞춤 케어 필요.',
+      rationale:
+        'T-zone 유분도 ' +
+        tZoneAverage.oiliness +
+        '점(높음), U-zone 유분도 ' +
+        uZoneAverage.oiliness +
+        '점으로 복합성 피부로 분류. 존별 맞춤 케어 필요.',
     };
   }
 
   // 중성: 균형 잡힌 상태
   return {
     skinType: 'normal',
-    rationale: 'T-zone 유분도 ' + tZoneAverage.oiliness + '점, U-zone 유분도 ' + uZoneAverage.oiliness + '점으로 중성(정상) 피부로 분류. 현재 상태 유지 권장.',
+    rationale:
+      'T-zone 유분도 ' +
+      tZoneAverage.oiliness +
+      '점, U-zone 유분도 ' +
+      uZoneAverage.oiliness +
+      '점으로 중성(정상) 피부로 분류. 현재 상태 유지 권장.',
   };
 }

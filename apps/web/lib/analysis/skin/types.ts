@@ -6,7 +6,7 @@
  * @see {@link docs/principles/skin-physiology.md} 6-Zone 정의
  */
 
-import type { LabColor } from '@/lib/shared/integration-types';
+import type { LabColor } from '@/lib/color';
 
 // =============================================================================
 // 6-Zone 타입 정의
@@ -25,12 +25,12 @@ import type { LabColor } from '@/lib/shared/integration-types';
  * - eyeArea: 민감, 얇은 피부
  */
 export type SkinZone =
-  | 'forehead'     // 이마: 피지선 밀도 높음, T-zone
-  | 'nose'         // 코: 피지선 최고 밀도, T-zone
-  | 'leftCheek'    // 왼쪽 볼: U-zone, 건조 경향
-  | 'rightCheek'   // 오른쪽 볼: U-zone, 건조 경향
-  | 'chin'         // 턱: 혼합, 호르몬 영향
-  | 'eyeArea';     // 눈가: 민감, 얇은 피부
+  | 'forehead' // 이마: 피지선 밀도 높음, T-zone
+  | 'nose' // 코: 피지선 최고 밀도, T-zone
+  | 'leftCheek' // 왼쪽 볼: U-zone, 건조 경향
+  | 'rightCheek' // 오른쪽 볼: U-zone, 건조 경향
+  | 'chin' // 턱: 혼합, 호르몬 영향
+  | 'eyeArea'; // 눈가: 민감, 얇은 피부
 
 /**
  * 모공 크기 분류
@@ -46,15 +46,15 @@ export type PoreSize = 'small' | 'medium' | 'large';
  * 피부 고민 유형
  */
 export type ZoneConcern =
-  | 'oiliness'       // 번들거림
-  | 'dryness'        // 건조함
-  | 'redness'        // 붉은기
-  | 'pores'          // 모공
-  | 'wrinkles'       // 주름
-  | 'sensitivity'    // 민감
-  | 'blackheads'     // 블랙헤드
-  | 'acne'           // 여드름
-  | 'pigmentation';  // 색소침착
+  | 'oiliness' // 번들거림
+  | 'dryness' // 건조함
+  | 'redness' // 붉은기
+  | 'pores' // 모공
+  | 'wrinkles' // 주름
+  | 'sensitivity' // 민감
+  | 'blackheads' // 블랙헤드
+  | 'acne' // 여드름
+  | 'pigmentation'; // 색소침착
 
 /**
  * 존별 분석 메트릭
@@ -125,11 +125,11 @@ export interface SixZoneAnalysis {
  * 피부 타입 (5가지)
  */
 export type SkinType =
-  | 'dry'         // 건성
-  | 'normal'      // 중성
-  | 'oily'        // 지성
+  | 'dry' // 건성
+  | 'normal' // 중성
+  | 'oily' // 지성
   | 'combination' // 복합성
-  | 'sensitive';  // 민감성
+  | 'sensitive'; // 민감성
 
 /**
  * 6-Zone 얼굴 영역 좌표
@@ -171,12 +171,12 @@ export interface BoundingBox {
  * @see docs/principles/skin-physiology.md Section 1.2
  */
 export const ZONE_SEBUM_DENSITY: Record<SkinZone, { min: number; max: number }> = {
-  forehead: { min: 400, max: 900 },  // 최다 밀집
-  nose: { min: 300, max: 800 },       // 변동 크지만 높음
-  leftCheek: { min: 50, max: 200 },   // 낮음
-  rightCheek: { min: 50, max: 200 },  // 낮음
-  chin: { min: 200, max: 500 },       // 중간
-  eyeArea: { min: 20, max: 100 },     // 매우 낮음
+  forehead: { min: 400, max: 900 }, // 최다 밀집
+  nose: { min: 300, max: 800 }, // 변동 크지만 높음
+  leftCheek: { min: 50, max: 200 }, // 낮음
+  rightCheek: { min: 50, max: 200 }, // 낮음
+  chin: { min: 200, max: 500 }, // 중간
+  eyeArea: { min: 20, max: 100 }, // 매우 낮음
 };
 
 /**
@@ -185,12 +185,12 @@ export const ZONE_SEBUM_DENSITY: Record<SkinZone, { min: number; max: number }> 
  * @see docs/principles/skin-physiology.md Section 2.3
  */
 export const ZONE_OILINESS_THRESHOLDS: Record<SkinZone, { dry: number; oily: number }> = {
-  forehead: { dry: 35, oily: 65 },   // T-zone: 높은 임계값
-  nose: { dry: 35, oily: 65 },       // T-zone
-  leftCheek: { dry: 25, oily: 55 },  // U-zone: 낮은 임계값
+  forehead: { dry: 35, oily: 65 }, // T-zone: 높은 임계값
+  nose: { dry: 35, oily: 65 }, // T-zone
+  leftCheek: { dry: 25, oily: 55 }, // U-zone: 낮은 임계값
   rightCheek: { dry: 25, oily: 55 }, // U-zone
-  chin: { dry: 30, oily: 60 },       // 중간
-  eyeArea: { dry: 20, oily: 50 },    // 민감 영역
+  chin: { dry: 30, oily: 60 }, // 중간
+  eyeArea: { dry: 20, oily: 50 }, // 민감 영역
 };
 
 /**
@@ -201,8 +201,8 @@ export const ZONE_OILINESS_THRESHOLDS: Record<SkinZone, { dry: number; oily: num
 export const ZONE_SENSITIVITY_THRESHOLDS: Record<SkinZone, { normal: number; high: number }> = {
   forehead: { normal: 12, high: 18 },
   nose: { normal: 13, high: 18 },
-  leftCheek: { normal: 12, high: 15 },   // 볼은 민감도 낮은 기준
+  leftCheek: { normal: 12, high: 15 }, // 볼은 민감도 낮은 기준
   rightCheek: { normal: 12, high: 15 },
   chin: { normal: 12, high: 16 },
-  eyeArea: { normal: 10, high: 14 },     // 눈가는 더 민감
+  eyeArea: { normal: 10, high: 14 }, // 눈가는 더 민감
 };
