@@ -12,6 +12,11 @@ import type {
   FaceShapeType,
   FaceShapeAnalysis,
   HairColorAnalysis,
+  HairTexture,
+  HairLength,
+  HairThickness,
+  HairDensity,
+  ScalpCondition,
 } from './types';
 import { FACE_SHAPE_LABELS } from './types';
 import { recommendHairstyles, recommendHairColors, generateCareTips } from './style-recommender';
@@ -24,16 +29,22 @@ import { recommendHairstyles, recommendHairColors, generateCareTips } from './st
  * Mock 얼굴형 생성
  */
 function generateMockFaceShape(): FaceShapeType {
-  const shapes: FaceShapeType[] = ['oval', 'round', 'square', 'heart', 'oblong', 'diamond', 'rectangle'];
+  const shapes: FaceShapeType[] = [
+    'oval',
+    'round',
+    'square',
+    'heart',
+    'oblong',
+    'diamond',
+    'rectangle',
+  ];
   return shapes[Math.floor(Math.random() * shapes.length)];
 }
 
 /**
  * Mock 얼굴형 분석 결과 생성
  */
-export function generateMockFaceShapeAnalysis(
-  faceShape?: FaceShapeType
-): FaceShapeAnalysis {
+export function generateMockFaceShapeAnalysis(faceShape?: FaceShapeType): FaceShapeAnalysis {
   const shape = faceShape || generateMockFaceShape();
 
   // 얼굴형별 대표 비율
@@ -43,11 +54,11 @@ export function generateMockFaceShapeAnalysis(
       faceWidth: 0.25,
       foreheadWidth: 0.22,
       cheekboneWidth: 0.25,
-      jawWidth: 0.20,
+      jawWidth: 0.2,
       lengthToWidthRatio: 1.4,
     },
     round: {
-      faceLength: 0.30,
+      faceLength: 0.3,
       faceWidth: 0.28,
       foreheadWidth: 0.24,
       cheekboneWidth: 0.28,
@@ -55,7 +66,7 @@ export function generateMockFaceShapeAnalysis(
       lengthToWidthRatio: 1.07,
     },
     square: {
-      faceLength: 0.30,
+      faceLength: 0.3,
       faceWidth: 0.28,
       foreheadWidth: 0.26,
       cheekboneWidth: 0.28,
@@ -71,17 +82,17 @@ export function generateMockFaceShapeAnalysis(
       lengthToWidthRatio: 1.27,
     },
     oblong: {
-      faceLength: 0.40,
+      faceLength: 0.4,
       faceWidth: 0.24,
       foreheadWidth: 0.22,
       cheekboneWidth: 0.24,
-      jawWidth: 0.20,
+      jawWidth: 0.2,
       lengthToWidthRatio: 1.67,
     },
     diamond: {
       faceLength: 0.34,
       faceWidth: 0.27,
-      foreheadWidth: 0.20,
+      foreheadWidth: 0.2,
       cheekboneWidth: 0.27,
       jawWidth: 0.18,
       lengthToWidthRatio: 1.26,
@@ -117,10 +128,9 @@ export function generateMockFaceShapeAnalysis(
 /**
  * Mock 헤어컬러 분석 결과 생성
  */
-export function generateMockHairColorAnalysis(
-  personalColorSeason?: string
-): HairColorAnalysis {
-  const season = personalColorSeason || ['spring', 'summer', 'autumn', 'winter'][Math.floor(Math.random() * 4)];
+export function generateMockHairColorAnalysis(personalColorSeason?: string): HairColorAnalysis {
+  const season =
+    personalColorSeason || ['spring', 'summer', 'autumn', 'winter'][Math.floor(Math.random() * 4)];
 
   const currentColors = [
     { name: '내추럴 블랙', hexColor: '#1C1C1C' },
@@ -133,7 +143,11 @@ export function generateMockHairColorAnalysis(
   return {
     currentColor: {
       ...currentColor,
-      labColor: { L: 20 + Math.random() * 20, a: 5 + Math.random() * 10, b: 10 + Math.random() * 15 },
+      labColor: {
+        L: 20 + Math.random() * 20,
+        a: 5 + Math.random() * 10,
+        b: 10 + Math.random() * 15,
+      },
     },
     skinToneMatch: Math.round(60 + Math.random() * 30),
     recommendedColors: recommendHairColors(season, { maxResults: 4 }),
@@ -143,12 +157,10 @@ export function generateMockHairColorAnalysis(
 /**
  * Mock HairAnalysisResult 전체 생성
  */
-export function generateMockHairAnalysisResult(
-  options?: {
-    faceShape?: FaceShapeType;
-    personalColorSeason?: string;
-  }
-): HairAnalysisResult {
+export function generateMockHairAnalysisResult(options?: {
+  faceShape?: FaceShapeType;
+  personalColorSeason?: string;
+}): HairAnalysisResult {
   const { faceShape, personalColorSeason } = options || {};
 
   const faceShapeAnalysis = generateMockFaceShapeAnalysis(faceShape);
@@ -158,9 +170,12 @@ export function generateMockHairAnalysisResult(
     maxResults: 5,
   });
 
+  const textures: HairTexture[] = ['straight', 'wavy', 'curly'];
+  const scalpConditions: ScalpCondition[] = ['dry', 'normal', 'oily'];
+
   const careTips = generateCareTips(faceShapeAnalysis.faceShape, {
-    texture: ['straight', 'wavy', 'curly'][Math.floor(Math.random() * 3)] as any,
-    scalpCondition: ['dry', 'normal', 'oily'][Math.floor(Math.random() * 3)],
+    texture: textures[Math.floor(Math.random() * textures.length)],
+    scalpCondition: scalpConditions[Math.floor(Math.random() * scalpConditions.length)],
   });
 
   return {
@@ -168,11 +183,13 @@ export function generateMockHairAnalysisResult(
     faceShapeAnalysis,
     hairColorAnalysis,
     currentHairInfo: {
-      length: ['short', 'medium', 'long'][Math.floor(Math.random() * 3)] as any,
-      texture: ['straight', 'wavy', 'curly'][Math.floor(Math.random() * 3)] as any,
-      thickness: ['fine', 'medium', 'thick'][Math.floor(Math.random() * 3)] as any,
-      density: ['thin', 'normal', 'dense'][Math.floor(Math.random() * 3)] as any,
-      scalpCondition: ['dry', 'normal', 'oily', 'sensitive'][Math.floor(Math.random() * 4)] as any,
+      length: (['short', 'medium', 'long'] as HairLength[])[Math.floor(Math.random() * 3)],
+      texture: textures[Math.floor(Math.random() * textures.length)],
+      thickness: (['fine', 'medium', 'thick'] as HairThickness[])[Math.floor(Math.random() * 3)],
+      density: (['thin', 'normal', 'dense'] as HairDensity[])[Math.floor(Math.random() * 3)],
+      scalpCondition: (['dry', 'normal', 'oily', 'sensitive'] as ScalpCondition[])[
+        Math.floor(Math.random() * 4)
+      ],
     },
     styleRecommendations,
     careTips,

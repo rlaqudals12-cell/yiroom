@@ -188,11 +188,6 @@ export default function HairAnalysisResultPage() {
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setImageUrl(dbData.image_url);
-
-      // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
-      // 분석 완료 기록 (재진입 구분)
-      const celebrationKey = `celebration-hair-${analysisId}`;
-      sessionStorage.setItem(celebrationKey, 'shown');
     } catch (err) {
       console.error('[H-1] Fetch error:', err);
       setError('결과를 불러오는 데 문제가 발생했어요');

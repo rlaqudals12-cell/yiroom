@@ -122,7 +122,7 @@ export default function HairAnalysisPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Analysis failed');
+        throw new Error(errorData.error || '분석에 실패했어요');
       }
 
       const data = await response.json();

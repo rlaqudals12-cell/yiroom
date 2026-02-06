@@ -7,7 +7,7 @@
  * @see docs/specs/SDD-HAIR-ANALYSIS.md
  */
 
-import type { LabColor } from '@/lib/analysis/personal-color-v2';
+import type { LabColor } from '@/lib/color';
 import type {
   FaceShapeType,
   HairstyleRecommendation,
