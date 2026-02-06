@@ -14,7 +14,7 @@ import {
   calculateHue,
   calculateLabDistance,
   calculateCIEDE2000,
-} from '@/lib/analysis/personal-color/color-space';
+} from '@/lib/color';
 
 // ============================================
 // RGB → Lab 변환 테스트
@@ -233,7 +233,7 @@ describe('calculateCIEDE2000', () => {
       },
       // Pair 3
       {
-        lab1: { L: 50, a: 2.8361, b: -74.0200 },
+        lab1: { L: 50, a: 2.8361, b: -74.02 },
         lab2: { L: 50, a: 0, b: -82.7485 },
         expected: 3.4412,
         description: '파랑 계열 #3',
@@ -242,21 +242,21 @@ describe('calculateCIEDE2000', () => {
       {
         lab1: { L: 50, a: -1.3802, b: -84.2814 },
         lab2: { L: 50, a: 0, b: -82.7485 },
-        expected: 1.0000,
+        expected: 1.0,
         description: '명도 비슷, 색상 차이',
       },
       // Pair 5: 큰 색상각 차이
       {
         lab1: { L: 50, a: -1.1848, b: -84.8006 },
         lab2: { L: 50, a: 0, b: -82.7485 },
-        expected: 1.0000,
+        expected: 1.0,
         description: '작은 채도 차이',
       },
       // Pair 6: 무채색 근처
       {
         lab1: { L: 50, a: -0.9009, b: -85.5211 },
         lab2: { L: 50, a: 0, b: -82.7485 },
-        expected: 1.0000,
+        expected: 1.0,
         description: '무채색 근처 #1',
       },
       // Pair 13: 빨강 계열 (RT 회전 항 테스트)

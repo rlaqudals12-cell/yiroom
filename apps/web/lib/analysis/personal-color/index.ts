@@ -31,11 +31,11 @@ export type {
   ColorInfo,
   ColorCompatibility,
   SkinMetrics,
-} from "./types";
+} from './types';
 
-export { KOREAN_ADJUSTMENTS, SEASON_SUBTYPES } from "./types";
+export { KOREAN_ADJUSTMENTS, SEASON_SUBTYPES } from './types';
 
-// Color Space Utilities
+// Color Space Utilities (SSOT: lib/color)
 export {
   rgbToLab,
   hexToLab,
@@ -44,9 +44,9 @@ export {
   calculateHue,
   calculateLabDistance,
   calculateCIEDE2000,
-} from "./color-space";
+} from '@/lib/color';
 
-export type { CIEDE2000Options } from "./color-space";
+export type { CIEDE2000Options } from '@/lib/color';
 
 // Classification
 export {
@@ -58,17 +58,10 @@ export {
   composeTwelveTone,
   getReferenceLab,
   getKoreanName,
-} from "./classify";
+} from './classify';
 
 // Characteristics
-export {
-  getSubtypeCharacteristics,
-  getAllToneCharacteristics,
-} from "./characteristics";
+export { getSubtypeCharacteristics, getAllToneCharacteristics } from './characteristics';
 
 // Palette
-export {
-  generateTonePalette,
-  getToneCompatibility,
-  getAllTonePalettes,
-} from "./palette";
+export { generateTonePalette, getToneCompatibility, getAllTonePalettes } from './palette';

@@ -7,31 +7,13 @@
  */
 
 // ============================================
-// Lab 색공간 타입
+// Lab 색공간 타입 (SSOT: lib/color)
 // ============================================
 
-/**
- * Lab 색공간 색상값
- * @see docs/principles/color-science.md#lab-색공간-정의
- */
-export interface LabColor {
-  /** L* (Lightness): 0-100, 검정~흰색 */
-  L: number;
-  /** a* (Green-Red): -128 ~ +127, 초록~빨강 */
-  a: number;
-  /** b* (Blue-Yellow): -128 ~ +127, 파랑~노랑 */
-  b: number;
-}
+import type { LabColor as _LabColor, LabDerivedMetrics as _LabDerivedMetrics } from '@/lib/color';
 
-/**
- * Lab 색공간 파생 지표
- */
-export interface LabDerivedMetrics {
-  /** Chroma (채도): √(a*² + b*²) */
-  chroma: number;
-  /** Hue Angle (색상각): atan2(b*, a*) × (180/π) */
-  hue: number;
-}
+export type LabColor = _LabColor;
+export type LabDerivedMetrics = _LabDerivedMetrics;
 
 // ============================================
 // 4계절 시스템 타입

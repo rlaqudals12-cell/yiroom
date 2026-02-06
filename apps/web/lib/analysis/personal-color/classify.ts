@@ -15,9 +15,9 @@ import type {
   UndertoneResult,
   Undertone,
   SkinMetrics,
-} from "./types";
-import { KOREAN_ADJUSTMENTS } from "./types";
-import { calculateDerivedMetrics, calculateLabDistance } from "./color-space";
+} from './types';
+import { KOREAN_ADJUSTMENTS } from './types';
+import { calculateDerivedMetrics, calculateLabDistance } from '@/lib/color';
 
 // ============================================
 // 12-Tone Lab 범위 (color-science.md 기반)
@@ -29,42 +29,42 @@ import { calculateDerivedMetrics, calculateLabDistance } from "./color-space";
  */
 const TWELVE_TONE_REFERENCE_LAB: Record<TwelveTone, LabColor> = {
   // Spring (웜톤, 밝음)
-  "light-spring": { L: 72, a: 8, b: 22 },
-  "true-spring": { L: 68, a: 12, b: 24 },
-  "bright-spring": { L: 66, a: 14, b: 26 },
+  'light-spring': { L: 72, a: 8, b: 22 },
+  'true-spring': { L: 68, a: 12, b: 24 },
+  'bright-spring': { L: 66, a: 14, b: 26 },
 
   // Summer (쿨톤, 밝음)
-  "light-summer": { L: 70, a: 4, b: 12 },
-  "true-summer": { L: 66, a: 6, b: 14 },
-  "muted-summer": { L: 64, a: 5, b: 11 },
+  'light-summer': { L: 70, a: 4, b: 12 },
+  'true-summer': { L: 66, a: 6, b: 14 },
+  'muted-summer': { L: 64, a: 5, b: 11 },
 
   // Autumn (웜톤, 어두움)
-  "muted-autumn": { L: 58, a: 10, b: 18 },
-  "true-autumn": { L: 54, a: 14, b: 22 },
-  "deep-autumn": { L: 48, a: 16, b: 24 },
+  'muted-autumn': { L: 58, a: 10, b: 18 },
+  'true-autumn': { L: 54, a: 14, b: 22 },
+  'deep-autumn': { L: 48, a: 16, b: 24 },
 
   // Winter (쿨톤, 어두움)
-  "true-winter": { L: 52, a: 6, b: 10 },
-  "bright-winter": { L: 56, a: 8, b: 12 },
-  "deep-winter": { L: 44, a: 4, b: 8 },
+  'true-winter': { L: 52, a: 6, b: 10 },
+  'bright-winter': { L: 56, a: 8, b: 12 },
+  'deep-winter': { L: 44, a: 4, b: 8 },
 };
 
 /**
  * 12-Tone 한국어 이름
  */
 const TWELVE_TONE_KOREAN_NAMES: Record<TwelveTone, string> = {
-  "light-spring": "라이트 스프링",
-  "true-spring": "트루 스프링",
-  "bright-spring": "브라이트 스프링",
-  "light-summer": "라이트 서머",
-  "true-summer": "트루 서머",
-  "muted-summer": "뮤트 서머",
-  "muted-autumn": "뮤트 오텀",
-  "true-autumn": "트루 오텀",
-  "deep-autumn": "딥 오텀",
-  "true-winter": "트루 윈터",
-  "bright-winter": "브라이트 윈터",
-  "deep-winter": "딥 윈터",
+  'light-spring': '라이트 스프링',
+  'true-spring': '트루 스프링',
+  'bright-spring': '브라이트 스프링',
+  'light-summer': '라이트 서머',
+  'true-summer': '트루 서머',
+  'muted-summer': '뮤트 서머',
+  'muted-autumn': '뮤트 오텀',
+  'true-autumn': '트루 오텀',
+  'deep-autumn': '딥 오텀',
+  'true-winter': '트루 윈터',
+  'bright-winter': '브라이트 윈터',
+  'deep-winter': '딥 윈터',
 };
 
 // ============================================
@@ -97,20 +97,20 @@ export function determineUndertone(lab: LabColor): UndertoneResult {
   let confidence: number;
 
   if (chroma < 8) {
-    undertone = "neutral";
+    undertone = 'neutral';
     confidence = 60;
   } else if (hue > warmCoolThresholdHue && lab.b > warmCoolThresholdB) {
-    undertone = "warm";
+    undertone = 'warm';
     const hueMargin = hue - warmCoolThresholdHue;
     const bMargin = lab.b - warmCoolThresholdB;
     confidence = Math.min(95, 70 + hueMargin * 0.5 + bMargin * 1.5);
   } else if (hue < warmCoolThresholdHue && lab.b < warmCoolThresholdB) {
-    undertone = "cool";
+    undertone = 'cool';
     const hueMargin = warmCoolThresholdHue - hue;
     const bMargin = warmCoolThresholdB - lab.b;
     confidence = Math.min(95, 70 + hueMargin * 0.5 + bMargin * 1.5);
   } else {
-    undertone = "neutral";
+    undertone = 'neutral';
     confidence = 50 + Math.abs(hue - warmCoolThresholdHue) * 0.3;
   }
 
@@ -129,17 +129,17 @@ export function determineUndertone(lab: LabColor): UndertoneResult {
 export function determineSeason(lab: LabColor, undertone: UndertoneResult): Season {
   const { springAutumnBoundaryL, summerWinterBoundaryL } = KOREAN_ADJUSTMENTS;
 
-  if (undertone.undertone === "warm") {
-    return lab.L > springAutumnBoundaryL ? "spring" : "autumn";
-  } else if (undertone.undertone === "cool") {
-    return lab.L > summerWinterBoundaryL ? "summer" : "winter";
+  if (undertone.undertone === 'warm') {
+    return lab.L > springAutumnBoundaryL ? 'spring' : 'autumn';
+  } else if (undertone.undertone === 'cool') {
+    return lab.L > summerWinterBoundaryL ? 'summer' : 'winter';
   } else {
     if (lab.L > springAutumnBoundaryL) {
       const { hue } = calculateDerivedMetrics(lab);
-      return hue > KOREAN_ADJUSTMENTS.warmCoolThresholdHue ? "spring" : "summer";
+      return hue > KOREAN_ADJUSTMENTS.warmCoolThresholdHue ? 'spring' : 'summer';
     } else {
       const { hue } = calculateDerivedMetrics(lab);
-      return hue > KOREAN_ADJUSTMENTS.warmCoolThresholdHue ? "autumn" : "winter";
+      return hue > KOREAN_ADJUSTMENTS.warmCoolThresholdHue ? 'autumn' : 'winter';
     }
   }
 }
@@ -155,32 +155,32 @@ export function determineSubtype(lab: LabColor, season: Season): Subtype {
   const { chroma } = calculateDerivedMetrics(lab);
 
   switch (season) {
-    case "spring": {
-      if (lab.L > SUBTYPE_THRESHOLDS.lightL) return "light";
-      if (chroma > SUBTYPE_THRESHOLDS.brightChroma) return "bright";
-      return "true";
+    case 'spring': {
+      if (lab.L > SUBTYPE_THRESHOLDS.lightL) return 'light';
+      if (chroma > SUBTYPE_THRESHOLDS.brightChroma) return 'bright';
+      return 'true';
     }
 
-    case "summer": {
-      if (lab.L > SUBTYPE_THRESHOLDS.lightL) return "light";
-      if (chroma < SUBTYPE_THRESHOLDS.mutedChroma) return "muted";
-      return "true";
+    case 'summer': {
+      if (lab.L > SUBTYPE_THRESHOLDS.lightL) return 'light';
+      if (chroma < SUBTYPE_THRESHOLDS.mutedChroma) return 'muted';
+      return 'true';
     }
 
-    case "autumn": {
-      if (lab.L < SUBTYPE_THRESHOLDS.deepL) return "deep";
-      if (chroma < SUBTYPE_THRESHOLDS.mutedChroma) return "muted";
-      return "true";
+    case 'autumn': {
+      if (lab.L < SUBTYPE_THRESHOLDS.deepL) return 'deep';
+      if (chroma < SUBTYPE_THRESHOLDS.mutedChroma) return 'muted';
+      return 'true';
     }
 
-    case "winter": {
-      if (lab.L < SUBTYPE_THRESHOLDS.deepL) return "deep";
-      if (chroma > SUBTYPE_THRESHOLDS.brightChroma) return "bright";
-      return "true";
+    case 'winter': {
+      if (lab.L < SUBTYPE_THRESHOLDS.deepL) return 'deep';
+      if (chroma > SUBTYPE_THRESHOLDS.brightChroma) return 'bright';
+      return 'true';
     }
 
     default:
-      return "true";
+      return 'true';
   }
 }
 
@@ -198,7 +198,7 @@ export function classify12Tone(skinMetrics: SkinMetrics): TwelveToneResult {
   const undertoneResult = determineUndertone(lab);
 
   if (undertoneResult.confidence < 60) {
-    warnings.push("언더톤 판정이 경계 영역입니다. 드레이핑 테스트로 확인하세요.");
+    warnings.push('언더톤 판정이 경계 영역입니다. 드레이핑 테스트로 확인하세요.');
   }
 
   const season = determineSeason(lab, undertoneResult);
@@ -211,7 +211,9 @@ export function classify12Tone(skinMetrics: SkinMetrics): TwelveToneResult {
   const distanceConfidence = Math.max(60, 100 - labDistance * 2.5);
 
   if (labDistance > 10) {
-    warnings.push(`대표값과의 거리가 큽니다 (deltaE=${labDistance.toFixed(1)}). 인접 타입도 고려하세요.`);
+    warnings.push(
+      `대표값과의 거리가 큽니다 (deltaE=${labDistance.toFixed(1)}). 인접 타입도 고려하세요.`
+    );
   }
 
   const confidence = Math.round((undertoneResult.confidence + distanceConfidence) / 2);
@@ -232,7 +234,7 @@ export function classify12Tone(skinMetrics: SkinMetrics): TwelveToneResult {
 // ============================================
 
 export function parseTwelveTone(tone: TwelveTone): { season: Season; subtype: Subtype } {
-  const parts = tone.split("-");
+  const parts = tone.split('-');
   const subtype = parts[0] as Subtype;
   const season = parts[1] as Season;
   return { season, subtype };
