@@ -5,8 +5,8 @@
  * @see docs/specs/SDD-HAIR-ANALYSIS.md
  */
 
-import type { LabColor } from '../personal-color-v2';
-import type { Landmark33 } from '../body-v2';
+import type { LabColor } from '@/lib/analysis/personal-color-v2';
+import type { Landmark33 } from '@/lib/analysis/body-v2';
 
 // =============================================================================
 // 얼굴형 타입
@@ -16,13 +16,13 @@ import type { Landmark33 } from '../body-v2';
  * 얼굴형 분류 (7가지)
  */
 export type FaceShapeType =
-  | 'oval'        // 타원형 (이상적)
-  | 'round'       // 둥근형
-  | 'square'      // 사각형
-  | 'heart'       // 하트형 (역삼각형)
-  | 'oblong'      // 긴 형
-  | 'diamond'     // 다이아몬드형
-  | 'rectangle';  // 직사각형
+  | 'oval' // 타원형 (이상적)
+  | 'round' // 둥근형
+  | 'square' // 사각형
+  | 'heart' // 하트형 (역삼각형)
+  | 'oblong' // 긴 형
+  | 'diamond' // 다이아몬드형
+  | 'rectangle'; // 직사각형
 
 /**
  * 얼굴형 한국어 라벨
@@ -139,11 +139,11 @@ export interface FaceShapeAnalysis {
   faceShapeLabel: string;
   confidence: number;
   ratios: {
-    faceLength: number;      // 얼굴 길이
-    faceWidth: number;       // 얼굴 너비
-    foreheadWidth: number;   // 이마 너비
-    cheekboneWidth: number;  // 광대 너비
-    jawWidth: number;        // 턱 너비
+    faceLength: number; // 얼굴 길이
+    faceWidth: number; // 얼굴 너비
+    foreheadWidth: number; // 이마 너비
+    cheekboneWidth: number; // 광대 너비
+    jawWidth: number; // 턱 너비
     lengthToWidthRatio: number; // 길이/너비 비율
   };
 }
@@ -188,10 +188,13 @@ export interface HairAnalysisResult {
 /**
  * 얼굴형별 추천 스타일 매핑
  */
-export const FACE_SHAPE_STYLE_MAPPING: Record<FaceShapeType, {
-  recommended: string[];
-  avoid: string[];
-}> = {
+export const FACE_SHAPE_STYLE_MAPPING: Record<
+  FaceShapeType,
+  {
+    recommended: string[];
+    avoid: string[];
+  }
+> = {
   oval: {
     recommended: ['대부분의 스타일 가능', '레이어드 컷', '뱅 스타일', '숏컷', '롱헤어'],
     avoid: ['극단적으로 볼륨이 큰 스타일'],

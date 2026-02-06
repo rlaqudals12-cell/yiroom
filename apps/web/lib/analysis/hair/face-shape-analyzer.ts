@@ -7,11 +7,8 @@
  * @see docs/specs/SDD-HAIR-ANALYSIS.md
  */
 
-import type { Landmark33 } from '../body-v2';
-import type {
-  FaceShapeType,
-  FaceShapeAnalysis,
-} from './types';
+import type { Landmark33 } from '@/lib/analysis/body-v2';
+import type { FaceShapeType, FaceShapeAnalysis } from './types';
 import { FACE_SHAPE_LABELS, FACE_SHAPE_DESCRIPTIONS } from './types';
 
 // =============================================================================
@@ -100,10 +97,8 @@ function calculateFaceRatios(
   const chin = get(FACE_LANDMARKS.chin);
 
   // 거리 계산 함수
-  const distance = (
-    p1: { x: number; y: number },
-    p2: { x: number; y: number }
-  ) => Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+  const distance = (p1: { x: number; y: number }, p2: { x: number; y: number }) =>
+    Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
 
   // 얼굴 길이 (이마 상단 ~ 턱 끝)
   const faceLength = distance(foreheadTop, chin);
@@ -136,15 +131,11 @@ function calculateFaceRatios(
 /**
  * 비율 기반 얼굴형 분류
  */
-function classifyFaceShape(
-  ratios: FaceShapeAnalysis['ratios']
-): { faceShape: FaceShapeType; confidence: number } {
-  const {
-    lengthToWidthRatio,
-    foreheadWidth,
-    cheekboneWidth,
-    jawWidth,
-  } = ratios;
+function classifyFaceShape(ratios: FaceShapeAnalysis['ratios']): {
+  faceShape: FaceShapeType;
+  confidence: number;
+} {
+  const { lengthToWidthRatio, foreheadWidth, cheekboneWidth, jawWidth } = ratios;
 
   // 상대적 비율 계산
   const foreheadToJaw = jawWidth > 0 ? foreheadWidth / jawWidth : 1;
@@ -202,9 +193,7 @@ function classifyFaceShape(
  * Pose 랜드마크(33개)에서 얼굴형 추정
  * Face Mesh가 없을 때 사용하는 대체 함수
  */
-export function estimateFaceShapeFromPose(
-  poseLandmarks: Landmark33[]
-): FaceShapeAnalysis {
+export function estimateFaceShapeFromPose(poseLandmarks: Landmark33[]): FaceShapeAnalysis {
   // Pose 랜드마크에서 얼굴 관련 포인트 추출
   // 0: 코, 1-4: 눈, 5-6: 귀, 7-8: 입
   const nose = poseLandmarks[0];
@@ -219,7 +208,7 @@ export function estimateFaceShapeFromPose(
   const eyeDistance = Math.abs(rightEye.x - leftEye.x);
   const earDistance = Math.abs(rightEar.x - leftEar.x);
   const mouthWidth = Math.abs(rightMouth.x - leftMouth.x);
-  const faceHeight = Math.abs(nose.y - ((leftEar.y + rightEar.y) / 2)) * 2;
+  const faceHeight = Math.abs(nose.y - (leftEar.y + rightEar.y) / 2) * 2;
 
   const estimatedRatios: FaceShapeAnalysis['ratios'] = {
     faceLength: faceHeight,
@@ -250,9 +239,7 @@ export function getFaceShapeDescription(faceShape: FaceShapeType): string {
 /**
  * 얼굴형 신뢰도 등급
  */
-export function getFaceShapeConfidenceGrade(
-  confidence: number
-): { label: string; color: string } {
+export function getFaceShapeConfidenceGrade(confidence: number): { label: string; color: string } {
   if (confidence >= 85) return { label: '매우 높음', color: 'emerald' };
   if (confidence >= 70) return { label: '높음', color: 'blue' };
   if (confidence >= 55) return { label: '보통', color: 'amber' };

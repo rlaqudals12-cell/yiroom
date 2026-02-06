@@ -7,7 +7,7 @@
  * @see docs/specs/SDD-HAIR-ANALYSIS.md
  */
 
-import type { LabColor } from '../personal-color-v2';
+import type { LabColor } from '@/lib/analysis/personal-color-v2';
 import type {
   FaceShapeType,
   HairstyleRecommendation,
@@ -118,28 +118,124 @@ const HAIRSTYLE_CATALOG: HairstyleRecommendation[] = [
  */
 const HAIR_COLOR_BY_SEASON: Record<string, HairColorRecommendation[]> = {
   spring: [
-    { name: '골드 브라운', hexColor: '#B5651D', suitability: 90, seasonMatch: 'spring', tags: ['웜톤', '밝은'] },
-    { name: '허니 블론드', hexColor: '#D4A76A', suitability: 85, seasonMatch: 'spring', tags: ['웜톤', '블론드'] },
-    { name: '오렌지 브라운', hexColor: '#C87533', suitability: 80, seasonMatch: 'spring', tags: ['웜톤', '비비드'] },
-    { name: '코랄 브라운', hexColor: '#CD5C5C', suitability: 75, seasonMatch: 'spring', tags: ['웜톤', '코랄'] },
+    {
+      name: '골드 브라운',
+      hexColor: '#B5651D',
+      suitability: 90,
+      seasonMatch: 'spring',
+      tags: ['웜톤', '밝은'],
+    },
+    {
+      name: '허니 블론드',
+      hexColor: '#D4A76A',
+      suitability: 85,
+      seasonMatch: 'spring',
+      tags: ['웜톤', '블론드'],
+    },
+    {
+      name: '오렌지 브라운',
+      hexColor: '#C87533',
+      suitability: 80,
+      seasonMatch: 'spring',
+      tags: ['웜톤', '비비드'],
+    },
+    {
+      name: '코랄 브라운',
+      hexColor: '#CD5C5C',
+      suitability: 75,
+      seasonMatch: 'spring',
+      tags: ['웜톤', '코랄'],
+    },
   ],
   summer: [
-    { name: '애쉬 브라운', hexColor: '#8B7355', suitability: 90, seasonMatch: 'summer', tags: ['쿨톤', '자연스러운'] },
-    { name: '로즈 브라운', hexColor: '#9E7B7B', suitability: 85, seasonMatch: 'summer', tags: ['쿨톤', '로즈'] },
-    { name: '라벤더 그레이', hexColor: '#9896A4', suitability: 80, seasonMatch: 'summer', tags: ['쿨톤', '라벤더'] },
-    { name: '소프트 블랙', hexColor: '#3C3C3C', suitability: 75, seasonMatch: 'summer', tags: ['쿨톤', '다크'] },
+    {
+      name: '애쉬 브라운',
+      hexColor: '#8B7355',
+      suitability: 90,
+      seasonMatch: 'summer',
+      tags: ['쿨톤', '자연스러운'],
+    },
+    {
+      name: '로즈 브라운',
+      hexColor: '#9E7B7B',
+      suitability: 85,
+      seasonMatch: 'summer',
+      tags: ['쿨톤', '로즈'],
+    },
+    {
+      name: '라벤더 그레이',
+      hexColor: '#9896A4',
+      suitability: 80,
+      seasonMatch: 'summer',
+      tags: ['쿨톤', '라벤더'],
+    },
+    {
+      name: '소프트 블랙',
+      hexColor: '#3C3C3C',
+      suitability: 75,
+      seasonMatch: 'summer',
+      tags: ['쿨톤', '다크'],
+    },
   ],
   autumn: [
-    { name: '다크 브라운', hexColor: '#5C4033', suitability: 90, seasonMatch: 'autumn', tags: ['웜톤', '딥'] },
-    { name: '버건디', hexColor: '#800020', suitability: 85, seasonMatch: 'autumn', tags: ['웜톤', '버건디'] },
-    { name: '초콜릿 브라운', hexColor: '#7B3F00', suitability: 85, seasonMatch: 'autumn', tags: ['웜톤', '초콜릿'] },
-    { name: '오번', hexColor: '#A52A2A', suitability: 80, seasonMatch: 'autumn', tags: ['웜톤', '레드'] },
+    {
+      name: '다크 브라운',
+      hexColor: '#5C4033',
+      suitability: 90,
+      seasonMatch: 'autumn',
+      tags: ['웜톤', '딥'],
+    },
+    {
+      name: '버건디',
+      hexColor: '#800020',
+      suitability: 85,
+      seasonMatch: 'autumn',
+      tags: ['웜톤', '버건디'],
+    },
+    {
+      name: '초콜릿 브라운',
+      hexColor: '#7B3F00',
+      suitability: 85,
+      seasonMatch: 'autumn',
+      tags: ['웜톤', '초콜릿'],
+    },
+    {
+      name: '오번',
+      hexColor: '#A52A2A',
+      suitability: 80,
+      seasonMatch: 'autumn',
+      tags: ['웜톤', '레드'],
+    },
   ],
   winter: [
-    { name: '블루 블랙', hexColor: '#1C1C28', suitability: 90, seasonMatch: 'winter', tags: ['쿨톤', '블랙'] },
-    { name: '애쉬 블랙', hexColor: '#2F2F2F', suitability: 85, seasonMatch: 'winter', tags: ['쿨톤', '애쉬'] },
-    { name: '버건디 블랙', hexColor: '#4A0000', suitability: 80, seasonMatch: 'winter', tags: ['쿨톤', '버건디'] },
-    { name: '플래티넘 블론드', hexColor: '#E5E4E2', suitability: 75, seasonMatch: 'winter', tags: ['쿨톤', '플래티넘'] },
+    {
+      name: '블루 블랙',
+      hexColor: '#1C1C28',
+      suitability: 90,
+      seasonMatch: 'winter',
+      tags: ['쿨톤', '블랙'],
+    },
+    {
+      name: '애쉬 블랙',
+      hexColor: '#2F2F2F',
+      suitability: 85,
+      seasonMatch: 'winter',
+      tags: ['쿨톤', '애쉬'],
+    },
+    {
+      name: '버건디 블랙',
+      hexColor: '#4A0000',
+      suitability: 80,
+      seasonMatch: 'winter',
+      tags: ['쿨톤', '버건디'],
+    },
+    {
+      name: '플래티넘 블론드',
+      hexColor: '#E5E4E2',
+      suitability: 75,
+      seasonMatch: 'winter',
+      tags: ['쿨톤', '플래티넘'],
+    },
   ],
 };
 
@@ -147,8 +243,20 @@ const HAIR_COLOR_BY_SEASON: Record<string, HairColorRecommendation[]> = {
  * 기본 헤어컬러 (시즌 미지정 시)
  */
 const DEFAULT_HAIR_COLORS: HairColorRecommendation[] = [
-  { name: '내추럴 브라운', hexColor: '#6B4423', suitability: 80, seasonMatch: 'all', tags: ['자연스러운'] },
-  { name: '다크 브라운', hexColor: '#3D2314', suitability: 80, seasonMatch: 'all', tags: ['자연스러운'] },
+  {
+    name: '내추럴 브라운',
+    hexColor: '#6B4423',
+    suitability: 80,
+    seasonMatch: 'all',
+    tags: ['자연스러운'],
+  },
+  {
+    name: '다크 브라운',
+    hexColor: '#3D2314',
+    suitability: 80,
+    seasonMatch: 'all',
+    tags: ['자연스러운'],
+  },
   { name: '블랙', hexColor: '#1C1C1C', suitability: 75, seasonMatch: 'all', tags: ['클래식'] },
 ];
 
@@ -174,26 +282,26 @@ export function recommendHairstyles(
   const avoidKeywords = styleMapping.avoid;
 
   // 스타일별 적합도 계산
-  const scoredStyles = HAIRSTYLE_CATALOG.map(style => {
+  const scoredStyles = HAIRSTYLE_CATALOG.map((style) => {
     let suitability = 50; // 기본 점수
 
     // 추천 키워드 매칭
-    recommendedKeywords.forEach(keyword => {
+    recommendedKeywords.forEach((keyword) => {
       if (
         style.name.includes(keyword) ||
         style.description.includes(keyword) ||
-        style.tags.some(tag => tag.includes(keyword))
+        style.tags.some((tag) => tag.includes(keyword))
       ) {
         suitability += 15;
       }
     });
 
     // 피해야 할 키워드 매칭
-    avoidKeywords.forEach(keyword => {
+    avoidKeywords.forEach((keyword) => {
       if (
         style.name.includes(keyword) ||
         style.description.includes(keyword) ||
-        style.tags.some(tag => tag.includes(keyword))
+        style.tags.some((tag) => tag.includes(keyword))
       ) {
         suitability -= 20;
       }
@@ -224,9 +332,7 @@ export function recommendHairstyles(
   });
 
   // 적합도 순 정렬 및 상위 N개 반환
-  return scoredStyles
-    .sort((a, b) => b.suitability - a.suitability)
-    .slice(0, maxResults);
+  return scoredStyles.sort((a, b) => b.suitability - a.suitability).slice(0, maxResults);
 }
 
 /**
