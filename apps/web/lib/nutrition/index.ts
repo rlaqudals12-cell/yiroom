@@ -127,6 +127,9 @@ export {
   findSimilarIngredient,
   calculateDailyCalories,
   calculateDailyProtein,
+  calculateGoalBasedMacros,
+  calculateAllGoalComparisons,
+  mapToFitnessGoal,
   SAMPLE_RECIPES,
   NUTRITION_GOAL_LABELS,
   NUTRITION_TARGETS,
@@ -136,6 +139,7 @@ export {
 
 export type {
   NutritionGoal,
+  GoalBasedMacros,
   IngredientCategory,
   RecipeIngredient,
   Recipe,

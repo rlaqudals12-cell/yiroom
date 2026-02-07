@@ -589,3 +589,104 @@ export function calculateDailyCalories(
 export function calculateDailyProtein(weight: number, goal: NutritionGoal): number {
   return Math.round(weight * NUTRITION_TARGETS[goal].proteinPerKg);
 }
+
+// 목표별 매크로 계산 결과
+export interface GoalBasedMacros {
+  dailyCalories: number;
+  protein: number; // g
+  carbs: number; // g
+  fat: number; // g
+  goal: NutritionGoal;
+  goalLabel: string;
+  description: string;
+}
+
+/**
+ * 목표별 칼로리 + 매크로(단백질/탄수화물/지방) 통합 계산
+ *
+ * NUTRITION_TARGETS의 목표별 비율을 사용:
+ * - diet: 칼로리 80%, 단백질 1.6g/kg, 탄수화물 35%, 지방 25%
+ * - bulk: 칼로리 115%, 단백질 2.0g/kg, 탄수화물 45%, 지방 25%
+ * - lean: 칼로리 105%, 단백질 2.2g/kg, 탄수화물 40%, 지방 25%
+ * - maintenance: 칼로리 100%, 단백질 1.4g/kg, 탄수화물 45%, 지방 30%
+ *
+ * @param tdee - 총 에너지 소비량 (kcal/day)
+ * @param weight - 체중 (kg)
+ * @param goal - 영양 목표 (diet/bulk/lean/maintenance)
+ */
+export function calculateGoalBasedMacros(
+  tdee: number,
+  weight: number,
+  goal: NutritionGoal
+): GoalBasedMacros {
+  if (tdee <= 0 || weight <= 0) {
+    return {
+      dailyCalories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      goal,
+      goalLabel: NUTRITION_GOAL_LABELS[goal],
+      description: NUTRITION_TARGETS[goal].description,
+    };
+  }
+
+  const target = NUTRITION_TARGETS[goal];
+  const dailyCalories = Math.round(tdee * target.calorieMultiplier);
+
+  // 단백질: 체중 기반 (g/kg)
+  const protein = Math.round(weight * target.proteinPerKg);
+  const proteinCalories = protein * 4;
+
+  // 지방: 목표별 비율
+  const fatCalories = dailyCalories * target.fatRatio;
+  const fat = Math.round(fatCalories / 9);
+
+  // 탄수화물: 나머지 칼로리
+  const carbsCalories = Math.max(0, dailyCalories - proteinCalories - fatCalories);
+  const carbs = Math.round(carbsCalories / 4);
+
+  return {
+    dailyCalories,
+    protein,
+    carbs,
+    fat,
+    goal,
+    goalLabel: NUTRITION_GOAL_LABELS[goal],
+    description: target.description,
+  };
+}
+
+// 영양 온보딩 목표 → 레시피 목표 매핑
+type OnboardingNutritionGoal = 'weight_loss' | 'maintain' | 'muscle' | 'skin' | 'health';
+
+const GOAL_MAPPING: Record<OnboardingNutritionGoal, NutritionGoal> = {
+  weight_loss: 'diet',
+  maintain: 'maintenance',
+  muscle: 'bulk',
+  skin: 'maintenance',
+  health: 'maintenance',
+};
+
+/**
+ * 온보딩 영양 목표를 레시피/피트니스 목표로 변환
+ *
+ * 매핑:
+ * - weight_loss → diet (칼로리 제한)
+ * - muscle → bulk (칼로리 잉여)
+ * - maintain/skin/health → maintenance (유지)
+ */
+export function mapToFitnessGoal(onboardingGoal: OnboardingNutritionGoal): NutritionGoal {
+  return GOAL_MAPPING[onboardingGoal] ?? 'maintenance';
+}
+
+/**
+ * 4가지 목표 전체에 대한 매크로 비교표 생성
+ *
+ * 온보딩 후 사용자에게 각 목표별 칼로리/매크로를 비교하여
+ * 목표 변경 시 참고할 수 있도록 함
+ */
+export function calculateAllGoalComparisons(tdee: number, weight: number): GoalBasedMacros[] {
+  const goals: NutritionGoal[] = ['diet', 'bulk', 'lean', 'maintenance'];
+  return goals.map((goal) => calculateGoalBasedMacros(tdee, weight, goal));
+}
