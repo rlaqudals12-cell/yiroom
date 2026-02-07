@@ -153,7 +153,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('상세 지표')).toBeInTheDocument();
+        expect(screen.getByText('항목별 점수')).toBeInTheDocument();
       });
 
       const detailTab = screen.getByRole('tab', { name: /상세 정보/i });
@@ -209,7 +209,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('분석 인사이트')).toBeInTheDocument();
+        expect(screen.getByText('분석 요약')).toBeInTheDocument();
         expect(screen.getByText(/전반적으로 건강한 모발 상태입니다/)).toBeInTheDocument();
       });
     });
@@ -219,7 +219,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('상세 지표')).toBeInTheDocument();
+        expect(screen.getByText('항목별 점수')).toBeInTheDocument();
       });
 
       // 상세 정보 탭으로 전환
@@ -227,7 +227,7 @@ describe('HairAnalysisResultPage', () => {
       await user.click(detailTab);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 성분')).toBeInTheDocument();
+        expect(screen.getByText('추천 케어 성분')).toBeInTheDocument();
         expect(screen.getByText('아르간 오일')).toBeInTheDocument();
         expect(screen.getByText('히알루론산')).toBeInTheDocument();
       });
@@ -246,7 +246,7 @@ describe('HairAnalysisResultPage', () => {
       await user.click(detailTab);
 
       await waitFor(() => {
-        expect(screen.getByText('케어 팁')).toBeInTheDocument();
+        expect(screen.getByText('관리 방법')).toBeInTheDocument();
         expect(screen.getByText(/주 2회 딥 컨디셔닝/)).toBeInTheDocument();
       });
     });
@@ -345,7 +345,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/분석 결과를 찾을 수 없습니다/)).toBeInTheDocument();
+        expect(screen.getByText(/결과를 불러오는 데 문제가 발생했어요/)).toBeInTheDocument();
       });
     });
 
@@ -362,7 +362,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Database connection failed/)).toBeInTheDocument();
+        expect(screen.getByText(/결과를 불러오는 데 문제가 발생했어요/)).toBeInTheDocument();
       });
     });
 

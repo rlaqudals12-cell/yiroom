@@ -62,7 +62,7 @@ describe('FactorTrendChart', () => {
     // 기간 외의 데이터만 제공
     const entries = [createMockEntry(100, 3)]; // 100일 전 = 7일 기간 외
     render(<FactorTrendChart entries={entries} factor="skinCondition" period="7days" />);
-    expect(screen.getByText('최근 7일 동안 기록이 없습니다')).toBeInTheDocument();
+    expect(screen.getByText('최근 7일 동안 기록이 없어요')).toBeInTheDocument();
   });
 
   it('displays average condition', () => {

@@ -239,7 +239,7 @@ describe('POST /api/analyze/skin', () => {
       const json = await response.json();
 
       expect(response.status).toBe(401);
-      expect(json.error).toBe('Unauthorized');
+      expect(json.error).toBe('인증이 필요합니다.');
     });
   });
 
@@ -249,7 +249,7 @@ describe('POST /api/analyze/skin', () => {
       const json = await response.json();
 
       expect(response.status).toBe(400);
-      expect(json.error).toBe('Image is required');
+      expect(json.error).toBe('이미지가 필요해요');
     });
   });
 
@@ -539,7 +539,7 @@ describe('GET /api/analyze/skin', () => {
       const json = await response.json();
 
       expect(response.status).toBe(401);
-      expect(json.error).toBe('Unauthorized');
+      expect(json.error).toBe('인증이 필요합니다.');
     });
   });
 
@@ -575,7 +575,7 @@ describe('GET /api/analyze/skin', () => {
       const json = await response.json();
 
       expect(response.status).toBe(500);
-      expect(json.error).toBe('Failed to fetch analyses');
+      expect(json.error).toBe('데이터베이스 오류가 발생했습니다.');
     });
   });
 });

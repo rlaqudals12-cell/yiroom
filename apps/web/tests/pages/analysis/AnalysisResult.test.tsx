@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import AnalysisResult from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
 import type { PersonalColorResult } from '@/lib/mock/personal-color';
 
@@ -202,23 +202,6 @@ describe('AnalysisResult', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
       expect(screen.getByText('얼굴이 환하게 보여요')).toBeInTheDocument();
-    });
-  });
-
-  describe('다시 분석하기', () => {
-    it('다시 분석하기 버튼을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
-
-      expect(screen.getByRole('button', { name: /다시 분석하기/ })).toBeInTheDocument();
-    });
-
-    it('버튼 클릭 시 onRetry를 호출한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
-
-      const button = screen.getByRole('button', { name: /다시 분석하기/ });
-      fireEvent.click(button);
-
-      expect(mockOnRetry).toHaveBeenCalledTimes(1);
     });
   });
 

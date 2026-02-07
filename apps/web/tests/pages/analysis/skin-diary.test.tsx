@@ -128,7 +128,7 @@ describe('SkinDiaryPage', () => {
       render(<SkinDiaryPage />);
 
       await waitFor(() => {
-        expect(screen.getByRole('alert')).toHaveTextContent(/실패했습니다/);
+        expect(screen.getByRole('alert')).toHaveTextContent(/불러오지 못했어요/);
       });
     });
   });

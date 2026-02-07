@@ -73,7 +73,7 @@ describe('CorrelationChart', () => {
 
   it('renders empty state when no insights', () => {
     render(<CorrelationChart insights={[]} />);
-    expect(screen.getByText('상관관계 데이터가 없습니다')).toBeInTheDocument();
+    expect(screen.getByText('상관관계 데이터가 없어요')).toBeInTheDocument();
     expect(screen.getByText('7일 이상 기록하면 분석 결과를 확인할 수 있어요')).toBeInTheDocument();
   });
 

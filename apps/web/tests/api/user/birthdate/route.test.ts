@@ -15,7 +15,7 @@ const createMockSupabase = () => {
   const mock = {
     from: vi.fn(),
     select: vi.fn(),
-    update: vi.fn(),
+    upsert: vi.fn(),
     eq: vi.fn(),
     single: vi.fn(),
   };
@@ -23,7 +23,7 @@ const createMockSupabase = () => {
   // 체인 설정
   mock.from.mockReturnValue(mock);
   mock.select.mockReturnValue(mock);
-  mock.update.mockReturnValue(mock);
+  mock.upsert.mockResolvedValue({ error: null });
   mock.eq.mockReturnValue(mock);
 
   return mock;
@@ -44,7 +44,11 @@ describe('POST /api/user/birthdate', () => {
   });
 
   it('should return 401 when not authenticated', async () => {
-    vi.mocked(auth).mockResolvedValue({ userId: null } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+    vi.mocked(auth).mockResolvedValue({ userId: null } as ReturnType<typeof auth> extends Promise<
+      infer T
+    >
+      ? T
+      : never);
 
     const request = new NextRequest('http://localhost/api/user/birthdate', {
       method: 'POST',
@@ -59,7 +63,11 @@ describe('POST /api/user/birthdate', () => {
   });
 
   it('should return 400 for invalid birthdate format', async () => {
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<
+      typeof auth
+    > extends Promise<infer T>
+      ? T
+      : never);
 
     const request = new NextRequest('http://localhost/api/user/birthdate', {
       method: 'POST',
@@ -74,7 +82,11 @@ describe('POST /api/user/birthdate', () => {
   });
 
   it('should return 403 for minor (under 14)', async () => {
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<
+      typeof auth
+    > extends Promise<infer T>
+      ? T
+      : never);
 
     // 현재 기준 10세
     const minorBirthDate = new Date();
@@ -95,10 +107,13 @@ describe('POST /api/user/birthdate', () => {
   });
 
   it('should save birthdate for adult (14+)', async () => {
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<
+      typeof auth
+    > extends Promise<infer T>
+      ? T
+      : never);
 
-    // update().eq() 체인 결과
-    mockSupabase.eq.mockResolvedValue({ error: null });
+    // upsert() 결과 (기본값 이미 설정됨)
 
     // 현재 기준 20세
     const adultBirthDate = new Date();
@@ -119,9 +134,11 @@ describe('POST /api/user/birthdate', () => {
   });
 
   it('should allow exactly 14 years old', async () => {
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
-
-    mockSupabase.eq.mockResolvedValue({ error: null });
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<
+      typeof auth
+    > extends Promise<infer T>
+      ? T
+      : never);
 
     // 정확히 14년 전
     const exactlyFourteen = new Date();
@@ -148,7 +165,11 @@ describe('GET /api/user/birthdate', () => {
   });
 
   it('should return 401 when not authenticated', async () => {
-    vi.mocked(auth).mockResolvedValue({ userId: null } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+    vi.mocked(auth).mockResolvedValue({ userId: null } as ReturnType<typeof auth> extends Promise<
+      infer T
+    >
+      ? T
+      : never);
 
     const response = await GET();
     const data = await response.json();
@@ -158,7 +179,11 @@ describe('GET /api/user/birthdate', () => {
   });
 
   it('should return birthdate when exists', async () => {
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<
+      typeof auth
+    > extends Promise<infer T>
+      ? T
+      : never);
 
     // select().eq().single() 체인 결과
     mockSupabase.single.mockResolvedValue({
@@ -176,7 +201,11 @@ describe('GET /api/user/birthdate', () => {
   });
 
   it('should return null when birthdate not set', async () => {
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_123' } as ReturnType<
+      typeof auth
+    > extends Promise<infer T>
+      ? T
+      : never);
 
     mockSupabase.single.mockResolvedValue({
       data: { birth_date: null },
