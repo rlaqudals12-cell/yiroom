@@ -76,6 +76,12 @@ export interface CosmeticProduct {
   // 퍼스널 컬러 (메이크업용)
   personalColorSeasons?: PersonalColorSeason[];
 
+  // 헤어케어 매칭 (H-1)
+  hairTypes?: string[]; // 적합 모발 타입 (straight, wavy, curly, coily)
+
+  // 메이크업 매칭 (M-1)
+  faceShapes?: string[]; // 적합 얼굴형 (oval, round, square, heart, oblong)
+
   // 메타데이터
   imageUrl?: string;
   purchaseUrl?: string;
@@ -100,6 +106,8 @@ export interface CosmeticProductFilter {
   skinTypes?: SkinType[];
   concerns?: SkinConcern[];
   personalColorSeasons?: PersonalColorSeason[];
+  hairTypes?: string[];
+  faceShapes?: string[];
   priceRange?: PriceRange;
   minRating?: number;
 }
@@ -203,6 +211,8 @@ export interface CosmeticProductRow {
   key_ingredients: string[] | null;
   avoid_ingredients: string[] | null;
   personal_color_seasons: string[] | null;
+  hair_types: string[] | null;
+  face_shapes: string[] | null;
   image_url: string | null;
   purchase_url: string | null;
   affiliate_url: string | null;
@@ -258,6 +268,8 @@ export function toCosmeticProduct(row: CosmeticProductRow): CosmeticProduct {
     keyIngredients: row.key_ingredients ?? undefined,
     avoidIngredients: row.avoid_ingredients ?? undefined,
     personalColorSeasons: row.personal_color_seasons as PersonalColorSeason[] | undefined,
+    hairTypes: row.hair_types ?? undefined,
+    faceShapes: row.face_shapes ?? undefined,
     imageUrl: row.image_url ?? undefined,
     purchaseUrl: row.purchase_url ?? undefined,
     affiliateUrl: row.affiliate_url ?? undefined,

@@ -30,6 +30,8 @@ const mockCosmeticRow: CosmeticProductRow = {
   key_ingredients: ['히알루론산', '세라마이드'],
   avoid_ingredients: [],
   personal_color_seasons: ['Spring', 'Summer'],
+  hair_types: null,
+  face_shapes: null,
   image_url: 'https://example.com/image.jpg',
   purchase_url: 'https://example.com/buy',
   affiliate_url: null,
@@ -344,9 +346,9 @@ describe('Cosmetic Repository', () => {
       mockChain.order = vi.fn().mockReturnValue(mockChain);
       mockChain.limit = vi.fn().mockReturnValue(mockChain);
       // 최종 await 시 결과 반환 (thenable)
-      mockChain.then = vi.fn().mockImplementation((resolve) =>
-        resolve({ data: [mockCosmeticRow], error: null })
-      );
+      mockChain.then = vi
+        .fn()
+        .mockImplementation((resolve) => resolve({ data: [mockCosmeticRow], error: null }));
 
       vi.mocked(supabase.from).mockReturnValue(mockChain);
 
@@ -432,11 +434,7 @@ describe('Cosmetic Repository', () => {
       const mockChain = {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockResolvedValue({
-            data: [
-              { brand: '설화수' },
-              { brand: '아이오페' },
-              { brand: '이니스프리' },
-            ],
+            data: [{ brand: '설화수' }, { brand: '아이오페' }, { brand: '이니스프리' }],
             error: null,
           }),
         }),

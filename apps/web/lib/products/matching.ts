@@ -44,7 +44,6 @@ export interface UserProfile {
 
   // M-1 메이크업 분석
   undertone?: string; // 허용: 'warm' | 'cool' | 'neutral'
-  // TODO: Phase 2에서 cosmetic_products에 face_shapes 컬럼 추가 후 매칭 로직 구현
   faceShape?: string; // 허용: 'oval' | 'round' | 'square' | 'heart' | 'oblong'
 }
 
@@ -132,6 +131,29 @@ function calculateCosmeticMatchScore(product: CosmeticProduct, profile: UserProf
     }
   }
 
+  // 얼굴형 매칭 - 메이크업 (20점, M-1)
+  if (product.category === 'makeup' && profile.faceShape) {
+    if (product.faceShapes && product.faceShapes.length > 0) {
+      const faceMatched = product.faceShapes.includes(profile.faceShape);
+      reasons.push({
+        type: 'faceShape',
+        label: getFaceShapeLabel(profile.faceShape),
+        matched: faceMatched,
+      });
+      if (faceMatched) {
+        score += 20;
+      }
+    } else {
+      // 제품에 faceShapes 데이터 없으면 프로필 완성도 보너스 (5점)
+      reasons.push({
+        type: 'faceShape',
+        label: getFaceShapeLabel(profile.faceShape),
+        matched: false,
+      });
+      score += 5;
+    }
+  }
+
   // 언더톤 매칭 - 메이크업 추가 점수 (15점, M-1)
   if (product.category === 'makeup' && profile.undertone) {
     // 언더톤 기반 색상 적합도 (제품 키워드/태그에 언더톤 정보가 있을 때)
@@ -169,17 +191,29 @@ function calculateHaircareMatchScore(
 ): MatchResult {
   let score = baseScore;
 
-  // 모발 타입 프로필 보너스 (15점)
-  // TODO: Phase 2에서 cosmetic_products에 hair_types 컬럼 추가 후 제품 기반 매칭 구현
-  // 현재 CosmeticProduct에 hair_types 필드가 없으므로 프로필 완성도 보너스만 부여
+  // 모발 타입 매칭 (30점) — 제품 hairTypes 배열과 비교
   if (profile.hairType) {
     const hairTypeLabel = getHairTypeLabel(profile.hairType);
-    reasons.push({
-      type: 'hairType',
-      label: hairTypeLabel,
-      matched: false,
-    });
-    score += 15;
+    if (product.hairTypes && product.hairTypes.length > 0) {
+      // 제품에 hairTypes 데이터가 있으면 실매칭
+      const hairMatched = product.hairTypes.includes(profile.hairType);
+      reasons.push({
+        type: 'hairType',
+        label: hairTypeLabel,
+        matched: hairMatched,
+      });
+      if (hairMatched) {
+        score += 30;
+      }
+    } else {
+      // 제품에 hairTypes 데이터가 없으면 프로필 완성도 보너스 (10점)
+      reasons.push({
+        type: 'hairType',
+        label: hairTypeLabel,
+        matched: false,
+      });
+      score += 10;
+    }
   }
 
   // 두피 타입 매칭 (30점) — 제품 skinTypes 필드 재활용 (두피도 dry/oily/sensitive)
@@ -875,6 +909,17 @@ function getScalpTypeLabel(scalpType: string): string {
     normal: '정상 두피',
   };
   return labels[scalpType] || `${scalpType} 두피`;
+}
+
+function getFaceShapeLabel(faceShape: string): string {
+  const labels: Record<string, string> = {
+    oval: '계란형 적합',
+    round: '둥근형 적합',
+    square: '각진형 적합',
+    heart: '하트형 적합',
+    oblong: '긴형 적합',
+  };
+  return labels[faceShape] || `${faceShape} 얼굴형`;
 }
 
 function getUndertoneLabel(undertone: string): string {

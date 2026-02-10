@@ -546,19 +546,48 @@ describe('헤어케어 매칭 (H-1)', () => {
     rating: 4.1,
   };
 
-  it('모발 타입 프로필 시 hairType reason 추가 (15점 프로필 보너스)', () => {
+  it('제품에 hairTypes 없을 때 프로필 보너스 (10점)', () => {
     const profile: UserProfile = {
       hairType: 'wavy',
     };
 
     const result = calculateMatchScore(mockShampooProduct, profile);
 
-    // 현재 CosmeticProduct에 hair_types 필드 없으므로 matched: false (프로필 완성도 보너스)
+    // hairTypes 데이터 없으므로 matched: false (프로필 완성도 보너스)
     expect(result.reasons).toContainEqual(
       expect.objectContaining({ type: 'hairType', matched: false })
     );
-    // 기본 20 + hairType 15 = 35 이상
-    expect(result.score).toBeGreaterThanOrEqual(35);
+    // 기본 20 + hairType 10 = 30 이상
+    expect(result.score).toBeGreaterThanOrEqual(30);
+  });
+
+  it('제품에 hairTypes 있고 매칭되면 30점', () => {
+    const productWithHairTypes: CosmeticProduct = {
+      ...mockShampooProduct,
+      hairTypes: ['wavy', 'curly'],
+    };
+    const profile: UserProfile = { hairType: 'wavy' };
+    const result = calculateMatchScore(productWithHairTypes, profile);
+
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'hairType', matched: true })
+    );
+    // 기본 20 + hairType 30 = 50 이상
+    expect(result.score).toBeGreaterThanOrEqual(50);
+  });
+
+  it('제품에 hairTypes 있지만 불일치면 0점', () => {
+    const productWithHairTypes: CosmeticProduct = {
+      ...mockShampooProduct,
+      hairTypes: ['straight'],
+    };
+    const profile: UserProfile = { hairType: 'curly' };
+    const result = calculateMatchScore(productWithHairTypes, profile);
+
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'hairType', matched: false })
+    );
+    // hairType 매칭 실패 → 0점 추가 (기본 20점만)
   });
 
   it('두피 타입 매칭 시 scalpType reason 추가 (30점)', () => {
@@ -609,8 +638,8 @@ describe('헤어케어 매칭 (H-1)', () => {
 
     const result = calculateMatchScore(mockShampooProduct, profile);
 
-    // 기본 20 + hairType 15 + scalpType 30 + concern 20 + brand 보너스 = 97
-    expect(result.score).toBeGreaterThanOrEqual(85);
+    // 기본 20 + hairType 10 + scalpType 30 + concern 20 + brand 보너스 = 92
+    expect(result.score).toBeGreaterThanOrEqual(80);
     // scalpType, concern 매칭 확인 (hairType은 matched: false)
     expect(result.reasons.filter((r) => r.matched).length).toBeGreaterThanOrEqual(2);
     expect(result.reasons.map((r) => r.type)).toContain('hairType');
@@ -710,6 +739,73 @@ describe('메이크업 언더톤 매칭 (M-1)', () => {
 
     // serum은 메이크업이 아니므로 undertone reason 없음
     expect(result.reasons.find((r) => r.type === 'undertone')).toBeUndefined();
+  });
+});
+
+describe('메이크업 얼굴형 매칭 (M-1 faceShape)', () => {
+  const mockMakeupWithFaceShapes: CosmeticProduct = {
+    id: 'makeup-fs-1',
+    name: '컨투어링 팔레트',
+    brand: '테스트 브랜드',
+    category: 'makeup',
+    subcategory: 'contour',
+    faceShapes: ['round', 'square'],
+    priceKrw: 25000,
+    rating: 4.2,
+  };
+
+  it('faceShapes 있고 매칭되면 20점 + matched: true', () => {
+    const profile: UserProfile = { faceShape: 'round' };
+    const result = calculateMatchScore(mockMakeupWithFaceShapes, profile);
+
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'faceShape', matched: true })
+    );
+    // 기본 20 + faceShape 20 = 40 이상
+    expect(result.score).toBeGreaterThanOrEqual(40);
+  });
+
+  it('faceShapes 있지만 불일치면 matched: false, 0점', () => {
+    const profile: UserProfile = { faceShape: 'oval' };
+    const result = calculateMatchScore(mockMakeupWithFaceShapes, profile);
+
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'faceShape', matched: false })
+    );
+  });
+
+  it('faceShapes 없으면 프로필 보너스 5점', () => {
+    const makeupNoFaceShapes: CosmeticProduct = {
+      id: 'makeup-nofs-1',
+      name: '립스틱',
+      brand: '테스트',
+      category: 'makeup',
+      priceKrw: 20000,
+      rating: 4.0,
+    };
+    const profile: UserProfile = { faceShape: 'heart' };
+    const result = calculateMatchScore(makeupNoFaceShapes, profile);
+
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'faceShape', matched: false })
+    );
+    // 기본 20 + faceShape 보너스 5 = 25 이상
+    expect(result.score).toBeGreaterThanOrEqual(25);
+  });
+
+  it('비메이크업 제품에는 faceShape 매칭 없음', () => {
+    const serumProduct: CosmeticProduct = {
+      id: 'serum-fs-1',
+      name: '세럼',
+      brand: '테스트',
+      category: 'serum',
+      priceKrw: 25000,
+      rating: 4.0,
+    };
+    const profile: UserProfile = { faceShape: 'oval' };
+    const result = calculateMatchScore(serumProduct, profile);
+
+    expect(result.reasons.find((r) => r.type === 'faceShape')).toBeUndefined();
   });
 });
 
