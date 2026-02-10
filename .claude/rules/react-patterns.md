@@ -104,6 +104,68 @@ export const ChartDynamic = dynamic(() => import('./Chart'), {
 </DialogHeader>
 ```
 
+## React 19 신기능
+
+### `use` Hook
+
+서버 컴포넌트에서 Promise나 Context를 직접 읽을 수 있다.
+
+```tsx
+import { use } from 'react';
+
+export default function UserProfile({ userPromise }: { userPromise: Promise<User> }) {
+  const user = use(userPromise);
+  return <div>{user.name}</div>;
+}
+```
+
+- `use`는 조건부 호출 가능 (일반 Hook과 다름)
+- Suspense 바운더리 안에서 사용
+
+### Server Actions
+
+서버 뮤테이션을 `'use server'` 지시어로 정의한다.
+
+```tsx
+// lib/actions/profile.ts
+'use server';
+
+export async function updateProfile(formData: FormData) {
+  const name = formData.get('name') as string;
+  await supabase.from('users').update({ name }).eq('id', userId);
+}
+
+// 사용: form action 바인딩
+<form action={updateProfile}>
+  <input name="name" />
+  <button type="submit">저장</button>
+</form>;
+```
+
+### `useFormStatus`
+
+폼 제출 상태를 추적한다.
+
+```tsx
+'use client';
+import { useFormStatus } from 'react-dom';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending}>
+      {pending ? '처리 중...' : '저장'}
+    </button>
+  );
+}
+```
+
+### 이룸 적용 기준
+
+- 대부분 기존 API 라우트 패턴 유지
+- Server Actions는 단순 폼 제출에만 적용
+- 복잡한 비즈니스 로직은 API 라우트 사용
+
 ---
 
-**Version**: 1.0 | **Updated**: 2026-01-15 | coding-standards React 부분 추출
+**Version**: 1.1 | **Updated**: 2026-02-11 | React 19 신기능 (use, Server Actions, useFormStatus) 추가

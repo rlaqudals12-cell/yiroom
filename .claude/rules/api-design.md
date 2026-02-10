@@ -4,55 +4,31 @@
 
 ## API 버전 관리
 
-### URL 기반 버전
+> **현재 상태**: API 버전 관리 미구현. 모든 API는 `/api/{domain}` 형태.
+> 외부 소비자가 없는 내부 API이므로 Breaking Change 발생 시점에 도입 예정.
 
-```
-/api/v1/analyze/skin      # 레거시
-/api/v2/analyze/skin      # 현재 버전
-/api/analyze/skin         # 버전 없음 → v2 리다이렉트
-```
-
-### 버전 지원 정책
-
-| 버전 | 상태   | 지원 종료  |
-| ---- | ------ | ---------- |
-| v1   | 레거시 | v3 출시 시 |
-| v2   | 현재   | -          |
-
-### 폐기 예정 헤더
-
-```http
-HTTP/1.1 200 OK
-X-API-Version: 1.0
-X-Deprecated-At: 2026-06-01
-X-Sunset: 2026-09-01
-X-Upgrade-To: /api/v2/analyze/skin
-```
-
-## 라우트 구조
-
-### 폴더 구성
+### 현재 라우트 구조
 
 ```
 app/api/
-├── v1/                      # 레거시 API
-│   └── analyze/
-│       └── skin/
-│           └── route.ts
-├── v2/                      # 현재 API
-│   └── analyze/
-│       └── skin/
-│           └── route.ts
-├── analyze/                 # 버전 없는 요청
-│   └── skin/
-│       └── route.ts         # v2로 리다이렉트
+├── analyze/                 # AI 분석 API
+│   ├── personal-color/
+│   ├── skin/
+│   ├── body/
+│   └── ...
+├── coach/                   # AI 코치
+├── admin/                   # 관리자
+├── user/                    # 사용자 정보
 ├── webhooks/                # 외부 웹훅
 │   └── clerk/
-│       └── route.ts
-└── cron/                    # Cron Job
-    └── cleanup-images/
-        └── route.ts
+└── health/                  # 헬스체크
 ```
+
+### 향후 버전 관리 도입 시점
+
+- 외부 파트너 API 개방 시
+- Breaking Change 발생 시 (기존 클라이언트 호환 필요)
+- `/api/v1/` 접두사 + 폐기 예정 헤더 방식 적용
 
 ### 라우트 핸들러 패턴
 
@@ -82,8 +58,8 @@ interface SkinAnalysisResponse {
   };
   error?: {
     code: string;
-    message: string;        // 기술 메시지 (로깅용)
-    userMessage: string;    // 사용자 메시지 (UI 표시)
+    message: string; // 기술 메시지 (로깅용)
+    userMessage: string; // 사용자 메시지 (UI 표시)
     details?: Record<string, unknown>;
   };
 }
@@ -469,4 +445,4 @@ export async function GET(request: NextRequest) {
 
 ---
 
-**Version**: 1.1 | **Updated**: 2026-01-28 | 에러 응답 형식 표준화 (userMessage 필수)
+**Version**: 1.2 | **Updated**: 2026-02-11 | API 버전 관리 현황 반영, 라우트 구조 실제와 동기화
