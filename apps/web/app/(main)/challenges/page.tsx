@@ -103,14 +103,10 @@ export default function ChallengesPage() {
   };
 
   // 진행 중인 챌린지만 필터링
-  const activeChallenges = userChallenges.filter(
-    (uc) => uc.status === 'in_progress'
-  );
+  const activeChallenges = userChallenges.filter((uc) => uc.status === 'in_progress');
 
   // 완료된 챌린지만 필터링
-  const completedChallenges = userChallenges.filter(
-    (uc) => uc.status === 'completed'
-  );
+  const completedChallenges = userChallenges.filter((uc) => uc.status === 'completed');
 
   // 로딩
   if (!isLoaded || isLoading) {
@@ -127,16 +123,14 @@ export default function ChallengesPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">로그인이 필요합니다</h2>
-          <p className="text-muted-foreground">
-            챌린지에 참여하려면 먼저 로그인해주세요
-          </p>
+          <p className="text-muted-foreground">챌린지에 참여하려면 먼저 로그인해주세요</p>
         </div>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen px-4 py-8">
+    <div className="min-h-screen px-4 py-8">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* 헤더 */}
         <header className="flex items-center gap-4">
@@ -153,9 +147,7 @@ export default function ChallengesPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold">챌린지</h1>
-              <p className="text-sm text-muted-foreground">
-                목표를 설정하고 달성해보세요
-              </p>
+              <p className="text-sm text-muted-foreground">목표를 설정하고 달성해보세요</p>
             </div>
           </div>
         </header>
@@ -266,6 +258,6 @@ export default function ChallengesPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

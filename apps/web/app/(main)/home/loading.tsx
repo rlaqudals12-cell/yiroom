@@ -17,7 +17,7 @@ export default function HomeLoading() {
       <HomeHeader />
 
       {/* 본문 스켈레톤 */}
-      <main className="px-4 py-5 space-y-5">
+      <div className="px-4 py-5 space-y-5">
         {/* 인사 섹션 - LCP 후보 */}
         <section>
           <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-2" />
@@ -79,7 +79,7 @@ export default function HomeLoading() {
             ))}
           </div>
         </section>
-      </main>
+      </div>
     </div>
   );
 }

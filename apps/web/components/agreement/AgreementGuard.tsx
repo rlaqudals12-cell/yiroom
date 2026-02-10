@@ -48,7 +48,7 @@ export function AgreementGuard() {
           .maybeSingle();
 
         if (error) {
-          console.error('[AgreementGuard] Error:', error);
+          console.error('[AgreementGuard] Error:', error?.code, error?.message);
           return;
         }
 

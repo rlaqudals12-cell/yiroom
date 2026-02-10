@@ -171,7 +171,7 @@ export default function FeedPage() {
       </header>
 
       {/* 본문 */}
-      <main className="px-4 py-4 pb-24">
+      <div className="px-4 py-4 pb-24">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
@@ -200,7 +200,7 @@ export default function FeedPage() {
             ))}
           </div>
         )}
-      </main>
+      </div>
 
       {/* 플로팅 작성 버튼 */}
       <button

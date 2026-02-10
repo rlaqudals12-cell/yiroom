@@ -294,7 +294,7 @@ export default function PostDetailPage() {
       </header>
 
       {/* 본문 */}
-      <main className="px-4 py-4 pb-32">
+      <div className="px-4 py-4 pb-32">
         {/* 포스트 */}
         <article className="bg-card rounded-2xl border p-4 mb-6">
           {/* 사용자 정보 */}
@@ -479,7 +479,7 @@ export default function PostDetailPage() {
             </div>
           )}
         </section>
-      </main>
+      </div>
 
       {/* 댓글 입력 */}
       {isSignedIn && (

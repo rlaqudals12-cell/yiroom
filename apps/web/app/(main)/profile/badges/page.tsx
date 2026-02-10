@@ -90,7 +90,7 @@ export default function BadgesPage() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-8">
+    <div className="min-h-screen px-4 py-8">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* 헤더 */}
         <header className="flex items-center gap-4">
@@ -123,10 +123,7 @@ export default function BadgesPage() {
 
         {/* 배지 그리드 */}
         <section className="bg-white rounded-2xl border p-6">
-          <BadgeGrid
-            groups={badgeGroups}
-            userBadges={userBadges}
-          />
+          <BadgeGrid groups={badgeGroups} userBadges={userBadges} />
         </section>
 
         {/* 안내 메시지 */}
@@ -145,6 +142,6 @@ export default function BadgesPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

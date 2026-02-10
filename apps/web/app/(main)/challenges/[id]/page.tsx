@@ -11,13 +11,7 @@ import { useState, useEffect, use } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  Calendar,
-  Trophy,
-  Gift,
-  AlertTriangle,
-} from 'lucide-react';
+import { ArrowLeft, Calendar, Trophy, Gift, AlertTriangle } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
 import { ChallengeProgress } from '@/components/challenges';
@@ -40,12 +34,7 @@ import {
   abandonChallenge,
   completeChallenge,
 } from '@/lib/challenges';
-import {
-  DOMAIN_COLORS,
-  DOMAIN_NAMES,
-  DIFFICULTY_NAMES,
-  STATUS_NAMES,
-} from '@/types/challenges';
+import { DOMAIN_COLORS, DOMAIN_NAMES, DIFFICULTY_NAMES, STATUS_NAMES } from '@/types/challenges';
 import type { Challenge, UserChallenge } from '@/types/challenges';
 import { toast } from 'sonner';
 import { useGamification } from '@/components/gamification';
@@ -138,9 +127,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
       const success = await abandonChallenge(supabase, userChallenge.id);
 
       if (success) {
-        setUserChallenge((prev) =>
-          prev ? { ...prev, status: 'abandoned' } : null
-        );
+        setUserChallenge((prev) => (prev ? { ...prev, status: 'abandoned' } : null));
         toast.success('챌린지를 포기했습니다');
         router.push('/challenges');
       } else {
@@ -163,9 +150,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
       const result = await completeChallenge(supabase, userChallenge.id, user.id);
 
       if (result.success) {
-        setUserChallenge((prev) =>
-          prev ? { ...prev, rewardClaimed: true } : null
-        );
+        setUserChallenge((prev) => (prev ? { ...prev, rewardClaimed: true } : null));
 
         // 게이미피케이션 알림
         if (result.xpAwarded || result.badgeAwarded) {
@@ -174,9 +159,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
           });
         }
 
-        toast.success(
-          `🎉 축하합니다! ${result.xpAwarded || 0} XP를 획득했습니다!`
-        );
+        toast.success(`🎉 축하합니다! ${result.xpAwarded || 0} XP를 획득했습니다!`);
       } else {
         toast.error(result.error || '보상 수령에 실패했습니다');
       }
@@ -218,7 +201,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
   const canClaimReward = isCompleted && !userChallenge?.rewardClaimed;
 
   return (
-    <main className="min-h-screen px-4 py-8">
+    <div className="min-h-screen px-4 py-8">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* 헤더 */}
         <header className="flex items-center gap-4">
@@ -243,9 +226,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold">{challenge.name}</h2>
-              <p className="text-muted-foreground mt-1">
-                {challenge.description}
-              </p>
+              <p className="text-muted-foreground mt-1">{challenge.description}</p>
             </div>
           </div>
 
@@ -262,8 +243,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
               {challenge.durationDays}일
             </span>
             <span className="px-3 py-1 rounded-full text-sm bg-primary/10 text-primary flex items-center gap-1">
-              <Trophy className="w-4 h-4" />
-              +{challenge.rewardXp} XP
+              <Trophy className="w-4 h-4" />+{challenge.rewardXp} XP
             </span>
           </div>
         </section>
@@ -294,12 +274,8 @@ export default function ChallengeDetailPage({ params }: PageProps) {
 
             {/* 시작일/종료일 */}
             <div className="flex justify-between text-sm text-muted-foreground pt-2 border-t">
-              <span>
-                시작: {new Date(userChallenge.startedAt).toLocaleDateString('ko-KR')}
-              </span>
-              <span>
-                목표: {new Date(userChallenge.targetEndAt).toLocaleDateString('ko-KR')}
-              </span>
+              <span>시작: {new Date(userChallenge.startedAt).toLocaleDateString('ko-KR')}</span>
+              <span>목표: {new Date(userChallenge.targetEndAt).toLocaleDateString('ko-KR')}</span>
             </div>
           </section>
         )}
@@ -328,12 +304,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
         {/* 액션 버튼 */}
         <section className="flex gap-3">
           {!isParticipating ? (
-            <Button
-              onClick={handleJoin}
-              disabled={isJoining || !user}
-              className="flex-1"
-              size="lg"
-            >
+            <Button onClick={handleJoin} disabled={isJoining || !user} className="flex-1" size="lg">
               {isJoining ? '참여 중...' : '챌린지 참여하기'}
             </Button>
           ) : isInProgress ? (
@@ -361,8 +332,8 @@ export default function ChallengeDetailPage({ params }: PageProps) {
                   <AlertDialogHeader>
                     <AlertDialogTitle>챌린지를 포기하시겠습니까?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      포기하면 진행 상황이 모두 사라지고, 다시 시작해야 합니다.
-                      정말 포기하시겠습니까?
+                      포기하면 진행 상황이 모두 사라지고, 다시 시작해야 합니다. 정말
+                      포기하시겠습니까?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -393,12 +364,10 @@ export default function ChallengeDetailPage({ params }: PageProps) {
         {/* 비로그인 안내 */}
         {!user && (
           <div className="text-center py-4 px-6 bg-muted rounded-xl">
-            <p className="text-sm text-muted-foreground">
-              챌린지에 참여하려면 로그인이 필요합니다
-            </p>
+            <p className="text-sm text-muted-foreground">챌린지에 참여하려면 로그인이 필요합니다</p>
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

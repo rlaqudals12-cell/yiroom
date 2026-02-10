@@ -2,13 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import {
-  ArrowLeft,
-  SlidersHorizontal,
-  ChevronDown,
-  Star,
-  Sparkles,
-} from 'lucide-react';
+import { ArrowLeft, SlidersHorizontal, ChevronDown, Star, Sparkles } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { BottomNav } from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
@@ -43,14 +37,78 @@ const categoryInfo: Record<string, { name: string; description: string }> = {
 
 // 임시 제품 데이터
 const mockProducts = [
-  { id: '1', name: '비타민C 15% 세럼', brand: '이룸 스킨', price: 32000, rating: 4.8, reviewCount: 1234, matchRate: 95 },
-  { id: '2', name: '히알루론산 토너', brand: '클린뷰티', price: 28000, rating: 4.7, reviewCount: 892, matchRate: 92 },
-  { id: '3', name: '레티놀 0.5% 크림', brand: '스킨랩', price: 45000, rating: 4.6, reviewCount: 567, matchRate: 88 },
-  { id: '4', name: '나이아신아마이드 세럼', brand: '더마솔루션', price: 38000, rating: 4.9, reviewCount: 2341, matchRate: 97 },
-  { id: '5', name: '세라마이드 크림', brand: '베리어랩', price: 52000, rating: 4.5, reviewCount: 432, matchRate: 85 },
-  { id: '6', name: 'AHA/BHA 필링 패드', brand: '코스알엑스', price: 24000, rating: 4.7, reviewCount: 1567, matchRate: 90 },
-  { id: '7', name: '수분 앰플', brand: '닥터지', price: 35000, rating: 4.6, reviewCount: 789, matchRate: 93 },
-  { id: '8', name: '시카 밤', brand: '라로슈포제', price: 42000, rating: 4.8, reviewCount: 1023, matchRate: 91 },
+  {
+    id: '1',
+    name: '비타민C 15% 세럼',
+    brand: '이룸 스킨',
+    price: 32000,
+    rating: 4.8,
+    reviewCount: 1234,
+    matchRate: 95,
+  },
+  {
+    id: '2',
+    name: '히알루론산 토너',
+    brand: '클린뷰티',
+    price: 28000,
+    rating: 4.7,
+    reviewCount: 892,
+    matchRate: 92,
+  },
+  {
+    id: '3',
+    name: '레티놀 0.5% 크림',
+    brand: '스킨랩',
+    price: 45000,
+    rating: 4.6,
+    reviewCount: 567,
+    matchRate: 88,
+  },
+  {
+    id: '4',
+    name: '나이아신아마이드 세럼',
+    brand: '더마솔루션',
+    price: 38000,
+    rating: 4.9,
+    reviewCount: 2341,
+    matchRate: 97,
+  },
+  {
+    id: '5',
+    name: '세라마이드 크림',
+    brand: '베리어랩',
+    price: 52000,
+    rating: 4.5,
+    reviewCount: 432,
+    matchRate: 85,
+  },
+  {
+    id: '6',
+    name: 'AHA/BHA 필링 패드',
+    brand: '코스알엑스',
+    price: 24000,
+    rating: 4.7,
+    reviewCount: 1567,
+    matchRate: 90,
+  },
+  {
+    id: '7',
+    name: '수분 앰플',
+    brand: '닥터지',
+    price: 35000,
+    rating: 4.6,
+    reviewCount: 789,
+    matchRate: 93,
+  },
+  {
+    id: '8',
+    name: '시카 밤',
+    brand: '라로슈포제',
+    price: 42000,
+    rating: 4.8,
+    reviewCount: 1023,
+    matchRate: 91,
+  },
 ];
 
 export default function BeautyCategoryPage() {
@@ -97,12 +155,7 @@ export default function BeautyCategoryPage() {
   }, [sortBy, matchFilterOn, minMatchRate]);
 
   // 무한 스크롤
-  const {
-    displayedItems,
-    hasMore,
-    isLoading,
-    sentinelRef,
-  } = useInfiniteScroll(filteredProducts, {
+  const { displayedItems, hasMore, isLoading, sentinelRef } = useInfiniteScroll(filteredProducts, {
     pageSize: 6,
     initialLoadSize: 6,
   });
@@ -186,26 +239,19 @@ export default function BeautyCategoryPage() {
       </header>
 
       {/* 제품 목록 */}
-      <main className="px-4 py-4">
-        <p className="text-sm text-muted-foreground mb-4">
-          {filteredProducts.length}개 제품
-        </p>
+      <div className="px-4 py-4">
+        <p className="text-sm text-muted-foreground mb-4">{filteredProducts.length}개 제품</p>
 
         <div className="grid grid-cols-2 gap-3">
           {displayedItems.map((product, index) => (
-            <FadeInUp
-              key={product.id}
-              delay={Math.min(index, 5) as 0 | 1 | 2 | 3 | 4 | 5}
-            >
+            <FadeInUp key={product.id} delay={Math.min(index, 5) as 0 | 1 | 2 | 3 | 4 | 5}>
               <button
                 onClick={() => router.push(`/beauty/${product.id}`)}
                 className="bg-card rounded-xl border p-3 text-left hover:shadow-md transition-shadow w-full"
               >
                 {/* 매칭률 */}
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-primary">
-                    {product.matchRate}% 매칭
-                  </span>
+                  <span className="text-xs font-bold text-primary">{product.matchRate}% 매칭</span>
                 </div>
 
                 {/* 이미지 */}
@@ -215,9 +261,7 @@ export default function BeautyCategoryPage() {
 
                 {/* 정보 */}
                 <p className="text-xs text-muted-foreground">{product.brand}</p>
-                <p className="text-sm font-medium line-clamp-2 mt-0.5">
-                  {product.name}
-                </p>
+                <p className="text-sm font-medium line-clamp-2 mt-0.5">{product.name}</p>
 
                 {/* 평점 */}
                 <div className="flex items-center gap-1 mt-2">
@@ -229,9 +273,7 @@ export default function BeautyCategoryPage() {
                 </div>
 
                 {/* 가격 */}
-                <p className="text-sm font-semibold mt-2">
-                  {product.price.toLocaleString()}원
-                </p>
+                <p className="text-sm font-semibold mt-2">{product.price.toLocaleString()}원</p>
               </button>
             </FadeInUp>
           ))}
@@ -254,12 +296,10 @@ export default function BeautyCategoryPage() {
             </div>
           )}
           {!hasMore && displayedItems.length > 0 && (
-            <p className="text-center text-sm text-muted-foreground">
-              모든 제품을 확인했습니다
-            </p>
+            <p className="text-center text-sm text-muted-foreground">모든 제품을 확인했습니다</p>
           )}
         </div>
-      </main>
+      </div>
 
       <BottomNav />
     </div>

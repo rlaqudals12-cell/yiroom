@@ -11,23 +11,14 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import {
-  ArrowLeft,
-  ScanBarcode,
-  Plus,
-  Minus,
-  Check,
-  AlertCircle,
-  Loader2,
-} from 'lucide-react';
+import { ArrowLeft, ScanBarcode, Plus, Minus, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BarcodeFood, BarcodeSearchResponse, MealType } from '@/types/nutrition';
 
 // 바코드 스캐너는 동적 import (카메라 API는 클라이언트 전용)
-const BarcodeScanner = dynamic(
-  () => import('@/components/nutrition/BarcodeScanner'),
-  { ssr: false }
-);
+const BarcodeScanner = dynamic(() => import('@/components/nutrition/BarcodeScanner'), {
+  ssr: false,
+});
 
 // 상태 타입
 type PageState = 'idle' | 'scanning' | 'loading' | 'found' | 'not-found' | 'registering' | 'error';
@@ -212,7 +203,7 @@ export default function BarcodeScanPage() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 py-6">
         {/* 초기 상태 */}
         {state === 'idle' && (
           <div className="text-center py-12">
@@ -279,19 +270,21 @@ export default function BarcodeScanPage() {
                 )}
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">{food.name}</h3>
-                  {food.brand && (
-                    <p className="text-sm text-muted-foreground">{food.brand}</p>
-                  )}
+                  {food.brand && <p className="text-sm text-muted-foreground">{food.brand}</p>}
                   <p className="text-sm text-muted-foreground mt-1">
-                    {food.servingSize}{food.servingUnit} 기준
+                    {food.servingSize}
+                    {food.servingUnit} 기준
                   </p>
                   {foodSource && (
                     <span
                       className={cn(
                         'inline-block mt-2 px-2 py-0.5 text-xs rounded-full',
-                        foodSource === 'local' && 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-                        foodSource === 'openfoodfacts' && 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-                        foodSource === 'foodsafetykorea' && 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+                        foodSource === 'local' &&
+                          'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+                        foodSource === 'openfoodfacts' &&
+                          'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+                        foodSource === 'foodsafetykorea' &&
+                          'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
                       )}
                     >
                       {foodSource === 'local' && '로컬 DB'}
@@ -308,9 +301,7 @@ export default function BarcodeScanPage() {
               <h4 className="font-medium mb-3">영양 정보</h4>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="bg-muted rounded-lg p-3">
-                  <p className="text-lg font-semibold">
-                    {Math.round(food.calories * servings)}
-                  </p>
+                  <p className="text-lg font-semibold">{Math.round(food.calories * servings)}</p>
                   <p className="text-xs text-muted-foreground">kcal</p>
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-3">
@@ -416,9 +407,7 @@ export default function BarcodeScanPage() {
                 <AlertCircle className="w-8 h-8 text-yellow-600" />
               </div>
               <h3 className="font-semibold text-lg mb-2">등록되지 않은 식품</h3>
-              <p className="text-muted-foreground text-sm">
-                바코드: {scannedBarcode}
-              </p>
+              <p className="text-muted-foreground text-sm">바코드: {scannedBarcode}</p>
             </div>
 
             {/* 등록 폼 */}
@@ -430,9 +419,7 @@ export default function BarcodeScanPage() {
                 <input
                   type="text"
                   value={registerForm.name}
-                  onChange={(e) =>
-                    setRegisterForm((prev) => ({ ...prev, name: e.target.value }))
-                  }
+                  onChange={(e) => setRegisterForm((prev) => ({ ...prev, name: e.target.value }))}
                   className="w-full mt-1 px-3 py-2 border border-border rounded-lg bg-background"
                   placeholder="예: 신라면"
                 />
@@ -443,9 +430,7 @@ export default function BarcodeScanPage() {
                 <input
                   type="text"
                   value={registerForm.brand}
-                  onChange={(e) =>
-                    setRegisterForm((prev) => ({ ...prev, brand: e.target.value }))
-                  }
+                  onChange={(e) => setRegisterForm((prev) => ({ ...prev, brand: e.target.value }))}
                   className="w-full mt-1 px-3 py-2 border border-border rounded-lg bg-background"
                   placeholder="예: 농심"
                 />
@@ -571,7 +556,7 @@ export default function BarcodeScanPage() {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

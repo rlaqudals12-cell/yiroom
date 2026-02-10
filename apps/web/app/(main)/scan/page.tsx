@@ -107,7 +107,7 @@ export default function ScanPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6">
         {/* 로딩 상태 */}
         {state === 'loading' && (
           <div className="flex flex-col items-center justify-center py-20">
@@ -217,7 +217,7 @@ export default function ScanPage() {
             )}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

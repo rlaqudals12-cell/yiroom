@@ -118,7 +118,7 @@ export default function WorkoutHistoryDetailPage() {
         </div>
       </header>
 
-      <main className="px-4 py-6 space-y-4 max-w-lg mx-auto">
+      <div className="px-4 py-6 space-y-4 max-w-lg mx-auto">
         {/* 날짜 및 요약 */}
         <FadeInUp>
           <section className="bg-card rounded-xl border p-6">
@@ -233,7 +233,7 @@ export default function WorkoutHistoryDetailPage() {
             </section>
           </FadeInUp>
         )}
-      </main>
+      </div>
     </div>
   );
 }

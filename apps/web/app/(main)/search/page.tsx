@@ -369,7 +369,7 @@ export default function SearchPage() {
         )}
       </header>
 
-      <main className="px-4 py-4">
+      <div className="px-4 py-4">
         {!isSearching ? (
           // 검색 전 화면
           <div className="space-y-6">
@@ -644,7 +644,7 @@ export default function SearchPage() {
               )}
           </div>
         )}
-      </main>
+      </div>
 
       <BottomNav />
     </div>

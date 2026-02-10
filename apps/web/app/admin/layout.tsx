@@ -11,11 +11,7 @@ export const metadata = {
   description: '이룸 관리자 대시보드',
 };
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // 관리자 권한 체크
   const admin = await isAdmin();
   if (!admin) {
@@ -53,7 +49,7 @@ export default async function AdminLayout({
         </header>
 
         {/* 페이지 콘텐츠 */}
-        <main className="flex-1 p-6">{children}</main>
+        <div className="flex-1 p-6">{children}</div>
       </div>
     </div>
   );

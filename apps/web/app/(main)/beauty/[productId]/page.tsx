@@ -291,7 +291,7 @@ export default function BeautyProductDetailPage() {
       </header>
 
       {/* 본문 */}
-      <main className="px-4 py-4 space-y-6">
+      <div className="px-4 py-4 space-y-6">
         {/* 제품 이미지 */}
         <FadeInUp>
           <div className="w-full aspect-square bg-muted rounded-2xl flex items-center justify-center">
@@ -428,7 +428,7 @@ export default function BeautyProductDetailPage() {
             </button>
           </section>
         </FadeInUp>
-      </main>
+      </div>
 
       {/* 하단 구매 바 */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">

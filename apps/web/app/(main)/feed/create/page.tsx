@@ -170,7 +170,7 @@ export default function CreatePostPage() {
       </header>
 
       {/* 본문 */}
-      <main className="px-4 py-4 pb-24">
+      <div className="px-4 py-4 pb-24">
         {/* 포스트 타입 선택 */}
         <div className="mb-4">
           <label className="text-sm font-medium text-foreground mb-2 block">글 유형</label>
@@ -284,7 +284,7 @@ export default function CreatePostPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

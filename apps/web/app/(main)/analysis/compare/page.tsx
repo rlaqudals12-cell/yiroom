@@ -363,7 +363,7 @@ function CompareContent() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* 분석 타입 탭 */}
         <Tabs
           value={activeType}
@@ -483,7 +483,7 @@ function CompareContent() {
         <Button className={cn('w-full')} onClick={() => router.push(`/analysis/${activeType}`)}>
           새로운 {TYPE_LABELS[activeType]} 분석하기
         </Button>
-      </main>
+      </div>
 
       <BottomNav />
     </div>

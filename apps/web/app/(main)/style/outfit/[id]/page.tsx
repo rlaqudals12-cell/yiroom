@@ -363,7 +363,7 @@ export default function OutfitDetailPage() {
       </header>
 
       {/* 본문 */}
-      <main className="px-4 py-4 space-y-6">
+      <div className="px-4 py-4 space-y-6">
         {/* 코디 이미지 */}
         <FadeInUp>
           <div className="relative w-full aspect-[3/4] bg-gradient-to-br from-rose-50 to-amber-50 rounded-2xl flex items-center justify-center overflow-hidden">
@@ -530,7 +530,7 @@ export default function OutfitDetailPage() {
             </button>
           </section>
         </FadeInUp>
-      </main>
+      </div>
 
       {/* 하단 구매 바 */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">

@@ -295,7 +295,7 @@ export default function ProfilePage() {
 
   return (
     <div className="bg-background min-h-screen pb-20" data-testid="profile-page">
-      <main className="space-y-4 px-4 py-6">
+      <div className="space-y-4 px-4 py-6">
         {/* K-5: 시간대별 인사말 헤더 */}
         <FadeInUp>
           <section
@@ -719,7 +719,7 @@ export default function ProfilePage() {
             </SignOutButton>
           </section>
         </FadeInUp>
-      </main>
+      </div>
 
       <BottomNav />
     </div>

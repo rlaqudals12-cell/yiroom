@@ -173,7 +173,7 @@ export default function WeightGoalTrackingPage() {
         </div>
       </header>
 
-      <main className="px-4 py-6 max-w-lg mx-auto space-y-6">
+      <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
         {/* 신체 정보 입력 */}
         <section className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm">
           <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -412,7 +412,7 @@ export default function WeightGoalTrackingPage() {
           {bmiResult?.disclaimer ||
             '이 결과는 참고용이며, 정확한 건강 상태 평가는 전문 의료인과 상담하시기 바랍니다.'}
         </p>
-      </main>
+      </div>
     </div>
   );
 }

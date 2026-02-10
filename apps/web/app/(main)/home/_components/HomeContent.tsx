@@ -11,7 +11,8 @@ import HomeAnalysisSummary from './HomeAnalysisSummary';
 
 // 최근 본 제품 - lazy loading (비필수 콘텐츠)
 const RecentlyViewed = dynamic(
-  () => import('@/components/products/RecentlyViewed').then((mod) => ({ default: mod.RecentlyViewed })),
+  () =>
+    import('@/components/products/RecentlyViewed').then((mod) => ({ default: mod.RecentlyViewed })),
   {
     ssr: false,
     loading: () => <RecentlyViewedSkeleton />,
@@ -120,7 +121,7 @@ export default function HomeContent() {
       </header>
 
       {/* 본문 */}
-      <main className="px-4 py-5 space-y-5">
+      <div className="px-4 py-5 space-y-5">
         {/* 시간 기반 인사 - LCP 최적화: 즉시 렌더링 */}
         <section className="animate-fade-in-up">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -144,10 +145,7 @@ export default function HomeContent() {
 
         {/* 오늘의 추천 - 기존 사용자만 표시 (로딩 완료 후) */}
         {!isDataLoading && !isNewUser && (
-          <section
-            aria-label="오늘의 맞춤 추천"
-            className="animate-fade-in-up animation-delay-200"
-          >
+          <section aria-label="오늘의 맞춤 추천" className="animate-fade-in-up animation-delay-200">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-amber-500" aria-hidden="true" />
               오늘의 추천
@@ -201,7 +199,7 @@ export default function HomeContent() {
             <RecentlyViewed limit={6} />
           </Suspense>
         </section>
-      </main>
+      </div>
     </>
   );
 }

@@ -211,7 +211,7 @@ export default function HistoryPage() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* Streak 카드 */}
         <StreakCard
           summary={getStreakSummary(streak)}
@@ -254,7 +254,7 @@ export default function HistoryPage() {
             ))
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

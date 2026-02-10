@@ -92,25 +92,25 @@ export default function MentalHealthPage() {
 
   if (!isLoaded || isLoading) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
           <Skeleton className="h-8 w-48 mx-auto mb-4" />
           <Skeleton className="h-[600px] rounded-xl" />
         </div>
-      </main>
+      </div>
     );
   }
 
   if (!isSignedIn) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <p className="text-muted-foreground">로그인이 필요합니다</p>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-muted" data-testid="mental-health-page">
+    <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="mental-health-page">
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-6">
@@ -125,9 +125,7 @@ export default function MentalHealthPage() {
               <Flame className="w-5 h-5 text-orange-500" />
             </div>
             <div>
-              <p className="font-medium text-foreground">
-                {todayData.streak}일 연속 체크인!
-              </p>
+              <p className="font-medium text-foreground">{todayData.streak}일 연속 체크인!</p>
               <p className="text-xs text-muted-foreground">꾸준함이 건강의 시작이에요</p>
             </div>
           </div>
@@ -189,7 +187,12 @@ export default function MentalHealthPage() {
               <CardContent>
                 {weekTrend && weekTrend.totalLogs > 0 ? (
                   <div className="space-y-4">
-                    <TrendItem label="평균 기분" value={weekTrend.avgMoodScore} max={5} suffix="/5" />
+                    <TrendItem
+                      label="평균 기분"
+                      value={weekTrend.avgMoodScore}
+                      max={5}
+                      suffix="/5"
+                    />
                     <TrendItem
                       label="평균 스트레스"
                       value={weekTrend.avgStressLevel}
@@ -238,7 +241,7 @@ export default function MentalHealthPage() {
           심각한 정신건강 문제가 있다면 전문가와 상담하세요.
         </p>
       </div>
-    </main>
+    </div>
   );
 }
 

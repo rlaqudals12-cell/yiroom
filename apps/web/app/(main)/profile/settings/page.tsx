@@ -632,7 +632,7 @@ export default function SettingsPage() {
       </header>
 
       {/* 본문 */}
-      <main className="px-4 py-4">{renderContent()}</main>
+      <div className="px-4 py-4">{renderContent()}</div>
     </div>
   );
 }

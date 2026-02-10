@@ -33,7 +33,8 @@ const slides: OnboardingSlide[] = [
   {
     id: 1,
     title: '나만의 퍼스널컬러',
-    description: 'AI가 당신에게 어울리는 컬러를 찾아드려요.\n자연광에서 간단한 사진 한 장이면 충분해요.',
+    description:
+      'AI가 당신에게 어울리는 컬러를 찾아드려요.\n자연광에서 간단한 사진 한 장이면 충분해요.',
     icon: Palette,
     gradient: 'from-rose-100 to-pink-100',
     iconBg: 'bg-rose-500',
@@ -130,10 +131,7 @@ export default function OnboardingPage() {
   // 분석 선택 화면
   if (showAnalysisSelection) {
     return (
-      <div
-        className="min-h-screen bg-background flex flex-col"
-        data-testid="onboarding-selection"
-      >
+      <div className="min-h-screen bg-background flex flex-col" data-testid="onboarding-selection">
         {/* 헤더 */}
         <header className="px-4 py-4">
           <button
@@ -146,10 +144,8 @@ export default function OnboardingPage() {
         </header>
 
         {/* 본문 */}
-        <main className="flex-1 px-4 py-4">
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            어떤 분석을 시작할까요?
-          </h1>
+        <div className="flex-1 px-4 py-4">
+          <h1 className="text-2xl font-bold text-foreground mb-2">어떤 분석을 시작할까요?</h1>
           <p className="text-muted-foreground mb-6">
             관심 있는 분석을 선택하거나, 모두 시작해보세요
           </p>
@@ -200,7 +196,7 @@ export default function OnboardingPage() {
               전체 분석 시작하기 (약 7분)
             </button>
           </div>
-        </main>
+        </div>
 
         {/* 건너뛰기 */}
         <footer className="px-4 py-6">
@@ -217,10 +213,7 @@ export default function OnboardingPage() {
 
   // 캐러셀 화면
   return (
-    <div
-      className="min-h-screen bg-background flex flex-col"
-      data-testid="onboarding-page"
-    >
+    <div className="min-h-screen bg-background flex flex-col" data-testid="onboarding-page">
       {/* 헤더 */}
       <header className="flex items-center justify-between px-4 py-4">
         <div className="w-16" />
@@ -246,7 +239,7 @@ export default function OnboardingPage() {
       </header>
 
       {/* 슬라이드 콘텐츠 */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6">
+      <div className="flex-1 flex flex-col items-center justify-center px-6">
         {/* 아이콘 영역 */}
         <div
           className={cn(
@@ -255,23 +248,18 @@ export default function OnboardingPage() {
           )}
         >
           <div
-            className={cn(
-              'w-24 h-24 rounded-full flex items-center justify-center',
-              slide.iconBg
-            )}
+            className={cn('w-24 h-24 rounded-full flex items-center justify-center', slide.iconBg)}
           >
             <slide.icon className="w-12 h-12 text-white" />
           </div>
         </div>
 
         {/* 텍스트 */}
-        <h2 className="text-2xl font-bold text-foreground text-center mb-3">
-          {slide.title}
-        </h2>
+        <h2 className="text-2xl font-bold text-foreground text-center mb-3">{slide.title}</h2>
         <p className="text-muted-foreground text-center whitespace-pre-line leading-relaxed">
           {slide.description}
         </p>
-      </main>
+      </div>
 
       {/* 하단 네비게이션 */}
       <footer className="px-6 py-8">

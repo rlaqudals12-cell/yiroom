@@ -12,15 +12,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  RefreshCw,
-  Droplets,
-  Utensils,
-  AlertCircle,
-  Plus,
-  Coffee,
-} from 'lucide-react';
+import { ArrowLeft, RefreshCw, Droplets, Utensils, AlertCircle, Plus, Coffee } from 'lucide-react';
 
 // 영양소 진행률 타입
 interface NutritionProgress {
@@ -116,16 +108,18 @@ export default function NutritionDashboardPage() {
 
       // 신호등이 없으면 meals에서 계산
       if (trafficLight.total === 0 && mealsData.meals) {
-        mealsData.meals.forEach((meal: { records: Array<{ foods: Array<{ traffic_light?: string }> }> }) => {
-          meal.records?.forEach((record) => {
-            record.foods?.forEach((food) => {
-              if (food.traffic_light === 'green') trafficLight.green++;
-              else if (food.traffic_light === 'yellow') trafficLight.yellow++;
-              else if (food.traffic_light === 'red') trafficLight.red++;
-              trafficLight.total++;
+        mealsData.meals.forEach(
+          (meal: { records: Array<{ foods: Array<{ traffic_light?: string }> }> }) => {
+            meal.records?.forEach((record) => {
+              record.foods?.forEach((food) => {
+                if (food.traffic_light === 'green') trafficLight.green++;
+                else if (food.traffic_light === 'yellow') trafficLight.yellow++;
+                else if (food.traffic_light === 'red') trafficLight.red++;
+                trafficLight.total++;
+              });
             });
-          });
-        });
+          }
+        );
       }
 
       // 진행률 계산 함수
@@ -162,48 +156,45 @@ export default function NutritionDashboardPage() {
   }, [fetchDashboardData]);
 
   // 수분 섭취 빠른 추가
-  const handleAddWater = useCallback(async (drinkType: string, amountMl: number) => {
-    if (isAddingWater) return;
-    setIsAddingWater(true);
+  const handleAddWater = useCallback(
+    async (drinkType: string, amountMl: number) => {
+      if (isAddingWater) return;
+      setIsAddingWater(true);
 
-    try {
-      const res = await fetch('/api/nutrition/water', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ drinkType, amountMl }),
-      });
+      try {
+        const res = await fetch('/api/nutrition/water', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ drinkType, amountMl }),
+        });
 
-      if (!res.ok) {
-        throw new Error('수분 기록 추가에 실패했습니다');
+        if (!res.ok) {
+          throw new Error('수분 기록 추가에 실패했습니다');
+        }
+
+        // 데이터 새로고침
+        await fetchDashboardData();
+      } catch (err) {
+        console.error('[Dashboard] Add water error:', err);
+        // 간단한 에러 표시 (toast 대신)
+        alert(err instanceof Error ? err.message : '수분 기록 추가에 실패했습니다');
+      } finally {
+        setIsAddingWater(false);
       }
-
-      // 데이터 새로고침
-      await fetchDashboardData();
-    } catch (err) {
-      console.error('[Dashboard] Add water error:', err);
-      // 간단한 에러 표시 (toast 대신)
-      alert(err instanceof Error ? err.message : '수분 기록 추가에 실패했습니다');
-    } finally {
-      setIsAddingWater(false);
-    }
-  }, [isAddingWater, fetchDashboardData]);
+    },
+    [isAddingWater, fetchDashboardData]
+  );
 
   // 로딩 상태
   if (isLoading) {
     return (
-      <div
-        data-testid="dashboard-loading"
-        className="min-h-screen bg-muted p-4"
-      >
+      <div data-testid="dashboard-loading" className="min-h-screen bg-muted p-4">
         <div className="mx-auto max-w-md space-y-4">
           {/* 헤더 스켈레톤 */}
           <div className="h-12 bg-muted-foreground/20 rounded-lg animate-pulse" />
           {/* 카드 스켈레톤 */}
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-40 bg-muted-foreground/20 rounded-2xl animate-pulse"
-            />
+            <div key={i} className="h-40 bg-muted-foreground/20 rounded-2xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -213,10 +204,7 @@ export default function NutritionDashboardPage() {
   // 에러 상태
   if (error) {
     return (
-      <div
-        data-testid="nutrition-dashboard"
-        className="min-h-screen bg-muted p-4"
-      >
+      <div data-testid="nutrition-dashboard" className="min-h-screen bg-muted p-4">
         <div className="mx-auto max-w-md">
           <div className="rounded-2xl bg-red-50 dark:bg-red-950/50 p-6 text-center">
             <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500 dark:text-red-400" />
@@ -237,10 +225,7 @@ export default function NutritionDashboardPage() {
   }
 
   return (
-    <div
-      data-testid="nutrition-dashboard"
-      className="min-h-screen bg-muted"
-    >
+    <div data-testid="nutrition-dashboard" className="min-h-screen bg-muted">
       {/* 헤더 */}
       <header className="sticky top-0 z-10 border-b border-border bg-card px-4 py-3">
         <div className="mx-auto flex max-w-md items-center justify-between">
@@ -265,7 +250,7 @@ export default function NutritionDashboardPage() {
       </header>
 
       {/* 콘텐츠 */}
-      <main className="mx-auto max-w-md space-y-4 p-4">
+      <div className="mx-auto max-w-md space-y-4 p-4">
         {/* 영양소 진행률 섹션 */}
         <section className="rounded-2xl bg-card p-4 shadow-sm">
           <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
@@ -326,18 +311,13 @@ export default function NutritionDashboardPage() {
         </section>
 
         {/* 음식 신호등 현황 */}
-        <section
-          data-testid="traffic-light-summary"
-          className="rounded-2xl bg-card p-4 shadow-sm"
-        >
+        <section data-testid="traffic-light-summary" className="rounded-2xl bg-card p-4 shadow-sm">
           <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
             <span>🚦</span> 오늘의 음식 신호등
           </h2>
 
           {data?.trafficLight.total === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              아직 기록된 음식이 없습니다
-            </p>
+            <p className="text-center text-muted-foreground py-4">아직 기록된 음식이 없습니다</p>
           ) : (
             <>
               {/* 신호등 바 */}
@@ -379,7 +359,11 @@ export default function NutritionDashboardPage() {
                   <span className="text-foreground/80">
                     초록 {data?.trafficLight.green || 0}개
                     <span className="ml-1 text-muted-foreground">
-                      ({Math.round(((data?.trafficLight.green || 0) / (data?.trafficLight.total || 1)) * 100)}%)
+                      (
+                      {Math.round(
+                        ((data?.trafficLight.green || 0) / (data?.trafficLight.total || 1)) * 100
+                      )}
+                      %)
                     </span>
                   </span>
                 </div>
@@ -391,9 +375,7 @@ export default function NutritionDashboardPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-full bg-red-500" />
-                  <span className="text-foreground/80">
-                    빨강 {data?.trafficLight.red || 0}개
-                  </span>
+                  <span className="text-foreground/80">빨강 {data?.trafficLight.red || 0}개</span>
                 </div>
               </div>
             </>
@@ -401,10 +383,7 @@ export default function NutritionDashboardPage() {
         </section>
 
         {/* 수분 섭취 현황 */}
-        <section
-          data-testid="water-intake-section"
-          className="rounded-2xl bg-card p-4 shadow-sm"
-        >
+        <section data-testid="water-intake-section" className="rounded-2xl bg-card p-4 shadow-sm">
           <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
             <Droplets className="h-5 w-5 text-blue-500" />
             수분 섭취
@@ -421,9 +400,7 @@ export default function NutritionDashboardPage() {
                 key={i}
                 aria-hidden="true"
                 className={`text-2xl ${
-                  i < Math.ceil((data?.water.percentage || 0) / 10)
-                    ? 'opacity-100'
-                    : 'opacity-30'
+                  i < Math.ceil((data?.water.percentage || 0) / 10) ? 'opacity-100' : 'opacity-30'
                 }`}
               >
                 💧
@@ -433,32 +410,28 @@ export default function NutritionDashboardPage() {
 
           {/* 수분 수치 */}
           <p className="mb-4 text-center text-lg font-semibold text-foreground">
-            {(data?.water.current || 0).toLocaleString()}mL / {(data?.water.target || DEFAULT_TARGETS.water).toLocaleString()}mL
+            {(data?.water.current || 0).toLocaleString()}mL /{' '}
+            {(data?.water.target || DEFAULT_TARGETS.water).toLocaleString()}mL
             <span className="ml-2 text-sm font-normal text-muted-foreground">
               ({data?.water.percentage || 0}%)
             </span>
           </p>
 
           {/* 수분 빠른 추가 버튼 */}
-          <div
-            data-testid="water-quick-add"
-            className="grid grid-cols-2 gap-2"
-          >
+          <div data-testid="water-quick-add" className="grid grid-cols-2 gap-2">
             <button
               onClick={() => handleAddWater('water', 250)}
               disabled={isAddingWater}
               className="flex items-center justify-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition-colors"
             >
-              <Plus className="h-4 w-4" />
-              물 1컵 (250mL)
+              <Plus className="h-4 w-4" />물 1컵 (250mL)
             </button>
             <button
               onClick={() => handleAddWater('water', 500)}
               disabled={isAddingWater}
               className="flex items-center justify-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition-colors"
             >
-              <Plus className="h-4 w-4" />
-              물 1병 (500mL)
+              <Plus className="h-4 w-4" />물 1병 (500mL)
             </button>
             <button
               onClick={() => handleAddWater('coffee', 200)}
@@ -486,7 +459,7 @@ export default function NutritionDashboardPage() {
           <Utensils className="h-5 w-5" />
           식단 기록하기
         </button>
-      </main>
+      </div>
     </div>
   );
 }
@@ -525,10 +498,16 @@ function NutritionProgressBar({
       <div className="mb-1 flex items-center justify-between">
         <span id={`${testId}-label`} className="text-sm font-medium text-foreground/80">
           {label}
-          {warning && <span className="ml-1 text-amber-500" aria-label="부족">⚠️</span>}
+          {warning && (
+            <span className="ml-1 text-amber-500" aria-label="부족">
+              ⚠️
+            </span>
+          )}
         </span>
         <span className="text-sm text-muted-foreground">
-          {Math.round(current)}{unit} / {target}{unit} ({percentage}%)
+          {Math.round(current)}
+          {unit} / {target}
+          {unit} ({percentage}%)
         </span>
       </div>
       <div

@@ -18,10 +18,7 @@ export default function NutritionLayoutClient({ children }: NutritionLayoutClien
   };
 
   return (
-    <main
-      className="min-h-[calc(100vh-80px)] bg-[#FAFAFA]"
-      role="main"
-    >
+    <div className="min-h-[calc(100vh-80px)] bg-[#FAFAFA]" role="main">
       {/* 상단 헤더 */}
       <header className="sticky top-0 z-10 bg-card border-b border-border/50">
         <div className="max-w-[480px] mx-auto px-4 h-14 flex items-center">
@@ -32,16 +29,12 @@ export default function NutritionLayoutClient({ children }: NutritionLayoutClien
           >
             <ArrowLeft className="w-5 h-5 text-foreground/80" />
           </button>
-          <h1 className="ml-2 text-lg font-semibold text-foreground">
-            영양 관리
-          </h1>
+          <h1 className="ml-2 text-lg font-semibold text-foreground">영양 관리</h1>
         </div>
       </header>
 
       {/* 콘텐츠 영역 - 하단 여백 80px (하단 네비게이션 공간) */}
-      <div className="max-w-[480px] mx-auto px-4 py-6 pb-20">
-        {children}
-      </div>
-    </main>
+      <div className="max-w-[480px] mx-auto px-4 py-6 pb-20">{children}</div>
+    </div>
   );
 }

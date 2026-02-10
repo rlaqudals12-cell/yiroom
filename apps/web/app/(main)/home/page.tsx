@@ -96,7 +96,7 @@ export default async function HomePage() {
       <HomeHeader />
 
       {/* 본문 */}
-      <main className="px-4 py-5 space-y-5">
+      <div className="px-4 py-5 space-y-5">
         {/* 인사말 - Server Component (LCP 요소) */}
         <HomeGreeting userName={userName} />
 
@@ -114,7 +114,7 @@ export default async function HomePage() {
         <Suspense fallback={<RecentlyViewedSkeleton />}>
           <HomeRecentlyViewed />
         </Suspense>
-      </main>
+      </div>
     </div>
   );
 }

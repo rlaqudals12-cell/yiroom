@@ -40,7 +40,7 @@ export default function MyInfoPage() {
         </div>
       </header>
 
-      <main className="px-4 py-6 space-y-6 max-w-lg mx-auto">
+      <div className="px-4 py-6 space-y-6 max-w-lg mx-auto">
         {/* 프로필 완성도 안내 */}
         <div className="text-center py-4">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 mb-3">
@@ -123,7 +123,7 @@ export default function MyInfoPage() {
             </Link>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

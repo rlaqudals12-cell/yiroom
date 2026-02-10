@@ -9,14 +9,7 @@
  * - 비로그인 사용자: localStorage
  */
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  ReactNode,
-} from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import {
@@ -93,7 +86,7 @@ export function GenderProvider({ children }: GenderProviderProps) {
       if (error) {
         // PGRST116 = no rows returned, 이 경우 null 반환
         if (error.code !== 'PGRST116') {
-          console.error('[GenderProvider] Supabase load error:', error);
+          console.error('[GenderProvider] Supabase load error:', error?.code, error?.message);
         }
         return null;
       }

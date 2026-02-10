@@ -95,9 +95,7 @@ export default function StyleGalleryPage() {
                 <Sparkles className="w-5 h-5 text-primary" />
                 스타일 갤러리
               </h1>
-              <p className="text-xs text-muted-foreground">
-                10가지 스타일의 Best 10 코디
-              </p>
+              <p className="text-xs text-muted-foreground">10가지 스타일의 Best 10 코디</p>
             </div>
           </div>
         </div>
@@ -107,20 +105,20 @@ export default function StyleGalleryPage() {
       {userPersonalColor && (
         <div className="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b">
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-primary">{userPersonalColor}</span>
-            에 어울리는 코디에 ✨ 표시됩니다
+            <span className="font-medium text-primary">{userPersonalColor}</span>에 어울리는 코디에
+            ✨ 표시됩니다
           </p>
         </div>
       )}
 
       {/* 스타일 갤러리 */}
-      <main className="p-4">
+      <div className="p-4">
         <StyleGallery
           userPersonalColor={userPersonalColor}
           initialCategory={initialCategory}
           onOutfitSelect={handleOutfitSelect}
         />
-      </main>
+      </div>
 
       {/* 퍼스널컬러 분석 유도 (없는 경우) */}
       {!userPersonalColor && (

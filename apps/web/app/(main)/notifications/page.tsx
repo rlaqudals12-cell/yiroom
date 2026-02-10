@@ -119,7 +119,11 @@ function groupNotifications(notifications: Notification[]) {
   const earlier: Notification[] = [];
 
   notifications.forEach((notification) => {
-    if (notification.time.includes('전') && !notification.time.includes('주') && !notification.time.includes('일')) {
+    if (
+      notification.time.includes('전') &&
+      !notification.time.includes('주') &&
+      !notification.time.includes('일')
+    ) {
       today.push(notification);
     } else if (notification.time.includes('어제') || notification.time.includes('일 전')) {
       thisWeek.push(notification);
@@ -140,9 +144,7 @@ export default function NotificationsPage() {
 
   // 알림 읽음 처리
   const handleReadNotification = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   };
 
   // 알림 클릭 처리
@@ -175,9 +177,7 @@ export default function NotificationsPage() {
     return (
       <FadeInUp delay={delay}>
         <section className="mb-6">
-          <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">
-            {title}
-          </h2>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">{title}</h2>
           <div className="space-y-2">
             {items.map((notification) => {
               const Icon = notificationIcons[notification.type];
@@ -224,9 +224,7 @@ export default function NotificationsPage() {
                     <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
                       {notification.message}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {notification.time}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
                   </div>
 
                   {/* 삭제 버튼 */}
@@ -288,7 +286,7 @@ export default function NotificationsPage() {
       </header>
 
       {/* 본문 */}
-      <main className="px-4 py-4">
+      <div className="px-4 py-4">
         {notifications.length === 0 ? (
           // 알림 없음 상태
           <FadeInUp>
@@ -310,7 +308,7 @@ export default function NotificationsPage() {
             {renderNotificationGroup('이전', grouped.earlier, 2)}
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }

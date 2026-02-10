@@ -108,8 +108,12 @@ export default function FastingSettingsPage() {
       fastingEnabled: !prev.fastingEnabled,
       // 활성화 시 기본값 설정
       fastingType: !prev.fastingEnabled ? prev.fastingType || '16:8' : prev.fastingType,
-      fastingStartTime: !prev.fastingEnabled ? prev.fastingStartTime || '20:00' : prev.fastingStartTime,
-      eatingWindowHours: !prev.fastingEnabled ? prev.eatingWindowHours || 8 : prev.eatingWindowHours,
+      fastingStartTime: !prev.fastingEnabled
+        ? prev.fastingStartTime || '20:00'
+        : prev.fastingStartTime,
+      eatingWindowHours: !prev.fastingEnabled
+        ? prev.eatingWindowHours || 8
+        : prev.eatingWindowHours,
     }));
   };
 
@@ -196,10 +200,7 @@ export default function FastingSettingsPage() {
   // 로딩 상태
   if (isLoading) {
     return (
-      <div
-        data-testid="fasting-loading"
-        className="flex min-h-screen items-center justify-center"
-      >
+      <div data-testid="fasting-loading" className="flex min-h-screen items-center justify-center">
         <div className="animate-pulse text-muted-foreground">로딩 중...</div>
       </div>
     );
@@ -208,10 +209,7 @@ export default function FastingSettingsPage() {
   // 에러 상태
   if (error && !settings.fastingEnabled && isLoading === false) {
     return (
-      <div
-        data-testid="fasting-settings-page"
-        className="min-h-screen bg-muted p-4"
-      >
+      <div data-testid="fasting-settings-page" className="min-h-screen bg-muted p-4">
         <div className="mx-auto max-w-md">
           <div className="rounded-lg bg-red-50 p-6 text-center">
             <p className="mb-4 text-red-600">{error}</p>
@@ -228,10 +226,7 @@ export default function FastingSettingsPage() {
   }
 
   return (
-    <div
-      data-testid="fasting-settings-page"
-      className="min-h-screen bg-muted"
-    >
+    <div data-testid="fasting-settings-page" className="min-h-screen bg-muted">
       {/* 헤더 */}
       <header className="sticky top-0 z-10 border-b bg-card px-4 py-3">
         <div className="mx-auto flex max-w-md items-center gap-3">
@@ -247,7 +242,7 @@ export default function FastingSettingsPage() {
       </header>
 
       {/* 콘텐츠 */}
-      <main className="mx-auto max-w-md p-4">
+      <div className="mx-auto max-w-md p-4">
         {/* 단식 활성화 토글 */}
         <div className="mb-6 rounded-xl bg-card p-4 shadow-sm">
           <div className="flex items-center justify-between">
@@ -257,9 +252,7 @@ export default function FastingSettingsPage() {
               </div>
               <div>
                 <p className="font-medium">간헐적 단식</p>
-                <p className="text-sm text-muted-foreground">
-                  단식 시간을 관리하세요
-                </p>
+                <p className="text-sm text-muted-foreground">단식 시간을 관리하세요</p>
               </div>
             </div>
             <button
@@ -356,9 +349,7 @@ export default function FastingSettingsPage() {
                 <Sun className="h-6 w-6 text-green-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">식사 가능 시간</p>
-                  <p className="text-xl font-bold text-green-700">
-                    {calculateEatingWindow()}
-                  </p>
+                  <p className="text-xl font-bold text-green-700">{calculateEatingWindow()}</p>
                 </div>
               </div>
             </div>
@@ -373,7 +364,7 @@ export default function FastingSettingsPage() {
         >
           {isSaving ? '저장 중...' : '저장'}
         </button>
-      </main>
+      </div>
     </div>
   );
 }

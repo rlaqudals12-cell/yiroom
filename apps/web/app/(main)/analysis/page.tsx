@@ -124,7 +124,7 @@ const ANALYSIS_CATEGORIES: AnalysisCategory[] = [
 
 export default function AnalysisPage() {
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-muted pb-24" data-testid="analysis-page">
+    <div className="min-h-[calc(100vh-80px)] bg-muted pb-24" data-testid="analysis-page">
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-8">
@@ -180,6 +180,6 @@ export default function AnalysisPage() {
           </p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

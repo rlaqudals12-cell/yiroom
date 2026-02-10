@@ -104,11 +104,13 @@ export default function YearReviewPage() {
 
   const handleShare = () => {
     if (typeof navigator.share === 'function') {
-      navigator.share({
-        title: `${currentYear} 연말 리뷰`,
-        text: `올해 총 ${yearlyStats.totalWorkoutHours}시간 운동하고, ${yearlyStats.totalCaloriesBurned.toLocaleString()} kcal를 소모했어요!`,
-        url: window.location.href,
-      }).catch(() => {});
+      navigator
+        .share({
+          title: `${currentYear} 연말 리뷰`,
+          text: `올해 총 ${yearlyStats.totalWorkoutHours}시간 운동하고, ${yearlyStats.totalCaloriesBurned.toLocaleString()} kcal를 소모했어요!`,
+          url: window.location.href,
+        })
+        .catch(() => {});
     }
   };
 
@@ -156,15 +158,13 @@ export default function YearReviewPage() {
       </div>
 
       {/* 슬라이드 콘텐츠 */}
-      <main className="px-4 pb-24">
+      <div className="px-4 pb-24">
         {/* 슬라이드 0: 올해의 기록 */}
         {currentSlide === 0 && (
           <FadeInUp>
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold mb-2">올해의 기록</h2>
-              <p className="text-white/70">
-                {currentYear}년 동안 정말 열심히 했어요!
-              </p>
+              <p className="text-white/70">{currentYear}년 동안 정말 열심히 했어요!</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white/10 backdrop-blur rounded-2xl p-6 text-center">
@@ -174,7 +174,9 @@ export default function YearReviewPage() {
               </div>
               <div className="bg-white/10 backdrop-blur rounded-2xl p-6 text-center">
                 <Flame className="w-8 h-8 mx-auto mb-2 text-orange-400" />
-                <p className="text-3xl font-bold">{yearlyStats.totalCaloriesBurned.toLocaleString()}</p>
+                <p className="text-3xl font-bold">
+                  {yearlyStats.totalCaloriesBurned.toLocaleString()}
+                </p>
                 <p className="text-sm text-white/70">소모 칼로리</p>
               </div>
               <div className="bg-white/10 backdrop-blur rounded-2xl p-6 text-center">
@@ -296,9 +298,7 @@ export default function YearReviewPage() {
             <div className="bg-white/10 backdrop-blur rounded-2xl p-6 text-center mb-6">
               <Trophy className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
               <p className="text-5xl font-bold mb-2">{friendComparison.rank}위</p>
-              <p className="text-white/70">
-                {friendComparison.totalFriends}명의 친구 중
-              </p>
+              <p className="text-white/70">{friendComparison.totalFriends}명의 친구 중</p>
             </div>
             <div className="space-y-3">
               <div className="bg-green-500/20 rounded-xl p-4 border border-green-500/30">
@@ -318,7 +318,7 @@ export default function YearReviewPage() {
             </button>
           </FadeInUp>
         )}
-      </main>
+      </div>
 
       {/* 하단 네비게이션 */}
       <div className="fixed bottom-0 left-0 right-0 bg-black/30 backdrop-blur p-4">

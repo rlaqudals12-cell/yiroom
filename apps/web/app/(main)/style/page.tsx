@@ -396,7 +396,7 @@ export default function StylePage() {
       </FadeInUp>
 
       {/* 본문 */}
-      <main className="px-4 py-4 space-y-6">
+      <div className="px-4 py-4 space-y-6">
         {/* 오늘의 코디 추천 */}
         {hasAnalysis && (
           <FadeInUp delay={4}>
@@ -537,7 +537,7 @@ export default function StylePage() {
             </button>
           </section>
         </FadeInUp>
-      </main>
+      </div>
 
       <BottomNav />
     </div>

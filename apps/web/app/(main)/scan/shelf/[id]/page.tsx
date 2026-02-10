@@ -172,7 +172,7 @@ export default function ShelfDetailPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-4 py-6 space-y-6">
         {/* 제품 기본 정보 */}
         <div className="flex gap-4">
           <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
@@ -334,7 +334,7 @@ export default function ShelfDetailPage() {
             </CardContent>
           </Card>
         )}
-      </main>
+      </div>
     </div>
   );
 }

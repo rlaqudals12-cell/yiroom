@@ -36,7 +36,7 @@ export function HomeSkeleton({ className }: SkeletonBaseProps) {
         </div>
       </header>
 
-      <main className="px-4 py-4 space-y-4">
+      <div className="px-4 py-4 space-y-4">
         {/* 시간 기반 인사 */}
         <Skeleton className="h-8 w-48" />
 
@@ -83,7 +83,7 @@ export function HomeSkeleton({ className }: SkeletonBaseProps) {
 
         {/* 이번 주 랭킹 */}
         <Skeleton className="h-24 rounded-2xl" />
-      </main>
+      </div>
 
       {/* 하단 네비 placeholder */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t h-16" />
@@ -137,7 +137,7 @@ export function BeautyPageSkeleton({ className }: SkeletonBaseProps) {
         </div>
       </div>
 
-      <main className="px-4 py-4 space-y-6">
+      <div className="px-4 py-4 space-y-6">
         {/* 맞춤 제품 추천 */}
         <section>
           <Skeleton className="h-6 w-36 mb-3" />
@@ -163,7 +163,7 @@ export function BeautyPageSkeleton({ className }: SkeletonBaseProps) {
 
         {/* 주의 성분 알림 */}
         <Skeleton className="h-28 rounded-2xl" />
-      </main>
+      </div>
     </div>
   );
 }
@@ -237,7 +237,7 @@ export function StylePageSkeleton({ className }: SkeletonBaseProps) {
         </div>
       </div>
 
-      <main className="px-4 py-4 space-y-6">
+      <div className="px-4 py-4 space-y-6">
         {/* 오늘의 코디 추천 */}
         <section>
           <Skeleton className="h-6 w-36 mb-3" />
@@ -259,7 +259,7 @@ export function StylePageSkeleton({ className }: SkeletonBaseProps) {
 
         {/* 오늘 뭐 입지? */}
         <Skeleton className="h-32 rounded-2xl" />
-      </main>
+      </div>
     </div>
   );
 }
@@ -300,7 +300,7 @@ export function CategoryPageSkeleton({ className, productCount = 8 }: CategoryPa
         </div>
       </header>
 
-      <main className="px-4 py-4">
+      <div className="px-4 py-4">
         <Skeleton className="h-4 w-16 mb-4" />
 
         <div className="grid grid-cols-2 gap-3">
@@ -308,7 +308,7 @@ export function CategoryPageSkeleton({ className, productCount = 8 }: CategoryPa
             <ProductCardSkeleton key={i} variant="large" />
           ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -332,7 +332,7 @@ export function RecordPageSkeleton({ className }: SkeletonBaseProps) {
         </div>
       </header>
 
-      <main className="px-4 py-4 space-y-4">
+      <div className="px-4 py-4 space-y-4">
         {/* 날짜 선택 */}
         <div className="flex items-center justify-between">
           <Skeleton className="w-8 h-8" />
@@ -399,7 +399,7 @@ export function RecordPageSkeleton({ className }: SkeletonBaseProps) {
             <Skeleton className="h-16 rounded-xl" />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -462,7 +462,7 @@ export function SearchPageSkeleton({ className }: SkeletonBaseProps) {
         </div>
       </header>
 
-      <main className="px-4 py-4 space-y-4">
+      <div className="px-4 py-4 space-y-4">
         {/* 최근 검색 */}
         <div>
           <Skeleton className="h-5 w-20 mb-3" />
@@ -497,7 +497,7 @@ export function SearchPageSkeleton({ className }: SkeletonBaseProps) {
             <Skeleton className="h-20 rounded-xl" />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -521,7 +521,7 @@ export function SettingsPageSkeleton({ className }: SkeletonBaseProps) {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* 알림 설정 */}
         <div className="bg-card rounded-xl border p-4">
           <Skeleton className="h-5 w-24 mb-4" />
@@ -546,7 +546,7 @@ export function SettingsPageSkeleton({ className }: SkeletonBaseProps) {
           <Skeleton className="h-5 w-28 mb-4" />
           <Skeleton className="h-10 w-full rounded-lg" />
         </div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -574,7 +574,7 @@ export function ProfilePageSkeleton({ className }: SkeletonBaseProps) {
         </div>
       </div>
 
-      <main className="px-4 py-4 space-y-4">
+      <div className="px-4 py-4 space-y-4">
         {/* 레벨 프로그레스 */}
         <div className="bg-card rounded-xl border p-4">
           <div className="flex items-center justify-between mb-2">
@@ -603,7 +603,7 @@ export function ProfilePageSkeleton({ className }: SkeletonBaseProps) {
             </div>
           ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

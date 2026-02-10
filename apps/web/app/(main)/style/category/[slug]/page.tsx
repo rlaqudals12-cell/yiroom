@@ -401,7 +401,7 @@ export default function StyleCategoryPage() {
       </header>
 
       {/* 제품 목록 */}
-      <main className="px-4 py-4">
+      <div className="px-4 py-4">
         {isProductsLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -482,7 +482,7 @@ export default function StyleCategoryPage() {
             </div>
           </>
         )}
-      </main>
+      </div>
 
       <BottomNav />
     </div>

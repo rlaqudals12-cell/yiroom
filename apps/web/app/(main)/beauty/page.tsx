@@ -1077,7 +1077,7 @@ export default function BeautyPage() {
       )}
 
       {/* 제품 그리드 */}
-      <main className="px-4 py-4 space-y-6">
+      <div className="px-4 py-4 space-y-6">
         {/* 피부타입별 오늘의 랭킹 (화해 스타일) */}
         {hasAnalysis && (
           <FadeInUp delay={6}>
@@ -1357,7 +1357,7 @@ export default function BeautyPage() {
             </section>
           </FadeInUp>
         )}
-      </main>
+      </div>
 
       <BottomNav />
     </div>

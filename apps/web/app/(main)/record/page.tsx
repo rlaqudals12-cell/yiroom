@@ -105,7 +105,7 @@ export default function RecordPage() {
         </div>
       </nav>
 
-      <main className="px-4 py-4 space-y-4">
+      <div className="px-4 py-4 space-y-4">
         {/* 주간 요약 */}
         <FadeInUp>
           <section className="bg-card rounded-2xl border p-4" aria-label="주간 요약">
@@ -142,9 +142,7 @@ export default function RecordPage() {
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
                 <p className="text-xs text-muted-foreground">📈 체중 변화</p>
-                <p className="text-lg font-bold text-green-600">
-                  {weekSummary.weightChange}kg
-                </p>
+                <p className="text-lg font-bold text-green-600">{weekSummary.weightChange}kg</p>
               </div>
             </div>
           </section>
@@ -166,9 +164,7 @@ export default function RecordPage() {
                   {todayMeals.map((meal) => (
                     <button
                       key={meal.type}
-                      onClick={() =>
-                        router.push(`/record/nutrition/add?meal=${meal.type}`)
-                      }
+                      onClick={() => router.push(`/record/nutrition/add?meal=${meal.type}`)}
                       className="w-full flex items-center justify-between p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors"
                     >
                       <div className="flex items-center gap-3">
@@ -184,9 +180,7 @@ export default function RecordPage() {
                         <span className="font-medium">{meal.label}</span>
                       </div>
                       {meal.recorded ? (
-                        <span className="text-sm text-foreground">
-                          {meal.calories} kcal
-                        </span>
+                        <span className="text-sm text-foreground">{meal.calories} kcal</span>
                       ) : (
                         <span className="text-sm text-muted-foreground">(미입력)</span>
                       )}
@@ -215,12 +209,8 @@ export default function RecordPage() {
             {/* 오늘 뭐 먹지? */}
             <FadeInUp delay={2}>
               <section className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl border border-orange-200 p-4">
-                <h2 className="font-semibold mb-2 flex items-center gap-2">
-                  🍽️ 오늘 뭐 먹지?
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  피부 + 체형 + 목표 맞춤 AI 추천
-                </p>
+                <h2 className="font-semibold mb-2 flex items-center gap-2">🍽️ 오늘 뭐 먹지?</h2>
+                <p className="text-sm text-muted-foreground">피부 + 체형 + 목표 맞춤 AI 추천</p>
                 <button
                   onClick={() => router.push('/nutrition/suggest')}
                   className="mt-3 w-full bg-orange-500 text-white py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors"
@@ -238,7 +228,10 @@ export default function RecordPage() {
                     <Droplets className="w-5 h-5 text-blue-500" aria-hidden="true" />
                     수분 섭취
                   </h2>
-                  <span className="text-sm text-muted-foreground" aria-label={`${targetWater}잔 중 ${waterCount}잔 섭취`}>
+                  <span
+                    className="text-sm text-muted-foreground"
+                    aria-label={`${targetWater}잔 중 ${waterCount}잔 섭취`}
+                  >
                     {waterCount} / {targetWater}잔
                   </span>
                 </div>
@@ -279,9 +272,7 @@ export default function RecordPage() {
                     <Timer className="w-5 h-5 text-purple-500" aria-hidden="true" />
                     <div>
                       <p className="font-semibold text-foreground">간헐적 단식</p>
-                      <p className="text-sm text-muted-foreground">
-                        단식 중 (12시간 32분 남음)
-                      </p>
+                      <p className="text-sm text-muted-foreground">단식 중 (12시간 32분 남음)</p>
                     </div>
                   </div>
                   <button
@@ -326,9 +317,7 @@ export default function RecordPage() {
             {/* 오늘의 운동 계획 */}
             <FadeInUp delay={2}>
               <section className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-4">
-                <h2 className="font-semibold mb-3 flex items-center gap-2">
-                  💪 오늘의 운동 계획
-                </h2>
+                <h2 className="font-semibold mb-3 flex items-center gap-2">💪 오늘의 운동 계획</h2>
                 <div className="bg-white/50 rounded-xl p-4">
                   <p className="font-medium text-foreground">상체 운동 (30분)</p>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -355,13 +344,9 @@ export default function RecordPage() {
                       className="flex items-center justify-between p-3 bg-muted/50 rounded-xl"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground">
-                          {workout.date}
-                        </span>
+                        <span className="text-sm text-muted-foreground">{workout.date}</span>
                         <span className="font-medium">{workout.type}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {workout.duration}분
-                        </span>
+                        <span className="text-sm text-muted-foreground">{workout.duration}분</span>
                       </div>
                       <div className="flex items-center gap-1 text-orange-600">
                         <Flame className="w-4 h-4" />
@@ -381,7 +366,7 @@ export default function RecordPage() {
             </FadeInUp>
           </>
         )}
-      </main>
+      </div>
 
       <BottomNav />
     </div>

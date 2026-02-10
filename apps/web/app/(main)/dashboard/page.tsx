@@ -14,7 +14,8 @@ import { CrossModuleCard } from '@/components/insights';
 
 export default function DashboardPage() {
   const { user, isLoaded: isUserLoaded } = useUser();
-  const { isLoading, analyses, isNewUser, hasPersonalColor, hasSkin, hasBody } = useAnalysisStatus();
+  const { isLoading, analyses, isNewUser, hasPersonalColor, hasSkin, hasBody } =
+    useAnalysisStatus();
 
   // 로딩 상태
   if (!isUserLoaded || isLoading) {
@@ -37,7 +38,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-80px)] px-4 py-8" data-testid="dashboard-page">
+    <div className="min-h-[calc(100vh-80px)] px-4 py-8" data-testid="dashboard-page">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Zone 1: User Profile (축소형) */}
         <div className="opacity-0 animate-fade-in-up">
@@ -93,6 +94,6 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

@@ -41,28 +41,112 @@ interface StatCard {
 
 // 임시 데이터 - 주간
 const weeklyWorkoutStats: StatCard[] = [
-  { label: '총 운동 시간', value: '5.5', unit: '시간', change: 12, icon: Dumbbell, iconColor: 'text-blue-500' },
-  { label: '소모 칼로리', value: '2,340', unit: 'kcal', change: 8, icon: Flame, iconColor: 'text-orange-500' },
-  { label: '운동 횟수', value: '5', unit: '회', change: 25, icon: TrendingUp, iconColor: 'text-green-500' },
+  {
+    label: '총 운동 시간',
+    value: '5.5',
+    unit: '시간',
+    change: 12,
+    icon: Dumbbell,
+    iconColor: 'text-blue-500',
+  },
+  {
+    label: '소모 칼로리',
+    value: '2,340',
+    unit: 'kcal',
+    change: 8,
+    icon: Flame,
+    iconColor: 'text-orange-500',
+  },
+  {
+    label: '운동 횟수',
+    value: '5',
+    unit: '회',
+    change: 25,
+    icon: TrendingUp,
+    iconColor: 'text-green-500',
+  },
 ];
 
 const weeklyNutritionStats: StatCard[] = [
-  { label: '평균 섭취', value: '1,850', unit: 'kcal', change: -5, icon: Utensils, iconColor: 'text-amber-500' },
-  { label: '평균 단백질', value: '95', unit: 'g', change: 15, icon: TrendingUp, iconColor: 'text-purple-500' },
-  { label: '평균 물 섭취', value: '2.1', unit: 'L', change: 10, icon: Droplets, iconColor: 'text-cyan-500' },
+  {
+    label: '평균 섭취',
+    value: '1,850',
+    unit: 'kcal',
+    change: -5,
+    icon: Utensils,
+    iconColor: 'text-amber-500',
+  },
+  {
+    label: '평균 단백질',
+    value: '95',
+    unit: 'g',
+    change: 15,
+    icon: TrendingUp,
+    iconColor: 'text-purple-500',
+  },
+  {
+    label: '평균 물 섭취',
+    value: '2.1',
+    unit: 'L',
+    change: 10,
+    icon: Droplets,
+    iconColor: 'text-cyan-500',
+  },
 ];
 
 // 임시 데이터 - 월간
 const monthlyWorkoutStats: StatCard[] = [
-  { label: '총 운동 시간', value: '22', unit: '시간', change: 15, icon: Dumbbell, iconColor: 'text-blue-500' },
-  { label: '소모 칼로리', value: '9,560', unit: 'kcal', change: 10, icon: Flame, iconColor: 'text-orange-500' },
-  { label: '운동 횟수', value: '18', unit: '회', change: 20, icon: TrendingUp, iconColor: 'text-green-500' },
+  {
+    label: '총 운동 시간',
+    value: '22',
+    unit: '시간',
+    change: 15,
+    icon: Dumbbell,
+    iconColor: 'text-blue-500',
+  },
+  {
+    label: '소모 칼로리',
+    value: '9,560',
+    unit: 'kcal',
+    change: 10,
+    icon: Flame,
+    iconColor: 'text-orange-500',
+  },
+  {
+    label: '운동 횟수',
+    value: '18',
+    unit: '회',
+    change: 20,
+    icon: TrendingUp,
+    iconColor: 'text-green-500',
+  },
 ];
 
 const monthlyNutritionStats: StatCard[] = [
-  { label: '평균 섭취', value: '1,820', unit: 'kcal', change: -3, icon: Utensils, iconColor: 'text-amber-500' },
-  { label: '평균 단백질', value: '92', unit: 'g', change: 18, icon: TrendingUp, iconColor: 'text-purple-500' },
-  { label: '평균 물 섭취', value: '2.0', unit: 'L', change: 8, icon: Droplets, iconColor: 'text-cyan-500' },
+  {
+    label: '평균 섭취',
+    value: '1,820',
+    unit: 'kcal',
+    change: -3,
+    icon: Utensils,
+    iconColor: 'text-amber-500',
+  },
+  {
+    label: '평균 단백질',
+    value: '92',
+    unit: 'g',
+    change: 18,
+    icon: TrendingUp,
+    iconColor: 'text-purple-500',
+  },
+  {
+    label: '평균 물 섭취',
+    value: '2.0',
+    unit: 'L',
+    change: 8,
+    icon: Droplets,
+    iconColor: 'text-cyan-500',
+  },
 ];
 
 // 목표 달성률 데이터
@@ -226,7 +310,7 @@ export default function ReportPage() {
       </header>
 
       {/* 본문 */}
-      <main className="px-4 py-4 space-y-6">
+      <div className="px-4 py-4 space-y-6">
         {/* 운동 통계 */}
         <FadeInUp>
           <section>
@@ -348,7 +432,7 @@ export default function ReportPage() {
             </button>
           </div>
         </FadeInUp>
-      </main>
+      </div>
     </div>
   );
 }
