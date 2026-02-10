@@ -36,6 +36,16 @@ export interface UserProfile {
   // N-1 영양 분석
   nutritionGoals?: string[];
   dietaryRestrictions?: string[];
+
+  // H-1 헤어 분석
+  hairType?: string;
+  scalpType?: string;
+  hairConcerns?: string[];
+
+  // M-1 메이크업 분석
+  undertone?: string; // 허용: 'warm' | 'cool' | 'neutral'
+  // TODO: Phase 2에서 cosmetic_products에 face_shapes 컬럼 추가 후 매칭 로직 구현
+  faceShape?: string; // 허용: 'oval' | 'round' | 'square' | 'heart' | 'oblong'
 }
 
 /**
@@ -57,12 +67,18 @@ export interface MatchResult {
  * - 퍼스널 컬러 매칭: 0-20점 (메이크업만)
  * - 기본 점수: 20점
  */
-function calculateCosmeticMatchScore(
-  product: CosmeticProduct,
-  profile: UserProfile
-): MatchResult {
+function calculateCosmeticMatchScore(product: CosmeticProduct, profile: UserProfile): MatchResult {
   const reasons: MatchReason[] = [];
   let score = 20; // 기본 점수
+
+  // 헤어케어 카테고리 감지
+  const isHaircare = ['shampoo', 'conditioner', 'hair-treatment', 'scalp-care'].includes(
+    product.category
+  );
+
+  if (isHaircare) {
+    return calculateHaircareMatchScore(product, profile, score, reasons);
+  }
 
   // 피부 타입 매칭 (30점)
   if (profile.skinType && product.skinTypes) {
@@ -116,6 +132,87 @@ function calculateCosmeticMatchScore(
     }
   }
 
+  // 언더톤 매칭 - 메이크업 추가 점수 (15점, M-1)
+  if (product.category === 'makeup' && profile.undertone) {
+    // 언더톤 기반 색상 적합도 (제품 키워드/태그에 언더톤 정보가 있을 때)
+    const undertoneLabel = getUndertoneLabel(profile.undertone);
+    reasons.push({
+      type: 'undertone',
+      label: undertoneLabel,
+      matched: true,
+    });
+    score += 15;
+  }
+
+  return {
+    score: Math.min(100, score),
+    reasons,
+  };
+}
+
+// ================================================
+// 헤어케어 매칭 (H-1)
+// ================================================
+
+/**
+ * 헤어케어 제품 매칭 점수 계산
+ * - 모발 타입 매칭: 0-30점
+ * - 두피 타입 매칭: 0-30점
+ * - 모발 고민 매칭: 0-20점
+ * - 기본 점수: 20점
+ */
+function calculateHaircareMatchScore(
+  product: CosmeticProduct,
+  profile: UserProfile,
+  baseScore: number,
+  reasons: MatchReason[]
+): MatchResult {
+  let score = baseScore;
+
+  // 모발 타입 프로필 보너스 (15점)
+  // TODO: Phase 2에서 cosmetic_products에 hair_types 컬럼 추가 후 제품 기반 매칭 구현
+  // 현재 CosmeticProduct에 hair_types 필드가 없으므로 프로필 완성도 보너스만 부여
+  if (profile.hairType) {
+    const hairTypeLabel = getHairTypeLabel(profile.hairType);
+    reasons.push({
+      type: 'hairType',
+      label: hairTypeLabel,
+      matched: false,
+    });
+    score += 15;
+  }
+
+  // 두피 타입 매칭 (30점) — 제품 skinTypes 필드 재활용 (두피도 dry/oily/sensitive)
+  if (profile.scalpType && product.skinTypes) {
+    const scalpMatched = product.skinTypes.includes(profile.scalpType as SkinType);
+    const scalpLabel = getScalpTypeLabel(profile.scalpType);
+    reasons.push({
+      type: 'scalpType',
+      label: scalpLabel,
+      matched: scalpMatched,
+    });
+    if (scalpMatched) {
+      score += 30;
+    }
+  }
+
+  // 모발 고민 매칭 (20점)
+  if (profile.hairConcerns && profile.hairConcerns.length > 0 && product.concerns) {
+    const matchedConcerns = profile.hairConcerns.filter((concern) =>
+      product.concerns?.some((c) => c.toLowerCase().includes(concern.toLowerCase()))
+    );
+
+    if (matchedConcerns.length > 0) {
+      reasons.push({
+        type: 'concern',
+        label: '모발 고민 적합',
+        matched: true,
+      });
+      const matchRatio = matchedConcerns.length / profile.hairConcerns.length;
+      score += Math.round(20 * matchRatio);
+    }
+  }
+
   return {
     score: Math.min(100, score),
     reasons,
@@ -157,9 +254,7 @@ function calculateSupplementMatchScore(
   // 영양 목표 매칭
   if (profile.nutritionGoals && profile.nutritionGoals.length > 0 && product.targetConcerns) {
     const matchedGoals = profile.nutritionGoals.filter((goal) =>
-      product.targetConcerns?.some(
-        (concern) => concern.toLowerCase().includes(goal.toLowerCase())
-      )
+      product.targetConcerns?.some((concern) => concern.toLowerCase().includes(goal.toLowerCase()))
     );
 
     if (matchedGoals.length > 0) {
@@ -175,9 +270,7 @@ function calculateSupplementMatchScore(
   // 운동 목표 연동
   if (profile.workoutGoals && profile.workoutGoals.length > 0 && product.benefits) {
     const workoutRelatedBenefits = ['muscle', 'energy', 'bone'];
-    const hasWorkoutBenefit = product.benefits.some((b) =>
-      workoutRelatedBenefits.includes(b)
-    );
+    const hasWorkoutBenefit = product.benefits.some((b) => workoutRelatedBenefits.includes(b));
 
     if (hasWorkoutBenefit) {
       reasons.push({
@@ -216,7 +309,9 @@ function calculateEquipmentMatchScore(
   // 타겟 근육 매칭
   if (profile.targetMuscles && profile.targetMuscles.length > 0 && product.targetMuscles) {
     const matchedMuscles = profile.targetMuscles.filter((muscle) =>
-      product.targetMuscles?.includes(muscle as 'chest' | 'back' | 'shoulders' | 'arms' | 'legs' | 'core' | 'full_body')
+      product.targetMuscles?.includes(
+        muscle as 'chest' | 'back' | 'shoulders' | 'arms' | 'legs' | 'core' | 'full_body'
+      )
     );
 
     if (matchedMuscles.length > 0) {
@@ -232,8 +327,7 @@ function calculateEquipmentMatchScore(
 
   // 스킬 레벨 매칭
   if (profile.skillLevel && product.skillLevel) {
-    const levelMatched =
-      product.skillLevel === 'all' || product.skillLevel === profile.skillLevel;
+    const levelMatched = product.skillLevel === 'all' || product.skillLevel === profile.skillLevel;
 
     reasons.push({
       type: 'goal',
@@ -262,10 +356,7 @@ function calculateEquipmentMatchScore(
  * - 식이 제한 매칭: 0-30점
  * - 기본 점수: 30점
  */
-function calculateHealthFoodMatchScore(
-  product: HealthFood,
-  profile: UserProfile
-): MatchResult {
+function calculateHealthFoodMatchScore(product: HealthFood, profile: UserProfile): MatchResult {
   const reasons: MatchReason[] = [];
   let score = 30; // 기본 점수
 
@@ -280,9 +371,7 @@ function calculateHealthFoodMatchScore(
     let benefitMatched = false;
     profile.workoutGoals.forEach((goal) => {
       const relatedBenefits = goalToBenefit[goal] || [];
-      const hasRelatedBenefit = product.benefits?.some((b) =>
-        relatedBenefits.includes(b)
-      );
+      const hasRelatedBenefit = product.benefits?.some((b) => relatedBenefits.includes(b));
       if (hasRelatedBenefit) {
         benefitMatched = true;
       }
@@ -299,9 +388,23 @@ function calculateHealthFoodMatchScore(
   }
 
   // 식이 제한 매칭
-  if (profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0 && product.dietaryInfo) {
+  if (
+    profile.dietaryRestrictions &&
+    profile.dietaryRestrictions.length > 0 &&
+    product.dietaryInfo
+  ) {
     const matchedRestrictions = profile.dietaryRestrictions.filter((restriction) =>
-      product.dietaryInfo?.includes(restriction as 'vegan' | 'vegetarian' | 'gluten_free' | 'lactose_free' | 'keto' | 'sugar_free' | 'organic' | 'non_gmo')
+      product.dietaryInfo?.includes(
+        restriction as
+          | 'vegan'
+          | 'vegetarian'
+          | 'gluten_free'
+          | 'lactose_free'
+          | 'keto'
+          | 'sugar_free'
+          | 'organic'
+          | 'non_gmo'
+      )
     );
 
     if (matchedRestrictions.length > 0) {
@@ -330,24 +433,72 @@ function calculateHealthFoodMatchScore(
 const POPULAR_BRANDS: Record<string, string[]> = {
   // 스킨케어 - 올리브영 어워즈 수상 브랜드
   skincare: [
-    '라운드랩', '아누아', '토리든', '달바', '닥터지', '클레어스',
-    '비플레인', '구달', '메디힐', '웰라쥬', '코스알엑스', '이니스프리',
-    '미샤', '넘버즈인', '에스네이처', '메디큐브', '마녀공장', '아이소이',
-    '피지오겔', '라로슈포제', '세타필', '더마비', '에뛰드', '클리오',
+    '라운드랩',
+    '아누아',
+    '토리든',
+    '달바',
+    '닥터지',
+    '클레어스',
+    '비플레인',
+    '구달',
+    '메디힐',
+    '웰라쥬',
+    '코스알엑스',
+    '이니스프리',
+    '미샤',
+    '넘버즈인',
+    '에스네이처',
+    '메디큐브',
+    '마녀공장',
+    '아이소이',
+    '피지오겔',
+    '라로슈포제',
+    '세타필',
+    '더마비',
+    '에뛰드',
+    '클리오',
   ],
   // 영양제 - 대중적 브랜드
   supplement: [
-    '종근당건강', '뉴트리원', '센트룸', '얼라이브', '솔가', '나우푸드',
-    '닥터스베스트', '네이처메이드', '일양약품', 'GNC', '뉴트리라이트',
+    '종근당건강',
+    '뉴트리원',
+    '센트룸',
+    '얼라이브',
+    '솔가',
+    '나우푸드',
+    '닥터스베스트',
+    '네이처메이드',
+    '일양약품',
+    'GNC',
+    '뉴트리라이트',
   ],
   // 운동기구 - 인지도 있는 브랜드
-  equipment: [
-    '하이퍼', '핏번', '나이키', '아디다스', '스포틱', '반석스포츠',
-  ],
+  equipment: ['하이퍼', '핏번', '나이키', '아디다스', '스포틱', '반석스포츠'],
   // 건강식품 - 대중적 브랜드
   healthfood: [
-    '마이프로틴', '옵티멈 뉴트리션', 'BSN', '신타6', '머슬팜',
-    '랩노쉬', '하이뮨', '일동후디스',
+    '마이프로틴',
+    '옵티멈 뉴트리션',
+    'BSN',
+    '신타6',
+    '머슬팜',
+    '랩노쉬',
+    '하이뮨',
+    '일동후디스',
+  ],
+  // 헤어케어 - 대중적 브랜드 (H-1)
+  haircare: [
+    '다슈',
+    '닥터포헤어',
+    '려',
+    'TS',
+    '라보에이치',
+    '헤드앤숄더',
+    '케라시스',
+    '미쟝센',
+    '쿤달',
+    '아모스',
+    '모로칸오일',
+    '라우쉬',
   ],
 };
 
@@ -362,9 +513,10 @@ function getPriceRange(product: AnyProduct): 'budget' | 'mid' | 'premium' | null
   }
 
   // 다른 제품은 가격으로 판단
-  const priceKrw = (product as SupplementProduct).priceKrw ||
-                   (product as WorkoutEquipment).priceKrw ||
-                   (product as HealthFood).priceKrw;
+  const priceKrw =
+    (product as SupplementProduct).priceKrw ||
+    (product as WorkoutEquipment).priceKrw ||
+    (product as HealthFood).priceKrw;
 
   if (!priceKrw) return null;
 
@@ -379,7 +531,10 @@ function getPriceRange(product: AnyProduct): 'budget' | 'mid' | 'premium' | null
  * - mid (중가): +8점
  * - premium (고가): +0점
  */
-function calculatePriceAccessibilityBonus(product: AnyProduct): { score: number; reason: MatchReason | null } {
+function calculatePriceAccessibilityBonus(product: AnyProduct): {
+  score: number;
+  reason: MatchReason | null;
+} {
   const priceRange = getPriceRange(product);
 
   if (!priceRange) return { score: 0, reason: null };
@@ -419,7 +574,10 @@ function calculatePriceAccessibilityBonus(product: AnyProduct): { score: number;
  * 대중 브랜드 보너스 (구하기 쉬운 브랜드)
  * - 올리브영/쿠팡에서 쉽게 구할 수 있는 브랜드: +12점
  */
-function calculatePopularBrandBonus(product: AnyProduct): { score: number; reason: MatchReason | null } {
+function calculatePopularBrandBonus(product: AnyProduct): {
+  score: number;
+  reason: MatchReason | null;
+} {
   const brand = product.brand;
   if (!brand) return { score: 0, reason: null };
 
@@ -427,9 +585,15 @@ function calculatePopularBrandBonus(product: AnyProduct): { score: number; reaso
   let brandList: string[] = [];
 
   switch (productType) {
-    case 'cosmetic':
-      brandList = POPULAR_BRANDS.skincare;
+    case 'cosmetic': {
+      // 헤어케어 카테고리는 별도 브랜드 리스트 사용
+      const cosmeticProduct = product as CosmeticProduct;
+      const isHaircare = ['shampoo', 'conditioner', 'hair-treatment', 'scalp-care'].includes(
+        cosmeticProduct.category
+      );
+      brandList = isHaircare ? POPULAR_BRANDS.haircare : POPULAR_BRANDS.skincare;
       break;
+    }
     case 'supplement':
       brandList = POPULAR_BRANDS.supplement;
       break;
@@ -442,8 +606,8 @@ function calculatePopularBrandBonus(product: AnyProduct): { score: number; reaso
   }
 
   const isPopular = brandList.some(
-    (b) => brand.toLowerCase().includes(b.toLowerCase()) ||
-           b.toLowerCase().includes(brand.toLowerCase())
+    (b) =>
+      brand.toLowerCase().includes(b.toLowerCase()) || b.toLowerCase().includes(brand.toLowerCase())
   );
 
   if (isPopular) {
@@ -468,7 +632,10 @@ function calculatePopularBrandBonus(product: AnyProduct): { score: number; reaso
  * - 리뷰 500개+: +5점
  * - 리뷰 100개+: +3점
  */
-function calculateReviewPopularityBonus(product: AnyProduct): { score: number; reason: MatchReason | null } {
+function calculateReviewPopularityBonus(product: AnyProduct): {
+  score: number;
+  reason: MatchReason | null;
+} {
   const reviewCount = product.reviewCount || 0;
 
   let bonus = 0;
@@ -564,10 +731,7 @@ function calculateRatingBonus(product: AnyProduct): { score: number; reason: Mat
  * - 리뷰 많은 제품 우선 (최대 +15)
  * - 높은 평점 우선 (최대 +10)
  */
-export function calculateMatchScore(
-  product: AnyProduct,
-  profile: UserProfile
-): MatchResult {
+export function calculateMatchScore(product: AnyProduct, profile: UserProfile): MatchResult {
   const productType = getProductType(product);
 
   let result: MatchResult;
@@ -691,4 +855,33 @@ function getSkillLevelLabel(level: string): string {
     all: '전체',
   };
   return labels[level] || level;
+}
+
+function getHairTypeLabel(hairType: string): string {
+  const labels: Record<string, string> = {
+    straight: '직모',
+    wavy: '웨이브',
+    curly: '곱슬',
+    coily: '강한 곱슬',
+  };
+  return labels[hairType] ? `${labels[hairType]} 적합` : `${hairType} 타입`;
+}
+
+function getScalpTypeLabel(scalpType: string): string {
+  const labels: Record<string, string> = {
+    dry: '건성 두피',
+    oily: '지성 두피',
+    sensitive: '민감 두피',
+    normal: '정상 두피',
+  };
+  return labels[scalpType] || `${scalpType} 두피`;
+}
+
+function getUndertoneLabel(undertone: string): string {
+  const labels: Record<string, string> = {
+    warm: '웜톤 적합',
+    cool: '쿨톤 적합',
+    neutral: '뉴트럴톤 적합',
+  };
+  return labels[undertone] || `${undertone} 톤`;
 }

@@ -8,8 +8,6 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 
 import { useNetworkStatus } from '../offline';
 import { useClerkSupabaseClient } from '../supabase';
-import { coachLogger } from '../utils/logger';
-
 import {
   createCoachSession,
   saveCoachMessage,
@@ -17,6 +15,8 @@ import {
   getSessionMessages,
   type CoachSession,
 } from './history';
+import { coachLogger } from '../utils/logger';
+
 import {
   sendCoachMessage,
   getMockResponse,

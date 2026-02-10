@@ -119,6 +119,16 @@ export type {
   GlobalDeeplinkResult,
 } from './global-links';
 
+// Partner Adapters (v2)
+export { getAdapter, getConfiguredAdapters, coupangAdapter } from './adapters';
+export type {
+  PartnerAdapter,
+  ProductSearchQuery,
+  PartnerProduct,
+  TrackingParams,
+  ConversionEvent,
+} from './adapters';
+
 // Types re-export (convenience)
 export type {
   AffiliatePartner,

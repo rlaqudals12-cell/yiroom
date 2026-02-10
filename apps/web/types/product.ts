@@ -18,33 +18,39 @@ export type PriceRange = 'budget' | 'mid' | 'premium';
 
 /** 화장품 카테고리 */
 export type CosmeticCategory =
-  | 'cleanser'      // 클렌저
-  | 'toner'         // 토너
-  | 'serum'         // 세럼/에센스
-  | 'moisturizer'   // 수분크림
-  | 'sunscreen'     // 선크림
-  | 'mask'          // 마스크팩
-  | 'makeup';       // 메이크업
+  | 'cleanser' // 클렌저
+  | 'toner' // 토너
+  | 'serum' // 세럼/에센스
+  | 'moisturizer' // 수분크림
+  | 'sunscreen' // 선크림
+  | 'mask' // 마스크팩
+  | 'makeup' // 메이크업
+  // v2: 헤어케어 (H-1 모듈)
+  | 'shampoo' // 샴푸
+  | 'conditioner' // 컨디셔너/린스
+  | 'hair-treatment' // 헤어 트리트먼트
+  | 'scalp-care'; // 두피 케어
 
 /** 메이크업 서브카테고리 */
 export type MakeupSubcategory =
-  | 'foundation'    // 파운데이션
-  | 'lip'           // 립
-  | 'eye'           // 아이
-  | 'blush'         // 블러셔
-  | 'brow';         // 브로우
+  | 'foundation' // 파운데이션
+  | 'lip' // 립
+  | 'eye' // 아이
+  | 'blush' // 블러셔
+  | 'brow' // 브로우
+  | 'contour'; // 컨투어링 (M-1 모듈)
 
 /** 피부 타입 */
 export type SkinType = 'dry' | 'oily' | 'combination' | 'sensitive' | 'normal';
 
 /** 피부 고민 */
 export type SkinConcern =
-  | 'acne'          // 여드름
-  | 'aging'         // 노화
-  | 'whitening'     // 미백
-  | 'hydration'     // 수분
-  | 'pore'          // 모공
-  | 'redness';      // 홍조
+  | 'acne' // 여드름
+  | 'aging' // 노화
+  | 'whitening' // 미백
+  | 'hydration' // 수분
+  | 'pore' // 모공
+  | 'redness'; // 홍조
 
 /** 퍼스널 컬러 시즌 */
 export type PersonalColorSeason = 'Spring' | 'Summer' | 'Autumn' | 'Winter';
@@ -84,10 +90,7 @@ export interface CosmeticProduct {
 }
 
 /** 화장품 생성 입력 (id, timestamps 제외) */
-export type CosmeticProductInput = Omit<
-  CosmeticProduct,
-  'id' | 'createdAt' | 'updatedAt'
->;
+export type CosmeticProductInput = Omit<CosmeticProduct, 'id' | 'createdAt' | 'updatedAt'>;
 
 /** 화장품 필터 옵션 */
 export interface CosmeticProductFilter {
@@ -107,30 +110,30 @@ export interface CosmeticProductFilter {
 
 /** 영양제 카테고리 */
 export type SupplementCategory =
-  | 'vitamin'       // 비타민
-  | 'mineral'       // 미네랄
-  | 'protein'       // 프로틴
-  | 'omega'         // 오메가
-  | 'probiotic'     // 프로바이오틱스
-  | 'collagen'      // 콜라겐
-  | 'other';        // 기타
+  | 'vitamin' // 비타민
+  | 'mineral' // 미네랄
+  | 'protein' // 프로틴
+  | 'omega' // 오메가
+  | 'probiotic' // 프로바이오틱스
+  | 'collagen' // 콜라겐
+  | 'other'; // 기타
 
 /** 영양제 효능 */
 export type SupplementBenefit =
-  | 'skin'          // 피부
-  | 'hair'          // 모발
-  | 'energy'        // 에너지
-  | 'immunity'      // 면역
-  | 'digestion'     // 소화
-  | 'sleep'         // 수면
-  | 'muscle'        // 근육
-  | 'bone';         // 뼈
+  | 'skin' // 피부
+  | 'hair' // 모발
+  | 'energy' // 에너지
+  | 'immunity' // 면역
+  | 'digestion' // 소화
+  | 'sleep' // 수면
+  | 'muscle' // 근육
+  | 'bone'; // 뼈
 
 /** 영양제 성분 */
 export interface SupplementIngredient {
   name: string;
   amount: number;
-  unit: string;  // mg, g, IU, mcg, etc.
+  unit: string; // mg, g, IU, mcg, etc.
 }
 
 /** 영양제 제품 */
@@ -151,9 +154,9 @@ export interface SupplementProduct {
 
   // 메타데이터
   priceKrw?: number;
-  dosage?: string;           // 예: '1일 1정'
-  servingSize?: number;      // 1회 섭취량
-  totalServings?: number;    // 총 제공량
+  dosage?: string; // 예: '1일 1정'
+  servingSize?: number; // 1회 섭취량
+  totalServings?: number; // 총 제공량
   imageUrl?: string;
   purchaseUrl?: string;
   affiliateUrl?: string;
@@ -170,10 +173,7 @@ export interface SupplementProduct {
 }
 
 /** 영양제 생성 입력 */
-export type SupplementProductInput = Omit<
-  SupplementProduct,
-  'id' | 'createdAt' | 'updatedAt'
->;
+export type SupplementProductInput = Omit<SupplementProduct, 'id' | 'createdAt' | 'updatedAt'>;
 
 /** 영양제 필터 옵션 */
 export interface SupplementProductFilter {
@@ -303,39 +303,39 @@ export function toSupplementProduct(row: SupplementProductRow): SupplementProduc
 
 /** 운동 기구 카테고리 */
 export type WorkoutEquipmentCategory =
-  | 'dumbbell'        // 덤벨
-  | 'barbell'         // 바벨
-  | 'kettlebell'      // 케틀벨
+  | 'dumbbell' // 덤벨
+  | 'barbell' // 바벨
+  | 'kettlebell' // 케틀벨
   | 'resistance_band' // 저항 밴드
-  | 'pull_up_bar'     // 풀업바/치닝바
-  | 'yoga_mat'        // 요가매트
-  | 'foam_roller'     // 폼롤러
-  | 'jump_rope'       // 줄넘기
-  | 'ab_roller'       // 복근 롤러
-  | 'bench'           // 벤치
-  | 'rack'            // 랙/스쿼트랙
-  | 'cardio'          // 유산소 기구
-  | 'accessory'       // 액세서리
-  | 'wearable'        // 웨어러블
-  | 'other';          // 기타
+  | 'pull_up_bar' // 풀업바/치닝바
+  | 'yoga_mat' // 요가매트
+  | 'foam_roller' // 폼롤러
+  | 'jump_rope' // 줄넘기
+  | 'ab_roller' // 복근 롤러
+  | 'bench' // 벤치
+  | 'rack' // 랙/스쿼트랙
+  | 'cardio' // 유산소 기구
+  | 'accessory' // 액세서리
+  | 'wearable' // 웨어러블
+  | 'other'; // 기타
 
 /** 타겟 근육군 */
 export type TargetMuscle =
-  | 'chest'           // 가슴
-  | 'back'            // 등
-  | 'shoulders'       // 어깨
-  | 'arms'            // 팔
-  | 'legs'            // 다리
-  | 'core'            // 코어
-  | 'full_body';      // 전신
+  | 'chest' // 가슴
+  | 'back' // 등
+  | 'shoulders' // 어깨
+  | 'arms' // 팔
+  | 'legs' // 다리
+  | 'core' // 코어
+  | 'full_body'; // 전신
 
 /** 운동 타입 */
 export type ExerciseType =
-  | 'strength'        // 근력
-  | 'cardio'          // 유산소
-  | 'flexibility'     // 유연성
-  | 'balance'         // 균형
-  | 'plyometric';     // 플라이오메트릭
+  | 'strength' // 근력
+  | 'cardio' // 유산소
+  | 'flexibility' // 유연성
+  | 'balance' // 균형
+  | 'plyometric'; // 플라이오메트릭
 
 /** 스킬 레벨 */
 export type SkillLevel = 'beginner' | 'intermediate' | 'advanced' | 'all';
@@ -387,10 +387,7 @@ export interface WorkoutEquipment {
 }
 
 /** 운동 기구 생성 입력 */
-export type WorkoutEquipmentInput = Omit<
-  WorkoutEquipment,
-  'id' | 'createdAt' | 'updatedAt'
->;
+export type WorkoutEquipmentInput = Omit<WorkoutEquipment, 'id' | 'createdAt' | 'updatedAt'>;
 
 /** 운동 기구 필터 옵션 */
 export interface WorkoutEquipmentFilter {
@@ -477,20 +474,20 @@ export function toWorkoutEquipment(row: WorkoutEquipmentRow): WorkoutEquipment {
 
 /** 건강식품 카테고리 */
 export type HealthFoodCategory =
-  | 'protein_powder'    // 프로틴 파우더
-  | 'protein_bar'       // 프로틴 바
-  | 'meal_replacement'  // 식사 대용식
-  | 'energy_drink'      // 에너지 음료
-  | 'sports_drink'      // 스포츠 음료
-  | 'bcaa'              // BCAA/아미노산
-  | 'creatine'          // 크레아틴
-  | 'pre_workout'       // 프리워크아웃
-  | 'post_workout'      // 포스트워크아웃
-  | 'diet_food'         // 다이어트 식품
-  | 'healthy_snack'     // 건강 스낵
-  | 'superfood'         // 슈퍼푸드
-  | 'functional_food'   // 기능성 식품
-  | 'other';            // 기타
+  | 'protein_powder' // 프로틴 파우더
+  | 'protein_bar' // 프로틴 바
+  | 'meal_replacement' // 식사 대용식
+  | 'energy_drink' // 에너지 음료
+  | 'sports_drink' // 스포츠 음료
+  | 'bcaa' // BCAA/아미노산
+  | 'creatine' // 크레아틴
+  | 'pre_workout' // 프리워크아웃
+  | 'post_workout' // 포스트워크아웃
+  | 'diet_food' // 다이어트 식품
+  | 'healthy_snack' // 건강 스낵
+  | 'superfood' // 슈퍼푸드
+  | 'functional_food' // 기능성 식품
+  | 'other'; // 기타
 
 /** 식이 정보 */
 export type DietaryInfo =
@@ -505,13 +502,13 @@ export type DietaryInfo =
 
 /** 건강식품 효능 */
 export type HealthFoodBenefit =
-  | 'muscle_gain'       // 근육 증가
-  | 'weight_loss'       // 체중 감량
-  | 'energy'            // 에너지
-  | 'recovery'          // 회복
-  | 'endurance'         // 지구력
-  | 'hydration'         // 수분 공급
-  | 'focus';            // 집중력
+  | 'muscle_gain' // 근육 증가
+  | 'weight_loss' // 체중 감량
+  | 'energy' // 에너지
+  | 'recovery' // 회복
+  | 'endurance' // 지구력
+  | 'hydration' // 수분 공급
+  | 'focus'; // 집중력
 
 /** 섭취 시간 */
 export type BestTime = 'pre_workout' | 'post_workout' | 'morning' | 'anytime';
@@ -580,10 +577,7 @@ export interface HealthFood {
 }
 
 /** 건강식품 생성 입력 */
-export type HealthFoodInput = Omit<
-  HealthFood,
-  'id' | 'createdAt' | 'updatedAt'
->;
+export type HealthFoodInput = Omit<HealthFood, 'id' | 'createdAt' | 'updatedAt'>;
 
 /** 건강식품 필터 옵션 */
 export interface HealthFoodFilter {
@@ -714,9 +708,13 @@ export type MatchReasonType =
   | 'personalColor'
   | 'goal'
   | 'rating'
-  | 'price'      // 가격 접근성
-  | 'brand'      // 대중 브랜드
-  | 'popularity'; // 리뷰 인기도
+  | 'price' // 가격 접근성
+  | 'brand' // 대중 브랜드
+  | 'popularity' // 리뷰 인기도
+  | 'hairType' // 모발 타입 매칭 (H-1)
+  | 'scalpType' // 두피 타입 매칭 (H-1)
+  | 'undertone' // 언더톤 매칭 (M-1)
+  | 'faceShape'; // 얼굴형 매칭 (M-1)
 
 /** 매칭 사유 */
 export interface MatchReason {
@@ -754,6 +752,7 @@ export type ProductCategory =
   | 'all'
   | 'skincare'
   | 'makeup'
+  | 'haircare'
   | 'supplement'
   | 'equipment'
   | 'healthfood';
@@ -766,8 +765,4 @@ export interface ProductCategoryInfo {
 }
 
 /** 통합 제품 타입 (유니온) */
-export type AnyProduct =
-  | CosmeticProduct
-  | SupplementProduct
-  | WorkoutEquipment
-  | HealthFood;
+export type AnyProduct = CosmeticProduct | SupplementProduct | WorkoutEquipment | HealthFood;

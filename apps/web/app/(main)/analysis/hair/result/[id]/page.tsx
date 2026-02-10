@@ -11,6 +11,7 @@ import { useAnalysisShare, createHairShareData } from '@/hooks/useAnalysisShare'
 import Link from 'next/link';
 import { AIBadge } from '@/components/common/AIBadge';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
+import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -165,7 +166,6 @@ export default function HairAnalysisResultPage() {
   const fetchAnalysis = useCallback(async () => {
     if (!isSignedIn || !analysisId || fetchedRef.current) return;
 
-    fetchedRef.current = true;
     setIsLoading(true);
     setError(null);
 
@@ -188,8 +188,28 @@ export default function HairAnalysisResultPage() {
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setImageUrl(dbData.image_url);
+      fetchedRef.current = true;
     } catch (err) {
       console.error('[H-1] Fetch error:', err);
+
+      // Fallback: sessionStorage에서 캐시된 데이터 복원
+      try {
+        const cached = sessionStorage.getItem(`hair-result-${analysisId}`);
+        if (cached) {
+          const { dbData } = JSON.parse(cached);
+          if (dbData) {
+            const transformedResult = transformDbToResult(dbData as DbHairAnalysis);
+            setResult(transformedResult);
+            setImageUrl(dbData.image_url);
+            sessionStorage.removeItem(`hair-result-${analysisId}`);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        /* sessionStorage 복원 실패 무시 */
+      }
+
       setError('결과를 불러오는 데 문제가 발생했어요');
     } finally {
       setIsLoading(false);
@@ -425,6 +445,19 @@ export default function HairAnalysisResultPage() {
                 )}
               </TabsContent>
             </Tabs>
+          )}
+
+          {/* 맞춤 헤어케어 제품 추천 */}
+          {result && (
+            <RecommendedProducts
+              analysisType="hair"
+              analysisResult={{
+                hairType: result.hairType,
+                scalpType: result.scalpType,
+                hairConcerns: result.concerns as string[],
+              }}
+              className="mt-6"
+            />
           )}
 
           {/* 다음 분석 추천 */}

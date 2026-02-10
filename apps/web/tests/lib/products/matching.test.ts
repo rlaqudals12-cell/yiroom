@@ -523,6 +523,196 @@ describe('리뷰 인기도 보너스', () => {
   });
 });
 
+describe('헤어케어 매칭 (H-1)', () => {
+  const mockShampooProduct: CosmeticProduct = {
+    id: 'shampoo-1',
+    name: '두피 케어 샴푸',
+    brand: '닥터포헤어',
+    category: 'shampoo',
+    skinTypes: ['oily', 'normal'],
+    concerns: ['hydration', 'pore'],
+    priceKrw: 22000,
+    rating: 4.4,
+  };
+
+  const mockTreatmentProduct: CosmeticProduct = {
+    id: 'treatment-1',
+    name: '헤어 트리트먼트',
+    brand: '알수없는브랜드',
+    category: 'hair-treatment',
+    skinTypes: ['dry', 'sensitive'],
+    concerns: ['hydration', 'aging'],
+    priceKrw: 30000,
+    rating: 4.1,
+  };
+
+  it('모발 타입 프로필 시 hairType reason 추가 (15점 프로필 보너스)', () => {
+    const profile: UserProfile = {
+      hairType: 'wavy',
+    };
+
+    const result = calculateMatchScore(mockShampooProduct, profile);
+
+    // 현재 CosmeticProduct에 hair_types 필드 없으므로 matched: false (프로필 완성도 보너스)
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'hairType', matched: false })
+    );
+    // 기본 20 + hairType 15 = 35 이상
+    expect(result.score).toBeGreaterThanOrEqual(35);
+  });
+
+  it('두피 타입 매칭 시 scalpType reason 추가 (30점)', () => {
+    const profile: UserProfile = {
+      scalpType: 'oily',
+    };
+
+    const result = calculateMatchScore(mockShampooProduct, profile);
+
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'scalpType', matched: true })
+    );
+    // 기본 20 + scalpType 30 = 50 이상
+    expect(result.score).toBeGreaterThanOrEqual(50);
+  });
+
+  it('두피 타입 불일치 시 scalpType matched=false', () => {
+    const profile: UserProfile = {
+      scalpType: 'dry',
+    };
+
+    const result = calculateMatchScore(mockShampooProduct, profile);
+
+    // oily/normal 제품에 dry 프로필 → 불일치
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'scalpType', matched: false })
+    );
+  });
+
+  it('모발 고민 매칭 시 concern reason 추가', () => {
+    const profile: UserProfile = {
+      hairConcerns: ['hydration'],
+    };
+
+    const result = calculateMatchScore(mockShampooProduct, profile);
+
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'concern', matched: true })
+    );
+  });
+
+  it('hairType + scalpType + hairConcerns 복합 매칭', () => {
+    const profile: UserProfile = {
+      hairType: 'straight',
+      scalpType: 'oily',
+      hairConcerns: ['hydration'],
+    };
+
+    const result = calculateMatchScore(mockShampooProduct, profile);
+
+    // 기본 20 + hairType 15 + scalpType 30 + concern 20 + brand 보너스 = 97
+    expect(result.score).toBeGreaterThanOrEqual(85);
+    // scalpType, concern 매칭 확인 (hairType은 matched: false)
+    expect(result.reasons.filter((r) => r.matched).length).toBeGreaterThanOrEqual(2);
+    expect(result.reasons.map((r) => r.type)).toContain('hairType');
+    expect(result.reasons.map((r) => r.type)).toContain('scalpType');
+    expect(result.reasons.map((r) => r.type)).toContain('concern');
+  });
+
+  it('헤어케어 인기 브랜드에 보너스 추가', () => {
+    const profile: UserProfile = {};
+
+    const result = calculateMatchScore(mockShampooProduct, profile);
+
+    // '닥터포헤어'는 POPULAR_BRANDS.haircare에 포함
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'brand', label: '인기 브랜드', matched: true })
+    );
+  });
+
+  it('hair-treatment 카테고리도 헤어케어 매칭 로직 적용', () => {
+    const profile: UserProfile = {
+      hairType: 'curly',
+      scalpType: 'dry',
+    };
+
+    const result = calculateMatchScore(mockTreatmentProduct, profile);
+
+    // hairType(프로필 보너스, matched: false) + scalpType(dry 매칭) → 두 reason 모두 존재
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'hairType', matched: false })
+    );
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'scalpType', matched: true })
+    );
+  });
+});
+
+describe('메이크업 언더톤 매칭 (M-1)', () => {
+  const mockMakeupForUndertone: CosmeticProduct = {
+    id: 'makeup-ut-1',
+    name: '쿨톤 립',
+    brand: '테스트 브랜드',
+    category: 'makeup',
+    subcategory: 'lip',
+    personalColorSeasons: ['Summer'],
+    priceKrw: 25000,
+    rating: 4.3,
+  };
+
+  it('메이크업 제품 + undertone 프로필 시 undertone reason 추가 (15점)', () => {
+    const profile: UserProfile = {
+      undertone: 'cool',
+    };
+
+    const result = calculateMatchScore(mockMakeupForUndertone, profile);
+
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'undertone', matched: true })
+    );
+    // 기본 20 + undertone 15 = 35 이상
+    expect(result.score).toBeGreaterThanOrEqual(35);
+  });
+
+  it('personalColor + undertone 복합 매칭', () => {
+    const profile: UserProfile = {
+      personalColorSeason: 'Summer',
+      undertone: 'cool',
+    };
+
+    const result = calculateMatchScore(mockMakeupForUndertone, profile);
+
+    // personalColor(20점) + undertone(15점) 모두 적용
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'personalColor', matched: true })
+    );
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'undertone', matched: true })
+    );
+    // 기본 20 + personalColor 20 + undertone 15 = 55 이상
+    expect(result.score).toBeGreaterThanOrEqual(55);
+  });
+
+  it('비메이크업 제품에는 undertone 매칭 없음', () => {
+    const serumProduct: CosmeticProduct = {
+      id: 'serum-ut-1',
+      name: '보습 세럼',
+      brand: '테스트',
+      category: 'serum',
+      priceKrw: 30000,
+      rating: 4.0,
+    };
+
+    const profile: UserProfile = {
+      undertone: 'warm',
+    };
+
+    const result = calculateMatchScore(serumProduct, profile);
+
+    // serum은 메이크업이 아니므로 undertone reason 없음
+    expect(result.reasons.find((r) => r.type === 'undertone')).toBeUndefined();
+  });
+});
+
 describe('점수 상한 검증', () => {
   it('모든 보너스가 적용되어도 100점 이하', () => {
     // 모든 보너스가 적용될 수 있는 완벽한 제품
@@ -609,5 +799,83 @@ describe('복합 매칭 시나리오', () => {
     // 영양제 복합 매칭 확인
     expect(result.score).toBeGreaterThan(60);
     expect(result.reasons.map((r) => r.type)).toContain('brand');
+  });
+});
+
+describe('엣지 케이스', () => {
+  const mockShampoo: CosmeticProduct = {
+    id: 'edge-shampoo',
+    name: '엣지 케이스 샴푸',
+    brand: '알수없는브랜드',
+    category: 'shampoo',
+    priceKrw: 15000,
+    rating: 4.0,
+  };
+
+  it('모든 H-1 필드가 undefined인 프로필로 헤어케어 매칭', () => {
+    const profile: UserProfile = {};
+    const result = calculateMatchScore(mockShampoo, profile);
+
+    // hairType/scalpType/hairConcerns 모두 없으므로 기본점만 부여
+    expect(result.score).toBeGreaterThanOrEqual(20);
+    expect(result.reasons.find((r) => r.type === 'hairType')).toBeUndefined();
+    expect(result.reasons.find((r) => r.type === 'scalpType')).toBeUndefined();
+  });
+
+  it('product.skinTypes가 undefined인 경우 scalpType 매칭 건너뜀', () => {
+    const productNoSkinTypes: CosmeticProduct = {
+      ...mockShampoo,
+      skinTypes: undefined,
+    };
+    const profile: UserProfile = { scalpType: 'oily' };
+    const result = calculateMatchScore(productNoSkinTypes, profile);
+
+    // skinTypes 없으므로 scalpType reason 없어야 함
+    expect(result.reasons.find((r) => r.type === 'scalpType')).toBeUndefined();
+  });
+
+  it('product.concerns가 빈 배열인 경우 hairConcerns 매칭 건너뜀', () => {
+    const productEmptyConcerns: CosmeticProduct = {
+      ...mockShampoo,
+      concerns: [],
+    };
+    const profile: UserProfile = { hairConcerns: ['hydration'] };
+    const result = calculateMatchScore(productEmptyConcerns, profile);
+
+    // concerns 빈 배열이므로 concern reason 없어야 함
+    expect(result.reasons.find((r) => r.type === 'concern')).toBeUndefined();
+  });
+
+  it('hairConcerns가 빈 배열인 프로필', () => {
+    const productWithConcerns: CosmeticProduct = {
+      ...mockShampoo,
+      concerns: ['hydration'],
+    };
+    const profile: UserProfile = { hairConcerns: [] };
+    const result = calculateMatchScore(productWithConcerns, profile);
+
+    // 빈 배열이므로 concern 매칭 건너뜀
+    expect(result.reasons.find((r) => r.type === 'concern')).toBeUndefined();
+  });
+
+  it('undertone이 undefined인 메이크업 프로필', () => {
+    const makeupProduct: CosmeticProduct = {
+      id: 'edge-makeup',
+      name: '엣지 파운데이션',
+      brand: '테스트',
+      category: 'makeup',
+      personalColorSeasons: ['Spring'],
+      priceKrw: 30000,
+      rating: 4.2,
+    };
+    const profile: UserProfile = { personalColorSeason: 'Spring' };
+    const result = calculateMatchScore(makeupProduct, profile);
+
+    // undertone 없으므로 undertone reason 없어야 함
+    expect(result.reasons.find((r) => r.type === 'undertone')).toBeUndefined();
+    // personalColor는 매칭
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'personalColor', matched: true })
+    );
   });
 });

@@ -32,7 +32,7 @@ import {
   type SkinAnalysisResult,
 } from '@/lib/gemini';
 
-import { SKIN_TYPE_DATA, SCORE_WEIGHTS } from './constants';
+import { SKIN_TYPE_DATA } from './constants';
 import type { SkinMetrics, SkinMetricsDelta } from './types';
 
 export default function SkinResultScreen() {

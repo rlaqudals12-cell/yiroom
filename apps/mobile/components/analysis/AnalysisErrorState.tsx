@@ -65,7 +65,10 @@ export function AnalysisErrorState({
             testID={`${testID}-home`}
           >
             <Text
-              style={[styles.homeButtonText, isDark && styles.homeButtonTextDark]}
+              style={[
+                styles.homeButtonText,
+                isDark && styles.homeButtonTextDark,
+              ]}
             >
               홈으로 돌아가기
             </Text>

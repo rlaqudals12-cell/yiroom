@@ -92,15 +92,29 @@ export type AffiliateSkinType = 'dry' | 'oily' | 'combination' | 'sensitive' | '
 
 /** 피부 고민 (매칭용) */
 export type AffiliateSkinConcern =
-  | 'acne' | 'aging' | 'whitening' | 'hydration'
-  | 'pore' | 'redness' | 'dark_circles' | 'wrinkles';
+  | 'acne'
+  | 'aging'
+  | 'whitening'
+  | 'hydration'
+  | 'pore'
+  | 'redness'
+  | 'dark_circles'
+  | 'wrinkles';
 
 /** 퍼스널 컬러 (매칭용) */
-export type AffiliatePersonalColor =
-  | 'spring_warm' | 'summer_cool' | 'autumn_warm' | 'winter_cool';
+export type AffiliatePersonalColor = 'spring_warm' | 'summer_cool' | 'autumn_warm' | 'winter_cool';
 
 /** 체형 (매칭용) */
 export type AffiliateBodyType = 'straight' | 'wave' | 'natural';
+
+/** 모발 타입 (H-1 매칭용) */
+export type AffiliateHairType = 'straight' | 'wavy' | 'curly' | 'coily';
+
+/** 두피 타입 (H-1 매칭용) */
+export type AffiliateScalpType = 'dry' | 'oily' | 'sensitive' | 'normal';
+
+/** 언더톤 (M-1 매칭용) */
+export type AffiliateUndertone = 'warm' | 'cool' | 'neutral';
 
 /** 어필리에이트 제품 (DB Row) */
 export interface AffiliateProductRow {
@@ -126,6 +140,12 @@ export interface AffiliateProductRow {
   skin_concerns: string[] | null;
   personal_colors: string[] | null;
   body_types: string[] | null;
+  // v2: H-1/M-1 매칭 필드
+  hair_types: string[] | null;
+  scalp_types: string[] | null;
+  face_shapes: string[] | null;
+  undertones: string[] | null;
+  makeup_subcategory: string | null;
   keywords: string[] | null;
   tags: string[] | null;
   is_in_stock: boolean;
@@ -161,6 +181,12 @@ export interface AffiliateProduct {
   skinConcerns?: AffiliateSkinConcern[];
   personalColors?: AffiliatePersonalColor[];
   bodyTypes?: AffiliateBodyType[];
+  // v2: H-1/M-1 매칭 필드
+  hairTypes?: AffiliateHairType[];
+  scalpTypes?: AffiliateScalpType[];
+  faceShapes?: string[];
+  undertones?: AffiliateUndertone[];
+  makeupSubcategory?: string;
   keywords?: string[];
   tags?: string[];
   isInStock: boolean;
@@ -195,6 +221,11 @@ export function toAffiliateProduct(row: AffiliateProductRow): AffiliateProduct {
     skinConcerns: row.skin_concerns as AffiliateSkinConcern[] | undefined,
     personalColors: row.personal_colors as AffiliatePersonalColor[] | undefined,
     bodyTypes: row.body_types as AffiliateBodyType[] | undefined,
+    hairTypes: row.hair_types as AffiliateHairType[] | undefined,
+    scalpTypes: row.scalp_types as AffiliateScalpType[] | undefined,
+    faceShapes: row.face_shapes ?? undefined,
+    undertones: row.undertones as AffiliateUndertone[] | undefined,
+    makeupSubcategory: row.makeup_subcategory ?? undefined,
     keywords: row.keywords ?? undefined,
     tags: row.tags ?? undefined,
     isInStock: row.is_in_stock,
@@ -215,6 +246,12 @@ export interface AffiliateProductFilter {
   skinConcerns?: AffiliateSkinConcern[];
   personalColors?: AffiliatePersonalColor[];
   bodyTypes?: AffiliateBodyType[];
+  // v2: H-1/M-1 필터
+  hairTypes?: AffiliateHairType[];
+  scalpTypes?: AffiliateScalpType[];
+  faceShapes?: string[];
+  undertones?: AffiliateUndertone[];
+  makeupSubcategory?: string;
   minPrice?: number;
   maxPrice?: number;
   minRating?: number;
@@ -227,7 +264,14 @@ export type AffiliateProductSortBy = 'rating' | 'price_asc' | 'price_desc' | 'po
 
 /** 추천 유형 */
 export type AffiliateRecommendationType =
-  | 'skin_match' | 'color_match' | 'body_match' | 'popular' | 'search' | 'related';
+  | 'skin_match'
+  | 'color_match'
+  | 'body_match'
+  | 'hair_match'
+  | 'makeup_match'
+  | 'popular'
+  | 'search'
+  | 'related';
 
 /** 클릭 생성 입력 */
 export interface AffiliateClickCreateInput {

@@ -11,6 +11,7 @@ import { useAnalysisShare, createMakeupShareData } from '@/hooks/useAnalysisShar
 import Link from 'next/link';
 import { AIBadge } from '@/components/common/AIBadge';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
+import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,7 @@ import {
   MAKEUP_STYLES,
   MAKEUP_CONCERNS,
 } from '@/lib/mock/makeup-analysis';
+import type { PersonalColorSeason } from '@/types/product';
 
 // 점수 -> 상태
 function getStatus(value: number): 'good' | 'normal' | 'warning' {
@@ -191,7 +193,6 @@ export default function MakeupAnalysisResultPage() {
   const fetchAnalysis = useCallback(async () => {
     if (!isSignedIn || !analysisId || fetchedRef.current) return;
 
-    fetchedRef.current = true;
     setIsLoading(true);
     setError(null);
 
@@ -215,8 +216,28 @@ export default function MakeupAnalysisResultPage() {
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setImageUrl(dbData.image_url);
+      fetchedRef.current = true;
     } catch (err) {
       console.error('[M-1] Fetch error:', err);
+
+      // Fallback: sessionStorage에서 캐시된 데이터 복원
+      try {
+        const cached = sessionStorage.getItem(`makeup-result-${analysisId}`);
+        if (cached) {
+          const { dbData } = JSON.parse(cached);
+          if (dbData) {
+            const transformedResult = transformDbToResult(dbData as DbMakeupAnalysis);
+            setResult(transformedResult);
+            setImageUrl(dbData.image_url);
+            sessionStorage.removeItem(`makeup-result-${analysisId}`);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        /* sessionStorage 복원 실패 무시 */
+      }
+
       setError('결과를 불러올 수 없어요');
     } finally {
       setIsLoading(false);
@@ -508,6 +529,19 @@ export default function MakeupAnalysisResultPage() {
           </Tabs>
         )}
 
+        {/* 맞춤 메이크업 제품 추천 */}
+        {result && (
+          <RecommendedProducts
+            analysisType="makeup"
+            analysisResult={{
+              undertone: result.undertone,
+              faceShape: result.faceShape,
+              seasonType: result.personalColorConnection?.season as PersonalColorSeason | undefined,
+            }}
+            className="mt-6"
+          />
+        )}
+
         {/* 다음 분석 추천 */}
         <ContextLinkingCard currentModule="makeup" />
       </div>
@@ -520,7 +554,7 @@ export default function MakeupAnalysisResultPage() {
             <Button
               className="w-full"
               onClick={() =>
-                router.push(`/products?undertone=${result.undertone || ''}&category=cosmetics`)
+                router.push(`/products?undertone=${result.undertone || ''}&category=makeup`)
               }
             >
               <Sparkles className="w-4 h-4 mr-2" />

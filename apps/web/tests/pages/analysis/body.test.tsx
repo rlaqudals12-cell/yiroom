@@ -281,7 +281,9 @@ describe('BodyAnalysisPage', () => {
       await waitFor(() => {
         expect(screen.getByTestId('multi-angle-capture')).toBeInTheDocument();
       });
-      expect(screen.getByText('정면, 측면, 후면 사진을 촬영해주세요')).toBeInTheDocument();
+      expect(
+        screen.getByText('정면, 좌측면, 우측면, 후면 사진을 촬영해주세요')
+      ).toBeInTheDocument();
 
       // 4. 촬영 완료 → 분석 로딩
       await user.click(screen.getByTestId('multi-angle-complete'));
@@ -441,7 +443,7 @@ describe('BodyAnalysisPage', () => {
 
       // 에러 서브타이틀 확인
       await waitFor(() => {
-        expect(screen.getByText('분석 중 오류가 발생했어요')).toBeInTheDocument();
+        expect(screen.getByText('분석에 실패했어요. 다시 시도해주세요.')).toBeInTheDocument();
       });
     });
   });

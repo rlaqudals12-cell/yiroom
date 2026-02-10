@@ -235,7 +235,10 @@ export default function BodyResultScreen() {
 
   return (
     <SafeAreaView
-      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
+      style={[
+        commonAnalysisStyles.container,
+        isDark && commonAnalysisStyles.containerDark,
+      ]}
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
@@ -254,7 +257,11 @@ export default function BodyResultScreen() {
 
         {/* BMI 카드 */}
         <View style={[styles.bmiCard, isDark && commonAnalysisStyles.cardDark]}>
-          <Text style={[styles.bmiLabel, isDark && commonAnalysisStyles.textMuted]}>BMI</Text>
+          <Text
+            style={[styles.bmiLabel, isDark && commonAnalysisStyles.textMuted]}
+          >
+            BMI
+          </Text>
           <View style={styles.bmiValue}>
             <Text style={[styles.bmiNumber, { color: bmiStatus.color }]}>
               {bmi}
@@ -265,27 +272,50 @@ export default function BodyResultScreen() {
               <Text style={styles.bmiStatusText}>{bmiStatus.label}</Text>
             </View>
           </View>
-          <Text style={[styles.bmiInfo, isDark && commonAnalysisStyles.textMuted]}>
+          <Text
+            style={[styles.bmiInfo, isDark && commonAnalysisStyles.textMuted]}
+          >
             키 {height}cm / 체중 {weight}kg
           </Text>
         </View>
 
         {/* 체형 결과 */}
-        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
-          <Text style={[styles.typeLabel, isDark && commonAnalysisStyles.textMuted]}>
+        <View
+          style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}
+        >
+          <Text
+            style={[styles.typeLabel, isDark && commonAnalysisStyles.textMuted]}
+          >
             당신의 체형은
           </Text>
-          <Text style={[styles.typeName, isDark && commonAnalysisStyles.textLight]}>
+          <Text
+            style={[styles.typeName, isDark && commonAnalysisStyles.textLight]}
+          >
             {typeData.name}
           </Text>
-          <Text style={[commonAnalysisStyles.description, isDark && commonAnalysisStyles.textMuted]}>
+          <Text
+            style={[
+              commonAnalysisStyles.description,
+              isDark && commonAnalysisStyles.textMuted,
+            ]}
+          >
             {typeData.description}
           </Text>
         </View>
 
         {/* 추천 스타일 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}>
+        <View
+          style={[
+            commonAnalysisStyles.section,
+            isDark && commonAnalysisStyles.cardDark,
+          ]}
+        >
+          <Text
+            style={[
+              commonAnalysisStyles.sectionTitle,
+              isDark && commonAnalysisStyles.textLight,
+            ]}
+          >
             추천 스타일
           </Text>
           <View style={styles.tagContainer}>
@@ -298,8 +328,18 @@ export default function BodyResultScreen() {
         </View>
 
         {/* 피해야 할 스타일 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}>
+        <View
+          style={[
+            commonAnalysisStyles.section,
+            isDark && commonAnalysisStyles.cardDark,
+          ]}
+        >
+          <Text
+            style={[
+              commonAnalysisStyles.sectionTitle,
+              isDark && commonAnalysisStyles.textLight,
+            ]}
+          >
             피하면 좋은 스타일
           </Text>
           <View style={styles.tagContainer}>

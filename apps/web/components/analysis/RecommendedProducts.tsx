@@ -22,7 +22,7 @@ import type {
 import type { UserProfile } from '@/lib/products/matching';
 
 // 분석 타입별 설정
-type AnalysisType = 'personal-color' | 'skin' | 'body';
+type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
 
 interface AnalysisResult {
   // 퍼스널 컬러 분석 결과
@@ -35,6 +35,15 @@ interface AnalysisResult {
   // 체형 분석 결과
   bodyType?: string;
   recommendedExercises?: string[];
+
+  // H-1 헤어 분석 결과
+  hairType?: string;
+  scalpType?: string;
+  hairConcerns?: string[];
+
+  // M-1 메이크업 분석 결과
+  undertone?: string;
+  faceShape?: string;
 }
 
 interface RecommendedProductsProps {
@@ -60,7 +69,12 @@ export function RecommendedProducts({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 객체 참조 대신 primitive 값으로 안정적 비교 (useEffect 무한 루프 방지)
+  const analysisResultKey = JSON.stringify(analysisResult);
+
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchProducts() {
       setIsLoading(true);
       setError(null);
@@ -138,7 +152,62 @@ export function RecommendedProducts({
             }
             break;
           }
+
+          case 'hair': {
+            // 헤어 분석 → 헤어케어 제품 추천
+            const { hairType, scalpType, hairConcerns } = analysisResult;
+            if (hairType || scalpType) {
+              userProfile = {
+                hairType,
+                scalpType,
+                hairConcerns: hairConcerns || [],
+              };
+              // 4개 헤어케어 카테고리 병렬 조회
+              const hairCategories = [
+                'shampoo',
+                'conditioner',
+                'hair-treatment',
+                'scalp-care',
+              ] as const;
+              const hairProductArrays = await Promise.all(
+                hairCategories.map((cat) =>
+                  getCosmeticProducts(
+                    {
+                      category: cat,
+                      ...(scalpType ? { skinTypes: [scalpType as SkinType] } : {}),
+                    },
+                    10
+                  )
+                )
+              );
+              fetchedProducts = hairProductArrays.flat();
+            }
+            break;
+          }
+
+          case 'makeup': {
+            // 메이크업 분석 → 메이크업 제품 추천
+            const { undertone, faceShape, seasonType: season } = analysisResult;
+            if (undertone || faceShape) {
+              userProfile = {
+                undertone,
+                faceShape,
+                ...(season ? { personalColorSeason: season } : {}),
+              };
+              fetchedProducts = await getCosmeticProducts(
+                {
+                  category: 'makeup',
+                  ...(season ? { personalColorSeasons: [season] } : {}),
+                },
+                20
+              );
+            }
+            break;
+          }
         }
+
+        // 이전 요청이 취소된 경우 상태 업데이트 무시
+        if (cancelled) return;
 
         // 매칭 점수 계산 및 정렬
         if (fetchedProducts.length > 0) {
@@ -148,15 +217,20 @@ export function RecommendedProducts({
           setProducts([]);
         }
       } catch (err) {
+        if (cancelled) return;
         console.error('[RecommendedProducts] 제품 로딩 실패:', err);
         setError('제품을 불러오는 중 오류가 발생했습니다.');
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     }
 
     fetchProducts();
-  }, [analysisType, analysisResult, maxProducts]);
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- analysisResult를 primitive로 분해하여 안정적 비교
+  }, [analysisType, analysisResultKey, maxProducts]);
 
   // 분석 타입별 섹션 제목 및 링크
   const sectionConfig = {
@@ -177,6 +251,18 @@ export function RecommendedProducts({
       subtitle: '체형 분석 기반 추천',
       link: `/products?category=equipment&bodyType=${analysisResult.bodyType || ''}`,
       emoji: '💪',
+    },
+    hair: {
+      title: '나에게 맞는 헤어케어',
+      subtitle: '두피/모발 타입 기반 추천',
+      link: `/products?category=haircare&scalpType=${analysisResult.scalpType || ''}`,
+      emoji: '💇',
+    },
+    makeup: {
+      title: '나에게 어울리는 메이크업',
+      subtitle: '얼굴형/언더톤 기반 추천',
+      link: `/products?category=makeup&undertone=${analysisResult.undertone || ''}`,
+      emoji: '💄',
     },
   };
 

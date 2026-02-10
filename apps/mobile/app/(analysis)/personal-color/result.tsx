@@ -170,7 +170,10 @@ export default function PersonalColorResultScreen() {
 
   return (
     <SafeAreaView
-      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
+      style={[
+        commonAnalysisStyles.container,
+        isDark && commonAnalysisStyles.containerDark,
+      ]}
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
@@ -182,27 +185,54 @@ export default function PersonalColorResultScreen() {
         )}
 
         {/* 결과 카드 */}
-        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
+        <View
+          style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}
+        >
           {/* AI 분석 신뢰도 표시 */}
           <AnalysisTrustBadge
             type={usedFallback ? 'questionnaire' : 'ai'}
             confidence={usedFallback ? undefined : result.confidence}
             testID="personal-color-trust-badge"
           />
-          <Text style={[styles.seasonLabel, isDark && commonAnalysisStyles.textMuted]}>
+          <Text
+            style={[
+              styles.seasonLabel,
+              isDark && commonAnalysisStyles.textMuted,
+            ]}
+          >
             당신의 퍼스널 컬러는
           </Text>
-          <Text style={[styles.seasonName, isDark && commonAnalysisStyles.textLight]}>
+          <Text
+            style={[
+              styles.seasonName,
+              isDark && commonAnalysisStyles.textLight,
+            ]}
+          >
             {seasonData.name}
           </Text>
-          <Text style={[commonAnalysisStyles.description, isDark && commonAnalysisStyles.textMuted]}>
+          <Text
+            style={[
+              commonAnalysisStyles.description,
+              isDark && commonAnalysisStyles.textMuted,
+            ]}
+          >
             {result.description || seasonData.description}
           </Text>
         </View>
 
         {/* 추천 컬러 팔레트 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}>
+        <View
+          style={[
+            commonAnalysisStyles.section,
+            isDark && commonAnalysisStyles.cardDark,
+          ]}
+        >
+          <Text
+            style={[
+              commonAnalysisStyles.sectionTitle,
+              isDark && commonAnalysisStyles.textLight,
+            ]}
+          >
             추천 컬러 팔레트
           </Text>
           <View style={styles.colorPalette}>
@@ -216,8 +246,18 @@ export default function PersonalColorResultScreen() {
         </View>
 
         {/* 비슷한 연예인 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}>
+        <View
+          style={[
+            commonAnalysisStyles.section,
+            isDark && commonAnalysisStyles.cardDark,
+          ]}
+        >
+          <Text
+            style={[
+              commonAnalysisStyles.sectionTitle,
+              isDark && commonAnalysisStyles.textLight,
+            ]}
+          >
             같은 타입의 연예인
           </Text>
           <View style={styles.celebrities}>
