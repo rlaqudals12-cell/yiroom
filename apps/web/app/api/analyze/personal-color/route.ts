@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import {
@@ -30,6 +31,20 @@ const XP_ANALYSIS_COMPLETE = 10;
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
+
+// Base64 이미지 검증
+const base64ImageSchema = z.string().min(100, '이미지 데이터가 너무 짧아요');
+
+// 입력 스키마
+const personalColorSchema = z.object({
+  imageBase64: base64ImageSchema.optional(),
+  wristImageBase64: base64ImageSchema.optional(),
+  frontImageBase64: base64ImageSchema.optional(),
+  leftImageBase64: base64ImageSchema.optional(),
+  rightImageBase64: base64ImageSchema.optional(),
+  useMock: z.boolean().optional().default(false),
+  saveImage: z.boolean().optional().default(false),
+});
 
 /**
  * PC-1 퍼스널 컬러 분석 API (Real AI + Mock Fallback)
@@ -71,19 +86,20 @@ export async function POST(req: NextRequest) {
       return rateLimitResult.response!;
     }
 
-    const body = await req.json();
+    const rawBody = await req.json();
+    const parsed = personalColorSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return validationError(parsed.error.errors[0]?.message || '입력 정보를 확인해주세요.');
+    }
     const {
-      // 하위 호환
       imageBase64,
       wristImageBase64,
-      // 다각도 지원
       frontImageBase64,
       leftImageBase64,
       rightImageBase64,
-      useMock = false,
-      // 이미지 저장 여부 (동의 시만 true)
-      saveImage = false,
-    } = body;
+      useMock,
+      saveImage,
+    } = parsed.data;
 
     // 이미지 입력 검증: 다각도 또는 단일 이미지 필요
     const hasFrontImage = !!frontImageBase64;
@@ -93,9 +109,9 @@ export async function POST(req: NextRequest) {
       return validationError('이미지가 필요합니다.');
     }
 
-    // 분석용 이미지 입력 구성
+    // 분석용 이미지 입력 구성 (위에서 hasFrontImage || hasLegacyImage 검증 완료)
     const analysisInput: PersonalColorMultiAngleInput = {
-      frontImageBase64: frontImageBase64 || imageBase64,
+      frontImageBase64: (frontImageBase64 || imageBase64)!,
       leftImageBase64,
       rightImageBase64,
       wristImageBase64,
@@ -334,8 +350,9 @@ export async function POST(req: NextRequest) {
     // 이미지 업로드 (사용자 동의 시에만 저장 - GDPR/PIPA 준수)
     const primaryImage = frontImageBase64 || imageBase64;
     let faceImageUrl: string | null = null;
-    let leftImageUrl: string | null = null;
-    let rightImageUrl: string | null = null;
+    // leftImageUrl, rightImageUrl: DB 컬럼 추가 후 활성화 (Phase 2)
+    let _leftImageUrl: string | null = null;
+    let _rightImageUrl: string | null = null;
 
     if (primaryImage && saveImage) {
       console.log('[PC-1] User consented to image storage, uploading...');
@@ -370,7 +387,7 @@ export async function POST(req: NextRequest) {
             contentType: 'image/jpeg',
             upsert: false,
           });
-        if (leftUpload) leftImageUrl = leftUpload.path;
+        if (leftUpload) _leftImageUrl = leftUpload.path;
       }
 
       // 우측 이미지 업로드 (다각도 분석 시)
@@ -383,7 +400,7 @@ export async function POST(req: NextRequest) {
             contentType: 'image/jpeg',
             upsert: false,
           });
-        if (rightUpload) rightImageUrl = rightUpload.path;
+        if (rightUpload) _rightImageUrl = rightUpload.path;
       }
     } else if (primaryImage && !saveImage) {
       console.log('[PC-1] User did not consent to image storage, skipping upload');
@@ -406,16 +423,19 @@ export async function POST(req: NextRequest) {
     const undertone = undertoneMap[result.tone] || 'Neutral';
 
     // DB에 저장
+    // 주의: left_image_url, right_image_url, images_count, analysis_reliability 컬럼은
+    // 클라우드 DB에 마이그레이션 미적용으로 제외 (20260113_pc_multi_angle_columns.sql 참조)
+    // 다각도 이미지 정보는 image_analysis JSONB에 포함됨
     const { data, error } = await supabase
       .from('personal_color_assessments')
       .insert({
         clerk_user_id: userId,
         questionnaire_answers: {}, // 문진 응답 (현재 미사용)
         face_image_url: faceImageUrl,
-        left_image_url: leftImageUrl,
-        right_image_url: rightImageUrl,
-        images_count: imagesCount,
-        analysis_reliability: analysisReliability,
+        // 다각도 컬럼 제외 (마이그레이션 적용 후 복원 필요):
+        // left_image_url: leftImageUrl,
+        // right_image_url: rightImageUrl,
+        // images_count: imagesCount,
         season: season,
         undertone: undertone,
         confidence: result.confidence,
@@ -468,13 +488,14 @@ export async function POST(req: NextRequest) {
     }
 
     // users 테이블에 PC-1 결과 동기화 (비정규화 - 빠른 조회용)
+    // 주의: face_image_url 컬럼은 users 테이블에 존재하지 않음
+    // 얼굴 이미지 URL은 personal_color_assessments.face_image_url에만 저장됨
     const { error: userUpdateError } = await supabase
       .from('users')
       .update({
         latest_pc_assessment_id: data.id,
         personal_color_season: season,
         personal_color_undertone: undertone,
-        face_image_url: faceImageUrl,
       })
       .eq('clerk_user_id', userId);
 

@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { analyzeSkin, type GeminiSkinAnalysisResult } from '@/lib/gemini';
@@ -25,6 +26,18 @@ const XP_ANALYSIS_COMPLETE = 10;
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
+
+// Base64 이미지 검증
+const base64ImageSchema = z.string().min(100, '이미지 데이터가 너무 짧아요');
+
+// 입력 스키마
+const skinAnalysisSchema = z.object({
+  imageBase64: base64ImageSchema.optional(),
+  frontImageBase64: base64ImageSchema.optional(),
+  leftImageBase64: base64ImageSchema.optional(),
+  rightImageBase64: base64ImageSchema.optional(),
+  useMock: z.boolean().optional().default(false),
+});
 
 /**
  * S-1 피부 분석 API (Real AI + Mock Fallback)
@@ -61,14 +74,13 @@ export async function POST(req: NextRequest) {
       return rateLimitResult.response!;
     }
 
-    const body = await req.json();
-    const {
-      imageBase64,
-      frontImageBase64,
-      leftImageBase64,
-      rightImageBase64,
-      useMock = false,
-    } = body;
+    const rawBody = await req.json();
+    const parsed = skinAnalysisSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return validationError(parsed.error.errors[0]?.message || '입력 정보를 확인해주세요.');
+    }
+    const { imageBase64, frontImageBase64, leftImageBase64, rightImageBase64, useMock } =
+      parsed.data;
 
     // 하위 호환: imageBase64 또는 frontImageBase64 중 하나 필수
     const primaryImage = frontImageBase64 || imageBase64;
@@ -440,12 +452,14 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
 
+    // DB 저장 실패해도 분석 결과는 반환
+    let saved = true;
     if (error) {
-      console.error('[S-1] Database insert error:', error);
-      return dbError();
+      console.error('[S-1] Database insert error:', error?.code, error?.message);
+      saved = false;
     }
 
-    // 게이미피케이션 연동
+    // 게이미피케이션 연동 (DB 저장 성공 시에만)
     const gamificationResult: {
       badgeResults: BadgeAwardResult[];
       xpAwarded: number;
@@ -454,24 +468,26 @@ export async function POST(req: NextRequest) {
       xpAwarded: 0,
     };
 
-    try {
-      // XP 추가 (분석 완료 시 10 XP)
-      await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
-      gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
+    if (saved) {
+      try {
+        // XP 추가 (분석 완료 시 10 XP)
+        await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
+        gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
 
-      // 피부 분석 완료 배지
-      const skinBadge = await awardAnalysisBadge(supabase, userId, 'skin');
-      if (skinBadge) {
-        gamificationResult.badgeResults.push(skinBadge);
-      }
+        // 피부 분석 완료 배지
+        const skinBadge = await awardAnalysisBadge(supabase, userId, 'skin');
+        if (skinBadge) {
+          gamificationResult.badgeResults.push(skinBadge);
+        }
 
-      // 모든 분석 완료 여부 체크
-      const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
-      if (allBadge) {
-        gamificationResult.badgeResults.push(allBadge);
+        // 모든 분석 완료 여부 체크
+        const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
+        if (allBadge) {
+          gamificationResult.badgeResults.push(allBadge);
+        }
+      } catch (gamificationError) {
+        console.error('[S-1] Gamification error:', gamificationError);
       }
-    } catch (gamificationError) {
-      console.error('[S-1] Gamification error:', gamificationError);
     }
 
     // 피부 타입 기반 파운데이션 제형 추천 (S-1 전용)
@@ -481,7 +497,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: data,
+      saved,
+      data: data ?? null,
       result: {
         ...result,
         analyzedAt: new Date().toISOString(),

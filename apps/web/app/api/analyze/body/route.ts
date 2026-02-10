@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { analyzeBody, type GeminiBodyAnalysisResult } from '@/lib/gemini';
@@ -25,26 +26,51 @@ const XP_ANALYSIS_COMPLETE = 10;
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
 
+// Base64 이미지 검증: data:image/ 프리픽스 또는 순수 Base64
+const base64ImageSchema = z.string().min(100, '이미지 데이터가 너무 짧아요');
+
+// 입력 스키마
+const bodyAnalysisSchema = z.object({
+  imageBase64: base64ImageSchema.optional(),
+  frontImageBase64: base64ImageSchema.optional(),
+  sideImageBase64: base64ImageSchema.optional(),
+  leftSideImageBase64: base64ImageSchema.optional(),
+  rightSideImageBase64: base64ImageSchema.optional(),
+  backImageBase64: base64ImageSchema.optional(),
+  userInput: z
+    .object({
+      height: z.number().min(50).max(300),
+      weight: z.number().min(10).max(500),
+      targetWeight: z.number().min(10).max(500).optional(),
+      bodyType: z.string().optional(),
+      gender: z.string().optional(),
+    })
+    .optional(),
+  useMock: z.boolean().optional().default(false),
+});
+
 /**
  * C-1 체형 분석 API (Real AI + Mock Fallback)
  *
  * POST /api/analyze/body
  * Body: {
- *   imageBase64?: string,         // 체형 이미지 (기존 호환)
- *   frontImageBase64?: string,    // 정면 이미지 (다각도 촬영)
- *   sideImageBase64?: string,     // 측면 이미지 (선택)
- *   backImageBase64?: string,     // 후면 이미지 (선택)
- *   userInput?: UserBodyInput,    // 사용자 입력 (키, 체중)
- *   useMock?: boolean             // Mock 모드 강제 (선택)
+ *   imageBase64?: string,             // 체형 이미지 (기존 호환)
+ *   frontImageBase64?: string,        // 정면 이미지 (다각도 촬영)
+ *   leftSideImageBase64?: string,     // 좌측면 이미지 (선택)
+ *   rightSideImageBase64?: string,    // 우측면 이미지 (선택)
+ *   sideImageBase64?: string,         // 측면 이미지 (하위 호환 → leftSide로 매핑)
+ *   backImageBase64?: string,         // 후면 이미지 (선택)
+ *   userInput?: UserBodyInput,        // 사용자 입력 (키, 체중)
+ *   useMock?: boolean                 // Mock 모드 강제 (선택)
  * }
  *
  * Returns: {
  *   success: boolean,
- *   data: BodyAnalysis,           // DB 저장된 데이터
- *   result: BodyAnalysisResult,   // AI 분석 결과
+ *   data: BodyAnalysis,               // DB 저장된 데이터
+ *   result: BodyAnalysisResult,       // AI 분석 결과
  *   personalColorSeason: string | null,
- *   imagesAnalyzed: { front, side, back },  // 분석된 이미지 현황
- *   usedMock: boolean             // Mock 사용 여부
+ *   imagesAnalyzed: { front, leftSide, rightSide, back },
+ *   usedMock: boolean                 // Mock 사용 여부
  * }
  */
 export async function POST(req: NextRequest) {
@@ -62,8 +88,21 @@ export async function POST(req: NextRequest) {
       return rateLimitResult.response!;
     }
 
-    const body = await req.json();
-    const { imageBase64, frontImageBase64, sideImageBase64, backImageBase64, userInput, useMock = false } = body;
+    const rawBody = await req.json();
+    const parsed = bodyAnalysisSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return badRequestError(parsed.error.errors[0]?.message || '입력 정보를 확인해주세요.');
+    }
+    const {
+      imageBase64,
+      frontImageBase64,
+      sideImageBase64,
+      leftSideImageBase64,
+      rightSideImageBase64,
+      backImageBase64,
+      userInput,
+      useMock,
+    } = parsed.data;
 
     // 다각도 이미지 또는 단일 이미지 (하위 호환)
     const primaryImage = frontImageBase64 || imageBase64;
@@ -72,11 +111,17 @@ export async function POST(req: NextRequest) {
       return badRequestError('이미지가 필요합니다.');
     }
 
+    // 하위 호환: 기존 sideImageBase64 → leftSideImageBase64로 매핑
+    const resolvedLeftSide = leftSideImageBase64 || sideImageBase64 || undefined;
+    const resolvedRightSide = rightSideImageBase64 || undefined;
+    const resolvedBack = backImageBase64 || undefined;
+
     // 분석에 사용된 이미지 현황
     const imagesAnalyzed = {
       front: !!primaryImage,
-      side: !!sideImageBase64,
-      back: !!backImageBase64,
+      leftSide: !!resolvedLeftSide,
+      rightSide: !!resolvedRightSide,
+      back: !!resolvedBack,
     };
     const imageCount = Object.values(imagesAnalyzed).filter(Boolean).length;
 
@@ -134,12 +179,13 @@ export async function POST(req: NextRequest) {
       // Real AI 분석 (다각도 지원)
       try {
         console.log(`[C-1] Starting Gemini analysis (${imageCount} image(s), 3-type system)...`);
-        result = await analyzeBody(primaryImage, sideImageBase64, backImageBase64);
+        result = await analyzeBody(primaryImage, resolvedLeftSide, resolvedRightSide, resolvedBack);
         console.log('[C-1] Gemini analysis completed');
 
         // 다각도 분석 시 신뢰도 보정
         if (imageCount >= 2 && result.imageQuality) {
-          result.imageQuality.analysisReliability = imageCount >= 3 ? 'high' : 'medium';
+          result.imageQuality.analysisReliability =
+            imageCount >= 4 ? 'high' : imageCount >= 3 ? 'high' : 'medium';
         }
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백 (3타입 시스템)
@@ -200,14 +246,17 @@ export async function POST(req: NextRequest) {
       'body-images',
       {
         front: primaryImage,
-        side: sideImageBase64,
-        back: backImageBase64,
+        left_side: resolvedLeftSide,
+        right_side: resolvedRightSide,
+        back: resolvedBack,
       }
     );
 
     // 정면 이미지 URL (하위 호환성)
     const imageUrl = uploadedImages.front || null;
-    console.log(`[C-1] Image consent: ${hasConsent ? 'granted' : 'not granted'}, frontImage: ${imageUrl ? 'uploaded' : 'none'}`);
+    console.log(
+      `[C-1] Image consent: ${hasConsent ? 'granted' : 'not granted'}, frontImage: ${imageUrl ? 'uploaded' : 'none'}`
+    );
 
     // 퍼스널 컬러 조회 (자동 연동)
     const { data: pcData } = await supabase
@@ -239,6 +288,9 @@ export async function POST(req: NextRequest) {
       .insert({
         clerk_user_id: userId,
         image_url: imageUrl || '',
+        left_side_image_url: uploadedImages.left_side || null,
+        right_side_image_url: uploadedImages.right_side || null,
+        back_image_url: uploadedImages.back || null,
         height: userInput?.height || null,
         weight: userInput?.weight || null,
         body_type: result.bodyType,
