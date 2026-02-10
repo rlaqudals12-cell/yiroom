@@ -228,6 +228,36 @@ export default function PersonalColorResultPage() {
       }
     } catch (err) {
       console.error('[PC-1] Fetch error:', err);
+
+      // Fallback: sessionStorage에서 캐시된 데이터 복원
+      try {
+        const cached = sessionStorage.getItem(`pc-result-${analysisId}`);
+        if (cached) {
+          const { dbData } = JSON.parse(cached);
+          if (dbData) {
+            const transformedResult = transformDbToResult(dbData as DbPersonalColorAssessment);
+            setResult(transformedResult);
+            if (dbData.image_analysis?.analysisEvidence) {
+              setAnalysisEvidence(dbData.image_analysis.analysisEvidence);
+            }
+            if (dbData.image_analysis?.imageQuality) {
+              setImageQuality(dbData.image_analysis.imageQuality);
+            }
+            if (dbData.face_image_url) {
+              setImageUrl(dbData.face_image_url);
+            }
+            if (dbData.image_analysis?.usedMock) {
+              setUsedMock(true);
+            }
+            sessionStorage.removeItem(`pc-result-${analysisId}`);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        /* sessionStorage 복원 실패 무시 */
+      }
+
       setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
     } finally {
       setIsLoading(false);

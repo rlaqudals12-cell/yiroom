@@ -132,6 +132,17 @@ export default function MakeupAnalysisPage() {
         ...data.result,
         analyzedAt: new Date(data.result.analyzedAt),
       });
+
+      // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
+      try {
+        sessionStorage.setItem(
+          `makeup-result-${data.data.id}`,
+          JSON.stringify({ dbData: data.data, cachedAt: new Date().toISOString() })
+        );
+      } catch {
+        /* sessionStorage 실패 무시 */
+      }
+
       setStep('result');
     } catch (err) {
       console.error('[M-1] Analysis error:', err);

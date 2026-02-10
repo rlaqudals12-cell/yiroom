@@ -98,7 +98,7 @@ export async function checkPhotoReuseEligibility(
         console.log('[photo-reuse] analysis_images table not found, skipping');
         return { eligible: false, reason: 'no_image' };
       }
-      console.error('[photo-reuse] DB query error:', error);
+      console.error('[photo-reuse] DB query error:', error?.code, error?.message);
       return { eligible: false, reason: 'no_image' };
     }
 

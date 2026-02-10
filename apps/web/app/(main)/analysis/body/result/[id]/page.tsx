@@ -290,6 +290,32 @@ export default function BodyAnalysisResultPage() {
       }
     } catch (err) {
       console.error('[C-1] Fetch error:', err);
+
+      // Fallback: sessionStorage에서 캐시된 데이터 복원
+      try {
+        const cached = sessionStorage.getItem(`body-result-${analysisId}`);
+        if (cached) {
+          const { dbData } = JSON.parse(cached);
+          if (dbData) {
+            const transformedResult = transformDbToResult(dbData as DbBodyAnalysis);
+            setResult(transformedResult);
+            const styleRecs = dbData.style_recommendations;
+            if (styleRecs && !Array.isArray(styleRecs)) {
+              if (styleRecs.analysisEvidence) setAnalysisEvidence(styleRecs.analysisEvidence);
+              if (styleRecs.imageQuality) setImageQuality(styleRecs.imageQuality);
+              if (styleRecs.confidence) setConfidence(styleRecs.confidence);
+              if (styleRecs.matchedFeatures) setMatchedFeatures(styleRecs.matchedFeatures);
+              if (styleRecs.usedMock) setUsedMock(true);
+            }
+            sessionStorage.removeItem(`body-result-${analysisId}`);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        /* sessionStorage 복원 실패 무시 */
+      }
+
       setError('결과를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsLoading(false);

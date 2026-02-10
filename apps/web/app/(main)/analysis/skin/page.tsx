@@ -332,7 +332,23 @@ export default function SkinAnalysisPage() {
 
       // 분석 결과가 DB에 저장되었으면 결과 페이지로 리다이렉트
       if (data.data?.id) {
-        // 결과 페이지로 리다이렉트 (탭 UI 포함)
+        // 결과 데이터를 sessionStorage에 캐시 (결과 페이지 DB 조회 실패 시 fallback용)
+        try {
+          sessionStorage.setItem(
+            `skin-result-${data.data.id}`,
+            JSON.stringify({
+              dbData: data.data,
+              result: data.result,
+              personalColorSeason: data.personalColorSeason,
+              foundationRecommendation: data.foundationRecommendation,
+              ingredientWarnings: data.ingredientWarnings,
+              productRecommendations: data.productRecommendations,
+              cachedAt: new Date().toISOString(),
+            })
+          );
+        } catch {
+          // sessionStorage 실패 무시 (시크릿 모드 등)
+        }
         router.push(`/analysis/skin/result/${data.data.id}`);
         return;
       }

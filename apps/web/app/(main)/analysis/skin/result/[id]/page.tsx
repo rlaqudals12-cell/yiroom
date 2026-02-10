@@ -581,6 +581,40 @@ export default function SkinAnalysisResultPage() {
       setSynergyInsight(insight);
     } catch (err) {
       console.error('[S-1] Fetch error:', err);
+
+      // Fallback: sessionStorage에서 캐시된 결과 복원 (클라이언트 JWT 문제 시)
+      try {
+        const cached = sessionStorage.getItem(`skin-result-${analysisId}`);
+        if (cached) {
+          const cachedData = JSON.parse(cached);
+          if (cachedData.dbData) {
+            console.info('[S-1] sessionStorage fallback 사용');
+            const transformedResult = transformDbToResult(cachedData.dbData);
+            setResult(transformedResult);
+            setSkinType(cachedData.dbData.skin_type);
+            if (cachedData.dbData.recommendations?.analysisEvidence) {
+              setAnalysisEvidence(cachedData.dbData.recommendations.analysisEvidence);
+            }
+            if (cachedData.dbData.recommendations?.imageQuality) {
+              setImageQuality(cachedData.dbData.recommendations.imageQuality);
+            }
+            if (cachedData.dbData.recommendations?.usedMock) {
+              setUsedMock(true);
+            }
+            if (cachedData.dbData.problem_areas?.length > 0) {
+              setProblemAreas(cachedData.dbData.problem_areas);
+            } else {
+              setProblemAreas(MOCK_PROBLEM_AREAS);
+            }
+            sessionStorage.removeItem(`skin-result-${analysisId}`);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // sessionStorage 실패 무시
+      }
+
       setError('결과를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsLoading(false);

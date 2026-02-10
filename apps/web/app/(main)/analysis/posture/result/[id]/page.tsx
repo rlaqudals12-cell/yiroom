@@ -129,6 +129,30 @@ export default function PostureAnalysisResultPage() {
       }
     } catch (err) {
       console.error('[A-1] Fetch error:', err);
+
+      // Fallback: sessionStorage에서 캐시된 데이터 복원
+      try {
+        const cached = sessionStorage.getItem(`posture-result-${analysisId}`);
+        if (cached) {
+          const { dbData } = JSON.parse(cached);
+          if (dbData) {
+            const transformedResult = transformDbToResult(dbData as DbPostureAnalysis);
+            setResult(transformedResult);
+            // 새 분석이므로 축하 효과 표시
+            const celebrationKey = `celebration-posture-${analysisId}`;
+            if (!sessionStorage.getItem(celebrationKey)) {
+              sessionStorage.setItem(celebrationKey, 'shown');
+              setShowCelebration(true);
+            }
+            sessionStorage.removeItem(`posture-result-${analysisId}`);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        /* sessionStorage 복원 실패 무시 */
+      }
+
       setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
     } finally {
       setIsLoading(false);
@@ -149,31 +173,31 @@ export default function PostureAnalysisResultPage() {
   // 로딩 상태
   if (!isLoaded || isLoading) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">결과를 불러오는 중...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 비로그인 상태
   if (!isSignedIn) {
     return (
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
           <p className="text-muted-foreground">분석 결과를 확인하려면 먼저 로그인해주세요</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   // 에러 상태
   if (error) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-muted">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error}</p>
@@ -191,7 +215,7 @@ export default function PostureAnalysisResultPage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -205,10 +229,7 @@ export default function PostureAnalysisResultPage() {
         onComplete={() => setShowCelebration(false)}
       />
 
-      <main
-        className="min-h-[calc(100vh-80px)] bg-muted"
-        data-testid="posture-analysis-result-page"
-      >
+      <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="posture-analysis-result-page">
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
           <header className="flex items-center justify-between mb-6">
@@ -230,7 +251,7 @@ export default function PostureAnalysisResultPage() {
             <AnalysisResult result={result} onRetry={handleNewAnalysis} shareRef={shareRef} />
           )}
         </div>
-      </main>
+      </div>
 
       {/* 하단 고정 버튼 */}
       {result && (

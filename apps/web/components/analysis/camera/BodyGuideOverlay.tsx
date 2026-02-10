@@ -8,7 +8,7 @@
 import { cn } from '@/lib/utils';
 
 /** 체형 촬영 각도 */
-export type BodyAngle = 'front' | 'side' | 'back';
+export type BodyAngle = 'front' | 'left_side' | 'right_side' | 'back';
 
 interface BodyGuideOverlayProps {
   /** 현재 촬영 각도 */
@@ -20,21 +20,24 @@ interface BodyGuideOverlayProps {
 // 각도별 안내 문구
 const ANGLE_MESSAGES: Record<BodyAngle, string> = {
   front: '정면을 바라봐주세요',
-  side: '옆모습을 보여주세요',
+  left_side: '왼쪽 옆모습을 보여주세요',
+  right_side: '오른쪽 옆모습을 보여주세요',
   back: '뒷모습을 보여주세요',
 };
 
 // 각도별 라벨
 const ANGLE_LABELS: Record<BodyAngle, string> = {
   front: '정면',
-  side: '측면',
+  left_side: '좌측면',
+  right_side: '우측면',
   back: '후면',
 };
 
 // 각도별 촬영 팁
 const ANGLE_TIPS: Record<BodyAngle, string> = {
   front: '전신이 프레임 안에 들어오도록 해주세요',
-  side: '어깨와 골반 라인이 보이도록 해주세요',
+  left_side: '왼쪽 어깨와 골반 라인이 보이도록 해주세요',
+  right_side: '오른쪽 어깨와 골반 라인이 보이도록 해주세요',
   back: '어깨와 허리 라인이 보이도록 해주세요',
 };
 

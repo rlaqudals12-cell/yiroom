@@ -167,6 +167,17 @@ export default function PostureAnalysisPage() {
         ...data.result,
         analyzedAt: new Date(data.result.analyzedAt),
       });
+
+      // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
+      try {
+        sessionStorage.setItem(
+          `posture-result-${data.data.id}`,
+          JSON.stringify({ dbData: data.data, cachedAt: new Date().toISOString() })
+        );
+      } catch {
+        /* sessionStorage 실패 무시 */
+      }
+
       setStep('result');
       setShowConfetti(true);
     } catch (err) {
@@ -216,7 +227,7 @@ export default function PostureAnalysisPage() {
       {/* 축하 Confetti 효과 */}
       <Confetti trigger={showConfetti} />
 
-      <main className="min-h-[calc(100vh-80px)] bg-muted" data-testid="posture-analysis-page">
+      <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="posture-analysis-page">
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
           <header className="text-center mb-8">
@@ -290,7 +301,7 @@ export default function PostureAnalysisPage() {
             <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />
           )}
         </div>
-      </main>
+      </div>
 
       {/* 공유 버튼 - 결과 화면에서만 하단 고정 */}
       {step === 'result' && result && (

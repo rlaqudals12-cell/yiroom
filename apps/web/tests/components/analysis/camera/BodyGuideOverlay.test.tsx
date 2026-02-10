@@ -18,12 +18,20 @@ describe('BodyGuideOverlay', () => {
       expect(screen.getByText('전신이 프레임 안에 들어오도록 해주세요')).toBeInTheDocument();
     });
 
-    it('측면 각도로 렌더링된다', () => {
-      render(<BodyGuideOverlay angle="side" />);
+    it('좌측면 각도로 렌더링된다', () => {
+      render(<BodyGuideOverlay angle="left_side" />);
 
-      expect(screen.getByText('측면')).toBeInTheDocument();
-      expect(screen.getByText('옆모습을 보여주세요')).toBeInTheDocument();
-      expect(screen.getByText('어깨와 골반 라인이 보이도록 해주세요')).toBeInTheDocument();
+      expect(screen.getByText('좌측면')).toBeInTheDocument();
+      expect(screen.getByText('왼쪽 옆모습을 보여주세요')).toBeInTheDocument();
+      expect(screen.getByText('왼쪽 어깨와 골반 라인이 보이도록 해주세요')).toBeInTheDocument();
+    });
+
+    it('우측면 각도로 렌더링된다', () => {
+      render(<BodyGuideOverlay angle="right_side" />);
+
+      expect(screen.getByText('우측면')).toBeInTheDocument();
+      expect(screen.getByText('오른쪽 옆모습을 보여주세요')).toBeInTheDocument();
+      expect(screen.getByText('오른쪽 어깨와 골반 라인이 보이도록 해주세요')).toBeInTheDocument();
     });
 
     it('후면 각도로 렌더링된다', () => {

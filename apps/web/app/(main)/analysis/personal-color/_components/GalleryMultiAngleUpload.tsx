@@ -190,15 +190,17 @@ export default function GalleryMultiAngleUpload({
         <p className="text-sm text-muted-foreground">정면 사진은 필수, 좌/우 사진은 선택이에요</p>
       </div>
 
-      {/* 정면 사진 (필수) */}
+      {/* 정면 사진 (필수) - 메인 영역 */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">정면 사진</span>
-          <span className="text-xs text-red-500">필수</span>
+          <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-medium">
+            필수
+          </span>
         </div>
 
         {images.front ? (
-          <div className="relative aspect-[3/4] max-w-[200px] mx-auto rounded-2xl overflow-hidden border-2 border-primary">
+          <div className="relative aspect-[3/4] w-full max-w-[280px] mx-auto rounded-2xl overflow-hidden border-2 border-primary shadow-lg">
             <img src={images.front} alt="정면 사진" className="w-full h-full object-cover" />
             <button
               onClick={() => handleRemoveImage('front')}
@@ -206,42 +208,44 @@ export default function GalleryMultiAngleUpload({
             >
               <X className="w-4 h-4" />
             </button>
-            <div className="absolute bottom-2 left-2 px-2 py-1 bg-primary text-white text-xs font-medium rounded-full flex items-center gap-1">
-              <Check className="w-3 h-3" />
+            <div className="absolute bottom-2 left-2 px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-full flex items-center gap-1.5 shadow">
+              <Check className="w-3.5 h-3.5" />
               정면
             </div>
           </div>
         ) : (
           <button
             onClick={() => handleSelectAngle('front')}
-            className="w-full aspect-[3/4] max-w-[200px] mx-auto rounded-2xl border-2 border-dashed border-primary/50 bg-primary/5 flex flex-col items-center justify-center gap-3 hover:bg-primary/10 transition-colors"
+            className="w-full aspect-[3/4] max-w-[280px] mx-auto rounded-2xl border-2 border-dashed border-primary bg-primary/5 flex flex-col items-center justify-center gap-4 hover:bg-primary/10 hover:border-primary transition-all"
           >
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-8 h-8 text-primary/50" />
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+              <User className="w-10 h-10 text-primary/60" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-primary">정면 사진 선택</p>
+              <p className="text-base font-semibold text-primary">정면 사진 선택</p>
               <p className="text-xs text-muted-foreground mt-1">{ANGLE_DESCRIPTIONS.front}</p>
             </div>
           </button>
         )}
       </div>
 
-      {/* 추가 각도 (선택) */}
+      {/* 추가 각도 (선택) - 보조 영역 */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold">추가 각도</span>
-          <span className="text-xs text-muted-foreground">선택</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">추가 각도</span>
+            <span className="text-xs text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded">
+              선택
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground">더 정확한 분석을 위해 추가</p>
         </div>
-        <p className="text-xs text-muted-foreground">
-          더 정확한 분석을 위해 좌/우 사진을 추가할 수 있어요
-        </p>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex gap-4 justify-center">
           {(['left', 'right'] as const).map((angle) => (
-            <div key={angle}>
+            <div key={angle} className="flex-1 max-w-[180px]">
               {images[angle] ? (
-                <div className="relative aspect-square rounded-xl overflow-hidden border border-border">
+                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-green-400 shadow-md">
                   <img
                     src={images[angle]}
                     alt={`${ANGLE_LABELS[angle]} 사진`}
@@ -249,12 +253,12 @@ export default function GalleryMultiAngleUpload({
                   />
                   <button
                     onClick={() => handleRemoveImage(angle)}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                    className="absolute top-2 right-2 w-7 h-7 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
-                  <div className="absolute bottom-1.5 left-1.5 px-2 py-0.5 bg-green-500 text-white text-[10px] font-medium rounded-full flex items-center gap-0.5">
-                    <Check className="w-2.5 h-2.5" />
+                  <div className="absolute bottom-2 left-2 px-2.5 py-1 bg-green-500 text-white text-xs font-medium rounded-full flex items-center gap-1.5 shadow">
+                    <Check className="w-3 h-3" />
                     {ANGLE_LABELS[angle]}
                   </div>
                 </div>
@@ -262,12 +266,21 @@ export default function GalleryMultiAngleUpload({
                 <button
                   onClick={() => handleSelectAngle(angle)}
                   className={cn(
-                    'w-full aspect-square rounded-xl border border-dashed flex flex-col items-center justify-center gap-2 transition-colors',
-                    'border-border bg-muted/30 hover:bg-muted/50'
+                    'w-full aspect-[3/4] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all',
+                    'border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50'
                   )}
                 >
-                  <ImageIcon className="w-6 h-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{ANGLE_LABELS[angle]}</span>
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                    <ImageIcon className="w-7 h-7 text-primary/50" />
+                  </div>
+                  <div className="text-center">
+                    <span className="text-sm font-medium text-foreground">
+                      {ANGLE_LABELS[angle]}
+                    </span>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      45° {angle === 'left' ? '왼쪽' : '오른쪽'}
+                    </p>
+                  </div>
                 </button>
               )}
             </div>

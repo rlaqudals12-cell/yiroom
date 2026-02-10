@@ -502,6 +502,16 @@ export default function PersonalColorPage() {
         data.imagesCount
       );
 
+      // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
+      try {
+        sessionStorage.setItem(
+          `pc-result-${data.data.id}`,
+          JSON.stringify({ dbData: data.data, cachedAt: new Date().toISOString() })
+        );
+      } catch {
+        /* sessionStorage 실패 무시 */
+      }
+
       // 결과 페이지로 리다이렉트 (DB에서 analysisEvidence 포함한 전체 데이터 조회)
       router.push(`/analysis/personal-color/result/${data.data.id}`);
     } catch (err) {
@@ -571,17 +581,17 @@ export default function PersonalColorPage() {
   // 기존 결과 확인 중이면 로딩 표시
   if (checkingExisting) {
     return (
-      <main className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
+      <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">확인 중...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-muted">
+    <div className="min-h-[calc(100vh-80px)] bg-muted">
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-8">
@@ -682,6 +692,6 @@ export default function PersonalColorPage() {
 
         {step === 'result' && result && <AnalysisResult result={result} onRetry={handleRetry} />}
       </div>
-    </main>
+    </div>
   );
 }

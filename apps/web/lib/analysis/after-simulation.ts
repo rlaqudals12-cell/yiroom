@@ -12,7 +12,12 @@
  */
 
 import type { DrapeOpticalProperties } from './drape-palette';
-import { createOptimizedContext, rgbaToHsl, hslToRgba } from './canvas-utils';
+import {
+  createOptimizedContext,
+  rgbaToHsl,
+  hslToRgba,
+  getConstrainedCanvasSize,
+} from './canvas-utils';
 
 // ============================================
 // 타입 정의
@@ -278,10 +283,12 @@ export async function generateAfterImage(
 ): Promise<AfterSimulationResult> {
   const startTime = performance.now();
 
-  // 캔버스 생성
+  // 캔버스 생성 (크기 제한으로 레이아웃 overflow 방지)
   const canvas = document.createElement('canvas');
-  const width = originalImage.naturalWidth || originalImage.width;
-  const height = originalImage.naturalHeight || originalImage.height;
+  const { width, height } = getConstrainedCanvasSize(
+    originalImage.naturalWidth || originalImage.width,
+    originalImage.naturalHeight || originalImage.height
+  );
   canvas.width = width;
   canvas.height = height;
 
@@ -290,8 +297,8 @@ export async function generateAfterImage(
     throw new Error('Canvas 컨텍스트 생성 실패');
   }
 
-  // 원본 이미지 그리기
-  ctx.drawImage(originalImage, 0, 0);
+  // 원본 이미지 그리기 (스케일 적용)
+  ctx.drawImage(originalImage, 0, 0, width, height);
 
   // 프리셋 설정 가져오기
   const config = SIMULATION_PRESETS[preset];
@@ -330,14 +337,18 @@ export function renderAfterPreview(
   const ctx = targetCanvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) return;
 
-  // 크기 맞추기
-  if (targetCanvas.width !== originalImage.width || targetCanvas.height !== originalImage.height) {
-    targetCanvas.width = originalImage.naturalWidth || originalImage.width;
-    targetCanvas.height = originalImage.naturalHeight || originalImage.height;
+  // 크기 맞추기 (제한된 크기 사용)
+  const { width, height } = getConstrainedCanvasSize(
+    originalImage.naturalWidth || originalImage.width,
+    originalImage.naturalHeight || originalImage.height
+  );
+  if (targetCanvas.width !== width || targetCanvas.height !== height) {
+    targetCanvas.width = width;
+    targetCanvas.height = height;
   }
 
-  // 원본 그리기
-  ctx.drawImage(originalImage, 0, 0);
+  // 원본 그리기 (스케일 적용)
+  ctx.drawImage(originalImage, 0, 0, width, height);
 
   // 효과 적용
   applyDrapeReflection(ctx, faceMask, drape, config);
