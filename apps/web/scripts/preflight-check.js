@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports, sonarjs/os-command */
 
 /**
  * 서버 시작 전 사전 검사 스크립트
@@ -117,6 +118,29 @@ if (!fs.existsSync(nodeModules)) {
   hasError = true;
 } else {
   console.log('   ✅ node_modules 존재\n');
+}
+
+// 7. DB 스키마 확인 (서버 실행 중일 때만)
+console.log('7️⃣ DB 스키마 확인...');
+const expectedSchemaFile = path.join(WEB_DIR, 'lib', 'db', 'expected-schema.ts');
+if (!fs.existsSync(expectedSchemaFile)) {
+  console.log('   ⚠️  expected-schema.ts 파일이 없습니다.\n');
+} else {
+  // expected-schema.ts에서 마이그레이션 파일 목록 추출
+  const schemaContent = fs.readFileSync(expectedSchemaFile, 'utf-8');
+  const migrationMatches = schemaContent.match(/migration:\s*'([^']+)'/g);
+  if (migrationMatches) {
+    const migrations = [...new Set(migrationMatches.map((m) => m.match(/'([^']+)'/)[1]))];
+    const migrationDir = path.join(WEB_DIR, '..', '..', 'supabase', 'migrations');
+    const missingFiles = migrations.filter((m) => !fs.existsSync(path.join(migrationDir, m)));
+    if (missingFiles.length > 0) {
+      console.log('   ⚠️  마이그레이션 파일 누락:', missingFiles.join(', '));
+      hasError = true;
+    } else {
+      console.log(`   ✅ ${migrations.length}개 마이그레이션 파일 존재`);
+    }
+  }
+  console.log('   💡 원격 DB 스키마 확인: GET /api/health/db-schema\n');
 }
 
 // 결과 출력
