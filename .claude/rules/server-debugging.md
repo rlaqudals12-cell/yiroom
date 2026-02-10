@@ -107,6 +107,65 @@ Next.js 16에서 middleware가 proxy로 변경됨:
 rm -rf apps/web/.next
 ```
 
+### Turbopack 캐시 손상 (Corrupted Database)
+
+**증상**: 서버 로그에 다음 에러 반복:
+
+```
+thread 'tokio-runtime-worker' panicked:
+Failed to restore task data (corrupted database or bug)
+Unable to open static sorted file XXXXX.sst
+Persisting failed: Another write batch or compaction is already active
+```
+
+**원인**: `.next` 내부 SST 파일 손상. 강제 종료, 동시 서버 실행, 디스크 오류 등으로 발생.
+
+**해결**:
+
+```bash
+taskkill /F /IM node.exe
+rm -rf apps/web/.next
+cd apps/web && npx next dev --turbopack
+```
+
+### PWA Service Worker와 개발 환경 충돌
+
+**증상**: 브라우저에서 페이지 레이아웃이 깨지거나 오래된 콘텐츠 표시. `Ctrl+Shift+R`로도 해결 안 됨.
+
+**원인**: 이전 프로덕션 빌드에서 등록된 Service Worker가 `StaleWhileRevalidate`로 페이지/CSS를 캐싱.
+
+**확인 방법**:
+
+1. Chrome DevTools (F12) → Application → Service Workers
+2. 등록된 SW가 있으면 문제 가능성 높음
+
+**해결**:
+
+1. Chrome DevTools → Application → Service Workers → **Unregister**
+2. Application → Storage → **Clear site data** 클릭
+3. 또는 시크릿 모드에서 테스트 (SW 우회)
+
+**중요**: `Ctrl+Shift+R` (Hard Refresh)은 Service Worker를 우회하지 않음.
+
+### 레이아웃 깨짐 진단 (서버 정상인 경우)
+
+서버 HTML/CSS가 정상인데 브라우저에서 레이아웃이 깨질 때:
+
+```bash
+# 1. 서버 HTML 확인 (공개 라우트)
+curl -s http://localhost:3000/home | grep -o '<main[^>]*>'
+
+# 2. CSS 확인
+curl -s http://localhost:3000/home | grep -o 'href="[^"]*\.css[^"]*"'
+# CSS 파일 다운로드 후 클래스 존재 확인
+```
+
+서버가 정상이면 브라우저측 문제:
+
+1. **시크릿 모드 테스트** (SW/캐시 우회)
+2. **DevTools → Application → Service Workers** 확인
+3. **진단 스크립트** 실행 (상세: `docs/troubleshooting/2026-02-09-layout-collapse-investigation.md`)
+
 ## 디버깅 체크리스트
 
 서버 접속 문제 발생 시 순서대로 확인:
@@ -117,6 +176,8 @@ rm -rf apps/web/.next
 - [ ] 4. curl로 HTTP 응답 확인
 - [ ] 5. 응답 헤더에서 Clerk 관련 정보 확인
 - [ ] 6. `proxy.ts`의 공개 라우트 목록 확인
+- [ ] 7. 브라우저 Service Worker 등록 확인 (DevTools → Application)
+- [ ] 8. 시크릿 모드에서 동일 증상 재현 확인
 
 ## 유용한 디버깅 명령어
 

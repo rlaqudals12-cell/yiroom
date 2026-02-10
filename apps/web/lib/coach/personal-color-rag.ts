@@ -290,11 +290,7 @@ function normalizeSeasonType(season: string): SeasonType {
   if (lowerSeason.includes('summer') || lowerSeason.includes('여름')) {
     return 'summer';
   }
-  if (
-    lowerSeason.includes('autumn') ||
-    lowerSeason.includes('fall') ||
-    lowerSeason.includes('가을')
-  ) {
+  if (lowerSeason.includes('autumn') || lowerSeason.includes('가을')) {
     return 'autumn';
   }
   if (lowerSeason.includes('winter') || lowerSeason.includes('겨울')) {

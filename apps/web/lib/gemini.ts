@@ -1442,12 +1442,14 @@ function generateMockDetailedSkinAnalysis(): GeminiDetailedSkinAnalysisResult {
  */
 export async function analyzeBody(
   frontImageBase64: string,
-  sideImageBase64?: string,
+  leftSideImageBase64?: string,
+  rightSideImageBase64?: string,
   backImageBase64?: string
 ): Promise<GeminiBodyAnalysisResult> {
   // 다각도 분석 여부
-  const hasMultiAngle = !!(sideImageBase64 || backImageBase64);
-  const imageCount = 1 + (sideImageBase64 ? 1 : 0) + (backImageBase64 ? 1 : 0);
+  const hasMultiAngle = !!(leftSideImageBase64 || rightSideImageBase64 || backImageBase64);
+  const imageCount =
+    1 + (leftSideImageBase64 ? 1 : 0) + (rightSideImageBase64 ? 1 : 0) + (backImageBase64 ? 1 : 0);
   // Mock 모드 확인
   if (FORCE_MOCK) {
     geminiLogger.info('[C-1] Using mock (FORCE_MOCK_AI=true)');
@@ -1476,12 +1478,14 @@ export async function analyzeBody(
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 여러 각도의 이미지가 제공되었습니다:
 - 정면: 어깨/허리/골반 비율, 전체 실루엣 판단의 기준
-${sideImageBase64 ? '- 측면: 자세 정렬, 복부 돌출도, 엉덩이 곡선 분석' : ''}
+${leftSideImageBase64 ? '- 좌측면: 왼쪽 어깨/골반 라인, 복부 돌출도, 자세 정렬 분석' : ''}
+${rightSideImageBase64 ? '- 우측면: 오른쪽 어깨/골반 라인, 좌우 비대칭 비교 분석' : ''}
 ${backImageBase64 ? '- 후면: 어깨뼈 대칭, 허리 곡선, 척추 정렬 분석' : ''}
 
 [다각도 분석 규칙]
 ✅ 정면에서 판단하기 어려운 부분은 측면/후면으로 보완
-✅ 측면에서 복부 돌출도와 자세 정렬을 정확히 파악
+✅ 좌/우 측면을 비교하여 비대칭 여부를 정확히 판단
+✅ 비대칭이 감지되면 이를 보완하는 스타일링 추천에 반영
 ✅ 다각도 분석으로 신뢰도 향상 (confidence +10~15%)
 ✅ imageQuality.analysisReliability를 "high"로 설정`;
     }
@@ -1491,9 +1495,14 @@ ${backImageBase64 ? '- 후면: 어깨뼈 대칭, 허리 곡선, 척추 정렬 �
     // 정면 이미지 추가
     contentParts.push(formatImageForGemini(frontImageBase64));
 
-    // 측면 이미지 추가
-    if (sideImageBase64) {
-      contentParts.push(formatImageForGemini(sideImageBase64));
+    // 좌측면 이미지 추가
+    if (leftSideImageBase64) {
+      contentParts.push(formatImageForGemini(leftSideImageBase64));
+    }
+
+    // 우측면 이미지 추가
+    if (rightSideImageBase64) {
+      contentParts.push(formatImageForGemini(rightSideImageBase64));
     }
 
     // 후면 이미지 추가

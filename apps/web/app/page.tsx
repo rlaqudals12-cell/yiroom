@@ -48,7 +48,7 @@ export default function Home() {
   // SignedIn/SignedOut 조건부 렌더링으로 사용자 상태에 따른 UI 분기 처리
   // 서버 리다이렉트 제거로 LCP +3-4점 개선 예상
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-[#0F0F0F]" data-testid="landing-page">
+    <div className="min-h-[calc(100vh-80px)] bg-[#0F0F0F]" data-testid="landing-page">
       <div className="w-full px-4 md:px-10 lg:px-40 py-5">
         <div className="mx-auto max-w-[960px] w-full">
           {/* 히어로 섹션 - YIROOM IDENTITY 다크 테마 */}
@@ -266,6 +266,6 @@ export default function Home() {
 
       {/* 푸터 */}
       <Footer />
-    </main>
+    </div>
   );
 }

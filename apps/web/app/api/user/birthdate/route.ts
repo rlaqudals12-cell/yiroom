@@ -114,12 +114,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 생년월일 저장
+    // 생년월일 저장 (UPSERT로 레코드가 없으면 생성)
     const supabase = createClerkSupabaseClient();
-    const { error } = await supabase
-      .from('users')
-      .update({ birth_date: birthDate })
-      .eq('clerk_user_id', userId);
+    const { error } = await supabase.from('users').upsert(
+      {
+        clerk_user_id: userId,
+        birth_date: birthDate,
+      },
+      {
+        onConflict: 'clerk_user_id',
+      }
+    );
 
     if (error) {
       console.error('[API] POST /user/birthdate error:', error);

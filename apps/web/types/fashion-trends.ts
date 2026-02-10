@@ -6,6 +6,7 @@
  */
 
 import type { FitType } from './fashion-fit';
+import type { PersonalColorSeason } from '@/lib/shared/integration-types';
 
 // 트렌드 카테고리
 export type TrendCategory =
@@ -16,8 +17,8 @@ export type TrendCategory =
   | 'style' // 스타일 트렌드
   | 'detail'; // 디테일 트렌드
 
-// 시즌
-export type Season = 'spring' | 'summer' | 'fall' | 'winter' | 'all';
+// 시즌 (PersonalColorSeason SSOT 참조 + 'all' 확장)
+export type Season = PersonalColorSeason | 'all';
 
 // 트렌드 아이템
 export interface TrendItem {
@@ -67,10 +68,7 @@ export interface TrendFilterOptions {
 }
 
 // 트렌드 아이템 필터링 함수
-export function filterTrends(
-  items: TrendItem[],
-  options: TrendFilterOptions
-): TrendItem[] {
+export function filterTrends(items: TrendItem[], options: TrendFilterOptions): TrendItem[] {
   return items.filter((item) => {
     if (options.category && item.category !== options.category) return false;
     if (options.season && !item.season.includes(options.season) && !item.season.includes('all'))

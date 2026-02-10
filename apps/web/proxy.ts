@@ -116,8 +116,8 @@ const isPublicRoute = createRouteMatcher([
   // API 웹훅 (외부 서비스 콜백)
   '/api/webhooks(.*)',
   '/api/affiliate/(.*)',
-  // Health check
-  '/api/health',
+  // Health check (통합 + 하위 라우트)
+  '/api/health(.*)',
 ]);
 
 // Next.js 16: middleware → proxy 마이그레이션
