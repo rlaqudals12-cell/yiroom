@@ -152,6 +152,7 @@ export default function BodyAnalysisPage() {
   // 다각도 촬영 취소 시 입력 단계로 돌아가기
   const handleMultiAngleCancel = useCallback(() => {
     setStep('input');
+    setError(null);
   }, []);
 
   // 사진 선택 시 로딩 단계로 전환 (갤러리에서 단일 이미지 선택 시)
@@ -189,13 +190,15 @@ export default function BodyAnalysisPage() {
         // 다각도 이미지 사용
         requestBody = {
           frontImageBase64: multiAngleImages.frontImageBase64,
-          sideImageBase64: multiAngleImages.sideImageBase64,
+          leftSideImageBase64: multiAngleImages.leftSideImageBase64,
+          rightSideImageBase64: multiAngleImages.rightSideImageBase64,
           backImageBase64: multiAngleImages.backImageBase64,
           userInput,
         };
         const imageCount =
           1 +
-          (multiAngleImages.sideImageBase64 ? 1 : 0) +
+          (multiAngleImages.leftSideImageBase64 ? 1 : 0) +
+          (multiAngleImages.rightSideImageBase64 ? 1 : 0) +
           (multiAngleImages.backImageBase64 ? 1 : 0);
         console.log(`[C-1] Analyzing with ${imageCount} image(s)`);
       } else if (imageFile) {
@@ -237,12 +240,23 @@ export default function BodyAnalysisPage() {
         colorTips: data.colorTips,
         imagesAnalyzed: data.imagesAnalyzed,
       });
+
+      // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
+      try {
+        sessionStorage.setItem(
+          `body-result-${data.data.id}`,
+          JSON.stringify({ dbData: data.data, cachedAt: new Date().toISOString() })
+        );
+      } catch {
+        /* sessionStorage 실패 무시 */
+      }
+
       setStep('result');
       // 분석 완료 시 축하 효과
       setShowConfetti(true);
     } catch (err) {
-      console.error('Analysis error:', err);
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      console.error('[C-1] Analysis error:', err instanceof Error ? err.message : err);
+      setError('분석에 실패했어요. 다시 시도해주세요.');
       setStep('multi-angle');
     } finally {
       setIsAnalyzing(false);
@@ -266,16 +280,15 @@ export default function BodyAnalysisPage() {
     analysisStartedRef.current = false;
   }, []);
 
-  // 단계별 서브타이틀
+  // 단계별 서브타이틀 (에러는 인라인 배너로 표시, subtitle은 step 기준)
   const getSubtitle = () => {
-    if (error) return '분석 중 오류가 발생했어요';
     switch (step) {
       case 'guide':
         return '정확한 분석을 위한 촬영 가이드';
       case 'input':
         return '나에게 어울리는 스타일이 궁금하신가요?';
       case 'multi-angle':
-        return '정면, 측면, 후면 사진을 촬영해주세요';
+        return '정면, 좌측면, 우측면, 후면 사진을 촬영해주세요';
       case 'upload':
         return '전신 사진을 업로드해주세요';
       case 'known-type':
@@ -312,14 +325,21 @@ export default function BodyAnalysisPage() {
             <p className="text-muted-foreground mt-2">{getSubtitle()}</p>
           </header>
 
-          {/* 에러 메시지 */}
-          {error && step === 'upload' && (
+          {/* 에러 메시지 (multi-angle, upload 단계에서 표시) */}
+          {error && (step === 'upload' || step === 'multi-angle') && (
             <div
-              className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
+              className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm flex items-center justify-between"
               role="alert"
               aria-live="polite"
             >
-              {error}. 다시 시도해주세요.
+              <span>분석에 실패했어요. 다시 시도해주세요.</span>
+              <button
+                onClick={() => setError(null)}
+                className="ml-2 text-red-400 hover:text-red-600 dark:hover:text-red-300 text-xs shrink-0"
+                aria-label="에러 닫기"
+              >
+                닫기
+              </button>
             </div>
           )}
 

@@ -19,11 +19,37 @@ type CaptureStep = 'front' | 'additional' | 'complete';
 export interface MultiAngleBodyImages {
   /** 정면 이미지 (필수) */
   frontImageBase64: string;
-  /** 측면 이미지 (선택) */
-  sideImageBase64?: string;
+  /** 좌측면 이미지 (선택) */
+  leftSideImageBase64?: string;
+  /** 우측면 이미지 (선택) */
+  rightSideImageBase64?: string;
   /** 후면 이미지 (선택) */
   backImageBase64?: string;
 }
+
+// 각도 → 한국어 라벨 매핑
+const ANGLE_LABEL: Record<BodyAngle, string> = {
+  front: '정면',
+  left_side: '좌측면',
+  right_side: '우측면',
+  back: '후면',
+};
+
+// 각도별 메서드 선택 화면 안내문 (자연스러운 한국어)
+const ANGLE_METHOD_MESSAGE: Record<BodyAngle, string> = {
+  front: '전신이 잘 보이도록 정면을 촬영해주세요',
+  left_side: '왼쪽 옆모습을 보여주세요',
+  right_side: '오른쪽 옆모습을 보여주세요',
+  back: '뒷모습을 보여주세요',
+};
+
+// 각도 → 이미지 키 매핑
+const ANGLE_IMAGE_KEY: Record<BodyAngle, keyof MultiAngleBodyImages> = {
+  front: 'frontImageBase64',
+  left_side: 'leftSideImageBase64',
+  right_side: 'rightSideImageBase64',
+  back: 'backImageBase64',
+};
 
 interface MultiAngleBodyCaptureProps {
   /** 촬영 완료 핸들러 */
@@ -44,6 +70,8 @@ export function MultiAngleBodyCapture({
   const [currentAngle, setCurrentAngle] = useState<BodyAngle>('front');
   const [isCapturing, setIsCapturing] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  // 추가 각도 선택 후 카메라/갤러리 선택 화면 표시
+  const [showMethodChoice, setShowMethodChoice] = useState(false);
 
   // 촬영된 이미지
   const [images, setImages] = useState<Partial<MultiAngleBodyImages>>({});
@@ -108,23 +136,15 @@ export function MultiAngleBodyCapture({
       const imageBase64 = canvas.toDataURL('image/jpeg', 0.9);
 
       // 이미지 저장
-      const imageKey =
-        currentAngle === 'front'
-          ? 'frontImageBase64'
-          : currentAngle === 'side'
-            ? 'sideImageBase64'
-            : 'backImageBase64';
+      const imageKey = ANGLE_IMAGE_KEY[currentAngle];
 
       setImages((prev) => ({ ...prev, [imageKey]: imageBase64 }));
       setCapturedAngles((prev) => [...prev, currentAngle]);
 
       // 다음 단계로
+      stopCamera();
       if (currentAngle === 'front') {
         setStep('additional');
-        stopCamera();
-      } else {
-        // 추가 촬영 완료 후 다시 선택 화면으로
-        stopCamera();
       }
 
       setIsCapturing(false);
@@ -144,19 +164,18 @@ export function MultiAngleBodyCapture({
       const reader = new FileReader();
       reader.onload = (e) => {
         const imageBase64 = e.target?.result as string;
-
-        const imageKey =
-          currentAngle === 'front'
-            ? 'frontImageBase64'
-            : currentAngle === 'side'
-              ? 'sideImageBase64'
-              : 'backImageBase64';
+        const imageKey = ANGLE_IMAGE_KEY[currentAngle];
 
         setImages((prev) => ({ ...prev, [imageKey]: imageBase64 }));
         setCapturedAngles((prev) => [...prev, currentAngle]);
 
+        // 정면 완료 시 추가 촬영 단계로 전환
         if (currentAngle === 'front') {
           setStep('additional');
+        }
+        // 파일 입력 초기화 (같은 각도 재선택 허용)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
         }
       };
       reader.readAsDataURL(file);
@@ -164,15 +183,29 @@ export function MultiAngleBodyCapture({
     [currentAngle]
   );
 
-  // 추가 각도 선택
-  const handleSelectAngle = useCallback(
-    (angle: BodyAngle) => {
-      setCurrentAngle(angle);
-      setValidationError(null);
-      startCamera();
-    },
-    [startCamera]
-  );
+  // 추가 각도 선택 → 카메라/갤러리 선택 화면 표시
+  const handleSelectAngle = useCallback((angle: BodyAngle) => {
+    setCurrentAngle(angle);
+    setValidationError(null);
+    setShowMethodChoice(true);
+  }, []);
+
+  // 추가 각도: 카메라 선택
+  const handleMethodCamera = useCallback(() => {
+    setShowMethodChoice(false);
+    startCamera();
+  }, [startCamera]);
+
+  // 추가 각도: 갤러리 선택
+  const handleMethodGallery = useCallback(() => {
+    setShowMethodChoice(false);
+    fileInputRef.current?.click();
+  }, []);
+
+  // 추가 각도: 선택 취소 → 각도 선택 화면으로 복귀
+  const handleMethodBack = useCallback(() => {
+    setShowMethodChoice(false);
+  }, []);
 
   // 건너뛰기 / 완료
   const handleComplete = useCallback(() => {
@@ -186,7 +219,8 @@ export function MultiAngleBodyCapture({
     setStep('complete');
     onComplete({
       frontImageBase64: images.frontImageBase64,
-      sideImageBase64: images.sideImageBase64,
+      leftSideImageBase64: images.leftSideImageBase64,
+      rightSideImageBase64: images.rightSideImageBase64,
       backImageBase64: images.backImageBase64,
     });
   }, [images, onComplete, stopCamera]);
@@ -196,6 +230,20 @@ export function MultiAngleBodyCapture({
     setValidationError(null);
     startCamera();
   }, [startCamera]);
+
+  // 이미지 삭제 (갤러리 카드에서 X 버튼)
+  const handleRemoveImage = useCallback((angle: BodyAngle) => {
+    const imageKey = ANGLE_IMAGE_KEY[angle];
+    setImages((prev) => {
+      const next = { ...prev };
+      delete next[imageKey];
+      return next;
+    });
+    setCapturedAngles((prev) => prev.filter((a) => a !== angle));
+    if (angle === 'front') {
+      setStep('front');
+    }
+  }, []);
 
   // 갤러리에서 선택
   const handleGallerySelect = useCallback(() => {
@@ -269,7 +317,7 @@ export function MultiAngleBodyCapture({
               )}
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <div className="flex flex-col items-center justify-start pt-12 p-6">
               <div className="text-center mb-8">
                 <Camera className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                 <h2 className="text-xl font-semibold mb-2">정면 사진 촬영</h2>
@@ -318,7 +366,6 @@ export function MultiAngleBodyCapture({
                   size="lg"
                   onClick={() => {
                     stopCamera();
-                    setCurrentAngle('front');
                   }}
                 >
                   취소
@@ -345,24 +392,38 @@ export function MultiAngleBodyCapture({
                 </div>
               )}
             </div>
+          ) : showMethodChoice ? (
+            // 카메라/갤러리 선택 화면
+            <div className="flex flex-col items-center justify-start pt-12 p-6">
+              <div className="text-center mb-8">
+                <Camera className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h2 className="text-xl font-semibold mb-2">
+                  {ANGLE_LABEL[currentAngle]} 사진 촬영
+                </h2>
+                <p className="text-muted-foreground">{ANGLE_METHOD_MESSAGE[currentAngle]}</p>
+              </div>
+              <div className="flex flex-col gap-3 w-full max-w-xs">
+                <Button size="lg" onClick={handleMethodCamera}>
+                  <Camera className="w-5 h-5 mr-2" />
+                  카메라로 촬영
+                </Button>
+                <Button variant="outline" size="lg" onClick={handleMethodGallery}>
+                  <ImagePlus className="w-5 h-5 mr-2" />
+                  갤러리에서 선택
+                </Button>
+              </div>
+              <Button variant="ghost" onClick={handleMethodBack} className="mt-4">
+                뒤로
+              </Button>
+            </div>
           ) : (
-            // 추가 각도 선택 화면
-            <div className="flex-1 flex flex-col items-center justify-center p-6">
-              {/* 정면 사진 미리보기 */}
-              {images.frontImageBase64 && (
-                <div className="mb-6">
-                  <img
-                    src={images.frontImageBase64}
-                    alt="정면 사진"
-                    className="w-24 h-40 object-cover rounded-lg border"
-                  />
-                  <p className="text-sm text-center text-muted-foreground mt-2">정면 촬영 완료</p>
-                </div>
-              )}
-
+            // 추가 각도 선택 화면 (갤러리 카드 스타일)
+            <div className="flex flex-col items-center justify-start pt-8 p-6">
               <BodyAngleSelector
                 capturedAngles={capturedAngles}
+                images={images}
                 onSelectAngle={handleSelectAngle}
+                onRemoveImage={handleRemoveImage}
                 onSkip={handleComplete}
               />
             </div>
