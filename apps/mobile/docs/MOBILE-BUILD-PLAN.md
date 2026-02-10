@@ -1,9 +1,9 @@
 # 이룸 모바일 앱 빌드 계획
 
 > **작성일**: 2026-02-04
-> **목표**: Android APK 배포 (Google Play)
+> **목표**: Android APK 배포 (Google Play) → GFSA 지원
 > **우선순위**: Android > iOS (iOS는 Apple Developer 계정 확보 후)
-> **대안**: PWA (빌드 실패 시)
+> **전략**: PWA 기능 검증 → Expo 테스트 → EAS 빌드 → 스토어 제출
 
 ---
 
@@ -14,10 +14,13 @@
 cat apps/mobile/docs/MOBILE-BUILD-PLAN.md
 
 # 2. 현재 Phase 확인 후 해당 작업 진행
-cd apps/mobile
 
-# Phase 1: 로컬 테스트
-npx expo start
+# Phase 0: PWA 기능 검증 (웹)
+cd apps/web && npm run dev
+# http://localhost:3000 에서 기능 테스트
+
+# Phase 1: 로컬 테스트 (모바일)
+cd apps/mobile && npx expo start
 
 # Phase 2: EAS 빌드
 npx eas build --platform android --profile development --non-interactive
@@ -25,7 +28,51 @@ npx eas build --platform android --profile development --non-interactive
 
 ---
 
-## Phase 1: 로컬 기능 테스트 (~ 02.05)
+## Phase 0: PWA 기능 검증 (~ 02.05) ✨ 신규
+
+> **목적**: 공통 비즈니스 로직 사전 검증, EAS 빌드 전 버그 발견
+
+### 0.1 개발 서버 실행
+
+```bash
+cd apps/web
+npm run dev
+# http://localhost:3000
+```
+
+### 0.2 핵심 기능 테스트
+
+| ID   | 기능                | 테스트 항목                         | 상태 | 비고       |
+| ---- | ------------------- | ----------------------------------- | ---- | ---------- |
+| P0.1 | **인증**            | Clerk 로그인/로그아웃               | ⏳   | /sign-in   |
+| P0.2 | **퍼스널컬러 분석** | 이미지 업로드 → AI 분석 → 결과 표시 | ⏳   | /analysis  |
+| P0.3 | **피부 분석**       | 이미지 업로드 → AI 분석 → 결과 표시 | ⏳   | /analysis  |
+| P0.4 | **체형 분석**       | 이미지 업로드 → AI 분석 → 결과 표시 | ⏳   | /analysis  |
+| P0.5 | **대시보드**        | 분석 결과 요약 표시                 | ⏳   | /dashboard |
+| P0.6 | **네비게이션**      | 페이지 간 이동 정상 동작            | ⏳   | 전체       |
+| P0.7 | **반응형 UI**       | 모바일 뷰포트에서 레이아웃 확인     | ⏳   | 375px 기준 |
+
+### 0.3 PWA vs Mobile 공유 로직
+
+| 영역             | 공유 여부 | 비고                               |
+| ---------------- | --------- | ---------------------------------- |
+| AI 분석 API 호출 | ✅ 공유   | lib/gemini, lib/analysis           |
+| Supabase 연동    | ✅ 공유   | lib/supabase                       |
+| Clerk 인증       | ✅ 공유   | @clerk/nextjs vs @clerk/clerk-expo |
+| 비즈니스 로직    | ✅ 공유   | 점수 계산, 추천 로직               |
+| UI 컴포넌트      | ❌ 별도   | React vs React Native              |
+| 카메라/이미지    | ❌ 별도   | Web API vs expo-camera             |
+
+### 0.4 Phase 0 완료 기준
+
+- [ ] 모든 분석 기능 정상 동작 (퍼스널컬러, 피부, 체형)
+- [ ] 인증 플로우 정상 동작
+- [ ] 발견된 버그 수정 완료
+- [ ] 모바일 뷰포트에서 UI 깨짐 없음
+
+---
+
+## Phase 1: 로컬 기능 테스트 (02.05 ~ 02.06)
 
 ### 1.1 개발 환경 테스트
 
@@ -186,6 +233,68 @@ npx eas build:view <BUILD_ID>
 
 ---
 
+## Phase 3.5: 프로덕션 환경 설정 (EAS 빌드 성공 후)
+
+> **시점**: EAS Development 빌드 성공 후, 스토어 제출 전
+> **목적**: Mock 데이터 → 실제 API 전환, 보안 키 관리
+
+### 3.5.1 환경별 데이터 사용
+
+| 환경         | 빌드 프로필 | 데이터 소스         | 용도            |
+| ------------ | ----------- | ------------------- | --------------- |
+| 개발         | development | Mock 가능           | 기능 검증       |
+| 미리보기     | preview     | 실제 API (스테이징) | 내부 테스터     |
+| **프로덕션** | production  | **실제 API 필수**   | **스토어 심사** |
+
+> **중요**: Google Play/App Store 심사 시 **실제 기능이 동작**해야 함. Mock 데이터만 보여주면 리젝 가능.
+
+### 3.5.2 EAS Secrets 설정 (권장)
+
+```bash
+# 프로덕션 API 키 등록 (암호화 저장)
+eas secret:create --scope project --name GEMINI_API_KEY --value "실제_API_키"
+eas secret:create --scope project --name SUPABASE_URL --value "실제_URL"
+eas secret:create --scope project --name SUPABASE_ANON_KEY --value "실제_키"
+eas secret:create --scope project --name CLERK_PUBLISHABLE_KEY --value "실제_키"
+
+# 등록된 시크릿 확인
+eas secret:list
+```
+
+### 3.5.3 eas.json 환경 변수 설정
+
+```json
+// eas.json - production 프로필에 추가
+"production": {
+  "extends": "base",
+  "env": {
+    "EXPO_PUBLIC_GEMINI_API_KEY": "@GEMINI_API_KEY",
+    "EXPO_PUBLIC_SUPABASE_URL": "@SUPABASE_URL",
+    "EXPO_PUBLIC_SUPABASE_ANON_KEY": "@SUPABASE_ANON_KEY",
+    "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "@CLERK_PUBLISHABLE_KEY"
+  }
+}
+```
+
+### 3.5.4 환경 설정 체크리스트
+
+| 항목                   | 상태 | 비고                |
+| ---------------------- | ---- | ------------------- |
+| EAS Secrets 등록       | ⏳   | 4개 키              |
+| eas.json env 설정      | ⏳   | production 프로필   |
+| 실제 API 테스트        | ⏳   | Preview 빌드로 검증 |
+| Mock fallback 비활성화 | ⏳   | 프로덕션 전용       |
+
+### 3.5.5 API 키 관리 원칙
+
+| 방법              | 보안    | 권장 환경               |
+| ----------------- | ------- | ----------------------- |
+| `.env.local` 직접 | ⚠️ 낮음 | 로컬 개발만             |
+| **EAS Secrets**   | ✅ 높음 | **Preview, Production** |
+| 하드코딩          | ❌ 금지 | 절대 사용 금지          |
+
+---
+
 ## Phase 4: iOS 빌드 (02.10 이후, 선택)
 
 ### 4.1 필수 준비물
@@ -297,4 +406,4 @@ react-native-reanimated: ^4.2.1
 
 ---
 
-**Version**: 1.0 | **Updated**: 2026-02-04
+**Version**: 1.1 | **Updated**: 2026-02-05 | Phase 3.5 환경 설정 섹션 추가

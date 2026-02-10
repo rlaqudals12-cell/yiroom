@@ -6,38 +6,42 @@
 
 ## 문서 목록
 
-| 문서 | 도메인 | 소스 리서치 | 버전 |
-|------|--------|------------|------|
-| [color-science.md](color-science.md) | 색채학 (퍼스널컬러) | PC-1, PC-2, CIE-3 | 1.0 |
-| [skin-physiology.md](skin-physiology.md) | 피부 생리학 | S-1, S-2 | 1.0 |
-| [body-mechanics.md](body-mechanics.md) | 체형 역학 | C-1, C-2, W-2 | 1.0 |
-| [image-processing.md](image-processing.md) | 이미지 처리 | CIE-1~4 | 1.0 |
-| [design-system.md](design-system.md) | 디자인 시스템 | INF-1~4 | 1.0 |
-| [security-patterns.md](security-patterns.md) | 보안 아키텍처 | P0-3~7, SEC-1~8 | **2.0** |
-| [legal-compliance.md](legal-compliance.md) | 법적 준수 | N-1~4, C-2~4 | **2.0** |
-| [ai-inference.md](ai-inference.md) | AI 추론 | AI-1~8 | **2.0** |
-| [rag-retrieval.md](rag-retrieval.md) | RAG 검색 | RAG-OPT-1~4, EMB-1~4, VDB-1~4 | **1.0 (신규)** |
-| [nutrition-science.md](nutrition-science.md) | 영양학 | N-1, COMBO-SKIN-NUTRITION | 1.0 |
-| [exercise-physiology.md](exercise-physiology.md) | 운동생리학 | W-1, COMBO-BODY-EXERCISE | 1.0 |
-| [cross-domain-synergy.md](cross-domain-synergy.md) | 크로스 도메인 시너지 | COMBO-1~10 | 1.0 |
-| [oral-health.md](oral-health.md) | 구강 건강 | OH-1-BUNDLE | 1.0 |
-| [skin-procedures.md](skin-procedures.md) | 피부 시술 | SK-1~6 | 1.0 |
-| [db-migration.md](db-migration.md) | DB 마이그레이션 | DB-1~4, DFA, ACID | **2.0** |
-| [hybrid-data.md](hybrid-data.md) | Hybrid 데이터 패턴 | ADR-002, ADR-007 | **1.0 (신규)** |
-| [api-design.md](api-design.md) | API 설계 | ADR-020, API-1~4 | **1.0 (신규)** |
-| [performance.md](performance.md) | 성능 최적화 | ADR-014, ADR-019 | **1.0 (신규)** |
-| [coaching-psychology.md](coaching-psychology.md) | AI 코칭 심리학 | TTM, SDT, MI, GROW | **1.0 (신규)** |
-| [personalization-engine.md](personalization-engine.md) | 개인화 추천 엔진 | ADR-036, COMBO-1~10, 3-3-3 Rule | **2.1** |
-| [extensibility.md](extensibility.md) | 확장성 원리 (OCP) | SOLID, DIP, Strategy/Adapter | **1.0 (신규)** |
-| [fashion-matching.md](fashion-matching.md) | 패션 매칭 | J-1, P-2, P-3 스타일링 AI | **1.0 (신규)** |
-| [hair-makeup-analysis.md](hair-makeup-analysis.md) | 헤어/메이크업 분석 | H-1, M-1 분석 원리 | **1.0 (신규)** |
-| [accessibility.md](accessibility.md) | 접근성 | WCAG 2.1 AA, WAI-ARIA, POUR | **1.0 (신규)** |
-| [lesion-analysis.md](lesion-analysis.md) | 피부 병변 분석 | S-2, 트러블/병변 감지 | **1.0 (신규)** |
-| [stretching-physiology.md](stretching-physiology.md) | 스트레칭 생리학 | W-2, ROM, 유연성 | **1.0 (신규)** |
-| [risk-exercise-criteria.md](risk-exercise-criteria.md) | 위험 운동 기준 | W-2, 금기사항, PAR-Q+ | **1.0 (신규)** |
-| [color-matching-theory.md](color-matching-theory.md) | 색상 매칭 이론 | PC-1, PC-2, 색상 조화 | **1.0 (신규)** |
-| [3d-face-shape.md](3d-face-shape.md) | 3D 얼굴 형태 분석 | C-1, C-2, MediaPipe | **1.0 (신규)** |
-| [data-platform.md](data-platform.md) | 데이터 플랫폼 | ADR-061, Phase L | **1.0 (신규)** |
+| 문서                                                   | 도메인               | 소스 리서치                                  | 버전           |
+| ------------------------------------------------------ | -------------------- | -------------------------------------------- | -------------- |
+| [color-science.md](color-science.md)                   | 색채학 (퍼스널컬러)  | PC-1, PC-2, CIE-3                            | 1.0            |
+| [skin-physiology.md](skin-physiology.md)               | 피부 생리학          | S-1, S-2                                     | 1.0            |
+| [body-mechanics.md](body-mechanics.md)                 | 체형 역학            | C-1, C-2, W-2                                | 1.0            |
+| [image-processing.md](image-processing.md)             | 이미지 처리          | CIE-1~4                                      | 1.0            |
+| [design-system.md](design-system.md)                   | 디자인 시스템        | INF-1~4                                      | 1.0            |
+| [security-patterns.md](security-patterns.md)           | 보안 아키텍처        | P0-3~7, SEC-1~8                              | **2.0**        |
+| [legal-compliance.md](legal-compliance.md)             | 법적 준수            | N-1~4, C-2~4                                 | **2.0**        |
+| [ai-inference.md](ai-inference.md)                     | AI 추론              | AI-1~8                                       | **2.0**        |
+| [rag-retrieval.md](rag-retrieval.md)                   | RAG 검색             | RAG-OPT-1~4, EMB-1~4, VDB-1~4                | **1.0 (신규)** |
+| [nutrition-science.md](nutrition-science.md)           | 영양학               | N-1, COMBO-SKIN-NUTRITION                    | 1.0            |
+| [exercise-physiology.md](exercise-physiology.md)       | 운동생리학           | W-1, COMBO-BODY-EXERCISE                     | 1.0            |
+| [cross-domain-synergy.md](cross-domain-synergy.md)     | 크로스 도메인 시너지 | COMBO-1~10                                   | 1.0            |
+| [oral-health.md](oral-health.md)                       | 구강 건강            | OH-1-BUNDLE                                  | 1.0            |
+| [skin-procedures.md](skin-procedures.md)               | 피부 시술            | SK-1~6                                       | 1.0            |
+| [db-migration.md](db-migration.md)                     | DB 마이그레이션      | DB-1~4, DFA, ACID                            | **2.0**        |
+| [hybrid-data.md](hybrid-data.md)                       | Hybrid 데이터 패턴   | ADR-002, ADR-007                             | **1.0 (신규)** |
+| [api-design.md](api-design.md)                         | API 설계             | ADR-020, API-1~4                             | **1.0 (신규)** |
+| [performance.md](performance.md)                       | 성능 최적화          | ADR-014, ADR-019                             | **1.0 (신규)** |
+| [coaching-psychology.md](coaching-psychology.md)       | AI 코칭 심리학       | TTM, SDT, MI, GROW                           | **1.0 (신규)** |
+| [personalization-engine.md](personalization-engine.md) | 개인화 추천 엔진     | ADR-036, COMBO-1~10, 3-3-3 Rule              | **2.1**        |
+| [extensibility.md](extensibility.md)                   | 확장성 원리 (OCP)    | SOLID, DIP, Strategy/Adapter                 | **1.0 (신규)** |
+| [fashion-matching.md](fashion-matching.md)             | 패션 매칭            | J-1, P-2, P-3 스타일링 AI                    | **1.0 (신규)** |
+| [hair-makeup-analysis.md](hair-makeup-analysis.md)     | 헤어/메이크업 분석   | H-1, M-1 분석 원리                           | **1.0 (신규)** |
+| [accessibility.md](accessibility.md)                   | 접근성               | WCAG 2.1 AA, WAI-ARIA, POUR                  | **1.0 (신규)** |
+| [lesion-analysis.md](lesion-analysis.md)               | 피부 병변 분석       | S-2, 트러블/병변 감지                        | **1.0 (신규)** |
+| [stretching-physiology.md](stretching-physiology.md)   | 스트레칭 생리학      | W-2, ROM, 유연성                             | **1.0 (신규)** |
+| [risk-exercise-criteria.md](risk-exercise-criteria.md) | 위험 운동 기준       | W-2, 금기사항, PAR-Q+                        | **1.0 (신규)** |
+| [color-matching-theory.md](color-matching-theory.md)   | 색상 매칭 이론       | PC-1, PC-2, 색상 조화                        | **1.0 (신규)** |
+| [3d-face-shape.md](3d-face-shape.md)                   | 3D 얼굴 형태 분석    | C-1, C-2, MediaPipe                          | **1.0 (신규)** |
+| [data-platform.md](data-platform.md)                   | 데이터 플랫폼        | ADR-061, Phase L                             | **1.0 (신규)** |
+| [offline-support.md](offline-support.md)               | 오프라인 지원        | lib/offline, AsyncStorage, SWR               | **1.0 (신규)** |
+| [social-feed.md](social-feed.md)                       | 소셜 피드            | ADR-028, RLS, 피드 알고리즘                  | **1.0 (신규)** |
+| [barcode-qrcode.md](barcode-qrcode.md)                 | 바코드/QR 스캔       | EAN-13, Open Food Facts, 식품안전나라        | **1.0 (신규)** |
+| [weather-styling.md](weather-styling.md)               | 날씨 기반 스타일링   | 체감온도 레이어링, 17개 지역, OpenWeatherMap | **1.0 (신규)** |
 
 ## 폴더 구조
 
@@ -73,7 +77,11 @@ docs/principles/
 ├── risk-exercise-criteria.md # 위험 운동 기준 (W-2, PAR-Q+) ✅ 신규
 ├── color-matching-theory.md # 색상 매칭 이론 (PC-1, PC-2) ✅ 신규
 ├── 3d-face-shape.md         # 3D 얼굴 형태 분석 (C-1, C-2) ✅ 신규
-└── data-platform.md         # 데이터 플랫폼 (ADR-061, Phase L) ✅ 신규
+├── data-platform.md         # 데이터 플랫폼 (ADR-061, Phase L) ✅ 신규
+├── offline-support.md       # 오프라인 지원 (SWR, Sync Queue, LRU) ✅ 신규
+├── social-feed.md           # 소셜 피드 (ADR-028, RLS) ✅ 신규
+├── barcode-qrcode.md        # 바코드/QR 스캔 (EAN-13, API Fallback) ✅ 신규
+└── weather-styling.md       # 날씨 기반 스타일링 (체감온도, 레이어링) ✅ 신규
 ```
 
 ## 원리 문서 템플릿
@@ -86,12 +94,13 @@ docs/principles/
 ## 0. 궁극의 형태 (P1)
 
 ### 이상적 최종 상태
-
 ```
+
 "[도메인]의 완벽한 이해와 적용"
 
 - [제약 없는 이상적 상태 1]
 - [제약 없는 이상적 상태 2]
+
 ```
 
 ### 물리적 한계
@@ -127,7 +136,9 @@ docs/principles/
 
 ### 2.1 [공식/법칙명]
 ```
+
 [수식 또는 공식]
+
 ```
 
 ### 2.2 적용 방법
@@ -164,16 +175,16 @@ docs/principles/
 
 ### 완료된 양방향 링크 (핵심 7개)
 
-| 원리 문서 | 구현 스펙 | 관련 ADR |
-|----------|----------|----------|
-| nutrition-science.md | SDD-N1-NUTRITION | ADR-030 |
-| exercise-physiology.md | SDD-W1-WORKOUT | ADR-031 |
-| skin-physiology.md | SDD-SKIN-ANALYSIS-v2 | ADR-003, ADR-010 |
-| color-science.md | SDD-PERSONAL-COLOR-v2 | ADR-026 |
-| body-mechanics.md | SDD-BODY-ANALYSIS-v2 | ADR-005 |
-| image-processing.md | SDD-CIE-1~4 | ADR-001, ADR-033 |
-| ai-inference.md | - | ADR-003, ADR-007, ADR-010, ADR-024 |
-| data-platform.md | SDD-DATA-PLATFORM-L1 | ADR-061 |
+| 원리 문서              | 구현 스펙             | 관련 ADR                           |
+| ---------------------- | --------------------- | ---------------------------------- |
+| nutrition-science.md   | SDD-N1-NUTRITION      | ADR-030                            |
+| exercise-physiology.md | SDD-W1-WORKOUT        | ADR-031                            |
+| skin-physiology.md     | SDD-SKIN-ANALYSIS-v2  | ADR-003, ADR-010                   |
+| color-science.md       | SDD-PERSONAL-COLOR-v2 | ADR-026                            |
+| body-mechanics.md      | SDD-BODY-ANALYSIS-v2  | ADR-005                            |
+| image-processing.md    | SDD-CIE-1~4           | ADR-001, ADR-033                   |
+| ai-inference.md        | -                     | ADR-003, ADR-007, ADR-010, ADR-024 |
+| data-platform.md       | SDD-DATA-PLATFORM-L1  | ADR-061                            |
 
 ### 관련 문서 섹션 표준 구조
 
@@ -181,13 +192,15 @@ docs/principles/
 ## N. 관련 문서
 
 ### 구현 스펙 (이 원리를 적용하는 문서)
-| 문서 | 설명 |
-|------|------|
+
+| 문서                           | 설명                    |
+| ------------------------------ | ----------------------- |
 | [SDD-XXX](../specs/SDD-XXX.md) | 모듈 스펙, P3 원자 분해 |
 
 ### 관련 원리 문서
-| 문서 | 설명 |
-|------|------|
+
+| 문서                                       | 설명      |
+| ------------------------------------------ | --------- |
 | [other-principle.md](./other-principle.md) | 관련 원리 |
 ```
 
@@ -198,19 +211,22 @@ docs/principles/
 
 ---
 
-**Version**: 5.1 | **Created**: 2026-01-15 | **Updated**: 2026-02-01
+**Version**: 5.4 | **Created**: 2026-01-15 | **Updated**: 2026-02-04
 
 ### 변경 이력
 
-| 버전 | 날짜 | 변경 내용 |
-|------|------|----------|
-| 5.1 | 2026-02-01 | data-platform.md 신규 추가 (ADR-061, Phase L 데이터 플랫폼) |
-| 5.0 | 2026-01-29 | P3 원리 문서 5개 신규 추가 (lesion-analysis, stretching-physiology, risk-exercise-criteria, color-matching-theory, 3d-face-shape) |
-| 4.4 | 2026-01-23 | accessibility.md 신규 추가 (WCAG 2.1 AA, WAI-ARIA, POUR 원칙) |
-| 4.3 | 2026-01-23 | fashion-matching.md, hair-makeup-analysis.md 인덱스 추가 |
-| 4.2 | 2026-01-22 | extensibility.md 신규 추가 (OCP, DIP, ISP, Strategy/Adapter 패턴) |
-| 4.1 | 2026-01-22 | db-migration.md v2.0 - DFA 형식 정의, 안전성 메트릭, ACID 검증, 학술 인용 추가 (P3 강화) |
-| 4.0 | 2026-01-22 | personalization-engine.md 신규 추가 (Smart Combination Engine V1/V2/V3) |
-| 3.0 | 2026-01-21 | db-migration, hybrid-data, api-design, performance 원리 문서 4개 신규 추가 |
-| 2.0 | 2026-01-19 | rag-retrieval.md 신규, security/legal/ai 문서 v2.0 업데이트 반영 |
-| 1.0 | 2026-01-15 | 초기 버전 |
+| 버전 | 날짜       | 변경 내용                                                                                                                         |
+| ---- | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 5.4  | 2026-02-04 | weather-styling.md 신규 추가 (체감온도 레이어링, 17개 지역, 캐시 전략)                                                            |
+| 5.3  | 2026-02-03 | social-feed.md, barcode-qrcode.md 신규 추가 (피드 알고리즘, 바코드 디코딩 원리)                                                   |
+| 5.2  | 2026-02-03 | offline-support.md 신규 추가 (Stale-While-Revalidate, Sync Queue, LRU, Exponential Backoff)                                       |
+| 5.1  | 2026-02-01 | data-platform.md 신규 추가 (ADR-061, Phase L 데이터 플랫폼)                                                                       |
+| 5.0  | 2026-01-29 | P3 원리 문서 5개 신규 추가 (lesion-analysis, stretching-physiology, risk-exercise-criteria, color-matching-theory, 3d-face-shape) |
+| 4.4  | 2026-01-23 | accessibility.md 신규 추가 (WCAG 2.1 AA, WAI-ARIA, POUR 원칙)                                                                     |
+| 4.3  | 2026-01-23 | fashion-matching.md, hair-makeup-analysis.md 인덱스 추가                                                                          |
+| 4.2  | 2026-01-22 | extensibility.md 신규 추가 (OCP, DIP, ISP, Strategy/Adapter 패턴)                                                                 |
+| 4.1  | 2026-01-22 | db-migration.md v2.0 - DFA 형식 정의, 안전성 메트릭, ACID 검증, 학술 인용 추가 (P3 강화)                                          |
+| 4.0  | 2026-01-22 | personalization-engine.md 신규 추가 (Smart Combination Engine V1/V2/V3)                                                           |
+| 3.0  | 2026-01-21 | db-migration, hybrid-data, api-design, performance 원리 문서 4개 신규 추가                                                        |
+| 2.0  | 2026-01-19 | rag-retrieval.md 신규, security/legal/ai 문서 v2.0 업데이트 반영                                                                  |
+| 1.0  | 2026-01-15 | 초기 버전                                                                                                                         |

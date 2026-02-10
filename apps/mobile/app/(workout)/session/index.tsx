@@ -33,7 +33,7 @@ export default function WorkoutSessionScreen() {
   const [timer, setTimer] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
   const [caloriesBurned, setCaloriesBurned] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentExercise = SAMPLE_EXERCISES[currentExerciseIndex];
 
