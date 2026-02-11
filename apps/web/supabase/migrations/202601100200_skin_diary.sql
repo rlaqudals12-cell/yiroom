@@ -58,18 +58,22 @@ CREATE INDEX IF NOT EXISTS idx_skin_diary_condition
 ALTER TABLE skin_diary_entries ENABLE ROW LEVEL SECURITY;
 
 -- 자신의 다이어리만 조회 가능
+DROP POLICY IF EXISTS "Users can view own skin diary" ON skin_diary_entries;
 CREATE POLICY "Users can view own skin diary" ON skin_diary_entries
   FOR SELECT USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- 자신의 다이어리만 생성 가능
+DROP POLICY IF EXISTS "Users can insert own skin diary" ON skin_diary_entries;
 CREATE POLICY "Users can insert own skin diary" ON skin_diary_entries
   FOR INSERT WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- 자신의 다이어리만 수정 가능
+DROP POLICY IF EXISTS "Users can update own skin diary" ON skin_diary_entries;
 CREATE POLICY "Users can update own skin diary" ON skin_diary_entries
   FOR UPDATE USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- 자신의 다이어리만 삭제 가능
+DROP POLICY IF EXISTS "Users can delete own skin diary" ON skin_diary_entries;
 CREATE POLICY "Users can delete own skin diary" ON skin_diary_entries
   FOR DELETE USING (clerk_user_id = auth.jwt() ->> 'sub');
 

@@ -82,26 +82,31 @@ COMMENT ON COLUMN posture_analyses.body_type_correlation IS '체형-자세 상�
 ALTER TABLE posture_analyses ENABLE ROW LEVEL SECURITY;
 
 -- 본인 데이터만 조회
+DROP POLICY IF EXISTS "Users can view own posture data" ON posture_analyses;
 CREATE POLICY "Users can view own posture data"
 ON posture_analyses FOR SELECT
 USING (clerk_user_id = (auth.jwt() ->> 'sub'));
 
 -- 본인 데이터만 생성
+DROP POLICY IF EXISTS "Users can insert own posture data" ON posture_analyses;
 CREATE POLICY "Users can insert own posture data"
 ON posture_analyses FOR INSERT
 WITH CHECK (clerk_user_id = (auth.jwt() ->> 'sub'));
 
 -- 본인 데이터만 수정
+DROP POLICY IF EXISTS "Users can update own posture data" ON posture_analyses;
 CREATE POLICY "Users can update own posture data"
 ON posture_analyses FOR UPDATE
 USING (clerk_user_id = (auth.jwt() ->> 'sub'));
 
 -- 본인 데이터만 삭제
+DROP POLICY IF EXISTS "Users can delete own posture data" ON posture_analyses;
 CREATE POLICY "Users can delete own posture data"
 ON posture_analyses FOR DELETE
 USING (clerk_user_id = (auth.jwt() ->> 'sub'));
 
 -- service_role 전체 접근 허용
+DROP POLICY IF EXISTS "Service role full access on posture_analyses" ON posture_analyses;
 CREATE POLICY "Service role full access on posture_analyses"
 ON posture_analyses
 FOR ALL

@@ -42,6 +42,7 @@ CREATE INDEX IF NOT EXISTS idx_recipes_tags ON recipes USING GIN(tags);
 ALTER TABLE recipes ENABLE ROW LEVEL SECURITY;
 
 -- 모든 사용자 읽기 허용 (공유 레시피 DB)
+DROP POLICY IF EXISTS "recipes_public_read" ON recipes;
 CREATE POLICY "recipes_public_read" ON recipes
   FOR SELECT
   USING (true);

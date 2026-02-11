@@ -27,18 +27,22 @@ CREATE TABLE IF NOT EXISTS analysis_images (
 ALTER TABLE analysis_images ENABLE ROW LEVEL SECURITY;
 
 -- SELECT: 본인 이미지만 조회
+DROP POLICY IF EXISTS "analysis_images_select_own" ON analysis_images;
 CREATE POLICY "analysis_images_select_own" ON analysis_images
   FOR SELECT USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- INSERT: 본인 이미지만 추가
+DROP POLICY IF EXISTS "analysis_images_insert_own" ON analysis_images;
 CREATE POLICY "analysis_images_insert_own" ON analysis_images
   FOR INSERT WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- UPDATE: 본인 이미지만 수정
+DROP POLICY IF EXISTS "analysis_images_update_own" ON analysis_images;
 CREATE POLICY "analysis_images_update_own" ON analysis_images
   FOR UPDATE USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- DELETE: 본인 이미지만 삭제
+DROP POLICY IF EXISTS "analysis_images_delete_own" ON analysis_images;
 CREATE POLICY "analysis_images_delete_own" ON analysis_images
   FOR DELETE USING (clerk_user_id = auth.jwt() ->> 'sub');
 
@@ -59,6 +63,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_analysis_images_updated_at ON analysis_images;
 CREATE TRIGGER trigger_analysis_images_updated_at
   BEFORE UPDATE ON analysis_images
   FOR EACH ROW

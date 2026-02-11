@@ -142,6 +142,7 @@ COMMENT ON TABLE rate_limit_records IS 'API Rate Limiting 카운터 (Redis 도�
 -- audit_logs: 읽기 전용 (관리자만)
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Audit logs are read-only for admins" ON audit_logs;
 CREATE POLICY "Audit logs are read-only for admins" ON audit_logs
   FOR SELECT
   USING (
@@ -153,6 +154,7 @@ CREATE POLICY "Audit logs are read-only for admins" ON audit_logs
 -- image_access_logs: 본인 로그만 조회 가능
 ALTER TABLE image_access_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own image access logs" ON image_access_logs;
 CREATE POLICY "Users can view own image access logs" ON image_access_logs
   FOR SELECT
   USING (
@@ -163,6 +165,7 @@ CREATE POLICY "Users can view own image access logs" ON image_access_logs
 -- rate_limit_records: 서비스 역할만 접근
 ALTER TABLE rate_limit_records ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Rate limit records for service role only" ON rate_limit_records;
 CREATE POLICY "Rate limit records for service role only" ON rate_limit_records
   FOR ALL
   USING (current_setting('role', true) = 'service_role');

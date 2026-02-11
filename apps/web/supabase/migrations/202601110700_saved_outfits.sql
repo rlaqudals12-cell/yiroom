@@ -21,34 +21,47 @@ CREATE TABLE IF NOT EXISTS saved_outfits (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 기존 테이블에 누락된 컬럼 추가 (이미 테이블이 존재하는 경우 대비)
+ALTER TABLE saved_outfits ADD COLUMN IF NOT EXISTS outfit_id TEXT;
+ALTER TABLE saved_outfits ADD COLUMN IF NOT EXISTS season_type TEXT;
+ALTER TABLE saved_outfits ADD COLUMN IF NOT EXISTS occasion TEXT;
+ALTER TABLE saved_outfits ADD COLUMN IF NOT EXISTS outfit_snapshot JSONB;
+ALTER TABLE saved_outfits ADD COLUMN IF NOT EXISTS note TEXT;
+ALTER TABLE saved_outfits ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE saved_outfits ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
 -- 인덱스
-CREATE INDEX idx_saved_outfits_clerk_user_id ON saved_outfits(clerk_user_id);
-CREATE INDEX idx_saved_outfits_season_type ON saved_outfits(season_type);
-CREATE INDEX idx_saved_outfits_occasion ON saved_outfits(occasion);
-CREATE INDEX idx_saved_outfits_created_at ON saved_outfits(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_saved_outfits_clerk_user_id ON saved_outfits(clerk_user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_outfits_season_type ON saved_outfits(season_type);
+CREATE INDEX IF NOT EXISTS idx_saved_outfits_occasion ON saved_outfits(occasion);
+CREATE INDEX IF NOT EXISTS idx_saved_outfits_created_at ON saved_outfits(created_at DESC);
 
 -- 중복 저장 방지 (같은 사용자가 같은 outfit_id를 중복 저장 불가)
-CREATE UNIQUE INDEX idx_saved_outfits_unique ON saved_outfits(clerk_user_id, outfit_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_outfits_unique ON saved_outfits(clerk_user_id, outfit_id);
 
 -- RLS 정책
 ALTER TABLE saved_outfits ENABLE ROW LEVEL SECURITY;
 
 -- 자신의 저장 코디만 조회
+DROP POLICY IF EXISTS "Users can view own saved outfits" ON saved_outfits;
 CREATE POLICY "Users can view own saved outfits"
   ON saved_outfits FOR SELECT
   USING (clerk_user_id = (auth.jwt() ->> 'sub'));
 
 -- 자신의 코디만 저장
+DROP POLICY IF EXISTS "Users can insert own saved outfits" ON saved_outfits;
 CREATE POLICY "Users can insert own saved outfits"
   ON saved_outfits FOR INSERT
   WITH CHECK (clerk_user_id = (auth.jwt() ->> 'sub'));
 
 -- 자신의 저장 코디만 삭제
+DROP POLICY IF EXISTS "Users can delete own saved outfits" ON saved_outfits;
 CREATE POLICY "Users can delete own saved outfits"
   ON saved_outfits FOR DELETE
   USING (clerk_user_id = (auth.jwt() ->> 'sub'));
 
 -- 자신의 저장 코디만 수정 (메모 등)
+DROP POLICY IF EXISTS "Users can update own saved outfits" ON saved_outfits;
 CREATE POLICY "Users can update own saved outfits"
   ON saved_outfits FOR UPDATE
   USING (clerk_user_id = (auth.jwt() ->> 'sub'))
@@ -63,6 +76,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_saved_outfits_updated_at ON saved_outfits;
 CREATE TRIGGER trigger_saved_outfits_updated_at
   BEFORE UPDATE ON saved_outfits
   FOR EACH ROW

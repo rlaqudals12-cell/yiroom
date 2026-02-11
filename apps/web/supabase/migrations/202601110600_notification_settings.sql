@@ -72,37 +72,44 @@ ALTER TABLE user_notification_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_push_tokens ENABLE ROW LEVEL SECURITY;
 
 -- user_notification_settings RLS
+DROP POLICY IF EXISTS "Users can view their own notification settings" ON user_notification_settings;
 CREATE POLICY "Users can view their own notification settings"
   ON user_notification_settings FOR SELECT
   TO authenticated
   USING (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can insert their own notification settings" ON user_notification_settings;
 CREATE POLICY "Users can insert their own notification settings"
   ON user_notification_settings FOR INSERT
   TO authenticated
   WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can update their own notification settings" ON user_notification_settings;
 CREATE POLICY "Users can update their own notification settings"
   ON user_notification_settings FOR UPDATE
   TO authenticated
   USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- user_push_tokens RLS
+DROP POLICY IF EXISTS "Users can view their own push tokens" ON user_push_tokens;
 CREATE POLICY "Users can view their own push tokens"
   ON user_push_tokens FOR SELECT
   TO authenticated
   USING (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can insert their own push tokens" ON user_push_tokens;
 CREATE POLICY "Users can insert their own push tokens"
   ON user_push_tokens FOR INSERT
   TO authenticated
   WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can update their own push tokens" ON user_push_tokens;
 CREATE POLICY "Users can update their own push tokens"
   ON user_push_tokens FOR UPDATE
   TO authenticated
   USING (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can delete their own push tokens" ON user_push_tokens;
 CREATE POLICY "Users can delete their own push tokens"
   ON user_push_tokens FOR DELETE
   TO authenticated
@@ -120,11 +127,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_notification_settings_updated_at ON user_notification_settings;
 CREATE TRIGGER trigger_notification_settings_updated_at
   BEFORE UPDATE ON user_notification_settings
   FOR EACH ROW
   EXECUTE FUNCTION update_notification_settings_updated_at();
 
+DROP TRIGGER IF EXISTS trigger_push_tokens_updated_at ON user_push_tokens;
 CREATE TRIGGER trigger_push_tokens_updated_at
   BEFORE UPDATE ON user_push_tokens
   FOR EACH ROW

@@ -71,50 +71,61 @@ ALTER TABLE feed_interactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feed_comments ENABLE ROW LEVEL SECURITY;
 
 -- feed_posts RLS
+DROP POLICY IF EXISTS "Anyone can read posts" ON feed_posts;
 CREATE POLICY "Anyone can read posts"
   ON feed_posts FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Users can create own posts" ON feed_posts;
 CREATE POLICY "Users can create own posts"
   ON feed_posts FOR INSERT
   WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
+DROP POLICY IF EXISTS "Users can update own posts" ON feed_posts;
 CREATE POLICY "Users can update own posts"
   ON feed_posts FOR UPDATE
   USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub')
   WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
+DROP POLICY IF EXISTS "Users can delete own posts" ON feed_posts;
 CREATE POLICY "Users can delete own posts"
   ON feed_posts FOR DELETE
   USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- feed_interactions RLS
+DROP POLICY IF EXISTS "Anyone can read interactions" ON feed_interactions;
 CREATE POLICY "Anyone can read interactions"
   ON feed_interactions FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Users can create own interactions" ON feed_interactions;
 CREATE POLICY "Users can create own interactions"
   ON feed_interactions FOR INSERT
   WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
+DROP POLICY IF EXISTS "Users can delete own interactions" ON feed_interactions;
 CREATE POLICY "Users can delete own interactions"
   ON feed_interactions FOR DELETE
   USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- feed_comments RLS
+DROP POLICY IF EXISTS "Anyone can read comments" ON feed_comments;
 CREATE POLICY "Anyone can read comments"
   ON feed_comments FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Users can create comments" ON feed_comments;
 CREATE POLICY "Users can create comments"
   ON feed_comments FOR INSERT
   WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
+DROP POLICY IF EXISTS "Users can update own comments" ON feed_comments;
 CREATE POLICY "Users can update own comments"
   ON feed_comments FOR UPDATE
   USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub')
   WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
+DROP POLICY IF EXISTS "Users can delete own comments" ON feed_comments;
 CREATE POLICY "Users can delete own comments"
   ON feed_comments FOR DELETE
   USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
@@ -224,14 +235,17 @@ VALUES ('feed-images', 'feed-images', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage policies
+DROP POLICY IF EXISTS "Anyone can view feed images" ON storage.objects;
 CREATE POLICY "Anyone can view feed images"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'feed-images');
 
+DROP POLICY IF EXISTS "Authenticated users can upload feed images" ON storage.objects;
 CREATE POLICY "Authenticated users can upload feed images"
   ON storage.objects FOR INSERT
   WITH CHECK (bucket_id = 'feed-images' AND auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "Users can delete own feed images" ON storage.objects;
 CREATE POLICY "Users can delete own feed images"
   ON storage.objects FOR DELETE
   USING (bucket_id = 'feed-images' AND auth.uid()::text = (storage.foldername(name))[1]);

@@ -75,27 +75,32 @@ ALTER TABLE oral_health_assessments ENABLE ROW LEVEL SECURITY;
 -- 5. RLS 정책 생성
 -- JWT sub 클레임에서 clerk_user_id 추출
 
+DROP POLICY IF EXISTS "Users can view own oral health assessments" ON oral_health_assessments;
 CREATE POLICY "Users can view own oral health assessments"
     ON oral_health_assessments
     FOR SELECT
     USING (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can insert own oral health assessments" ON oral_health_assessments;
 CREATE POLICY "Users can insert own oral health assessments"
     ON oral_health_assessments
     FOR INSERT
     WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can update own oral health assessments" ON oral_health_assessments;
 CREATE POLICY "Users can update own oral health assessments"
     ON oral_health_assessments
     FOR UPDATE
     USING (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can delete own oral health assessments" ON oral_health_assessments;
 CREATE POLICY "Users can delete own oral health assessments"
     ON oral_health_assessments
     FOR DELETE
     USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- Service role은 모든 작업 허용
+DROP POLICY IF EXISTS "Service role has full access to oral health assessments" ON oral_health_assessments;
 CREATE POLICY "Service role has full access to oral health assessments"
     ON oral_health_assessments
     FOR ALL
@@ -128,18 +133,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_oral_health_updated_at ON oral_health_assessments;
 CREATE TRIGGER trigger_oral_health_updated_at
     BEFORE UPDATE ON oral_health_assessments
     FOR EACH ROW
     EXECUTE FUNCTION update_oral_health_updated_at();
 
--- 8. OH-1 뱃지 추가 (gamification_badges 테이블에 추가)
-INSERT INTO public.gamification_badges (id, category, name, description, icon, criteria)
-VALUES
-    ('oral_health_first', 'analysis', '첫 구강 건강 분석', '첫 구강 건강 분석을 완료했습니다', '🦷', '{"type": "count", "target": 1, "table": "oral_health_assessments"}'::jsonb),
-    ('oral_health_master', 'analysis', '구강 건강 마스터', '10회 구강 건강 분석을 완료했습니다', '🏆🦷', '{"type": "count", "target": 10, "table": "oral_health_assessments"}'::jsonb),
-    ('bright_smile', 'achievement', '밝은 미소', '치아 백색도 점수 90점 이상을 달성했습니다', '✨😁', '{"type": "score", "field": "whiteness_score", "threshold": 90, "table": "oral_health_assessments"}'::jsonb)
-ON CONFLICT (id) DO NOTHING;
+-- 8. OH-1 뱃지 추가 (gamification_badges 테이블에 추가) — 테이블 존재 시에만
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'gamification_badges') THEN
+    INSERT INTO public.gamification_badges (id, category, name, description, icon, criteria)
+    VALUES
+        ('oral_health_first', 'analysis', '첫 구강 건강 분석', '첫 구강 건강 분석을 완료했습니다', '🦷', '{"type": "count", "target": 1, "table": "oral_health_assessments"}'::jsonb),
+        ('oral_health_master', 'analysis', '구강 건강 마스터', '10회 구강 건강 분석을 완료했습니다', '🏆🦷', '{"type": "count", "target": 10, "table": "oral_health_assessments"}'::jsonb),
+        ('bright_smile', 'achievement', '밝은 미소', '치아 백색도 점수 90점 이상을 달성했습니다', '✨😁', '{"type": "score", "field": "whiteness_score", "threshold": 90, "table": "oral_health_assessments"}'::jsonb)
+    ON CONFLICT (id) DO NOTHING;
+  END IF;
+END $$;
 
 -- ============================================================
 -- 변경 이력

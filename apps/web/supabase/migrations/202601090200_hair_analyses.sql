@@ -58,27 +58,32 @@ ALTER TABLE hair_analyses ENABLE ROW LEVEL SECURITY;
 -- 5. RLS 정책 생성
 -- JWT sub 클레임에서 clerk_user_id 추출
 
+DROP POLICY IF EXISTS "Users can view own hair analyses" ON hair_analyses;
 CREATE POLICY "Users can view own hair analyses"
     ON hair_analyses
     FOR SELECT
     USING (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can insert own hair analyses" ON hair_analyses;
 CREATE POLICY "Users can insert own hair analyses"
     ON hair_analyses
     FOR INSERT
     WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can update own hair analyses" ON hair_analyses;
 CREATE POLICY "Users can update own hair analyses"
     ON hair_analyses
     FOR UPDATE
     USING (clerk_user_id = auth.jwt() ->> 'sub');
 
+DROP POLICY IF EXISTS "Users can delete own hair analyses" ON hair_analyses;
 CREATE POLICY "Users can delete own hair analyses"
     ON hair_analyses
     FOR DELETE
     USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- Service role은 모든 작업 허용
+DROP POLICY IF EXISTS "Service role has full access to hair analyses" ON hair_analyses;
 CREATE POLICY "Service role has full access to hair analyses"
     ON hair_analyses
     FOR ALL

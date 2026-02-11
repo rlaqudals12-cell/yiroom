@@ -7,7 +7,7 @@
 -- JWT에서 사용자 ID 추출 함수 (통일)
 -- ============================================
 
-CREATE OR REPLACE FUNCTION auth.get_user_id()
+CREATE OR REPLACE FUNCTION public.get_user_id()
 RETURNS TEXT
 LANGUAGE SQL
 STABLE
@@ -28,12 +28,12 @@ ALTER TABLE user_levels ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own level" ON user_levels;
 CREATE POLICY "Users can view own level" ON user_levels
   FOR SELECT
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Users can update own level" ON user_levels;
 CREATE POLICY "Users can update own level" ON user_levels
   FOR UPDATE
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Service role full access on user_levels" ON user_levels;
 CREATE POLICY "Service role full access on user_levels" ON user_levels
@@ -46,7 +46,7 @@ ALTER TABLE user_badges ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own badges" ON user_badges;
 CREATE POLICY "Users can view own badges" ON user_badges
   FOR SELECT
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Service role full access on user_badges" ON user_badges;
 CREATE POLICY "Service role full access on user_badges" ON user_badges
@@ -59,12 +59,12 @@ ALTER TABLE wellness_scores ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own wellness scores" ON wellness_scores;
 CREATE POLICY "Users can view own wellness scores" ON wellness_scores
   FOR SELECT
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Users can insert own wellness scores" ON wellness_scores;
 CREATE POLICY "Users can insert own wellness scores" ON wellness_scores
   FOR INSERT
-  WITH CHECK (clerk_user_id = auth.get_user_id());
+  WITH CHECK (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Service role full access on wellness_scores" ON wellness_scores;
 CREATE POLICY "Service role full access on wellness_scores" ON wellness_scores
@@ -75,34 +75,34 @@ CREATE POLICY "Service role full access on wellness_scores" ON wellness_scores
 -- 2. 소셜 테이블 RLS
 -- ============================================
 
--- friendships (양방향 조회 가능)
+-- friendships (양방향 조회 가능, 컬럼: requester_id/addressee_id)
 ALTER TABLE friendships ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Users can view friendships they are part of" ON friendships;
 CREATE POLICY "Users can view friendships they are part of" ON friendships
   FOR SELECT
   USING (
-    user_id = auth.get_user_id()
-    OR friend_id = auth.get_user_id()
+    requester_id = public.get_user_id()
+    OR addressee_id = public.get_user_id()
   );
 
 DROP POLICY IF EXISTS "Users can insert friendship requests" ON friendships;
 CREATE POLICY "Users can insert friendship requests" ON friendships
   FOR INSERT
-  WITH CHECK (user_id = auth.get_user_id());
+  WITH CHECK (requester_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Users can update friendships they are part of" ON friendships;
 CREATE POLICY "Users can update friendships they are part of" ON friendships
   FOR UPDATE
   USING (
-    user_id = auth.get_user_id()
-    OR friend_id = auth.get_user_id()
+    requester_id = public.get_user_id()
+    OR addressee_id = public.get_user_id()
   );
 
 DROP POLICY IF EXISTS "Users can delete friendships they created" ON friendships;
 CREATE POLICY "Users can delete friendships they created" ON friendships
   FOR DELETE
-  USING (user_id = auth.get_user_id() OR friend_id = auth.get_user_id());
+  USING (requester_id = public.get_user_id() OR addressee_id = public.get_user_id());
 
 -- leaderboard_cache (공개 조회)
 ALTER TABLE leaderboard_cache ENABLE ROW LEVEL SECURITY;
@@ -135,27 +135,33 @@ CREATE POLICY "Service role can manage challenges" ON challenges
   USING (current_setting('role', true) = 'service_role');
 
 -- challenge_participations (참가자만 조회)
-ALTER TABLE challenge_participations ENABLE ROW LEVEL SECURITY;
+-- 테이블명이 user_challenges일 수 있음 — 조건부 적용
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'challenge_participations') THEN
+    ALTER TABLE challenge_participations ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Users can view own challenge participations" ON challenge_participations;
-CREATE POLICY "Users can view own challenge participations" ON challenge_participations
-  FOR SELECT
-  USING (clerk_user_id = auth.get_user_id());
+    DROP POLICY IF EXISTS "Users can view own challenge participations" ON challenge_participations;
+    CREATE POLICY "Users can view own challenge participations" ON challenge_participations
+      FOR SELECT
+      USING (clerk_user_id = public.get_user_id());
 
-DROP POLICY IF EXISTS "Users can join challenges" ON challenge_participations;
-CREATE POLICY "Users can join challenges" ON challenge_participations
-  FOR INSERT
-  WITH CHECK (clerk_user_id = auth.get_user_id());
+    DROP POLICY IF EXISTS "Users can join challenges" ON challenge_participations;
+    CREATE POLICY "Users can join challenges" ON challenge_participations
+      FOR INSERT
+      WITH CHECK (clerk_user_id = public.get_user_id());
 
-DROP POLICY IF EXISTS "Users can update own participation" ON challenge_participations;
-CREATE POLICY "Users can update own participation" ON challenge_participations
-  FOR UPDATE
-  USING (clerk_user_id = auth.get_user_id());
+    DROP POLICY IF EXISTS "Users can update own participation" ON challenge_participations;
+    CREATE POLICY "Users can update own participation" ON challenge_participations
+      FOR UPDATE
+      USING (clerk_user_id = public.get_user_id());
 
-DROP POLICY IF EXISTS "Users can leave challenges" ON challenge_participations;
-CREATE POLICY "Users can leave challenges" ON challenge_participations
-  FOR DELETE
-  USING (clerk_user_id = auth.get_user_id());
+    DROP POLICY IF EXISTS "Users can leave challenges" ON challenge_participations;
+    CREATE POLICY "Users can leave challenges" ON challenge_participations
+      FOR DELETE
+      USING (clerk_user_id = public.get_user_id());
+  END IF;
+END $$;
 
 -- ============================================
 -- 4. 어필리에이트 테이블 RLS
@@ -167,12 +173,12 @@ ALTER TABLE affiliate_clicks ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own clicks" ON affiliate_clicks;
 CREATE POLICY "Users can view own clicks" ON affiliate_clicks
   FOR SELECT
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Users can record clicks" ON affiliate_clicks;
 CREATE POLICY "Users can record clicks" ON affiliate_clicks
   FOR INSERT
-  WITH CHECK (clerk_user_id = auth.get_user_id() OR clerk_user_id IS NULL);
+  WITH CHECK (clerk_user_id = public.get_user_id() OR clerk_user_id IS NULL);
 
 DROP POLICY IF EXISTS "Service role full access on affiliate_clicks" ON affiliate_clicks;
 CREATE POLICY "Service role full access on affiliate_clicks" ON affiliate_clicks
@@ -202,7 +208,7 @@ ALTER TABLE faqs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "FAQs are publicly viewable" ON faqs;
 CREATE POLICY "FAQs are publicly viewable" ON faqs
   FOR SELECT
-  USING (is_active = true);
+  USING (is_published = true);
 
 DROP POLICY IF EXISTS "Service role can manage faqs" ON faqs;
 CREATE POLICY "Service role can manage faqs" ON faqs
@@ -215,12 +221,12 @@ ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own feedback" ON feedback;
 CREATE POLICY "Users can view own feedback" ON feedback
   FOR SELECT
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Users can submit feedback" ON feedback;
 CREATE POLICY "Users can submit feedback" ON feedback
   FOR INSERT
-  WITH CHECK (clerk_user_id = auth.get_user_id());
+  WITH CHECK (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Service role full access on feedback" ON feedback;
 CREATE POLICY "Service role full access on feedback" ON feedback
@@ -237,12 +243,12 @@ ALTER TABLE user_notification_settings ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own notification settings" ON user_notification_settings;
 CREATE POLICY "Users can view own notification settings" ON user_notification_settings
   FOR SELECT
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Users can update own notification settings" ON user_notification_settings;
 CREATE POLICY "Users can update own notification settings" ON user_notification_settings
   FOR ALL
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 -- user_push_tokens (본인만 접근)
 ALTER TABLE user_push_tokens ENABLE ROW LEVEL SECURITY;
@@ -250,7 +256,7 @@ ALTER TABLE user_push_tokens ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can manage own push tokens" ON user_push_tokens;
 CREATE POLICY "Users can manage own push tokens" ON user_push_tokens
   FOR ALL
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Service role full access on push tokens" ON user_push_tokens;
 CREATE POLICY "Service role full access on push tokens" ON user_push_tokens
@@ -328,17 +334,17 @@ CREATE POLICY "Reviews are publicly viewable" ON product_reviews
 DROP POLICY IF EXISTS "Users can create reviews" ON product_reviews;
 CREATE POLICY "Users can create reviews" ON product_reviews
   FOR INSERT
-  WITH CHECK (clerk_user_id = auth.get_user_id());
+  WITH CHECK (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Users can update own reviews" ON product_reviews;
 CREATE POLICY "Users can update own reviews" ON product_reviews
   FOR UPDATE
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Users can delete own reviews" ON product_reviews;
 CREATE POLICY "Users can delete own reviews" ON product_reviews
   FOR DELETE
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 -- review_helpful (본인만 수정)
 ALTER TABLE review_helpful ENABLE ROW LEVEL SECURITY;
@@ -351,29 +357,34 @@ CREATE POLICY "Review helpful votes are viewable" ON review_helpful
 DROP POLICY IF EXISTS "Users can vote on reviews" ON review_helpful;
 CREATE POLICY "Users can vote on reviews" ON review_helpful
   FOR INSERT
-  WITH CHECK (clerk_user_id = auth.get_user_id());
+  WITH CHECK (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Users can change own votes" ON review_helpful;
 CREATE POLICY "Users can change own votes" ON review_helpful
   FOR UPDATE
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 DROP POLICY IF EXISTS "Users can remove own votes" ON review_helpful;
 CREATE POLICY "Users can remove own votes" ON review_helpful
   FOR DELETE
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = public.get_user_id());
 
 -- ============================================
 -- 9. 팬트리 테이블 RLS
 -- ============================================
 
--- pantry_items (본인만 접근)
-ALTER TABLE pantry_items ENABLE ROW LEVEL SECURITY;
+-- pantry_items (본인만 접근) — 테이블 존재 여부 확인 후 적용
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'pantry_items') THEN
+    ALTER TABLE pantry_items ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Users can manage own pantry" ON pantry_items;
-CREATE POLICY "Users can manage own pantry" ON pantry_items
-  FOR ALL
-  USING (clerk_user_id = auth.get_user_id());
+    DROP POLICY IF EXISTS "Users can manage own pantry" ON pantry_items;
+    CREATE POLICY "Users can manage own pantry" ON pantry_items
+      FOR ALL
+      USING (clerk_user_id = public.get_user_id());
+  END IF;
+END $$;
 
 -- ============================================
 -- 10. 추가 테이블 RLS (누락 가능성)

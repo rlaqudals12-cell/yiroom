@@ -27,19 +27,23 @@ CREATE INDEX IF NOT EXISTS idx_image_consents_retention
 -- RLS 정책 (CRUD 완전 지원)
 ALTER TABLE image_consents ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "image_consents_select_own" ON image_consents;
 CREATE POLICY "image_consents_select_own"
   ON image_consents FOR SELECT
   USING (auth.jwt() ->> 'sub' = clerk_user_id);
 
+DROP POLICY IF EXISTS "image_consents_insert_own" ON image_consents;
 CREATE POLICY "image_consents_insert_own"
   ON image_consents FOR INSERT
   WITH CHECK (auth.jwt() ->> 'sub' = clerk_user_id);
 
+DROP POLICY IF EXISTS "image_consents_update_own" ON image_consents;
 CREATE POLICY "image_consents_update_own"
   ON image_consents FOR UPDATE
   USING (auth.jwt() ->> 'sub' = clerk_user_id);
 
 -- GDPR 철회권: 본인 동의 삭제 가능
+DROP POLICY IF EXISTS "image_consents_delete_own" ON image_consents;
 CREATE POLICY "image_consents_delete_own"
   ON image_consents FOR DELETE
   USING (auth.jwt() ->> 'sub' = clerk_user_id);
@@ -53,6 +57,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_image_consents_updated_at ON image_consents;
 CREATE TRIGGER trigger_image_consents_updated_at
   BEFORE UPDATE ON image_consents
   FOR EACH ROW

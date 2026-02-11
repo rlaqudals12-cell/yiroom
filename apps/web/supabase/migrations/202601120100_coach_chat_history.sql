@@ -44,6 +44,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_coach_message_count ON coach_messages;
 CREATE TRIGGER trigger_coach_message_count
     AFTER INSERT ON coach_messages
     FOR EACH ROW
@@ -54,23 +55,28 @@ ALTER TABLE coach_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE coach_messages ENABLE ROW LEVEL SECURITY;
 
 -- coach_sessions RLS
+DROP POLICY IF EXISTS "Users can view own coach sessions" ON coach_sessions;
 CREATE POLICY "Users can view own coach sessions"
     ON coach_sessions FOR SELECT
     USING (clerk_user_id = (auth.jwt() ->> 'sub'));
 
+DROP POLICY IF EXISTS "Users can insert own coach sessions" ON coach_sessions;
 CREATE POLICY "Users can insert own coach sessions"
     ON coach_sessions FOR INSERT
     WITH CHECK (clerk_user_id = (auth.jwt() ->> 'sub'));
 
+DROP POLICY IF EXISTS "Users can update own coach sessions" ON coach_sessions;
 CREATE POLICY "Users can update own coach sessions"
     ON coach_sessions FOR UPDATE
     USING (clerk_user_id = (auth.jwt() ->> 'sub'));
 
+DROP POLICY IF EXISTS "Users can delete own coach sessions" ON coach_sessions;
 CREATE POLICY "Users can delete own coach sessions"
     ON coach_sessions FOR DELETE
     USING (clerk_user_id = (auth.jwt() ->> 'sub'));
 
 -- coach_messages RLS (세션 소유자만 접근)
+DROP POLICY IF EXISTS "Users can view own coach messages" ON coach_messages;
 CREATE POLICY "Users can view own coach messages"
     ON coach_messages FOR SELECT
     USING (
@@ -80,6 +86,7 @@ CREATE POLICY "Users can view own coach messages"
         )
     );
 
+DROP POLICY IF EXISTS "Users can insert own coach messages" ON coach_messages;
 CREATE POLICY "Users can insert own coach messages"
     ON coach_messages FOR INSERT
     WITH CHECK (
