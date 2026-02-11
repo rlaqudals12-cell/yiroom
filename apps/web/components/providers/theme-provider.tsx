@@ -21,7 +21,13 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children, defaultTheme = 'system' }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+  // inline script가 이미 html에 dark/light 클래스를 설정했으므로 그 값을 초기값으로 사용
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    }
+    return 'dark'; // SSR 기본값 = defaultTheme('dark')과 일치
+  });
   const [mounted, setMounted] = useState(false);
 
   // 시스템 테마 감지
@@ -31,27 +37,33 @@ export function ThemeProvider({ children, defaultTheme = 'system' }: ThemeProvid
   }, []);
 
   // 테마 적용
-  const applyTheme = useCallback((newTheme: Theme) => {
-    const root = document.documentElement;
-    const resolved = newTheme === 'system' ? getSystemTheme() : newTheme;
+  const applyTheme = useCallback(
+    (newTheme: Theme) => {
+      const root = document.documentElement;
+      const resolved = newTheme === 'system' ? getSystemTheme() : newTheme;
 
-    root.classList.remove('light', 'dark');
-    root.classList.add(resolved);
-    setResolvedTheme(resolved);
+      root.classList.remove('light', 'dark');
+      root.classList.add(resolved);
+      setResolvedTheme(resolved);
 
-    // 메타 테마 색상 업데이트 (모바일 브라우저용)
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', resolved === 'dark' ? '#0d101c' : '#f8f9fc');
-    }
-  }, [getSystemTheme]);
+      // 메타 테마 색상 업데이트 (모바일 브라우저용)
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', resolved === 'dark' ? '#0d101c' : '#f8f9fc');
+      }
+    },
+    [getSystemTheme]
+  );
 
   // 테마 변경 핸들러
-  const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem(THEME_KEY, newTheme);
-    applyTheme(newTheme);
-  }, [applyTheme]);
+  const setTheme = useCallback(
+    (newTheme: Theme) => {
+      setThemeState(newTheme);
+      localStorage.setItem(THEME_KEY, newTheme);
+      applyTheme(newTheme);
+    },
+    [applyTheme]
+  );
 
   // 초기 마운트 시 저장된 테마 로드
   useEffect(() => {
@@ -78,10 +90,10 @@ export function ThemeProvider({ children, defaultTheme = 'system' }: ThemeProvid
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme, mounted, applyTheme]);
 
-  // SSR 깜빡임 방지
+  // SSR: inline script가 이미 테마 클래스를 설정했으므로 children을 그대로 렌더
   if (!mounted) {
     return (
-      <ThemeContext.Provider value={{ theme: defaultTheme, setTheme: () => {}, resolvedTheme: 'light' }}>
+      <ThemeContext.Provider value={{ theme: defaultTheme, setTheme: () => {}, resolvedTheme }}>
         {children}
       </ThemeContext.Provider>
     );

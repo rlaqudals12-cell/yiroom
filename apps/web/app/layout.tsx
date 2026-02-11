@@ -38,7 +38,8 @@ const inter = Inter({
 const notoSansKR = Noto_Sans_KR({
   variable: '--font-noto-sans-kr',
   subsets: ['latin'],
-  // LCP 최적화: 필수 weight만 로드
+  // 한국어 서브셋은 next/font가 자동 분할 (unicode-range 기반)
+  // weight 지정 시 필요한 글리프만 로드됨
   weight: ['400', '500', '700'],
   display: 'swap',
   preload: true,
@@ -119,6 +120,12 @@ export default async function RootLayout({
     <ClerkProvider localization={clerkLocalization}>
       <html lang={locale} suppressHydrationWarning>
         <head>
+          {/* 테마 CLS 방지: 렌더링 전에 저장된 테마 적용 */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){try{var t=localStorage.getItem('yiroom-theme');var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.classList.add(d?'dark':'light')}catch(e){}})()`,
+            }}
+          />
           {/* Preconnect hints for external domains - Lighthouse Performance */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

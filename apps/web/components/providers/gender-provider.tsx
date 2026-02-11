@@ -39,10 +39,21 @@ export function GenderProvider({ children }: GenderProviderProps) {
   const { user, isLoaded: isUserLoaded } = useUser();
   const supabase = useClerkSupabaseClient();
 
-  const [genderProfile, setGenderProfile] = useState<UserGenderProfile>(
-    createDefaultGenderProfile()
-  );
-  const [isLoading, setIsLoading] = useState(true);
+  // localStorage에서 동기 로드 → LCP 블로킹 방지
+  const [genderProfile, setGenderProfile] = useState<UserGenderProfile>(() => {
+    if (typeof window === 'undefined') return createDefaultGenderProfile();
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (isValidGenderProfile(parsed)) return parsed;
+      }
+    } catch {
+      /* 파싱 실패 시 기본값 */
+    }
+    return createDefaultGenderProfile();
+  });
+  const isLoading = false; // localStorage 동기 로드로 블로킹 없음
 
   // 로컬 스토리지에서 로드
   const loadFromStorage = useCallback((): UserGenderProfile | null => {
@@ -129,44 +140,25 @@ export function GenderProvider({ children }: GenderProviderProps) {
     [supabase, user?.id]
   );
 
-  // 초기 로드
+  // Supabase 백그라운드 동기화 (localStorage 값은 이미 초기 state에서 로드됨)
   useEffect(() => {
-    async function initProfile() {
-      setIsLoading(true);
+    if (!isUserLoaded || !user?.id) return;
 
-      // 1. 로그인 사용자: Supabase에서 먼저 시도
-      if (user?.id) {
-        const supabaseProfile = await loadFromSupabase();
-        if (supabaseProfile) {
-          setGenderProfile(supabaseProfile);
-          saveToStorage(supabaseProfile); // 로컬에도 캐시
-          setIsLoading(false);
-          return;
-        }
-      }
-
-      // 2. 로컬 스토리지 확인
-      const localProfile = loadFromStorage();
-      if (localProfile) {
-        setGenderProfile(localProfile);
-
-        // 로그인 사용자면 Supabase에도 저장
-        if (user?.id) {
+    async function syncFromSupabase() {
+      const supabaseProfile = await loadFromSupabase();
+      if (supabaseProfile) {
+        setGenderProfile(supabaseProfile);
+        saveToStorage(supabaseProfile);
+      } else {
+        // Supabase에 없으면 현재 로컬 값을 Supabase에 저장
+        const localProfile = loadFromStorage();
+        if (localProfile) {
           await saveToSupabase(localProfile);
         }
-
-        setIsLoading(false);
-        return;
       }
-
-      // 3. 기본값 사용
-      setGenderProfile(createDefaultGenderProfile());
-      setIsLoading(false);
     }
 
-    if (isUserLoaded) {
-      initProfile();
-    }
+    syncFromSupabase();
   }, [user?.id, isUserLoaded, loadFromSupabase, loadFromStorage, saveToSupabase, saveToStorage]);
 
   // 프로필 업데이트
