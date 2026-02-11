@@ -69,6 +69,9 @@ import { getWarningIngredientsForSkinType } from '@/lib/ingredients';
 import { generateProductRecommendations, formatProductsForDB } from '@/lib/product-recommendations';
 import { NextRequest } from 'next/server';
 
+// Zod min(100) 검증 통과하는 mock 이미지 (100자 이상)
+const MOCK_IMAGE_BASE64 = 'data:image/jpeg;base64,/9j/' + 'A'.repeat(100);
+
 // Mock 요청 헬퍼 (NextRequest 호환)
 function createMockPostRequest(body: unknown): NextRequest {
   const url = 'http://localhost/api/analyze/skin';
@@ -289,7 +292,7 @@ describe('POST /api/analyze/skin', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_IMAGE_BASE64,
           useMock: true,
         })
       );
@@ -341,7 +344,7 @@ describe('POST /api/analyze/skin', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_IMAGE_BASE64,
         })
       );
       const json = await response.json();
@@ -356,7 +359,7 @@ describe('POST /api/analyze/skin', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_IMAGE_BASE64,
         })
       );
       const json = await response.json();
@@ -402,7 +405,7 @@ describe('POST /api/analyze/skin', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_IMAGE_BASE64,
           useMock: true,
         })
       );
@@ -448,7 +451,7 @@ describe('POST /api/analyze/skin', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_IMAGE_BASE64,
           useMock: true,
         })
       );
@@ -495,7 +498,7 @@ describe('POST /api/analyze/skin', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_IMAGE_BASE64,
           useMock: true,
         })
       );
