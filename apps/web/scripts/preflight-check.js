@@ -98,15 +98,30 @@ if (!fs.existsSync(envFile)) {
     'CLERK_SECRET_KEY',
     'NEXT_PUBLIC_SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    'SUPABASE_SERVICE_ROLE_KEY',
+    'GOOGLE_GENERATIVE_AI_API_KEY',
+  ];
+
+  // 선택적 (경고만)
+  const optionalVars = [
+    'CLERK_WEBHOOK_SECRET',
+    'NEXT_PUBLIC_CLERK_SIGN_IN_URL',
+    'NEXT_PUBLIC_CLERK_SIGN_UP_URL',
   ];
 
   const missing = requiredVars.filter((v) => !envContent.includes(v));
   if (missing.length > 0) {
-    console.log('   ⚠️  누락된 환경 변수:', missing.join(', '));
+    console.log('   ⚠️  누락된 필수 환경 변수:', missing.join(', '));
     hasError = true;
   } else {
-    console.log('   ✅ 필수 환경 변수 존재\n');
+    console.log('   ✅ 필수 환경 변수 존재');
   }
+
+  const missingOptional = optionalVars.filter((v) => !envContent.includes(v));
+  if (missingOptional.length > 0) {
+    console.log('   💡 선택적 환경 변수 누락:', missingOptional.join(', '));
+  }
+  console.log('');
 }
 
 // 6. node_modules 확인

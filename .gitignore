@@ -67,3 +67,13 @@ PRN
 aux
 AUX
 apps/web/test-results/
+
+# Temp / debug files
+.tmp-*
+.tmp.*
+*.tmp
+apps/web/.tmp-*
+
+# Claude Code local data
+.claude/sessions/
+.claude/settings.local.json
