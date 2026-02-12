@@ -17,23 +17,39 @@ vi.mock('@/lib/affiliate/products', () => ({
 import { GET } from '@/app/api/affiliate/products/route';
 import { getAffiliateProducts, getAffiliateProductCount } from '@/lib/affiliate/products';
 
-// Mock 제품 데이터
+// Mock 제품 데이터 (AffiliateProduct 타입에 맞춤)
 const mockProducts = [
   {
     id: 'prod-1',
+    partnerId: 'coupang',
+    externalProductId: 'ext-1',
     name: '히알루론산 세럼',
     brand: '라운드랩',
     category: 'cosmetic',
-    price: 25000,
+    priceKrw: 25000,
+    currency: 'KRW',
+    affiliateUrl: 'https://example.com/1',
     rating: 4.5,
+    isInStock: true,
+    isActive: true,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
   },
   {
     id: 'prod-2',
+    partnerId: 'coupang',
+    externalProductId: 'ext-2',
     name: '비타민C 앰플',
     brand: '클레어스',
     category: 'cosmetic',
-    price: 18000,
+    priceKrw: 18000,
+    currency: 'KRW',
+    affiliateUrl: 'https://example.com/2',
     rating: 4.3,
+    isInStock: true,
+    isActive: true,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
   },
 ];
 

@@ -39,7 +39,7 @@ function createMockRequest(body: unknown): Request {
 const mockUserContext = {
   skinType: 'combination',
   skinConcerns: ['acne', 'pore'],
-  personalColor: 'spring',
+  personalColor: { season: 'spring' },
   bodyType: 'rectangle',
 };
 

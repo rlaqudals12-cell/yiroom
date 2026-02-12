@@ -28,12 +28,24 @@ function createCronRequest(options?: {
   return new NextRequest('http://localhost:3000/api/cron/update-prices', { headers });
 }
 
-// Mock 결과 데이터
+// Mock 결과 데이터 (BatchUpdateResult 타입에 맞춤)
+const now = new Date();
+const mockBatchResult = (total: number, success: number, failed: number) => ({
+  total,
+  success,
+  failed,
+  skipped: 0,
+  results: [],
+  startedAt: now,
+  completedAt: now,
+  durationMs: 1000,
+});
+
 const mockPriceResult = {
-  cosmetic: { total: 100, success: 95, failed: 5 },
-  supplement: { total: 80, success: 78, failed: 2 },
-  workout_equipment: { total: 50, success: 50, failed: 0 },
-  health_food: { total: 60, success: 55, failed: 5 },
+  cosmetic: mockBatchResult(100, 95, 5),
+  supplement: mockBatchResult(80, 78, 2),
+  workout_equipment: mockBatchResult(50, 50, 0),
+  health_food: mockBatchResult(60, 55, 5),
 };
 
 describe('GET /api/cron/update-prices', () => {
