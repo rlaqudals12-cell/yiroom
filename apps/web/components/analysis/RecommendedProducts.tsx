@@ -18,6 +18,10 @@ import type {
   SkinConcern,
   PersonalColorSeason,
   TargetMuscle,
+  HairType,
+  ScalpType,
+  FaceShape,
+  Undertone,
 } from '@/types/product';
 import type { UserProfile } from '@/lib/products/matching';
 
@@ -158,8 +162,8 @@ export function RecommendedProducts({
             const { hairType, scalpType, hairConcerns } = analysisResult;
             if (hairType || scalpType) {
               userProfile = {
-                hairType,
-                scalpType,
+                hairType: hairType as HairType | undefined,
+                scalpType: scalpType as ScalpType | undefined,
                 hairConcerns: hairConcerns || [],
               };
               // 4개 헤어케어 카테고리 병렬 조회
@@ -190,8 +194,8 @@ export function RecommendedProducts({
             const { undertone, faceShape, seasonType: season } = analysisResult;
             if (undertone || faceShape) {
               userProfile = {
-                undertone,
-                faceShape,
+                undertone: undertone as Undertone | undefined,
+                faceShape: faceShape as FaceShape | undefined,
                 ...(season ? { personalColorSeason: season } : {}),
               };
               fetchedProducts = await getCosmeticProducts(

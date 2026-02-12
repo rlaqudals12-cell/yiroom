@@ -14,6 +14,10 @@ import type {
   SkinType,
   SkinConcern,
   PersonalColorSeason,
+  HairType,
+  ScalpType,
+  FaceShape,
+  Undertone,
 } from '@/types/product';
 import { getProductType } from './services/search';
 
@@ -38,13 +42,13 @@ export interface UserProfile {
   dietaryRestrictions?: string[];
 
   // H-1 헤어 분석
-  hairType?: string;
-  scalpType?: string;
+  hairType?: HairType;
+  scalpType?: ScalpType;
   hairConcerns?: string[];
 
   // M-1 메이크업 분석
-  undertone?: string; // 허용: 'warm' | 'cool' | 'neutral'
-  faceShape?: string; // 허용: 'oval' | 'round' | 'square' | 'heart' | 'oblong'
+  undertone?: Undertone;
+  faceShape?: FaceShape;
 }
 
 /**
@@ -154,16 +158,29 @@ function calculateCosmeticMatchScore(product: CosmeticProduct, profile: UserProf
     }
   }
 
-  // 언더톤 매칭 - 메이크업 추가 점수 (15점, M-1)
+  // 언더톤 매칭 - 메이크업 (15점, M-1)
   if (product.category === 'makeup' && profile.undertone) {
-    // 언더톤 기반 색상 적합도 (제품 키워드/태그에 언더톤 정보가 있을 때)
     const undertoneLabel = getUndertoneLabel(profile.undertone);
-    reasons.push({
-      type: 'undertone',
-      label: undertoneLabel,
-      matched: true,
-    });
-    score += 15;
+    if (product.undertones && product.undertones.length > 0) {
+      // 제품에 undertones 데이터가 있으면 실매칭
+      const undertoneMatched = product.undertones.includes(profile.undertone);
+      reasons.push({
+        type: 'undertone',
+        label: undertoneLabel,
+        matched: undertoneMatched,
+      });
+      if (undertoneMatched) {
+        score += 15;
+      }
+    } else {
+      // 제품에 undertones 데이터 없으면 프로필 완성도 보너스 (5점)
+      reasons.push({
+        type: 'undertone',
+        label: undertoneLabel,
+        matched: false,
+      });
+      score += 5;
+    }
   }
 
   return {
@@ -216,17 +233,22 @@ function calculateHaircareMatchScore(
     }
   }
 
-  // 두피 타입 매칭 (30점) — 제품 skinTypes 필드 재활용 (두피도 dry/oily/sensitive)
-  if (profile.scalpType && product.skinTypes) {
-    const scalpMatched = product.skinTypes.includes(profile.scalpType as SkinType);
+  // 두피 타입 매칭 (30점) — scalpTypes 우선, skinTypes 폴백
+  if (profile.scalpType) {
     const scalpLabel = getScalpTypeLabel(profile.scalpType);
-    reasons.push({
-      type: 'scalpType',
-      label: scalpLabel,
-      matched: scalpMatched,
-    });
-    if (scalpMatched) {
-      score += 30;
+    // scalpTypes가 있으면 사용, 없으면 skinTypes로 폴백 (dry/oily/sensitive 호환)
+    const targetTypes =
+      product.scalpTypes && product.scalpTypes.length > 0 ? product.scalpTypes : product.skinTypes;
+    if (targetTypes && targetTypes.length > 0) {
+      const scalpMatched = targetTypes.includes(profile.scalpType as ScalpType & SkinType);
+      reasons.push({
+        type: 'scalpType',
+        label: scalpLabel,
+        matched: scalpMatched,
+      });
+      if (scalpMatched) {
+        score += 30;
+      }
     }
   }
 

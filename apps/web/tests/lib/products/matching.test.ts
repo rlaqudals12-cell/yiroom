@@ -617,6 +617,20 @@ describe('헤어케어 매칭 (H-1)', () => {
     );
   });
 
+  it('scalpTypes 필드가 있으면 skinTypes 대신 사용', () => {
+    const productWithScalpTypes: CosmeticProduct = {
+      ...mockShampooProduct,
+      scalpTypes: ['dry', 'sensitive'],
+      skinTypes: ['oily'], // skinTypes는 무시되어야 함
+    };
+    const profile: UserProfile = { scalpType: 'dry' };
+    const result = calculateMatchScore(productWithScalpTypes, profile);
+
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'scalpType', matched: true })
+    );
+  });
+
   it('모발 고민 매칭 시 concern reason 추가', () => {
     const profile: UserProfile = {
       hairConcerns: ['hydration'],
@@ -684,11 +698,21 @@ describe('메이크업 언더톤 매칭 (M-1)', () => {
     category: 'makeup',
     subcategory: 'lip',
     personalColorSeasons: ['Summer'],
+    undertones: ['cool', 'neutral'],
     priceKrw: 25000,
     rating: 4.3,
   };
 
-  it('메이크업 제품 + undertone 프로필 시 undertone reason 추가 (15점)', () => {
+  const mockMakeupNoUndertones: CosmeticProduct = {
+    id: 'makeup-ut-2',
+    name: '립스틱',
+    brand: '테스트 브랜드',
+    category: 'makeup',
+    subcategory: 'lip',
+    priceKrw: 20000,
+  };
+
+  it('메이크업 제품 + undertone 프로필 시 undertone 실매칭 (15점)', () => {
     const profile: UserProfile = {
       undertone: 'cool',
     };
@@ -700,6 +724,20 @@ describe('메이크업 언더톤 매칭 (M-1)', () => {
     );
     // 기본 20 + undertone 15 = 35 이상
     expect(result.score).toBeGreaterThanOrEqual(35);
+  });
+
+  it('undertone 데이터 없는 메이크업 제품 → 프로필 보너스 (5점)', () => {
+    const profile: UserProfile = {
+      undertone: 'warm',
+    };
+
+    const result = calculateMatchScore(mockMakeupNoUndertones, profile);
+
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'undertone', matched: false })
+    );
+    // 기본 20 + undertone 보너스 5 = 25 이상
+    expect(result.score).toBeGreaterThanOrEqual(25);
   });
 
   it('personalColor + undertone 복합 매칭', () => {

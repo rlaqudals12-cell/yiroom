@@ -52,6 +52,18 @@ export type SkinConcern =
   | 'pore' // 모공
   | 'redness'; // 홍조
 
+/** 모발 타입 */
+export type HairType = 'straight' | 'wavy' | 'curly' | 'coily';
+
+/** 두피 타입 (SkinType 중 해당 값) */
+export type ScalpType = 'dry' | 'oily' | 'sensitive' | 'normal';
+
+/** 얼굴형 */
+export type FaceShape = 'oval' | 'round' | 'square' | 'heart' | 'oblong';
+
+/** 언더톤 */
+export type Undertone = 'warm' | 'cool' | 'neutral';
+
 /** 퍼스널 컬러 시즌 */
 export type PersonalColorSeason = 'Spring' | 'Summer' | 'Autumn' | 'Winter';
 
@@ -77,10 +89,12 @@ export interface CosmeticProduct {
   personalColorSeasons?: PersonalColorSeason[];
 
   // 헤어케어 매칭 (H-1)
-  hairTypes?: string[]; // 적합 모발 타입 (straight, wavy, curly, coily)
+  hairTypes?: HairType[]; // 적합 모발 타입
+  scalpTypes?: ScalpType[]; // 적합 두피 타입
 
   // 메이크업 매칭 (M-1)
-  faceShapes?: string[]; // 적합 얼굴형 (oval, round, square, heart, oblong)
+  faceShapes?: FaceShape[]; // 적합 얼굴형
+  undertones?: Undertone[]; // 적합 언더톤
 
   // 메타데이터
   imageUrl?: string;
@@ -106,8 +120,10 @@ export interface CosmeticProductFilter {
   skinTypes?: SkinType[];
   concerns?: SkinConcern[];
   personalColorSeasons?: PersonalColorSeason[];
-  hairTypes?: string[];
-  faceShapes?: string[];
+  hairTypes?: HairType[];
+  scalpTypes?: ScalpType[];
+  faceShapes?: FaceShape[];
+  undertones?: Undertone[];
   priceRange?: PriceRange;
   minRating?: number;
 }
@@ -212,7 +228,9 @@ export interface CosmeticProductRow {
   avoid_ingredients: string[] | null;
   personal_color_seasons: string[] | null;
   hair_types: string[] | null;
+  scalp_types: string[] | null;
   face_shapes: string[] | null;
+  undertones: string[] | null;
   image_url: string | null;
   purchase_url: string | null;
   affiliate_url: string | null;
@@ -268,8 +286,10 @@ export function toCosmeticProduct(row: CosmeticProductRow): CosmeticProduct {
     keyIngredients: row.key_ingredients ?? undefined,
     avoidIngredients: row.avoid_ingredients ?? undefined,
     personalColorSeasons: row.personal_color_seasons as PersonalColorSeason[] | undefined,
-    hairTypes: row.hair_types ?? undefined,
-    faceShapes: row.face_shapes ?? undefined,
+    hairTypes: row.hair_types as HairType[] | undefined,
+    scalpTypes: row.scalp_types as ScalpType[] | undefined,
+    faceShapes: row.face_shapes as FaceShape[] | undefined,
+    undertones: row.undertones as Undertone[] | undefined,
     imageUrl: row.image_url ?? undefined,
     purchaseUrl: row.purchase_url ?? undefined,
     affiliateUrl: row.affiliate_url ?? undefined,
