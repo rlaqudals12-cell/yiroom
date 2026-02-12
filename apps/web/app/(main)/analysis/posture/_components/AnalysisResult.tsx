@@ -33,6 +33,13 @@ function StatusIcon({ status }: { status: 'good' | 'warning' | 'alert' }) {
   return <AlertTriangle className="w-4 h-4 text-red-500" />;
 }
 
+// 상태별 한국어 라벨
+function getStatusLabel(status: 'good' | 'warning' | 'alert'): string {
+  if (status === 'good') return '양호';
+  if (status === 'warning') return '주의';
+  return '개선 필요';
+}
+
 // 측정값 바 컴포넌트
 function MeasurementBar({ measurement }: { measurement: PostureMeasurement }) {
   // 50이 이상적이므로, 50에서 얼마나 떨어졌는지 표시
@@ -46,22 +53,35 @@ function MeasurementBar({ measurement }: { measurement: PostureMeasurement }) {
           <StatusIcon status={measurement.status} />
           <span className="text-sm font-medium text-foreground">{measurement.name}</span>
         </div>
-        <span
-          className={`text-sm font-semibold ${
-            measurement.status === 'good'
-              ? 'text-green-500'
-              : measurement.status === 'warning'
-                ? 'text-amber-500'
-                : 'text-red-500'
-          }`}
-        >
-          {measurement.value}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className={`text-xs px-1.5 py-0.5 rounded ${
+              measurement.status === 'good'
+                ? 'bg-green-100 text-green-700'
+                : measurement.status === 'warning'
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-red-100 text-red-700'
+            }`}
+          >
+            {getStatusLabel(measurement.status)}
+          </span>
+          <span
+            className={`text-sm font-semibold ${
+              measurement.status === 'good'
+                ? 'text-green-500'
+                : measurement.status === 'warning'
+                  ? 'text-amber-500'
+                  : 'text-red-500'
+            }`}
+          >
+            {measurement.value}
+          </span>
+        </div>
       </div>
 
-      {/* 양방향 바 (50이 중앙) */}
+      {/* 양방향 바 (50이 중앙 = 이상적) */}
       <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-        {/* 중앙선 */}
+        {/* 중앙선 (이상적 기준) */}
         <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-400 z-10" />
 
         {/* 값 표시 바 */}
@@ -81,6 +101,25 @@ function MeasurementBar({ measurement }: { measurement: PostureMeasurement }) {
       </div>
 
       <p className="text-xs text-muted-foreground mt-1">{measurement.description}</p>
+    </div>
+  );
+}
+
+// 측정값 해석 가이드
+function MeasurementLegend() {
+  return (
+    <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground mb-3">
+      <span>중앙(50) = 이상적</span>
+      <span className="w-px h-3 bg-border" />
+      <span className="flex items-center gap-1">
+        <span className="w-2 h-2 rounded-full bg-green-400" /> 양호
+      </span>
+      <span className="flex items-center gap-1">
+        <span className="w-2 h-2 rounded-full bg-amber-400" /> 주의
+      </span>
+      <span className="flex items-center gap-1">
+        <span className="w-2 h-2 rounded-full bg-red-400" /> 개선 필요
+      </span>
     </div>
   );
 }
@@ -148,6 +187,7 @@ export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisRe
             <Target className="w-5 h-5 text-blue-500" />
             <h2 className="text-lg font-semibold text-foreground">정면 분석</h2>
           </div>
+          <MeasurementLegend />
           <div className="space-y-3">
             <MeasurementBar measurement={frontAnalysis.shoulderSymmetry} />
             <MeasurementBar measurement={frontAnalysis.pelvisSymmetry} />
@@ -157,13 +197,14 @@ export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisRe
         </section>
       </FadeInUp>
 
-      {/* 측면 분석 */}
+      {/* 옆모습 분석 */}
       <FadeInUp delay={3}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
             <Activity className="w-5 h-5 text-indigo-500" />
-            <h2 className="text-lg font-semibold text-foreground">측면 분석</h2>
+            <h2 className="text-lg font-semibold text-foreground">옆모습 분석</h2>
           </div>
+          <MeasurementLegend />
           <div className="space-y-3">
             <MeasurementBar measurement={sideAnalysis.headForwardAngle} />
             <MeasurementBar measurement={sideAnalysis.thoracicKyphosis} />

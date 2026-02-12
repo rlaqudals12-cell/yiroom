@@ -115,9 +115,7 @@ const EQUIPMENT_TYPE_WEIGHTS: Record<string, Partial<Record<WorkoutType, number>
  * @param inputData 사용자 온보딩 입력 데이터
  * @returns 분류된 운동 타입과 분류 이유
  */
-export function classifyWorkoutType(
-  inputData: Partial<WorkoutInputData>
-): WorkoutTypeResult {
+export function classifyWorkoutType(inputData: Partial<WorkoutInputData>): WorkoutTypeResult {
   const scores: Record<WorkoutType, number> = {
     toner: 0,
     builder: 0,
@@ -214,8 +212,8 @@ export function classifyWorkoutType(
   const typeInfo = WORKOUT_TYPE_INFO[resultType];
   const reason =
     reasons.length > 0
-      ? `${reasons.join('와 ')}에 맞춰 ${typeInfo.label} 타입을 추천합니다.`
-      : `${typeInfo.label} 타입을 추천합니다.`;
+      ? `${reasons.join('와 ')}에 맞춰 ${typeInfo.label} 타입을 추천해요.`
+      : `${typeInfo.label} 타입을 추천해요.`;
 
   return {
     type: resultType,

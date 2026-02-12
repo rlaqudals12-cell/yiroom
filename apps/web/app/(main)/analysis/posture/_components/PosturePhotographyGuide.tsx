@@ -31,8 +31,8 @@ const GUIDE_TIPS = [
   },
   {
     icon: Eye,
-    title: '정면 + 측면',
-    description: '정면(필수)과 측면(선택) 사진을 촬영해주세요',
+    title: '정면 + 옆모습',
+    description: '정면(필수)과 옆모습(선택) 사진을 촬영해주세요',
   },
 ];
 

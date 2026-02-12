@@ -67,7 +67,7 @@ export default function HistoryPage() {
         setIsLoading(false);
       } catch (err) {
         console.error('Failed to load data:', err);
-        setError('기록을 불러오는데 실패했습니다.');
+        setError('기록을 불러오는데 실패했어요.');
         setIsLoading(false);
       }
     };
@@ -170,7 +170,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="min-h-screen bg-muted" data-testid="workout-history-page">
       {/* 헤더 */}
       <header className="bg-card border-b border-border sticky top-0 z-10">
         <div className="px-4 py-4 flex items-center justify-between">

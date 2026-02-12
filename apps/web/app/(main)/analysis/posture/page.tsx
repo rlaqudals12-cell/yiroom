@@ -214,7 +214,7 @@ export default function PostureAnalysisPage() {
       case 'front-upload':
         return '정면 전신 사진을 촬영해주세요';
       case 'side-upload':
-        return '측면 사진을 촬영해주세요 (선택)';
+        return '옆모습 사진을 촬영해주세요 (선택)';
       case 'loading':
         return isAnalyzing ? 'AI가 분석 중이에요...' : 'AI가 분석 중이에요';
       case 'result':
@@ -287,11 +287,14 @@ export default function PostureAnalysisPage() {
             <div className="space-y-4">
               <PhotoUpload onPhotoSelect={handleSidePhotoSelect} angle="side" />
               <Button variant="outline" onClick={handleSkipSidePhoto} className="w-full">
-                측면 사진 건너뛰기
+                옆모습 사진 건너뛰기
               </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                측면 사진을 추가하면 더 정확한 분석이 가능해요
-              </p>
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-xs text-amber-700 text-center">
+                  옆모습 사진을 추가하면 거북목, 등 굽음, 골반 기울기까지 분석할 수 있어요. 건너뛰면
+                  정면 분석만 제공돼요.
+                </p>
+              </div>
             </div>
           )}
 

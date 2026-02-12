@@ -14,7 +14,7 @@ function PostureGuideOverlay({ angle }: { angle: 'front' | 'side' }) {
     <div className="w-32 h-72 border-2 border-muted-foreground rounded-lg opacity-50 flex flex-col items-center justify-center">
       <User className="w-20 h-20 text-muted-foreground opacity-60" />
       <span className="text-xs text-muted-foreground mt-2">
-        {angle === 'front' ? '정면' : '측면'}
+        {angle === 'front' ? '정면' : '옆모습'}
       </span>
     </div>
   );
@@ -29,7 +29,7 @@ const POSTURE_TIPS = {
     '팔은 자연스럽게 내려주세요',
   ],
   side: [
-    '측면에서 전신이 보이게 촬영해주세요',
+    '옆모습에서 전신이 보이게 촬영해주세요',
     '귀-어깨-골반-무릎-발목 라인이 보이도록',
     '고개를 정면을 향하고 자연스럽게 서주세요',
     '팔은 자연스럽게 내려주세요',
@@ -43,7 +43,7 @@ export default function PhotoUpload({ onPhotoSelect, angle }: PhotoUploadProps) 
       guideElement={<PostureGuideOverlay angle={angle} />}
       tips={POSTURE_TIPS[angle]}
       captureMode="environment"
-      guideText={`${angle === 'front' ? '정면' : '측면'} 전신이 가이드 안에 오도록`}
+      guideText={`${angle === 'front' ? '정면' : '옆모습'} 전신이 가이드 안에 오도록`}
       guideSubText="맞춰주세요"
     />
   );

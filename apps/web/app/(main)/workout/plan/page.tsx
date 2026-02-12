@@ -4,10 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkoutInputStore } from '@/lib/stores/workoutInputStore';
 import { classifyWorkoutType } from '@/lib/workout/classifyWorkoutType';
-import {
-  createWeeklyPlanFromInput,
-  generatePlanSummary,
-} from '@/lib/workout/weeklyPlan';
+import { createWeeklyPlanFromInput, generatePlanSummary } from '@/lib/workout/weeklyPlan';
 import { validateAllSteps } from '@/lib/utils/workoutValidation';
 import {
   WeeklyPlanCard,
@@ -37,7 +34,7 @@ export default function PlanPage() {
     // 유효성 검증
     const validation = validateAllSteps(inputData);
     if (!validation.isValid) {
-      setError('필수 정보가 누락되었습니다. 다시 시작해주세요.');
+      setError('필수 정보가 누락됐어요. 다시 시작해주세요.');
       setIsLoading(false);
       return;
     }
@@ -68,7 +65,7 @@ export default function PlanPage() {
         }
       } catch (err) {
         console.error('Plan generation error:', err);
-        setError('플랜 생성 중 오류가 발생했습니다.');
+        setError('플랜 생성 중 오류가 발생했어요.');
       } finally {
         setIsLoading(false);
       }
@@ -108,22 +105,13 @@ export default function PlanPage() {
   // 로딩 상태
   if (isLoading) {
     return (
-      <AnalyzingLoader
-        title="주간 플랜 생성 중"
-        subtitle="맞춤 운동 플랜을 준비하고 있어요..."
-      />
+      <AnalyzingLoader title="주간 플랜 생성 중" subtitle="맞춤 운동 플랜을 준비하고 있어요..." />
     );
   }
 
   // 에러 상태
   if (error) {
-    return (
-      <ErrorState
-        message={error}
-        onRetry={handleRestart}
-        retryLabel="다시 시작"
-      />
-    );
+    return <ErrorState message={error} onRetry={handleRestart} retryLabel="다시 시작" />;
   }
 
   // 플랜 없음
@@ -134,7 +122,7 @@ export default function PlanPage() {
   const summary = generatePlanSummary(plan);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="workout-plan-page">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <button

@@ -1,8 +1,8 @@
 /**
  * W-1 운동 추천 API 테스트
  * @description POST /api/workout/recommend 테스트
- * @version 1.0
- * @date 2025-12-09
+ * @version 2.0
+ * @date 2026-02-13
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -114,7 +114,9 @@ const mockRecommendationResult = {
 describe('POST /api/workout/recommend', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<ReturnType<typeof auth>>);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
+      ReturnType<typeof auth>
+    >);
     vi.mocked(getAllExercises).mockReturnValue(mockExercises);
     vi.mocked(getExerciseById).mockImplementation((id) => mockExercises.find((e) => e.id === id));
     vi.mocked(generateMockExerciseRecommendation).mockReturnValue(mockRecommendationResult);
@@ -124,10 +126,12 @@ describe('POST /api/workout/recommend', () => {
     it('인증되지 않은 요청은 401을 반환한다', async () => {
       vi.mocked(auth).mockResolvedValue({ userId: null } as Awaited<ReturnType<typeof auth>>);
 
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(401);
@@ -137,9 +141,11 @@ describe('POST /api/workout/recommend', () => {
 
   describe('입력 검증', () => {
     it('workoutType이 없으면 400을 반환한다', async () => {
-      const response = await POST(createMockPostRequest({
-        goals: ['strength'],
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          goals: ['strength'],
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(400);
@@ -147,10 +153,12 @@ describe('POST /api/workout/recommend', () => {
     });
 
     it('유효하지 않은 workoutType은 400을 반환한다', async () => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'invalid_type',
-        goals: ['strength'],
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'invalid_type',
+          goals: ['strength'],
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(400);
@@ -158,9 +166,11 @@ describe('POST /api/workout/recommend', () => {
     });
 
     it('goals가 없으면 400을 반환한다', async () => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(400);
@@ -168,10 +178,12 @@ describe('POST /api/workout/recommend', () => {
     });
 
     it('goals가 빈 배열이면 400을 반환한다', async () => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: [],
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: [],
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(400);
@@ -183,11 +195,13 @@ describe('POST /api/workout/recommend', () => {
     const validTypes = ['toner', 'builder', 'burner', 'mover', 'flexer'];
 
     it.each(validTypes)('workoutType=%s 는 유효하다', async (type) => {
-      const response = await POST(createMockPostRequest({
-        workoutType: type,
-        goals: ['strength'],
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: type,
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -197,11 +211,13 @@ describe('POST /api/workout/recommend', () => {
 
   describe('Mock 추천', () => {
     it('useMock=true이면 Mock 추천을 사용한다', async () => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -211,19 +227,21 @@ describe('POST /api/workout/recommend', () => {
     });
 
     it('모든 옵션과 함께 추천이 가능하다', async () => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'builder',
-        bodyType: 'hourglass',
-        goals: ['muscle', 'strength'],
-        concerns: ['upper_body'],
-        injuries: [],
-        equipment: ['dumbbell', 'barbell'],
-        location: 'gym',
-        userLevel: 'intermediate',
-        sessionMinutes: 45,
-        userWeight: 65,
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'builder',
+          bodyType: 'hourglass',
+          goals: ['muscle', 'strength'],
+          concerns: ['upper_body'],
+          injuries: [],
+          equipment: ['dumbbell', 'barbell'],
+          location: 'gym',
+          userLevel: 'intermediate',
+          sessionMinutes: 45,
+          userWeight: 65,
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -235,10 +253,12 @@ describe('POST /api/workout/recommend', () => {
     it('AI 추천 성공 시 결과를 반환한다', async () => {
       vi.mocked(recommendExercises).mockResolvedValue(mockRecommendationResult);
 
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -249,10 +269,12 @@ describe('POST /api/workout/recommend', () => {
     it('AI 추천 실패 시 Mock으로 폴백한다', async () => {
       vi.mocked(recommendExercises).mockRejectedValue(new Error('API Error'));
 
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -263,12 +285,14 @@ describe('POST /api/workout/recommend', () => {
 
   describe('운동 장소 검증', () => {
     it('유효하지 않은 location은 home으로 기본값이 설정된다', async () => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-        location: 'invalid_location',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          location: 'invalid_location',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -276,12 +300,14 @@ describe('POST /api/workout/recommend', () => {
     });
 
     it.each(['home', 'gym', 'outdoor'])('location=%s 는 유효하다', async (location) => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-        location,
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          location,
+          useMock: true,
+        })
+      );
       await response.json();
 
       expect(response.status).toBe(200);
@@ -290,12 +316,14 @@ describe('POST /api/workout/recommend', () => {
 
   describe('운동 레벨 검증', () => {
     it('유효하지 않은 userLevel은 beginner로 기본값이 설정된다', async () => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-        userLevel: 'invalid_level',
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          userLevel: 'invalid_level',
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -303,12 +331,14 @@ describe('POST /api/workout/recommend', () => {
     });
 
     it.each(['beginner', 'intermediate', 'advanced'])('userLevel=%s 는 유효하다', async (level) => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-        userLevel: level,
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          userLevel: level,
+          useMock: true,
+        })
+      );
       await response.json();
 
       expect(response.status).toBe(200);
@@ -317,11 +347,13 @@ describe('POST /api/workout/recommend', () => {
 
   describe('응답 형식', () => {
     it('성공 응답에 필수 필드가 포함된다', async () => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(json).toHaveProperty('success', true);
@@ -350,11 +382,13 @@ describe('POST /api/workout/recommend', () => {
     });
 
     it('추천된 운동에 상세 정보가 포함된다', async () => {
-      const response = await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-        useMock: true,
-      }));
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
       const json = await response.json();
 
       expect(json.exercises.main).toHaveLength(2);
@@ -373,11 +407,13 @@ describe('POST /api/workout/recommend', () => {
         return mockRecommendationResult;
       });
 
-      await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-        useMock: true,
-      }));
+      await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
 
       expect(generateMockExerciseRecommendation).toHaveBeenCalled();
     });
@@ -388,11 +424,13 @@ describe('POST /api/workout/recommend', () => {
         return mockRecommendationResult;
       });
 
-      await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-        useMock: true,
-      }));
+      await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
 
       expect(generateMockExerciseRecommendation).toHaveBeenCalled();
     });
@@ -403,14 +441,332 @@ describe('POST /api/workout/recommend', () => {
         return mockRecommendationResult;
       });
 
-      await POST(createMockPostRequest({
-        workoutType: 'toner',
-        goals: ['strength'],
-        sessionMinutes: 60,
-        useMock: true,
-      }));
+      await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          sessionMinutes: 60,
+          useMock: true,
+        })
+      );
 
       expect(generateMockExerciseRecommendation).toHaveBeenCalled();
+    });
+
+    it('사용자 지정 userWeight가 적용된다', async () => {
+      vi.mocked(generateMockExerciseRecommendation).mockImplementation((input) => {
+        expect(input.userWeight).toBe(75);
+        return mockRecommendationResult;
+      });
+
+      await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          userWeight: 75,
+          useMock: true,
+        })
+      );
+
+      expect(generateMockExerciseRecommendation).toHaveBeenCalled();
+    });
+  });
+
+  describe('엣지 케이스', () => {
+    it('goals가 배열이 아니면 400을 반환한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: 'strength',
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(json.error).toBe('Goals are required');
+    });
+
+    it('존재하지 않는 exerciseId는 결과에서 필터링된다', async () => {
+      const resultWithUnknown = {
+        ...mockRecommendationResult,
+        dailyExercises: [
+          ...mockRecommendationResult.dailyExercises,
+          {
+            exerciseId: 'unknown_exercise',
+            reason: '알 수 없는 운동',
+            sets: 3,
+            reps: 10,
+            restSeconds: 60,
+            priority: 3,
+          },
+        ],
+      };
+      vi.mocked(generateMockExerciseRecommendation).mockReturnValue(resultWithUnknown);
+
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      // unknown_exercise는 getExerciseById에서 undefined 반환 -> filter(Boolean)으로 제거
+      expect(json.exercises.main).toHaveLength(2);
+    });
+
+    it('warmup/cooldown에 존재하지 않는 ID가 있으면 필터링된다', async () => {
+      const resultWithUnknownWarmup = {
+        ...mockRecommendationResult,
+        warmupExercises: ['plank', 'nonexistent_warmup'],
+        cooldownExercises: ['nonexistent_cooldown'],
+      };
+      vi.mocked(generateMockExerciseRecommendation).mockReturnValue(resultWithUnknownWarmup);
+
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      // plank만 존재, nonexistent_warmup은 필터링
+      expect(json.exercises.warmup).toHaveLength(1);
+      // nonexistent_cooldown은 필터링
+      expect(json.exercises.cooldown).toHaveLength(0);
+    });
+
+    it('concerns와 injuries가 undefined여도 정상 동작한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'burner',
+          goals: ['weight_loss'],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+    });
+
+    it('equipment가 빈 배열이어도 정상 동작한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          equipment: [],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+    });
+  });
+
+  describe('AI 입력 데이터 구성', () => {
+    it('getAllExercises가 호출되어 운동 DB를 로드한다', async () => {
+      await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+
+      expect(getAllExercises).toHaveBeenCalledTimes(1);
+    });
+
+    it('AI 추천 입력에 운동 데이터가 포함된다', async () => {
+      vi.mocked(generateMockExerciseRecommendation).mockImplementation((input) => {
+        expect(input.availableExercises).toHaveLength(mockExercises.length);
+        expect(input.availableExercises[0]).toHaveProperty('id');
+        expect(input.availableExercises[0]).toHaveProperty('name');
+        expect(input.availableExercises[0]).toHaveProperty('category');
+        expect(input.availableExercises[0]).toHaveProperty('met');
+        return mockRecommendationResult;
+      });
+
+      await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+
+      expect(generateMockExerciseRecommendation).toHaveBeenCalled();
+    });
+
+    it('location이 undefined이면 home으로 기본값이 적용된다', async () => {
+      vi.mocked(generateMockExerciseRecommendation).mockImplementation((input) => {
+        expect(input.location).toBe('home');
+        return mockRecommendationResult;
+      });
+
+      await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+
+      expect(generateMockExerciseRecommendation).toHaveBeenCalled();
+    });
+
+    it('userLevel이 undefined이면 beginner로 기본값이 적용된다', async () => {
+      vi.mocked(generateMockExerciseRecommendation).mockImplementation((input) => {
+        expect(input.userLevel).toBe('beginner');
+        return mockRecommendationResult;
+      });
+
+      await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+
+      expect(generateMockExerciseRecommendation).toHaveBeenCalled();
+    });
+  });
+
+  describe('내부 서버 에러', () => {
+    it('예기치 않은 에러 발생 시 500을 반환한다', async () => {
+      vi.mocked(auth).mockRejectedValue(new Error('Unexpected Error'));
+
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.error).toBe('Internal server error');
+    });
+
+    it('req.json() 파싱 실패 시 500을 반환한다', async () => {
+      const badRequest = {
+        url: 'http://localhost/api/workout/recommend',
+        json: () => Promise.reject(new Error('Invalid JSON')),
+      } as Request;
+
+      const response = await POST(badRequest);
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.error).toBe('Internal server error');
+    });
+  });
+
+  describe('응답 summary 구조', () => {
+    it('summary.totalExercises가 main 운동 수와 일치한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.summary.totalExercises).toBe(json.exercises.main.length);
+    });
+
+    it('summary.estimatedMinutes가 숫자이다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(typeof json.summary.estimatedMinutes).toBe('number');
+    });
+
+    it('summary.estimatedCalories가 숫자이다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(typeof json.summary.estimatedCalories).toBe('number');
+    });
+
+    it('summary.focusBodyParts가 배열이다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(Array.isArray(json.summary.focusBodyParts)).toBe(true);
+    });
+
+    it('result.recommendedAt이 ISO 날짜 형식이다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.result.recommendedAt).toBeDefined();
+      // ISO 8601 형식 검증
+      expect(new Date(json.result.recommendedAt).toISOString()).toBe(json.result.recommendedAt);
+    });
+  });
+
+  describe('warmup/cooldown 운동', () => {
+    it('warmup 운동 상세 정보가 반환된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.exercises.warmup).toHaveLength(1);
+      expect(json.exercises.warmup[0]).toHaveProperty('id', 'plank');
+      expect(json.exercises.warmup[0]).toHaveProperty('name', '플랭크');
+    });
+
+    it('cooldown 운동 상세 정보가 반환된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          workoutType: 'toner',
+          goals: ['strength'],
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.exercises.cooldown).toHaveLength(1);
+      expect(json.exercises.cooldown[0]).toHaveProperty('id', 'plank');
     });
   });
 });

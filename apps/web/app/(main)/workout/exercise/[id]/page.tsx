@@ -55,12 +55,8 @@ export default function ExerciseDetailPage() {
         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
           <span className="text-3xl">🔍</span>
         </div>
-        <h2 className="text-lg font-bold text-foreground">
-          운동을 찾을 수 없습니다
-        </h2>
-        <p className="text-muted-foreground text-center">
-          요청하신 운동 정보를 찾을 수 없어요.
-        </p>
+        <h2 className="text-lg font-bold text-foreground">운동을 찾을 수 없어요</h2>
+        <p className="text-muted-foreground text-center">요청하신 운동 정보를 찾을 수 없어요.</p>
         <button
           onClick={() => router.back()}
           className="px-6 py-3 bg-indigo-500 text-white font-medium rounded-xl hover:bg-indigo-600 transition-colors"
@@ -86,9 +82,7 @@ export default function ExerciseDetailPage() {
         >
           <ArrowLeft className="w-5 h-5 text-foreground/80" />
         </button>
-        <h1 className="text-lg font-bold text-foreground truncate">
-          {exercise.name}
-        </h1>
+        <h1 className="text-lg font-bold text-foreground truncate">{exercise.name}</h1>
       </div>
 
       {/* 영상 또는 썸네일 영역 */}
@@ -109,9 +103,7 @@ export default function ExerciseDetailPage() {
       {/* 기본 정보 */}
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
         <h2 className="text-2xl font-bold text-foreground mb-1">{exercise.name}</h2>
-        {exercise.nameEn && (
-          <p className="text-sm text-muted-foreground mb-4">{exercise.nameEn}</p>
-        )}
+        {exercise.nameEn && <p className="text-sm text-muted-foreground mb-4">{exercise.nameEn}</p>}
 
         {/* 타겟 부위 */}
         <div className="flex flex-wrap gap-2 mb-4">

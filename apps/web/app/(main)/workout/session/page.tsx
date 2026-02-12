@@ -202,7 +202,7 @@ function SessionPageContent() {
         );
 
         if (!result) {
-          throw new Error('운동 기록 저장에 실패했습니다.');
+          throw new Error('운동 기록 저장에 실패했어요.');
         }
 
         // 최신 streak 조회
@@ -387,7 +387,7 @@ function SessionPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="min-h-screen bg-muted" data-testid="workout-session-page">
       {/* 헤더 */}
       <WorkoutSessionHeader
         dayLabel={dayPlan.dayLabel}

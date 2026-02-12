@@ -4,15 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import {
-  Dumbbell,
-  Play,
-  History,
-  BarChart3,
-  Flame,
-  Trophy,
-  ChevronRight,
-} from 'lucide-react';
+import { Dumbbell, Play, History, BarChart3, Flame, Trophy, ChevronRight } from 'lucide-react';
 import { getLatestWorkoutAnalysisAction, getWorkoutStreakAction } from './actions';
 import type { WorkoutAnalysis, WorkoutStreak } from '@/lib/api/workout';
 import { WORKOUT_TYPE_INFO } from '@/lib/workout/classifyWorkoutType';
@@ -76,16 +68,13 @@ export default function WorkoutPage() {
   const typeInfo = WORKOUT_TYPE_INFO[analysis.workout_type];
 
   return (
-    <div className="container max-w-lg mx-auto px-4 py-6 space-y-6">
+    <div className="container max-w-lg mx-auto px-4 py-6 space-y-6" data-testid="workout-page">
       {/* 헤더 */}
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Dumbbell className="h-6 w-6" />
-          내 운동
+          <Dumbbell className="h-6 w-6" />내 운동
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          오늘도 건강한 하루를 시작해보세요!
-        </p>
+        <p className="text-sm text-muted-foreground mt-1">오늘도 건강한 하루를 시작해보세요!</p>
       </div>
 
       {/* 운동 타입 카드 */}
@@ -99,9 +88,7 @@ export default function WorkoutPage() {
             </div>
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">내 운동 타입</p>
-              <p className={`text-xl font-bold ${typeInfo.color}`}>
-                {typeInfo.label}
-              </p>
+              <p className={`text-xl font-bold ${typeInfo.color}`}>{typeInfo.label}</p>
               <p className="text-sm text-muted-foreground">
                 {typeInfo.description.slice(0, 30)}...
               </p>
@@ -120,9 +107,7 @@ export default function WorkoutPage() {
             <div>
               <p className="text-orange-100 text-sm">오늘의 운동</p>
               <p className="text-xl font-bold mt-1">준비되셨나요?</p>
-              <p className="text-orange-100 text-sm mt-1">
-                운동을 시작하고 기록을 남겨보세요
-              </p>
+              <p className="text-orange-100 text-sm mt-1">운동을 시작하고 기록을 남겨보세요</p>
             </div>
             <Button
               variant="secondary"
@@ -153,9 +138,7 @@ export default function WorkoutPage() {
                   {streak.current_streak}
                   <span className="text-lg text-muted-foreground">일</span>
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  현재 연속 기록
-                </p>
+                <p className="text-sm text-muted-foreground">현재 연속 기록</p>
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -221,12 +204,8 @@ function OnboardingPrompt() {
 
         {/* 텍스트 */}
         <div className="space-y-2">
-          <h2 className="text-xl font-bold text-foreground">
-            나만의 운동 플랜
-          </h2>
-          <p className="text-muted-foreground">
-            체형에 맞는 맞춤 운동을 추천해드려요
-          </p>
+          <h2 className="text-xl font-bold text-foreground">나만의 운동 플랜</h2>
+          <p className="text-muted-foreground">체형에 맞는 맞춤 운동을 추천해드려요</p>
         </div>
 
         {/* 시작 버튼 */}

@@ -206,7 +206,7 @@ export default function ResultPage() {
       {/* 축하 Confetti 효과 */}
       <Confetti trigger={showConfetti} />
 
-      <div ref={shareRef} className="space-y-6">
+      <div ref={shareRef} className="space-y-6" data-testid="workout-result-page">
         {/* 헤더 */}
         <FadeInUp>
           <div className="text-center">

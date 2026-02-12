@@ -307,6 +307,9 @@ vi.mock('lucide-react', () => ({
   Copy: createIconMock('Copy'),
   Link: createIconMock('Link'),
 
+  // Posture (PST-1)
+  ArrowUpRight: createIconMock('ArrowUpRight'),
+
   // UI Components (Icon 접미사 버전)
   XIcon: createIconMock('XIcon'),
   CheckIcon: createIconMock('CheckIcon'),

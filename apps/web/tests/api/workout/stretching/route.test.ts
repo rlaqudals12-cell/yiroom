@@ -1,6 +1,8 @@
 /**
  * W-2 스트레칭 처방 API 테스트
  * @description POST /api/workout/stretching 테스트
+ * @version 2.0
+ * @date 2026-02-13
  * @see docs/specs/SDD-W-2-ADVANCED-STRETCHING.md
  */
 
@@ -35,6 +37,7 @@ import {
   generateGeneralFlexibilityPrescription,
   generateWeeklyStretchingPlan,
 } from '@/lib/workout/stretching';
+import { logAnalysisCreate } from '@/lib/audit/logger';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { NextRequest } from 'next/server';
 import type { StretchingPrescription, WeeklyStretchingPlan } from '@/types/stretching';
@@ -169,7 +172,11 @@ describe('POST /api/workout/stretching', () => {
     vi.mocked(generateSportStretchingPrescription).mockReturnValue(mockPrescription);
     vi.mocked(generateGeneralFlexibilityPrescription).mockReturnValue(mockPrescription);
     vi.mocked(generateWeeklyStretchingPlan).mockReturnValue(mockWeeklyPlan);
-    vi.mocked(checkRateLimit).mockReturnValue({ success: true, remaining: 50, resetTime: Date.now() + 3600000 });
+    vi.mocked(checkRateLimit).mockReturnValue({
+      success: true,
+      remaining: 50,
+      resetTime: Date.now() + 3600000,
+    });
   });
 
   describe('인증', () => {
@@ -366,10 +373,7 @@ describe('POST /api/workout/stretching', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.data.prescription).toBeDefined();
-      expect(generateGeneralFlexibilityPrescription).toHaveBeenCalledWith(
-        expect.any(Object),
-        20
-      );
+      expect(generateGeneralFlexibilityPrescription).toHaveBeenCalledWith(expect.any(Object), 20);
     });
 
     it('기본 시간(15분)이 적용된다', async () => {
@@ -381,10 +385,7 @@ describe('POST /api/workout/stretching', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(generateGeneralFlexibilityPrescription).toHaveBeenCalledWith(
-        expect.any(Object),
-        15
-      );
+      expect(generateGeneralFlexibilityPrescription).toHaveBeenCalledWith(expect.any(Object), 15);
     });
   });
 
@@ -514,6 +515,402 @@ describe('POST /api/workout/stretching', () => {
           availableEquipment: ['bodyweight', 'foam_roller', 'yoga_block'],
         }),
         expect.any(Number)
+      );
+    });
+
+    it('availableEquipment 미지정 시 기본 장비가 적용된다', async () => {
+      const profileWithoutEquipment = {
+        age: 30,
+        gender: 'female' as const,
+        fitnessLevel: 'beginner' as const,
+        stretchingExperience: 'none' as const,
+      };
+
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: profileWithoutEquipment,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      // 기본값: ['bodyweight', 'wall', 'chair', 'mat']
+      expect(generateGeneralFlexibilityPrescription).toHaveBeenCalledWith(
+        expect.objectContaining({
+          availableEquipment: ['bodyweight', 'wall', 'chair', 'mat'],
+        }),
+        expect.any(Number)
+      );
+    });
+  });
+
+  describe('감사 로그', () => {
+    it('처방 생성 후 감사 로그가 기록된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: mockUserProfile,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(logAnalysisCreate).toHaveBeenCalledWith(
+        'user_test123',
+        'stretching_prescription',
+        'rx-123'
+      );
+    });
+
+    it('자세교정 처방도 감사 로그가 기록된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'posture_correction',
+          profile: mockUserProfile,
+          postureAnalysis: mockPostureAnalysis,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(logAnalysisCreate).toHaveBeenCalledWith(
+        'user_test123',
+        'stretching_prescription',
+        'rx-123'
+      );
+    });
+  });
+
+  describe('사용자 프로필 구성', () => {
+    it('userId가 프로필에 포함된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: mockUserProfile,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(generateGeneralFlexibilityPrescription).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user_test123',
+        }),
+        expect.any(Number)
+      );
+    });
+
+    it('preferredLanguage가 ko로 설정된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: mockUserProfile,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(generateGeneralFlexibilityPrescription).toHaveBeenCalledWith(
+        expect.objectContaining({
+          preferredLanguage: 'ko',
+        }),
+        expect.any(Number)
+      );
+    });
+
+    it('sportsFrequency 미지정 시 rarely가 기본값이다', async () => {
+      const profileMinimal = {
+        age: 25,
+        gender: 'male' as const,
+        fitnessLevel: 'beginner' as const,
+        stretchingExperience: 'none' as const,
+      };
+
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: profileMinimal,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(generateGeneralFlexibilityPrescription).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sportsFrequency: 'rarely',
+        }),
+        expect.any(Number)
+      );
+    });
+  });
+
+  describe('추가 입력 검증', () => {
+    it('프로필 나이가 100을 초과하면 400을 반환한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: { ...mockUserProfile, age: 101 },
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(json.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('잘못된 gender 값은 400을 반환한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: { ...mockUserProfile, gender: 'other' },
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(json.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('잘못된 fitnessLevel 값은 400을 반환한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: { ...mockUserProfile, fitnessLevel: 'elite' },
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(json.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('잘못된 stretchingExperience 값은 400을 반환한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: { ...mockUserProfile, stretchingExperience: 'expert' },
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(json.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('프로필 없이 요청하면 400을 반환한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(json.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('잘못된 sport 값은 400을 반환한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'warmup',
+          profile: mockUserProfile,
+          sport: 'basketball',
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(json.error.code).toBe('VALIDATION_ERROR');
+    });
+  });
+
+  describe('유효한 스포츠 종목', () => {
+    const validSports = ['hiking', 'running', 'golf', 'cycling', 'swimming', 'tennis'];
+
+    it.each(validSports)('sport=%s 로 워밍업 처방이 성공한다', async (sport) => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'warmup',
+          profile: mockUserProfile,
+          sport,
+          availableMinutes: 10,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(generateSportStretchingPrescription).toHaveBeenCalledWith(
+        sport,
+        'warmup',
+        expect.any(Object),
+        10
+      );
+    });
+  });
+
+  describe('유효한 purpose 값', () => {
+    it.each(['general', 'posture_correction', 'warmup', 'cooldown'] as const)(
+      'purpose=%s 는 유효하다',
+      async (purpose) => {
+        // purpose에 따라 필수 필드 추가
+        const body: Record<string, unknown> = {
+          purpose,
+          profile: mockUserProfile,
+        };
+
+        if (purpose === 'posture_correction') {
+          body.postureAnalysis = mockPostureAnalysis;
+        }
+        if (purpose === 'warmup' || purpose === 'cooldown') {
+          body.sport = 'running';
+        }
+
+        const response = await POST(createMockPostRequest(body));
+        const json = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(json.success).toBe(true);
+      }
+    );
+  });
+
+  describe('summary 구조 검증', () => {
+    it('targetMuscles가 처방의 스트레칭 대상 근육에서 추출된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: mockUserProfile,
+        })
+      );
+      const json = await response.json();
+
+      // mockPrescription의 targetMuscles: ['upper_trapezius', 'levator_scapulae']
+      expect(json.data.summary.targetMuscles).toContain('upper_trapezius');
+      expect(json.data.summary.targetMuscles).toContain('levator_scapulae');
+    });
+
+    it('warnings가 처방의 경고에서 추출된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: mockUserProfile,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.data.summary.warnings).toEqual(mockPrescription.warnings);
+    });
+
+    it('totalExercises가 처방의 스트레칭 수와 일치한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: mockUserProfile,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.data.summary.totalExercises).toBe(mockPrescription.stretches.length);
+    });
+
+    it('totalDuration이 처방의 총 시간과 일치한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: mockUserProfile,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.data.summary.totalDuration).toBe(mockPrescription.totalDuration);
+    });
+  });
+
+  describe('내부 서버 에러', () => {
+    it('처방 생성 중 에러 발생 시 500을 반환한다', async () => {
+      vi.mocked(generateGeneralFlexibilityPrescription).mockImplementation(() => {
+        throw new Error('Prescription generation failed');
+      });
+
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: mockUserProfile,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.error.code).toBe('INTERNAL_ERROR');
+      expect(json.error.message).toContain('오류');
+    });
+
+    it('auth() 에러 발생 시 500을 반환한다', async () => {
+      vi.mocked(auth).mockRejectedValue(new Error('Auth service unavailable'));
+
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: mockUserProfile,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.error.code).toBe('INTERNAL_ERROR');
+    });
+  });
+
+  describe('Rate Limiting 인증 순서', () => {
+    it('인증 실패가 rate limit보다 우선한다', async () => {
+      vi.mocked(auth).mockResolvedValue({ userId: null } as Awaited<ReturnType<typeof auth>>);
+      vi.mocked(checkRateLimit).mockReturnValue({
+        success: false,
+        remaining: 0,
+        resetTime: Date.now() + 3600000,
+      });
+
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'general',
+          profile: mockUserProfile,
+        })
+      );
+
+      // 인증이 먼저 체크되므로 401이 반환됨
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('자세교정 처방 - availableMinutes 기본값', () => {
+    it('availableMinutes 미지정 시 15분이 적용된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'posture_correction',
+          profile: mockUserProfile,
+          postureAnalysis: mockPostureAnalysis,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(generatePostureCorrectionPrescription).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object),
+        15
+      );
+    });
+  });
+
+  describe('스포츠 처방 - availableMinutes 기본값', () => {
+    it('warmup에서 availableMinutes 미지정 시 10분이 적용된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          purpose: 'warmup',
+          profile: mockUserProfile,
+          sport: 'running',
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(generateSportStretchingPrescription).toHaveBeenCalledWith(
+        'running',
+        'warmup',
+        expect.any(Object),
+        10
       );
     });
   });
