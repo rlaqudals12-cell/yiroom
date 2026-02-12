@@ -57,7 +57,7 @@ const STEP_LABELS: Record<ProcessingStep, string> = {
   processing: '이미지 처리 중...',
   classifying: 'AI 분석 중...',
   done: '완료!',
-  error: '오류가 발생했습니다',
+  error: '오류가 발생했어요',
 };
 
 const STEP_PROGRESS: Record<ProcessingStep, number> = {
@@ -142,13 +142,13 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
 
     // 유효성 검사
     if (!file.type.startsWith('image/')) {
-      setError('이미지 파일만 업로드할 수 있습니다');
+      setError('이미지 파일만 업로드할 수 있어요');
       setStep('error');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      setError('파일 크기는 10MB 이하여야 합니다');
+      setError('파일 크기는 10MB 이하여야 해요');
       setStep('error');
       return;
     }
@@ -193,7 +193,7 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
       setStep('done');
     } catch (err) {
       console.error('[AddClothingDialog] Processing error:', err);
-      setError('이미지 처리 중 오류가 발생했습니다');
+      setError('이미지 처리 중 오류가 발생했어요');
       setStep('error');
     }
   }, []);
@@ -271,7 +271,7 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
       handleClose();
     } catch (err) {
       console.error('[AddClothingDialog] Save error:', err);
-      setError('저장 중 오류가 발생했습니다');
+      setError('저장 중 오류가 발생했어요');
     } finally {
       setSaving(false);
     }

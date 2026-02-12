@@ -15,7 +15,7 @@ interface CacheEntry {
 const analysisCache = new Map<string, CacheEntry>();
 
 // 분석 타입 정의
-export type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
+export type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup' | 'oral-health';
 
 // 분석 요약 정보
 export interface AnalysisSummary {
@@ -31,6 +31,7 @@ export interface AnalysisSummary {
   hairType?: string; // H-1
   makeupScore?: number; // M-1
   undertone?: string; // M-1
+  oralHealthScore?: number; // OH-1
 }
 
 // 분석 상태 반환 타입
@@ -43,6 +44,7 @@ export interface AnalysisStatus {
   hasBody: boolean;
   hasHair: boolean;
   hasMakeup: boolean;
+  hasOralHealth: boolean;
   // 상태 판단 헬퍼
   isNewUser: boolean; // 분석 0개
   isPartialUser: boolean; // 분석 1-2개
@@ -141,33 +143,39 @@ export function useAnalysisStatus(): AnalysisStatus {
 
       try {
         // 병렬로 모든 분석 결과 조회
-        const [pcResult, skinResult, bodyResult, hairResult, makeupResult] = await Promise.all([
-          supabase
-            .from('personal_color_assessments')
-            .select('id, season, created_at')
-            .order('created_at', { ascending: false })
-            .limit(1),
-          supabase
-            .from('skin_analyses')
-            .select('id, overall_score, created_at')
-            .order('created_at', { ascending: false })
-            .limit(1),
-          supabase
-            .from('body_analyses')
-            .select('id, body_type, created_at')
-            .order('created_at', { ascending: false })
-            .limit(1),
-          supabase
-            .from('hair_analyses')
-            .select('id, hair_type, overall_score, created_at')
-            .order('created_at', { ascending: false })
-            .limit(1),
-          supabase
-            .from('makeup_analyses')
-            .select('id, undertone, overall_score, created_at')
-            .order('created_at', { ascending: false })
-            .limit(1),
-        ]);
+        const [pcResult, skinResult, bodyResult, hairResult, makeupResult, oralHealthResult] =
+          await Promise.all([
+            supabase
+              .from('personal_color_assessments')
+              .select('id, season, created_at')
+              .order('created_at', { ascending: false })
+              .limit(1),
+            supabase
+              .from('skin_analyses')
+              .select('id, overall_score, created_at')
+              .order('created_at', { ascending: false })
+              .limit(1),
+            supabase
+              .from('body_analyses')
+              .select('id, body_type, created_at')
+              .order('created_at', { ascending: false })
+              .limit(1),
+            supabase
+              .from('hair_analyses')
+              .select('id, hair_type, overall_score, created_at')
+              .order('created_at', { ascending: false })
+              .limit(1),
+            supabase
+              .from('makeup_analyses')
+              .select('id, undertone, overall_score, created_at')
+              .order('created_at', { ascending: false })
+              .limit(1),
+            supabase
+              .from('oral_health_assessments')
+              .select('id, overall_score, created_at')
+              .order('created_at', { ascending: false })
+              .limit(1),
+          ]);
 
         const results: AnalysisSummary[] = [];
 
@@ -228,6 +236,17 @@ export function useAnalysisStatus(): AnalysisStatus {
           });
         }
 
+        // 구강건강 분석
+        if (oralHealthResult.data && oralHealthResult.data.length > 0) {
+          results.push({
+            id: oralHealthResult.data[0].id,
+            type: 'oral-health',
+            createdAt: new Date(oralHealthResult.data[0].created_at),
+            summary: `${oralHealthResult.data[0].overall_score}점`,
+            oralHealthScore: oralHealthResult.data[0].overall_score,
+          });
+        }
+
         // 캐시 저장
         setCachedData(user.id, results);
         setAnalyses(results);
@@ -250,6 +269,7 @@ export function useAnalysisStatus(): AnalysisStatus {
   const hasBody = analyses.some((a) => a.type === 'body');
   const hasHair = analyses.some((a) => a.type === 'hair');
   const hasMakeup = analyses.some((a) => a.type === 'makeup');
+  const hasOralHealth = analyses.some((a) => a.type === 'oral-health');
 
   // 사용자 상태 판단
   const analysisCount = analyses.length;
@@ -266,6 +286,7 @@ export function useAnalysisStatus(): AnalysisStatus {
     hasBody,
     hasHair,
     hasMakeup,
+    hasOralHealth,
     isNewUser,
     isPartialUser,
     isActiveUser,

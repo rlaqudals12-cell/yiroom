@@ -58,7 +58,7 @@ export default function NutritionResultPage() {
       !inputData.weight ||
       !inputData.activityLevel
     ) {
-      setError('필수 정보가 누락되었습니다. 다시 시작해주세요.');
+      setError('필수 정보가 누락되었어요. 다시 시작해주세요.');
       setIsLoading(false);
       return;
     }
@@ -131,7 +131,7 @@ export default function NutritionResultPage() {
       router.push('/dashboard');
     } catch (err) {
       console.error('Save error:', err);
-      setError('저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setError('저장 중 오류가 발생했어요. 다시 시도해주세요.');
     } finally {
       setIsSaving(false);
     }
@@ -329,7 +329,7 @@ export default function NutritionResultPage() {
 
         {/* 안내 */}
         <p className="text-muted-foreground pb-4 text-center text-xs">
-          계산된 값은 참고용이며, 개인의 건강 상태에 따라 다를 수 있습니다.
+          계산된 값은 참고용이며, 개인의 건강 상태에 따라 다를 수 있어요.
         </p>
       </div>
 

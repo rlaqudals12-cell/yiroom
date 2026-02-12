@@ -28,11 +28,13 @@ function convertToExerciseLogs(records: ExerciseSessionRecord[]): ExerciseLog[] 
   return records.map((record) => ({
     exercise_id: record.exerciseId,
     exercise_name: record.exerciseName,
-    sets: record.sets.map((set): SetLog => ({
-      reps: set.actualReps ?? set.targetReps ?? 0,
-      weight: set.actualWeight,
-      completed: set.status === 'completed',
-    })),
+    sets: record.sets.map(
+      (set): SetLog => ({
+        reps: set.actualReps ?? set.targetReps ?? 0,
+        weight: set.actualWeight,
+        completed: set.status === 'completed',
+      })
+    ),
     difficulty: record.difficulty,
   }));
 }
@@ -47,7 +49,11 @@ function convertToExerciseLogs(records: ExerciseSessionRecord[]): ExerciseLog[] 
  */
 export default function SessionPage() {
   return (
-    <Suspense fallback={<AnalyzingLoader title="운동 준비 중" subtitle="오늘의 운동을 준비하고 있어요..." />}>
+    <Suspense
+      fallback={
+        <AnalyzingLoader title="운동 준비 중" subtitle="오늘의 운동을 준비하고 있어요..." />
+      }
+    >
       <SessionPageContent />
     </Suspense>
   );
@@ -114,7 +120,7 @@ function SessionPageContent() {
     // 유효성 검증
     const validation = validateAllSteps(inputData);
     if (!validation.isValid) {
-      setError('운동 데이터가 없습니다. 다시 시작해주세요.');
+      setError('운동 데이터가 없어요. 다시 시작해주세요.');
       setIsLoading(false);
       return;
     }
@@ -137,7 +143,7 @@ function SessionPageContent() {
     }
 
     if (!targetDay || targetDay.isRestDay || targetDay.exercises.length === 0) {
-      setError('오늘은 휴식일이거나 운동이 없습니다.');
+      setError('오늘은 휴식일이거나 운동이 없어요.');
       setIsLoading(false);
       return;
     }
@@ -161,60 +167,69 @@ function SessionPageContent() {
   }, [status, elapsedTime, updateElapsedTime]);
 
   // 세션 저장 함수 (재시도 로직 포함)
-  const saveSession = useCallback(async (isRetry = false) => {
-    // 익명 사용자는 저장하지 않음
-    if (!user?.id) return;
+  const saveSession = useCallback(
+    async (isRetry = false) => {
+      // 익명 사용자는 저장하지 않음
+      if (!user?.id) return;
 
-    // 재시도가 아니고 이미 저장 시도했으면 스킵
-    if (!isRetry && saveAttemptedRef.current) return;
+      // 재시도가 아니고 이미 저장 시도했으면 스킵
+      if (!isRetry && saveAttemptedRef.current) return;
 
-    // 재시도 횟수 초과
-    if (isRetry && retryCountRef.current >= MAX_RETRY_COUNT) {
-      setSaveError('저장에 실패했습니다. 나중에 다시 시도해 주세요.');
-      return;
-    }
-
-    saveAttemptedRef.current = true;
-    setIsSaving(true);
-    setSaveError(null);
-
-    try {
-      // ExerciseLog 형식으로 변환
-      const exerciseLogs = convertToExerciseLogs(exerciseRecords);
-
-      // DB 저장 (streak 자동 업데이트 포함)
-      const result = await saveWorkoutLogAction(user.id, planId || null, workoutDate, exerciseLogs, {
-        actualDuration: Math.floor(elapsedTime / 60), // 분 단위
-        actualCalories: Math.round(estimatedCalories),
-      });
-
-      if (!result) {
-        throw new Error('운동 기록 저장에 실패했습니다.');
+      // 재시도 횟수 초과
+      if (isRetry && retryCountRef.current >= MAX_RETRY_COUNT) {
+        setSaveError('저장에 실패했어요. 나중에 다시 시도해 주세요.');
+        return;
       }
 
-      // 최신 streak 조회
-      const streak = await getWorkoutStreakAction(user.id);
-      if (streak) {
-        setCurrentStreak(streak.current_streak);
-      }
+      saveAttemptedRef.current = true;
+      setIsSaving(true);
+      setSaveError(null);
 
-      setIsSaved(true);
-      retryCountRef.current = 0; // 성공 시 리셋
-    } catch (err) {
-      console.error('Failed to save workout log:', err);
-      retryCountRef.current += 1;
+      try {
+        // ExerciseLog 형식으로 변환
+        const exerciseLogs = convertToExerciseLogs(exerciseRecords);
 
-      // 자동 재시도 (지수 백오프)
-      if (retryCountRef.current < MAX_RETRY_COUNT) {
-        const delay = Math.pow(2, retryCountRef.current) * 1000; // 2초, 4초, 8초
-        setTimeout(() => saveSession(true), delay);
-      } else {
-        setSaveError('운동 기록 저장에 실패했습니다. 재시도 버튼을 눌러주세요.');
+        // DB 저장 (streak 자동 업데이트 포함)
+        const result = await saveWorkoutLogAction(
+          user.id,
+          planId || null,
+          workoutDate,
+          exerciseLogs,
+          {
+            actualDuration: Math.floor(elapsedTime / 60), // 분 단위
+            actualCalories: Math.round(estimatedCalories),
+          }
+        );
+
+        if (!result) {
+          throw new Error('운동 기록 저장에 실패했습니다.');
+        }
+
+        // 최신 streak 조회
+        const streak = await getWorkoutStreakAction(user.id);
+        if (streak) {
+          setCurrentStreak(streak.current_streak);
+        }
+
+        setIsSaved(true);
+        retryCountRef.current = 0; // 성공 시 리셋
+      } catch (err) {
+        console.error('Failed to save workout log:', err);
+        retryCountRef.current += 1;
+
+        // 자동 재시도 (지수 백오프)
+        if (retryCountRef.current < MAX_RETRY_COUNT) {
+          const delay = Math.pow(2, retryCountRef.current) * 1000; // 2초, 4초, 8초
+          setTimeout(() => saveSession(true), delay);
+        } else {
+          setSaveError('운동 기록 저장에 실패했어요. 재시도 버튼을 눌러주세요.');
+        }
+      } finally {
+        setIsSaving(false);
       }
-    } finally {
-      setIsSaving(false);
-    }
-  }, [user?.id, exerciseRecords, planId, workoutDate, elapsedTime, estimatedCalories]);
+    },
+    [user?.id, exerciseRecords, planId, workoutDate, elapsedTime, estimatedCalories]
+  );
 
   // 수동 재시도
   const handleRetrySave = useCallback(() => {
@@ -232,9 +247,12 @@ function SessionPageContent() {
   }, [status, saveSession]);
 
   // 운동 상세 보기
-  const handleViewDetail = useCallback((exerciseId: string) => {
-    router.push(`/workout/exercise/${exerciseId}`);
-  }, [router]);
+  const handleViewDetail = useCallback(
+    (exerciseId: string) => {
+      router.push(`/workout/exercise/${exerciseId}`);
+    },
+    [router]
+  );
 
   // 종료 확인
   const handleExitConfirm = () => {
@@ -286,12 +304,7 @@ function SessionPageContent() {
 
   // 로딩
   if (isLoading) {
-    return (
-      <AnalyzingLoader
-        title="운동 준비 중"
-        subtitle="오늘의 운동을 준비하고 있어요..."
-      />
-    );
+    return <AnalyzingLoader title="운동 준비 중" subtitle="오늘의 운동을 준비하고 있어요..." />;
   }
 
   // 에러
@@ -310,17 +323,17 @@ function SessionPageContent() {
     // 저장 중일 때 로딩 표시
     if (isSaving) {
       return (
-        <AnalyzingLoader
-          title="운동 기록 저장 중"
-          subtitle="오늘의 운동을 기록하고 있어요..."
-        />
+        <AnalyzingLoader title="운동 기록 저장 중" subtitle="오늘의 운동을 기록하고 있어요..." />
       );
     }
 
     const totalVolume = exerciseRecords.reduce((sum, record) => {
-      return sum + record.sets
-        .filter((s) => s.status === 'completed')
-        .reduce((setSum, s) => setSum + (s.actualReps || 0) * (s.actualWeight || 0), 0);
+      return (
+        sum +
+        record.sets
+          .filter((s) => s.status === 'completed')
+          .reduce((setSum, s) => setSum + (s.actualReps || 0) * (s.actualWeight || 0), 0)
+      );
     }, 0);
 
     // 저장 실패 시 에러 UI와 완료 카드 함께 표시
@@ -394,9 +407,7 @@ function SessionPageContent() {
       {status === 'not_started' && (
         <div className="p-6 text-center">
           <div className="bg-card rounded-2xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-foreground mb-4">
-              오늘의 운동을 시작할까요?
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground mb-4">오늘의 운동을 시작할까요?</h2>
             <p className="text-muted-foreground mb-6">
               {dayPlan.exercises.length}개 운동 / 약 {dayPlan.estimatedMinutes}분
             </p>
@@ -412,7 +423,7 @@ function SessionPageContent() {
               <p className="text-xs text-muted-foreground leading-relaxed">
                 <span className="font-medium text-foreground/70">안내</span>
                 <br />
-                본 서비스는 전문 의료 조언을 대체하지 않습니다.
+                본 서비스는 전문 의료 조언을 대체하지 않아요.
                 <br />
                 <br />
                 • 부상이나 통증이 있는 경우 전문가와 상담 후 운동하세요.
@@ -420,8 +431,7 @@ function SessionPageContent() {
                 • 운동 중 통증이 발생하면 즉시 중단하세요.
                 <br />
                 • 무게와 강도는 점진적으로 늘려주세요.
-                <br />
-                • 임산부, 심장질환자, 고혈압 환자는 의사와 상담 후 운동하세요.
+                <br />• 임산부, 심장질환자, 고혈압 환자는 의사와 상담 후 운동하세요.
               </p>
             </div>
           </div>
@@ -481,9 +491,7 @@ function SessionPageContent() {
             <h3 id="exit-dialog-title" className="text-lg font-bold text-foreground mb-2">
               운동을 종료할까요?
             </h3>
-            <p className="text-muted-foreground mb-6">
-              진행 중인 운동 기록이 저장되지 않습니다.
-            </p>
+            <p className="text-muted-foreground mb-6">진행 중인 운동 기록이 저장되지 않아요.</p>
             <div className="flex gap-3">
               <button
                 onClick={handleExitCancel}

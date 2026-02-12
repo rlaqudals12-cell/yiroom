@@ -89,7 +89,7 @@ export default function EditPantryItemPage() {
         }
       } catch (err) {
         console.error('[EditPantryItem] Fetch error:', err);
-        toast.error(err instanceof Error ? err.message : '오류가 발생했습니다');
+        toast.error(err instanceof Error ? err.message : '오류가 발생했어요');
         router.push('/inventory/pantry');
       } finally {
         setIsLoading(false);
@@ -139,11 +139,11 @@ export default function EditPantryItemPage() {
         throw new Error(error.error || '저장에 실패했습니다');
       }
 
-      toast.success('재료가 수정되었습니다');
+      toast.success('재료가 수정됐어요');
       router.push('/inventory/pantry');
     } catch (err) {
       console.error('[EditPantryItem] Submit error:', err);
-      toast.error(err instanceof Error ? err.message : '오류가 발생했습니다');
+      toast.error(err instanceof Error ? err.message : '오류가 발생했어요');
     } finally {
       setIsSubmitting(false);
     }
@@ -151,7 +151,7 @@ export default function EditPantryItemPage() {
 
   // 삭제
   const handleDelete = async () => {
-    if (!confirm('이 재료를 삭제하시겠습니까?')) return;
+    if (!confirm('이 재료를 삭제하시겠어요?')) return;
 
     setIsDeleting(true);
     try {
@@ -164,11 +164,11 @@ export default function EditPantryItemPage() {
         throw new Error(error.error || '삭제에 실패했습니다');
       }
 
-      toast.success('재료가 삭제되었습니다');
+      toast.success('재료가 삭제됐어요');
       router.push('/inventory/pantry');
     } catch (err) {
       console.error('[EditPantryItem] Delete error:', err);
-      toast.error(err instanceof Error ? err.message : '오류가 발생했습니다');
+      toast.error(err instanceof Error ? err.message : '오류가 발생했어요');
     } finally {
       setIsDeleting(false);
     }

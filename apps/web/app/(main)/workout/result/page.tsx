@@ -93,7 +93,7 @@ export default function ResultPage() {
     // 유효성 검증
     const validation = validateAllSteps(inputData);
     if (!validation.isValid) {
-      setError('필수 정보가 누락되었습니다. 다시 시작해주세요.');
+      setError('필수 정보가 누락되었어요. 다시 시작해주세요.');
       setIsLoading(false);
       return;
     }
@@ -157,7 +157,7 @@ export default function ResultPage() {
         await saveAnalysisToDatabase(inputData);
       } catch (err) {
         console.error('Analysis error:', err);
-        setError('분석 중 오류가 발생했습니다.');
+        setError('분석 중 오류가 발생했어요.');
       } finally {
         setIsLoading(false);
         // 분석 완료 시 축하 효과
@@ -187,7 +187,7 @@ export default function ResultPage() {
   // 로딩 상태
   if (isLoading) {
     return (
-      <AnalyzingLoader title="AI가 분석 중입니다" subtitle="당신에게 맞는 운동을 찾고 있어요..." />
+      <AnalyzingLoader title="AI가 분석 중이에요" subtitle="당신에게 맞는 운동을 찾고 있어요..." />
     );
   }
 
@@ -290,7 +290,7 @@ export default function ResultPage() {
               <div className="text-muted-foreground flex items-center justify-center py-8">
                 <div className="text-center">
                   <Dumbbell className="mx-auto mb-2 h-12 w-12 opacity-50" />
-                  <p className="text-sm">추천 운동이 없습니다</p>
+                  <p className="text-sm">추천 운동이 없어요</p>
                 </div>
               </div>
             )}

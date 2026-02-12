@@ -57,7 +57,7 @@ export function AIBadge({
   variant = 'default',
   className,
   label = 'AI 분석 결과',
-  description = '이 결과는 AI 기술을 사용하여 생성되었습니다',
+  description = '이 결과는 AI 기술을 사용하여 생성되었어요',
 }: AIBadgeProps) {
   return (
     <div
@@ -115,7 +115,7 @@ export function AITransparencyNotice({ className, compact = false }: AITranspare
           aria-hidden="true"
         />
         <p className="text-xs text-violet-700 dark:text-violet-300">
-          이 서비스는 AI 기술을 사용하여 분석 결과를 제공합니다.
+          이 서비스는 AI 기술을 사용하여 분석 결과를 제공해요.
         </p>
       </aside>
     );
@@ -146,8 +146,8 @@ export function AITransparencyNotice({ className, compact = false }: AITranspare
             AI 기술 사용 안내
           </h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            이룸은 Google Gemini AI 기술을 사용하여 퍼스널컬러, 피부, 체형 등의 분석 결과를 제공합니다.
-            AI 분석 결과는 참고용이며, 정확한 진단이 필요한 경우 전문가 상담을 권장합니다.
+            이룸은 Google Gemini AI 기술을 사용하여 퍼스널컬러, 피부, 체형 등의 분석 결과를
+            제공해요. AI 분석 결과는 참고용이며, 정확한 진단이 필요한 경우 전문가 상담을 권장해요.
           </p>
         </div>
       </div>

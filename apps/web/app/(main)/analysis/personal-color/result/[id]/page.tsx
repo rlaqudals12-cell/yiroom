@@ -197,8 +197,7 @@ export default function PersonalColorResultPage() {
         const retryable = response.status >= 500;
         setIsRetryable(retryable);
         throw new Error(
-          json.error ||
-            (retryable ? '서버에 일시적인 문제가 있습니다' : '결과를 불러올 수 없습니다')
+          json.error || (retryable ? '서버에 일시적인 문제가 있어요' : '결과를 불러올 수 없어요')
         );
       }
 
@@ -258,7 +257,7 @@ export default function PersonalColorResultPage() {
         /* sessionStorage 복원 실패 무시 */
       }
 
-      setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
+      setError(err instanceof Error ? err.message : '결과를 불러올 수 없어요');
     } finally {
       setIsLoading(false);
     }
@@ -305,7 +304,7 @@ export default function PersonalColorResultPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
           <p className="text-muted-foreground">분석 결과를 확인하려면 먼저 로그인해주세요</p>
         </div>
       </div>

@@ -109,10 +109,10 @@ export default function FeedbackPage() {
         </div>
         {/* 텍스트 - 페이드인 애니메이션 */}
         <div className="animate-fade-in-up animation-delay-200">
-          <h2 className="mb-2 text-center text-xl font-bold">감사합니다!</h2>
+          <h2 className="mb-2 text-center text-xl font-bold">감사해요!</h2>
           <p className="text-muted-foreground mb-6 text-center">
-            소중한 의견을 보내주셔서 감사합니다.
-            <br />더 나은 이룸을 만드는 데 참고하겠습니다.
+            소중한 의견을 보내주셔서 감사해요.
+            <br />더 나은 이룸을 만드는 데 참고할게요.
           </p>
         </div>
         {/* 버튼 - 지연 등장 */}
@@ -211,7 +211,7 @@ export default function FeedbackPage() {
 
       {/* 안내 문구 */}
       <p className="text-muted-foreground text-center text-xs">
-        피드백은 익명으로 처리되며, 서비스 개선에만 사용됩니다.
+        피드백은 익명으로 처리되며, 서비스 개선에만 사용돼요.
       </p>
     </div>
   );

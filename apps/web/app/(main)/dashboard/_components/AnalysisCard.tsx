@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Palette, Sparkles, User, ChevronRight, Scissors, Heart } from 'lucide-react';
+import { Palette, Sparkles, User, ChevronRight, Scissors, Heart, SmilePlus } from 'lucide-react';
 
 // 상대 시간 포맷팅 헬퍼 함수
 function formatRelativeTime(date: Date): string {
@@ -21,7 +21,7 @@ function formatRelativeTime(date: Date): string {
 
 interface AnalysisSummary {
   id: string;
-  type: 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
+  type: 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup' | 'oral-health';
   createdAt: Date;
   summary: string;
   seasonType?: string;
@@ -77,6 +77,14 @@ const ANALYSIS_CONFIG = {
     bgColor: 'bg-rose-50',
     borderColor: 'border-rose-200/50',
     iconColor: 'text-rose-500',
+  },
+  'oral-health': {
+    title: '구강건강',
+    icon: SmilePlus,
+    baseHref: '/analysis/oral-health',
+    bgColor: 'bg-cyan-50',
+    borderColor: 'border-cyan-200/50',
+    iconColor: 'text-cyan-600',
   },
 };
 

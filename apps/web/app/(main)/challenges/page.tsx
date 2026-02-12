@@ -55,7 +55,7 @@ export default function ChallengesPage() {
         setStats(myStats);
       } catch (error) {
         console.error('[ChallengesPage] 데이터 조회 실패:', error);
-        toast.error('챌린지 목록을 불러오는데 실패했습니다');
+        toast.error('챌린지 목록을 불러오지 못했어요');
       } finally {
         setIsLoading(false);
       }
@@ -69,7 +69,7 @@ export default function ChallengesPage() {
   // 챌린지 참여
   const handleJoin = async (challengeId: string) => {
     if (!user?.id) {
-      toast.error('로그인이 필요합니다');
+      toast.error('로그인이 필요해요');
       return;
     }
 
@@ -78,7 +78,7 @@ export default function ChallengesPage() {
 
       if (result.success && result.userChallenge) {
         setUserChallenges((prev) => [...prev, result.userChallenge!]);
-        toast.success('챌린지에 참여했습니다!');
+        toast.success('챌린지에 참여했어요!');
 
         // 통계 업데이트
         if (stats) {
@@ -89,11 +89,11 @@ export default function ChallengesPage() {
           });
         }
       } else {
-        toast.error(result.error || '참여에 실패했습니다');
+        toast.error(result.error || '참여에 실패했어요');
       }
     } catch (error) {
       console.error('[ChallengesPage] 참여 실패:', error);
-      toast.error('챌린지 참여에 실패했습니다');
+      toast.error('챌린지 참여에 실패했어요');
     }
   };
 
@@ -122,7 +122,7 @@ export default function ChallengesPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">로그인이 필요합니다</h2>
+          <h2 className="text-xl font-semibold mb-2">로그인이 필요해요</h2>
           <p className="text-muted-foreground">챌린지에 참여하려면 먼저 로그인해주세요</p>
         </div>
       </div>

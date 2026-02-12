@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Palette, Sparkles, User, ArrowRight, Scissors, Heart } from 'lucide-react';
+import { Palette, Sparkles, User, ArrowRight, Scissors, Heart, SmilePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface QuickActionsProps {
@@ -54,6 +54,15 @@ const ANALYSIS_ITEMS = [
     href: '/analysis/makeup',
     bgColor: 'bg-gradient-to-br from-rose-400 to-pink-500',
     requiresPC: true,
+  },
+  {
+    id: 'oral-health',
+    title: '구강건강 분석',
+    description: '치아와 잇몸 건강을 체크해보세요',
+    icon: SmilePlus,
+    href: '/analysis/oral-health',
+    bgColor: 'bg-gradient-to-br from-cyan-400 to-blue-500',
+    requiresPC: false,
   },
 ];
 

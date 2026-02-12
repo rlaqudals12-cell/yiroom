@@ -102,7 +102,7 @@ export default function Step1Page() {
 
         if (bodyError && bodyError.code !== 'PGRST116') {
           console.error('Error fetching body analysis:', bodyError);
-          setError('체형 데이터를 불러오는 중 오류가 발생했습니다.');
+          setError('체형 데이터를 불러오는 중 오류가 발생했어요.');
           return;
         }
 
@@ -141,7 +141,7 @@ export default function Step1Page() {
         }
       } catch (err) {
         console.error('Unexpected error:', err);
-        setError('예상치 못한 오류가 발생했습니다.');
+        setError('예상치 못한 오류가 발생했어요.');
       } finally {
         setIsLoading(false);
       }
@@ -156,7 +156,7 @@ export default function Step1Page() {
       setGoals(goals.filter((id) => id !== goalId));
     } else {
       if (goals.length >= MAX_GOALS) {
-        toast.warning(`최대 ${MAX_GOALS}개까지 선택 가능합니다`);
+        toast.warning(`최대 ${MAX_GOALS}개까지 선택할 수 있어요`);
         return;
       }
       setGoals([...goals, goalId]);
@@ -169,7 +169,7 @@ export default function Step1Page() {
       setConcerns(concerns.filter((id) => id !== concernId));
     } else {
       if (concerns.length >= MAX_CONCERNS) {
-        toast.warning(`최대 ${MAX_CONCERNS}개까지 선택 가능합니다`);
+        toast.warning(`최대 ${MAX_CONCERNS}개까지 선택할 수 있어요`);
         return;
       }
       setConcerns([...concerns, concernId]);
@@ -187,7 +187,7 @@ export default function Step1Page() {
     return (
       <div className="text-center py-12">
         <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">로그인이 필요합니다.</p>
+        <p className="text-muted-foreground">로그인이 필요해요.</p>
       </div>
     );
   }
@@ -227,7 +227,7 @@ export default function Step1Page() {
         <p className="text-xs text-amber-700 leading-relaxed">
           <span className="font-medium">서비스 이용 안내</span>
           <br />
-          <br />본 서비스는 전문 의료 조언을 대체하지 않습니다. 부상이나 통증이 있는 경우 전문가와
+          <br />본 서비스는 전문 의료 조언을 대체하지 않아요. 부상이나 통증이 있는 경우 전문가와
           상담 후 운동하세요.
         </p>
       </div>
@@ -238,7 +238,7 @@ export default function Step1Page() {
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-bold text-foreground mb-2">체형 분석이 필요합니다</h3>
+          <h3 className="text-lg font-bold text-foreground mb-2">체형 분석이 필요해요</h3>
           <p className="text-muted-foreground text-sm mb-6">
             맞춤 운동 추천을 위해 먼저 체형 분석을 진행해 주세요.
           </p>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Palette, Sparkles, User, Scissors, Heart, ChevronRight } from 'lucide-react';
+import { Palette, Sparkles, User, Scissors, Heart, SmilePlus, ChevronRight } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
 import { NextLevelCard } from '@/components/home/NextLevelCard';
@@ -43,6 +43,13 @@ const ANALYSIS_META = {
     shadow: 'shadow-pink-500/30',
     href: '/analysis/makeup/result',
   },
+  'oral-health': {
+    icon: SmilePlus,
+    label: '구강건강',
+    gradient: 'from-cyan-400 to-blue-500',
+    shadow: 'shadow-cyan-500/30',
+    href: '/analysis/oral-health/result',
+  },
 };
 
 interface HomeAnalysisSummaryProps {
@@ -58,7 +65,7 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
 
   // 미완료 분석 타입
   const completedTypes = new Set(analyses.map((a) => a.type));
-  const allTypes = ['personal-color', 'skin', 'body', 'hair', 'makeup'] as const;
+  const allTypes = ['personal-color', 'skin', 'body', 'hair', 'makeup', 'oral-health'] as const;
   const incompleteTypes = allTypes.filter((t) => !completedTypes.has(t));
 
   return (

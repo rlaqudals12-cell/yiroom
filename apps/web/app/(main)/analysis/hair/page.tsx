@@ -273,6 +273,7 @@ export default function HairAnalysisPage() {
               accept="image/*"
               onChange={handleFileSelect}
               className="hidden"
+              aria-label="헤어 분석용 사진 선택"
             />
 
             {imagePreview ? (
@@ -288,7 +289,12 @@ export default function HairAnalysisPage() {
                   <Button variant="outline" onClick={handleUploadClick} className="flex-1">
                     다른 사진 선택
                   </Button>
-                  <Button onClick={handleStartAnalysis} disabled={isAnalyzing} className="flex-1">
+                  <Button
+                    onClick={handleStartAnalysis}
+                    disabled={isAnalyzing}
+                    className="flex-1"
+                    aria-label="헤어 분석 시작"
+                  >
                     {isAnalyzing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />

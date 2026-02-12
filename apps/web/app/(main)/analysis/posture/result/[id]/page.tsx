@@ -153,7 +153,7 @@ export default function PostureAnalysisResultPage() {
         /* sessionStorage 복원 실패 무시 */
       }
 
-      setError(err instanceof Error ? err.message : '결과를 불러올 수 없습니다');
+      setError(err instanceof Error ? err.message : '결과를 불러올 수 없어요');
     } finally {
       setIsLoading(false);
     }
@@ -187,7 +187,7 @@ export default function PostureAnalysisResultPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
           <p className="text-muted-foreground">분석 결과를 확인하려면 먼저 로그인해주세요</p>
         </div>
       </div>

@@ -281,7 +281,7 @@ describe('FoodCapturePage', () => {
       await waitFor(() => {
         expect(screen.getByText('분석 실패')).toBeInTheDocument();
         expect(
-          screen.getByText('음식을 인식하지 못했습니다. 다시 촬영해주세요.')
+          screen.getByText('음식을 인식하지 못했어요. 다시 촬영해주세요.')
         ).toBeInTheDocument();
       });
     });
@@ -311,21 +311,22 @@ describe('FoodCapturePage', () => {
 
     it('분석 중 취소 버튼을 클릭하면 캡처 상태로 돌아간다', async () => {
       // fetch를 지연시켜 분석 중 상태 유지
-      mockFetch.mockImplementationOnce(() =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                ok: true,
-                json: () =>
-                  Promise.resolve({
-                    success: true,
-                    result: { foods: [], totalCalories: 0, mealType: 'lunch' },
-                  }),
-              }),
-            5000
+      mockFetch.mockImplementationOnce(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: () =>
+                    Promise.resolve({
+                      success: true,
+                      result: { foods: [], totalCalories: 0, mealType: 'lunch' },
+                    }),
+                }),
+              5000
+            )
           )
-        )
       );
 
       render(<FoodCapturePage />);
@@ -353,21 +354,22 @@ describe('FoodCapturePage', () => {
 
     it('분석 중 촬영된 사진이 표시된다', async () => {
       // fetch를 지연시켜 분석 중 상태 유지
-      mockFetch.mockImplementationOnce(() =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                ok: true,
-                json: () =>
-                  Promise.resolve({
-                    success: true,
-                    result: { foods: [], totalCalories: 0, mealType: 'lunch' },
-                  }),
-              }),
-            5000
+      mockFetch.mockImplementationOnce(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: () =>
+                    Promise.resolve({
+                      success: true,
+                      result: { foods: [], totalCalories: 0, mealType: 'lunch' },
+                    }),
+                }),
+              5000
+            )
           )
-        )
       );
 
       render(<FoodCapturePage />);

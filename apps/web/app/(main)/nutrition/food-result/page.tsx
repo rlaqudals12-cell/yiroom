@@ -138,13 +138,13 @@ export default function FoodResultPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || '저장에 실패했습니다.');
+        throw new Error(error.error || '저장에 실패했어요.');
       }
 
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || '저장에 실패했습니다.');
+        throw new Error(data.error || '저장에 실패했어요.');
       }
 
       // sessionStorage 정리
@@ -154,7 +154,7 @@ export default function FoodResultPage() {
       router.push('/nutrition');
     } catch (error) {
       console.error('[Food Result] Save error:', error);
-      setSaveError(error instanceof Error ? error.message : '저장에 실패했습니다.');
+      setSaveError(error instanceof Error ? error.message : '저장에 실패했어요.');
     } finally {
       setIsSaving(false);
     }
@@ -173,7 +173,7 @@ export default function FoodResultPage() {
 
   // 음식 수정 핸들러 (Task 2.11/2.12에서 실제 기능 구현 예정)
   const handleFoodEdit = useCallback((foodName: string) => {
-    setEditNotice(`"${foodName}" 수정 기능은 준비 중입니다.`);
+    setEditNotice(`"${foodName}" 수정 기능은 준비 중이에요.`);
     // 3초 후 알림 숨김
     setTimeout(() => setEditNotice(null), 3000);
   }, []);
@@ -266,9 +266,7 @@ export default function FoodResultPage() {
       {/* AI 인사이트 */}
       {analysisData.result.insight && (
         <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-          <p className="text-sm text-blue-700">
-            💡 {analysisData.result.insight}
-          </p>
+          <p className="text-sm text-blue-700">💡 {analysisData.result.insight}</p>
         </div>
       )}
 
@@ -307,7 +305,7 @@ export default function FoodResultPage() {
       {analysisData.usedMock && (
         <div className="bg-amber-50 rounded-xl p-3 border border-amber-200">
           <p className="text-xs text-amber-700 text-center">
-            ⚠️ AI 분석이 일시적으로 사용 불가하여 예시 결과를 표시합니다.
+            ⚠️ AI 분석이 일시적으로 사용 불가하여 예시 결과를 표시하고 있어요.
           </p>
         </div>
       )}

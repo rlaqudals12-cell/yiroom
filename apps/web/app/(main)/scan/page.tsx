@@ -75,7 +75,7 @@ export default function ScanPage() {
   // 선행 조건: 사용자 제품함 DB 스키마 설계
   // 재검토 트리거: 제품함 기능 요청 시
   const handleAddToShelf = useCallback(() => {
-    alert('내 제품함에 추가되었습니다.');
+    alert('내 제품함에 추가되었어요.');
   }, []);
 
   // 공유 (TODO: 실제 구현)
@@ -112,7 +112,7 @@ export default function ScanPage() {
         {state === 'loading' && (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="mt-4 text-muted-foreground">제품 정보를 조회하고 있습니다...</p>
+            <p className="mt-4 text-muted-foreground">제품 정보를 조회하고 있어요...</p>
             {lastBarcode && (
               <p className="mt-2 text-sm text-muted-foreground font-mono">{lastBarcode}</p>
             )}
@@ -137,7 +137,7 @@ export default function ScanPage() {
             <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center">
               <Package className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h2 className="mt-6 text-xl font-semibold">제품을 찾을 수 없습니다</h2>
+            <h2 className="mt-6 text-xl font-semibold">제품을 찾을 수 없어요</h2>
             <p className="mt-2 text-muted-foreground text-center">
               {lastBarcode && (
                 <>
@@ -145,7 +145,7 @@ export default function ScanPage() {
                   <br />
                 </>
               )}
-              데이터베이스에 등록되지 않은 제품입니다
+              데이터베이스에 등록되지 않은 제품이에요
             </p>
             <button
               onClick={handleRescan}

@@ -19,10 +19,7 @@ vi.mock('next/navigation', () => ({
 
 // next/image 모킹
 vi.mock('next/image', () => ({
-  default: ({ src, alt }: { src: string; alt: string }) => (
-     
-    <img src={src} alt={alt} />
-  ),
+  default: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
 }));
 
 // Mock fetch
@@ -311,7 +308,7 @@ describe('FoodResultPage', () => {
 
     // 준비 중 알림 표시 확인
     await waitFor(() => {
-      expect(screen.getByText(/"김치찌개" 수정 기능은 준비 중입니다./)).toBeInTheDocument();
+      expect(screen.getByText(/"김치찌개" 수정 기능은 준비 중이에요./)).toBeInTheDocument();
     });
   });
 

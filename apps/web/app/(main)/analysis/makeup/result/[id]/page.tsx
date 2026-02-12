@@ -8,6 +8,7 @@ import { ArrowLeft, RefreshCw, Sparkles, ClipboardList, Palette, Heart } from 'l
 import { Button } from '@/components/ui/button';
 import { ShareButton } from '@/components/share';
 import { useAnalysisShare, createMakeupShareData } from '@/hooks/useAnalysisShare';
+import Image from 'next/image';
 import Link from 'next/link';
 import { AIBadge } from '@/components/common/AIBadge';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
@@ -15,145 +16,24 @@ import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import {
-  type UndertoneId,
-  type EyeShapeId,
-  type LipShapeId,
-  type FaceShapeId,
-  type MakeupStyleId,
-  type MakeupConcernId,
-  type ColorRecommendation,
-  UNDERTONES,
-  EYE_SHAPES,
-  LIP_SHAPES,
-  FACE_SHAPES,
-  MAKEUP_STYLES,
-  MAKEUP_CONCERNS,
-} from '@/lib/mock/makeup-analysis';
+import { MAKEUP_STYLES, MAKEUP_CONCERNS } from '@/lib/mock/makeup-analysis';
 import type { PersonalColorSeason } from '@/types/product';
+import {
+  type DbMakeupAnalysis,
+  type MakeupResultView,
+  transformDbToResult,
+} from './_lib/transform';
 
-// 점수 -> 상태
-function getStatus(value: number): 'good' | 'normal' | 'warning' {
-  if (value >= 71) return 'good';
-  if (value >= 41) return 'normal';
-  return 'warning';
-}
-
-// 점수에 따른 설명 생성
-function getDescription(name: string, value: number): string {
-  if (value >= 71) return `${name}(이)가 좋은 상태예요`;
-  if (value >= 41) return `${name}(이)가 보통 수준이에요`;
-  return `${name} 관리가 필요해요`;
-}
-
-// DB 타입 정의
-interface DbMakeupAnalysis {
-  id: string;
-  clerk_user_id: string;
-  image_url: string;
-  undertone: UndertoneId;
-  eye_shape: EyeShapeId;
-  lip_shape: LipShapeId;
-  face_shape: FaceShapeId;
-  skin_texture: number | null;
-  skin_tone_uniformity: number | null;
-  hydration: number | null;
-  pore_visibility: number | null;
-  oil_balance: number | null;
-  overall_score: number;
-  concerns: MakeupConcernId[];
-  recommendations: {
-    insight?: string;
-    styles?: MakeupStyleId[];
-    colors?: ColorRecommendation[];
-    tips?: Array<{ category: string; tips: string[] }>;
-    personalColorConnection?: {
-      season: string;
-      compatibility: 'high' | 'medium' | 'low';
-      note: string;
-    };
-    analysisReliability?: 'high' | 'medium' | 'low';
-  } | null;
-  analysis_reliability: 'high' | 'medium' | 'low' | null;
-  created_at: string;
-}
-
-interface MakeupMetric {
-  id: string;
-  name: string;
-  value: number;
-  status: 'good' | 'normal' | 'warning';
-  description: string;
-}
-
-interface MakeupAnalysisResultView {
-  overallScore: number;
-  metrics: MakeupMetric[];
-  undertone: UndertoneId;
-  undertoneLabel: string;
-  eyeShape: EyeShapeId;
-  eyeShapeLabel: string;
-  lipShape: LipShapeId;
-  lipShapeLabel: string;
-  faceShape: FaceShapeId;
-  faceShapeLabel: string;
-  concerns: MakeupConcernId[];
-  insight: string;
-  recommendedStyles: MakeupStyleId[];
-  colorRecommendations: ColorRecommendation[];
-  makeupTips: Array<{ category: string; tips: string[] }>;
-  personalColorConnection?: {
-    season: string;
-    compatibility: 'high' | 'medium' | 'low';
-    note: string;
-  };
-  analyzedAt: Date;
-}
-
-// DB 데이터 -> 뷰 데이터 변환
-function transformDbToResult(dbData: DbMakeupAnalysis): MakeupAnalysisResultView {
-  const createMetric = (id: string, name: string, value: number | null) => ({
-    id,
-    name,
-    value: value ?? 50,
-    status: getStatus(value ?? 50),
-    description: getDescription(name, value ?? 50),
-  });
-
-  const undertoneLabel =
-    UNDERTONES.find((t) => t.id === dbData.undertone)?.label || dbData.undertone;
-  const eyeShapeLabel =
-    EYE_SHAPES.find((t) => t.id === dbData.eye_shape)?.label || dbData.eye_shape;
-  const lipShapeLabel =
-    LIP_SHAPES.find((t) => t.id === dbData.lip_shape)?.label || dbData.lip_shape;
-  const faceShapeLabel =
-    FACE_SHAPES.find((t) => t.id === dbData.face_shape)?.label || dbData.face_shape;
-
-  return {
-    overallScore: dbData.overall_score,
-    metrics: [
-      createMetric('skinTexture', '피부 결', dbData.skin_texture),
-      createMetric('skinTone', '피부톤 고르기', dbData.skin_tone_uniformity),
-      createMetric('hydration', '수분감', dbData.hydration),
-      createMetric('poreVisibility', '모공 상태', dbData.pore_visibility),
-      createMetric('oilBalance', '유수분 균형', dbData.oil_balance),
-    ],
-    undertone: dbData.undertone,
-    undertoneLabel,
-    eyeShape: dbData.eye_shape,
-    eyeShapeLabel,
-    lipShape: dbData.lip_shape,
-    lipShapeLabel,
-    faceShape: dbData.face_shape,
-    faceShapeLabel,
-    concerns: dbData.concerns || [],
-    insight: dbData.recommendations?.insight || '메이크업 분석이 완료되었어요!',
-    recommendedStyles: dbData.recommendations?.styles || [],
-    colorRecommendations: dbData.recommendations?.colors || [],
-    makeupTips: dbData.recommendations?.tips || [],
-    personalColorConnection: dbData.recommendations?.personalColorConnection,
-    analyzedAt: new Date(dbData.created_at),
-  };
+// 상태별 색상
+function getStatusColor(status: string): string {
+  switch (status) {
+    case 'good':
+      return 'text-green-600 bg-green-100';
+    case 'warning':
+      return 'text-red-600 bg-red-100';
+    default:
+      return 'text-amber-600 bg-amber-100';
+  }
 }
 
 export default function MakeupAnalysisResultPage() {
@@ -161,14 +41,15 @@ export default function MakeupAnalysisResultPage() {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
-  const [result, setResult] = useState<MakeupAnalysisResultView | null>(null);
+  const [result, setResult] = useState<MakeupResultView | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('basic');
   const fetchedRef = useRef(false);
 
-  const analysisId = params.id as string;
+  const rawId = params.id;
+  const analysisId = Array.isArray(rawId) ? rawId[0] : rawId;
 
   // 공유 카드 데이터
   const shareData = useMemo(() => {
@@ -254,18 +135,6 @@ export default function MakeupAnalysisResultPage() {
   const handleNewAnalysis = useCallback(() => {
     router.push('/analysis/makeup');
   }, [router]);
-
-  // 상태별 색상
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'good':
-        return 'text-green-600 bg-green-100';
-      case 'warning':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-amber-600 bg-amber-100';
-    }
-  };
 
   // 로딩 상태
   if (!isLoaded || isLoading) {
@@ -516,11 +385,13 @@ export default function MakeupAnalysisResultPage() {
               {imageUrl && (
                 <div className="bg-card rounded-xl p-6 shadow-sm">
                   <h3 className="font-semibold mb-3">분석 이미지</h3>
-                  <div className="aspect-square rounded-lg overflow-hidden bg-muted">
-                    <img
+                  <div className="aspect-square rounded-lg overflow-hidden bg-muted relative">
+                    <Image
                       src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/makeup-images/${imageUrl}`}
                       alt="분석된 메이크업 이미지"
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 512px"
                     />
                   </div>
                 </div>

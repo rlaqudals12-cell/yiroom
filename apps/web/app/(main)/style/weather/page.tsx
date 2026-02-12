@@ -81,7 +81,7 @@ export default function WeatherOutfitPage() {
       setRecommendation(data.recommendation);
     } catch (err) {
       console.error('[WeatherOutfit] Error:', err);
-      setError('날씨 정보를 불러오는데 실패했습니다.');
+      setError('날씨 정보를 불러오는 데 실패했어요.');
     } finally {
       setLoading(false);
     }
@@ -95,7 +95,7 @@ export default function WeatherOutfitPage() {
   // 현재 위치 사용
   const handleUseLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setError('이 브라우저에서는 위치 서비스를 지원하지 않습니다.');
+      setError('이 브라우저에서는 위치 서비스를 지원하지 않아요.');
       return;
     }
 
@@ -124,7 +124,7 @@ export default function WeatherOutfitPage() {
           }
         } catch (err) {
           console.error('[WeatherOutfit] Location error:', err);
-          setError('위치 기반 날씨를 불러오는데 실패했습니다.');
+          setError('위치 기반 날씨를 불러오는 데 실패했어요.');
         } finally {
           setLoading(false);
           setUsingLocation(false);
@@ -132,7 +132,7 @@ export default function WeatherOutfitPage() {
       },
       (err) => {
         console.error('[WeatherOutfit] Geolocation error:', err);
-        setError('위치 정보를 가져오는데 실패했습니다.');
+        setError('위치 정보를 가져오는 데 실패했어요.');
         setUsingLocation(false);
       }
     );
@@ -143,12 +143,7 @@ export default function WeatherOutfitPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">오늘의 코디</h1>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={fetchData}
-          disabled={loading}
-        >
+        <Button variant="ghost" size="sm" onClick={fetchData} disabled={loading}>
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
@@ -198,9 +193,7 @@ export default function WeatherOutfitPage() {
 
       {/* 에러 메시지 */}
       {error && (
-        <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-          {error}
-        </div>
+        <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
       )}
 
       {/* 로딩 */}

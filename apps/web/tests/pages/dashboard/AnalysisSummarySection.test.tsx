@@ -62,8 +62,8 @@ describe('AnalysisSummarySection', () => {
   it('미완료 분석 개수가 표시된다', () => {
     render(<AnalysisSummarySection analyses={mockAnalyses} />);
 
-    // 5개 중 2개 완료 → 3개 남음
-    expect(screen.getByText('3개 분석이 남았어요')).toBeInTheDocument();
+    // 6개 중 2개 완료 → 4개 남음
+    expect(screen.getByText('4개 분석이 남았어요')).toBeInTheDocument();
   });
 
   it('추가 분석 버튼이 표시된다', () => {
@@ -88,6 +88,7 @@ describe('AnalysisSummarySection', () => {
       { id: '3', type: 'body', createdAt: new Date(), summary: '모래시계형' },
       { id: '4', type: 'hair', createdAt: new Date(), summary: '직모' },
       { id: '5', type: 'makeup', createdAt: new Date(), summary: '웜톤' },
+      { id: '6', type: 'oral-health', createdAt: new Date(), summary: '90점' },
     ];
 
     render(<AnalysisSummarySection analyses={allAnalyses} />);
@@ -100,7 +101,7 @@ describe('AnalysisSummarySection', () => {
     render(<AnalysisSummarySection analyses={[]} />);
 
     expect(screen.getByTestId('analysis-summary-section')).toBeInTheDocument();
-    expect(screen.getByText('5개 분석이 남았어요')).toBeInTheDocument();
+    expect(screen.getByText('6개 분석이 남았어요')).toBeInTheDocument();
   });
 
   it('분석 타입별 라벨이 표시된다', () => {

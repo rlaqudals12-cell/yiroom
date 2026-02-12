@@ -42,7 +42,7 @@ export default function YearlyReviewPage() {
         setShowConfetti(true);
       } catch (err) {
         console.error('[YearlyReview] Error:', err);
-        setError('연말 리뷰를 불러오는데 실패했습니다.');
+        setError('연말 리뷰를 불러오는데 실패했어요.');
       } finally {
         setLoading(false);
       }
@@ -111,7 +111,7 @@ export default function YearlyReviewPage() {
           <h1 className="text-xl font-bold">2025 연말 리뷰</h1>
         </div>
         <div className="text-center py-12">
-          <p className="text-muted-foreground">{error || '데이터를 불러올 수 없습니다.'}</p>
+          <p className="text-muted-foreground">{error || '데이터를 불러올 수 없어요.'}</p>
           <Button asChild className="mt-4">
             <Link href="/dashboard">대시보드로 돌아가기</Link>
           </Button>
@@ -141,12 +141,7 @@ export default function YearlyReviewPage() {
 
       {/* 공유 버튼 */}
       <div className="mb-6">
-        <ShareButton
-          onShare={handleShare}
-          loading={sharing}
-          fullWidth
-          size="lg"
-        />
+        <ShareButton onShare={handleShare} loading={sharing} fullWidth size="lg" />
       </div>
 
       {/* 상세 통계 */}
@@ -159,7 +154,7 @@ export default function YearlyReviewPage() {
 
       {/* 푸터 */}
       <div className="mt-8 text-center text-sm text-muted-foreground">
-        <p>2025년 한 해 동안 이룸과 함께해 주셔서 감사합니다.</p>
+        <p>2025년 한 해 동안 이룸과 함께해 주셔서 감사해요.</p>
         <p className="mt-1">2026년에도 건강한 한 해 되세요!</p>
       </div>
     </div>

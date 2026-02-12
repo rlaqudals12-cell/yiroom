@@ -77,14 +77,14 @@ export default function StyleOnboardingPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || '저장에 실패했습니다');
+        throw new Error(error.error || '저장에 실패했어요');
       }
 
-      toast.success('신체 정보가 저장되었습니다');
+      toast.success('신체 정보가 저장되었어요');
       router.push('/style');
     } catch (err) {
       console.error('[StyleOnboarding] Submit error:', err);
-      toast.error(err instanceof Error ? err.message : '오류가 발생했습니다');
+      toast.error(err instanceof Error ? err.message : '오류가 발생했어요');
     } finally {
       setIsSubmitting(false);
     }
@@ -223,7 +223,7 @@ export default function StyleOnboardingPage() {
 
           {/* 안내 */}
           <p className="text-xs text-muted-foreground text-center mt-4">
-            입력한 정보는 맞춤 사이즈 추천에만 사용됩니다
+            입력한 정보는 맞춤 사이즈 추천에만 사용돼요
           </p>
         </div>
       </div>

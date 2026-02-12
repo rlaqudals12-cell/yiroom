@@ -11,13 +11,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  ChevronLeft,
-  ChevronRight,
-  ArrowLeft,
-  RefreshCw,
-  AlertCircle,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common';
 import { cn } from '@/lib/utils';
@@ -109,33 +103,34 @@ export default function NutritionHistoryPage() {
   }, [selectedDate]);
 
   // 히스토리 데이터 로드
-  const fetchHistory = useCallback(async (date: Date) => {
-    setIsLoading(true);
-    setError(null);
+  const fetchHistory = useCallback(
+    async (date: Date) => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const dateStr = formatDate(date);
-      const response = await fetch(`/api/nutrition/meals?date=${dateStr}`);
+      try {
+        const dateStr = formatDate(date);
+        const response = await fetch(`/api/nutrition/meals?date=${dateStr}`);
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push('/sign-in');
-          return;
+        if (!response.ok) {
+          if (response.status === 401) {
+            router.push('/sign-in');
+            return;
+          }
+          throw new Error('데이터를 불러오는 데 실패했어요.');
         }
-        throw new Error('데이터를 불러오는데 실패했습니다.');
-      }
 
-      const result: HistoryResponse = await response.json();
-      setData(result);
-    } catch (err) {
-      console.error('[History Page] Fetch error:', err);
-      setError(
-        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [router]);
+        const result: HistoryResponse = await response.json();
+        setData(result);
+      } catch (err) {
+        console.error('[History Page] Fetch error:', err);
+        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했어요.');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [router]
+  );
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -208,10 +203,7 @@ export default function NutritionHistoryPage() {
         {/* 식사 섹션 스켈레톤 */}
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="bg-card rounded-2xl p-4 shadow-sm border border-border/50"
-            >
+            <div key={i} className="bg-card rounded-2xl p-4 shadow-sm border border-border/50">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
                 <div className="w-20 h-5 bg-muted animate-pulse rounded" />
@@ -247,9 +239,9 @@ export default function NutritionHistoryPage() {
             <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
           <h2 className="text-lg font-bold text-red-900 dark:text-red-100 mb-2">
-            데이터를 불러올 수 없습니다
+            데이터를 불러올 수 없어요
           </h2>
-          <p className="text-red-700 dark:text-red-300 mb-4">오류가 발생했습니다.</p>
+          <p className="text-red-700 dark:text-red-300 mb-4">오류가 발생했어요.</p>
           <Button onClick={() => fetchHistory(selectedDate)} variant="outline">
             <RefreshCw className="w-4 h-4 mr-2" />
             다시 시도
@@ -295,9 +287,7 @@ export default function NutritionHistoryPage() {
           onClick={handleNextDate}
           className={cn(
             'p-2 rounded-full transition-colors',
-            isToday
-              ? 'text-muted-foreground/50 cursor-not-allowed'
-              : 'hover:bg-muted'
+            isToday ? 'text-muted-foreground/50 cursor-not-allowed' : 'hover:bg-muted'
           )}
           aria-label="다음 날짜"
           disabled={isToday}
@@ -322,21 +312,15 @@ export default function NutritionHistoryPage() {
         <div className="grid grid-cols-3 gap-4 mt-4">
           <div className="text-center">
             <div className="text-xs text-muted-foreground mb-1">탄수화물</div>
-            <div className="font-semibold text-foreground">
-              {data?.summary?.totalCarbs || 0}g
-            </div>
+            <div className="font-semibold text-foreground">{data?.summary?.totalCarbs || 0}g</div>
           </div>
           <div className="text-center">
             <div className="text-xs text-muted-foreground mb-1">단백질</div>
-            <div className="font-semibold text-foreground">
-              {data?.summary?.totalProtein || 0}g
-            </div>
+            <div className="font-semibold text-foreground">{data?.summary?.totalProtein || 0}g</div>
           </div>
           <div className="text-center">
             <div className="text-xs text-muted-foreground mb-1">지방</div>
-            <div className="font-semibold text-foreground">
-              {data?.summary?.totalFat || 0}g
-            </div>
+            <div className="font-semibold text-foreground">{data?.summary?.totalFat || 0}g</div>
           </div>
         </div>
       </div>
@@ -390,9 +374,7 @@ export default function NutritionHistoryPage() {
                         )}
                         <span className="text-foreground">{food.food_name}</span>
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        {food.calories} kcal
-                      </span>
+                      <span className="text-sm text-muted-foreground">{food.calories} kcal</span>
                     </div>
                   ))
                 )}

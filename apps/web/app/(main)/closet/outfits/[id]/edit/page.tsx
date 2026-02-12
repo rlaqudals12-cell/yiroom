@@ -32,12 +32,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CollageView, OutfitBuilder } from '@/components/inventory';
-import type {
-  InventoryItem,
-  InventoryItemDB,
-  Season,
-  Occasion,
-} from '@/types/inventory';
+import type { InventoryItem, InventoryItemDB, Season, Occasion } from '@/types/inventory';
 import { SEASON_LABELS, OCCASION_LABELS } from '@/types/inventory';
 
 interface SavedOutfitDB {
@@ -132,9 +127,7 @@ export default function EditOutfitPage() {
 
       // 선택된 아이템 설정
       if (outfit.item_ids?.length > 0) {
-        const selected = clientItems.filter((item) =>
-          outfit.item_ids.includes(item.id)
-        );
+        const selected = clientItems.filter((item) => outfit.item_ids.includes(item.id));
         setSelectedItems(selected);
       }
     }
@@ -149,9 +142,7 @@ export default function EditOutfitPage() {
   // 시즌 토글
   const toggleSeason = (season: Season) => {
     setSeasons((prev) =>
-      prev.includes(season)
-        ? prev.filter((s) => s !== season)
-        : [...prev, season]
+      prev.includes(season) ? prev.filter((s) => s !== season) : [...prev, season]
     );
   };
 
@@ -187,7 +178,7 @@ export default function EditOutfitPage() {
       router.push(`/closet/outfits/${outfitId}`);
     } catch (error) {
       console.error('[EditOutfit] Error:', error);
-      alert('저장 중 오류가 발생했습니다.');
+      alert('저장 중 오류가 발생했어요.');
     } finally {
       setSaving(false);
     }
@@ -199,17 +190,14 @@ export default function EditOutfitPage() {
 
     setDeleting(true);
     try {
-      const { error } = await supabase
-        .from('saved_outfits')
-        .delete()
-        .eq('id', outfitId);
+      const { error } = await supabase.from('saved_outfits').delete().eq('id', outfitId);
 
       if (!error) {
         router.push('/closet/outfits');
       }
     } catch (error) {
       console.error('[EditOutfit] Delete error:', error);
-      alert('삭제 중 오류가 발생했습니다.');
+      alert('삭제 중 오류가 발생했어요.');
     } finally {
       setDeleting(false);
     }
@@ -268,7 +256,7 @@ export default function EditOutfitPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>코디 삭제</AlertDialogTitle>
                 <AlertDialogDescription>
-                  이 코디를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                  이 코디를 삭제하시겠어요? 이 작업은 되돌릴 수 없어요.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -296,11 +284,7 @@ export default function EditOutfitPage() {
             </div>
 
             {/* 아이템 변경 버튼 */}
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setStep('items')}
-            >
+            <Button variant="outline" className="w-full" onClick={() => setStep('items')}>
               아이템 변경 ({selectedItems.length}개 선택됨)
             </Button>
 
@@ -348,10 +332,7 @@ export default function EditOutfitPage() {
             {/* 상황 */}
             <div className="space-y-2">
               <Label>상황</Label>
-              <Select
-                value={occasion}
-                onValueChange={(v) => setOccasion(v as Occasion)}
-              >
+              <Select value={occasion} onValueChange={(v) => setOccasion(v as Occasion)}>
                 <SelectTrigger>
                   <SelectValue placeholder="상황 선택 (선택)" />
                 </SelectTrigger>
@@ -393,9 +374,7 @@ export default function EditOutfitPage() {
           <div className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-lg font-semibold mb-1">옷을 선택하세요</h2>
-              <p className="text-sm text-muted-foreground">
-                코디에 포함할 옷을 골라주세요
-              </p>
+              <p className="text-sm text-muted-foreground">코디에 포함할 옷을 골라주세요</p>
             </div>
 
             <OutfitBuilder

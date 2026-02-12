@@ -126,7 +126,7 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
       }
     } catch (error) {
       console.error('[ReviewSection] Failed to load reviews:', error);
-      toast.error('리뷰를 불러오는데 실패했습니다.');
+      toast.error('리뷰를 불러오지 못했어요.');
     } finally {
       setIsLoading(false);
     }
@@ -188,7 +188,7 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
   // 리뷰 작성
   const handleSubmit = async (data: Omit<CreateReviewInput, 'productType' | 'productId'>) => {
     if (!user?.id) {
-      toast.error('로그인이 필요합니다.');
+      toast.error('로그인이 필요해요.');
       return;
     }
 
@@ -201,7 +201,7 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
           setReviews((prev) =>
             prev.map((r) => (r.id === editingReview.id ? { ...r, ...updated } : r))
           );
-          toast.success('리뷰가 수정되었습니다.');
+          toast.success('리뷰가 수정됐어요.');
         }
       } else {
         // 새 리뷰 작성
@@ -216,14 +216,14 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
           // 요약 업데이트
           const newSummary = await getReviewSummary(productType, productId);
           setSummary(newSummary);
-          toast.success('리뷰가 등록되었습니다.');
+          toast.success('리뷰가 등록됐어요.');
         }
       }
       setIsFormOpen(false);
       setEditingReview(null);
     } catch (error) {
       console.error('[ReviewSection] Failed to submit review:', error);
-      toast.error('리뷰 등록에 실패했습니다.');
+      toast.error('리뷰 등록에 실패했어요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -242,11 +242,11 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
         // 요약 업데이트
         const newSummary = await getReviewSummary(productType, productId);
         setSummary(newSummary);
-        toast.success('리뷰가 삭제되었습니다.');
+        toast.success('리뷰가 삭제됐어요.');
       }
     } catch (error) {
       console.error('[ReviewSection] Failed to delete review:', error);
-      toast.error('리뷰 삭제에 실패했습니다.');
+      toast.error('리뷰 삭제에 실패했어요.');
     } finally {
       setIsDeleting(false);
       setDeleteReviewId(null);
@@ -256,7 +256,7 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
   // 도움됨 토글
   const handleHelpful = async (reviewId: string, isHelpful: boolean) => {
     if (!user?.id) {
-      toast.error('로그인이 필요합니다.');
+      toast.error('로그인이 필요해요.');
       return;
     }
 
@@ -271,7 +271,7 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
   // 리뷰 작성 버튼 클릭
   const handleWriteClick = () => {
     if (!user) {
-      toast.error('로그인이 필요합니다.');
+      toast.error('로그인이 필요해요.');
       return;
     }
     setEditingReview(null);
@@ -362,8 +362,8 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
       <AlertDialog open={!!deleteReviewId} onOpenChange={() => setDeleteReviewId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>리뷰를 삭제하시겠습니까?</AlertDialogTitle>
-            <AlertDialogDescription>삭제된 리뷰는 복구할 수 없습니다.</AlertDialogDescription>
+            <AlertDialogTitle>리뷰를 삭제하시겠어요?</AlertDialogTitle>
+            <AlertDialogDescription>삭제된 리뷰는 복구할 수 없어요.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>

@@ -154,7 +154,7 @@ function EmptyState() {
     <Card className="border-dashed">
       <CardContent className="py-12 flex flex-col items-center text-center">
         <FolderOpen className="w-12 h-12 text-muted-foreground/50 mb-4" />
-        <h3 className="font-medium mb-2">저장된 코디가 없습니다</h3>
+        <h3 className="font-medium mb-2">저장된 코디가 없어요</h3>
         <p className="text-sm text-muted-foreground mb-4">마음에 드는 코디를 저장해보세요</p>
         <Button onClick={() => router.push('/outfit')}>코디 추천 보기</Button>
       </CardContent>
@@ -189,7 +189,7 @@ export default function SavedOutfitsPage() {
           <h1 className="text-2xl font-bold">저장된 코디</h1>
           <p className="text-muted-foreground text-sm">
             {totalCount > 0
-              ? `${totalCount}개의 코디가 저장되어 있습니다`
+              ? `${totalCount}개의 코디가 저장되어 있어요`
               : '저장된 코디를 관리하세요'}
           </p>
         </div>
@@ -232,7 +232,7 @@ export default function SavedOutfitsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>코디 삭제</AlertDialogTitle>
             <AlertDialogDescription>
-              이 코디를 삭제하시겠습니까? 삭제된 코디는 복구할 수 없습니다.
+              이 코디를 삭제하시겠어요? 삭제된 코디는 복구할 수 없어요.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -143,7 +143,9 @@ describe('NutritionDashboardPage', () => {
 
       await waitFor(() => {
         // 헤더의 h1 태그에 있는 제목 확인
-        expect(screen.getByRole('heading', { level: 1, name: '영양 대시보드' })).toBeInTheDocument();
+        expect(
+          screen.getByRole('heading', { level: 1, name: '영양 대시보드' })
+        ).toBeInTheDocument();
       });
     });
   });
@@ -282,7 +284,9 @@ describe('NutritionDashboardPage', () => {
 
       await waitFor(() => {
         // 에러 상태의 h2 제목 확인
-        expect(screen.getByRole('heading', { level: 2, name: /실패/ })).toBeInTheDocument();
+        expect(
+          screen.getByRole('heading', { level: 2, name: /불러오지 못했어요/ })
+        ).toBeInTheDocument();
       });
     });
   });

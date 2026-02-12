@@ -64,7 +64,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
         const challengeData = await getChallengeById(supabase, challengeId);
 
         if (!challengeData) {
-          toast.error('챌린지를 찾을 수 없습니다');
+          toast.error('챌린지를 찾을 수 없어요');
           router.push('/challenges');
           return;
         }
@@ -82,7 +82,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
         }
       } catch (error) {
         console.error('[ChallengeDetailPage] 데이터 조회 실패:', error);
-        toast.error('챌린지 정보를 불러오는데 실패했습니다');
+        toast.error('챌린지 정보를 불러오지 못했어요');
       } finally {
         setIsLoading(false);
       }
@@ -96,7 +96,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
   // 참여하기
   const handleJoin = async () => {
     if (!user?.id) {
-      toast.error('로그인이 필요합니다');
+      toast.error('로그인이 필요해요');
       return;
     }
 
@@ -106,13 +106,13 @@ export default function ChallengeDetailPage({ params }: PageProps) {
 
       if (result.success && result.userChallenge) {
         setUserChallenge(result.userChallenge);
-        toast.success('챌린지에 참여했습니다!');
+        toast.success('챌린지에 참여했어요!');
       } else {
-        toast.error(result.error || '참여에 실패했습니다');
+        toast.error(result.error || '참여에 실패했어요');
       }
     } catch (error) {
       console.error('[ChallengeDetailPage] 참여 실패:', error);
-      toast.error('챌린지 참여에 실패했습니다');
+      toast.error('챌린지 참여에 실패했어요');
     } finally {
       setIsJoining(false);
     }
@@ -128,14 +128,14 @@ export default function ChallengeDetailPage({ params }: PageProps) {
 
       if (success) {
         setUserChallenge((prev) => (prev ? { ...prev, status: 'abandoned' } : null));
-        toast.success('챌린지를 포기했습니다');
+        toast.success('챌린지를 포기했어요');
         router.push('/challenges');
       } else {
-        toast.error('포기 처리에 실패했습니다');
+        toast.error('포기 처리에 실패했어요');
       }
     } catch (error) {
       console.error('[ChallengeDetailPage] 포기 실패:', error);
-      toast.error('포기 처리에 실패했습니다');
+      toast.error('포기 처리에 실패했어요');
     } finally {
       setIsAbandoning(false);
     }
@@ -159,13 +159,13 @@ export default function ChallengeDetailPage({ params }: PageProps) {
           });
         }
 
-        toast.success(`🎉 축하합니다! ${result.xpAwarded || 0} XP를 획득했습니다!`);
+        toast.success(`🎉 축하해요! ${result.xpAwarded || 0} XP를 획득했어요!`);
       } else {
-        toast.error(result.error || '보상 수령에 실패했습니다');
+        toast.error(result.error || '보상 수령에 실패했어요');
       }
     } catch (error) {
       console.error('[ChallengeDetailPage] 보상 수령 실패:', error);
-      toast.error('보상 수령에 실패했습니다');
+      toast.error('보상 수령에 실패했어요');
     } finally {
       setIsClaiming(false);
     }
@@ -185,7 +185,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">챌린지를 찾을 수 없습니다</h2>
+          <h2 className="text-xl font-semibold mb-2">챌린지를 찾을 수 없어요</h2>
           <Link href="/challenges" className="text-primary hover:underline">
             챌린지 목록으로 돌아가기
           </Link>
@@ -285,7 +285,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
           <section className="rounded-2xl border-2 border-green-300 bg-green-50 dark:bg-green-950/20 p-6 text-center">
             <Gift className="w-12 h-12 text-green-500 mx-auto mb-3" />
             <h3 className="text-lg font-bold text-green-700 dark:text-green-400">
-              축하합니다! 챌린지를 완료했어요!
+              축하해요! 챌린지를 완료했어요!
             </h3>
             <p className="text-sm text-green-600 dark:text-green-500 mt-1 mb-4">
               아래 버튼을 눌러 보상을 받으세요
@@ -330,10 +330,9 @@ export default function ChallengeDetailPage({ params }: PageProps) {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>챌린지를 포기하시겠습니까?</AlertDialogTitle>
+                    <AlertDialogTitle>챌린지를 포기하시겠어요?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      포기하면 진행 상황이 모두 사라지고, 다시 시작해야 합니다. 정말
-                      포기하시겠습니까?
+                      포기하면 진행 상황이 모두 사라지고, 다시 시작해야 해요. 정말 포기하시겠어요?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -364,7 +363,7 @@ export default function ChallengeDetailPage({ params }: PageProps) {
         {/* 비로그인 안내 */}
         {!user && (
           <div className="text-center py-4 px-6 bg-muted rounded-xl">
-            <p className="text-sm text-muted-foreground">챌린지에 참여하려면 로그인이 필요합니다</p>
+            <p className="text-sm text-muted-foreground">챌린지에 참여하려면 로그인이 필요해요</p>
           </div>
         )}
       </div>

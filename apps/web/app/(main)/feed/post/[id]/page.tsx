@@ -72,7 +72,7 @@ export default function PostDetailPage() {
         const postData = await postRes.json();
 
         if (!postData.success) {
-          setError('포스트를 찾을 수 없습니다');
+          setError('포스트를 찾을 수 없어요');
           return;
         }
 
@@ -87,7 +87,7 @@ export default function PostDetailPage() {
         }
       } catch (err) {
         console.error('Failed to fetch post:', err);
-        setError('데이터를 불러오는데 실패했습니다');
+        setError('데이터를 불러오는데 실패했어요');
       } finally {
         setIsLoading(false);
       }
@@ -263,7 +263,7 @@ export default function PostDetailPage() {
         </header>
         <div className="flex flex-col items-center justify-center py-20">
           <p className="text-lg font-medium text-foreground">
-            {error || '포스트를 찾을 수 없습니다'}
+            {error || '포스트를 찾을 수 없어요'}
           </p>
           <button
             onClick={() => router.push('/feed')}

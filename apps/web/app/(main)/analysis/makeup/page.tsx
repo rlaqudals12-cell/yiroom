@@ -3,18 +3,18 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import Image from 'next/image';
 import Link from 'next/link';
-import { Clock, ArrowRight, Upload, Loader2, Palette, Sparkles } from 'lucide-react';
+import { Clock, ArrowRight, Upload, Loader2 } from 'lucide-react';
 import {
   type MakeupAnalysisResult,
-  type UndertoneId,
-  type MakeupConcernId,
-  type MakeupStyleId,
   generateMockMakeupAnalysisResult,
   UNDERTONES,
-  MAKEUP_CONCERNS,
 } from '@/lib/mock/makeup-analysis';
 import { Button } from '@/components/ui/button';
+import { MakeupGuide } from './_components/MakeupGuide';
+import { MakeupKnownTypeInput } from './_components/MakeupKnownTypeInput';
+import { MakeupAnalysisResultView } from './_components/MakeupAnalysisResultView';
 
 type AnalysisStep = 'guide' | 'upload' | 'known-input' | 'loading' | 'result';
 
@@ -31,13 +31,19 @@ function formatDate(date: Date): string {
   return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
 }
 
-// 기존 분석 결과 타입
-interface ExistingAnalysis {
+// 기존 분석 결과 타입 (_components에서도 공유)
+export interface ExistingAnalysis {
   id: string;
   overall_score: number;
   undertone: string;
   created_at: string;
 }
+
+const UNDERTONE_LABELS: Record<string, string> = {
+  warm: '웜톤',
+  cool: '쿨톤',
+  neutral: '뉴트럴',
+};
 
 export default function MakeupAnalysisPage() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -91,7 +97,6 @@ export default function MakeupAnalysisPage() {
     setError(null);
   }, []);
 
-  // 이미지 업로드 버튼 클릭
   const handleUploadClick = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
@@ -105,7 +110,6 @@ export default function MakeupAnalysisPage() {
     setError(null);
 
     try {
-      // 파일을 Base64로 변환
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve, reject) => {
         reader.onload = () => resolve(reader.result as string);
@@ -114,7 +118,6 @@ export default function MakeupAnalysisPage() {
       reader.readAsDataURL(imageFile);
       const imageBase64 = await base64Promise;
 
-      // API 호출
       const response = await fetch('/api/analyze/makeup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -153,11 +156,6 @@ export default function MakeupAnalysisPage() {
     }
   }, [imageFile, isSignedIn]);
 
-  // 알고 있는 타입으로 건너뛰기
-  const handleSkipToKnownInput = useCallback(() => {
-    setStep('known-input');
-  }, []);
-
   // 다시 분석하기
   const handleRetry = useCallback(() => {
     setImageFile(null);
@@ -184,13 +182,6 @@ export default function MakeupAnalysisPage() {
     }
   }, [step, error]);
 
-  // 언더톤 라벨
-  const undertoneLabels: Record<string, string> = {
-    warm: '웜톤',
-    cool: '쿨톤',
-    neutral: '뉴트럴',
-  };
-
   return (
     <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="makeup-analysis-page">
       <div className="max-w-lg mx-auto px-4 py-8">
@@ -203,10 +194,22 @@ export default function MakeupAnalysisPage() {
         {/* 에러 메시지 */}
         {error && (
           <div
-            className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
+            className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-sm"
             role="alert"
+            aria-live="assertive"
+            data-testid="makeup-error-banner"
           >
-            {error}. 다시 시도해주세요.
+            <p className="text-red-600">{error}</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRetry}
+              className="mt-2 text-red-600 hover:text-red-700 hover:bg-red-100 px-0"
+              aria-label="메이크업 분석 다시 시도"
+              data-testid="makeup-error-retry-button"
+            >
+              다시 시도하기 →
+            </Button>
           </div>
         )}
 
@@ -215,6 +218,8 @@ export default function MakeupAnalysisPage() {
           <Link
             href={`/analysis/makeup/result/${existingAnalysis.id}`}
             className="block mb-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl border border-pink-200 hover:shadow-md transition-shadow"
+            data-testid="makeup-existing-banner"
+            aria-label={`기존 메이크업 분석 결과 보기 (${existingAnalysis.overall_score}점)`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -228,7 +233,7 @@ export default function MakeupAnalysisPage() {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
                     {formatDate(new Date(existingAnalysis.created_at))} ·{' '}
-                    {undertoneLabels[existingAnalysis.undertone] || existingAnalysis.undertone}
+                    {UNDERTONE_LABELS[existingAnalysis.undertone] || existingAnalysis.undertone}
                   </div>
                 </div>
               </div>
@@ -239,41 +244,12 @@ export default function MakeupAnalysisPage() {
 
         {/* 촬영 가이드 */}
         {step === 'guide' && (
-          <div className="space-y-6">
-            <div className="bg-card rounded-xl p-6 shadow-sm">
-              <h2 className="font-semibold text-lg mb-4">📸 촬영 가이드</h2>
-              <ul className="space-y-3 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-pink-500">✓</span>
-                  밝은 자연광 아래에서 촬영해주세요
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-pink-500">✓</span>
-                  정면에서 얼굴 전체가 보이도록 촬영해주세요
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-pink-500">✓</span>
-                  민낯 상태에서 촬영하면 더 정확해요
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-red-400">✗</span>
-                  필터나 보정된 사진은 피해주세요
-                </li>
-              </ul>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                onClick={() => setStep('upload')}
-                className="flex-1 bg-pink-500 hover:bg-pink-600"
-              >
-                사진 선택하기
-              </Button>
-              <Button variant="outline" onClick={handleSkipToKnownInput}>
-                알고 있어요
-              </Button>
-            </div>
-          </div>
+          <MakeupGuide
+            existingAnalysis={existingAnalysis}
+            checkingExisting={checkingExisting}
+            onStartUpload={() => setStep('upload')}
+            onSkipToKnownInput={() => setStep('known-input')}
+          />
         )}
 
         {/* 사진 업로드 */}
@@ -285,15 +261,19 @@ export default function MakeupAnalysisPage() {
               accept="image/*"
               onChange={handleFileSelect}
               className="hidden"
+              aria-label="메이크업 분석용 사진 선택"
+              data-testid="makeup-file-input"
             />
 
             {imagePreview ? (
               <div className="space-y-4">
-                <div className="aspect-square rounded-xl overflow-hidden bg-muted">
-                  <img
+                <div className="aspect-square rounded-xl overflow-hidden bg-muted relative">
+                  <Image
                     src={imagePreview}
                     alt="선택된 이미지"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    unoptimized
                   />
                 </div>
                 <div className="flex gap-3">
@@ -304,6 +284,8 @@ export default function MakeupAnalysisPage() {
                     onClick={handleStartAnalysis}
                     disabled={isAnalyzing}
                     className="flex-1 bg-pink-500 hover:bg-pink-600"
+                    data-testid="makeup-analyze-button"
+                    aria-label="메이크업 분석 시작"
                   >
                     {isAnalyzing ? (
                       <>
@@ -320,6 +302,8 @@ export default function MakeupAnalysisPage() {
               <button
                 onClick={handleUploadClick}
                 className="w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-pink-500/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
+                aria-label="사진을 선택해주세요. 탭하여 갤러리에서 선택"
+                data-testid="makeup-upload-area"
               >
                 <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center">
                   <Upload className="w-8 h-8 text-pink-600" />
@@ -339,7 +323,7 @@ export default function MakeupAnalysisPage() {
 
         {/* 알고있는 타입 입력 */}
         {step === 'known-input' && (
-          <KnownTypeInput
+          <MakeupKnownTypeInput
             onSubmit={(undertone, concerns) => {
               const mockResult = generateMockMakeupAnalysisResult();
               setResult({
@@ -357,7 +341,11 @@ export default function MakeupAnalysisPage() {
 
         {/* 로딩 */}
         {step === 'loading' && (
-          <div className="flex flex-col items-center justify-center py-16">
+          <div
+            className="flex flex-col items-center justify-center py-16"
+            aria-live="polite"
+            data-testid="makeup-loading"
+          >
             <div className="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center mb-6 animate-pulse">
               <span className="text-4xl">💄</span>
             </div>
@@ -369,252 +357,9 @@ export default function MakeupAnalysisPage() {
 
         {/* 결과 */}
         {step === 'result' && result && (
-          <AnalysisResultView result={result} onRetry={handleRetry} />
+          <MakeupAnalysisResultView result={result} onRetry={handleRetry} />
         )}
       </div>
-    </div>
-  );
-}
-
-// 알고있는 타입 입력 컴포넌트
-function KnownTypeInput({
-  onSubmit,
-  onBack,
-}: {
-  onSubmit: (undertone: UndertoneId, concerns: MakeupConcernId[]) => void;
-  onBack: () => void;
-}) {
-  const [selectedUndertone, setSelectedUndertone] = useState<UndertoneId | null>(null);
-  const [selectedConcerns, setSelectedConcerns] = useState<MakeupConcernId[]>([]);
-
-  const toggleConcern = (id: MakeupConcernId) => {
-    setSelectedConcerns((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
-    );
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* 언더톤 선택 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">피부 톤을 선택해주세요</h3>
-        <div className="grid grid-cols-3 gap-3">
-          {UNDERTONES.map((tone) => (
-            <button
-              key={tone.id}
-              onClick={() => setSelectedUndertone(tone.id)}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                selectedUndertone === tone.id
-                  ? 'border-pink-500 bg-pink-50'
-                  : 'border-muted hover:border-pink-200'
-              }`}
-            >
-              <span className="text-2xl mb-2 block">{tone.emoji}</span>
-              <span className="font-medium text-sm">{tone.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 고민 선택 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">피부 고민을 선택해주세요 (복수 선택)</h3>
-        <div className="flex flex-wrap gap-2">
-          {MAKEUP_CONCERNS.map((concern) => (
-            <button
-              key={concern.id}
-              onClick={() => toggleConcern(concern.id)}
-              className={`px-3 py-2 rounded-full text-sm transition-all ${
-                selectedConcerns.includes(concern.id)
-                  ? 'bg-pink-500 text-white'
-                  : 'bg-muted hover:bg-muted/80'
-              }`}
-            >
-              {concern.emoji} {concern.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={onBack}>
-          ← 뒤로
-        </Button>
-        <Button
-          onClick={() => selectedUndertone && onSubmit(selectedUndertone, selectedConcerns)}
-          disabled={!selectedUndertone}
-          className="flex-1 bg-pink-500 hover:bg-pink-600"
-        >
-          결과 보기
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// 결과 보기 컴포넌트
-function AnalysisResultView({
-  result,
-  onRetry,
-}: {
-  result: MakeupAnalysisResult;
-  onRetry: () => void;
-}) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'good':
-        return 'text-green-600 bg-green-100';
-      case 'warning':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-pink-600 bg-pink-100';
-    }
-  };
-
-  const styleLabels: Record<MakeupStyleId, string> = {
-    natural: '내추럴',
-    glam: '글램',
-    cute: '큐트',
-    chic: '시크',
-    vintage: '빈티지',
-    edgy: '엣지',
-  };
-
-  return (
-    <div className="space-y-6" data-testid="makeup-analysis-result">
-      {/* 종합 점수 */}
-      <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-6 text-center">
-        <div className="w-24 h-24 mx-auto rounded-full bg-white shadow-lg flex items-center justify-center mb-4">
-          <span className="text-4xl font-bold text-pink-600">{result.overallScore}</span>
-        </div>
-        <h2 className="text-xl font-bold text-foreground">
-          {result.undertoneLabel} · {result.faceShapeLabel}
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {result.eyeShapeLabel} · {result.lipShapeLabel}
-        </p>
-      </div>
-
-      {/* 인사이트 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-pink-500" />
-          분석 요약
-        </h3>
-        <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
-      </div>
-
-      {/* 지표 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">📊 피부 상태</h3>
-        <div className="space-y-4">
-          {result.metrics.map((metric) => (
-            <div key={metric.id}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium">{metric.label}</span>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(metric.status)}`}
-                >
-                  {metric.value}점
-                </span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${
-                    metric.status === 'good'
-                      ? 'bg-green-500'
-                      : metric.status === 'warning'
-                        ? 'bg-red-500'
-                        : 'bg-pink-500'
-                  }`}
-                  style={{ width: `${metric.value}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 추천 스타일 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3 flex items-center gap-2">
-          <Palette className="w-4 h-4 text-pink-500" />
-          추천 메이크업 스타일
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {result.recommendedStyles.map((style, i) => (
-            <span key={i} className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm">
-              {styleLabels[style as MakeupStyleId] || style}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* 색상 추천 */}
-      {result.colorRecommendations.map((cr) => (
-        <div key={cr.category} className="bg-card rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold mb-3">💄 {cr.categoryLabel} 추천 색상</h3>
-          <div className="flex flex-wrap gap-3">
-            {cr.colors.map((color, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div
-                  className="w-8 h-8 rounded-full border-2 border-white shadow-md"
-                  style={{ backgroundColor: color.hex }}
-                />
-                <div>
-                  <p className="text-sm font-medium">{color.name}</p>
-                  <p className="text-xs text-muted-foreground">{color.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-
-      {/* 메이크업 팁 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3">✨ 메이크업 팁</h3>
-        <div className="space-y-4">
-          {result.makeupTips.map((tipGroup, i) => (
-            <div key={i}>
-              <p className="text-sm font-medium text-pink-600 mb-2">{tipGroup.category}</p>
-              <ul className="space-y-1">
-                {tipGroup.tips.map((tip, j) => (
-                  <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <span className="text-pink-500">•</span>
-                    {tip}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 퍼스널 컬러 연동 */}
-      {result.personalColorConnection && (
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
-          <h3 className="font-semibold mb-2 flex items-center gap-2">🎨 퍼스널 컬러 연동</h3>
-          <p className="text-sm text-muted-foreground mb-2">
-            예상 시즌:{' '}
-            <span className="font-medium text-foreground">
-              {result.personalColorConnection.season}
-            </span>
-          </p>
-          <p className="text-xs text-muted-foreground">{result.personalColorConnection.note}</p>
-          <Link
-            href="/analysis/personal-color"
-            className="inline-block mt-3 text-sm text-purple-600 hover:underline"
-          >
-            퍼스널 컬러 진단받기 →
-          </Link>
-        </div>
-      )}
-
-      {/* 버튼 */}
-      <Button onClick={onRetry} variant="outline" className="w-full">
-        다시 분석하기
-      </Button>
     </div>
   );
 }

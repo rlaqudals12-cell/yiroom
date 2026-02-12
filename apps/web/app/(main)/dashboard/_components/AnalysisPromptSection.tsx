@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Palette, Sparkles, User, Scissors, Heart, Lightbulb } from 'lucide-react';
+import { Palette, Sparkles, User, Scissors, Heart, SmilePlus, Lightbulb } from 'lucide-react';
 
 // 분석 카드 아이템 정의
 const ANALYSIS_CARDS = [
@@ -50,6 +50,15 @@ const ANALYSIS_CARDS = [
     gradient: 'from-pink-400 to-rose-500',
     recommended: false,
   },
+  {
+    id: 'oral-health',
+    title: '구강건강',
+    description: '치아·잇몸 건강 체크',
+    icon: SmilePlus,
+    href: '/analysis/oral-health',
+    gradient: 'from-cyan-400 to-blue-500',
+    recommended: false,
+  },
 ];
 
 /**
@@ -73,7 +82,7 @@ export default function AnalysisPromptSection() {
       </div>
 
       {/* 분석 카드 그리드 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
         {ANALYSIS_CARDS.map((card) => {
           const Icon = card.icon;
           return (

@@ -13,12 +13,7 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { MakeupAnalysisResult, ColorRecommendation } from '@/lib/mock/makeup-analysis';
 
 interface MakeupResultCardProps {
@@ -91,9 +86,7 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
               <CardTitle className={`text-2xl ${undertoneStyle.text}`}>
                 {result.undertoneLabel}
               </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                메이크업 분석 결과
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">메이크업 분석 결과</p>
             </div>
           </div>
           <div className="text-right">
@@ -103,14 +96,14 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
         </div>
 
         {/* 특징 뱃지 */}
-        <div className="flex flex-wrap gap-2 mt-4">
-          <Badge variant="secondary">
+        <div className="flex flex-wrap gap-2 mt-4" data-testid="makeup-feature-badges">
+          <Badge variant="secondary" aria-label={`눈 모양: ${result.eyeShapeLabel}`}>
             👁️ {result.eyeShapeLabel}
           </Badge>
-          <Badge variant="secondary">
+          <Badge variant="secondary" aria-label={`입술 모양: ${result.lipShapeLabel}`}>
             💋 {result.lipShapeLabel}
           </Badge>
-          <Badge variant="secondary">
+          <Badge variant="secondary" aria-label={`얼굴형: ${result.faceShapeLabel}`}>
             🔷 {result.faceShapeLabel}
           </Badge>
         </div>
@@ -124,7 +117,7 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
 
         {/* 탭 컨텐츠 */}
         <Tabs defaultValue="colors" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-4" aria-label="메이크업 분석 결과 탭">
             <TabsTrigger value="colors">추천 컬러</TabsTrigger>
             <TabsTrigger value="styles">추천 스타일</TabsTrigger>
             <TabsTrigger value="tips">메이크업 팁</TabsTrigger>
@@ -228,13 +221,12 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
                       : 'secondary'
                   }
                 >
-                  호환성: {
-                    result.personalColorConnection.compatibility === 'high'
-                      ? '높음'
-                      : result.personalColorConnection.compatibility === 'medium'
-                        ? '보통'
-                        : '낮음'
-                  }
+                  호환성:{' '}
+                  {result.personalColorConnection.compatibility === 'high'
+                    ? '높음'
+                    : result.personalColorConnection.compatibility === 'medium'
+                      ? '보통'
+                      : '낮음'}
                 </Badge>
               </div>
             </div>
@@ -265,10 +257,14 @@ function ColorCategoryCard({ category }: { category: ColorRecommendation }) {
           <TooltipProvider key={idx}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center gap-2 p-2 border rounded-lg hover:border-primary transition-colors cursor-pointer">
+                <div
+                  className="flex items-center gap-2 p-2 border rounded-lg hover:border-primary transition-colors cursor-pointer"
+                  aria-label={`${color.name} (${color.hex})`}
+                >
                   <div
                     className="w-8 h-8 rounded-lg shadow-sm border border-gray-200"
                     style={{ backgroundColor: color.hex }}
+                    aria-hidden="true"
                   />
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{color.name}</p>
@@ -290,7 +286,11 @@ function ColorCategoryCard({ category }: { category: ColorRecommendation }) {
 /**
  * 피부 지표 바
  */
-function MetricBar({ metric }: { metric: { id: string; label: string; value: number; status: string; description: string } }) {
+function MetricBar({
+  metric,
+}: {
+  metric: { id: string; label: string; value: number; status: string; description: string };
+}) {
   const statusColors = {
     good: 'bg-emerald-500',
     normal: 'bg-amber-500',
@@ -300,9 +300,11 @@ function MetricBar({ metric }: { metric: { id: string; label: string; value: num
   const barColor = statusColors[metric.status as keyof typeof statusColors] || statusColors.normal;
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1" data-testid={`metric-${metric.id}`}>
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">{metric.label}</span>
+        <span className="text-sm font-medium" id={`metric-label-${metric.id}`}>
+          {metric.label}
+        </span>
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold">{metric.value}점</span>
           <Badge
@@ -319,7 +321,14 @@ function MetricBar({ metric }: { metric: { id: string; label: string; value: num
           </Badge>
         </div>
       </div>
-      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div
+        className="h-2 bg-gray-100 rounded-full overflow-hidden"
+        role="progressbar"
+        aria-valuenow={metric.value}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-labelledby={`metric-label-${metric.id}`}
+      >
         <div
           className={`h-full rounded-full transition-all ${barColor}`}
           style={{ width: `${metric.value}%` }}

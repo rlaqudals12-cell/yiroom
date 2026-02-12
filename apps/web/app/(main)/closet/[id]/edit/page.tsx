@@ -120,18 +120,14 @@ export default function EditClothingPage() {
   // 시즌 토글
   const toggleSeason = (season: Season) => {
     setSeasons((prev) =>
-      prev.includes(season)
-        ? prev.filter((s) => s !== season)
-        : [...prev, season]
+      prev.includes(season) ? prev.filter((s) => s !== season) : [...prev, season]
     );
   };
 
   // 상황 토글
   const toggleOccasion = (occasion: Occasion) => {
     setOccasions((prev) =>
-      prev.includes(occasion)
-        ? prev.filter((o) => o !== occasion)
-        : [...prev, occasion]
+      prev.includes(occasion) ? prev.filter((o) => o !== occasion) : [...prev, occasion]
     );
   };
 
@@ -180,7 +176,7 @@ export default function EditClothingPage() {
       router.push('/closet');
     } catch (error) {
       console.error('[EditClothing] Error:', error);
-      alert('저장 중 오류가 발생했습니다.');
+      alert('저장 중 오류가 발생했어요.');
     } finally {
       setSaving(false);
     }
@@ -192,10 +188,7 @@ export default function EditClothingPage() {
 
     setDeleting(true);
     try {
-      const { error } = await supabase
-        .from('user_inventory')
-        .delete()
-        .eq('id', itemId);
+      const { error } = await supabase.from('user_inventory').delete().eq('id', itemId);
 
       if (error) {
         console.error('[EditClothing] Delete error:', error);
@@ -205,7 +198,7 @@ export default function EditClothingPage() {
       router.push('/closet');
     } catch (error) {
       console.error('[EditClothing] Error:', error);
-      alert('삭제 중 오류가 발생했습니다.');
+      alert('삭제 중 오류가 발생했어요.');
     } finally {
       setDeleting(false);
     }
@@ -254,7 +247,7 @@ export default function EditClothingPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>아이템 삭제</AlertDialogTitle>
                 <AlertDialogDescription>
-                  이 옷을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                  이 옷을 삭제하시겠어요? 이 작업은 되돌릴 수 없어요.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -277,11 +270,7 @@ export default function EditClothingPage() {
         <div className="flex justify-center">
           <div className="w-40 h-40 rounded-xl overflow-hidden bg-muted">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imageUrl}
-              alt={name}
-              className="w-full h-full object-contain"
-            />
+            <img src={imageUrl} alt={name} className="w-full h-full object-contain" />
           </div>
         </div>
 
@@ -400,10 +389,7 @@ export default function EditClothingPage() {
         {/* 패턴 */}
         <div className="space-y-2">
           <Label>패턴</Label>
-          <Select
-            value={pattern}
-            onValueChange={(v) => setPattern(v as Pattern)}
-          >
+          <Select value={pattern} onValueChange={(v) => setPattern(v as Pattern)}>
             <SelectTrigger>
               <SelectValue placeholder="패턴 선택" />
             </SelectTrigger>
@@ -453,12 +439,7 @@ export default function EditClothingPage() {
         </div>
 
         {/* 저장 버튼 */}
-        <Button
-          className="w-full"
-          size="lg"
-          onClick={handleSave}
-          disabled={saving || !name}
-        >
+        <Button className="w-full" size="lg" onClick={handleSave} disabled={saving || !name}>
           {saving ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

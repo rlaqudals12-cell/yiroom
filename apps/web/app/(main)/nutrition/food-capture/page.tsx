@@ -50,7 +50,7 @@ export default function FoodCapturePage() {
         const base64 = result.split(',')[1] || result;
         resolve(base64);
       };
-      reader.onerror = () => reject(new Error('파일 읽기에 실패했습니다.'));
+      reader.onerror = () => reject(new Error('파일 읽기에 실패했어요.'));
       reader.readAsDataURL(file);
     });
   }, []);
@@ -92,18 +92,18 @@ export default function FoodCapturePage() {
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.error || '음식 분석에 실패했습니다.');
+          throw new Error(error.error || '음식 분석에 실패했어요.');
         }
 
         const data = await response.json();
 
         if (!data.success) {
-          throw new Error(data.error || '음식 분석에 실패했습니다.');
+          throw new Error(data.error || '음식 분석에 실패했어요.');
         }
 
         // 음식이 인식되지 않은 경우
         if (data.warning || data.result.foods.length === 0) {
-          setErrorMessage('음식을 인식하지 못했습니다. 다시 촬영해주세요.');
+          setErrorMessage('음식을 인식하지 못했어요. 다시 촬영해주세요.');
           setPageState('error');
           return;
         }
@@ -129,9 +129,7 @@ export default function FoodCapturePage() {
         }
 
         console.error('[Food Capture] Analysis error:', error);
-        setErrorMessage(
-          error instanceof Error ? error.message : '음식 분석에 실패했습니다.'
-        );
+        setErrorMessage(error instanceof Error ? error.message : '음식 분석에 실패했어요.');
         setPageState('error');
       }
     },
@@ -178,12 +176,7 @@ export default function FoodCapturePage() {
         {/* 촬영된 사진 프리뷰 */}
         {previewImage && (
           <div className="relative aspect-square w-full max-w-xs mx-auto rounded-2xl overflow-hidden bg-muted">
-            <Image
-              src={previewImage}
-              alt="촬영된 음식 사진"
-              fill
-              className="object-cover"
-            />
+            <Image src={previewImage} alt="촬영된 음식 사진" fill className="object-cover" />
             {/* 로딩 오버레이 */}
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
               <div className="bg-card/90 rounded-full p-4">
@@ -198,11 +191,7 @@ export default function FoodCapturePage() {
 
         {/* 취소 버튼 */}
         <div className="flex justify-center">
-          <Button
-            onClick={handleCancel}
-            variant="outline"
-            className="w-full max-w-xs h-12"
-          >
+          <Button onClick={handleCancel} variant="outline" className="w-full max-w-xs h-12">
             취소
           </Button>
         </div>
@@ -235,18 +224,10 @@ export default function FoodCapturePage() {
           <p className="text-red-700 dark:text-red-300 mb-6">{errorMessage}</p>
 
           <div className="space-y-3">
-            <Button
-              onClick={handleRetry}
-              className="w-full h-12"
-              variant="default"
-            >
+            <Button onClick={handleRetry} className="w-full h-12" variant="default">
               다시 촬영하기
             </Button>
-            <Button
-              onClick={handleBack}
-              className="w-full h-12"
-              variant="outline"
-            >
+            <Button onClick={handleBack} className="w-full h-12" variant="outline">
               돌아가기
             </Button>
           </div>

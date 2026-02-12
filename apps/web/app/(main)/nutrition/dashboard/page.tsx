@@ -74,7 +74,7 @@ export default function NutritionDashboardPage() {
       ]);
 
       if (!mealsRes.ok || !waterRes.ok) {
-        throw new Error('데이터를 불러오는데 실패했습니다');
+        throw new Error('데이터를 불러오지 못했어요');
       }
 
       const mealsData = await mealsRes.json();
@@ -144,7 +144,7 @@ export default function NutritionDashboardPage() {
       });
     } catch (err) {
       console.error('[Dashboard] Fetch error:', err);
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다');
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했어요');
     } finally {
       setIsLoading(false);
     }
@@ -169,7 +169,7 @@ export default function NutritionDashboardPage() {
         });
 
         if (!res.ok) {
-          throw new Error('수분 기록 추가에 실패했습니다');
+          throw new Error('수분 기록 추가에 실패했어요');
         }
 
         // 데이터 새로고침
@@ -177,7 +177,7 @@ export default function NutritionDashboardPage() {
       } catch (err) {
         console.error('[Dashboard] Add water error:', err);
         // 간단한 에러 표시 (toast 대신)
-        alert(err instanceof Error ? err.message : '수분 기록 추가에 실패했습니다');
+        alert(err instanceof Error ? err.message : '수분 기록 추가에 실패했어요');
       } finally {
         setIsAddingWater(false);
       }
@@ -209,7 +209,7 @@ export default function NutritionDashboardPage() {
           <div className="rounded-2xl bg-red-50 dark:bg-red-950/50 p-6 text-center">
             <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500 dark:text-red-400" />
             <h2 className="mb-2 text-lg font-bold text-red-900 dark:text-red-100">
-              데이터를 불러오는데 실패했습니다
+              데이터를 불러오지 못했어요
             </h2>
             <p className="mb-4 text-red-700 dark:text-red-300">{error}</p>
             <button
@@ -317,7 +317,7 @@ export default function NutritionDashboardPage() {
           </h2>
 
           {data?.trafficLight.total === 0 ? (
-            <p className="text-center text-muted-foreground py-4">아직 기록된 음식이 없습니다</p>
+            <p className="text-center text-muted-foreground py-4">아직 기록된 음식이 없어요</p>
           ) : (
             <>
               {/* 신호등 바 */}

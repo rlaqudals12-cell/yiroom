@@ -107,10 +107,10 @@ export function FeedbackSheet({
           handleOpenChange(false);
         }, 2000);
       } else {
-        setErrors(['피드백 전송에 실패했습니다. 다시 시도해주세요.']);
+        setErrors(['피드백 전송에 실패했어요. 다시 시도해주세요.']);
       }
     } catch {
-      setErrors(['피드백 전송 중 오류가 발생했습니다.']);
+      setErrors(['피드백 전송 중 오류가 발생했어요.']);
     } finally {
       setIsSubmitting(false);
     }
@@ -136,9 +136,7 @@ export function FeedbackSheet({
             <MessageSquare className="h-5 w-5" />
             피드백 보내기
           </SheetTitle>
-          <SheetDescription>
-            버그 신고, 기능 제안, 또는 문의사항을 보내주세요.
-          </SheetDescription>
+          <SheetDescription>버그 신고, 기능 제안, 또는 문의사항을 보내주세요.</SheetDescription>
         </SheetHeader>
 
         {submitSuccess ? (
@@ -146,10 +144,8 @@ export function FeedbackSheet({
             <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
               <Check className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="font-semibold text-lg">피드백을 보내주셔서 감사합니다!</h3>
-            <p className="text-muted-foreground text-center">
-              소중한 의견을 검토 후 반영하겠습니다.
-            </p>
+            <h3 className="font-semibold text-lg">피드백을 보내주셔서 감사해요!</h3>
+            <p className="text-muted-foreground text-center">소중한 의견을 검토 후 반영할게요.</p>
           </div>
         ) : (
           <div className="mt-6 space-y-6">
@@ -171,21 +167,16 @@ export function FeedbackSheet({
             {/* 피드백 유형 */}
             <div className="space-y-2">
               <Label htmlFor="type">피드백 유형 *</Label>
-              <Select
-                value={type}
-                onValueChange={(v) => setType(v as FeedbackType)}
-              >
+              <Select value={type} onValueChange={(v) => setType(v as FeedbackType)}>
                 <SelectTrigger id="type" data-testid="feedback-type-select">
                   <SelectValue placeholder="유형을 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(FEEDBACK_TYPE_NAMES) as FeedbackType[]).map(
-                    (t) => (
-                      <SelectItem key={t} value={t}>
-                        {FEEDBACK_TYPE_ICONS[t]} {FEEDBACK_TYPE_NAMES[t]}
-                      </SelectItem>
-                    )
-                  )}
+                  {(Object.keys(FEEDBACK_TYPE_NAMES) as FeedbackType[]).map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {FEEDBACK_TYPE_ICONS[t]} {FEEDBACK_TYPE_NAMES[t]}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

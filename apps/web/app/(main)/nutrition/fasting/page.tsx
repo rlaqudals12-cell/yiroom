@@ -76,7 +76,7 @@ export default function FastingSettingsPage() {
       const response = await fetch('/api/nutrition/settings');
 
       if (!response.ok) {
-        throw new Error('설정을 불러오는데 실패했습니다');
+        throw new Error('설정을 불러오는 데 실패했어요');
       }
 
       const result = await response.json();
@@ -91,7 +91,7 @@ export default function FastingSettingsPage() {
       });
     } catch (err) {
       console.error('[N-1] Fasting settings fetch error:', err);
-      setError('설정을 불러오는 중 오류가 발생했습니다');
+      setError('설정을 불러오는 중 오류가 발생했어요');
     } finally {
       setIsLoading(false);
     }
@@ -185,13 +185,13 @@ export default function FastingSettingsPage() {
       });
 
       if (!response.ok) {
-        throw new Error('저장에 실패했습니다');
+        throw new Error('저장에 실패했어요');
       }
 
       router.back();
     } catch (err) {
       console.error('[N-1] Fasting settings save error:', err);
-      setError('저장 중 오류가 발생했습니다');
+      setError('저장 중 오류가 발생했어요');
     } finally {
       setIsSaving(false);
     }

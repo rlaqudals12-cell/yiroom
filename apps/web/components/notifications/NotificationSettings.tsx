@@ -249,14 +249,14 @@ export function NotificationSettings() {
         const subscription = await subscribeToPush();
         if (subscription) {
           setIsPushActive(true);
-          toast.success('푸시 알림이 활성화되었습니다!');
+          toast.success('푸시 알림이 활성화됐어요!');
         } else {
-          toast.success('알림 권한이 허용되었습니다!');
+          toast.success('알림 권한이 허용됐어요!');
         }
         setSettings((prev) => ({ ...prev, enabled: true }));
         showTestNotification();
       } else if (result === 'denied') {
-        toast.error('알림 권한이 거부되었습니다. 브라우저 설정에서 변경할 수 있습니다.');
+        toast.error('알림 권한이 거부됐어요. 브라우저 설정에서 변경할 수 있어요.');
       }
     } finally {
       setIsLoading(false);
@@ -271,15 +271,15 @@ export function NotificationSettings() {
         const success = await unsubscribeFromPush();
         if (success) {
           setIsPushActive(false);
-          toast.success('백그라운드 푸시 알림이 비활성화되었습니다.');
+          toast.success('백그라운드 푸시 알림이 비활성화됐어요.');
         }
       } else {
         const subscription = await subscribeToPush();
         if (subscription) {
           setIsPushActive(true);
-          toast.success('백그라운드 푸시 알림이 활성화되었습니다!');
+          toast.success('백그라운드 푸시 알림이 활성화됐어요!');
         } else {
-          toast.error('푸시 알림 등록에 실패했습니다.');
+          toast.error('푸시 알림 등록에 실패했어요.');
         }
       }
     } finally {
@@ -293,9 +293,9 @@ export function NotificationSettings() {
     try {
       const success = await sendTestPush();
       if (success) {
-        toast.success('테스트 푸시 알림을 발송했습니다!');
+        toast.success('테스트 푸시 알림을 발송했어요!');
       } else {
-        toast.error('푸시 알림 발송에 실패했습니다.');
+        toast.error('푸시 알림 발송에 실패했어요.');
       }
     } finally {
       setIsTestingPush(false);
@@ -309,12 +309,12 @@ export function NotificationSettings() {
 
   const handleTimeChange = (key: keyof DbNotificationSettings, time: string) => {
     setSettings((prev) => ({ ...prev, [key]: time }));
-    toast.success(`시간이 ${time}으로 설정되었습니다.`);
+    toast.success(`시간이 ${time}으로 설정됐어요.`);
   };
 
   const handleIntervalChange = (interval: number) => {
     setSettings((prev) => ({ ...prev, waterReminderInterval: interval }));
-    toast.success(`수분 섭취 알림 간격이 ${interval}시간으로 설정되었습니다.`);
+    toast.success(`수분 섭취 알림 간격이 ${interval}시간으로 설정됐어요.`);
   };
 
   // 지원하지 않는 브라우저
@@ -326,7 +326,7 @@ export function NotificationSettings() {
             <BellOff className="w-5 h-5 text-muted-foreground" />
             알림 설정
           </CardTitle>
-          <CardDescription>이 브라우저는 푸시 알림을 지원하지 않습니다.</CardDescription>
+          <CardDescription>이 브라우저는 푸시 알림을 지원하지 않아요.</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -369,7 +369,7 @@ export function NotificationSettings() {
               <div className="flex-1">
                 <p className="font-medium text-amber-900 mb-1">알림 권한 필요</p>
                 <p className="text-sm text-amber-700 mb-3">
-                  리마인더 알림을 받으려면 브라우저 알림 권한이 필요합니다.
+                  리마인더 알림을 받으려면 브라우저 알림 권한이 필요해요.
                 </p>
                 <Button
                   onClick={handleRequestPermission}
@@ -390,7 +390,7 @@ export function NotificationSettings() {
                 </Button>
                 {permission === 'denied' && (
                   <p className="text-xs text-amber-600 mt-2">
-                    브라우저 설정에서 알림 권한을 변경할 수 있습니다.
+                    브라우저 설정에서 알림 권한을 변경할 수 있어요.
                   </p>
                 )}
               </div>
@@ -640,7 +640,7 @@ export function NotificationSettings() {
               className="w-full"
               onClick={() => {
                 showTestNotification();
-                toast.success('테스트 알림을 보냈습니다!');
+                toast.success('테스트 알림을 보냈어요!');
               }}
               data-testid="test-notification-button"
             >

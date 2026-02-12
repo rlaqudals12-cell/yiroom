@@ -48,13 +48,13 @@ export default function WorkoutHistoryDetailPage() {
         }
 
         if (!data) {
-          throw new Error('운동 기록을 찾을 수 없습니다');
+          throw new Error('운동 기록을 찾을 수 없어요');
         }
 
         setLog(data as WorkoutLog);
       } catch (err) {
         console.error('[Workout History] Load error:', err);
-        setError(err instanceof Error ? err.message : '기록을 불러올 수 없습니다');
+        setError(err instanceof Error ? err.message : '기록을 불러올 수 없어요');
       } finally {
         setIsLoading(false);
       }
@@ -71,7 +71,7 @@ export default function WorkoutHistoryDetailPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h2 className="mb-2 text-xl font-semibold">로그인이 필요합니다</h2>
+          <h2 className="mb-2 text-xl font-semibold">로그인이 필요해요</h2>
           <p className="text-muted-foreground">운동 기록을 확인하려면 먼저 로그인해주세요</p>
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function WorkoutHistoryDetailPage() {
 
   if (error || !log) {
     return (
-      <ErrorState message={error || '기록을 찾을 수 없습니다'} onRetry={() => router.refresh()} />
+      <ErrorState message={error || '기록을 찾을 수 없어요'} onRetry={() => router.refresh()} />
     );
   }
 

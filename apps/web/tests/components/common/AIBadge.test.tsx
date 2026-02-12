@@ -5,7 +5,7 @@ import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 describe('AIBadge', () => {
   it('should render with default props', () => {
     render(<AIBadge />);
-    
+
     const badge = screen.getByTestId('ai-badge');
     expect(badge).toBeInTheDocument();
     expect(screen.getByText('AI 분석 결과')).toBeInTheDocument();
@@ -13,13 +13,13 @@ describe('AIBadge', () => {
 
   it('should render with custom label', () => {
     render(<AIBadge label="AI 생성" />);
-    
+
     expect(screen.getByText('AI 생성')).toBeInTheDocument();
   });
 
   it('should apply small variant styles', () => {
     render(<AIBadge variant="small" />);
-    
+
     const badge = screen.getByTestId('ai-badge');
     expect(badge).toHaveClass('px-2');
     expect(badge).toHaveClass('py-0.5');
@@ -27,14 +27,14 @@ describe('AIBadge', () => {
 
   it('should apply inline variant styles', () => {
     render(<AIBadge variant="inline" />);
-    
+
     const badge = screen.getByTestId('ai-badge');
     expect(badge).toHaveClass('px-1.5');
   });
 
   it('should apply card variant styles', () => {
     render(<AIBadge variant="card" />);
-    
+
     const badge = screen.getByTestId('ai-badge');
     expect(badge).toHaveClass('px-3');
     expect(badge).toHaveClass('py-1.5');
@@ -66,7 +66,7 @@ describe('AIBadge', () => {
 
   it('should apply custom className', () => {
     render(<AIBadge className="my-custom-class" />);
-    
+
     const badge = screen.getByTestId('ai-badge');
     expect(badge).toHaveClass('my-custom-class');
   });
@@ -75,7 +75,7 @@ describe('AIBadge', () => {
 describe('AITransparencyNotice', () => {
   it('should render full notice by default', () => {
     render(<AITransparencyNotice />);
-    
+
     const notice = screen.getByTestId('ai-transparency-notice');
     expect(notice).toBeInTheDocument();
     expect(screen.getByText('AI 기술 사용 안내')).toBeInTheDocument();
@@ -84,15 +84,15 @@ describe('AITransparencyNotice', () => {
 
   it('should render compact notice when compact prop is true', () => {
     render(<AITransparencyNotice compact />);
-    
+
     const notice = screen.getByTestId('ai-transparency-notice-compact');
     expect(notice).toBeInTheDocument();
-    expect(screen.getByText(/AI 기술을 사용하여 분석 결과를 제공합니다/)).toBeInTheDocument();
+    expect(screen.getByText(/AI 기술을 사용하여 분석 결과를 제공해요/)).toBeInTheDocument();
   });
 
   it('should apply custom className', () => {
     render(<AITransparencyNotice className="my-custom-class" />);
-    
+
     const notice = screen.getByTestId('ai-transparency-notice');
     expect(notice).toHaveClass('my-custom-class');
   });
@@ -100,7 +100,7 @@ describe('AITransparencyNotice', () => {
   it('should include professional consultation recommendation', () => {
     render(<AITransparencyNotice />);
 
-    expect(screen.getByText(/전문가 상담을 권장합니다/)).toBeInTheDocument();
+    expect(screen.getByText(/전문가 상담을 권장해요/)).toBeInTheDocument();
   });
 
   it('should have role note', () => {

@@ -99,14 +99,14 @@ export default function AddPantryItemPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || '저장에 실패했습니다');
+        throw new Error(error.error || '저장에 실패했어요');
       }
 
-      toast.success('재료가 추가되었습니다');
+      toast.success('재료가 추가되었어요');
       router.push('/inventory/pantry');
     } catch (err) {
       console.error('[AddPantryItem] Submit error:', err);
-      toast.error(err instanceof Error ? err.message : '오류가 발생했습니다');
+      toast.error(err instanceof Error ? err.message : '오류가 발생했어요');
     } finally {
       setIsSubmitting(false);
     }
@@ -261,7 +261,7 @@ export default function AddPantryItemPage() {
 
           {/* 안내 */}
           <p className="text-xs text-muted-foreground text-center mt-4">
-            등록한 재료로 레시피를 추천받을 수 있습니다
+            등록한 재료로 레시피를 추천받을 수 있어요
           </p>
         </div>
       </div>
