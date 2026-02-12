@@ -28,9 +28,9 @@ export default function MakeupAnalysisError({ error, reset }: ErrorProps) {
           </p>
           <div className="flex gap-3 justify-center">
             <Button variant="outline" asChild>
-              <Link href="/dashboard">
+              <Link href="/analysis">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                대시보드로
+                분석 목록으로
               </Link>
             </Button>
             <Button onClick={reset}>

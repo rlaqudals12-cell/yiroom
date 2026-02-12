@@ -69,6 +69,13 @@ function createMockGetRequest(): NextRequest {
   return req;
 }
 
+// 검증 통과용 mock base64 (min 100자)
+const MOCK_BASE64 = 'data:image/jpeg;base64,/9j/' + 'A'.repeat(100);
+const MOCK_BASE64_FRONT = 'data:image/jpeg;base64,/9j/' + 'F'.repeat(100);
+const MOCK_BASE64_LEFT = 'data:image/jpeg;base64,/9j/' + 'L'.repeat(100);
+const MOCK_BASE64_RIGHT = 'data:image/jpeg;base64,/9j/' + 'R'.repeat(100);
+const MOCK_BASE64_WRIST = 'data:image/jpeg;base64,/9j/' + 'W'.repeat(100);
+
 // Mock 데이터
 const mockPersonalColorResult = {
   seasonType: 'spring' as const,
@@ -150,9 +157,9 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          frontImageBase64: 'data:image/jpeg;base64,/9j/front',
-          leftImageBase64: 'data:image/jpeg;base64,/9j/left',
-          rightImageBase64: 'data:image/jpeg;base64,/9j/right',
+          frontImageBase64: MOCK_BASE64_FRONT,
+          leftImageBase64: MOCK_BASE64_LEFT,
+          rightImageBase64: MOCK_BASE64_RIGHT,
           useMock: true,
         })
       );
@@ -169,7 +176,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          frontImageBase64: 'data:image/jpeg;base64,/9j/front',
+          frontImageBase64: MOCK_BASE64_FRONT,
           useMock: true,
         })
       );
@@ -185,7 +192,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
           useMock: true,
         })
       );
@@ -201,8 +208,8 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          frontImageBase64: 'data:image/jpeg;base64,/9j/front',
-          leftImageBase64: 'data:image/jpeg;base64,/9j/left',
+          frontImageBase64: MOCK_BASE64_FRONT,
+          leftImageBase64: MOCK_BASE64_LEFT,
           useMock: true,
         })
       );
@@ -217,8 +224,8 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          frontImageBase64: 'data:image/jpeg;base64,/9j/front',
-          wristImageBase64: 'data:image/jpeg;base64,/9j/wrist',
+          frontImageBase64: MOCK_BASE64_FRONT,
+          wristImageBase64: MOCK_BASE64_WRIST,
           useMock: true,
         })
       );
@@ -264,7 +271,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
           useMock: true,
         })
       );
@@ -281,7 +288,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
           questionnaireAnswers: { q1: 'warm', q2: 'gold' },
           useMock: true,
         })
@@ -300,7 +307,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
         })
       );
       const json = await response.json();
@@ -316,7 +323,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
         })
       );
       const json = await response.json();
@@ -347,7 +354,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
         })
       );
       const json = await response.json();
@@ -380,7 +387,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
         })
       );
       const json = await response.json();
@@ -410,7 +417,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
         })
       );
       const json = await response.json();
@@ -427,7 +434,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
           useMock: true,
         })
       );
@@ -444,14 +451,14 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
           useMock: true,
         })
       );
       const json = await response.json();
 
       expect(response.status).toBe(500);
-      expect(json.error).toBe('Failed to save analysis');  // 이 에러는 API에서 직접 반환
+      expect(json.error).toBe('Failed to save analysis'); // 이 에러는 API에서 직접 반환
     });
   });
 
@@ -461,7 +468,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
           useMock: true,
           saveImage: true,
         })
@@ -476,7 +483,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
           useMock: true,
           saveImage: false,
         })
@@ -491,7 +498,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
           useMock: true,
           saveImage: true,
         })
@@ -509,7 +516,7 @@ describe('POST /api/analyze/personal-color', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: MOCK_BASE64,
           useMock: true,
         })
       );
