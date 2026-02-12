@@ -197,7 +197,7 @@ function MakeupAnalysisResultPage({ params }: { params: { id: string } }) {
           <button onClick={() => alert('공유')}>공유하기</button>
           <button
             onClick={() =>
-              (window.location.href = `/products?undertone=${result.undertone}&category=cosmetics`)
+              (window.location.href = `/products?undertone=${result.undertone}&category=makeup`)
             }
           >
             맞춤 화장품 보기
@@ -362,7 +362,7 @@ describe('MakeupAnalysisResultPage', () => {
       const productButton = screen.getByText('맞춤 화장품 보기');
       fireEvent.click(productButton);
 
-      expect(window.location.href).toBe('/products?undertone=warm&category=cosmetics');
+      expect(window.location.href).toBe('/products?undertone=warm&category=makeup');
     });
   });
 

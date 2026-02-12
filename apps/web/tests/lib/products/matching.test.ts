@@ -1012,4 +1012,80 @@ describe('엣지 케이스', () => {
       expect.objectContaining({ type: 'personalColor', matched: true })
     );
   });
+
+  it('hairTypes가 빈 배열이면 프로필 보너스 (undefined와 동일 처리)', () => {
+    const productEmptyHairTypes: CosmeticProduct = {
+      id: 'edge-empty-ht',
+      name: '샴푸',
+      brand: '테스트',
+      category: 'shampoo',
+      hairTypes: [],
+      priceKrw: 15000,
+      rating: 4.0,
+    };
+    const profile: UserProfile = { hairType: 'wavy' };
+    const result = calculateMatchScore(productEmptyHairTypes, profile);
+
+    // 빈 배열 → 데이터 없음 → matched: false, 보너스 10점
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'hairType', matched: false })
+    );
+  });
+
+  it('scalpTypes가 빈 배열이면 skinTypes로 폴백', () => {
+    const productEmptyScalpTypes: CosmeticProduct = {
+      id: 'edge-empty-st',
+      name: '스칼프 케어',
+      brand: '테스트',
+      category: 'scalp-care',
+      scalpTypes: [],
+      skinTypes: ['oily', 'normal'],
+      priceKrw: 18000,
+      rating: 4.0,
+    };
+    const profile: UserProfile = { scalpType: 'oily' };
+    const result = calculateMatchScore(productEmptyScalpTypes, profile);
+
+    // scalpTypes 빈 배열 → skinTypes 폴백 → oily 매칭
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'scalpType', matched: true })
+    );
+  });
+
+  it('undertones가 있지만 불일치 시 0점', () => {
+    const productCoolOnly: CosmeticProduct = {
+      id: 'edge-ut-mismatch',
+      name: '쿨톤 전용 립',
+      brand: '테스트',
+      category: 'makeup',
+      undertones: ['cool'],
+      priceKrw: 20000,
+      rating: 4.0,
+    };
+    const profile: UserProfile = { undertone: 'warm' };
+    const result = calculateMatchScore(productCoolOnly, profile);
+
+    // warm ∉ ['cool'] → matched: false, 0점
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ type: 'undertone', matched: false })
+    );
+    // 기본 20점 + 가격 보너스 15점 (priceKrw 20000 = budget) = 35점
+    // undertone 불일치 → 0점 (매칭 점수 추가 없음)
+    expect(result.score).toBe(35);
+  });
+
+  it('빈 프로필로 모든 제품 타입 기본점 확인', () => {
+    const emptyProfile: UserProfile = {};
+
+    const cosmeticResult = calculateMatchScore(mockCosmeticProduct, emptyProfile);
+    const supplementResult = calculateMatchScore(mockSupplementProduct, emptyProfile);
+    const equipmentResult = calculateMatchScore(mockWorkoutEquipment, emptyProfile);
+    const healthFoodResult = calculateMatchScore(mockHealthFood, emptyProfile);
+
+    // 모든 제품 타입에 기본점 부여
+    expect(cosmeticResult.score).toBeGreaterThanOrEqual(20);
+    expect(supplementResult.score).toBeGreaterThanOrEqual(20);
+    expect(equipmentResult.score).toBeGreaterThanOrEqual(20);
+    expect(healthFoodResult.score).toBeGreaterThanOrEqual(30); // healthFood 기본 30점
+  });
 });
