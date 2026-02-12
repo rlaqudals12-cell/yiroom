@@ -35,6 +35,10 @@ interface CosmeticSeedProduct {
   key_ingredients: string[] | null;
   avoid_ingredients: string[] | null;
   personal_color_seasons: string[] | null;
+  hair_types?: string[] | null;
+  scalp_types?: string[] | null;
+  face_shapes?: string[] | null;
+  undertones?: string[] | null;
   image_url: string | null;
   purchase_url: string | null;
   rating: number;
@@ -69,27 +73,29 @@ async function seedCosmeticProducts() {
   console.log(`  총 ${products.length}개 제품 발견`);
 
   // 배치 삽입 (프로덕션 DB 스키마에 맞춤)
-  const { data, error } = await supabase
-    .from('cosmetic_products')
-    .insert(
-      products.map((p) => ({
-        name: p.name,
-        brand: p.brand,
-        category: p.category,
-        subcategory: p.subcategory,
-        price_range: p.price_range,
-        price_krw: p.price_krw,
-        skin_types: p.skin_types,
-        concerns: p.concerns,
-        key_ingredients: p.key_ingredients,
-        personal_color_seasons: p.personal_color_seasons,
-        image_url: p.image_url,
-        purchase_url: p.purchase_url,
-        rating: p.rating,
-        review_count: p.review_count,
-        is_active: true,
-      }))
-    );
+  const { error } = await supabase.from('cosmetic_products').insert(
+    products.map((p) => ({
+      name: p.name,
+      brand: p.brand,
+      category: p.category,
+      subcategory: p.subcategory,
+      price_range: p.price_range,
+      price_krw: p.price_krw,
+      skin_types: p.skin_types,
+      concerns: p.concerns,
+      key_ingredients: p.key_ingredients,
+      personal_color_seasons: p.personal_color_seasons,
+      hair_types: p.hair_types ?? [],
+      scalp_types: p.scalp_types ?? [],
+      face_shapes: p.face_shapes ?? [],
+      undertones: p.undertones ?? [],
+      image_url: p.image_url,
+      purchase_url: p.purchase_url,
+      rating: p.rating,
+      review_count: p.review_count,
+      is_active: true,
+    }))
+  );
 
   if (error) {
     console.error('  ❌ 화장품 입력 실패:', error.message);
@@ -110,24 +116,22 @@ async function seedSupplementProducts() {
   console.log(`  총 ${products.length}개 제품 발견`);
 
   // 배치 삽입 (프로덕션 DB 스키마에 맞춤)
-  const { data, error } = await supabase
-    .from('supplement_products')
-    .insert(
-      products.map((p) => ({
-        name: p.name,
-        brand: p.brand,
-        category: p.category,
-        benefits: p.benefits,
-        main_ingredients: p.main_ingredients,
-        target_concerns: p.target_concerns,
-        price_krw: p.price_krw,
-        image_url: p.image_url,
-        purchase_url: p.purchase_url,
-        rating: p.rating,
-        review_count: p.review_count,
-        is_active: true,
-      }))
-    );
+  const { error } = await supabase.from('supplement_products').insert(
+    products.map((p) => ({
+      name: p.name,
+      brand: p.brand,
+      category: p.category,
+      benefits: p.benefits,
+      main_ingredients: p.main_ingredients,
+      target_concerns: p.target_concerns,
+      price_krw: p.price_krw,
+      image_url: p.image_url,
+      purchase_url: p.purchase_url,
+      rating: p.rating,
+      review_count: p.review_count,
+      is_active: true,
+    }))
+  );
 
   if (error) {
     console.error('  ❌ 영양제 입력 실패:', error.message);

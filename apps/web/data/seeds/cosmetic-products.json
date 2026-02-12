@@ -19,7 +19,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아누아 어성초 77 토너",
@@ -36,7 +40,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "SK-II 페이셜 트리트먼트 에센스",
@@ -53,7 +61,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "헉슬리 토너 익스트랙트 잇",
@@ -70,7 +82,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클레어스 서플 프레파레이션 토너",
@@ -87,7 +103,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이솝 파슬리 씨드 토너",
@@ -104,7 +124,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "소메바이미 AHA BHA PHA 토너",
@@ -121,7 +145,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "피지오겔 데일리 모이스처 테라피 토너",
@@ -138,7 +166,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "AHC 아우라 시크릿 토너",
@@ -155,7 +187,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 9000
+      "review_count": 9000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "빌리프 더 트루 크림 아쿠아 토너",
@@ -172,7 +208,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "달바 화이트 트러플 퍼스트 스프레이 세럼",
@@ -189,7 +229,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바이오더마 센시비오 토닉 로션",
@@ -206,7 +250,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "토니모리 원더 세라마이드 모찌 토너",
@@ -223,7 +271,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.2,
-      "review_count": 4000
+      "review_count": 4000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "네이처리퍼블릭 비타페어C 토너",
@@ -240,7 +292,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에스트라 아토베리어365 크림 미스트",
@@ -257,7 +313,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "더마비 데일리 모이스처 토너",
@@ -274,7 +334,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "키엘 캘린듈라 허벌 토너",
@@ -291,7 +355,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아비브 어성초 카밍 토너",
@@ -308,7 +376,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "원씽 갈락토미세스 퍼멘트 필트레이트",
@@ -325,7 +397,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터오라클 21스테이 A-테카 토너",
@@ -342,7 +418,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 4000
+      "review_count": 4000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "코스알엑스 달팽이 뮤신 에센스",
@@ -359,7 +439,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 그린티 씨드 세럼",
@@ -376,7 +460,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "미샤 타임 레볼루션 에센스",
@@ -393,7 +481,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "넘버즈인 3번 비타민C 세럼",
@@ -410,7 +502,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "토리든 다이브인 세럼",
@@ -427,7 +523,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에스티로더 어드밴스드 나이트 리페어",
@@ -444,7 +544,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "랑콤 제니피끄 세럼",
@@ -461,7 +565,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "설화수 윤조에센스",
@@ -478,7 +586,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "오브제 레티놀 0.3 세럼",
@@ -495,7 +607,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "코스알엑스 비타민C 23 세럼",
@@ -512,7 +628,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "디오디너리 나이아신아마이드 10%",
@@ -529,7 +649,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "디오디너리 히알루론산 2%",
@@ -546,7 +670,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "후 공진향 에센스",
@@ -563,7 +691,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이소이 불가리안 로즈 세럼",
@@ -580,7 +712,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "마녀공장 갈락 나이아신 2.0 에센스",
@@ -597,7 +733,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아누아 어성초 80 수딩 앰플",
@@ -614,7 +754,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "비플레인 시카풀 앰플",
@@ -631,7 +775,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라로슈포제 하이알루 B5 세럼",
@@ -648,7 +796,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터지 레드 블레미쉬 시카 수딩 세럼",
@@ -665,7 +817,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "키엘 데일리 리바이빙 컨센트레이트",
@@ -682,7 +838,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바이오더마 세비움 세럼",
@@ -699,7 +859,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에스트라 아토베리어365 히드로 수딩 크림",
@@ -716,7 +880,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 9000
+      "review_count": 9000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "AHC 프리미어 앰플 인 아이크림",
@@ -733,7 +901,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "헉슬리 오일 에센스",
@@ -750,7 +922,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라네즈 워터뱅크 블루 히알루로닉 크림",
@@ -767,7 +943,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 순정 모이스트 크림",
@@ -784,7 +964,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터지 레드 블레미쉬 크림",
@@ -801,7 +985,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "빌리프 더 트루 크림 모이스처라이징 밤",
@@ -818,7 +1006,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "설화수 자음수 에센셜 크림",
@@ -835,7 +1027,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "키엘 울트라 페이셜 크림",
@@ -852,7 +1048,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라로슈포제 시카플라스트 밤 B5",
@@ -869,7 +1069,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "AHC 유스 래스팅 리얼 아이크림",
@@ -886,7 +1090,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "피지오겔 DMT 페이셜 크림",
@@ -903,7 +1111,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "코스알엑스 오일프리 모이스처라이징 로션",
@@ -920,7 +1132,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 9000
+      "review_count": 9000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 그린티 씨드 크림",
@@ -937,7 +1153,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터자르트 세라마이딘 크림",
@@ -954,7 +1174,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클리니크 모이스처 서지 72시간",
@@ -971,7 +1195,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이오페 레티놀 엑스퍼트 0.1%",
@@ -988,7 +1216,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에스트라 아토베리어365 크림",
@@ -1005,7 +1237,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "더마비 데일리 모이스처 바디 로션",
@@ -1022,7 +1258,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "토리든 다이브인 저분자 히알루론산 크림",
@@ -1039,7 +1279,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "비플레인 녹두 클렌징 폼",
@@ -1056,7 +1300,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "마녀공장 퓨어 클렌징 오일",
@@ -1073,7 +1321,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이소이 액티 히알루론 클렌저",
@@ -1090,7 +1342,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 3000
+      "review_count": 3000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바이오더마 센시비오 H2O",
@@ -1107,7 +1363,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라운드랩 1025 독도 클렌저",
@@ -1124,7 +1384,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 그린티 클렌징 폼",
@@ -1141,7 +1405,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "세타필 젠틀 스킨 클렌저",
@@ -1158,7 +1426,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "코스알엑스 굿모닝 젤 클렌저",
@@ -1175,7 +1447,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라로슈포제 에파클라 클렌징 젤",
@@ -1192,7 +1468,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터지 레드 블레미쉬 클리어 수딩 폼",
@@ -1209,7 +1489,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "토리든 다이브인 클렌징 폼",
@@ -1226,7 +1510,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 순정 폼 클렌저",
@@ -1243,7 +1531,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.2,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아누아 어성초 포어 딥 클렌징 폼",
@@ -1260,7 +1552,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "DHC 딥 클렌징 오일",
@@ -1277,7 +1573,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "헉슬리 클렌징 젤",
@@ -1294,7 +1594,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 4000
+      "review_count": 4000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클레어스 젠틀 블랙 딥 클렌징 오일",
@@ -1311,7 +1615,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "프레시 소이 페이스 클렌저",
@@ -1328,7 +1636,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "AHC 클렌징 폼",
@@ -1345,7 +1657,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 9000
+      "review_count": 9000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "비오레 UV 아쿠아 리치 워터리 에센스",
@@ -1362,7 +1678,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라운드랩 자작나무 수분 선크림",
@@ -1379,7 +1699,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이소이 선밀크",
@@ -1396,7 +1720,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터지 그린 마일드 업 선 플러스",
@@ -1413,7 +1741,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라로슈포제 안텔리오스 UV뮨 400",
@@ -1430,7 +1762,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 순정 선프라이즈 마일드 밀크",
@@ -1447,7 +1783,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 데일리 UV 선스크린",
@@ -1464,7 +1804,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "미샤 올 어라운드 세이프 블록",
@@ -1481,7 +1825,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "토리든 다이브인 세럼 선크림",
@@ -1498,7 +1846,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "AHC 내추럴 퍼펙션 선스크린",
@@ -1515,7 +1867,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "피지오겔 UV 쉴드 선크림",
@@ -1532,7 +1888,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "정샘물 에센셜 스킨 누더 쿠션 선크림",
@@ -1549,7 +1909,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아비브 퀵 선스틱 프로텍션 바",
@@ -1566,7 +1930,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "메디힐 티트리 마스크",
@@ -1583,7 +1951,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터자르트 시카페어 마스크",
@@ -1600,7 +1972,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "롬앤 제로 벨벳 틴트 #13 이브닝",
@@ -1617,7 +1993,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "롬앤 제로 벨벳 틴트 #06 딥소울",
@@ -1634,7 +2014,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": null,
+      "undertones": ["cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "롬앤 쥬시 래스팅 틴트 #09 리치코지",
@@ -1651,7 +2035,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "페리페라 잉크 더 벨벳 #15 베리좋아",
@@ -1668,7 +2056,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "클리오 프로 아이팔레트 #04 스트리트브릭",
@@ -1685,7 +2077,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "클리오 프로 아이팔레트 #02 브라운슈",
@@ -1702,7 +2098,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "face_shapes": null,
+      "undertones": ["cool", "warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에뛰드 플레이컬러 아이즈 #와인파티",
@@ -1719,7 +2119,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 6000
+      "review_count": 6000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "정샘물 에센셜 스킨 누더 쿠션",
@@ -1736,7 +2140,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 7000
+      "review_count": 7000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "클리오 킬커버 파운웨어 쿠션",
@@ -1753,7 +2161,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "헤라 블랙 쿠션",
@@ -1770,7 +2182,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "이니스프리 노세범 미네랄 파우더",
@@ -1787,7 +2203,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 30000
+      "review_count": 30000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "투쿨포스쿨 아트클래스 바이로댕 쉐딩",
@@ -1804,7 +2224,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": ["round", "square", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "롬앤 쥬시 래스팅 틴트 #25 베어그레이프",
@@ -1821,7 +2245,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "롬앤 글래스팅 멜팅 밤 #02 로지브릭",
@@ -1838,7 +2266,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "페리페라 잉크 무드 매트 스틱 #09 피치코랄",
@@ -1855,7 +2287,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 6000
+      "review_count": 6000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에스쁘아 노웨어 베터 립스 #BE401",
@@ -1872,7 +2308,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 5000
+      "review_count": 5000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "맥 레트로 매트 립스틱 #루비우",
@@ -1889,7 +2329,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "디올 어딕트 립 글로우 #004 코랄",
@@ -1906,7 +2350,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에뛰드 플레이컬러 아이즈 #피치팜",
@@ -1923,7 +2371,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 7000
+      "review_count": 7000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "롬앤 베터 댄 팔레트 #01 파뮤더스트",
@@ -1940,7 +2392,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 9000
+      "review_count": 9000,
+      "face_shapes": null,
+      "undertones": ["cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에스쁘아 리얼 아이팔레트 #03 누드라이브러리",
@@ -1957,7 +2413,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 5000
+      "review_count": 5000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "어반디케이 네이키드3 팔레트",
@@ -1974,7 +2434,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "라네즈 네오쿠션 매트",
@@ -1991,7 +2455,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에뛰드 더블래스팅 쿠션 글로우",
@@ -2008,7 +2476,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8000
+      "review_count": 8000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에스쁘아 프로테일러 비글로우 쿠션",
@@ -2025,7 +2497,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 6000
+      "review_count": 6000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "클리오 킬커버 아이언 그립 쿠션",
@@ -2042,7 +2518,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 9000
+      "review_count": 9000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "투쿨포스쿨 아트클래스 바이로댕 하이라이터",
@@ -2059,7 +2539,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": ["oval", "heart", "round"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "클리오 프리즘 에어 블러셔 #01 코랄",
@@ -2076,7 +2560,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 7000
+      "review_count": 7000,
+      "face_shapes": ["oval", "heart", "round"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에뛰드 러블리 쿠키 블러셔 #OR201",
@@ -2093,7 +2581,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": ["oval", "heart", "round"],
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "셀퓨전씨 레이저 선스크린 100",
@@ -2110,7 +2602,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에스쁘아 워터 스플래쉬 선크림",
@@ -2127,7 +2623,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아벤느 뜨리세라 뉴트리 플루이드 로션",
@@ -2144,7 +2644,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "메디힐 N.M.F 인텐시브 하이드레이팅 마스크",
@@ -2161,7 +2665,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이오페 더마 리페어 시카 크림",
@@ -2178,7 +2686,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "스킨푸드 블랙슈가 퍼펙트 스크럽폼",
@@ -2195,7 +2707,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "파파레서피 봄비 허니 마스크",
@@ -2212,7 +2728,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "구달 청귤 비타C 세럼",
@@ -2229,7 +2749,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아벤느 시칼팔뜨 리페어 크림",
@@ -2246,7 +2770,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 9000
+      "review_count": 9000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "헤라 UV 미스트 쿠션",
@@ -2263,7 +2791,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "네오젠 더마로지 리얼 시카 패드",
@@ -2280,7 +2812,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "뷰티오브조선 글로우 딥 세럼",
@@ -2297,7 +2833,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아모레퍼시픽 빈티지 싱글 익스트랙트 에센스",
@@ -2314,7 +2854,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "조선미녀 맑은쌀 선크림",
@@ -2331,7 +2875,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "일리윤 세라마이드 아토 로션",
@@ -2348,7 +2896,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "메이크프렘 세이프 미 릴리프 모이스처 크림",
@@ -2365,7 +2917,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "차앤박 비타민 파워 10 포뮬라",
@@ -2382,7 +2938,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "VT 시카 스킨",
@@ -2399,7 +2959,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "스킨1004 마다가스카르 센텔라 앰플",
@@ -2416,7 +2980,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "올리브영 라운드어라운드 그린티 시카 진정 패드",
@@ -2433,7 +3001,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이즈앤트리 히알루론산 워터리 선젤",
@@ -2450,7 +3022,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 9000
+      "review_count": 9000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "웰라쥬 리얼 히알루로닉 블루 앰플",
@@ -2467,7 +3043,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "티르티르 마스크핏 레드 쿠션",
@@ -2484,7 +3064,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "아멜리 그라프톤 진주알 크림",
@@ -2501,7 +3085,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 4000
+      "review_count": 4000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "유세린 아쿠아포린 액티브 크림",
@@ -2518,7 +3106,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "프리메라 알파인 베리 워터리 크림",
@@ -2535,7 +3127,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "롬앤 한올 매트 틴트 #M01 더스티피치",
@@ -2552,7 +3148,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "클리오 슈퍼프루프 펜 라이너 킬블랙",
@@ -2569,7 +3169,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "헤라 블랙 마스카라",
@@ -2586,7 +3190,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "페리페라 잉크 블랙카라",
@@ -2603,7 +3211,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "정샘물 스킨 누더 퍼펙팅 파우더",
@@ -2620,7 +3232,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "입생로랑 루쥬 볼륍떼 샤인 #44",
@@ -2637,7 +3253,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "샤넬 루쥬 코코 블룸 #118",
@@ -2654,7 +3274,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 8000
+      "review_count": 8000,
+      "face_shapes": null,
+      "undertones": ["cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "아모스 녹차실활 에센스",
@@ -2671,7 +3295,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "스킨푸드 에그화이트 포어 폼",
@@ -2688,7 +3316,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.2,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "셀라피 AHA BHA PHA 데일리 클렌징 폼",
@@ -2705,7 +3337,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아크네스 약산성 폼 클렌저",
@@ -2722,7 +3358,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.2,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클럽클리오 누드이즘 물광 쿠션",
@@ -2739,7 +3379,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "롬앤 블러 퍼지 틴트 #01 퍼지피치",
@@ -2756,7 +3400,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "A'PIEU 쥬시팡 워터 틴트 #RD01",
@@ -2773,7 +3421,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": null,
+      "undertones": ["cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "홀리카홀리카 피스매칭 쉐도우",
@@ -2790,7 +3442,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.2,
-      "review_count": 6000
+      "review_count": 6000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "미샤 글로우 틴트 #RD01",
@@ -2807,7 +3463,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 7000
+      "review_count": 7000,
+      "face_shapes": null,
+      "undertones": ["cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "더페이스샵 잉크 래스팅 파운데이션 슬림핏",
@@ -2824,7 +3484,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 9000
+      "review_count": 9000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "이니스프리 비비드 코튼 잉크 #06",
@@ -2841,7 +3505,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 5000
+      "review_count": 5000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에뛰드 픽싱 틴트 #03 피치",
@@ -2858,7 +3526,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "3CE 벨벳 립 틴트 #TAUPE",
@@ -2875,7 +3547,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "3CE 무드 레시피 페이스 블러쉬 #ROSE BEIGE",
@@ -2892,7 +3568,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": ["oval", "heart", "round"],
+      "undertones": ["cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "설화수 윤조에센스",
@@ -2909,7 +3589,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "미샤 타임 레볼루션 아르테미시아 에센스",
@@ -2926,7 +3610,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "코스알엑스 어드밴스드 스네일 96 뮤신 파워 에센스",
@@ -2943,7 +3631,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 그린티 씨드 에센스",
@@ -2960,7 +3652,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에스티로더 어드밴스드 나이트 리페어 세럼",
@@ -2977,7 +3673,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.8,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 순정 에센스",
@@ -2994,7 +3694,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "오휘 더 퍼스트 제네추어 에센스",
@@ -3011,7 +3715,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "헤라 시그니아 에센스",
@@ -3028,7 +3736,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "설화수 진설 아이크림",
@@ -3045,7 +3757,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.8,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이오페 레티놀 엑스퍼트 아이크림",
@@ -3062,7 +3778,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에스티로더 어드밴스드 나이트 리페어 아이",
@@ -3079,7 +3799,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 그린티 씨드 아이크림",
@@ -3096,7 +3820,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라네즈 퍼펙트 리뉴 아이크림",
@@ -3113,7 +3841,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 7000
+      "review_count": 7000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "키엘 크리미 아이 트리트먼트 위드 아보카도",
@@ -3130,7 +3862,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "AHC 텐 레볼루션 리얼 아이크림 포 페이스",
@@ -3147,7 +3883,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "오휘 더 퍼스트 제네추어 아이크림",
@@ -3164,7 +3904,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 4000
+      "review_count": 4000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "메디힐 N.M.F 인텐시브 하이드레이팅 마스크",
@@ -3181,7 +3925,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 50000
+      "review_count": 50000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터자르트 시카페어 마스크",
@@ -3198,7 +3946,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아비브 구미 마스크 어성초",
@@ -3215,7 +3967,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라네즈 워터 슬리핑 마스크",
@@ -3232,7 +3988,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 수퍼 화산송이 모공 마스크",
@@ -3249,7 +4009,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "글로우레시피 워터멜론 슬리핑 마스크",
@@ -3266,7 +4030,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "스킨푸드 블랙슈가 마스크",
@@ -3283,7 +4051,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "토리든 다이브인 마스크",
@@ -3300,7 +4072,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "VT 시카 데일리 수딩 마스크",
@@ -3317,7 +4093,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "설화수 오버나이트 바이탈라이징 마스크",
@@ -3334,7 +4114,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라네즈 립 슬리핑 마스크",
@@ -3351,7 +4135,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 허니 세라 립밤",
@@ -3368,7 +4156,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "디올 어딕트 립 글로우",
@@ -3385,7 +4177,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "버츠비 비즈왁스 립밤",
@@ -3402,7 +4198,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "프레시 슈가 립 트리트먼트",
@@ -3419,7 +4219,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "일리윤 세라마이드 아토 로션",
@@ -3436,7 +4240,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아토팜 MLE 바디로션",
@@ -3453,7 +4261,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "뉴트로지나 노르웨이젼 포뮬러 바디로션",
@@ -3470,7 +4282,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "솔드 자몽 바디스크럽",
@@ -3487,7 +4303,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "더바디샵 시어버터 바디버터",
@@ -3504,7 +4324,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "조말론 잉글리쉬 페어 앤 프리지아 바디크림",
@@ -3521,7 +4345,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바이오더마 아토덤 인텐시브 밤",
@@ -3538,7 +4366,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "세타필 모이스처라이징 로션",
@@ -3555,12 +4387,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "모로칸오일 트리트먼트",
       "brand": "모로칸오일",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-oil",
       "price_range": "mid",
       "price_krw": 52000,
@@ -3572,12 +4408,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "미쟝센 퍼펙트 세럼",
       "brand": "미쟝센",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-serum",
       "price_range": "budget",
       "price_krw": 12000,
@@ -3589,12 +4429,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "케라스타즈 뉴트리티브 마스크",
       "brand": "케라스타즈",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-mask",
       "price_range": "premium",
       "price_krw": 65000,
@@ -3606,12 +4450,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라보테 헤어 에센스 미스트",
       "brand": "라보테",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-mist",
       "price_range": "budget",
       "price_krw": 15000,
@@ -3623,12 +4471,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아모스 녹차실감 샴푸",
       "brand": "아모스",
-      "category": "hair_care",
+      "category": "shampoo",
       "subcategory": "shampoo",
       "price_range": "mid",
       "price_krw": 28000,
@@ -3640,12 +4492,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터포헤어 폴리젠 샴푸",
       "brand": "닥터포헤어",
-      "category": "hair_care",
+      "category": "shampoo",
       "subcategory": "shampoo",
       "price_range": "mid",
       "price_krw": 35000,
@@ -3657,12 +4513,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "오지오 핸드 앤 헤어 크림",
       "brand": "오지오",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-cream",
       "price_range": "mid",
       "price_krw": 32000,
@@ -3674,12 +4534,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "려 자양윤모 샴푸",
       "brand": "려",
-      "category": "hair_care",
+      "category": "shampoo",
       "subcategory": "shampoo",
       "price_range": "budget",
       "price_krw": 15000,
@@ -3691,7 +4555,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "비오레 UV 아쿠아리치 워터리 에센스",
@@ -3708,7 +4576,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 40000
+      "review_count": 40000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이즈앤트리 하얀 선크림",
@@ -3725,7 +4597,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터지 브라이트닝 업 선",
@@ -3742,7 +4618,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라로슈포제 안뗄리오스 XL 플루이드",
@@ -3759,7 +4639,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클리오 킬 커버 선쿠션",
@@ -3776,7 +4660,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바닐라코 클린 잇 제로 클렌징 밤",
@@ -3793,7 +4681,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "더페이스샵 라이스 워터 브라이트 클렌징 폼",
@@ -3810,7 +4702,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "비욘드 피토가닉 클렌징 오일",
@@ -3827,7 +4723,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "토리든 발라클레이 클렌저",
@@ -3844,7 +4744,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "피지오겔 데일리 모이스처 테라피 클렌저",
@@ -3861,7 +4765,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "페리페라 잉크 벨벳",
@@ -3878,7 +4786,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 30000
+      "review_count": 30000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에뛰드 플레이 컬러 아이즈 와인파티",
@@ -3895,7 +4807,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "토니모리 백젤 아이라이너",
@@ -3912,7 +4828,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "미샤 매직쿠션 커버 래스팅",
@@ -3929,7 +4849,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "키스미 히로인 메이크 롱&컬 마스카라",
@@ -3946,7 +4870,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 40000
+      "review_count": 40000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "더샘 커버 퍼펙션 팁 컨실러",
@@ -3963,7 +4891,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 50000
+      "review_count": 50000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "클리오 프로 아이 팔레트",
@@ -3980,7 +4912,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 22000
+      "review_count": 22000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "맥 스튜디오 픽스 파우더",
@@ -3997,7 +4933,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "구달 청귤 비타C 잡티 토너패드",
@@ -4014,7 +4954,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 28000
+      "review_count": 28000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "벨리프 아쿠아 밤",
@@ -4031,7 +4975,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "벨리프 모이스처라이징 밤",
@@ -4048,7 +4996,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "넘버즈인 3번 비타민C 세럼",
@@ -4065,7 +5017,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "넘버즈인 5번 판테놀 세럼",
@@ -4082,7 +5038,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "일리윤 세라마이드 아토 집중크림",
@@ -4099,7 +5059,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "해피바스 오리지널 컬렉션 바디워시",
@@ -4116,7 +5080,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터브로너스 퓨어 캐스틸 솝",
@@ -4133,7 +5101,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "메이크프렘 세이프 미 릴리프 모이스처 크림",
@@ -4150,7 +5122,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "피카소 피카소 프로 아티스트 브러쉬 세트",
@@ -4167,7 +5143,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 8000
+      "review_count": 8000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "시세이도 얼티뮨 파워 인퓨징 컨센트레이트",
@@ -4184,7 +5164,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "랑콤 제니피끄 어드밴스드",
@@ -4201,7 +5185,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.8,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바이오레 메이크업 리무버 클렌징 리퀴드",
@@ -4218,7 +5206,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바이오더마 센시비오 H2O",
@@ -4235,7 +5227,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 45000
+      "review_count": 45000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "티르티르 마스크 핏 레드 쿠션",
@@ -4252,7 +5248,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 35000
+      "review_count": 35000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "클리오 킬 브로우 오토 하드",
@@ -4269,7 +5269,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 22000
+      "review_count": 22000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "이니스프리 노세범 미네랄 파우더",
@@ -4286,7 +5290,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 50000
+      "review_count": 50000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "홀리카홀리카 하트풀 립스틱",
@@ -4303,7 +5311,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.2,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에뛰드 드로잉 아이브로우 펜슬",
@@ -4320,7 +5332,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 45000
+      "review_count": 45000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "롬앤 쥬시 래스팅 틴트",
@@ -4337,7 +5353,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 60000
+      "review_count": 60000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "롬앤 베러 댄 아이즈",
@@ -4354,7 +5374,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 35000
+      "review_count": 35000,
+      "face_shapes": null,
+      "undertones": ["cool", "warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "롬앤 한올 샤프 브로우 펜슬",
@@ -4371,7 +5395,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에스쁘아 비 실크 커버 쿠션",
@@ -4388,7 +5416,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에스쁘아 쿠튀르 립 틴트 벨벳",
@@ -4405,7 +5437,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "나스 블러쉬",
@@ -4422,7 +5458,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": ["oval", "heart", "round"],
+      "undertones": ["cool", "warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "나스 라디언트 크리미 컨실러",
@@ -4439,7 +5479,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "샬롯틸버리 필로우 톡 립스틱",
@@ -4456,7 +5500,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "샬롯틸버리 플로리스 파우더",
@@ -4473,7 +5521,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.8,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "조르지오 아르마니 루미너스 실크 파운데이션",
@@ -4490,7 +5542,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.8,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "디올 백스테이지 아이 팔레트",
@@ -4507,7 +5563,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "디올 루즈 디올 립스틱",
@@ -4524,7 +5584,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "샤넬 레 베쥬 헬시 글로우 파운데이션",
@@ -4541,7 +5605,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "샤넬 루쥬 코코 블룸",
@@ -4558,7 +5626,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "입생로랑 르 꾸션 앙크르 드 뽀",
@@ -4575,7 +5647,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "입생로랑 루쥬 볼루테 샤인",
@@ -4592,7 +5668,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "브이티 리들샷 100 에센스",
@@ -4609,7 +5689,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "마녀공장 갈락토미 나이아신 에센스",
@@ -4626,7 +5710,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "마녀공장 비피다 바이옴 콤플렉스 앰플",
@@ -4643,7 +5731,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이소이 불가리안 로즈 포어 타이트닝 토너",
@@ -4660,7 +5752,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "프리메라 알파인 베리 워터리 크림",
@@ -4677,7 +5773,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "프리메라 미라클 시드 에센스",
@@ -4694,7 +5794,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이소이 텐 세럼",
@@ -4711,7 +5815,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "한율 쌀결 맑은 수분 에센스",
@@ -4728,7 +5836,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "한율 달빛 유자 수면팩",
@@ -4745,7 +5857,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "스킨1004 마다가스카르 센텔라 앰플",
@@ -4762,7 +5878,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "스킨1004 히알루 시카 워터핏 선세럼",
@@ -4779,7 +5899,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아비브 히알루론산 에센스",
@@ -4796,7 +5920,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "정샘물 에센셜 스타 듀 파운데이션",
@@ -4813,7 +5941,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "헤라 블랙 파운데이션",
@@ -4830,7 +5962,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "헤라 센슈얼 파우더 매트 립스틱",
@@ -4847,7 +5983,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "설화수 퍼펙팅 쿠션 인텐스",
@@ -4864,7 +6004,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "아이오페 에어쿠션 XP",
@@ -4881,7 +6025,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 22000
+      "review_count": 22000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "라네즈 네오 쿠션 매트",
@@ -4898,7 +6046,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "라네즈 네오 쿠션 글로우",
@@ -4915,7 +6067,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 30000
+      "review_count": 30000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에뛰드 픽싱 틴트",
@@ -4932,7 +6088,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": null,
+      "undertones": ["cool", "warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "바비브라운 인텐시브 스킨 세럼 파운데이션",
@@ -4949,12 +6109,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "그라펜 어니언 오일",
       "brand": "그라펜",
-      "category": "hair_care",
+      "category": "scalp-care",
       "subcategory": "scalp-oil",
       "price_range": "mid",
       "price_krw": 35000,
@@ -4966,12 +6130,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "TS 샴푸",
       "brand": "TS",
-      "category": "hair_care",
+      "category": "shampoo",
       "subcategory": "shampoo",
       "price_range": "mid",
       "price_krw": 28000,
@@ -4983,12 +6151,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "헤드앤숄더 클래식 클린 샴푸",
       "brand": "헤드앤숄더",
-      "category": "hair_care",
+      "category": "shampoo",
       "subcategory": "shampoo",
       "price_range": "budget",
       "price_krw": 12000,
@@ -5000,12 +6172,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 40000
+      "review_count": 40000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "케라시스 케라틴 실크 샴푸",
       "brand": "케라시스",
-      "category": "hair_care",
+      "category": "shampoo",
       "subcategory": "shampoo",
       "price_range": "budget",
       "price_krw": 10000,
@@ -5017,12 +6193,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "엘라스틴 퍼퓸 샴푸",
       "brand": "엘라스틴",
-      "category": "hair_care",
+      "category": "shampoo",
       "subcategory": "shampoo",
       "price_range": "budget",
       "price_krw": 12000,
@@ -5034,7 +6214,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아벤느 익스트림 리지 스킨 리커버리 크림",
@@ -5051,7 +6235,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라로슈포제 시카플라스트 밤 B5",
@@ -5068,7 +6256,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라로슈포제 에팔라 클렌징 젤",
@@ -5085,7 +6277,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "세라비 하이드레이팅 클렌저",
@@ -5102,7 +6298,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 28000
+      "review_count": 28000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "세라비 PM 페이셜 모이스처라이징 로션",
@@ -5119,7 +6319,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "오딧세이 바이 더 오션 퍼퓸",
@@ -5136,7 +6340,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "조말론 우드 세이지 앤 씨 솔트 향수",
@@ -5153,7 +6361,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "더블유드레스룸 드레스 퍼퓸",
@@ -5170,7 +6382,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바디판타지 바디 스프레이",
@@ -5187,7 +6403,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.2,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "피지컬 선스크린 선블록",
@@ -5204,7 +6424,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에센스 선 프로텍터",
@@ -5221,7 +6445,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 선프라이즈 마일드 에어리 피니쉬",
@@ -5238,7 +6466,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라운드랩 자작나무 수분 선크림",
@@ -5255,7 +6487,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아누아 피치 70 나이아신 세럼",
@@ -5272,7 +6508,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "토리든 다이브인 세럼",
@@ -5289,7 +6529,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "코스알엑스 AHA BHA 비타민C 세럼",
@@ -5306,7 +6550,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "코스알엑스 풀핏 프로폴리스 라이트 앰플",
@@ -5323,7 +6571,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "메디힐 콜라겐 에센셜 마스크",
@@ -5340,7 +6592,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "메디힐 티트리 케어 솔루션 마스크",
@@ -5357,7 +6613,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 40000
+      "review_count": 40000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "파파레서피 봄비 꿀 마스크",
@@ -5374,7 +6634,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 28000
+      "review_count": 28000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "제이엠솔루션 물광 SOS 앰플 마스크",
@@ -5391,7 +6655,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "리더스 인솔루션 아쿠아링거 마스크",
@@ -5408,7 +6676,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "오리진스 클리어 임프루브먼트 마스크",
@@ -5425,7 +6697,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "비오템 옴므 아쿠아파워",
@@ -5442,7 +6718,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "랩시리즈 멀티액션 페이스 워시",
@@ -5459,7 +6739,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 포레스트 포맨 올인원",
@@ -5476,7 +6760,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "오딧세이 포맨 올인원 로션",
@@ -5493,7 +6781,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "헤라 옴므 블랙 퍼펙트 로션",
@@ -5510,7 +6802,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이오페 맨 올인원 퍼펙트 세럼",
@@ -5527,7 +6823,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "설화수 옴므 리바이탈라이징 토너",
@@ -5544,7 +6844,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 4000
+      "review_count": 4000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아모레퍼시픽 타임 리스폰스 아이 리뉴 크림",
@@ -5561,7 +6865,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.8,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "크리니크 모이스처 서지",
@@ -5578,7 +6886,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "크리니크 드라마티컬리 디퍼런트 모이스처라이징 로션+",
@@ -5595,7 +6907,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "키엘 울트라 페이셜 크림",
@@ -5612,7 +6928,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "키엘 레티놀 스킨 리뉴잉 데일리 마이크로 도즈 세럼",
@@ -5629,7 +6949,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "프레시 로즈 딥 하이드레이션 페이스 크림",
@@ -5646,7 +6970,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "프레시 소이 페이스 클렌저",
@@ -5663,7 +6991,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "OPI 네일 폴리쉬",
@@ -5680,7 +7012,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에씨 네일 폴리쉬",
@@ -5697,7 +7033,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "미샤 셀프 네일 살롱",
@@ -5714,7 +7054,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.2,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "OPI 네일 엔비 스트렝스너",
@@ -5731,7 +7075,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "살리 한센 미라클 젤",
@@ -5748,7 +7096,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클리오 프로 플레이 멀티 팔레트",
@@ -5765,7 +7117,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "페리페라 스피디 스킨워시 클렌저",
@@ -5782,7 +7138,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아넷사 퍼펙트 UV 선크림 마일드 밀크",
@@ -5799,7 +7159,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아넷사 퍼펙트 UV 스킨케어 젤",
@@ -5816,7 +7180,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 28000
+      "review_count": 28000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "알리에 엑스트라 UV 젤",
@@ -5833,7 +7201,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "캔메이크 머메이드 스킨 젤 UV",
@@ -5850,7 +7222,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "스킨아쿠아 UV 슈퍼 모이스처 젤",
@@ -5867,7 +7243,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "달바 화이트 트러플 퍼스트 스프레이 세럼",
@@ -5884,7 +7264,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "달바 워터풀 선크림",
@@ -5901,7 +7285,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "넘버즈인 1번 토너패드",
@@ -5918,7 +7306,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바이오힐보 프로바이오덤 리프팅 크림",
@@ -5935,7 +7327,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "해피바스 아로마 바디미스트",
@@ -5952,7 +7348,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "존슨즈 베이비 로션",
@@ -5969,7 +7369,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 40000
+      "review_count": 40000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바셀린 딥 모이스처 바디로션",
@@ -5986,7 +7390,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "니베아 소프트 모이스처라이징 크림",
@@ -6003,7 +7411,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 45000
+      "review_count": 45000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "베네피트 단델리온 블러쉬",
@@ -6020,7 +7432,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": ["oval", "heart", "round"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "베네피트 후프 프로펠 브로우 펜슬",
@@ -6037,7 +7453,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "투쿨포스쿨 아이브로우 카라",
@@ -6054,7 +7474,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "투쿨포스쿨 아트클래스 바이 로댕",
@@ -6071,7 +7495,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": ["round", "square", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "더페이스샵 잉크 래스팅 파운데이션",
@@ -6088,12 +7516,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "아모스 데미지 리페어 헤어팩",
       "brand": "아모스",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-mask",
       "price_range": "mid",
       "price_krw": 25000,
@@ -6105,12 +7537,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "판틴 프로-V 미라클 헤어 오일",
       "brand": "판틴",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-oil",
       "price_range": "budget",
       "price_krw": 15000,
@@ -6122,12 +7558,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "로레알 파리 엘비브 엑스트라오디너리 오일",
       "brand": "로레알",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-oil",
       "price_range": "budget",
       "price_krw": 18000,
@@ -6139,12 +7579,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "도브 데미지 테라피 헤어팩",
       "brand": "도브",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-mask",
       "price_range": "budget",
       "price_krw": 12000,
@@ -6156,12 +7600,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "미쟝센 헬로버블 염색약",
       "brand": "미쟝센",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-color",
       "price_range": "budget",
       "price_krw": 8000,
@@ -6173,12 +7621,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "리엔 물들임 새치 커버",
       "brand": "리엔",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-color",
       "price_range": "budget",
       "price_krw": 12000,
@@ -6190,12 +7642,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "비욘드 피토가닉 샴푸",
       "brand": "비욘드",
-      "category": "hair_care",
+      "category": "shampoo",
       "subcategory": "shampoo",
       "price_range": "budget",
       "price_krw": 15000,
@@ -6207,12 +7663,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라보에이치 탈모증상 완화 샴푸",
       "brand": "라보에이치",
-      "category": "hair_care",
+      "category": "shampoo",
       "subcategory": "shampoo",
       "price_range": "mid",
       "price_krw": 28000,
@@ -6224,7 +7684,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 베터 립스 톡",
@@ -6241,7 +7705,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "헤라 블랙 쿠션",
@@ -6258,7 +7726,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "설화수 에센셜 컴포트 퍼밍 크림",
@@ -6275,7 +7747,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.8,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "헤라 에이지 어웨이 모디파잉 에센스",
@@ -6292,7 +7768,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라네즈 크림스킨",
@@ -6309,7 +7789,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 28000
+      "review_count": 28000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라네즈 워터뱅크 블루 하이드레이팅 크림",
@@ -6326,7 +7810,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "마몽드 로즈 워터 토너",
@@ -6343,7 +7831,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "마몽드 아쿠아 필 세럼",
@@ -6360,7 +7852,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 AC 클린업 토너",
@@ -6377,7 +7873,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 비자 트러블 스팟 에센스",
@@ -6394,7 +7894,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 그린티 씨드 스킨",
@@ -6411,7 +7915,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 소노컬러 립펜슬",
@@ -6428,7 +7936,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "맥 립글라스",
@@ -6445,7 +7957,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "맥 러스터 립스틱",
@@ -6462,7 +7978,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 22000
+      "review_count": 22000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "맥 미네랄라이즈 스킨피니쉬",
@@ -6479,7 +7999,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": ["oval", "heart", "round"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "바비브라운 크러쉬드 립 컬러",
@@ -6496,7 +8020,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "바비브라운 스모키 아이 마스카라",
@@ -6513,7 +8041,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "어반디케이 네이키드 팔레트",
@@ -6530,7 +8062,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "어반디케이 올나이터 세팅 스프레이",
@@ -6547,7 +8083,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "투페이스 베터 댄 섹스 마스카라",
@@ -6564,7 +8104,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 30000
+      "review_count": 30000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "투페이스 본 디스 웨이 파운데이션",
@@ -6581,7 +8125,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "타르트 셰이프 테이프 컨실러",
@@ -6598,7 +8146,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 28000
+      "review_count": 28000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "페리페라 잉크 에어리 벨벳",
@@ -6615,7 +8167,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에스쁘아 리얼 아이 팔레트",
@@ -6632,7 +8188,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "키스미 히로인 메이크 아이라이너",
@@ -6649,7 +8209,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 22000
+      "review_count": 22000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "데자뷰 필름타입 마스카라",
@@ -6666,7 +8230,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "캔메이크 크림 치크",
@@ -6683,7 +8251,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 25000
+      "review_count": 25000,
+      "face_shapes": ["oval", "heart", "round"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "캔메이크 파우더리 치크스",
@@ -6700,7 +8272,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": ["oval", "heart", "round"],
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "켄드랩 싱크 젤리 프라이머",
@@ -6717,7 +8293,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "문샷 마이크로 피트 쿠션",
@@ -6734,7 +8314,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "힌스 무드 인핸서 리퀴드 매트",
@@ -6751,7 +8335,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 18000
+      "review_count": 18000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "힌스 뉴 뎁스 아이섀도우 팔레트",
@@ -6768,7 +8356,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 22000
+      "review_count": 22000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "웨이크메이크 소프트 블러링 아이 팔레트",
@@ -6785,7 +8377,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "웨이크메이크 워터 벨벳 립틴트",
@@ -6802,7 +8398,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "아이즈 네일 케어 스트렝스너",
@@ -6819,7 +8419,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "네일리아 캣 아이 젤 폴리쉬",
@@ -6836,7 +8440,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "불리 비앙카 핸드크림",
@@ -6853,7 +8461,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "록시땅 시어 핸드크림",
@@ -6870,7 +8482,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "한율 시어 핸드크림",
@@ -6887,7 +8503,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "듀이트리 시카 플러스 밸런싱 앰플 마스크",
@@ -6904,7 +8524,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "뷰티오브조선 윤 세럼",
@@ -6921,7 +8545,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "뷰티오브조선 진생 에센스 워터",
@@ -6938,7 +8566,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 30000
+      "review_count": 30000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "뷰티오브조선 선스틱",
@@ -6955,7 +8587,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "글리티 덤프 쿠션",
@@ -6972,7 +8608,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "에스티로더 더블웨어 스테이 인 플레이스 메이크업",
@@ -6989,7 +8629,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.8,
-      "review_count": 35000
+      "review_count": 35000,
+      "face_shapes": ["oval", "round", "square", "heart", "oblong"],
+      "undertones": ["warm", "cool", "neutral"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "클라랑스 더블 세럼",
@@ -7006,7 +8650,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "시슬리아 프레스티지 크림",
@@ -7023,7 +8671,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.9,
-      "review_count": 3000
+      "review_count": 3000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라메르 크렘 드 라 메르",
@@ -7040,7 +8692,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.8,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라메르 더 트리트먼트 로션",
@@ -7057,7 +8713,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 5000
+      "review_count": 5000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "셀레네 칼라거스 세럼",
@@ -7074,7 +8734,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "순수 베스트 레티놀 세럼",
@@ -7091,7 +8755,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이소이 아이 리페어 세럼",
@@ -7108,7 +8776,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 6000
+      "review_count": 6000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "미샤 레볼루션 나이트 사이언스 에센스",
@@ -7125,7 +8797,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 몬스터 미셀라 클렌징 워터",
@@ -7142,7 +8818,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "스킨푸드 로열허니 프로폴리스 앰플",
@@ -7159,7 +8839,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "스킨푸드 캐롯 카로틴 캄 워터 패드",
@@ -7176,7 +8860,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "더마토리 하이포 알러제닉 시카 크림",
@@ -7193,7 +8881,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "네오젠 리얼 퍼멘트 마이크로 에센스",
@@ -7210,7 +8902,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "네오젠 그린 티 리얼 프레시 클렌징 스틱",
@@ -7227,7 +8923,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에스트라 아토베리어 365 크림",
@@ -7244,7 +8944,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "CNP 프로폴리스 에너지 앰플",
@@ -7261,7 +8965,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "CNP 인비저블 피링 부스터",
@@ -7278,7 +8986,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "피부피부 콜라겐 펩타이드 세럼",
@@ -7295,7 +9007,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "얼스레시피 수분가득 수박팩",
@@ -7312,7 +9028,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클렌징 티슈 올킬 클렌징 오일",
@@ -7329,7 +9049,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라벨영 쇼킹 토너",
@@ -7346,7 +9070,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아누아 어성초 클렌징 오일",
@@ -7363,7 +9091,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "더마비 세라 MD 수분 로션",
@@ -7380,7 +9112,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "달바 미스트 세럼",
@@ -7397,7 +9133,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "코스노리 화이트닝 드레스 크림",
@@ -7414,7 +9154,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "페리페라 잉크 더 벨벳 틴트",
@@ -7431,7 +9175,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 35000
+      "review_count": 35000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "조성아 루미너스 크림 립스틱",
@@ -7448,7 +9196,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 10000
+      "review_count": 10000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "바비 미에로 코튼 틴트",
@@ -7465,7 +9217,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "face_shapes": null,
+      "undertones": ["cool", "warm"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "메리몽드 립블러셔",
@@ -7482,7 +9238,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "face_shapes": null,
+      "undertones": ["warm", "cool"],
+      "hair_types": null,
+      "scalp_types": null
     },
     {
       "name": "셀퓨전씨 레이저 선스크린 100",
@@ -7499,7 +9259,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터지 레드 블레미쉬 시카 수딩 크림",
@@ -7516,7 +9280,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터펜티 블레미쉬 클리어 세럼",
@@ -7533,7 +9301,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클레어스 비타민 E 마스크",
@@ -7550,7 +9322,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클레어스 미드나잇 블루 칼밍 크림",
@@ -7567,7 +9343,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "피부과학자 AHA BHA 토너",
@@ -7584,7 +9364,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이소이 퓨어 딥 클린 버블 클렌저",
@@ -7601,7 +9385,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8000
+      "review_count": 8000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바닐라코 하이드레이팅 필오프 마스크",
@@ -7618,7 +9406,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아리따움 콜라겐 립 마스크",
@@ -7635,7 +9427,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "마몽드 핑크 플라워 틴티드 립밤",
@@ -7652,7 +9448,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 10000
+      "review_count": 10000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "해피바스 파파야 엔자임 파우더 워시",
@@ -7669,7 +9469,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "마몽드 로즈 워터 젤 크림",
@@ -7686,7 +9490,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 순정 마스크",
@@ -7703,7 +9511,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 20000
+      "review_count": 20000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 그린티 시드 에센스",
@@ -7720,7 +9532,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에스티로더 어드밴스드 나이트 리페어 에센스",
@@ -7737,7 +9553,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 32000
+      "review_count": 32000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "설화수 자음생 에센스",
@@ -7754,7 +9574,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "헤라 시그니아 에센스",
@@ -7771,7 +9595,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8500
+      "review_count": 8500,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "코스알엑스 갈락토미세스 95 에센스",
@@ -7788,7 +9616,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "시세이도 얼티뮨 아이 파워 인퓨징 컨센트레이트",
@@ -7805,7 +9637,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 9500
+      "review_count": 9500,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에스티로더 어드밴스드 나이트 리페어 아이",
@@ -7822,7 +9658,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아이오페 레티놀 엑스퍼트 아이크림",
@@ -7839,7 +9679,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 7200
+      "review_count": 7200,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "설화수 자음생 아이크림",
@@ -7856,7 +9700,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 6800
+      "review_count": 6800,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클리오 굿락 아이크림",
@@ -7873,7 +9721,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.2,
-      "review_count": 5500
+      "review_count": 5500,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "이니스프리 그린티 씨드 아이크림",
@@ -7890,7 +9742,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 9200
+      "review_count": 9200,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라네즈 립 슬리핑 마스크 베리",
@@ -7907,7 +9763,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 45000
+      "review_count": 45000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라네즈 립 슬리핑 마스크 바닐라",
@@ -7924,7 +9784,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 28000
+      "review_count": 28000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에뛰드 베어 립스 바이 에뛰드",
@@ -7941,7 +9805,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "니베아 립밤 오리지널",
@@ -7958,7 +9826,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "버츠비 비즈왁스 립밤",
@@ -7975,7 +9847,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 42000
+      "review_count": 42000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에씨네일 영양 강화 베이스코트",
@@ -7992,7 +9868,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 8500
+      "review_count": 8500,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "OPI 네일 엔비 오리지널",
@@ -8009,7 +9889,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "에씨 탑코트 젤 세터",
@@ -8026,7 +9910,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "버트비 레몬 버터 큐티클 크림",
@@ -8043,7 +9931,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 9800
+      "review_count": 9800,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "키엘 큐티클 오일",
@@ -8060,7 +9952,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6500
+      "review_count": 6500,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "메디힐 티트리 케어 솔루션 마스크",
@@ -8077,7 +9973,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 35000
+      "review_count": 35000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "JM솔루션 꿀 광채 황금 마스크",
@@ -8094,7 +9994,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 28000
+      "review_count": 28000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "스킨푸드 블랙슈가 퍼펙트 스크럽 마스크",
@@ -8111,7 +10015,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "글램글로우 슈퍼머드 클리어링 트리트먼트",
@@ -8128,7 +10036,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.3,
-      "review_count": 8500
+      "review_count": 8500,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "바디샵 히말라얀 차콜 퓨리파잉 클레이 워시",
@@ -8145,7 +10057,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 9500
+      "review_count": 9500,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아베다 체리 아몬드 바디 로션",
@@ -8162,7 +10078,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 7200
+      "review_count": 7200,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "뉴트로지나 바디 오일",
@@ -8179,7 +10099,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "솔드 자 카네이션 바디 스크럽",
@@ -8196,7 +10120,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 5800
+      "review_count": 5800,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "록시땅 시어버터 풋 크림",
@@ -8213,12 +10141,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "케라스타즈 뉴트리티브 밤 매지스트랄",
       "brand": "케라스타즈",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-treatment",
       "price_range": "premium",
       "price_krw": 58000,
@@ -8230,12 +10162,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 9800
+      "review_count": 9800,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "모로칸오일 트리트먼트 라이트",
       "brand": "모로칸오일",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-oil",
       "price_range": "premium",
       "price_krw": 52000,
@@ -8247,12 +10183,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 32000
+      "review_count": 32000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아베다 댐 데미지 레메디 트리트먼트",
       "brand": "아베다",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-treatment",
       "price_range": "premium",
       "price_krw": 48000,
@@ -8264,12 +10204,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 8500
+      "review_count": 8500,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라우쉬 허브 스칼프 토닉",
       "brand": "라우쉬",
-      "category": "hair_care",
+      "category": "scalp-care",
       "subcategory": "scalp-care",
       "price_range": "mid",
       "price_krw": 35000,
@@ -8281,12 +10225,16 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 6200
+      "review_count": 6200,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "미쟝센 퍼펙트 세럼 오리지널",
       "brand": "미쟝센",
-      "category": "hair_care",
+      "category": "hair-treatment",
       "subcategory": "hair-serum",
       "price_range": "budget",
       "price_krw": 12000,
@@ -8298,7 +10246,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 55000
+      "review_count": 55000,
+      "hair_types": ["straight", "wavy", "curly", "coily"],
+      "scalp_types": ["dry", "oily", "normal", "sensitive"],
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라로슈포제 안텔리오스 XL 플루이드",
@@ -8315,7 +10267,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 28000
+      "review_count": 28000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "클리오 킬커버 더 퍼펙트 UV 쿠션",
@@ -8332,7 +10288,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "아벤느 선 플루이드 미네랄",
@@ -8349,7 +10309,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 12000
+      "review_count": 12000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "닥터지 그린 마일드 업 선 플러스",
@@ -8366,7 +10330,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "토리든 다이브인 저분자 히알루론산 토너",
@@ -8383,7 +10351,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 48000
+      "review_count": 48000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "넘버즈인 3번 비타민C 토너",
@@ -8400,7 +10372,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "원씽 갈락토미세스 퍼멘트 필트레이트",
@@ -8417,7 +10393,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 15000
+      "review_count": 15000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "마녀공장 비피다 바이옴 콤플렉스 앰플 토너",
@@ -8434,7 +10414,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 25000
+      "review_count": 25000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "라운드랩 자작나무 수분 클렌징 폼",
@@ -8451,7 +10435,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.5,
-      "review_count": 22000
+      "review_count": 22000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "토리든 다이브인 저분자 히알루론산 클렌저",
@@ -8468,7 +10456,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.6,
-      "review_count": 28000
+      "review_count": 28000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "넘버즈인 1번 모공 딥클렌징 폼",
@@ -8485,7 +10477,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.4,
-      "review_count": 18000
+      "review_count": 18000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     },
     {
       "name": "마녀공장 퓨어 클렌징 오일",
@@ -8502,7 +10498,11 @@
       "image_url": null,
       "purchase_url": null,
       "rating": 4.7,
-      "review_count": 45000
+      "review_count": 45000,
+      "hair_types": null,
+      "scalp_types": null,
+      "face_shapes": null,
+      "undertones": null
     }
   ]
 }

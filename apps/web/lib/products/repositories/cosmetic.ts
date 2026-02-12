@@ -12,6 +12,10 @@ import type {
   SkinType,
   SkinConcern,
   PersonalColorSeason,
+  HairType,
+  ScalpType,
+  FaceShape,
+  Undertone,
 } from '@/types/product';
 
 // 타입 변환 함수
@@ -29,6 +33,10 @@ export function mapCosmeticRow(row: CosmeticProductRow): CosmeticProduct {
     keyIngredients: row.key_ingredients ?? undefined,
     avoidIngredients: row.avoid_ingredients ?? undefined,
     personalColorSeasons: row.personal_color_seasons as PersonalColorSeason[] | undefined,
+    hairTypes: row.hair_types as HairType[] | undefined,
+    scalpTypes: row.scalp_types as ScalpType[] | undefined,
+    faceShapes: row.face_shapes as FaceShape[] | undefined,
+    undertones: row.undertones as Undertone[] | undefined,
     imageUrl: row.image_url ?? undefined,
     purchaseUrl: row.purchase_url ?? undefined,
     rating: row.rating ?? undefined,
@@ -81,6 +89,22 @@ export async function getCosmeticProducts(
 
   if (filter?.personalColorSeasons && filter.personalColorSeasons.length > 0) {
     query = query.contains('personal_color_seasons', filter.personalColorSeasons);
+  }
+
+  if (filter?.hairTypes && filter.hairTypes.length > 0) {
+    query = query.contains('hair_types', filter.hairTypes);
+  }
+
+  if (filter?.scalpTypes && filter.scalpTypes.length > 0) {
+    query = query.contains('scalp_types', filter.scalpTypes);
+  }
+
+  if (filter?.faceShapes && filter.faceShapes.length > 0) {
+    query = query.contains('face_shapes', filter.faceShapes);
+  }
+
+  if (filter?.undertones && filter.undertones.length > 0) {
+    query = query.contains('undertones', filter.undertones);
   }
 
   const { data, error } = await query.order('rating', { ascending: false });

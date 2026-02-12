@@ -18,27 +18,54 @@ export type PriceRange = 'budget' | 'mid' | 'premium';
 
 /** 화장품 카테고리 */
 export type CosmeticCategory =
+  // 스킨케어
   | 'cleanser' // 클렌저
   | 'toner' // 토너
-  | 'serum' // 세럼/에센스
+  | 'serum' // 세럼
+  | 'essence' // 에센스
   | 'moisturizer' // 수분크림
+  | 'eye_cream' // 아이크림
   | 'sunscreen' // 선크림
   | 'mask' // 마스크팩
+  // 메이크업
   | 'makeup' // 메이크업
-  // v2: 헤어케어 (H-1 모듈)
+  // 헤어케어 (H-1 모듈)
   | 'shampoo' // 샴푸
   | 'conditioner' // 컨디셔너/린스
   | 'hair-treatment' // 헤어 트리트먼트
-  | 'scalp-care'; // 두피 케어
+  | 'scalp-care' // 두피 케어
+  // 바디/기타
+  | 'body_care' // 바디케어
+  | 'lip_care' // 립케어
+  | 'nail_care'; // 네일케어
 
 /** 메이크업 서브카테고리 */
 export type MakeupSubcategory =
+  // 베이스
+  | 'primer' // 프라이머
   | 'foundation' // 파운데이션
-  | 'lip' // 립
-  | 'eye' // 아이
+  | 'cushion' // 쿠션
+  | 'concealer' // 컨실러
+  | 'powder' // 파우더
+  | 'setting-spray' // 세팅 스프레이
+  // 컬러
   | 'blush' // 블러셔
+  | 'contour' // 컨투어링
+  | 'highlighter' // 하이라이터
+  // 브로우
   | 'brow' // 브로우
-  | 'contour'; // 컨투어링 (M-1 모듈)
+  // 아이
+  | 'eye' // 아이 (통합)
+  | 'eyeshadow' // 아이섀도우
+  | 'eyeliner' // 아이라이너
+  | 'mascara' // 마스카라
+  // 립
+  | 'lip' // 립
+  | 'lip-gloss' // 립글로스
+  | 'lip-liner' // 립라이너
+  // 기타
+  | 'multi-palette' // 멀티 팔레트
+  | 'brush'; // 브러시/도구
 
 /** 피부 타입 */
 export type SkinType = 'dry' | 'oily' | 'combination' | 'sensitive' | 'normal';
