@@ -83,7 +83,6 @@ export default function FeedbackPage() {
       // API 응답 확인 (DB 저장 결과)
       const result = await response.json();
       if (result.success) {
-        console.log('[Feedback] 피드백 저장 완료:', result.id);
       }
 
       setIsSubmitted(true);

@@ -257,7 +257,6 @@ export async function analyzeIngredientsWithAI(
 ): Promise<AIIngredientSummary> {
   // Mock 모드 확인
   if (process.env.FORCE_MOCK_AI === 'true') {
-    console.log('[IngredientAnalysis] Using mock (FORCE_MOCK_AI=true)');
     return generateMockIngredientSummary(ingredients);
   }
 
@@ -307,7 +306,6 @@ export async function analyzeIngredientsWithAI(
         throw new Error('Missing required fields in response');
       }
 
-      console.log('[IngredientAnalysis] AI analysis completed');
       return parsed;
     } catch (error) {
       const isLastAttempt = attempt === MAX_RETRIES;

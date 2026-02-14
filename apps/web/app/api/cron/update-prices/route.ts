@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  console.log('[Cron] Starting scheduled price update...');
+  console.info('[Cron] Starting scheduled price update...');
 
   try {
     // 각 타입당 100개씩 업데이트 (총 400개)
@@ -99,9 +99,7 @@ export async function GET(request: NextRequest) {
       summary.workout_equipment.failed +
       summary.health_food.failed;
 
-    console.log(
-      `[Cron] Price update completed: ${totalSuccess} success, ${totalFailed} failed`
-    );
+    console.info(`[Cron] Price update completed: ${totalSuccess} success, ${totalFailed} failed`);
 
     return NextResponse.json({
       success: true,

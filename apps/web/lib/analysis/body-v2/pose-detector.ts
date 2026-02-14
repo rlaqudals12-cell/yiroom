@@ -36,7 +36,9 @@ interface MediaPipePoseResults {
 interface MediaPipePose {
   setOptions: (options: Partial<MediaPipePoseOptions>) => void;
   onResults: (callback: (results: MediaPipePoseResults) => void) => void;
-  send: (input: { image: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement }) => Promise<void>;
+  send: (input: {
+    image: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement;
+  }) => Promise<void>;
   close: () => void;
 }
 
@@ -165,7 +167,6 @@ export async function initPose(): Promise<MediaPipePose> {
       });
 
       poseInstance = pose;
-      console.log('[Pose] MediaPipe Pose 초기화 완료');
 
       return pose;
     } catch (error) {
@@ -190,7 +191,6 @@ export function closePose(): void {
     }
     poseInstance = null;
     loadPromise = null;
-    console.log('[Pose] MediaPipe Pose 해제 완료');
   }
 }
 
@@ -217,7 +217,6 @@ export function isPoseLoaded(): boolean {
  * const result = await detectPose(imageBase64);
  * if (result.confidence > 0.7) {
  *   const leftShoulder = result.landmarks[POSE_LANDMARK_INDEX.LEFT_SHOULDER];
- *   console.log('왼쪽 어깨:', leftShoulder);
  * }
  */
 export async function detectPose(imageBase64: string): Promise<PoseDetectionResult> {
@@ -280,10 +279,7 @@ export async function detectPose(imageBase64: string): Promise<PoseDetectionResu
  * @param minVisibility - 최소 가시성 임계값 (기본 0.5)
  * @returns 유효 여부
  */
-export function validatePoseLandmarks(
-  landmarks: Landmark33[],
-  minVisibility = 0.5
-): boolean {
+export function validatePoseLandmarks(landmarks: Landmark33[], minVisibility = 0.5): boolean {
   if (landmarks.length !== 33) {
     return false;
   }

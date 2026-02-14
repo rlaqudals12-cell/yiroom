@@ -78,7 +78,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Failed to update stats' }, { status: 500 });
     }
 
-    console.log('[CommunityStats Cron] Updated stats for', today);
+    console.info('[CommunityStats Cron] Updated stats for', today);
 
     return NextResponse.json({
       success: true,

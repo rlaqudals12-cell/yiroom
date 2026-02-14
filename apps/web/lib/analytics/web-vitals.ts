@@ -65,7 +65,7 @@ function reportVital(metric: Metric): void {
   // 콘솔 로그 (개발 환경)
   if (process.env.NODE_ENV === 'development') {
     const formattedValue = name === 'CLS' ? value.toFixed(3) : `${value.toFixed(0)}ms`;
-    console.log(`[Web Vitals] ${name}: ${formattedValue} (${rating})`);
+    console.debug(`[Web Vitals] ${name}: ${formattedValue} (${rating})`);
   }
 
   // 성능 저하 시 Sentry에 이벤트 전송

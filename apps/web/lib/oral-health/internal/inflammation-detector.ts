@@ -22,7 +22,7 @@ function mean(values: number[]): number {
 function standardDeviation(values: number[]): number {
   if (values.length === 0) return 0;
   const avg = mean(values);
-  const squareDiffs = values.map(v => Math.pow(v - avg, 2));
+  const squareDiffs = values.map((v) => Math.pow(v - avg, 2));
   return Math.sqrt(mean(squareDiffs));
 }
 
@@ -48,19 +48,19 @@ export function detectGumInflammation(gumPixels: LabColor[]): GumHealthMetrics {
   }
 
   // a* 값 통계 계산
-  const aStarValues = gumPixels.map(p => p.a);
+  const aStarValues = gumPixels.map((p) => p.a);
   const aStarMean = mean(aStarValues);
   const aStarStd = standardDeviation(aStarValues);
 
   // 붉은 영역 비율 (a* > 15)
-  const redPixels = aStarValues.filter(a => a > 15);
+  const redPixels = aStarValues.filter((a) => a > 15);
   const rednessPercentage = (redPixels.length / aStarValues.length) * 100;
 
   // 부종 지표 (L* 감소 + a* 증가 조합)
   // 부은 잇몸은 어두워지고(L* 감소) 붉어짐(a* 증가)
-  const lStarValues = gumPixels.map(p => p.L);
+  const lStarValues = gumPixels.map((p) => p.L);
   const lStarMean = mean(lStarValues);
-  const swellingIndicator = Math.max(0, (aStarMean - 10) * (70 - lStarMean) / 100);
+  const swellingIndicator = Math.max(0, ((aStarMean - 10) * (70 - lStarMean)) / 100);
 
   return {
     aStarMean,
@@ -86,9 +86,9 @@ export function classifyGumHealth(metrics: GumHealthMetrics): {
 
   // 염증 점수 계산 (0-100)
   let inflammationScore = 0;
-  inflammationScore += Math.min(40, aStarMean * 2);           // a* 기여 (최대 40)
+  inflammationScore += Math.min(40, aStarMean * 2); // a* 기여 (최대 40)
   inflammationScore += Math.min(30, rednessPercentage * 0.5); // 붉은 영역 기여 (최대 30)
-  inflammationScore += Math.min(30, swellingIndicator * 3);   // 부종 기여 (최대 30)
+  inflammationScore += Math.min(30, swellingIndicator * 3); // 부종 기여 (최대 30)
   inflammationScore = Math.min(100, Math.round(inflammationScore));
 
   // 상태 분류
@@ -110,7 +110,7 @@ export function classifyGumHealth(metrics: GumHealthMetrics): {
   } else {
     status = 'severe_inflammation';
     needsDentalVisit = true;
-    confidence = 75;  // 심한 경우 전문 진단 필요
+    confidence = 75; // 심한 경우 전문 진단 필요
   }
 
   return {
@@ -132,33 +132,33 @@ export function generateGumHealthRecommendations(status: GumHealthStatus): strin
 
   switch (status) {
     case 'healthy':
-      recommendations.push('현재 잇몸 상태가 양호합니다.');
+      recommendations.push('현재 잇몸 상태가 양호해요.');
       recommendations.push('하루 2회 칫솔질과 매일 치실 사용을 유지하세요.');
-      recommendations.push('6개월마다 정기 치과 검진을 권장합니다.');
+      recommendations.push('6개월마다 정기 치과 검진을 권장해요.');
       break;
 
     case 'mild_gingivitis':
-      recommendations.push('경미한 잇몸 염증이 감지되었습니다.');
-      recommendations.push('잇몸 관리 치약 사용을 권장합니다.');
+      recommendations.push('경미한 잇몸 염증이 감지되었어요.');
+      recommendations.push('잇몸 관리 치약 사용을 권장해요.');
       recommendations.push('부드러운 칫솔모로 잇몸 라인을 마사지하듯 닦아주세요.');
       recommendations.push('항균 구강청결제 사용을 고려해보세요.');
-      recommendations.push('2주간 홈케어 후에도 개선되지 않으면 치과 방문을 권장합니다.');
+      recommendations.push('2주간 홈케어 후에도 개선되지 않으면 치과 방문을 권장해요.');
       break;
 
     case 'moderate_gingivitis':
-      recommendations.push('중등도 잇몸 염증이 감지되었습니다.');
-      recommendations.push('가까운 시일 내 치과 방문을 권장합니다.');
-      recommendations.push('전문 스케일링이 필요할 수 있습니다.');
+      recommendations.push('중등도 잇몸 염증이 감지되었어요.');
+      recommendations.push('가까운 시일 내 치과 방문을 권장해요.');
+      recommendations.push('전문 스케일링이 필요할 수 있어요.');
       recommendations.push('잇몸 질환 전용 치약과 구강청결제를 사용하세요.');
       recommendations.push('치실 또는 치간 칫솔로 치아 사이를 꼼꼼히 청소하세요.');
       break;
 
     case 'severe_inflammation':
-      recommendations.push('심한 잇몸 염증이 감지되었습니다.');
+      recommendations.push('심한 잇몸 염증이 감지되었어요.');
       recommendations.push('가능한 빨리 치과를 방문하세요.');
-      recommendations.push('치주 질환으로 진행될 수 있어 전문 치료가 필요합니다.');
+      recommendations.push('치주 질환으로 진행될 수 있어 전문 치료가 필요해요.');
       recommendations.push('잇몸에서 피가 나더라도 부드럽게 닦아주세요.');
-      recommendations.push('금연은 잇몸 건강 회복에 매우 중요합니다.');
+      recommendations.push('금연은 잇몸 건강 회복에 매우 중요해요.');
       break;
   }
 
@@ -168,14 +168,17 @@ export function generateGumHealthRecommendations(status: GumHealthStatus): strin
 /**
  * 잇몸 상태 라벨 및 색상
  */
-export const GUM_STATUS_CONFIG: Record<GumHealthStatus, {
-  label: string;
-  labelEn: string;
-  color: string;
-  bgColor: string;
-  icon: 'check' | 'info' | 'warning' | 'alert';
-  severity: number;  // 0-3
-}> = {
+export const GUM_STATUS_CONFIG: Record<
+  GumHealthStatus,
+  {
+    label: string;
+    labelEn: string;
+    color: string;
+    bgColor: string;
+    icon: 'check' | 'info' | 'warning' | 'alert';
+    severity: number; // 0-3
+  }
+> = {
   healthy: {
     label: '건강',
     labelEn: 'Healthy',

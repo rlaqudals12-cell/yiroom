@@ -88,33 +88,19 @@ export async function POST(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
-    const {
-      imageBase64,
-      mealType = 'lunch',
-      saveToDb = false,
-      useMock = false,
-    } = body;
+    const { imageBase64, mealType = 'lunch', saveToDb = false, useMock = false } = body;
 
     // 필수 필드 검증
     if (!imageBase64 || typeof imageBase64 !== 'string') {
-      return NextResponse.json(
-        { error: 'imageBase64 is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'imageBase64 is required' }, { status: 400 });
     }
 
     // 이미지 검증 및 정규화
     const imageValidation = validateAndNormalizeImage(imageBase64);
     if (!imageValidation.isValid) {
-      return NextResponse.json(
-        { error: imageValidation.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: imageValidation.error }, { status: 400 });
     }
 
     // mealType 검증
@@ -140,13 +126,10 @@ export async function POST(req: Request) {
       // Mock 모드
       result = generateMockFoodAnalysis(analysisInput);
       usedMock = true;
-      console.log('[N-1] Using mock food analysis');
     } else {
       // Real AI 분석
       try {
-        console.log('[N-1] Starting Gemini food analysis...');
         result = await analyzeFoodImage(analysisInput);
-        console.log('[N-1] Gemini food analysis completed:', result.foods.length, 'foods detected');
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[N-1] Gemini error, falling back to mock:', aiError);
@@ -171,18 +154,22 @@ export async function POST(req: Request) {
       const supabase = createServiceRoleClient();
 
       // 총 영양소 사용 (result에서 제공하거나 계산)
-      const totalCalories = result.totalCalories ?? result.foods.reduce((sum, f) => sum + f.calories, 0);
-      const totalProtein = result.totalProtein ?? result.foods.reduce((sum, f) => sum + f.protein, 0);
+      const totalCalories =
+        result.totalCalories ?? result.foods.reduce((sum, f) => sum + f.calories, 0);
+      const totalProtein =
+        result.totalProtein ?? result.foods.reduce((sum, f) => sum + f.protein, 0);
       const totalCarbs = result.totalCarbs ?? result.foods.reduce((sum, f) => sum + f.carbs, 0);
       const totalFat = result.totalFat ?? result.foods.reduce((sum, f) => sum + f.fat, 0);
 
       // 전체 신뢰도 계산 (평균)
-      const avgConfidence = result.foods.length > 0
-        ? result.foods.reduce((sum, f) => sum + (f.confidence || 0.8), 0) / result.foods.length
-        : 0.8;
+      const avgConfidence =
+        result.foods.length > 0
+          ? result.foods.reduce((sum, f) => sum + (f.confidence || 0.8), 0) / result.foods.length
+          : 0.8;
 
       // 신뢰도 레벨 결정
-      const confidenceLevel = avgConfidence >= 0.85 ? 'high' : avgConfidence >= 0.7 ? 'medium' : 'low';
+      const confidenceLevel =
+        avgConfidence >= 0.85 ? 'high' : avgConfidence >= 0.7 ? 'medium' : 'low';
 
       // foods 배열을 DB 형식으로 변환
       const foodsForDb = result.foods.map((food) => ({
@@ -239,9 +226,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('[N-1] Food analysis error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

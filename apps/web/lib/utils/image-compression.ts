@@ -27,9 +27,7 @@ export async function compressBase64Image(base64: string): Promise<string> {
 
     img.onload = () => {
       try {
-        // 원본 크기
         let { width, height } = img;
-        const originalSize = base64.length;
 
         // 리사이즈 비율 계산
         if (width > MAX_IMAGE_SIZE || height > MAX_IMAGE_SIZE) {
@@ -56,15 +54,6 @@ export async function compressBase64Image(base64: string): Promise<string> {
 
         // JPEG로 압축 (투명도 없는 사진에 적합)
         const compressed = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
-        const compressedSize = compressed.length;
-
-        // 압축률 로깅
-        const savedPercent = Math.round((1 - compressedSize / originalSize) * 100);
-        console.log(
-          `[IMG-COMPRESS] ${img.naturalWidth}x${img.naturalHeight} → ${width}x${height}, ` +
-            `${Math.round(originalSize / 1024)}KB → ${Math.round(compressedSize / 1024)}KB (${savedPercent}% 절감)`
-        );
-
         resolve(compressed);
       } catch (err) {
         console.error('[IMG-COMPRESS] Error:', err);

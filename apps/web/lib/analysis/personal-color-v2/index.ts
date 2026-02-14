@@ -16,7 +16,6 @@
  *
  * const lab = rgbToLab(245, 220, 200);
  * const result = classifyTone(lab);
- * console.log(result.tone); // 'true-spring'
  */
 
 // ============================================

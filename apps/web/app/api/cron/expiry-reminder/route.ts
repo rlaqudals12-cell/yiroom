@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  console.log('[Cron Expiry] Starting expiry reminder check...');
+  console.info('[Cron Expiry] Starting expiry reminder check...');
 
   try {
     const supabase = createServiceRoleClient();
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!expiringItems || expiringItems.length === 0) {
-      console.log('[Cron Expiry] No expiring items found');
+      console.info('[Cron Expiry] No expiring items found');
       return NextResponse.json({
         success: true,
         message: 'No expiring items found',
@@ -152,7 +152,9 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    console.log(`[Cron Expiry] Found ${expiringItems.length} items for ${userGroups.length} users`);
+    console.info(
+      `[Cron Expiry] Found ${expiringItems.length} items for ${userGroups.length} users`
+    );
 
     // 3. 사용자별 푸시 알림 발송
     const result: ExpiryReminderResult = {
@@ -178,10 +180,10 @@ export async function GET(request: NextRequest) {
         .update({ is_active: false })
         .in('endpoint', uniqueExpired);
 
-      console.log(`[Cron Expiry] Deactivated ${uniqueExpired.length} expired subscriptions`);
+      console.info(`[Cron Expiry] Deactivated ${uniqueExpired.length} expired subscriptions`);
     }
 
-    console.log(`[Cron Expiry] Completed: ${result.sent} sent, ${result.failed} failed`);
+    console.info(`[Cron Expiry] Completed: ${result.sent} sent, ${result.failed} failed`);
 
     return NextResponse.json({
       success: true,

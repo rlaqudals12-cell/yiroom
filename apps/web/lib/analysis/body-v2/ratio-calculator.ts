@@ -181,7 +181,6 @@ function estimateWaistWidth(landmarks: Landmark33[]): number {
  * @example
  * const poseResult = await detectPose(imageBase64);
  * const ratios = calculateBodyRatios(poseResult);
- * console.log('어깨-허리 비율:', ratios.shoulderToWaistRatio);
  */
 export function calculateBodyRatios(poseResult: PoseDetectionResult): BodyRatios {
   const { landmarks } = poseResult;
@@ -301,8 +300,7 @@ export function calculateRatioConfidence(
     POSE_LANDMARK_INDEX.RIGHT_ANKLE,
   ];
   const keyVisibility =
-    keyIndices.reduce((sum, idx) => sum + (landmarks[idx]?.visibility ?? 0), 0) /
-    keyIndices.length;
+    keyIndices.reduce((sum, idx) => sum + (landmarks[idx]?.visibility ?? 0), 0) / keyIndices.length;
   const visibilityScore = keyVisibility * 40;
 
   // 3. 비율 유효성 (20%)

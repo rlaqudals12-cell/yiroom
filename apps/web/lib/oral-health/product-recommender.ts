@@ -186,16 +186,14 @@ function extractTargetConditions(
  * 치약 매칭 점수 계산
  */
 function calculateToothpasteScore(
-  toothpaste: typeof TOOTHPASTE_DATABASE[0],
+  toothpaste: (typeof TOOTHPASTE_DATABASE)[0],
   conditions: string[],
   preferences: ProductPreferences
 ): number {
   let score = 50; // 기본 점수
 
   // 조건 매칭
-  const matchingConditions = toothpaste.targetConditions.filter(c =>
-    conditions.includes(c)
-  );
+  const matchingConditions = toothpaste.targetConditions.filter((c) => conditions.includes(c));
   score += matchingConditions.length * 20;
 
   // 가격대 매칭
@@ -215,16 +213,14 @@ function calculateToothpasteScore(
  * 구강 청결제 매칭 점수 계산
  */
 function calculateMouthwashScore(
-  mouthwash: typeof MOUTHWASH_DATABASE[0],
+  mouthwash: (typeof MOUTHWASH_DATABASE)[0],
   conditions: string[],
   preferences: ProductPreferences
 ): number {
   let score = 50;
 
   // 조건 매칭
-  const matchingConditions = mouthwash.targetConditions.filter(c =>
-    conditions.includes(c)
-  );
+  const matchingConditions = mouthwash.targetConditions.filter((c) => conditions.includes(c));
   score += matchingConditions.length * 20;
 
   // 가격대 매칭
@@ -258,65 +254,65 @@ function recommendInterdental(profile: UserOralProfile): InterdentalRecommendati
   if (profile.dentalWork.includes('braces')) {
     primary.push({
       type: 'superfloss',
-      reason: '교정 장치 사이 청소에 적합합니다.',
+      reason: '교정 장치 사이 청소에 적합해요.',
     });
     primary.push({
       type: 'interdental_brush',
-      reason: '교정 와이어 주변 플라크 제거에 효과적입니다.',
+      reason: '교정 와이어 주변 플라크 제거에 효과적이에요.',
     });
     alternative.push({
       type: 'water_flosser',
-      reason: '물살로 부드럽게 청소할 수 있습니다.',
+      reason: '물살로 부드럽게 청소할 수 있어요.',
     });
   }
   // 브릿지/크라운
   else if (profile.dentalWork.includes('bridge') || profile.dentalWork.includes('crown')) {
     primary.push({
       type: 'superfloss',
-      reason: '브릿지 하부 청소에 적합합니다.',
+      reason: '브릿지 하부 청소에 적합해요.',
     });
     primary.push({
       type: 'interdental_brush',
-      reason: '보철물 주변 청소에 효과적입니다.',
+      reason: '보철물 주변 청소에 효과적이에요.',
     });
   }
   // 임플란트
   else if (profile.dentalWork.includes('implant')) {
     primary.push({
       type: 'interdental_brush',
-      reason: '임플란트 주변 청소에 가장 효과적입니다.',
+      reason: '임플란트 주변 청소에 가장 효과적이에요.',
     });
     primary.push({
       type: 'water_flosser',
-      reason: '임플란트에 부드럽고 안전합니다.',
+      reason: '임플란트에 부드럽고 안전해요.',
     });
   }
   // 민감한 잇몸
   else if (profile.sensitivity === 'severe' || profile.gumHealth === 'periodontitis') {
     primary.push({
       type: 'water_flosser',
-      reason: '민감한 잇몸에 부드럽게 사용할 수 있습니다.',
+      reason: '민감한 잇몸에 부드럽게 사용할 수 있어요.',
     });
     primary.push({
       type: 'floss_ptfe',
-      reason: 'PTFE 재질로 잇몸 자극이 적습니다.',
+      reason: 'PTFE 재질로 잇몸 자극이 적어요.',
     });
   }
   // 일반
   else {
     primary.push({
       type: 'floss_waxed',
-      reason: '일반적인 치간 청소에 적합합니다.',
+      reason: '일반적인 치간 청소에 적합해요.',
     });
     if (profile.calculus !== 'none') {
       primary.push({
         type: 'interdental_brush',
-        reason: '치석이 쌓이기 쉬운 부위 청소에 효과적입니다.',
+        reason: '치석이 쌓이기 쉬운 부위 청소에 효과적이에요.',
       });
     }
     alternative.push({
       type: 'water_flosser',
-      reason: '편리하게 치간 청소를 할 수 있습니다.',
+      reason: '편리하게 치간 청소를 할 수 있어요.',
     });
   }
 
@@ -370,9 +366,7 @@ function getKeyIngredients(profile: UserOralProfile): string[] {
 /**
  * 케어 루틴 생성
  */
-function generateCareRoutine(
-  profile: UserOralProfile
-): OralProductRecommendation['careRoutine'] {
+function generateCareRoutine(profile: UserOralProfile): OralProductRecommendation['careRoutine'] {
   const routine: OralProductRecommendation['careRoutine'] = [
     {
       step: 1,
@@ -438,25 +432,23 @@ export function recommendOralProducts(
   const conditions = extractTargetConditions(profile, toothResult, gumResult);
 
   // 치약 추천
-  const toothpasteScores = TOOTHPASTE_DATABASE.map(tp => ({
+  const toothpasteScores = TOOTHPASTE_DATABASE.map((tp) => ({
     ...tp,
     matchScore: calculateToothpasteScore(tp, conditions, preferences),
     reason: getToothpasteReason(tp, conditions),
   }));
 
-  const sortedToothpaste = toothpasteScores
-    .sort((a, b) => b.matchScore - a.matchScore)
-    .slice(0, 3);
+  const sortedToothpaste = toothpasteScores.sort((a, b) => b.matchScore - a.matchScore).slice(0, 3);
 
   // 구강 청결제 추천
-  const mouthwashScores = MOUTHWASH_DATABASE.map(mw => ({
+  const mouthwashScores = MOUTHWASH_DATABASE.map((mw) => ({
     ...mw,
     matchScore: calculateMouthwashScore(mw, conditions, preferences),
     reason: getMouthwashReason(mw, conditions, preferences),
   }));
 
   const sortedMouthwash = mouthwashScores
-    .filter(mw => mw.matchScore >= 40) // 최소 점수 이상만
+    .filter((mw) => mw.matchScore >= 40) // 최소 점수 이상만
     .sort((a, b) => b.matchScore - a.matchScore)
     .slice(0, 3);
 
@@ -467,14 +459,14 @@ export function recommendOralProducts(
   const accessories = getAccessories(profile);
 
   return {
-    toothpaste: sortedToothpaste.map(tp => ({
+    toothpaste: sortedToothpaste.map((tp) => ({
       name: tp.name,
       brand: tp.brand,
       keyIngredients: tp.keyIngredients,
       matchScore: tp.matchScore,
       reason: tp.reason,
     })),
-    mouthwash: sortedMouthwash.map(mw => ({
+    mouthwash: sortedMouthwash.map((mw) => ({
       name: mw.name,
       brand: mw.brand,
       keyIngredients: mw.keyIngredients,
@@ -493,68 +485,66 @@ export function recommendOralProducts(
  * 치약 추천 이유 생성
  */
 function getToothpasteReason(
-  toothpaste: typeof TOOTHPASTE_DATABASE[0],
+  toothpaste: (typeof TOOTHPASTE_DATABASE)[0],
   conditions: string[]
 ): string {
-  const matches = toothpaste.targetConditions.filter(c => conditions.includes(c));
+  const matches = toothpaste.targetConditions.filter((c) => conditions.includes(c));
 
   if (matches.length === 0) {
-    return '일반적인 구강 관리에 적합합니다.';
+    return '일반적인 구강 관리에 적합해요.';
   }
 
   const reasonMap: Record<string, string> = {
-    sensitivity: '시린 이에 효과적입니다.',
-    gingivitis: '잇몸 건강 개선에 도움이 됩니다.',
-    whitening: '치아 미백에 효과적입니다.',
-    cavityRisk: '충치 예방에 효과적입니다.',
-    calculus: '치석 형성을 억제합니다.',
-    halitosis: '구취 제거에 효과적입니다.',
-    braces: '교정 중 구강 관리에 적합합니다.',
-    implant: '임플란트 주변 관리에 적합합니다.',
+    sensitivity: '시린 이에 효과적이에요.',
+    gingivitis: '잇몸 건강 개선에 도움이 돼요.',
+    whitening: '치아 미백에 효과적이에요.',
+    cavityRisk: '충치 예방에 효과적이에요.',
+    calculus: '치석 형성을 억제해요.',
+    halitosis: '구취 제거에 효과적이에요.',
+    braces: '교정 중 구강 관리에 적합해요.',
+    implant: '임플란트 주변 관리에 적합해요.',
   };
 
-  const reasons = matches.map(m => reasonMap[m]).filter(Boolean);
-  return reasons.join(' ') || '귀하의 구강 상태에 적합합니다.';
+  const reasons = matches.map((m) => reasonMap[m]).filter(Boolean);
+  return reasons.join(' ') || '현재 구강 상태에 적합해요.';
 }
 
 /**
  * 구강 청결제 추천 이유 생성
  */
 function getMouthwashReason(
-  mouthwash: typeof MOUTHWASH_DATABASE[0],
+  mouthwash: (typeof MOUTHWASH_DATABASE)[0],
   conditions: string[],
   preferences: ProductPreferences
 ): string {
   const parts: string[] = [];
 
   if (preferences.alcoholFree && mouthwash.alcoholFree) {
-    parts.push('무알콜로 자극이 적습니다.');
+    parts.push('무알콜로 자극이 적어요.');
   }
 
-  const matches = mouthwash.targetConditions.filter(c => conditions.includes(c));
+  const matches = mouthwash.targetConditions.filter((c) => conditions.includes(c));
   if (matches.includes('halitosis')) {
-    parts.push('구취 제거에 효과적입니다.');
+    parts.push('구취 제거에 효과적이에요.');
   }
   if (matches.includes('gingivitis')) {
-    parts.push('잇몸 건강에 도움이 됩니다.');
+    parts.push('잇몸 건강에 도움이 돼요.');
   }
 
-  return parts.length > 0 ? parts.join(' ') : '일반적인 구강 청결에 적합합니다.';
+  return parts.length > 0 ? parts.join(' ') : '일반적인 구강 청결에 적합해요.';
 }
 
 /**
  * 액세서리 추천
  */
-function getAccessories(
-  profile: UserOralProfile
-): OralProductRecommendation['accessories'] {
+function getAccessories(profile: UserOralProfile): OralProductRecommendation['accessories'] {
   const accessories: OralProductRecommendation['accessories'] = [];
 
   // 혀 클리너
   if (profile.halitosis) {
     accessories.push({
       type: '혀 클리너',
-      reason: '혀 세균 제거로 구취를 줄여줍니다.',
+      reason: '혀 세균 제거로 구취를 줄여줘요.',
     });
   }
 
@@ -562,14 +552,14 @@ function getAccessories(
   if (profile.dentalWork.length > 0) {
     accessories.push({
       type: '치간 칫솔 세트 (다양한 크기)',
-      reason: '다양한 치간 간격에 맞춰 사용할 수 있습니다.',
+      reason: '다양한 치간 간격에 맞춰 사용할 수 있어요.',
     });
   }
 
   // 칫솔 살균기
   accessories.push({
     type: '칫솔 살균기',
-    reason: '칫솔 위생 관리에 도움이 됩니다.',
+    reason: '칫솔 위생 관리에 도움이 돼요.',
   });
 
   return accessories;

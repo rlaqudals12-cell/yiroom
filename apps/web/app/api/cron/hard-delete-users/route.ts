@@ -86,7 +86,7 @@ async function hardDeleteUser(
   const failedTables: string[] = [];
 
   try {
-    console.log(`[GDPR-HARD-DELETE] Processing user ${redactPii.userId(clerkUserId)}`);
+    console.info(`[GDPR-HARD-DELETE] Processing user ${redactPii.userId(clerkUserId)}`);
 
     // 1. 모든 관련 테이블에서 데이터 삭제 (의존성 순서대로)
     for (const tableName of DELETION_TABLES) {
@@ -103,7 +103,7 @@ async function hardDeleteUser(
             deleteError.message.includes('does not exist') ||
             deleteError.message.includes('column')
           ) {
-            console.log(`[GDPR-HARD-DELETE] Skipping ${tableName} - not applicable`);
+            console.info(`[GDPR-HARD-DELETE] Skipping ${tableName} - not applicable`);
           } else {
             console.error(`[GDPR-HARD-DELETE] Failed to delete from ${tableName}:`, deleteError);
             failedTables.push(tableName);
@@ -125,7 +125,7 @@ async function hardDeleteUser(
         if (files && files.length > 0) {
           const filePaths = files.map((f) => `${clerkUserId}/${f.name}`);
           await supabase.storage.from(bucket).remove(filePaths);
-          console.log(`[GDPR-HARD-DELETE] Deleted ${filePaths.length} files from ${bucket}`);
+          console.info(`[GDPR-HARD-DELETE] Deleted ${filePaths.length} files from ${bucket}`);
         }
       } catch {
         // 버킷이 없거나 이미 삭제됨
@@ -167,7 +167,9 @@ async function hardDeleteUser(
         deleted_tables: deletedTables,
         clerk_deleted: clerkDeleted,
       });
-      console.log(`[GDPR-HARD-DELETE] Successfully hard-deleted user ${redactPii.userId(clerkUserId)}`);
+      console.info(
+        `[GDPR-HARD-DELETE] Successfully hard-deleted user ${redactPii.userId(clerkUserId)}`
+      );
       return true;
     } else {
       await logDeletionAudit(supabase, userId, 'HARD_DELETE_FAILED', {
@@ -183,7 +185,10 @@ async function hardDeleteUser(
       return false;
     }
   } catch (error) {
-    console.error(`[GDPR-HARD-DELETE] Error processing user ${redactPii.userId(clerkUserId)}:`, error);
+    console.error(
+      `[GDPR-HARD-DELETE] Error processing user ${redactPii.userId(clerkUserId)}:`,
+      error
+    );
 
     await logDeletionAudit(supabase, userId, 'HARD_DELETE_FAILED', {
       clerk_user_id: clerkUserId,
@@ -201,7 +206,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  console.log('[GDPR-HARD-DELETE] Starting hard delete cron job...');
+  console.info('[GDPR-HARD-DELETE] Starting hard delete cron job...');
 
   try {
     const supabase = createServiceRoleClient();
@@ -233,7 +238,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!users || users.length === 0) {
-      console.log('[GDPR-HARD-DELETE] No users pending hard delete');
+      console.info('[GDPR-HARD-DELETE] No users pending hard delete');
       return NextResponse.json({
         success: true,
         message: 'No users to process',
@@ -242,7 +247,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log(`[GDPR-HARD-DELETE] Found ${users.length} users for hard delete`);
+    console.info(`[GDPR-HARD-DELETE] Found ${users.length} users for hard delete`);
 
     // 각 사용자 처리
     for (const user of users) {
@@ -275,7 +280,7 @@ export async function GET(request: NextRequest) {
       performed_by: 'system:cron:hard-delete-users',
     });
 
-    console.log('[GDPR-HARD-DELETE] Completed:', result);
+    console.info('[GDPR-HARD-DELETE] Completed:', result);
 
     return NextResponse.json({
       success: true,

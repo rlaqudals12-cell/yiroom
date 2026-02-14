@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log('[Cron] Processing expired challenges...');
+    console.info('[Cron] Processing expired challenges...');
 
     // Service Role 클라이언트 사용 (RLS 우회)
     const supabase = createServiceRoleClient();
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     // 만료된 챌린지 실패 처리
     const failedCount = await processExpiredChallenges(supabase);
 
-    console.log(`[Cron] Processed ${failedCount} expired challenges`);
+    console.info(`[Cron] Processed ${failedCount} expired challenges`);
 
     return NextResponse.json({
       success: true,

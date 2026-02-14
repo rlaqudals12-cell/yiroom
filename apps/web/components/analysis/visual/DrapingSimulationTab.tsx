@@ -165,8 +165,7 @@ export default function DrapingSimulationTab({
       // 시너지 적용
       if (synergyInsight && results.length > 0) {
         const mockDraping = generateMockDrapingResults();
-        const { adjustedBestColors } = applyInsightToDraping(mockDraping, synergyInsight);
-        console.log('[DrapingSimulationTab] 시너지 적용 베스트:', adjustedBestColors);
+        applyInsightToDraping(mockDraping, synergyInsight);
       }
     },
     [synergyInsight]

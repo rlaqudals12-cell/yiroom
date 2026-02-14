@@ -110,7 +110,6 @@ export async function initKakaoSDK(): Promise<void> {
     if (window.Kakao && !window.Kakao.isInitialized()) {
       window.Kakao.init(kakaoAppKey);
       isInitialized = true;
-      console.log('[Kakao] SDK initialized');
     }
   })();
 

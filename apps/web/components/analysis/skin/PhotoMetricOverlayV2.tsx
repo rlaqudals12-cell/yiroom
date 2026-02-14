@@ -148,7 +148,6 @@ export function PhotoMetricOverlayV2({
           faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
         ]);
         setModelsLoaded(true);
-        console.log('[PhotoMetricOverlayV2] Models loaded');
       } catch (err) {
         console.error('[PhotoMetricOverlayV2] Model load error:', err);
         setIsLoading(false);
@@ -176,9 +175,7 @@ export function PhotoMetricOverlayV2({
 
         if (detection) {
           setLandmarks(detection.landmarks.positions);
-          console.log('[PhotoMetricOverlayV2] Face detected with 68 landmarks');
         } else {
-          console.log('[PhotoMetricOverlayV2] No face detected, using fallback');
           setLandmarks(null);
         }
       } catch (err) {

@@ -514,8 +514,6 @@ export default function StylePage() {
             <h2 className="text-lg font-semibold mb-3">룩북 피드</h2>
             <LookbookFeed
               posts={lookbookPosts}
-              onLike={(postId) => console.log('Like:', postId)}
-              onShare={(postId) => console.log('Share:', postId)}
               onPostClick={(postId) => router.push(`/style/lookbook/${postId}`)}
             />
           </section>

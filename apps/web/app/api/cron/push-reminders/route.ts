@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
   }
 
   const currentHour = getCurrentKSTHour();
-  console.log(`[Cron Push] Starting personalized push reminders for KST ${currentHour}...`);
+  console.info(`[Cron Push] Starting personalized push reminders for KST ${currentHour}...`);
 
   try {
     const supabase = createServiceRoleClient();
@@ -133,10 +133,10 @@ export async function GET(request: NextRequest) {
         .update({ is_active: false })
         .in('endpoint', uniqueExpired);
 
-      console.log(`[Cron Push] Deactivated ${uniqueExpired.length} expired subscriptions`);
+      console.info(`[Cron Push] Deactivated ${uniqueExpired.length} expired subscriptions`);
     }
 
-    console.log(`[Cron Push] Completed: ${totalSent} sent, ${totalFailed} failed`);
+    console.info(`[Cron Push] Completed: ${totalSent} sent, ${totalFailed} failed`);
 
     return NextResponse.json({
       success: true,
@@ -205,7 +205,7 @@ async function sendWorkoutReminders(
     }
 
     const userIds = matchingUsers.map((s) => s.clerk_user_id);
-    console.log(`[Cron Push] workout_reminder: ${userIds.length} users at ${currentHour}`);
+    console.info(`[Cron Push] workout_reminder: ${userIds.length} users at ${currentHour}`);
 
     return sendPushToUsers(supabase, userIds, 'workout_reminder', result);
   } catch (error) {
@@ -265,7 +265,7 @@ async function sendNutritionReminders(
     }
 
     const userIds = matchingUsers.map((s) => s.clerk_user_id);
-    console.log(
+    console.info(
       `[Cron Push] nutrition_reminder (${mealType}): ${userIds.length} users at ${currentHour}`
     );
 
@@ -407,7 +407,7 @@ async function sendGlobalReminder(
       .filter((r) => r.error === 'SUBSCRIPTION_EXPIRED')
       .map((r) => r.endpoint);
 
-    console.log(`[Cron Push] ${reminderType}: ${result.sent} sent, ${result.failed} failed`);
+    console.info(`[Cron Push] ${reminderType}: ${result.sent} sent, ${result.failed} failed`);
 
     return result;
   } catch (error) {

@@ -16,10 +16,7 @@ import {
   dbError,
   imageQualityError,
 } from '@/lib/api/error-response';
-import {
-  validateImageForAnalysis,
-  logQualityResult,
-} from '@/lib/api/image-quality';
+import { validateImageForAnalysis, logQualityResult } from '@/lib/api/image-quality';
 import {
   generateMockBodyAnalysisResult,
   classifyBodyType,
@@ -97,11 +94,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (!qualityResult.success) {
-        console.log('[C-2] Image quality check failed:', qualityResult.error.details);
-        return imageQualityError(
-          qualityResult.error.userMessage,
-          qualityResult.error.message
-        );
+        return imageQualityError(qualityResult.error.userMessage, qualityResult.error.message);
       }
 
       // 품질 검증 결과 로깅
@@ -119,12 +112,9 @@ export async function POST(req: NextRequest) {
       // Mock 모드
       result = generateMockBodyAnalysisResult();
       usedFallback = true;
-      console.log('[C-2] Using mock analysis (33 landmarks)');
     } else {
       // Real AI 분석
       try {
-        console.log('[C-2] Starting MediaPipe 33 landmark analysis...');
-
         // 클라이언트에서 랜드마크를 제공한 경우 직접 분석
         if (landmarks && Array.isArray(landmarks) && landmarks.length === 33) {
           const typedLandmarks = landmarks as Landmark33[];
@@ -152,8 +142,8 @@ export async function POST(req: NextRequest) {
             bodyShapeInfo,
             stylingRecommendations: {
               tops: bodyShapeInfo.stylingTips.slice(0, 2),
-              bottoms: getStylingPriorities(bodyShape).filter(s =>
-                s.includes('팬츠') || s.includes('스커트')
+              bottoms: getStylingPriorities(bodyShape).filter(
+                (s) => s.includes('팬츠') || s.includes('스커트')
               ),
               outerwear: ['롱 카디건', '테일러드 재킷'],
               silhouettes: getStylingPriorities(bodyShape),
@@ -165,7 +155,6 @@ export async function POST(req: NextRequest) {
           };
         } else {
           // 이미지 기반 분석 - Gemini Vision으로 체형 분석
-          console.log('[C-2] Analyzing body with Gemini Vision...');
 
           const geminiResult = await analyzeBodyWithGemini(imageBase64);
 
@@ -181,7 +170,10 @@ export async function POST(req: NextRequest) {
             const estimatedBodyRatios: BodyRatios = {
               shoulderWidth: 40, // 추정값 (cm)
               waistWidth: 40 / geminiData.estimatedRatios.shoulderToWaistRatio,
-              hipWidth: (40 / geminiData.estimatedRatios.shoulderToWaistRatio) / geminiData.estimatedRatios.waistToHipRatio,
+              hipWidth:
+                40 /
+                geminiData.estimatedRatios.shoulderToWaistRatio /
+                geminiData.estimatedRatios.waistToHipRatio,
               shoulderToWaistRatio: geminiData.estimatedRatios.shoulderToWaistRatio,
               waistToHipRatio: geminiData.estimatedRatios.waistToHipRatio,
               upperBodyLength: 45, // 추정값
@@ -212,17 +204,12 @@ export async function POST(req: NextRequest) {
               analyzedAt: new Date().toISOString(),
               usedFallback: false,
             };
-
-            console.log('[C-2] Gemini analysis succeeded:', bodyShape, 'Confidence:', geminiData.confidence);
           } else {
             // Gemini 분석 실패 - Mock으로 폴백
-            console.log('[C-2] Gemini analysis failed, using mock fallback');
             result = generateMockBodyAnalysisResult();
             usedFallback = true;
           }
         }
-
-        console.log('[C-2] Analysis completed:', result.bodyShape, 'Confidence:', result.measurementConfidence);
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[C-2] Analysis error, falling back to mock:', aiError);
@@ -371,12 +358,11 @@ export async function GET() {
  */
 function mapBodyShapeToLegacy(bodyShape: BodyShapeType): string {
   const mapping: Record<BodyShapeType, string> = {
-    rectangle: 'N',        // 직선형 → Natural
+    rectangle: 'N', // 직선형 → Natural
     'inverted-triangle': 'S', // 역삼각형 → Straight
-    triangle: 'W',         // 삼각형 → Wave
-    oval: 'W',             // 타원형 → Wave
-    hourglass: 'S',        // 모래시계 → Straight
+    triangle: 'W', // 삼각형 → Wave
+    oval: 'W', // 타원형 → Wave
+    hourglass: 'S', // 모래시계 → Straight
   };
   return mapping[bodyShape] || 'N';
 }
-

@@ -109,7 +109,6 @@ export async function initFaceMesh(
       });
 
       faceMeshInstance = faceMesh;
-      console.log('[MediaPipe] Face Mesh 초기화 완료');
 
       return faceMesh;
     } catch (error) {
@@ -134,7 +133,6 @@ export function closeFaceMesh(): void {
     }
     faceMeshInstance = null;
     loadPromise = null;
-    console.log('[MediaPipe] Face Mesh 해제 완료');
   }
 }
 

@@ -141,8 +141,6 @@ export default function PostureAnalysisPage() {
       const frontImageBase64 = await fileToBase64(frontImage);
       const sideImageBase64 = sideImage ? await fileToBase64(sideImage) : undefined;
 
-      console.log(`[A-1] Analyzing with ${sideImage ? 2 : 1} image(s)`);
-
       const response = await fetch('/api/analyze/posture', {
         method: 'POST',
         headers: {
@@ -160,7 +158,6 @@ export default function PostureAnalysisPage() {
       }
 
       const data = await response.json();
-      console.log('[A-1] Analysis result:', data.usedMock ? 'Mock' : 'Real AI');
 
       // API 응답을 PostureAnalysisResult 형식으로 변환
       setResult({

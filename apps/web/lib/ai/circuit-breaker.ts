@@ -115,7 +115,6 @@ export class AICircuitBreaker {
     if (this.metrics.state === 'half-open') {
       // half-open에서 성공하면 closed로 복귀
       this.metrics.state = 'closed';
-      console.log(`[CircuitBreaker] ${this.providerName}: half-open -> closed`);
     }
   }
 
@@ -147,7 +146,6 @@ export class AICircuitBreaker {
 
     if (elapsed >= this.config.resetTimeoutMs) {
       this.metrics.state = 'half-open';
-      console.log(`[CircuitBreaker] ${this.providerName}: open -> half-open (${elapsed}ms elapsed)`);
     }
   }
 
@@ -164,7 +162,6 @@ export class AICircuitBreaker {
       totalSuccesses: this.metrics.totalSuccesses,
       totalFailures: this.metrics.totalFailures,
     };
-    console.log(`[CircuitBreaker] ${this.providerName}: manually reset to closed`);
   }
 }
 
@@ -229,9 +226,8 @@ export function getAllCircuitStates(): Record<AIProviderName, CircuitState> {
  * 모든 서킷 브레이커 리셋
  */
 export function resetAllCircuitBreakers(): void {
-  for (const [name, breaker] of circuitBreakers) {
+  for (const [, breaker] of circuitBreakers) {
     breaker.reset();
-    console.log(`[CircuitBreaker] Reset: ${name}`);
   }
 }
 

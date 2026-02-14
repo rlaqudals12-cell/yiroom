@@ -70,11 +70,7 @@ async function withTimeout<T>(
 /**
  * 재시도 로직
  */
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  maxRetries: number,
-  delayMs: number
-): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, maxRetries: number, delayMs: number): Promise<T> {
   let lastError: Error | null = null;
   for (let i = 0; i <= maxRetries; i++) {
     try {
@@ -226,9 +222,7 @@ type GeminiSkinV2Response = z.infer<typeof GeminiSkinV2ResponseSchema>;
 /**
  * Gemini 응답을 SkinAnalysisV2Result로 변환
  */
-function convertGeminiToSkinV2Result(
-  geminiResponse: GeminiSkinV2Response
-): SkinAnalysisV2Result {
+function convertGeminiToSkinV2Result(geminiResponse: GeminiSkinV2Response): SkinAnalysisV2Result {
   const zoneTypes: SkinZoneType[] = [
     'forehead',
     'nose',
@@ -323,7 +317,6 @@ export async function analyzeSkinV2WithGemini(
 ): Promise<{ result: SkinAnalysisV2Result; usedFallback: boolean }> {
   // Mock 모드 확인
   if (FORCE_MOCK) {
-    console.log('[S-2 Gemini] Using mock (FORCE_MOCK_AI=true)');
     return {
       result: generateMockSkinAnalysisV2Result(),
       usedFallback: true,
@@ -356,8 +349,6 @@ export async function analyzeSkinV2WithGemini(
 
     const response = await geminiResult.response;
     const text = response.text();
-
-    console.log('[S-2 Gemini] Analysis completed');
 
     // JSON 파싱 및 검증
     const parsed = parseJsonResponse<unknown>(text);
@@ -472,9 +463,7 @@ export function mapSaturationLevel(
   return mapping[saturation] || 'medium';
 }
 
-export type GeminiPersonalColorV2Response = z.infer<
-  typeof GeminiPersonalColorV2ResponseSchema
->;
+export type GeminiPersonalColorV2Response = z.infer<typeof GeminiPersonalColorV2ResponseSchema>;
 
 /**
  * PC-2 퍼스널컬러 v2 피부색 추출
@@ -487,7 +476,6 @@ export async function extractSkinColorWithGemini(
 ): Promise<{ data: GeminiPersonalColorV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (FORCE_MOCK) {
-    console.log('[PC-2 Gemini] Using mock (FORCE_MOCK_AI=true)');
     return { data: null, usedFallback: true };
   }
 
@@ -514,8 +502,6 @@ export async function extractSkinColorWithGemini(
 
     const response = await geminiResult.response;
     const text = response.text();
-
-    console.log('[PC-2 Gemini] Color extraction completed');
 
     // JSON 파싱 및 검증
     const parsed = parseJsonResponse<unknown>(text);
@@ -640,7 +626,6 @@ export async function analyzeBodyWithGemini(
 ): Promise<{ data: GeminiBodyV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (FORCE_MOCK) {
-    console.log('[C-2 Gemini] Using mock (FORCE_MOCK_AI=true)');
     return { data: null, usedFallback: true };
   }
 
@@ -667,8 +652,6 @@ export async function analyzeBodyWithGemini(
 
     const response = await geminiResult.response;
     const text = response.text();
-
-    console.log('[C-2 Gemini] Body analysis completed');
 
     // JSON 파싱 및 검증
     const parsed = parseJsonResponse<unknown>(text);
@@ -810,7 +793,6 @@ export async function analyzeHairWithGemini(
 ): Promise<{ data: GeminiHairV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (FORCE_MOCK) {
-    console.log('[H-1 Gemini] Using mock (FORCE_MOCK_AI=true)');
     return { data: null, usedFallback: true };
   }
 
@@ -837,8 +819,6 @@ export async function analyzeHairWithGemini(
 
     const response = await geminiResult.response;
     const text = response.text();
-
-    console.log('[H-1 Gemini] Hair analysis completed');
 
     // JSON 파싱 및 검증
     const parsed = parseJsonResponse<unknown>(text);
@@ -938,9 +918,25 @@ const GeminiOralHealthResponseSchema = z.object({
   confidence: z.number().min(0).max(100),
   toothColor: z.object({
     detectedShade: z.enum([
-      'B1', 'A1', 'B2', 'D2', 'A2', 'C1', 'C2', 'D4',
-      'A3', 'D3', 'B3', 'A3.5', 'B4', 'C3', 'A4', 'C4',
-      '0M1', '0M2', '0M3'
+      'B1',
+      'A1',
+      'B2',
+      'D2',
+      'A2',
+      'C1',
+      'C2',
+      'D4',
+      'A3',
+      'D3',
+      'B3',
+      'A3.5',
+      'B4',
+      'C3',
+      'A4',
+      'C4',
+      '0M1',
+      '0M2',
+      '0M3',
     ]),
     brightness: z.enum(['very_bright', 'bright', 'medium', 'dark', 'very_dark']),
     yellowness: z.enum(['minimal', 'mild', 'moderate', 'significant']),
@@ -949,7 +945,12 @@ const GeminiOralHealthResponseSchema = z.object({
     alternativeShades: z.array(z.string()),
   }),
   gumHealth: z.object({
-    overallStatus: z.enum(['healthy', 'mild_gingivitis', 'moderate_gingivitis', 'severe_inflammation']),
+    overallStatus: z.enum([
+      'healthy',
+      'mild_gingivitis',
+      'moderate_gingivitis',
+      'severe_inflammation',
+    ]),
     inflammationScore: z.number().min(0).max(100),
     rednessLevel: z.enum(['normal', 'slightly_red', 'red', 'very_red']),
     swellingLevel: z.enum(['none', 'mild', 'moderate', 'severe']),
@@ -981,7 +982,6 @@ export async function analyzeOralWithGemini(
 ): Promise<{ data: GeminiOralHealthResponse | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (FORCE_MOCK) {
-    console.log('[OH-1 Gemini] Using mock (FORCE_MOCK_AI=true)');
     return { data: null, usedFallback: true };
   }
 
@@ -1008,8 +1008,6 @@ export async function analyzeOralWithGemini(
 
     const response = await geminiResult.response;
     const text = response.text();
-
-    console.log('[OH-1 Gemini] Oral health analysis completed');
 
     // JSON 파싱 및 검증
     const parsed = parseJsonResponse<unknown>(text);

@@ -305,19 +305,6 @@ export function createCleanupFunction(
 /**
  * 메모리 사용량 로깅 (개발용)
  */
-export function logMemoryUsage(label?: string): void {
-  const info = getMemoryInfo();
-
-  if (info.heapLimit === 0) {
-    console.log(`[Memory${label ? ` - ${label}` : ''}] 측정 불가 (Chrome 전용)`);
-    return;
-  }
-
-  const usedMB = Math.round(info.usedHeap / 1024 / 1024);
-  const limitMB = Math.round(info.heapLimit / 1024 / 1024);
-  const percentage = Math.round(info.usageRatio * 100);
-
-  console.log(
-    `[Memory${label ? ` - ${label}` : ''}] ${usedMB}MB / ${limitMB}MB (${percentage}%) - ${info.status}`
-  );
+export function logMemoryUsage(_label?: string): void {
+  // 외부 호출 유지를 위해 함수 시그니처 보존
 }

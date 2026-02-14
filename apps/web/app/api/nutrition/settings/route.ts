@@ -101,7 +101,6 @@ export async function POST(request: Request) {
 
       if (preferences.length > 0) {
         await upsertPreferences(supabase, preferences);
-        console.log(`[N-1] Saved ${preferences.length} preferences to user_preferences`);
       }
     } catch (prefError) {
       // user_preferences 저장 실패해도 기존 로직은 정상 동작

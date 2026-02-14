@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  console.log('[Cron Cleanup] Starting GDPR consent cleanup...');
+  console.info('[Cron Cleanup] Starting GDPR consent cleanup...');
 
   try {
     const supabase = createServiceRoleClient();
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!expiredConsents || expiredConsents.length === 0) {
-      console.log('[Cron Cleanup] No expired consents found');
+      console.info('[Cron Cleanup] No expired consents found');
       return NextResponse.json({
         success: true,
         message: 'No expired consents to process',
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log(`[Cron Cleanup] Found ${expiredConsents.length} expired consents`);
+    console.info(`[Cron Cleanup] Found ${expiredConsents.length} expired consents`);
 
     // 2. 각 레코드 처리
     const result: CleanupResult = {
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
               console.error(`[Cron Cleanup] Storage delete error:`, deleteError.message);
             } else {
               result.deletedImages += filePaths.length;
-              console.log(
+              console.info(
                 `[Cron Cleanup] Deleted ${filePaths.length} images for ${consent.clerk_user_id}`
               );
             }
@@ -175,7 +175,7 @@ export async function GET(request: NextRequest) {
       completedAt: new Date().toISOString(),
     };
 
-    console.log('[Cron Cleanup] Result:', response);
+    console.info('[Cron Cleanup] Result:', response);
 
     return NextResponse.json(response);
   } catch (error) {

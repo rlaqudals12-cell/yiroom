@@ -60,7 +60,6 @@ export default function BodyAnalysisPage() {
     async function checkExistingAnalysis() {
       // forceNew 파라미터가 있으면 자동 리디렉트 건너뛰기
       if (forceNew) {
-        console.log('[C-1] forceNew=true, skipping auto-redirect');
         setCheckingExisting(false);
         return;
       }
@@ -195,17 +194,10 @@ export default function BodyAnalysisPage() {
           backImageBase64: multiAngleImages.backImageBase64,
           userInput,
         };
-        const imageCount =
-          1 +
-          (multiAngleImages.leftSideImageBase64 ? 1 : 0) +
-          (multiAngleImages.rightSideImageBase64 ? 1 : 0) +
-          (multiAngleImages.backImageBase64 ? 1 : 0);
-        console.log(`[C-1] Analyzing with ${imageCount} image(s)`);
       } else if (imageFile) {
         // 단일 이미지 사용 (갤러리에서 선택)
         const imageBase64 = await fileToBase64(imageFile);
         requestBody = { imageBase64, userInput };
-        console.log('[C-1] Analyzing with single image');
       } else {
         return;
       }
@@ -224,13 +216,6 @@ export default function BodyAnalysisPage() {
       }
 
       const data = await response.json();
-      console.log(
-        '[C-1] Analysis result:',
-        data.usedMock ? 'Mock' : 'Real AI',
-        'Images:',
-        data.imagesAnalyzed
-      );
-
       // API 응답의 result + 퍼스널 컬러 추천 통합
       setResult({
         ...data.result,

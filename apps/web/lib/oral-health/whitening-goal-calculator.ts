@@ -6,7 +6,12 @@
  * @see docs/specs/SDD-OH-1-ORAL-HEALTH.md
  */
 
-import type { WhiteningGoalInput, WhiteningGoalResult, VitaShade, PersonalColorSeason } from '@/types/oral-health';
+import type {
+  WhiteningGoalInput,
+  WhiteningGoalResult,
+  VitaShade,
+  PersonalColorSeason,
+} from '@/types/oral-health';
 import {
   SEASON_SHADE_RECOMMENDATIONS,
   isOverWhitening,
@@ -46,7 +51,7 @@ export function calculateWhiteningGoal(input: WhiteningGoalInput): WhiteningGoal
     isOverWhitening: overWhiteningCheck.isOver,
     overWhiteningReason: overWhiteningCheck.reason,
     harmonySuggestion: seasonConfig.harmony,
-    recommendedMethods: methods.slice(0, 3).map(m => ({
+    recommendedMethods: methods.slice(0, 3).map((m) => ({
       method: m.method as WhiteningGoalResult['recommendedMethods'][0]['method'],
       effectiveness: m.effectiveness,
       duration: m.duration,
@@ -108,23 +113,22 @@ export function trackWhiteningProgress(
   const completedSteps = calculateShadeSteps(startShade, currentShade);
   const remainingSteps = calculateShadeSteps(currentShade, targetShade);
 
-  const progressPercentage = totalSteps > 0
-    ? Math.min(100, Math.round((completedSteps / totalSteps) * 100))
-    : 100;
+  const progressPercentage =
+    totalSteps > 0 ? Math.min(100, Math.round((completedSteps / totalSteps) * 100)) : 100;
 
   const isGoalReached = remainingSteps <= 0;
 
   let message: string;
   if (isGoalReached) {
-    message = '축하합니다! 목표 셰이드에 도달했습니다.';
+    message = '축하해요! 목표 셰이드에 도달했어요.';
   } else if (progressPercentage >= 75) {
-    message = '목표에 거의 도달했습니다. 조금만 더 힘내세요!';
+    message = '목표에 거의 도달했어요. 조금만 더 힘내세요!';
   } else if (progressPercentage >= 50) {
-    message = '절반 이상 진행되었습니다. 잘하고 계세요!';
+    message = '절반 이상 진행되었어요. 잘하고 계세요!';
   } else if (progressPercentage >= 25) {
-    message = '미백이 순조롭게 진행 중입니다.';
+    message = '미백이 순조롭게 진행 중이에요.';
   } else {
-    message = '미백을 시작했습니다. 꾸준히 관리해주세요.';
+    message = '미백을 시작했어요. 꾸준히 관리해주세요.';
   }
 
   return {
@@ -151,8 +155,8 @@ export function generateWhiteningPrecautions(
 
   // 많은 단계 변화 시 추가 주의사항
   if (shadeSteps >= 4) {
-    precautions.push('급격한 미백은 치아 민감도를 유발할 수 있습니다. 점진적으로 진행하세요.');
-    precautions.push('전문가 상담 하에 진행하는 것을 권장합니다.');
+    precautions.push('급격한 미백은 치아 민감도를 유발할 수 있어요. 점진적으로 진행하세요.');
+    precautions.push('전문가 상담 하에 진행하는 것을 권장해요.');
   }
 
   // 시즌별 주의사항
@@ -168,7 +172,8 @@ export function generateWhiteningPrecautions(
  * 미백 결과 요약 텍스트 생성
  */
 export function generateWhiteningGoalSummary(result: WhiteningGoalResult): string {
-  const { targetShade, shadeStepsNeeded, expectedDuration, isOverWhitening, harmonySuggestion } = result;
+  const { targetShade, shadeStepsNeeded, expectedDuration, isOverWhitening, harmonySuggestion } =
+    result;
 
   let summary = `추천 목표 셰이드: ${targetShade}\n`;
   summary += `필요한 단계: ${shadeStepsNeeded}단계\n`;

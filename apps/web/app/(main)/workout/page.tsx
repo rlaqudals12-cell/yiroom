@@ -35,13 +35,10 @@ export default function WorkoutPage() {
 
     const loadData = async () => {
       try {
-        console.log('[W-1 Page] Loading data for user:', user.id);
         const [analysisData, streakData] = await Promise.all([
           getLatestWorkoutAnalysisAction(user.id),
           getWorkoutStreakAction(user.id),
         ]);
-        console.log('[W-1 Page] Analysis data:', analysisData);
-        console.log('[W-1 Page] Streak data:', streakData);
         setAnalysis(analysisData);
         setStreak(streakData);
       } catch (error) {

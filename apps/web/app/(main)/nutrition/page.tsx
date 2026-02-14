@@ -124,9 +124,7 @@ export default function NutritionPage() {
   const [isWaterSaving, setIsWaterSaving] = useState(false); // 수분 저장 중 상태
   const [isManualInputOpen, setIsManualInputOpen] = useState(false); // 음식 직접 입력 시트 열림 상태 (Task 2.11)
   const [isManualSaving, setIsManualSaving] = useState(false); // 음식 직접 입력 저장 중 상태
-  const [selectedMealTypeForManual] = useState<
-    'breakfast' | 'lunch' | 'dinner' | 'snack'
-  >('lunch'); // 직접 입력 시 선택된 식사 타입 (향후 MealSection 연결 시 setter 사용)
+  const [selectedMealTypeForManual] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('lunch'); // 직접 입력 시 선택된 식사 타입 (향후 MealSection 연결 시 setter 사용)
 
   // 간헐적 단식 설정 상태 (Task 2.17)
   const [fastingSettings, setFastingSettings] = useState<{
@@ -629,7 +627,6 @@ export default function NutritionPage() {
   // 기록 클릭 핸들러 (상세 보기)
   const handleRecordClick = useCallback((record: MealRecord) => {
     // 향후 기록 상세/수정 페이지로 이동
-    console.log('[Nutrition Page] Record clicked:', record.id);
     // router.push(`/nutrition/record/${record.id}`);
   }, []);
 

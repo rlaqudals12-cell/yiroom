@@ -11,10 +11,7 @@
  * - 웹훅 전송
  */
 
-import type {
-  SourceModule,
-  IntegrationMetadata,
-} from './integration-types';
+import type { SourceModule, IntegrationMetadata } from './integration-types';
 
 // ============================================
 // 이벤트 타입 정의
@@ -79,26 +76,12 @@ export const CACHE_INVALIDATION_RULES: Record<IntegrationEventType, string[]> = 
     'exercise:recommendations',
     'posture:corrections',
   ],
-  [INTEGRATION_EVENT_TYPES.OH1_RESULT_SAVED]: [
-    'nutrition:oral',
-    'supplement:recommendations',
-  ],
-  [INTEGRATION_EVENT_TYPES.M1_RESULT_SAVED]: [
-    'makeup:products',
-  ],
-  [INTEGRATION_EVENT_TYPES.H1_RESULT_SAVED]: [
-    'hair:products',
-  ],
-  [INTEGRATION_EVENT_TYPES.SK1_RESULT_SAVED]: [
-    'procedures:clinics',
-  ],
-  [INTEGRATION_EVENT_TYPES.W2_RESULT_SAVED]: [
-    'stretching:history',
-  ],
-  [INTEGRATION_EVENT_TYPES.N1_RESULT_SAVED]: [
-    'nutrition:plans',
-    'recipes:recommendations',
-  ],
+  [INTEGRATION_EVENT_TYPES.OH1_RESULT_SAVED]: ['nutrition:oral', 'supplement:recommendations'],
+  [INTEGRATION_EVENT_TYPES.M1_RESULT_SAVED]: ['makeup:products'],
+  [INTEGRATION_EVENT_TYPES.H1_RESULT_SAVED]: ['hair:products'],
+  [INTEGRATION_EVENT_TYPES.SK1_RESULT_SAVED]: ['procedures:clinics'],
+  [INTEGRATION_EVENT_TYPES.W2_RESULT_SAVED]: ['stretching:history'],
+  [INTEGRATION_EVENT_TYPES.N1_RESULT_SAVED]: ['nutrition:plans', 'recipes:recommendations'],
 };
 
 /**
@@ -161,9 +144,7 @@ function shouldNotifyTarget(eventType: IntegrationEventType): boolean {
 /**
  * 타겟 모듈 알림 전송
  */
-async function notifyTargetModule<T>(
-  event: IntegrationEvent<T>
-): Promise<string[]> {
+async function notifyTargetModule<T>(event: IntegrationEvent<T>): Promise<string[]> {
   if (!shouldNotifyTarget(event.type)) {
     return [];
   }
@@ -172,9 +153,6 @@ async function notifyTargetModule<T>(
 
   // 실제 구현에서는 웹훅 또는 내부 이벤트 버스 사용
   // await sendWebhook(targetUrl, event);
-
-  // 현재는 로깅만
-  console.log('[Integration] Notifying targets for event:', event.type);
 
   // 타겟 모듈 목록 반환
   const targetModules = getTargetModules(event.type);
@@ -206,12 +184,7 @@ function getTargetModules(eventType: IntegrationEventType): string[] {
  */
 async function logIntegrationEvent<T>(event: IntegrationEvent<T>): Promise<void> {
   // 감사 로그 기록 (실제 구현에서는 audit logger 사용)
-  console.log('[Integration] Event published:', {
-    id: event.id,
-    type: event.type,
-    userId: event.userId,
-    timestamp: event.timestamp,
-  });
+  // TODO: audit logger 도입 시 이벤트 기록 추가
 }
 
 /**
@@ -243,10 +216,7 @@ export async function publishIntegrationEvent<T>(
     await logIntegrationEvent(event);
 
     // 2. 캐시 무효화
-    const invalidatedCaches = await invalidateTargetCache(
-      event.type,
-      event.userId
-    );
+    const invalidatedCaches = await invalidateTargetCache(event.type, event.userId);
 
     // 3. 타겟 모듈 알림
     const notifiedTargets = await notifyTargetModule(event);
@@ -312,9 +282,7 @@ export function clearAllHandlers(): void {
 /**
  * 소스 모듈에서 이벤트 타입으로 변환
  */
-export function getEventTypeForModule(
-  sourceModule: SourceModule
-): IntegrationEventType | null {
+export function getEventTypeForModule(sourceModule: SourceModule): IntegrationEventType | null {
   const mapping: Partial<Record<SourceModule, IntegrationEventType>> = {
     'PC-1': INTEGRATION_EVENT_TYPES.PC2_RESULT_SAVED,
     'PC-2': INTEGRATION_EVENT_TYPES.PC2_RESULT_SAVED,

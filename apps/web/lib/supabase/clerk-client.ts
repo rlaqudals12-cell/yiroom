@@ -58,27 +58,7 @@ export function useClerkSupabaseClient() {
 
           // 'supabase' 템플릿 실패 시 기본 토큰 시도
           if (!token) {
-            console.log(
-              "[Clerk-Supabase] 'supabase' template returned null, trying default token..."
-            );
             token = await getToken();
-          }
-
-          if (!token) {
-            console.warn('[Clerk-Supabase] Token is null - user may not be authenticated');
-          } else {
-            // JWT 디버깅: 토큰의 payload 확인 (프로덕션에서는 제거)
-            try {
-              const payload = JSON.parse(atob(token.split('.')[1]));
-              console.log('[Clerk-Supabase] Token payload:', {
-                sub: payload.sub,
-                aud: payload.aud,
-                role: payload.role,
-                exp: new Date(payload.exp * 1000).toISOString(),
-              });
-            } catch {
-              console.log('[Clerk-Supabase] Token received (could not parse payload)');
-            }
           }
 
           return token ?? null;

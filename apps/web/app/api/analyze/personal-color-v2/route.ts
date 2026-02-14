@@ -16,10 +16,7 @@ import {
   dbError,
   imageQualityError,
 } from '@/lib/api/error-response';
-import {
-  validateImageForAnalysis,
-  logQualityResult,
-} from '@/lib/api/image-quality';
+import { validateImageForAnalysis, logQualityResult } from '@/lib/api/image-quality';
 import {
   classifyTone,
   rgbToLab,
@@ -94,11 +91,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (!qualityResult.success) {
-        console.log('[PC-2] Image quality check failed:', qualityResult.error.details);
-        return imageQualityError(
-          qualityResult.error.userMessage,
-          qualityResult.error.message
-        );
+        return imageQualityError(qualityResult.error.userMessage, qualityResult.error.message);
       }
 
       // 품질 검증 결과 로깅
@@ -116,12 +109,9 @@ export async function POST(req: NextRequest) {
       // Mock 모드
       result = generateMockResult();
       usedFallback = true;
-      console.log('[PC-2] Using mock analysis (12-tone system)');
     } else {
       // Real AI 분석
       try {
-        console.log('[PC-2] Starting Lab-based 12-tone analysis...');
-
         // skinRgb가 제공된 경우 직접 분석
         // 아닌 경우 이미지에서 피부색 추출 필요 (Gemini 연동)
         if (skinRgb) {
@@ -157,7 +147,6 @@ export async function POST(req: NextRequest) {
           result.palette.blushColors = makeup.blushColors;
         } else {
           // 이미지 기반 분석 - Gemini로 피부색 추출
-          console.log('[PC-2] Extracting skin color with Gemini...');
 
           const geminiResult = await extractSkinColorWithGemini(imageBase64);
 
@@ -176,8 +165,12 @@ export async function POST(req: NextRequest) {
               palette,
               detailedAnalysis: {
                 skinToneLab: skinLab,
-                contrastLevel: geminiResult.data.brightnessLevel === 'light' ? 'high' :
-                               geminiResult.data.brightnessLevel === 'dark' ? 'low' : 'medium',
+                contrastLevel:
+                  geminiResult.data.brightnessLevel === 'light'
+                    ? 'high'
+                    : geminiResult.data.brightnessLevel === 'dark'
+                      ? 'low'
+                      : 'medium',
                 saturationLevel: mapSaturationLevel(geminiResult.data.saturationLevel),
                 valueLevel: mapBrightnessToValueLevel(geminiResult.data.brightnessLevel),
               },
@@ -193,17 +186,12 @@ export async function POST(req: NextRequest) {
             result.palette.lipColors = makeup.lipColors;
             result.palette.eyeshadowColors = makeup.eyeColors;
             result.palette.blushColors = makeup.blushColors;
-
-            console.log('[PC-2] Gemini color extraction successful:', classification.tone);
           } else {
             // Gemini 실패: Mock으로 폴백
-            console.log('[PC-2] Gemini failed, using fallback');
             result = generateMockResult();
             usedFallback = true;
           }
         }
-
-        console.log('[PC-2] Analysis completed:', result.classification.tone);
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[PC-2] Analysis error, falling back to mock:', aiError);
@@ -224,7 +212,10 @@ export async function POST(req: NextRequest) {
         season: mapSeasonToDb(result.classification.season),
         undertone: mapUndertoneToDb(result.classification.undertone),
         confidence: result.classification.confidence,
-        season_scores: generateSeasonScores(result.classification.season, result.classification.confidence),
+        season_scores: generateSeasonScores(
+          result.classification.season,
+          result.classification.confidence
+        ),
         image_analysis: {
           // PC-2 v2 분석 결과
           version: 2,
@@ -375,10 +366,7 @@ function mapUndertoneToDb(undertone: string): string {
   return map[undertone] || undertone;
 }
 
-function generateSeasonScores(
-  season: string,
-  confidence: number
-): Record<string, number> {
+function generateSeasonScores(season: string, confidence: number): Record<string, number> {
   const seasons = ['spring', 'summer', 'autumn', 'winter'];
   const scores: Record<string, number> = {};
 
@@ -396,8 +384,12 @@ function generateMakeupRecommendations(tone: TwelveTone): {
 } {
   // 톤별 메이크업 추천 (간략화)
   const warmTones: TwelveTone[] = [
-    'light-spring', 'true-spring', 'bright-spring',
-    'muted-autumn', 'true-autumn', 'deep-autumn',
+    'light-spring',
+    'true-spring',
+    'bright-spring',
+    'muted-autumn',
+    'true-autumn',
+    'deep-autumn',
   ];
 
   if (warmTones.includes(tone)) {
@@ -420,8 +412,12 @@ function generateStylingRecommendations(tone: TwelveTone): {
   accessoryColors: string[];
 } {
   const warmTones: TwelveTone[] = [
-    'light-spring', 'true-spring', 'bright-spring',
-    'muted-autumn', 'true-autumn', 'deep-autumn',
+    'light-spring',
+    'true-spring',
+    'bright-spring',
+    'muted-autumn',
+    'true-autumn',
+    'deep-autumn',
   ];
 
   if (warmTones.includes(tone)) {
@@ -437,7 +433,9 @@ function generateStylingRecommendations(tone: TwelveTone): {
   };
 }
 
-function determineMetals(undertone: 'warm' | 'cool' | 'neutral'): ('gold' | 'silver' | 'rose-gold')[] {
+function determineMetals(
+  undertone: 'warm' | 'cool' | 'neutral'
+): ('gold' | 'silver' | 'rose-gold')[] {
   switch (undertone) {
     case 'warm':
       return ['gold', 'rose-gold'];

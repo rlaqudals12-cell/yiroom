@@ -114,20 +114,15 @@ export default function PersonalColorPage() {
     async function checkExistingAnalysis() {
       // forceNew 파라미터가 있으면 자동 리디렉트 건너뛰기
       if (forceNew) {
-        console.log('[PC-1] forceNew=true, skipping auto-redirect');
         setCheckingExisting(false);
         return;
       }
 
       if (!isLoaded || !isSignedIn) {
-        console.log('[PC-1] Skipping check - isLoaded:', isLoaded, 'isSignedIn:', isSignedIn);
         return;
       }
 
       try {
-        console.log('[PC-1] Checking existing analysis...');
-        console.log('[PC-1] Auth state - isLoaded:', isLoaded, 'isSignedIn:', isSignedIn);
-
         // 1차 시도: 클라이언트 측 Supabase 쿼리 (RLS)
         let data = null;
         let queryFailed = false;
@@ -139,9 +134,6 @@ export default function PersonalColorPage() {
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
-
-          console.log('[PC-1] Client query result - data:', result.data, 'count:', result.count);
-
           if (result.error) {
             console.error('[PC-1] Client query error:', result.error.message);
             queryFailed = true;
@@ -155,12 +147,10 @@ export default function PersonalColorPage() {
 
         // 2차 시도: 클라이언트 쿼리 실패 시 API 통해 조회 (Service Role 사용)
         if (queryFailed || (!data && isSignedIn)) {
-          console.log('[PC-1] Trying API fallback...');
           try {
             const response = await fetch('/api/analyze/personal-color');
             if (response.ok) {
               const apiResult = await response.json();
-              console.log('[PC-1] API fallback result:', apiResult);
               if (apiResult.data) {
                 data = {
                   id: apiResult.data.id,
@@ -174,9 +164,6 @@ export default function PersonalColorPage() {
             console.error('[PC-1] API fallback error:', apiError);
           }
         }
-
-        console.log('[PC-1] Final existing analysis data:', data);
-
         if (data && !isRedirecting) {
           // 신뢰도가 높으면 자동으로 결과 페이지로 리디렉트
           const confidence = data.confidence ?? 85;
@@ -240,7 +227,6 @@ export default function PersonalColorPage() {
       if (response.ok) {
         const data = await response.json();
         setExistingConsent(data.consent);
-        console.log('[PC-1] Consent saved from guide checkbox');
       }
     } catch (err) {
       console.error('[PC-1] Consent save error:', err);
@@ -443,16 +429,6 @@ export default function PersonalColorPage() {
       // currentSessionConsent: 현재 세션에서 체크박스로 동의한 경우
       // existingConsent: 이전에 이미 동의한 경우
       const saveImage = currentSessionConsent || !!existingConsent?.consent_given;
-      console.log(
-        '[PC-1] saveImage:',
-        saveImage,
-        '(session:',
-        currentSessionConsent,
-        ', existing:',
-        !!existingConsent?.consent_given,
-        ')'
-      );
-
       if (hasMultiAngle && multiAngleImages) {
         // 다각도 분석 요청
         requestBody = {
@@ -462,11 +438,6 @@ export default function PersonalColorPage() {
           wristImageBase64,
           saveImage,
         };
-        console.log('[PC-1] Using multi-angle images:', {
-          front: !!multiAngleImages.frontImageBase64,
-          left: !!multiAngleImages.leftImageBase64,
-          right: !!multiAngleImages.rightImageBase64,
-        });
       } else if (faceImageFile) {
         // 레거시 단일 이미지 요청
         const faceImageBase64 = await fileToBase64(faceImageFile);
@@ -493,15 +464,6 @@ export default function PersonalColorPage() {
       }
 
       const data = await response.json();
-      console.log(
-        '[PC-1] Analysis result:',
-        data.usedMock ? 'Mock' : 'Real AI',
-        '/ Reliability:',
-        data.analysisReliability,
-        '/ Images:',
-        data.imagesCount
-      );
-
       // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
       try {
         sessionStorage.setItem(

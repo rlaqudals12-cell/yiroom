@@ -80,7 +80,11 @@ function inferMealType(text: string): MealType {
 }
 
 // 수량 패턴
-const QUANTITY_PATTERNS: Array<{ pattern: RegExp; getValue: (m: RegExpMatchArray) => number; unit: string }> = [
+const QUANTITY_PATTERNS: Array<{
+  pattern: RegExp;
+  getValue: (m: RegExpMatchArray) => number;
+  unit: string;
+}> = [
   { pattern: /(\d+)\s*인분/, getValue: (m) => parseInt(m[1], 10), unit: '인분' },
   { pattern: /(\d+)\s*공기/, getValue: (m) => parseInt(m[1], 10), unit: '공기' },
   { pattern: /(\d+)\s*그릇/, getValue: (m) => parseInt(m[1], 10), unit: '그릇' },
@@ -166,6 +170,5 @@ export function generateMockVoiceParseResult(text: string): VoiceParseResult {
 /** 음성 텍스트를 음식 정보로 파싱 (AI + Mock Fallback) */
 export async function parseVoiceToFood(text: string): Promise<VoiceParseResult> {
   // 현재는 Mock만 사용, 향후 Gemini AI 연동 예정
-  console.log("[VoiceParser] Using mock parser");
   return parseVoiceTranscript(text);
 }

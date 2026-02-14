@@ -385,9 +385,6 @@ export async function POST(request: Request) {
     const allergies = await getAllergies(supabase, userId, fallbackAllergies);
     const dislikedFoods = await getDislikedFoods(supabase, userId);
 
-    console.log('[N-1 Suggest] Allergies:', allergies);
-    console.log('[N-1 Suggest] Disliked foods:', dislikedFoods);
-
     // 해당 식사 시간대 음식 가져오기
     const baseFoods = POPULAR_KOREAN_FOODS[mealType] || POPULAR_KOREAN_FOODS.lunch;
 

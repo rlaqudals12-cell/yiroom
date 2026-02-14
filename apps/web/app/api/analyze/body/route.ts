@@ -174,14 +174,10 @@ export async function POST(req: NextRequest) {
         },
       };
       usedMock = true;
-      console.log('[C-1] Using mock analysis (3-type system)');
     } else {
       // Real AI 분석 (다각도 지원)
       try {
-        console.log(`[C-1] Starting Gemini analysis (${imageCount} image(s), 3-type system)...`);
         result = await analyzeBody(primaryImage, resolvedLeftSide, resolvedRightSide, resolvedBack);
-        console.log('[C-1] Gemini analysis completed');
-
         // 다각도 분석 시 신뢰도 보정
         if (imageCount >= 2 && result.imageQuality) {
           result.imageQuality.analysisReliability =
@@ -239,7 +235,7 @@ export async function POST(req: NextRequest) {
     const supabase = createServiceRoleClient();
 
     // 이미지 저장 동의 확인 + 업로드 (PIPA 준수)
-    const { hasConsent, uploadedImages } = await checkConsentAndUploadImages(
+    const { uploadedImages } = await checkConsentAndUploadImages(
       supabase,
       userId,
       'body',
@@ -254,10 +250,6 @@ export async function POST(req: NextRequest) {
 
     // 정면 이미지 URL (하위 호환성)
     const imageUrl = uploadedImages.front || null;
-    console.log(
-      `[C-1] Image consent: ${hasConsent ? 'granted' : 'not granted'}, frontImage: ${imageUrl ? 'uploaded' : 'none'}`
-    );
-
     // 퍼스널 컬러 조회 (자동 연동)
     const { data: pcData } = await supabase
       .from('personal_color_assessments')
@@ -277,11 +269,6 @@ export async function POST(req: NextRequest) {
     // 퍼스널 컬러 + 체형 기반 코디 색상 추천 생성
     const colorRecommendations = generateColorRecommendations(personalColorSeason, result.bodyType);
     const colorTips = getColorTipsForBodyType(result.bodyType);
-
-    console.log(
-      `[C-1] Generated color recommendations for ${personalColorSeason || 'no PC'} + ${result.bodyType} body type`
-    );
-
     // DB에 저장
     const { data, error } = await supabase
       .from('body_analyses')

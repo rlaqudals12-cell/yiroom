@@ -92,13 +92,10 @@ export async function POST(req: Request) {
       // Mock 모드
       result = generateMockWorkoutAnalysis(analysisInput);
       usedMock = true;
-      console.log('[W-1] Using mock analysis');
     } else {
       // Real AI 분석
       try {
-        console.log('[W-1] Starting Gemini workout analysis...');
         result = await analyzeWorkout(analysisInput);
-        console.log('[W-1] Gemini analysis completed:', result.workoutType);
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[W-1] Gemini error, falling back to mock:', aiError);

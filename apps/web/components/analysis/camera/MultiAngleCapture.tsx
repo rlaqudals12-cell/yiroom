@@ -120,7 +120,6 @@ export function MultiAngleCapture({
 
         // 메이크업 경고
         if (result.quality.makeupDetected) {
-          console.log('[MultiAngleCapture] Makeup detected (warning only)');
         }
       }
 

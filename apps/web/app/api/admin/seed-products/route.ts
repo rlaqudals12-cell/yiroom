@@ -29,27 +29,24 @@ export async function POST(request: Request) {
     };
 
     // 화장품 시드
-    console.log('Seeding cosmetics...');
     for (const product of cosmeticData.products) {
-      const { error } = await supabase
-        .from('cosmetic_products')
-        .insert({
-          name: product.name,
-          brand: product.brand,
-          category: product.category,
-          subcategory: product.subcategory,
-          price_range: product.price_range,
-          price_krw: product.price_krw,
-          skin_types: product.skin_types,
-          concerns: product.concerns,
-          key_ingredients: product.key_ingredients,
-          personal_color_seasons: product.personal_color_seasons,
-          image_url: product.image_url,
-          purchase_url: product.purchase_url,
-          rating: product.rating,
-          review_count: product.review_count,
-          is_active: true,
-        });
+      const { error } = await supabase.from('cosmetic_products').insert({
+        name: product.name,
+        brand: product.brand,
+        category: product.category,
+        subcategory: product.subcategory,
+        price_range: product.price_range,
+        price_krw: product.price_krw,
+        skin_types: product.skin_types,
+        concerns: product.concerns,
+        key_ingredients: product.key_ingredients,
+        personal_color_seasons: product.personal_color_seasons,
+        image_url: product.image_url,
+        purchase_url: product.purchase_url,
+        rating: product.rating,
+        review_count: product.review_count,
+        is_active: true,
+      });
 
       if (error) {
         console.error(`Cosmetic error: ${product.name}`, error.message);
@@ -60,24 +57,21 @@ export async function POST(request: Request) {
     }
 
     // 영양제 시드
-    console.log('Seeding supplements...');
     for (const product of supplementData.products) {
-      const { error } = await supabase
-        .from('supplement_products')
-        .insert({
-          name: product.name,
-          brand: product.brand,
-          category: product.category,
-          benefits: product.benefits,
-          main_ingredients: product.main_ingredients,
-          target_concerns: product.target_concerns,
-          price_krw: product.price_krw,
-          image_url: product.image_url,
-          purchase_url: product.purchase_url,
-          rating: product.rating,
-          review_count: product.review_count,
-          is_active: true,
-        });
+      const { error } = await supabase.from('supplement_products').insert({
+        name: product.name,
+        brand: product.brand,
+        category: product.category,
+        benefits: product.benefits,
+        main_ingredients: product.main_ingredients,
+        target_concerns: product.target_concerns,
+        price_krw: product.price_krw,
+        image_url: product.image_url,
+        purchase_url: product.purchase_url,
+        rating: product.rating,
+        review_count: product.review_count,
+        is_active: true,
+      });
 
       if (error) {
         console.error(`Supplement error: ${product.name}`, error.message);
@@ -97,9 +91,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Seed error:', error);
-    return NextResponse.json(
-      { error: 'Seed failed', details: String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Seed failed', details: String(error) }, { status: 500 });
   }
 }

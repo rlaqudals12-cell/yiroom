@@ -127,13 +127,10 @@ export async function POST(req: Request) {
       // Mock 모드
       result = generateMockExerciseRecommendation(recommendInput);
       usedMock = true;
-      console.log('[W-1] Using mock exercise recommendation');
     } else {
       // Real AI 추천
       try {
-        console.log('[W-1] Starting Gemini exercise recommendation...');
         result = await recommendExercises(recommendInput);
-        console.log('[W-1] Gemini recommendation completed');
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[W-1] Gemini error, falling back to mock:', aiError);

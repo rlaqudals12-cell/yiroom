@@ -57,7 +57,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
       if (signedUrlData && !signedUrlError) {
         responseData = { ...data, face_image_url: signedUrlData.signedUrl };
-        console.log('[PC-1] Generated signed URL for face image');
       } else if (signedUrlError) {
         console.warn('[PC-1] Failed to generate signed URL:', signedUrlError.message);
       }

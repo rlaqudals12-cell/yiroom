@@ -40,10 +40,7 @@ async function withTimeout<T>(
 /**
  * 재시도 로직 (지수 백오프)
  */
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions
-): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions): Promise<T> {
   const { maxRetries, delayMs, backoffMultiplier = 1 } = options;
   let lastError: Error | null = null;
   let currentDelay = delayMs;
@@ -94,7 +91,6 @@ export async function analyzeWithMultiAI<TInput, TOutput>(
   for (const provider of sortedProviders) {
     // 프로바이더 활성화 확인
     if (!provider.isEnabled()) {
-      console.log(`[MultiAI] ${provider.name}: disabled, skipping`);
       continue;
     }
 
@@ -103,14 +99,11 @@ export async function analyzeWithMultiAI<TInput, TOutput>(
     // 서킷 브레이커 확인
     const circuitBreaker = getCircuitBreaker(provider.name);
     if (!circuitBreaker.canExecute()) {
-      console.log(`[MultiAI] ${provider.name}: circuit OPEN, skipping`);
       errors[provider.name] = 'Circuit breaker open';
       continue;
     }
 
     try {
-      console.log(`[MultiAI] Trying ${provider.name}...`);
-
       // 서킷 브레이커를 통한 실행
       const result = await circuitBreaker.execute(() =>
         withTimeout(
@@ -124,7 +117,6 @@ export async function analyzeWithMultiAI<TInput, TOutput>(
       );
 
       const latencyMs = Date.now() - startTime;
-      console.log(`[MultiAI] ${provider.name} succeeded in ${latencyMs}ms`);
 
       return {
         result,
@@ -138,7 +130,6 @@ export async function analyzeWithMultiAI<TInput, TOutput>(
       errors[provider.name] = errorMsg;
 
       if (error instanceof CircuitOpenError) {
-        console.log(`[MultiAI] ${provider.name}: circuit open`);
       } else {
         console.error(`[MultiAI] ${provider.name} failed:`, errorMsg);
       }
@@ -191,25 +182,15 @@ export async function analyzeImageWithMultiAI<T>(
 /**
  * S-2 피부분석용 Multi-AI 래퍼
  */
-export function createSkinV2MultiAIAnalyzer<T>(
-  prompt: string,
-  generateMock: () => T
-) {
+export function createSkinV2MultiAIAnalyzer<T>(prompt: string, generateMock: () => T) {
   return (imageBase64: string) =>
-    analyzeImageWithMultiAI<T>(
-      { imageBase64, analysisType: 'skin-v2' },
-      prompt,
-      generateMock
-    );
+    analyzeImageWithMultiAI<T>({ imageBase64, analysisType: 'skin-v2' }, prompt, generateMock);
 }
 
 /**
  * PC-2 퍼스널컬러용 Multi-AI 래퍼
  */
-export function createPersonalColorV2MultiAIAnalyzer<T>(
-  prompt: string,
-  generateMock: () => T
-) {
+export function createPersonalColorV2MultiAIAnalyzer<T>(prompt: string, generateMock: () => T) {
   return (imageBase64: string) =>
     analyzeImageWithMultiAI<T>(
       { imageBase64, analysisType: 'personal-color-v2' },
@@ -221,29 +202,15 @@ export function createPersonalColorV2MultiAIAnalyzer<T>(
 /**
  * C-2 체형분석용 Multi-AI 래퍼
  */
-export function createBodyV2MultiAIAnalyzer<T>(
-  prompt: string,
-  generateMock: () => T
-) {
+export function createBodyV2MultiAIAnalyzer<T>(prompt: string, generateMock: () => T) {
   return (imageBase64: string) =>
-    analyzeImageWithMultiAI<T>(
-      { imageBase64, analysisType: 'body-v2' },
-      prompt,
-      generateMock
-    );
+    analyzeImageWithMultiAI<T>({ imageBase64, analysisType: 'body-v2' }, prompt, generateMock);
 }
 
 /**
  * H-2 헤어분석용 Multi-AI 래퍼
  */
-export function createHairV2MultiAIAnalyzer<T>(
-  prompt: string,
-  generateMock: () => T
-) {
+export function createHairV2MultiAIAnalyzer<T>(prompt: string, generateMock: () => T) {
   return (imageBase64: string) =>
-    analyzeImageWithMultiAI<T>(
-      { imageBase64, analysisType: 'hair-v2' },
-      prompt,
-      generateMock
-    );
+    analyzeImageWithMultiAI<T>({ imageBase64, analysisType: 'hair-v2' }, prompt, generateMock);
 }

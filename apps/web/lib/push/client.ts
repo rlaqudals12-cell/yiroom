@@ -137,7 +137,6 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
       throw new Error(`Server responded with ${response.status}`);
     }
 
-    console.log('[Push] Successfully subscribed');
     return subscription;
   } catch (error) {
     console.error('[Push] Subscription failed:', error);
@@ -159,7 +158,6 @@ export async function unsubscribeFromPush(): Promise<boolean> {
     const subscription = await registration.pushManager.getSubscription();
 
     if (!subscription) {
-      console.log('[Push] No subscription to unsubscribe');
       return true;
     }
 
@@ -176,7 +174,6 @@ export async function unsubscribeFromPush(): Promise<boolean> {
 
     // 브라우저 구독 해제
     const success = await subscription.unsubscribe();
-    console.log('[Push] Unsubscribed:', success);
     return success;
   } catch (error) {
     console.error('[Push] Unsubscribe failed:', error);

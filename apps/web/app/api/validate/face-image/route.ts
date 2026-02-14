@@ -44,12 +44,7 @@ export async function POST(req: Request) {
     }
 
     // AI 검증 실행
-    console.log(`[FACE-VALIDATE] Starting validation for angle: ${expectedAngle}`);
     const result = await validateFaceImage(imageBase64, expectedAngle as FaceAngle);
-    console.log(`[FACE-VALIDATE] Validation result:`, {
-      suitable: result.suitable,
-      detectedAngle: result.detectedAngle,
-    });
 
     return NextResponse.json({
       success: true,

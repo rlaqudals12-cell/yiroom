@@ -6,17 +6,8 @@
  * @see {@link docs/principles/body-mechanics.md} 체형 역학 원리
  */
 
-import type {
-  Landmark33,
-  PoseDetectionResult,
-  PostureAnalysis,
-  PostureIssue,
-} from './types';
-import {
-  POSE_LANDMARK_INDEX,
-  POSTURE_EXERCISES,
-  POSTURE_ISSUE_LABELS,
-} from './types';
+import type { Landmark33, PoseDetectionResult, PostureAnalysis, PostureIssue } from './types';
+import { POSE_LANDMARK_INDEX, POSTURE_EXERCISES, POSTURE_ISSUE_LABELS } from './types';
 import { calculateMidpoint } from './pose-detector';
 
 // =============================================================================
@@ -335,7 +326,6 @@ function detectKyphosis(landmarks: Landmark33[]): PostureIssue | null {
  * @example
  * const posture = analyzePosture(poseResult);
  * if (posture.issues.length > 0) {
- *   console.log('자세 문제:', posture.issues);
  * }
  */
 export function analyzePosture(poseResult: PoseDetectionResult): PostureAnalysis {
@@ -465,13 +455,8 @@ export function calculatePostureScore(analysis: PostureAnalysis): number {
  * @param limit - 최대 개수 (기본 3)
  * @returns 우선순위가 높은 자세 문제 목록
  */
-export function getPriorityIssues(
-  analysis: PostureAnalysis,
-  limit = 3
-): PostureIssue[] {
-  return [...analysis.issues]
-    .sort((a, b) => b.severity - a.severity)
-    .slice(0, limit);
+export function getPriorityIssues(analysis: PostureAnalysis, limit = 3): PostureIssue[] {
+  return [...analysis.issues].sort((a, b) => b.severity - a.severity).slice(0, limit);
 }
 
 /**

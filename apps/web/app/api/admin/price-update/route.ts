@@ -76,11 +76,6 @@ export async function POST(request: NextRequest) {
     if (limit < 1 || limit > 500) {
       return NextResponse.json({ error: 'limit must be between 1 and 500' }, { status: 400 });
     }
-
-    console.log(
-      `[Admin API] Price update requested: type=${productType || 'all'}, limit=${limit}, source=${source || 'auto'}`
-    );
-
     // 감사 로그 기록
     const clientIp = getClientIp(request);
     logAdminAction(

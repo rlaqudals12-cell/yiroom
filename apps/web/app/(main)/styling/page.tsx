@@ -79,13 +79,11 @@ export default function StylingPage() {
   // 제품 클릭 핸들러 (어필리에이트 연동)
   const handleProductClick = (combinationId: string) => {
     // 향후 어필리에이트 제품 페이지로 연결
-    console.log('[Styling] Product click:', combinationId);
     router.push('/products');
   };
 
   // 운동복 제품 클릭 핸들러
   const handleWorkoutProductClick = (combinationId: string, partner: 'musinsa' | 'coupang') => {
-    console.log('[Styling] Workout product click:', combinationId, partner);
     // 향후 파트너별 제품 페이지로 연결
     router.push('/products?category=workout');
   };
@@ -93,7 +91,6 @@ export default function StylingPage() {
   // 저장 핸들러
   const handleSave = (combinationId: string) => {
     // 향후 저장 기능 구현
-    console.log('[Styling] Save combination:', combinationId);
   };
 
   // 로딩 상태

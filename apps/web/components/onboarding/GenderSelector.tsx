@@ -84,7 +84,6 @@ interface GenderSelectorProps {
  * @example
  * ```tsx
  * <GenderSelector
- *   onSelect={(profile) => console.log(profile)}
  *   includeStylePreference
  * />
  * ```
@@ -150,9 +149,7 @@ export function GenderSelector({
       {/* 성별 선택 */}
       <div className="space-y-3">
         <h3 className="text-lg font-medium text-foreground">성별 선택</h3>
-        <p className="text-sm text-muted-foreground">
-          맞춤 스타일링을 위해 성별을 선택해주세요
-        </p>
+        <p className="text-sm text-muted-foreground">맞춤 스타일링을 위해 성별을 선택해주세요</p>
         <div className="grid grid-cols-3 gap-3">
           {GENDER_OPTIONS.map((option) => (
             <button
@@ -189,9 +186,7 @@ export function GenderSelector({
       {includeStylePreference && selectedGender && (
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <h3 className="text-lg font-medium text-foreground">스타일 선호도</h3>
-          <p className="text-sm text-muted-foreground">
-            선호하는 스타일을 선택해주세요
-          </p>
+          <p className="text-sm text-muted-foreground">선호하는 스타일을 선택해주세요</p>
           <div className="grid grid-cols-3 gap-3">
             {STYLE_OPTIONS.map((option) => (
               <button

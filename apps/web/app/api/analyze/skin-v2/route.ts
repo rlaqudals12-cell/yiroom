@@ -16,10 +16,7 @@ import {
   dbError,
   imageQualityError,
 } from '@/lib/api/error-response';
-import {
-  validateImageForAnalysis,
-  logQualityResult,
-} from '@/lib/api/image-quality';
+import { validateImageForAnalysis, logQualityResult } from '@/lib/api/image-quality';
 import {
   generateMockSkinAnalysisV2Result,
   type SkinAnalysisV2Result,
@@ -84,11 +81,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (!qualityResult.success) {
-        console.log('[S-2] Image quality check failed:', qualityResult.error.details);
-        return imageQualityError(
-          qualityResult.error.userMessage,
-          qualityResult.error.message
-        );
+        return imageQualityError(qualityResult.error.userMessage, qualityResult.error.message);
       }
 
       // 품질 검증 결과 로깅
@@ -106,24 +99,12 @@ export async function POST(req: NextRequest) {
       // Mock 모드
       result = generateMockSkinAnalysisV2Result();
       usedFallback = true;
-      console.log('[S-2] Using mock analysis (7-zone system)');
     } else {
       // Real AI 분석 (Gemini Vision API)
       try {
-        console.log('[S-2] Starting 7-zone skin analysis with Gemini...');
-
         const geminiResult = await analyzeSkinV2WithGemini(imageBase64);
         result = geminiResult.result;
         usedFallback = geminiResult.usedFallback;
-
-        console.log(
-          '[S-2] Analysis completed:',
-          result.skinType,
-          'Vitality:',
-          result.vitalityScore,
-          'Fallback:',
-          usedFallback
-        );
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[S-2] Analysis error, falling back to mock:', aiError);
@@ -153,13 +134,14 @@ export async function POST(req: NextRequest) {
           tUzoneDifference: result.zoneAnalysis.tUzoneDifference,
         },
         concerns: result.primaryConcerns,
-        recommendations: result.routineRecommendations?.map(r => ({
-          step: r.step,
-          category: r.category,
-          reason: r.reason,
-          ingredients: r.ingredients,
-          avoidIngredients: r.avoidIngredients,
-        })) ?? [],
+        recommendations:
+          result.routineRecommendations?.map((r) => ({
+            step: r.step,
+            category: r.category,
+            reason: r.reason,
+            ingredients: r.ingredients,
+            avoidIngredients: r.avoidIngredients,
+          })) ?? [],
       })
       .select()
       .single();
@@ -301,7 +283,7 @@ export async function getHistory(req: NextRequest) {
     }
 
     // v2 결과만 필터링
-    const v2Results = data?.filter(d => d.scores?.version === 2) || [];
+    const v2Results = data?.filter((d) => d.scores?.version === 2) || [];
 
     return NextResponse.json({
       success: true,

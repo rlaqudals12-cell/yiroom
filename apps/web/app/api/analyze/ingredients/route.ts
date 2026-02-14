@@ -1,12 +1,12 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { applyRateLimit } from "@/lib/security/rate-limit";
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { applyRateLimit } from '@/lib/security/rate-limit';
 import {
   analyzeIngredients,
   getWarningIngredientsForSkinType,
   type SkinType,
   type IngredientWarning,
-} from "@/lib/ingredients";
+} from '@/lib/ingredients';
 
 /**
  * 성분 분석 API (하이브리드: DB 우선 + AI 폴백)
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Rate Limit 체크
@@ -40,14 +40,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { ingredients, skinType = "normal" } = body;
+    const { ingredients, skinType = 'normal' } = body;
 
     // 입력 검증
     if (!ingredients || !Array.isArray(ingredients)) {
-      return NextResponse.json(
-        { error: "Ingredients array is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Ingredients array is required' }, { status: 400 });
     }
 
     if (ingredients.length === 0) {
@@ -60,29 +57,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 피부 타입 검증
-    const validSkinTypes: SkinType[] = [
-      "dry",
-      "oily",
-      "sensitive",
-      "combination",
-      "normal",
-    ];
-    const validatedSkinType: SkinType = validSkinTypes.includes(skinType)
-      ? skinType
-      : "normal";
-
-    console.log(
-      `[Ingredients] Analyzing ${ingredients.length} ingredients for ${validatedSkinType} skin`
-    );
-
+    const validSkinTypes: SkinType[] = ['dry', 'oily', 'sensitive', 'combination', 'normal'];
+    const validatedSkinType: SkinType = validSkinTypes.includes(skinType) ? skinType : 'normal';
     // 성분 분석 실행
-    const warnings: IngredientWarning[] = await analyzeIngredients(
-      ingredients,
-      validatedSkinType
-    );
-
-    console.log(`[Ingredients] Found ${warnings.length} warnings`);
-
+    const warnings: IngredientWarning[] = await analyzeIngredients(ingredients, validatedSkinType);
     return NextResponse.json({
       success: true,
       warnings,
@@ -90,11 +68,8 @@ export async function POST(req: NextRequest) {
       warningCount: warnings.length,
     });
   } catch (error) {
-    console.error("Ingredient analysis error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Ingredient analysis error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -114,7 +89,7 @@ export async function GET(req: NextRequest) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Rate Limit 체크
@@ -124,23 +99,12 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const skinType = searchParams.get("skinType") as SkinType | null;
+    const skinType = searchParams.get('skinType') as SkinType | null;
 
     // 피부 타입 검증
-    const validSkinTypes: SkinType[] = [
-      "dry",
-      "oily",
-      "sensitive",
-      "combination",
-      "normal",
-    ];
+    const validSkinTypes: SkinType[] = ['dry', 'oily', 'sensitive', 'combination', 'normal'];
     const validatedSkinType: SkinType =
-      skinType && validSkinTypes.includes(skinType) ? skinType : "sensitive";
-
-    console.log(
-      `[Ingredients] Fetching warning ingredients for ${validatedSkinType} skin`
-    );
-
+      skinType && validSkinTypes.includes(skinType) ? skinType : 'sensitive';
     const ingredients = await getWarningIngredientsForSkinType(validatedSkinType);
 
     return NextResponse.json({
@@ -150,10 +114,7 @@ export async function GET(req: NextRequest) {
       skinType: validatedSkinType,
     });
   } catch (error) {
-    console.error("Get warning ingredients error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Get warning ingredients error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -16,10 +16,7 @@ import {
   dbError,
   imageQualityError,
 } from '@/lib/api/error-response';
-import {
-  validateImageForAnalysis,
-  logQualityResult,
-} from '@/lib/api/image-quality';
+import { validateImageForAnalysis, logQualityResult } from '@/lib/api/image-quality';
 import {
   analyzeFaceShape,
   estimateFaceShapeFromPose,
@@ -33,11 +30,7 @@ import {
   FACE_SHAPE_LABELS,
 } from '@/lib/analysis/hair';
 import type { Landmark33 } from '@/lib/analysis/body-v2';
-import {
-  checkAndAwardAllAnalysisBadge,
-  addXp,
-  type BadgeAwardResult,
-} from '@/lib/gamification';
+import { checkAndAwardAllAnalysisBadge, addXp, type BadgeAwardResult } from '@/lib/gamification';
 import { analyzeHairWithGemini } from '@/lib/gemini/v2-analysis';
 
 // XP 보상 상수
@@ -110,11 +103,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (!qualityResult.success) {
-        console.log('[H-1] Image quality check failed:', qualityResult.error.details);
-        return imageQualityError(
-          qualityResult.error.userMessage,
-          qualityResult.error.message
-        );
+        return imageQualityError(qualityResult.error.userMessage, qualityResult.error.message);
       }
 
       // 품질 검증 결과 로깅
@@ -134,27 +123,20 @@ export async function POST(req: NextRequest) {
         personalColorSeason,
       });
       usedFallback = true;
-      console.log('[H-1] Using mock analysis');
     } else {
       try {
-        console.log('[H-1] Starting face shape analysis...');
-
         let faceShapeAnalysis;
 
         // Face Mesh 랜드마크가 있으면 사용 (더 정확)
         if (faceLandmarks && Array.isArray(faceLandmarks) && faceLandmarks.length >= 468) {
           faceShapeAnalysis = analyzeFaceShape(faceLandmarks);
-          console.log('[H-1] Using Face Mesh landmarks (468+)');
         }
         // Pose 33 랜드마크가 있으면 대체 분석
         else if (poseLandmarks && Array.isArray(poseLandmarks) && poseLandmarks.length === 33) {
           faceShapeAnalysis = estimateFaceShapeFromPose(poseLandmarks as Landmark33[]);
-          console.log('[H-1] Using Pose 33 landmarks (fallback)');
         }
         // 랜드마크가 없으면 Gemini Vision으로 얼굴형 분석
         else if (imageBase64) {
-          console.log('[H-1] No landmarks provided, trying Gemini Vision...');
-
           const geminiResult = await analyzeHairWithGemini(imageBase64);
 
           if (geminiResult.data && !geminiResult.usedFallback) {
@@ -175,11 +157,8 @@ export async function POST(req: NextRequest) {
                 lengthToWidthRatio: geminiData.estimatedRatios.lengthToWidthRatio,
               },
             };
-
-            console.log('[H-1] Gemini analysis succeeded:', faceShapeType, 'Confidence:', geminiData.confidence);
           } else {
             // Gemini 분석 실패 - Mock으로 폴백
-            console.log('[H-1] Gemini analysis failed, using mock fallback');
             result = generateMockHairAnalysisResult({ personalColorSeason });
             usedFallback = true;
 
@@ -189,7 +168,6 @@ export async function POST(req: NextRequest) {
         }
         // 이미지도 없으면 Mock 폴백
         else {
-          console.log('[H-1] No image or landmarks, using mock fallback');
           result = generateMockHairAnalysisResult({ personalColorSeason });
           usedFallback = true;
 
@@ -203,10 +181,9 @@ export async function POST(req: NextRequest) {
         });
 
         // 헤어컬러 추천 (퍼스널컬러 연계)
-        const colorRecommendations = recommendHairColors(
-          personalColorSeason || 'spring',
-          { maxResults: 4 }
-        );
+        const colorRecommendations = recommendHairColors(personalColorSeason || 'spring', {
+          maxResults: 4,
+        });
 
         // 케어 팁 생성
         const hairTexture = (currentHair?.texture || 'straight') as HairTexture;
@@ -229,8 +206,6 @@ export async function POST(req: NextRequest) {
           analyzedAt: new Date().toISOString(),
           usedFallback: false,
         };
-
-        console.log('[H-1] Analysis completed:', faceShapeAnalysis.faceShape, 'Confidence:', faceShapeAnalysis.confidence);
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[H-1] Analysis error, falling back to mock:', aiError);

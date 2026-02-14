@@ -464,16 +464,13 @@ export default function SkinAnalysisResultPage() {
       setSkinType(dbData.skin_type);
 
       // 이미지 URL 처리 (private bucket이므로 API로 signed URL 생성)
-      console.log('[S-1] DB image_url:', dbData.image_url);
       if (dbData.image_url && dbData.image_url.length > 0) {
         // 이미 전체 URL인지 확인 (구버전 호환)
         if (dbData.image_url.startsWith('http')) {
-          console.log('[S-1] Using direct HTTP URL');
           setImageUrl(dbData.image_url);
         } else {
           // API를 통해 signed URL 생성 (서버에서 service role 사용)
           try {
-            console.log('[S-1] Requesting signed URL for:', dbData.image_url);
             const response = await fetch('/api/storage/signed-url', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -486,7 +483,6 @@ export default function SkinAnalysisResultPage() {
 
             if (response.ok) {
               const { signedUrl } = await response.json();
-              console.log('[S-1] Signed URL 생성 성공');
               setImageUrl(signedUrl);
             } else {
               const errorText = await response.text();

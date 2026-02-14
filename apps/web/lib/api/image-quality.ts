@@ -72,11 +72,7 @@ export async function validateImageForAnalysis(
     allowWarnings?: boolean;
   } = {}
 ): Promise<ImageQualityResult> {
-  const {
-    minScore = MIN_ACCEPTABLE_SCORE,
-    skipResolution = false,
-    allowWarnings = true,
-  } = options;
+  const { minScore = MIN_ACCEPTABLE_SCORE, skipResolution = false, allowWarnings = true } = options;
 
   try {
     // Base64 → RGBImageData 변환
@@ -87,8 +83,7 @@ export async function validateImageForAnalysis(
 
     // 검증 통과 여부 판단
     const isAcceptable =
-      qualityResult.isAcceptable ||
-      (allowWarnings && qualityResult.overallScore >= minScore);
+      qualityResult.isAcceptable || (allowWarnings && qualityResult.overallScore >= minScore);
 
     if (!isAcceptable) {
       // 주요 이슈에 따른 사용자 메시지 선택
@@ -196,17 +191,5 @@ export function logQualityResult(
   result: CIE1Output,
   imageSize?: { width: number; height: number }
 ): void {
-  const sizeStr = imageSize ? `${imageSize.width}x${imageSize.height}` : 'unknown';
-
-  console.log(
-    `[${module}] Image quality: score=${result.overallScore}, ` +
-    `acceptable=${result.isAcceptable}, size=${sizeStr}, ` +
-    `sharpness=${result.sharpness.score.toFixed(0)}, ` +
-    `exposure=${result.exposure.verdict}, ` +
-    `cct=${result.colorTemperature.kelvin}K`
-  );
-
-  if (result.allIssues.length > 0) {
-    console.log(`[${module}] Issues: ${result.allIssues.join(', ')}`);
-  }
+  // 함수 시그니처 유지, 프로덕션 로깅 제거됨
 }

@@ -81,7 +81,6 @@ export async function POST(request: NextRequest) {
       response = await generateChatResponse(message, context, history.slice(0, -1));
     } else {
       // Gemini 미설정 시 Mock 응답
-      console.log('[Chat API] Gemini not configured, using mock response');
       response = generateMockResponse(message);
     }
 

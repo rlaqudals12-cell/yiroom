@@ -96,7 +96,7 @@ async function softDeleteUser(
   const now = new Date().toISOString();
 
   try {
-    console.log(`[GDPR-SOFT-DELETE] Processing user ${redactPii.userId(clerkUserId)}`);
+    console.info(`[GDPR-SOFT-DELETE] Processing user ${redactPii.userId(clerkUserId)}`);
 
     // 1. 사용자 테이블 익명화
     const anonymizedData = generateAnonymizedData(userId);
@@ -116,9 +116,15 @@ async function softDeleteUser(
 
     // 2. 관련 테이블 익명화 (이미지 URL null 처리)
     const tablesToAnonymize = [
-      { table: 'personal_color_assessments', imageColumns: ['face_image_url', 'left_image_url', 'right_image_url', 'wrist_image_url'] },
+      {
+        table: 'personal_color_assessments',
+        imageColumns: ['face_image_url', 'left_image_url', 'right_image_url', 'wrist_image_url'],
+      },
       { table: 'skin_analyses', imageColumns: ['face_image_url'] },
-      { table: 'body_analyses', imageColumns: ['body_image_url', 'front_image_url', 'side_image_url'] },
+      {
+        table: 'body_analyses',
+        imageColumns: ['body_image_url', 'front_image_url', 'side_image_url'],
+      },
       { table: 'meal_records', imageColumns: ['image_url'] },
     ];
 
@@ -131,7 +137,7 @@ async function softDeleteUser(
         await supabase.from(table).update(updateData).eq('clerk_user_id', clerkUserId);
       } catch {
         // 테이블이 없거나 컬럼이 없으면 무시
-        console.log(`[GDPR-SOFT-DELETE] Skipping ${table} - may not exist`);
+        console.info(`[GDPR-SOFT-DELETE] Skipping ${table} - may not exist`);
       }
     }
 
@@ -143,7 +149,7 @@ async function softDeleteUser(
         if (files && files.length > 0) {
           const filePaths = files.map((f) => `${clerkUserId}/${f.name}`);
           await supabase.storage.from(bucket).remove(filePaths);
-          console.log(`[GDPR-SOFT-DELETE] Deleted ${filePaths.length} files from ${bucket}`);
+          console.info(`[GDPR-SOFT-DELETE] Deleted ${filePaths.length} files from ${bucket}`);
         }
       } catch {
         // 버킷이 없거나 파일이 없으면 무시
@@ -151,12 +157,7 @@ async function softDeleteUser(
     }
 
     // 4. 소셜 데이터 삭제 (친구, 피드 등)
-    const socialTables = [
-      'friendships',
-      'feed_posts',
-      'post_likes',
-      'post_comments',
-    ];
+    const socialTables = ['friendships', 'feed_posts', 'post_likes', 'post_comments'];
 
     for (const table of socialTables) {
       try {
@@ -194,10 +195,15 @@ async function softDeleteUser(
       anonymized_fields: Object.keys(anonymizedData),
     });
 
-    console.log(`[GDPR-SOFT-DELETE] Successfully soft-deleted user ${redactPii.userId(clerkUserId)}`);
+    console.info(
+      `[GDPR-SOFT-DELETE] Successfully soft-deleted user ${redactPii.userId(clerkUserId)}`
+    );
     return true;
   } catch (error) {
-    console.error(`[GDPR-SOFT-DELETE] Error processing user ${redactPii.userId(clerkUserId)}:`, error);
+    console.error(
+      `[GDPR-SOFT-DELETE] Error processing user ${redactPii.userId(clerkUserId)}:`,
+      error
+    );
     return false;
   }
 }
@@ -208,7 +214,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  console.log('[GDPR-SOFT-DELETE] Starting soft delete cron job...');
+  console.info('[GDPR-SOFT-DELETE] Starting soft delete cron job...');
 
   try {
     const supabase = createServiceRoleClient();
@@ -238,7 +244,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!users || users.length === 0) {
-      console.log('[GDPR-SOFT-DELETE] No users pending soft delete');
+      console.info('[GDPR-SOFT-DELETE] No users pending soft delete');
       return NextResponse.json({
         success: true,
         message: 'No users to process',
@@ -247,7 +253,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log(`[GDPR-SOFT-DELETE] Found ${users.length} users for soft delete`);
+    console.info(`[GDPR-SOFT-DELETE] Found ${users.length} users for soft delete`);
 
     // 각 사용자 처리
     for (const user of users) {
@@ -280,7 +286,7 @@ export async function GET(request: NextRequest) {
       performed_by: 'system:cron:soft-delete-users',
     });
 
-    console.log('[GDPR-SOFT-DELETE] Completed:', result);
+    console.info('[GDPR-SOFT-DELETE] Completed:', result);
 
     return NextResponse.json({
       success: true,

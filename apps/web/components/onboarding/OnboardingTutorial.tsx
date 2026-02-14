@@ -34,7 +34,6 @@ interface OnboardingTutorialProps {
  * // 커스텀 스텝 사용
  * <OnboardingTutorial
  *   steps={customSteps}
- *   onComplete={() => console.log('완료!')}
  * />
  * ```
  */

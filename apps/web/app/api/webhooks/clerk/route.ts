@@ -83,27 +83,24 @@ async function handleUserUpsert(data: ClerkWebhookEvent['data']): Promise<boolea
 
   const email = data.email_addresses?.[0]?.email_address || null;
 
-  const { error } = await supabase
-    .from('users')
-    .upsert(
-      {
-        clerk_user_id: data.id,
-        email,
-        first_name: data.first_name || null,
-        last_name: data.last_name || null,
-        image_url: data.image_url || null,
-      },
-      {
-        onConflict: 'clerk_user_id',
-      }
-    );
+  const { error } = await supabase.from('users').upsert(
+    {
+      clerk_user_id: data.id,
+      email,
+      first_name: data.first_name || null,
+      last_name: data.last_name || null,
+      image_url: data.image_url || null,
+    },
+    {
+      onConflict: 'clerk_user_id',
+    }
+  );
 
   if (error) {
     console.error('[Clerk Webhook] User upsert 실패:', error);
     return false;
   }
 
-  console.log(`[Clerk Webhook] User upserted: ${data.id}`);
   return true;
 }
 
@@ -128,7 +125,6 @@ async function handleUserDelete(data: ClerkWebhookEvent['data']): Promise<boolea
     return false;
   }
 
-  console.log(`[Clerk Webhook] User soft deleted: ${data.id}`);
   return true;
 }
 
@@ -150,8 +146,6 @@ export async function POST(request: NextRequest) {
 
     const { type, data } = evt;
 
-    console.log(`[Clerk Webhook] Received event: ${type}`);
-
     // 이벤트 타입별 처리
     switch (type) {
       case 'user.created':
@@ -172,7 +166,6 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        console.log(`[Clerk Webhook] Unhandled event type: ${type}`);
     }
 
     return NextResponse.json({ success: true, type });
@@ -192,9 +185,7 @@ export async function GET() {
   return NextResponse.json({
     endpoint: '/api/webhooks/clerk',
     status: hasSecret ? 'configured' : 'missing_secret',
-    message: hasSecret
-      ? 'Webhook endpoint ready'
-      : 'CLERK_WEBHOOK_SECRET 환경변수를 설정하세요',
+    message: hasSecret ? 'Webhook endpoint ready' : 'CLERK_WEBHOOK_SECRET 환경변수를 설정하세요',
     supportedEvents: ['user.created', 'user.updated', 'user.deleted'],
   });
 }

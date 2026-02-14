@@ -125,7 +125,6 @@ export function FaceLandmarkHeatMap({
         ]);
 
         setModelsLoaded(true);
-        console.log('[FaceLandmarkHeatMap] Models loaded successfully');
       } catch (err) {
         console.error('[FaceLandmarkHeatMap] Model loading error:', err);
         setError('모델 로드 실패');
@@ -162,9 +161,7 @@ export function FaceLandmarkHeatMap({
 
         if (detectionResult) {
           setDetection(detectionResult);
-          console.log('[FaceLandmarkHeatMap] Face detected with 68 landmarks');
         } else {
-          console.log('[FaceLandmarkHeatMap] No face detected');
           setError('얼굴을 감지할 수 없어요');
         }
       } catch (err) {

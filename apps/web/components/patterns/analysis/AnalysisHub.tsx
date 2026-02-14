@@ -38,12 +38,15 @@ export type AnalysisModuleType = 'PC-1' | 'S-1' | 'C-1';
 export type AnalysisTheme = 'brand' | 'skin' | 'personalColor' | 'body' | 'hair' | 'face';
 
 // 테마별 색상 매핑
-const THEME_CONFIG: Record<AnalysisTheme, {
-  gradient: string;
-  accentClass: string;
-  shadowColor: string;
-  buttonVariant: 'brand' | 'skin' | 'personalColor' | 'body' | 'hair' | 'face';
-}> = {
+const THEME_CONFIG: Record<
+  AnalysisTheme,
+  {
+    gradient: string;
+    accentClass: string;
+    shadowColor: string;
+    buttonVariant: 'brand' | 'skin' | 'personalColor' | 'body' | 'hair' | 'face';
+  }
+> = {
   brand: {
     gradient: 'bg-gradient-brand',
     accentClass: 'text-primary border-primary/20 bg-primary/10',
@@ -58,7 +61,8 @@ const THEME_CONFIG: Record<AnalysisTheme, {
   },
   personalColor: {
     gradient: 'bg-gradient-to-r from-[#C084FC] to-[#A855F7]',
-    accentClass: 'text-module-personal-color border-module-personal-color/20 bg-module-personal-color/10',
+    accentClass:
+      'text-module-personal-color border-module-personal-color/20 bg-module-personal-color/10',
     shadowColor: 'shadow-[0_40px_100px_-20px_oklch(0.68_0.14_300_/_0.3)]',
     buttonVariant: 'personalColor',
   },
@@ -83,8 +87,7 @@ const THEME_CONFIG: Record<AnalysisTheme, {
 };
 
 export interface AnalysisHubProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof analysisHubVariants> {
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof analysisHubVariants> {
   onSelectModule: (module: AnalysisModuleType) => void;
   /** 테마 색상 (기본: brand/민트) */
   theme?: AnalysisTheme;
@@ -95,10 +98,8 @@ export interface AnalysisHubProps
  *
  * @example
  * // 기본 (민트)
- * <AnalysisHub onSelectModule={(mod) => console.log(mod)} />
  *
  * // 핑크 테마 (Gemini 원본)
- * <AnalysisHub theme="skin" onSelectModule={(mod) => console.log(mod)} />
  */
 function AnalysisHub({
   className,
@@ -121,10 +122,8 @@ function AnalysisHub({
       <header className="space-y-4">
         <h2 className="text-4xl font-black leading-tight tracking-tighter text-foreground">
           오늘 당신의 <br />
-          <span className={cn('text-transparent bg-clip-text', themeConfig.gradient)}>
-            빛깔
-          </span>
-          은 어떤가요?
+          <span className={cn('text-transparent bg-clip-text', themeConfig.gradient)}>빛깔</span>은
+          어떤가요?
         </h2>
         <p className="text-sm text-muted-foreground font-medium leading-relaxed">
           이룸 AI의 지능형 미학이 <br />
@@ -140,29 +139,39 @@ function AnalysisHub({
           className={cn(
             'relative group p-10 rounded-[3.5rem] bg-card/30 cursor-pointer transition-all duration-700 hover:translate-y-[-8px] active:scale-[0.98] w-full text-left',
             themeConfig.shadowColor,
-            themeConfig.accentClass.split(' ').find(c => c.startsWith('border-'))
+            themeConfig.accentClass.split(' ').find((c) => c.startsWith('border-'))
           )}
         >
           {/* 배경 아이콘 */}
           <div className="absolute top-0 right-0 p-10 opacity-10 scale-125 group-hover:scale-150 transition-transform duration-1000">
-            <Palette className={cn('w-24 h-24', themeConfig.accentClass.split(' ').find(c => c.startsWith('text-')))} />
+            <Palette
+              className={cn(
+                'w-24 h-24',
+                themeConfig.accentClass.split(' ').find((c) => c.startsWith('text-'))
+              )}
+            />
           </div>
 
           <div className="relative z-10 space-y-8">
             <div className="flex items-center gap-4">
-              <div className={cn(
-                'min-w-[56px] min-h-[56px] rounded-2xl flex items-center justify-center',
-                themeConfig.accentClass
-              )}>
-                <Sparkles className={cn('w-8 h-8', themeConfig.accentClass.split(' ').find(c => c.startsWith('text-')))} />
+              <div
+                className={cn(
+                  'min-w-[56px] min-h-[56px] rounded-2xl flex items-center justify-center',
+                  themeConfig.accentClass
+                )}
+              >
+                <Sparkles
+                  className={cn(
+                    'w-8 h-8',
+                    themeConfig.accentClass.split(' ').find((c) => c.startsWith('text-'))
+                  )}
+                />
               </div>
               <div>
                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">
                   AI Module PC-1
                 </span>
-                <h3 className="text-2xl font-black text-foreground">
-                  퍼스널 컬러 진단
-                </h3>
+                <h3 className="text-2xl font-black text-foreground">퍼스널 컬러 진단</h3>
               </div>
             </div>
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PostureCorrectionCard } from '@/components/body/PostureCorrectionCard';
 import type { BodyShape7 } from '@/lib/body/types';
 

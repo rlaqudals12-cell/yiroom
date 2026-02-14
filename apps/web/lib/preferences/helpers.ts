@@ -24,12 +24,10 @@ export async function getAllergies(
 
     if (preferences.length > 0) {
       const allergies = preferencesToAllergies(preferences);
-      console.log('[Preferences] Allergies loaded from user_preferences:', allergies);
       return allergies;
     }
 
     // Fallback: 파라미터로 받은 allergies 사용
-    console.log('[Preferences] Using fallback allergies:', fallbackAllergies);
     return fallbackAllergies as AllergyType[];
   } catch (error) {
     console.error('[Preferences] Error fetching allergies, using fallback:', error);
@@ -52,12 +50,10 @@ export async function getDislikedFoods(
     const avoidedNames = await getAvoidedItemNames(supabase, userId, 'nutrition');
 
     if (avoidedNames.length > 0) {
-      console.log('[Preferences] Disliked foods loaded from user_preferences:', avoidedNames);
       return avoidedNames;
     }
 
     // Fallback
-    console.log('[Preferences] Using fallback disliked foods:', fallbackFoods);
     return fallbackFoods;
   } catch (error) {
     console.error('[Preferences] Error fetching disliked foods, using fallback:', error);
@@ -81,12 +77,10 @@ export async function getInjuries(
 
     if (avoidedBodyParts.length > 0) {
       // 한글 → 영문 ID 변환 필요 시 converters 활용
-      console.log('[Preferences] Injuries loaded from user_preferences:', avoidedBodyParts);
       return avoidedBodyParts;
     }
 
     // Fallback
-    console.log('[Preferences] Using fallback injuries:', fallbackInjuries);
     return fallbackInjuries.filter((id) => id !== 'none');
   } catch (error) {
     console.error('[Preferences] Error fetching injuries, using fallback:', error);

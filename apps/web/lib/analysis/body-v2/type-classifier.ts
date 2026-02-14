@@ -6,15 +6,8 @@
  * @see {@link docs/principles/body-mechanics.md} 체형 역학 원리
  */
 
-import type {
-  BodyRatios,
-  BodyShapeType,
-  BodyShapeInfo,
-} from './types';
-import {
-  BODY_SHAPE_INFO,
-  BODY_SHAPE_THRESHOLDS,
-} from './types';
+import type { BodyRatios, BodyShapeType, BodyShapeInfo } from './types';
+import { BODY_SHAPE_INFO, BODY_SHAPE_THRESHOLDS } from './types';
 
 // =============================================================================
 // 내부 함수
@@ -113,7 +106,6 @@ function isOval(ratios: BodyRatios): boolean {
  *
  * @example
  * const bodyType = classifyBodyType(ratios);
- * console.log('체형:', bodyType); // 'hourglass'
  */
 export function classifyBodyType(ratios: BodyRatios): BodyShapeType {
   // 1. 모래시계형 체크 (가장 먼저 - 특수 조건)
@@ -150,8 +142,6 @@ export function classifyBodyType(ratios: BodyRatios): BodyShapeType {
  *
  * @example
  * const info = getBodyShapeInfo('hourglass');
- * console.log(info.label); // '모래시계형'
- * console.log(info.stylingTips); // ['허리를 강조하는 핏', ...]
  */
 export function getBodyShapeInfo(type: BodyShapeType): BodyShapeInfo {
   const info = BODY_SHAPE_INFO[type];
@@ -229,7 +219,7 @@ export function calculateClassificationConfidence(
 
     case 'triangle': {
       // 힙이 어깨보다 얼마나 넓은지
-      const hipExcess = (hipWidth / shoulderWidth) - BODY_SHAPE_THRESHOLDS.triangleRatio;
+      const hipExcess = hipWidth / shoulderWidth - BODY_SHAPE_THRESHOLDS.triangleRatio;
       confidence += Math.min(hipExcess * 100, 40);
       break;
     }

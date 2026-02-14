@@ -170,23 +170,16 @@ export async function POST(req: NextRequest) {
         },
       };
       usedMock = true;
-      console.log(
-        `[PC-1] Using mock analysis (${imagesCount} image(s), reliability: ${reliability})`
-      );
     } else {
       // Real AI 분석
       try {
-        console.log(`[PC-1] Starting Gemini analysis with ${imagesCount} image(s)...`);
-        console.log('[PC-1] Multi-angle:', hasMultiAngle, '/ Wrist:', !!wristImageBase64);
         aiResult = await analyzePersonalColor(analysisInput);
-        console.log('[PC-1] Gemini analysis completed');
 
         // AI 결과에 analysisEvidence/imageQuality가 없으면 기본값 제공
         const isCool = aiResult.tone === 'cool';
         const reliability = determineReliability(hasMultiAngle, !!wristImageBase64);
 
         if (!aiResult.analysisEvidence) {
-          console.log('[PC-1] Adding default analysisEvidence');
           aiResult.analysisEvidence = {
             veinColor: isCool ? 'blue' : 'green',
             veinScore: isCool ? 70 : 30,
@@ -198,7 +191,6 @@ export async function POST(req: NextRequest) {
         }
 
         if (!aiResult.imageQuality) {
-          console.log('[PC-1] Adding default imageQuality');
           aiResult.imageQuality = {
             lightingCondition: 'mixed',
             makeupDetected: false,
@@ -211,8 +203,7 @@ export async function POST(req: NextRequest) {
         // 혈관색이 blue/purple이면 반드시 cool 톤이어야 함
         const veinColor = aiResult.analysisEvidence?.veinColor;
         const skinUndertone = aiResult.analysisEvidence?.skinUndertone;
-        const originalTone = aiResult.tone;
-        const originalSeason = aiResult.seasonType;
+        // 검증 전 원본 tone/season은 aiResult에서 직접 참조
 
         // 혈관색 기반 검증
         if (veinColor) {
@@ -222,14 +213,8 @@ export async function POST(req: NextRequest) {
 
           // 혈관색과 톤 불일치 시 수정
           if (isCoolVein && aiResult.tone !== 'cool') {
-            console.log(
-              `[PC-1] Consistency fix: veinColor=${veinColor} but tone=${aiResult.tone}, correcting to cool`
-            );
             aiResult.tone = 'cool';
           } else if (isWarmVein && aiResult.tone !== 'warm') {
-            console.log(
-              `[PC-1] Consistency fix: veinColor=${veinColor} but tone=${aiResult.tone}, correcting to warm`
-            );
             aiResult.tone = 'warm';
           } else if (isUncertainVein) {
             // 혈관색이 불확실한 경우: skinUndertone으로 2차 검증
@@ -237,17 +222,11 @@ export async function POST(req: NextRequest) {
             const isCoolSkin = skinUndertone === 'pink' || skinUndertone === 'neutral';
             const isWarmSkin = skinUndertone === 'yellow' || skinUndertone === 'olive';
 
-            if (isCoolSkin && aiResult.tone === 'warm') {
+            if (
+              (isCoolSkin && aiResult.tone === 'warm') ||
+              (isWarmSkin && aiResult.tone === 'cool')
+            ) {
               // 피부 언더톤과 판정 결과가 명확히 불일치 → 신뢰도 약간 낮춤
-              console.log(
-                `[PC-1] Uncertain vein: skinUndertone=${skinUndertone} suggests cool but tone=${aiResult.tone}`
-              );
-              aiResult.confidence = Math.min(aiResult.confidence || 85, 75);
-            } else if (isWarmSkin && aiResult.tone === 'cool') {
-              // 피부 언더톤과 판정 결과가 명확히 불일치 → 신뢰도 약간 낮춤
-              console.log(
-                `[PC-1] Uncertain vein: skinUndertone=${skinUndertone} suggests warm but tone=${aiResult.tone}`
-              );
               aiResult.confidence = Math.min(aiResult.confidence || 85, 75);
             }
             // 불명확한 경우는 AI 판정을 신뢰 (신뢰도 유지)
@@ -263,25 +242,14 @@ export async function POST(req: NextRequest) {
           const contrast = aiResult.analysisEvidence?.skinHairContrast;
           const isVeryHighContrast = contrast === 'very_high';
 
-          if (aiResult.seasonType === 'winter' && !isVeryHighContrast) {
-            // Winter인데 대비가 높지 않으면 Summer로 수정
-            console.log(
-              `[PC-1] Season correction: winter but contrast=${contrast}, changing to summer`
-            );
-            aiResult.seasonType = 'summer';
-            aiResult.seasonLabel = '여름 쿨톤';
-            aiResult.seasonDescription = '차갑고 부드러운 색상이 잘 어울리는 여름 쿨톤입니다.';
-            aiResult.depth = 'light';
-          } else if (aiResult.seasonType === 'autumn') {
-            // Autumn인데 cool 톤이면 Summer로 수정 (Autumn은 항상 warm)
-            console.log('[PC-1] Season correction: autumn with cool tone, changing to summer');
-            aiResult.seasonType = 'summer';
-            aiResult.seasonLabel = '여름 쿨톤';
-            aiResult.seasonDescription = '차갑고 부드러운 색상이 잘 어울리는 여름 쿨톤입니다.';
-            aiResult.depth = 'light';
-          } else if (aiResult.seasonType === 'spring') {
-            // Spring인데 cool 톤이면 Summer로 수정 (Spring은 항상 warm)
-            console.log('[PC-1] Season correction: spring with cool tone, changing to summer');
+          if (
+            (aiResult.seasonType === 'winter' && !isVeryHighContrast) ||
+            aiResult.seasonType === 'autumn' ||
+            aiResult.seasonType === 'spring'
+          ) {
+            // Cool 톤과 불일치하는 시즌은 Summer로 수정
+            // - Winter: 대비가 높지 않으면 Summer
+            // - Autumn/Spring: 항상 warm이므로 cool 톤이면 Summer
             aiResult.seasonType = 'summer';
             aiResult.seasonLabel = '여름 쿨톤';
             aiResult.seasonDescription = '차갑고 부드러운 색상이 잘 어울리는 여름 쿨톤입니다.';
@@ -295,9 +263,6 @@ export async function POST(req: NextRequest) {
             // Summer/Winter인데 warm 톤이면 수정
             const depth = aiResult.depth || 'light';
             const newSeason = depth === 'deep' ? 'autumn' : 'spring';
-            console.log(
-              `[PC-1] Season correction: ${aiResult.seasonType} with warm tone, changing to ${newSeason}`
-            );
             if (newSeason === 'autumn') {
               aiResult.seasonType = 'autumn';
               aiResult.seasonLabel = '가을 웜톤';
@@ -310,13 +275,6 @@ export async function POST(req: NextRequest) {
               aiResult.depth = 'light';
             }
           }
-        }
-
-        // 수정이 있었으면 로그
-        if (originalTone !== aiResult.tone || originalSeason !== aiResult.seasonType) {
-          console.log(
-            `[PC-1] Result corrected: ${originalSeason} ${originalTone} → ${aiResult.seasonType} ${aiResult.tone}`
-          );
         }
       } catch (aiError) {
         // 신뢰성 문제로 랜덤 Mock Fallback 금지 - 에러를 사용자에게 전달
@@ -355,7 +313,6 @@ export async function POST(req: NextRequest) {
     let _rightImageUrl: string | null = null;
 
     if (primaryImage && saveImage) {
-      console.log('[PC-1] User consented to image storage, uploading...');
       const timestamp = Date.now();
       const fileName = `${userId}/${timestamp}.jpg`;
 
@@ -402,8 +359,6 @@ export async function POST(req: NextRequest) {
           });
         if (rightUpload) _rightImageUrl = rightUpload.path;
       }
-    } else if (primaryImage && !saveImage) {
-      console.log('[PC-1] User did not consent to image storage, skipping upload');
     }
 
     // 계절 타입 변환 (소문자 → DB 형식)
@@ -502,8 +457,6 @@ export async function POST(req: NextRequest) {
     if (userUpdateError) {
       // 동기화 실패해도 분석 결과는 이미 저장되었으므로 경고만 출력
       console.warn('[PC-1] Failed to sync to users table:', userUpdateError);
-    } else {
-      console.log('[PC-1] Synced PC result to users table');
     }
 
     // 게이미피케이션 연동

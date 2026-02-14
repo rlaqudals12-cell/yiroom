@@ -69,7 +69,6 @@ export default function SkinAnalysisPage() {
     async function checkExistingAnalysis() {
       // forceNew 파라미터가 있으면 자동 리디렉트 건너뛰기
       if (forceNew) {
-        console.log('[S-1] forceNew=true, skipping auto-redirect');
         setCheckingExisting(false);
         return;
       }

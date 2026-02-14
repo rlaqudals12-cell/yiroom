@@ -42,28 +42,19 @@ function mapDbToFood(row: Record<string, unknown>): BarcodeFood {
   };
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ code: string }> }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ code: string }> }) {
   try {
     // 인증 확인
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { code } = await params;
 
     // 바코드 유효성 검사 (EAN-13, EAN-8, UPC-A)
     if (!code || !/^\d{8,14}$/.test(code)) {
-      return NextResponse.json(
-        { error: 'Invalid barcode format' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid barcode format' }, { status: 400 });
     }
 
     const supabase = createClerkSupabaseClient();
@@ -78,21 +69,16 @@ export async function GET(
     if (error && error.code !== 'PGRST116') {
       // PGRST116: 결과 없음 (정상)
       console.error('[Barcode API] DB error:', error);
-      return NextResponse.json(
-        { error: 'Database error' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
     // 로컬 DB에서 찾은 경우
     if (data) {
       // 스캔 이력 저장 (비동기, 실패해도 무시)
-      void supabase
-        .from('user_barcode_history')
-        .insert({
-          clerk_user_id: userId,
-          barcode_food_id: data.id,
-        });
+      void supabase.from('user_barcode_history').insert({
+        clerk_user_id: userId,
+        barcode_food_id: data.id,
+      });
 
       const response: BarcodeSearchResponse = {
         found: true,
@@ -104,7 +90,6 @@ export async function GET(
     }
 
     // 2. Open Food Facts API에서 조회 (fallback)
-    console.log('[Barcode API] Local DB miss, trying Open Food Facts:', code);
     const offResult = await lookupOpenFoodFacts(code);
 
     if (offResult.found && offResult.food) {
@@ -158,7 +143,6 @@ export async function GET(
     // 3. 식품안전나라 API에서 조회 (한국 제품용 fallback)
     // 한국 바코드 (880으로 시작)인 경우만 시도
     if (code.startsWith('880')) {
-      console.log('[Barcode API] Korean barcode, trying Food Safety Korea:', code);
       const fskResult = await lookupFoodSafetyKorea(code);
 
       if (fskResult.found && fskResult.food) {
@@ -218,9 +202,6 @@ export async function GET(
     return NextResponse.json(response);
   } catch (error) {
     console.error('[Barcode API] Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

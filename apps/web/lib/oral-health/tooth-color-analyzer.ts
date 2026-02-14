@@ -8,7 +8,11 @@
 
 import type { ToothColorInput, ToothColorResult, LabColor, VitaSeries } from '@/types/oral-health';
 // lab-converter functions can be used for local pixel analysis in future
-import { findBestShadeMatch, interpretBrightness, interpretYellowness } from './internal/vita-database';
+import {
+  findBestShadeMatch,
+  interpretBrightness,
+  interpretYellowness,
+} from './internal/vita-database';
 import { interpretColorDifference } from './internal/ciede2000';
 import {
   getGeminiOralAnalysis,
@@ -32,11 +36,9 @@ export async function analyzeToothColor(
     const { data, usedFallback } = await getGeminiOralAnalysis(input.imageBase64);
 
     if (!usedFallback && data) {
-      console.log('[OH-1 Tooth] Using Gemini analysis result');
       const result = convertGeminiToothColorResult(data);
       return { ...result, usedFallback: false };
     }
-    console.log('[OH-1 Tooth] Gemini unavailable, falling back to mock');
   }
 
   // 폴백: 이미지에서 치아 영역 Lab 값 추출 (Mock)
@@ -62,7 +64,7 @@ export async function analyzeToothColor(
     matchedShade: matchResult.shade,
     deltaE: Math.round(matchResult.deltaE * 100) / 100,
     confidence,
-    alternativeMatches: matchResult.alternativeMatches.map(m => ({
+    alternativeMatches: matchResult.alternativeMatches.map((m) => ({
       shade: m.shade,
       deltaE: Math.round(m.deltaE * 100) / 100,
     })),
@@ -95,12 +97,10 @@ async function extractToothLabFromImage(
   const geminiResult = await extractToothLabWithGemini(imageBase64);
 
   if (geminiResult && !geminiResult.usedFallback) {
-    console.log('[OH-1 Tooth] Extracted Lab via Gemini bridge');
     return geminiResult.lab;
   }
 
   // 폴백: Mock Lab 값 생성
-  console.log('[OH-1 Tooth] Using mock tooth Lab');
   // Mock: 일반적인 A2~A3 범위의 치아 색상
   return {
     L: 65 + Math.random() * 6,
@@ -168,5 +168,5 @@ export function generateToothColorSummary(result: ToothColorResult): string {
   const yellowness = yellownessTexts[interpretation.yellowness];
   const series = seriesTexts[interpretation.series];
 
-  return `현재 치아 색상은 VITA ${matchedShade}로, ${brightness} ${yellowness} ${series}입니다. (신뢰도 ${confidence}%)`;
+  return `현재 치아 색상은 VITA ${matchedShade}로, ${brightness} ${yellowness} ${series}이에요. (신뢰도 ${confidence}%)`;
 }

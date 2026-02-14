@@ -48,7 +48,6 @@ export async function getGeminiOralAnalysis(
 
   // 캐시된 결과가 있으면 재사용
   if (cachedGeminiResult && cachedGeminiResult.imageHash === imageHash) {
-    console.log('[OH-1 Bridge] Using cached Gemini result');
     return { data: cachedGeminiResult.data, usedFallback: cachedGeminiResult.usedFallback };
   }
 
@@ -144,7 +143,10 @@ export function convertGeminiGumHealthResult(
   // 영향 영역 변환
   const affectedAreas = gumHealth.affectedAreas.map((region) => ({
     region,
-    severity: estimateSeverityFromInflammation(gumHealth.inflammationScore) as 'mild' | 'moderate' | 'severe',
+    severity: estimateSeverityFromInflammation(gumHealth.inflammationScore) as
+      | 'mild'
+      | 'moderate'
+      | 'severe',
   }));
 
   return {

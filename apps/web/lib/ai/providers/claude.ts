@@ -70,7 +70,6 @@ async function getAnthropicClient(): Promise<AnthropicClient | null> {
       const Anthropic = AnthropicModule.default;
       anthropicClient = new Anthropic({ apiKey: API_KEY }) as unknown as AnthropicClient;
       sdkAvailable = true;
-      console.log('[Claude] Anthropic SDK loaded successfully');
     } catch {
       console.warn(
         '[Claude] @anthropic-ai/sdk not installed, Claude provider disabled.',
@@ -151,10 +150,7 @@ export function parseClaudeJsonResponse<T>(text: string): T {
  * @param prompt 분석 프롬프트
  * @returns 파싱된 JSON 응답
  */
-export async function analyzeWithClaude<T>(
-  input: ImageAnalysisInput,
-  prompt: string
-): Promise<T> {
+export async function analyzeWithClaude<T>(input: ImageAnalysisInput, prompt: string): Promise<T> {
   const client = await getAnthropicClient();
   if (!client) {
     throw new Error('Anthropic SDK not available or API key not configured');
@@ -185,8 +181,6 @@ export async function analyzeWithClaude<T>(
     throw new Error('No text response from Claude');
   }
 
-  console.log(`[Claude] ${input.analysisType} analysis completed`);
-
   return parseClaudeJsonResponse<T>(textContent.text);
 }
 
@@ -196,9 +190,7 @@ export async function analyzeWithClaude<T>(
  * @param prompt 분석에 사용할 프롬프트
  * @returns AIProvider 구현
  */
-export function createClaudeProvider<T>(
-  prompt: string
-): AIProvider<ImageAnalysisInput, T> {
+export function createClaudeProvider<T>(prompt: string): AIProvider<ImageAnalysisInput, T> {
   return {
     name: 'claude',
     analyze: (input: ImageAnalysisInput) => analyzeWithClaude<T>(input, prompt),

@@ -34,11 +34,9 @@ export async function analyzeGumHealth(
     const { data, usedFallback } = await getGeminiOralAnalysis(input.imageBase64);
 
     if (!usedFallback && data) {
-      console.log('[OH-1 Gum] Using Gemini analysis result');
       const result = convertGeminiGumHealthResult(data);
       return { ...result, usedFallback: false };
     }
-    console.log('[OH-1 Gum] Gemini unavailable, falling back to mock');
   }
 
   // 폴백: 이미지에서 잇몸 영역 Lab 값 추출 (Mock)
@@ -82,21 +80,19 @@ async function extractGumPixelsFromImage(imageBase64: string): Promise<LabColor[
   const geminiResult = await extractGumPixelsWithGemini(imageBase64);
 
   if (geminiResult && !geminiResult.usedFallback) {
-    console.log('[OH-1 Gum] Extracted pixels via Gemini bridge');
     return geminiResult.pixels;
   }
 
   // 폴백: Mock 픽셀 생성
-  console.log('[OH-1 Gum] Using mock gum pixels');
   const pixelCount = 100 + Math.floor(Math.random() * 100);
   const pixels: LabColor[] = [];
 
   // 건강한 잇몸~경미한 염증 범위의 Mock 데이터
   for (let i = 0; i < pixelCount; i++) {
     pixels.push({
-      L: 55 + Math.random() * 15,  // 55-70 (밝기)
-      a: 8 + Math.random() * 8,     // 8-16 (붉은기, 건강~경미 염증)
-      b: 10 + Math.random() * 8,    // 10-18 (황색기)
+      L: 55 + Math.random() * 15, // 55-70 (밝기)
+      a: 8 + Math.random() * 8, // 8-16 (붉은기, 건강~경미 염증)
+      b: 10 + Math.random() * 8, // 10-18 (황색기)
     });
   }
 
@@ -113,9 +109,7 @@ async function extractGumPixelsFromImage(imageBase64: string): Promise<LabColor[
  * @param gumPixels - 잇몸 Lab 픽셀 배열
  * @returns 영향 받는 영역 배열
  */
-function analyzeAffectedAreas(
-  gumPixels: LabColor[]
-): Array<{
+function analyzeAffectedAreas(gumPixels: LabColor[]): Array<{
   region: 'upper_front' | 'upper_back' | 'lower_front' | 'lower_back';
   severity: 'mild' | 'moderate' | 'severe';
 }> {
@@ -124,7 +118,7 @@ function analyzeAffectedAreas(
   const avgA = gumPixels.reduce((sum, p) => sum + p.a, 0) / gumPixels.length;
 
   if (avgA < 12) {
-    return [];  // 건강한 경우 영향 영역 없음
+    return []; // 건강한 경우 영향 영역 없음
   }
 
   // 경미한 염증 시 일부 영역 반환
@@ -161,31 +155,31 @@ export function getGumHealthGrade(inflammationScore: number): {
     return {
       grade: 'A',
       label: '매우 좋음',
-      description: '잇몸이 건강한 상태입니다.',
+      description: '잇몸이 건강한 상태예요.',
     };
   } else if (inflammationScore < 40) {
     return {
       grade: 'B',
       label: '좋음',
-      description: '잇몸 상태가 양호하나 관리가 필요합니다.',
+      description: '잇몸 상태가 양호하지만 관리가 필요해요.',
     };
   } else if (inflammationScore < 60) {
     return {
       grade: 'C',
       label: '보통',
-      description: '경미한 염증이 있어 개선이 필요합니다.',
+      description: '경미한 염증이 있어 개선이 필요해요.',
     };
   } else if (inflammationScore < 80) {
     return {
       grade: 'D',
       label: '주의',
-      description: '중등도 염증으로 치과 상담을 권장합니다.',
+      description: '중등도 염증으로 치과 상담을 권장해요.',
     };
   } else {
     return {
       grade: 'F',
       label: '위험',
-      description: '심각한 염증으로 빠른 치과 방문이 필요합니다.',
+      description: '심각한 염증으로 빠른 치과 방문이 필요해요.',
     };
   }
 }
@@ -202,7 +196,7 @@ export function generateGumHealthSummary(result: GumHealthResult): string {
   summary += `${grade.description}`;
 
   if (needsDentalVisit) {
-    summary += '\n\n치과 방문을 권장합니다.';
+    summary += '\n\n치과 방문을 권장해요.';
   }
 
   return summary;

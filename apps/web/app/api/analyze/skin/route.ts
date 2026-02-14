@@ -91,9 +91,6 @@ export async function POST(req: NextRequest) {
 
     // 다각도 이미지 수 계산
     const imagesCount = [primaryImage, leftImageBase64, rightImageBase64].filter(Boolean).length;
-    console.log(
-      `[S-1] Multi-angle images: ${imagesCount} (front: 1, left: ${leftImageBase64 ? 1 : 0}, right: ${rightImageBase64 ? 1 : 0})`
-    );
 
     // 분석 신뢰도 결정
     const analysisReliability = imagesCount === 3 ? 'high' : imagesCount === 2 ? 'medium' : 'low';
@@ -143,11 +140,9 @@ export async function POST(req: NextRequest) {
         problemAreas: MOCK_PROBLEM_AREAS,
       };
       usedMock = true;
-      console.log('[S-1] Using mock analysis');
     } else {
       // Real AI 분석
       try {
-        console.log('[S-1] Starting Gemini analysis...');
         // 현재: 정면 이미지 기반 분석 (다각도 이미지는 메타데이터로 활용)
         result = await analyzeSkin(primaryImage);
         // 다각도 메타데이터 추가
@@ -166,7 +161,6 @@ export async function POST(req: NextRequest) {
             | 'medium'
             | 'low';
         }
-        console.log('[S-1] Gemini analysis completed');
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[S-1] Gemini error, falling back to mock:', aiError);
@@ -223,7 +217,6 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     const hasImageConsent = consentData?.consent_given === true;
-    console.log(`[S-1] Image consent status: ${hasImageConsent ? 'granted' : 'not granted'}`);
 
     // 이미지 업로드 헬퍼 (동의가 있는 경우에만 사용)
     // 반환값: Storage 경로 (private bucket이므로 결과 페이지에서 signed URL 생성)
@@ -254,11 +247,9 @@ export async function POST(req: NextRequest) {
     let _rightImageUrl: string | null = null;
 
     if (hasImageConsent) {
-      console.log('[S-1] 동의 있음 - 이미지 업로드 시작');
       // 정면 이미지 업로드
       if (primaryImage) {
         frontImageUrl = await uploadImage(primaryImage, 'front');
-        console.log('[S-1] 정면 이미지 업로드 결과:', frontImageUrl ? '성공' : '실패');
       }
 
       // 좌측 이미지 업로드 (선택) - 미래 다각도 분석용
@@ -270,13 +261,10 @@ export async function POST(req: NextRequest) {
       if (rightImageBase64) {
         _rightImageUrl = await uploadImage(rightImageBase64, 'right');
       }
-    } else {
-      console.log('[S-1] 동의 없음 - 이미지 업로드 건너뜀');
     }
 
     // 하위 호환: 기존 imageUrl은 frontImageUrl 사용
     const imageUrl = frontImageUrl;
-    console.log('[S-1] 최종 imageUrl:', imageUrl || '(없음)');
 
     // 퍼스널 컬러 조회 (자동 연동 + 파운데이션 추천)
     const { data: pcData } = await supabase
@@ -337,7 +325,6 @@ export async function POST(req: NextRequest) {
     }
 
     // 피부 타입별 주의 성분 조회 (하이브리드 성분 분석)
-    console.log(`[S-1] Fetching warning ingredients for ${skinType} skin`);
     const warningIngredients = await getWarningIngredientsForSkinType(skinType);
 
     // 피부 타입별 warning 레벨 계산 헬퍼
@@ -386,10 +373,6 @@ export async function POST(req: NextRequest) {
       category: ing.category,
     }));
 
-    console.log(
-      `[S-1] Found ${ingredientWarnings.length} warning ingredients for ${skinType} skin`
-    );
-
     // 제품 추천 생성
     const metricsForProducts = {
       hydration: getMetricValue('hydration'),
@@ -408,10 +391,6 @@ export async function POST(req: NextRequest) {
 
     // products 필드 형식으로 변환
     const productsForDB = formatProductsForDB(productRecommendations);
-
-    console.log(
-      `[S-1] Generated ${productRecommendations.routine.length} routine steps, ${productRecommendations.specialCare.length} special care products`
-    );
 
     // DB에 저장
     const { data, error } = await supabase

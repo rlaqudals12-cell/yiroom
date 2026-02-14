@@ -38,8 +38,6 @@ export async function checkImageConsent(
 
   const hasConsent = consentData?.consent_given === true;
 
-  console.log(`[${analysisType.toUpperCase()}] Image consent status: ${hasConsent ? 'granted' : 'not granted'}`);
-
   return {
     hasConsent,
     consentId: hasConsent ? consentData?.id : null,
@@ -107,7 +105,6 @@ export async function checkConsentAndUploadImages(
 
   // 2. 동의가 없으면 업로드 건너뜀
   if (!hasConsent) {
-    console.log(`[${analysisType.toUpperCase()}] No consent - skipping image upload`);
     const emptyResults: Record<string, string | null> = {};
     for (const suffix of Object.keys(images)) {
       emptyResults[suffix] = null;
@@ -116,13 +113,17 @@ export async function checkConsentAndUploadImages(
   }
 
   // 3. 동의가 있으면 이미지 업로드
-  console.log(`[${analysisType.toUpperCase()}] Consent granted - starting image upload`);
   const uploadedImages: Record<string, string | null> = {};
 
   for (const [suffix, base64] of Object.entries(images)) {
     if (base64) {
-      uploadedImages[suffix] = await uploadImageToStorage(supabase, bucketName, userId, base64, suffix);
-      console.log(`[${analysisType.toUpperCase()}] ${suffix} image upload: ${uploadedImages[suffix] ? 'success' : 'failed'}`);
+      uploadedImages[suffix] = await uploadImageToStorage(
+        supabase,
+        bucketName,
+        userId,
+        base64,
+        suffix
+      );
     } else {
       uploadedImages[suffix] = null;
     }

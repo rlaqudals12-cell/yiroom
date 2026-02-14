@@ -32,7 +32,6 @@ export async function loadKakaoSDK(): Promise<boolean> {
     script.async = true;
 
     script.onload = () => {
-      console.log('[Share] Kakao SDK loaded dynamically');
       resolve(true);
     };
 

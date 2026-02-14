@@ -42,7 +42,6 @@ export async function extractFaceLandmarks(
 
   // Mock 강제 사용 또는 환경변수
   if (useMock || process.env.NEXT_PUBLIC_FORCE_MOCK_AI === 'true') {
-    console.log('[FaceLandmark] Mock 모드 사용');
     return generateMockLandmarks();
   }
 

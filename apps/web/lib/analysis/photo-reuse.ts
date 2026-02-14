@@ -95,7 +95,6 @@ export async function checkPhotoReuseEligibility(
     if (error) {
       // 테이블 미존재 오류 (42P01)는 조용히 처리
       if (error.code === '42P01') {
-        console.log('[photo-reuse] analysis_images table not found, skipping');
         return { eligible: false, reason: 'no_image' };
       }
       console.error('[photo-reuse] DB query error:', error?.code, error?.message);

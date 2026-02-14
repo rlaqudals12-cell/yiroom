@@ -17,11 +17,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { sendPushToSubscriptions } from '@/lib/push/server';
-import {
-  GDPR_CONFIG,
-  type DeletionReminderResult,
-  type DeletionAuditAction,
-} from '@/types/gdpr';
+import { GDPR_CONFIG, type DeletionReminderResult, type DeletionAuditAction } from '@/types/gdpr';
 
 // Vercel Cron 인증 검증
 function validateCronAuth(request: NextRequest): boolean {
@@ -79,12 +75,14 @@ async function sendDeletionReminder(
     // Web Push 구독 조회 (push_subscriptions 테이블)
     const { data: subscriptions, error: subError } = await supabase
       .from('push_subscriptions')
-      .select('id, clerk_user_id, endpoint, p256dh, auth, user_agent, created_at, updated_at, is_active')
+      .select(
+        'id, clerk_user_id, endpoint, p256dh, auth, user_agent, created_at, updated_at, is_active'
+      )
       .eq('clerk_user_id', clerkUserId)
       .eq('is_active', true);
 
     if (subError || !subscriptions || subscriptions.length === 0) {
-      console.log(`[GDPR-REMINDER] No push subscriptions for user ${userId}`);
+      console.info(`[GDPR-REMINDER] No push subscriptions for user ${userId}`);
       return false;
     }
 
@@ -145,11 +143,11 @@ async function processRemindersForDays(
   }
 
   if (!users || users.length === 0) {
-    console.log(`[GDPR-REMINDER] No users with ${daysRemaining} days remaining`);
+    console.info(`[GDPR-REMINDER] No users with ${daysRemaining} days remaining`);
     return 0;
   }
 
-  console.log(`[GDPR-REMINDER] Found ${users.length} users with ${daysRemaining} days remaining`);
+  console.info(`[GDPR-REMINDER] Found ${users.length} users with ${daysRemaining} days remaining`);
 
   let sentCount = 0;
 
@@ -184,7 +182,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  console.log('[GDPR-REMINDER] Starting deletion reminder cron job...');
+  console.info('[GDPR-REMINDER] Starting deletion reminder cron job...');
 
   try {
     const supabase = createServiceRoleClient();
@@ -211,7 +209,7 @@ export async function GET(request: NextRequest) {
       performed_by: 'system:cron:deletion-reminder',
     });
 
-    console.log('[GDPR-REMINDER] Completed:', result);
+    console.info('[GDPR-REMINDER] Completed:', result);
 
     return NextResponse.json({
       success: true,

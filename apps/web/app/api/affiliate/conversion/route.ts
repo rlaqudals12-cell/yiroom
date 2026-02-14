@@ -153,10 +153,6 @@ export async function POST(request: NextRequest) {
       console.error('[Conversion] 일별 통계 업데이트 실패:', err);
     });
 
-    console.log(
-      `[Conversion] ${partner} 전환 처리 완료: clickId=${clickId}, value=${conversionValue}, commission=${commission}`
-    );
-
     return NextResponse.json(
       {
         success: true,
@@ -178,16 +174,6 @@ export async function POST(request: NextRequest) {
 async function logConversionEvent(body: ConversionWebhookBody): Promise<void> {
   // 향후 DB 로깅 시 사용 예정
   // const supabase = createServiceRoleClient();
-
-  // 별도 로깅 테이블이나 로그 서비스로 전송
-  console.log('[Conversion] Orphan conversion event:', {
-    partner: body.partner,
-    orderId: body.orderId || body.transactionId,
-    amount: extractOrderAmount(body),
-    commission: extractCommission(body),
-    timestamp: new Date().toISOString(),
-  });
-
   // 향후 affiliate_conversion_logs 테이블 추가 가능
   // await supabase.from('affiliate_conversion_logs').insert({...});
 }

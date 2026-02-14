@@ -82,10 +82,7 @@ export function parseGeminiJsonResponse<T>(text: string): T {
  * @param prompt 분석 프롬프트
  * @returns 파싱된 JSON 응답
  */
-export async function analyzeWithGemini<T>(
-  input: ImageAnalysisInput,
-  prompt: string
-): Promise<T> {
+export async function analyzeWithGemini<T>(input: ImageAnalysisInput, prompt: string): Promise<T> {
   if (!genAI) {
     throw new Error('Gemini API key not configured');
   }
@@ -97,8 +94,6 @@ export async function analyzeWithGemini<T>(
   const response = await result.response;
   const text = response.text();
 
-  console.log(`[Gemini] ${input.analysisType} analysis completed`);
-
   return parseGeminiJsonResponse<T>(text);
 }
 
@@ -108,9 +103,7 @@ export async function analyzeWithGemini<T>(
  * @param prompt 분석에 사용할 프롬프트
  * @returns AIProvider 구현
  */
-export function createGeminiProvider<T>(
-  prompt: string
-): AIProvider<ImageAnalysisInput, T> {
+export function createGeminiProvider<T>(prompt: string): AIProvider<ImageAnalysisInput, T> {
   return {
     name: 'gemini',
     analyze: (input: ImageAnalysisInput) => analyzeWithGemini<T>(input, prompt),

@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
 
     // 개발 환경에서는 Mock fallback
     if (process.env.NODE_ENV === 'development') {
-      console.log('[OCR API] Falling back to mock result');
       const mockResult = generateMockOcrResult();
       return NextResponse.json(mockResult);
     }

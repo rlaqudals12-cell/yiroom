@@ -66,11 +66,9 @@ export async function POST(req: NextRequest) {
       // Mock 모드
       result = generateMockMakeupAnalysisResult();
       usedMock = true;
-      console.log('[M-1] Using mock analysis');
     } else {
       // Gemini AI 분석 실행
       try {
-        console.log('[M-1] Starting Gemini analysis...');
         const geminiResult = await analyzeMakeup(imageBase64);
         // Gemini 결과를 MakeupAnalysisResult 형식으로 변환
         result = {
@@ -98,7 +96,6 @@ export async function POST(req: NextRequest) {
           analyzedAt: new Date(),
           analysisReliability: geminiResult.analysisReliability,
         };
-        console.log('[M-1] Gemini analysis completed');
       } catch (aiError) {
         console.error('[M-1] Gemini error, falling back to mock:', aiError);
         result = generateMockMakeupAnalysisResult();

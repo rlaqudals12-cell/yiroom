@@ -43,14 +43,6 @@ export async function POST(request: NextRequest) {
 
     // 개발 환경 로깅
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Analytics API] Received events:', {
-        sessionId,
-        deviceType,
-        browser,
-        os,
-        eventCount: events.length,
-        events: events.map((e) => ({ type: e.eventType, name: e.eventName })),
-      });
     }
 
     // DB 저장 (Service Role로 RLS 우회 - 익명 사용자도 저장 가능)

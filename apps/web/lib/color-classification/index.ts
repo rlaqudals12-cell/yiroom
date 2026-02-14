@@ -10,8 +10,6 @@
  * import { classifyProductColor } from '@/lib/color-classification';
  *
  * const result = await classifyProductColor(imageUrl);
- * console.log(result.tone); // 'warm' | 'cool' | 'neutral'
- * console.log(result.seasonMatch.spring); // 0-100
  */
 
 // 타입 내보내기
@@ -44,11 +42,7 @@ export {
 } from './color-utils';
 
 // K-means 클러스터링
-export {
-  kMeansClustering,
-  extractPixelsFromImageData,
-  loadImagePixels,
-} from './extract-colors';
+export { kMeansClustering, extractPixelsFromImageData, loadImagePixels } from './extract-colors';
 
 // 배경 필터링
 export {
@@ -117,7 +111,6 @@ const DEFAULT_EXTRACTION_OPTIONS: Required<ColorExtractionOptions> = {
  * const result = await classifyProductColor('https://example.com/product.jpg');
  *
  * if (result.seasonMatch.spring >= 80) {
- *   console.log('봄 타입에게 추천!');
  * }
  */
 export async function classifyProductColor(
@@ -280,10 +273,7 @@ export function classifyFromPixels(
 /**
  * 전체 신뢰도 계산
  */
-function calculateOverallConfidence(
-  palette: ExtractedColor[],
-  toneConfidence: number
-): number {
+function calculateOverallConfidence(palette: ExtractedColor[], toneConfidence: number): number {
   // 대표색 비율이 높을수록 신뢰도 높음
   const dominantRatio = palette[0]?.percentage ?? 0;
   const ratioScore = Math.min(100, dominantRatio * 2);
@@ -292,9 +282,7 @@ function calculateOverallConfidence(
   const diversityPenalty = palette.length > 3 ? (palette.length - 3) * 5 : 0;
 
   // 톤 분류 신뢰도 가중치
-  const finalConfidence = Math.round(
-    ratioScore * 0.4 + toneConfidence * 0.6 - diversityPenalty
-  );
+  const finalConfidence = Math.round(ratioScore * 0.4 + toneConfidence * 0.6 - diversityPenalty);
 
   return Math.max(0, Math.min(100, finalConfidence));
 }

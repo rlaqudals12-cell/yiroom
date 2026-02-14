@@ -24,8 +24,6 @@ export async function saveWorkoutAnalysisAction(
     targetDate?: string;
   }
 ): Promise<{ success: boolean; data?: WorkoutAnalysis; error?: string }> {
-  console.log('[W-1 Action] saveWorkoutAnalysisAction called for user:', clerkUserId);
-  console.log('[W-1 Action] Input:', JSON.stringify(input));
   const supabase = createServiceRoleClient();
 
   // Clerk ID로 내부 user_id 조회
@@ -39,9 +37,6 @@ export async function saveWorkoutAnalysisAction(
     console.error('[W-1 Action] User not found for clerk_user_id:', clerkUserId, userError);
     return { success: false, error: `User not found: ${userError?.message || 'Unknown'}` };
   }
-
-  console.log('[W-1 Action] Found user:', userData.id);
-
   // Mock 분석 결과 생성
   const analysisInput: WorkoutAnalysisInput = {
     bodyType: input.bodyType,
@@ -110,16 +105,11 @@ export async function saveWorkoutAnalysisAction(
 
     if (preferences.length > 0) {
       await upsertPreferences(supabase, preferences);
-      console.log(
-        `[W-1 Action] Saved ${preferences.length} injury preferences to user_preferences`
-      );
     }
   } catch (prefError) {
     // user_preferences 저장 실패해도 기존 로직은 정상 동작
     console.error('[W-1 Action] Failed to save preferences (non-critical):', prefError);
   }
-
-  console.log('[W-1 Action] Workout analysis saved:', data?.id, data?.workout_type);
   return { success: true, data: data as WorkoutAnalysis };
 }
 
@@ -129,7 +119,6 @@ export async function saveWorkoutAnalysisAction(
 export async function getLatestWorkoutAnalysisAction(
   clerkUserId: string
 ): Promise<WorkoutAnalysis | null> {
-  console.log('[W-1 Action] getLatestWorkoutAnalysisAction called with clerkUserId:', clerkUserId);
   const supabase = createServiceRoleClient();
 
   // Clerk ID로 내부 user_id 조회
@@ -143,9 +132,6 @@ export async function getLatestWorkoutAnalysisAction(
     console.error('[W-1 Action] User not found for clerk_user_id:', clerkUserId, userError);
     return null;
   }
-
-  console.log('[W-1 Action] Found internal user_id:', userData.id);
-
   const { data, error } = await supabase
     .from('workout_analyses')
     .select('*')
@@ -156,14 +142,11 @@ export async function getLatestWorkoutAnalysisAction(
 
   if (error) {
     if (error.code === 'PGRST116') {
-      console.log('[W-1 Action] No workout analysis found for user_id:', userData.id);
       return null;
     }
     console.error('[W-1 Action] Error fetching workout analysis:', error);
     return null;
   }
-
-  console.log('[W-1 Action] Found workout analysis:', data?.id, data?.workout_type);
   return data as WorkoutAnalysis;
 }
 

@@ -35,32 +35,32 @@ export const SEASON_SHADE_RECOMMENDATIONS: Record<PersonalColorSeason, SeasonSha
     maxBrightShade: '0M2',
     preferredSeries: ['A', 'B'],
     avoidShades: ['C1', 'C2', 'C3', 'C4'],
-    harmony: '밝고 투명한 노란 피부에 따뜻한 아이보리 톤이 조화롭습니다.',
-    whiteningNotes: '너무 차가운 블루 화이트(0M1)는 피부 톤과 충돌할 수 있습니다.',
+    harmony: '밝고 투명한 노란 피부에 따뜻한 아이보리 톤이 조화로워요.',
+    whiteningNotes: '너무 차가운 블루 화이트(0M1)는 피부 톤과 충돌할 수 있어요.',
   },
   summer: {
     recommendedShades: ['B1', 'C1', 'A1'],
     maxBrightShade: '0M1',
     preferredSeries: ['B', 'C'],
     avoidShades: ['A3', 'A3.5', 'A4'],
-    harmony: '핑크빛 밝은 피부에 블루 언더톤의 쿨 화이트가 어울립니다.',
-    whiteningNotes: '가장 밝은 셰이드까지 자연스럽게 어울릴 수 있습니다.',
+    harmony: '핑크빛 밝은 피부에 블루 언더톤의 쿨 화이트가 어울려요.',
+    whiteningNotes: '가장 밝은 셰이드까지 자연스럽게 어울릴 수 있어요.',
   },
   autumn: {
     recommendedShades: ['A2', 'B2', 'A3'],
     maxBrightShade: 'A1',
     preferredSeries: ['A', 'B'],
     avoidShades: ['0M1', '0M2', 'C1'],
-    harmony: '구릿빛 건강한 피부에 자연스러운 아이보리~옐로 톤이 조화롭습니다.',
-    whiteningNotes: '과도한 미백(0M 셰이드)은 피부와 부조화를 일으킬 수 있습니다.',
+    harmony: '구릿빛 건강한 피부에 자연스러운 아이보리~옐로 톤이 조화로워요.',
+    whiteningNotes: '과도한 미백(0M 셰이드)은 피부와 부조화를 일으킬 수 있어요.',
   },
   winter: {
     recommendedShades: ['B1', '0M1', 'C1'],
     maxBrightShade: '0M1',
     preferredSeries: ['B', 'C'],
     avoidShades: ['A3', 'A3.5', 'A4', 'B4'],
-    harmony: '선명한 핑크 베이스에 순백에 가까운 밝은 화이트가 어울립니다.',
-    whiteningNotes: '높은 대비를 위해 밝은 셰이드가 효과적입니다.',
+    harmony: '선명한 핑크 베이스에 순백에 가까운 밝은 화이트가 어울려요.',
+    whiteningNotes: '높은 대비를 위해 밝은 셰이드가 효과적이에요.',
   },
 };
 
@@ -83,7 +83,7 @@ export function isOverWhitening(
   if (warmSeasons.includes(season) && targetShade === '0M1') {
     return {
       isOver: true,
-      reason: '웜톤 피부에 차가운 블루 화이트는 부자연스러울 수 있습니다.',
+      reason: '웜톤 피부에 차가운 블루 화이트는 부자연스러울 수 있어요.',
     };
   }
 
@@ -91,15 +91,15 @@ export function isOverWhitening(
   if (season === 'autumn' && bleachedShades.includes(targetShade)) {
     return {
       isOver: true,
-      reason: '따뜻한 피부톤에 과도한 미백은 부자연스러울 수 있습니다.',
+      reason: '따뜻한 피부톤에 과도한 미백은 부자연스러울 수 있어요.',
     };
   }
 
   // 피해야 할 셰이드 확인
   if (config.avoidShades.includes(targetShade)) {
     return {
-      isOver: false,  // 어두운 셰이드는 over whitening이 아님
-      reason: `${season} 시즌에 권장하지 않는 셰이드입니다.`,
+      isOver: false, // 어두운 셰이드는 over whitening이 아님
+      reason: `${season} 시즌에 권장하지 않는 셰이드예요.`,
     };
   }
 
@@ -128,8 +128,25 @@ export function recommendTargetShade(
 
   // 현재 셰이드 순위 파악
   const brightnessOrder: VitaShade[] = [
-    '0M1', '0M2', '0M3', 'B1', 'A1', 'B2', 'D2', 'A2', 'C1', 'C2', 'D4',
-    'A3', 'D3', 'B3', 'A3.5', 'B4', 'C3', 'A4', 'C4',
+    '0M1',
+    '0M2',
+    '0M3',
+    'B1',
+    'A1',
+    'B2',
+    'D2',
+    'A2',
+    'C1',
+    'C2',
+    'D4',
+    'A3',
+    'D3',
+    'B3',
+    'A3.5',
+    'B4',
+    'C3',
+    'A4',
+    'C4',
   ];
 
   const currentIdx = brightnessOrder.indexOf(currentShade);
@@ -138,7 +155,7 @@ export function recommendTargetShade(
       targetShade: config.recommendedShades[0],
       shadeSteps: 0,
       isRealistic: false,
-      warning: '현재 셰이드를 식별할 수 없습니다.',
+      warning: '현재 셰이드를 식별할 수 없어요.',
     };
   }
 
@@ -178,7 +195,7 @@ export function recommendTargetShade(
   return {
     targetShade,
     shadeSteps,
-    isRealistic: shadeSteps <= 8,  // 8단계 이상은 비현실적
+    isRealistic: shadeSteps <= 8, // 8단계 이상은 비현실적
     warning: overWhitening.isOver ? overWhitening.reason : undefined,
   };
 }
@@ -194,7 +211,7 @@ export function getWhiteningMethodsForSeason(
   effectiveness: 'low' | 'medium' | 'high';
   duration: string;
   notes: string;
-  suitability: number;  // 0-100
+  suitability: number; // 0-100
 }> {
   const methods = [];
 

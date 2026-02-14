@@ -98,13 +98,10 @@ export async function POST(req: NextRequest) {
         },
       };
       usedMock = true;
-      console.log('[A-1] Using mock analysis');
     } else {
       // Real AI 분석
       try {
-        console.log(`[A-1] Starting Gemini analysis (${imageCount} image(s))...`);
         result = await analyzePosture(frontImageBase64, sideImageBase64, bodyType);
-        console.log('[A-1] Gemini analysis completed');
 
         // 다각도 분석 시 신뢰도 보정
         if (imageCount === 2 && result.imageQuality) {
@@ -140,7 +137,7 @@ export async function POST(req: NextRequest) {
     const supabase = createServiceRoleClient();
 
     // 이미지 저장 동의 확인 + 업로드 (PIPA 준수)
-    const { hasConsent, uploadedImages } = await checkConsentAndUploadImages(
+    const { uploadedImages } = await checkConsentAndUploadImages(
       supabase,
       userId,
       'posture',
@@ -153,7 +150,6 @@ export async function POST(req: NextRequest) {
 
     // 정면 이미지 URL (하위 호환성)
     const frontImageUrl = uploadedImages.front || null;
-    console.log(`[A-1] Image consent: ${hasConsent ? 'granted' : 'not granted'}, frontImage: ${frontImageUrl ? 'uploaded' : 'none'}`);
 
     // C-1 체형 정보 조회 (bodyType이 제공되지 않은 경우)
     let finalBodyType = bodyType;
@@ -168,7 +164,6 @@ export async function POST(req: NextRequest) {
 
       if (bodyData?.body_type) {
         finalBodyType = bodyData.body_type;
-        console.log(`[A-1] Using C-1 body type: ${finalBodyType}`);
       }
     }
 

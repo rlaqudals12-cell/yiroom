@@ -87,19 +87,15 @@ export async function POST(request: NextRequest) {
     const supabase = createServiceRoleClient();
 
     // 14세 미만 동의 자격 검증 (PIPA 준수)
-    const { data: userProfile, error: profileError } = await supabase
+    const { data: userProfile } = await supabase
       .from('users')
       .select('birth_date')
       .eq('clerk_user_id', userId)
       .single();
 
-    console.log('[Consent API] User profile:', userProfile, 'Error:', profileError);
-
     const eligibility = checkConsentEligibility(userProfile?.birth_date);
-    console.log('[Consent API] Eligibility check:', eligibility);
 
     if (!eligibility.canConsent) {
-      console.log('[Consent API] 동의 불가:', eligibility.reason);
       return NextResponse.json(
         {
           error:
@@ -195,7 +191,6 @@ export async function DELETE(request: NextRequest) {
           // 스토리지 삭제 실패해도 동의 철회는 진행
         } else {
           deletedImagesCount = filePaths.length;
-          console.log(`[Consent API] Deleted ${deletedImagesCount} images from ${bucketName}`);
         }
       }
     } catch (storageErr) {

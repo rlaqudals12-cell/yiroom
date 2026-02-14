@@ -39,10 +39,13 @@ function randomChoice<T>(arr: T[]): T {
 /**
  * 체형별 비율 범위
  */
-const BODY_SHAPE_RATIO_RANGES: Record<BodyShapeType, {
-  shoulderHipRatio: [number, number];
-  waistToAvgRatio: [number, number];
-}> = {
+const BODY_SHAPE_RATIO_RANGES: Record<
+  BodyShapeType,
+  {
+    shoulderHipRatio: [number, number];
+    waistToAvgRatio: [number, number];
+  }
+> = {
   rectangle: {
     shoulderHipRatio: [0.95, 1.05],
     waistToAvgRatio: [0.85, 0.95],
@@ -183,13 +186,15 @@ export function generateMockPoseResult(): PoseDetectionResult {
  * @param targetType - 생성할 체형 유형 (지정 시 해당 체형에 맞는 비율 생성)
  */
 export function generateMockBodyRatios(targetType?: BodyShapeType): BodyRatios {
-  const type = targetType || randomChoice<BodyShapeType>([
-    'rectangle',
-    'inverted-triangle',
-    'triangle',
-    'oval',
-    'hourglass',
-  ]);
+  const type =
+    targetType ||
+    randomChoice<BodyShapeType>([
+      'rectangle',
+      'inverted-triangle',
+      'triangle',
+      'oval',
+      'hourglass',
+    ]);
 
   const ranges = BODY_SHAPE_RATIO_RANGES[type];
   const shoulderHipRatio = randomInRange(...ranges.shoulderHipRatio);
@@ -286,27 +291,24 @@ export function generateMockPostureAnalysis(includeIssues = true): PostureAnalys
  *
  * @example
  * const mockResult = generateMockBodyAnalysisResult();
- * console.log('체형:', mockResult.bodyShape); // 'hourglass'
  */
 export function generateMockBodyAnalysisResult(options?: {
   targetBodyType?: BodyShapeType;
   includePosture?: boolean;
   includeStyling?: boolean;
 }): BodyAnalysisV2Result {
-  const {
-    targetBodyType,
-    includePosture = true,
-    includeStyling = true,
-  } = options || {};
+  const { targetBodyType, includePosture = true, includeStyling = true } = options || {};
 
   // 체형 유형 결정
-  const bodyShape: BodyShapeType = targetBodyType || randomChoice<BodyShapeType>([
-    'rectangle',
-    'inverted-triangle',
-    'triangle',
-    'oval',
-    'hourglass',
-  ]);
+  const bodyShape: BodyShapeType =
+    targetBodyType ||
+    randomChoice<BodyShapeType>([
+      'rectangle',
+      'inverted-triangle',
+      'triangle',
+      'oval',
+      'hourglass',
+    ]);
 
   // 각 항목 생성
   const poseDetection = generateMockPoseResult();
