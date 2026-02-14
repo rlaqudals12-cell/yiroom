@@ -47,7 +47,7 @@ import { GET, POST } from '@/app/api/analyze/makeup/route';
 import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzeMakeup } from '@/lib/gemini';
-import { generateMockMakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
+import { generateMockMakeupAnalysisResult, type MakeupConcernId } from '@/lib/mock/makeup-analysis';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { addXp } from '@/lib/gamification';
 import { createSkinToneNutritionAlert, createCollagenBoostAlert } from '@/lib/alerts';
@@ -618,6 +618,289 @@ describe('GET /api/analyze/makeup', () => {
       expect(response.status).toBe(500);
       expect(json.error).toBe('분석 목록을 불러올 수 없습니다.');
       expect(json.code).toBe('DB_ERROR');
+    });
+
+    it('data가 null이면 빈 배열을 반환한다', async () => {
+      mockSupabase.from = vi.fn().mockImplementation(() => ({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({ data: null, error: null }),
+      }));
+
+      const response = await GET();
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.data).toEqual([]);
+      expect(json.count).toBe(0);
+    });
+  });
+});
+
+describe('POST /api/analyze/makeup - 추가 시나리오', () => {
+  const mockSupabase = {
+    from: vi.fn(),
+    storage: {
+      from: vi.fn(),
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
+      ReturnType<typeof auth>
+    >);
+    vi.mocked(createServiceRoleClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+    );
+    vi.mocked(applyRateLimit).mockReturnValue({ success: true, headers: {} });
+    vi.mocked(generateMockMakeupAnalysisResult).mockReturnValue(mockMakeupAnalysisResult);
+    vi.mocked(analyzeMakeup).mockResolvedValue(
+      mockGeminiResponse as Awaited<ReturnType<typeof analyzeMakeup>>
+    );
+    vi.mocked(addXp).mockResolvedValue(null);
+    vi.mocked(createSkinToneNutritionAlert).mockReturnValue({
+      type: 'skin_tone_nutrition',
+      priority: 'medium',
+      title: '피부톤 개선 영양 추천',
+      message: '비타민C와 항산화 식품으로 피부 광채를 높여보세요',
+      data: {},
+      targetModules: ['nutrition'],
+    } as unknown as ReturnType<typeof createSkinToneNutritionAlert>);
+    vi.mocked(createCollagenBoostAlert).mockReturnValue({
+      type: 'collagen_boost',
+      priority: 'medium',
+      title: '콜라겐 섭취 추천',
+      message: '피부 탄력 개선을 위해 콜라겐 섭취를 권장해요',
+      data: {},
+      targetModules: ['nutrition'],
+    } as unknown as ReturnType<typeof createCollagenBoostAlert>);
+
+    mockSupabase.from = vi.fn().mockImplementation((table: string) => {
+      if (table === 'makeup_analyses') {
+        return {
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: mockDbResult, error: null }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      };
+    });
+
+    mockSupabase.storage.from = vi.fn().mockReturnValue({
+      upload: vi.fn().mockResolvedValue({
+        data: { path: 'user_test123/1234567890_makeup.jpg' },
+        error: null,
+      }),
+    });
+  });
+
+  describe('Rate Limit', () => {
+    it('Rate limit 초과 시 해당 응답을 반환한다', async () => {
+      const { NextResponse } = await import('next/server');
+      const rateLimitResponse = NextResponse.json(
+        { error: '요청이 너무 많습니다.', code: 'RATE_LIMIT_EXCEEDED' },
+        { status: 429 }
+      );
+      vi.mocked(applyRateLimit).mockReturnValue({
+        success: false,
+        headers: {},
+        response: rateLimitResponse,
+      });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
+
+      expect(response.status).toBe(429);
+    });
+  });
+
+  describe('이미지 업로드 실패', () => {
+    it('이미지 업로드 실패 시에도 분석은 정상 진행된다', async () => {
+      mockSupabase.storage.from = vi.fn().mockReturnValue({
+        upload: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Storage upload failed' },
+        }),
+      });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+    });
+
+    it('이미지 업로드 예외 시에도 분석은 정상 진행된다', async () => {
+      mockSupabase.storage.from = vi.fn().mockReturnValue({
+        upload: vi.fn().mockRejectedValue(new Error('Network error')),
+      });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+    });
+  });
+
+  describe('게이미피케이션 에러 처리', () => {
+    it('XP 추가 실패 시에도 분석 결과는 정상 반환된다', async () => {
+      vi.mocked(addXp).mockRejectedValue(new Error('Gamification DB error'));
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      // 게이미피케이션 에러 시 xpAwarded는 0
+      expect(json.gamification.xpAwarded).toBe(0);
+    });
+  });
+
+  describe('Gemini 분석 결과 매핑', () => {
+    it('Gemini 결과의 undertone이 응답에 정확히 매핑된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
+      const json = await response.json();
+
+      expect(json.result.undertone).toBe('warm');
+      expect(json.result.undertoneLabel).toBe('웜톤');
+      expect(json.result.eyeShape).toBe('double');
+      expect(json.result.lipShape).toBe('full');
+      expect(json.result.faceShape).toBe('oval');
+    });
+
+    it('Gemini 결과의 colorRecommendations이 정확히 매핑된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
+      const json = await response.json();
+
+      expect(json.result.colorRecommendations).toHaveLength(2);
+      expect(json.result.colorRecommendations[0].category).toBe('foundation');
+      expect(json.result.colorRecommendations[1].category).toBe('lip');
+    });
+
+    it('응답에 analyzedAt이 ISO 문자열로 포함된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.result.analyzedAt).toBeDefined();
+      // ISO 문자열 형식 확인
+      expect(new Date(json.result.analyzedAt).toISOString()).toBe(json.result.analyzedAt);
+    });
+  });
+
+  describe('내부 예외 처리', () => {
+    it('body 파싱 실패 시 500을 반환한다', async () => {
+      const url = 'http://localhost/api/analyze/makeup';
+      const req = new NextRequest(url, {
+        method: 'POST',
+        body: 'invalid json body',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(req);
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.code).toBe('INTERNAL_ERROR');
+    });
+  });
+
+  describe('alerts 배열 구조', () => {
+    it('모든 조건 충족 시 2개 알림이 생성된다', async () => {
+      // concerns가 있고, 탄력 proxy가 60 미만인 경우
+      const lowMetricsResult = {
+        ...mockMakeupAnalysisResult,
+        concerns: ['dark-circles', 'redness'] as MakeupConcernId[],
+        metrics: mockMakeupAnalysisResult.metrics.map((m) => {
+          if (m.id === 'skinTexture') return { ...m, value: 30 };
+          if (m.id === 'hydration') return { ...m, value: 30 };
+          return m;
+        }),
+      };
+      vi.mocked(generateMockMakeupAnalysisResult).mockReturnValue(lowMetricsResult);
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.alerts).toHaveLength(2);
+      expect(json.alerts[0].type).toBe('skin_tone_nutrition');
+      expect(json.alerts[1].type).toBe('collagen_boost');
+    });
+
+    it('조건 미충족 시 빈 알림 배열을 반환한다', async () => {
+      // concerns 없고, 탄력 proxy가 60 이상인 경우
+      const goodResult = {
+        ...mockMakeupAnalysisResult,
+        concerns: [] as string[],
+        metrics: mockMakeupAnalysisResult.metrics.map((m) => {
+          if (m.id === 'skinTexture') return { ...m, value: 80 };
+          if (m.id === 'hydration') return { ...m, value: 80 };
+          return m;
+        }),
+      };
+      vi.mocked(generateMockMakeupAnalysisResult).mockReturnValue(
+        goodResult as unknown as MakeupAnalysisResult
+      );
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.alerts).toHaveLength(0);
     });
   });
 });

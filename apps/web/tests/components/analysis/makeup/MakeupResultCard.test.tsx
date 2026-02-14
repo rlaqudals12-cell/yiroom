@@ -85,12 +85,8 @@ function MakeupResultCard({
   const undertoneStyle = UNDERTONE_STYLES[result.undertone] || UNDERTONE_STYLES.neutral;
 
   // 신뢰도 등급
-  const reliabilityLabel =
-    result.analysisReliability === 'high'
-      ? '높음'
-      : result.analysisReliability === 'low'
-        ? '낮음'
-        : '보통';
+  const reliabilityMap = { high: '높음', low: '낮음', medium: '보통' } as const;
+  const reliabilityLabel = reliabilityMap[result.analysisReliability] ?? '보통';
 
   // 점수 등급
   const getScoreLabel = (score: number): string => {
@@ -203,11 +199,11 @@ function MakeupResultCard({
           <span>{result.personalColorConnection.note}</span>
           <span>
             호환성:{' '}
-            {result.personalColorConnection.compatibility === 'high'
-              ? '높음'
-              : result.personalColorConnection.compatibility === 'medium'
-                ? '보통'
-                : '낮음'}
+            {
+              { high: '높음', medium: '보통', low: '낮음' }[
+                result.personalColorConnection.compatibility
+              ]
+            }
           </span>
         </div>
       )}
@@ -669,6 +665,265 @@ describe('MakeupResultCard', () => {
       render(<MakeupResultCard result={result} />);
       expect(screen.getByTestId('overall-score')).toHaveTextContent('100');
       expect(screen.getByTestId('score-grade')).toHaveTextContent('매우 좋음');
+    });
+  });
+
+  describe('다양한 언더톤별 렌더링', () => {
+    it('웜톤 아이콘이 표시된다', () => {
+      const result = createMockResult({ undertone: 'warm' });
+      render(<MakeupResultCard result={result} />);
+      // 웜톤 배경 스타일 적용 확인
+      expect(screen.getByTestId('makeup-result-card')).toBeInTheDocument();
+    });
+
+    it('쿨톤 아이콘이 표시된다', () => {
+      const result = createMockResult({ undertone: 'cool', undertoneLabel: '쿨톤' });
+      render(<MakeupResultCard result={result} />);
+      expect(screen.getByTestId('undertone-label')).toHaveTextContent('쿨톤');
+    });
+
+    it('뉴트럴 아이콘이 표시된다', () => {
+      const result = createMockResult({ undertone: 'neutral', undertoneLabel: '뉴트럴' });
+      render(<MakeupResultCard result={result} />);
+      expect(screen.getByTestId('undertone-label')).toHaveTextContent('뉴트럴');
+    });
+  });
+
+  describe('다양한 눈 형태별 뱃지', () => {
+    const eyeShapes = [
+      { shape: 'monolid', label: '무쌍' },
+      { shape: 'double', label: '유쌍' },
+      { shape: 'hooded', label: '속쌍' },
+      { shape: 'round', label: '둥근 눈' },
+      { shape: 'downturned', label: '처진 눈' },
+    ];
+
+    eyeShapes.forEach(({ shape, label }) => {
+      it(`${label} 눈 형태가 표시된다`, () => {
+        const result = createMockResult({ eyeShape: shape, eyeShapeLabel: label });
+        render(<MakeupResultCard result={result} />);
+        expect(screen.getByText(label)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('다양한 입술 형태별 뱃지', () => {
+    const lipShapes = [
+      { shape: 'thin', label: '얇은 입술' },
+      { shape: 'wide', label: '넓은 입술' },
+      { shape: 'small', label: '작은 입술' },
+      { shape: 'heart', label: '하트형' },
+      { shape: 'asymmetric', label: '비대칭' },
+    ];
+
+    lipShapes.forEach(({ shape, label }) => {
+      it(`${label} 입술 형태가 표시된다`, () => {
+        const result = createMockResult({ lipShape: shape, lipShapeLabel: label });
+        render(<MakeupResultCard result={result} />);
+        expect(screen.getByText(label)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('다양한 얼굴형별 뱃지', () => {
+    const faceShapes = [
+      { shape: 'round', label: '둥근형' },
+      { shape: 'square', label: '각진형' },
+      { shape: 'oblong', label: '긴 얼굴' },
+      { shape: 'diamond', label: '다이아몬드' },
+    ];
+
+    faceShapes.forEach(({ shape, label }) => {
+      it(`${label} 얼굴형이 표시된다`, () => {
+        const result = createMockResult({ faceShape: shape, faceShapeLabel: label });
+        render(<MakeupResultCard result={result} />);
+        expect(screen.getByText(label)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('모든 피부 고민 표시', () => {
+    const allConcerns = [
+      { id: 'dark-circles', name: '다크서클' },
+      { id: 'redness', name: '홍조' },
+      { id: 'uneven-tone', name: '피부톤 불균일' },
+      { id: 'large-pores', name: '넓은 모공' },
+      { id: 'oily-tzone', name: 'T존 번들거림' },
+      { id: 'dry-patches', name: '건조 부위' },
+      { id: 'acne-scars', name: '트러블 흔적' },
+      { id: 'fine-lines', name: '잔주름' },
+    ];
+
+    allConcerns.forEach(({ id, name }) => {
+      it(`${name} 고민이 올바르게 표시된다`, () => {
+        const result = createMockResult({ concerns: [id] });
+        render(<MakeupResultCard result={result} />);
+        expect(screen.getByText(new RegExp(name))).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('모든 스타일 표시', () => {
+    const allStyles = [
+      { id: 'natural', name: '내추럴' },
+      { id: 'glam', name: '글램' },
+      { id: 'cute', name: '큐트' },
+      { id: 'chic', name: '시크' },
+      { id: 'vintage', name: '빈티지' },
+      { id: 'edgy', name: '엣지' },
+    ];
+
+    allStyles.forEach(({ id, name }) => {
+      it(`${name} 스타일이 올바르게 표시된다`, () => {
+        const result = createMockResult({ recommendedStyles: [id] });
+        render(<MakeupResultCard result={result} />);
+        expect(screen.getByText(name)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('metric 다양한 상태 조합', () => {
+    it('모두 good 상태인 metric', () => {
+      const result = createMockResult({
+        metrics: [
+          { id: 'a', label: '지표A', value: 85, status: 'good', description: '좋은 상태' },
+          { id: 'b', label: '지표B', value: 90, status: 'good', description: '매우 좋음' },
+        ],
+      });
+      render(<MakeupResultCard result={result} />);
+      const allGood = screen.getAllByText('양호');
+      expect(allGood).toHaveLength(2);
+    });
+
+    it('모두 warning 상태인 metric', () => {
+      const result = createMockResult({
+        metrics: [
+          { id: 'a', label: '지표A', value: 20, status: 'warning', description: '주의 필요' },
+          { id: 'b', label: '지표B', value: 15, status: 'warning', description: '관리 필요' },
+        ],
+      });
+      render(<MakeupResultCard result={result} />);
+      const allWarning = screen.getAllByText('주의');
+      expect(allWarning).toHaveLength(2);
+    });
+
+    it('단일 metric 렌더링', () => {
+      const result = createMockResult({
+        metrics: [
+          { id: 'only', label: '유일한 지표', value: 55, status: 'normal', description: '보통' },
+        ],
+      });
+      render(<MakeupResultCard result={result} />);
+      expect(screen.getByText('유일한 지표')).toBeInTheDocument();
+      expect(screen.getByText('55점')).toBeInTheDocument();
+    });
+  });
+
+  describe('복잡한 colorRecommendation 렌더링', () => {
+    it('5개 카테고리 모두 렌더링', () => {
+      const result = createMockResult({
+        colorRecommendations: [
+          {
+            category: 'foundation',
+            categoryLabel: '파운데이션',
+            colors: [{ name: '골든 베이지', hex: '#E8C39E', description: '황금빛' }],
+          },
+          {
+            category: 'lip',
+            categoryLabel: '립',
+            colors: [{ name: '코랄', hex: '#FF6B4A', description: '화사한' }],
+          },
+          {
+            category: 'eyeshadow',
+            categoryLabel: '아이섀도',
+            colors: [{ name: '골드', hex: '#C9A86A', description: '화려한' }],
+          },
+          {
+            category: 'blush',
+            categoryLabel: '블러셔',
+            colors: [{ name: '피치', hex: '#FFAB91', description: '복숭아빛' }],
+          },
+          {
+            category: 'contour',
+            categoryLabel: '컨투어',
+            colors: [{ name: '브라운', hex: '#8B6914', description: '따뜻한' }],
+          },
+        ],
+      });
+      render(<MakeupResultCard result={result} />);
+      expect(screen.getByText('파운데이션')).toBeInTheDocument();
+      expect(screen.getByText('립')).toBeInTheDocument();
+      expect(screen.getByText('아이섀도')).toBeInTheDocument();
+      expect(screen.getByText('블러셔')).toBeInTheDocument();
+      expect(screen.getByText('컨투어')).toBeInTheDocument();
+    });
+
+    it('카테고리에 여러 색상이 있을 때 모두 표시', () => {
+      const result = createMockResult({
+        colorRecommendations: [
+          {
+            category: 'lip',
+            categoryLabel: '립',
+            colors: [
+              { name: '레드A', hex: '#FF0000', description: '빨강' },
+              { name: '레드B', hex: '#EE0000', description: '진빨강' },
+              { name: '레드C', hex: '#DD0000', description: '어두운 빨강' },
+            ],
+          },
+        ],
+      });
+      render(<MakeupResultCard result={result} />);
+      expect(screen.getByText('레드A')).toBeInTheDocument();
+      expect(screen.getByText('레드B')).toBeInTheDocument();
+      expect(screen.getByText('레드C')).toBeInTheDocument();
+    });
+  });
+
+  describe('복잡한 makeupTips 렌더링', () => {
+    it('여러 카테고리와 여러 팁 렌더링', () => {
+      const result = createMockResult({
+        makeupTips: [
+          { category: '베이스', tips: ['팁1', '팁2', '팁3'] },
+          { category: '아이', tips: ['팁A', '팁B'] },
+          { category: '립', tips: ['팁X'] },
+        ],
+      });
+      render(<MakeupResultCard result={result} />);
+      expect(screen.getByText('베이스')).toBeInTheDocument();
+      expect(screen.getByText('아이')).toBeInTheDocument();
+      expect(screen.getByText('립')).toBeInTheDocument();
+      expect(screen.getByText('팁1')).toBeInTheDocument();
+      expect(screen.getByText('팁3')).toBeInTheDocument();
+      expect(screen.getByText('팁X')).toBeInTheDocument();
+    });
+  });
+
+  describe('긴 텍스트 처리', () => {
+    it('긴 인사이트 텍스트가 렌더링된다', () => {
+      const longInsight = '웜톤에 계란형 얼굴이시네요. '.repeat(10);
+      const result = createMockResult({ insight: longInsight });
+      render(<MakeupResultCard result={result} />);
+      expect(screen.getByTestId('insight')).toHaveTextContent(longInsight.trim());
+    });
+
+    it('긴 컬러 이름이 렌더링된다', () => {
+      const result = createMockResult({
+        colorRecommendations: [
+          {
+            category: 'lip',
+            categoryLabel: '립',
+            colors: [
+              {
+                name: '매우 긴 색상 이름 테스트용',
+                hex: '#AABBCC',
+                description: '긴 설명 텍스트 테스트',
+              },
+            ],
+          },
+        ],
+      });
+      render(<MakeupResultCard result={result} />);
+      expect(screen.getByText('매우 긴 색상 이름 테스트용')).toBeInTheDocument();
     });
   });
 });

@@ -251,7 +251,7 @@ describe('POST /api/analyze/body', () => {
     it('useMock=true이면 Mock 분석을 사용한다', async () => {
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
           useMock: true,
         })
       );
@@ -266,7 +266,7 @@ describe('POST /api/analyze/body', () => {
     it('사용자 입력(키/체중)과 함께 분석이 가능하다', async () => {
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
           userInput: { height: 165, weight: 55 },
           useMock: true,
         })
@@ -285,7 +285,7 @@ describe('POST /api/analyze/body', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
         })
       );
       const json = await response.json();
@@ -300,7 +300,7 @@ describe('POST /api/analyze/body', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
         })
       );
       const json = await response.json();
@@ -315,7 +315,7 @@ describe('POST /api/analyze/body', () => {
     it('퍼스널 컬러 정보가 응답에 포함된다', async () => {
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
           useMock: true,
         })
       );
@@ -366,7 +366,7 @@ describe('POST /api/analyze/body', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
           useMock: true,
         })
       );
@@ -382,7 +382,7 @@ describe('POST /api/analyze/body', () => {
     it('키/체중 입력 시 BMI가 계산된다', async () => {
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
           userInput: { height: 165, weight: 55 },
           useMock: true,
         })
@@ -398,7 +398,7 @@ describe('POST /api/analyze/body', () => {
       // 정상 체중 (BMI < 23)
       let response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
           userInput: { height: 170, weight: 60 },
           useMock: true,
         })
@@ -409,7 +409,7 @@ describe('POST /api/analyze/body', () => {
       // 저체중 (BMI < 18.5)
       response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
           userInput: { height: 170, weight: 50 },
           useMock: true,
         })
@@ -423,7 +423,7 @@ describe('POST /api/analyze/body', () => {
     it('분석 결과가 DB에 저장된다', async () => {
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
           useMock: true,
         })
       );
@@ -473,7 +473,7 @@ describe('POST /api/analyze/body', () => {
 
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
           useMock: true,
         })
       );
@@ -488,7 +488,7 @@ describe('POST /api/analyze/body', () => {
     it('성공 응답에 필수 필드가 포함된다', async () => {
       const response = await POST(
         createMockPostRequest({
-          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          imageBase64: 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200),
           useMock: true,
         })
       );

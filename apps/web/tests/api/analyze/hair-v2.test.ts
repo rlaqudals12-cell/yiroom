@@ -125,12 +125,24 @@ const mockHairAnalysisResult = {
     currentColor: undefined,
     skinToneMatch: 82,
     recommendedColors: [
-      { name: '애쉬 브라운', hexColor: '#6B4423', suitability: 90, seasonMatch: 'spring', tags: ['자연스러움'] },
+      {
+        name: '애쉬 브라운',
+        hexColor: '#6B4423',
+        suitability: 90,
+        seasonMatch: 'spring',
+        tags: ['자연스러움'],
+      },
     ],
   },
   currentHairInfo: undefined,
   styleRecommendations: [
-    { name: '레이어드 컷', description: '볼륨감 있는 스타일', length: 'medium' as const, suitability: 85, tags: ['여성스러움'] },
+    {
+      name: '레이어드 컷',
+      description: '볼륨감 있는 스타일',
+      length: 'medium' as const,
+      suitability: 85,
+      tags: ['여성스러움'],
+    },
   ],
   careTips: ['정기적인 트리밍', '보습 케어'],
   analyzedAt: new Date().toISOString(),
@@ -216,7 +228,9 @@ describe('POST /api/analyze/hair-v2', () => {
     vi.mocked(analyzeFaceShape).mockReturnValue(mockFaceShapeAnalysis);
     vi.mocked(estimateFaceShapeFromPose).mockReturnValue(mockFaceShapeAnalysis);
     vi.mocked(recommendHairstyles).mockReturnValue(mockHairAnalysisResult.styleRecommendations);
-    vi.mocked(recommendHairColors).mockReturnValue(mockHairAnalysisResult.hairColorAnalysis!.recommendedColors);
+    vi.mocked(recommendHairColors).mockReturnValue(
+      mockHairAnalysisResult.hairColorAnalysis!.recommendedColors
+    );
     vi.mocked(generateCareTips).mockReturnValue(mockHairAnalysisResult.careTips);
     vi.mocked(analyzeHairWithGemini).mockResolvedValue(mockGeminiResponse);
 
@@ -558,7 +572,10 @@ describe('GET /api/analyze/hair-v2', () => {
     });
 
     it('DB 에러 시 500을 반환한다', async () => {
-      mockSupabase.single.mockResolvedValue({ data: null, error: { message: 'DB Error', code: 'OTHER' } });
+      mockSupabase.single.mockResolvedValue({
+        data: null,
+        error: { message: 'DB Error', code: 'OTHER' },
+      });
 
       const response = await GET();
       const json = await response.json();
@@ -587,6 +604,580 @@ describe('GET /api/analyze/hair-v2', () => {
       response = await GET();
       json = await response.json();
       expect(json.isV2).toBe(false);
+    });
+  });
+
+  // =========================================================================
+  // 확장 테스트: GET 엣지 케이스
+  // =========================================================================
+  describe('GET 엣지 케이스', () => {
+    it('analysis_data가 null인 데이터도 정상 처리한다', async () => {
+      mockSupabase.single.mockResolvedValue({
+        data: { ...mockDbResult, analysis_data: null },
+        error: null,
+      });
+
+      const response = await GET();
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.isV2).toBe(false);
+    });
+
+    it('GET 응답에 필수 필드가 포함된다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await GET();
+      const json = await response.json();
+
+      expect(json).toHaveProperty('success');
+      expect(json).toHaveProperty('data');
+      expect(json).toHaveProperty('hasResult');
+      expect(json).toHaveProperty('isV2');
+    });
+  });
+});
+
+// =============================================================================
+// POST 확장 테스트: 에러 시나리오, Rate Limit, 이미지 품질
+// =============================================================================
+describe('POST /api/analyze/hair-v2 확장 테스트', () => {
+  const mockSupabase = {
+    from: vi.fn(),
+  };
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
+      ReturnType<typeof auth>
+    >);
+    vi.mocked(createServiceRoleClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+    );
+    vi.mocked(generateMockHairAnalysisResult).mockReturnValue(mockHairAnalysisResult);
+    vi.mocked(analyzeFaceShape).mockReturnValue(mockFaceShapeAnalysis);
+    vi.mocked(estimateFaceShapeFromPose).mockReturnValue(mockFaceShapeAnalysis);
+    vi.mocked(recommendHairstyles).mockReturnValue(mockHairAnalysisResult.styleRecommendations);
+    vi.mocked(recommendHairColors).mockReturnValue(
+      mockHairAnalysisResult.hairColorAnalysis!.recommendedColors
+    );
+    vi.mocked(generateCareTips).mockReturnValue(mockHairAnalysisResult.careTips);
+    vi.mocked(analyzeHairWithGemini).mockResolvedValue(mockGeminiResponse);
+
+    // 이미지 품질 검증 mock 복원 (매 테스트마다 success: true로 리셋)
+    const { validateImageForAnalysis } = await import('@/lib/api/image-quality');
+    vi.mocked(validateImageForAnalysis).mockResolvedValue({
+      success: true,
+      qualityResult: { score: 85, passed: true },
+      imageData: { width: 1024, height: 1024 },
+    } as unknown as Awaited<ReturnType<typeof validateImageForAnalysis>>);
+
+    // Rate Limit mock 복원
+    const { applyRateLimit } = await import('@/lib/security/rate-limit');
+    vi.mocked(applyRateLimit).mockReturnValue({ success: true } as ReturnType<
+      typeof applyRateLimit
+    >);
+
+    // Default supabase mock
+    mockSupabase.from = vi.fn().mockImplementation((table: string) => {
+      if (table === 'hair_assessments') {
+        return {
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: mockDbResult, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === 'users') {
+        return {
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
+      }
+      if (table === 'user_levels') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              maybeSingle: vi.fn().mockResolvedValue({
+                data: { id: 'level-123', level: 1, current_xp: 0, total_xp: 0, tier: 'beginner' },
+                error: null,
+              }),
+            }),
+          }),
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      };
+    });
+  });
+
+  describe('Rate Limit 시나리오', () => {
+    it('Rate Limit 초과 시 429를 반환한다', async () => {
+      const { applyRateLimit } = await import('@/lib/security/rate-limit');
+      vi.mocked(applyRateLimit).mockReturnValue({
+        success: false,
+        response: new Response(
+          JSON.stringify({ code: 'RATE_LIMIT', message: 'Too many requests' }),
+          { status: 429, headers: { 'Content-Type': 'application/json' } }
+        ),
+      } as ReturnType<typeof applyRateLimit>);
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
+
+      expect(response.status).toBe(429);
+    });
+  });
+
+  describe('이미지 품질 검증 실패', () => {
+    it('이미지 품질 검증 실패 시 에러를 반환한다', async () => {
+      const { validateImageForAnalysis } = await import('@/lib/api/image-quality');
+      vi.mocked(validateImageForAnalysis).mockResolvedValue({
+        success: false,
+        error: {
+          code: 'IMAGE_QUALITY_ERROR' as const,
+          message: 'Image quality too low',
+          userMessage: '이미지 품질이 너무 낮아요',
+          details: {
+            overallScore: 20,
+            primaryIssue: 'blur',
+            allIssues: ['blur'],
+            sharpnessScore: 20,
+            exposureVerdict: 'ok',
+            cctKelvin: 5500,
+          },
+        },
+        qualityResult: { score: 20, passed: false },
+        imageData: { width: 100, height: 100 },
+      } as unknown as Awaited<ReturnType<typeof validateImageForAnalysis>>);
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
+
+      expect(response.status).toBe(422);
+    });
+  });
+
+  describe('Gemini 예외 처리', () => {
+    it('Gemini가 예외를 던지면 Mock으로 폴백한다', async () => {
+      vi.mocked(analyzeHairWithGemini).mockRejectedValue(new Error('Gemini API timeout'));
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.usedFallback).toBe(true);
+    });
+  });
+
+  describe('currentHair 정보 전달', () => {
+    it('currentHair 정보가 분석에 반영된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          currentHair: {
+            length: 'long',
+            texture: 'wavy',
+            thickness: 'thick',
+            density: 'dense',
+            scalpCondition: 'oily',
+          },
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      // generateCareTips가 scalpCondition을 받아 호출됨
+      expect(generateCareTips).toHaveBeenCalled();
+    });
+  });
+
+  describe('skipQualityCheck 옵션', () => {
+    it('skipQualityCheck=true이면 이미지 품질 검증을 건너뛴다', async () => {
+      const { validateImageForAnalysis } = await import('@/lib/api/image-quality');
+      vi.mocked(validateImageForAnalysis).mockClear();
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          skipQualityCheck: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(validateImageForAnalysis).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('랜드마크 갯수 부족 시', () => {
+    it('Face Mesh 랜드마크가 468개 미만이면 Gemini Vision으로 폴백한다', async () => {
+      const insufficientLandmarks = createMockFaceLandmarks(100);
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          faceLandmarks: insufficientLandmarks,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      // analyzeFaceShape가 호출되지 않고 Gemini로 폴백
+      expect(analyzeFaceShape).not.toHaveBeenCalled();
+      expect(analyzeHairWithGemini).toHaveBeenCalled();
+    });
+
+    it('Pose 랜드마크가 33개가 아니면 Gemini Vision으로 폴백한다', async () => {
+      const wrongPoseLandmarks = Array.from({ length: 20 }, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        z: Math.random(),
+        visibility: 0.9,
+      }));
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          poseLandmarks: wrongPoseLandmarks,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(estimateFaceShapeFromPose).not.toHaveBeenCalled();
+      expect(analyzeHairWithGemini).toHaveBeenCalled();
+    });
+  });
+
+  describe('게이미피케이션 연동', () => {
+    it('성공 응답에 gamification 필드가 포함된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.gamification).toBeDefined();
+      expect(json.gamification).toHaveProperty('badgeResults');
+      expect(json.gamification).toHaveProperty('xpAwarded');
+      expect(Array.isArray(json.gamification.badgeResults)).toBe(true);
+    });
+
+    it('XP가 정상적으로 부여된다', async () => {
+      const { addXp } = await import('@/lib/gamification');
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(addXp).toHaveBeenCalled();
+      expect(json.gamification.xpAwarded).toBe(10);
+    });
+  });
+
+  describe('응답 데이터 구조 검증', () => {
+    it('result 필드에 faceShapeAnalysis 구조가 올바르다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      const { faceShapeAnalysis } = json.result;
+      expect(faceShapeAnalysis).toHaveProperty('faceShape');
+      expect(faceShapeAnalysis).toHaveProperty('faceShapeLabel');
+      expect(faceShapeAnalysis).toHaveProperty('confidence');
+      expect(faceShapeAnalysis).toHaveProperty('ratios');
+    });
+
+    it('result 필드에 styleRecommendations 배열이 포함된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(Array.isArray(json.result.styleRecommendations)).toBe(true);
+      expect(json.result.styleRecommendations.length).toBeGreaterThan(0);
+
+      const firstStyle = json.result.styleRecommendations[0];
+      expect(firstStyle).toHaveProperty('name');
+      expect(firstStyle).toHaveProperty('description');
+      expect(firstStyle).toHaveProperty('suitability');
+    });
+
+    it('result 필드에 careTips 배열이 포함된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(Array.isArray(json.result.careTips)).toBe(true);
+      expect(json.result.careTips.length).toBeGreaterThan(0);
+      json.result.careTips.forEach((tip: unknown) => {
+        expect(typeof tip).toBe('string');
+      });
+    });
+
+    it('data 필드에 DB 저장 결과가 포함된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      expect(json.data).toHaveProperty('id');
+      expect(json.data).toHaveProperty('clerk_user_id');
+      expect(json.data).toHaveProperty('face_shape');
+      expect(json.data).toHaveProperty('created_at');
+    });
+  });
+
+  // =========================================================================
+  // 추가 에러 시나리오 및 엣지 케이스
+  // =========================================================================
+  describe('POST 입력 검증 심화', () => {
+    it('빈 imageBase64 문자열도 유효한 입력으로 처리한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: '',
+        })
+      );
+      const json = await response.json();
+
+      // 빈 문자열은 falsy이므로 VALIDATION_ERROR 반환
+      expect(response.status).toBe(400);
+      expect(json.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('faceLandmarks가 빈 배열이면 Gemini Vision으로 분석한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          faceLandmarks: [],
+        })
+      );
+      await response.json();
+
+      expect(response.status).toBe(200);
+      // 빈 배열은 468 미만이므로 Gemini로 폴백
+      expect(analyzeHairWithGemini).toHaveBeenCalled();
+    });
+
+    it('poseLandmarks가 빈 배열이면 Gemini Vision으로 분석한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          poseLandmarks: [],
+        })
+      );
+      await response.json();
+
+      expect(response.status).toBe(200);
+      expect(analyzeHairWithGemini).toHaveBeenCalled();
+    });
+  });
+
+  describe('Face Mesh와 Pose 동시 제공', () => {
+    it('faceLandmarks와 poseLandmarks 둘 다 있으면 Face Mesh를 우선 사용한다', async () => {
+      const faceLandmarks = createMockFaceLandmarks(468);
+      const poseLandmarks = createMockPoseLandmarks();
+
+      const response = await POST(
+        createMockPostRequest({
+          faceLandmarks,
+          poseLandmarks,
+        })
+      );
+      await response.json();
+
+      expect(response.status).toBe(200);
+      expect(analyzeFaceShape).toHaveBeenCalledWith(faceLandmarks);
+      expect(estimateFaceShapeFromPose).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('analyzeFaceShape 예외 시 폴백', () => {
+    it('analyzeFaceShape 예외 시 Mock으로 폴백한다', async () => {
+      vi.mocked(analyzeFaceShape).mockImplementation(() => {
+        throw new Error('Landmark parsing failed');
+      });
+
+      const faceLandmarks = createMockFaceLandmarks(468);
+      const response = await POST(createMockPostRequest({ faceLandmarks }));
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.usedFallback).toBe(true);
+    });
+  });
+
+  describe('users 테이블 업데이트 실패', () => {
+    it('users 테이블 업데이트 실패 시에도 성공 응답을 반환한다', async () => {
+      // users 테이블 업데이트만 실패하도록 설정
+      mockSupabase.from = vi.fn().mockImplementation((table: string) => {
+        if (table === 'hair_assessments') {
+          return {
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: mockDbResult, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'users') {
+          return {
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ error: { message: 'User update failed' } }),
+            }),
+          };
+        }
+        if (table === 'user_levels') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: { id: 'level-123', level: 1, current_xp: 0, total_xp: 0, tier: 'beginner' },
+                  error: null,
+                }),
+              }),
+            }),
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ error: null }),
+            }),
+          };
+        }
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        };
+      });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+      const json = await response.json();
+
+      // users 업데이트 실패는 경고일 뿐 응답은 성공
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+    });
+  });
+
+  describe('Gemini Vision 다양한 얼굴형', () => {
+    it('Gemini가 round 얼굴형을 반환하면 결과에 반영된다', async () => {
+      vi.mocked(analyzeHairWithGemini).mockResolvedValue({
+        data: {
+          ...mockGeminiResponse.data,
+          faceShape: 'round' as const,
+        },
+        usedFallback: false,
+      });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+        })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.result.faceShapeAnalysis.faceShape).toBe('round');
+      expect(json.result.faceShapeAnalysis.faceShapeLabel).toBe('둥근형');
+    });
+  });
+
+  describe('personalColorSeason 다양한 값', () => {
+    it('가을 퍼스널컬러가 정상 전달된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          personalColorSeason: 'autumn',
+          useMock: true,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(generateMockHairAnalysisResult).toHaveBeenCalledWith(
+        expect.objectContaining({ personalColorSeason: 'autumn' })
+      );
+    });
+
+    it('personalColorSeason 미전달 시 기본값으로 처리된다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(generateMockHairAnalysisResult).toHaveBeenCalledWith(
+        expect.objectContaining({ personalColorSeason: undefined })
+      );
+    });
+  });
+
+  describe('응답 HTTP 상태 코드 검증', () => {
+    it('정상 응답의 Content-Type이 application/json이다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+
+      expect(response.headers.get('content-type')).toContain('application/json');
     });
   });
 });
