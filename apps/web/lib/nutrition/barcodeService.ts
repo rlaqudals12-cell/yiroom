@@ -72,7 +72,7 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeSearchRespo
     return {
       found: false,
       barcode,
-      message: error instanceof Error ? error.message : '조회 중 오류가 발생했습니다',
+      message: error instanceof Error ? error.message : '조회 중 오류가 발생했어요',
     };
   }
 }
@@ -112,7 +112,7 @@ export async function registerBarcodeFood(
     if (!response.ok) {
       return {
         success: false,
-        error: result.error || '등록 중 오류가 발생했습니다',
+        error: result.error || '등록 중 오류가 발생했어요',
       };
     }
 
@@ -124,7 +124,7 @@ export async function registerBarcodeFood(
     console.error('[BarcodeService] Register error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : '등록 중 오류가 발생했습니다',
+      error: error instanceof Error ? error.message : '등록 중 오류가 발생했어요',
     };
   }
 }
@@ -144,7 +144,7 @@ export async function getBarcodeHistory(limit: number = 10): Promise<BarcodeHist
     if (!response.ok) {
       return {
         history: [],
-        error: data.error || '이력 조회 중 오류가 발생했습니다',
+        error: data.error || '이력 조회 중 오류가 발생했어요',
       };
     }
 
@@ -155,7 +155,7 @@ export async function getBarcodeHistory(limit: number = 10): Promise<BarcodeHist
     console.error('[BarcodeService] History error:', error);
     return {
       history: [],
-      error: error instanceof Error ? error.message : '이력 조회 중 오류가 발생했습니다',
+      error: error instanceof Error ? error.message : '이력 조회 중 오류가 발생했어요',
     };
   }
 }
@@ -200,7 +200,7 @@ export async function recordBarcodeFood(
       const error = await response.json();
       return {
         success: false,
-        error: error.message || '기록 저장 중 오류가 발생했습니다',
+        error: error.message || '기록 저장 중 오류가 발생했어요',
       };
     }
 
@@ -209,7 +209,7 @@ export async function recordBarcodeFood(
     console.error('[BarcodeService] Record error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : '기록 저장 중 오류가 발생했습니다',
+      error: error instanceof Error ? error.message : '기록 저장 중 오류가 발생했어요',
     };
   }
 }

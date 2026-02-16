@@ -6,7 +6,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RecipeSearch from '@/components/nutrition/RecipeSearch';
-import { SAMPLE_RECIPES } from '@/lib/nutrition/recipe-matcher';
 
 describe('RecipeSearch', () => {
   const mockPantryItems = ['닭가슴살', '양상추', '방울토마토', '올리브오일'];
@@ -91,12 +90,7 @@ describe('RecipeSearch', () => {
 
   it('레시피 카드를 클릭하면 onSelectRecipe가 호출되어야 함', () => {
     const onSelectRecipe = vi.fn();
-    render(
-      <RecipeSearch
-        pantryItems={mockPantryItems}
-        onSelectRecipe={onSelectRecipe}
-      />
-    );
+    render(<RecipeSearch pantryItems={mockPantryItems} onSelectRecipe={onSelectRecipe} />);
 
     // 첫 번째 레시피 카드 클릭
     const firstRecipeCard = screen.getAllByTestId(/^recipe-card-/)[0];
@@ -130,16 +124,11 @@ describe('RecipeSearch', () => {
   it('결과 개수가 표시되어야 함', () => {
     render(<RecipeSearch pantryItems={mockPantryItems} />);
 
-    expect(screen.getByText(/개의 레시피를 찾았습니다/)).toBeInTheDocument();
+    expect(screen.getByText(/개의 레시피를 찾았어요/)).toBeInTheDocument();
   });
 
   it('기본 영양 목표가 설정되면 해당 필터가 활성화되어야 함', () => {
-    render(
-      <RecipeSearch
-        pantryItems={mockPantryItems}
-        defaultGoal="diet"
-      />
-    );
+    render(<RecipeSearch pantryItems={mockPantryItems} defaultGoal="diet" />);
 
     // 필터 섹션 열기
     const filterButton = screen.getByTestId('lucide-filter').closest('button');

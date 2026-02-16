@@ -9,23 +9,18 @@
  * - 남성: 역삼각형, 사다리꼴, 직사각형, 삼각형, 타원형
  */
 
-import type {
-  Gender,
-  BodyRatios,
-  BodyTypeResult,
-  BodyShape7,
-} from './types';
+import type { Gender, BodyRatios, BodyTypeResult, BodyShape7 } from './types';
 import { calculateWHR, calculateSHR, calculateWHtR } from './ratios';
 
 /**
  * 체형 분류에 필요한 측정값
  */
 export interface ClassifyInput {
-  bust: number;      // 가슴 둘레 (cm) - 여성용
-  waist: number;     // 허리 둘레 (cm)
-  hip: number;       // 엉덩이 둘레 (cm)
-  shoulder: number;  // 어깨 너비 (cm)
-  height: number;    // 신장 (cm)
+  bust: number; // 가슴 둘레 (cm) - 여성용
+  waist: number; // 허리 둘레 (cm)
+  hip: number; // 엉덩이 둘레 (cm)
+  shoulder: number; // 어깨 너비 (cm)
+  height: number; // 신장 (cm)
   gender: Gender;
 }
 
@@ -57,11 +52,7 @@ const BODY_SHAPE_KOREAN: Record<BodyShape7, string> = {
  * @param hip - 엉덩이 둘레 (cm)
  * @returns 체형 분류 결과
  */
-function classifyFemaleBody(
-  bust: number,
-  waist: number,
-  hip: number
-): BodyTypeResult {
+function classifyFemaleBody(bust: number, waist: number, hip: number): BodyTypeResult {
   // 인치 → cm 변환 (1인치 = 2.54cm)
   const CM_PER_INCH = 2.54;
 
@@ -132,11 +123,7 @@ function classifyFemaleBody(
  * @param hip - 엉덩이 너비/둘레 (cm)
  * @returns 체형 분류 결과
  */
-function classifyMaleBody(
-  shoulder: number,
-  waist: number,
-  hip: number
-): BodyTypeResult {
+function classifyMaleBody(shoulder: number, waist: number, hip: number): BodyTypeResult {
   const shr = shoulder / hip;
   const shoulderWaistRatio = shoulder / waist;
 
@@ -209,12 +196,12 @@ export function classifyBodyType(input: ClassifyInput): BodyTypeResult {
 
   // 입력값 검증
   if (waist <= 0 || hip <= 0 || shoulder <= 0) {
-    throw new Error('허리, 엉덩이, 어깨 측정값은 0보다 커야 합니다.');
+    throw new Error('허리, 엉덩이, 어깨 측정값은 0보다 커야 해요.');
   }
 
   if (gender === 'female') {
     if (bust <= 0) {
-      throw new Error('여성 체형 분류에는 가슴 둘레가 필요합니다.');
+      throw new Error('여성 체형 분류에는 가슴 둘레가 필요해요.');
     }
     return classifyFemaleBody(bust, waist, hip);
   }
@@ -236,10 +223,7 @@ export function classifyBodyType(input: ClassifyInput): BodyTypeResult {
  * const ratios = { whr: 0.75, shr: 0.95, whtr: 0.42 };
  * const result = classifyBodyTypeFromRatios(ratios, 'female');
  */
-export function classifyBodyTypeFromRatios(
-  ratios: BodyRatios,
-  gender: Gender
-): BodyTypeResult {
+export function classifyBodyTypeFromRatios(ratios: BodyRatios, gender: Gender): BodyTypeResult {
   const { whr, shr } = ratios;
 
   // SHR 기반 기본 분류
@@ -276,7 +260,7 @@ export function classifyBodyTypeFromRatios(
       };
     }
   } else {
-    if (whr >= 0.90) {
+    if (whr >= 0.9) {
       return {
         type: 'oval',
         confidence: 0.7,

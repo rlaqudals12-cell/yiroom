@@ -87,7 +87,7 @@ describe('RecommendedExerciseList', () => {
       const exercises = [createMockExercise({ id: 'ex-1', category: 'lower' })];
       render(<RecommendedExerciseList exercises={exercises} />);
       fireEvent.click(screen.getByText(/상체/));
-      expect(screen.getByText('해당 카테고리의 운동이 없습니다.')).toBeInTheDocument();
+      expect(screen.getByText('해당 카테고리의 운동이 없어요.')).toBeInTheDocument();
     });
   });
 
@@ -151,7 +151,7 @@ describe('RecommendedExerciseList', () => {
   describe('빈 상태', () => {
     it('운동이 없으면 빈 상태 메시지가 표시된다', () => {
       render(<RecommendedExerciseList exercises={[]} />);
-      expect(screen.getByText('해당 카테고리의 운동이 없습니다.')).toBeInTheDocument();
+      expect(screen.getByText('해당 카테고리의 운동이 없어요.')).toBeInTheDocument();
     });
   });
 });

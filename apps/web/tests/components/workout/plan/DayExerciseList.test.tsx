@@ -166,7 +166,7 @@ describe('DayExerciseList', () => {
     it('운동이 없으면 빈 상태를 표시한다', () => {
       const emptyDay = createMockDayPlan({ exercises: [] });
       render(<DayExerciseList {...defaultProps} day={emptyDay} />);
-      expect(screen.getByText('이 날의 운동이 없습니다')).toBeInTheDocument();
+      expect(screen.getByText('이 날의 운동이 없어요')).toBeInTheDocument();
     });
   });
 

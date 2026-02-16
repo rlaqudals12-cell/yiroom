@@ -39,7 +39,7 @@ export function generateMockWorkoutAnalysis(
   > = {
     toner: {
       label: '토너',
-      description: '근육 탄력과 라인 만들기에 집중하는 운동 타입입니다.',
+      description: '근육 탄력과 라인 만들기에 집중하는 운동 타입이에요.',
       intensity: 'medium',
       exercises: [
         { name: '플랭크', category: 'core', reason: '코어 강화와 전신 탄력에 효과적' },
@@ -51,7 +51,7 @@ export function generateMockWorkoutAnalysis(
     },
     builder: {
       label: '빌더',
-      description: '근육량 증가와 근력 강화에 집중하는 운동 타입입니다.',
+      description: '근육량 증가와 근력 강화에 집중하는 운동 타입이에요.',
       intensity: 'high',
       exercises: [
         { name: '벤치프레스', category: 'upper', reason: '가슴 근육 발달' },
@@ -63,7 +63,7 @@ export function generateMockWorkoutAnalysis(
     },
     burner: {
       label: '버너',
-      description: '체지방 연소와 체중 감량에 집중하는 운동 타입입니다.',
+      description: '체지방 연소와 체중 감량에 집중하는 운동 타입이에요.',
       intensity: 'high',
       exercises: [
         { name: '버피', category: 'cardio', reason: '고강도 칼로리 소모' },
@@ -75,7 +75,7 @@ export function generateMockWorkoutAnalysis(
     },
     mover: {
       label: '무버',
-      description: '체력 향상과 심폐 기능 강화에 집중하는 운동 타입입니다.',
+      description: '체력 향상과 심폐 기능 강화에 집중하는 운동 타입이에요.',
       intensity: 'medium',
       exercises: [
         { name: '조깅', category: 'cardio', reason: '기초 심폐 기능 향상' },
@@ -87,7 +87,7 @@ export function generateMockWorkoutAnalysis(
     },
     flexer: {
       label: '플렉서',
-      description: '유연성과 균형감각 향상에 집중하는 운동 타입입니다.',
+      description: '유연성과 균형감각 향상에 집중하는 운동 타입이에요.',
       intensity: 'low',
       exercises: [
         { name: '요가', category: 'core', reason: '유연성과 마음의 안정' },
@@ -145,9 +145,9 @@ export function generateMockWorkoutAnalysis(
     confidence: 75,
     reason: classification.reason,
     bodyTypeAdvice: input.bodyType
-      ? `${input.bodyType}형 체형에 맞춰 상체와 하체의 균형을 고려한 운동을 추천합니다.`
-      : '체형에 맞는 균형 잡힌 운동 루틴을 추천합니다.',
-    goalAdvice: `선택하신 목표를 달성하기 위해 꾸준한 운동이 중요합니다. ${frequencyMap[input.frequency] || 3}회 운동을 목표로 시작해보세요.`,
+      ? `${input.bodyType}형 체형에 맞춰 상체와 하체의 균형을 고려한 운동을 추천해요.`
+      : '체형에 맞는 균형 잡힌 운동 루틴을 추천해요.',
+    goalAdvice: `선택하신 목표를 달성하기 위해 꾸준한 운동이 중요해요. ${frequencyMap[input.frequency] || 3}회 운동을 목표로 시작해보세요.`,
     cautionAdvice,
     recommendedExercises: details.exercises,
     weeklyPlanSuggestion: {
@@ -246,9 +246,7 @@ export function generateMockExerciseRecommendation(
   const warmupCandidates = scoredExercises.filter(
     (e) => e.exercise.difficulty === 'beginner' && e.exercise.category !== 'cardio'
   );
-  const cooldownCandidates = scoredExercises.filter(
-    (e) => e.exercise.difficulty === 'beginner'
-  );
+  const cooldownCandidates = scoredExercises.filter((e) => e.exercise.difficulty === 'beginner');
 
   // 운동 타입별 기본 세트/반복 설정
   const volumeSettings: Record<string, { sets: number; reps: number; rest: number }> = {
@@ -263,7 +261,7 @@ export function generateMockExerciseRecommendation(
   // 결과 구성
   const dailyExercises = mainExercises.map((item, index) => ({
     exerciseId: item.exercise.id,
-    reason: `${item.exercise.name}은(는) ${concerns[0] ? concerns[0] + ' 부위와 관련된' : '목표에 적합한'} 운동입니다.`,
+    reason: `${item.exercise.name}은(는) ${concerns[0] ? concerns[0] + ' 부위와 관련된' : '목표에 적합한'} 운동이에요.`,
     sets: volume.sets,
     reps: volume.reps,
     restSeconds: volume.rest,
@@ -440,7 +438,7 @@ export function generateMockWorkoutInsights(
   const motivationalMessages = [
     '오늘의 노력이 내일의 나를 만들어요. 힘내세요!',
     '포기하지 않는 당신이 멋져요. 함께 가요!',
-    '작은 변화가 큰 결과를 만들어요. 응원합니다!',
+    '작은 변화가 큰 결과를 만들어요. 응원해요!',
     '꾸준함이 최고의 무기예요. 계속 달려봐요!',
   ];
   const motivationalMessage =

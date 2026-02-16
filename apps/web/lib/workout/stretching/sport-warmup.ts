@@ -105,13 +105,7 @@ const HIKING_PROTOCOL: SportProtocol = {
     notes: '하산 후 근육 긴장 완화. 특히 대퇴사두근과 종아리 집중.',
   },
 
-  keyMuscles: [
-    'quadriceps',
-    'gluteus_maximus',
-    'gastrocnemius',
-    'hamstrings',
-    'tibialis_anterior',
-  ],
+  keyMuscles: ['quadriceps', 'gluteus_maximus', 'gastrocnemius', 'hamstrings', 'tibialis_anterior'],
 
   commonInjuries: [
     'PFPS (슬개대퇴통증증후군)',
@@ -270,12 +264,7 @@ const GOLF_PROTOCOL: SportProtocol = {
     'rotator_cuff',
   ],
 
-  commonInjuries: [
-    '요통 (18-54%)',
-    '골프 엘보 (내측상과염)',
-    '손목 부상',
-    '어깨 충돌증후군',
-  ],
+  commonInjuries: ['요통 (18-54%)', '골프 엘보 (내측상과염)', '손목 부상', '어깨 충돌증후군'],
 
   injuryPrevention: [
     'X-Factor 극대화 시 요추 손상 위험: 개인 가동범위 내 스윙',
@@ -345,12 +334,7 @@ const CYCLING_PROTOCOL: SportProtocol = {
     'erector_spinae',
   ],
 
-  commonInjuries: [
-    'PFPS (35.7%)',
-    '요통 (60%)',
-    '손목 저림',
-    '회음부 불편',
-  ],
+  commonInjuries: ['PFPS (35.7%)', '요통 (60%)', '손목 저림', '회음부 불편'],
 
   injuryPrevention: [
     '바이크 피팅이 부상 예방 핵심',
@@ -419,12 +403,7 @@ const SWIMMING_PROTOCOL: SportProtocol = {
     'serratus_anterior',
   ],
 
-  commonInjuries: [
-    '수영 어깨 (27-87%)',
-    '평영 무릎 (73-86%)',
-    '요통',
-    '목 통증',
-  ],
+  commonInjuries: ['수영 어깨 (27-87%)', '평영 무릎 (73-86%)', '요통', '목 통증'],
 
   injuryPrevention: [
     '어깨 과사용 주의 (하루 4,000스트로크 이상 위험)',
@@ -496,12 +475,7 @@ const TENNIS_PROTOCOL: SportProtocol = {
     'obliques',
   ],
 
-  commonInjuries: [
-    '테니스 엘보 (외측상과염, 5%)',
-    '어깨 부상 (11.9%)',
-    '발목 염좌',
-    '무릎 부상',
-  ],
+  commonInjuries: ['테니스 엘보 (외측상과염, 5%)', '어깨 부상 (11.9%)', '발목 염좌', '무릎 부상'],
 
   injuryPrevention: [
     '그립 크기 최적화 (전완 부담 감소)',
@@ -669,17 +643,15 @@ export function generateSportPrescription(
         : 1.0;
 
   // PrescribedStretch 생성
-  const prescribedStretches: PrescribedStretch[] = conditionFiltered.map(
-    (exercise, index) => ({
-      exercise,
-      order: index + 1,
-      adjustedDuration:
-        phaseProtocol.type === 'dynamic'
-          ? exercise.defaultDuration
-          : Math.round(exercise.defaultDuration * durationMultiplier),
-      adjustedSets: exercise.sets,
-    })
-  );
+  const prescribedStretches: PrescribedStretch[] = conditionFiltered.map((exercise, index) => ({
+    exercise,
+    order: index + 1,
+    adjustedDuration:
+      phaseProtocol.type === 'dynamic'
+        ? exercise.defaultDuration
+        : Math.round(exercise.defaultDuration * durationMultiplier),
+    adjustedSets: exercise.sets,
+  }));
 
   // 경고 생성
   const warnings: string[] = [];
@@ -689,12 +661,12 @@ export function generateSportPrescription(
     warnings.push('고령 등산객: 동작 강도를 낮추고 지지대를 활용하세요.');
   }
   if (userProfile.age >= 65 && sport === 'golf') {
-    warnings.push('시니어 골퍼: 워밍업 15-20분, 3/4 스윙을 권장합니다.');
+    warnings.push('시니어 골퍼: 워밍업 15-20분, 3/4 스윙을 권장해요.');
   }
 
   // 특수 조건 경고
   if (userProfile.specialConditions.includes('disc_herniation')) {
-    warnings.push('디스크 환자: 회전 운동 시 주의가 필요합니다.');
+    warnings.push('디스크 환자: 회전 운동 시 주의가 필요해요.');
   }
 
   // 총 시간 계산
@@ -771,7 +743,9 @@ export function generateSportPrescriptionSummary(
   lines.push(`# ${protocol.nameKo} ${phaseKo} 루틴`);
   lines.push(`---`);
   lines.push(`**총 소요 시간**: 약 ${prescription.totalDuration}분`);
-  lines.push(`**운동 유형**: ${prescription.phase === 'warmup' ? '동적 스트레칭' : '정적 스트레칭'}`);
+  lines.push(
+    `**운동 유형**: ${prescription.phase === 'warmup' ? '동적 스트레칭' : '정적 스트레칭'}`
+  );
   lines.push(``);
 
   lines.push(`## 운동 순서`);
@@ -817,8 +791,8 @@ export function generateSportPrescriptionSummary(
  * 의료 면책조항
  */
 const SPORT_MEDICAL_DISCLAIMER = `
-이 스포츠 스트레칭 프로그램은 일반적인 건강 정보 제공 목적으로 작성되었습니다.
-개인의 건강 상태, 기존 부상, 체력 수준에 따라 적합하지 않을 수 있습니다.
+이 스포츠 스트레칭 프로그램은 일반적인 건강 정보 제공 목적으로 작성되었어요.
+개인의 건강 상태, 기존 부상, 체력 수준에 따라 적합하지 않을 수 있어요.
 
 다음 경우 전문가와 상담 후 운동하세요:
 • 기존 관절/근육 부상이 있는 경우

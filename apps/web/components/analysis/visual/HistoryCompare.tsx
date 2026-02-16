@@ -157,7 +157,7 @@ export default function HistoryCompare({ history, className, onImageClick }: His
             <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground">
               {sortedHistory.length === 0
-                ? '분석 기록이 없습니다.'
+                ? '분석 기록이 없어요.'
                 : '2회 이상 분석하면 변화를 비교할 수 있어요.'}
             </p>
           </div>

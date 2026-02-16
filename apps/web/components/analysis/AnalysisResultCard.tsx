@@ -19,10 +19,7 @@ import { ReactNode, useId, useEffect } from 'react';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { cn } from '@/lib/utils';
-import {
-  getConfidenceLevel,
-  announceAnalysisComplete,
-} from '@/lib/a11y/aria-utils';
+import { getConfidenceLevel, announceAnalysisComplete } from '@/lib/a11y/aria-utils';
 
 interface AnalysisResultCardProps {
   /** Mock 데이터 사용 여부 (AI 분석 실패 시 true) */
@@ -82,9 +79,7 @@ export function AnalysisResultCard({
   const badgeLabel = analysisType ? ANALYSIS_TYPE_LABELS[analysisType] : 'AI 분석 결과';
 
   // 신뢰도 레벨 정보
-  const confidenceInfo = confidence !== undefined
-    ? getConfidenceLevel(confidence)
-    : null;
+  const confidenceInfo = confidence !== undefined ? getConfidenceLevel(confidence) : null;
 
   // 마운트 시 스크린리더 알림
   useEffect(() => {
@@ -101,13 +96,11 @@ export function AnalysisResultCard({
     if (confidenceInfo) {
       return confidenceInfo.description;
     }
-    return '이 결과는 AI 기술을 사용하여 생성되었습니다';
+    return '이 결과는 AI 기술을 사용하여 생성됐어요';
   };
 
   // ARIA 속성 결정
-  const ariaProps = title
-    ? { 'aria-labelledby': titleId }
-    : { 'aria-label': badgeLabel };
+  const ariaProps = title ? { 'aria-labelledby': titleId } : { 'aria-label': badgeLabel };
 
   return (
     <article
@@ -126,19 +119,18 @@ export function AnalysisResultCard({
       <header className="px-6 pt-6 pb-4 border-b border-border/50">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <AIBadge
-              variant="default"
-              label={badgeLabel}
-              description={getBadgeDescription()}
-            />
+            <AIBadge variant="default" label={badgeLabel} description={getBadgeDescription()} />
             {confidence !== undefined && !usedMock && confidenceInfo && (
               <span
                 id={confidenceId}
                 className={cn(
                   'text-xs px-2 py-0.5 rounded-full',
-                  confidenceInfo.level === 'high' && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-                  confidenceInfo.level === 'medium' && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-                  confidenceInfo.level === 'low' && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                  confidenceInfo.level === 'high' &&
+                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+                  confidenceInfo.level === 'medium' &&
+                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+                  confidenceInfo.level === 'low' &&
+                    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                 )}
                 aria-label={confidenceInfo.description}
               >
@@ -147,10 +139,7 @@ export function AnalysisResultCard({
             )}
           </div>
           {title && (
-            <h2
-              id={titleId}
-              className="text-lg font-semibold text-foreground"
-            >
+            <h2 id={titleId} className="text-lg font-semibold text-foreground">
               {title}
             </h2>
           )}

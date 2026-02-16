@@ -83,9 +83,7 @@ export function calculateShadowIntensity(zoneBrightness: number[]): number {
 export function calculateDarkAreaRatio(zoneBrightness: number[]): number {
   if (zoneBrightness.length === 0) return 0;
 
-  const darkCount = zoneBrightness.filter(
-    (b) => b < SHADOW_THRESHOLDS.darkThreshold
-  ).length;
+  const darkCount = zoneBrightness.filter((b) => b < SHADOW_THRESHOLDS.darkThreshold).length;
 
   return darkCount / zoneBrightness.length;
 }
@@ -99,9 +97,7 @@ export function calculateDarkAreaRatio(zoneBrightness: number[]): number {
 export function calculateOverexposedRatio(zoneBrightness: number[]): number {
   if (zoneBrightness.length === 0) return 0;
 
-  const brightCount = zoneBrightness.filter(
-    (b) => b > SHADOW_THRESHOLDS.brightThreshold
-  ).length;
+  const brightCount = zoneBrightness.filter((b) => b > SHADOW_THRESHOLDS.brightThreshold).length;
 
   return brightCount / zoneBrightness.length;
 }
@@ -174,7 +170,7 @@ function generateShadowRecommendation(
   severity: ShadowAnalysis['severity']
 ): string {
   if (severity === 'none') {
-    return '조명 상태가 양호합니다.';
+    return '조명 상태가 양호해요.';
   }
 
   const directionTips: Record<string, string> = {
@@ -186,9 +182,9 @@ function generateShadowRecommendation(
   };
 
   const severityPrefix: Record<string, string> = {
-    mild: '약간의 그림자가 감지되었습니다. ',
-    moderate: '그림자가 있습니다. ',
-    severe: '강한 그림자가 있어 분석 정확도에 영향을 줄 수 있습니다. ',
+    mild: '약간의 그림자가 감지됐어요. ',
+    moderate: '그림자가 있어요. ',
+    severe: '강한 그림자가 있어 분석 정확도에 영향을 줄 수 있어요. ',
   };
 
   return severityPrefix[severity] + directionTips[direction];

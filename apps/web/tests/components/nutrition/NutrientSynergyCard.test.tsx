@@ -27,7 +27,8 @@ vi.mock('@/lib/nutrition/nutrient-synergy', () => ({
   getInteractionInfo: vi.fn((n1, n2) => ({
     type: n1 === 'vitaminC' && n2 === 'iron' ? 'synergy' : 'independent',
     factor: n1 === 'vitaminC' && n2 === 'iron' ? 1.5 : 1,
-    description: n1 === 'vitaminC' && n2 === 'iron' ? '비타민C가 철분 흡수를 50% 증가시킵니다.' : null,
+    description:
+      n1 === 'vitaminC' && n2 === 'iron' ? '비타민C가 철분 흡수를 50% 증가시킵니다.' : null,
   })),
   NUTRIENT_INTERACTION_MATRIX: {
     vitaminC: { iron: 1.5, collagen: 1.3 },
@@ -68,9 +69,7 @@ describe('NutrientSynergyCard', () => {
     it('면책조항이 표시된다', () => {
       render(<NutrientSynergyCard />);
 
-      expect(
-        screen.getByText(/참고용 정보입니다/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/참고용 정보예요/)).toBeInTheDocument();
     });
   });
 

@@ -92,7 +92,7 @@ describe('AnalyzingLoader', () => {
 describe('ErrorState', () => {
   it('기본 에러 메시지를 표시한다', () => {
     render(<ErrorState />);
-    expect(screen.getByText('오류가 발생했습니다.')).toBeInTheDocument();
+    expect(screen.getByText('오류가 발생했어요.')).toBeInTheDocument();
   });
 
   it('커스텀 에러 메시지를 표시한다', () => {

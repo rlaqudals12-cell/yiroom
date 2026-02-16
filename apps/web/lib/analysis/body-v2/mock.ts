@@ -249,19 +249,19 @@ export function generateMockPostureAnalysis(includeIssues = true): PostureAnalys
       {
         type: 'shoulder-imbalance',
         severity: Math.ceil(randomInRange(1, 3)),
-        description: '왼쪽 어깨가 2.5도 높습니다',
+        description: '왼쪽 어깨가 2.5도 높아요',
         exercises: ['사이드 플랭크', '덤벨 숄더 프레스', '스트레칭'],
       },
       {
         type: 'forward-head',
         severity: Math.ceil(randomInRange(1, 4)),
-        description: '머리가 앞으로 나와 있습니다 (거북목 의심)',
+        description: '머리가 앞으로 나와 있어요 (거북목 의심)',
         exercises: ['턱 당기기', '목 스트레칭', '흉추 신전'],
       },
       {
         type: 'rounded-shoulders',
         severity: Math.ceil(randomInRange(1, 3)),
-        description: '어깨가 앞으로 굽어 있습니다',
+        description: '어깨가 앞으로 굽어 있어요',
         exercises: ['가슴 스트레칭', '로우 운동', '페이스 풀'],
       },
     ];

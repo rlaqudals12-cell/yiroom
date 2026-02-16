@@ -90,10 +90,7 @@ describe('NutrientBarChart', () => {
       render(<NutrientBarChart data={defaultData} />);
 
       const progressbars = screen.getAllByRole('progressbar');
-      expect(progressbars[0]).toHaveAttribute(
-        'aria-label',
-        '탄수화물 섭취 진행률 60%'
-      );
+      expect(progressbars[0]).toHaveAttribute('aria-label', '탄수화물 섭취 진행률 60%');
     });
   });
 
@@ -143,9 +140,7 @@ describe('NutrientBarChart', () => {
     it('로딩 중일 때 스켈레톤 UI를 표시한다', () => {
       render(<NutrientBarChart data={defaultData} isLoading />);
 
-      expect(
-        screen.getByTestId('nutrient-bar-chart-loading')
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('nutrient-bar-chart-loading')).toBeInTheDocument();
     });
 
     it('로딩 중일 때 progressbar를 표시하지 않는다', () => {
@@ -212,9 +207,7 @@ describe('NutrientBarChart', () => {
       const data: NutrientData[] = [
         { name: '테스트', current: 85, target: 100, unit: 'g', color: 'blue' },
       ];
-      const { container } = render(
-        <NutrientBarChart data={data} showWarningThreshold={false} />
-      );
+      const { container } = render(<NutrientBarChart data={data} showWarningThreshold={false} />);
 
       const progressBar = container.querySelector('[data-progress-fill]');
       expect(progressBar).toHaveClass('bg-blue-500');
@@ -224,9 +217,7 @@ describe('NutrientBarChart', () => {
       const data: NutrientData[] = [
         { name: '테스트', current: 85, target: 100, unit: 'g', color: 'blue' },
       ];
-      const { container } = render(
-        <NutrientBarChart data={data} showWarningThreshold={true} />
-      );
+      const { container } = render(<NutrientBarChart data={data} showWarningThreshold={true} />);
 
       const progressBar = container.querySelector('[data-progress-fill]');
       expect(progressBar).toHaveClass('bg-amber-500');
@@ -236,9 +227,7 @@ describe('NutrientBarChart', () => {
       const data: NutrientData[] = [
         { name: '테스트', current: 80, target: 100, unit: 'g', color: 'blue' },
       ];
-      const { container } = render(
-        <NutrientBarChart data={data} showWarningThreshold={true} />
-      );
+      const { container } = render(<NutrientBarChart data={data} showWarningThreshold={true} />);
 
       const progressBar = container.querySelector('[data-progress-fill]');
       expect(progressBar).toHaveClass('bg-amber-500');
@@ -248,9 +237,7 @@ describe('NutrientBarChart', () => {
       const data: NutrientData[] = [
         { name: '테스트', current: 100, target: 100, unit: 'g', color: 'blue' },
       ];
-      const { container } = render(
-        <NutrientBarChart data={data} showWarningThreshold={true} />
-      );
+      const { container } = render(<NutrientBarChart data={data} showWarningThreshold={true} />);
 
       const progressBar = container.querySelector('[data-progress-fill]');
       expect(progressBar).toHaveClass('bg-red-500');
@@ -260,9 +247,7 @@ describe('NutrientBarChart', () => {
       const data: NutrientData[] = [
         { name: '테스트', current: 79, target: 100, unit: 'g', color: 'blue' },
       ];
-      const { container } = render(
-        <NutrientBarChart data={data} showWarningThreshold={true} />
-      );
+      const { container } = render(<NutrientBarChart data={data} showWarningThreshold={true} />);
 
       const progressBar = container.querySelector('[data-progress-fill]');
       expect(progressBar).toHaveClass('bg-blue-500');
@@ -273,7 +258,7 @@ describe('NutrientBarChart', () => {
     it('빈 데이터일 때 빈 상태 메시지를 표시한다', () => {
       render(<NutrientBarChart data={[]} />);
 
-      expect(screen.getByText(/영양소 데이터가 없습니다/)).toBeInTheDocument();
+      expect(screen.getByText(/영양소 데이터가 없어요/)).toBeInTheDocument();
     });
   });
 });

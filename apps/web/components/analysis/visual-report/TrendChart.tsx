@@ -124,7 +124,7 @@ export function TrendChart({
         data-testid="trend-chart-empty"
       >
         <div className="text-center text-muted-foreground py-8">
-          <p className="text-sm">분석 기록이 없습니다</p>
+          <p className="text-sm">분석 기록이 없어요</p>
           <p className="text-xs mt-1">분석을 진행하면 변화 추이를 확인할 수 있어요</p>
         </div>
       </div>

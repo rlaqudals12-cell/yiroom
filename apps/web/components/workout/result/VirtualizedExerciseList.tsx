@@ -63,16 +63,13 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
   }, [exercises, selectedCategory]);
 
   // 무한 스크롤 훅
-  const {
-    displayedItems,
-    hasMore,
-    isLoading,
-    sentinelRef,
-    reset,
-  } = useInfiniteScroll(filteredExercises, {
-    pageSize,
-    initialLoadSize: pageSize,
-  });
+  const { displayedItems, hasMore, isLoading, sentinelRef, reset } = useInfiniteScroll(
+    filteredExercises,
+    {
+      pageSize,
+      initialLoadSize: pageSize,
+    }
+  );
 
   // 카테고리 변경 시 리셋
   const handleCategoryChange = (category: ExerciseCategory | 'all') => {
@@ -171,19 +168,14 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
         )
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          <p>해당 카테고리의 운동이 없습니다.</p>
+          <p>해당 카테고리의 운동이 없어요.</p>
         </div>
       )}
 
       {/* 무한 스크롤 센티널 */}
       {enableInfiniteScroll && (
         <>
-          <div
-            ref={sentinelRef}
-            className="h-1"
-            data-testid="scroll-sentinel"
-            aria-hidden="true"
-          />
+          <div ref={sentinelRef} className="h-1" data-testid="scroll-sentinel" aria-hidden="true" />
 
           {/* 로딩 인디케이터 */}
           {isLoading && (
@@ -202,7 +194,7 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
           {/* 모두 로드됨 표시 */}
           {!hasMore && displayedItems.length > pageSize && (
             <div className="text-center text-sm text-muted-foreground py-2">
-              모든 운동을 불러왔습니다
+              모든 운동을 불러왔어요
             </div>
           )}
         </>

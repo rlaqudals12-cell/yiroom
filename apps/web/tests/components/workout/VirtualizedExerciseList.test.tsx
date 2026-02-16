@@ -72,11 +72,7 @@ describe('VirtualizedExerciseList', () => {
     it('초기에 pageSize만큼만 표시', () => {
       const exercises = createMockExercises(20);
       render(
-        <VirtualizedExerciseList
-          exercises={exercises}
-          enableInfiniteScroll={true}
-          pageSize={6}
-        />
+        <VirtualizedExerciseList exercises={exercises} enableInfiniteScroll={true} pageSize={6} />
       );
 
       // 처음 6개만 렌더링됨
@@ -87,11 +83,7 @@ describe('VirtualizedExerciseList', () => {
     it('"더 보기" 메시지 표시', () => {
       const exercises = createMockExercises(20);
       render(
-        <VirtualizedExerciseList
-          exercises={exercises}
-          enableInfiniteScroll={true}
-          pageSize={6}
-        />
+        <VirtualizedExerciseList exercises={exercises} enableInfiniteScroll={true} pageSize={6} />
       );
 
       expect(screen.getByText(/스크롤하여 더 보기/)).toBeInTheDocument();
@@ -103,11 +95,7 @@ describe('VirtualizedExerciseList', () => {
     it('카테고리 클릭 시 필터링', async () => {
       const exercises = createMockExercises(12); // 각 카테고리 3개씩
       render(
-        <VirtualizedExerciseList
-          exercises={exercises}
-          enableInfiniteScroll={true}
-          pageSize={6}
-        />
+        <VirtualizedExerciseList exercises={exercises} enableInfiniteScroll={true} pageSize={6} />
       );
 
       // 전체 탭 - 6개 표시 (무한 스크롤)
@@ -139,12 +127,7 @@ describe('VirtualizedExerciseList', () => {
       const exercises = createMockExercises(3);
       const handleClick = vi.fn();
 
-      render(
-        <VirtualizedExerciseList
-          exercises={exercises}
-          onExerciseClick={handleClick}
-        />
-      );
+      render(<VirtualizedExerciseList exercises={exercises} onExerciseClick={handleClick} />);
 
       const cards = screen.getAllByRole('article');
       fireEvent.click(cards[0]);
@@ -157,7 +140,7 @@ describe('VirtualizedExerciseList', () => {
     it('운동이 없으면 빈 메시지 표시', () => {
       render(<VirtualizedExerciseList exercises={[]} />);
 
-      expect(screen.getByText('해당 카테고리의 운동이 없습니다.')).toBeInTheDocument();
+      expect(screen.getByText('해당 카테고리의 운동이 없어요.')).toBeInTheDocument();
     });
 
     it('필터링 후 결과 없으면 빈 메시지 표시', async () => {
@@ -171,7 +154,7 @@ describe('VirtualizedExerciseList', () => {
       fireEvent.click(screen.getByTestId('filter-lower'));
 
       await waitFor(() => {
-        expect(screen.getByText('해당 카테고리의 운동이 없습니다.')).toBeInTheDocument();
+        expect(screen.getByText('해당 카테고리의 운동이 없어요.')).toBeInTheDocument();
       });
     });
   });
@@ -179,12 +162,7 @@ describe('VirtualizedExerciseList', () => {
   describe('무한 스크롤 비활성화', () => {
     it('enableInfiniteScroll=false면 전체 표시', () => {
       const exercises = createMockExercises(20);
-      render(
-        <VirtualizedExerciseList
-          exercises={exercises}
-          enableInfiniteScroll={false}
-        />
-      );
+      render(<VirtualizedExerciseList exercises={exercises} enableInfiniteScroll={false} />);
 
       // 모든 운동 표시
       const cards = screen.getAllByRole('article');

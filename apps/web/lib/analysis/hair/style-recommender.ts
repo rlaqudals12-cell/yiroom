@@ -28,7 +28,7 @@ const HAIRSTYLE_CATALOG: HairstyleRecommendation[] = [
   // 숏 스타일
   {
     name: '픽시컷',
-    description: '짧고 경쾌한 스타일로, 얼굴 윤곽을 강조합니다.',
+    description: '짧고 경쾌한 스타일로, 얼굴 윤곽을 강조해요.',
     length: 'short',
     suitability: 0,
     tags: ['숏', '세련됨', '관리 용이'],
@@ -51,7 +51,7 @@ const HAIRSTYLE_CATALOG: HairstyleRecommendation[] = [
   // 미디엄 스타일
   {
     name: '미디엄 레이어드',
-    description: '어깨 정도 길이의 레이어드 컷으로, 다양한 스타일링이 가능합니다.',
+    description: '어깨 정도 길이의 레이어드 컷으로, 다양한 스타일링이 가능해요.',
     length: 'medium',
     suitability: 0,
     tags: ['미디엄', '레이어드', '버서타일'],
@@ -457,10 +457,10 @@ export function generateCareTips(
       break;
     case 'square':
       tips.push('부드러운 웨이브를 연출하는 컬링 아이론을 활용해보세요.');
-      tips.push('각진 인상을 완화하는 소프트한 스타일링을 추천합니다.');
+      tips.push('각진 인상을 완화하는 소프트한 스타일링을 추천해요.');
       break;
     case 'oblong':
-      tips.push('사이드 볼륨을 위한 웨이브 스타일링을 추천합니다.');
+      tips.push('사이드 볼륨을 위한 웨이브 스타일링을 추천해요.');
       break;
     default:
       tips.push('본인의 얼굴형에 맞는 스타일을 유지해주세요.');

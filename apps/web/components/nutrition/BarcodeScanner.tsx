@@ -121,13 +121,13 @@ export default function BarcodeScanner({
       } catch (err) {
         if (!mounted) return;
 
-        const message = err instanceof Error ? err.message : '카메라를 시작할 수 없습니다';
+        const message = err instanceof Error ? err.message : '카메라를 시작할 수 없어요';
 
         // 권한 거부 메시지 개선
         if (message.includes('Permission') || message.includes('NotAllowed')) {
-          setErrorMessage('카메라 권한이 필요합니다. 설정에서 권한을 허용해주세요.');
+          setErrorMessage('카메라 권한이 필요해요. 설정에서 권한을 허용해주세요.');
         } else if (message.includes('NotFound') || message.includes('DevicesNotFound')) {
-          setErrorMessage('카메라를 찾을 수 없습니다.');
+          setErrorMessage('카메라를 찾을 수 없어요.');
         } else {
           setErrorMessage(message);
         }
@@ -180,7 +180,7 @@ export default function BarcodeScanner({
 
     // 이미지 파일 검증
     if (!file.type.startsWith('image/')) {
-      onError?.('이미지 파일만 선택할 수 있습니다');
+      onError?.('이미지 파일만 선택할 수 있어요');
       return;
     }
 
@@ -209,8 +209,8 @@ export default function BarcodeScanner({
       // 바코드를 찾지 못한 경우
       const message =
         err instanceof Error && err.message.includes('No barcode')
-          ? '이미지에서 바코드를 찾을 수 없습니다'
-          : '바코드 인식에 실패했습니다';
+          ? '이미지에서 바코드를 찾을 수 없어요'
+          : '바코드 인식에 실패했어요';
 
       onError?.(message);
     } finally {

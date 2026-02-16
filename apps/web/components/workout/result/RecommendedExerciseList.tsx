@@ -87,7 +87,7 @@ const RecommendedExerciseList = memo(function RecommendedExerciseList({
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          <p>해당 카테고리의 운동이 없습니다.</p>
+          <p>해당 카테고리의 운동이 없어요.</p>
         </div>
       )}
 

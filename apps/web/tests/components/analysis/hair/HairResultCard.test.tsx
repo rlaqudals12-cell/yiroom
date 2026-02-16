@@ -542,7 +542,7 @@ describe('HairResultCard', () => {
       const result = createMockResult({ usedFallback: true });
       render(<HairResultCard result={result} />);
       expect(screen.getByText(/AI 분석이 지연되어/)).toBeInTheDocument();
-      expect(screen.getByText(/재분석을 권장합니다/)).toBeInTheDocument();
+      expect(screen.getByText(/재분석을 권장해요/)).toBeInTheDocument();
     });
 
     it('usedFallback=false일 때 알림을 숨긴다', () => {

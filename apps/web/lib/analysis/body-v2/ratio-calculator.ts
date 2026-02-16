@@ -186,7 +186,7 @@ export function calculateBodyRatios(poseResult: PoseDetectionResult): BodyRatios
   const { landmarks } = poseResult;
 
   if (!validatePoseLandmarks(landmarks)) {
-    throw new Error('[BodyRatios] 체형 분석에 필요한 랜드마크가 부족합니다');
+    throw new Error('[BodyRatios] 체형 분석에 필요한 랜드마크가 부족해요');
   }
 
   // 기본 측정값 계산

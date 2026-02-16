@@ -461,8 +461,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
         {result.usedFallback && (
           <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-sm text-amber-800">
-              AI 분석이 지연되어 예측 결과를 표시하고 있습니다. 정확한 분석을 위해 재분석을
-              권장합니다.
+              AI 분석이 지연되어 예측 결과를 표시하고 있어요. 정확한 분석을 위해 재분석을 권장해요.
             </p>
           </div>
         )}

@@ -45,7 +45,7 @@ export function SkinImageViewer({
           className
         )}
       >
-        <p className="text-muted-foreground text-sm">이미지를 불러올 수 없습니다</p>
+        <p className="text-muted-foreground text-sm">이미지를 불러올 수 없어요</p>
       </div>
     );
   }

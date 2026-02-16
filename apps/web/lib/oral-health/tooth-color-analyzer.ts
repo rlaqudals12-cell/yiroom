@@ -82,7 +82,7 @@ export async function analyzeToothColor(
  *
  * @description
  * Gemini Vision을 통해 VITA 셰이드를 판별하고,
- * 해당 셰이드의 Lab 참조값을 반환합니다.
+ * 해당 셰이드의 Lab 참조값을 반환해요.
  * Gemini 사용 불가 시 Mock 데이터로 폴백.
  *
  * @param imageBase64 - Base64 인코딩된 이미지

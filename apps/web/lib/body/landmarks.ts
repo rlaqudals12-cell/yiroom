@@ -200,11 +200,11 @@ export function estimateShoulderWidth(landmarks: PoseLandmark[]): number {
   const rightShoulder = landmarks[LANDMARK_INDEX.RIGHT_SHOULDER];
 
   if (!leftShoulder || !rightShoulder) {
-    throw new Error('어깨 랜드마크가 누락되었습니다.');
+    throw new Error('어깨 랜드마크가 누락되었어요.');
   }
 
   if (!isReliableLandmark(leftShoulder) || !isReliableLandmark(rightShoulder)) {
-    throw new Error('어깨 랜드마크의 신뢰도가 낮습니다.');
+    throw new Error('어깨 랜드마크의 신뢰도가 낮아요.');
   }
 
   // 2D 거리 (정면 이미지 기준)
@@ -226,11 +226,11 @@ export function estimateHipWidth(landmarks: PoseLandmark[]): number {
   const rightHip = landmarks[LANDMARK_INDEX.RIGHT_HIP];
 
   if (!leftHip || !rightHip) {
-    throw new Error('엉덩이 랜드마크가 누락되었습니다.');
+    throw new Error('엉덩이 랜드마크가 누락되었어요.');
   }
 
   if (!isReliableLandmark(leftHip) || !isReliableLandmark(rightHip)) {
-    throw new Error('엉덩이 랜드마크의 신뢰도가 낮습니다.');
+    throw new Error('엉덩이 랜드마크의 신뢰도가 낮아요.');
   }
 
   return euclideanDistance2D(leftHip, rightHip);
@@ -246,10 +246,7 @@ export function estimateHipWidth(landmarks: PoseLandmark[]): number {
  * @param ratio - 어깨~엉덩이 구간에서 허리 위치 비율 (기본: 0.6, 어깨에서 60% 지점)
  * @returns 허리 위치 좌표
  */
-export function estimateWaistPosition(
-  landmarks: PoseLandmark[],
-  ratio: number = 0.6
-): Point2D {
+export function estimateWaistPosition(landmarks: PoseLandmark[], ratio: number = 0.6): Point2D {
   const leftShoulder = landmarks[LANDMARK_INDEX.LEFT_SHOULDER];
   const rightShoulder = landmarks[LANDMARK_INDEX.RIGHT_SHOULDER];
   const leftHip = landmarks[LANDMARK_INDEX.LEFT_HIP];
@@ -388,7 +385,7 @@ export function calculatePixelToCmRatio(config: PixelToRealConfig): number {
     return headSizeCm / config.headSizePixels;
   }
 
-  throw new Error('유효한 참조 데이터가 필요합니다. (신장 또는 머리 크기)');
+  throw new Error('유효한 참조 데이터가 필요해요. (신장 또는 머리 크기)');
 }
 
 /**
@@ -428,9 +425,7 @@ export function extractLandmarkMeasurements(landmarks: PoseLandmark[]): Landmark
   if (!areEssentialLandmarksReliable(landmarks)) {
     const summary = getLandmarkReliabilitySummary(landmarks);
     const unreliableStr = summary.unreliableIndices.join(', ');
-    throw new Error(
-      '필수 랜드마크의 신뢰도가 낮습니다. 신뢰할 수 없는 인덱스: ' + unreliableStr
-    );
+    throw new Error('필수 랜드마크의 신뢰도가 낮아요. 신뢰할 수 없는 인덱스: ' + unreliableStr);
   }
 
   return {

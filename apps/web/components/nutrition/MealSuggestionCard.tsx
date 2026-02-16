@@ -72,9 +72,9 @@ const TRAFFIC_LIGHT_COLORS: Record<TrafficLight, string> = {
 
 // 가격대 아이콘
 const PRICE_ICONS: Record<string, string> = {
-  '저렴': '💰',
-  '보통': '💰💰',
-  '비쌈': '💰💰💰',
+  저렴: '💰',
+  보통: '💰💰',
+  비쌈: '💰💰💰',
 };
 
 /**
@@ -98,7 +98,11 @@ function SuggestedFoodItem({ food }: { food: SuggestedFood }) {
             TRAFFIC_LIGHT_COLORS[food.trafficLight]
           )}
         >
-          {food.trafficLight === 'green' ? '좋음' : food.trafficLight === 'yellow' ? '보통' : '주의'}
+          {food.trafficLight === 'green'
+            ? '좋음'
+            : food.trafficLight === 'yellow'
+              ? '보통'
+              : '주의'}
         </span>
       </div>
 
@@ -120,9 +124,7 @@ function SuggestedFoodItem({ food }: { food: SuggestedFood }) {
 
       {/* 구하기 정보 */}
       <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">
-          📍 {food.whereToGet}
-        </span>
+        <span className="text-muted-foreground">📍 {food.whereToGet}</span>
         <span className="text-muted-foreground">
           {PRICE_ICONS[food.priceRange]} {food.priceRange}
         </span>
@@ -201,14 +203,14 @@ export default function MealSuggestionCard({
       });
 
       if (!response.ok) {
-        throw new Error('추천을 불러오는데 실패했습니다');
+        throw new Error('추천을 불러오는데 실패했어요');
       }
 
       const data = await response.json();
       setResult(data);
     } catch (err) {
       console.error('[MealSuggestionCard] Error:', err);
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다');
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했어요');
     } finally {
       setIsLoading(false);
     }
@@ -227,7 +229,10 @@ export default function MealSuggestionCard({
           </div>
           <h3 className="font-semibold text-foreground mb-1">오늘 뭐 먹지?</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            남은 칼로리: <span className="font-medium text-indigo-600">{remainingCalories.toLocaleString()}kcal</span>
+            남은 칼로리:{' '}
+            <span className="font-medium text-indigo-600">
+              {remainingCalories.toLocaleString()}kcal
+            </span>
           </p>
 
           {/* 연동 컨텍스트 표시 */}
@@ -271,9 +276,7 @@ export default function MealSuggestionCard({
       >
         <div className="text-center py-8">
           <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">
-            맞춤 메뉴를 찾고 있어요...
-          </p>
+          <p className="text-sm text-muted-foreground">맞춤 메뉴를 찾고 있어요...</p>
         </div>
       </div>
     );
@@ -351,8 +354,11 @@ export default function MealSuggestionCard({
         {/* 총 칼로리 */}
         <div className="mt-3 pt-3 border-t border-indigo-200/50 text-center">
           <span className="text-sm text-muted-foreground">
-            총 <span className="font-medium text-indigo-600">{result.totalCalories.toLocaleString()}kcal</span>
-            {' '}/ 남은 {remainingCalories.toLocaleString()}kcal
+            총{' '}
+            <span className="font-medium text-indigo-600">
+              {result.totalCalories.toLocaleString()}kcal
+            </span>{' '}
+            / 남은 {remainingCalories.toLocaleString()}kcal
           </span>
         </div>
 

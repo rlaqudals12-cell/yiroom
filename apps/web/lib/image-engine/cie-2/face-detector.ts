@@ -6,12 +6,7 @@
  * @see docs/specs/SDD-CIE-2-FACE-DETECTION.md
  */
 
-import type {
-  Point3D,
-  BoundingBox,
-  FaceLandmarks,
-  DetectedFace,
-} from '../types';
+import type { Point3D, BoundingBox, FaceLandmarks, DetectedFace } from '../types';
 import { FACE_LANDMARK_INDICES, FACE_ANGLE_THRESHOLDS, FRONTALITY_WEIGHTS } from '../constants';
 import { calculateFaceEulerAngles, calculateFrontalityScore, eulerToDegrees } from '../utils';
 
@@ -130,11 +125,7 @@ export function calculateFaceAngle(points: Point3D[]) {
 export function calculateFrontalityFromLandmarks(points: Point3D[]): number {
   const angles = calculateFaceAngle(points);
 
-  return calculateFrontalityScore(
-    angles,
-    FACE_ANGLE_THRESHOLDS,
-    FRONTALITY_WEIGHTS
-  );
+  return calculateFrontalityScore(angles, FACE_ANGLE_THRESHOLDS, FRONTALITY_WEIGHTS);
 }
 
 /**
@@ -222,7 +213,7 @@ export function selectBestFace(
     const centerY = face.boundingBox.y + face.boundingBox.height / 2;
     const distanceFromCenter = Math.sqrt(
       Math.pow((centerX - imageWidth / 2) / imageWidth, 2) +
-      Math.pow((centerY - imageHeight / 2) / imageHeight, 2)
+        Math.pow((centerY - imageHeight / 2) / imageHeight, 2)
     );
     const centerWeight = (1 - Math.min(1, distanceFromCenter)) * 100 * 0.3;
 
@@ -262,17 +253,16 @@ export function validateFaceAngle(angles: ReturnType<typeof calculateFaceAngle>)
   }
 
   if (Math.abs(anglesDeg.yaw) > yaw) {
-    issues.push(anglesDeg.yaw > 0 ? '오른쪽을 바라보고 있습니다' : '왼쪽을 바라보고 있습니다');
+    issues.push(anglesDeg.yaw > 0 ? '오른쪽을 바라보고 있어요' : '왼쪽을 바라보고 있어요');
   }
 
   if (Math.abs(anglesDeg.roll) > roll) {
-    issues.push('고개가 기울어져 있습니다');
+    issues.push('고개가 기울어져 있어요');
   }
 
   return {
     isValid: issues.length === 0,
-    feedback: issues.length > 0
-      ? issues.join('. ') + '. 정면을 바라봐주세요.'
-      : '얼굴 각도가 적절합니다.',
+    feedback:
+      issues.length > 0 ? issues.join('. ') + '. 정면을 바라봐주세요.' : '얼굴 각도가 적절해요.',
   };
 }

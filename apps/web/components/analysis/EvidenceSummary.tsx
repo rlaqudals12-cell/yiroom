@@ -50,9 +50,7 @@ export function PersonalColorEvidenceSummary({
         )}
       >
         <Info className="w-4 h-4 text-muted-foreground" />
-        <span className="text-muted-foreground">
-          {isCool ? '쿨톤' : '웜톤'} 특성이 분석되었습니다
-        </span>
+        <span className="text-muted-foreground">{isCool ? '쿨톤' : '웜톤'} 특성이 분석됐어요</span>
       </div>
     );
   }
@@ -145,7 +143,7 @@ export function SkinEvidenceSummary({
         )}
       >
         <Info className="w-4 h-4 text-muted-foreground" />
-        <span className="text-muted-foreground">{skinTypeLabel} 피부로 분석되었습니다</span>
+        <span className="text-muted-foreground">{skinTypeLabel} 피부로 분석됐어요</span>
       </div>
     );
   }
@@ -235,7 +233,7 @@ export function BodyEvidenceSummary({
         )}
       >
         <Info className="w-4 h-4 text-muted-foreground" />
-        <span className="text-muted-foreground">{bodyTypeLabel} 체형으로 분석되었습니다</span>
+        <span className="text-muted-foreground">{bodyTypeLabel} 체형으로 분석됐어요</span>
       </div>
     );
   }

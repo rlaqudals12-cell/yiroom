@@ -6,11 +6,7 @@
  * @see docs/specs/SDD-CIE-4-LIGHTING-ANALYSIS.md
  */
 
-import type {
-  RGBImageData,
-  CIE4Output,
-  NormalizedRect,
-} from '../types';
+import type { RGBImageData, CIE4Output, NormalizedRect } from '../types';
 import { DEFAULT_CIE_CONFIG, PROCESSING_TIMEOUT } from '../constants';
 import {
   estimateCCTFromFace,
@@ -68,11 +64,7 @@ export function processLightingAnalysis(
     }
 
     // 4. 종합 점수 계산
-    const overallScore = calculateOverallScore(
-      cctSuitability,
-      uniformityScore,
-      shadowScore
-    );
+    const overallScore = calculateOverallScore(cctSuitability, uniformityScore, shadowScore);
 
     // 5. 적합성 판정
     const isSuitable = overallScore >= config.minQualityScore;
@@ -161,9 +153,7 @@ function calculateOverallScore(
   const weights = { cct: 0.4, uniformity: 0.35, shadow: 0.25 };
 
   return Math.round(
-    cctScore * weights.cct +
-    uniformityScore * weights.uniformity +
-    shadowScore * weights.shadow
+    cctScore * weights.cct + uniformityScore * weights.uniformity + shadowScore * weights.shadow
   );
 }
 
@@ -174,10 +164,7 @@ function calculateOverallScore(
  * @param overallScore - 종합 점수
  * @returns 신뢰도 (0-1)
  */
-function calculateConfidence(
-  faceRegion: NormalizedRect | undefined,
-  overallScore: number
-): number {
+function calculateConfidence(faceRegion: NormalizedRect | undefined, overallScore: number): number {
   // 얼굴 영역이 없으면 신뢰도 낮음
   const baseConfidence = faceRegion ? 0.9 : 0.5;
 
@@ -210,16 +197,18 @@ function generateFeedback(
 
   // CCT 피드백
   if (lightingType === 'warm') {
-    feedback.push('조명이 따뜻한 색상입니다. 자연광 또는 백색 조명 아래에서 촬영하면 더 정확한 분석이 가능합니다.');
+    feedback.push(
+      '조명이 따뜻한 색상이에요. 자연광 또는 백색 조명 아래에서 촬영하면 더 정확한 분석이 가능해요.'
+    );
   } else if (lightingType === 'cool') {
-    feedback.push('조명이 차가운 색상입니다. 피부톤이 실제보다 푸르게 보일 수 있습니다.');
+    feedback.push('조명이 차가운 색상이에요. 피부톤이 실제보다 푸르게 보일 수 있어요.');
   } else if (lightingType === 'extreme') {
-    feedback.push('조명 색온도가 분석에 적합하지 않습니다. 다른 환경에서 다시 촬영해주세요.');
+    feedback.push('조명 색온도가 분석에 적합하지 않아요. 다른 환경에서 다시 촬영해주세요.');
   }
 
   // 균일성 피드백
   if (zoneAnalysis && zoneAnalysis.uniformity < 0.7) {
-    feedback.push('얼굴에 조명이 고르게 분포되지 않았습니다. 정면에서 균일한 조명을 사용해주세요.');
+    feedback.push('얼굴에 조명이 고르게 분포되지 않았어요. 정면에서 균일한 조명을 사용해주세요.');
   }
 
   // 그림자 피드백
@@ -229,11 +218,11 @@ function generateFeedback(
 
   // 종합 피드백
   if (overallScore >= 80) {
-    feedback.unshift('조명 상태가 좋습니다. 정확한 분석이 가능합니다.');
+    feedback.unshift('조명 상태가 좋아요. 정확한 분석이 가능해요.');
   } else if (overallScore >= 50) {
-    feedback.unshift('조명 상태가 보통입니다. 가능하면 조명 환경을 개선해주세요.');
+    feedback.unshift('조명 상태가 보통이에요. 가능하면 조명 환경을 개선해주세요.');
   } else {
-    feedback.unshift('조명 상태가 좋지 않습니다. 분석 정확도가 낮을 수 있습니다.');
+    feedback.unshift('조명 상태가 좋지 않아요. 분석 정확도가 낮을 수 있어요.');
   }
 
   return feedback;

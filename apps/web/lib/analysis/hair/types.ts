@@ -42,11 +42,11 @@ export const FACE_SHAPE_LABELS: Record<FaceShapeType, string> = {
  */
 export const FACE_SHAPE_DESCRIPTIONS: Record<FaceShapeType, string> = {
   oval: '이상적인 얼굴형으로 대부분의 헤어스타일이 잘 어울립니다.',
-  round: '볼이 넓고 턱선이 부드러운 형태로, 세로 길이감을 주는 스타일이 좋습니다.',
+  round: '볼이 넓고 턱선이 부드러운 형태로, 세로 길이감을 주는 스타일이 좋아요.',
   square: '이마와 턱이 넓고 각진 형태로, 부드러운 곡선의 스타일이 어울립니다.',
-  heart: '이마가 넓고 턱이 좁은 형태로, 볼륨을 아래에 주는 스타일이 좋습니다.',
+  heart: '이마가 넓고 턱이 좁은 형태로, 볼륨을 아래에 주는 스타일이 좋아요.',
   oblong: '세로로 긴 형태로, 가로 볼륨을 주는 스타일이 어울립니다.',
-  diamond: '광대가 넓고 이마와 턱이 좁은 형태로, 이마와 턱에 볼륨을 주는 스타일이 좋습니다.',
+  diamond: '광대가 넓고 이마와 턱이 좁은 형태로, 이마와 턱에 볼륨을 주는 스타일이 좋아요.',
   rectangle: '세로로 길고 각진 형태로, 부드러운 웨이브와 가로 볼륨이 어울립니다.',
 };
 

@@ -223,7 +223,7 @@ export function RecommendedProducts({
       } catch (err) {
         if (cancelled) return;
         console.error('[RecommendedProducts] 제품 로딩 실패:', err);
-        setError('제품을 불러오는 중 오류가 발생했습니다.');
+        setError('제품을 불러오는 중 오류가 발생했어요.');
       } finally {
         if (!cancelled) setIsLoading(false);
       }

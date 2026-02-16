@@ -41,7 +41,7 @@ describe('analyzeSkinCorrelation', () => {
 
       expect(result.confidence).toBe('low');
       expect(result.confidenceReason).toContain('2개');
-      expect(result.insights).toContain('상관관계 분석을 위해 최소 5일 이상의 기록이 필요합니다.');
+      expect(result.insights).toContain('상관관계 분석을 위해 최소 5일 이상의 기록이 필요해요.');
     });
 
     it('빈 데이터일 때 안내 메시지를 제공한다', async () => {
@@ -199,7 +199,7 @@ describe('analyzeSkinCorrelation', () => {
       });
 
       await expect(analyzeSkinCorrelation(mockSupabase as any, 30)).rejects.toThrow(
-        '다이어리 데이터를 불러오는데 실패했습니다.'
+        '다이어리 데이터를 불러오는데 실패했어요.'
       );
     });
   });

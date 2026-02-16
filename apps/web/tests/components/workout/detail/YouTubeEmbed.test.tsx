@@ -65,7 +65,7 @@ describe('YouTubeEmbed', () => {
   describe('유효하지 않은 URL', () => {
     it('에러 메시지가 표시된다', () => {
       render(<YouTubeEmbed videoUrl="https://invalid-url.com/video" />);
-      expect(screen.getByText('영상을 불러올 수 없습니다')).toBeInTheDocument();
+      expect(screen.getByText('영상을 불러올 수 없어요')).toBeInTheDocument();
     });
   });
 });

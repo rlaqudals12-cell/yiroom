@@ -204,11 +204,11 @@ export function getInteractionInfo(nutrient1: string, nutrient2: string): Nutrie
       calcium: '비타민 D가 장에서 칼슘 흡수를 30-40% 증가시킵니다.',
     },
     calcium: {
-      iron: '칼슘이 철분과 경쟁하여 흡수를 억제합니다. 따로 섭취하세요.',
-      zinc: '고용량 칼슘이 아연 흡수를 억제합니다.',
+      iron: '칼슘이 철분과 경쟁하여 흡수를 억제해요. 따로 섭취하세요.',
+      zinc: '고용량 칼슘이 아연 흡수를 억제해요.',
     },
     zinc: {
-      copper: '아연 과다 섭취 시 구리 결핍을 유발할 수 있습니다.',
+      copper: '아연 과다 섭취 시 구리 결핍을 유발할 수 있어요.',
     },
   };
 

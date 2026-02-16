@@ -74,7 +74,7 @@ describe('HistoryCompare', () => {
     it('히스토리가 없으면 안내 메시지를 표시해야 함', () => {
       render(<HistoryCompare history={[]} />);
 
-      expect(screen.getByText('분석 기록이 없습니다.')).toBeInTheDocument();
+      expect(screen.getByText('분석 기록이 없어요.')).toBeInTheDocument();
     });
 
     it('히스토리가 1개면 비교 불가 메시지를 표시해야 함', () => {

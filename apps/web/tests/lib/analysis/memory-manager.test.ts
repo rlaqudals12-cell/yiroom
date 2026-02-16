@@ -342,39 +342,13 @@ describe('Memory Manager', () => {
   });
 
   describe('logMemoryUsage', () => {
-    it('메모리 정보를 로깅한다', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      Object.defineProperty(global, 'window', {
-        value: { performance: {} },
-        writable: true,
-      });
-
-      logMemoryUsage('test');
-
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+    it('함수가 에러 없이 실행된다', () => {
+      // 프로덕션 로깅 제거 후 빈 함수 — 에러 없이 호출 가능한지 확인
+      expect(() => logMemoryUsage('test')).not.toThrow();
     });
 
-    it('Chrome에서 상세 정보를 로깅한다', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      Object.defineProperty(global, 'window', {
-        value: {
-          performance: {
-            memory: {
-              usedJSHeapSize: 500 * 1024 * 1024,
-              jsHeapSizeLimit: 1000 * 1024 * 1024,
-            },
-          },
-        },
-        writable: true,
-      });
-
-      logMemoryUsage();
-
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('500MB'));
-      consoleSpy.mockRestore();
+    it('인자 없이도 호출 가능하다', () => {
+      expect(() => logMemoryUsage()).not.toThrow();
     });
   });
 });

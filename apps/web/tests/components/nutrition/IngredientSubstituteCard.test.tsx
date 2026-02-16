@@ -103,9 +103,7 @@ describe('IngredientSubstituteCard', () => {
     it('면책조항이 표시된다', () => {
       render(<IngredientSubstituteCard />);
 
-      expect(
-        screen.getByText(/개인의 건강 상태와 취향에 따라/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/개인의 건강 상태와 취향에 따라/)).toBeInTheDocument();
     });
   });
 
@@ -149,7 +147,7 @@ describe('IngredientSubstituteCard', () => {
       const searchInput = screen.getByPlaceholderText(/재료 검색/);
       fireEvent.change(searchInput, { target: { value: '존재하지않는재료' } });
 
-      expect(screen.getByText('검색 결과가 없습니다')).toBeInTheDocument();
+      expect(screen.getByText('검색 결과가 없어요')).toBeInTheDocument();
     });
   });
 
@@ -174,9 +172,7 @@ describe('IngredientSubstituteCard', () => {
 
       // 아이템 펼치기
       const buttons = screen.getAllByRole('button', { expanded: false });
-      const expandableButton = buttons.find(
-        (btn) => btn.getAttribute('aria-expanded') === 'false'
-      );
+      const expandableButton = buttons.find((btn) => btn.getAttribute('aria-expanded') === 'false');
 
       if (expandableButton) {
         fireEvent.click(expandableButton);
@@ -238,8 +234,8 @@ describe('IngredientSubstituteCard', () => {
       // 린매스 버튼을 찾아서 활성화 상태 확인
       const leanButtons = screen.getAllByText('린매스');
       // 버튼 중 bg-blue-50 클래스를 가진 것을 찾음
-      const activeButton = leanButtons.find(
-        (el) => el.closest('button')?.className.includes('bg-blue')
+      const activeButton = leanButtons.find((el) =>
+        el.closest('button')?.className.includes('bg-blue')
       );
       expect(activeButton).toBeTruthy();
     });

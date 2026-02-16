@@ -112,7 +112,7 @@ function detectShoulderImbalance(landmarks: Landmark33[]): PostureIssue | null {
   return {
     type: 'shoulder-imbalance',
     severity,
-    description: `${higherSide} 어깨가 ${tilt.toFixed(1)}도 높습니다`,
+    description: `${higherSide} 어깨가 ${tilt.toFixed(1)}도 높아요`,
     exercises: POSTURE_EXERCISES['shoulder-imbalance'],
   };
 }
@@ -140,7 +140,7 @@ function detectHipImbalance(landmarks: Landmark33[]): PostureIssue | null {
   return {
     type: 'hip-imbalance',
     severity,
-    description: `${higherSide} 골반이 ${tilt.toFixed(1)}도 높습니다`,
+    description: `${higherSide} 골반이 ${tilt.toFixed(1)}도 높아요`,
     exercises: POSTURE_EXERCISES['hip-imbalance'],
   };
 }
@@ -178,7 +178,7 @@ function detectForwardHead(landmarks: Landmark33[]): PostureIssue | null {
   return {
     type: 'forward-head',
     severity,
-    description: '머리가 앞으로 나와 있습니다 (거북목 의심)',
+    description: '머리가 앞으로 나와 있어요 (거북목 의심)',
     exercises: POSTURE_EXERCISES['forward-head'],
   };
 }
@@ -216,7 +216,7 @@ function detectRoundedShoulders(landmarks: Landmark33[]): PostureIssue | null {
   return {
     type: 'rounded-shoulders',
     severity,
-    description: '어깨가 앞으로 굽어 있습니다',
+    description: '어깨가 앞으로 굽어 있어요',
     exercises: POSTURE_EXERCISES['rounded-shoulders'],
   };
 }
@@ -255,7 +255,7 @@ function detectLordosis(landmarks: Landmark33[]): PostureIssue | null {
   return {
     type: 'lordosis',
     severity,
-    description: '허리가 과도하게 젖혀져 있습니다 (요추전만 의심)',
+    description: '허리가 과도하게 젖혀져 있어요 (요추전만 의심)',
     exercises: POSTURE_EXERCISES.lordosis,
   };
 }
@@ -298,7 +298,7 @@ function detectKyphosis(landmarks: Landmark33[]): PostureIssue | null {
   return {
     type: 'kyphosis',
     severity,
-    description: '등이 굽어 있습니다 (흉추후만 의심)',
+    description: '등이 굽어 있어요 (흉추후만 의심)',
     exercises: POSTURE_EXERCISES.kyphosis,
   };
 }
@@ -486,20 +486,20 @@ export function generatePostureSummary(analysis: PostureAnalysis): string {
   const score = calculatePostureScore(analysis);
 
   if (score >= 90) {
-    return '전반적으로 균형 잡힌 자세입니다. 현재 상태를 유지하세요!';
+    return '전반적으로 균형 잡힌 자세예요. 현재 상태를 유지하세요!';
   }
 
   if (score >= 70) {
     const mainIssue = analysis.issues[0];
     if (mainIssue) {
-      return `${getPostureIssueLabel(mainIssue.type)}이(가) 감지되었습니다. 가벼운 스트레칭을 권장합니다.`;
+      return `${getPostureIssueLabel(mainIssue.type)}이(가) 감지되었어요. 가벼운 스트레칭을 권장해요.`;
     }
-    return '약간의 자세 개선이 필요합니다.';
+    return '약간의 자세 개선이 필요해요.';
   }
 
   if (score >= 50) {
-    return `${analysis.issues.length}가지 자세 문제가 감지되었습니다. 교정 운동을 권장합니다.`;
+    return `${analysis.issues.length}가지 자세 문제가 감지되었어요. 교정 운동을 권장해요.`;
   }
 
-  return '자세 교정이 필요합니다. 전문가 상담을 권장합니다.';
+  return '자세 교정이 필요해요. 전문가 상담을 권장해요.';
 }

@@ -97,7 +97,7 @@ describe('BarcodeScanner', () => {
 
     await waitFor(() => {
       expect(screen.getByText('카메라 오류')).toBeInTheDocument();
-      expect(screen.getByText(/카메라 권한이 필요합니다/)).toBeInTheDocument();
+      expect(screen.getByText(/카메라 권한이 필요해요/)).toBeInTheDocument();
     });
     expect(onError).toHaveBeenCalled();
   });
@@ -109,7 +109,7 @@ describe('BarcodeScanner', () => {
     render(<BarcodeScanner onScan={vi.fn()} onError={onError} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/카메라를 찾을 수 없습니다/)).toBeInTheDocument();
+      expect(screen.getByText(/카메라를 찾을 수 없어요/)).toBeInTheDocument();
     });
   });
 

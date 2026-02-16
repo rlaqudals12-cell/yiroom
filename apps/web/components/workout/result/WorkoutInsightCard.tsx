@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  Lightbulb,
-  Scale,
-  TrendingUp,
-  Flame,
-  Users,
-  Sparkles,
-  Star,
-} from 'lucide-react';
+import { Lightbulb, Scale, TrendingUp, Flame, Users, Sparkles, Star } from 'lucide-react';
 import { GeminiWorkoutInsightResult } from '@/lib/gemini';
 
 interface WorkoutInsightCardProps {
@@ -58,10 +50,7 @@ const INSIGHT_TYPE_STYLES: Record<
 };
 
 // 우선순위별 라벨 스타일
-const PRIORITY_STYLES: Record<
-  string,
-  { label: string; className: string }
-> = {
+const PRIORITY_STYLES: Record<string, { label: string; className: string }> = {
   high: { label: '중요', className: 'bg-red-100 text-red-700' },
   medium: { label: '참고', className: 'bg-muted text-muted-foreground' },
   low: { label: '팁', className: 'bg-muted/50 text-muted-foreground' },
@@ -89,12 +78,8 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
               <Star className="w-4 h-4 text-indigo-600" />
             </div>
             <div>
-              <p className="text-xs font-medium text-indigo-600 mb-1">
-                이번 주 하이라이트
-              </p>
-              <p className="text-sm text-foreground font-medium">
-                {weeklyHighlight}
-              </p>
+              <p className="text-xs font-medium text-indigo-600 mb-1">이번 주 하이라이트</p>
+              <p className="text-sm text-foreground font-medium">{weeklyHighlight}</p>
             </div>
           </div>
         </div>
@@ -150,8 +135,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
                             {insight.data.trend === 'up' && '↑'}
                             {insight.data.trend === 'down' && '↓'}
                             {insight.data.trend === 'stable' && '→'}
-                            {insight.data.percentage !== undefined &&
-                              `${insight.data.percentage}%`}
+                            {insight.data.percentage !== undefined && `${insight.data.percentage}%`}
                           </span>
                         )}
                         {insight.data.targetArea && (
@@ -172,9 +156,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
       {/* 동기부여 메시지 */}
       {motivationalMessage && (
         <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl p-4 text-white">
-          <p className="text-sm font-medium text-center">
-            {motivationalMessage}
-          </p>
+          <p className="text-sm font-medium text-center">{motivationalMessage}</p>
         </div>
       )}
 
@@ -182,7 +164,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
       {insightItems.length === 0 && !weeklyHighlight && !motivationalMessage && (
         <div className="text-center py-6 text-muted-foreground">
           <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">아직 인사이트가 없습니다</p>
+          <p className="text-sm">아직 인사이트가 없어요</p>
           <p className="text-xs mt-1">운동 기록을 쌓으면 맞춤 인사이트를 제공해드려요</p>
         </div>
       )}

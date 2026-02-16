@@ -312,7 +312,7 @@ export default function AnalysisEvidenceReport({
                 <span className={cn('font-bold', isCool ? 'text-blue-600' : 'text-orange-600')}>
                   {tone === 'cool' ? '쿨톤' : '웜톤'}
                 </span>
-                으로 판정되었습니다.
+                으로 판정됐어요.
                 {evidence.skinHairContrast && (
                   <>
                     {' '}
@@ -327,7 +327,7 @@ export default function AnalysisEvidenceReport({
                             ? '봄'
                             : '가을'}
                     </span>{' '}
-                    타입으로 분류되었습니다.
+                    타입으로 분류됐어요.
                   </>
                 )}
               </>
@@ -337,7 +337,7 @@ export default function AnalysisEvidenceReport({
                 <span className={cn('font-bold', isCool ? 'text-blue-600' : 'text-orange-600')}>
                   {tone === 'cool' ? '쿨톤' : '웜톤'}
                 </span>
-                으로 판정되었습니다.
+                으로 판정됐어요.
               </>
             )}
           </p>

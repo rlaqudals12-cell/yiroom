@@ -40,18 +40,14 @@ export function DayExerciseList({
   // 휴식일 표시
   if (day.isRestDay) {
     return (
-      <div
-        className="bg-muted rounded-2xl p-6 text-center"
-        data-testid="day-exercise-list-rest"
-      >
+      <div className="bg-muted rounded-2xl p-6 text-center" data-testid="day-exercise-list-rest">
         <div className="w-16 h-16 bg-muted/80 rounded-full flex items-center justify-center mx-auto mb-4">
           <Coffee className="w-8 h-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-bold text-foreground mb-2">
-          {day.dayLabel} - 휴식일
-        </h3>
+        <h3 className="text-lg font-bold text-foreground mb-2">{day.dayLabel} - 휴식일</h3>
         <p className="text-muted-foreground text-sm">
-          오늘은 충분한 휴식을 취하세요.<br />
+          오늘은 충분한 휴식을 취하세요.
+          <br />
           근육이 회복되는 중요한 시간이에요.
         </p>
       </div>
@@ -106,9 +102,7 @@ export function DayExerciseList({
               {/* 운동 정보 */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-medium text-foreground truncate">
-                    {exercise.name}
-                  </h4>
+                  <h4 className="font-medium text-foreground truncate">{exercise.name}</h4>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${difficulty.color}`}>
                     {difficulty.label}
                   </span>
@@ -142,7 +136,7 @@ export function DayExerciseList({
       {day.exercises.length === 0 && (
         <div className="p-8 text-center text-muted-foreground">
           <Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">이 날의 운동이 없습니다</p>
+          <p className="text-sm">이 날의 운동이 없어요</p>
         </div>
       )}
     </div>

@@ -39,11 +39,14 @@ const DAY_FULL_NAMES: Record<keyof WeeklyStretchingPlan['days'], string> = {
   sunday: '일요일',
 };
 
-const TYPE_CONFIG: Record<DailyRoutine['type'], {
-  emoji: string;
-  label: string;
-  color: string;
-}> = {
+const TYPE_CONFIG: Record<
+  DailyRoutine['type'],
+  {
+    emoji: string;
+    label: string;
+    color: string;
+  }
+> = {
   stretch: {
     emoji: '🧘',
     label: '스트레칭',
@@ -81,9 +84,7 @@ export function WeeklyStretchingPlanCard({
           <span>📅 주간 스트레칭 플랜</span>
           <Badge variant="outline">{plan.progressionWeek}주차</Badge>
         </CardTitle>
-        <CardDescription>
-          {plan.weekStartDate} 시작
-        </CardDescription>
+        <CardDescription>{plan.weekStartDate} 시작</CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -106,14 +107,10 @@ export function WeeklyStretchingPlanCard({
                   !isSelected && !isToday && 'hover:bg-muted'
                 )}
               >
-                <span className="text-xs text-muted-foreground">
-                  {DAY_NAMES[day]}
-                </span>
+                <span className="text-xs text-muted-foreground">{DAY_NAMES[day]}</span>
                 <span className="text-lg">{config.emoji}</span>
                 {routine.duration > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {routine.duration}분
-                  </span>
+                  <span className="text-xs text-muted-foreground">{routine.duration}분</span>
                 )}
               </button>
             );
@@ -121,28 +118,18 @@ export function WeeklyStretchingPlanCard({
         </div>
 
         {/* 선택된 날 상세 */}
-        {selectedDay && (
-          <DayDetail
-            day={selectedDay}
-            routine={plan.days[selectedDay]}
-          />
-        )}
+        {selectedDay && <DayDetail day={selectedDay} routine={plan.days[selectedDay]} />}
 
         {/* 오늘 루틴 (선택 없을 때) */}
-        {!selectedDay && today && (
-          <DayDetail
-            day={today}
-            routine={plan.days[today]}
-            isToday
-          />
-        )}
+        {!selectedDay && today && <DayDetail day={today} routine={plan.days[today]} isToday />}
 
         {/* 주간 요약 */}
         <div className="mt-4 pt-4 border-t">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">이번 주 예상 운동량</span>
             <span className="font-medium">
-              {calculateWeeklyStats(plan).totalMinutes}분 / {calculateWeeklyStats(plan).totalExercises}개 운동
+              {calculateWeeklyStats(plan).totalMinutes}분 /{' '}
+              {calculateWeeklyStats(plan).totalExercises}개 운동
             </span>
           </div>
         </div>
@@ -165,26 +152,24 @@ function DayDetail({ day, routine, isToday }: DayDetailProps) {
       <div className="flex items-center justify-between mb-3">
         <h4 className="font-medium flex items-center gap-2">
           {config.emoji} {DAY_FULL_NAMES[day]}
-          {isToday && <Badge variant="default" className="text-xs">오늘</Badge>}
+          {isToday && (
+            <Badge variant="default" className="text-xs">
+              오늘
+            </Badge>
+          )}
         </h4>
-        <Badge className={config.color}>
-          {config.label}
-        </Badge>
+        <Badge className={config.color}>{config.label}</Badge>
       </div>
 
       {routine.type === 'rest' ? (
         <p className="text-sm text-muted-foreground">
-          {routine.notes || '휴식일입니다. 가벼운 걷기를 권장합니다.'}
+          {routine.notes || '휴식일이에요. 가벼운 걷기를 권장해요.'}
         </p>
       ) : (
         <div className="space-y-2">
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-muted-foreground">
-              🕐 약 {routine.duration}분
-            </span>
-            <span className="text-muted-foreground">
-              💪 {routine.stretches.length}개 운동
-            </span>
+            <span className="text-muted-foreground">🕐 약 {routine.duration}분</span>
+            <span className="text-muted-foreground">💪 {routine.stretches.length}개 운동</span>
           </div>
 
           {routine.stretches.length > 0 && (
@@ -207,9 +192,7 @@ function DayDetail({ day, routine, isToday }: DayDetailProps) {
           )}
 
           {routine.notes && (
-            <p className="text-sm text-muted-foreground mt-2">
-              📝 {routine.notes}
-            </p>
+            <p className="text-sm text-muted-foreground mt-2">📝 {routine.notes}</p>
           )}
         </div>
       )}

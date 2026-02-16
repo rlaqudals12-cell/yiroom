@@ -70,7 +70,7 @@ describe('TrendChart', () => {
     it('데이터가 없으면 빈 상태 메시지가 표시되어야 함', () => {
       render(<TrendChart data={[]} metric="overall" />);
       expect(screen.getByTestId('trend-chart-empty')).toBeInTheDocument();
-      expect(screen.getByText('분석 기록이 없습니다')).toBeInTheDocument();
+      expect(screen.getByText('분석 기록이 없어요')).toBeInTheDocument();
     });
   });
 

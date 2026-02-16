@@ -136,12 +136,7 @@ function SupplementItem({
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-medium text-foreground">{supplement.name}</h4>
-            <span
-              className={cn(
-                'text-xs px-2 py-0.5 rounded-full border',
-                categoryColor
-              )}
-            >
+            <span className={cn('text-xs px-2 py-0.5 rounded-full border', categoryColor)}>
               {CATEGORY_LABELS[supplement.category]}
             </span>
           </div>
@@ -193,8 +188,12 @@ function SupplementItem({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 text-white rounded transition-colors"
               style={{ backgroundColor: 'var(--affiliate-coupang)' }}
-              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-coupang-hover)')}
-              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-coupang)')}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = 'var(--affiliate-coupang-hover)')
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = 'var(--affiliate-coupang)')
+              }
               data-testid="coupang-link"
             >
               쿠팡
@@ -206,8 +205,12 @@ function SupplementItem({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 text-white rounded transition-colors"
               style={{ backgroundColor: 'var(--affiliate-oliveyoung)' }}
-              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-oliveyoung-hover)')}
-              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-oliveyoung)')}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = 'var(--affiliate-oliveyoung-hover)')
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = 'var(--affiliate-oliveyoung)')
+              }
               data-testid="oliveyoung-link"
             >
               올리브영
@@ -219,7 +222,9 @@ function SupplementItem({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 text-white rounded transition-colors"
               style={{ backgroundColor: 'var(--affiliate-iherb)' }}
-              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-iherb-hover)')}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = 'var(--affiliate-iherb-hover)')
+              }
               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--affiliate-iherb)')}
               data-testid="iherb-link"
             >
@@ -272,9 +277,7 @@ export default function SupplementRecommendationCard({
   );
 
   // 상위 3개만 표시 (접힌 상태), 전체 표시 (펼친 상태)
-  const displayedSupplements = isExpanded
-    ? result.allSupplements
-    : getTopSupplements(result, 3);
+  const displayedSupplements = isExpanded ? result.allSupplements : getTopSupplements(result, 3);
 
   // 로딩 상태
   if (isLoading) {
@@ -293,7 +296,7 @@ export default function SupplementRecommendationCard({
           <h3 className="text-sm font-semibold text-foreground">영양제 추천</h3>
         </div>
         <p className="text-sm text-muted-foreground text-center py-4">
-          현재 목표에 맞는 영양제 추천이 없습니다.
+          현재 목표에 맞는 영양제 추천이 없어요.
         </p>
       </div>
     );
@@ -336,17 +339,13 @@ export default function SupplementRecommendationCard({
       {/* 영양제 목록 */}
       <div className="space-y-2">
         {displayedSupplements.map((supplement) => (
-          <SupplementItem
-            key={supplement.name}
-            supplement={supplement}
-            isExpanded={isExpanded}
-          />
+          <SupplementItem key={supplement.name} supplement={supplement} isExpanded={isExpanded} />
         ))}
       </div>
 
       {/* 안내 메시지 */}
       <div className="mt-3 text-center text-xs text-muted-foreground">
-        💡 개인 건강 상태에 따라 복용 전 전문가 상담을 권장합니다
+        💡 개인 건강 상태에 따라 복용 전 전문가 상담을 권장해요
       </div>
     </div>
   );

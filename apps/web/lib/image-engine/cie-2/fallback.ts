@@ -21,7 +21,7 @@ export function generateFrontalityFallback(): FrontalityResult {
       yaw: 5,
       roll: 3,
     },
-    feedback: '얼굴 각도가 적절합니다.',
+    feedback: '얼굴 각도가 적절해요.',
   };
 }
 
@@ -40,7 +40,7 @@ export function generateCIE2Fallback(processingTime = 0): CIE2Output {
     faceRegion: undefined,
     validation: {
       isAngleValid: true,
-      angleFeedback: '얼굴 각도가 적절합니다.',
+      angleFeedback: '얼굴 각도가 적절해요.',
       frontalityResult: generateFrontalityFallback(),
     },
     metadata: {
@@ -87,10 +87,7 @@ export function generateNoFaceFallback(processingTime = 0): CIE2Output {
  * @param processingTime - 처리 시간
  * @returns 에러 상태 CIE-2 출력
  */
-export function generateErrorFallback(
-  errorMessage: string,
-  processingTime = 0
-): CIE2Output {
+export function generateErrorFallback(errorMessage: string, processingTime = 0): CIE2Output {
   return {
     success: false,
     faceDetected: false,
@@ -133,9 +130,7 @@ export function generateRandomCIE2Mock(): CIE2Output {
     faceCount: faceDetected ? 1 : 0,
     validation: {
       isAngleValid: isValid,
-      angleFeedback: isValid
-        ? '얼굴 각도가 적절합니다.'
-        : '고개를 정면으로 향해주세요.',
+      angleFeedback: isValid ? '얼굴 각도가 적절해요.' : '고개를 정면으로 향해주세요.',
       frontalityResult: {
         score: frontalityScore,
         isValid,
@@ -144,9 +139,7 @@ export function generateRandomCIE2Mock(): CIE2Output {
           yaw: yawDev,
           roll: rollDev,
         },
-        feedback: isValid
-          ? '얼굴 각도가 적절합니다.'
-          : '고개가 기울어져 있습니다.',
+        feedback: isValid ? '얼굴 각도가 적절해요.' : '고개가 기울어져 있어요.',
       },
     },
     metadata: {

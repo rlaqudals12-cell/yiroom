@@ -327,7 +327,7 @@ const STYLE_INSIGHTS: Record<BodyType, string[]> = {
 
 // 로딩 팁 순환 (스펙: 3초 간격)
 export const LOADING_TIPS = [
-  '체형 비율을 분석합니다',
+  '체형 비율을 분석해요',
   '어깨, 허리, 골반 라인을 측정 중',
   'AI가 맞춤 스타일을 준비하고 있어요',
   '거의 완료되었어요!',

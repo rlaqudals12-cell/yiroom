@@ -78,7 +78,7 @@ export const COLOR_COMBINATIONS: Record<SeasonType, ColorCombination[]> = {
       style: 'casual',
       occasions: ['daily', 'shopping'],
       seasonTypes: ['summer'],
-      tip: '회색빛이 도는 하늘색이 여름 쿨톤에 잘 맞습니다',
+      tip: '회색빛이 도는 하늘색이 여름 쿨톤에 잘 맞아요',
     },
     {
       id: 'summer-daily-3',
@@ -108,7 +108,7 @@ export const COLOR_COMBINATIONS: Record<SeasonType, ColorCombination[]> = {
       style: 'casual',
       occasions: ['daily', 'outdoor'],
       seasonTypes: ['autumn'],
-      tip: '흙색 계열이 가을 웜톤의 깊이있는 피부톤과 조화롭습니다',
+      tip: '흙색 계열이 가을 웜톤의 깊이있는 피부톤과 조화로워요',
     },
     {
       id: 'autumn-daily-2',
@@ -121,7 +121,7 @@ export const COLOR_COMBINATIONS: Record<SeasonType, ColorCombination[]> = {
       style: 'elegant',
       occasions: ['work', 'date'],
       seasonTypes: ['autumn'],
-      tip: '겨자색 니트와 브라운 팬츠는 가을 웜톤의 클래식한 조합입니다',
+      tip: '겨자색 니트와 브라운 팬츠는 가을 웜톤의 클래식한 조합이에요',
     },
     {
       id: 'autumn-daily-3',
@@ -151,7 +151,7 @@ export const COLOR_COMBINATIONS: Record<SeasonType, ColorCombination[]> = {
       style: 'formal',
       occasions: ['work', 'party'],
       seasonTypes: ['winter'],
-      tip: '선명한 흑백 대비가 겨울 쿨톤의 명확한 피부톤을 강조합니다',
+      tip: '선명한 흑백 대비가 겨울 쿨톤의 명확한 피부톤을 강조해요',
     },
     {
       id: 'winter-daily-2',
@@ -164,7 +164,7 @@ export const COLOR_COMBINATIONS: Record<SeasonType, ColorCombination[]> = {
       style: 'elegant',
       occasions: ['work', 'date'],
       seasonTypes: ['winter'],
-      tip: '선명한 파란색이 겨울 쿨톤의 차가운 피부톤과 조화롭습니다',
+      tip: '선명한 파란색이 겨울 쿨톤의 차가운 피부톤과 조화로워요',
     },
     {
       id: 'winter-daily-3',
@@ -178,7 +178,7 @@ export const COLOR_COMBINATIONS: Record<SeasonType, ColorCombination[]> = {
       style: 'casual',
       occasions: ['party', 'date'],
       seasonTypes: ['winter'],
-      tip: '선명한 핑크는 겨울 쿨톤만이 소화할 수 있는 색입니다',
+      tip: '선명한 핑크는 겨울 쿨톤만이 소화할 수 있는 색이에요',
     },
   ],
 };
@@ -374,17 +374,17 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
       {
         metalTone: 'rose_gold',
         isRecommended: true,
-        description: '로즈골드도 따뜻한 느낌으로 좋습니다',
+        description: '로즈골드도 따뜻한 느낌으로 좋아요',
       },
       {
         metalTone: 'silver',
         isRecommended: false,
-        description: '차가운 실버는 피하는 것이 좋습니다',
+        description: '차가운 실버는 피하는 것이 좋아요',
       },
       {
         metalTone: 'bronze',
         isRecommended: false,
-        description: '브론즈는 가을 웜톤에 더 적합합니다',
+        description: '브론즈는 가을 웜톤에 더 적합해요',
       },
     ],
     items: [
@@ -393,7 +393,7 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
         name: '코랄 드롭',
         metalTone: 'gold',
         gemstone: { name: '코랄', hex: '#FF7F7F' },
-        tip: '작은 사이즈가 더 화사해 보입니다',
+        tip: '작은 사이즈가 더 화사해 보여요',
       },
       {
         type: 'necklace',
@@ -415,24 +415,24 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
       },
     ],
     generalTip:
-      '봄 웜톤은 옐로우 골드와 따뜻한 색상의 원석이 잘 어울립니다. 피치, 코랄 계열 보석을 추천합니다.',
+      '봄 웜톤은 옐로우 골드와 따뜻한 색상의 원석이 잘 어울려요. 피치, 코랄 계열 보석을 추천해요.',
   },
 
   summer: {
     seasonType: 'summer',
     metalTones: [
-      { metalTone: 'silver', isRecommended: true, description: '쿨한 실버가 가장 잘 어울립니다' },
+      { metalTone: 'silver', isRecommended: true, description: '쿨한 실버가 가장 잘 어울려요' },
       {
         metalTone: 'rose_gold',
         isRecommended: true,
-        description: '핑크빛 로즈골드도 좋은 선택입니다',
+        description: '핑크빛 로즈골드도 좋은 선택이에요',
       },
       {
         metalTone: 'gold',
         isRecommended: false,
-        description: '옐로우 골드는 피하는 것이 좋습니다',
+        description: '옐로우 골드는 피하는 것이 좋아요',
       },
-      { metalTone: 'bronze', isRecommended: false, description: '브론즈는 너무 따뜻한 느낌입니다' },
+      { metalTone: 'bronze', isRecommended: false, description: '브론즈는 너무 따뜻한 느낌이에요' },
     ],
     items: [
       {
@@ -446,7 +446,7 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
         type: 'necklace',
         name: '실버 체인',
         metalTone: 'silver',
-        tip: '심플한 실버 체인이 세련됩니다',
+        tip: '심플한 실버 체인이 세련돼요',
       },
       {
         type: 'ring',
@@ -462,7 +462,7 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
       },
     ],
     generalTip:
-      '여름 쿨톤은 실버와 시원한 색상의 보석이 잘 어울립니다. 라벤더, 스카이블루 계열을 추천합니다.',
+      '여름 쿨톤은 실버와 시원한 색상의 보석이 잘 어울려요. 라벤더, 스카이블루 계열을 추천해요.',
   },
 
   autumn: {
@@ -477,9 +477,9 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
       {
         metalTone: 'rose_gold',
         isRecommended: true,
-        description: '로즈골드도 따뜻한 느낌으로 좋습니다',
+        description: '로즈골드도 따뜻한 느낌으로 좋아요',
       },
-      { metalTone: 'silver', isRecommended: false, description: '차가운 실버는 어울리지 않습니다' },
+      { metalTone: 'silver', isRecommended: false, description: '차가운 실버는 어울리지 않아요' },
     ],
     items: [
       {
@@ -487,7 +487,7 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
         name: '앰버 드롭',
         metalTone: 'gold',
         gemstone: { name: '호박(앰버)', hex: '#FFBF00' },
-        tip: '호박 원석이 가을 분위기와 잘 맞습니다',
+        tip: '호박 원석이 가을 분위기와 잘 맞아요',
       },
       {
         type: 'necklace',
@@ -509,24 +509,24 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
       },
     ],
     generalTip:
-      '가을 웜톤은 앤틱 골드, 브론즈와 깊이있는 색상의 원석이 잘 어울립니다. 앰버, 타이거아이를 추천합니다.',
+      '가을 웜톤은 앤틱 골드, 브론즈와 깊이있는 색상의 원석이 잘 어울려요. 앰버, 타이거아이를 추천해요.',
   },
 
   winter: {
     seasonType: 'winter',
     metalTones: [
-      { metalTone: 'silver', isRecommended: true, description: '화이트 실버가 가장 잘 어울립니다' },
+      { metalTone: 'silver', isRecommended: true, description: '화이트 실버가 가장 잘 어울려요' },
       {
         metalTone: 'gold',
         isRecommended: true,
-        description: '화이트 골드도 좋은 선택입니다',
+        description: '화이트 골드도 좋은 선택이에요',
       },
       {
         metalTone: 'rose_gold',
         isRecommended: false,
-        description: '로즈골드는 너무 따뜻한 느낌입니다',
+        description: '로즈골드는 너무 따뜻한 느낌이에요',
       },
-      { metalTone: 'bronze', isRecommended: false, description: '브론즈는 어울리지 않습니다' },
+      { metalTone: 'bronze', isRecommended: false, description: '브론즈는 어울리지 않아요' },
     ],
     items: [
       {
@@ -534,7 +534,7 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
         name: '다이아몬드 스터드',
         metalTone: 'silver',
         gemstone: { name: '큐빅', hex: '#E6E8E6' },
-        tip: '선명한 반짝임이 겨울 쿨톤과 잘 맞습니다',
+        tip: '선명한 반짝임이 겨울 쿨톤과 잘 맞아요',
       },
       {
         type: 'necklace',
@@ -556,7 +556,7 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
       },
     ],
     generalTip:
-      '겨울 쿨톤은 실버와 선명한 색상의 보석이 잘 어울립니다. 다이아몬드, 사파이어, 에메랄드를 추천합니다.',
+      '겨울 쿨톤은 실버와 선명한 색상의 보석이 잘 어울려요. 다이아몬드, 사파이어, 에메랄드를 추천해요.',
   },
 };
 
@@ -611,7 +611,7 @@ export const MAKEUP_STYLING: Record<SeasonType, MakeupStylingType> = {
         { name: '체리 레드', hex: '#DE3163', finish: 'glossy' },
         { name: '모브 핑크', hex: '#E0B0FF', finish: 'satin' },
       ],
-      tip: '푸른 기가 도는 핑크 계열이 피부를 맑게 보이게 합니다',
+      tip: '푸른 기가 도는 핑크 계열이 피부를 맑게 보이게 해요',
     },
     eyeshadow: {
       category: 'eyeshadow',
@@ -647,7 +647,7 @@ export const MAKEUP_STYLING: Record<SeasonType, MakeupStylingType> = {
         { name: '머스타드 오렌지', hex: '#FF8C00', finish: 'matte' },
         { name: '누드 브라운', hex: '#C19A6B', finish: 'satin' },
       ],
-      tip: '깊이있는 웜톤 립컬러가 고급스러운 분위기를 연출합니다',
+      tip: '깊이있는 웜톤 립컬러가 고급스러운 분위기를 연출해요',
     },
     eyeshadow: {
       category: 'eyeshadow',
@@ -683,7 +683,7 @@ export const MAKEUP_STYLING: Record<SeasonType, MakeupStylingType> = {
         { name: '푸시아', hex: '#FF00FF', finish: 'matte' },
         { name: '딥 플럼', hex: '#8E4585', finish: 'satin' },
       ],
-      tip: '선명하고 강렬한 립컬러가 피부를 더 밝게 보이게 합니다',
+      tip: '선명하고 강렬한 립컬러가 피부를 더 밝게 보이게 해요',
     },
     eyeshadow: {
       category: 'eyeshadow',

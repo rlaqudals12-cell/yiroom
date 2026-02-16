@@ -13,13 +13,7 @@
 import { useMemo } from 'react';
 
 // 색상 타입
-export type NutrientColor =
-  | 'amber'
-  | 'blue'
-  | 'rose'
-  | 'green'
-  | 'purple'
-  | 'cyan';
+export type NutrientColor = 'amber' | 'blue' | 'rose' | 'green' | 'purple' | 'cyan';
 
 // 영양소 데이터 타입
 export interface NutrientData {
@@ -63,10 +57,7 @@ const COLOR_MAP: Record<NutrientColor, { bg: string; fill: string }> = {
  */
 function LoadingSkeleton({ testId }: { testId: string }) {
   return (
-    <div
-      data-testid={`${testId}-loading`}
-      className="space-y-4"
-    >
+    <div data-testid={`${testId}-loading`} className="space-y-4">
       {[1, 2, 3].map((i) => (
         <div key={i} className="space-y-2">
           <div className="flex justify-between">
@@ -100,20 +91,15 @@ export default function NutrientBarChart({
   // 빈 데이터
   if (data.length === 0) {
     return (
-      <div
-        data-testid={testId}
-        className="text-center text-muted-foreground py-4"
-      >
-        영양소 데이터가 없습니다.
+      <div data-testid={testId} className="text-center text-muted-foreground py-4">
+        영양소 데이터가 없어요.
       </div>
     );
   }
 
   return (
     <div data-testid={testId} className="space-y-4">
-      {title && (
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      )}
+      {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
       <div className="space-y-3">
         {data.map((nutrient, index) => (
           <NutrientBar
@@ -199,9 +185,7 @@ export function NutrientBar({
               {unit}
             </span>
           </span>
-          <span className={`text-xs font-medium ${textColor}`}>
-            {percentage}%
-          </span>
+          <span className={`text-xs font-medium ${textColor}`}>{percentage}%</span>
         </div>
       </div>
 

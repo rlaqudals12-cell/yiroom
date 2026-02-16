@@ -40,23 +40,26 @@ import {
  * ACSM 스트레칭 가이드라인
  */
 export const ACSM_GUIDELINES = {
-  minDuration: 15,        // 초
-  optimalDuration: 30,    // 초
-  maxDuration: 60,        // 초
+  minDuration: 15, // 초
+  optimalDuration: 30, // 초
+  maxDuration: 60, // 초
   minSets: 2,
   optimalSets: 3,
   maxSets: 4,
-  weeklyFrequency: 3,     // 주 2-3회
-  restBetweenSets: 15,    // 초
+  weeklyFrequency: 3, // 주 2-3회
+  restBetweenSets: 15, // 초
 };
 
 /**
  * 난이도별 조정 계수
  */
-const DIFFICULTY_MULTIPLIERS: Record<Difficulty, {
-  duration: number;
-  sets: number;
-}> = {
+const DIFFICULTY_MULTIPLIERS: Record<
+  Difficulty,
+  {
+    duration: number;
+    sets: number;
+  }
+> = {
   beginner: { duration: 0.75, sets: 0.75 },
   intermediate: { duration: 1.0, sets: 1.0 },
   advanced: { duration: 1.25, sets: 1.25 },
@@ -67,15 +70,15 @@ const DIFFICULTY_MULTIPLIERS: Record<Difficulty, {
  */
 const CONDITION_CONTRAINDICATIONS: Record<SpecialCondition, string[]> = {
   pregnancy: [
-    'str_chest_floor',     // 엎드리기 금지
-    'str_pigeon_pose',     // 깊은 스트레칭 주의
+    'str_chest_floor', // 엎드리기 금지
+    'str_pigeon_pose', // 깊은 스트레칭 주의
   ],
   senior: [
-    'str_pigeon_pose',     // 바닥 운동 어려움
-    'pnf_hamstring',       // PNF 강도 주의
+    'str_pigeon_pose', // 바닥 운동 어려움
+    'pnf_hamstring', // PNF 강도 주의
   ],
   osteoporosis: [
-    'str_chest_floor',     // 척추 압박 주의
+    'str_chest_floor', // 척추 압박 주의
   ],
   disc_herniation: [
     'str_hamstring_supine', // 디스크 압박 가능
@@ -86,7 +89,7 @@ const CONDITION_CONTRAINDICATIONS: Record<SpecialCondition, string[]> = {
   ],
   rheumatoid: [],
   hypermobility: [
-    'pnf_hamstring',       // 과도한 스트레칭 주의
+    'pnf_hamstring', // 과도한 스트레칭 주의
   ],
   recent_surgery: [],
 };
@@ -95,8 +98,8 @@ const CONDITION_CONTRAINDICATIONS: Record<SpecialCondition, string[]> = {
  * 의료 면책 조항
  */
 export const MEDICAL_DISCLAIMER = `
-이 스트레칭 프로그램은 일반적인 건강 정보 제공 목적으로 작성되었습니다.
-개인의 건강 상태에 따라 적합하지 않을 수 있으며, 의학적 조언을 대체하지 않습니다.
+이 스트레칭 프로그램은 일반적인 건강 정보 제공 목적으로 작성되었어요.
+개인의 건강 상태에 따라 적합하지 않을 수 있으며, 의학적 조언을 대체하지 않아요.
 운동을 시작하기 전에 의료 전문가와 상담하세요. 통증이 발생하면 즉시 중단하세요.
 `.trim();
 
@@ -109,12 +112,14 @@ export const MEDICAL_DISCLAIMER = `
  */
 function calculateExerciseDuration(exercise: StretchExercise): number {
   if (exercise.durationUnit === 'seconds') {
-    return exercise.defaultDuration * exercise.sets +
-      exercise.restBetweenSets * (exercise.sets - 1);
+    return (
+      exercise.defaultDuration * exercise.sets + exercise.restBetweenSets * (exercise.sets - 1)
+    );
   }
   // reps 기반: 대략 3초/rep 추정
-  return exercise.defaultDuration * 3 * exercise.sets +
-    exercise.restBetweenSets * (exercise.sets - 1);
+  return (
+    exercise.defaultDuration * 3 * exercise.sets + exercise.restBetweenSets * (exercise.sets - 1)
+  );
 }
 
 /**
@@ -122,9 +127,10 @@ function calculateExerciseDuration(exercise: StretchExercise): number {
  */
 function calculateTotalDuration(stretches: PrescribedStretch[]): number {
   const totalSeconds = stretches.reduce((sum, ps) => {
-    const exerciseTime = ps.exercise.durationUnit === 'seconds'
-      ? ps.adjustedDuration * ps.adjustedSets
-      : ps.adjustedDuration * 3 * ps.adjustedSets;
+    const exerciseTime =
+      ps.exercise.durationUnit === 'seconds'
+        ? ps.adjustedDuration * ps.adjustedSets
+        : ps.adjustedDuration * 3 * ps.adjustedSets;
     const restTime = ps.exercise.restBetweenSets * (ps.adjustedSets - 1);
     return sum + exerciseTime + restTime;
   }, 0);
@@ -161,18 +167,13 @@ function filterByEquipment(
   // bodyweight는 항상 가능
   equipmentSet.add('bodyweight');
 
-  return exercises.filter((ex) =>
-    ex.equipment.every((eq) => equipmentSet.has(eq))
-  );
+  return exercises.filter((ex) => ex.equipment.every((eq) => equipmentSet.has(eq)));
 }
 
 /**
  * 난이도에 따른 운동 조정
  */
-function adjustForDifficulty(
-  exercise: StretchExercise,
-  userLevel: Difficulty
-): PrescribedStretch {
+function adjustForDifficulty(exercise: StretchExercise, userLevel: Difficulty): PrescribedStretch {
   const multiplier = DIFFICULTY_MULTIPLIERS[userLevel];
 
   let adjustedDuration = Math.round(exercise.defaultDuration * multiplier.duration);
@@ -180,11 +181,12 @@ function adjustForDifficulty(
 
   // ACSM 가이드라인 범위 내로 조정
   if (exercise.durationUnit === 'seconds') {
-    adjustedDuration = Math.max(ACSM_GUIDELINES.minDuration,
-      Math.min(ACSM_GUIDELINES.maxDuration, adjustedDuration));
+    adjustedDuration = Math.max(
+      ACSM_GUIDELINES.minDuration,
+      Math.min(ACSM_GUIDELINES.maxDuration, adjustedDuration)
+    );
   }
-  adjustedSets = Math.max(ACSM_GUIDELINES.minSets,
-    Math.min(ACSM_GUIDELINES.maxSets, adjustedSets));
+  adjustedSets = Math.max(ACSM_GUIDELINES.minSets, Math.min(ACSM_GUIDELINES.maxSets, adjustedSets));
 
   return {
     exercise,
@@ -197,10 +199,7 @@ function adjustForDifficulty(
 /**
  * 시간 제한에 맞게 루틴 조정
  */
-function fitToTimeLimit(
-  stretches: PrescribedStretch[],
-  maxMinutes: number
-): PrescribedStretch[] {
+function fitToTimeLimit(stretches: PrescribedStretch[], maxMinutes: number): PrescribedStretch[] {
   const result: PrescribedStretch[] = [];
   let currentMinutes = 0;
 
@@ -239,8 +238,7 @@ export function generatePostureCorrectionPrescription(
   availableMinutes: number = 15
 ): StretchingPrescription {
   // 1. 자세 분석에서 스트레칭 매핑
-  const { imbalances, stretches, activations } =
-    mapPostureToStretches(postureAnalysis);
+  const { imbalances, stretches, activations } = mapPostureToStretches(postureAnalysis);
 
   // 2. 특수 조건/장비로 필터링
   let filteredStretches = filterByConditions(stretches, profile.specialConditions);
@@ -265,16 +263,20 @@ export function generatePostureCorrectionPrescription(
   const limitedActivations = fitToTimeLimit(prescribedActivations, availableMinutes * 0.3);
 
   // 5. 순서 재배정
-  prescribedStretches.forEach((s, idx) => { s.order = idx + 1; });
-  limitedActivations.forEach((a, idx) => { a.order = idx + 1; });
+  prescribedStretches.forEach((s, idx) => {
+    s.order = idx + 1;
+  });
+  limitedActivations.forEach((a, idx) => {
+    a.order = idx + 1;
+  });
 
   // 6. 경고 메시지 생성
   const warnings: string[] = [];
   if (imbalances.some((im) => im.severity === 'severe')) {
-    warnings.push('심한 자세 불균형이 감지되었습니다. 전문가 상담을 권장합니다.');
+    warnings.push('심한 자세 불균형이 감지되었어요. 전문가 상담을 권장해요.');
   }
   if (profile.specialConditions.length > 0) {
-    warnings.push('특수 건강 상태를 고려하여 일부 운동이 제외되었습니다.');
+    warnings.push('특수 건강 상태를 고려하여 일부 운동이 제외되었어요.');
   }
 
   // 7. 처방 객체 생성
@@ -480,9 +482,7 @@ function getNextMonday(): string {
 /**
  * 스트레칭 처방 요약 생성
  */
-export function generatePrescriptionSummary(
-  prescription: StretchingPrescription
-): string {
+export function generatePrescriptionSummary(prescription: StretchingPrescription): string {
   const lines: string[] = [];
 
   lines.push(`📋 스트레칭 처방 요약`);
@@ -493,11 +493,11 @@ export function generatePrescriptionSummary(
 
   lines.push(`🧘 스트레칭 목록:`);
   for (const stretch of prescription.stretches) {
-    const muscles = stretch.exercise.targetMuscles
-      .map((m) => MUSCLE_NAME_KO[m])
-      .join(', ');
+    const muscles = stretch.exercise.targetMuscles.map((m) => MUSCLE_NAME_KO[m]).join(', ');
     lines.push(`  ${stretch.order}. ${stretch.exercise.nameKo}`);
-    lines.push(`     - ${stretch.adjustedSets}세트 x ${stretch.adjustedDuration}${stretch.exercise.durationUnit === 'seconds' ? '초' : '회'}`);
+    lines.push(
+      `     - ${stretch.adjustedSets}세트 x ${stretch.adjustedDuration}${stretch.exercise.durationUnit === 'seconds' ? '초' : '회'}`
+    );
     lines.push(`     - 타겟: ${muscles}`);
   }
 
@@ -546,7 +546,10 @@ export function generateWeeklyPlanSummary(plan: WeeklyStretchingPlan): string {
   lines.push(`시작일: ${plan.weekStartDate}`);
   lines.push(`---`);
 
-  for (const [day, routine] of Object.entries(plan.days) as [keyof WeeklyStretchingPlan['days'], DailyRoutine][]) {
+  for (const [day, routine] of Object.entries(plan.days) as [
+    keyof WeeklyStretchingPlan['days'],
+    DailyRoutine,
+  ][]) {
     const emoji = typeEmoji[routine.type];
     const dayName = dayNames[day];
 

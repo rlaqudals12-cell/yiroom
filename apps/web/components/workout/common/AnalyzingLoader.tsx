@@ -118,7 +118,7 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  message = '오류가 발생했습니다.',
+  message = '오류가 발생했어요.',
   onRetry,
   retryLabel = '다시 시도',
 }: ErrorStateProps) {
@@ -147,12 +147,7 @@ export function ErrorState({
           onClick={onRetry}
           className="flex items-center gap-2 px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-colors"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

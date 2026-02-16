@@ -170,7 +170,7 @@ export async function analyzeSkinCorrelation(
 
   if (error) {
     geminiLogger.error('[Correlation] Failed to fetch diary entries:', error);
-    throw new Error('다이어리 데이터를 불러오는데 실패했습니다.');
+    throw new Error('다이어리 데이터를 불러오는데 실패했어요.');
   }
 
   const diaryEntries = (entries || []) as DiaryEntryForAnalysis[];
@@ -316,9 +316,9 @@ function generateInfluencerDescription(
   const directionText = score > 0 ? '양의' : '음의';
 
   if (score > 0) {
-    return `${factorLabel}이(가) 좋을수록 피부 상태도 좋아지는 ${strengthText} ${directionText} 상관관계가 있습니다.`;
+    return `${factorLabel}이(가) 좋을수록 피부 상태도 좋아지는 ${strengthText} ${directionText} 상관관계가 있어요.`;
   } else {
-    return `${factorLabel}이(가) 높을수록 피부 상태가 나빠지는 ${strengthText} 상관관계가 있습니다.`;
+    return `${factorLabel}이(가) 높을수록 피부 상태가 나빠지는 ${strengthText} 상관관계가 있어요.`;
   }
 }
 
@@ -337,15 +337,13 @@ function generateInsights(
     correlations.sleepHours.strength === 'strong'
   ) {
     insights.push(
-      '수면의 질이 피부 상태에 큰 영향을 미치고 있습니다. 규칙적인 수면 습관을 유지해보세요.'
+      '수면의 질이 피부 상태에 큰 영향을 미치고 있어요. 규칙적인 수면 습관을 유지해보세요.'
     );
   }
 
   // 스트레스 관련 인사이트
   if (correlations.stressLevel.strength === 'strong') {
-    insights.push(
-      '스트레스가 피부 상태에 직접적인 영향을 주고 있습니다. 스트레스 관리가 필요합니다.'
-    );
+    insights.push('스트레스가 피부 상태에 직접적인 영향을 주고 있어요. 스트레스 관리가 필요해요.');
   }
 
   // 루틴 관련 인사이트
@@ -354,20 +352,20 @@ function generateInsights(
     entries.length;
 
   if (routineCompliance < 0.5) {
-    insights.push('스킨케어 루틴 완료율이 낮습니다. 꾸준한 관리가 피부 개선에 도움이 됩니다.');
+    insights.push('스킨케어 루틴 완료율이 낮아요. 꾸준한 관리가 피부 개선에 도움이 돼요.');
   } else if (routineCompliance > 0.8) {
-    insights.push('스킨케어 루틴을 잘 지키고 계십니다. 좋은 습관이 피부 건강에 기여하고 있습니다.');
+    insights.push('스킨케어 루틴을 잘 지키고 있어요. 좋은 습관이 피부 건강에 기여하고 있어요.');
   }
 
   // 수분 섭취 인사이트
   const avgWater = entries.reduce((sum, e) => sum + (e.water_intake_ml || 0), 0) / entries.length;
   if (avgWater < 1500) {
-    insights.push('평균 수분 섭취량이 권장량(2L)보다 낮습니다. 수분 섭취를 늘려보세요.');
+    insights.push('평균 수분 섭취량이 권장량(2L)보다 낮아요. 수분 섭취를 늘려보세요.');
   }
 
   // 기본 인사이트
   if (insights.length === 0) {
-    insights.push('데이터가 더 쌓이면 더 정확한 분석이 가능합니다. 꾸준히 기록해주세요!');
+    insights.push('데이터가 더 쌓이면 더 정확한 분석이 가능해요. 꾸준히 기록해주세요!');
   }
 
   return insights.slice(0, 4);
@@ -390,7 +388,7 @@ function generateRecommendations(
         priority: 'high',
         category: '수면',
         action: '7시간 이상 수면 확보하기',
-        reason: '수면 시간이 피부 상태와 강한 양의 상관관계를 보입니다.',
+        reason: '수면 시간이 피부 상태와 강한 양의 상관관계를 보여요.',
       });
     }
   }
@@ -401,7 +399,7 @@ function generateRecommendations(
       priority: 'high',
       category: '스트레스',
       action: '스트레스 관리 루틴 도입하기',
-      reason: '스트레스가 피부 상태에 부정적인 영향을 주고 있습니다.',
+      reason: '스트레스가 피부 상태에 부정적인 영향을 주고 있어요.',
     });
   }
 
@@ -413,7 +411,7 @@ function generateRecommendations(
         priority: 'medium',
         category: '스킨케어',
         action: '저녁 스킨케어 루틴 꾸준히 하기',
-        reason: '저녁 루틴 완료가 피부 상태 개선과 관련이 있습니다.',
+        reason: '저녁 루틴 완료가 피부 상태 개선과 관련이 있어요.',
       });
     }
   }
@@ -424,7 +422,7 @@ function generateRecommendations(
       priority: 'medium',
       category: '수분',
       action: '하루 2L 이상 물 마시기',
-      reason: '수분 섭취가 피부 수분도와 연관이 있습니다.',
+      reason: '수분 섭취가 피부 수분도와 연관이 있어요.',
     });
   }
 
@@ -441,19 +439,19 @@ function assessConfidence(
   if (entryCount >= 21) {
     return {
       confidence: 'high',
-      confidenceReason: '3주 이상의 충분한 데이터로 신뢰할 수 있는 분석입니다.',
+      confidenceReason: '3주 이상의 충분한 데이터로 신뢰할 수 있는 분석이에요.',
     };
   } else if (entryCount >= 14) {
     return {
       confidence: 'medium',
       confidenceReason:
-        '2주간의 데이터로 참고할 수 있는 분석입니다. 더 많은 기록이 쌓이면 정확도가 높아집니다.',
+        '2주간의 데이터로 참고할 수 있는 분석이에요. 더 많은 기록이 쌓이면 정확도가 높아져요.',
     };
   } else {
     return {
       confidence: 'low',
       confidenceReason:
-        '데이터가 적어 참고용으로만 활용해주세요. 최소 2주 이상 기록하면 더 정확한 분석이 가능합니다.',
+        '데이터가 적어 참고용으로만 활용해주세요. 최소 2주 이상 기록하면 더 정확한 분석이 가능해요.',
     };
   }
 }
@@ -491,7 +489,7 @@ function generateInsufficientDataResult(
     },
     topInfluencers: [],
     insights: [
-      '상관관계 분석을 위해 최소 5일 이상의 기록이 필요합니다.',
+      '상관관계 분석을 위해 최소 5일 이상의 기록이 필요해요.',
       '매일 조금씩 기록하면 나만의 피부 패턴을 발견할 수 있어요!',
     ],
     recommendations: [
@@ -499,11 +497,11 @@ function generateInsufficientDataResult(
         priority: 'high',
         category: '기록',
         action: '피부 다이어리를 매일 작성해보세요',
-        reason: '데이터가 쌓일수록 더 정확한 분석이 가능합니다.',
+        reason: '데이터가 쌓일수록 더 정확한 분석이 가능해요.',
       },
     ],
     confidence: 'low',
-    confidenceReason: `현재 ${entriesCount}개의 기록만 있습니다. 최소 5개 이상의 기록이 필요합니다.`,
+    confidenceReason: `현재 ${entriesCount}개의 기록만 있어요. 최소 5개 이상의 기록이 필요해요.`,
   };
 }
 

@@ -168,7 +168,7 @@ describe('MealSuggestionCard', () => {
       });
 
       expect(screen.getByTestId('meal-suggestion-error')).toBeInTheDocument();
-      expect(screen.getByText('추천을 불러오는데 실패했습니다')).toBeInTheDocument();
+      expect(screen.getByText('추천을 불러오는데 실패했어요')).toBeInTheDocument();
     });
 
     it('네트워크 에러 시 에러 메시지를 표시한다', async () => {

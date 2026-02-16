@@ -97,7 +97,9 @@ function SubstituteItem({
         aria-expanded={isExpanded}
       >
         <div className="flex items-center gap-3">
-          <div className={cn('w-10 h-10 rounded-full flex items-center justify-center', goalStyle.bg)}>
+          <div
+            className={cn('w-10 h-10 rounded-full flex items-center justify-center', goalStyle.bg)}
+          >
             <Icon className={cn('w-5 h-5', goalStyle.color)} />
           </div>
           <div className="flex items-center gap-2">
@@ -135,8 +137,8 @@ function SubstituteItem({
                 {substitute.ratio === 0
                   ? '제거'
                   : substitute.ratio === 1
-                  ? '동량'
-                  : `${substitute.ratio}배`}
+                    ? '동량'
+                    : `${substitute.ratio}배`}
               </span>
             </div>
 
@@ -211,9 +213,7 @@ export function IngredientSubstituteCard({
           </div>
           <div>
             <h3 className="font-bold text-lg text-foreground">건강한 재료 대체</h3>
-            <p className="text-sm text-muted-foreground">
-              목표에 맞는 대체 재료 추천
-            </p>
+            <p className="text-sm text-muted-foreground">목표에 맞는 대체 재료 추천</p>
           </div>
         </div>
 
@@ -288,7 +288,7 @@ export function IngredientSubstituteCard({
         ) : (
           <div className="text-center py-8">
             <Search className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-muted-foreground">검색 결과가 없습니다</p>
+            <p className="text-muted-foreground">검색 결과가 없어요</p>
           </div>
         )}
       </div>
@@ -299,9 +299,7 @@ export function IngredientSubstituteCard({
           <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <Lightbulb className="w-4 h-4 text-amber-600" />
-              <p className="font-medium text-sm text-amber-800 dark:text-amber-300">
-                활용 팁
-              </p>
+              <p className="font-medium text-sm text-amber-800 dark:text-amber-300">활용 팁</p>
             </div>
             <ul className="space-y-1 text-sm text-amber-700 dark:text-amber-200">
               <li>• 대체 재료는 질감이나 맛이 다를 수 있어 소량으로 테스트하세요.</li>
@@ -315,7 +313,7 @@ export function IngredientSubstituteCard({
       {/* 면책조항 */}
       <div className="px-5 pb-4 bg-white dark:bg-slate-800">
         <p className="text-xs text-muted-foreground text-center">
-          ※ 개인의 건강 상태와 취향에 따라 적합하지 않을 수 있습니다.
+          ※ 개인의 건강 상태와 취향에 따라 적합하지 않을 수 있어요.
         </p>
       </div>
     </div>

@@ -83,7 +83,7 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
       });
 
       if (!landmarkResult) {
-        throw new Error('얼굴을 감지할 수 없습니다');
+        throw new Error('얼굴을 감지할 수 없어요');
       }
 
       setLandmarks(landmarkResult.landmarks);
@@ -111,7 +111,7 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
       setState('ready');
     } catch (err) {
       console.error('[VisualAnalysisTab] 분석 오류:', err);
-      setError(err instanceof Error ? err.message : '분석에 실패했습니다');
+      setError(err instanceof Error ? err.message : '분석에 실패했어요');
       setState('error');
     }
   }, [imageUrl, loadImage, deviceCapability.tier]);
@@ -156,7 +156,7 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
         </CardHeader>
         <CardContent>
           <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-            <p className="text-sm text-destructive">{error || '분석에 실패했습니다'}</p>
+            <p className="text-sm text-destructive">{error || '분석에 실패했어요'}</p>
           </div>
         </CardContent>
       </Card>

@@ -313,7 +313,7 @@ export default function BodyAnalysisEvidenceReport({
                   <span className={cn('font-bold', theme.primary)}>
                     {bodyType === 'S' ? '스트레이트' : bodyType === 'W' ? '웨이브' : '내추럴'}
                   </span>{' '}
-                  체형으로 판정되었습니다. (신뢰도: {confidence}%)
+                  체형으로 판정되었어요. (신뢰도: {confidence}%)
                 </>
               ) : (
                 <>
@@ -321,7 +321,7 @@ export default function BodyAnalysisEvidenceReport({
                   <span className={cn('font-bold', theme.primary)}>
                     {bodyType === 'S' ? '스트레이트' : bodyType === 'W' ? '웨이브' : '내추럴'}
                   </span>{' '}
-                  타입으로 판정되었습니다.
+                  타입으로 판정되었어요.
                 </>
               )}
             </p>

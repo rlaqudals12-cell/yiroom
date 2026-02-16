@@ -38,10 +38,10 @@ export interface HydrationCorrectionInput {
  * 수분도 수준 분류 (5단계)
  */
 export type HydrationLevel =
-  | 'very_dry'     // 매우 건조
-  | 'dry'          // 건조
-  | 'normal'       // 정상
-  | 'hydrated'     // 촉촉
+  | 'very_dry' // 매우 건조
+  | 'dry' // 건조
+  | 'normal' // 정상
+  | 'hydrated' // 촉촉
   | 'very_hydrated'; // 매우 촉촉
 
 /**
@@ -205,10 +205,7 @@ export function estimateHydrationFromRoughness(ra: number): number {
  *
  * @see docs/principles/skin-physiology.md Section 6.1
  */
-export function correctHydrationWithTEWL(
-  baseHydration: number,
-  tewl: number
-): number {
+export function correctHydrationWithTEWL(baseHydration: number, tewl: number): number {
   // TEWL 유효성 검사
   if (tewl < 0) {
     return baseHydration;
@@ -224,15 +221,16 @@ export function correctHydrationWithTEWL(
 
   if (tewl < TEWL_THRESHOLDS.NORMAL) {
     // 정상: TEWL이 낮을수록 수분 유지력 높음
-    correctionFactor = 1 + (TEWL_THRESHOLDS.NORMAL - tewl) / TEWL_THRESHOLDS.NORMAL * 0.15;
+    correctionFactor = 1 + ((TEWL_THRESHOLDS.NORMAL - tewl) / TEWL_THRESHOLDS.NORMAL) * 0.15;
   } else if (tewl < TEWL_THRESHOLDS.MILD_DAMAGE) {
     // 경미한 손상: 미세 하락
-    const ratio = (tewl - TEWL_THRESHOLDS.NORMAL) /
-      (TEWL_THRESHOLDS.MILD_DAMAGE - TEWL_THRESHOLDS.NORMAL);
+    const ratio =
+      (tewl - TEWL_THRESHOLDS.NORMAL) / (TEWL_THRESHOLDS.MILD_DAMAGE - TEWL_THRESHOLDS.NORMAL);
     correctionFactor = 1 - ratio * 0.05;
   } else if (tewl < TEWL_THRESHOLDS.MODERATE_DAMAGE) {
     // 중등도 손상
-    const ratio = (tewl - TEWL_THRESHOLDS.MILD_DAMAGE) /
+    const ratio =
+      (tewl - TEWL_THRESHOLDS.MILD_DAMAGE) /
       (TEWL_THRESHOLDS.MODERATE_DAMAGE - TEWL_THRESHOLDS.MILD_DAMAGE);
     correctionFactor = 0.95 - ratio * 0.15;
   } else {
@@ -242,7 +240,7 @@ export function correctHydrationWithTEWL(
       (tewl - TEWL_THRESHOLDS.MODERATE_DAMAGE) /
         (TEWL_THRESHOLDS.SEVERE_DAMAGE - TEWL_THRESHOLDS.MODERATE_DAMAGE)
     );
-    correctionFactor = 0.80 - ratio * 0.10;
+    correctionFactor = 0.8 - ratio * 0.1;
   }
 
   const correctedHydration = baseHydration * correctionFactor;
@@ -312,20 +310,16 @@ export function classifyHydrationLevel(hydration: number): HydrationLevel {
  * @param tewl - TEWL 값 (옵션)
  * @returns 권장 사항 목록
  */
-function generateRecommendations(
-  level: HydrationLevel,
-  hasTewl: boolean,
-  tewl?: number
-): string[] {
+function generateRecommendations(level: HydrationLevel, hasTewl: boolean, tewl?: number): string[] {
   const recommendations: string[] = [];
 
   switch (level) {
     case 'very_dry':
-      recommendations.push('피부가 매우 건조합니다. 집중 보습 케어가 필요합니다.');
+      recommendations.push('피부가 매우 건조해요. 집중 보습 케어가 필요해요.');
       recommendations.push('세라마이드, 히알루론산 함유 고보습 제품을 사용하세요.');
       recommendations.push('하루 2회 이상 보습제를 바르고, 세안 후 3분 이내에 보습하세요.');
-      recommendations.push('실내 가습기 사용을 권장합니다.');
-      recommendations.push('증상이 지속되면 피부과 상담을 권장합니다.');
+      recommendations.push('실내 가습기 사용을 권장해요.');
+      recommendations.push('증상이 지속되면 피부과 상담을 권장해요.');
       break;
 
     case 'dry':
@@ -335,13 +329,13 @@ function generateRecommendations(
       break;
 
     case 'normal':
-      recommendations.push('피부 수분 상태가 양호합니다.');
+      recommendations.push('피부 수분 상태가 양호해요.');
       recommendations.push('현재 케어 루틴을 유지하세요.');
       recommendations.push('계절 변화에 따라 보습력을 조절하세요.');
       break;
 
     case 'hydrated':
-      recommendations.push('피부 수분이 충분합니다.');
+      recommendations.push('피부 수분이 충분해요.');
       recommendations.push('가벼운 수분 제품으로 유지 관리하세요.');
       recommendations.push('과도한 유분 제품은 피하세요.');
       break;
@@ -349,17 +343,17 @@ function generateRecommendations(
     case 'very_hydrated':
       recommendations.push('피부 수분이 매우 좋은 상태입니다.');
       recommendations.push('현재 상태를 유지하세요.');
-      recommendations.push('가벼운 로션이나 젤 타입 제품이 적합합니다.');
+      recommendations.push('가벼운 로션이나 젤 타입 제품이 적합해요.');
       break;
   }
 
   // TEWL 기반 추가 권장 사항
   if (hasTewl && tewl !== undefined) {
     if (tewl > TEWL_THRESHOLDS.MODERATE_DAMAGE) {
-      recommendations.push('피부 장벽이 손상되었습니다. 장벽 강화 제품을 사용하세요.');
+      recommendations.push('피부 장벽이 손상되었어요. 장벽 강화 제품을 사용하세요.');
       recommendations.push('자극적인 성분(레티놀, AHA 등)은 일시 중단하세요.');
     } else if (tewl > TEWL_THRESHOLDS.MILD_DAMAGE) {
-      recommendations.push('피부 장벽 기능이 약간 저하되었습니다.');
+      recommendations.push('피부 장벽 기능이 약간 저하되었어요.');
       recommendations.push('세라마이드, 판테놀 성분이 도움이 됩니다.');
     }
   }
@@ -480,11 +474,7 @@ export function calculateCorrectedHydration(
   const confidence = calculateConfidence(input);
 
   // 권장 사항 생성
-  const recommendations = generateRecommendations(
-    hydrationLevel,
-    tewl !== undefined,
-    tewl
-  );
+  const recommendations = generateRecommendations(hydrationLevel, tewl !== undefined, tewl);
 
   return {
     estimatedHydration,
@@ -509,17 +499,15 @@ export function calculateCorrectedHydration(
  * @param ra - 평균 조도 (μm)
  * @returns 유효 여부와 경고 메시지
  */
-export function validateRoughnessRa(
-  ra: number
-): { valid: boolean; warning?: string } {
+export function validateRoughnessRa(ra: number): { valid: boolean; warning?: string } {
   if (ra < 0) {
-    return { valid: false, warning: 'Ra 값은 0 이상이어야 합니다.' };
+    return { valid: false, warning: 'Ra 값은 0 이상이어야 해요.' };
   }
   if (ra < 10) {
-    return { valid: true, warning: 'Ra 값이 매우 낮습니다. 측정 오류일 수 있습니다.' };
+    return { valid: true, warning: 'Ra 값이 매우 낮아요. 측정 오류일 수 있어요.' };
   }
   if (ra > 80) {
-    return { valid: true, warning: 'Ra 값이 매우 높습니다. 측정 오류일 수 있습니다.' };
+    return { valid: true, warning: 'Ra 값이 매우 높아요. 측정 오류일 수 있어요.' };
   }
   return { valid: true };
 }
@@ -537,23 +525,23 @@ export function interpretTEWL(tewl: number): {
   if (tewl < TEWL_THRESHOLDS.NORMAL) {
     return {
       status: 'normal',
-      description: '피부 장벽 기능이 정상입니다. 수분 손실이 적습니다.',
+      description: '피부 장벽 기능이 정상이에요. 수분 손실이 적어요.',
     };
   }
   if (tewl < TEWL_THRESHOLDS.MILD_DAMAGE) {
     return {
       status: 'mild',
-      description: '피부 장벽이 약간 손상되었습니다. 보습 강화를 권장합니다.',
+      description: '피부 장벽이 약간 손상되었어요. 보습 강화를 권장해요.',
     };
   }
   if (tewl < TEWL_THRESHOLDS.MODERATE_DAMAGE) {
     return {
       status: 'moderate',
-      description: '피부 장벽이 중등도 손상되었습니다. 장벽 복구 케어가 필요합니다.',
+      description: '피부 장벽이 중등도 손상되었어요. 장벽 복구 케어가 필요해요.',
     };
   }
   return {
     status: 'severe',
-    description: '피부 장벽이 심각하게 손상되었습니다. 피부과 상담을 권장합니다.',
+    description: '피부 장벽이 심각하게 손상되었어요. 피부과 상담을 권장해요.',
   };
 }

@@ -106,14 +106,20 @@ export default function RecipeSearch({
   }, []);
 
   // 목표 변경 핸들러
-  const handleGoalChange = useCallback((goal: NutritionGoal | undefined) => {
-    setSelectedGoal(goal === selectedGoal ? undefined : goal);
-  }, [selectedGoal]);
+  const handleGoalChange = useCallback(
+    (goal: NutritionGoal | undefined) => {
+      setSelectedGoal(goal === selectedGoal ? undefined : goal);
+    },
+    [selectedGoal]
+  );
 
   // 조리시간 필터 변경 핸들러
-  const handleCookTimeChange = useCallback((time: number | undefined) => {
-    setMaxCookTime(time === maxCookTime ? undefined : time);
-  }, [maxCookTime]);
+  const handleCookTimeChange = useCallback(
+    (time: number | undefined) => {
+      setMaxCookTime(time === maxCookTime ? undefined : time);
+    },
+    [maxCookTime]
+  );
 
   return (
     <div data-testid="recipe-search" className={cn('space-y-4', className)}>
@@ -145,9 +151,7 @@ export default function RecipeSearch({
           onClick={() => setShowFilters(!showFilters)}
           className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 p-0"
         >
-          <Filter
-            className={cn('h-4 w-4', showFilters && 'text-primary')}
-          />
+          <Filter className={cn('h-4 w-4', showFilters && 'text-primary')} />
         </Button>
       </div>
 
@@ -227,9 +231,7 @@ export default function RecipeSearch({
             <Card className="border-dashed">
               <CardContent className="py-8 text-center">
                 <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                <p className="text-muted-foreground">
-                  조건에 맞는 레시피가 없습니다.
-                </p>
+                <p className="text-muted-foreground">조건에 맞는 레시피가 없어요.</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   필터를 조정하거나 재료를 추가해보세요.
                 </p>
@@ -250,7 +252,7 @@ export default function RecipeSearch({
       {/* 결과 수 표시 */}
       {!isLoading && matchResults.length > 0 && (
         <p className="text-center text-sm text-muted-foreground">
-          {matchResults.length}개의 레시피를 찾았습니다
+          {matchResults.length}개의 레시피를 찾았어요
         </p>
       )}
     </div>
@@ -287,8 +289,11 @@ function RecipeMatchCard({ result, onClick }: RecipeMatchCardProps) {
             variant="secondary"
             className={cn(
               'flex-shrink-0',
-              matchScore >= 80 && 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-              matchScore >= 50 && matchScore < 80 && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+              matchScore >= 80 &&
+                'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+              matchScore >= 50 &&
+                matchScore < 80 &&
+                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
               matchScore < 50 && 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
             )}
           >
@@ -299,9 +304,7 @@ function RecipeMatchCard({ result, onClick }: RecipeMatchCardProps) {
 
       <CardContent className="pt-0 space-y-3">
         {/* 추천 이유 */}
-        <p className="text-sm text-primary bg-primary/10 rounded-lg px-3 py-2">
-          {matchReason}
-        </p>
+        <p className="text-sm text-primary bg-primary/10 rounded-lg px-3 py-2">{matchReason}</p>
 
         {/* 메타 정보 */}
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -313,10 +316,7 @@ function RecipeMatchCard({ result, onClick }: RecipeMatchCardProps) {
             <Flame className="h-4 w-4" />
             {recipe.nutritionInfo.calories}kcal
           </span>
-          <Badge
-            variant="outline"
-            className={cn('text-xs', DIFFICULTY_COLORS[recipe.difficulty])}
-          >
+          <Badge variant="outline" className={cn('text-xs', DIFFICULTY_COLORS[recipe.difficulty])}>
             {DIFFICULTY_LABELS[recipe.difficulty]}
           </Badge>
         </div>
@@ -324,11 +324,7 @@ function RecipeMatchCard({ result, onClick }: RecipeMatchCardProps) {
         {/* 영양 목표 태그 */}
         <div className="flex flex-wrap gap-1">
           {recipe.nutritionGoals.map((goal) => (
-            <Badge
-              key={goal}
-              variant="outline"
-              className="text-xs"
-            >
+            <Badge key={goal} variant="outline" className="text-xs">
               {NUTRITION_GOAL_LABELS[goal]}
             </Badge>
           ))}

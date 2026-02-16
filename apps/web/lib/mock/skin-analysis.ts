@@ -427,7 +427,7 @@ export const FOUNDATION_FORMULAS: Record<SkinTypeId, FoundationFormula> = {
 
 // 로딩 화면 팁 목록
 export const LOADING_TIPS = [
-  '7가지 피부 지표를 분석합니다',
+  '7가지 피부 지표를 분석해요',
   '수분도, 유분도, 모공 상태를 측정 중',
   'AI가 맞춤 솔루션을 준비하고 있어요',
   '거의 완료되었어요!',

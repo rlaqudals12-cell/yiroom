@@ -107,7 +107,7 @@ export default function DrapingSimulationTab({
       });
 
       if (!landmarkResult) {
-        throw new Error('얼굴을 감지할 수 없습니다');
+        throw new Error('얼굴을 감지할 수 없어요');
       }
 
       // 3. 얼굴 마스크 생성 (canvas와 동일한 제한된 크기 사용)
@@ -152,7 +152,7 @@ export default function DrapingSimulationTab({
       setState('ready');
     } catch (err) {
       console.error('[DrapingSimulationTab] 초기화 오류:', err);
-      setError(err instanceof Error ? err.message : '초기화에 실패했습니다');
+      setError(err instanceof Error ? err.message : '초기화에 실패했어요');
       setState('error');
     }
   }, [imageUrl, loadImage, deviceCapability.tier, skinAnalysisId, supabase]);
@@ -206,7 +206,7 @@ export default function DrapingSimulationTab({
         </CardHeader>
         <CardContent>
           <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-            <p className="text-sm text-destructive">{error || '초기화에 실패했습니다'}</p>
+            <p className="text-sm text-destructive">{error || '초기화에 실패했어요'}</p>
           </div>
         </CardContent>
       </Card>

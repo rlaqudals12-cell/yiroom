@@ -14,12 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type {
   HairAnalysisResult,
   FaceShapeType,
@@ -56,7 +51,8 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
 
   // 신뢰도 등급
   const confidenceGrade = useMemo(() => {
-    if (faceShapeAnalysis.confidence >= 85) return { label: '매우 높음', color: 'text-emerald-600' };
+    if (faceShapeAnalysis.confidence >= 85)
+      return { label: '매우 높음', color: 'text-emerald-600' };
     if (faceShapeAnalysis.confidence >= 70) return { label: '높음', color: 'text-blue-600' };
     if (faceShapeAnalysis.confidence >= 55) return { label: '보통', color: 'text-amber-600' };
     return { label: '낮음', color: 'text-red-600' };
@@ -78,18 +74,14 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
               <CardTitle className={`text-2xl ${shapeStyle.text}`}>
                 {faceShapeAnalysis.faceShapeLabel}
               </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                얼굴형 분석 결과
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">얼굴형 분석 결과</p>
             </div>
           </div>
           <div className="text-right">
             <Badge variant="secondary" className={confidenceGrade.color}>
               신뢰도 {faceShapeAnalysis.confidence}%
             </Badge>
-            <p className="text-xs text-muted-foreground mt-1">
-              {confidenceGrade.label}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{confidenceGrade.label}</p>
           </div>
         </div>
       </CardHeader>
@@ -150,10 +142,7 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
           <TabsContent value="care" className="mt-4">
             <div className="space-y-3">
               {careTips.map((tip, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-gray-50 rounded-lg flex items-start gap-3"
-                >
+                <div key={idx} className="p-3 bg-gray-50 rounded-lg flex items-start gap-3">
                   <span className="text-lg">💡</span>
                   <p className="text-sm">{tip}</p>
                 </div>
@@ -199,11 +188,7 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
                 value={faceShapeAnalysis.ratios.cheekboneWidth}
                 maxValue={0.35}
               />
-              <RatioBar
-                label="턱"
-                value={faceShapeAnalysis.ratios.jawWidth}
-                maxValue={0.35}
-              />
+              <RatioBar label="턱" value={faceShapeAnalysis.ratios.jawWidth} maxValue={0.35} />
             </div>
           </div>
         )}
@@ -215,7 +200,8 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
             <div className="flex flex-wrap gap-2">
               {result.currentHairInfo.length && (
                 <Badge variant="outline">
-                  {HAIR_LENGTH_LABELS[result.currentHairInfo.length] || result.currentHairInfo.length}
+                  {HAIR_LENGTH_LABELS[result.currentHairInfo.length] ||
+                    result.currentHairInfo.length}
                 </Badge>
               )}
               {result.currentHairInfo.texture && (
@@ -235,8 +221,7 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
         {result.usedFallback && (
           <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-sm text-amber-800">
-              AI 분석이 지연되어 예측 결과를 표시하고 있습니다.
-              정확한 분석을 위해 재분석을 권장합니다.
+              AI 분석이 지연되어 예측 결과를 표시하고 있어요. 정확한 분석을 위해 재분석을 권장해요.
             </p>
           </div>
         )}
@@ -322,15 +307,7 @@ function ColorCard({ color }: { color: HairColorRecommendation }) {
 /**
  * 비율 바 컴포넌트
  */
-function RatioBar({
-  label,
-  value,
-  maxValue,
-}: {
-  label: string;
-  value: number;
-  maxValue: number;
-}) {
+function RatioBar({ label, value, maxValue }: { label: string; value: number; maxValue: number }) {
   const percentage = Math.min(100, (value / maxValue) * 100);
 
   return (
@@ -342,9 +319,7 @@ function RatioBar({
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <span className="text-xs font-medium w-12 text-right">
-        {(value * 100).toFixed(0)}%
-      </span>
+      <span className="text-xs font-medium w-12 text-right">{(value * 100).toFixed(0)}%</span>
     </div>
   );
 }

@@ -39,7 +39,7 @@ export function generateShadowAnalysisFallback(): ShadowAnalysis {
     severity: 'none',
     darkAreaRatio: 0,
     overexposedRatio: 0,
-    recommendation: '조명 상태가 양호합니다.',
+    recommendation: '조명 상태가 양호해요.',
   };
 }
 
@@ -60,7 +60,7 @@ export function generateCIE4Fallback(processingTime = 0): CIE4Output {
     zoneAnalysis: null,
     shadowAnalysis: null,
     overallScore: 80,
-    feedback: ['조명 분석을 완료하지 못했습니다. 기본값이 사용됩니다.'],
+    feedback: ['조명 분석을 완료하지 못했어요. 기본값이 사용돼요.'],
     metadata: {
       processingTime,
       hasFaceRegion: false,
@@ -76,10 +76,7 @@ export function generateCIE4Fallback(processingTime = 0): CIE4Output {
  * @param processingTime - 처리 시간
  * @returns 에러 상태 CIE-4 출력
  */
-export function generateErrorCIE4Fallback(
-  errorMessage: string,
-  processingTime = 0
-): CIE4Output {
+export function generateErrorCIE4Fallback(errorMessage: string, processingTime = 0): CIE4Output {
   return {
     success: false,
     isSuitable: false,
@@ -90,7 +87,7 @@ export function generateErrorCIE4Fallback(
     zoneAnalysis: null,
     shadowAnalysis: null,
     overallScore: 50,
-    feedback: [`조명 분석 중 오류가 발생했습니다: ${errorMessage}`],
+    feedback: [`조명 분석 중 오류가 발생했어요: ${errorMessage}`],
     metadata: {
       processingTime,
       hasFaceRegion: false,
@@ -121,8 +118,16 @@ export function generateRandomCIE4Mock(): CIE4Output {
     requiresCorrection: cct < 4500 || cct > 7500,
     zoneAnalysis: {
       zones: [
-        { name: 'forehead_left', brightness: Math.round(100 + Math.random() * 80), status: 'normal' },
-        { name: 'forehead_right', brightness: Math.round(100 + Math.random() * 80), status: 'normal' },
+        {
+          name: 'forehead_left',
+          brightness: Math.round(100 + Math.random() * 80),
+          status: 'normal',
+        },
+        {
+          name: 'forehead_right',
+          brightness: Math.round(100 + Math.random() * 80),
+          status: 'normal',
+        },
         { name: 'cheek_left', brightness: Math.round(90 + Math.random() * 70), status: 'normal' },
         { name: 'cheek_right', brightness: Math.round(90 + Math.random() * 70), status: 'normal' },
         { name: 'chin_left', brightness: Math.round(80 + Math.random() * 60), status: 'normal' },
@@ -138,17 +143,15 @@ export function generateRandomCIE4Mock(): CIE4Output {
         ? (['left', 'right', 'top', 'bottom'] as const)[Math.floor(Math.random() * 4)]
         : 'none',
       intensity: hasShadow ? 0.1 + Math.random() * 0.4 : 0,
-      severity: hasShadow
-        ? (['mild', 'moderate'] as const)[Math.floor(Math.random() * 2)]
-        : 'none',
+      severity: hasShadow ? (['mild', 'moderate'] as const)[Math.floor(Math.random() * 2)] : 'none',
       darkAreaRatio: Math.random() * 0.2,
       overexposedRatio: Math.random() * 0.1,
       recommendation: hasShadow
-        ? '그림자가 감지되었습니다. 조명을 조절해주세요.'
-        : '조명 상태가 양호합니다.',
+        ? '그림자가 감지됐어요. 조명을 조절해주세요.'
+        : '조명 상태가 양호해요.',
     },
     overallScore: Math.round(60 + Math.random() * 40),
-    feedback: ['테스트 데이터입니다.'],
+    feedback: ['테스트 데이터예요.'],
     metadata: {
       processingTime: Math.random() * 200,
       hasFaceRegion: true,
@@ -217,11 +220,11 @@ export function generateConditionedCIE4Mock(
 
 function getFeedbackForCondition(condition: string): string[] {
   const feedbackMap: Record<string, string[]> = {
-    optimal: ['조명 상태가 매우 좋습니다.'],
-    warm_light: ['조명이 따뜻한 색상입니다. 백색 조명 아래에서 촬영해주세요.'],
-    cool_light: ['조명이 차가운 색상입니다. 피부톤이 실제보다 푸르게 보일 수 있습니다.'],
-    harsh_shadow: ['강한 그림자가 감지되었습니다. 균일한 조명 환경에서 촬영해주세요.'],
-    dark: ['조명이 부족합니다. 더 밝은 환경에서 촬영해주세요.'],
+    optimal: ['조명 상태가 매우 좋아요.'],
+    warm_light: ['조명이 따뜻한 색상이에요. 백색 조명 아래에서 촬영해주세요.'],
+    cool_light: ['조명이 차가운 색상이에요. 피부톤이 실제보다 푸르게 보일 수 있어요.'],
+    harsh_shadow: ['강한 그림자가 감지됐어요. 균일한 조명 환경에서 촬영해주세요.'],
+    dark: ['조명이 부족해요. 더 밝은 환경에서 촬영해주세요.'],
   };
-  return feedbackMap[condition] || ['알 수 없는 조건입니다.'];
+  return feedbackMap[condition] || ['알 수 없는 조건이에요.'];
 }

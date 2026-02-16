@@ -218,19 +218,19 @@ export function validateProfile(profile: UserProfile): {
   const errors: string[] = [];
 
   if (profile.weightKg <= 0 || profile.weightKg > 500) {
-    errors.push('체중은 0보다 크고 500kg 이하여야 합니다.');
+    errors.push('체중은 0보다 크고 500kg 이하여야 해요.');
   }
 
   if (profile.heightCm <= 0 || profile.heightCm > 300) {
-    errors.push('키는 0보다 크고 300cm 이하여야 합니다.');
+    errors.push('키는 0보다 크고 300cm 이하여야 해요.');
   }
 
   if (profile.age <= 0 || profile.age > 150) {
-    errors.push('나이는 0보다 크고 150세 이하여야 합니다.');
+    errors.push('나이는 0보다 크고 150세 이하여야 해요.');
   }
 
   if (!['male', 'female'].includes(profile.gender)) {
-    errors.push("성별은 'male' 또는 'female'이어야 합니다.");
+    errors.push("성별은 'male' 또는 'female'이어야 해요.");
   }
 
   return {

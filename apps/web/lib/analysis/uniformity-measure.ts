@@ -359,7 +359,7 @@ function detectProblemAreas(
         type: 'spot',
         region: region.name,
         severity: Math.round(regionAnalysis.melaninOutlierRatio * 500),
-        description: `${getRegionKoreanName(region.name)}에 색소 침착이 있습니다.`,
+        description: `${getRegionKoreanName(region.name)}에 색소 침착이 있어요.`,
       });
     }
 
@@ -368,7 +368,7 @@ function detectProblemAreas(
         type: 'redness',
         region: region.name,
         severity: Math.round(regionAnalysis.hemoglobinOutlierRatio * 500),
-        description: `${getRegionKoreanName(region.name)}에 홍조가 있습니다.`,
+        description: `${getRegionKoreanName(region.name)}에 홍조가 있어요.`,
       });
     }
   }
@@ -477,7 +477,7 @@ function generateUniformityDescription(
     excellent: '피부 톤이 매우 균일해요! 깨끗하고 건강한 피부입니다.',
     good: '피부 톤이 대체로 균일해요. 약간의 케어로 더 좋아질 수 있어요.',
     fair: '피부 톤에 다소 불균일함이 있어요. 꾸준한 관리가 필요해요.',
-    poor: '피부 톤 불균일이 두드러져요. 집중 케어를 권장합니다.',
+    poor: '피부 톤 불균일이 두드러져요. 집중 케어를 권장해요.',
   };
 
   let description = gradeDescriptions[grade];
@@ -616,6 +616,6 @@ export function generateMockUniformityResult(): SkinUniformityResult {
     spotCount: Math.floor(Math.random() * 5),
     problemAreas: [],
     grade: determineGrade(score),
-    description: '피부 상태 분석이 완료되었습니다.',
+    description: '피부 상태 분석이 완료됐어요.',
   };
 }

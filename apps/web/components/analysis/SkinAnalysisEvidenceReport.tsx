@@ -360,7 +360,7 @@ export default function SkinAnalysisEvidenceReport({
               <span className={cn('font-bold', theme.primary)}>
                 {SKIN_TYPE_LABELS[skinType] || skinType}
               </span>{' '}
-              피부로 판정되었습니다.
+              피부로 판정됐어요.
               {overallScore && <> (종합 점수: {overallScore}점)</>}
             </p>
           </div>

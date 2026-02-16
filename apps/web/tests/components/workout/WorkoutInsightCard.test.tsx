@@ -107,7 +107,7 @@ describe('WorkoutInsightCard', () => {
     };
 
     render(<WorkoutInsightCard insights={emptyInsights} />);
-    expect(screen.getByText('아직 인사이트가 없습니다')).toBeInTheDocument();
+    expect(screen.getByText('아직 인사이트가 없어요')).toBeInTheDocument();
   });
 
   it('handles partial data gracefully', () => {

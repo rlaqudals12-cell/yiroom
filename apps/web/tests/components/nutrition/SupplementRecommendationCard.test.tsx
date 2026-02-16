@@ -46,7 +46,7 @@ describe('SupplementRecommendationCard', () => {
     it('안내 메시지를 표시한다', () => {
       render(<SupplementRecommendationCard goal="health" />);
 
-      expect(screen.getByText(/전문가 상담을 권장합니다/)).toBeInTheDocument();
+      expect(screen.getByText(/전문가 상담을 권장해요/)).toBeInTheDocument();
     });
   });
 

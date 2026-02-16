@@ -32,12 +32,12 @@ export function generateMockToothColorResult(options?: {
 
   // 셰이드별 Lab 값 매핑
   const shadeLabMap: Record<string, { L: number; a: number; b: number }> = {
-    'B1': { L: 71, a: 1.5, b: 15 },
-    'A1': { L: 70, a: 2, b: 16 },
-    'B2': { L: 69, a: 2.5, b: 17 },
-    'A2': { L: 67, a: 3, b: 19 },
-    'A3': { L: 63, a: 4, b: 22 },
-    'A4': { L: 58, a: 5.5, b: 26 },
+    B1: { L: 71, a: 1.5, b: 15 },
+    A1: { L: 70, a: 2, b: 16 },
+    B2: { L: 69, a: 2.5, b: 17 },
+    A2: { L: 67, a: 3, b: 19 },
+    A3: { L: 63, a: 4, b: 22 },
+    A4: { L: 58, a: 5.5, b: 26 },
   };
 
   const lab = shadeLabMap[shade] ?? { L: 67, a: 3, b: 19 };
@@ -74,37 +74,37 @@ export function generateMockGumHealthResult(options?: {
     GumHealthStatus,
     { aStarMean: number; score: number; needsVisit: boolean }
   > = {
-    'healthy': { aStarMean: 10, score: 15, needsVisit: false },
-    'mild_gingivitis': { aStarMean: 18, score: 40, needsVisit: false },
-    'moderate_gingivitis': { aStarMean: 25, score: 65, needsVisit: true },
-    'severe_inflammation': { aStarMean: 35, score: 85, needsVisit: true },
+    healthy: { aStarMean: 10, score: 15, needsVisit: false },
+    mild_gingivitis: { aStarMean: 18, score: 40, needsVisit: false },
+    moderate_gingivitis: { aStarMean: 25, score: 65, needsVisit: true },
+    severe_inflammation: { aStarMean: 35, score: 85, needsVisit: true },
   };
 
   const metrics = statusMetrics[status];
 
   const recommendationsMap: Record<GumHealthStatus, string[]> = {
-    'healthy': [
-      '현재 잇몸 상태가 양호합니다.',
+    healthy: [
+      '현재 잇몸 상태가 양호해요.',
       '정기적인 검진을 통해 유지하세요.',
       '하루 2회 올바른 칫솔질을 계속하세요.',
     ],
-    'mild_gingivitis': [
-      '경미한 잇몸 염증이 관찰됩니다.',
-      '잇몸 전용 치약 사용을 권장합니다.',
+    mild_gingivitis: [
+      '경미한 잇몸 염증이 관찰돼요.',
+      '잇몸 전용 치약 사용을 권장해요.',
       '치간 청소를 꼼꼼히 해주세요.',
       '2-3주 후 상태를 다시 확인해주세요.',
     ],
-    'moderate_gingivitis': [
-      '중등도 잇몸 염증이 있습니다.',
-      '치과 방문을 권장합니다.',
+    moderate_gingivitis: [
+      '중등도 잇몸 염증이 있어요.',
+      '치과 방문을 권장해요.',
       '부드러운 칫솔모로 잇몸 라인을 마사지해주세요.',
-      '항균 구강 청결제 사용을 권장합니다.',
+      '항균 구강 청결제 사용을 권장해요.',
     ],
-    'severe_inflammation': [
-      '심한 잇몸 염증이 관찰됩니다.',
+    severe_inflammation: [
+      '심한 잇몸 염증이 관찰돼요.',
       '가능한 빨리 치과를 방문해주세요.',
       '딱딱한 음식은 피해주세요.',
-      '전문적인 치료가 필요할 수 있습니다.',
+      '전문적인 치료가 필요할 수 있어요.',
     ],
   };
 
@@ -152,7 +152,7 @@ export function generateMockWhiteningGoalResult(
   const seasonHarmony: Record<PersonalColorSeason, string> = {
     spring: '봄 웜톤에는 아이보리 빛 자연스러운 치아 색상이 어울립니다.',
     summer: '여름 쿨톤에는 밝은 흰색 치아가 잘 어울립니다.',
-    autumn: '가을 웜톤에는 너무 하얀 치아보다 자연스러운 아이보리가 조화롭습니다.',
+    autumn: '가을 웜톤에는 너무 하얀 치아보다 자연스러운 아이보리가 조화로워요.',
     winter: '겨울 쿨톤에는 밝고 선명한 흰색 치아가 어울립니다.',
   };
 
@@ -168,7 +168,7 @@ export function generateMockWhiteningGoalResult(
     },
     isOverWhitening,
     overWhiteningReason: isOverWhitening
-      ? '가을 웜톤에 과도하게 밝은 치아는 부자연스러워 보일 수 있습니다.'
+      ? '가을 웜톤에 과도하게 밝은 치아는 부자연스러워 보일 수 있어요.'
       : undefined,
     harmonySuggestion: seasonHarmony[season],
     recommendedMethods: [
@@ -176,13 +176,13 @@ export function generateMockWhiteningGoalResult(
         method: 'whitening_toothpaste',
         effectiveness: 'low',
         duration: '4-8주',
-        notes: '일상적 관리에 적합합니다.',
+        notes: '일상적 관리에 적합해요.',
       },
       {
         method: 'strips',
         effectiveness: 'medium',
         duration: '2-4주',
-        notes: '집에서 손쉽게 사용할 수 있습니다.',
+        notes: '집에서 손쉽게 사용할 수 있어요.',
       },
       {
         method: 'professional_bleaching',
@@ -207,14 +207,14 @@ export function generateMockProductRecommendation(): OralProductRecommendation {
         brand: '센소다인',
         keyIngredients: ['질산칼륨', '불소'],
         matchScore: 88,
-        reason: '시린 이에 효과적입니다.',
+        reason: '시린 이에 효과적이에요.',
       },
       {
         name: '잇몸 케어 치약',
         brand: '페리오',
         keyIngredients: ['토코페롤', '알란토인', '불소'],
         matchScore: 82,
-        reason: '잇몸 건강 개선에 도움이 됩니다.',
+        reason: '잇몸 건강 개선에 도움이 돼요.',
       },
     ],
     mouthwash: [
@@ -223,20 +223,20 @@ export function generateMockProductRecommendation(): OralProductRecommendation {
         brand: '가그린',
         keyIngredients: ['CPC', '자일리톨'],
         matchScore: 85,
-        reason: '무알콜로 자극이 적습니다.',
+        reason: '무알콜로 자극이 적어요.',
       },
     ],
     interdental: {
       primary: [
         {
           type: 'floss_waxed',
-          reason: '일반적인 치간 청소에 적합합니다.',
+          reason: '일반적인 치간 청소에 적합해요.',
         },
       ],
       alternative: [
         {
           type: 'water_flosser',
-          reason: '편리하게 치간 청소를 할 수 있습니다.',
+          reason: '편리하게 치간 청소를 할 수 있어요.',
         },
       ],
     },
@@ -308,12 +308,12 @@ export function generateMockOralHealthAssessment(options?: {
   if (gumHealth) {
     if (gumHealth.healthStatus !== 'healthy') {
       overallScore -= 15;
-      recommendations.push('잇몸 건강 관리가 필요합니다.');
+      recommendations.push('잇몸 건강 관리가 필요해요.');
     }
   }
 
   if (recommendations.length === 0) {
-    recommendations.push('전반적인 구강 건강 상태가 양호합니다.');
+    recommendations.push('전반적인 구강 건강 상태가 양호해요.');
     recommendations.push('정기적인 치과 검진을 유지해주세요.');
   }
 

@@ -35,7 +35,7 @@ import type {
  */
 export function calculateWHR(waist: number, hip: number): number {
   if (waist <= 0 || hip <= 0) {
-    throw new Error('허리와 엉덩이 둘레는 0보다 커야 합니다.');
+    throw new Error('허리와 엉덩이 둘레는 0보다 커야 해요.');
   }
 
   // 원리 문서 공식: WHR = 허리 둘레 / 엉덩이 둘레
@@ -59,7 +59,7 @@ export function calculateWHR(waist: number, hip: number): number {
  */
 export function calculateSHR(shoulder: number, hip: number): number {
   if (shoulder <= 0 || hip <= 0) {
-    throw new Error('어깨와 엉덩이 너비는 0보다 커야 합니다.');
+    throw new Error('어깨와 엉덩이 너비는 0보다 커야 해요.');
   }
 
   // 원리 문서 공식: SHR = 어깨 너비 / 엉덩이 너비
@@ -83,7 +83,7 @@ export function calculateSHR(shoulder: number, hip: number): number {
  */
 export function calculateWHtR(waist: number, height: number): number {
   if (waist <= 0 || height <= 0) {
-    throw new Error('허리 둘레와 신장은 0보다 커야 합니다.');
+    throw new Error('허리 둘레와 신장은 0보다 커야 해요.');
   }
 
   // 원리 문서 공식: WHtR = 허리 둘레 / 신장
@@ -104,13 +104,13 @@ export function calculateWHtR(waist: number, height: number): number {
  * @returns WHR 분류 결과
  */
 export function classifyWHR(whr: number, gender: Gender): WHRClassification {
-  const threshold = gender === 'male' ? 0.90 : 0.85;
+  const threshold = gender === 'male' ? 0.9 : 0.85;
   const status: WHRHealthStatus = whr < threshold ? 'normal' : 'risk';
 
   const description =
     status === 'normal'
-      ? `정상 범위입니다 (기준: ${threshold} 미만)`
-      : `주의가 필요합니다 (기준: ${threshold} 이상)`;
+      ? `정상 범위예요 (기준: ${threshold} 미만)`
+      : `주의가 필요해요 (기준: ${threshold} 이상)`;
 
   return {
     value: whr,
@@ -138,16 +138,16 @@ export function classifyWHtR(whtr: number): WHtRClassification {
 
   if (whtr < 0.4) {
     status = 'underweight';
-    description = '저체중 가능성이 있습니다. 영양 상담을 권장합니다.';
+    description = '저체중 가능성이 있어요. 영양 상담을 권장해요.';
   } else if (whtr < 0.5) {
     status = 'normal';
-    description = '정상 범위입니다. 허리 둘레가 신장의 절반 미만으로 건강합니다.';
+    description = '정상 범위예요. 허리 둘레가 신장의 절반 미만으로 건강해요.';
   } else if (whtr < 0.6) {
     status = 'caution';
-    description = '주의가 필요합니다. 생활습관 개선을 권장합니다.';
+    description = '주의가 필요해요. 생활습관 개선을 권장해요.';
   } else {
     status = 'risk';
-    description = '위험 범위입니다. 의료 상담을 권장합니다.';
+    description = '위험 범위예요. 의료 상담을 권장해요.';
   }
 
   return {
@@ -174,13 +174,13 @@ export function classifySHR(shr: number): SHRClassification {
 
   if (shr > 1.1) {
     shape = 'invertedTriangle';
-    description = '역삼각형 체형입니다. 어깨가 넓고 상체가 발달했습니다.';
+    description = '역삼각형 체형이에요. 어깨가 넓고 상체가 발달했어요.';
   } else if (shr >= 0.9) {
     shape = 'balanced';
-    description = '균형 잡힌 체형입니다. 어깨와 엉덩이 비율이 조화롭습니다.';
+    description = '균형 잡힌 체형이에요. 어깨와 엉덩이 비율이 조화로워요.';
   } else {
     shape = 'pear';
-    description = '배형/삼각형 체형입니다. 하체가 발달했습니다.';
+    description = '배형/삼각형 체형이에요. 하체가 발달했어요.';
   }
 
   return {

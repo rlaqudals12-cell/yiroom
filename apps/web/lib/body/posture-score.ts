@@ -30,10 +30,10 @@ import type {
  * CVA가 가장 중요한 지표이므로 0.30, 나머지는 유사한 중요도
  */
 const WEIGHTS = {
-  cva: 0.30,
+  cva: 0.3,
   thoracicKyphosis: 0.25,
   pelvicTilt: 0.25,
-  spineSymmetry: 0.20,
+  spineSymmetry: 0.2,
 } as const;
 
 /**
@@ -45,11 +45,11 @@ const WEIGHTS = {
  * 심각: < 30° (심각한 거북목, 의료 상담 권장)
  */
 const CVA_THRESHOLDS = {
-  normal: 50,      // 정상 기준
-  mild: 40,        // 경도 기준
-  moderate: 30,    // 중등도 기준
-  optimal: 55,     // 최적값 (100점 기준)
-  maxNormal: 65,   // 정상 범위 상한
+  normal: 50, // 정상 기준
+  mild: 40, // 경도 기준
+  moderate: 30, // 중등도 기준
+  optimal: 55, // 최적값 (100점 기준)
+  maxNormal: 65, // 정상 범위 상한
 } as const;
 
 /**
@@ -95,10 +95,10 @@ const PELVIC_THRESHOLDS = {
  * 자세 등급 기준 (종합 점수 기반)
  */
 const LEVEL_THRESHOLDS = {
-  excellent: 90,  // A (우수)
-  good: 80,       // B (양호)
-  fair: 70,       // C (보통)
-  poor: 0,        // D 이하 (주의/위험)
+  excellent: 90, // A (우수)
+  good: 80, // B (양호)
+  fair: 70, // C (보통)
+  poor: 0, // D 이하 (주의/위험)
 } as const;
 
 // ============================================
@@ -145,7 +145,7 @@ export function calculateCVAScore(cvaAngle: number): number {
     return 0;
   }
 
-  const normalMin = 48;   // 정상 범위 하한 (원리 문서)
+  const normalMin = 48; // 정상 범위 하한 (원리 문서)
   const normalMax = CVA_THRESHOLDS.maxNormal;
   const optimal = CVA_THRESHOLDS.optimal;
 
@@ -209,7 +209,7 @@ export function classifyCobbSeverity(cobbAngle: number): CobbSeverity {
 export function calculateSpineSymmetryScore(cobbAngle: number): number {
   // 입력값 검증
   if (cobbAngle < 0) {
-    return 100;  // 음수 각도는 정상으로 처리
+    return 100; // 음수 각도는 정상으로 처리
   }
 
   // Cobb 각도를 대칭성 점수로 변환
@@ -370,29 +370,29 @@ function generateRecommendations(
   // CVA 기반 권장사항
   if (componentScores.cva < 70) {
     if (metrics.cva < CVA_THRESHOLDS.moderate) {
-      recommendations.push('거북목이 심각합니다. 전문가 상담을 권장합니다.');
+      recommendations.push('거북목이 심각해요. 전문가 상담을 권장해요.');
     } else if (metrics.cva < CVA_THRESHOLDS.mild) {
-      recommendations.push('거북목 교정이 필요합니다. 턱당기기 운동을 추천합니다.');
+      recommendations.push('거북목 교정이 필요해요. 턱당기기 운동을 추천해요.');
     } else {
-      recommendations.push('경추 자세 개선이 필요합니다. 스트레칭을 권장합니다.');
+      recommendations.push('경추 자세 개선이 필요해요. 스트레칭을 권장해요.');
     }
   }
 
   // 흉추 후만각 기반 권장사항
   if (componentScores.kyphosis < 70) {
     if (metrics.thoracicKyphosis > KYPHOSIS_THRESHOLDS.maxNormal) {
-      recommendations.push('굽은등(과다후만) 의심됩니다. 흉추 신전 운동을 권장합니다.');
+      recommendations.push('굽은등(과다후만) 의심돼요. 흉추 신전 운동을 권장해요.');
     } else if (metrics.thoracicKyphosis < KYPHOSIS_THRESHOLDS.minNormal) {
-      recommendations.push('일자등(과소후만) 의심됩니다. 전문가 상담을 권장합니다.');
+      recommendations.push('일자등(과소후만) 의심돼요. 전문가 상담을 권장해요.');
     }
   }
 
   // 골반 기울기 기반 권장사항
   if (componentScores.pelvicTilt < 70) {
     if (metrics.pelvicTilt > PELVIC_THRESHOLDS.maxNormal) {
-      recommendations.push('골반 전방경사 의심됩니다. 코어 강화 운동을 권장합니다.');
+      recommendations.push('골반 전방경사 의심돼요. 코어 강화 운동을 권장해요.');
     } else if (metrics.pelvicTilt < PELVIC_THRESHOLDS.minNormal) {
-      recommendations.push('골반 후방경사 의심됩니다. 장요근 스트레칭을 권장합니다.');
+      recommendations.push('골반 후방경사 의심돼요. 장요근 스트레칭을 권장해요.');
     }
   }
 
@@ -401,15 +401,15 @@ function generateRecommendations(
     // spineSymmetry를 Cobb 각도로 역산 (대략적)
     const estimatedCobb = (1 - metrics.spineSymmetry) * 45;
     if (estimatedCobb > COBB_THRESHOLDS.mild) {
-      recommendations.push('척추측만 의심됩니다. 전문의 진단을 권장합니다.');
+      recommendations.push('척추측만 의심돼요. 전문의 진단을 권장해요.');
     } else {
-      recommendations.push('척추 비대칭이 감지되었습니다. 정기적인 자세 점검을 권장합니다.');
+      recommendations.push('척추 비대칭이 감지되었어요. 정기적인 자세 점검을 권장해요.');
     }
   }
 
   // 권장사항이 없으면 긍정적 메시지
   if (recommendations.length === 0) {
-    recommendations.push('전반적으로 양호한 자세입니다. 현재 상태를 유지하세요.');
+    recommendations.push('전반적으로 양호한 자세예요. 현재 상태를 유지하세요.');
   }
 
   return recommendations;
@@ -443,7 +443,7 @@ function generateRecommendations(
 export function calculatePostureScore(metrics: PostureMetrics): PostureScoreResult {
   // 입력값 검증
   if (metrics.spineSymmetry < 0 || metrics.spineSymmetry > 1) {
-    throw new Error('spineSymmetry는 0-1 범위여야 합니다.');
+    throw new Error('spineSymmetry는 0-1 범위여야 해요.');
   }
 
   // 각 항목별 점수 계산
@@ -459,9 +459,9 @@ export function calculatePostureScore(metrics: PostureMetrics): PostureScoreResu
   // 가중 평균으로 종합 점수 계산
   const totalScore = Math.round(
     cvaScore * WEIGHTS.cva +
-    kyphosisScore * WEIGHTS.thoracicKyphosis +
-    pelvicTiltScore * WEIGHTS.pelvicTilt +
-    spineSymmetryScore * WEIGHTS.spineSymmetry
+      kyphosisScore * WEIGHTS.thoracicKyphosis +
+      pelvicTiltScore * WEIGHTS.pelvicTilt +
+      spineSymmetryScore * WEIGHTS.spineSymmetry
   );
 
   const componentScores = {

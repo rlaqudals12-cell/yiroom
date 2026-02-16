@@ -104,7 +104,12 @@ function generateRecommendations(
 
   for (const nutrientId of dangers) {
     const rdaInfo = KOREAN_RDA[gender][nutrientId];
-    const msg = rdaInfo.nameKo + ' 과다 섭취 주의: 상한 섭취량(' + rdaInfo.ul + rdaInfo.unit + ')을 초과했습니다.';
+    const msg =
+      rdaInfo.nameKo +
+      ' 과다 섭취 주의: 상한 섭취량(' +
+      rdaInfo.ul +
+      rdaInfo.unit +
+      ')을 초과했어요.';
     recs.push(msg);
   }
 
@@ -115,17 +120,17 @@ function generateRecommendations(
       const top3 = sources[0] + ', ' + sources[1] + ', ' + sources[2];
       recs.push(rdaInfo.nameKo + ' 부족: ' + top3 + ' 등의 섭취를 늘려보세요.');
     } else {
-      recs.push(rdaInfo.nameKo + ' 부족: 권장 섭취량 대비 부족합니다.');
+      recs.push(rdaInfo.nameKo + ' 부족: 권장 섭취량 대비 부족해요.');
     }
   }
 
   for (const nutrientId of excesses) {
     const rdaInfo = KOREAN_RDA[gender][nutrientId];
-    recs.push(rdaInfo.nameKo + ' 과잉: 상한 이내이지만, 균형 잡힌 섭취를 권장합니다.');
+    recs.push(rdaInfo.nameKo + ' 과잉: 상한 이내이지만, 균형 잡힌 섭취를 권장해요.');
   }
 
   if (recs.length === 0) {
-    recs.push('영양소 섭취가 전반적으로 양호합니다. 현재 식단을 유지하세요.');
+    recs.push('영양소 섭취가 전반적으로 양호해요. 현재 식단을 유지하세요.');
   }
 
   return recs;

@@ -6,7 +6,7 @@
  * @see docs/research/PHASE-K-RESEARCH.md 섹션 2.1
  *
  * 참고: 아시아인은 같은 BMI에서 더 많은 내장지방을 저장하므로
- * WHO 기준보다 낮은 기준을 적용합니다.
+ * WHO 기준보다 낮은 기준을 적용해요.
  */
 
 // ============================================================================
@@ -113,7 +113,7 @@ const CATEGORY_LABELS: Record<BMICategory, string> = {
 /** 의학적 면책조항 */
 const MEDICAL_DISCLAIMER =
   '이 결과는 참고용이며, 정확한 건강 상태 평가는 전문 의료인과 상담하시기 바랍니다. ' +
-  'BMI는 근육량, 뼈 밀도, 나이 등을 고려하지 않으므로 개인 차이가 있을 수 있습니다.';
+  'BMI는 근육량, 뼈 밀도, 나이 등을 고려하지 않으므로 개인 차이가 있을 수 있어요.';
 
 // ============================================================================
 // BMI 계산 함수
@@ -185,10 +185,10 @@ function calculateWeightDifference(
 export function calculateBMI(heightCm: number, weightKg: number): BMIResult {
   // 입력 검증
   if (heightCm < 100 || heightCm > 250) {
-    throw new Error(`키는 100-250cm 범위여야 합니다: ${heightCm}cm`);
+    throw new Error(`키는 100-250cm 범위여야 해요: ${heightCm}cm`);
   }
   if (weightKg < 20 || weightKg > 300) {
-    throw new Error(`체중은 20-300kg 범위여야 합니다: ${weightKg}kg`);
+    throw new Error(`체중은 20-300kg 범위여야 해요: ${weightKg}kg`);
   }
 
   const bmiValue = computeBMI(heightCm, weightKg);
@@ -230,8 +230,8 @@ export function checkAbdominalObesity(
   const isAbdominalObesity = waistCm >= threshold;
 
   const description = isAbdominalObesity
-    ? `허리둘레 ${waistCm}cm는 복부비만 기준(${threshold}cm 이상)에 해당합니다.`
-    : `허리둘레 ${waistCm}cm는 정상 범위입니다.`;
+    ? `허리둘레 ${waistCm}cm는 복부비만 기준(${threshold}cm 이상)에 해당해요.`
+    : `허리둘레 ${waistCm}cm는 정상 범위예요.`;
 
   return {
     waistCircumference: waistCm,
@@ -303,7 +303,7 @@ function generateRecommendations(
 
   switch (bmi.category) {
     case 'underweight':
-      recommendations.push('균형 잡힌 식단으로 건강한 체중 증가를 권장합니다.');
+      recommendations.push('균형 잡힌 식단으로 건강한 체중 증가를 권장해요.');
       recommendations.push('근력 운동을 통해 근육량을 늘려보세요.');
       break;
     case 'normal':
@@ -311,20 +311,20 @@ function generateRecommendations(
       recommendations.push('규칙적인 운동과 균형 잡힌 식단을 계속 유지해주세요.');
       break;
     case 'overweight':
-      recommendations.push('가벼운 식단 조절과 규칙적인 운동을 권장합니다.');
+      recommendations.push('가벼운 식단 조절과 규칙적인 운동을 권장해요.');
       recommendations.push('하루 30분 이상 걷기부터 시작해보세요.');
       break;
     case 'obese1':
     case 'obese2':
     case 'obese3':
-      recommendations.push('전문 의료인과 상담하여 건강 관리 계획을 세우시길 권장합니다.');
-      recommendations.push('급격한 다이어트보다 점진적인 생활습관 개선이 효과적입니다.');
+      recommendations.push('전문 의료인과 상담하여 건강 관리 계획을 세우시길 권장해요.');
+      recommendations.push('급격한 다이어트보다 점진적인 생활습관 개선이 효과적이에요.');
       break;
   }
 
   if (abdominalObesity?.isAbdominalObesity) {
     recommendations.push('복부 지방 감소를 위해 유산소 운동을 병행해보세요.');
-    recommendations.push('당분과 정제 탄수화물 섭취를 줄이는 것이 도움됩니다.');
+    recommendations.push('당분과 정제 탄수화물 섭취를 줄이는 것이 도움돼요.');
   }
 
   return recommendations;

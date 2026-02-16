@@ -24,12 +24,7 @@ import { processMock as processCIE2Mock } from '../cie-2';
 import { processAWBCorrectionWithTimeout } from '../cie-3';
 import { processLightingAnalysisWithTimeout } from '../cie-4';
 
-import type {
-  PipelineOptions,
-  PipelineResult,
-  PipelineStage,
-  PipelineContext,
-} from './types';
+import type { PipelineOptions, PipelineResult, PipelineStage, PipelineContext } from './types';
 
 /**
  * 기본 파이프라인 옵션
@@ -115,7 +110,7 @@ async function runCIE2Stage(context: PipelineContext): Promise<boolean> {
   if (!cie2Result.success || !cie2Result.faceDetected) {
     if (!context.options.continueOnFaceDetectionFail) {
       context.result.isSuitableForAnalysis = false;
-      context.result.rejectionReason = '얼굴을 찾을 수 없습니다';
+      context.result.rejectionReason = '얼굴을 찾을 수 없어요';
       return false;
     }
   }
@@ -219,9 +214,7 @@ function calculateOverallQuality(result: Partial<PipelineResult>): number {
 
   // CIE-3: AWB (15%)
   if (result.cie3) {
-    const awbScore = result.cie3.success
-      ? (result.cie3.metadata?.confidence ?? 0.7) * 100
-      : 50;
+    const awbScore = result.cie3.success ? (result.cie3.metadata?.confidence ?? 0.7) * 100 : 50;
     totalScore += awbScore * 0.15;
     weights += 0.15;
   }
@@ -340,7 +333,7 @@ export async function runCIEPipeline(
     context.result.stage = 'failed';
     context.result.success = false;
     context.result.isSuitableForAnalysis = false;
-    context.result.rejectionReason = '이미지 처리 중 오류가 발생했습니다';
+    context.result.rejectionReason = '이미지 처리 중 오류가 발생했어요';
 
     return finalizeResult(context);
   }

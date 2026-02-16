@@ -60,11 +60,7 @@ interface CompletedExerciseData {
 // 메인 컴포넌트
 // ============================================
 
-export function StretchingGuide({
-  prescription,
-  onComplete,
-  className,
-}: StretchingGuideProps) {
+export function StretchingGuide({ prescription, onComplete, className }: StretchingGuideProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentSet, setCurrentSet] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -165,9 +161,7 @@ export function StretchingGuide({
         <CardContent className="p-8 text-center">
           <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-4" />
           <h3 className="text-lg font-semibold">스트레칭 완료!</h3>
-          <p className="text-muted-foreground mt-2">
-            오늘의 스트레칭을 모두 마쳤습니다.
-          </p>
+          <p className="text-muted-foreground mt-2">오늘의 스트레칭을 모두 마쳤어요.</p>
         </CardContent>
       </Card>
     );
@@ -200,12 +194,14 @@ export function StretchingGuide({
             </div>
             <div className="flex gap-2">
               <Badge variant={exercise.type === 'static' ? 'secondary' : 'default'}>
-                {exercise.type === 'static' ? '정적' :
-                 exercise.type === 'dynamic' ? '동적' : 'PNF'}
+                {exercise.type === 'static' ? '정적' : exercise.type === 'dynamic' ? '동적' : 'PNF'}
               </Badge>
               <Badge variant="outline">
-                {exercise.difficulty === 'beginner' ? '초급' :
-                 exercise.difficulty === 'intermediate' ? '중급' : '고급'}
+                {exercise.difficulty === 'beginner'
+                  ? '초급'
+                  : exercise.difficulty === 'intermediate'
+                    ? '중급'
+                    : '고급'}
               </Badge>
             </div>
           </div>
@@ -224,25 +220,12 @@ export function StretchingGuide({
 
           {/* 컨트롤 버튼 */}
           <div className="flex justify-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleReset}
-              title="다시 시작"
-            >
+            <Button variant="outline" size="icon" onClick={handleReset} title="다시 시작">
               <RotateCcw className="w-5 h-5" />
             </Button>
 
-            <Button
-              size="lg"
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="w-24"
-            >
-              {isPlaying ? (
-                <Pause className="w-6 h-6" />
-              ) : (
-                <Play className="w-6 h-6" />
-              )}
+            <Button size="lg" onClick={() => setIsPlaying(!isPlaying)} className="w-24">
+              {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
             </Button>
 
             <Button
@@ -294,9 +277,7 @@ export function StretchingGuide({
 
       {/* 다음 운동 미리보기 */}
       {currentIndex < totalExercises - 1 && (
-        <NextExercisePreview
-          nextStretch={prescription.stretches[currentIndex + 1]}
-        />
+        <NextExercisePreview nextStretch={prescription.stretches[currentIndex + 1]} />
       )}
     </div>
   );
@@ -330,14 +311,7 @@ function TimerDisplay({
       <div className="relative inline-flex items-center justify-center">
         {/* 원형 프로그레스 */}
         <svg className="w-40 h-40 -rotate-90">
-          <circle
-            cx="80"
-            cy="80"
-            r="70"
-            strokeWidth="8"
-            fill="none"
-            className="stroke-muted"
-          />
+          <circle cx="80" cy="80" r="70" strokeWidth="8" fill="none" className="stroke-muted" />
           <circle
             cx="80"
             cy="80"
@@ -357,9 +331,7 @@ function TimerDisplay({
         {/* 시간 표시 */}
         <div className="absolute flex flex-col items-center">
           <span className="text-4xl font-bold tabular-nums">
-            {durationUnit === 'seconds'
-              ? formatTime(timeLeft)
-              : `${timeLeft}회`}
+            {durationUnit === 'seconds' ? formatTime(timeLeft) : `${timeLeft}회`}
           </span>
           <span className="text-sm text-muted-foreground">
             {currentSet} / {totalSets} 세트
@@ -458,8 +430,7 @@ function NextExercisePreview({ nextStretch }: { nextStretch: PrescribedStretch }
         <p className="text-xs text-muted-foreground mb-1">다음 운동</p>
         <p className="font-medium">{nextStretch.exercise.nameKo}</p>
         <p className="text-sm text-muted-foreground">
-          {nextStretch.adjustedSets}세트 x{' '}
-          {nextStretch.adjustedDuration}
+          {nextStretch.adjustedSets}세트 x {nextStretch.adjustedDuration}
           {nextStretch.exercise.durationUnit === 'seconds' ? '초' : '회'}
         </p>
       </CardContent>
@@ -474,9 +445,7 @@ function NextExercisePreview({ nextStretch }: { nextStretch: PrescribedStretch }
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  return mins > 0
-    ? `${mins}:${secs.toString().padStart(2, '0')}`
-    : `${secs}`;
+  return mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}`;
 }
 
 // ============================================
