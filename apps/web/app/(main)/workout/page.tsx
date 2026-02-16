@@ -7,7 +7,7 @@ import { useUser } from '@clerk/nextjs';
 import { Dumbbell, Play, History, BarChart3, Flame, Trophy, ChevronRight } from 'lucide-react';
 import { getLatestWorkoutAnalysisAction, getWorkoutStreakAction } from './actions';
 import type { WorkoutAnalysis, WorkoutStreak } from '@/lib/api/workout';
-import { WORKOUT_TYPE_INFO } from '@/lib/workout/classifyWorkoutType';
+import { WORKOUT_TYPE_INFO } from '@/lib/workout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { QuickActionCard } from '@/components/workout/common';
@@ -23,6 +23,7 @@ export default function WorkoutPage() {
   const { user, isLoaded } = useUser();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<WorkoutAnalysis | null>(null);
   const [streak, setStreak] = useState<WorkoutStreak | null>(null);
 
@@ -41,8 +42,9 @@ export default function WorkoutPage() {
         ]);
         setAnalysis(analysisData);
         setStreak(streakData);
-      } catch (error) {
-        console.error('[W-1 Page] Failed to load workout data:', error);
+      } catch (err) {
+        console.error('[W-1 Page] Failed to load workout data:', err);
+        setError('운동 데이터를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
       } finally {
         setIsLoading(false);
       }
@@ -54,6 +56,32 @@ export default function WorkoutPage() {
   // 로딩 상태
   if (isLoading) {
     return <WorkoutPageSkeleton />;
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <div className="container max-w-lg mx-auto px-4 py-8" data-testid="workout-page">
+        <div
+          className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-center"
+          role="alert"
+          aria-live="assertive"
+          data-testid="workout-error-banner"
+        >
+          <p className="text-red-600">{error}</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.location.reload()}
+            className="mt-2 text-red-600 hover:text-red-700 hover:bg-red-100"
+            aria-label="운동 페이지 다시 불러오기"
+            data-testid="workout-error-retry-button"
+          >
+            다시 시도하기
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   // 분석 데이터가 없으면 온보딩 유도
@@ -90,7 +118,7 @@ export default function WorkoutPage() {
                 {typeInfo.description.slice(0, 30)}...
               </p>
             </div>
-            <Link href="/workout/result">
+            <Link href="/workout/result" aria-label="분석 결과 보기">
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </Link>
           </div>

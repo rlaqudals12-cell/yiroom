@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { recommendRecipes, type NutritionGoal } from '@/lib/nutrition/recipe-matcher';
+import { recommendRecipes, type NutritionGoal } from '@/lib/nutrition';
 
 export const runtime = 'edge';
 

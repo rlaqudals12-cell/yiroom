@@ -10,10 +10,7 @@
 'use client';
 
 import { Check, Circle, Utensils, Trophy, TrendingUp } from 'lucide-react';
-import {
-  NUTRITION_STREAK_BADGES,
-  type StreakSummary,
-} from '@/lib/nutrition/streak';
+import { NUTRITION_STREAK_BADGES, type StreakSummary } from '@/lib/nutrition';
 
 // =====================================================
 // NutritionStreakProgress - 진행도 표시 컴포넌트
@@ -116,10 +113,7 @@ export function NutritionStreakBadge({
   };
 
   return (
-    <div
-      className="flex flex-col items-center gap-1"
-      data-testid="nutrition-streak-badge"
-    >
+    <div className="flex flex-col items-center gap-1" data-testid="nutrition-streak-badge">
       <div
         className={`
           ${sizeClasses[size]}
@@ -130,9 +124,7 @@ export function NutritionStreakBadge({
       >
         <span>{badge.emoji}</span>
       </div>
-      {showName && (
-        <span className="text-xs font-medium text-muted-foreground">{badge.name}</span>
-      )}
+      {showName && <span className="text-xs font-medium text-muted-foreground">{badge.name}</span>}
     </div>
   );
 }
@@ -149,24 +141,13 @@ interface NutritionStreakBadgeListProps {
 /**
  * Streak 배지 목록 컴포넌트
  */
-export function NutritionStreakBadgeList({
-  badges,
-  size = 'sm',
-}: NutritionStreakBadgeListProps) {
+export function NutritionStreakBadgeList({ badges, size = 'sm' }: NutritionStreakBadgeListProps) {
   if (badges.length === 0) return null;
 
   return (
-    <div
-      className="flex items-center gap-2 flex-wrap"
-      data-testid="nutrition-streak-badge-list"
-    >
+    <div className="flex items-center gap-2 flex-wrap" data-testid="nutrition-streak-badge-list">
       {badges.map((badgeId) => (
-        <NutritionStreakBadge
-          key={badgeId}
-          badgeId={badgeId}
-          size={size}
-          showName={false}
-        />
+        <NutritionStreakBadge key={badgeId} badgeId={badgeId} size={size} showName={false} />
       ))}
     </div>
   );
@@ -188,10 +169,7 @@ interface NutritionStreakCardProps {
  */
 function LoadingSkeleton({ testId }: { testId: string }) {
   return (
-    <div
-      className="bg-card rounded-2xl p-6 shadow-sm"
-      data-testid={`${testId}-loading`}
-    >
+    <div className="bg-card rounded-2xl p-6 shadow-sm" data-testid={`${testId}-loading`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
@@ -242,10 +220,7 @@ export function NutritionStreakCard({
   } = summary;
 
   return (
-    <div
-      className="bg-card rounded-2xl p-6 shadow-sm"
-      data-testid={testId}
-    >
+    <div className="bg-card rounded-2xl p-6 shadow-sm" data-testid={testId}>
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -272,10 +247,7 @@ export function NutritionStreakCard({
       {/* 진행도 - 다음 마일스톤까지 진행 상황 표시 */}
       {isActive && nextMilestone && nextMilestone <= 14 && (
         <div className="mb-4">
-          <NutritionStreakProgress
-            currentStreak={currentStreak}
-            targetDays={nextMilestone}
-          />
+          <NutritionStreakProgress currentStreak={currentStreak} targetDays={nextMilestone} />
         </div>
       )}
 
@@ -283,9 +255,7 @@ export function NutritionStreakCard({
       <div className="mb-4">
         <p className="text-foreground">{message}</p>
         {warningMessage && (
-          <p className="text-amber-600 text-sm mt-1 font-medium">
-            {warningMessage}
-          </p>
+          <p className="text-amber-600 text-sm mt-1 font-medium">{warningMessage}</p>
         )}
       </div>
 
@@ -295,8 +265,8 @@ export function NutritionStreakCard({
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-module-nutrition" />
             <span className="text-sm text-module-nutrition-dark">
-              {nextMilestone}일 연속까지{' '}
-              <span className="font-bold">{daysToNextMilestone}일</span> 남았어요!
+              {nextMilestone}일 연속까지 <span className="font-bold">{daysToNextMilestone}일</span>{' '}
+              남았어요!
             </span>
           </div>
         </div>

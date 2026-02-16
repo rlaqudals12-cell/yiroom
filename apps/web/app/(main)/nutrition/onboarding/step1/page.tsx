@@ -10,7 +10,7 @@ import {
   type ActivityLevel,
 } from '@/lib/stores/nutritionInputStore';
 import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/workout/common';
-import { ACTIVITY_LEVEL_LABELS } from '@/lib/nutrition/calculateBMR';
+import { ACTIVITY_LEVEL_LABELS } from '@/lib/nutrition';
 import type { NutritionGoal } from '@/types/nutrition';
 import { Loader2, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 

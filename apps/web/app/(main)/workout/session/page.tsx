@@ -5,8 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { useWorkoutInputStore } from '@/lib/stores/workoutInputStore';
 import { useWorkoutSessionStore } from '@/lib/stores/workoutSessionStore';
-import { classifyWorkoutType } from '@/lib/workout/classifyWorkoutType';
-import { createWeeklyPlanFromInput } from '@/lib/workout/weeklyPlan';
+import { classifyWorkoutType, createWeeklyPlanFromInput } from '@/lib/workout';
 import { validateAllSteps } from '@/lib/utils/workoutValidation';
 import { saveWorkoutLogAction, getWorkoutStreakAction } from './actions';
 import type { ExerciseLog, SetLog } from '@/lib/api/workout';
@@ -426,12 +425,12 @@ function SessionPageContent() {
                 본 서비스는 전문 의료 조언을 대체하지 않아요.
                 <br />
                 <br />
-                • 부상이나 통증이 있는 경우 전문가와 상담 후 운동하세요.
+                • 부상이나 통증이 있는 경우 전문가와 상담 후 운동해주세요.
                 <br />
-                • 운동 중 통증이 발생하면 즉시 중단하세요.
+                • 운동 중 통증이 발생하면 즉시 중단해주세요.
                 <br />
                 • 무게와 강도는 점진적으로 늘려주세요.
-                <br />• 임산부, 심장질환자, 고혈압 환자는 의사와 상담 후 운동하세요.
+                <br />• 임산부, 심장질환자, 고혈압 환자는 의사와 상담 후 운동해주세요.
               </p>
             </div>
           </div>

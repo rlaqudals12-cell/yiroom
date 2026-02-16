@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Activity, AlertCircle, Play } from 'lucide-react';
 
 import type { StretchingPrescription } from '@/types/stretching';
-import { MUSCLE_NAME_KO } from '@/lib/workout/stretching';
+import { MUSCLE_NAME_KO } from '@/lib/workout';
 
 interface StretchingRoutineCardProps {
   prescription: StretchingPrescription;
@@ -58,13 +58,9 @@ export function StretchingRoutineCard({
               <span>{purposeIcon}</span>
               {purposeTitle}
             </CardTitle>
-            <CardDescription>
-              {prescription.frequency}
-            </CardDescription>
+            <CardDescription>{prescription.frequency}</CardDescription>
           </div>
-          <Badge variant="secondary">
-            {prescription.stretches.length}개 운동
-          </Badge>
+          <Badge variant="secondary">{prescription.stretches.length}개 운동</Badge>
         </div>
       </CardHeader>
 
@@ -118,20 +114,20 @@ export function StretchingRoutineCard({
         <div className="border rounded-lg divide-y">
           {prescription.stretches.slice(0, 3).map((stretch, idx) => (
             <div key={stretch.exercise.id} className="p-3 flex items-center gap-3">
-              <span className="text-sm text-muted-foreground w-6">
-                {idx + 1}.
-              </span>
+              <span className="text-sm text-muted-foreground w-6">{idx + 1}.</span>
               <div className="flex-1">
                 <p className="text-sm font-medium">{stretch.exercise.nameKo}</p>
                 <p className="text-xs text-muted-foreground">
-                  {stretch.adjustedSets}세트 x{' '}
-                  {stretch.adjustedDuration}
+                  {stretch.adjustedSets}세트 x {stretch.adjustedDuration}
                   {stretch.exercise.durationUnit === 'seconds' ? '초' : '회'}
                 </p>
               </div>
               <Badge variant="secondary" className="text-xs">
-                {stretch.exercise.type === 'static' ? '정적' :
-                 stretch.exercise.type === 'dynamic' ? '동적' : 'PNF'}
+                {stretch.exercise.type === 'static'
+                  ? '정적'
+                  : stretch.exercise.type === 'dynamic'
+                    ? '동적'
+                    : 'PNF'}
               </Badge>
             </div>
           ))}
@@ -149,9 +145,7 @@ export function StretchingRoutineCard({
         </Button>
 
         {/* 면책 조항 */}
-        <p className="text-xs text-muted-foreground text-center">
-          통증이 발생하면 즉시 중단하세요
-        </p>
+        <p className="text-xs text-muted-foreground text-center">통증이 발생하면 즉시 중단하세요</p>
       </CardContent>
     </Card>
   );

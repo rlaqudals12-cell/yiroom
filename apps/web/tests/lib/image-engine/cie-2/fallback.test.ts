@@ -48,7 +48,7 @@ describe('lib/image-engine/cie-2/fallback', () => {
     it('피드백 메시지가 있다', () => {
       const result = generateFrontalityFallback();
 
-      expect(result.feedback).toBe('얼굴 각도가 적절합니다.');
+      expect(result.feedback).toBe('얼굴 각도가 적절해요.');
     });
   });
 

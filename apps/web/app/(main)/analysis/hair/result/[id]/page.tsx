@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ShareButton } from '@/components/share';
 import { useAnalysisShare, createHairShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
+import Image from 'next/image';
 import { AIBadge } from '@/components/common/AIBadge';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
@@ -434,11 +435,13 @@ export default function HairAnalysisResultPage() {
                 {imageUrl && (
                   <div className="bg-card rounded-xl p-6 shadow-sm">
                     <h3 className="font-semibold mb-3">분석 이미지</h3>
-                    <div className="aspect-square rounded-lg overflow-hidden bg-muted">
-                      <img
+                    <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+                      <Image
                         src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/hair-images/${imageUrl}`}
                         alt="분석된 헤어 이미지"
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 512px"
+                        className="object-cover"
                       />
                     </div>
                   </div>

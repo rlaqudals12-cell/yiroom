@@ -12,10 +12,7 @@
 import { useState, useMemo } from 'react';
 import { AlertTriangle, Flame, X, ChevronRight, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  getWorkoutNutritionInsight,
-  type WorkoutSummary,
-} from '@/lib/nutrition/workoutInsight';
+import { getWorkoutNutritionInsight, type WorkoutSummary } from '@/lib/nutrition';
 
 export interface CalorieSurplusAlertProps {
   /** 오늘의 운동 요약 */
@@ -38,7 +35,10 @@ type AlertLevel = 'warning' | 'danger';
 /**
  * 알림 레벨별 스타일 설정
  */
-const ALERT_STYLES: Record<AlertLevel, { bg: string; border: string; text: string; button: string }> = {
+const ALERT_STYLES: Record<
+  AlertLevel,
+  { bg: string; border: string; text: string; button: string }
+> = {
   warning: {
     bg: 'bg-amber-50',
     border: 'border-amber-200',
@@ -95,7 +95,10 @@ export default function CalorieSurplusAlert({
   }
 
   // 칼로리 초과가 아니거나 추천이 없으면 표시하지 않음
-  if (!insight.recommendation.shouldRecommend || insight.recommendation.reason !== 'calorie_surplus') {
+  if (
+    !insight.recommendation.shouldRecommend ||
+    insight.recommendation.reason !== 'calorie_surplus'
+  ) {
     return null;
   }
 

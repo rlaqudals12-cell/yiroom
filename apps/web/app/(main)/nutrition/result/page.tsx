@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNutritionInputStore } from '@/lib/stores/nutritionInputStore';
-import { calculateAll } from '@/lib/nutrition/calculateBMR';
+import { calculateAll } from '@/lib/nutrition';
 import { AnalyzingLoader, ErrorState } from '@/components/workout/common';
 import { Check, ChevronRight, Utensils, Flame, Activity, Target } from 'lucide-react';
 import { useShare } from '@/hooks/useShare';

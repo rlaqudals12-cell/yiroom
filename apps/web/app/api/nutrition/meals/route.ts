@@ -8,7 +8,7 @@ import {
   type BadgeAwardResult,
   type LevelUpResult,
 } from '@/lib/gamification';
-import { getDaysDifference } from '@/lib/nutrition/streak';
+import { getDaysDifference } from '@/lib/nutrition';
 import { updateChallengesOnNutrition, type ChallengeUpdateResult } from '@/lib/challenges';
 import { trackActivity } from '@/lib/levels';
 

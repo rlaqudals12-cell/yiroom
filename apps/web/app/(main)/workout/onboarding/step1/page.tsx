@@ -256,6 +256,8 @@ export default function Step1Page() {
             <button
               onClick={() => setShowBodyInfo(!showBodyInfo)}
               className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
+              aria-label={showBodyInfo ? '체형 정보 접기' : '체형 정보 펼치기'}
+              aria-expanded={showBodyInfo}
             >
               <div className="flex items-center gap-3">
                 {bodyTypeInfo && <span className="text-2xl">{bodyTypeInfo.emoji}</span>}

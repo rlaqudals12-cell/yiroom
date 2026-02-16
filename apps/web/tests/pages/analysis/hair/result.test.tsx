@@ -35,6 +35,14 @@ vi.mock('@/lib/supabase/clerk-client', () => ({
   useClerkSupabaseClient: () => mockSupabaseClient,
 }));
 
+// Mock next/image (테스트 환경에서 NEXT_PUBLIC_SUPABASE_URL 미정의 대응)
+vi.mock('next/image', () => ({
+  default: (props: Record<string, unknown>) => {
+    const { fill, sizes, priority, ...rest } = props;
+    return <img {...rest} />;
+  },
+}));
+
 // Mock Share hook
 const mockShare = vi.fn();
 vi.mock('@/hooks/useAnalysisShare', () => ({

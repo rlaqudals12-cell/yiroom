@@ -12,7 +12,7 @@
 import { ScanBarcode, ShieldCheck, ShieldAlert, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BarcodeFood } from '@/types/nutrition';
-import { getSourceLabel, calculateNutrition } from '@/lib/nutrition/barcodeService';
+import { getSourceLabel, calculateNutrition } from '@/lib/nutrition';
 
 export interface FoodCardProps {
   /** 바코드 식품 데이터 */

@@ -206,7 +206,10 @@ export default function MakeupAnalysisResultPage() {
         {/* 탭 기반 결과 */}
         {result && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
+            <TabsList
+              className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted"
+              aria-label="메이크업 분석 결과 탭"
+            >
               <TabsTrigger value="basic" className="gap-1 text-xs sm:text-sm">
                 <Sparkles className="w-4 h-4" />
                 분석

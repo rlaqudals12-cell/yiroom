@@ -1,6 +1,6 @@
 'use client';
 
-import { STREAK_BADGES } from '@/lib/workout/streak';
+import { STREAK_BADGES } from '@/lib/workout';
 
 interface StreakBadgeProps {
   badgeId: string;
@@ -12,11 +12,7 @@ interface StreakBadgeProps {
  * Streak 배지 컴포넌트
  * - 마일스톤 배지 표시
  */
-export function StreakBadge({
-  badgeId,
-  size = 'md',
-  showName = true,
-}: StreakBadgeProps) {
+export function StreakBadge({ badgeId, size = 'md', showName = true }: StreakBadgeProps) {
   // 배지 ID에서 일수 추출 (예: '7day' -> 7)
   const milestone = parseInt(badgeId.replace('day', ''), 10);
   const badge = STREAK_BADGES[milestone];
@@ -30,10 +26,7 @@ export function StreakBadge({
   };
 
   return (
-    <div
-      className="flex flex-col items-center gap-1"
-      data-testid="streak-badge"
-    >
+    <div className="flex flex-col items-center gap-1" data-testid="streak-badge">
       <div
         className={`
           ${sizeClasses[size]}
@@ -44,9 +37,7 @@ export function StreakBadge({
       >
         <span>{badge.emoji}</span>
       </div>
-      {showName && (
-        <span className="text-xs font-medium text-muted-foreground">{badge.name}</span>
-      )}
+      {showName && <span className="text-xs font-medium text-muted-foreground">{badge.name}</span>}
     </div>
   );
 }
@@ -63,10 +54,7 @@ export function StreakBadgeList({ badges, size = 'sm' }: StreakBadgeListProps) {
   if (badges.length === 0) return null;
 
   return (
-    <div
-      className="flex items-center gap-2 flex-wrap"
-      data-testid="streak-badge-list"
-    >
+    <div className="flex items-center gap-2 flex-wrap" data-testid="streak-badge-list">
       {badges.map((badgeId) => (
         <StreakBadge key={badgeId} badgeId={badgeId} size={size} showName={false} />
       ))}

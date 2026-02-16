@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   generateBest5,
-  ExerciseGoal,
   GOAL_ICONS,
+  type ExerciseGoal,
   type ExerciseRecommendation,
-} from '@/lib/workout/best5-generator';
+} from '@/lib/workout';
 import { PostureType } from '@/lib/mock/posture-analysis';
 import { BodyType } from '@/types/workout';
 import { Clock, Flame, Info, ChevronDown, ChevronUp } from 'lucide-react';

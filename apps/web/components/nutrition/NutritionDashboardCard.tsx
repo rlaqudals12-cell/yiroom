@@ -6,24 +6,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import {
-  Flame,
-  TrendingUp,
-  TrendingDown,
-  Target,
-  Utensils,
-  Info,
-} from 'lucide-react';
+import { Flame, TrendingUp, TrendingDown, Target, Utensils, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import NutrientBarChart, { type NutrientData } from './NutrientBarChart';
-import {
-  type NutritionGoal,
-  NUTRITION_GOAL_LABELS,
-  NUTRITION_TARGETS,
-} from '@/lib/nutrition/recipe-matcher';
+import { type NutritionGoal, NUTRITION_GOAL_LABELS, NUTRITION_TARGETS } from '@/lib/nutrition';
 
 export interface NutritionDashboardCardProps {
   /** 현재 영양 섭취 */
@@ -126,9 +115,7 @@ export default function NutritionDashboardCard({
 
   // 칼로리 진행률
   const calorieProgress = useMemo(() => {
-    const percentage = Math.round(
-      (current.calories / calculatedTargets.calories) * 100
-    );
+    const percentage = Math.round((current.calories / calculatedTargets.calories) * 100);
     return Math.min(100, Math.max(0, percentage));
   }, [current.calories, calculatedTargets.calories]);
 
@@ -212,7 +199,8 @@ export default function NutritionDashboardCard({
               {current.calories.toLocaleString()}
             </span>
             <span className="text-lg text-muted-foreground">
-              {' '}/ {calculatedTargets.calories.toLocaleString()}
+              {' '}
+              / {calculatedTargets.calories.toLocaleString()}
             </span>
             <span className="text-sm text-muted-foreground ml-1">kcal</span>
           </div>
@@ -221,22 +209,22 @@ export default function NutritionDashboardCard({
             value={calorieProgress}
             className={cn(
               'h-3',
-              current.calories > calculatedTargets.calories && '[&>[data-slot=indicator]]:bg-red-500'
+              current.calories > calculatedTargets.calories &&
+                '[&>[data-slot=indicator]]:bg-red-500'
             )}
           />
 
           <div className="flex justify-between text-xs text-muted-foreground mt-2">
-            <span>남은 칼로리: {Math.max(0, calculatedTargets.calories - current.calories).toLocaleString()}kcal</span>
+            <span>
+              남은 칼로리:{' '}
+              {Math.max(0, calculatedTargets.calories - current.calories).toLocaleString()}kcal
+            </span>
             <span>{calorieProgress}%</span>
           </div>
         </div>
 
         {/* 매크로 영양소 차트 */}
-        <NutrientBarChart
-          data={nutrientData}
-          title="영양소 현황"
-          showWarningThreshold
-        />
+        <NutrientBarChart data={nutrientData} title="영양소 현황" showWarningThreshold />
 
         {/* 단백질 부족 경고 */}
         {proteinStatus.warning && (

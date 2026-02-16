@@ -18,7 +18,7 @@ import {
   type WeightChangeInsight,
   type ReanalysisPrompt,
   type BodyCalorieAdjustment,
-} from '@/lib/nutrition/bodyInsight';
+} from '@/lib/nutrition';
 
 export interface BodyInsightCardProps {
   /** C-1 체형 분석 데이터 */
@@ -61,11 +61,7 @@ function LoadingSkeleton() {
 /**
  * C-1 분석 유도 카드
  */
-function NoAnalysisCard({
-  onNavigate,
-}: {
-  onNavigate?: () => void;
-}) {
+function NoAnalysisCard({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div
       className="bg-module-body-light rounded-2xl p-4 shadow-sm border border-module-body/20"
@@ -101,11 +97,7 @@ function NoAnalysisCard({
 /**
  * 체중 변화 섹션
  */
-export function WeightChangeSection({
-  insight,
-}: {
-  insight: WeightChangeInsight;
-}) {
+export function WeightChangeSection({ insight }: { insight: WeightChangeInsight }) {
   const getTrendIcon = () => {
     if (insight.weightChange < -0.5) {
       return <TrendingDown className="w-5 h-5 text-green-500" />;
@@ -153,7 +145,11 @@ export function WeightChangeSection({
           <p
             className={cn(
               'text-lg font-bold',
-              insight.weightChange < 0 ? 'text-green-600' : insight.weightChange > 0 ? 'text-red-600' : 'text-muted-foreground'
+              insight.weightChange < 0
+                ? 'text-green-600'
+                : insight.weightChange > 0
+                  ? 'text-red-600'
+                  : 'text-muted-foreground'
             )}
           >
             {formatWeight(insight.weightChange)}
@@ -221,11 +217,7 @@ export function ReanalysisPromptSection({
 /**
  * 칼로리 조정 정보 섹션
  */
-export function CalorieAdjustmentSection({
-  adjustment,
-}: {
-  adjustment: BodyCalorieAdjustment;
-}) {
+export function CalorieAdjustmentSection({ adjustment }: { adjustment: BodyCalorieAdjustment }) {
   const hasAdjustment = adjustment.baseCalories !== adjustment.adjustedCalories;
   const diff = adjustment.adjustedCalories - adjustment.baseCalories;
 

@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import {
@@ -20,6 +21,41 @@ import {
   internalError,
   dbError,
 } from '@/lib/api/error-response';
+
+// Gemini 응답에서 유효한 값만 필터링하기 위한 Zod 스키마
+const makeupConcernSchema = z.enum([
+  'dark-circles',
+  'redness',
+  'uneven-tone',
+  'large-pores',
+  'oily-tzone',
+  'dry-patches',
+  'acne-scars',
+  'fine-lines',
+]);
+
+const makeupStyleSchema = z.enum(['natural', 'glam', 'cute', 'chic', 'vintage', 'edgy']);
+
+const colorCategorySchema = z.enum(['foundation', 'lip', 'eyeshadow', 'blush', 'contour']);
+
+// Gemini 응답 문자열 배열에서 유효한 값만 필터링
+function filterValidConcerns(concerns: string[]): MakeupConcernId[] {
+  return concerns.filter((c): c is MakeupConcernId => makeupConcernSchema.safeParse(c).success);
+}
+
+function filterValidStyles(styles: string[]): MakeupAnalysisResult['recommendedStyles'] {
+  return styles.filter(
+    (s): s is MakeupAnalysisResult['recommendedStyles'][number] =>
+      makeupStyleSchema.safeParse(s).success
+  );
+}
+
+function parseColorCategory(
+  category: string
+): MakeupAnalysisResult['colorRecommendations'][0]['category'] | null {
+  const result = colorCategorySchema.safeParse(category);
+  return result.success ? result.data : null;
+}
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 15;
@@ -70,7 +106,21 @@ export async function POST(req: NextRequest) {
       // Gemini AI 분석 실행
       try {
         const geminiResult = await analyzeMakeup(imageBase64);
-        // Gemini 결과를 MakeupAnalysisResult 형식으로 변환
+        // Gemini 결과를 MakeupAnalysisResult 형식으로 변환 (Zod 검증)
+        const validConcerns = filterValidConcerns(geminiResult.concerns);
+        const validStyles = filterValidStyles(geminiResult.recommendedStyles);
+        const validColorRecs = geminiResult.colorRecommendations
+          .map((cr) => {
+            const category = parseColorCategory(cr.category);
+            if (!category) return null;
+            return {
+              category,
+              categoryLabel: cr.categoryLabel,
+              colors: cr.colors,
+            };
+          })
+          .filter((cr): cr is NonNullable<typeof cr> => cr !== null);
+
         result = {
           undertone: geminiResult.undertone,
           undertoneLabel: geminiResult.undertoneLabel,
@@ -82,15 +132,10 @@ export async function POST(req: NextRequest) {
           faceShapeLabel: geminiResult.faceShapeLabel,
           overallScore: geminiResult.overallScore,
           metrics: geminiResult.metrics,
-          concerns: geminiResult.concerns as MakeupConcernId[],
+          concerns: validConcerns,
           insight: geminiResult.insight,
-          recommendedStyles:
-            geminiResult.recommendedStyles as MakeupAnalysisResult['recommendedStyles'],
-          colorRecommendations: geminiResult.colorRecommendations.map((cr) => ({
-            category: cr.category as MakeupAnalysisResult['colorRecommendations'][0]['category'],
-            categoryLabel: cr.categoryLabel,
-            colors: cr.colors,
-          })),
+          recommendedStyles: validStyles,
+          colorRecommendations: validColorRecs,
           makeupTips: geminiResult.makeupTips,
           personalColorConnection: geminiResult.personalColorConnection,
           analyzedAt: new Date(),
@@ -193,7 +238,7 @@ export async function POST(req: NextRequest) {
     const alerts: CrossModuleAlertData[] = [];
 
     // 언더톤 및 피부 고민 기반 영양 추천 알림
-    const undertone = result.undertone as 'warm' | 'cool' | 'neutral';
+    const undertone = result.undertone;
     const skinConcerns = result.concerns || [];
     if (skinConcerns.length > 0) {
       alerts.push(createSkinToneNutritionAlert(undertone, skinConcerns));

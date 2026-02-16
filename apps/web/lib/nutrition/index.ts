@@ -6,7 +6,7 @@
  * - 내부 구현 파일 직접 import 금지
  *
  * @module lib/nutrition
- * @description BMR/TDEE 계산, RDA 데이터베이스, 영양소 평가, 시너지 분석
+ * @description BMR/TDEE 계산, RDA 데이터베이스, 영양소 평가, 시너지 분석, 레시피, 스트릭, 인사이트
  *
  * @example
  * import { calculateBMR, KOREAN_RDA, evaluateNutrientIntake } from '@/lib/nutrition';
@@ -145,3 +145,148 @@ export type {
   Recipe,
   RecipeMatchResult,
 } from './recipe-matcher';
+
+// ============================================
+// 재료 대체 추천 (Phase K-4)
+// ============================================
+
+export {
+  generateRecipeVariations,
+  getSubstitutesForIngredient,
+  INGREDIENT_SUBSTITUTES,
+} from './ingredient-substitutes';
+
+export type { VariationGoal, SubstituteInfo, RecipeVariation } from './ingredient-substitutes';
+
+// ============================================
+// S-1 피부 연동 인사이트
+// ============================================
+
+export {
+  getSkinNutritionInsight,
+  getHydrationTargetFromSkin,
+  getSkinHydrationMessage,
+  convertSkinMetricsToSummary,
+} from './skinInsight';
+
+export type {
+  SkinMetricKey,
+  SkinAnalysisSummary,
+  SkinFoodRecommendation,
+  HydrationInsight,
+  SkinNutritionInsight,
+} from './skinInsight';
+
+// ============================================
+// W-1 운동 연동 인사이트
+// ============================================
+
+export {
+  getWorkoutNutritionInsight,
+  createWorkoutSummary,
+  getWorkoutMealMessage,
+} from './workoutInsight';
+
+export type {
+  WorkoutSummary,
+  CalorieBalanceStatus,
+  CalorieBalanceInsight,
+  WorkoutRecommendation,
+  WorkoutNutritionInsight,
+} from './workoutInsight';
+
+// ============================================
+// C-1 체형 연동 인사이트
+// ============================================
+
+export {
+  getBodyNutritionInsight,
+  convertBodyAnalysisToData,
+  getRecommendedCaloriesFromWeight,
+} from './bodyInsight';
+
+export type {
+  BodyAnalysisData,
+  WeightChangeStatus,
+  WeightChangeInsight,
+  ReanalysisPrompt,
+  BodyCalorieAdjustment,
+  BodyNutritionInsight,
+} from './bodyInsight';
+
+// ============================================
+// 음성 식단 기록
+// ============================================
+
+export {
+  parseVoiceInput,
+  parseVoiceTranscript,
+  generateMockVoiceParseResult,
+  parseVoiceToFood,
+} from './voice-parser';
+
+export type { MealType, ParsedFoodItem, VoiceParseResult } from './voice-parser';
+
+// ============================================
+// 식단 스트릭 (연속 기록)
+// ============================================
+
+export {
+  NUTRITION_STREAK_MILESTONES,
+  NUTRITION_STREAK_BADGES,
+  NUTRITION_STREAK_REWARDS,
+  getDaysDifference,
+  isStreakBroken,
+  calculateCurrentStreak,
+  getNextMilestone,
+  getDaysToNextMilestone,
+  getAchievedMilestones,
+  getNewlyAchievedMilestones,
+  getBadgesForMilestones,
+  getNewBadges,
+  getStreakMessage,
+  getStreakWarningMessage,
+  getReEngagementMessage,
+  getMilestoneAchievementMessage,
+  getStreakSummary,
+} from './streak';
+
+export type { NutritionStreak, StreakSummary } from './streak';
+
+// ============================================
+// 바코드 식품 조회
+// ============================================
+
+export {
+  getSourceLabel,
+  calculateNutrition,
+  isValidBarcode,
+  lookupBarcode,
+  registerBarcodeFood,
+  getBarcodeHistory,
+  recordBarcodeFood,
+} from './barcodeService';
+
+// ============================================
+// 외부 식품 DB 조회
+// ============================================
+
+export { lookupOpenFoodFacts } from './openfoodfacts';
+
+export type { OpenFoodFactsResult } from './openfoodfacts';
+
+export { lookupFoodSafetyKorea } from './foodsafetykorea';
+
+export type { FoodSafetyKoreaResult } from './foodsafetykorea';
+
+// ============================================
+// 영양제 추천
+// ============================================
+
+export { getSupplementRecommendations, getTopSupplements } from './supplementInsight';
+
+export type {
+  SupplementRecommendation,
+  SkinConcern,
+  SupplementInsightResult,
+} from './supplementInsight';

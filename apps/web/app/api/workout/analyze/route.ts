@@ -7,7 +7,7 @@ import {
   type GeminiWorkoutAnalysisResult,
 } from '@/lib/gemini';
 import { generateMockWorkoutAnalysis } from '@/lib/mock/workout-analysis';
-import { WORKOUT_TYPE_INFO } from '@/lib/workout/classifyWorkoutType';
+import { WORKOUT_TYPE_INFO } from '@/lib/workout';
 import type { WorkoutType } from '@/types/workout';
 import { trackActivity } from '@/lib/levels';
 

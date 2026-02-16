@@ -48,9 +48,14 @@ import {
 } from '@/components/nutrition/dynamic';
 import type { NutritionGoal } from '@/types/nutrition';
 import { Button } from '@/components/ui/button';
-import { convertSkinMetricsToSummary, type SkinAnalysisSummary } from '@/lib/nutrition/skinInsight';
-import { createWorkoutSummary, type WorkoutSummary } from '@/lib/nutrition/workoutInsight';
-import { convertBodyAnalysisToData, type BodyAnalysisData } from '@/lib/nutrition/bodyInsight';
+import {
+  convertSkinMetricsToSummary,
+  createWorkoutSummary,
+  convertBodyAnalysisToData,
+  type SkinAnalysisSummary,
+  type WorkoutSummary,
+  type BodyAnalysisData,
+} from '@/lib/nutrition';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';

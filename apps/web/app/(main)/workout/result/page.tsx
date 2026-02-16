@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { useWorkoutInputStore, type PersonalColorSeason } from '@/lib/stores/workoutInputStore';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { convertSkinMetricsToSummary } from '@/lib/nutrition/skinInsight';
+import { convertSkinMetricsToSummary } from '@/lib/nutrition';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
-import { classifyWorkoutType, WorkoutTypeResult } from '@/lib/workout/classifyWorkoutType';
+import {
+  classifyWorkoutType,
+  getRecommendedExercises,
+  type WorkoutTypeResult,
+} from '@/lib/workout';
 import { saveWorkoutAnalysisAction } from '../actions';
-import { getRecommendedExercises } from '@/lib/workout/exercises';
 import { validateAllSteps } from '@/lib/utils/workoutValidation';
 import {
   WorkoutTypeCard,
@@ -21,8 +24,7 @@ import {
   RecommendedEquipmentCard,
   RecommendedSupplementCard,
 } from '@/components/workout/result';
-import type { SkinAnalysisSummary } from '@/lib/workout/skinTips';
-import type { WorkoutType } from '@/lib/workout/nutritionTips';
+import type { SkinAnalysisSummary, WorkoutType } from '@/lib/workout';
 import { AnalyzingLoader, ErrorState } from '@/components/workout/common';
 import { Exercise, BodyType } from '@/types/workout';
 import { Dumbbell, Calendar } from 'lucide-react';

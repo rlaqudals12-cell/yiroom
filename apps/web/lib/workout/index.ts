@@ -206,6 +206,7 @@ export {
   getPostWorkoutNutritionTips,
   getQuickNutritionMessage,
   calculateProteinRecommendation,
+  type WorkoutType,
   type NutritionTip,
   type PostWorkoutNutrition,
   type CalorieEstimate,

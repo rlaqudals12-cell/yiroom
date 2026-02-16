@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { SAMPLE_RECIPES } from '@/lib/nutrition/recipe-matcher';
-import { generateRecipeVariations, VariationGoal } from '@/lib/nutrition/ingredient-substitutes';
+import { SAMPLE_RECIPES, generateRecipeVariations, type VariationGoal } from '@/lib/nutrition';
 
 export const runtime = 'edge';
 

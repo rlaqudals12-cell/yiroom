@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Utensils, ChevronDown, ChevronUp, Timer, Droplets, ArrowRight } from 'lucide-react';
-import type { NutritionTip, WorkoutType } from '@/lib/workout/nutritionTips';
+import type { NutritionTip, WorkoutType } from '@/lib/workout';
 import {
   getPostWorkoutNutritionTips,
   getQuickNutritionMessage,
   calculateProteinRecommendation,
   estimateCaloriesBurned,
-} from '@/lib/workout/nutritionTips';
+} from '@/lib/workout';
 
 interface PostWorkoutNutritionCardProps {
   workoutType: WorkoutType;
@@ -63,7 +63,8 @@ export default function PostWorkoutNutritionCard({
   const quickMessage = getQuickNutritionMessage(workoutType, durationMinutes, caloriesBurned);
   const tips = getPostWorkoutNutritionTips(workoutType, durationMinutes);
   const proteinRec = calculateProteinRecommendation(workoutType, bodyWeightKg);
-  const calories = caloriesBurned || estimateCaloriesBurned(workoutType, durationMinutes, bodyWeightKg).total;
+  const calories =
+    caloriesBurned || estimateCaloriesBurned(workoutType, durationMinutes, bodyWeightKg).total;
 
   return (
     <div
@@ -78,9 +79,7 @@ export default function PostWorkoutNutritionCard({
               <Utensils className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground">
-                {quickMessage.title}
-              </h3>
+              <h3 className="font-bold text-foreground">{quickMessage.title}</h3>
               <p className="text-sm text-primary">{quickMessage.message}</p>
             </div>
           </div>
@@ -89,11 +88,7 @@ export default function PostWorkoutNutritionCard({
             className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-primary"
             aria-label={isExpanded ? '접기' : '펼치기'}
           >
-            {isExpanded ? (
-              <ChevronUp className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
+            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </button>
         </div>
       </div>
@@ -118,14 +113,12 @@ export default function PostWorkoutNutritionCard({
           </div>
 
           {/* 단백질 권장량 */}
-          <div
-            className="p-3 bg-card/60 rounded-lg"
-            data-testid="protein-recommendation"
-          >
+          <div className="p-3 bg-card/60 rounded-lg" data-testid="protein-recommendation">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-foreground">단백질 권장량</span>
               <span className="text-lg font-bold text-primary">
-                {proteinRec.min}-{proteinRec.max}{proteinRec.unit}
+                {proteinRec.min}-{proteinRec.max}
+                {proteinRec.unit}
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -171,10 +164,11 @@ export default function PostWorkoutNutritionCard({
           </div>
 
           {/* N-1 식단 분석 유도 */}
-          <div className="text-center py-4 bg-card/50 rounded-lg" data-testid="nutrition-analysis-cta">
-            <p className="text-xs text-muted-foreground mb-3">
-              더 정확한 식단 추천을 받고 싶다면?
-            </p>
+          <div
+            className="text-center py-4 bg-card/50 rounded-lg"
+            data-testid="nutrition-analysis-cta"
+          >
+            <p className="text-xs text-muted-foreground mb-3">더 정확한 식단 추천을 받고 싶다면?</p>
             <Link
               href="/nutrition"
               className="inline-flex items-center gap-2 px-4 py-2 bg-foreground hover:bg-foreground/90 text-background text-sm font-medium rounded-lg transition-colors"
@@ -182,9 +176,7 @@ export default function PostWorkoutNutritionCard({
               식단 분석 받기
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <p className="text-xs text-muted-foreground mt-2">
-              * N-1 영양 모듈 출시 예정
-            </p>
+            <p className="text-xs text-muted-foreground mt-2">* N-1 영양 모듈 출시 예정</p>
           </div>
         </div>
       )}

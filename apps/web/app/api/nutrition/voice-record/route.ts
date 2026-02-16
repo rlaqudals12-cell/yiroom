@@ -9,7 +9,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { parseVoiceInput, type ParsedFoodItem } from '@/lib/nutrition/voice-parser';
+import { parseVoiceInput, type ParsedFoodItem } from '@/lib/nutrition';
 
 // 유효한 식사 타입
 const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const;

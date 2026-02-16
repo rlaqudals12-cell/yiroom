@@ -21,8 +21,18 @@ import type {
   VitaShade,
   ToothColorResult,
   GumHealthResult,
-  LabColor,
 } from '@/types/oral-health';
+import {
+  getLabForShade,
+  getAStarFromRedness,
+  getRednessPercentage,
+  getSwellingIndicator,
+  mapInflammationToSeverity,
+  calculateTargetShade,
+  calculateRouteShadeSteps,
+  checkOverWhitening,
+  generateHarmonySuggestion,
+} from '@/lib/oral-health/internal/route-helpers';
 
 // 요청 스키마
 const requestSchema = z.object({
@@ -252,7 +262,7 @@ function convertGeminiToAssessment(
       ? {
           targetShade: calculateTargetShade(toothColor.matchedShade, personalColorSeason),
           personalColorSeason,
-          shadeStepsNeeded: calculateShadeSteps(toothColor.matchedShade, personalColorSeason),
+          shadeStepsNeeded: calculateRouteShadeSteps(toothColor.matchedShade, personalColorSeason),
           isOverWhitening: checkOverWhitening(toothColor.matchedShade, personalColorSeason),
           harmonySuggestion: generateHarmonySuggestion(
             toothColor.matchedShade,
@@ -272,145 +282,4 @@ function convertGeminiToAssessment(
     overallScore: gemini.overallScore,
     recommendations: gemini.recommendations,
   };
-}
-
-// ============================================================================
-// 헬퍼 함수
-// ============================================================================
-
-/**
- * VITA 셰이드에 대한 Lab 색상값 반환 (간소화된 참조 테이블)
- */
-function getLabForShade(shade: VitaShade): LabColor {
-  const labValues: Record<VitaShade, LabColor> = {
-    B1: { L: 71, a: 1.5, b: 15 },
-    A1: { L: 70, a: 2, b: 16 },
-    B2: { L: 68.5, a: 2, b: 17 },
-    D2: { L: 68, a: 1.5, b: 14 },
-    A2: { L: 67, a: 2.5, b: 18 },
-    C1: { L: 66, a: 1, b: 12 },
-    C2: { L: 65, a: 1.5, b: 14 },
-    D4: { L: 64, a: 2, b: 16 },
-    A3: { L: 63, a: 3, b: 20 },
-    D3: { L: 62, a: 2, b: 15 },
-    B3: { L: 61, a: 2.5, b: 19 },
-    'A3.5': { L: 60, a: 3.5, b: 22 },
-    B4: { L: 58, a: 3, b: 21 },
-    C3: { L: 57, a: 2, b: 16 },
-    A4: { L: 55, a: 4, b: 24 },
-    C4: { L: 54, a: 2.5, b: 18 },
-    '0M1': { L: 80, a: 0, b: 8 },
-    '0M2': { L: 78, a: 0.5, b: 10 },
-    '0M3': { L: 76, a: 1, b: 12 },
-  };
-  return labValues[shade] || { L: 65, a: 2, b: 16 };
-}
-
-/**
- * 붉은기 레벨에서 a* 평균값 추정
- */
-function getAStarFromRedness(redness: 'normal' | 'slightly_red' | 'red' | 'very_red'): number {
-  const values = { normal: 12, slightly_red: 18, red: 25, very_red: 35 };
-  return values[redness];
-}
-
-/**
- * 붉은기 레벨에서 붉은 영역 비율 추정
- */
-function getRednessPercentage(redness: 'normal' | 'slightly_red' | 'red' | 'very_red'): number {
-  const values = { normal: 5, slightly_red: 15, red: 30, very_red: 50 };
-  return values[redness];
-}
-
-/**
- * 부종 레벨에서 부종 지표 추정
- */
-function getSwellingIndicator(swelling: 'none' | 'mild' | 'moderate' | 'severe'): number {
-  const values = { none: 0, mild: 25, moderate: 50, severe: 80 };
-  return values[swelling];
-}
-
-/**
- * 염증 점수를 심각도로 매핑
- */
-function mapInflammationToSeverity(score: number): 'mild' | 'moderate' | 'severe' {
-  if (score < 30) return 'mild';
-  if (score < 60) return 'moderate';
-  return 'severe';
-}
-
-/**
- * 퍼스널컬러 기반 목표 셰이드 계산
- */
-function calculateTargetShade(currentShade: VitaShade, season: PersonalColorSeason): VitaShade {
-  // 퍼스널컬러별 권장 셰이드 범위
-  const seasonTargets: Record<PersonalColorSeason, VitaShade[]> = {
-    spring: ['B1', 'A1', 'B2'], // 밝고 따뜻한 톤
-    summer: ['B1', 'C1', 'D2'], // 밝고 차가운 톤
-    autumn: ['A2', 'B2', 'D2'], // 중간 밝기 따뜻한 톤
-    winter: ['B1', 'C1', 'C2'], // 밝고 선명한 톤
-  };
-
-  const targets = seasonTargets[season];
-  // 현재 셰이드보다 밝은 목표 중 첫 번째 선택
-  return targets[0];
-}
-
-/**
- * 필요한 셰이드 단계 수 계산
- */
-function calculateShadeSteps(currentShade: VitaShade, _season: PersonalColorSeason): number {
-  const shadeRanks: Record<VitaShade, number> = {
-    B1: 1,
-    A1: 2,
-    B2: 3,
-    D2: 4,
-    A2: 5,
-    C1: 6,
-    C2: 7,
-    D4: 8,
-    A3: 9,
-    D3: 10,
-    B3: 11,
-    'A3.5': 12,
-    B4: 13,
-    C3: 14,
-    A4: 15,
-    C4: 16,
-    '0M1': 0,
-    '0M2': 0,
-    '0M3': 0,
-  };
-
-  const currentRank = shadeRanks[currentShade];
-  const targetRank = 2; // 일반적으로 A1/B1 수준 목표
-
-  return Math.max(0, currentRank - targetRank);
-}
-
-/**
- * 과도한 미백 여부 확인
- */
-function checkOverWhitening(currentShade: VitaShade, _season: PersonalColorSeason): boolean {
-  // 이미 매우 밝은 셰이드이거나 Bleached 셰이드면 과도한 미백 경고
-  const brightShades: VitaShade[] = ['B1', 'A1', '0M1', '0M2', '0M3'];
-  return brightShades.includes(currentShade);
-}
-
-/**
- * 조화 제안 생성
- */
-function generateHarmonySuggestion(currentShade: VitaShade, season: PersonalColorSeason): string {
-  const suggestions: Record<PersonalColorSeason, string> = {
-    spring:
-      '봄 웜톤에는 따뜻하고 밝은 아이보리 계열의 치아색이 자연스럽습니다. 과도하게 하얀 치아보다 약간의 따뜻함이 있는 B1-A1 셰이드를 권장합니다.',
-    summer:
-      '여름 쿨톤에는 핑크빛이 도는 밝은 치아색이 어울립니다. 회색 기가 있는 C1-D2 계열도 자연스러운 조화를 이룹니다.',
-    autumn:
-      '가을 웜톤에는 너무 하얀 치아보다 자연스러운 아이보리 톤이 어울립니다. A2-B2 셰이드가 피부톤과 조화롭습니다.',
-    winter:
-      '겨울 쿨톤에는 선명하고 밝은 치아색이 잘 어울립니다. B1-C1 셰이드로 깨끗한 이미지를 연출할 수 있습니다.',
-  };
-
-  return suggestions[season];
 }

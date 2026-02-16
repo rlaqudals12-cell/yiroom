@@ -101,12 +101,7 @@ function createShadowedImage(width: number, height: number): RGBImageData {
 /**
  * 테스트용 얼굴 영역 생성
  */
-function createFaceRegion(
-  x = 0.25,
-  y = 0.2,
-  width = 0.5,
-  height = 0.6
-): NormalizedRect {
+function createFaceRegion(x = 0.25, y = 0.2, width = 0.5, height = 0.6): NormalizedRect {
   return { x, y, width, height };
 }
 
@@ -293,7 +288,7 @@ describe('CIE-4: processLightingAnalysis', () => {
       const result = processLightingAnalysis(imageData);
 
       const hasPositiveFeedback = result.feedback.some(
-        (f) => f.includes('좋습니다') || f.includes('보통')
+        (f) => f.includes('좋아요') || f.includes('보통')
       );
       expect(hasPositiveFeedback).toBe(true);
     });
@@ -389,9 +384,7 @@ describe('CIE-4: processLightingAnalysis', () => {
       // 그림자가 있는 이미지에서 그림자 감지
       if (result.shadowAnalysis) {
         // severity는 'none' | 'mild' | 'moderate' | 'severe' 중 하나
-        expect(['none', 'mild', 'moderate', 'severe']).toContain(
-          result.shadowAnalysis.severity
-        );
+        expect(['none', 'mild', 'moderate', 'severe']).toContain(result.shadowAnalysis.severity);
         // 그림자 강도(intensity)가 어느 정도 있어야 함
         expect(result.shadowAnalysis.intensity).toBeGreaterThanOrEqual(0);
       }
@@ -478,11 +471,7 @@ describe('CIE-4: processLightingAnalysisWithTimeout', () => {
     const imageData = createNaturalLightingImage(100, 100);
     const customConfig = { minQualityScore: 50 };
 
-    const resultPromise = processLightingAnalysisWithTimeout(
-      imageData,
-      undefined,
-      customConfig
-    );
+    const resultPromise = processLightingAnalysisWithTimeout(imageData, undefined, customConfig);
     vi.advanceTimersByTime(100);
     const result = await resultPromise;
 
@@ -598,9 +587,7 @@ describe('CIE-4: Overall Score Calculation', () => {
     const shadowedResult = processLightingAnalysis(shadowedImage, faceRegion);
 
     // 균일한 조명이 그림자가 있는 것보다 점수가 높거나 같음
-    expect(uniformResult.overallScore).toBeGreaterThanOrEqual(
-      shadowedResult.overallScore - 20
-    );
+    expect(uniformResult.overallScore).toBeGreaterThanOrEqual(shadowedResult.overallScore - 20);
   });
 });
 
@@ -624,9 +611,7 @@ describe('CIE-4: Confidence Calculation', () => {
     const withoutFace = processLightingAnalysis(imageData);
     const withFace = processLightingAnalysis(imageData, faceRegion);
 
-    expect(withFace.metadata.confidence).toBeGreaterThan(
-      withoutFace.metadata.confidence
-    );
+    expect(withFace.metadata.confidence).toBeGreaterThan(withoutFace.metadata.confidence);
   });
 
   it('should adjust confidence for extreme scores', () => {

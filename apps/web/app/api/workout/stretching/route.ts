@@ -15,7 +15,7 @@ import {
   generateSportStretchingPrescription,
   generateGeneralFlexibilityPrescription,
   generateWeeklyStretchingPlan,
-} from '@/lib/workout/stretching';
+} from '@/lib/workout';
 import { logAnalysisCreate } from '@/lib/audit/logger';
 import { checkRateLimit, getRateLimitHeaders } from '@/lib/security/rate-limit';
 import type {
@@ -35,41 +35,68 @@ const userProfileSchema = z.object({
   gender: z.enum(['male', 'female']),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
   stretchingExperience: z.enum(['none', 'some', 'regular']),
-  primarySports: z.array(z.enum(['hiking', 'running', 'golf', 'cycling', 'swimming', 'tennis'])).optional(),
+  primarySports: z
+    .array(z.enum(['hiking', 'running', 'golf', 'cycling', 'swimming', 'tennis']))
+    .optional(),
   sportsFrequency: z.enum(['daily', 'weekly', 'monthly', 'rarely']).optional(),
   contraindications: z.array(z.string()).optional(),
-  specialConditions: z.array(z.enum([
-    'pregnancy', 'senior', 'osteoporosis', 'disc_herniation',
-    'spinal_stenosis', 'rheumatoid', 'hypermobility', 'recent_surgery'
-  ])).optional(),
-  availableEquipment: z.array(z.enum([
-    'bodyweight', 'wall', 'chair', 'mat', 'foam_roller',
-    'resistance_band', 'yoga_block', 'trekking_pole', 'golf_club'
-  ])).optional(),
+  specialConditions: z
+    .array(
+      z.enum([
+        'pregnancy',
+        'senior',
+        'osteoporosis',
+        'disc_herniation',
+        'spinal_stenosis',
+        'rheumatoid',
+        'hypermobility',
+        'recent_surgery',
+      ])
+    )
+    .optional(),
+  availableEquipment: z
+    .array(
+      z.enum([
+        'bodyweight',
+        'wall',
+        'chair',
+        'mat',
+        'foam_roller',
+        'resistance_band',
+        'yoga_block',
+        'trekking_pole',
+        'golf_club',
+      ])
+    )
+    .optional(),
   preferredSessionDuration: z.number().int().min(5).max(60).optional(),
 });
 
-const postureAnalysisSchema = z.object({
-  assessmentId: z.string(),
-  createdAt: z.string(),
-  angles: z.object({
-    cva: z.number(),
-    shoulderTilt: z.number(),
-    thoracicKyphosis: z.number(),
-    lumbarLordosis: z.number(),
-    pelvicTilt: z.number(),
-  }),
-  overallScore: z.number(),
-  category: z.enum(['excellent', 'good', 'moderate', 'poor']),
-  imbalances: z.array(z.object({
-    type: z.string(),
-    severity: z.enum(['mild', 'moderate', 'severe']),
-    affectedAngles: z.array(z.string()),
-    description: z.string(),
-  })),
-  tightMuscles: z.array(z.string()),
-  weakMuscles: z.array(z.string()),
-}).optional();
+const postureAnalysisSchema = z
+  .object({
+    assessmentId: z.string(),
+    createdAt: z.string(),
+    angles: z.object({
+      cva: z.number(),
+      shoulderTilt: z.number(),
+      thoracicKyphosis: z.number(),
+      lumbarLordosis: z.number(),
+      pelvicTilt: z.number(),
+    }),
+    overallScore: z.number(),
+    category: z.enum(['excellent', 'good', 'moderate', 'poor']),
+    imbalances: z.array(
+      z.object({
+        type: z.string(),
+        severity: z.enum(['mild', 'moderate', 'severe']),
+        affectedAngles: z.array(z.string()),
+        description: z.string(),
+      })
+    ),
+    tightMuscles: z.array(z.string()),
+    weakMuscles: z.array(z.string()),
+  })
+  .optional();
 
 const requestSchema = z.object({
   purpose: z.enum(['posture_correction', 'warmup', 'cooldown', 'general']),
@@ -104,9 +131,7 @@ interface StretchingResponse {
  *
  * 스트레칭 처방 생성
  */
-export async function POST(
-  request: NextRequest
-): Promise<NextResponse<StretchingResponse>> {
+export async function POST(request: NextRequest): Promise<NextResponse<StretchingResponse>> {
   try {
     // 1. 인증 확인
     const { userId } = await auth();
@@ -160,7 +185,8 @@ export async function POST(
       );
     }
 
-    const { purpose, profile, postureAnalysis, sport, availableMinutes, includeWeeklyPlan } = validated.data;
+    const { purpose, profile, postureAnalysis, sport, availableMinutes, includeWeeklyPlan } =
+      validated.data;
 
     // 4. 사용자 프로필 구성
     const userProfile: StretchingUserProfile = {
@@ -173,7 +199,12 @@ export async function POST(
       sportsFrequency: profile.sportsFrequency || 'rarely',
       contraindications: profile.contraindications || [],
       specialConditions: (profile.specialConditions || []) as SpecialCondition[],
-      availableEquipment: (profile.availableEquipment || ['bodyweight', 'wall', 'chair', 'mat']) as Equipment[],
+      availableEquipment: (profile.availableEquipment || [
+        'bodyweight',
+        'wall',
+        'chair',
+        'mat',
+      ]) as Equipment[],
       preferredSessionDuration: profile.preferredSessionDuration || 15,
       preferredLanguage: 'ko',
     };
@@ -226,10 +257,7 @@ export async function POST(
 
       case 'general':
       default:
-        prescription = generateGeneralFlexibilityPrescription(
-          userProfile,
-          availableMinutes || 15
-        );
+        prescription = generateGeneralFlexibilityPrescription(userProfile, availableMinutes || 15);
         break;
     }
 
@@ -245,8 +273,8 @@ export async function POST(
 
     // 7. 요약 정보 생성
     const targetMuscles = new Set<string>();
-    prescription.stretches.forEach(s => {
-      s.exercise.targetMuscles.forEach(m => targetMuscles.add(m));
+    prescription.stretches.forEach((s) => {
+      s.exercise.targetMuscles.forEach((m) => targetMuscles.add(m));
     });
 
     const summary = {

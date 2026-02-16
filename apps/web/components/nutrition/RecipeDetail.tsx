@@ -29,11 +29,10 @@ import { Progress } from '@/components/ui/progress';
 import {
   type Recipe,
   type RecipeIngredient,
-  type NutritionGoal,
   NUTRITION_GOAL_LABELS,
   INGREDIENT_CATEGORY_LABELS,
   findSimilarIngredient,
-} from '@/lib/nutrition/recipe-matcher';
+} from '@/lib/nutrition';
 
 export interface RecipeDetailProps {
   /** 레시피 데이터 */
@@ -134,24 +133,14 @@ export default function RecipeDetail({
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         {onBack && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="gap-1"
-          >
+          <Button variant="ghost" size="sm" onClick={onBack} className="gap-1">
             <ArrowLeft className="h-4 w-4" />
             뒤로
           </Button>
         )}
         <div className="flex items-center gap-2 ml-auto">
           {onShare && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onShare(recipe)}
-              aria-label="공유하기"
-            >
+            <Button variant="ghost" size="sm" onClick={() => onShare(recipe)} aria-label="공유하기">
               <Share2 className="h-4 w-4" />
             </Button>
           )}
@@ -197,9 +186,7 @@ export default function RecipeDetail({
             </div>
             <div className="rounded-lg bg-muted p-3">
               <Users className="h-5 w-5 mx-auto text-muted-foreground" />
-              <Badge className={cn('mt-1', difficultyInfo.color)}>
-                {difficultyInfo.label}
-              </Badge>
+              <Badge className={cn('mt-1', difficultyInfo.color)}>{difficultyInfo.label}</Badge>
               <p className="text-xs text-muted-foreground mt-1">난이도</p>
             </div>
           </div>
@@ -270,9 +257,7 @@ export default function RecipeDetail({
             {pantryItems.length > 0 && (
               <Badge
                 variant={availabilityRate >= 80 ? 'default' : 'secondary'}
-                className={cn(
-                  availabilityRate >= 80 && 'bg-green-500'
-                )}
+                className={cn(availabilityRate >= 80 && 'bg-green-500')}
               >
                 {availabilityRate}% 보유
               </Badge>
@@ -281,9 +266,7 @@ export default function RecipeDetail({
         </CardHeader>
         <CardContent className="space-y-2">
           {/* 재료 보유율 프로그레스 바 */}
-          {pantryItems.length > 0 && (
-            <Progress value={availabilityRate} className="h-2 mb-4" />
-          )}
+          {pantryItems.length > 0 && <Progress value={availabilityRate} className="h-2 mb-4" />}
 
           {/* 재료 목록 */}
           <ul className="space-y-2">
@@ -298,22 +281,22 @@ export default function RecipeDetail({
                 )}
               >
                 <div className="flex items-center gap-2">
-                  {pantryItems.length > 0 && (
-                    isAvailable ? (
+                  {pantryItems.length > 0 &&
+                    (isAvailable ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
                     ) : (
                       <Circle className="h-4 w-4 text-muted-foreground" />
-                    )
-                  )}
+                    ))}
                   <span className={cn(ingredient.optional && 'text-muted-foreground')}>
                     {ingredient.name}
-                    {ingredient.optional && (
-                      <span className="text-xs ml-1">(선택)</span>
-                    )}
+                    {ingredient.optional && <span className="text-xs ml-1">(선택)</span>}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{ingredient.quantity}{ingredient.unit}</span>
+                  <span>
+                    {ingredient.quantity}
+                    {ingredient.unit}
+                  </span>
                   <Badge variant="outline" className="text-xs">
                     {INGREDIENT_CATEGORY_LABELS[ingredient.category]}
                   </Badge>
@@ -381,9 +364,7 @@ export default function RecipeDetail({
                   {index + 1}
                 </span>
                 <span
-                  className={cn(
-                    completedSteps.has(index) && 'line-through text-muted-foreground'
-                  )}
+                  className={cn(completedSteps.has(index) && 'line-through text-muted-foreground')}
                 >
                   {step}
                 </span>

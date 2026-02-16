@@ -8,7 +8,7 @@ import { WeeklyCalendar, WorkoutHistoryCard, HistoryStats } from '@/components/w
 import { StreakCard } from '@/components/workout/streak';
 import { AnalyzingLoader, ErrorState } from '@/components/workout/common';
 import { EmptyState } from '@/components/common';
-import { getStreakSummary } from '@/lib/workout/streak';
+import { getStreakSummary } from '@/lib/workout';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import type { WorkoutLog, WorkoutStreak } from '@/lib/api/workout';
 

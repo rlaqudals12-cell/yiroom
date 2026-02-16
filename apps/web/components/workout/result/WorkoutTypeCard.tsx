@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { WorkoutType } from '@/types/workout';
-import { WORKOUT_TYPE_INFO } from '@/lib/workout/classifyWorkoutType';
+import { WORKOUT_TYPE_INFO } from '@/lib/workout';
 
 interface WorkoutTypeCardProps {
   type: WorkoutType;
@@ -17,29 +17,20 @@ const WorkoutTypeCard = memo(function WorkoutTypeCard({ type, reason }: WorkoutT
   const typeInfo = WORKOUT_TYPE_INFO[type];
 
   return (
-    <div
-      data-testid="workout-type-card"
-      className={`rounded-2xl p-6 ${typeInfo.bgColor}`}
-    >
+    <div data-testid="workout-type-card" className={`rounded-2xl p-6 ${typeInfo.bgColor}`}>
       {/* 헤더 */}
       <div className="flex items-center gap-4 mb-4">
         <div className="w-16 h-16 bg-card/50 rounded-2xl flex items-center justify-center text-4xl">
           {typeInfo.icon}
         </div>
         <div>
-          <p className="text-sm font-medium text-muted-foreground mb-1">
-            당신의 운동 타입
-          </p>
-          <h2 className={`text-2xl font-bold ${typeInfo.color}`}>
-            {typeInfo.label}
-          </h2>
+          <p className="text-sm font-medium text-muted-foreground mb-1">당신의 운동 타입</p>
+          <h2 className={`text-2xl font-bold ${typeInfo.color}`}>{typeInfo.label}</h2>
         </div>
       </div>
 
       {/* 설명 */}
-      <p className={`text-base ${typeInfo.color} opacity-80 mb-4`}>
-        {typeInfo.description}
-      </p>
+      <p className={`text-base ${typeInfo.color} opacity-80 mb-4`}>{typeInfo.description}</p>
 
       {/* 분류 이유 */}
       <div className="bg-card/50 rounded-xl p-4">

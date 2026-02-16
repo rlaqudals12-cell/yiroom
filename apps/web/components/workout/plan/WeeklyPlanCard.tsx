@@ -1,7 +1,7 @@
 'use client';
 
 import type { DayPlan, WorkoutType } from '@/types/workout';
-import { WORKOUT_TYPE_INFO } from '@/lib/workout/classifyWorkoutType';
+import { WORKOUT_TYPE_INFO } from '@/lib/workout';
 import { Calendar } from 'lucide-react';
 
 // 요일 한글 라벨
@@ -107,10 +107,10 @@ export function WeeklyPlanCard({
             <Calendar className={`w-5 h-5 ${typeInfo.color}`} />
           </div>
           <div>
-            <h3 className="font-bold text-foreground">{monthName} {weekNumber}주차</h3>
-            <p className="text-sm text-muted-foreground">
-              {typeInfo.label} 타입 주간 플랜
-            </p>
+            <h3 className="font-bold text-foreground">
+              {monthName} {weekNumber}주차
+            </h3>
+            <p className="text-sm text-muted-foreground">{typeInfo.label} 타입 주간 플랜</p>
           </div>
         </div>
       </div>
@@ -137,7 +137,9 @@ export function WeeklyPlanCard({
                   {DAY_LABELS[day.day]}
                 </span>
                 <span className="text-lg mb-1">{status.icon}</span>
-                <span className={`text-xs font-medium ${status.textColor} truncate w-full text-center`}>
+                <span
+                  className={`text-xs font-medium ${status.textColor} truncate w-full text-center`}
+                >
                   {getFocusLabel(day)}
                 </span>
               </button>

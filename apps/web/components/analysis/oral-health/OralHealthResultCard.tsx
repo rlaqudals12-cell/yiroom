@@ -68,7 +68,7 @@ export function OralHealthResultCard({
 
       {/* 탭 컨텐츠 */}
       <Tabs defaultValue={hasToothColor ? 'tooth' : 'gum'} className="p-4">
-        <TabsList className="mb-4 w-full">
+        <TabsList className="mb-4 w-full" aria-label="구강건강 분석 결과 탭">
           {hasToothColor && (
             <TabsTrigger value="tooth" className="flex-1">
               치아 색상

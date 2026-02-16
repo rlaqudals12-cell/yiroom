@@ -5,7 +5,7 @@
 
 'use client';
 
-import { RecipeVariation } from '@/lib/nutrition/ingredient-substitutes';
+import { type RecipeVariation } from '@/lib/nutrition';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Lightbulb, TrendingDown, TrendingUp } from 'lucide-react';

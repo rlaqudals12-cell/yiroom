@@ -3,7 +3,7 @@
 import { Flame, Trophy, TrendingUp } from 'lucide-react';
 import { StreakProgress } from './StreakProgress';
 import { StreakBadgeList } from './StreakBadge';
-import type { StreakSummary } from '@/lib/workout/streak';
+import type { StreakSummary } from '@/lib/workout';
 
 interface StreakCardProps {
   summary: StreakSummary;
@@ -29,10 +29,7 @@ export function StreakCard({ summary, onStartWorkout }: StreakCardProps) {
   } = summary;
 
   return (
-    <div
-      className="bg-card rounded-2xl p-6 shadow-sm"
-      data-testid="streak-card"
-    >
+    <div className="bg-card rounded-2xl p-6 shadow-sm" data-testid="streak-card">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -59,10 +56,7 @@ export function StreakCard({ summary, onStartWorkout }: StreakCardProps) {
       {/* 진행도 - 다음 마일스톤까지 진행 상황 표시 */}
       {isActive && nextMilestone && nextMilestone <= 14 && (
         <div className="mb-4">
-          <StreakProgress
-            currentStreak={currentStreak}
-            targetDays={nextMilestone}
-          />
+          <StreakProgress currentStreak={currentStreak} targetDays={nextMilestone} />
         </div>
       )}
 
@@ -70,9 +64,7 @@ export function StreakCard({ summary, onStartWorkout }: StreakCardProps) {
       <div className="mb-4">
         <p className="text-foreground">{message}</p>
         {warningMessage && (
-          <p className="text-module-workout-dark text-sm mt-1 font-medium">
-            {warningMessage}
-          </p>
+          <p className="text-module-workout-dark text-sm mt-1 font-medium">{warningMessage}</p>
         )}
       </div>
 
@@ -82,8 +74,8 @@ export function StreakCard({ summary, onStartWorkout }: StreakCardProps) {
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-module-workout" />
             <span className="text-sm text-module-workout-dark">
-              {nextMilestone}일 연속까지{' '}
-              <span className="font-bold">{daysToNextMilestone}일</span> 남았어요!
+              {nextMilestone}일 연속까지 <span className="font-bold">{daysToNextMilestone}일</span>{' '}
+              남았어요!
             </span>
           </div>
         </div>

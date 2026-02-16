@@ -179,6 +179,8 @@ export default function Step3Page() {
         <button
           onClick={() => setShowTargetSection(!showTargetSection)}
           className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
+          aria-label={showTargetSection ? '목표 설정 접기' : '목표 설정 펼치기'}
+          aria-expanded={showTargetSection}
         >
           <div className="text-left">
             <p className="font-medium text-foreground">목표 설정</p>

@@ -45,10 +45,7 @@ function createTestGrayscaleData(
 }
 
 // 테스트용 에지 이미지 생성 (수직선)
-function createEdgeImage(
-  width: number,
-  height: number
-): GrayscaleImageData {
+function createEdgeImage(width: number, height: number): GrayscaleImageData {
   const data = new Uint8Array(width * height);
 
   for (let y = 0; y < height; y++) {
@@ -62,10 +59,7 @@ function createEdgeImage(
 }
 
 // 테스트용 노이즈 이미지 생성
-function createNoisyImage(
-  width: number,
-  height: number
-): GrayscaleImageData {
+function createNoisyImage(width: number, height: number): GrayscaleImageData {
   const data = new Uint8Array(width * height);
 
   // 체커보드 패턴 (높은 variance 유발)
@@ -246,7 +240,7 @@ describe('getSharpnessVerdict', () => {
 
 describe('getSharpnessFeedback', () => {
   it('각 등급에 맞는 피드백 반환', () => {
-    expect(getSharpnessFeedback('rejected')).toContain('흐립니다');
+    expect(getSharpnessFeedback('rejected')).toContain('흐려요');
     expect(getSharpnessFeedback('warning')).toContain('다소');
     expect(getSharpnessFeedback('acceptable')).toContain('적절');
     expect(getSharpnessFeedback('optimal')).toContain('매우');
@@ -299,7 +293,7 @@ describe('analyzeSharpness', () => {
     const result = analyzeSharpness(imageData);
 
     if (result.verdict === 'rejected') {
-      expect(result.feedback).toContain('흐립니다');
+      expect(result.feedback).toContain('흐려요');
     }
   });
 });

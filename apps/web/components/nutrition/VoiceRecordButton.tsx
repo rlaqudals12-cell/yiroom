@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
-import type { MealType } from '@/lib/nutrition/voice-parser';
+import type { MealType } from '@/lib/nutrition';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -19,17 +19,11 @@ export default function VoiceRecordButton({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const {
-    transcript,
-    isListening,
-    isSupported,
-    startListening,
-    stopListening,
-    resetTranscript,
-  } = useVoiceRecognition({
-    lang: 'ko-KR',
-    maxDuration: 10000,
-  });
+  const { transcript, isListening, isSupported, startListening, stopListening, resetTranscript } =
+    useVoiceRecognition({
+      lang: 'ko-KR',
+      maxDuration: 10000,
+    });
 
   const handleToggle = useCallback(async () => {
     if (isListening) {
@@ -83,10 +77,7 @@ export default function VoiceRecordButton({
         size="icon"
         onClick={handleToggle}
         disabled={disabled || isProcessing}
-        className={cn(
-          'w-12 h-12 rounded-full',
-          isListening && 'animate-pulse ring-2 ring-red-400'
-        )}
+        className={cn('w-12 h-12 rounded-full', isListening && 'animate-pulse ring-2 ring-red-400')}
         data-testid="voice-record-button"
       >
         {isProcessing ? (

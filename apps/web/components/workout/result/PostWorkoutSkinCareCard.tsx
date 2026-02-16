@@ -2,12 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Droplets, ChevronDown, ChevronUp, Sparkles, AlertTriangle, ArrowRight } from 'lucide-react';
-import type { SkinCareTip, SkinAnalysisSummary } from '@/lib/workout/skinTips';
 import {
-  getPostWorkoutSkinCareTips,
-  getQuickPostWorkoutMessage,
-} from '@/lib/workout/skinTips';
+  Droplets,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  AlertTriangle,
+  ArrowRight,
+} from 'lucide-react';
+import type { SkinCareTip, SkinAnalysisSummary } from '@/lib/workout';
+import { getPostWorkoutSkinCareTips, getQuickPostWorkoutMessage } from '@/lib/workout';
 
 interface PostWorkoutSkinCareCardProps {
   workoutType: string;
@@ -60,10 +64,9 @@ export default function PostWorkoutSkinCareCard({
   const tips = getPostWorkoutSkinCareTips(workoutType, durationMinutes, skinAnalysis);
 
   // 중요도 높은 팁이 있는지 확인
-  const hasHighPriorityTips = [
-    ...tips.immediateActions,
-    ...tips.skinMetricTips,
-  ].some((tip) => tip.priority === 'high');
+  const hasHighPriorityTips = [...tips.immediateActions, ...tips.skinMetricTips].some(
+    (tip) => tip.priority === 'high'
+  );
 
   return (
     <div
@@ -80,9 +83,7 @@ export default function PostWorkoutSkinCareCard({
             <div>
               <h3 className="font-bold text-foreground flex items-center gap-2">
                 {quickMessage.icon} {quickMessage.title}
-                {hasHighPriorityTips && (
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
-                )}
+                {hasHighPriorityTips && <AlertTriangle className="w-4 h-4 text-amber-500" />}
               </h3>
               <p className="text-sm text-cyan-600">{quickMessage.message}</p>
             </div>
@@ -92,11 +93,7 @@ export default function PostWorkoutSkinCareCard({
             className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-cyan-600"
             aria-label={isExpanded ? '접기' : '펼치기'}
           >
-            {isExpanded ? (
-              <ChevronUp className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
+            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </button>
         </div>
       </div>
@@ -124,9 +121,7 @@ export default function PostWorkoutSkinCareCard({
             <div data-testid="skin-metric-tips">
               <div className="flex items-center gap-2 mb-2">
                 <Droplets className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-foreground/80">
-                  내 피부 맞춤 케어
-                </span>
+                <span className="text-sm font-medium text-foreground/80">내 피부 맞춤 케어</span>
               </div>
               <div className="space-y-2">
                 {tips.skinMetricTips.map((tip, index) => (
@@ -152,7 +147,10 @@ export default function PostWorkoutSkinCareCard({
 
           {/* S-1 분석 없을 때 안내 + 피부 분석 유도 */}
           {!skinAnalysis && (
-            <div className="text-center py-4 bg-muted/50 rounded-lg" data-testid="skin-analysis-cta">
+            <div
+              className="text-center py-4 bg-muted/50 rounded-lg"
+              data-testid="skin-analysis-cta"
+            >
               <p className="text-xs text-muted-foreground mb-3">
                 피부 분석을 완료하면 더 맞춤화된 팁을 받을 수 있어요!
               </p>

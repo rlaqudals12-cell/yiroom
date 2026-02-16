@@ -122,7 +122,7 @@ describe('lib/image-engine/cie-4/fallback', () => {
     it('긍정적인 피드백 메시지를 반환한다', () => {
       const result = generateShadowAnalysisFallback();
 
-      expect(result.recommendation).toBe('조명 상태가 양호합니다.');
+      expect(result.recommendation).toBe('조명 상태가 양호해요.');
     });
   });
 
@@ -431,13 +431,7 @@ describe('lib/image-engine/cie-4/fallback', () => {
     });
 
     it('각 조건에 적절한 피드백이 있다', () => {
-      const conditions = [
-        'optimal',
-        'warm_light',
-        'cool_light',
-        'harsh_shadow',
-        'dark',
-      ] as const;
+      const conditions = ['optimal', 'warm_light', 'cool_light', 'harsh_shadow', 'dark'] as const;
 
       conditions.forEach((condition) => {
         const result = generateConditionedCIE4Mock(condition);
@@ -447,13 +441,7 @@ describe('lib/image-engine/cie-4/fallback', () => {
     });
 
     it('모든 조건에서 success는 true이다', () => {
-      const conditions = [
-        'optimal',
-        'warm_light',
-        'cool_light',
-        'harsh_shadow',
-        'dark',
-      ] as const;
+      const conditions = ['optimal', 'warm_light', 'cool_light', 'harsh_shadow', 'dark'] as const;
 
       conditions.forEach((condition) => {
         const result = generateConditionedCIE4Mock(condition);

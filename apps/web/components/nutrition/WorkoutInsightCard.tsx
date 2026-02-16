@@ -16,7 +16,7 @@ import {
   getWorkoutNutritionInsight,
   type WorkoutSummary,
   type CalorieBalanceStatus,
-} from '@/lib/nutrition/workoutInsight';
+} from '@/lib/nutrition';
 
 export interface WorkoutInsightCardProps {
   /** 오늘의 운동 요약 */
@@ -95,10 +95,7 @@ function CalorieBalanceSection({
   const percentage = target > 0 ? Math.min(150, Math.round((net / target) * 100)) : 0;
 
   return (
-    <div
-      className={cn('rounded-xl p-3 border', colors.bg)}
-      data-testid="calorie-balance-section"
-    >
+    <div className={cn('rounded-xl p-3 border', colors.bg)} data-testid="calorie-balance-section">
       {/* 칼로리 요약 */}
       <div className="grid grid-cols-3 gap-2 text-center mb-3">
         <div>
@@ -190,9 +187,7 @@ function WorkoutSummarySection({
           <Dumbbell className="w-5 h-5 text-module-workout" />
         </div>
         <div>
-          <p className="text-sm font-medium text-foreground">
-            오늘 {workoutCount}회 운동 완료!
-          </p>
+          <p className="text-sm font-medium text-foreground">오늘 {workoutCount}회 운동 완료!</p>
           <p className="text-xs text-muted-foreground">
             {totalDuration}분 · {totalCaloriesBurned.toLocaleString()}kcal 소모
           </p>

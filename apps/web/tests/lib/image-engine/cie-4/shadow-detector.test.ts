@@ -166,7 +166,7 @@ describe('lib/image-engine/cie-4/shadow-detector', () => {
         severity: 'none',
         darkAreaRatio: 0,
         overexposedRatio: 0,
-        recommendation: '조명 상태가 양호합니다.',
+        recommendation: '조명 상태가 양호해요.',
       };
 
       expect(shadowToScore(noShadow)).toBe(100);

@@ -1,7 +1,7 @@
 'use server';
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { getNewBadges, STREAK_MILESTONES, getDaysDifference } from '@/lib/workout/streak';
+import { getNewBadges, STREAK_MILESTONES, getDaysDifference } from '@/lib/workout';
 import { checkNewMilestone, type Milestone } from '@/lib/milestones';
 import type { WorkoutLog, WorkoutStreak, ExerciseLog } from '@/lib/api/workout';
 

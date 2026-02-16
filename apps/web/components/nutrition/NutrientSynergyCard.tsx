@@ -26,7 +26,7 @@ import {
   getInteractionInfo,
   NUTRIENT_INTERACTION_MATRIX,
   type InteractionType,
-} from '@/lib/nutrition/nutrient-synergy';
+} from '@/lib/nutrition';
 
 // 영양소 한글 라벨
 const NUTRIENT_LABELS: Record<string, string> = {

@@ -16,7 +16,7 @@ import {
   type SkinAnalysisSummary,
   type SkinFoodRecommendation,
   type HydrationInsight,
-} from '@/lib/nutrition/skinInsight';
+} from '@/lib/nutrition';
 
 export interface SkinInsightCardProps {
   /** S-1 피부 분석 요약 데이터 */
@@ -57,11 +57,7 @@ function LoadingSkeleton() {
 /**
  * S-1 분석 유도 카드
  */
-function NoAnalysisCard({
-  onNavigate,
-}: {
-  onNavigate?: () => void;
-}) {
+function NoAnalysisCard({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div
       className="bg-module-skin-light rounded-2xl p-4 shadow-sm border border-module-skin/20"
@@ -152,11 +148,7 @@ function FoodRecommendationItem({
 /**
  * 수분 인사이트 섹션
  */
-function HydrationInsightSection({
-  insight,
-}: {
-  insight: HydrationInsight;
-}) {
+function HydrationInsightSection({ insight }: { insight: HydrationInsight }) {
   const percentage = insight.currentMl
     ? Math.min(100, Math.round((insight.currentMl / insight.targetMl) * 100))
     : 0;

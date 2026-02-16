@@ -28,7 +28,7 @@ import {
   type RecipeMatchResult,
   type NutritionGoal,
   NUTRITION_GOAL_LABELS,
-} from '@/lib/nutrition/recipe-matcher';
+} from '@/lib/nutrition';
 
 export interface RecipeSearchProps {
   /** 사용자 보유 재료 목록 */

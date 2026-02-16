@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { Flame, Dumbbell, Utensils, Sparkles, TrendingUp, Settings } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { DailyCheckin } from '@/components/checkin';
-import { getStreakSummary as getWorkoutStreakSummary, type StreakSummary } from '@/lib/workout/streak';
-import { getStreakSummary as getNutritionStreakSummary, type StreakSummary as NutritionStreakSummary } from '@/lib/nutrition/streak';
+import { getStreakSummary as getWorkoutStreakSummary, type StreakSummary } from '@/lib/workout';
+import {
+  getStreakSummary as getNutritionStreakSummary,
+  type StreakSummary as NutritionStreakSummary,
+} from '@/lib/nutrition';
 import { loadNotificationSettings, showStreakWarning } from '@/lib/notifications';
 
 interface CombinedStreakWidgetProps {
@@ -34,10 +37,7 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
 
       try {
         // 운동 Streak 데이터 조회
-        const { data: workoutData } = await supabase
-          .from('workout_streaks')
-          .select('*')
-          .single();
+        const { data: workoutData } = await supabase.from('workout_streaks').select('*').single();
 
         // 영양 Streak 데이터 조회
         const { data: nutritionData } = await supabase
@@ -47,16 +47,20 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
 
         // Streak Summary 계산
         const workoutSummary = getWorkoutStreakSummary(workoutData);
-        const nutritionSummary = getNutritionStreakSummary(nutritionData ? {
-          id: nutritionData.id,
-          userId: nutritionData.user_id,
-          currentStreak: nutritionData.current_streak,
-          longestStreak: nutritionData.longest_streak,
-          lastRecordDate: nutritionData.last_record_date,
-          badgesEarned: nutritionData.badges_earned || [],
-          premiumRewardsClaimed: nutritionData.premium_rewards_claimed || [],
-          updatedAt: nutritionData.updated_at,
-        } : null);
+        const nutritionSummary = getNutritionStreakSummary(
+          nutritionData
+            ? {
+                id: nutritionData.id,
+                userId: nutritionData.user_id,
+                currentStreak: nutritionData.current_streak,
+                longestStreak: nutritionData.longest_streak,
+                lastRecordDate: nutritionData.last_record_date,
+                badgesEarned: nutritionData.badges_earned || [],
+                premiumRewardsClaimed: nutritionData.premium_rewards_claimed || [],
+                updatedAt: nutritionData.updated_at,
+              }
+            : null
+        );
 
         setWorkoutStreak(workoutSummary);
         setNutritionStreak(nutritionSummary);
@@ -79,13 +83,21 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
     if (!settings.enabled || !settings.streakWarning) return;
 
     // 운동 streak 경고 (활성 상태이고 오늘 기록 안 함)
-    if (workoutStreak?.isActive && workoutStreak.warningMessage && workoutStreak.currentStreak >= 3) {
+    if (
+      workoutStreak?.isActive &&
+      workoutStreak.warningMessage &&
+      workoutStreak.currentStreak >= 3
+    ) {
       showStreakWarning('workout', workoutStreak.currentStreak);
       hasShownWarning.current = true;
     }
 
     // 영양 streak 경고 (활성 상태이고 오늘 기록 안 함)
-    if (nutritionStreak?.isActive && nutritionStreak.warningMessage && nutritionStreak.currentStreak >= 3) {
+    if (
+      nutritionStreak?.isActive &&
+      nutritionStreak.warningMessage &&
+      nutritionStreak.currentStreak >= 3
+    ) {
       showStreakWarning('nutrition', nutritionStreak.currentStreak);
       hasShownWarning.current = true;
     }
@@ -140,10 +152,10 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
                 <Settings className="w-4 h-4 text-amber-600" />
               </Link>
               <div className="text-right">
-              <p className="text-3xl font-bold text-amber-600">
-                {totalStreak}
-                <span className="text-lg text-muted-foreground">일</span>
-              </p>
+                <p className="text-3xl font-bold text-amber-600">
+                  {totalStreak}
+                  <span className="text-lg text-muted-foreground">일</span>
+                </p>
               </div>
             </div>
           </div>
@@ -187,13 +199,12 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
         </div>
 
         {/* 마일스톤 알림 */}
-        {(workoutStreak?.daysToNextMilestone === 1 || nutritionStreak?.daysToNextMilestone === 1) && (
+        {(workoutStreak?.daysToNextMilestone === 1 ||
+          nutritionStreak?.daysToNextMilestone === 1) && (
           <div className="mx-4 mb-4 bg-amber-100 rounded-lg p-3">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-amber-600" />
-              <span className="text-sm font-medium text-amber-700">
-                내일이면 마일스톤 달성! 🎉
-              </span>
+              <span className="text-sm font-medium text-amber-700">내일이면 마일스톤 달성! 🎉</span>
             </div>
           </div>
         )}
@@ -211,10 +222,7 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
       </div>
 
       {/* 체크인 모달 */}
-      <DailyCheckin
-        open={isCheckinOpen}
-        onOpenChange={setIsCheckinOpen}
-      />
+      <DailyCheckin open={isCheckinOpen} onOpenChange={setIsCheckinOpen} />
     </>
   );
 }

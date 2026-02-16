@@ -131,8 +131,8 @@ describe('getCCTFeedback', () => {
     expect(getCCTFeedback('too_warm')).toContain('따뜻');
     expect(getCCTFeedback('warm')).toContain('따뜻');
     expect(getCCTFeedback('neutral')).toContain('적절');
-    expect(getCCTFeedback('cool')).toContain('차갑');
-    expect(getCCTFeedback('too_cool')).toContain('차갑');
+    expect(getCCTFeedback('cool')).toContain('차가');
+    expect(getCCTFeedback('too_cool')).toContain('차가');
   });
 
   it('피드백은 비어있지 않음', () => {
@@ -284,7 +284,7 @@ describe('analyzeColorTemperature', () => {
     if (result.verdict === 'too_warm') {
       expect(result.feedback).toContain('따뜻');
     } else if (result.verdict === 'too_cool') {
-      expect(result.feedback).toContain('차갑');
+      expect(result.feedback).toContain('차가');
     }
   });
 

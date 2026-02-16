@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Clock, ArrowRight, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OralHealthResultCard } from '@/components/analysis/oral-health';
@@ -252,11 +253,14 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
 
             {imagePreview ? (
               <div className="space-y-4">
-                <div className="aspect-[4/3] rounded-xl overflow-hidden bg-muted">
-                  <img
+                <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-muted">
+                  <Image
                     src={imagePreview}
                     alt="선택된 이미지"
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 512px"
+                    className="object-cover"
+                    unoptimized
                   />
                 </div>
                 <div className="flex gap-3">

@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkoutInputStore } from '@/lib/stores/workoutInputStore';
-import { classifyWorkoutType } from '@/lib/workout/classifyWorkoutType';
-import { createWeeklyPlanFromInput, generatePlanSummary } from '@/lib/workout/weeklyPlan';
+import { classifyWorkoutType, createWeeklyPlanFromInput, generatePlanSummary } from '@/lib/workout';
 import { validateAllSteps } from '@/lib/utils/workoutValidation';
 import {
   WeeklyPlanCard,
@@ -128,6 +127,7 @@ export default function PlanPage() {
         <button
           onClick={handleBack}
           className="p-2 -ml-2 hover:bg-muted rounded-lg transition-colors"
+          aria-label="뒤로 가기"
         >
           <ArrowLeft className="w-6 h-6 text-muted-foreground" />
         </button>
@@ -136,6 +136,7 @@ export default function PlanPage() {
           onClick={handleRestart}
           className="p-2 -mr-2 hover:bg-muted rounded-lg transition-colors"
           title="플랜 재생성"
+          aria-label="플랜 재생성"
         >
           <RefreshCw className="w-5 h-5 text-muted-foreground" />
         </button>

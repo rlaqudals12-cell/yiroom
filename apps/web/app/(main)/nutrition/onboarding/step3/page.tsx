@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useNutritionInputStore, type AllergyType } from '@/lib/stores/nutritionInputStore';
 import { ProgressIndicator, StepNavigation } from '@/components/workout/common';
-import { calculateAll } from '@/lib/nutrition/calculateBMR';
+import { calculateAll } from '@/lib/nutrition';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 
 // 알레르기/기피 음식 옵션

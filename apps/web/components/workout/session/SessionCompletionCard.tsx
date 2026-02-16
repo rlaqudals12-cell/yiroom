@@ -1,9 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { Trophy, Flame, Clock, Dumbbell, TrendingUp, Share2, Home, Droplets, Utensils, Loader2 } from 'lucide-react';
-import type { WorkoutType } from '@/lib/workout/nutritionTips';
-import { getQuickNutritionMessage, calculateProteinRecommendation } from '@/lib/workout/nutritionTips';
+import {
+  Trophy,
+  Flame,
+  Clock,
+  Dumbbell,
+  TrendingUp,
+  Share2,
+  Home,
+  Droplets,
+  Utensils,
+  Loader2,
+} from 'lucide-react';
+import type { WorkoutType } from '@/lib/workout';
+import { getQuickNutritionMessage, calculateProteinRecommendation } from '@/lib/workout';
 import { useShare } from '@/hooks/useShare';
 
 interface SessionCompletionCardProps {
@@ -11,16 +22,16 @@ interface SessionCompletionCardProps {
   completedExercises: number;
   totalSets: number;
   completedSets: number;
-  totalTime: number;           // seconds
+  totalTime: number; // seconds
   caloriesBurned: number;
-  totalVolume: number;         // kg
+  totalVolume: number; // kg
   currentStreak?: number;
   isNewRecord?: boolean;
-  workoutType?: WorkoutType;   // P3-5.2: 영양 추천을 위한 운동 타입
-  bodyWeightKg?: number;       // P3-5.2: 단백질 권장량 계산용
+  workoutType?: WorkoutType; // P3-5.2: 영양 추천을 위한 운동 타입
+  bodyWeightKg?: number; // P3-5.2: 단백질 권장량 계산용
   onGoHome: () => void;
-  onShare?: () => void;        // 외부 share 함수 (미사용 시 내부 useShare 사용)
-  showShareButton?: boolean;   // 공유 버튼 표시 여부 (기본: true)
+  onShare?: () => void; // 외부 share 함수 (미사용 시 내부 useShare 사용)
+  showShareButton?: boolean; // 공유 버튼 표시 여부 (기본: true)
 }
 
 /**
@@ -136,9 +147,7 @@ export function SessionCompletionCard({
             {/* 볼륨 */}
             <div className="bg-white/10 rounded-xl p-4 text-center">
               <TrendingUp className="w-6 h-6 text-purple-300 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-white">
-                {totalVolume.toLocaleString()}
-              </p>
+              <p className="text-2xl font-bold text-white">{totalVolume.toLocaleString()}</p>
               <p className="text-xs text-white/60">kg 볼륨</p>
             </div>
           </div>
@@ -164,10 +173,7 @@ export function SessionCompletionCard({
           </div>
 
           {/* S-1 연동: 피부 관리 팁 */}
-          <div
-            className="mt-4 bg-cyan-500/20 rounded-xl p-4"
-            data-testid="skin-care-tip"
-          >
+          <div className="mt-4 bg-cyan-500/20 rounded-xl p-4" data-testid="skin-care-tip">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-cyan-400/30 rounded-full flex items-center justify-center flex-shrink-0">
                 <Droplets className="w-5 h-5 text-cyan-200" />

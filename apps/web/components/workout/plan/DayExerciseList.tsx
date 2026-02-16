@@ -1,7 +1,7 @@
 'use client';
 
 import type { DayPlan, WorkoutType } from '@/types/workout';
-import { calculateExerciseDetails } from '@/lib/workout/weeklyPlan';
+import { calculateExerciseDetails } from '@/lib/workout';
 import { Clock, Flame, Dumbbell, ChevronRight, Coffee } from 'lucide-react';
 
 // 부위 한글 라벨 (BodyPart 타입과 일치)

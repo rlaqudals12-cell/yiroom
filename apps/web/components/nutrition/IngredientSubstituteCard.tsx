@@ -26,7 +26,7 @@ import {
   INGREDIENT_SUBSTITUTES,
   type SubstituteInfo,
   type VariationGoal,
-} from '@/lib/nutrition/ingredient-substitutes';
+} from '@/lib/nutrition';
 
 // 목표별 스타일 정의
 const GOAL_STYLES: Record<

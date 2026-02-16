@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Clock, Flame, Dumbbell, RefreshCw } from 'lucide-react';
-import { getExerciseById, getAlternativeExercises } from '@/lib/workout/exercises';
+import { getExerciseById, getAlternativeExercises } from '@/lib/workout';
 import { PostureGuide, YouTubeEmbed } from '@/components/workout/detail';
 import { ExerciseCard } from '@/components/workout/common';
 
@@ -79,6 +79,7 @@ export default function ExerciseDetailPage() {
         <button
           onClick={() => router.back()}
           className="p-2 hover:bg-muted rounded-full transition-colors"
+          aria-label="뒤로 가기"
         >
           <ArrowLeft className="w-5 h-5 text-foreground/80" />
         </button>

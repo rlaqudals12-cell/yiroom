@@ -26,7 +26,7 @@ function createMockSharpness(overrides: Partial<SharpnessResult> = {}): Sharpnes
     score: 75,
     laplacianVariance: 200,
     verdict: 'acceptable',
-    feedback: '선명도가 적절합니다.',
+    feedback: '선명도가 적절해요.',
     ...overrides,
   };
 }
@@ -36,7 +36,7 @@ function createMockExposure(overrides: Partial<ExposureResult> = {}): ExposureRe
     meanBrightness: 130,
     verdict: 'normal',
     confidence: 0.85,
-    feedback: '노출이 적절합니다.',
+    feedback: '노출이 적절해요.',
     ...overrides,
   };
 }

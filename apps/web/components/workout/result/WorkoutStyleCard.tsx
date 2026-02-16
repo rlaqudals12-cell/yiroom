@@ -17,8 +17,9 @@ import {
   getPersonalColorLabel,
   getPersonalColorEmoji,
   getPersonalColorTheme,
-} from '@/lib/workout/styleRecommendations';
-import { generateShoppingLinks, type ShoppingCategory } from '@/lib/workout/shoppingLinks';
+  generateShoppingLinks,
+  type ShoppingCategory,
+} from '@/lib/workout';
 import { trackShoppingClick } from '@/lib/analytics/tracker';
 
 interface WorkoutStyleCardProps {

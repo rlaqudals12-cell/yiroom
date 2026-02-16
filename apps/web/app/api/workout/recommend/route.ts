@@ -6,7 +6,7 @@ import {
   type GeminiExerciseRecommendationResult,
 } from '@/lib/gemini';
 import { generateMockExerciseRecommendation } from '@/lib/mock/workout-analysis';
-import { getAllExercises, getExerciseById } from '@/lib/workout/exercises';
+import { getAllExercises, getExerciseById } from '@/lib/workout';
 import type { WorkoutType } from '@/types/workout';
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)

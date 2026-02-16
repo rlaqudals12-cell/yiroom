@@ -553,7 +553,7 @@ export default function PersonalColorPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-muted">
+    <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="personal-color-analysis-page">
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-8">

@@ -15,8 +15,11 @@ import {
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { DailyCheckin } from '@/components/checkin';
 import { InfoTooltip } from '@/components/common';
-import { getStreakSummary as getWorkoutStreakSummary, type StreakSummary } from '@/lib/workout/streak';
-import { getStreakSummary as getNutritionStreakSummary, type StreakSummary as NutritionStreakSummary } from '@/lib/nutrition/streak';
+import { getStreakSummary as getWorkoutStreakSummary, type StreakSummary } from '@/lib/workout';
+import {
+  getStreakSummary as getNutritionStreakSummary,
+  type StreakSummary as NutritionStreakSummary,
+} from '@/lib/nutrition';
 import { loadNotificationSettings, showStreakWarning } from '@/lib/notifications';
 import type { WeeklyReport } from '@/types/report';
 
@@ -54,16 +57,20 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
         ]);
 
         const workoutSummary = getWorkoutStreakSummary(workoutResult.data);
-        const nutritionSummary = getNutritionStreakSummary(nutritionResult.data ? {
-          id: nutritionResult.data.id,
-          userId: nutritionResult.data.user_id,
-          currentStreak: nutritionResult.data.current_streak,
-          longestStreak: nutritionResult.data.longest_streak,
-          lastRecordDate: nutritionResult.data.last_record_date,
-          badgesEarned: nutritionResult.data.badges_earned || [],
-          premiumRewardsClaimed: nutritionResult.data.premium_rewards_claimed || [],
-          updatedAt: nutritionResult.data.updated_at,
-        } : null);
+        const nutritionSummary = getNutritionStreakSummary(
+          nutritionResult.data
+            ? {
+                id: nutritionResult.data.id,
+                userId: nutritionResult.data.user_id,
+                currentStreak: nutritionResult.data.current_streak,
+                longestStreak: nutritionResult.data.longest_streak,
+                lastRecordDate: nutritionResult.data.last_record_date,
+                badgesEarned: nutritionResult.data.badges_earned || [],
+                premiumRewardsClaimed: nutritionResult.data.premium_rewards_claimed || [],
+                updatedAt: nutritionResult.data.updated_at,
+              }
+            : null
+        );
 
         setWorkoutStreak(workoutSummary);
         setNutritionStreak(nutritionSummary);
@@ -102,12 +109,20 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
     const settings = loadNotificationSettings();
     if (!settings.enabled || !settings.streakWarning) return;
 
-    if (workoutStreak?.isActive && workoutStreak.warningMessage && workoutStreak.currentStreak >= 3) {
+    if (
+      workoutStreak?.isActive &&
+      workoutStreak.warningMessage &&
+      workoutStreak.currentStreak >= 3
+    ) {
       showStreakWarning('workout', workoutStreak.currentStreak);
       hasShownWarning.current = true;
     }
 
-    if (nutritionStreak?.isActive && nutritionStreak.warningMessage && nutritionStreak.currentStreak >= 3) {
+    if (
+      nutritionStreak?.isActive &&
+      nutritionStreak.warningMessage &&
+      nutritionStreak.currentStreak >= 3
+    ) {
       showStreakWarning('nutrition', nutritionStreak.currentStreak);
       hasShownWarning.current = true;
     }
@@ -207,7 +222,8 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
           </div>
 
           {/* 마일스톤 알림 - 펄스 애니메이션 */}
-          {(workoutStreak?.daysToNextMilestone === 1 || nutritionStreak?.daysToNextMilestone === 1) && (
+          {(workoutStreak?.daysToNextMilestone === 1 ||
+            nutritionStreak?.daysToNextMilestone === 1) && (
             <div className="relative bg-amber-100 rounded-lg p-2.5 mb-4 overflow-hidden animate-fade-in-up">
               {/* 배경 펄스 효과 */}
               <div className="absolute inset-0 bg-amber-200/50 animate-pulse" />
@@ -243,7 +259,8 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
                 <div className="flex items-center gap-1.5">
                   <Flame className="w-3.5 h-3.5 text-module-nutrition" />
                   <span className="text-sm text-foreground">
-                    {Math.round(weeklyReport.nutrition.summary.avgCaloriesPerDay).toLocaleString()}kcal
+                    {Math.round(weeklyReport.nutrition.summary.avgCaloriesPerDay).toLocaleString()}
+                    kcal
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -273,10 +290,7 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
       </div>
 
       {/* 체크인 모달 */}
-      <DailyCheckin
-        open={isCheckinOpen}
-        onOpenChange={setIsCheckinOpen}
-      />
+      <DailyCheckin open={isCheckinOpen} onOpenChange={setIsCheckinOpen} />
     </>
   );
 }

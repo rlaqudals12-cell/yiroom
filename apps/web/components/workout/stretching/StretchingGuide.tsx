@@ -30,7 +30,7 @@ import type {
   PrescribedStretch,
   StretchExercise,
 } from '@/types/stretching';
-import { MUSCLE_NAME_KO } from '@/lib/workout/stretching';
+import { MUSCLE_NAME_KO } from '@/lib/workout';
 
 // ============================================
 // Props 타입

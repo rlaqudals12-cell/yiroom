@@ -12,8 +12,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
-import { lookupOpenFoodFacts } from '@/lib/nutrition/openfoodfacts';
-import { lookupFoodSafetyKorea } from '@/lib/nutrition/foodsafetykorea';
+import { lookupOpenFoodFacts, lookupFoodSafetyKorea } from '@/lib/nutrition';
 import type { BarcodeFood, BarcodeSearchResponse } from '@/types/nutrition';
 
 // DB 결과를 BarcodeFood 타입으로 변환

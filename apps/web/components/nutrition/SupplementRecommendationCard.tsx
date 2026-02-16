@@ -18,7 +18,7 @@ import {
   getTopSupplements,
   type SupplementRecommendation,
   type SkinConcern,
-} from '@/lib/nutrition/supplementInsight';
+} from '@/lib/nutrition';
 
 // 대중적 브랜드 추천 (구하기 쉬운 브랜드)
 const POPULAR_BRANDS: Record<string, { name: string; badge: string }[]> = {
