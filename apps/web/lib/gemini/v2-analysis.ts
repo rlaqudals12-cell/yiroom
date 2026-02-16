@@ -42,7 +42,7 @@ const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 // 모델 설정
 const modelConfig = {
-  model: 'gemini-2.0-flash-exp',
+  model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
   generationConfig: {
     temperature: 0.3,
     maxOutputTokens: 4096,

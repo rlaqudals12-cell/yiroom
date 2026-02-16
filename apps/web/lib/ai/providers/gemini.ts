@@ -16,7 +16,7 @@ import type { AIProvider, ImageAnalysisInput } from '../types';
 // =============================================================================
 
 const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-const MODEL_NAME = process.env.GEMINI_MODEL ?? 'gemini-2.0-flash-exp';
+const MODEL_NAME = process.env.GEMINI_MODEL ?? 'gemini-3-flash-preview';
 
 // Gemini 클라이언트 초기화
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;

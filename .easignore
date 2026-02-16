@@ -1,64 +1,43 @@
-# EAS Build Ignore
-# Format: gitignore-style patterns
+# EAS Build: monorepo root .easignore
+# .easignore overrides default behavior, so must include node_modules etc.
 
-# Node modules - all levels
-**/node_modules/
+# Node modules (root and web - mobile's is needed for build)
+node_modules/
+!apps/mobile/node_modules/
+!packages/shared/node_modules/
+apps/web/node_modules/
 
 # Git
 .git/
 
-# Development tools
-.beads/
-.claude/
-.tmp.driveupload/
+# Web app (not needed for mobile build)
+apps/web/.next/
+apps/web/dist/
+apps/web/coverage/
+apps/web/tests/
 
-# Web app (not needed for mobile build) - multiple patterns for compatibility
-apps/web/
-apps/web/**
-
-# Build caches
-**/.next/
-**/.expo/
-**/dist/
-**/out/
-
-# Test files
-**/__tests__/
-**/__mocks__/
-**/*.test.*
-**/*.spec.*
-**/coverage/
-**/jest.config.*
-**/vitest.config.*
-**/playwright.config.*
-**/e2e/
-
-# Documentation (large research folder)
-docs/research/
-docs/claude-archive/
-docs/.archive/
+# Documentation with Korean filenames (causes tar extraction errors on Linux)
+docs/
 
 # IDE
 .vscode/
 .idea/
 
-# OS
-**/.DS_Store
-**/Thumbs.db
+# Test artifacts
+coverage/
+.nyc_output/
 
-# Logs
+# OS files
+.DS_Store
+Thumbs.db
+
+# Mobile build artifacts (regenerated)
+apps/mobile/dist/
+apps/mobile/android/
+apps/mobile/ios/
+
+# Other
 *.log
-**/*-debug.log*
-**/*-error.log*
-
-# Turbo cache
+.claude/
+.husky/
 .turbo/
-**/.turbo/
-
-# Lock files (will be regenerated)
-pnpm-lock.yaml
-yarn.lock
-
-# Other large/unnecessary folders
-supabase/.branches/
-**/.cache/

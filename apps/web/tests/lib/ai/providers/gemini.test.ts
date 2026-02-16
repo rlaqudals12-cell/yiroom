@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 // 환경변수 설정 (import 전에 설정)
 vi.stubEnv('GOOGLE_GENERATIVE_AI_API_KEY', '');
-vi.stubEnv('GEMINI_MODEL', 'gemini-2.0-flash-exp');
+vi.stubEnv('GEMINI_MODEL', 'gemini-3-flash-preview');
 vi.stubEnv('FORCE_MOCK_AI', 'false');
 vi.stubEnv('ENABLE_GEMINI', 'true');
 
@@ -215,7 +215,7 @@ describe('lib/ai/providers/gemini', () => {
       const info = getGeminiModelInfo();
 
       // 기본값 또는 환경변수 값 확인
-      expect(info.model).toBe('gemini-2.0-flash-exp');
+      expect(info.model).toBe('gemini-3-flash-preview');
     });
   });
 
