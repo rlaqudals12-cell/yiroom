@@ -7,10 +7,25 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { AIBadge } from '@/components/common/AIBadge';
-import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
-import { OralHealthResultCard } from '@/components/analysis/oral-health';
 import type { OralHealthAssessment } from '@/types/oral-health';
+
+// 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
+const OralHealthResultCard = dynamic(
+  () =>
+    import('@/components/analysis/oral-health').then((mod) => ({
+      default: mod.OralHealthResultCard,
+    })),
+  { ssr: false }
+);
+const ContextLinkingCard = dynamic(
+  () =>
+    import('@/components/analysis/ContextLinkingCard').then((mod) => ({
+      default: mod.ContextLinkingCard,
+    })),
+  { ssr: false }
+);
 
 // DB 행 → OralHealthAssessment 변환
 interface DbOralHealthRow {
@@ -78,7 +93,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
       setAssessment(transformed);
       fetchedRef.current = true;
     } catch (err) {
-      console.error('[OH-1] Fetch error:', err);
+      console.error('[OH-1] Fetch error:', err instanceof Error ? err.message : 'Unknown error');
       setError('결과를 불러오는 데 문제가 발생했어요');
     } finally {
       setIsLoading(false);
@@ -100,7 +115,11 @@ export default function OralHealthResultPage(): React.JSX.Element {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <div
+            className="animate-spin w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full mx-auto mb-4"
+            role="status"
+            aria-label="결과를 불러오는 중"
+          />
           <p className="text-muted-foreground">결과를 불러오는 중...</p>
         </div>
       </div>
@@ -192,8 +211,13 @@ export default function OralHealthResultPage(): React.JSX.Element {
       {assessment && (
         <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
           <div className="max-w-md mx-auto">
-            <Button variant="outline" className="w-full" onClick={handleNewAnalysis}>
-              <RefreshCw className="w-4 h-4 mr-2" />
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleNewAnalysis}
+              aria-label="구강건강 다시 분석하기"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
               다시 분석하기
             </Button>
           </div>

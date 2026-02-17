@@ -123,8 +123,11 @@ export default function NutritionHistoryPage() {
         const result: HistoryResponse = await response.json();
         setData(result);
       } catch (err) {
-        console.error('[History Page] Fetch error:', err);
-        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했어요.');
+        console.error(
+          '[History Page] Fetch error:',
+          err instanceof Error ? err.message : 'Unknown error'
+        );
+        setError('데이터를 불러올 수 없어요.');
       } finally {
         setIsLoading(false);
       }

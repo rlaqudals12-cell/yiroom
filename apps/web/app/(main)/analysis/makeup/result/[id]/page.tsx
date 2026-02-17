@@ -16,7 +16,7 @@ import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { MAKEUP_STYLES, MAKEUP_CONCERNS } from '@/lib/mock/makeup-analysis';
+import { MAKEUP_STYLES, MAKEUP_CONCERNS } from '@/lib/analysis/makeup';
 import type { PersonalColorSeason } from '@/types/product';
 import {
   type DbMakeupAnalysis,
@@ -80,7 +80,9 @@ export default function MakeupAnalysisResultPage() {
     try {
       const { data, error: dbError } = await supabase
         .from('makeup_analyses')
-        .select('*')
+        .select(
+          'id, clerk_user_id, image_url, undertone, eye_shape, lip_shape, face_shape, skin_texture, skin_tone_uniformity, hydration, pore_visibility, oil_balance, overall_score, concerns, recommendations, analysis_reliability, created_at'
+        )
         .eq('id', analysisId)
         .single();
 

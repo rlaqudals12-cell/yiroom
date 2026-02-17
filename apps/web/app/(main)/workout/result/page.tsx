@@ -14,16 +14,37 @@ import {
 } from '@/lib/workout';
 import { saveWorkoutAnalysisAction } from '../actions';
 import { validateAllSteps } from '@/lib/utils/workoutValidation';
-import {
-  WorkoutTypeCard,
-  RecommendedExerciseList,
-  BodyTypeInsight,
-  WorkoutStyleCard,
-  PostWorkoutSkinCareCard,
-  PostWorkoutNutritionCard,
-  RecommendedEquipmentCard,
-  RecommendedSupplementCard,
-} from '@/components/workout/result';
+import dynamic from 'next/dynamic';
+// 메인 결과 카드는 즉시 로드 (above the fold)
+import { WorkoutTypeCard } from '@/components/workout/result';
+
+// 하단 카드들은 dynamic import (below the fold, 번들 분할)
+const BodyTypeInsight = dynamic(() => import('@/components/workout/result/BodyTypeInsight'), {
+  ssr: false,
+});
+const WorkoutStyleCard = dynamic(() => import('@/components/workout/result/WorkoutStyleCard'), {
+  ssr: false,
+});
+const PostWorkoutSkinCareCard = dynamic(
+  () => import('@/components/workout/result/PostWorkoutSkinCareCard'),
+  { ssr: false }
+);
+const PostWorkoutNutritionCard = dynamic(
+  () => import('@/components/workout/result/PostWorkoutNutritionCard'),
+  { ssr: false }
+);
+const RecommendedEquipmentCard = dynamic(
+  () => import('@/components/workout/result/RecommendedEquipmentCard'),
+  { ssr: false }
+);
+const RecommendedSupplementCard = dynamic(
+  () => import('@/components/workout/result/RecommendedSupplementCard'),
+  { ssr: false }
+);
+const RecommendedExerciseList = dynamic(
+  () => import('@/components/workout/result/RecommendedExerciseList'),
+  { ssr: false }
+);
 import type { SkinAnalysisSummary, WorkoutType } from '@/lib/workout';
 import { AnalyzingLoader, ErrorState } from '@/components/workout/common';
 import { Exercise, BodyType } from '@/types/workout';
@@ -31,7 +52,10 @@ import { Dumbbell, Calendar } from 'lucide-react';
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { FadeInUp, ScaleIn, Confetti } from '@/components/animations';
-import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
+const ConsultantCTA = dynamic(
+  () => import('@/components/coach/ConsultantCTA').then((mod) => ({ default: mod.ConsultantCTA })),
+  { ssr: false }
+);
 
 export default function ResultPage() {
   const router = useRouter();
@@ -304,6 +328,7 @@ export default function ResultPage() {
           <div className="space-y-3">
             <button
               onClick={handleViewPlan}
+              aria-label="주간 운동 플랜 보기"
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 py-4 font-medium text-white transition-colors hover:bg-indigo-600"
             >
               <Calendar className="h-5 w-5" />
@@ -311,6 +336,7 @@ export default function ResultPage() {
             </button>
             <button
               onClick={handleStartWorkout}
+              aria-label="바로 운동 시작하기"
               className="bg-card flex w-full items-center justify-center gap-2 rounded-xl border-2 border-indigo-500 py-4 font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
             >
               <Dumbbell className="h-5 w-5" />

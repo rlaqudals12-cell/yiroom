@@ -75,7 +75,11 @@ export default function BarcodeScanPage() {
         setState('not-found');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '조회 실패');
+      console.error(
+        '[Barcode] Lookup error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
+      setError('바코드 조회에 실패했어요.');
       setState('error');
     }
   }, []);
@@ -129,7 +133,11 @@ export default function BarcodeScanPage() {
       // 성공 시 영양 페이지로 이동
       router.push('/nutrition');
     } catch (err) {
-      setError(err instanceof Error ? err.message : '기록 실패');
+      console.error(
+        '[Barcode] Record error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
+      setError('기록에 실패했어요.');
     } finally {
       setIsRecording(false);
     }
@@ -163,7 +171,11 @@ export default function BarcodeScanPage() {
       setFood(data.food);
       setState('found');
     } catch (err) {
-      setError(err instanceof Error ? err.message : '등록 실패');
+      console.error(
+        '[Barcode] Register error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
+      setError('등록에 실패했어요.');
       setState('error');
     }
   };
@@ -214,7 +226,7 @@ export default function BarcodeScanPage() {
             <p className="text-muted-foreground mb-8">
               식품 포장의 바코드를 스캔하면
               <br />
-              영양 정보가 자동으로 입력됩니다
+              영양 정보가 자동으로 입력돼요
             </p>
             <button
               onClick={() => setState('scanning')}

@@ -56,7 +56,7 @@ export interface ColorRecommendations {
 }
 
 export interface BodyAnalysisResult {
-  bodyType: BodyType; // 체형 타입
+  bodyType: BodyType | BodyType3; // 체형 타입 (3타입 또는 레거시 8타입)
   bodyTypeLabel: string; // 한국어 라벨 (예: "X자형")
   bodyTypeDescription: string; // 체형 설명
   measurements: BodyMeasurement[]; // 어깨/허리/골반

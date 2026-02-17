@@ -26,7 +26,16 @@ import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
-import { SkinConsultantCTA } from '@/components/skin/SkinConsultantCTA';
+import dynamic from 'next/dynamic';
+
+// FAB 메뉴 내 컴포넌트 - 조건부 렌더링이므로 dynamic import
+const SkinConsultantCTA = dynamic(
+  () =>
+    import('@/components/skin/SkinConsultantCTA').then((mod) => ({
+      default: mod.SkinConsultantCTA,
+    })),
+  { ssr: false }
+);
 import Link from 'next/link';
 import type { SkinType as ProductSkinType, SkinConcern } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -450,7 +459,7 @@ export default function SkinAnalysisResultPage() {
         .single();
 
       if (dbError) {
-        throw new Error(dbError.message);
+        throw new Error('분석 결과를 불러올 수 없어요.');
       }
 
       if (!data) {
@@ -1149,8 +1158,9 @@ export default function SkinAnalysisResultPage() {
                   router.push(`/analysis/skin/solution?skinType=${skinType || ''}`);
                   setIsActionMenuOpen(false);
                 }}
+                aria-label="피부 타입별 클렌징 가이드 보기"
               >
-                <Droplets className="w-4 h-4 mr-2" />
+                <Droplets className="w-4 h-4 mr-2" aria-hidden="true" />
                 클렌징 가이드
               </Button>
 
@@ -1162,8 +1172,9 @@ export default function SkinAnalysisResultPage() {
                   router.push(`/products?skinType=${skinType || ''}&category=skincare`);
                   setIsActionMenuOpen(false);
                 }}
+                aria-label="피부 맞춤 제품 추천 보기"
               >
-                <Sparkles className="w-4 h-4 mr-2" />
+                <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
                 맞춤 제품
               </Button>
 
@@ -1184,8 +1195,9 @@ export default function SkinAnalysisResultPage() {
                   handleNewAnalysis();
                   setIsActionMenuOpen(false);
                 }}
+                aria-label="피부 분석 다시 하기"
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
+                <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
                 다시 분석
               </Button>
 
@@ -1199,8 +1211,9 @@ export default function SkinAnalysisResultPage() {
                   setIsActionMenuOpen(false);
                 }}
                 disabled={shareLoading}
+                aria-label="분석 결과 공유하기"
               >
-                <Share2 className="w-4 h-4 mr-2" />
+                <Share2 className="w-4 h-4 mr-2" aria-hidden="true" />
                 공유하기
               </Button>
             </div>

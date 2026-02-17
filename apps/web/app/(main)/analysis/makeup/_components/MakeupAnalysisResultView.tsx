@@ -8,7 +8,8 @@
 
 import Link from 'next/link';
 import { Palette, Sparkles } from 'lucide-react';
-import type { MakeupAnalysisResult, MakeupStyleId } from '@/lib/mock/makeup-analysis';
+import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
+import type { MakeupStyleId } from '@/lib/analysis/makeup';
 import { Button } from '@/components/ui/button';
 
 interface MakeupAnalysisResultViewProps {

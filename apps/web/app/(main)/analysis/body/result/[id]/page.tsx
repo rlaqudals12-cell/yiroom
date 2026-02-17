@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
   RefreshCw,
@@ -18,171 +19,48 @@ import {
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  type BodyAnalysisResult,
-  type BodyType,
-  type BodyType3,
-  BODY_TYPES_3,
-  EASY_BODY_TIPS,
-  mapBodyTypeTo3Type,
-} from '@/lib/mock/body-analysis';
+import type { BodyAnalysisResult, BodyType3 } from '@/lib/mock/body-analysis';
+import type {
+  BodyAnalysisEvidence,
+  BodyImageQuality,
+} from '@/components/analysis/BodyAnalysisEvidenceReport';
 import AnalysisResult from '../../_components/AnalysisResult';
-import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { ShareButton } from '@/components/share';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
-import { BodyStylingTab } from '@/components/analysis/visual';
-import BodyAnalysisEvidenceReport, {
-  type BodyAnalysisEvidence,
-  type BodyImageQuality,
-} from '@/components/analysis/BodyAnalysisEvidenceReport';
 import { VisualReportCard } from '@/components/analysis/visual-report';
-import { DrapingSimulationTab } from '@/components/analysis/visual';
-import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { Palette } from 'lucide-react';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
+import { transformDbToResult, type DbBodyAnalysis } from './_lib/transform';
 
-// DB 데이터 타입
-interface DbBodyAnalysis {
-  id: string;
-  clerk_user_id: string;
-  body_type: string;
-  height: number | null;
-  weight: number | null;
-  shoulder: number | null;
-  waist: number | null;
-  hip: number | null;
-  ratio: number | null;
-  strengths: string[] | null;
-  improvements: string[] | null;
-  style_recommendations:
-    | {
-        items?: Array<{ item: string; reason: string }>;
-        insight?: string;
-        colorTips?: string[];
-        analysisEvidence?: BodyAnalysisEvidence;
-        imageQuality?: BodyImageQuality;
-        confidence?: number;
-        matchedFeatures?: number;
-        usedMock?: boolean; // AI 분석 실패 시 Mock 데이터 사용 여부
-      }
-    | Array<{
-        category: string;
-        items: string[];
-        tip: string;
-      }>
-    | null;
-  personal_color_season: string | null;
-  color_recommendations: {
-    topColors?: string[];
-    bottomColors?: string[];
-    avoidColors?: string[];
-  } | null;
-  created_at: string;
-}
-
-// 측정값 설명 생성
-function getMeasurementDescription(name: string, value: number): string {
-  if (value >= 70) return `${name}가 넓은 편이에요`;
-  if (value >= 40) return `${name}가 균형 잡힌 편이에요`;
-  return `${name}가 좁은 편이에요`;
-}
-
-// DB 데이터 → BodyAnalysisResult 변환 (Hybrid: DB는 핵심 데이터만, 표시용은 최신 Mock 사용)
-function transformDbToResult(dbData: DbBodyAnalysis): BodyAnalysisResult {
-  const rawBodyType = dbData.body_type as BodyType | BodyType3;
-
-  // 3타입인지 8타입인지 확인하고 매핑
-  const isNew3Type = ['S', 'W', 'N'].includes(rawBodyType);
-  const bodyType3: BodyType3 = isNew3Type
-    ? (rawBodyType as BodyType3)
-    : mapBodyTypeTo3Type(rawBodyType as BodyType);
-
-  const info = BODY_TYPES_3[bodyType3];
-
-  // Hybrid 전략: 표시 데이터는 항상 최신 Mock 사용 (코드 업데이트 시 기존 사용자도 혜택)
-  const mockEasyBodyTip = EASY_BODY_TIPS[bodyType3];
-
-  // DB의 style_recommendations를 StyleRecommendation[] 형식으로 변환
-  let styleRecs: Array<{ item: string; reason: string }> = [];
-  if (dbData.style_recommendations) {
-    if (Array.isArray(dbData.style_recommendations)) {
-      // 레거시 배열 형식: { category, items, tip }[]
-      styleRecs = dbData.style_recommendations.flatMap((rec) =>
-        rec.items.map((item: string) => ({
-          item,
-          reason: rec.tip || `${rec.category}에 어울리는 아이템`,
-        }))
-      );
-    } else if (dbData.style_recommendations.items) {
-      // 새 객체 형식: { items: { item, reason }[] }
-      styleRecs = dbData.style_recommendations.items;
-    }
-  }
-  if (styleRecs.length === 0) {
-    styleRecs = info.recommendations || [];
-  }
-
-  // insights 배열을 하나의 문장으로 결합
-  const insightText =
-    info.insights?.length > 0
-      ? info.insights[0]
-      : `${info.label} 체형의 특징을 가지고 있어요! ${info.characteristics}`;
-
-  return {
-    // 3타입을 BodyType으로 캐스팅 (하위 호환성)
-    bodyType: bodyType3 as unknown as BodyType,
-    bodyTypeLabel: info.label,
-    bodyTypeDescription: info.description,
-    measurements: [
-      {
-        name: '어깨',
-        value: dbData.shoulder || 50,
-        description: getMeasurementDescription('어깨', dbData.shoulder || 50),
-      },
-      {
-        name: '허리',
-        value: dbData.waist || 50,
-        description: getMeasurementDescription('허리', dbData.waist || 50),
-      },
-      {
-        name: '골반',
-        value: dbData.hip || 50,
-        description: getMeasurementDescription('골반', dbData.hip || 50),
-      },
-    ],
-    strengths: dbData.strengths || info.strengths,
-    insight: insightText,
-    styleRecommendations: styleRecs,
-    analyzedAt: new Date(dbData.created_at),
-    userInput:
-      dbData.height && dbData.weight
-        ? {
-            height: dbData.height,
-            weight: dbData.weight,
-          }
-        : undefined,
-    bmi:
-      dbData.height && dbData.weight
-        ? Math.round((dbData.weight / (dbData.height / 100) ** 2) * 10) / 10
-        : undefined,
-    personalColorSeason: dbData.personal_color_season,
-    colorRecommendations: dbData.color_recommendations
-      ? {
-          topColors: dbData.color_recommendations.topColors || [],
-          bottomColors: dbData.color_recommendations.bottomColors || [],
-          avoidColors: dbData.color_recommendations.avoidColors || [],
-          bestCombinations: [],
-          accessories: [],
-        }
-      : null,
-    // Hybrid 데이터: 초보자 친화 팁 (최신 Mock 사용)
-    easyBodyTip: mockEasyBodyTip,
-  };
-}
+// 탭 전용 컴포넌트 — dynamic import (번들 분할)
+const BodyStylingTab = dynamic(
+  () => import('@/components/analysis/visual').then((mod) => ({ default: mod.BodyStylingTab })),
+  { ssr: false }
+);
+const DrapingSimulationTab = dynamic(
+  () =>
+    import('@/components/analysis/visual').then((mod) => ({ default: mod.DrapingSimulationTab })),
+  { ssr: false }
+);
+const BodyAnalysisEvidenceReport = dynamic(
+  () => import('@/components/analysis/BodyAnalysisEvidenceReport'),
+  { ssr: false }
+);
+const RecommendedProducts = dynamic(
+  () =>
+    import('@/components/analysis/RecommendedProducts').then((mod) => ({
+      default: mod.RecommendedProducts,
+    })),
+  { ssr: false }
+);
+const ConsultantCTA = dynamic(
+  () => import('@/components/coach/ConsultantCTA').then((mod) => ({ default: mod.ConsultantCTA })),
+  { ssr: false }
+);
 
 export default function BodyAnalysisResultPage() {
   const params = useParams();
@@ -233,12 +111,14 @@ export default function BodyAnalysisResultPage() {
     try {
       const { data, error: dbError } = await supabase
         .from('body_analyses')
-        .select('*')
+        .select(
+          'id, clerk_user_id, body_type, height, weight, shoulder, waist, hip, ratio, strengths, improvements, style_recommendations, personal_color_season, color_recommendations, created_at'
+        )
         .eq('id', analysisId)
         .single();
 
       if (dbError) {
-        throw new Error(dbError.message);
+        throw new Error('분석 결과를 불러올 수 없어요');
       }
 
       if (!data) {
@@ -289,7 +169,7 @@ export default function BodyAnalysisResultPage() {
         setShowCelebration(true);
       }
     } catch (err) {
-      console.error('[C-1] Fetch error:', err);
+      console.error('[C-1] Fetch error:', err instanceof Error ? err.message : 'Unknown error');
 
       // Fallback: sessionStorage에서 캐시된 데이터 복원
       try {
@@ -420,20 +300,36 @@ export default function BodyAnalysisResultPage() {
           {result && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-4 sticky top-0 z-10 bg-muted">
-                <TabsTrigger value="basic" className="gap-1 text-xs">
-                  <BarChart3 className="w-4 h-4" />
+                <TabsTrigger
+                  value="basic"
+                  className="gap-1 text-xs"
+                  aria-label="기본 분석 결과 보기"
+                >
+                  <BarChart3 className="w-4 h-4" aria-hidden="true" />
                   기본 분석
                 </TabsTrigger>
-                <TabsTrigger value="evidence" className="gap-1 text-xs">
-                  <ClipboardList className="w-4 h-4" />
+                <TabsTrigger
+                  value="evidence"
+                  className="gap-1 text-xs"
+                  aria-label="AI 분석 근거 보기"
+                >
+                  <ClipboardList className="w-4 h-4" aria-hidden="true" />
                   분석 근거
                 </TabsTrigger>
-                <TabsTrigger value="styling" className="gap-1 text-xs">
-                  <Shirt className="w-4 h-4" />
+                <TabsTrigger
+                  value="styling"
+                  className="gap-1 text-xs"
+                  aria-label="체형별 스타일 추천 보기"
+                >
+                  <Shirt className="w-4 h-4" aria-hidden="true" />
                   스타일
                 </TabsTrigger>
-                <TabsTrigger value="draping" className="gap-1 text-xs">
-                  <Palette className="w-4 h-4" />
+                <TabsTrigger
+                  value="draping"
+                  className="gap-1 text-xs"
+                  aria-label="드레이핑 시뮬레이션 보기"
+                >
+                  <Palette className="w-4 h-4" aria-hidden="true" />
                   드레이핑
                 </TabsTrigger>
               </TabsList>

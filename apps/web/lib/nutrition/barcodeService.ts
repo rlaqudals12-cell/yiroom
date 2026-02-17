@@ -68,11 +68,14 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeSearchRespo
 
     return data;
   } catch (error) {
-    console.error('[BarcodeService] Lookup error:', error);
+    console.error(
+      '[BarcodeService] Lookup error:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     return {
       found: false,
       barcode,
-      message: error instanceof Error ? error.message : '조회 중 오류가 발생했어요',
+      message: '조회 중 오류가 발생했어요',
     };
   }
 }
@@ -121,10 +124,13 @@ export async function registerBarcodeFood(
       food: result.food,
     };
   } catch (error) {
-    console.error('[BarcodeService] Register error:', error);
+    console.error(
+      '[BarcodeService] Register error:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     return {
       success: false,
-      error: error instanceof Error ? error.message : '등록 중 오류가 발생했어요',
+      error: '등록 중 오류가 발생했어요',
     };
   }
 }
@@ -152,10 +158,13 @@ export async function getBarcodeHistory(limit: number = 10): Promise<BarcodeHist
       history: data.history || [],
     };
   } catch (error) {
-    console.error('[BarcodeService] History error:', error);
+    console.error(
+      '[BarcodeService] History error:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     return {
       history: [],
-      error: error instanceof Error ? error.message : '이력 조회 중 오류가 발생했어요',
+      error: '이력 조회 중 오류가 발생했어요',
     };
   }
 }
@@ -206,10 +215,13 @@ export async function recordBarcodeFood(
 
     return { success: true };
   } catch (error) {
-    console.error('[BarcodeService] Record error:', error);
+    console.error(
+      '[BarcodeService] Record error:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     return {
       success: false,
-      error: error instanceof Error ? error.message : '기록 저장 중 오류가 발생했어요',
+      error: '기록 저장 중 오류가 발생했어요',
     };
   }
 }

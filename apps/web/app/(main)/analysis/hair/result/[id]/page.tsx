@@ -10,9 +10,24 @@ import { ShareButton } from '@/components/share';
 import { useAnalysisShare, createHairShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { AIBadge } from '@/components/common/AIBadge';
-import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
-import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
+
+// 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
+const ContextLinkingCard = dynamic(
+  () =>
+    import('@/components/analysis/ContextLinkingCard').then((mod) => ({
+      default: mod.ContextLinkingCard,
+    })),
+  { ssr: false }
+);
+const RecommendedProducts = dynamic(
+  () =>
+    import('@/components/analysis/RecommendedProducts').then((mod) => ({
+      default: mod.RecommendedProducts,
+    })),
+  { ssr: false }
+);
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -173,12 +188,14 @@ export default function HairAnalysisResultPage() {
     try {
       const { data, error: dbError } = await supabase
         .from('hair_analyses')
-        .select('*')
+        .select(
+          'id, clerk_user_id, image_url, hair_type, hair_thickness, scalp_type, hydration, scalp_health, damage_level, density, elasticity, shine, overall_score, concerns, recommendations, used_fallback, created_at'
+        )
         .eq('id', analysisId)
         .single();
 
       if (dbError) {
-        throw new Error(dbError.message);
+        throw new Error('분석 결과를 불러올 수 없어요');
       }
 
       if (!data) {
@@ -312,12 +329,12 @@ export default function HairAnalysisResultPage() {
           {result && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4 sticky top-0 z-10 bg-muted">
-                <TabsTrigger value="basic" className="gap-1">
-                  <Sparkles className="w-4 h-4" />
+                <TabsTrigger value="basic" className="gap-1" aria-label="기본 분석 결과 보기">
+                  <Sparkles className="w-4 h-4" aria-hidden="true" />
                   기본 분석
                 </TabsTrigger>
-                <TabsTrigger value="details" className="gap-1">
-                  <ClipboardList className="w-4 h-4" />
+                <TabsTrigger value="details" className="gap-1" aria-label="상세 분석 정보 보기">
+                  <ClipboardList className="w-4 h-4" aria-hidden="true" />
                   상세 정보
                 </TabsTrigger>
               </TabsList>
@@ -478,14 +495,20 @@ export default function HairAnalysisResultPage() {
               onClick={() =>
                 router.push(`/products?scalpType=${result.scalpType || ''}&category=haircare`)
               }
+              aria-label="헤어 맞춤 제품 추천 보기"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
               헤어 맞춤 제품 보기
             </Button>
             {/* 다시 분석하기 + 공유 */}
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
-                <RefreshCw className="w-4 h-4 mr-2" />
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handleNewAnalysis}
+                aria-label="헤어 분석 다시 하기"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
                 다시 분석하기
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />

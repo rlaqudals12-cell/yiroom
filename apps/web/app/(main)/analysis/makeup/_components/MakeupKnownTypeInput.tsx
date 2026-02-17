@@ -12,7 +12,7 @@ import {
   type MakeupConcernId,
   UNDERTONES,
   MAKEUP_CONCERNS,
-} from '@/lib/mock/makeup-analysis';
+} from '@/lib/analysis/makeup';
 import { Button } from '@/components/ui/button';
 
 interface MakeupKnownTypeInputProps {

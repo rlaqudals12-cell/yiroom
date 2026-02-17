@@ -192,6 +192,16 @@ export default function HairHistoryPage() {
                     isSelected && 'ring-2 ring-amber-500'
                   )}
                   onClick={() => handleSelectForCompare(item.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelectForCompare(item.id);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${formatDate(item.date)} 헤어 분석 결과 선택`}
+                  aria-pressed={isSelected}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">

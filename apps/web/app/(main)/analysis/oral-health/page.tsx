@@ -131,7 +131,7 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
       setResult(data.data.assessment);
       setStep('result');
     } catch (err) {
-      console.error('[OH-1] Analysis error:', err);
+      console.error('[OH-1] Analysis error:', err instanceof Error ? err.message : 'Unknown error');
       setError('분석 중 문제가 발생했어요. 다시 시도해주세요.');
       setStep('upload');
     } finally {

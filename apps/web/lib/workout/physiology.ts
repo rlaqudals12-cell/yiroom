@@ -121,9 +121,9 @@ const MUSCLE_RECOVERY_HOURS: Record<MuscleGroup, { min: number; max: number }> =
 const AGE_RECOVERY_COEFFICIENTS: Record<string, number> = {
   '20-29': 1.0,
   '30-39': 1.05,
-  '40-49': 1.10,
+  '40-49': 1.1,
   '50-59': 1.15,
-  '60+': 1.20,
+  '60+': 1.2,
 };
 
 /**
@@ -211,11 +211,41 @@ const RPE_ZONE_MAP: Array<{
   description: string;
   intensity: RPEEstimate['intensity'];
 }> = [
-  { zone: 1, rpeRange: [1, 2], hrPercentRange: [50, 60], description: '매우 가벼움 - 대화 가능', intensity: 'very_light' },
-  { zone: 2, rpeRange: [3, 4], hrPercentRange: [60, 70], description: '가벼움 - 약간 숨참', intensity: 'light' },
-  { zone: 3, rpeRange: [5, 6], hrPercentRange: [70, 80], description: '중간 - 대화 어려움', intensity: 'moderate' },
-  { zone: 4, rpeRange: [7, 8], hrPercentRange: [80, 90], description: '힘듦 - 단어만 가능', intensity: 'vigorous' },
-  { zone: 5, rpeRange: [9, 10], hrPercentRange: [90, 100], description: '매우 힘듦 - 대화 불가', intensity: 'near_maximal' },
+  {
+    zone: 1,
+    rpeRange: [1, 2],
+    hrPercentRange: [50, 60],
+    description: '매우 가벼움 - 대화 가능',
+    intensity: 'very_light',
+  },
+  {
+    zone: 2,
+    rpeRange: [3, 4],
+    hrPercentRange: [60, 70],
+    description: '가벼움 - 약간 숨참',
+    intensity: 'light',
+  },
+  {
+    zone: 3,
+    rpeRange: [5, 6],
+    hrPercentRange: [70, 80],
+    description: '중간 - 대화 어려움',
+    intensity: 'moderate',
+  },
+  {
+    zone: 4,
+    rpeRange: [7, 8],
+    hrPercentRange: [80, 90],
+    description: '힘듦 - 단어만 가능',
+    intensity: 'vigorous',
+  },
+  {
+    zone: 5,
+    rpeRange: [9, 10],
+    hrPercentRange: [90, 100],
+    description: '매우 힘듦 - 대화 불가',
+    intensity: 'near_maximal',
+  },
 ];
 
 // ============================================
@@ -245,22 +275,22 @@ export function roundToNearest(value: number, unit: number): number {
 }
 
 // ============================================
-// �ٽ� �Լ�
+// 핵심 함수
 // ============================================
 
 /**
- * �ִ� �ɹڼ� ��� (Tanaka ����)
- * ����: HRmax = 208 - (0.7 x age)
- * ���� ����: exercise-physiology.md 2.3.1
+ * 최대 심박수 계산 (Tanaka 공식)
+ * 공식: HRmax = 208 - (0.7 x age)
+ * 원리 문서: exercise-physiology.md 2.3.1
  */
 export function calculateMaxHR(age: number): number {
   return Math.round(208 - 0.7 * age);
 }
 
 /**
- * ��ǥ �ɹڼ� �� ��� (Karvonen ����)
- * ����: THR = ((HRmax - HRrest) x Intensity) + HRrest
- * ���� ����: exercise-physiology.md 2.3.2
+ * 목표 심박수 존 계산 (Karvonen 공식)
+ * 공식: THR = ((HRmax - HRrest) x Intensity) + HRrest
+ * 원리 문서: exercise-physiology.md 2.3.2
  */
 export function calculateTargetHRZone(
   age: number,
@@ -273,20 +303,16 @@ export function calculateTargetHRZone(
 }
 
 /**
- * � ���� ���
- * ����: Volume = sets x reps x weight
- * ���� ����: exercise-physiology.md 3.1.1
+ * 총 볼륨 계산
+ * 공식: Volume = sets x reps x weight
+ * 원리 문서: exercise-physiology.md 3.1.1
  */
-export function calculateWorkVolume(
-  sets: number,
-  reps: number,
-  weight: number
-): number {
+export function calculateWorkVolume(sets: number, reps: number, weight: number): number {
   return sets * reps * weight;
 }
 
 /**
- * �ְ� ���� ���
+ * 주간 볼륨 계산
  */
 export function calculateWeeklyVolume(
   weeklyRecords: Array<{ sets: number; reps: number; weight: number }>
@@ -298,23 +324,20 @@ export function calculateWeeklyVolume(
 }
 
 /**
- * ���� ��ȭ�� ��� (percent)
+ * 볼륨 변화율 계산 (percent)
  */
-export function calculateVolumeChangeRate(
-  currentVolume: number,
-  previousVolume: number
-): number {
+export function calculateVolumeChangeRate(currentVolume: number, previousVolume: number): number {
   if (previousVolume === 0) return 0;
   return Math.round(((currentVolume - previousVolume) / previousVolume) * 100 * 10) / 10;
 }
 
 /**
- * RPE ���� (�ɹڼ� ���)
- * ���� ����: exercise-physiology.md 2.4
+ * RPE 추정 (심박수 기반)
+ * 원리 문서: exercise-physiology.md 2.4
  */
 export function estimateRPE(heartRate: number, maxHR: number): RPEEstimate {
   const hrPercent = (heartRate / maxHR) * 100;
-  
+
   for (const zoneInfo of RPE_ZONE_MAP) {
     const [minHR, maxHRPercent] = zoneInfo.hrPercentRange;
     if (hrPercent >= minHR && hrPercent < maxHRPercent) {
@@ -328,18 +351,18 @@ export function estimateRPE(heartRate: number, maxHR: number): RPEEstimate {
       };
     }
   }
-  
+
   return {
     rpe: 10,
     zone: 5,
-    description: '�ִ� ����',
+    description: '최대 강도',
     intensity: 'near_maximal',
   };
 }
 
 /**
- * ȸ�� �ð� ���
- * ���� ����: exercise-physiology.md 2.5
+ * 회복 시간 계산
+ * 원리 문서: exercise-physiology.md 2.5
  */
 export function calculateRecoveryTime(
   muscleGroup: MuscleGroup,
@@ -352,29 +375,38 @@ export function calculateRecoveryTime(
 ): RecoveryTimeResult {
   const { age = 30, fitnessLevel = 'intermediate', met } = options;
   const intensity = options.intensity ?? (met ? getIntensityFromMET(met) : 'moderate');
-  
+
   const baseRecovery = MUSCLE_RECOVERY_HOURS[muscleGroup];
   const ageCoef = AGE_RECOVERY_COEFFICIENTS[getAgeGroup(age)];
   const fitnessCoef = FITNESS_RECOVERY_COEFFICIENTS[fitnessLevel];
   const intensityCoef = INTENSITY_RECOVERY_COEFFICIENTS[intensity];
-  
+
   const minHours = Math.round(baseRecovery.min * ageCoef * fitnessCoef * intensityCoef);
   const maxHours = Math.round(baseRecovery.max * ageCoef * fitnessCoef * intensityCoef);
   const recommendedHours = Math.round((minHours + maxHours) / 2);
-  
+
   const factors: string[] = [];
   if (ageCoef > 1.0) {
-    factors.push('���� (' + age + '��): ȸ�� +' + Math.round((ageCoef - 1) * 100) + '%');
+    factors.push('나이 (' + age + '세): 회복 +' + Math.round((ageCoef - 1) * 100) + '%');
   }
   if (fitnessCoef !== 1.0) {
     const sign = fitnessCoef > 1 ? '+' : '';
-    factors.push('��Ʈ�Ͻ� ���� (' + fitnessLevel + '): ȸ�� ' + sign + Math.round((fitnessCoef - 1) * 100) + '%');
+    factors.push(
+      '피트니스 레벨 (' +
+        fitnessLevel +
+        '): 회복 ' +
+        sign +
+        Math.round((fitnessCoef - 1) * 100) +
+        '%'
+    );
   }
   if (intensityCoef !== 1.0) {
     const sign = intensityCoef > 1 ? '+' : '';
-    factors.push('� ���� (' + intensity + '): ȸ�� ' + sign + Math.round((intensityCoef - 1) * 100) + '%');
+    factors.push(
+      '운동 강도 (' + intensity + '): 회복 ' + sign + Math.round((intensityCoef - 1) * 100) + '%'
+    );
   }
-  
+
   return {
     minHours,
     maxHours,
@@ -384,8 +416,8 @@ export function calculateRecoveryTime(
 }
 
 /**
- * ������ ������ ����
- * ���� ����: exercise-physiology.md 3.2
+ * 점진적 과부하 제안
+ * 원리 문서: exercise-physiology.md 3.2
  */
 export function suggestProgressiveOverload(
   history: WorkoutHistory,
@@ -396,91 +428,120 @@ export function suggestProgressiveOverload(
 ): OverloadSuggestion {
   const { workoutType = 'builder', isLowerBody = false } = options;
   const typeParams = WORKOUT_TYPE_PARAMS[workoutType];
-  
+
   const records = history.records;
-  
+
   if (records.length < 2) {
-    const lastRecord = records[0] ?? { sets: typeParams.sets[0], reps: typeParams.repRange[0], weight: 0 };
+    const lastRecord = records[0] ?? {
+      sets: typeParams.sets[0],
+      reps: typeParams.repRange[0],
+      weight: 0,
+    };
     return {
       suggestedWeight: lastRecord.weight,
       suggestedReps: lastRecord.reps,
       suggestedSets: lastRecord.sets,
-      reason: '�̷��� �����Ͽ� ���� ���� ������ �����մϴ�.',
+      reason: '이력이 부족해서 현재 수준 유지를 추천해요.',
       weeklyProgressRate: 0,
-      safetyNotes: ['2�� �̻� ��� �� ������ ������ Ȱ��ȭ�˴ϴ�.'],
+      safetyNotes: ['2주 이상 기록 후 점진적 과부하가 활성화돼요.'],
     };
   }
-  
+
   const recent = records.slice(0, Math.min(7, records.length));
   const avgWeight = recent.reduce((sum, r) => sum + r.weight, 0) / recent.length;
   const avgReps = recent.reduce((sum, r) => sum + r.reps, 0) / recent.length;
   const avgSets = recent.reduce((sum, r) => sum + r.sets, 0) / recent.length;
-  const rpeRecords = recent.filter(r => r.rpe !== undefined);
-  const avgRPE = rpeRecords.length > 0
-    ? rpeRecords.reduce((sum, r) => sum + (r.rpe ?? 0), 0) / rpeRecords.length
-    : 7;
-  
+  const rpeRecords = recent.filter((r) => r.rpe !== undefined);
+  const avgRPE =
+    rpeRecords.length > 0
+      ? rpeRecords.reduce((sum, r) => sum + (r.rpe ?? 0), 0) / rpeRecords.length
+      : 7;
+
   const currentVolume = calculateWorkVolume(avgSets, avgReps, avgWeight);
-  
+
   const older = records.slice(Math.min(7, records.length));
-  const prevAvgWeight = older.length > 0 
-    ? older.reduce((sum, r) => sum + r.weight, 0) / older.length 
-    : avgWeight;
-  const prevVolume = older.length > 0
-    ? calculateWorkVolume(
-        older.reduce((sum, r) => sum + r.sets, 0) / older.length,
-        older.reduce((sum, r) => sum + r.reps, 0) / older.length,
-        prevAvgWeight
-      )
-    : currentVolume;
-  
+  const prevAvgWeight =
+    older.length > 0 ? older.reduce((sum, r) => sum + r.weight, 0) / older.length : avgWeight;
+  const prevVolume =
+    older.length > 0
+      ? calculateWorkVolume(
+          older.reduce((sum, r) => sum + r.sets, 0) / older.length,
+          older.reduce((sum, r) => sum + r.reps, 0) / older.length,
+          prevAvgWeight
+        )
+      : currentVolume;
+
   const progressRate = calculateVolumeChangeRate(currentVolume, prevVolume);
-  
+
   const safetyNotes: string[] = [];
   let suggestedWeight = avgWeight;
   let suggestedReps = Math.round(avgReps);
   let suggestedSets = Math.round(avgSets);
   let reason = '';
-  
+
   const weightIncrement = isLowerBody ? 5 : 2.5;
   const [minReps, maxReps] = typeParams.repRange;
   const [, maxSets] = typeParams.sets;
   const [minRPE, maxRPE] = typeParams.rpeRange;
-  
+
   if (avgRPE < minRPE) {
     if (avgReps >= maxReps) {
       suggestedWeight = roundToNearest(avgWeight + weightIncrement, weightIncrement);
       suggestedReps = minReps;
-      reason = 'RPE(' + avgRPE.toFixed(1) + ')�� ��ǥ(' + minRPE + '-' + maxRPE + ') �̸��Դϴ�. ���Ը� ' + weightIncrement + 'kg �ø��� �ݺ����� ����ϴ�.';
+      reason =
+        'RPE(' +
+        avgRPE.toFixed(1) +
+        ')가 목표(' +
+        minRPE +
+        '-' +
+        maxRPE +
+        ') 미만이에요. 무게를 ' +
+        weightIncrement +
+        'kg 올리고 반복수를 낮춰요.';
     } else {
       suggestedReps = Math.min(Math.round(avgReps) + 2, maxReps);
-      reason = 'RPE(' + avgRPE.toFixed(1) + ')�� ��ǥ �̸��Դϴ�. �ݺ����� ' + suggestedReps + 'ȸ�� �ø��ϴ�.';
+      reason =
+        'RPE(' +
+        avgRPE.toFixed(1) +
+        ')가 목표 미만이에요. 반복수를 ' +
+        suggestedReps +
+        '회로 올려요.';
     }
   } else if (avgRPE > maxRPE) {
-    safetyNotes.push('���� RPE�� �����ϴ�. �������� ������.');
-    reason = 'RPE(' + avgRPE.toFixed(1) + ')�� ��ǥ(' + minRPE + '-' + maxRPE + ') �ʰ��Դϴ�. ���� ������ �����ϰų� ȸ���� �����ϼ���.';
+    safetyNotes.push('높은 RPE에 주의하세요. 무리하지 마세요.');
+    reason =
+      'RPE(' +
+      avgRPE.toFixed(1) +
+      ')가 목표(' +
+      minRPE +
+      '-' +
+      maxRPE +
+      ') 초과예요. 현재 중량을 유지하거나 회복에 집중하세요.';
   } else {
     if (progressRate < 10) {
       if (avgReps < maxReps - 1) {
         suggestedReps = Math.round(avgReps) + 1;
-        reason = '�������� �����Դϴ�. �ݺ����� 1ȸ �÷�������.';
+        reason = '진행이 안정적이에요. 반복수를 1회 올려보세요.';
       } else if (avgSets < maxSets) {
         suggestedSets = Math.round(avgSets) + 1;
-        reason = '�ݺ����� ����մϴ�. ��Ʈ ���� 1��Ʈ �÷�������.';
+        reason = '반복수를 채웠어요. 세트 수를 1세트 올려보세요.';
       } else {
         suggestedWeight = roundToNearest(avgWeight + weightIncrement, weightIncrement);
         suggestedReps = minReps;
-        reason = '��Ʈ�� �ݺ����� ����մϴ�. ���Ը� ' + weightIncrement + 'kg �ø��� �ݺ����� ���߼���.';
+        reason =
+          '세트와 반복수를 채웠어요. 무게를 ' + weightIncrement + 'kg 올리고 반복수를 낮추세요.';
       }
     } else {
-      reason = '�ְ� ���� ������(' + progressRate + '%)�� ����մϴ�. ���� ������ �����ϼ���.';
+      reason = '주간 볼륨 증가율(' + progressRate + '%)이 충분해요. 현재 수준을 유지하세요.';
     }
   }
-  
+
   if (progressRate > 10) {
-    safetyNotes.push('�ְ� ���� ������(' + progressRate + '%)�� ����ġ(10%)�� �ʰ��մϴ�. �λ� ���迡 �����ϼ���.');
+    safetyNotes.push(
+      '주간 볼륨 증가율(' + progressRate + '%)이 임계치(10%)를 초과해요. 부상 위험에 주의하세요.'
+    );
   }
-  
+
   return {
     suggestedWeight,
     suggestedReps,
@@ -492,7 +553,7 @@ export function suggestProgressiveOverload(
 }
 
 /**
- * 5-Type � �Ķ���� ��ȸ
+ * 5-Type 운동 파라미터 조회
  */
 export function getWorkoutTypeParams(
   workoutType: keyof typeof WORKOUT_TYPE_PARAMS
@@ -501,7 +562,7 @@ export function getWorkoutTypeParams(
 }
 
 /**
- * MET ������ ���� ���� ��ȸ
+ * MET 기반으로 강도 수준 조회
  */
 export function getIntensityLevel(met: number): IntensityLevel {
   return getIntensityFromMET(met);

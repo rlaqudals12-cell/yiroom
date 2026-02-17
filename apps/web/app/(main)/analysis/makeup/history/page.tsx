@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  AlertCircle,
   ArrowLeft,
   Calendar,
   TrendingUp,
@@ -47,27 +48,33 @@ export default function MakeupHistoryPage() {
   const [analyses, setAnalyses] = useState<MakeupAnalysisHistoryItem[]>([]);
   const [trend, setTrend] = useState<'improving' | 'declining' | 'stable'>('stable');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchHistory = async () => {
       setLoading(true);
+      setError(null);
       try {
         const res = await fetch(`/api/analysis/history?type=makeup&period=${period}&limit=20`);
         if (res.ok) {
           const data: AnalysisHistoryResponse = await res.json();
           setAnalyses(data.analyses as MakeupAnalysisHistoryItem[]);
           setTrend(data.trend);
+        } else {
+          setError('기록을 불러오는데 실패했어요.');
         }
-      } catch (error) {
-        console.error('[Makeup History] Fetch error:', error);
+      } catch (err) {
+        console.error('[Makeup History] Fetch error:', err);
+        setError('네트워크 오류가 발생했어요. 다시 시도해주세요.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchHistory();
-  }, [period]);
+  }, [period, retryCount]);
 
   const handleSelectForCompare = (id: string) => {
     setSelectedIds((prev) => {
@@ -134,10 +141,18 @@ export default function MakeupHistoryPage() {
         {/* 기간 필터 */}
         <Tabs value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
           <TabsList className="w-full grid grid-cols-4">
-            <TabsTrigger value="1m">{PERIOD_LABELS['1m']}</TabsTrigger>
-            <TabsTrigger value="3m">{PERIOD_LABELS['3m']}</TabsTrigger>
-            <TabsTrigger value="6m">{PERIOD_LABELS['6m']}</TabsTrigger>
-            <TabsTrigger value="all">{PERIOD_LABELS['all']}</TabsTrigger>
+            <TabsTrigger value="1m" aria-label="최근 1개월 기록 보기">
+              {PERIOD_LABELS['1m']}
+            </TabsTrigger>
+            <TabsTrigger value="3m" aria-label="최근 3개월 기록 보기">
+              {PERIOD_LABELS['3m']}
+            </TabsTrigger>
+            <TabsTrigger value="6m" aria-label="최근 6개월 기록 보기">
+              {PERIOD_LABELS['6m']}
+            </TabsTrigger>
+            <TabsTrigger value="all" aria-label="전체 기록 보기">
+              {PERIOD_LABELS['all']}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -154,6 +169,19 @@ export default function MakeupHistoryPage() {
           </p>
         )}
 
+        {/* 에러 상태 */}
+        {error && !loading && (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="h-12 w-12 mx-auto text-red-400 mb-4" aria-hidden="true" />
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button variant="outline" onClick={() => setRetryCount((c) => c + 1)}>
+                다시 시도
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* 분석 이력 목록 */}
         {loading ? (
           <div className="space-y-3">
@@ -163,7 +191,7 @@ export default function MakeupHistoryPage() {
               </Card>
             ))}
           </div>
-        ) : analyses.length === 0 ? (
+        ) : error ? null : analyses.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
               <Calendar

@@ -3,11 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import {
-  generateMockMakeupAnalysisResult,
-  type MakeupAnalysisResult,
-  type MakeupConcernId,
-} from '@/lib/mock/makeup-analysis';
+import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
+import { generateMockMakeupAnalysisResult, type MakeupConcernId } from '@/lib/analysis/makeup';
 import { analyzeMakeup } from '@/lib/gemini';
 import { addXp, type BadgeAwardResult } from '@/lib/gamification';
 import {

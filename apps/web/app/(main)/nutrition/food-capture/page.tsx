@@ -128,8 +128,11 @@ export default function FoodCapturePage() {
           return;
         }
 
-        console.error('[Food Capture] Analysis error:', error);
-        setErrorMessage(error instanceof Error ? error.message : '음식 분석에 실패했어요.');
+        console.error(
+          '[Food Capture] Analysis error:',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        setErrorMessage('음식 분석에 실패했어요.');
         setPageState('error');
       }
     },

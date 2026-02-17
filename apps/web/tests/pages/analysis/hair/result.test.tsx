@@ -164,7 +164,7 @@ describe('HairAnalysisResultPage', () => {
         expect(screen.getByText('항목별 점수')).toBeInTheDocument();
       });
 
-      const detailTab = screen.getByRole('tab', { name: /상세 정보/i });
+      const detailTab = screen.getByRole('tab', { name: /상세 분석 정보/i });
       await user.click(detailTab);
 
       await waitFor(() => {
@@ -231,7 +231,7 @@ describe('HairAnalysisResultPage', () => {
       });
 
       // 상세 정보 탭으로 전환
-      const detailTab = screen.getByRole('tab', { name: /상세 정보/i });
+      const detailTab = screen.getByRole('tab', { name: /상세 분석 정보/i });
       await user.click(detailTab);
 
       await waitFor(() => {
@@ -250,7 +250,7 @@ describe('HairAnalysisResultPage', () => {
       });
 
       // 상세 정보 탭으로 전환
-      const detailTab = screen.getByRole('tab', { name: /상세 정보/i });
+      const detailTab = screen.getByRole('tab', { name: /상세 분석 정보/i });
       await user.click(detailTab);
 
       await waitFor(() => {

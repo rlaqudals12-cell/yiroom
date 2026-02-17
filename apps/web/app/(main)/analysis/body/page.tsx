@@ -117,7 +117,7 @@ export default function BodyAnalysisPage() {
 
       // 선택된 타입으로 결과 덮어쓰기 (BodyAnalysisResult 형식으로 변환)
       setResult({
-        bodyType: bodyType as unknown as import('@/lib/mock/body-analysis').BodyType,
+        bodyType: bodyType,
         bodyTypeLabel: typeInfo.label,
         bodyTypeDescription: typeInfo.description,
         measurements: mockResult.measurements,

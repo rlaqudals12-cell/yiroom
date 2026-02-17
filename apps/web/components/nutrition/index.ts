@@ -41,10 +41,7 @@ export {
   type NutrientColor,
 } from './NutrientBarChart';
 
-export {
-  default as MealSection,
-  MealSectionList,
-} from './MealSection';
+export { default as MealSection, MealSectionList } from './MealSection';
 export {
   default as QuickActionBar,
   FloatingCameraButton,
@@ -58,10 +55,7 @@ export {
   type DrinkType,
   type WaterIntakeCardProps,
 } from './WaterIntakeCard';
-export {
-  default as WaterInputSheet,
-  type WaterInputSheetProps,
-} from './WaterInputSheet';
+export { default as WaterInputSheet, type WaterInputSheetProps } from './WaterInputSheet';
 
 // 음식 직접 입력 UI 컴포넌트 (Task 2.11)
 export {
@@ -71,10 +65,7 @@ export {
 } from './ManualFoodInputSheet';
 
 // 간헐적 단식 타이머 컴포넌트 (Task 2.17)
-export {
-  default as FastingTimer,
-  type FastingTimerProps,
-} from './FastingTimer';
+export { default as FastingTimer, type FastingTimerProps } from './FastingTimer';
 
 // Streak UI 컴포넌트 (Task 3.6)
 export {
@@ -120,7 +111,7 @@ export {
 } from './CalorieSurplusAlert';
 
 // Voice Record Button (AI Enhancement)
-export {
-  default as VoiceRecordButton,
-  type VoiceRecordButtonProps,
-} from './VoiceRecordButton';
+export { default as VoiceRecordButton, type VoiceRecordButtonProps } from './VoiceRecordButton';
+
+// 영양 온보딩 유도 컴포넌트 (P3-2.2)
+export { default as NutritionOnboardingPrompt } from './NutritionOnboardingPrompt';

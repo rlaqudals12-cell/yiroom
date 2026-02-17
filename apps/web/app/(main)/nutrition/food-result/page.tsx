@@ -70,7 +70,10 @@ export default function FoodResultPage() {
         setPortionMultipliers(initialMultipliers);
       }
     } catch (error) {
-      console.error('[Food Result] Failed to parse stored data:', error);
+      console.error(
+        '[Food Result] Failed to parse stored data:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -153,8 +156,11 @@ export default function FoodResultPage() {
       // 대시보드 또는 식단 기록 페이지로 이동
       router.push('/nutrition');
     } catch (error) {
-      console.error('[Food Result] Save error:', error);
-      setSaveError(error instanceof Error ? error.message : '저장에 실패했어요.');
+      console.error(
+        '[Food Result] Save error:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+      setSaveError('저장에 실패했어요.');
     } finally {
       setIsSaving(false);
     }

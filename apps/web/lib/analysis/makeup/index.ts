@@ -49,3 +49,13 @@ export {
   MAKEUP_STYLES,
   MAKEUP_CONCERNS,
 } from '@/lib/mock/makeup-analysis';
+
+// Mock 파일의 ID 타입 re-export (하위 호환)
+export type {
+  UndertoneId,
+  EyeShapeId,
+  LipShapeId,
+  FaceShapeId,
+  MakeupStyleId,
+  MakeupConcernId,
+} from '@/lib/mock/makeup-analysis';

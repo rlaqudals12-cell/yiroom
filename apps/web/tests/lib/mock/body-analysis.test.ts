@@ -85,7 +85,7 @@ describe('C-1 체형 분석 Mock', () => {
     it('체형 타입과 라벨이 일치한다', () => {
       for (let i = 0; i < 20; i++) {
         const result = generateMockBodyAnalysis();
-        const expectedLabel = BODY_TYPES[result.bodyType].label;
+        const expectedLabel = BODY_TYPES[result.bodyType as BodyType].label;
         expect(result.bodyTypeLabel).toBe(expectedLabel);
       }
     });

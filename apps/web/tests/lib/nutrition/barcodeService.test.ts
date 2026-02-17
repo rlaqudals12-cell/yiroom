@@ -129,7 +129,7 @@ describe('barcodeService', () => {
       const result = await lookupBarcode('8801234567890');
 
       expect(result.found).toBe(false);
-      expect(result.message).toContain('Server error');
+      expect(result.message).toBe('조회 중 오류가 발생했어요');
     });
 
     it('네트워크 오류 시 에러 메시지를 반환한다', async () => {
@@ -138,7 +138,7 @@ describe('barcodeService', () => {
       const result = await lookupBarcode('8801234567890');
 
       expect(result.found).toBe(false);
-      expect(result.message).toBe('Network error');
+      expect(result.message).toBe('조회 중 오류가 발생했어요');
     });
   });
 

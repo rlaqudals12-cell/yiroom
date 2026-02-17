@@ -79,7 +79,7 @@ export default function NutritionStep3Page() {
     }
 
     if (dislikedFoods.length >= 10) {
-      toast.warning('최대 10개까지 추가 가능합니다');
+      toast.warning('최대 10개까지 추가할 수 있어요');
       return;
     }
 
@@ -148,7 +148,7 @@ export default function NutritionStep3Page() {
       {/* 헤더 */}
       <div className="text-center">
         <h2 className="text-xl font-bold text-foreground">개인화 설정</h2>
-        <p className="text-muted-foreground mt-1">거의 다 왔어요! 마지막 단계입니다</p>
+        <p className="text-muted-foreground mt-1">거의 다 왔어요! 마지막 단계예요</p>
       </div>
 
       {/* 건너뛰기 버튼 */}
@@ -292,7 +292,7 @@ export default function NutritionStep3Page() {
 
       {/* 안내 문구 */}
       <p className="text-center text-xs text-muted-foreground">
-        알레르기와 기피 음식은 추천에서 제외됩니다
+        알레르기와 기피 음식은 추천에서 제외돼요
       </p>
 
       {/* 네비게이션 버튼 */}

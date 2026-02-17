@@ -15,8 +15,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { RefreshCw, AlertCircle, Utensils, Loader2 } from 'lucide-react';
+import { RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
 import { CrossModuleAlertList } from '@/components/common/CrossModuleAlert';
 import {
   createScalpHealthNutritionAlert,
@@ -58,7 +57,17 @@ import {
 } from '@/lib/nutrition';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
-import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
+import dynamic from 'next/dynamic';
+
+// 하단 CTA와 온보딩은 dynamic import (below the fold, 번들 분할)
+const ConsultantCTA = dynamic(
+  () => import('@/components/coach/ConsultantCTA').then((mod) => ({ default: mod.ConsultantCTA })),
+  { ssr: false }
+);
+const NutritionOnboardingPrompt = dynamic(
+  () => import('@/components/nutrition/NutritionOnboardingPrompt'),
+  { ssr: false }
+);
 
 // API 응답 타입
 interface MealFood {
@@ -194,14 +203,17 @@ export default function NutritionPage() {
           router.push('/sign-in');
           return;
         }
-        throw new Error('식단 정보를 불러오는데 실패했습니다.');
+        throw new Error('식단 정보를 불러오는 데 실패했어요.');
       }
 
       const result: DailyMealsResponse = await response.json();
       setData(result);
     } catch (err) {
-      console.error('[Nutrition Page] Fetch error:', err);
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      console.error(
+        '[Nutrition Page] Fetch error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
+      setError('식단 정보를 불러올 수 없어요.');
     } finally {
       setIsLoading(false);
     }
@@ -217,7 +229,10 @@ export default function NutritionPage() {
         setWaterAmount(result.totalEffectiveMl || 0);
       }
     } catch (err) {
-      console.error('[Nutrition Page] Water fetch error:', err);
+      console.error(
+        '[Nutrition Page] Water fetch error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
     } finally {
       setIsWaterLoading(false);
     }
@@ -253,7 +268,10 @@ export default function NutritionPage() {
         setHasSettings(false);
       }
     } catch (err) {
-      console.error('[Nutrition Page] Settings fetch error:', err);
+      console.error(
+        '[Nutrition Page] Settings fetch error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
       setHasSettings(false);
     } finally {
       setIsSettingsLoading(false);
@@ -284,7 +302,10 @@ export default function NutritionPage() {
         setSkinAnalysis(summary);
       }
     } catch (err) {
-      console.error('[Nutrition Page] Skin analysis fetch error:', err);
+      console.error(
+        '[Nutrition Page] Skin analysis fetch error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
       setSkinAnalysis(null);
     } finally {
       setIsSkinLoading(false);
@@ -323,7 +344,10 @@ export default function NutritionPage() {
       const summary = createWorkoutSummary(workoutLogs);
       setWorkoutSummary(summary);
     } catch (err) {
-      console.error('[Nutrition Page] Workout data fetch error:', err);
+      console.error(
+        '[Nutrition Page] Workout data fetch error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
       setWorkoutSummary(null);
     } finally {
       setIsWorkoutLoading(false);
@@ -360,7 +384,10 @@ export default function NutritionPage() {
         setCurrentWeight(null);
       }
     } catch (err) {
-      console.error('[Nutrition Page] Body analysis fetch error:', err);
+      console.error(
+        '[Nutrition Page] Body analysis fetch error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
       setBodyAnalysis(null);
       setCurrentWeight(null);
     } finally {
@@ -396,7 +423,10 @@ export default function NutritionPage() {
         recommendedIngredients: recommendations?.ingredients || [],
       });
     } catch (err) {
-      console.error('[Nutrition Page] Hair analysis fetch error:', err);
+      console.error(
+        '[Nutrition Page] Hair analysis fetch error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
       setHairAnalysis(null);
     } finally {
       setIsHairLoading(false);
@@ -426,7 +456,10 @@ export default function NutritionPage() {
         hydration: makeupData.hydration,
       });
     } catch (err) {
-      console.error('[Nutrition Page] Makeup analysis fetch error:', err);
+      console.error(
+        '[Nutrition Page] Makeup analysis fetch error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
       setMakeupAnalysis(null);
     } finally {
       setIsMakeupLoading(false);
@@ -455,7 +488,10 @@ export default function NutritionPage() {
         console.error('[Nutrition Page] Water add failed');
       }
     } catch (err) {
-      console.error('[Nutrition Page] Water add error:', err);
+      console.error(
+        '[Nutrition Page] Water add error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
     }
   }, []);
 
@@ -480,7 +516,10 @@ export default function NutritionPage() {
           console.error('[Nutrition Page] Water add failed');
         }
       } catch (err) {
-        console.error('[Nutrition Page] Water add error:', err);
+        console.error(
+          '[Nutrition Page] Water add error:',
+          err instanceof Error ? err.message : 'Unknown error'
+        );
       } finally {
         setIsWaterSaving(false);
       }
@@ -539,7 +578,10 @@ export default function NutritionPage() {
           console.error('[Nutrition Page] Manual food save failed');
         }
       } catch (err) {
-        console.error('[Nutrition Page] Manual food save error:', err);
+        console.error(
+          '[Nutrition Page] Manual food save error:',
+          err instanceof Error ? err.message : 'Unknown error'
+        );
       } finally {
         setIsManualSaving(false);
       }
@@ -690,7 +732,7 @@ export default function NutritionPage() {
             <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
           <h2 className="text-lg font-bold text-red-900 dark:text-red-100 mb-2">
-            데이터를 불러올 수 없습니다
+            데이터를 불러올 수 없어요
           </h2>
           <p className="text-red-700 dark:text-red-300 mb-4">{error}</p>
           <Button onClick={fetchTodayMeals} variant="outline">
@@ -873,52 +915,6 @@ export default function NutritionPage() {
         defaultMealType={selectedMealTypeForManual}
         isSaving={isManualSaving}
       />
-    </div>
-  );
-}
-
-/**
- * 온보딩 유도 컴포넌트 (P3-2.2)
- * - 영양 설정이 없을 때 표시
- * - workout/page.tsx의 OnboardingPrompt 패턴 참고
- */
-function NutritionOnboardingPrompt() {
-  return (
-    <div className="container max-w-lg mx-auto px-4 py-8" data-testid="nutrition-onboarding-prompt">
-      <div className="text-center space-y-6">
-        {/* 아이콘 */}
-        <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-          <Utensils className="h-10 w-10 text-green-500" />
-        </div>
-
-        {/* 텍스트 */}
-        <div className="space-y-2">
-          <h2 className="text-xl font-bold text-foreground">나만의 식단 관리</h2>
-          <p className="text-muted-foreground">목표에 맞는 맞춤 칼로리와 영양소를 설정해요</p>
-        </div>
-
-        {/* 시작 버튼 */}
-        <Link
-          href="/nutrition/onboarding/step1"
-          className="block w-full py-4 bg-green-500 hover:bg-green-600 text-white text-center font-medium rounded-xl transition-colors"
-        >
-          식단 설정 시작하기
-        </Link>
-
-        {/* 설명 */}
-        <div className="text-left bg-muted rounded-xl p-4">
-          <p className="text-sm text-muted-foreground font-medium mb-2">
-            이런 기능을 사용할 수 있어요:
-          </p>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>✓ 내 목표에 맞는 칼로리 계산</li>
-            <li>✓ AI 음식 인식 및 영양 분석</li>
-            <li>✓ 수분 섭취 트래킹</li>
-            <li>✓ 간헐적 단식 타이머</li>
-            <li>✓ 주간/월간 영양 리포트</li>
-          </ul>
-        </div>
-      </div>
     </div>
   );
 }

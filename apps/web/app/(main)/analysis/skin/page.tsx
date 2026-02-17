@@ -366,7 +366,7 @@ export default function SkinAnalysisPage() {
       setShowConfetti(true);
     } catch (err) {
       console.error('[S-1] Analysis error:', err);
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      setError('분석 중 오류가 발생했어요. 다시 시도해주세요.');
       // 에러 시 촬영 모드에 따라 적절한 단계로 복귀
       setStep(captureMode === 'camera' ? 'camera' : 'upload');
     } finally {

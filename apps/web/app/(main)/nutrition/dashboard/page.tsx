@@ -143,8 +143,11 @@ export default function NutritionDashboardPage() {
         },
       });
     } catch (err) {
-      console.error('[Dashboard] Fetch error:', err);
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했어요');
+      console.error(
+        '[Dashboard] Fetch error:',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
+      setError('데이터를 불러오지 못했어요.');
     } finally {
       setIsLoading(false);
     }
@@ -175,9 +178,10 @@ export default function NutritionDashboardPage() {
         // 데이터 새로고침
         await fetchDashboardData();
       } catch (err) {
-        console.error('[Dashboard] Add water error:', err);
-        // 간단한 에러 표시 (toast 대신)
-        alert(err instanceof Error ? err.message : '수분 기록 추가에 실패했어요');
+        console.error(
+          '[Dashboard] Add water error:',
+          err instanceof Error ? err.message : 'Unknown error'
+        );
       } finally {
         setIsAddingWater(false);
       }

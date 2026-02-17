@@ -11,9 +11,9 @@ import type {
   FaceShapeId,
   MakeupStyleId,
   MakeupConcernId,
-  ColorRecommendation,
-} from '@/lib/mock/makeup-analysis';
-import { UNDERTONES, EYE_SHAPES, LIP_SHAPES, FACE_SHAPES } from '@/lib/mock/makeup-analysis';
+} from '@/lib/analysis/makeup';
+import type { ColorRecommendation } from '@/lib/mock/makeup-analysis';
+import { UNDERTONES, EYE_SHAPES, LIP_SHAPES, FACE_SHAPES } from '@/lib/analysis/makeup';
 
 // DB 행 타입
 export interface DbMakeupAnalysis {

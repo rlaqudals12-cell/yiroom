@@ -6,11 +6,8 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Clock, ArrowRight, Upload, Loader2 } from 'lucide-react';
-import {
-  type MakeupAnalysisResult,
-  generateMockMakeupAnalysisResult,
-  UNDERTONES,
-} from '@/lib/mock/makeup-analysis';
+import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
+import { generateMockMakeupAnalysisResult, UNDERTONES } from '@/lib/analysis/makeup';
 import { Button } from '@/components/ui/button';
 import { MakeupGuide } from './_components/MakeupGuide';
 import { MakeupKnownTypeInput } from './_components/MakeupKnownTypeInput';
