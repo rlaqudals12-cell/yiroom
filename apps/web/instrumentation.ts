@@ -7,6 +7,11 @@
  * @see https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#instrumentation
  */
 export async function register() {
+  // dev 환경에서는 Sentry 로딩 스킵 (enabled: false이지만 패키지 컴파일 자체가 느림)
+  if (process.env.NODE_ENV !== 'production') {
+    return;
+  }
+
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     // Node.js 런타임 (Server Components, API Routes)
     await import('./sentry.server.config');

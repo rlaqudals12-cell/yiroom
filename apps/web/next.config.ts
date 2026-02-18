@@ -269,7 +269,9 @@ const sentryConfig = {
 };
 
 // Sentry 설정이 완전하면 withSentryConfig 사용, 아니면 기본 config 사용
-const hasSentryConfig = process.env.SENTRY_ORG && process.env.SENTRY_PROJECT;
+// dev 환경에서는 Sentry wrapper 스킵 (Turbopack 플러그인 오버헤드 제거)
+const hasSentryConfig =
+  process.env.NODE_ENV === 'production' && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT;
 
 // 플러그인 체인: i18n → PWA → Analyzer → (Sentry)
 const baseConfig = withNextIntl(withAnalyzer(withPWA(nextConfig)));

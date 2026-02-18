@@ -49,7 +49,6 @@ export function useClerkSupabaseClient() {
         try {
           // Clerk가 아직 로드되지 않은 경우 처리
           if (typeof getToken !== 'function') {
-            console.warn('[Clerk-Supabase] getToken is not ready yet');
             return null;
           }
 
