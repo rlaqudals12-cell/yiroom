@@ -5,16 +5,15 @@
 node_modules/
 !apps/mobile/node_modules/
 !packages/shared/node_modules/
-apps/web/node_modules/
 
 # Git
 .git/
 
-# Web app (not needed for mobile build)
+# Web app: keep package.json for workspace resolution, exclude heavy content
 apps/web/.next/
-apps/web/dist/
-apps/web/coverage/
+apps/web/node_modules/
 apps/web/tests/
+apps/web/public/
 
 # Documentation with Korean filenames (causes tar extraction errors on Linux)
 docs/
@@ -38,6 +37,8 @@ apps/mobile/ios/
 
 # Other
 *.log
+.beads/
 .claude/
 .husky/
 .turbo/
+stitch_total_wellness_ai_homepage/
