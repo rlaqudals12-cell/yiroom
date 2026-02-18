@@ -26,6 +26,7 @@ export default function RootLayout() {
       <ClerkLoaded>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         <Stack
+          initialRouteName="(tabs)"
           screenOptions={{
             headerStyle: {
               backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#ffffff',
@@ -40,6 +41,16 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
           <Stack.Screen name="(analysis)" options={{ headerShown: false }} />
+          <Stack.Screen name="(challenges)" options={{ headerShown: false }} />
+          <Stack.Screen name="(closet)" options={{ headerShown: false }} />
+          <Stack.Screen name="(coach)" options={{ headerShown: false }} />
+          <Stack.Screen name="(feed)" options={{ headerShown: false }} />
+          <Stack.Screen name="(nutrition)" options={{ headerShown: false }} />
+          <Stack.Screen name="(reports)" options={{ headerShown: false }} />
+          <Stack.Screen name="(social)" options={{ headerShown: false }} />
+          <Stack.Screen name="(workout)" options={{ headerShown: false }} />
+          <Stack.Screen name="products" options={{ headerShown: false }} />
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
         </Stack>
       </ClerkLoaded>
     </ClerkProvider>
