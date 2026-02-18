@@ -169,8 +169,8 @@ export default function ChallengeDetailScreen() {
             text: '포기',
             style: 'destructive',
             onPress: async () => {
-              // TODO: 포기 API 구현 필요
-              Alert.alert('알림', '포기 기능은 준비 중입니다.');
+              // 포기 기능은 추후 추가 예정
+              Alert.alert('곧 추가될 예정이에요', '포기 기능을 준비하고 있어요. 조금만 기다려주세요!');
             },
           },
         ]
@@ -189,8 +189,8 @@ export default function ChallengeDetailScreen() {
     if (hapticEnabled) {
       Haptics.selectionAsync();
     }
-    // TODO: 진행 상황 기록 화면으로 이동
-    Alert.alert('준비 중', '진행 상황 기록 기능이 곧 추가됩니다.');
+    // 진행 상황 기록 기능은 추후 추가 예정
+    Alert.alert('곧 추가될 예정이에요', '진행 상황 기록 기능을 준비하고 있어요. 조금만 기다려주세요!');
   };
 
   // 남은 일수 계산

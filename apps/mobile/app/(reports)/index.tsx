@@ -60,6 +60,14 @@ export default function ReportsScreen() {
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={styles.content}>
+        {/* 샘플 데이터 안내 배너 */}
+        <View style={[styles.sampleBanner, isDark && styles.sampleBannerDark]}>
+          <Text style={styles.sampleBannerIcon}>💡</Text>
+          <Text style={[styles.sampleBannerText, isDark && styles.textMuted]}>
+            아래는 예시 데이터예요. 분석을 완료하면 실제 결과가 표시돼요!
+          </Text>
+        </View>
+
         {/* 프로필 헤더 */}
         <View style={[styles.profileCard, isDark && styles.cardDark]}>
           <View style={styles.avatar}>
@@ -504,6 +512,27 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
+  },
+  sampleBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    gap: 10,
+  },
+  sampleBannerDark: {
+    backgroundColor: '#1C1917',
+  },
+  sampleBannerIcon: {
+    fontSize: 18,
+  },
+  sampleBannerText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#92400E',
+    lineHeight: 19,
   },
   textLight: {
     color: '#ffffff',

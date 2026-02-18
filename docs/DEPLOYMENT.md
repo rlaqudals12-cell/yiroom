@@ -6,12 +6,12 @@
 
 ### 필수 서비스 계정
 
-| 서비스 | 용도 | 설정 위치 |
-|--------|------|-----------|
-| **Vercel** | 호스팅 | vercel.com |
-| **Supabase** | 데이터베이스 | supabase.com |
-| **Clerk** | 인증 | clerk.com |
-| **Google Cloud** | Gemini API | console.cloud.google.com |
+| 서비스           | 용도         | 설정 위치                |
+| ---------------- | ------------ | ------------------------ |
+| **Vercel**       | 호스팅       | vercel.com               |
+| **Supabase**     | 데이터베이스 | supabase.com             |
+| **Clerk**        | 인증         | clerk.com                |
+| **Google Cloud** | Gemini API   | console.cloud.google.com |
 
 ### 환경 변수
 
@@ -116,6 +116,7 @@ npm run build
    - www.yiroom.app
 
 2. **DNS 설정**
+
    ```
    Type: A
    Name: @
@@ -158,13 +159,13 @@ npx lighthouse https://yiroom.app/home --output=json
 
 ### 3. 핵심 기능 테스트
 
-| 기능 | 테스트 방법 | 예상 결과 |
-|------|-------------|-----------|
-| 로그인 | Google/Kakao 로그인 시도 | 성공, /home 리다이렉트 |
-| 피부 분석 | 이미지 업로드 및 분석 | 3초 이내 결과 반환 |
-| 퍼스널 컬러 | 이미지 업로드 및 분석 | 3초 이내 결과 반환 |
-| 제품 추천 | 분석 후 제품 목록 확인 | 매칭된 제품 표시 |
-| AI 코치 | 채팅 메시지 전송 | 스트리밍 응답 |
+| 기능        | 테스트 방법              | 예상 결과              |
+| ----------- | ------------------------ | ---------------------- |
+| 로그인      | Google/Kakao 로그인 시도 | 성공, /home 리다이렉트 |
+| 피부 분석   | 이미지 업로드 및 분석    | 3초 이내 결과 반환     |
+| 퍼스널 컬러 | 이미지 업로드 및 분석    | 3초 이내 결과 반환     |
+| 제품 추천   | 분석 후 제품 목록 확인   | 매칭된 제품 표시       |
+| AI 코치     | 채팅 메시지 전송         | 스트리밍 응답          |
 
 ---
 
@@ -199,12 +200,12 @@ vercel logs yiroom.app --follow
 
 ### 롤백 방법 비교
 
-| 방법 | 소요 시간 | 사용 시점 |
-|------|-----------|-----------|
-| **GitHub Actions 자동 롤백** | ~1분 | 에러율 급증 시 자동 트리거 |
-| **GitHub Actions 수동 롤백** | ~1분 | 수동으로 빠른 롤백 필요 시 |
-| **Vercel 대시보드** | ~2분 | 간단한 수동 롤백 |
-| **Vercel CLI** | ~1분 | 터미널에서 빠른 롤백 |
+| 방법                         | 소요 시간 | 사용 시점                  |
+| ---------------------------- | --------- | -------------------------- |
+| **GitHub Actions 자동 롤백** | ~1분      | 에러율 급증 시 자동 트리거 |
+| **GitHub Actions 수동 롤백** | ~1분      | 수동으로 빠른 롤백 필요 시 |
+| **Vercel 대시보드**          | ~2분      | 간단한 수동 롤백           |
+| **Vercel CLI**               | ~1분      | 터미널에서 빠른 롤백       |
 
 ### 1. GitHub Actions 자동 롤백 (권장)
 
@@ -212,12 +213,12 @@ vercel logs yiroom.app --follow
 
 GitHub Secrets에 다음 값 추가:
 
-| Secret | 설명 | 필수 |
-|--------|------|------|
-| `VERCEL_TOKEN` | Vercel API 토큰 | 필수 |
-| `VERCEL_ORG_ID` | Vercel 조직 ID | 필수 |
+| Secret              | 설명               | 필수 |
+| ------------------- | ------------------ | ---- |
+| `VERCEL_TOKEN`      | Vercel API 토큰    | 필수 |
+| `VERCEL_ORG_ID`     | Vercel 조직 ID     | 필수 |
 | `VERCEL_PROJECT_ID` | Vercel 프로젝트 ID | 필수 |
-| `SLACK_WEBHOOK_URL` | Slack 알림 (선택) | 선택 |
+| `SLACK_WEBHOOK_URL` | Slack 알림 (선택)  | 선택 |
 
 #### 수동 트리거
 
@@ -235,6 +236,7 @@ Actions > Auto Rollback > Run workflow
 #### 자동 트리거 조건
 
 헬스체크 워크플로우에서 자동으로 롤백이 트리거되는 조건:
+
 - 모든 헬스체크 엔드포인트 실패 (status: unhealthy)
 - `auto_rollback` 옵션이 활성화된 경우
 
@@ -304,37 +306,118 @@ vercel inspect <deployment-url>
 
 ## 모바일 앱 배포 (Expo EAS)
 
-### 빌드
+### EAS 개요
+
+| 항목            | 값                                        |
+| --------------- | ----------------------------------------- |
+| **서비스**      | Expo Application Services (클라우드 빌드) |
+| **프로젝트 ID** | `0e876253-c0e1-4cbe-a9e1-33207bae230a`    |
+| **패키지명**    | `com.yiroom.app`                          |
+| **EAS CLI**     | `>= 16.0.0`                               |
+| **빌드 Node**   | `20.18.0`                                 |
+
+### 요금 플랜
+
+| 플랜       | 가격    | Android 빌드 | 권장          |
+| ---------- | ------- | ------------ | ------------- |
+| Free       | $0      | 30회/월      | 테스트        |
+| Production | $1/빌드 | 종량제       | **현재 권장** |
+| On-demand  | $99/월  | 무제한       | 팀 규모 시    |
+
+> **주의**: Free 플랜은 월 30회 제한. 소진 시 다음 달 1일 리셋.
+
+### 빌드 프로필 (eas.json)
+
+| 프로필        | 용도        | Android 출력     | 배포 방식   |
+| ------------- | ----------- | ---------------- | ----------- |
+| `development` | 개발/디버깅 | APK              | 내부 배포   |
+| `preview`     | QA/테스트   | APK              | 내부 배포   |
+| `production`  | 스토어 제출 | AAB (app-bundle) | Google Play |
 
 ```bash
 cd apps/mobile
 
-# 프로덕션 빌드
-eas build --platform all --profile production
+# 개발용 APK (디바이스 테스트)
+eas build --profile development --platform android
 
-# iOS만
-eas build --platform ios --profile production
+# QA/테스트용 APK
+eas build --profile preview --platform android
 
-# Android만
-eas build --platform android --profile production
+# Google Play 제출용 AAB
+eas build --profile production --platform android
 ```
+
+### 모노레포 필수 설정
+
+#### .easignore (모노레포 루트)
+
+`.easignore`는 **반드시 모노레포 루트** (`c:\dev\yiroom\.easignore`)에 위치해야 함.
+`apps/mobile/` 하위에 놓으면 적용되지 않음.
+
+```
+# 핵심 설정 요약
+node_modules/              # 기본 제외
+!apps/mobile/node_modules/ # 모바일 의존성은 포함
+!packages/shared/node_modules/
+docs/                      # 한글 파일명 → Linux tar 추출 실패 방지
+apps/web/                  # 웹 앱 불필요
+```
+
+> **주의**: `.easignore`는 `.gitignore`의 기본 동작을 **완전히 대체**함.
+> `node_modules/` 제외를 명시하지 않으면 전체 node_modules가 업로드됨 (2GB+).
+
+#### metro.config.js
+
+모노레포에서 React 중복 방지 필수:
+
+```javascript
+// watchFolders: 기본값 유지하며 루트 추가
+config.watchFolders = [...(config.watchFolders || []), monorepoRoot];
+
+// React 중복 방지 (루트 vs 모바일 버전 충돌 방지)
+config.resolver.extraNodeModules = {
+  react: path.resolve(projectRoot, 'node_modules/react'),
+  'react-dom': path.resolve(projectRoot, 'node_modules/react-dom'),
+  'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
+};
+```
+
+### 알려진 이슈 및 해결
+
+| 이슈                        | 원인                                       | 해결                         |
+| --------------------------- | ------------------------------------------ | ---------------------------- |
+| tar 추출 실패 (Cannot open) | `docs/` 한글 UTF-8 파일명이 Linux에서 깨짐 | `.easignore`에 `docs/` 추가  |
+| 업로드 2GB+                 | `.easignore`가 기본 무시 패턴 대체         | `node_modules/` 명시적 제외  |
+| `eas build --local` 실패    | **Windows 미지원** (macOS/Linux만)         | EAS 클라우드 빌드 사용       |
+| React 중복 경고             | 루트(19.2.x) vs 모바일(19.1.x) 충돌        | `extraNodeModules`로 핀 고정 |
 
 ### 스토어 제출
 
 ```bash
+# Google Play 제출 (AAB 빌드 완료 후)
+eas submit --platform android --profile production
+
 # App Store 제출
 eas submit --platform ios --profile production
-
-# Google Play 제출
-eas submit --platform android --profile production
 ```
 
 ### OTA 업데이트
 
 ```bash
-# 경미한 변경은 OTA로 배포
+# 경미한 변경은 OTA로 배포 (네이티브 변경 없을 때만)
 eas update --branch production --message "버그 수정"
 ```
+
+### Gemini AI 모델 설정
+
+모바일/웹 공통으로 Gemini 모델명 업데이트 필요:
+
+| 항목     | 이전 (deprecated)      | 현재                                                     |
+| -------- | ---------------------- | -------------------------------------------------------- |
+| 모델명   | `gemini-2.0-flash-exp` | `gemini-3-flash-preview`                                 |
+| 환경변수 | `GEMINI_MODEL`         | `process.env.GEMINI_MODEL \|\| 'gemini-3-flash-preview'` |
+
+> `gemini-2.0-flash-exp`는 2026년 2월 기준 404 반환 (deprecated).
 
 ---
 
@@ -402,11 +485,11 @@ Error: Could not connect to Supabase
 
 ## 연락처
 
-| 역할 | 담당 |
-|------|------|
-| 기술 리드 | - |
-| 인프라 | - |
-| 보안 | - |
+| 역할      | 담당 |
+| --------- | ---- |
+| 기술 리드 | -    |
+| 인프라    | -    |
+| 보안      | -    |
 
 ---
 

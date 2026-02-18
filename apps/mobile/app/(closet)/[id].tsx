@@ -280,8 +280,8 @@ export default function ItemDetailScreen() {
         <TouchableOpacity
           style={[styles.actionButton, styles.editButton]}
           onPress={() => {
-            // TODO: 편집 화면
             Haptics.selectionAsync();
+            Alert.alert('곧 추가될 예정이에요', '편집 기능을 준비하고 있어요. 조금만 기다려주세요!');
           }}
         >
           <Edit2 size={20} color="#fff" />
