@@ -26,7 +26,7 @@ export default function RootLayout() {
       <ClerkLoaded>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         <Stack
-          initialRouteName="(tabs)"
+          initialRouteName="index"
           screenOptions={{
             headerStyle: {
               backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#ffffff',
@@ -37,6 +37,7 @@ export default function RootLayout() {
             },
           }}
         >
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
