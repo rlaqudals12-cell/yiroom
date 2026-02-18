@@ -75,6 +75,10 @@ apps/web/test-results/
 *.tmp
 apps/web/.tmp-*
 
+# Google Service Account (보안 - 절대 커밋 금지)
+google-service-account.json
+**/google-service-account.json
+
 # Claude Code local data
 .claude/sessions/
 .claude/settings.local.json
