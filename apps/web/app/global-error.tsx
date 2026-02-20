@@ -48,9 +48,7 @@ export default function GlobalError({
               marginBottom: '1.5rem',
             }}
           >
-            <AlertTriangle
-              style={{ width: '40px', height: '40px', color: '#dc2626' }}
-            />
+            <AlertTriangle style={{ width: '40px', height: '40px', color: '#dc2626' }} />
           </div>
 
           {/* 에러 메시지 */}
@@ -66,8 +64,7 @@ export default function GlobalError({
               앱에 문제가 발생했어요
             </h1>
             <p style={{ color: '#6b7280', maxWidth: '400px' }}>
-              예상치 못한 오류가 발생했습니다. 페이지를 새로고침하거나 잠시 후
-              다시 시도해 주세요.
+              예상치 못한 오류가 발생했습니다. 페이지를 새로고침하거나 잠시 후 다시 시도해 주세요.
             </p>
             {error.digest && (
               <p
@@ -88,8 +85,8 @@ export default function GlobalError({
               onClick={reset}
               style={{
                 padding: '0.75rem 1.5rem',
-                backgroundColor: '#2e5afa',
-                color: 'white',
+                backgroundColor: '#F8C8DC',
+                color: '#1a1a1a',
                 border: 'none',
                 borderRadius: '0.5rem',
                 fontSize: '1rem',
