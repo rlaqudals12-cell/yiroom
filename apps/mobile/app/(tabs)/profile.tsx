@@ -9,18 +9,17 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  useColorScheme,
   TouchableOpacity,
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
+import { useTheme, brand, statusColors, shadows } from '../../lib/theme';
 import { profileLogger } from '../../lib/utils/logger';
 
 export default function ProfileScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
 
@@ -42,59 +41,79 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.profileHeader, isDark && styles.cardDark]}>
+        <View
+          style={[
+            styles.profileHeader,
+            { backgroundColor: colors.card },
+            shadows.card,
+          ]}
+        >
           {isSignedIn && user ? (
             <>
               {user.imageUrl ? (
                 <Image source={{ uri: user.imageUrl }} style={styles.avatar} />
               ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarText}>
+                <View
+                  style={[
+                    styles.avatarPlaceholder,
+                    { backgroundColor: colors.secondary },
+                  ]}
+                >
+                  <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
                     {user.firstName?.[0] ||
                       user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() ||
                       '?'}
                   </Text>
                 </View>
               )}
-              <Text style={[styles.profileName, isDark && styles.textLight]}>
+              <Text style={[styles.profileName, { color: colors.foreground }]}>
                 {user.fullName ||
                   user.emailAddresses[0]?.emailAddress ||
                   '사용자'}
               </Text>
               <TouchableOpacity
-                style={[styles.loginButton, styles.logoutButton]}
+                style={[styles.actionButton, { backgroundColor: colors.mutedForeground }]}
                 onPress={handleSignOut}
               >
-                <Text style={styles.loginButtonText}>로그아웃</Text>
+                <Text style={styles.actionButtonText}>로그아웃</Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarText}>?</Text>
+              <View
+                style={[
+                  styles.avatarPlaceholder,
+                  { backgroundColor: colors.secondary },
+                ]}
+              >
+                <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>?</Text>
               </View>
-              <Text style={[styles.profileName, isDark && styles.textLight]}>
+              <Text style={[styles.profileName, { color: colors.foreground }]}>
                 로그인이 필요합니다
               </Text>
               <TouchableOpacity
-                style={styles.loginButton}
+                style={[styles.actionButton, { backgroundColor: brand.primary }]}
                 onPress={handleSignIn}
               >
-                <Text style={styles.loginButtonText}>로그인</Text>
+                <Text
+                  style={[styles.actionButtonText, { color: brand.primaryForeground }]}
+                >
+                  로그인
+                </Text>
               </TouchableOpacity>
             </>
           )}
         </View>
 
         <View style={styles.menuSection}>
-          <Text style={[styles.menuSectionTitle, isDark && styles.textMuted]}>
+          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>
             분석 결과
           </Text>
           <MenuItem
             title="퍼스널 컬러"
-            isDark={isDark}
+            colors={colors}
             completed={!!personalColor}
             subtitle={
               personalColor?.season ? `${personalColor.season}` : undefined
@@ -103,14 +122,14 @@ export default function ProfileScreen() {
           />
           <MenuItem
             title="피부 분석"
-            isDark={isDark}
+            colors={colors}
             completed={!!skinAnalysis}
             subtitle={skinAnalysis?.skinType || undefined}
             onPress={() => router.push('/(analysis)/skin')}
           />
           <MenuItem
             title="체형 분석"
-            isDark={isDark}
+            colors={colors}
             completed={!!bodyAnalysis}
             subtitle={bodyAnalysis?.bodyType || undefined}
             onPress={() => router.push('/(analysis)/body')}
@@ -118,12 +137,12 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.menuSection}>
-          <Text style={[styles.menuSectionTitle, isDark && styles.textMuted]}>
+          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>
             기록
           </Text>
           <MenuItem
             title="운동 기록"
-            isDark={isDark}
+            colors={colors}
             completed={!!workoutAnalysis}
             subtitle={
               workoutStreak?.currentStreak
@@ -134,7 +153,7 @@ export default function ProfileScreen() {
           />
           <MenuItem
             title="식단 기록"
-            isDark={isDark}
+            colors={colors}
             completed={!!nutritionStreak}
             subtitle={
               nutritionStreak?.currentStreak
@@ -145,36 +164,36 @@ export default function ProfileScreen() {
           />
           <MenuItem
             title="주간 리포트"
-            isDark={isDark}
+            colors={colors}
             onPress={() => router.push('/reports')}
           />
         </View>
 
         <View style={styles.menuSection}>
-          <Text style={[styles.menuSectionTitle, isDark && styles.textMuted]}>
+          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>
             설정
           </Text>
           <MenuItem
             title="알림 설정"
-            isDark={isDark}
+            colors={colors}
             subtitle="물, 운동, 식사 알림"
             onPress={() => router.push('/settings/notifications')}
           />
           <MenuItem
             title="목표 설정"
-            isDark={isDark}
+            colors={colors}
             subtitle="물, 칼로리, 운동 목표"
             onPress={() => router.push('/settings/goals')}
           />
           <MenuItem
             title="위젯 설정"
-            isDark={isDark}
+            colors={colors}
             subtitle="홈 화면 위젯"
             onPress={() => router.push('/settings/widgets')}
           />
           <MenuItem
             title="전체 설정"
-            isDark={isDark}
+            colors={colors}
             onPress={() => router.push('/settings')}
           />
         </View>
@@ -183,39 +202,53 @@ export default function ProfileScreen() {
   );
 }
 
+interface MenuItemColors {
+  card: string;
+  foreground: string;
+  mutedForeground: string;
+}
+
 function MenuItem({
   title,
-  isDark,
+  colors,
   completed,
   subtitle,
   onPress,
 }: {
   title: string;
-  isDark: boolean;
+  colors: MenuItemColors;
   completed?: boolean;
   subtitle?: string;
   onPress?: () => void;
 }) {
   return (
     <TouchableOpacity
-      style={[styles.menuItem, isDark && styles.menuItemDark]}
+      style={[
+        styles.menuItem,
+        { backgroundColor: colors.card },
+        shadows.sm,
+      ]}
       activeOpacity={0.7}
       onPress={onPress}
     >
       <View style={styles.menuItemContent}>
         <View style={styles.menuItemTitleRow}>
-          <Text style={[styles.menuItemText, isDark && styles.textLight]}>
+          <Text style={[styles.menuItemText, { color: colors.foreground }]}>
             {title}
           </Text>
-          {completed && <Text style={styles.menuItemCheck}>✓</Text>}
+          {completed && (
+            <Text style={[styles.menuItemCheck, { color: statusColors.success }]}>
+              ✓
+            </Text>
+          )}
         </View>
         {subtitle && (
-          <Text style={[styles.menuItemSubtitle, isDark && styles.textMuted]}>
+          <Text style={[styles.menuItemSubtitle, { color: colors.mutedForeground }]}>
             {subtitle}
           </Text>
         )}
       </View>
-      <Text style={[styles.menuItemArrow, isDark && styles.textMuted]}>→</Text>
+      <Text style={[styles.menuItemArrow, { color: colors.mutedForeground }]}>→</Text>
     </TouchableOpacity>
   );
 }
@@ -223,28 +256,15 @@ function MenuItem({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   content: {
     padding: 20,
   },
   profileHeader: {
-    backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
   },
   avatar: {
     width: 80,
@@ -256,31 +276,24 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#e5e5e5',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
   avatarText: {
     fontSize: 32,
-    color: '#999',
   },
   profileName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
-  loginButton: {
-    backgroundColor: '#2e5afa',
+  actionButton: {
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 8,
   },
-  logoutButton: {
-    backgroundColor: '#666',
-  },
-  loginButtonText: {
+  actionButtonText: {
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '600',
@@ -290,14 +303,12 @@ const styles = StyleSheet.create({
   },
   menuSectionTitle: {
     fontSize: 13,
-    color: '#666',
     marginBottom: 8,
     paddingLeft: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   menuItem: {
-    backgroundColor: '#ffffff',
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 12,
@@ -305,14 +316,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  menuItemDark: {
-    backgroundColor: '#1a1a1a',
   },
   menuItemContent: {
     flex: 1,
@@ -324,26 +327,16 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 15,
-    color: '#111',
   },
   menuItemCheck: {
     fontSize: 12,
-    color: '#22c55e',
     fontWeight: '600',
   },
   menuItemSubtitle: {
     fontSize: 12,
-    color: '#666',
     marginTop: 2,
   },
   menuItemArrow: {
     fontSize: 16,
-    color: '#999',
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

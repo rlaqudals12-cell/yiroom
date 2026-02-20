@@ -4,36 +4,29 @@
  */
 import { Tabs } from 'expo-router';
 import { Home, Sparkles, Shirt, BookOpen, User } from 'lucide-react-native';
-import { useColorScheme, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
-// 색상 상수 (이룸 브랜드 컬러)
-const COLORS = {
-  primary: '#2e5afa',
-  inactive: '#8E8E93',
-  lightBg: '#ffffff',
-  darkBg: '#1a1a1a',
-};
+import { useTheme } from '../../lib/theme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, brand } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.inactive,
+        tabBarActiveTintColor: brand.primary,
+        tabBarInactiveTintColor: colors.mutedForeground,
         tabBarStyle: {
-          backgroundColor: isDark ? COLORS.darkBg : COLORS.lightBg,
-          borderTopColor: isDark ? '#2a2a2a' : '#e5e5e5',
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
           height: Platform.OS === 'ios' ? 88 : 60,
           paddingBottom: Platform.OS === 'ios' ? 28 : 8,
           paddingTop: 8,
         },
         headerStyle: {
-          backgroundColor: isDark ? COLORS.darkBg : COLORS.lightBg,
+          backgroundColor: colors.card,
         },
-        headerTintColor: isDark ? '#ffffff' : '#000000',
+        headerTintColor: colors.foreground,
       }}
     >
       <Tabs.Screen

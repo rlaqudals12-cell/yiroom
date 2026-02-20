@@ -2,19 +2,19 @@
  * 인증 화면 레이아웃
  */
 import { Stack } from 'expo-router';
-import { useColorScheme } from 'react-native';
+
+import { useTheme } from '../../lib/theme';
 
 export default function AuthLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors } = useTheme();
 
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+          backgroundColor: colors.card,
         },
-        headerTintColor: isDark ? '#ffffff' : '#000000',
+        headerTintColor: colors.foreground,
         headerTitleStyle: {
           fontWeight: '600',
         },

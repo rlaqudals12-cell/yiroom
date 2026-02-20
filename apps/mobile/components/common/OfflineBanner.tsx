@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   syncButton: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#F8C8DC',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,

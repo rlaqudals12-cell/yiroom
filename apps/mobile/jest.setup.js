@@ -160,6 +160,15 @@ jest.mock('nativewind', () => ({
   cssInterop: jest.fn(),
 }));
 
+jest.mock('react-native-css-interop', () => ({
+  cssInterop: jest.fn(),
+  remapProps: jest.fn(),
+  StyleSheet: {
+    create: (styles) => styles,
+    register: jest.fn(),
+  },
+}));
+
 // =============================================================================
 // Platform 모킹
 // =============================================================================

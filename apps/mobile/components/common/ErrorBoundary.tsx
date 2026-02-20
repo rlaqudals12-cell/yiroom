@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   retryButton: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#F8C8DC',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,

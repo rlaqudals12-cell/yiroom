@@ -11,15 +11,15 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  useColorScheme,
   TouchableOpacity,
   Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useTheme } from '../../lib/theme';
+
 export default function SettingsScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const appVersion = Constants.expoConfig?.version || '0.1.0';
 
@@ -35,7 +35,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
       <ScrollView
@@ -44,70 +44,70 @@ export default function SettingsScreen() {
       >
         {/* 알림 및 목표 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
             알림 및 목표
           </Text>
           <SettingsItem
             icon="🔔"
             title="알림 설정"
             subtitle="물, 운동, 식사 알림"
-            isDark={isDark}
+            colors={colors}
             onPress={() => handlePress('/settings/notifications')}
           />
           <SettingsItem
             icon="🎯"
             title="목표 설정"
             subtitle="일일 물, 칼로리 목표"
-            isDark={isDark}
+            colors={colors}
             onPress={() => handlePress('/settings/goals')}
           />
         </View>
 
         {/* 위젯 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
             위젯
           </Text>
           <SettingsItem
             icon="📱"
             title="위젯 설정"
             subtitle="홈 화면 위젯 미리보기"
-            isDark={isDark}
+            colors={colors}
             onPress={() => handlePress('/settings/widgets')}
           />
         </View>
 
-        {/* 앱 정보 */}
+        {/* 앱 정보 — 네이티브 페이지로 이동 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
             앱 정보
           </Text>
           <SettingsItem
             icon="📖"
             title="이용약관"
-            isDark={isDark}
-            onPress={() => handleLink('https://yiroom.app/terms')}
+            colors={colors}
+            onPress={() => handlePress('/terms')}
           />
           <SettingsItem
             icon="🔒"
             title="개인정보 처리방침"
-            isDark={isDark}
-            onPress={() => handleLink('https://yiroom.app/privacy')}
+            colors={colors}
+            onPress={() => handlePress('/privacy-policy')}
           />
           <SettingsItem
             icon="💬"
             title="피드백 보내기"
-            isDark={isDark}
+            colors={colors}
             onPress={() => handleLink('mailto:support@yiroom.app')}
           />
         </View>
 
         {/* 버전 정보 */}
         <View style={styles.versionSection}>
-          <Text style={[styles.versionLabel, isDark && styles.textMuted]}>
+          <Text style={[styles.versionLabel, { color: colors.foreground }]}>
             이룸
           </Text>
-          <Text style={[styles.versionText, isDark && styles.textMuted]}>
+          <Text style={[styles.versionText, { color: colors.mutedForeground }]}>
             버전 {appVersion}
           </Text>
         </View>
@@ -116,37 +116,43 @@ export default function SettingsScreen() {
   );
 }
 
+interface SettingsItemColors {
+  card: string;
+  foreground: string;
+  mutedForeground: string;
+}
+
 function SettingsItem({
   icon,
   title,
   subtitle,
-  isDark,
+  colors,
   onPress,
 }: {
   icon: string;
   title: string;
   subtitle?: string;
-  isDark: boolean;
+  colors: SettingsItemColors;
   onPress: () => void;
 }) {
   return (
     <TouchableOpacity
-      style={[styles.settingsItem, isDark && styles.settingsItemDark]}
+      style={[styles.settingsItem, { backgroundColor: colors.card }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
       <Text style={styles.settingsIcon}>{icon}</Text>
       <View style={styles.settingsContent}>
-        <Text style={[styles.settingsTitle, isDark && styles.textLight]}>
+        <Text style={[styles.settingsTitle, { color: colors.foreground }]}>
           {title}
         </Text>
         {subtitle && (
-          <Text style={[styles.settingsSubtitle, isDark && styles.textMuted]}>
+          <Text style={[styles.settingsSubtitle, { color: colors.mutedForeground }]}>
             {subtitle}
           </Text>
         )}
       </View>
-      <Text style={[styles.settingsArrow, isDark && styles.textMuted]}>›</Text>
+      <Text style={[styles.settingsArrow, { color: colors.mutedForeground }]}>›</Text>
     </TouchableOpacity>
   );
 }
@@ -154,10 +160,6 @@ function SettingsItem({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   content: {
     padding: 16,
@@ -169,7 +171,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#666',
     marginBottom: 8,
     marginLeft: 4,
     textTransform: 'uppercase',
@@ -178,14 +179,10 @@ const styles = StyleSheet.create({
   settingsItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 12,
     marginBottom: 8,
-  },
-  settingsItemDark: {
-    backgroundColor: '#1a1a1a',
   },
   settingsIcon: {
     fontSize: 20,
@@ -197,16 +194,13 @@ const styles = StyleSheet.create({
   settingsTitle: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#111',
   },
   settingsSubtitle: {
     fontSize: 12,
-    color: '#666',
     marginTop: 2,
   },
   settingsArrow: {
     fontSize: 20,
-    color: '#999',
   },
   versionSection: {
     alignItems: 'center',
@@ -215,17 +209,9 @@ const styles = StyleSheet.create({
   versionLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 4,
   },
   versionText: {
     fontSize: 13,
-    color: '#666',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

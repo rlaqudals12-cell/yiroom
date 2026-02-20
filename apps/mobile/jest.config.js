@@ -16,6 +16,9 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/$1',
     '^react-native-reanimated$':
       '<rootDir>/__mocks__/react-native-reanimated.js',
+    '^@sentry/react-native$': '<rootDir>/__mocks__/@sentry/react-native.js',
+    '^react-native-css-interop(.*)$':
+      '<rootDir>/__mocks__/react-native-css-interop.js',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   collectCoverageFrom: [

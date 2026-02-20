@@ -3,11 +3,11 @@
  */
 
 import { Stack } from 'expo-router';
-import { useColorScheme } from 'react-native';
+
+import { useTheme } from '../../lib/theme';
 
 export default function CoachLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors } = useTheme();
 
   return (
     <Stack
@@ -15,9 +15,9 @@ export default function CoachLayout() {
         headerShown: true,
         headerBackTitle: '뒤로',
         headerStyle: {
-          backgroundColor: isDark ? '#0a0a0a' : '#f8f9fc',
+          backgroundColor: colors.background,
         },
-        headerTintColor: isDark ? '#fff' : '#111',
+        headerTintColor: colors.foreground,
       }}
     >
       <Stack.Screen

@@ -10,7 +10,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  useColorScheme,
   Pressable,
   LayoutAnimation,
   ActivityIndicator,
@@ -24,26 +23,20 @@ import {
   calculateCalorieProgress,
 } from '../../hooks';
 import { useOnboardingCheck } from '../../lib/onboarding';
+import {
+  useTheme,
+  brand,
+  moduleColors,
+  lightColors,
+  darkColors,
+} from '../../lib/theme';
 import { useWidgetSync } from '../../lib/widgets';
 
-// 색상 상수
-const COLORS = {
-  primary: '#2e5afa',
-  secondary: '#8b5cf6',
-  workout: '#f97316',
-  nutrition: '#22c55e',
-  skin: '#ec4899',
-  body: '#06b6d4',
-  coach: '#10b981', // AI Coach 색상
-  lightBg: '#f8f9fc',
-  darkBg: '#0a0a0a',
-  cardLight: '#ffffff',
-  cardDark: '#1a1a1a',
-};
+// AI Coach 색상 (모듈 토큰에 미정의)
+const COACH_COLOR = '#10b981';
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useTheme();
   const router = useRouter();
   const { user, isLoaded } = useUser();
   const [showMore, setShowMore] = useState(false);
@@ -243,7 +236,7 @@ export default function HomeScreen() {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <ActivityIndicator size="large" color={brand.primary} />
         </View>
       </SafeAreaView>
     );
@@ -328,7 +321,7 @@ export default function HomeScreen() {
             </Text>
           </View>
           <View style={styles.coachArrow}>
-            <Text style={[styles.arrowText, { color: COLORS.coach }]}>›</Text>
+            <Text style={[styles.arrowText, { color: COACH_COLOR }]}>›</Text>
           </View>
         </Pressable>
 
@@ -341,7 +334,7 @@ export default function HomeScreen() {
             <QuickActionButton
               title="퍼스널 컬러"
               subtitle="나의 컬러 찾기"
-              color={COLORS.primary}
+              color={moduleColors.personalColor.base}
               isDark={isDark}
               onPress={() => router.push('/(analysis)/personal-color')}
               completed={!!personalColor}
@@ -349,7 +342,7 @@ export default function HomeScreen() {
             <QuickActionButton
               title="피부 분석"
               subtitle="AI 피부 진단"
-              color={COLORS.skin}
+              color={moduleColors.skin.base}
               isDark={isDark}
               onPress={() => router.push('/(analysis)/skin')}
               completed={!!skinAnalysis}
@@ -357,7 +350,7 @@ export default function HomeScreen() {
             <QuickActionButton
               title="체형 분석"
               subtitle="맞춤 스타일"
-              color={COLORS.body}
+              color={moduleColors.body.base}
               isDark={isDark}
               onPress={() => router.push('/(analysis)/body')}
               completed={!!bodyAnalysis}
@@ -396,17 +389,17 @@ export default function HomeScreen() {
                 <StatItem
                   label="운동"
                   value={workoutValue}
-                  color={COLORS.workout}
+                  color={moduleColors.workout.dark}
                 />
                 <StatItem
                   label="식단"
                   value={nutritionValue}
-                  color={COLORS.nutrition}
+                  color={moduleColors.nutrition.dark}
                 />
                 <StatItem
                   label="분석"
                   value={checkinValue}
-                  color={COLORS.primary}
+                  color={brand.primary}
                 />
               </View>
             </View>
@@ -420,21 +413,21 @@ export default function HomeScreen() {
                 <ModuleCard
                   title="운동"
                   description="맞춤 운동 플랜으로 목표 달성"
-                  color={COLORS.workout}
+                  color={moduleColors.workout.dark}
                   isDark={isDark}
                   onPress={() => router.push('/(workout)/onboarding')}
                 />
                 <ModuleCard
                   title="영양"
                   description="균형 잡힌 식단으로 건강 관리"
-                  color={COLORS.nutrition}
+                  color={moduleColors.nutrition.dark}
                   isDark={isDark}
                   onPress={() => router.push('/(nutrition)/dashboard')}
                 />
                 <ModuleCard
                   title="제품 추천"
                   description="나에게 맞는 제품 찾기"
-                  color={COLORS.secondary}
+                  color={brand.primary}
                   isDark={isDark}
                   onPress={() => router.push('/products')}
                 />
@@ -443,7 +436,7 @@ export default function HomeScreen() {
 
             {/* 팁 카드 */}
             <View style={[styles.tipCard, isDark && styles.cardDark]}>
-              <Text style={[styles.tipLabel, { color: COLORS.secondary }]}>
+              <Text style={[styles.tipLabel, { color: brand.primary }]}>
                 💡 오늘의 팁
               </Text>
               <Text style={[styles.tipText, isDark && styles.textLight]}>
@@ -607,10 +600,10 @@ function ModuleCard({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.lightBg,
+    backgroundColor: lightColors.background,
   },
   containerDark: {
-    backgroundColor: COLORS.darkBg,
+    backgroundColor: darkColors.background,
   },
   content: {
     padding: 20,
@@ -666,7 +659,7 @@ const styles = StyleSheet.create({
 
   // 요약 카드
   summaryCard: {
-    backgroundColor: COLORS.cardLight,
+    backgroundColor: lightColors.card,
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
@@ -677,7 +670,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardDark: {
-    backgroundColor: COLORS.cardDark,
+    backgroundColor: darkColors.card,
   },
   summaryHeader: {
     marginBottom: 16,
@@ -726,7 +719,7 @@ const styles = StyleSheet.create({
 
   // 오늘 할 일
   todoCard: {
-    backgroundColor: COLORS.cardLight,
+    backgroundColor: lightColors.card,
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -784,7 +777,7 @@ const styles = StyleSheet.create({
   },
   quickAction: {
     flex: 1,
-    backgroundColor: COLORS.cardLight,
+    backgroundColor: lightColors.card,
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
@@ -833,7 +826,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   moduleCard: {
-    backgroundColor: COLORS.cardLight,
+    backgroundColor: lightColors.card,
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
@@ -871,7 +864,7 @@ const styles = StyleSheet.create({
 
   // 더 보기 토글
   moreToggle: {
-    backgroundColor: COLORS.cardLight,
+    backgroundColor: lightColors.card,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -898,7 +891,7 @@ const styles = StyleSheet.create({
 
   // 팁 카드
   tipCard: {
-    backgroundColor: COLORS.cardLight,
+    backgroundColor: lightColors.card,
     borderRadius: 16,
     padding: 20,
     shadowColor: '#000',
@@ -920,15 +913,15 @@ const styles = StyleSheet.create({
 
   // AI Coach 카드
   coachCard: {
-    backgroundColor: COLORS.cardLight,
+    backgroundColor: lightColors.card,
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: COLORS.coach,
-    shadowColor: COLORS.coach,
+    borderColor: COACH_COLOR,
+    shadowColor: COACH_COLOR,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -938,7 +931,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: `${COLORS.coach}15`,
+    backgroundColor: `${COACH_COLOR}15`,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,

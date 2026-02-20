@@ -171,8 +171,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#2a2a2a',
   },
   goalCardSelected: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2',
+    borderColor: '#F8C8DC',
+    backgroundColor: '#FDF2F6',
   },
   goalIcon: {
     fontSize: 28,
@@ -185,13 +185,13 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   goalLabelSelected: {
-    color: '#ef4444',
+    color: '#F8C8DC',
   },
   checkmark: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#ef4444',
+    backgroundColor: '#F8C8DC',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#444444',
   },
   progressDotActive: {
-    backgroundColor: '#ef4444',
+    backgroundColor: '#F8C8DC',
     width: 24,
   },
   footer: {
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   nextButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: '#F8C8DC',
     borderRadius: 12,
     padding: 18,
     alignItems: 'center',

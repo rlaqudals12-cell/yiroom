@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#2e5afa"
+      "backgroundColor": "#F8C8DC"
     },
     "ios": {
       "supportsTablet": true,
@@ -28,7 +28,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#2e5afa"
+        "backgroundColor": "#F8C8DC"
       },
       "package": "com.yiroom.app",
       "edgeToEdgeEnabled": true,

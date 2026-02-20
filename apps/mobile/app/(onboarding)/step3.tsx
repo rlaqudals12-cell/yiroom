@@ -158,7 +158,7 @@ export default function OnboardingStep3() {
             <Switch
               value={data.preferences.notificationsEnabled ?? false}
               onValueChange={handleNotificationsToggle}
-              trackColor={{ false: '#e0e0e0', true: '#ef4444' }}
+              trackColor={{ false: '#e0e0e0', true: '#F8C8DC' }}
               thumbColor="#ffffff"
               testID="notifications-switch"
             />
@@ -306,8 +306,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#2a2a2a',
   },
   optionButtonSelected: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2',
+    borderColor: '#F8C8DC',
+    backgroundColor: '#FDF2F6',
   },
   optionText: {
     fontSize: 14,
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   optionTextSelected: {
-    color: '#ef4444',
+    color: '#F8C8DC',
   },
   switchRow: {
     flexDirection: 'row',
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#444444',
   },
   progressDotActive: {
-    backgroundColor: '#ef4444',
+    backgroundColor: '#F8C8DC',
     width: 24,
   },
   footer: {
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   },
   completeButton: {
     flex: 2,
-    backgroundColor: '#ef4444',
+    backgroundColor: '#F8C8DC',
     borderRadius: 12,
     padding: 18,
     alignItems: 'center',
