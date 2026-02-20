@@ -9,10 +9,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  useColorScheme,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button, Card, CardContent, ProgressIndicator } from '../../components/ui';
+import { useTheme } from '../../lib/theme';
 import {
   useOnboarding,
   type WorkoutFrequency,
@@ -32,9 +33,7 @@ const MEAL_PREFERENCES: MealPreference[] = [
 ];
 
 export default function OnboardingStep3() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
+  const { colors, brand, spacing, radii, shadows, typography } = useTheme();
   const { data, setPreferences, prevStep, completeOnboarding } =
     useOnboarding();
 
@@ -59,26 +58,52 @@ export default function OnboardingStep3() {
     ? calculateAge(data.basicInfo.birthYear)
     : null;
 
+  const selectedBg = `${brand.primary}1A`;
+
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       testID="onboarding-step3"
     >
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { padding: spacing.lg }]}>
         {/* 헤더 */}
         <View style={styles.header}>
           <Text style={styles.emoji}>🏁</Text>
-          <Text style={[styles.title, isDark && styles.textLight]}>
+          <Text
+            style={[
+              styles.title,
+              {
+                color: colors.foreground,
+                fontSize: typography.size['2xl'],
+                fontWeight: typography.weight.bold,
+              },
+            ]}
+          >
             거의 다 왔어요!
           </Text>
-          <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
+          <Text
+            style={{
+              color: colors.mutedForeground,
+              fontSize: typography.size.sm,
+              textAlign: 'center',
+            }}
+          >
             마지막으로 선호도를 알려주세요
           </Text>
         </View>
 
         {/* 운동 빈도 */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+        <View style={{ marginBottom: spacing.lg }}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              {
+                color: colors.foreground,
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+              },
+            ]}
+          >
             현재 운동 빈도
           </Text>
           <View style={styles.optionGrid}>
@@ -89,18 +114,23 @@ export default function OnboardingStep3() {
                   key={freq}
                   style={[
                     styles.optionButton,
-                    isDark && styles.optionButtonDark,
-                    isSelected && styles.optionButtonSelected,
+                    shadows.sm,
+                    {
+                      backgroundColor: isSelected ? selectedBg : colors.card,
+                      borderRadius: radii.lg + 2,
+                      borderColor: isSelected ? brand.primary : colors.border,
+                      borderWidth: isSelected ? 2 : 1,
+                    },
                   ]}
                   onPress={() => handleFrequencySelect(freq)}
                   testID={`frequency-${freq}`}
                 >
                   <Text
-                    style={[
-                      styles.optionText,
-                      isDark && styles.textLight,
-                      isSelected && styles.optionTextSelected,
-                    ]}
+                    style={{
+                      fontSize: typography.size.sm,
+                      fontWeight: typography.weight.medium,
+                      color: isSelected ? brand.primary : colors.foreground,
+                    }}
                   >
                     {WORKOUT_FREQUENCY_LABELS[freq]}
                   </Text>
@@ -111,8 +141,17 @@ export default function OnboardingStep3() {
         </View>
 
         {/* 식습관 */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+        <View style={{ marginBottom: spacing.lg }}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              {
+                color: colors.foreground,
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+              },
+            ]}
+          >
             선호하는 식습관
           </Text>
           <View style={styles.optionGrid}>
@@ -123,18 +162,23 @@ export default function OnboardingStep3() {
                   key={pref}
                   style={[
                     styles.optionButton,
-                    isDark && styles.optionButtonDark,
-                    isSelected && styles.optionButtonSelected,
+                    shadows.sm,
+                    {
+                      backgroundColor: isSelected ? selectedBg : colors.card,
+                      borderRadius: radii.lg + 2,
+                      borderColor: isSelected ? brand.primary : colors.border,
+                      borderWidth: isSelected ? 2 : 1,
+                    },
                   ]}
                   onPress={() => handleMealSelect(pref)}
                   testID={`meal-${pref}`}
                 >
                   <Text
-                    style={[
-                      styles.optionText,
-                      isDark && styles.textLight,
-                      isSelected && styles.optionTextSelected,
-                    ]}
+                    style={{
+                      fontSize: typography.size.sm,
+                      fontWeight: typography.weight.medium,
+                      color: isSelected ? brand.primary : colors.foreground,
+                    }}
                   >
                     {MEAL_PREFERENCE_LABELS[pref]}
                   </Text>
@@ -145,20 +189,41 @@ export default function OnboardingStep3() {
         </View>
 
         {/* 알림 설정 */}
-        <View style={styles.section}>
-          <View style={styles.switchRow}>
+        <View style={{ marginBottom: spacing.lg }}>
+          <View
+            style={[
+              styles.switchRow,
+              {
+                backgroundColor: colors.secondary,
+                borderRadius: radii.lg + 2,
+                padding: spacing.md,
+              },
+            ]}
+          >
             <View style={styles.switchLabel}>
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  marginBottom: spacing.xs,
+                }}
+              >
                 알림 받기
               </Text>
-              <Text style={[styles.switchHint, isDark && styles.subtitleDark]}>
+              <Text
+                style={{
+                  fontSize: typography.size.xs + 1,
+                  color: colors.mutedForeground,
+                }}
+              >
                 운동/식단 리마인더를 받을게요
               </Text>
             </View>
             <Switch
               value={data.preferences.notificationsEnabled ?? false}
               onValueChange={handleNotificationsToggle}
-              trackColor={{ false: '#e0e0e0', true: '#F8C8DC' }}
+              trackColor={{ false: colors.border, true: brand.primary }}
               thumbColor="#ffffff"
               testID="notifications-switch"
             />
@@ -166,78 +231,93 @@ export default function OnboardingStep3() {
         </View>
 
         {/* 요약 카드 */}
-        <View style={[styles.summaryCard, isDark && styles.summaryCardDark]}>
-          <Text style={[styles.summaryTitle, isDark && styles.textLight]}>
-            📋 입력하신 정보
-          </Text>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, isDark && styles.subtitleDark]}>
-              목표
+        <Card>
+          <CardContent style={{ paddingTop: spacing.md }}>
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+                color: colors.cardForeground,
+                marginBottom: spacing.md,
+              }}
+            >
+              📋 입력하신 정보
             </Text>
-            <Text style={[styles.summaryValue, isDark && styles.textLight]}>
-              {data.goals.map((g) => GOAL_LABELS[g]).join(', ') || '-'}
-            </Text>
-          </View>
-          {age && (
             <View style={styles.summaryRow}>
-              <Text
-                style={[styles.summaryLabel, isDark && styles.subtitleDark]}
-              >
-                나이
+              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                목표
               </Text>
-              <Text style={[styles.summaryValue, isDark && styles.textLight]}>
-                {age}세
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.medium,
+                  color: colors.cardForeground,
+                  maxWidth: '60%',
+                  textAlign: 'right',
+                }}
+              >
+                {data.goals.map((g) => GOAL_LABELS[g]).join(', ') || '-'}
               </Text>
             </View>
-          )}
-          {data.basicInfo.height && data.basicInfo.weight && (
-            <View style={styles.summaryRow}>
-              <Text
-                style={[styles.summaryLabel, isDark && styles.subtitleDark]}
-              >
-                신체
-              </Text>
-              <Text style={[styles.summaryValue, isDark && styles.textLight]}>
-                {data.basicInfo.height}cm / {data.basicInfo.weight}kg
-              </Text>
-            </View>
-          )}
-        </View>
+            {age && (
+              <View style={styles.summaryRow}>
+                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                  나이
+                </Text>
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.medium,
+                    color: colors.cardForeground,
+                  }}
+                >
+                  {age}세
+                </Text>
+              </View>
+            )}
+            {data.basicInfo.height && data.basicInfo.weight && (
+              <View style={styles.summaryRow}>
+                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                  신체
+                </Text>
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.medium,
+                    color: colors.cardForeground,
+                  }}
+                >
+                  {data.basicInfo.height}cm / {data.basicInfo.weight}kg
+                </Text>
+              </View>
+            )}
+          </CardContent>
+        </Card>
 
         {/* 진행 상황 */}
-        <View style={styles.progress}>
-          <View
-            style={[styles.progressDot, isDark && styles.progressDotDark]}
-          />
-          <View
-            style={[styles.progressDot, isDark && styles.progressDotDark]}
-          />
-          <View style={[styles.progressDot, styles.progressDotActive]} />
-        </View>
+        <ProgressIndicator current={3} total={3} style={{ marginTop: spacing.xl }} />
       </ScrollView>
 
       {/* 하단 버튼 */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.backButton, isDark && styles.backButtonDark]}
+      <View style={[styles.footer, { padding: spacing.lg, paddingBottom: 40, gap: spacing.sm + 4 }]}>
+        <Button
+          variant="secondary"
+          size="lg"
           onPress={prevStep}
           testID="back-button"
+          style={{ flex: 1 }}
         >
-          <Text style={[styles.backButtonText, isDark && styles.textLight]}>
-            이전
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.completeButton,
-            !canComplete && styles.completeButtonDisabled,
-          ]}
+          이전
+        </Button>
+        <Button
+          size="lg"
           onPress={completeOnboarding}
           disabled={!canComplete}
           testID="complete-button"
+          style={{ flex: 2 }}
         >
-          <Text style={styles.completeButtonText}>시작하기 🎉</Text>
-        </TouchableOpacity>
+          시작하기 🎉
+        </Button>
       </View>
     </SafeAreaView>
   );
@@ -246,47 +326,22 @@ export default function OnboardingStep3() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  containerDark: {
-    backgroundColor: '#1a1a1a',
   },
   content: {
-    padding: 24,
     paddingBottom: 120,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
   },
   emoji: {
     fontSize: 48,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#000000',
-    marginBottom: 8,
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#666666',
-    textAlign: 'center',
-  },
-  subtitleDark: {
-    color: '#999999',
-  },
-  section: {
-    marginBottom: 24,
+    marginBottom: 6,
   },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000000',
     marginBottom: 12,
   },
   optionGrid: {
@@ -295,93 +350,21 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   optionButton: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  optionButtonDark: {
-    backgroundColor: '#2a2a2a',
-  },
-  optionButtonSelected: {
-    borderColor: '#F8C8DC',
-    backgroundColor: '#FDF2F6',
-  },
-  optionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#000000',
-  },
-  optionTextSelected: {
-    color: '#F8C8DC',
   },
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
   },
   switchLabel: {
     flex: 1,
-  },
-  switchHint: {
-    fontSize: 13,
-    color: '#666666',
-    marginTop: 4,
-  },
-  summaryCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 8,
-  },
-  summaryCardDark: {
-    backgroundColor: '#2a2a2a',
-  },
-  summaryTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 16,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
-  },
-  summaryLabel: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  summaryValue: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#000000',
-    maxWidth: '60%',
-    textAlign: 'right',
-  },
-  progress: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 32,
-  },
-  progressDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#e0e0e0',
-  },
-  progressDotDark: {
-    backgroundColor: '#444444',
-  },
-  progressDotActive: {
-    backgroundColor: '#F8C8DC',
-    width: 24,
   },
   footer: {
     position: 'absolute',
@@ -389,39 +372,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    padding: 24,
-    paddingBottom: 40,
-    gap: 12,
     backgroundColor: 'transparent',
-  },
-  backButton: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 18,
-    alignItems: 'center',
-  },
-  backButtonDark: {
-    backgroundColor: '#2a2a2a',
-  },
-  backButtonText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#666666',
-  },
-  completeButton: {
-    flex: 2,
-    backgroundColor: '#F8C8DC',
-    borderRadius: 12,
-    padding: 18,
-    alignItems: 'center',
-  },
-  completeButtonDisabled: {
-    backgroundColor: '#cccccc',
-  },
-  completeButtonText: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '600',
   },
 });

@@ -4,7 +4,7 @@
  * variant: default | secondary | ghost | destructive | outline
  * size: sm | md | lg
  */
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 
@@ -19,6 +19,7 @@ interface ButtonProps {
   disabled?: boolean;
   onPress?: () => void;
   testID?: string;
+  style?: ViewStyle;
 }
 
 export function Button({
@@ -29,6 +30,7 @@ export function Button({
   disabled = false,
   onPress,
   testID,
+  style: externalStyle,
 }: ButtonProps): React.JSX.Element {
   const { colors, brand, radii, typography } = useTheme();
   const isDisabled = disabled || isLoading;
@@ -54,6 +56,7 @@ export function Button({
           opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
         },
         variant === 'outline' && styles.outlined,
+        externalStyle,
       ]}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: isLoading }}

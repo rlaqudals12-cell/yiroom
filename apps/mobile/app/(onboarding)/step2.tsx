@@ -10,10 +10,11 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  useColorScheme,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button, Input, ProgressIndicator } from '../../components/ui';
+import { useTheme } from '../../lib/theme';
 import {
   useOnboarding,
   type Gender,
@@ -34,9 +35,7 @@ const ACTIVITY_LEVELS: ActivityLevel[] = [
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function OnboardingStep2() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
+  const { colors, brand, spacing, radii, shadows, typography } = useTheme();
   const { data, setBasicInfo, nextStep, prevStep } = useOnboarding();
 
   // 로컬 입력 상태
@@ -83,26 +82,52 @@ export default function OnboardingStep2() {
     data.basicInfo.birthYear &&
     data.basicInfo.activityLevel;
 
+  const selectedBg = `${brand.primary}1A`;
+
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       testID="onboarding-step2"
     >
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { padding: spacing.lg }]}>
         {/* 헤더 */}
         <View style={styles.header}>
           <Text style={styles.emoji}>📝</Text>
-          <Text style={[styles.title, isDark && styles.textLight]}>
+          <Text
+            style={[
+              styles.title,
+              {
+                color: colors.foreground,
+                fontSize: typography.size['2xl'],
+                fontWeight: typography.weight.bold,
+              },
+            ]}
+          >
             기본 정보를 알려주세요
           </Text>
-          <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
+          <Text
+            style={{
+              color: colors.mutedForeground,
+              fontSize: typography.size.sm,
+              textAlign: 'center',
+            }}
+          >
             더 정확한 맞춤 추천을 위해 필요해요
           </Text>
         </View>
 
         {/* 성별 선택 */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+        <View style={{ marginBottom: spacing.lg }}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              {
+                color: colors.foreground,
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+              },
+            ]}
+          >
             성별
           </Text>
           <View style={styles.optionRow}>
@@ -113,18 +138,23 @@ export default function OnboardingStep2() {
                   key={gender}
                   style={[
                     styles.optionButton,
-                    isDark && styles.optionButtonDark,
-                    isSelected && styles.optionButtonSelected,
+                    shadows.sm,
+                    {
+                      backgroundColor: isSelected ? selectedBg : colors.card,
+                      borderRadius: radii.lg + 2,
+                      borderColor: isSelected ? brand.primary : colors.border,
+                      borderWidth: isSelected ? 2 : 1,
+                    },
                   ]}
                   onPress={() => handleGenderSelect(gender)}
                   testID={`gender-${gender}`}
                 >
                   <Text
-                    style={[
-                      styles.optionText,
-                      isDark && styles.textLight,
-                      isSelected && styles.optionTextSelected,
-                    ]}
+                    style={{
+                      fontSize: typography.size.sm,
+                      fontWeight: typography.weight.semibold,
+                      color: isSelected ? brand.primary : colors.foreground,
+                    }}
                   >
                     {GENDER_LABELS[gender]}
                   </Text>
@@ -135,16 +165,12 @@ export default function OnboardingStep2() {
         </View>
 
         {/* 출생년도 */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            출생년도
-          </Text>
-          <TextInput
-            style={[styles.input, isDark && styles.inputDark]}
+        <View style={{ marginBottom: spacing.lg }}>
+          <Input
+            label="출생년도"
             value={birthYear}
             onChangeText={handleBirthYearChange}
             placeholder="1990"
-            placeholderTextColor={isDark ? '#666666' : '#999999'}
             keyboardType="number-pad"
             maxLength={4}
             testID="birthYear-input"
@@ -152,54 +178,84 @@ export default function OnboardingStep2() {
         </View>
 
         {/* 신장/체중 (선택) */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+        <View style={{ marginBottom: spacing.lg }}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              {
+                color: colors.foreground,
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+              },
+            ]}
+          >
             신장 / 체중 (선택)
           </Text>
           <View style={styles.inputRow}>
             <View style={styles.inputGroup}>
               <TextInput
                 style={[
-                  styles.input,
-                  styles.inputHalf,
-                  isDark && styles.inputDark,
+                  styles.customInput,
+                  {
+                    backgroundColor: colors.secondary,
+                    borderRadius: radii.lg + 2,
+                    color: colors.foreground,
+                    fontSize: typography.size.base,
+                  },
                 ]}
                 value={height}
                 onChangeText={handleHeightChange}
                 placeholder="170"
-                placeholderTextColor={isDark ? '#666666' : '#999999'}
+                placeholderTextColor={colors.mutedForeground}
                 keyboardType="number-pad"
                 maxLength={3}
                 testID="height-input"
               />
-              <Text style={[styles.unit, isDark && styles.textLight]}>cm</Text>
+              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                cm
+              </Text>
             </View>
             <View style={styles.inputGroup}>
               <TextInput
                 style={[
-                  styles.input,
-                  styles.inputHalf,
-                  isDark && styles.inputDark,
+                  styles.customInput,
+                  {
+                    backgroundColor: colors.secondary,
+                    borderRadius: radii.lg + 2,
+                    color: colors.foreground,
+                    fontSize: typography.size.base,
+                  },
                 ]}
                 value={weight}
                 onChangeText={handleWeightChange}
                 placeholder="65"
-                placeholderTextColor={isDark ? '#666666' : '#999999'}
+                placeholderTextColor={colors.mutedForeground}
                 keyboardType="decimal-pad"
                 maxLength={5}
                 testID="weight-input"
               />
-              <Text style={[styles.unit, isDark && styles.textLight]}>kg</Text>
+              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                kg
+              </Text>
             </View>
           </View>
         </View>
 
         {/* 활동 수준 */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+        <View style={{ marginBottom: spacing.lg }}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              {
+                color: colors.foreground,
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+              },
+            ]}
+          >
             평소 활동 수준
           </Text>
-          <View style={styles.activityGrid}>
+          <View style={{ gap: spacing.sm }}>
             {ACTIVITY_LEVELS.map((level) => {
               const isSelected = data.basicInfo.activityLevel === level;
               return (
@@ -207,18 +263,23 @@ export default function OnboardingStep2() {
                   key={level}
                   style={[
                     styles.activityButton,
-                    isDark && styles.activityButtonDark,
-                    isSelected && styles.activityButtonSelected,
+                    shadows.sm,
+                    {
+                      backgroundColor: isSelected ? selectedBg : colors.card,
+                      borderRadius: radii.lg + 2,
+                      borderColor: isSelected ? brand.primary : colors.border,
+                      borderWidth: isSelected ? 2 : 1,
+                    },
                   ]}
                   onPress={() => handleActivitySelect(level)}
                   testID={`activity-${level}`}
                 >
                   <Text
-                    style={[
-                      styles.activityText,
-                      isDark && styles.textLight,
-                      isSelected && styles.activityTextSelected,
-                    ]}
+                    style={{
+                      fontSize: typography.size.sm,
+                      fontWeight: typography.weight.medium,
+                      color: isSelected ? brand.primary : colors.foreground,
+                    }}
                   >
                     {ACTIVITY_LEVEL_LABELS[level]}
                   </Text>
@@ -229,36 +290,29 @@ export default function OnboardingStep2() {
         </View>
 
         {/* 진행 상황 */}
-        <View style={styles.progress}>
-          <View
-            style={[styles.progressDot, isDark && styles.progressDotDark]}
-          />
-          <View style={[styles.progressDot, styles.progressDotActive]} />
-          <View
-            style={[styles.progressDot, isDark && styles.progressDotDark]}
-          />
-        </View>
+        <ProgressIndicator current={2} total={3} style={{ marginTop: spacing.xl }} />
       </ScrollView>
 
       {/* 하단 버튼 */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.backButton, isDark && styles.backButtonDark]}
+      <View style={[styles.footer, { padding: spacing.lg, paddingBottom: 40, gap: spacing.sm + 4 }]}>
+        <Button
+          variant="secondary"
+          size="lg"
           onPress={prevStep}
           testID="back-button"
+          style={{ flex: 1 }}
         >
-          <Text style={[styles.backButtonText, isDark && styles.textLight]}>
-            이전
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.nextButton, !canProceed && styles.nextButtonDisabled]}
+          이전
+        </Button>
+        <Button
+          size="lg"
           onPress={nextStep}
           disabled={!canProceed}
           testID="next-button"
+          style={{ flex: 2 }}
         >
-          <Text style={styles.nextButtonText}>다음</Text>
-        </TouchableOpacity>
+          다음
+        </Button>
       </View>
     </SafeAreaView>
   );
@@ -267,47 +321,22 @@ export default function OnboardingStep2() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  containerDark: {
-    backgroundColor: '#1a1a1a',
   },
   content: {
-    padding: 24,
     paddingBottom: 120,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
   },
   emoji: {
     fontSize: 48,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#000000',
-    marginBottom: 8,
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#666666',
-    textAlign: 'center',
-  },
-  subtitleDark: {
-    color: '#999999',
-  },
-  section: {
-    marginBottom: 24,
+    marginBottom: 6,
   },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000000',
     marginBottom: 12,
   },
   optionRow: {
@@ -316,38 +345,12 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
   },
-  optionButtonDark: {
-    backgroundColor: '#2a2a2a',
-  },
-  optionButtonSelected: {
-    borderColor: '#F8C8DC',
-    backgroundColor: '#FDF2F6',
-  },
-  optionText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000000',
-  },
-  optionTextSelected: {
-    color: '#F8C8DC',
-  },
-  input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
+  customInput: {
+    flex: 1,
     padding: 16,
-    fontSize: 16,
-    color: '#000000',
-  },
-  inputDark: {
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
   },
   inputRow: {
     flexDirection: 'row',
@@ -359,56 +362,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  inputHalf: {
-    flex: 1,
-  },
-  unit: {
-    fontSize: 15,
-    color: '#666666',
-  },
-  activityGrid: {
-    gap: 8,
-  },
   activityButton: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
     padding: 16,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  activityButtonDark: {
-    backgroundColor: '#2a2a2a',
-  },
-  activityButtonSelected: {
-    borderColor: '#F8C8DC',
-    backgroundColor: '#FDF2F6',
-  },
-  activityText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#000000',
-  },
-  activityTextSelected: {
-    color: '#F8C8DC',
-  },
-  progress: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 32,
-  },
-  progressDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#e0e0e0',
-  },
-  progressDotDark: {
-    backgroundColor: '#444444',
-  },
-  progressDotActive: {
-    backgroundColor: '#F8C8DC',
-    width: 24,
   },
   footer: {
     position: 'absolute',
@@ -416,39 +371,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    padding: 24,
-    paddingBottom: 40,
-    gap: 12,
     backgroundColor: 'transparent',
-  },
-  backButton: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 18,
-    alignItems: 'center',
-  },
-  backButtonDark: {
-    backgroundColor: '#2a2a2a',
-  },
-  backButtonText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#666666',
-  },
-  nextButton: {
-    flex: 2,
-    backgroundColor: '#F8C8DC',
-    borderRadius: 12,
-    padding: 18,
-    alignItems: 'center',
-  },
-  nextButtonDisabled: {
-    backgroundColor: '#cccccc',
-  },
-  nextButtonText: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '600',
   },
 });

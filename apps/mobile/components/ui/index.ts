@@ -15,3 +15,6 @@ export {
   CardContent,
   CardFooter,
 } from './Card';
+export { MenuCard } from './MenuCard';
+export { SectionHeader } from './SectionHeader';
+export { ProgressIndicator } from './ProgressIndicator';
