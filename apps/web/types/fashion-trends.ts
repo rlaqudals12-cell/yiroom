@@ -5,7 +5,8 @@
  * @see docs/specs/SDD-PHASE-K-COMPREHENSIVE-UPGRADE.md
  */
 
-import type { FitType } from './fashion-fit';
+// FitType은 lib/fashion에서 정의됨 — 순환 의존 방지를 위해 동일 타입 인라인 정의
+type FitType = 'slim' | 'regular' | 'relaxed';
 
 // 트렌드 카테고리
 export type TrendCategory =

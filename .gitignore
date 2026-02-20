@@ -82,3 +82,13 @@ google-service-account.json
 # Claude Code local data
 .claude/sessions/
 .claude/settings.local.json
+
+# 임시 디버그/스크린샷 파일
+*.apk
+parse-ui.js
+ui-dump.xml
+ui-expo54*.xml
+ui*.xml
+ss*.png
+screen-*.png
+emulator-screenshot*.png
