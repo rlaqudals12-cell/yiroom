@@ -78,12 +78,20 @@ export default function SkinAnalysisPage() {
       existingCheckedRef.current = true;
 
       try {
-        const { data } = await supabase
+        const { data, error: dbError } = await supabase
           .from('skin_analyses')
           .select('id')
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
+
+        if (dbError) {
+          console.warn(
+            '[S-1] checkExisting DB 조회 실패 (RLS/JWT 문제 가능):',
+            dbError.code,
+            dbError.message
+          );
+        }
 
         if (data && !isRedirecting) {
           // 기존 결과가 있으면 자동으로 결과 페이지로 리디렉트
@@ -91,8 +99,36 @@ export default function SkinAnalysisPage() {
           router.replace(`/analysis/skin/result/${data.id}`);
           return;
         }
-      } catch {
-        // 기존 결과 없음 - 무시
+
+        // DB 조회 실패 시 sessionStorage에서 최근 결과 ID 확인 (fallback)
+        if (!data) {
+          try {
+            const lastResultId = sessionStorage.getItem('skin-latest-result-id');
+            if (lastResultId && !isRedirecting) {
+              console.info('[S-1] sessionStorage fallback으로 결과 페이지 리다이렉트');
+              isRedirecting = true;
+              router.replace(`/analysis/skin/result/${lastResultId}`);
+              return;
+            }
+          } catch {
+            // sessionStorage 실패 무시
+          }
+        }
+      } catch (err) {
+        console.warn('[S-1] checkExisting 예외:', err);
+
+        // 예외 발생 시에도 sessionStorage fallback 시도
+        try {
+          const lastResultId = sessionStorage.getItem('skin-latest-result-id');
+          if (lastResultId && !isRedirecting) {
+            console.info('[S-1] sessionStorage fallback으로 결과 페이지 리다이렉트 (예외 경로)');
+            isRedirecting = true;
+            router.replace(`/analysis/skin/result/${lastResultId}`);
+            return;
+          }
+        } catch {
+          // sessionStorage 실패 무시
+        }
       } finally {
         if (!isRedirecting) {
           setCheckingExisting(false);
@@ -345,6 +381,8 @@ export default function SkinAnalysisPage() {
               cachedAt: new Date().toISOString(),
             })
           );
+          // 최근 결과 ID 저장 (checkExistingAnalysis fallback용)
+          sessionStorage.setItem('skin-latest-result-id', data.data.id);
         } catch {
           // sessionStorage 실패 무시 (시크릿 모드 등)
         }

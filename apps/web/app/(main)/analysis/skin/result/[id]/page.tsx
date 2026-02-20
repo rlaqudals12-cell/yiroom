@@ -21,6 +21,7 @@ import {
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { type SkinAnalysisResult, type SkinTypeId, EASY_SKIN_TIPS } from '@/lib/mock/skin-analysis';
+import { SKIN_TYPE_LABELS, type SkinTypeV2 } from '@/lib/analysis/skin-v2';
 import { generateSynergyFromGeminiResult } from '@/lib/analysis';
 import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
@@ -83,6 +84,67 @@ import type { SkinAnalysisSummary } from '@/types/skin-consultation';
 
 // 존 ID 타입 (FaceZoneMapProps에서 추출)
 type FaceZoneId = keyof NonNullable<FaceZoneMapProps['zones']>;
+
+// 영문 skinType → 한국어 라벨 변환
+function getSkinTypeLabel(skinType: string | null): string {
+  if (!skinType) return '내 피부';
+  const key = skinType.toLowerCase() as SkinTypeV2;
+  return SKIN_TYPE_LABELS[key] ?? skinType;
+}
+
+// 피부 타입별 설명 (근거 탭 빈 상태용)
+const SKIN_TYPE_EXPLANATIONS: Record<
+  string,
+  {
+    characteristics: string;
+    tZone: string;
+    uZone: string;
+    careFocus: string;
+    avoidReason: string;
+  }
+> = {
+  dry: {
+    characteristics:
+      '피지 분비가 적어 피부 장벽이 약해지기 쉬운 타입이에요. 외부 자극에 민감하고 당김이 느껴질 수 있어요.',
+    tZone: 'T존도 유분이 적어 전체적으로 건조한 편이에요',
+    uZone: 'U존은 특히 수분 손실이 빠르고 각질이 생기기 쉬워요',
+    careFocus: '수분 공급과 피부 장벽 강화가 핵심이에요. 세라마이드, 히알루론산 성분을 추천해요.',
+    avoidReason: '알코올이 많은 토너나 강한 클렌저는 남은 수분까지 빼앗길 수 있어요.',
+  },
+  oily: {
+    characteristics:
+      '피지 분비가 활발해 윤기가 있지만 모공이 넓어지기 쉬운 타입이에요. 여드름과 블랙헤드에 주의가 필요해요.',
+    tZone: 'T존에 피지가 집중되어 번들거림이 느껴져요',
+    uZone: 'U존도 유분이 있어 전체적으로 기름진 편이에요',
+    careFocus: '유수분 밸런스 조절이 핵심이에요. BHA, 나이아신아마이드 성분을 추천해요.',
+    avoidReason: '유분기 많은 크림이나 오일은 모공을 막아 트러블을 유발할 수 있어요.',
+  },
+  combination: {
+    characteristics:
+      'T존은 유분이 많고 U존은 건조한, 두 가지 특성이 공존하는 타입이에요. 부위별 맞춤 관리가 중요해요.',
+    tZone: 'T존(이마, 코)은 피지 분비가 활발해 번들거려요',
+    uZone: 'U존(볼, 턱)은 수분이 부족해 당기거나 각질이 생겨요',
+    careFocus:
+      '부위별 다른 제품을 사용하는 멀티케어가 효과적이에요. T존엔 BHA, U존엔 히알루론산을 추천해요.',
+    avoidReason: '한 가지 제품으로 전체를 관리하면 한쪽이 과하거나 부족할 수 있어요.',
+  },
+  normal: {
+    characteristics:
+      '유수분 밸런스가 잘 잡힌 건강한 타입이에요. 현재 상태를 유지하는 관리가 중요해요.',
+    tZone: 'T존 유분이 적절해 번들거리지 않아요',
+    uZone: 'U존 수분도 충분해 당김이 없어요',
+    careFocus: '현재 밸런스 유지가 핵심이에요. 자외선 차단과 항산화 관리를 추천해요.',
+    avoidReason: '과도한 스킨케어 단계는 오히려 피부 밸런스를 깨뜨릴 수 있어요.',
+  },
+  sensitive: {
+    characteristics:
+      '피부 장벽이 약해 외부 자극에 쉽게 반응하는 타입이에요. 홍조, 따가움, 가려움이 생기기 쉬워요.',
+    tZone: 'T존도 자극에 민감해 빨갛게 달아오를 수 있어요',
+    uZone: 'U존은 건조함과 민감함이 함께 나타나는 경우가 많아요',
+    careFocus: '자극 최소화와 장벽 강화가 핵심이에요. 판테놀, 마데카소사이드 성분을 추천해요.',
+    avoidReason: '향료, 알코올, 강한 산성 성분은 피부를 더 자극할 수 있어요.',
+  },
+};
 
 // 점수 → 상태 (MetricStatus 타입에 맞게)
 function getStatus(value: number): 'good' | 'normal' | 'warning' {
@@ -454,7 +516,9 @@ export default function SkinAnalysisResultPage() {
     try {
       const { data, error: dbError } = await supabase
         .from('skin_analyses')
-        .select('*')
+        .select(
+          'id, clerk_user_id, image_url, skin_type, hydration, oil_level, pores, pigmentation, wrinkles, sensitivity, overall_score, recommendations, products, ingredient_warnings, personal_color_season, foundation_recommendation, problem_areas, created_at'
+        )
         .eq('id', analysisId)
         .single();
 
@@ -525,6 +589,13 @@ export default function SkinAnalysisResultPage() {
         setProblemAreas(MOCK_PROBLEM_AREAS);
       }
 
+      // DB 조회 성공 → 최근 결과 ID 업데이트 (checkExisting fallback용)
+      try {
+        sessionStorage.setItem('skin-latest-result-id', analysisId);
+      } catch {
+        // sessionStorage 실패 무시
+      }
+
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
       const celebrationKey = `celebration-skin-${analysisId}`;
       if (!sessionStorage.getItem(celebrationKey)) {
@@ -587,13 +658,13 @@ export default function SkinAnalysisResultPage() {
     } catch (err) {
       console.error('[S-1] Fetch error:', err);
 
-      // Fallback: sessionStorage에서 캐시된 결과 복원 (클라이언트 JWT 문제 시)
+      // Fallback: sessionStorage에서 캐시된 결과 복원 (클라이언트 JWT/RLS 문제 시)
       try {
         const cached = sessionStorage.getItem(`skin-result-${analysisId}`);
         if (cached) {
           const cachedData = JSON.parse(cached);
           if (cachedData.dbData) {
-            console.info('[S-1] sessionStorage fallback 사용');
+            console.info('[S-1] sessionStorage fallback 사용 (DB 조회 실패 → 캐시 복원)');
             const transformedResult = transformDbToResult(cachedData.dbData);
             setResult(transformedResult);
             setSkinType(cachedData.dbData.skin_type);
@@ -611,7 +682,7 @@ export default function SkinAnalysisResultPage() {
             } else {
               setProblemAreas(MOCK_PROBLEM_AREAS);
             }
-            sessionStorage.removeItem(`skin-result-${analysisId}`);
+            // 캐시 유지 — 다음 방문 시에도 fallback으로 사용 가능하도록
             setIsLoading(false);
             return;
           }
@@ -751,7 +822,7 @@ export default function SkinAnalysisResultPage() {
           {result && (
             <div ref={swipeContainerRef} {...swipeHandlers} className="touch-pan-y">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 mb-4 sticky top-0 z-10 bg-muted">
+                <TabsList className="grid w-full grid-cols-5 mb-4 sticky top-0 z-10 bg-muted">
                   <TabsTrigger value="basic" className="gap-1 text-xs px-1">
                     <Sparkles className="w-3 h-3" />
                     분석
@@ -867,8 +938,7 @@ export default function SkinAnalysisResultPage() {
                             맞춤 클렌징 가이드
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {skinType ? `${skinType} 피부에 맞는` : '내 피부 타입에 맞는'} 클렌저와
-                            pH 관리법
+                            {`${getSkinTypeLabel(skinType)} 피부에 맞는`} 클렌저와 pH 관리법
                           </p>
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -980,10 +1050,79 @@ export default function SkinAnalysisResultPage() {
                       overallScore={result.overallScore}
                     />
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                      <p>분석 근거 데이터가 없어요</p>
-                      <p className="text-sm mt-1">새로 분석하면 상세 근거를 볼 수 있어요</p>
+                    <div className="space-y-4">
+                      {/* 피부 타입 기반 설명 (evidence 없어도 표시) */}
+                      {skinType && SKIN_TYPE_EXPLANATIONS[skinType.toLowerCase()] ? (
+                        <>
+                          {/* 피부 타입 설명 카드 */}
+                          <section className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-5">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Sparkles className="w-5 h-5 text-emerald-500" />
+                              <h3 className="font-semibold text-foreground">
+                                왜 {getSkinTypeLabel(skinType)} 피부인가요?
+                              </h3>
+                            </div>
+                            <p className="text-sm text-foreground/80 leading-relaxed">
+                              {SKIN_TYPE_EXPLANATIONS[skinType.toLowerCase()].characteristics}
+                            </p>
+                          </section>
+
+                          {/* T존 / U존 비교 */}
+                          <section className="grid grid-cols-2 gap-3">
+                            <div className="bg-amber-50 rounded-xl border border-amber-200 p-4">
+                              <p className="text-xs font-medium text-amber-700 mb-1">
+                                T존 (이마·코)
+                              </p>
+                              <p className="text-sm text-foreground/80">
+                                {SKIN_TYPE_EXPLANATIONS[skinType.toLowerCase()].tZone}
+                              </p>
+                            </div>
+                            <div className="bg-sky-50 rounded-xl border border-sky-200 p-4">
+                              <p className="text-xs font-medium text-sky-700 mb-1">U존 (볼·턱)</p>
+                              <p className="text-sm text-foreground/80">
+                                {SKIN_TYPE_EXPLANATIONS[skinType.toLowerCase()].uZone}
+                              </p>
+                            </div>
+                          </section>
+
+                          {/* 관리 포인트 */}
+                          <section className="bg-card rounded-xl border p-5">
+                            <div className="flex items-start gap-2 mb-3">
+                              <Lightbulb className="w-4 h-4 text-green-500 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-medium text-foreground">
+                                  핵심 관리 포인트
+                                </p>
+                                <p className="text-sm text-foreground/80 mt-1">
+                                  {SKIN_TYPE_EXPLANATIONS[skinType.toLowerCase()].careFocus}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2 pt-3 border-t">
+                              <Eye className="w-4 h-4 text-amber-500 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-medium text-foreground">주의할 점</p>
+                                <p className="text-sm text-foreground/80 mt-1">
+                                  {SKIN_TYPE_EXPLANATIONS[skinType.toLowerCase()].avoidReason}
+                                </p>
+                              </div>
+                            </div>
+                          </section>
+
+                          {/* 상세 근거 안내 */}
+                          <div className="text-center py-4 text-muted-foreground">
+                            <p className="text-sm">
+                              새로 분석하면 더 상세한 이미지 기반 근거를 볼 수 있어요
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                          <p>분석 근거 데이터가 없어요</p>
+                          <p className="text-sm mt-1">새로 분석하면 상세 근거를 볼 수 있어요</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </TabsContent>
@@ -1122,7 +1261,7 @@ export default function SkinAnalysisResultPage() {
                       skinAnalysis={
                         result
                           ? ({
-                              skinType: skinType || '복합성',
+                              skinType: getSkinTypeLabel(skinType),
                               hydration:
                                 result.metrics.find((m) => m.id === 'hydration')?.value || 50,
                               oiliness: result.metrics.find((m) => m.id === 'oil')?.value || 50,
