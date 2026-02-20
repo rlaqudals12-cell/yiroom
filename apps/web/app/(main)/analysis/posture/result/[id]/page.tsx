@@ -144,7 +144,7 @@ export default function PostureAnalysisResultPage() {
               sessionStorage.setItem(celebrationKey, 'shown');
               setShowCelebration(true);
             }
-            sessionStorage.removeItem(`posture-result-${analysisId}`);
+            // 캐시 유지 — 다음 방문 시에도 fallback으로 사용 가능하도록
             setIsLoading(false);
             return;
           }

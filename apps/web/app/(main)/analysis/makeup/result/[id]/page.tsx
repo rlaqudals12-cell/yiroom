@@ -112,7 +112,7 @@ export default function MakeupAnalysisResultPage() {
             const transformedResult = transformDbToResult(dbData as DbMakeupAnalysis);
             setResult(transformedResult);
             setImageUrl(dbData.image_url);
-            sessionStorage.removeItem(`makeup-result-${analysisId}`);
+            // 캐시 유지 — 다음 방문 시에도 fallback으로 사용 가능하도록
             setIsLoading(false);
             return;
           }

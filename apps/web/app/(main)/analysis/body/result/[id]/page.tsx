@@ -187,7 +187,7 @@ export default function BodyAnalysisResultPage() {
               if (styleRecs.matchedFeatures) setMatchedFeatures(styleRecs.matchedFeatures);
               if (styleRecs.usedMock) setUsedMock(true);
             }
-            sessionStorage.removeItem(`body-result-${analysisId}`);
+            // 캐시 유지 — 다음 방문 시에도 fallback으로 사용 가능하도록
             setIsLoading(false);
             return;
           }
