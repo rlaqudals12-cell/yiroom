@@ -297,7 +297,18 @@ export function RecommendedProducts({
 
   // 제품이 없는 경우
   if (products.length === 0) {
-    return null;
+    return (
+      <section className={className} data-testid="recommended-products-empty">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-2xl">{config.emoji}</span>
+          <h3 className="text-lg font-semibold text-foreground">{config.title}</h3>
+        </div>
+        <div className="text-center py-8 bg-muted/30 rounded-xl border border-border/50">
+          <Sparkles className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">맞춤 제품을 준비하고 있어요</p>
+        </div>
+      </section>
+    );
   }
 
   return (

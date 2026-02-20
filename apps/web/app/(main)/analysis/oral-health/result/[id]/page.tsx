@@ -202,6 +202,9 @@ export default function OralHealthResultPage(): React.JSX.Element {
                     ? '괜찮지만 관리가 필요한 부분이 있어요'
                     : '적극적인 관리가 필요해요'}
               </p>
+              <p className="text-xs text-muted-foreground/70 mt-2">
+                100점 만점 · 밝기, 색상 톤, 잇몸 상태 종합 평가
+              </p>
             </div>
 
             {/* 상세 결과 카드 */}
