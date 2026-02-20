@@ -2,9 +2,57 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { BarChart3, Palette, Sparkles, Circle, CheckCircle2 } from 'lucide-react';
+import { BarChart3, Palette, Sparkles, Circle, CheckCircle2, HelpCircle } from 'lucide-react';
 import type { AnalysisEvidence, ImageQuality } from '../AnalysisEvidenceReport';
 import type { ColorInfo, SeasonType } from '@/lib/mock/personal-color';
+
+// 시즌별 설명 데이터 — 사용자가 "왜 이 색이 어울리는지" 이해할 수 있도록
+const SEASON_EXPLANATIONS: Record<
+  SeasonType,
+  {
+    whyThisColor: string;
+    skinHarmony: string;
+    avoidReason: string;
+    dailyTip: string;
+  }
+> = {
+  spring: {
+    whyThisColor:
+      '봄 웜톤은 피부에 노란 언더톤이 있어서, 따뜻하고 맑은 색상이 피부를 밝고 건강하게 보이게 해요.',
+    skinHarmony:
+      '피치, 코랄, 아이보리처럼 따뜻한 밝은 색이 피부의 노란 기와 조화를 이루어 생기 있어 보여요.',
+    avoidReason:
+      '차갑고 탁한 색은 피부의 따뜻한 톤을 가려 얼굴이 칙칙하거나 피곤해 보일 수 있어요.',
+    dailyTip: '상의나 스카프에 코랄·살몬·밝은 베이지 같은 색을 활용하면 얼굴이 한결 화사해져요.',
+  },
+  summer: {
+    whyThisColor:
+      '여름 쿨톤은 피부에 핑크 언더톤이 있어서, 부드럽고 시원한 파스텔 계열이 피부를 맑게 보이게 해요.',
+    skinHarmony:
+      '라벤더, 로즈, 스카이블루처럼 차분한 쿨 파스텔이 피부의 핑크 기와 자연스럽게 어울려요.',
+    avoidReason:
+      '강하고 따뜻한 색(오렌지, 머스타드 등)은 피부의 핑크 톤과 충돌하여 얼굴이 붉거나 탁해 보여요.',
+    dailyTip: '회색빛 파란색이나 연한 라벤더 톤의 옷이 피부를 투명하고 우아하게 보이게 해줘요.',
+  },
+  autumn: {
+    whyThisColor:
+      '가을 웜톤은 피부에 황금빛 언더톤이 있어서, 깊고 따뜻한 어스 톤이 피부에 깊이감을 더해줘요.',
+    skinHarmony:
+      '카키, 테라코타, 머스타드처럼 자연의 색이 피부의 따뜻함과 조화를 이루어 풍성해 보여요.',
+    avoidReason:
+      '차갑고 선명한 색(파란 핑크, 네온)은 피부의 따뜻한 깊이와 어울리지 않아 부자연스러워요.',
+    dailyTip:
+      '올리브 그린, 캐멀, 와인 같은 깊은 톤을 메인 컬러로 활용하면 고급스러운 분위기가 나요.',
+  },
+  winter: {
+    whyThisColor:
+      '겨울 쿨톤은 피부에 푸른 언더톤이 있어서, 선명하고 대비가 강한 색이 얼굴에 생동감을 줘요.',
+    skinHarmony: '순백색, 로열블루, 버건디처럼 채도가 높고 선명한 색이 피부의 투명함을 살려줘요.',
+    avoidReason:
+      '탁하고 따뜻한 중간 톤(베이지, 올리브)은 피부를 칙칙하고 생기 없어 보이게 할 수 있어요.',
+    dailyTip: '블랙·화이트 대비에 포인트로 레드나 로열블루를 넣으면 세련된 인상을 줄 수 있어요.',
+  },
+};
 
 interface DetailedEvidenceReportProps {
   evidence: AnalysisEvidence | null;
@@ -49,6 +97,17 @@ function ToneSpectrumBar({ veinScore, tone }: { veinScore: number; tone: 'warm' 
       <p className="text-center text-sm text-muted-foreground">
         {isCool ? '쿨톤' : '웜톤'} 확률: <strong className="text-foreground">{position}%</strong>
       </p>
+      <p className="text-xs text-muted-foreground mt-1">
+        {position > 70
+          ? isCool
+            ? '뚜렷한 쿨톤이에요. 시원한 계열의 색상이 잘 어울려요.'
+            : '뚜렷한 웜톤이에요. 따뜻한 계열의 색상이 잘 어울려요.'
+          : position > 40
+            ? '중성 톤에 가까워서 다양한 색상을 소화할 수 있어요.'
+            : isCool
+              ? '약한 쿨톤이에요. 따뜻한 색도 어느 정도 어울려요.'
+              : '약한 웜톤이에요. 시원한 색도 어느 정도 어울려요.'}
+      </p>
     </div>
   );
 }
@@ -62,42 +121,48 @@ function ColorCompareVisual({
   worstColors: ColorInfo[];
 }) {
   return (
-    <div className="grid grid-cols-2 gap-4" data-testid="color-compare-visual">
-      {/* Best Colors */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-green-600" />
-          <span className="text-sm font-medium text-green-700">잘 어울리는 색</span>
+    <div className="space-y-3" data-testid="color-compare-visual">
+      <div className="grid grid-cols-2 gap-4">
+        {/* Best Colors */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-medium text-green-700">잘 어울리는 색</span>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {bestColors.slice(0, 6).map((color, i) => (
+              <div
+                key={i}
+                className="w-8 h-8 rounded-lg shadow-sm border border-white/50 transition-transform hover:scale-110"
+                style={{ backgroundColor: color.hex }}
+                title={color.name}
+              />
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-1">
-          {bestColors.slice(0, 6).map((color, i) => (
-            <div
-              key={i}
-              className="w-8 h-8 rounded-lg shadow-sm border border-white/50 transition-transform hover:scale-110"
-              style={{ backgroundColor: color.hex }}
-              title={color.name}
-            />
-          ))}
-        </div>
-      </div>
 
-      {/* Worst Colors */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Circle className="w-4 h-4 text-red-500" />
-          <span className="text-sm font-medium text-red-600">피해야 할 색</span>
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {worstColors.slice(0, 6).map((color, i) => (
-            <div
-              key={i}
-              className="w-8 h-8 rounded-lg shadow-sm border border-white/50 opacity-75 transition-transform hover:scale-110"
-              style={{ backgroundColor: color.hex }}
-              title={color.name}
-            />
-          ))}
+        {/* Worst Colors */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Circle className="w-4 h-4 text-red-500" />
+            <span className="text-sm font-medium text-red-600">피해야 할 색</span>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {worstColors.slice(0, 6).map((color, i) => (
+              <div
+                key={i}
+                className="w-8 h-8 rounded-lg shadow-sm border border-white/50 opacity-75 transition-transform hover:scale-110"
+                style={{ backgroundColor: color.hex }}
+                title={color.name}
+              />
+            ))}
+          </div>
         </div>
       </div>
+      <p className="text-xs text-muted-foreground">
+        어울리는 색은 피부톤과 조화를 이뤄 얼굴을 밝게 보이게 하고, 피해야 할 색은 피부와 부조화를
+        일으켜 칙칙해 보일 수 있어요.
+      </p>
     </div>
   );
 }
@@ -232,21 +297,59 @@ function AnalysisFactorsVisual({ evidence }: { evidence: AnalysisEvidence }) {
  */
 export default function DetailedEvidenceReport({
   evidence,
-  imageQuality,
-  seasonType: _seasonType, // 향후 시즌별 UI 확장 예정
+  imageQuality: _imageQuality,
+  seasonType,
   tone,
   bestColors,
   worstColors,
   className,
 }: DetailedEvidenceReportProps) {
-  if (!evidence && !imageQuality) {
-    return null;
-  }
-
   const isCool = tone === 'cool';
+  const seasonExplanation = SEASON_EXPLANATIONS[seasonType];
+  const seasonLabel =
+    seasonType === 'spring'
+      ? '봄 웜톤'
+      : seasonType === 'summer'
+        ? '여름 쿨톤'
+        : seasonType === 'autumn'
+          ? '가을 웜톤'
+          : '겨울 쿨톤';
 
   return (
     <div className={cn('space-y-4', className)} data-testid="detailed-evidence-report">
+      {/* 시즌별 설명 카드 — evidence 없이도 항상 표시 */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <HelpCircle className="w-4 h-4" />왜 이 색이 어울리나요?
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{seasonLabel}의 특징</p>
+            <p className="text-sm text-muted-foreground">{seasonExplanation.whyThisColor}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-2.5 rounded-lg bg-green-50 dark:bg-green-950/30">
+              <p className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">
+                어울리는 이유
+              </p>
+              <p className="text-xs text-muted-foreground">{seasonExplanation.skinHarmony}</p>
+            </div>
+            <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/30">
+              <p className="text-xs font-medium text-red-600 dark:text-red-400 mb-1">
+                피해야 할 이유
+              </p>
+              <p className="text-xs text-muted-foreground">{seasonExplanation.avoidReason}</p>
+            </div>
+          </div>
+          <div className="p-2.5 rounded-lg bg-muted">
+            <p className="text-xs font-medium mb-1">일상 활용 팁</p>
+            <p className="text-xs text-muted-foreground">{seasonExplanation.dailyTip}</p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 톤 스펙트럼 카드 */}
       {evidence && evidence.veinScore > 0 && (
         <Card>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState, useCallback } from 'react';
-import type { DrapeSimulatorProps, DrapeResult } from '@/types/visual-analysis';
+import type { DrapeSimulatorProps, DrapeResult, MetalType } from '@/types/visual-analysis';
 import {
   analyzeFullPalette,
   getBestColors,
@@ -37,6 +37,7 @@ export default function DrapeSimulator({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [bestResults, setBestResults] = useState<DrapeResult[]>([]);
+  const [worstResults, setWorstResults] = useState<DrapeResult[]>([]);
 
   /**
    * 단일 색상 미리보기
@@ -95,6 +96,10 @@ export default function DrapeSimulator({
       // 베스트 5 저장
       const best = getBestColors(results, 5);
       setBestResults(best);
+
+      // 워스트 5 저장 (가장 어울리지 않는 색상)
+      const worst = results.slice(-5).reverse();
+      setWorstResults(worst);
 
       // 완료 콜백
       if (onAnalysisComplete) {
@@ -189,7 +194,18 @@ export default function DrapeSimulator({
         />
       )}
 
-      {/* 3. 분석 버튼 */}
+      {/* 3. 베스트 vs 워스트 비교 (분석 완료 시) */}
+      {bestResults.length > 0 && worstResults.length > 0 && (
+        <ComparisonSection
+          bestColor={bestResults[0].color}
+          worstColor={worstResults[0].color}
+          image={image}
+          faceMask={faceMask}
+          metalType={metalType}
+        />
+      )}
+
+      {/* 4. 분석 버튼 */}
       <Button onClick={runFullAnalysis} disabled={isAnalyzing || !image} className="w-full">
         {isAnalyzing ? '분석 중...' : bestResults.length > 0 ? '다시 분석' : '전체 컬러 분석 시작'}
       </Button>
@@ -211,10 +227,12 @@ function BestColorsSection({
   onColorSelect: (color: string) => void;
   skinInsight?: string;
 }) {
+  const selectedIndex = results.findIndex((r) => r.color === selectedColor);
+  const rank = selectedIndex >= 0 ? selectedIndex + 1 : 0;
+
   return (
     <div className="space-y-2" data-testid="best-colors-section">
       <h4 className="text-sm font-medium">베스트 컬러 TOP 5</h4>
-      {/* 피부 상태 인사이트 (한 줄) */}
       {skinInsight && <p className="text-xs text-muted-foreground">{skinInsight}</p>}
       <div className="flex gap-2">
         {results.map((result, index) => (
@@ -239,19 +257,183 @@ function BestColorsSection({
       </div>
 
       {/* 선택된 색상 상세 */}
-      {selectedColor && (
+      {selectedColor && rank > 0 && (
         <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
           <div className="w-10 h-10 rounded border" style={{ backgroundColor: selectedColor }} />
           <div className="flex-1">
-            <p className="text-sm font-medium">{selectedColor}</p>
+            <p className="text-sm font-medium">{getKoreanColorName(selectedColor)}</p>
             <p className="text-xs text-muted-foreground">
-              어울림 점수: {results.find((r) => r.color === selectedColor)?.uniformity.toFixed(1)}점
+              어울림 {rank}위 {renderStars(rank)}
             </p>
           </div>
         </div>
       )}
     </div>
   );
+}
+
+/**
+ * 베스트 vs 워스트 비교 섹션
+ * 캔버스로 두 색상을 나란히 렌더링하여 차이를 직관적으로 보여줌
+ */
+function ComparisonSection({
+  bestColor,
+  worstColor,
+  image,
+  faceMask,
+  metalType,
+}: {
+  bestColor: string;
+  worstColor: string;
+  image: HTMLImageElement;
+  faceMask: Uint8Array;
+  metalType: MetalType;
+}) {
+  const bestCanvasRef = useRef<HTMLCanvasElement>(null);
+  const worstCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // 비교 캔버스에 드레이프 렌더링
+  const renderToCanvas = useCallback(
+    (canvas: HTMLCanvasElement | null, color: string) => {
+      if (!canvas || !image) return;
+
+      const ctx = createOptimizedContext(canvas, { willReadFrequently: true });
+      if (!ctx) return;
+
+      const { width, height } = getConstrainedCanvasSize(
+        image.naturalWidth || image.width,
+        image.naturalHeight || image.height
+      );
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx.drawImage(image, 0, 0, width, height);
+      applyDrapeColor(ctx, color, faceMask, canvas.height);
+      applyMetalReflectance(ctx, faceMask, metalType);
+      applyVignette(ctx, width, height, 0.3);
+    },
+    [image, faceMask, metalType]
+  );
+
+  useEffect(() => {
+    renderToCanvas(bestCanvasRef.current, bestColor);
+    renderToCanvas(worstCanvasRef.current, worstColor);
+  }, [bestColor, worstColor, renderToCanvas]);
+
+  // 언마운트 시 캔버스 정리
+  useEffect(() => {
+    const bestCanvas = bestCanvasRef.current;
+    const worstCanvas = worstCanvasRef.current;
+    return () => {
+      if (bestCanvas) releaseCanvas(bestCanvas);
+      if (worstCanvas) releaseCanvas(worstCanvas);
+    };
+  }, []);
+
+  return (
+    <div className="space-y-2" data-testid="comparison-section">
+      <h4 className="text-sm font-medium">어울리는 색 vs 피해야 할 색</h4>
+      <div className="grid grid-cols-2 gap-3">
+        {/* 베스트 1위 */}
+        <div className="space-y-1.5">
+          <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+            <canvas
+              ref={bestCanvasRef}
+              className="max-w-full max-h-full object-contain"
+              aria-label="가장 어울리는 컬러 미리보기"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-5 h-5 rounded border flex-shrink-0"
+              style={{ backgroundColor: bestColor }}
+            />
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-green-600 dark:text-green-400 truncate">
+                {getKoreanColorName(bestColor)}
+              </p>
+              <p className="text-[10px] text-muted-foreground">가장 어울려요</p>
+            </div>
+          </div>
+        </div>
+
+        {/* 워스트 1위 */}
+        <div className="space-y-1.5">
+          <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+            <canvas
+              ref={worstCanvasRef}
+              className="max-w-full max-h-full object-contain"
+              aria-label="피해야 할 컬러 미리보기"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-5 h-5 rounded border flex-shrink-0"
+              style={{ backgroundColor: worstColor }}
+            />
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-red-500 dark:text-red-400 truncate">
+                {getKoreanColorName(worstColor)}
+              </p>
+              <p className="text-[10px] text-muted-foreground">피하는 게 좋아요</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 순위에 따른 별점 표시 (1위=5개, 5위=1개)
+function renderStars(rank: number): string {
+  const filled = Math.max(1, 6 - rank);
+  return '★'.repeat(filled) + '☆'.repeat(5 - filled);
+}
+
+// HEX → 한국어 색상명 변환 (HSL 기반)
+function getKoreanColorName(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2 / 255;
+  const d = max - min;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1)) / 255;
+
+  // 무채색 판정
+  if (s < 0.1) {
+    if (l > 0.9) return '화이트';
+    if (l > 0.7) return '라이트 그레이';
+    if (l > 0.3) return '그레이';
+    return '차콜';
+  }
+
+  // 색상(Hue) 계산
+  let h = 0;
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+    else if (max === g) h = ((b - r) / d + 2) * 60;
+    else h = ((r - g) / d + 4) * 60;
+  }
+
+  // 채도+명도에 따른 접두사
+  const prefix = l > 0.75 ? '라이트 ' : l < 0.35 ? '딥 ' : '';
+
+  // 색상명 매핑
+  if (h < 15 || h >= 345) return `${prefix}레드`;
+  if (h < 30) return `${prefix}코랄`;
+  if (h < 45) return `${prefix}오렌지`;
+  if (h < 60) return `${prefix}골드`;
+  if (h < 75) return `${prefix}옐로`;
+  if (h < 150) return `${prefix}그린`;
+  if (h < 195) return `${prefix}민트`;
+  if (h < 240) return `${prefix}블루`;
+  if (h < 270) return `${prefix}퍼플`;
+  if (h < 300) return `${prefix}바이올렛`;
+  if (h < 330) return `${prefix}핑크`;
+  return `${prefix}로즈`;
 }
 
 /**
