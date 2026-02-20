@@ -726,7 +726,13 @@ export default function SkinAnalysisResultPage() {
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
-          <p className="text-muted-foreground">분석 결과를 확인하려면 먼저 로그인해주세요</p>
+          <p className="text-muted-foreground mb-4">분석 결과를 확인하려면 먼저 로그인해주세요</p>
+          <Link
+            href="/sign-in"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            로그인하기
+          </Link>
         </div>
       </div>
     );

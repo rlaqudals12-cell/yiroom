@@ -24,6 +24,18 @@ import {
   transformDbToResult,
 } from './_lib/transform';
 
+// 시즌 한국어 변환
+const SEASON_LABELS: Record<string, string> = {
+  spring: '봄 웜톤',
+  Spring: '봄 웜톤',
+  summer: '여름 쿨톤',
+  Summer: '여름 쿨톤',
+  autumn: '가을 웜톤',
+  Autumn: '가을 웜톤',
+  winter: '겨울 쿨톤',
+  Winter: '겨울 쿨톤',
+};
+
 // 상태별 색상
 function getStatusColor(status: string): string {
   switch (status) {
@@ -156,7 +168,13 @@ export default function MakeupAnalysisResultPage() {
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
-          <p className="text-muted-foreground">분석 결과를 확인하려면 로그인해주세요</p>
+          <p className="text-muted-foreground mb-4">분석 결과를 확인하려면 로그인해주세요</p>
+          <Link
+            href="/sign-in"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            로그인하기
+          </Link>
         </div>
       </div>
     );
@@ -352,7 +370,9 @@ export default function MakeupAnalysisResultPage() {
                     <h3 className="font-semibold">퍼스널 컬러 연동</h3>
                   </div>
                   <p className="text-sm font-medium text-purple-700 mb-2">
-                    추정 시즌: {result.personalColorConnection.season}
+                    추정 시즌:{' '}
+                    {SEASON_LABELS[result.personalColorConnection.season] ||
+                      result.personalColorConnection.season}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {result.personalColorConnection.note}
