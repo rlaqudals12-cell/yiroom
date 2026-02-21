@@ -5,6 +5,8 @@
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+// eslint-disable-next-line import/order -- monitoring import
+import { captureError } from '../../lib/monitoring/sentry';
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
@@ -135,7 +137,10 @@ export default function FeedDetailScreen() {
         );
       }
     } catch (error) {
-      console.error('[Feed Detail] Fetch error:', error);
+      captureError(error instanceof Error ? error : new Error(String(error)), {
+        screen: 'feed-detail',
+        tags: { module: 'feed', action: 'fetch' },
+      });
       Alert.alert('오류', '게시물을 불러올 수 없습니다.');
       router.back();
     } finally {
@@ -188,7 +193,10 @@ export default function FeedDetailScreen() {
             }
           : null
       );
-      console.error('[Feed Detail] Like error:', error);
+      captureError(error instanceof Error ? error : new Error(String(error)), {
+        screen: 'feed-detail',
+        tags: { module: 'feed', action: 'like' },
+      });
     }
   };
 
@@ -226,7 +234,10 @@ export default function FeedDetailScreen() {
       setFeedItem((prev) => (prev ? { ...prev, comments: prev.comments + 1 } : null));
       setCommentText('');
     } catch (error) {
-      console.error('[Feed Detail] Comment error:', error);
+      captureError(error instanceof Error ? error : new Error(String(error)), {
+        screen: 'feed-detail',
+        tags: { module: 'feed', action: 'comment' },
+      });
       Alert.alert('오류', '댓글을 작성할 수 없습니다.');
     } finally {
       setIsSubmitting(false);

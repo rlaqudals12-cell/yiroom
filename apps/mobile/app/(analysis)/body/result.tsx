@@ -4,6 +4,8 @@
 import type { BodyType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
+// eslint-disable-next-line import/order
+import { captureError } from '../../../lib/monitoring/sentry';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, useColorScheme, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -151,7 +153,10 @@ export default function BodyResultScreen() {
         setUsedFallback(true);
       }
     } catch (error) {
-      console.error('[C-1] Analysis error:', error);
+      captureError(error instanceof Error ? error : new Error(String(error)), {
+        screen: 'body-result',
+        tags: { module: 'C-1', action: 'analyze' },
+      });
       setBodyType(null);
     } finally {
       setIsLoading(false);

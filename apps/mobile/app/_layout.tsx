@@ -5,8 +5,11 @@ import '../global.css';
 import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { Text, View } from 'react-native';
 
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
+import { initSentry, SentryErrorBoundary, sentryWrap } from '../lib/monitoring/sentry';
 import { ThemeProvider, useTheme } from '../lib/theme';
 import { appLogger } from '../lib/utils/logger';
 
@@ -54,19 +57,41 @@ function ThemedStack() {
   );
 }
 
-export default function RootLayout() {
+// Sentry ErrorBoundary fallback
+function SentryFallback() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+      <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>문제가 발생했어요</Text>
+      <Text style={{ fontSize: 14, color: '#666', textAlign: 'center' }}>
+        앱을 다시 시작해 주세요.
+      </Text>
+    </View>
+  );
+}
+
+function RootLayout() {
+  // Sentry 초기화
+  useEffect(() => {
+    initSentry();
+  }, []);
+
   // Clerk key가 없으면 경고 (개발 중에는 무시)
   if (!CLERK_PUBLISHABLE_KEY) {
     appLogger.warn('Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY');
   }
 
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
-      <ClerkLoaded>
-        <ThemeProvider>
-          <ThemedStack />
-        </ThemeProvider>
-      </ClerkLoaded>
-    </ClerkProvider>
+    <SentryErrorBoundary fallback={SentryFallback}>
+      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+        <ClerkLoaded>
+          <ThemeProvider>
+            <ThemedStack />
+          </ThemeProvider>
+        </ClerkLoaded>
+      </ClerkProvider>
+    </SentryErrorBoundary>
   );
 }
+
+// Sentry wrap으로 앱 전체 성능 추적
+export default sentryWrap(RootLayout);

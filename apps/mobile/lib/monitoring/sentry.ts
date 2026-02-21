@@ -2,8 +2,7 @@
  * Sentry 크래시 리포팅
  * 프로덕션 에러 모니터링 및 추적
  */
-/* eslint-disable import/no-unresolved -- @sentry/react-native는 Phase 1C에서 설치 예정 */
-
+import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
 
 import { ErrorContext, ErrorSeverity } from './types';
@@ -22,7 +21,7 @@ let isInitialized = false;
  * Sentry 초기화
  * 앱 시작 시 호출
  */
-export async function initSentry(): Promise<void> {
+export function initSentry(): void {
   if (IS_DEV) {
     sentryLogger.info('개발 모드에서는 비활성화됩니다.');
     return;
@@ -34,30 +33,28 @@ export async function initSentry(): Promise<void> {
   }
 
   try {
-    // Sentry SDK 동적 import (프로덕션에서만)
-    const Sentry = await import('@sentry/react-native');
-
     Sentry.init({
       dsn: SENTRY_DSN,
       environment: IS_DEV ? 'development' : 'production',
       release: Constants.expoConfig?.version,
       dist: Constants.expoConfig?.extra?.buildNumber,
-      // 샘플링 비율
+      // 성능 추적
       tracesSampleRate: 0.2,
+      profilesSampleRate: 0.1,
       // 에러 필터링
       beforeSend(event) {
-        // 개발 모드 에러 무시
         if (IS_DEV) return null;
         return event;
       },
       // 브레드크럼 필터링
       beforeBreadcrumb(breadcrumb) {
-        // 민감한 데이터 제거
         if (breadcrumb.data?.password) {
           breadcrumb.data.password = '[REDACTED]';
         }
         return breadcrumb;
       },
+      enableAutoSessionTracking: true,
+      enableAutoPerformanceTracing: true,
     });
 
     isInitialized = true;
@@ -70,148 +67,104 @@ export async function initSentry(): Promise<void> {
 /**
  * 에러 캡처
  */
-export async function captureError(error: Error, context?: ErrorContext): Promise<void> {
+export function captureError(error: Error, context?: ErrorContext): void {
   errorLogger.error(error.message, context);
 
   if (!isInitialized || IS_DEV) return;
 
-  try {
-    const Sentry = await import('@sentry/react-native');
-
-    Sentry.withScope((scope) => {
-      // 사용자 설정
-      if (context?.userId) {
-        scope.setUser({ id: context.userId });
-      }
-
-      // 태그 설정
-      if (context?.tags) {
-        Object.entries(context.tags).forEach(([key, value]) => {
-          scope.setTag(key, value);
-        });
-      }
-
-      // 추가 데이터
-      if (context?.extra) {
-        Object.entries(context.extra).forEach(([key, value]) => {
-          scope.setExtra(key, value);
-        });
-      }
-
-      // 화면 정보
-      if (context?.screen) {
-        scope.setTag('screen', context.screen);
-      }
-
-      Sentry.captureException(error);
-    });
-  } catch (e) {
-    sentryLogger.error('에러 캡처 실패:', e);
-  }
+  Sentry.withScope((scope) => {
+    if (context?.userId) {
+      scope.setUser({ id: context.userId });
+    }
+    if (context?.tags) {
+      Object.entries(context.tags).forEach(([key, value]) => {
+        scope.setTag(key, value);
+      });
+    }
+    if (context?.extra) {
+      Object.entries(context.extra).forEach(([key, value]) => {
+        scope.setExtra(key, value);
+      });
+    }
+    if (context?.screen) {
+      scope.setTag('screen', context.screen);
+    }
+    Sentry.captureException(error);
+  });
 }
 
 /**
  * 메시지 캡처
  */
-export async function captureMessage(
+export function captureMessage(
   message: string,
   severity: ErrorSeverity = 'info',
   context?: ErrorContext
-): Promise<void> {
+): void {
   sentryLogger.info(`[${severity.toUpperCase()}] ${message}`);
 
   if (!isInitialized || IS_DEV) return;
 
-  try {
-    const Sentry = await import('@sentry/react-native');
-
-    Sentry.withScope((scope) => {
-      scope.setLevel(severity);
-
-      if (context?.userId) {
-        scope.setUser({ id: context.userId });
-      }
-
-      if (context?.tags) {
-        Object.entries(context.tags).forEach(([key, value]) => {
-          scope.setTag(key, value);
-        });
-      }
-
-      Sentry.captureMessage(message);
-    });
-  } catch (e) {
-    sentryLogger.error('메시지 캡처 실패:', e);
-  }
+  Sentry.withScope((scope) => {
+    scope.setLevel(severity);
+    if (context?.userId) {
+      scope.setUser({ id: context.userId });
+    }
+    if (context?.tags) {
+      Object.entries(context.tags).forEach(([key, value]) => {
+        scope.setTag(key, value);
+      });
+    }
+    Sentry.captureMessage(message);
+  });
 }
 
 /**
  * 사용자 설정
  */
-export async function setUser(userId: string | null): Promise<void> {
+export function setUser(userId: string | null): void {
   if (!isInitialized || IS_DEV) return;
-
-  try {
-    const Sentry = await import('@sentry/react-native');
-
-    if (userId) {
-      Sentry.setUser({ id: userId });
-    } else {
-      Sentry.setUser(null);
-    }
-  } catch (e) {
-    sentryLogger.error('사용자 설정 실패:', e);
+  if (userId) {
+    Sentry.setUser({ id: userId });
+  } else {
+    Sentry.setUser(null);
   }
 }
 
 /**
  * 브레드크럼 추가
  */
-export async function addBreadcrumb(
+export function addBreadcrumb(
   message: string,
   category: string,
   data?: Record<string, unknown>
-): Promise<void> {
+): void {
   if (!isInitialized || IS_DEV) return;
-
-  try {
-    const Sentry = await import('@sentry/react-native');
-
-    Sentry.addBreadcrumb({
-      message,
-      category,
-      data,
-      level: 'info',
-    });
-  } catch (e) {
-    sentryLogger.error('브레드크럼 추가 실패:', e);
-  }
+  Sentry.addBreadcrumb({ message, category, data, level: 'info' });
 }
 
 /**
  * 태그 설정
  */
-export async function setTag(key: string, value: string): Promise<void> {
+export function setTag(key: string, value: string): void {
   if (!isInitialized || IS_DEV) return;
-
-  try {
-    const Sentry = await import('@sentry/react-native');
-    Sentry.setTag(key, value);
-  } catch (e) {
-    sentryLogger.error('태그 설정 실패:', e);
-  }
+  Sentry.setTag(key, value);
 }
 
 /**
  * 컨텍스트 설정
  */
-export async function setContext(name: string, context: Record<string, unknown>): Promise<void> {
+export function setContext(name: string, context: Record<string, unknown>): void {
   if (!isInitialized || IS_DEV) return;
-
-  try {
-    const Sentry = await import('@sentry/react-native');
-    Sentry.setContext(name, context);
-  } catch (e) {
-    sentryLogger.error('컨텍스트 설정 실패:', e);
-  }
+  Sentry.setContext(name, context);
 }
+
+/**
+ * Sentry ErrorBoundary (React 컴포넌트용 re-export)
+ */
+export const SentryErrorBoundary = Sentry.ErrorBoundary;
+
+/**
+ * 네비게이션 라우팅 계측 wrapper
+ */
+export const sentryWrap = Sentry.wrap;
