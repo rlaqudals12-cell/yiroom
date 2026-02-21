@@ -122,8 +122,9 @@ export default function FoodCameraScreen() {
   // AI 음식 분석 (Gemini API 연동 + Mock Fallback)
   const analyzeFood = async (imageBase64: string) => {
     try {
-      // Gemini API 호출 (lib/gemini.ts에서 Mock Fallback 포함)
-      const result: FoodAnalysisResult = await analyzeFoodWithGemini(imageBase64);
+      // Gemini API 호출 (usedFallback 포함)
+      const response = await analyzeFoodWithGemini(imageBase64);
+      const result: FoodAnalysisResult = response.result;
 
       // 결과를 RecognizedFood 형식으로 변환
       const recognizedFoods: RecognizedFood[] = result.foods.map((food) => ({

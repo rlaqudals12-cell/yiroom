@@ -97,15 +97,11 @@ export default function PersonalColorResultScreen() {
       // 문진 결과 파싱 (Record<number, string> 형식으로 변환)
       const parsedAnswers: Record<number, string> = JSON.parse(answers || '{}');
 
-      // lib/gemini.ts의 analyzePersonalColor 호출
-      const analysisResult = await analyzeWithGemini(base64Data, parsedAnswers);
+      // lib/gemini의 analyzePersonalColor 호출 (usedFallback 포함)
+      const response = await analyzeWithGemini(base64Data, parsedAnswers);
 
-      // Mock fallback 사용 여부 확인 (confidence가 0.75이면 Mock)
-      if (analysisResult.confidence === 0.75) {
-        setUsedFallback(true);
-      }
-
-      setResult(analysisResult);
+      setUsedFallback(response.usedFallback);
+      setResult(response.result);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'personal-color-result',

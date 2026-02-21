@@ -71,3 +71,11 @@ export interface FoodAnalysisResult {
   totalFat: number;
   insight?: string;
 }
+
+/**
+ * 분석 응답 래퍼 — fallback 사용 여부를 명시적으로 전달
+ */
+export interface AnalysisResponse<T> {
+  result: T;
+  usedFallback: boolean;
+}

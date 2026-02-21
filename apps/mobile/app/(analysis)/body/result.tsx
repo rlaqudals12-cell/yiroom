@@ -124,12 +124,11 @@ export default function BodyResultScreen() {
       const heightNum = parseFloat(height);
       const weightNum = parseFloat(weight);
 
-      // lib/gemini.ts의 analyzeBody 호출
-      const analysisResult: BodyAnalysisResult = await analyzeWithGemini(
-        base64Data,
-        heightNum,
-        weightNum
-      );
+      // lib/gemini의 analyzeBody 호출 (usedFallback 포함)
+      const response = await analyzeWithGemini(base64Data, heightNum, weightNum);
+      const analysisResult = response.result;
+
+      setUsedFallback(response.usedFallback);
 
       // 결과 매핑 (BodyType 대소문자 변환)
       const bodyTypeMap: Record<string, BodyType> = {
@@ -148,11 +147,6 @@ export default function BodyResultScreen() {
       setBmi(analysisResult.bmi);
       setRecommendations(analysisResult.recommendations || []);
       setAvoidItems(analysisResult.avoidItems || []);
-
-      // Mock fallback 감지
-      if (analysisResult.proportions?.shoulderHipRatio === 1.0) {
-        setUsedFallback(true);
-      }
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'body-result',

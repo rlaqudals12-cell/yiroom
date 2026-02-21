@@ -1,6 +1,6 @@
 /**
  * Gemini API 클라이언트
- * API 호출, 재시도, 이미지 변환 담당
+ * API 호출, 지수 백오프 재시도, 이미지 변환 담당
  */
 import { geminiLogger } from '../utils/logger';
 
@@ -12,8 +12,14 @@ const GEMINI_API_URL =
 // 분석 타임아웃 (3초)
 const ANALYSIS_TIMEOUT = 3000;
 
-// 재시도 횟수
+// 재시도 설정
 const MAX_RETRIES = 2;
+const RETRY_BASE_DELAY = 1000;
+
+// 429, 400, 403은 재시도해도 동일 결과 → 즉시 실패
+function isRetryableStatus(status: number): boolean {
+  return status !== 429 && status !== 400 && status !== 403;
+}
 
 /**
  * 이미지를 Base64로 변환
@@ -34,8 +40,13 @@ export async function imageToBase64(imageUri: string): Promise<string> {
   });
 }
 
+function backoffDelay(retryCount: number): Promise<void> {
+  const delay = RETRY_BASE_DELAY * Math.pow(2, retryCount);
+  return new Promise(resolve => setTimeout(resolve, delay));
+}
+
 /**
- * Gemini API 호출 (재시도 로직 포함)
+ * Gemini API 호출 (지수 백오프 재시도 포함)
  */
 export async function callGeminiAPI(
   prompt: string,
@@ -81,6 +92,10 @@ export async function callGeminiAPI(
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      // 재시도 불가능한 상태 코드는 즉시 throw
+      if (!isRetryableStatus(response.status)) {
+        throw new Error(`Gemini API error: ${response.status} (non-retryable)`);
+      }
       throw new Error(`Gemini API error: ${response.status}`);
     }
 
@@ -89,8 +104,16 @@ export async function callGeminiAPI(
   } catch (error) {
     clearTimeout(timeoutId);
 
+    // non-retryable 에러는 재시도하지 않음
+    const msg = error instanceof Error ? error.message : '';
+    if (msg.includes('non-retryable')) {
+      throw error;
+    }
+
     if (retryCount < MAX_RETRIES) {
-      geminiLogger.warn(`API retry ${retryCount + 1}/${MAX_RETRIES}`);
+      const delay = RETRY_BASE_DELAY * Math.pow(2, retryCount);
+      geminiLogger.warn(`API retry ${retryCount + 1}/${MAX_RETRIES} (${delay}ms 대기)`);
+      await backoffDelay(retryCount);
       return callGeminiAPI(prompt, imageBase64, retryCount + 1);
     }
 

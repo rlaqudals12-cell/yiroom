@@ -15,6 +15,7 @@ export type {
   BodyAnalysisResult,
   FoodAnalysisResult,
   TrafficLight,
+  AnalysisResponse,
 } from './types';
 
 // 분석 함수

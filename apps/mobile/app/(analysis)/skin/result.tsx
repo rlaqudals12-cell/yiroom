@@ -63,10 +63,11 @@ export default function SkinResultScreen() {
         throw new Error('이미지 데이터가 없습니다.');
       }
 
-      // lib/gemini.ts의 analyzeSkin 호출
-      const analysisResult: SkinAnalysisResult = await analyzeWithGemini(base64Data);
+      // lib/gemini의 analyzeSkin 호출 (usedFallback 포함)
+      const response = await analyzeWithGemini(base64Data);
+      const analysisResult = response.result;
 
-      // 결과 매핑
+      setUsedFallback(response.usedFallback);
       setSkinType(analysisResult.skinType);
       setMetrics(analysisResult.metrics);
 
@@ -81,11 +82,6 @@ export default function SkinResultScreen() {
           (100 - analysisResult.metrics.sensitivity) * 0.1
       );
       setOverallScore(score);
-
-      // Mock fallback 감지 (기본 Mock 값인 경우)
-      if (analysisResult.metrics.moisture === 65) {
-        setUsedFallback(true);
-      }
 
       // Mock 이전 분석 데이터 (실제 구현 시 DB에서 가져옴)
       const hasPreviousAnalysis = Math.random() > 0.5;
