@@ -79,6 +79,7 @@ export default function FriendsScreen() {
 
   return (
     <SafeAreaView
+      testID="social-friends-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

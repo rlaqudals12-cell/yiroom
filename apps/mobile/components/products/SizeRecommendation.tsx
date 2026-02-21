@@ -87,7 +87,7 @@ export function SizeRecommendation({
   }
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
+    <View testID="size-recommendation" style={[styles.container, isDark && styles.containerDark]}>
       {/* 헤더 */}
       <View style={styles.header}>
         <Text style={styles.headerIcon}>📏</Text>

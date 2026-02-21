@@ -85,7 +85,10 @@ export function TodaySummaryWidget({
 
   // 대형 위젯
   return (
-    <View style={[styles.containerLarge, isDark && styles.containerDark]}>
+    <View
+      testID="today-summary-widget"
+      style={[styles.containerLarge, isDark && styles.containerDark]}
+    >
       <View style={styles.header}>
         <Text style={[styles.title, isDark && styles.textLight]}>오늘의 이룸</Text>
         {data.currentStreak > 0 && (

@@ -30,6 +30,7 @@ export default function SettingsScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
+      testID="settings-screen"
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 알림 및 목표 */}

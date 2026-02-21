@@ -44,7 +44,7 @@ export function StreakWidget({
   }
 
   return (
-    <View style={[styles.containerMedium, isDark && styles.containerDark]}>
+    <View testID="streak-widget" style={[styles.containerMedium, isDark && styles.containerDark]}>
       <View style={styles.header}>
         <Text style={[styles.title, isDark && styles.textLight]}>연속 기록</Text>
         <View style={styles.levelBadge}>

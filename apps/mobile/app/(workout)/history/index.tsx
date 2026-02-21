@@ -143,7 +143,11 @@ export default function WorkoutHistoryScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+      testID="workout-history-screen"
+    >
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}

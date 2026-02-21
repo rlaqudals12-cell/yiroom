@@ -79,6 +79,7 @@ export default function BodyAnalysisScreen() {
 
   return (
     <SafeAreaView
+      testID="analysis-body-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

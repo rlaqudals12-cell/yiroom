@@ -102,6 +102,7 @@ export default function NotificationsSettingsScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
+      testID="settings-notifications-screen"
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 권한 안내 */}

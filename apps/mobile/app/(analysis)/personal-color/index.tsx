@@ -88,7 +88,11 @@ export default function PersonalColorScreen() {
   const progress = ((currentQuestion + 1) / QUESTIONS.length) * 100;
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      testID="analysis-pc-screen"
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       {/* 진행 바 */}
       <View style={styles.progressContainer}>
         <View style={[styles.progressBar, isDark && styles.progressBarDark]}>

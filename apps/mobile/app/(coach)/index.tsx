@@ -14,7 +14,11 @@ export default function CoachScreen() {
   const { colors, isDark } = useTheme();
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      testID="coach-screen"
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ChatInterface />
     </SafeAreaView>
   );

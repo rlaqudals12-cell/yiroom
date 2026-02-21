@@ -120,6 +120,7 @@ export default function LeaderboardScreen() {
 
   return (
     <SafeAreaView
+      testID="social-leaderboard-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

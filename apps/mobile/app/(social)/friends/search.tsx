@@ -113,6 +113,7 @@ export default function FriendSearchScreen() {
 
   return (
     <SafeAreaView
+      testID="social-friend-search-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

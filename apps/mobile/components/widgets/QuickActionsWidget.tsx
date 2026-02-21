@@ -63,7 +63,10 @@ export function QuickActionsWidget({ size = 'medium', onAction }: QuickActionsWi
 
   // 중형 위젯 (4x1)
   return (
-    <View style={[styles.containerMedium, isDark && styles.containerDark]}>
+    <View
+      testID="quick-actions-widget"
+      style={[styles.containerMedium, isDark && styles.containerDark]}
+    >
       <Text style={[styles.title, isDark && styles.textLight]}>빠른 실행</Text>
       <View style={styles.actionsRow}>
         {QUICK_ACTIONS.map((action) => (

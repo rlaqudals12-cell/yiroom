@@ -82,6 +82,7 @@ export default function NutritionRecordScreen() {
 
   return (
     <SafeAreaView
+      testID="nutrition-record-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

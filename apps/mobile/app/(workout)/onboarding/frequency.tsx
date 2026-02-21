@@ -61,7 +61,11 @@ export default function WorkoutFrequencyScreen() {
   const isValid = frequency !== null && preferredTime !== null;
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+      testID="workout-onboarding-frequency-screen"
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 주당 운동 횟수 */}
         <Text style={[styles.title, isDark && styles.textLight]}>주당 운동 횟수</Text>

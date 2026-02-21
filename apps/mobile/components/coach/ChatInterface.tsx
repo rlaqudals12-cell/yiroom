@@ -98,6 +98,7 @@ export function ChatInterface() {
 
   return (
     <KeyboardAvoidingView
+      testID="chat-interface"
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={90}

@@ -53,7 +53,7 @@ export function ReviewSummary({ summary }: ReviewSummaryProps) {
   };
 
   return (
-    <View style={styles.container} accessibilityRole="summary">
+    <View testID="review-summary" style={styles.container} accessibilityRole="summary">
       {/* 평균 점수 */}
       <View style={styles.averageSection}>
         <Text style={styles.averageScore}>{averageRating.toFixed(1)}</Text>

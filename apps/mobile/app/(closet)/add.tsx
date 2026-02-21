@@ -240,7 +240,11 @@ export default function ClosetAddScreen() {
         }}
       />
 
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        testID="closet-add-screen"
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         {/* 이미지 섹션 */}
         <View style={styles.imageSection}>
           {formData.imageUri ? (

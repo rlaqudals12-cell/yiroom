@@ -138,7 +138,11 @@ export default function WorkoutResultScreen() {
   const typeData = WORKOUT_TYPE_DATA[workoutType];
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+      testID="workout-result-screen"
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 결과 헤더 */}
         <View style={styles.resultHeader}>

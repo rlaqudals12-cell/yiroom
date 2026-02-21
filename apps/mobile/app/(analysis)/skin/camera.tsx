@@ -91,7 +91,7 @@ export default function SkinCameraScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View testID="analysis-skin-camera-screen" style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing={facing} mirror={facing === 'front'}>
         {/* 가이드 오버레이 */}
         <View style={styles.overlay}>

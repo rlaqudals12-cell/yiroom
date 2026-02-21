@@ -98,6 +98,7 @@ export function StarRating({
 
   return (
     <View
+      testID="star-rating"
       style={styles.container}
       accessibilityRole="adjustable"
       accessibilityLabel={`별점 ${rating}점`}

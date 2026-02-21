@@ -65,7 +65,11 @@ export default function WorkoutGoalsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+      testID="workout-onboarding-goals-screen"
+    >
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, isDark && styles.textLight]}>운동 목표를 선택해주세요</Text>
         <Text style={[styles.subtitle, isDark && styles.textMuted]}>

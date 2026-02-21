@@ -34,7 +34,10 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      testID="profile-screen"
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.profileHeader, { backgroundColor: colors.card }, shadows.card]}>
           {isSignedIn && user ? (

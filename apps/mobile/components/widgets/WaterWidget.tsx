@@ -45,7 +45,7 @@ export function WaterWidget({ current, goal, onAddWater, size = 'medium' }: Wate
   }
 
   return (
-    <View style={[styles.containerMedium, isDark && styles.containerDark]}>
+    <View testID="water-widget" style={[styles.containerMedium, isDark && styles.containerDark]}>
       <View style={styles.header}>
         <Text style={[styles.title, isDark && styles.textLight]}>💧 물 섭취</Text>
         <Text style={[styles.glasses, isDark && styles.textMuted]}>{glasses}잔 마심</Text>

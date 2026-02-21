@@ -62,6 +62,7 @@ export default function SignInScreen() {
 
   return (
     <KeyboardAvoidingView
+      testID="auth-signin-screen"
       style={[styles.container, { backgroundColor: colors.card }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
@@ -77,6 +78,7 @@ export default function SignInScreen() {
           <View style={styles.inputContainer}>
             <Text style={[styles.label, { color: colors.foreground }]}>이메일</Text>
             <TextInput
+              testID="signin-email-input"
               style={[
                 styles.input,
                 {
@@ -98,6 +100,7 @@ export default function SignInScreen() {
           <View style={styles.inputContainer}>
             <Text style={[styles.label, { color: colors.foreground }]}>비밀번호</Text>
             <TextInput
+              testID="signin-password-input"
               style={[
                 styles.input,
                 {
@@ -115,6 +118,7 @@ export default function SignInScreen() {
           </View>
 
           <TouchableOpacity
+            testID="signin-submit-button"
             style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleSignIn}
             disabled={isLoading}

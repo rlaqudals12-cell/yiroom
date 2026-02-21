@@ -197,7 +197,11 @@ export default function ChallengesScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      testID="challenges-screen"
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       {/* 통계 카드 */}
       {stats && (
         <View style={styles.statsContainer}>

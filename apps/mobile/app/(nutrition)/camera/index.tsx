@@ -469,7 +469,7 @@ export default function FoodCameraScreen() {
 
   // 카메라 화면
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView testID="nutrition-camera-screen" style={styles.container} edges={['bottom']}>
       <View style={styles.cameraContainer}>
         <CameraView ref={cameraRef} style={styles.camera} facing="back">
           {/* 가이드 프레임 */}

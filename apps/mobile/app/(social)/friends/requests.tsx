@@ -113,6 +113,7 @@ export default function FriendRequestsScreen() {
 
   return (
     <SafeAreaView
+      testID="social-friend-requests-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

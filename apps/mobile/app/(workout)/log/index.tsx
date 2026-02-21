@@ -189,6 +189,7 @@ export default function WorkoutLogScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
+      testID="workout-log-screen"
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* 운동 선택 섹션 */}

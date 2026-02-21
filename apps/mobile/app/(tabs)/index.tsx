@@ -231,7 +231,7 @@ export default function HomeScreen(): React.JSX.Element {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView testID="home-screen" style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
         contentContainerStyle={{ padding: spacing.md + 4, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}

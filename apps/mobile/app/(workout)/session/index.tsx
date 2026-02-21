@@ -115,7 +115,10 @@ export default function WorkoutSessionScreen() {
   // 준비 화면
   if (sessionState === 'ready') {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView
+        style={[styles.container, isDark && styles.containerDark]}
+        testID="workout-session-screen"
+      >
         <View style={styles.readyContent}>
           <Text style={[styles.readyTitle, isDark && styles.textLight]}>운동 준비</Text>
           <Text style={[styles.readySubtitle, isDark && styles.textMuted]}>

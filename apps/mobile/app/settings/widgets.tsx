@@ -57,7 +57,11 @@ export default function WidgetSettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+      testID="settings-widgets-screen"
+    >
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.scrollContent}

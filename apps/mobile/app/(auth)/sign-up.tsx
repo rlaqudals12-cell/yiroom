@@ -161,6 +161,7 @@ export default function SignUpScreen() {
   // 회원가입 폼
   return (
     <KeyboardAvoidingView
+      testID="auth-signup-screen"
       style={[styles.container, { backgroundColor: colors.card }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
@@ -184,6 +185,7 @@ export default function SignUpScreen() {
                   backgroundColor: colors.muted,
                 },
               ]}
+              testID="signup-email-input"
               placeholder="이메일을 입력하세요"
               placeholderTextColor={colors.mutedForeground}
               value={email}
@@ -205,6 +207,7 @@ export default function SignUpScreen() {
                   backgroundColor: colors.muted,
                 },
               ]}
+              testID="signup-password-input"
               placeholder="8자 이상 입력하세요"
               placeholderTextColor={colors.mutedForeground}
               value={password}
@@ -233,6 +236,7 @@ export default function SignUpScreen() {
           </View>
 
           <TouchableOpacity
+            testID="signup-submit-button"
             style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleSignUp}
             disabled={isLoading}

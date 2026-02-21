@@ -49,7 +49,11 @@ export default function ReportsScreen() {
   const { colors, isDark } = useTheme();
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      testID="reports-screen"
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 샘플 데이터 안내 배너 */}
         <View style={[styles.sampleBanner, isDark && styles.sampleBannerDark]}>

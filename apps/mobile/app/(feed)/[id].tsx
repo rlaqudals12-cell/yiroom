@@ -306,6 +306,7 @@ export default function FeedDetailScreen() {
 
   return (
     <SafeAreaView
+      testID="feed-detail-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

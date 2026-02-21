@@ -442,6 +442,7 @@ export default function FoodSearchScreen() {
 
   return (
     <SafeAreaView
+      testID="nutrition-search-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

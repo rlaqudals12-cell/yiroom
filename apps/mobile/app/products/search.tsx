@@ -222,7 +222,11 @@ export default function ProductSearchScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+      testID="products-search-screen"
+    >
       {/* 검색 바 */}
       <View style={styles.searchSection}>
         <View style={[styles.searchInputContainer, isDark && styles.searchInputContainerDark]}>

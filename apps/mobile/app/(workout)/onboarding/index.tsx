@@ -15,7 +15,11 @@ export default function WorkoutOnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+      testID="workout-onboarding-screen"
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 헤더 */}
         <View style={styles.header}>

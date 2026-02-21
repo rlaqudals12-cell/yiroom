@@ -117,6 +117,7 @@ export default function SkincareRoutineScreen() {
 
   return (
     <SafeAreaView
+      testID="analysis-skin-routine-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

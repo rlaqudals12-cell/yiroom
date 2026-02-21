@@ -137,7 +137,7 @@ export function ReviewList({
   };
 
   return (
-    <View style={styles.container}>
+    <View testID="review-list" style={styles.container}>
       {/* 정렬 옵션 */}
       <View style={styles.sortContainer}>{SORT_OPTIONS.map(renderSortOption)}</View>
 

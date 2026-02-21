@@ -141,6 +141,7 @@ export function ScoreChangeBadge({
 
   return (
     <Animated.View
+      testID="score-change-badge"
       style={[
         styles.badge,
         animatedStyle,

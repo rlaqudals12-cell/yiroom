@@ -230,7 +230,11 @@ export default function ChallengeDetailScreen() {
         }}
       />
 
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        testID="challenge-detail-screen"
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         {/* 헤더 섹션 */}
         <View style={styles.headerSection}>
           <View style={styles.badgeRow}>

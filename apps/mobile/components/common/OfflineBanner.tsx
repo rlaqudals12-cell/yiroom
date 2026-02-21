@@ -49,6 +49,7 @@ export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: O
 
   return (
     <Animated.View
+      testID="offline-banner"
       style={[
         styles.container,
         isDark && styles.containerDark,

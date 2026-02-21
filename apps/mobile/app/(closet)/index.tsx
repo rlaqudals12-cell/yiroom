@@ -87,7 +87,11 @@ export default function ClosetScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      testID="closet-screen"
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+    >
       {/* 통계 헤더 */}
       <View style={styles.statsContainer}>
         <View style={[styles.statCard, isDark && styles.statCardDark]}>

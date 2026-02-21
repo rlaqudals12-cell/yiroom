@@ -181,6 +181,7 @@ export default function FeedScreen() {
 
   return (
     <SafeAreaView
+      testID="feed-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

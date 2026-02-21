@@ -79,7 +79,11 @@ export default function HealthSyncScreen() {
           headerBackTitle: '설정',
         }}
       />
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+      <SafeAreaView
+        style={[styles.container, isDark && styles.containerDark]}
+        edges={['bottom']}
+        testID="settings-health-sync-screen"
+      >
         <ScrollView contentContainerStyle={styles.content}>
           {/* 플랫폼 체크 */}
           {!isAvailable && (

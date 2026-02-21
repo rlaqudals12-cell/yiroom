@@ -70,7 +70,10 @@ function ErrorFallbackContent({ error, onRetry }: { error: Error | null; onRetry
   const { colors, isDark } = useTheme();
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+    <SafeAreaView
+      testID="error-boundary"
+      style={[styles.container, isDark && styles.containerDark]}
+    >
       <View style={styles.content}>
         <Text style={styles.emoji}>😵</Text>
         <Text style={[styles.title, isDark && styles.textLight]}>문제가 발생했어요</Text>

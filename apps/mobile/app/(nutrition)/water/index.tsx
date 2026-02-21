@@ -175,6 +175,7 @@ export default function WaterTrackingScreen() {
 
   return (
     <SafeAreaView
+      testID="nutrition-water-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

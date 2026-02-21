@@ -236,7 +236,11 @@ export default function ProductsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, isDark && styles.containerDark]}
+      edges={['bottom']}
+      testID="products-screen"
+    >
       {/* 맞춤 추천 배너 */}
       {(filterSource || userSeason) && (
         <View style={[styles.banner, isDark && styles.bannerDark]}>

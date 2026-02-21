@@ -224,6 +224,7 @@ export default function FeedScreen() {
 
   return (
     <SafeAreaView
+      testID="social-feed-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

@@ -121,7 +121,7 @@ export function ReviewCard({
   };
 
   return (
-    <View style={styles.container} accessibilityRole="summary">
+    <View testID="review-card" style={styles.container} accessibilityRole="summary">
       {/* 헤더 */}
       <View style={styles.header}>
         <View style={styles.userInfo}>

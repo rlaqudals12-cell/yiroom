@@ -61,6 +61,7 @@ export default function NutritionDashboardScreen() {
 
   return (
     <SafeAreaView
+      testID="nutrition-dashboard-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

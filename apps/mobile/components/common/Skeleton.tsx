@@ -60,6 +60,7 @@ export function Skeleton({
 
   return (
     <Animated.View
+      testID="skeleton"
       style={[
         styles.skeleton,
         isDark && styles.skeletonDark,

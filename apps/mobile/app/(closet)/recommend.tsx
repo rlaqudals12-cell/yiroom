@@ -165,6 +165,7 @@ export default function RecommendScreen() {
 
   return (
     <SafeAreaView
+      testID="closet-recommend-screen"
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >

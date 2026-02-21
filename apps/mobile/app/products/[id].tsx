@@ -292,6 +292,7 @@ export default function ProductDetailScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
+      testID="product-detail-screen"
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* 이미지 영역 */}

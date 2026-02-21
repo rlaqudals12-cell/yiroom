@@ -193,6 +193,7 @@ export function CircularProgress({
 
   return (
     <View
+      testID="circular-progress"
       style={[styles.container, { width: config.size, height: config.size }]}
       accessibilityLabel={`피부 점수 ${score}점, ${gradeConfig.label} 등급`}
       accessibilityRole="progressbar"

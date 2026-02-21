@@ -108,7 +108,7 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
   };
 
   return (
-    <View style={styles.container}>
+    <View testID="ewg-analysis" style={styles.container}>
       {/* 요약 헤더 */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>성분 분석</Text>
