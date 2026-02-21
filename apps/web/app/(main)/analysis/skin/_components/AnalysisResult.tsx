@@ -462,7 +462,7 @@ export default function AnalysisResult({
           <div className="space-y-3">
             {recommendedIngredients.map((ingredient, index) => (
               <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-sm font-medium">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 flex items-center justify-center text-sm font-medium">
                   {index + 1}
                 </span>
                 <div>
@@ -489,10 +489,10 @@ export default function AnalysisResult({
                   key={index}
                   className={`p-3 rounded-lg border ${
                     warning.level === 'high'
-                      ? 'bg-red-50 border-red-200'
+                      ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
                       : warning.level === 'medium'
-                        ? 'bg-orange-50 border-orange-200'
-                        : 'bg-yellow-50 border-yellow-200'
+                        ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800'
+                        : 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -507,10 +507,10 @@ export default function AnalysisResult({
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full ${
                         warning.level === 'high'
-                          ? 'bg-red-100 text-red-700'
+                          ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
                           : warning.level === 'medium'
-                            ? 'bg-orange-100 text-orange-700'
-                            : 'bg-yellow-100 text-yellow-700'
+                            ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300'
+                            : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'
                       }`}
                     >
                       {warning.level === 'high'
@@ -544,7 +544,7 @@ export default function AnalysisResult({
 
             {/* 아침/저녁 루틴 */}
             <div className="space-y-3 mb-4">
-              <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
+              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
                 <Sun className="w-4 h-4 text-amber-500 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-foreground">아침 루틴</p>
@@ -553,7 +553,7 @@ export default function AnalysisResult({
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2 p-3 bg-indigo-50 rounded-lg">
+              <div className="flex items-start gap-2 p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
                 <Moon className="w-4 h-4 text-indigo-500 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-foreground">저녁 루틴</p>
@@ -570,7 +570,7 @@ export default function AnalysisResult({
                 <p className="text-sm font-medium text-foreground/80">추천 제품</p>
                 {productRecommendations.routine.slice(0, 5).map((step, index) => (
                   <div key={index} className="flex items-start gap-2 p-3 bg-muted rounded-lg">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-xs font-medium">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 flex items-center justify-center text-xs font-medium">
                       {step.step}
                     </span>
                     <div className="flex-1">

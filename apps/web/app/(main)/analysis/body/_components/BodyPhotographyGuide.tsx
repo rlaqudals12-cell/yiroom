@@ -39,7 +39,7 @@ export default function BodyPhotographyGuide({ onContinue, onSkip }: BodyPhotogr
         {/* 상단 텍스트 */}
         <div className="absolute top-8 left-0 right-0 text-center">
           <span className="text-[10px] font-medium text-muted-foreground bg-white/50 dark:bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm tracking-wider">
-            FULL BODY SHOT
+            전신 촬영
           </span>
         </div>
 

@@ -199,10 +199,10 @@ export default function AnalysisResult({
                 className={`px-3 py-1 rounded-full text-sm ${
                   is3Type
                     ? type3 === 'S'
-                      ? 'bg-blue-100 text-blue-700'
+                      ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
                       : type3 === 'W'
-                        ? 'bg-pink-100 text-pink-700'
-                        : 'bg-green-100 text-green-700'
+                        ? 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300'
+                        : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
                     : 'bg-muted text-muted-foreground'
                 }`}
               >
@@ -244,12 +244,16 @@ export default function AnalysisResult({
       {/* 자가 진단 팁 */}
       {typeInfo3.selfCheckTip && (
         <FadeInUp delay={2}>
-          <section className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4">
+          <section className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-xl border border-amber-200 dark:border-amber-800 p-4">
             <div className="flex items-start gap-3">
               <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-amber-800 mb-1">알고 계셨나요?</p>
-                <p className="text-sm text-amber-700 leading-relaxed">{typeInfo3.selfCheckTip}</p>
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
+                  알고 계셨나요?
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed">
+                  {typeInfo3.selfCheckTip}
+                </p>
               </div>
             </div>
           </section>
@@ -389,7 +393,7 @@ export default function AnalysisResult({
               {avoidStyles.map((style, index) => (
                 <span
                   key={index}
-                  className="px-3 py-1.5 bg-orange-50 text-orange-700 rounded-lg text-sm border border-orange-200"
+                  className="px-3 py-1.5 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 rounded-lg text-sm border border-orange-200 dark:border-orange-800"
                 >
                   {style}
                 </span>
@@ -404,7 +408,7 @@ export default function AnalysisResult({
 
       {/* AI 스타일 인사이트 (가변 보상) */}
       <FadeInUp delay={6}>
-        <section className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-6">
+        <section className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl border border-purple-200 dark:border-purple-800 p-6">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-5 h-5 text-purple-500" />
             <h2 className="text-lg font-semibold text-foreground">스타일 인사이트</h2>
@@ -421,7 +425,7 @@ export default function AnalysisResult({
               <Palette className="w-5 h-5 text-violet-500" />
               <h2 className="text-lg font-semibold text-foreground">코디 색상 추천</h2>
               {personalColorSeason && (
-                <span className="ml-auto text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded-full">
+                <span className="ml-auto text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 px-2 py-1 rounded-full">
                   {personalColorSeason} 톤
                 </span>
               )}
@@ -437,7 +441,7 @@ export default function AnalysisResult({
                 {colorRecommendations.topColors.map((color, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-violet-50 text-violet-700 rounded-full text-sm"
+                    className="px-3 py-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-sm"
                   >
                     {color}
                   </span>
@@ -455,7 +459,7 @@ export default function AnalysisResult({
                 {colorRecommendations.bottomColors.map((color, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-sm"
+                    className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-sm"
                   >
                     {color}
                   </span>
@@ -473,9 +477,9 @@ export default function AnalysisResult({
                       key={index}
                       className="flex items-center gap-2 text-sm bg-muted px-3 py-2 rounded-lg"
                     >
-                      <span className="text-violet-600">{combo.top}</span>
+                      <span className="text-violet-600 dark:text-violet-400">{combo.top}</span>
                       <span className="text-muted-foreground">+</span>
-                      <span className="text-indigo-600">{combo.bottom}</span>
+                      <span className="text-indigo-600 dark:text-indigo-400">{combo.bottom}</span>
                     </div>
                   ))}
                 </div>
@@ -490,7 +494,7 @@ export default function AnalysisResult({
                   {colorRecommendations.accessories.map((acc, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm"
+                      className="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-sm"
                     >
                       {acc}
                     </span>
@@ -525,7 +529,7 @@ export default function AnalysisResult({
       {/* 색상 팁 */}
       {colorTips && colorTips.length > 0 && (
         <FadeInUp delay={8}>
-          <section className="bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-6">
+          <section className="bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/30 rounded-xl border border-violet-200 dark:border-violet-800 p-6">
             <div className="flex items-center gap-2 mb-3">
               <Palette className="w-5 h-5 text-violet-500" />
               <h2 className="text-lg font-semibold text-foreground">색상 팁</h2>
@@ -550,7 +554,7 @@ export default function AnalysisResult({
               <Bookmark className="w-5 h-5 text-rose-500" />
               <h2 className="text-lg font-semibold text-foreground">맞춤 코디 예시</h2>
               {personalColorSeason && (
-                <span className="ml-auto text-xs bg-rose-100 text-rose-700 px-2 py-1 rounded-full">
+                <span className="ml-auto text-xs bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 px-2 py-1 rounded-full">
                   {typeInfo3.label} + {personalColorSeason}
                 </span>
               )}
@@ -559,11 +563,11 @@ export default function AnalysisResult({
               {outfitExamples.map((outfit, index) => (
                 <div
                   key={index}
-                  className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-lg border border-rose-100"
+                  className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 rounded-lg border border-rose-100 dark:border-rose-800"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium text-foreground">{outfit.title}</h3>
-                    <span className="text-xs bg-white px-2 py-0.5 rounded-full text-rose-600 border border-rose-200">
+                    <span className="text-xs bg-white dark:bg-card px-2 py-0.5 rounded-full text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
                       {outfit.occasion}
                     </span>
                   </div>
@@ -571,7 +575,7 @@ export default function AnalysisResult({
                     {outfit.items.map((item, itemIndex) => (
                       <span
                         key={itemIndex}
-                        className="px-3 py-1.5 bg-white rounded-lg text-sm text-foreground/80 border border-rose-100"
+                        className="px-3 py-1.5 bg-white dark:bg-card rounded-lg text-sm text-foreground/80 border border-rose-100 dark:border-rose-900/50"
                       >
                         {item}
                       </span>
@@ -597,7 +601,7 @@ export default function AnalysisResult({
           <div className="space-y-3">
             {styleRecommendations.map((rec, index) => (
               <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-sm font-medium">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 flex items-center justify-center text-sm font-medium">
                   {index + 1}
                 </span>
                 <div>
