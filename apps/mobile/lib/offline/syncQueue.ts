@@ -193,3 +193,17 @@ export function createWaterRecordSync(
     data,
   };
 }
+
+/**
+ * 목표 업데이트 동기화 항목 생성
+ */
+export function createGoalUpdateSync(
+  action: 'create' | 'update' | 'delete',
+  data: Record<string, unknown>
+): Omit<SyncQueueItem, 'id' | 'createdAt' | 'retryCount'> {
+  return {
+    type: 'goal_update',
+    action,
+    data,
+  };
+}

@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Text, View } from 'react-native';
 
+import { OfflineBanner } from '../components/common/OfflineBanner';
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
 import { initSentry, SentryErrorBoundary, sentryWrap } from '../lib/monitoring/sentry';
 import { ThemeProvider, useTheme } from '../lib/theme';
@@ -20,6 +21,7 @@ function ThemedStack() {
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      <OfflineBanner />
       <Stack
         initialRouteName="index"
         screenOptions={{

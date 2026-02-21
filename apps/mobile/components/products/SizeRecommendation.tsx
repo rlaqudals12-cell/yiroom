@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 
-import { useNetworkStatus } from '../../lib/offline/useNetworkStatus';
+import { useNetworkStatus } from '../../lib/offline';
 import type {
   ClothingCategory,
   SizeRecommendation as SizeRecommendationType,

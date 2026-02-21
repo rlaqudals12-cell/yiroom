@@ -35,4 +35,5 @@ export {
   createWorkoutLogSync,
   createMealRecordSync,
   createWaterRecordSync,
+  createGoalUpdateSync,
 } from './syncQueue';
