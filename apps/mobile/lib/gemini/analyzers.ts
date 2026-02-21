@@ -11,12 +11,20 @@ import {
   generateMockSkinResult,
   generateMockBodyResult,
   generateMockFoodResult,
+  generateMockHairResult,
+  generateMockMakeupResult,
+  generateMockOralHealthResult,
+  generateMockPostureResult,
 } from './mocks';
 import type {
   PersonalColorAnalysisResult,
   SkinAnalysisResult,
   BodyAnalysisResult,
   FoodAnalysisResult,
+  HairAnalysisResult,
+  MakeupAnalysisResult,
+  OralHealthAnalysisResult,
+  PostureAnalysisResult,
   AnalysisResponse,
   TrafficLight,
 } from './types';
@@ -283,5 +291,181 @@ export async function analyzeFood(
   } catch (error) {
     geminiLogger.error('N-1 food analysis error, falling back to mock:', error);
     return { result: generateMockFoodResult(), usedFallback: true };
+  }
+}
+
+/**
+ * H-1 헤어 분석
+ */
+export async function analyzeHair(
+  imageBase64: string
+): Promise<AnalysisResponse<HairAnalysisResult>> {
+  const allowed = await checkRateLimit();
+  if (!allowed) {
+    geminiLogger.warn('H-1: Rate limit exceeded, using mock');
+    return { result: generateMockHairResult(), usedFallback: true };
+  }
+
+  const prompt = `당신은 헤어 전문 트리콜로지스트입니다. 제공된 헤어 이미지를 분석해주세요.
+
+다음 JSON 형식으로만 응답해주세요:
+{
+  "texture": "straight" | "wavy" | "curly" | "coily",
+  "thickness": "fine" | "medium" | "thick",
+  "scalpCondition": "dry" | "oily" | "normal" | "sensitive",
+  "damageLevel": 0-100,
+  "scores": {
+    "shine": 0-100,
+    "elasticity": 0-100,
+    "density": 0-100,
+    "scalpHealth": 0-100
+  },
+  "mainConcerns": ["주요 고민"],
+  "careRoutine": ["케어 루틴 추천"],
+  "recommendedStyles": ["추천 헤어스타일"]
+}
+
+한국어로 응답하세요.`;
+
+  try {
+    await incrementRateLimit();
+    const response = await callGeminiAPI(prompt, imageBase64);
+    return { result: JSON.parse(response), usedFallback: false };
+  } catch (error) {
+    geminiLogger.error('H-1 analysis error, falling back to mock:', error);
+    return { result: generateMockHairResult(), usedFallback: true };
+  }
+}
+
+/**
+ * M-1 메이크업 분석
+ */
+export async function analyzeMakeup(
+  imageBase64: string
+): Promise<AnalysisResponse<MakeupAnalysisResult>> {
+  const allowed = await checkRateLimit();
+  if (!allowed) {
+    geminiLogger.warn('M-1: Rate limit exceeded, using mock');
+    return { result: generateMockMakeupResult(), usedFallback: true };
+  }
+
+  const prompt = `당신은 메이크업 아티스트입니다. 제공된 얼굴 이미지를 분석하여 맞춤 메이크업을 추천해주세요.
+
+다음 JSON 형식으로만 응답해주세요:
+{
+  "faceShape": "oval" | "round" | "square" | "heart" | "oblong" | "diamond",
+  "undertone": "warm" | "cool" | "neutral",
+  "eyeShape": "monolid" | "double" | "hooded" | "round" | "almond",
+  "lipShape": "full" | "thin" | "wide" | "bow",
+  "scores": {
+    "skinTone": 0-100,
+    "eyeBalance": 0-100,
+    "lipBalance": 0-100,
+    "overall": 0-100
+  },
+  "recommendations": {
+    "base": "베이스 추천",
+    "eye": "아이 메이크업 추천",
+    "lip": "립 추천",
+    "blush": "블러셔 추천",
+    "contour": "컨투어링 추천"
+  },
+  "bestColors": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"]
+}
+
+한국어로 응답하세요.`;
+
+  try {
+    await incrementRateLimit();
+    const response = await callGeminiAPI(prompt, imageBase64);
+    return { result: JSON.parse(response), usedFallback: false };
+  } catch (error) {
+    geminiLogger.error('M-1 analysis error, falling back to mock:', error);
+    return { result: generateMockMakeupResult(), usedFallback: true };
+  }
+}
+
+/**
+ * OH-1 구강건강 분석
+ */
+export async function analyzeOralHealth(
+  imageBase64: string
+): Promise<AnalysisResponse<OralHealthAnalysisResult>> {
+  const allowed = await checkRateLimit();
+  if (!allowed) {
+    geminiLogger.warn('OH-1: Rate limit exceeded, using mock');
+    return { result: generateMockOralHealthResult(), usedFallback: true };
+  }
+
+  const prompt = `당신은 치과 전문의입니다. 제공된 구강 이미지를 분석하여 구강 건강 상태를 평가해주세요.
+
+다음 JSON 형식으로만 응답해주세요:
+{
+  "toothShade": "A1-D4 사이 VITA 치아 색상 코드",
+  "gumHealth": "healthy" | "mild_inflammation" | "moderate_inflammation" | "severe",
+  "overallScore": 0-100,
+  "scores": {
+    "whiteness": 0-100,
+    "alignment": 0-100,
+    "gumCondition": 0-100,
+    "hygiene": 0-100
+  },
+  "concerns": ["발견된 문제"],
+  "recommendations": ["관리 추천"],
+  "whiteningPotential": "high" | "medium" | "low"
+}
+
+한국어로 응답하세요.`;
+
+  try {
+    await incrementRateLimit();
+    const response = await callGeminiAPI(prompt, imageBase64);
+    return { result: JSON.parse(response), usedFallback: false };
+  } catch (error) {
+    geminiLogger.error('OH-1 analysis error, falling back to mock:', error);
+    return { result: generateMockOralHealthResult(), usedFallback: true };
+  }
+}
+
+/**
+ * Posture 자세 분석
+ */
+export async function analyzePosture(
+  imageBase64: string
+): Promise<AnalysisResponse<PostureAnalysisResult>> {
+  const allowed = await checkRateLimit();
+  if (!allowed) {
+    geminiLogger.warn('Posture: Rate limit exceeded, using mock');
+    return { result: generateMockPostureResult(), usedFallback: true };
+  }
+
+  const prompt = `당신은 물리치료사입니다. 제공된 전신 측면 이미지를 분석하여 자세 상태를 평가해주세요.
+
+다음 JSON 형식으로만 응답해주세요:
+{
+  "postureType": "normal" | "forward_head" | "rounded_shoulders" | "swayback" | "flat_back" | "kyphosis",
+  "overallScore": 0-100,
+  "scores": {
+    "headAlignment": 0-100,
+    "shoulderBalance": 0-100,
+    "spineAlignment": 0-100,
+    "hipAlignment": 0-100
+  },
+  "issues": ["발견된 자세 문제"],
+  "exercises": [
+    {"name": "운동명", "description": "설명", "duration": "횟수/시간"}
+  ],
+  "dailyTips": ["일상 팁"]
+}
+
+한국어로 응답하세요.`;
+
+  try {
+    await incrementRateLimit();
+    const response = await callGeminiAPI(prompt, imageBase64);
+    return { result: JSON.parse(response), usedFallback: false };
+  } catch (error) {
+    geminiLogger.error('Posture analysis error, falling back to mock:', error);
+    return { result: generateMockPostureResult(), usedFallback: true };
   }
 }
