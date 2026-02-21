@@ -40,11 +40,11 @@ const SEASON_LABELS: Record<string, string> = {
 function getStatusColor(status: string): string {
   switch (status) {
     case 'good':
-      return 'text-green-600 bg-green-100';
+      return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40';
     case 'warning':
-      return 'text-red-600 bg-red-100';
+      return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40';
     default:
-      return 'text-amber-600 bg-amber-100';
+      return 'text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/40';
   }
 }
 
@@ -246,9 +246,11 @@ export default function MakeupAnalysisResultPage() {
             {/* 기본 분석 탭 */}
             <TabsContent value="basic" className="mt-0 space-y-6">
               {/* 언더톤/얼굴형 요약 */}
-              <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-6 text-center">
-                <div className="w-20 h-20 mx-auto rounded-full bg-white shadow-lg flex items-center justify-center mb-4">
-                  <span className="text-3xl font-bold text-rose-600">{result.overallScore}</span>
+              <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 rounded-xl p-6 text-center">
+                <div className="w-20 h-20 mx-auto rounded-full bg-white dark:bg-rose-900/40 shadow-lg flex items-center justify-center mb-4">
+                  <span className="text-3xl font-bold text-rose-600 dark:text-rose-400">
+                    {result.overallScore}
+                  </span>
                 </div>
                 <h2 className="text-xl font-bold text-foreground">
                   {result.undertoneLabel} · {result.faceShapeLabel}
@@ -344,7 +346,7 @@ export default function MakeupAnalysisResultPage() {
                       {colorRec.colors.map((color, idx) => (
                         <div key={idx} className="flex items-center gap-3">
                           <div
-                            className="w-10 h-10 rounded-full shadow-md border-2 border-white"
+                            className="w-10 h-10 rounded-full shadow-md border-2 border-white dark:border-gray-700"
                             style={{ backgroundColor: color.hex }}
                           />
                           <div className="flex-1">
@@ -364,12 +366,12 @@ export default function MakeupAnalysisResultPage() {
 
               {/* 퍼스널 컬러 연결 */}
               {result.personalColorConnection && (
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 shadow-sm">
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-3">
                     <Heart className="w-5 h-5 text-purple-500" />
                     <h3 className="font-semibold">퍼스널 컬러 연동</h3>
                   </div>
-                  <p className="text-sm font-medium text-purple-700 mb-2">
+                  <p className="text-sm font-medium text-purple-700 dark:text-purple-300 mb-2">
                     추정 시즌:{' '}
                     {SEASON_LABELS[result.personalColorConnection.season] ||
                       result.personalColorConnection.season}

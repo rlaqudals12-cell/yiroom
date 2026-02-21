@@ -11,10 +11,10 @@ export default function Loading() {
           <div className="w-16" />
         </div>
         {/* 점수 카드 */}
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 text-center space-y-4">
-          <div className="w-20 h-20 mx-auto rounded-full bg-white/60 animate-pulse" />
-          <div className="h-6 w-40 mx-auto rounded-md bg-white/40 animate-pulse" />
-          <div className="h-4 w-32 mx-auto rounded-md bg-white/30 animate-pulse" />
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl p-6 text-center space-y-4">
+          <div className="w-20 h-20 mx-auto rounded-full bg-white/60 dark:bg-white/10 animate-pulse" />
+          <div className="h-6 w-40 mx-auto rounded-md bg-white/40 dark:bg-white/10 animate-pulse" />
+          <div className="h-4 w-32 mx-auto rounded-md bg-white/30 dark:bg-white/10 animate-pulse" />
         </div>
         {/* 탭 */}
         <div className="h-10 rounded-md bg-muted-foreground/10 animate-pulse" />

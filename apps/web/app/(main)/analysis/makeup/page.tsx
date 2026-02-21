@@ -201,7 +201,7 @@ export default function MakeupAnalysisPage() {
               variant="ghost"
               size="sm"
               onClick={handleRetry}
-              className="mt-2 text-red-600 hover:text-red-700 hover:bg-red-100 px-0"
+              className="mt-2 text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/40 px-0"
               aria-label="메이크업 분석 다시 시도"
               data-testid="makeup-error-retry-button"
             >
@@ -214,14 +214,14 @@ export default function MakeupAnalysisPage() {
         {step === 'guide' && existingAnalysis && !checkingExisting && (
           <Link
             href={`/analysis/makeup/result/${existingAnalysis.id}`}
-            className="block mb-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl border border-pink-200 hover:shadow-md transition-shadow"
+            className="block mb-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 rounded-xl border border-pink-200 dark:border-pink-800 hover:shadow-md transition-shadow"
             data-testid="makeup-existing-banner"
             aria-label={`기존 메이크업 분석 결과 보기 (${existingAnalysis.overall_score}점)`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center">
-                  <span className="text-lg font-bold text-pink-600">
+                <div className="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center">
+                  <span className="text-lg font-bold text-pink-600 dark:text-pink-400">
                     {existingAnalysis.overall_score}
                   </span>
                 </div>
@@ -302,8 +302,8 @@ export default function MakeupAnalysisPage() {
                 aria-label="사진을 선택해주세요. 탭하여 갤러리에서 선택"
                 data-testid="makeup-upload-area"
               >
-                <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-pink-600" />
+                <div className="w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-pink-600 dark:text-pink-400" />
                 </div>
                 <div className="text-center">
                   <p className="font-medium text-foreground">사진을 선택해주세요</p>
@@ -343,7 +343,7 @@ export default function MakeupAnalysisPage() {
             aria-live="polite"
             data-testid="makeup-loading"
           >
-            <div className="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center mb-6 animate-pulse">
+            <div className="w-20 h-20 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center mb-6 animate-pulse">
               <span className="text-4xl">💄</span>
             </div>
             <p className="text-lg font-medium text-foreground">AI가 얼굴을 분석하고 있어요</p>

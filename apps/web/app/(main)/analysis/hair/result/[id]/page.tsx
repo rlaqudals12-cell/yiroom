@@ -249,11 +249,11 @@ export default function HairAnalysisResultPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'good':
-        return 'text-green-600 bg-green-100';
+        return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40';
       case 'warning':
-        return 'text-red-600 bg-red-100';
+        return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40';
       default:
-        return 'text-amber-600 bg-amber-100';
+        return 'text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/40';
     }
   };
 
@@ -348,9 +348,11 @@ export default function HairAnalysisResultPage() {
               {/* 기본 분석 탭 */}
               <TabsContent value="basic" className="mt-0 space-y-6">
                 {/* 헤어 타입 요약 */}
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 text-center">
-                  <div className="w-20 h-20 mx-auto rounded-full bg-white shadow-lg flex items-center justify-center mb-4">
-                    <span className="text-3xl font-bold text-amber-600">{result.overallScore}</span>
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl p-6 text-center">
+                  <div className="w-20 h-20 mx-auto rounded-full bg-white dark:bg-amber-900/40 shadow-lg flex items-center justify-center mb-4">
+                    <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                      {result.overallScore}
+                    </span>
                   </div>
                   <h2 className="text-xl font-bold text-foreground">
                     {result.hairTypeLabel} · {result.hairThicknessLabel}
@@ -427,7 +429,7 @@ export default function HairAnalysisResultPage() {
                       {result.recommendedIngredients.map((ingredient, i) => (
                         <span
                           key={i}
-                          className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm"
+                          className="px-3 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 rounded-full text-sm"
                         >
                           {ingredient}
                         </span>

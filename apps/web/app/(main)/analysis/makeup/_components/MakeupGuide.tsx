@@ -27,7 +27,7 @@ export function MakeupGuide({
       {/* 첫 방문 환영 메시지 (기존 분석 없을 때만) */}
       {!existingAnalysis && !checkingExisting && (
         <div
-          className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl p-6 text-center border border-pink-100"
+          className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/30 dark:to-purple-950/30 rounded-xl p-6 text-center border border-pink-100 dark:border-pink-800"
           data-testid="makeup-welcome-banner"
         >
           <span className="text-4xl mb-3 block">💄</span>

@@ -30,20 +30,22 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
   const getStatusColor = (status: string): string => {
     switch (status) {
       case 'good':
-        return 'text-green-600 bg-green-100';
+        return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40';
       case 'warning':
-        return 'text-red-600 bg-red-100';
+        return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40';
       default:
-        return 'text-pink-600 bg-pink-100';
+        return 'text-pink-600 bg-pink-100 dark:text-pink-400 dark:bg-pink-900/40';
     }
   };
 
   return (
     <div className="space-y-6" data-testid="makeup-analysis-result">
       {/* 종합 점수 */}
-      <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-6 text-center">
-        <div className="w-24 h-24 mx-auto rounded-full bg-white shadow-lg flex items-center justify-center mb-4">
-          <span className="text-4xl font-bold text-pink-600">{result.overallScore}</span>
+      <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 rounded-xl p-6 text-center">
+        <div className="w-24 h-24 mx-auto rounded-full bg-white dark:bg-pink-900/40 shadow-lg flex items-center justify-center mb-4">
+          <span className="text-4xl font-bold text-pink-600 dark:text-pink-400">
+            {result.overallScore}
+          </span>
         </div>
         <h2 className="text-xl font-bold text-foreground">
           {result.undertoneLabel} · {result.faceShapeLabel}
@@ -108,7 +110,10 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
         </h3>
         <div className="flex flex-wrap gap-2">
           {result.recommendedStyles.map((style, i) => (
-            <span key={i} className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm">
+            <span
+              key={i}
+              className="px-3 py-1 bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 rounded-full text-sm"
+            >
               {STYLE_LABELS[style as MakeupStyleId] || style}
             </span>
           ))}
@@ -123,7 +128,7 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
             {cr.colors.map((color, i) => (
               <div key={i} className="flex items-center gap-2">
                 <div
-                  className="w-8 h-8 rounded-full border-2 border-white shadow-md"
+                  className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-700 shadow-md"
                   style={{ backgroundColor: color.hex }}
                   aria-hidden="true"
                 />
@@ -159,7 +164,7 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
 
       {/* 퍼스널 컬러 연동 */}
       {result.personalColorConnection && (
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
           <h3 className="font-semibold mb-2 flex items-center gap-2">🎨 퍼스널 컬러 연동</h3>
           <p className="text-sm text-muted-foreground mb-2">
             예상 시즌:{' '}
@@ -170,7 +175,7 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
           <p className="text-xs text-muted-foreground">{result.personalColorConnection.note}</p>
           <Link
             href="/analysis/personal-color"
-            className="inline-block mt-3 text-sm text-purple-600 hover:underline"
+            className="inline-block mt-3 text-sm text-purple-600 dark:text-purple-400 hover:underline"
           >
             퍼스널 컬러 진단받기 →
           </Link>
