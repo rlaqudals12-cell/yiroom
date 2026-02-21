@@ -3,8 +3,8 @@
  */
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { SectionHeader } from '../ui';
 import { useTheme } from '../../lib/theme';
+import { SectionHeader } from '../ui';
 
 interface QuickAction {
   title: string;
@@ -25,8 +25,16 @@ export function HomeQuickActions({
   onActionPress,
   onCoachPress,
 }: HomeQuickActionsProps): React.JSX.Element {
-  const { colors, brand, spacing, radii, shadows, typography, status,
-    module: moduleColors } = useTheme();
+  const {
+    colors,
+    brand,
+    spacing,
+    radii,
+    shadows,
+    typography,
+    status,
+    module: moduleColors,
+  } = useTheme();
 
   // AI Coach → moduleColors.workout.dark (이전 하드코딩 #10b981 대체)
   const coachColor = moduleColors.workout.dark;
@@ -123,7 +131,13 @@ export function HomeQuickActions({
                 }}
               />
               {action.completed && (
-                <Text style={{ fontSize: 12, color: status.success, fontWeight: '600' }}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: status.success,
+                    fontWeight: '600',
+                  }}
+                >
                   ✓
                 </Text>
               )}

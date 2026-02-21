@@ -4,7 +4,13 @@
  * Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
  * shadcn/ui Card와 동일한 구조.
  */
-import { StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 
@@ -16,7 +22,11 @@ interface CardProps {
   testID?: string;
 }
 
-export function Card({ children, style, testID }: CardProps): React.JSX.Element {
+export function Card({
+  children,
+  style,
+  testID,
+}: CardProps): React.JSX.Element {
   const { colors, radii, shadows } = useTheme();
 
   return (
@@ -45,7 +55,10 @@ interface CardHeaderProps {
   style?: ViewStyle;
 }
 
-export function CardHeader({ children, style }: CardHeaderProps): React.JSX.Element {
+export function CardHeader({
+  children,
+  style,
+}: CardHeaderProps): React.JSX.Element {
   return <View style={[styles.header, style]}>{children}</View>;
 }
 
@@ -56,7 +69,10 @@ interface CardTitleProps {
   style?: TextStyle;
 }
 
-export function CardTitle({ children, style }: CardTitleProps): React.JSX.Element {
+export function CardTitle({
+  children,
+  style,
+}: CardTitleProps): React.JSX.Element {
   const { colors, typography } = useTheme();
 
   return (
@@ -83,7 +99,10 @@ interface CardDescriptionProps {
   style?: TextStyle;
 }
 
-export function CardDescription({ children, style }: CardDescriptionProps): React.JSX.Element {
+export function CardDescription({
+  children,
+  style,
+}: CardDescriptionProps): React.JSX.Element {
   const { colors, typography } = useTheme();
 
   return (
@@ -110,7 +129,10 @@ interface CardContentProps {
   style?: ViewStyle;
 }
 
-export function CardContent({ children, style }: CardContentProps): React.JSX.Element {
+export function CardContent({
+  children,
+  style,
+}: CardContentProps): React.JSX.Element {
   return <View style={[styles.content, style]}>{children}</View>;
 }
 
@@ -121,7 +143,10 @@ interface CardFooterProps {
   style?: ViewStyle;
 }
 
-export function CardFooter({ children, style }: CardFooterProps): React.JSX.Element {
+export function CardFooter({
+  children,
+  style,
+}: CardFooterProps): React.JSX.Element {
   return <View style={[styles.footer, style]}>{children}</View>;
 }
 

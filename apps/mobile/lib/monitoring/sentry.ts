@@ -2,6 +2,7 @@
  * Sentry 크래시 리포팅
  * 프로덕션 에러 모니터링 및 추적
  */
+/* eslint-disable import/no-unresolved -- @sentry/react-native는 Phase 1C에서 설치 예정 */
 
 import Constants from 'expo-constants';
 

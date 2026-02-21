@@ -3,7 +3,14 @@
  *
  * 라벨, 에러 메시지, 다크 모드 지원.
  */
-import { StyleSheet, Text, TextInput, View, type TextInputProps, type ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type TextInputProps,
+  type ViewStyle,
+} from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 

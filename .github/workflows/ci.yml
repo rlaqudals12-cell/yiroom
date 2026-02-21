@@ -71,6 +71,32 @@ jobs:
       - name: Lint
         run: npx turbo run lint --filter=@yiroom/web
 
+  # 모바일 Lint (병렬)
+  mobile-lint:
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-mobile-lint-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-mobile-lint-${{ runner.os }}-
+
+      - run: npm ci
+
+      - name: Lint (Mobile)
+        run: npx turbo run lint --filter=@yiroom/mobile
+
   # Typecheck (병렬)
   typecheck:
     needs: changes
@@ -96,6 +122,32 @@ jobs:
 
       - name: Typecheck
         run: npx turbo run typecheck --filter=@yiroom/web
+
+  # 모바일 Typecheck (병렬)
+  mobile-typecheck:
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-mobile-typecheck-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-mobile-typecheck-${{ runner.os }}-
+
+      - run: npm ci
+
+      - name: Typecheck (Mobile)
+        run: npx turbo run typecheck --filter=@yiroom/mobile
 
   # 테스트 (샤딩으로 병렬화)
   test:
@@ -129,6 +181,32 @@ jobs:
         run: npm run test -w @yiroom/web -- --run --shard=${{ matrix.shard }}/3
         env:
           FORCE_MOCK_AI: true
+
+  # 모바일 테스트 (병렬)
+  mobile-test:
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-mobile-test-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-mobile-test-${{ runner.os }}-
+
+      - run: npm ci
+
+      - name: Run Tests (Mobile)
+        run: npm run test -w @yiroom/mobile
 
   # 접근성 테스트 (병렬)
   accessibility:
@@ -225,7 +303,7 @@ jobs:
 
   # CI 요약 리포트
   summary:
-    needs: [lint, typecheck, test, accessibility, build, quality]
+    needs: [lint, typecheck, test, accessibility, build, quality, mobile-lint, mobile-typecheck, mobile-test]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -241,6 +319,9 @@ jobs:
           echo "| Accessibility | ${{ needs.accessibility.result == 'success' && '✅ Passed' || needs.accessibility.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || needs.build.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Quality | ${{ needs.quality.result == 'success' && '✅ Passed' || needs.quality.result == 'skipped' && '⏭️ Skipped' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile Lint | ${{ needs.mobile-lint.result == 'success' && '✅ Passed' || needs.mobile-lint.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile Typecheck | ${{ needs.mobile-typecheck.result == 'success' && '✅ Passed' || needs.mobile-typecheck.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile Test | ${{ needs.mobile-test.result == 'success' && '✅ Passed' || needs.mobile-test.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Environment" >> $GITHUB_STEP_SUMMARY
           echo "- **Node.js**: 22" >> $GITHUB_STEP_SUMMARY

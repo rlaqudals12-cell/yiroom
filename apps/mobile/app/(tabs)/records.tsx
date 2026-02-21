@@ -28,8 +28,16 @@ import { useTheme } from '../../lib/theme';
 
 export default function RecordsTab(): React.JSX.Element {
   const router = useRouter();
-  const { colors, brand, spacing, radii, shadows, typography, module: moduleColors, status } =
-    useTheme();
+  const {
+    colors,
+    brand,
+    spacing,
+    radii,
+    shadows,
+    typography,
+    module: moduleColors,
+    status,
+  } = useTheme();
 
   const {
     streak: workoutStreak,
@@ -246,7 +254,9 @@ export default function RecordsTab(): React.JSX.Element {
           />
 
           <MenuCard
-            icon={<UtensilsCrossed size={20} color={moduleColors.nutrition.dark} />}
+            icon={
+              <UtensilsCrossed size={20} color={moduleColors.nutrition.dark} />
+            }
             iconBg={moduleColors.nutrition.light + '30'}
             title="식단 기록"
             description={

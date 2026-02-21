@@ -170,7 +170,10 @@ export default function ChallengeDetailScreen() {
             style: 'destructive',
             onPress: async () => {
               // 포기 기능은 추후 추가 예정
-              Alert.alert('곧 추가될 예정이에요', '포기 기능을 준비하고 있어요. 조금만 기다려주세요!');
+              Alert.alert(
+                '곧 추가될 예정이에요',
+                '포기 기능을 준비하고 있어요. 조금만 기다려주세요!'
+              );
             },
           },
         ]
@@ -190,7 +193,10 @@ export default function ChallengeDetailScreen() {
       Haptics.selectionAsync();
     }
     // 진행 상황 기록 기능은 추후 추가 예정
-    Alert.alert('곧 추가될 예정이에요', '진행 상황 기록 기능을 준비하고 있어요. 조금만 기다려주세요!');
+    Alert.alert(
+      '곧 추가될 예정이에요',
+      '진행 상황 기록 기능을 준비하고 있어요. 조금만 기다려주세요!'
+    );
   };
 
   // 남은 일수 계산

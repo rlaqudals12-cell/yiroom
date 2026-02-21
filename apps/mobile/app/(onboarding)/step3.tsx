@@ -12,8 +12,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, Card, CardContent, ProgressIndicator } from '../../components/ui';
-import { useTheme } from '../../lib/theme';
+import {
+  Button,
+  Card,
+  CardContent,
+  ProgressIndicator,
+} from '../../components/ui';
 import {
   useOnboarding,
   type WorkoutFrequency,
@@ -23,6 +27,7 @@ import {
   GOAL_LABELS,
   calculateAge,
 } from '../../lib/onboarding';
+import { useTheme } from '../../lib/theme';
 
 const WORKOUT_FREQUENCIES: WorkoutFrequency[] = ['none', '1-2', '3-4', '5+'];
 const MEAL_PREFERENCES: MealPreference[] = [
@@ -65,7 +70,9 @@ export default function OnboardingStep3() {
       style={[styles.container, { backgroundColor: colors.background }]}
       testID="onboarding-step3"
     >
-      <ScrollView contentContainerStyle={[styles.content, { padding: spacing.lg }]}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { padding: spacing.lg }]}
+      >
         {/* 헤더 */}
         <View style={styles.header}>
           <Text style={styles.emoji}>🏁</Text>
@@ -244,7 +251,12 @@ export default function OnboardingStep3() {
               📋 입력하신 정보
             </Text>
             <View style={styles.summaryRow}>
-              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  color: colors.mutedForeground,
+                }}
+              >
                 목표
               </Text>
               <Text
@@ -261,7 +273,12 @@ export default function OnboardingStep3() {
             </View>
             {age && (
               <View style={styles.summaryRow}>
-                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    color: colors.mutedForeground,
+                  }}
+                >
                   나이
                 </Text>
                 <Text
@@ -277,7 +294,12 @@ export default function OnboardingStep3() {
             )}
             {data.basicInfo.height && data.basicInfo.weight && (
               <View style={styles.summaryRow}>
-                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    color: colors.mutedForeground,
+                  }}
+                >
                   신체
                 </Text>
                 <Text
@@ -295,11 +317,20 @@ export default function OnboardingStep3() {
         </Card>
 
         {/* 진행 상황 */}
-        <ProgressIndicator current={3} total={3} style={{ marginTop: spacing.xl }} />
+        <ProgressIndicator
+          current={3}
+          total={3}
+          style={{ marginTop: spacing.xl }}
+        />
       </ScrollView>
 
       {/* 하단 버튼 */}
-      <View style={[styles.footer, { padding: spacing.lg, paddingBottom: 40, gap: spacing.sm + 4 }]}>
+      <View
+        style={[
+          styles.footer,
+          { padding: spacing.lg, paddingBottom: 40, gap: spacing.sm + 4 },
+        ]}
+      >
         <Button
           variant="secondary"
           size="lg"

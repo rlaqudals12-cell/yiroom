@@ -41,7 +41,9 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         <View
           style={[
@@ -61,7 +63,12 @@ export default function ProfileScreen() {
                     { backgroundColor: colors.secondary },
                   ]}
                 >
-                  <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
+                  <Text
+                    style={[
+                      styles.avatarText,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
                     {user.firstName?.[0] ||
                       user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() ||
                       '?'}
@@ -74,7 +81,10 @@ export default function ProfileScreen() {
                   '사용자'}
               </Text>
               <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: colors.mutedForeground }]}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: colors.mutedForeground },
+                ]}
                 onPress={handleSignOut}
               >
                 <Text style={styles.actionButtonText}>로그아웃</Text>
@@ -88,17 +98,27 @@ export default function ProfileScreen() {
                   { backgroundColor: colors.secondary },
                 ]}
               >
-                <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>?</Text>
+                <Text
+                  style={[styles.avatarText, { color: colors.mutedForeground }]}
+                >
+                  ?
+                </Text>
               </View>
               <Text style={[styles.profileName, { color: colors.foreground }]}>
                 로그인이 필요합니다
               </Text>
               <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: brand.primary }]}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: brand.primary },
+                ]}
                 onPress={handleSignIn}
               >
                 <Text
-                  style={[styles.actionButtonText, { color: brand.primaryForeground }]}
+                  style={[
+                    styles.actionButtonText,
+                    { color: brand.primaryForeground },
+                  ]}
                 >
                   로그인
                 </Text>
@@ -108,7 +128,9 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.menuSection}>
-          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}
+          >
             분석 결과
           </Text>
           <MenuItem
@@ -137,7 +159,9 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.menuSection}>
-          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}
+          >
             기록
           </Text>
           <MenuItem
@@ -170,7 +194,9 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.menuSection}>
-          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}
+          >
             설정
           </Text>
           <MenuItem
@@ -223,11 +249,7 @@ function MenuItem({
 }) {
   return (
     <TouchableOpacity
-      style={[
-        styles.menuItem,
-        { backgroundColor: colors.card },
-        shadows.sm,
-      ]}
+      style={[styles.menuItem, { backgroundColor: colors.card }, shadows.sm]}
       activeOpacity={0.7}
       onPress={onPress}
     >
@@ -237,18 +259,24 @@ function MenuItem({
             {title}
           </Text>
           {completed && (
-            <Text style={[styles.menuItemCheck, { color: statusColors.success }]}>
+            <Text
+              style={[styles.menuItemCheck, { color: statusColors.success }]}
+            >
               ✓
             </Text>
           )}
         </View>
         {subtitle && (
-          <Text style={[styles.menuItemSubtitle, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.menuItemSubtitle, { color: colors.mutedForeground }]}
+          >
             {subtitle}
           </Text>
         )}
       </View>
-      <Text style={[styles.menuItemArrow, { color: colors.mutedForeground }]}>→</Text>
+      <Text style={[styles.menuItemArrow, { color: colors.mutedForeground }]}>
+        →
+      </Text>
     </TouchableOpacity>
   );
 }

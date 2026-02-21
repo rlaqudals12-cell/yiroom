@@ -19,11 +19,17 @@ function getGreeting(): string {
   return '좋은 저녁이에요';
 }
 
-export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.Element {
+export function HomeHeader({
+  userName,
+  isLoaded,
+}: HomeHeaderProps): React.JSX.Element {
   const { colors, spacing, typography } = useTheme();
 
   return (
-    <View style={[styles.header, { marginBottom: spacing.lg }]} testID="home-header">
+    <View
+      style={[styles.header, { marginBottom: spacing.lg }]}
+      testID="home-header"
+    >
       <Text
         style={{
           fontSize: typography.size.sm,

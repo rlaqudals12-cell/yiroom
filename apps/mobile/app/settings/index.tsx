@@ -44,7 +44,9 @@ export default function SettingsScreen() {
       >
         {/* 알림 및 목표 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.sectionTitle, { color: colors.mutedForeground }]}
+          >
             알림 및 목표
           </Text>
           <SettingsItem
@@ -65,7 +67,9 @@ export default function SettingsScreen() {
 
         {/* 위젯 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.sectionTitle, { color: colors.mutedForeground }]}
+          >
             위젯
           </Text>
           <SettingsItem
@@ -79,7 +83,9 @@ export default function SettingsScreen() {
 
         {/* 앱 정보 — 네이티브 페이지로 이동 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.sectionTitle, { color: colors.mutedForeground }]}
+          >
             앱 정보
           </Text>
           <SettingsItem
@@ -147,12 +153,16 @@ function SettingsItem({
           {title}
         </Text>
         {subtitle && (
-          <Text style={[styles.settingsSubtitle, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.settingsSubtitle, { color: colors.mutedForeground }]}
+          >
             {subtitle}
           </Text>
         )}
       </View>
-      <Text style={[styles.settingsArrow, { color: colors.mutedForeground }]}>›</Text>
+      <Text style={[styles.settingsArrow, { color: colors.mutedForeground }]}>
+        ›
+      </Text>
     </TouchableOpacity>
   );
 }

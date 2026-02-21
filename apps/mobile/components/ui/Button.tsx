@@ -4,11 +4,22 @@
  * variant: default | secondary | ghost | destructive | outline
  * size: sm | md | lg
  */
-import { ActivityIndicator, Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  type ViewStyle,
+} from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 
-type ButtonVariant = 'default' | 'secondary' | 'ghost' | 'destructive' | 'outline';
+type ButtonVariant =
+  | 'default'
+  | 'secondary'
+  | 'ghost'
+  | 'destructive'
+  | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {

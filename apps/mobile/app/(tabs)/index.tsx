@@ -16,7 +16,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HomeHeader, HomeTodaySection, HomeQuickActions } from '../../components/home';
+import {
+  HomeHeader,
+  HomeTodaySection,
+  HomeQuickActions,
+} from '../../components/home';
 import {
   useWorkoutData,
   useNutritionData,
@@ -28,8 +32,15 @@ import { useTheme } from '../../lib/theme';
 import { useWidgetSync } from '../../lib/widgets';
 
 export default function HomeScreen(): React.JSX.Element {
-  const { colors, brand, spacing, radii, shadows, typography,
-    module: moduleColors } = useTheme();
+  const {
+    colors,
+    brand,
+    spacing,
+    radii,
+    shadows,
+    typography,
+    module: moduleColors,
+  } = useTheme();
   const router = useRouter();
   const { user, isLoaded } = useUser();
   const [showMore, setShowMore] = useState(false);
@@ -71,18 +82,32 @@ export default function HomeScreen(): React.JSX.Element {
       workoutMinutes: 0,
       currentStreak: workoutStreak?.currentStreak || 0,
     });
-  }, [workoutStreak, todaySummary, nutritionSettings, workoutLoading, nutritionLoading, syncAll]);
+  }, [
+    workoutStreak,
+    todaySummary,
+    nutritionSettings,
+    workoutLoading,
+    nutritionLoading,
+    syncAll,
+  ]);
 
   const userName = user?.firstName || user?.username || '사용자';
 
   // 오늘 할 일
   const todayTasks = useMemo(() => {
-    const tasks: { id: string; label: string; completed: boolean; route: string }[] = [];
+    const tasks: {
+      id: string;
+      label: string;
+      completed: boolean;
+      route: string;
+    }[] = [];
 
     tasks.push({
       id: 'workout',
       label: '오늘의 운동 완료',
-      completed: workoutStreak?.lastWorkoutDate === new Date().toISOString().split('T')[0],
+      completed:
+        workoutStreak?.lastWorkoutDate ===
+        new Date().toISOString().split('T')[0],
       route: '/(tabs)/records',
     });
 
@@ -118,7 +143,11 @@ export default function HomeScreen(): React.JSX.Element {
 
   // 알림 요약
   const notifications = useMemo(() => {
-    const items: { id: string; message: string; type: 'info' | 'warning' | 'success' }[] = [];
+    const items: {
+      id: string;
+      message: string;
+      type: 'info' | 'warning' | 'success';
+    }[] = [];
 
     if (workoutStreak?.currentStreak && workoutStreak.currentStreak >= 3) {
       items.push({
@@ -128,7 +157,9 @@ export default function HomeScreen(): React.JSX.Element {
       });
     }
 
-    const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length;
+    const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(
+      Boolean
+    ).length;
     if (analysisCount < 3 && analysisCount > 0) {
       items.push({
         id: 'analysis-incomplete',
@@ -143,41 +174,59 @@ export default function HomeScreen(): React.JSX.Element {
         nutritionSettings.dailyCalorieGoal
       );
       if (cp >= 100) {
-        items.push({ id: 'calorie-goal', message: '✅ 오늘 칼로리 목표 달성!', type: 'success' });
+        items.push({
+          id: 'calorie-goal',
+          message: '✅ 오늘 칼로리 목표 달성!',
+          type: 'success',
+        });
       }
     }
 
     if (items.length === 0) {
-      items.push({ id: 'welcome', message: '👋 오늘도 이룸과 함께 건강한 하루를!', type: 'info' });
+      items.push({
+        id: 'welcome',
+        message: '👋 오늘도 이룸과 함께 건강한 하루를!',
+        type: 'info',
+      });
     }
 
     return items;
-  }, [workoutStreak, personalColor, skinAnalysis, bodyAnalysis, todaySummary, nutritionSettings]);
+  }, [
+    workoutStreak,
+    personalColor,
+    skinAnalysis,
+    bodyAnalysis,
+    todaySummary,
+    nutritionSettings,
+  ]);
 
   // 퀵 액션
-  const quickActions = useMemo(() => [
-    {
-      title: '퍼스널 컬러',
-      subtitle: '나의 컬러 찾기',
-      color: moduleColors.personalColor.base,
-      route: '/(analysis)/personal-color',
-      completed: !!personalColor,
-    },
-    {
-      title: '피부 분석',
-      subtitle: 'AI 피부 진단',
-      color: moduleColors.skin.base,
-      route: '/(analysis)/skin',
-      completed: !!skinAnalysis,
-    },
-    {
-      title: '체형 분석',
-      subtitle: '맞춤 스타일',
-      color: moduleColors.body.base,
-      route: '/(analysis)/body',
-      completed: !!bodyAnalysis,
-    },
-  ], [personalColor, skinAnalysis, bodyAnalysis, moduleColors]);
+  const quickActions = useMemo(
+    () => [
+      {
+        title: '퍼스널 컬러',
+        subtitle: '나의 컬러 찾기',
+        color: moduleColors.personalColor.base,
+        route: '/(analysis)/personal-color',
+        completed: !!personalColor,
+      },
+      {
+        title: '피부 분석',
+        subtitle: 'AI 피부 진단',
+        color: moduleColors.skin.base,
+        route: '/(analysis)/skin',
+        completed: !!skinAnalysis,
+      },
+      {
+        title: '체형 분석',
+        subtitle: '맞춤 스타일',
+        color: moduleColors.body.base,
+        route: '/(analysis)/body',
+        completed: !!bodyAnalysis,
+      },
+    ],
+    [personalColor, skinAnalysis, bodyAnalysis, moduleColors]
+  );
 
   // 확장 섹션 요약값
   const workoutValue = workoutLoading
@@ -248,7 +297,14 @@ export default function HomeScreen(): React.JSX.Element {
           ]}
           onPress={handleToggleMore}
         >
-          <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.mutedForeground, marginRight: 6 }}>
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.semibold,
+              color: colors.mutedForeground,
+              marginRight: 6,
+            }}
+          >
             {showMore ? '접기' : '더 보기'}
           </Text>
           <Text style={{ fontSize: 12, color: colors.mutedForeground }}>
@@ -259,19 +315,55 @@ export default function HomeScreen(): React.JSX.Element {
         {showMore && (
           <>
             {/* 오늘의 요약 */}
-            <View style={[shadows.sm, { backgroundColor: colors.card, borderRadius: radii.xl, padding: spacing.md + 4, marginBottom: spacing.lg }]}>
-              <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.md }}>
+            <View
+              style={[
+                shadows.sm,
+                {
+                  backgroundColor: colors.card,
+                  borderRadius: radii.xl,
+                  padding: spacing.md + 4,
+                  marginBottom: spacing.lg,
+                },
+              ]}
+            >
+              <Text
+                style={{
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  marginBottom: spacing.md,
+                }}
+              >
                 오늘의 요약
               </Text>
               <View style={styles.statsRow}>
-                <StatItem label="운동" value={workoutValue} color={moduleColors.workout.dark} />
-                <StatItem label="식단" value={nutritionValue} color={moduleColors.nutrition.dark} />
-                <StatItem label="분석" value={checkinValue} color={brand.primary} />
+                <StatItem
+                  label="운동"
+                  value={workoutValue}
+                  color={moduleColors.workout.dark}
+                />
+                <StatItem
+                  label="식단"
+                  value={nutritionValue}
+                  color={moduleColors.nutrition.dark}
+                />
+                <StatItem
+                  label="분석"
+                  value={checkinValue}
+                  color={brand.primary}
+                />
               </View>
             </View>
 
             {/* 모듈 카드 */}
-            <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm + 4 }}>
+            <Text
+              style={{
+                fontSize: typography.size.lg,
+                fontWeight: typography.weight.semibold,
+                color: colors.foreground,
+                marginBottom: spacing.sm + 4,
+              }}
+            >
               나의 여정
             </Text>
             <View style={{ gap: spacing.sm + 4, marginBottom: spacing.lg }}>
@@ -296,11 +388,33 @@ export default function HomeScreen(): React.JSX.Element {
             </View>
 
             {/* 팁 */}
-            <View style={[shadows.sm, { backgroundColor: colors.card, borderRadius: radii.xl, padding: spacing.md + 4 }]}>
-              <Text style={{ fontSize: typography.size.xs, fontWeight: typography.weight.semibold, color: brand.primary, marginBottom: spacing.sm }}>
+            <View
+              style={[
+                shadows.sm,
+                {
+                  backgroundColor: colors.card,
+                  borderRadius: radii.xl,
+                  padding: spacing.md + 4,
+                },
+              ]}
+            >
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  fontWeight: typography.weight.semibold,
+                  color: brand.primary,
+                  marginBottom: spacing.sm,
+                }}
+              >
                 💡 오늘의 팁
               </Text>
-              <Text style={{ fontSize: typography.size.sm, color: colors.cardForeground, lineHeight: 22 }}>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  color: colors.cardForeground,
+                  lineHeight: 22,
+                }}
+              >
                 꾸준한 기록이 변화의 시작입니다.{'\n'}
                 오늘도 이룸과 함께해요!
               </Text>
@@ -314,17 +428,51 @@ export default function HomeScreen(): React.JSX.Element {
 
 // --- 내부 서브 컴포넌트 (확장 섹션용) ---
 
-function StatItem({ label, value, color }: { label: string; value: string; color: string }): React.JSX.Element {
+function StatItem({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string;
+  color: string;
+}): React.JSX.Element {
   const { colors, typography } = useTheme();
   return (
     <View style={styles.statItem}>
-      <Text style={{ fontSize: typography.size['2xl'], fontWeight: typography.weight.bold, color }}>{value}</Text>
-      <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: 4 }}>{label}</Text>
+      <Text
+        style={{
+          fontSize: typography.size['2xl'],
+          fontWeight: typography.weight.bold,
+          color,
+        }}
+      >
+        {value}
+      </Text>
+      <Text
+        style={{
+          fontSize: typography.size.xs,
+          color: colors.mutedForeground,
+          marginTop: 4,
+        }}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
 
-function ModuleCard({ title, description, color, onPress }: { title: string; description: string; color: string; onPress: () => void }): React.JSX.Element {
+function ModuleCard({
+  title,
+  description,
+  color,
+  onPress,
+}: {
+  title: string;
+  description: string;
+  color: string;
+  onPress: () => void;
+}): React.JSX.Element {
   const { colors, radii, shadows, spacing, typography } = useTheme();
   return (
     <Pressable
@@ -341,12 +489,44 @@ function ModuleCard({ title, description, color, onPress }: { title: string; des
       ]}
       onPress={onPress}
     >
-      <View style={{ width: 4, height: 40, borderRadius: 2, backgroundColor: color, marginRight: spacing.md }} />
+      <View
+        style={{
+          width: 4,
+          height: 40,
+          borderRadius: 2,
+          backgroundColor: color,
+          marginRight: spacing.md,
+        }}
+      />
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: 4 }}>{title}</Text>
-        <Text style={{ fontSize: typography.size.sm - 1, color: colors.mutedForeground }}>{description}</Text>
+        <Text
+          style={{
+            fontSize: typography.size.base,
+            fontWeight: typography.weight.semibold,
+            color: colors.foreground,
+            marginBottom: 4,
+          }}
+        >
+          {title}
+        </Text>
+        <Text
+          style={{
+            fontSize: typography.size.sm - 1,
+            color: colors.mutedForeground,
+          }}
+        >
+          {description}
+        </Text>
       </View>
-      <Text style={{ fontSize: 24, color: colors.mutedForeground, marginLeft: spacing.sm }}>›</Text>
+      <Text
+        style={{
+          fontSize: 24,
+          color: colors.mutedForeground,
+          marginLeft: spacing.sm,
+        }}
+      >
+        ›
+      </Text>
     </Pressable>
   );
 }

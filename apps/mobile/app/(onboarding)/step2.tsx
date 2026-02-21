@@ -14,7 +14,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Input, ProgressIndicator } from '../../components/ui';
-import { useTheme } from '../../lib/theme';
 import {
   useOnboarding,
   type Gender,
@@ -22,6 +21,7 @@ import {
   GENDER_LABELS,
   ACTIVITY_LEVEL_LABELS,
 } from '../../lib/onboarding';
+import { useTheme } from '../../lib/theme';
 
 const GENDERS: Gender[] = ['male', 'female', 'other'];
 const ACTIVITY_LEVELS: ActivityLevel[] = [
@@ -89,7 +89,9 @@ export default function OnboardingStep2() {
       style={[styles.container, { backgroundColor: colors.background }]}
       testID="onboarding-step2"
     >
-      <ScrollView contentContainerStyle={[styles.content, { padding: spacing.lg }]}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { padding: spacing.lg }]}
+      >
         {/* 헤더 */}
         <View style={styles.header}>
           <Text style={styles.emoji}>📝</Text>
@@ -211,7 +213,12 @@ export default function OnboardingStep2() {
                 maxLength={3}
                 testID="height-input"
               />
-              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  color: colors.mutedForeground,
+                }}
+              >
                 cm
               </Text>
             </View>
@@ -234,7 +241,12 @@ export default function OnboardingStep2() {
                 maxLength={5}
                 testID="weight-input"
               />
-              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  color: colors.mutedForeground,
+                }}
+              >
                 kg
               </Text>
             </View>
@@ -290,11 +302,20 @@ export default function OnboardingStep2() {
         </View>
 
         {/* 진행 상황 */}
-        <ProgressIndicator current={2} total={3} style={{ marginTop: spacing.xl }} />
+        <ProgressIndicator
+          current={2}
+          total={3}
+          style={{ marginTop: spacing.xl }}
+        />
       </ScrollView>
 
       {/* 하단 버튼 */}
-      <View style={[styles.footer, { padding: spacing.lg, paddingBottom: 40, gap: spacing.sm + 4 }]}>
+      <View
+        style={[
+          styles.footer,
+          { padding: spacing.lg, paddingBottom: 40, gap: spacing.sm + 4 },
+        ]}
+      >
         <Button
           variant="secondary"
           size="lg"

@@ -3,8 +3,8 @@
  */
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { SectionHeader } from '../ui';
 import { useTheme } from '../../lib/theme';
+import { SectionHeader } from '../ui';
 
 interface TodoTask {
   id: string;
@@ -30,7 +30,8 @@ export function HomeTodaySection({
   notifications,
   onTaskPress,
 }: HomeTodaySectionProps): React.JSX.Element {
-  const { colors, brand, spacing, radii, shadows, typography, status } = useTheme();
+  const { colors, brand, spacing, radii, shadows, typography, status } =
+    useTheme();
 
   const remainingCount = tasks.filter((t) => !t.completed).length;
 
@@ -105,7 +106,9 @@ export function HomeTodaySection({
                 styles.checkbox,
                 {
                   borderColor: task.completed ? status.success : colors.border,
-                  backgroundColor: task.completed ? status.success : 'transparent',
+                  backgroundColor: task.completed
+                    ? status.success
+                    : 'transparent',
                 },
               ]}
             >
