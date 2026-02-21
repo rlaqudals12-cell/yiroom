@@ -67,12 +67,7 @@ export function useFeed(): UseFeedResult {
             data = await getMyFeed(supabase, user.id, PAGE_SIZE, currentOffset);
             break;
           case 'friends':
-            data = await getFriendsFeed(
-              supabase,
-              user.id,
-              PAGE_SIZE,
-              currentOffset
-            );
+            data = await getFriendsFeed(supabase, user.id, PAGE_SIZE, currentOffset);
             break;
           case 'all':
             data = await getAllFeed(supabase, PAGE_SIZE, currentOffset);

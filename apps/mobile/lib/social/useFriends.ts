@@ -223,9 +223,7 @@ export function useUserSearch(): UseUserSearchResult {
       if (result.success) {
         // 결과 업데이트
         setResults((prev) =>
-          prev.map((r) =>
-            r.userId === targetUserId ? { ...r, isPending: true } : r
-          )
+          prev.map((r) => (r.userId === targetUserId ? { ...r, isPending: true } : r))
         );
       }
       return result.success;

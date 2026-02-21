@@ -87,9 +87,7 @@ export async function removeCache(key: string): Promise<void> {
 /**
  * 캐시 메타데이터 조회
  */
-export async function getCacheMetadata(
-  key: string
-): Promise<CacheMetadata | null> {
+export async function getCacheMetadata(key: string): Promise<CacheMetadata | null> {
   try {
     const stored = await AsyncStorage.getItem(key);
     if (!stored) {
@@ -142,11 +140,7 @@ export async function clearCacheByPrefix(prefix: string): Promise<void> {
 
     if (keysToRemove.length > 0) {
       await AsyncStorage.multiRemove(keysToRemove);
-      offlineLogger.info(
-        'Cache cleared by prefix:',
-        prefix,
-        keysToRemove.length
-      );
+      offlineLogger.info('Cache cleared by prefix:', prefix, keysToRemove.length);
     }
   } catch (error) {
     offlineLogger.error('Cache failed to clear by prefix:', prefix, error);
@@ -185,9 +179,7 @@ export async function getCacheOrFetch<T>(
     // 백그라운드에서 갱신 (stale-while-revalidate)
     fetchFn()
       .then((data) => setCache(key, data, ttl))
-      .catch((error) =>
-        offlineLogger.error('Cache background refresh failed:', error)
-      );
+      .catch((error) => offlineLogger.error('Cache background refresh failed:', error));
 
     return cached;
   }

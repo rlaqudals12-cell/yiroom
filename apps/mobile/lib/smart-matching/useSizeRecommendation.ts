@@ -46,8 +46,7 @@ export function useSizeRecommendation({
   enabled = true,
 }: UseSizeRecommendationParams): UseSizeRecommendationResult {
   const { getToken, isSignedIn } = useAuth();
-  const [recommendation, setRecommendation] =
-    useState<SizeRecommendation | null>(null);
+  const [recommendation, setRecommendation] = useState<SizeRecommendation | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,9 +75,7 @@ export function useSizeRecommendation({
       setRecommendation(result);
     } catch (err) {
       productLogger.error(' SizeRecommendation error:', err);
-      setError(
-        err instanceof Error ? err.message : '사이즈 추천을 불러올 수 없습니다.'
-      );
+      setError(err instanceof Error ? err.message : '사이즈 추천을 불러올 수 없습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -88,13 +85,9 @@ export function useSizeRecommendation({
     fetchRecommendation();
   }, [fetchRecommendation]);
 
-  const confidenceLabel = recommendation
-    ? getConfidenceLabel(recommendation.confidence)
-    : null;
+  const confidenceLabel = recommendation ? getConfidenceLabel(recommendation.confidence) : null;
 
-  const basisDescription = recommendation
-    ? getBasisDescription(recommendation.basis)
-    : '';
+  const basisDescription = recommendation ? getBasisDescription(recommendation.basis) : '';
 
   return {
     recommendation,
@@ -109,9 +102,7 @@ export function useSizeRecommendation({
 /**
  * Mock 사이즈 추천 (오프라인/테스트용)
  */
-export function getMockSizeRecommendation(
-  _category: ClothingCategory
-): SizeRecommendation {
+export function getMockSizeRecommendation(_category: ClothingCategory): SizeRecommendation {
   return {
     recommendedSize: 'M',
     confidence: 40,

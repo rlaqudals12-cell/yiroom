@@ -6,14 +6,7 @@
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Linking,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '../../lib/theme';
@@ -38,17 +31,10 @@ export default function SettingsScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 알림 및 목표 */}
         <View style={styles.section}>
-          <Text
-            style={[styles.sectionTitle, { color: colors.mutedForeground }]}
-          >
-            알림 및 목표
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>알림 및 목표</Text>
           <SettingsItem
             icon="🔔"
             title="알림 설정"
@@ -67,11 +53,7 @@ export default function SettingsScreen() {
 
         {/* 위젯 */}
         <View style={styles.section}>
-          <Text
-            style={[styles.sectionTitle, { color: colors.mutedForeground }]}
-          >
-            위젯
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>위젯</Text>
           <SettingsItem
             icon="📱"
             title="위젯 설정"
@@ -83,11 +65,7 @@ export default function SettingsScreen() {
 
         {/* 앱 정보 — 네이티브 페이지로 이동 */}
         <View style={styles.section}>
-          <Text
-            style={[styles.sectionTitle, { color: colors.mutedForeground }]}
-          >
-            앱 정보
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>앱 정보</Text>
           <SettingsItem
             icon="📖"
             title="이용약관"
@@ -110,9 +88,7 @@ export default function SettingsScreen() {
 
         {/* 버전 정보 */}
         <View style={styles.versionSection}>
-          <Text style={[styles.versionLabel, { color: colors.foreground }]}>
-            이룸
-          </Text>
+          <Text style={[styles.versionLabel, { color: colors.foreground }]}>이룸</Text>
           <Text style={[styles.versionText, { color: colors.mutedForeground }]}>
             버전 {appVersion}
           </Text>
@@ -149,20 +125,14 @@ function SettingsItem({
     >
       <Text style={styles.settingsIcon}>{icon}</Text>
       <View style={styles.settingsContent}>
-        <Text style={[styles.settingsTitle, { color: colors.foreground }]}>
-          {title}
-        </Text>
+        <Text style={[styles.settingsTitle, { color: colors.foreground }]}>{title}</Text>
         {subtitle && (
-          <Text
-            style={[styles.settingsSubtitle, { color: colors.mutedForeground }]}
-          >
+          <Text style={[styles.settingsSubtitle, { color: colors.mutedForeground }]}>
             {subtitle}
           </Text>
         )}
       </View>
-      <Text style={[styles.settingsArrow, { color: colors.mutedForeground }]}>
-        ›
-      </Text>
+      <Text style={[styles.settingsArrow, { color: colors.mutedForeground }]}>›</Text>
     </TouchableOpacity>
   );
 }

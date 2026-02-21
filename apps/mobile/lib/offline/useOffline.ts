@@ -30,11 +30,7 @@ interface UseOfflineReturn extends OfflineState {
  */
 export function useOffline(options: UseOfflineOptions = {}): UseOfflineReturn {
   const { autoSync = true, syncProcessor } = options;
-  const {
-    status: networkStatus,
-    isConnected,
-    refresh: refreshNetwork,
-  } = useNetworkStatus();
+  const { status: networkStatus, isConnected, refresh: refreshNetwork } = useNetworkStatus();
 
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('synced');
   const [pendingCount, setPendingCount] = useState(0);
@@ -117,10 +113,7 @@ export function useOffline(options: UseOfflineOptions = {}): UseOfflineReturn {
       }
     };
 
-    const subscription = AppState.addEventListener(
-      'change',
-      handleAppStateChange
-    );
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => subscription.remove();
   }, [autoSync, isConnected, pendingCount, sync]);
 

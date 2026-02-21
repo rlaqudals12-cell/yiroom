@@ -40,37 +40,26 @@ export default function NutritionRecordScreen() {
 
   const [selectedMealType, setSelectedMealType] = useState<MealType>('lunch');
   const [searchText, setSearchText] = useState('');
-  const [addedFoods, setAddedFoods] = useState<
-    { name: string; calories: number; emoji: string }[]
-  >([]);
-
-  const totalCalories = addedFoods.reduce(
-    (sum, food) => sum + food.calories,
-    0
+  const [addedFoods, setAddedFoods] = useState<{ name: string; calories: number; emoji: string }[]>(
+    []
   );
 
+  const totalCalories = addedFoods.reduce((sum, food) => sum + food.calories, 0);
+
   const handleTakePhoto = () => {
-    Alert.alert(
-      '음식 촬영',
-      '카메라로 음식을 촬영하면 AI가 자동으로 음식을 인식합니다.',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '촬영하기',
-          onPress: () => {
-            // TODO: 카메라 연동
-            Alert.alert('준비 중', 'AI 음식 인식 기능은 준비 중입니다.');
-          },
+    Alert.alert('음식 촬영', '카메라로 음식을 촬영하면 AI가 자동으로 음식을 인식합니다.', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '촬영하기',
+        onPress: () => {
+          // TODO: 카메라 연동
+          Alert.alert('준비 중', 'AI 음식 인식 기능은 준비 중입니다.');
         },
-      ]
-    );
+      },
+    ]);
   };
 
-  const handleAddFood = (food: {
-    name: string;
-    calories: number;
-    emoji: string;
-  }) => {
+  const handleAddFood = (food: { name: string; calories: number; emoji: string }) => {
     setAddedFoods((prev) => [...prev, food]);
   };
 
@@ -92,10 +81,7 @@ export default function NutritionRecordScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* 식사 타입 선택 */}
         <View style={styles.mealTypeContainer}>
@@ -128,9 +114,7 @@ export default function NutritionRecordScreen() {
         >
           <Text style={styles.photoIcon}>📷</Text>
           <View>
-            <Text style={[styles.photoTitle, isDark && styles.textLight]}>
-              음식 촬영하기
-            </Text>
+            <Text style={[styles.photoTitle, isDark && styles.textLight]}>음식 촬영하기</Text>
             <Text style={[styles.photoSubtitle, isDark && styles.textMuted]}>
               AI가 자동으로 음식을 인식합니다
             </Text>
@@ -138,9 +122,7 @@ export default function NutritionRecordScreen() {
         </TouchableOpacity>
 
         {/* 검색 */}
-        <View
-          style={[styles.searchContainer, isDark && styles.searchContainerDark]}
-        >
+        <View style={[styles.searchContainer, isDark && styles.searchContainerDark]}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={[styles.searchInput, isDark && styles.textLight]}
@@ -153,9 +135,7 @@ export default function NutritionRecordScreen() {
 
         {/* 빠른 추가 */}
         <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            빠른 추가
-          </Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>빠른 추가</Text>
           <View style={styles.quickAddGrid}>
             {QUICK_ADD_FOODS.map((food, index) => (
               <TouchableOpacity
@@ -164,15 +144,10 @@ export default function NutritionRecordScreen() {
                 onPress={() => handleAddFood(food)}
               >
                 <Text style={styles.quickAddEmoji}>{food.emoji}</Text>
-                <Text
-                  style={[styles.quickAddName, isDark && styles.textLight]}
-                  numberOfLines={1}
-                >
+                <Text style={[styles.quickAddName, isDark && styles.textLight]} numberOfLines={1}>
                   {food.name}
                 </Text>
-                <Text
-                  style={[styles.quickAddCalories, isDark && styles.textMuted]}
-                >
+                <Text style={[styles.quickAddCalories, isDark && styles.textMuted]}>
                   {food.calories} kcal
                 </Text>
               </TouchableOpacity>
@@ -183,20 +158,12 @@ export default function NutritionRecordScreen() {
         {/* 추가된 음식 */}
         {addedFoods.length > 0 && (
           <View style={[styles.section, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-              추가된 음식
-            </Text>
+            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>추가된 음식</Text>
             {addedFoods.map((food, index) => (
               <View key={index} style={styles.addedFoodItem}>
                 <Text style={styles.addedFoodEmoji}>{food.emoji}</Text>
-                <Text
-                  style={[styles.addedFoodName, isDark && styles.textLight]}
-                >
-                  {food.name}
-                </Text>
-                <Text
-                  style={[styles.addedFoodCalories, isDark && styles.textMuted]}
-                >
+                <Text style={[styles.addedFoodName, isDark && styles.textLight]}>{food.name}</Text>
+                <Text style={[styles.addedFoodCalories, isDark && styles.textMuted]}>
                   {food.calories} kcal
                 </Text>
                 <TouchableOpacity onPress={() => handleRemoveFood(index)}>
@@ -205,9 +172,7 @@ export default function NutritionRecordScreen() {
               </View>
             ))}
             <View style={styles.totalRow}>
-              <Text style={[styles.totalLabel, isDark && styles.textLight]}>
-                총 칼로리
-              </Text>
+              <Text style={[styles.totalLabel, isDark && styles.textLight]}>총 칼로리</Text>
               <Text style={styles.totalValue}>{totalCalories} kcal</Text>
             </View>
           </View>

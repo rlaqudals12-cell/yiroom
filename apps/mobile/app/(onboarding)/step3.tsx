@@ -2,22 +2,10 @@
  * 온보딩 Step 3: 선호도 설정 및 완료
  */
 
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  Button,
-  Card,
-  CardContent,
-  ProgressIndicator,
-} from '../../components/ui';
+import { Button, Card, CardContent, ProgressIndicator } from '../../components/ui';
 import {
   useOnboarding,
   type WorkoutFrequency,
@@ -30,17 +18,11 @@ import {
 import { useTheme } from '../../lib/theme';
 
 const WORKOUT_FREQUENCIES: WorkoutFrequency[] = ['none', '1-2', '3-4', '5+'];
-const MEAL_PREFERENCES: MealPreference[] = [
-  'regular',
-  'intermittent',
-  'low_carb',
-  'high_protein',
-];
+const MEAL_PREFERENCES: MealPreference[] = ['regular', 'intermittent', 'low_carb', 'high_protein'];
 
 export default function OnboardingStep3() {
   const { colors, brand, spacing, radii, shadows, typography } = useTheme();
-  const { data, setPreferences, prevStep, completeOnboarding } =
-    useOnboarding();
+  const { data, setPreferences, prevStep, completeOnboarding } = useOnboarding();
 
   const handleFrequencySelect = (freq: WorkoutFrequency) => {
     setPreferences({ workoutFrequency: freq });
@@ -59,9 +41,7 @@ export default function OnboardingStep3() {
     data.preferences.mealPreference !== undefined;
 
   // 요약 정보
-  const age = data.basicInfo.birthYear
-    ? calculateAge(data.basicInfo.birthYear)
-    : null;
+  const age = data.basicInfo.birthYear ? calculateAge(data.basicInfo.birthYear) : null;
 
   const selectedBg = `${brand.primary}1A`;
 
@@ -70,9 +50,7 @@ export default function OnboardingStep3() {
       style={[styles.container, { backgroundColor: colors.background }]}
       testID="onboarding-step3"
     >
-      <ScrollView
-        contentContainerStyle={[styles.content, { padding: spacing.lg }]}
-      >
+      <ScrollView contentContainerStyle={[styles.content, { padding: spacing.lg }]}>
         {/* 헤더 */}
         <View style={styles.header}>
           <Text style={styles.emoji}>🏁</Text>
@@ -317,19 +295,12 @@ export default function OnboardingStep3() {
         </Card>
 
         {/* 진행 상황 */}
-        <ProgressIndicator
-          current={3}
-          total={3}
-          style={{ marginTop: spacing.xl }}
-        />
+        <ProgressIndicator current={3} total={3} style={{ marginTop: spacing.xl }} />
       </ScrollView>
 
       {/* 하단 버튼 */}
       <View
-        style={[
-          styles.footer,
-          { padding: spacing.lg, paddingBottom: 40, gap: spacing.sm + 4 },
-        ]}
+        style={[styles.footer, { padding: spacing.lg, paddingBottom: 40, gap: spacing.sm + 4 }]}
       >
         <Button
           variant="secondary"

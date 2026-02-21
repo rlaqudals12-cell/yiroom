@@ -98,8 +98,7 @@ export const useAppPreferencesStore = create<AppPreferencesState>()(
 
       setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
 
-      setOnboardingCompleted: (onboardingCompleted) =>
-        set({ onboardingCompleted }),
+      setOnboardingCompleted: (onboardingCompleted) => set({ onboardingCompleted }),
 
       setAppTourCompleted: (appTourCompleted) => set({ appTourCompleted }),
 

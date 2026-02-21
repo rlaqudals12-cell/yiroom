@@ -27,10 +27,7 @@ import {
   type Challenge,
   type UserChallenge,
 } from '../../lib/challenges';
-import {
-  useChallenges,
-  useJoinChallenge,
-} from '../../lib/challenges/useChallenges';
+import { useChallenges, useJoinChallenge } from '../../lib/challenges/useChallenges';
 
 type TabType = 'explore' | 'my';
 
@@ -40,8 +37,7 @@ export default function ChallengesScreen() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabType>('explore');
-  const { challenges, userChallenges, stats, isLoading, refetch } =
-    useChallenges();
+  const { challenges, userChallenges, stats, isLoading, refetch } = useChallenges();
 
   const { join, isJoining } = useJoinChallenge((_newChallenge) => {
     // 참여 후 목록 새로고침
@@ -69,25 +65,17 @@ export default function ChallengesScreen() {
 
   // 참여 여부 확인
   const isParticipating = (challengeId: string) =>
-    userChallenges.some(
-      (uc) => uc.challengeId === challengeId && uc.status === 'in_progress'
-    );
+    userChallenges.some((uc) => uc.challengeId === challengeId && uc.status === 'in_progress');
 
   // 진행 중인 챌린지
-  const activeChallenges = userChallenges.filter(
-    (uc) => uc.status === 'in_progress'
-  );
+  const activeChallenges = userChallenges.filter((uc) => uc.status === 'in_progress');
 
   // 완료된 챌린지 (향후 통계 표시용)
-  const _completedChallenges = userChallenges.filter(
-    (uc) => uc.status === 'completed'
-  );
+  const _completedChallenges = userChallenges.filter((uc) => uc.status === 'completed');
 
   const renderChallenge = ({ item }: { item: Challenge }) => {
     const participating = isParticipating(item.id);
-    const userChallenge = userChallenges.find(
-      (uc) => uc.challengeId === item.id
-    );
+    const userChallenge = userChallenges.find((uc) => uc.challengeId === item.id);
     const progress = userChallenge ? calculateProgress(userChallenge) : 0;
 
     return (
@@ -99,17 +87,9 @@ export default function ChallengesScreen() {
           <Text style={styles.cardIcon}>{item.icon}</Text>
           <View style={styles.cardBadges}>
             <View
-              style={[
-                styles.domainBadge,
-                { backgroundColor: DOMAIN_COLORS[item.domain] + '20' },
-              ]}
+              style={[styles.domainBadge, { backgroundColor: DOMAIN_COLORS[item.domain] + '20' }]}
             >
-              <Text
-                style={[
-                  styles.domainBadgeText,
-                  { color: DOMAIN_COLORS[item.domain] },
-                ]}
-              >
+              <Text style={[styles.domainBadgeText, { color: DOMAIN_COLORS[item.domain] }]}>
                 {DOMAIN_NAMES[item.domain]}
               </Text>
             </View>
@@ -120,10 +100,7 @@ export default function ChallengesScreen() {
               ]}
             >
               <Text
-                style={[
-                  styles.difficultyBadgeText,
-                  { color: DIFFICULTY_COLORS[item.difficulty] },
-                ]}
+                style={[styles.difficultyBadgeText, { color: DIFFICULTY_COLORS[item.difficulty] }]}
               >
                 {DIFFICULTY_NAMES[item.difficulty]}
               </Text>
@@ -131,14 +108,9 @@ export default function ChallengesScreen() {
           </View>
         </View>
 
-        <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-          {item.name}
-        </Text>
+        <Text style={[styles.cardTitle, isDark && styles.textLight]}>{item.name}</Text>
         {item.description && (
-          <Text
-            style={[styles.cardDescription, isDark && styles.textMuted]}
-            numberOfLines={2}
-          >
+          <Text style={[styles.cardDescription, isDark && styles.textMuted]} numberOfLines={2}>
             {item.description}
           </Text>
         )}
@@ -154,9 +126,7 @@ export default function ChallengesScreen() {
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${progress}%` }]} />
             </View>
-            <Text style={[styles.progressText, isDark && styles.textMuted]}>
-              {progress}% 완료
-            </Text>
+            <Text style={[styles.progressText, isDark && styles.textMuted]}>{progress}% 완료</Text>
           </View>
         ) : (
           <TouchableOpacity
@@ -164,9 +134,7 @@ export default function ChallengesScreen() {
             onPress={() => handleJoin(item.id)}
             disabled={isJoining}
           >
-            <Text style={styles.joinButtonText}>
-              {isJoining ? '참여 중...' : '참여하기'}
-            </Text>
+            <Text style={styles.joinButtonText}>{isJoining ? '참여 중...' : '참여하기'}</Text>
           </TouchableOpacity>
         )}
       </TouchableOpacity>
@@ -194,30 +162,21 @@ export default function ChallengesScreen() {
                 { backgroundColor: DOMAIN_COLORS[challenge.domain] + '20' },
               ]}
             >
-              <Text
-                style={[
-                  styles.domainBadgeText,
-                  { color: DOMAIN_COLORS[challenge.domain] },
-                ]}
-              >
+              <Text style={[styles.domainBadgeText, { color: DOMAIN_COLORS[challenge.domain] }]}>
                 {DOMAIN_NAMES[challenge.domain]}
               </Text>
             </View>
           </View>
         </View>
 
-        <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-          {challenge.name}
-        </Text>
+        <Text style={[styles.cardTitle, isDark && styles.textLight]}>{challenge.name}</Text>
 
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
           <View style={styles.progressMeta}>
-            <Text style={[styles.progressText, isDark && styles.textMuted]}>
-              {progress}% 완료
-            </Text>
+            <Text style={[styles.progressText, isDark && styles.textMuted]}>{progress}% 완료</Text>
             <Text style={[styles.daysText, isDark && styles.textMuted]}>
               {daysRemaining}일 남음
             </Text>
@@ -238,39 +197,24 @@ export default function ChallengesScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 통계 카드 */}
       {stats && (
         <View style={styles.statsContainer}>
           <View style={[styles.statCard, isDark && styles.statCardDark]}>
             <Text style={styles.statIcon}>🔥</Text>
-            <Text style={[styles.statValue, isDark && styles.textLight]}>
-              {stats.inProgress}
-            </Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-              진행 중
-            </Text>
+            <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.inProgress}</Text>
+            <Text style={[styles.statLabel, isDark && styles.textMuted]}>진행 중</Text>
           </View>
           <View style={[styles.statCard, isDark && styles.statCardDark]}>
             <Text style={styles.statIcon}>🏆</Text>
-            <Text style={[styles.statValue, isDark && styles.textLight]}>
-              {stats.completed}
-            </Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-              완료
-            </Text>
+            <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.completed}</Text>
+            <Text style={[styles.statLabel, isDark && styles.textMuted]}>완료</Text>
           </View>
           <View style={[styles.statCard, isDark && styles.statCardDark]}>
             <Text style={styles.statIcon}>🎯</Text>
-            <Text style={[styles.statValue, isDark && styles.textLight]}>
-              {stats.total}
-            </Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-              전체
-            </Text>
+            <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.total}</Text>
+            <Text style={[styles.statLabel, isDark && styles.textMuted]}>전체</Text>
           </View>
         </View>
       )}
@@ -302,8 +246,7 @@ export default function ChallengesScreen() {
               activeTab === 'my' && styles.tabTextActive,
             ]}
           >
-            내 챌린지{' '}
-            {activeChallenges.length > 0 && `(${activeChallenges.length})`}
+            내 챌린지 {activeChallenges.length > 0 && `(${activeChallenges.length})`}
           </Text>
         </TouchableOpacity>
       </View>

@@ -96,23 +96,15 @@ export default function SkincareRoutineScreen() {
   // 에러 상태 (피부 분석 결과 없음)
   if (error) {
     return (
-      <SafeAreaView
-        style={[styles.container, isDark && styles.containerDark]}
-        edges={['bottom']}
-      >
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
         <View style={styles.errorContainer}>
           <View style={[styles.errorCard, isDark && styles.cardDark]}>
             <Text style={styles.errorIcon}>😢</Text>
             <Text style={[styles.errorTitle, isDark && styles.textLight]}>
               루틴을 만들 수 없어요
             </Text>
-            <Text style={[styles.errorText, isDark && styles.textMuted]}>
-              {error}
-            </Text>
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={handleGoToAnalysis}
-            >
+            <Text style={[styles.errorText, isDark && styles.textMuted]}>{error}</Text>
+            <TouchableOpacity style={styles.primaryButton} onPress={handleGoToAnalysis}>
               <Text style={styles.primaryButtonText}>피부 분석하러 가기</Text>
             </TouchableOpacity>
           </View>
@@ -122,10 +114,7 @@ export default function SkincareRoutineScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -138,9 +127,7 @@ export default function SkincareRoutineScreen() {
       >
         {/* 헤더 */}
         <View style={styles.header}>
-          <Text style={[styles.title, isDark && styles.textLight]}>
-            오늘의 스킨케어 루틴
-          </Text>
+          <Text style={[styles.title, isDark && styles.textLight]}>오늘의 스킨케어 루틴</Text>
           {skinData && (
             <Text style={[styles.subtitle, isDark && styles.textMuted]}>
               {skinTypeLabel} 피부 맞춤 루틴
@@ -152,23 +139,17 @@ export default function SkincareRoutineScreen() {
         {personalizationNote && (
           <View style={[styles.noteCard, isDark && styles.noteCardDark]}>
             <Text style={styles.noteEmoji}>✨</Text>
-            <Text style={[styles.noteText, isDark && styles.textLight]}>
-              {personalizationNote}
-            </Text>
+            <Text style={[styles.noteText, isDark && styles.textLight]}>{personalizationNote}</Text>
           </View>
         )}
 
         {/* 아침/저녁 토글 */}
-        <View
-          style={[styles.toggleContainer, isDark && styles.toggleContainerDark]}
-        >
+        <View style={[styles.toggleContainer, isDark && styles.toggleContainerDark]}>
           <TouchableOpacity
             style={[
               styles.toggleButton,
               activeTime === 'morning' && styles.toggleButtonActive,
-              activeTime === 'morning' &&
-                isDark &&
-                styles.toggleButtonActiveDark,
+              activeTime === 'morning' && isDark && styles.toggleButtonActiveDark,
             ]}
             onPress={() => handleTimeToggle('morning')}
           >
@@ -188,9 +169,7 @@ export default function SkincareRoutineScreen() {
             style={[
               styles.toggleButton,
               activeTime === 'evening' && styles.toggleButtonActive,
-              activeTime === 'evening' &&
-                isDark &&
-                styles.toggleButtonActiveDark,
+              activeTime === 'evening' && isDark && styles.toggleButtonActiveDark,
             ]}
             onPress={() => handleTimeToggle('evening')}
           >
@@ -213,28 +192,19 @@ export default function SkincareRoutineScreen() {
           <Text style={[styles.routineInfoText, isDark && styles.textLight]}>
             {timeLabel} 루틴 • {currentSteps.length}단계
           </Text>
-          <Text style={[styles.routineTime, isDark && styles.textMuted]}>
-            예상 {formattedTime}
-          </Text>
+          <Text style={[styles.routineTime, isDark && styles.textMuted]}>예상 {formattedTime}</Text>
         </View>
 
         {/* 루틴 단계 목록 */}
         <View style={styles.stepsList}>
           {currentSteps.map((step, index) => (
-            <RoutineStepCard
-              key={`${step.category}-${index}`}
-              step={step}
-              isDark={isDark}
-            />
+            <RoutineStepCard key={`${step.category}-${index}`} step={step} isDark={isDark} />
           ))}
         </View>
 
         {/* 하단 버튼 */}
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleProductRecommendation}
-          >
+          <TouchableOpacity style={styles.primaryButton} onPress={handleProductRecommendation}>
             <Text style={styles.primaryButtonText}>🧴 피부 맞춤 제품 보기</Text>
           </TouchableOpacity>
           <Text style={[styles.footerNote, isDark && styles.textMuted]}>
@@ -249,13 +219,7 @@ export default function SkincareRoutineScreen() {
 /**
  * 루틴 단계 카드 컴포넌트
  */
-function RoutineStepCard({
-  step,
-  isDark,
-}: {
-  step: RoutineStep;
-  isDark: boolean;
-}) {
+function RoutineStepCard({ step, isDark }: { step: RoutineStep; isDark: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const categoryInfo = getCategoryInfo(step.category);
 
@@ -277,42 +241,27 @@ function RoutineStepCard({
         <View style={styles.stepInfo}>
           <View style={styles.stepTitleRow}>
             <Text style={styles.stepEmoji}>{categoryInfo.emoji}</Text>
-            <Text style={[styles.stepName, isDark && styles.textLight]}>
-              {step.name}
-            </Text>
+            <Text style={[styles.stepName, isDark && styles.textLight]}>{step.name}</Text>
             {step.isOptional && (
               <View style={styles.optionalBadge}>
                 <Text style={styles.optionalText}>선택</Text>
               </View>
             )}
           </View>
-          <Text style={[styles.stepPurpose, isDark && styles.textMuted]}>
-            {step.purpose}
-          </Text>
+          <Text style={[styles.stepPurpose, isDark && styles.textMuted]}>{step.purpose}</Text>
           {step.duration && (
-            <Text style={[styles.stepDuration, isDark && styles.textMuted]}>
-              ⏱ {step.duration}
-            </Text>
+            <Text style={[styles.stepDuration, isDark && styles.textMuted]}>⏱ {step.duration}</Text>
           )}
         </View>
-        <Text style={[styles.expandIcon, isDark && styles.textMuted]}>
-          {expanded ? '▲' : '▼'}
-        </Text>
+        <Text style={[styles.expandIcon, isDark && styles.textMuted]}>{expanded ? '▲' : '▼'}</Text>
       </View>
 
       {/* 팁 (확장 시 표시) */}
       {expanded && step.tips.length > 0 && (
-        <View
-          style={[styles.tipsContainer, isDark && styles.tipsContainerDark]}
-        >
-          <Text style={[styles.tipsTitle, isDark && styles.textLight]}>
-            💡 사용 팁
-          </Text>
+        <View style={[styles.tipsContainer, isDark && styles.tipsContainerDark]}>
+          <Text style={[styles.tipsTitle, isDark && styles.textLight]}>💡 사용 팁</Text>
           {step.tips.map((tip, index) => (
-            <Text
-              key={index}
-              style={[styles.tipText, isDark && styles.textMuted]}
-            >
+            <Text key={index} style={[styles.tipText, isDark && styles.textMuted]}>
               • {tip}
             </Text>
           ))}

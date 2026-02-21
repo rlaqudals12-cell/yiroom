@@ -45,9 +45,7 @@ export function isGoogleFitAvailable(): boolean {
 function toGoogleFitScope(type: HealthPermissionType): string[] {
   const map: Record<HealthPermissionType, string[]> = {
     StepCount: ['https://www.googleapis.com/auth/fitness.activity.read'],
-    ActiveEnergyBurned: [
-      'https://www.googleapis.com/auth/fitness.activity.read',
-    ],
+    ActiveEnergyBurned: ['https://www.googleapis.com/auth/fitness.activity.read'],
     HeartRate: ['https://www.googleapis.com/auth/fitness.heart_rate.read'],
     SleepAnalysis: ['https://www.googleapis.com/auth/fitness.sleep.read'],
     BodyMass: ['https://www.googleapis.com/auth/fitness.body.read'],
@@ -57,22 +55,14 @@ function toGoogleFitScope(type: HealthPermissionType): string[] {
       'https://www.googleapis.com/auth/fitness.activity.write',
     ],
     DietaryWater: ['https://www.googleapis.com/auth/fitness.nutrition.read'],
-    DietaryEnergyConsumed: [
-      'https://www.googleapis.com/auth/fitness.nutrition.read',
-    ],
+    DietaryEnergyConsumed: ['https://www.googleapis.com/auth/fitness.nutrition.read'],
   };
   return map[type] || [];
 }
 
 export async function initializeGoogleFit(
   permissions: HealthPermissions = {
-    read: [
-      'StepCount',
-      'ActiveEnergyBurned',
-      'HeartRate',
-      'SleepAnalysis',
-      'BodyMass',
-    ],
+    read: ['StepCount', 'ActiveEnergyBurned', 'HeartRate', 'SleepAnalysis', 'BodyMass'],
     write: ['Workout'],
   }
 ): Promise<boolean> {
@@ -102,13 +92,7 @@ export async function checkGoogleFitPermissions(): Promise<{
       .then((isAuthorized: boolean) => {
         if (isAuthorized) {
           resolve({
-            read: [
-              'StepCount',
-              'ActiveEnergyBurned',
-              'HeartRate',
-              'SleepAnalysis',
-              'BodyMass',
-            ],
+            read: ['StepCount', 'ActiveEnergyBurned', 'HeartRate', 'SleepAnalysis', 'BodyMass'],
             write: ['Workout'],
           });
         } else {
@@ -222,10 +206,7 @@ export async function getTodaySteps(): Promise<StepCountData | null> {
           );
 
           if (mergedSource && mergedSource.steps.length > 0) {
-            const totalSteps = mergedSource.steps.reduce(
-              (sum, s) => sum + s.value,
-              0
-            );
+            const totalSteps = mergedSource.steps.reduce((sum, s) => sum + s.value, 0);
             resolve({
               date: new Date().toISOString().split('T')[0],
               steps: Math.round(totalSteps),
@@ -297,25 +278,18 @@ export async function getTodayActiveCalories(): Promise<ActiveCaloriesData | nul
       endDate,
       basalCalculation: false, // 활동 칼로리만
     })
-      .then(
-        (
-          results: { calorie: number; startDate: string; endDate: string }[]
-        ) => {
-          if (results && results.length > 0) {
-            const totalCalories = results.reduce(
-              (sum, r) => sum + r.calorie,
-              0
-            );
-            resolve({
-              date: new Date().toISOString().split('T')[0],
-              calories: Math.round(totalCalories),
-              source: 'Google Fit',
-            });
-          } else {
-            resolve(getMockActiveCalories());
-          }
+      .then((results: { calorie: number; startDate: string; endDate: string }[]) => {
+        if (results && results.length > 0) {
+          const totalCalories = results.reduce((sum, r) => sum + r.calorie, 0);
+          resolve({
+            date: new Date().toISOString().split('T')[0],
+            calories: Math.round(totalCalories),
+            source: 'Google Fit',
+          });
+        } else {
+          resolve(getMockActiveCalories());
         }
-      )
+      })
       .catch(() => resolve(getMockActiveCalories()));
   });
 }
@@ -330,30 +304,25 @@ export async function getTodayHeartRate(): Promise<HeartRateSummary | null> {
       startDate,
       endDate,
     })
-      .then(
-        (results: { value: number; startDate: string; endDate: string }[]) => {
-          if (results && results.length > 0) {
-            const values = results.map((r) => r.value);
-            const sorted = [...values].sort((a, b) => a - b);
-            const restingCount = Math.max(1, Math.floor(sorted.length * 0.1));
+      .then((results: { value: number; startDate: string; endDate: string }[]) => {
+        if (results && results.length > 0) {
+          const values = results.map((r) => r.value);
+          const sorted = [...values].sort((a, b) => a - b);
+          const restingCount = Math.max(1, Math.floor(sorted.length * 0.1));
 
-            resolve({
-              date: new Date().toISOString().split('T')[0],
-              average: Math.round(
-                values.reduce((a, b) => a + b, 0) / values.length
-              ),
-              min: Math.round(Math.min(...values)),
-              max: Math.round(Math.max(...values)),
-              resting: Math.round(
-                sorted.slice(0, restingCount).reduce((a, b) => a + b, 0) /
-                  restingCount
-              ),
-            });
-          } else {
-            resolve(getMockHeartRateSummary());
-          }
+          resolve({
+            date: new Date().toISOString().split('T')[0],
+            average: Math.round(values.reduce((a, b) => a + b, 0) / values.length),
+            min: Math.round(Math.min(...values)),
+            max: Math.round(Math.max(...values)),
+            resting: Math.round(
+              sorted.slice(0, restingCount).reduce((a, b) => a + b, 0) / restingCount
+            ),
+          });
+        } else {
+          resolve(getMockHeartRateSummary());
         }
-      )
+      })
       .catch(() => resolve(getMockHeartRateSummary()));
   });
 }
@@ -443,26 +412,22 @@ export async function getLatestWeight(): Promise<BodyMassData | null> {
       startDate,
       endDate,
     })
-      .then(
-        (results: { value: number; startDate: string; endDate: string }[]) => {
-          if (results && results.length > 0) {
-            // 가장 최근 데이터
-            const latest = results.sort(
-              (a, b) =>
-                new Date(b.startDate).getTime() -
-                new Date(a.startDate).getTime()
-            )[0];
+      .then((results: { value: number; startDate: string; endDate: string }[]) => {
+        if (results && results.length > 0) {
+          // 가장 최근 데이터
+          const latest = results.sort(
+            (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+          )[0];
 
-            resolve({
-              date: latest.startDate.split('T')[0],
-              weight: Math.round(latest.value * 10) / 10,
-              source: 'Google Fit',
-            });
-          } else {
-            resolve(getMockWeight());
-          }
+          resolve({
+            date: latest.startDate.split('T')[0],
+            weight: Math.round(latest.value * 10) / 10,
+            source: 'Google Fit',
+          });
+        } else {
+          resolve(getMockWeight());
         }
-      )
+      })
       .catch(() => resolve(getMockWeight()));
   });
 }

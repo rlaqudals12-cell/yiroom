@@ -134,9 +134,7 @@ export function calculateDiscountRate(
 /**
  * 제품 정렬
  */
-export function sortProducts<
-  T extends { matchScore?: number; rating?: number; price?: number },
->(
+export function sortProducts<T extends { matchScore?: number; rating?: number; price?: number }>(
   products: T[],
   sortBy: 'match' | 'rating' | 'price_asc' | 'price_desc' = 'match'
 ): T[] {

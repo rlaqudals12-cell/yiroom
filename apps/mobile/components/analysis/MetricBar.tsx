@@ -32,13 +32,7 @@ function getColor(value: number): string {
   return '#ef4444';
 }
 
-export function MetricBar({
-  label,
-  value,
-  delta,
-  isDark = false,
-  testID,
-}: MetricBarProps) {
+export function MetricBar({ label, value, delta, isDark = false, testID }: MetricBarProps) {
   return (
     <View
       style={styles.metricItem}
@@ -46,13 +40,9 @@ export function MetricBar({
       testID={testID}
     >
       <View style={styles.metricHeader}>
-        <Text style={[styles.metricLabel, isDark && styles.textLight]}>
-          {label}
-        </Text>
+        <Text style={[styles.metricLabel, isDark && styles.textLight]}>{label}</Text>
         <View style={styles.metricValueContainer}>
-          <Text style={[styles.metricValue, isDark && styles.textMuted]}>
-            {value}%
-          </Text>
+          <Text style={[styles.metricValue, isDark && styles.textMuted]}>{value}%</Text>
           {delta !== undefined && delta !== 0 && (
             <MetricDelta delta={delta} size="sm" isDark={isDark} />
           )}
@@ -60,10 +50,7 @@ export function MetricBar({
       </View>
       <View style={[styles.metricBarBg, isDark && styles.metricBarBgDark]}>
         <View
-          style={[
-            styles.metricBarFill,
-            { width: `${value}%`, backgroundColor: getColor(value) },
-          ]}
+          style={[styles.metricBarFill, { width: `${value}%`, backgroundColor: getColor(value) }]}
         />
       </View>
     </View>

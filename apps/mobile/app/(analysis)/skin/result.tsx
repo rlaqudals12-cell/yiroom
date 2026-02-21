@@ -7,14 +7,7 @@ import type { SkinType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  useColorScheme,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useColorScheme, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -68,8 +61,7 @@ export default function SkinResultScreen() {
       }
 
       // lib/gemini.ts의 analyzeSkin 호출
-      const analysisResult: SkinAnalysisResult =
-        await analyzeWithGemini(base64Data);
+      const analysisResult: SkinAnalysisResult = await analyzeWithGemini(base64Data);
 
       // 결과 매핑
       setSkinType(analysisResult.skinType);
@@ -94,9 +86,7 @@ export default function SkinResultScreen() {
 
       // Mock 이전 분석 데이터 (실제 구현 시 DB에서 가져옴)
       const hasPreviousAnalysis = Math.random() > 0.5;
-      const mockPreviousScore = hasPreviousAnalysis
-        ? Math.floor(Math.random() * 30) + 50
-        : null;
+      const mockPreviousScore = hasPreviousAnalysis ? Math.floor(Math.random() * 30) + 50 : null;
 
       // 변화량 계산
       const mockDelta: SkinMetricsDelta = {
@@ -146,10 +136,7 @@ export default function SkinResultScreen() {
 
   if (isLoading) {
     return (
-      <AnalysisLoadingState
-        message="피부 상태를 분석 중이에요..."
-        testID="skin-analysis-loading"
-      />
+      <AnalysisLoadingState message="피부 상태를 분석 중이에요..." testID="skin-analysis-loading" />
     );
   }
 
@@ -166,10 +153,7 @@ export default function SkinResultScreen() {
   const typeData = SKIN_TYPE_DATA[skinType];
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* AI 분석 신뢰도 표시 */}
         <AnalysisTrustBadge
@@ -180,9 +164,7 @@ export default function SkinResultScreen() {
         {/* 종합 점수 카드 */}
         <View style={[styles.scoreCard, isDark && styles.cardDark]}>
           <View style={styles.scoreHeader}>
-            <Text style={[styles.scoreLabel, isDark && styles.textMuted]}>
-              피부 건강 점수
-            </Text>
+            <Text style={[styles.scoreLabel, isDark && styles.textMuted]}>피부 건강 점수</Text>
             {delta && delta.overall !== 0 && (
               <ScoreChangeBadge
                 delta={delta.overall}
@@ -197,10 +179,7 @@ export default function SkinResultScreen() {
             {/* 결과 이미지 (작은 원형) */}
             {imageUri && (
               <View style={styles.smallImageContainer}>
-                <Image
-                  source={{ uri: imageUri }}
-                  style={styles.smallResultImage}
-                />
+                <Image source={{ uri: imageUri }} style={styles.smallResultImage} />
               </View>
             )}
             {/* CircularProgress */}
@@ -217,12 +196,8 @@ export default function SkinResultScreen() {
 
         {/* 피부 타입 결과 */}
         <View style={[styles.resultCard, isDark && styles.cardDark]}>
-          <Text style={[styles.typeLabel, isDark && styles.textMuted]}>
-            당신의 피부 타입은
-          </Text>
-          <Text style={[styles.typeName, isDark && styles.textLight]}>
-            {typeData.name}
-          </Text>
+          <Text style={[styles.typeLabel, isDark && styles.textMuted]}>당신의 피부 타입은</Text>
+          <Text style={[styles.typeName, isDark && styles.textLight]}>{typeData.name}</Text>
           <Text style={[styles.description, isDark && styles.textMuted]}>
             {typeData.description}
           </Text>
@@ -230,9 +205,7 @@ export default function SkinResultScreen() {
 
         {/* 피부 지표 */}
         <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            피부 분석 지표
-          </Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>피부 분석 지표</Text>
           <View style={styles.metricsContainer}>
             <MetricBar
               label="수분도"
@@ -240,18 +213,8 @@ export default function SkinResultScreen() {
               delta={delta?.moisture}
               isDark={isDark}
             />
-            <MetricBar
-              label="유분도"
-              value={metrics.oil}
-              delta={delta?.oil}
-              isDark={isDark}
-            />
-            <MetricBar
-              label="모공"
-              value={metrics.pores}
-              delta={delta?.pores}
-              isDark={isDark}
-            />
+            <MetricBar label="유분도" value={metrics.oil} delta={delta?.oil} isDark={isDark} />
+            <MetricBar label="모공" value={metrics.pores} delta={delta?.pores} isDark={isDark} />
             <MetricBar
               label="탄력"
               value={metrics.elasticity}
@@ -275,16 +238,12 @@ export default function SkinResultScreen() {
 
         {/* 스킨케어 팁 */}
         <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            스킨케어 팁
-          </Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>스킨케어 팁</Text>
           <View style={styles.tipsList}>
             {typeData.tips.map((tip, index) => (
               <View key={index} style={styles.tipItem}>
                 <Text style={styles.tipBullet}>•</Text>
-                <Text style={[styles.tipText, isDark && styles.textMuted]}>
-                  {tip}
-                </Text>
+                <Text style={[styles.tipText, isDark && styles.textMuted]}>{tip}</Text>
               </View>
             ))}
           </View>

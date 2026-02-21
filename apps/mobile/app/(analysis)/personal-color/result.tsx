@@ -5,14 +5,7 @@ import type { PersonalColorSeason } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  useColorScheme,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useColorScheme, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -79,9 +72,7 @@ export default function PersonalColorResultScreen() {
   }>();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [result, setResult] = useState<PersonalColorAnalysisResult | null>(
-    null
-  );
+  const [result, setResult] = useState<PersonalColorAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
 
   // 퍼스널 컬러 분석 (lib/gemini.ts 연동)
@@ -170,10 +161,7 @@ export default function PersonalColorResultScreen() {
 
   return (
     <SafeAreaView
-      style={[
-        commonAnalysisStyles.container,
-        isDark && commonAnalysisStyles.containerDark,
-      ]}
+      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
@@ -185,78 +173,44 @@ export default function PersonalColorResultScreen() {
         )}
 
         {/* 결과 카드 */}
-        <View
-          style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}
-        >
+        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
           {/* AI 분석 신뢰도 표시 */}
           <AnalysisTrustBadge
             type={usedFallback ? 'questionnaire' : 'ai'}
             confidence={usedFallback ? undefined : result.confidence}
             testID="personal-color-trust-badge"
           />
-          <Text
-            style={[
-              styles.seasonLabel,
-              isDark && commonAnalysisStyles.textMuted,
-            ]}
-          >
+          <Text style={[styles.seasonLabel, isDark && commonAnalysisStyles.textMuted]}>
             당신의 퍼스널 컬러는
           </Text>
-          <Text
-            style={[
-              styles.seasonName,
-              isDark && commonAnalysisStyles.textLight,
-            ]}
-          >
+          <Text style={[styles.seasonName, isDark && commonAnalysisStyles.textLight]}>
             {seasonData.name}
           </Text>
           <Text
-            style={[
-              commonAnalysisStyles.description,
-              isDark && commonAnalysisStyles.textMuted,
-            ]}
+            style={[commonAnalysisStyles.description, isDark && commonAnalysisStyles.textMuted]}
           >
             {result.description || seasonData.description}
           </Text>
         </View>
 
         {/* 추천 컬러 팔레트 */}
-        <View
-          style={[
-            commonAnalysisStyles.section,
-            isDark && commonAnalysisStyles.cardDark,
-          ]}
-        >
+        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
           <Text
-            style={[
-              commonAnalysisStyles.sectionTitle,
-              isDark && commonAnalysisStyles.textLight,
-            ]}
+            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
           >
             추천 컬러 팔레트
           </Text>
           <View style={styles.colorPalette}>
             {seasonData.colors.map((color, index) => (
-              <View
-                key={index}
-                style={[styles.colorSwatch, { backgroundColor: color }]}
-              />
+              <View key={index} style={[styles.colorSwatch, { backgroundColor: color }]} />
             ))}
           </View>
         </View>
 
         {/* 비슷한 연예인 */}
-        <View
-          style={[
-            commonAnalysisStyles.section,
-            isDark && commonAnalysisStyles.cardDark,
-          ]}
-        >
+        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
           <Text
-            style={[
-              commonAnalysisStyles.sectionTitle,
-              isDark && commonAnalysisStyles.textLight,
-            ]}
+            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
           >
             같은 타입의 연예인
           </Text>

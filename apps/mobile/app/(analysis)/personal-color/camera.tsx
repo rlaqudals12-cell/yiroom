@@ -5,14 +5,7 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 
 export default function PersonalColorCameraScreen() {
   const { answers } = useLocalSearchParams<{ answers: string }>();
@@ -35,19 +28,11 @@ export default function PersonalColorCameraScreen() {
     return (
       <View style={styles.permissionContainer}>
         <Text style={styles.permissionTitle}>카메라 권한이 필요해요</Text>
-        <Text style={styles.permissionText}>
-          퍼스널 컬러 진단을 위해 얼굴 사진이 필요합니다.
-        </Text>
-        <TouchableOpacity
-          style={styles.permissionButton}
-          onPress={requestPermission}
-        >
+        <Text style={styles.permissionText}>퍼스널 컬러 진단을 위해 얼굴 사진이 필요합니다.</Text>
+        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
           <Text style={styles.permissionButtonText}>권한 허용하기</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.galleryButton}
-          onPress={pickFromGallery}
-        >
+        <TouchableOpacity style={styles.galleryButton} onPress={pickFromGallery}>
           <Text style={styles.galleryButtonText}>갤러리에서 선택</Text>
         </TouchableOpacity>
       </View>
@@ -109,34 +94,21 @@ export default function PersonalColorCameraScreen() {
 
   return (
     <View style={styles.container}>
-      <CameraView
-        ref={cameraRef}
-        style={styles.camera}
-        facing={facing}
-        mirror={facing === 'front'}
-      >
+      <CameraView ref={cameraRef} style={styles.camera} facing={facing} mirror={facing === 'front'}>
         {/* 가이드 오버레이 */}
         <View style={styles.overlay}>
           <View style={styles.guideCircle} />
-          <Text style={styles.guideText}>
-            얼굴이 원 안에 들어오도록{'\n'}정면을 바라봐 주세요
-          </Text>
+          <Text style={styles.guideText}>얼굴이 원 안에 들어오도록{'\n'}정면을 바라봐 주세요</Text>
         </View>
 
         {/* 하단 컨트롤 */}
         <View style={styles.controls}>
-          <TouchableOpacity
-            style={styles.galleryIconButton}
-            onPress={pickFromGallery}
-          >
+          <TouchableOpacity style={styles.galleryIconButton} onPress={pickFromGallery}>
             <Text style={styles.iconText}>갤러리</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.captureButton,
-              isCapturing && styles.captureButtonDisabled,
-            ]}
+            style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
             onPress={takePicture}
             disabled={isCapturing}
           >
@@ -147,10 +119,7 @@ export default function PersonalColorCameraScreen() {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.flipButton}
-            onPress={toggleCameraFacing}
-          >
+          <TouchableOpacity style={styles.flipButton} onPress={toggleCameraFacing}>
             <Text style={styles.iconText}>전환</Text>
           </TouchableOpacity>
         </View>

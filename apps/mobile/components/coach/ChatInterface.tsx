@@ -17,11 +17,7 @@ import {
   useColorScheme,
 } from 'react-native';
 
-import {
-  QUICK_QUESTIONS,
-  type QuestionCategory,
-  type CoachMessage,
-} from '../../lib/coach';
+import { QUICK_QUESTIONS, type QuestionCategory, type CoachMessage } from '../../lib/coach';
 import { useCoach } from '../../lib/coach/useCoach';
 import { useNetworkStatus } from '../../lib/offline';
 
@@ -40,8 +36,7 @@ export function ChatInterface() {
   } = useCoach();
 
   const [input, setInput] = useState('');
-  const [activeCategory, setActiveCategory] =
-    useState<QuestionCategory>('general');
+  const [activeCategory, setActiveCategory] = useState<QuestionCategory>('general');
   const flatListRef = useRef<FlatList>(null);
 
   // 메시지 추가 시 스크롤
@@ -86,8 +81,7 @@ export function ChatInterface() {
         style={[
           styles.messageBubble,
           isUser ? styles.userBubble : styles.assistantBubble,
-          isDark &&
-            (isUser ? styles.userBubbleDark : styles.assistantBubbleDark),
+          isDark && (isUser ? styles.userBubbleDark : styles.assistantBubbleDark),
         ]}
       >
         <Text
@@ -112,9 +106,7 @@ export function ChatInterface() {
       {/* 오프라인 배너 */}
       {!isConnected && (
         <View style={styles.offlineBanner}>
-          <Text style={styles.offlineBannerText}>
-            오프라인 모드 - 기본 응답만 제공됩니다
-          </Text>
+          <Text style={styles.offlineBannerText}>오프라인 모드 - 기본 응답만 제공됩니다</Text>
         </View>
       )}
 
@@ -131,9 +123,7 @@ export function ChatInterface() {
           {/* 헤더 */}
           <View style={styles.header}>
             <Text style={styles.headerEmoji}>🤖</Text>
-            <Text style={[styles.headerTitle, isDark && styles.textLight]}>
-              AI 웰니스 코치
-            </Text>
+            <Text style={[styles.headerTitle, isDark && styles.textLight]}>AI 웰니스 코치</Text>
             <Text style={[styles.headerSubtitle, isDark && styles.textMuted]}>
               운동, 영양, 피부 관리에 대해 물어보세요!
             </Text>
@@ -144,10 +134,7 @@ export function ChatInterface() {
             {categories.map((cat) => (
               <TouchableOpacity
                 key={cat.key}
-                style={[
-                  styles.categoryTab,
-                  activeCategory === cat.key && styles.categoryTabActive,
-                ]}
+                style={[styles.categoryTab, activeCategory === cat.key && styles.categoryTabActive]}
                 onPress={() => handleCategoryChange(cat.key)}
               >
                 <Text
@@ -168,15 +155,10 @@ export function ChatInterface() {
             {QUICK_QUESTIONS[activeCategory].map((question, index) => (
               <TouchableOpacity
                 key={index}
-                style={[
-                  styles.quickQuestion,
-                  isDark && styles.quickQuestionDark,
-                ]}
+                style={[styles.quickQuestion, isDark && styles.quickQuestionDark]}
                 onPress={() => handleQuickQuestion(question)}
               >
-                <Text
-                  style={[styles.quickQuestionText, isDark && styles.textLight]}
-                >
+                <Text style={[styles.quickQuestionText, isDark && styles.textLight]}>
                   {question}
                 </Text>
               </TouchableOpacity>
@@ -201,17 +183,10 @@ export function ChatInterface() {
               {suggestedQuestions.map((question, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={[
-                    styles.suggestedButton,
-                    isDark && styles.suggestedButtonDark,
-                  ]}
+                  style={[styles.suggestedButton, isDark && styles.suggestedButtonDark]}
                   onPress={() => handleQuickQuestion(question)}
                 >
-                  <Text
-                    style={[styles.suggestedText, isDark && styles.textLight]}
-                  >
-                    {question}
-                  </Text>
+                  <Text style={[styles.suggestedText, isDark && styles.textLight]}>{question}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -223,16 +198,12 @@ export function ChatInterface() {
       {isLoading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color="#8b5cf6" />
-          <Text style={[styles.loadingText, isDark && styles.textMuted]}>
-            생각 중...
-          </Text>
+          <Text style={[styles.loadingText, isDark && styles.textMuted]}>생각 중...</Text>
         </View>
       )}
 
       {/* 입력 영역 */}
-      <View
-        style={[styles.inputContainer, isDark && styles.inputContainerDark]}
-      >
+      <View style={[styles.inputContainer, isDark && styles.inputContainerDark]}>
         <TextInput
           style={[styles.input, isDark && styles.inputDark]}
           placeholder="무엇이든 물어보세요..."
@@ -245,10 +216,7 @@ export function ChatInterface() {
           maxLength={500}
         />
         <TouchableOpacity
-          style={[
-            styles.sendButton,
-            (!input.trim() || isLoading) && styles.sendButtonDisabled,
-          ]}
+          style={[styles.sendButton, (!input.trim() || isLoading) && styles.sendButtonDisabled]}
           onPress={handleSend}
           disabled={!input.trim() || isLoading}
         >

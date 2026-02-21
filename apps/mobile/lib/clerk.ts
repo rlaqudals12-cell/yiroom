@@ -39,5 +39,4 @@ export const tokenCache: TokenCache = {
  * Clerk Publishable Key
  * 환경변수에서 가져오거나 하드코딩된 값 사용
  */
-export const CLERK_PUBLISHABLE_KEY =
-  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || '';
+export const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || '';

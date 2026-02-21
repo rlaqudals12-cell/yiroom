@@ -3,14 +3,7 @@
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  useColorScheme,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const GOALS = [
@@ -59,9 +52,7 @@ export default function WorkoutGoalsScreen() {
 
   const toggleGoal = (goalId: string) => {
     setSelectedGoals((prev) =>
-      prev.includes(goalId)
-        ? prev.filter((id) => id !== goalId)
-        : [...prev, goalId]
+      prev.includes(goalId) ? prev.filter((id) => id !== goalId) : [...prev, goalId]
     );
   };
 
@@ -73,14 +64,9 @@ export default function WorkoutGoalsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, isDark && styles.textLight]}>
-          운동 목표를 선택해주세요
-        </Text>
+        <Text style={[styles.title, isDark && styles.textLight]}>운동 목표를 선택해주세요</Text>
         <Text style={[styles.subtitle, isDark && styles.textMuted]}>
           복수 선택이 가능해요 (최대 3개)
         </Text>
@@ -113,18 +99,11 @@ export default function WorkoutGoalsScreen() {
                   >
                     {goal.label}
                   </Text>
-                  <Text
-                    style={[styles.goalDescription, isDark && styles.textMuted]}
-                  >
+                  <Text style={[styles.goalDescription, isDark && styles.textMuted]}>
                     {goal.description}
                   </Text>
                 </View>
-                <View
-                  style={[
-                    styles.checkbox,
-                    isSelected && styles.checkboxSelected,
-                  ]}
-                >
+                <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
                   {isSelected && <Text style={styles.checkmark}>✓</Text>}
                 </View>
               </TouchableOpacity>
@@ -135,16 +114,11 @@ export default function WorkoutGoalsScreen() {
 
       <View style={[styles.footer, isDark && styles.footerDark]}>
         <TouchableOpacity
-          style={[
-            styles.nextButton,
-            selectedGoals.length === 0 && styles.nextButtonDisabled,
-          ]}
+          style={[styles.nextButton, selectedGoals.length === 0 && styles.nextButtonDisabled]}
           onPress={handleNext}
           disabled={selectedGoals.length === 0}
         >
-          <Text style={styles.nextButtonText}>
-            다음 ({selectedGoals.length}/3)
-          </Text>
+          <Text style={styles.nextButtonText}>다음 ({selectedGoals.length}/3)</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

@@ -2,22 +2,11 @@
  * 온보딩 Step 1: 목표 선택
  */
 
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, ProgressIndicator } from '../../components/ui';
-import {
-  useOnboarding,
-  type OnboardingGoal,
-  GOAL_LABELS,
-  GOAL_ICONS,
-} from '../../lib/onboarding';
+import { useOnboarding, type OnboardingGoal, GOAL_LABELS, GOAL_ICONS } from '../../lib/onboarding';
 import { useTheme } from '../../lib/theme';
 
 const GOALS: OnboardingGoal[] = [
@@ -42,9 +31,7 @@ export default function OnboardingStep1() {
       style={[styles.container, { backgroundColor: colors.background }]}
       testID="onboarding-step1"
     >
-      <ScrollView
-        contentContainerStyle={[styles.content, { padding: spacing.lg }]}
-      >
+      <ScrollView contentContainerStyle={[styles.content, { padding: spacing.lg }]}>
         {/* 헤더 */}
         <View style={styles.header}>
           <Text style={styles.emoji}>🎯</Text>
@@ -110,12 +97,7 @@ export default function OnboardingStep1() {
                   {GOAL_LABELS[goal]}
                 </Text>
                 {isSelected && (
-                  <View
-                    style={[
-                      styles.checkmark,
-                      { backgroundColor: brand.primary },
-                    ]}
-                  >
+                  <View style={[styles.checkmark, { backgroundColor: brand.primary }]}>
                     <Text style={styles.checkmarkText}>✓</Text>
                   </View>
                 )}
@@ -125,21 +107,12 @@ export default function OnboardingStep1() {
         </View>
 
         {/* 진행 상황 */}
-        <ProgressIndicator
-          current={1}
-          total={3}
-          style={{ marginTop: spacing.xl }}
-        />
+        <ProgressIndicator current={1} total={3} style={{ marginTop: spacing.xl }} />
       </ScrollView>
 
       {/* 다음 버튼 */}
       <View style={[styles.footer, { padding: spacing.lg, paddingBottom: 40 }]}>
-        <Button
-          onPress={nextStep}
-          disabled={!canProceed}
-          size="lg"
-          testID="next-button"
-        >
+        <Button onPress={nextStep} disabled={!canProceed} size="lg" testID="next-button">
           다음
         </Button>
       </View>

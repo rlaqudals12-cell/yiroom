@@ -49,26 +49,14 @@ export interface CoachChatResponse {
 // ============================================
 
 export const QUICK_QUESTIONS = {
-  general: [
-    '오늘 컨디션 체크해줘',
-    '스트레스 해소법 알려줘',
-    '숙면을 위한 팁 있어?',
-  ],
-  workout: [
-    '오늘 운동 뭐하면 좋을까?',
-    '스트레칭 루틴 추천해줘',
-    '운동 후 회복에 좋은 음식은?',
-  ],
+  general: ['오늘 컨디션 체크해줘', '스트레스 해소법 알려줘', '숙면을 위한 팁 있어?'],
+  workout: ['오늘 운동 뭐하면 좋을까?', '스트레칭 루틴 추천해줘', '운동 후 회복에 좋은 음식은?'],
   nutrition: [
     '건강한 간식 추천해줘',
     '하루에 물 얼마나 마셔야 해?',
     '단백질 보충 어떻게 하면 좋아?',
   ],
-  skin: [
-    '스킨케어 루틴 알려줘',
-    '자외선 차단 팁 있어?',
-    '피부에 좋은 음식 추천해줘',
-  ],
+  skin: ['스킨케어 루틴 알려줘', '자외선 차단 팁 있어?', '피부에 좋은 음식 추천해줘'],
 };
 
 export type QuestionCategory = keyof typeof QUICK_QUESTIONS;
@@ -77,8 +65,7 @@ export type QuestionCategory = keyof typeof QUICK_QUESTIONS;
 // API 함수
 // ============================================
 
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL || 'https://yiroom.vercel.app';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://yiroom.vercel.app';
 
 /**
  * AI 코치에게 메시지 전송
@@ -129,9 +116,7 @@ const FALLBACK_RESPONSES: Record<string, string> = {
 /**
  * 질문 카테고리 감지
  */
-function detectQuestionCategory(
-  question: string
-): 'workout' | 'nutrition' | 'skin' | 'default' {
+function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'skin' | 'default' {
   const lowerQ = question.toLowerCase();
 
   if (

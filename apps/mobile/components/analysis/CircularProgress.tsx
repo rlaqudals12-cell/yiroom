@@ -121,9 +121,7 @@ const GRADE_CONFIGS: GradeConfig[] = [
 // 점수 -> 등급 변환
 function getGradeFromScore(score: number): GradeConfig {
   const clampedScore = Math.max(0, Math.min(100, score));
-  const config = GRADE_CONFIGS.find(
-    (c) => clampedScore >= c.minScore && clampedScore < c.maxScore
-  );
+  const config = GRADE_CONFIGS.find((c) => clampedScore >= c.minScore && clampedScore < c.maxScore);
   return config || GRADE_CONFIGS[GRADE_CONFIGS.length - 1];
 }
 
@@ -200,11 +198,7 @@ export function CircularProgress({
       accessibilityRole="progressbar"
       accessibilityValue={{ min: 0, max: 100, now: score }}
     >
-      <Svg
-        width={config.size}
-        height={config.size}
-        viewBox={`0 0 ${config.size} ${config.size}`}
-      >
+      <Svg width={config.size} height={config.size} viewBox={`0 0 ${config.size} ${config.size}`}>
         {/* 그라데이션 정의 */}
         <Defs>
           <LinearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -252,11 +246,7 @@ export function CircularProgress({
             ]}
           >
             {animatedScore}
-            <Text
-              style={[styles.scoreUnit, { fontSize: config.fontSize * 0.5 }]}
-            >
-              점
-            </Text>
+            <Text style={[styles.scoreUnit, { fontSize: config.fontSize * 0.5 }]}>점</Text>
           </Text>
           {showGradeLabel && (
             <Text

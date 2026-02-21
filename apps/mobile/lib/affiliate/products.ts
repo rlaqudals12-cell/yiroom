@@ -59,10 +59,7 @@ export async function getAffiliateProducts(
   limit = 20,
   offset = 0
 ): Promise<AffiliateProduct[]> {
-  let query = supabase
-    .from('affiliate_products')
-    .select('*')
-    .eq('is_active', true);
+  let query = supabase.from('affiliate_products').select('*').eq('is_active', true);
 
   // 필터 적용
   if (filter?.partnerId) {
@@ -317,9 +314,7 @@ export async function searchAffiliateProducts(
     .from('affiliate_products')
     .select('*')
     .eq('is_active', true)
-    .or(
-      `name.ilike.%${keyword}%,brand.ilike.%${keyword}%,description.ilike.%${keyword}%`
-    )
+    .or(`name.ilike.%${keyword}%,brand.ilike.%${keyword}%,description.ilike.%${keyword}%`)
     .order('rating', { ascending: false, nullsFirst: false })
     .limit(limit);
 
@@ -388,10 +383,7 @@ export async function getProductsByCategory(
 /**
  * Mock 제품 데이터 (DB 미연동 시 Fallback)
  */
-function getMockProductsByCategory(
-  category: string,
-  limit: number
-): AffiliateProduct[] {
+function getMockProductsByCategory(category: string, limit: number): AffiliateProduct[] {
   const mockProducts: Record<string, AffiliateProduct[]> = {
     skincare: [
       {

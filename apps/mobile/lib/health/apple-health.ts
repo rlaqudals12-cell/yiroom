@@ -87,10 +87,7 @@ export async function checkPermissions(
           write: permissions.write.map(toHealthKitPermission),
         },
       },
-      (
-        error: Error | null,
-        results: { permissions: { read: string[]; write: string[] } }
-      ) => {
+      (error: Error | null, results: { permissions: { read: string[]; write: string[] } }) => {
         if (error) resolve({ read: [], write: [] });
         else
           resolve({
@@ -226,8 +223,7 @@ export async function getStepHistory(days = 7): Promise<StepCountData[]> {
         const byDate: Record<string, { steps: number; source: string }> = {};
         res.forEach((s) => {
           const d = s.startDate.split('T')[0];
-          if (!byDate[d])
-            byDate[d] = { steps: 0, source: s.sourceName || 'Apple Health' };
+          if (!byDate[d]) byDate[d] = { steps: 0, source: s.sourceName || 'Apple Health' };
           byDate[d].steps += s.value;
         });
         resolve(
@@ -276,9 +272,7 @@ export async function getTodayHeartRate(): Promise<HeartRateSummary | null> {
           average: Math.round(vals.reduce((a, b) => a + b, 0) / vals.length),
           min: Math.round(Math.min(...vals)),
           max: Math.round(Math.max(...vals)),
-          resting: Math.round(
-            sorted.slice(0, restCount).reduce((a, b) => a + b, 0) / restCount
-          ),
+          resting: Math.round(sorted.slice(0, restCount).reduce((a, b) => a + b, 0) / restCount),
         });
       }
     );
@@ -337,13 +331,7 @@ export async function getLastNightSleep(): Promise<SleepSummary | null> {
           totalSleepMinutes: Math.round(total),
           inBedMinutes: Math.round(inBed || total),
           sleepQuality:
-            hrs >= 7 && hrs <= 9
-              ? 'excellent'
-              : hrs >= 6
-                ? 'good'
-                : hrs >= 5
-                  ? 'fair'
-                  : 'poor',
+            hrs >= 7 && hrs <= 9 ? 'excellent' : hrs >= 6 ? 'good' : hrs >= 5 ? 'fair' : 'poor',
           bedTime: bedTimeStr,
           wakeTime: wakeTimeStr,
         });
@@ -403,27 +391,17 @@ export async function saveWorkout(workout: WorkoutRecord): Promise<boolean> {
   });
 }
 
-export async function saveWaterIntake(
-  ml: number,
-  date = new Date()
-): Promise<boolean> {
+export async function saveWaterIntake(ml: number, date = new Date()): Promise<boolean> {
   if (!isHealthKitAvailable()) return true;
   return new Promise((resolve) => {
-    AppleHealthKit.saveWater({ value: ml, date }, (err: Error | null) =>
-      resolve(!err)
-    );
+    AppleHealthKit.saveWater({ value: ml, date }, (err: Error | null) => resolve(!err));
   });
 }
 
-export async function saveCalorieIntake(
-  cal: number,
-  date = new Date()
-): Promise<boolean> {
+export async function saveCalorieIntake(cal: number, date = new Date()): Promise<boolean> {
   if (!isHealthKitAvailable()) return true;
   return new Promise((resolve) => {
-    AppleHealthKit.saveFood({ value: cal, date }, (err: Error | null) =>
-      resolve(!err)
-    );
+    AppleHealthKit.saveFood({ value: cal, date }, (err: Error | null) => resolve(!err));
   });
 }
 

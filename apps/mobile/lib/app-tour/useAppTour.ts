@@ -68,11 +68,9 @@ export function useAppTour(options: UseAppTourOptions = {}): UseAppTourReturn {
   // 현재 스텝 저장
   useEffect(() => {
     if (isActive && !isLoading) {
-      AsyncStorage.setItem(CURRENT_STEP_KEY, currentStepIndex.toString()).catch(
-        (error) => {
-          tourLogger.error(' Save step error:', error);
-        }
-      );
+      AsyncStorage.setItem(CURRENT_STEP_KEY, currentStepIndex.toString()).catch((error) => {
+        tourLogger.error(' Save step error:', error);
+      });
     }
   }, [currentStepIndex, isActive, isLoading]);
 

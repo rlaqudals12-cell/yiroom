@@ -336,11 +336,8 @@ export default function FoodSearchScreen() {
   // 필터링된 음식 목록
   const filteredFoods = useMemo(() => {
     return FOOD_DATABASE.filter((food) => {
-      const matchesSearch = food.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        selectedCategory === '전체' || food.category === selectedCategory;
+      const matchesSearch = food.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === '전체' || food.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [searchQuery, selectedCategory]);
@@ -444,10 +441,7 @@ export default function FoodSearchScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 검색 바 */}
       <View style={styles.searchSection}>
         <TextInput
@@ -527,9 +521,7 @@ export default function FoodSearchScreen() {
       <ScrollView style={styles.foodList} showsVerticalScrollIndicator={false}>
         {filteredFoods.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={[styles.emptyText, isDark && styles.textMuted]}>
-              검색 결과가 없습니다
-            </Text>
+            <Text style={[styles.emptyText, isDark && styles.textMuted]}>검색 결과가 없습니다</Text>
           </View>
         ) : (
           filteredFoods.map((food) => {
@@ -546,16 +538,11 @@ export default function FoodSearchScreen() {
                 ]}
                 onPress={() => handleToggleFood(food)}
               >
-                <Text style={styles.trafficLight}>
-                  {getTrafficLightEmoji(food.trafficLight)}
-                </Text>
+                <Text style={styles.trafficLight}>{getTrafficLightEmoji(food.trafficLight)}</Text>
                 <View style={styles.foodInfo}>
-                  <Text style={[styles.foodName, isDark && styles.textLight]}>
-                    {food.name}
-                  </Text>
+                  <Text style={[styles.foodName, isDark && styles.textLight]}>{food.name}</Text>
                   <Text style={[styles.foodMeta, isDark && styles.textMuted]}>
-                    {food.calories}kcal · 탄{food.carbs}g 단{food.protein}g 지
-                    {food.fat}g
+                    {food.calories}kcal · 탄{food.carbs}g 단{food.protein}g 지{food.fat}g
                   </Text>
                 </View>
                 {isSelected && (
@@ -566,9 +553,7 @@ export default function FoodSearchScreen() {
                     >
                       <Text style={styles.portionButtonText}>−</Text>
                     </TouchableOpacity>
-                    <Text
-                      style={[styles.portionValue, isDark && styles.textLight]}
-                    >
+                    <Text style={[styles.portionValue, isDark && styles.textLight]}>
                       {selectedFood?.portion}
                     </Text>
                     <TouchableOpacity
@@ -597,9 +582,7 @@ export default function FoodSearchScreen() {
             <Text style={[styles.footerCount, isDark && styles.textLight]}>
               {selectedFoods.length}개 선택
             </Text>
-            <Text style={styles.footerCalories}>
-              {Math.round(totalNutrition.calories)} kcal
-            </Text>
+            <Text style={styles.footerCalories}>{Math.round(totalNutrition.calories)} kcal</Text>
           </View>
           <TouchableOpacity
             style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}

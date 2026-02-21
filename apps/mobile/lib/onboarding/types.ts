@@ -13,22 +13,13 @@ export type OnboardingGoal =
   | 'stress_relief'
   | 'better_sleep';
 
-export type ActivityLevel =
-  | 'sedentary'
-  | 'light'
-  | 'moderate'
-  | 'active'
-  | 'very_active';
+export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
 
 export type Gender = 'male' | 'female' | 'other';
 
 export type WorkoutFrequency = 'none' | '1-2' | '3-4' | '5+';
 
-export type MealPreference =
-  | 'regular'
-  | 'intermittent'
-  | 'low_carb'
-  | 'high_protein';
+export type MealPreference = 'regular' | 'intermittent' | 'low_carb' | 'high_protein';
 
 // ============================================================
 // 온보딩 데이터 타입
@@ -127,10 +118,7 @@ export function isOnboardingComplete(data: OnboardingData): boolean {
   if (!basicInfo.gender || !basicInfo.birthYear) return false;
 
   // 선호도 최소 1개
-  if (
-    preferences.workoutFrequency === undefined &&
-    preferences.mealPreference === undefined
-  ) {
+  if (preferences.workoutFrequency === undefined && preferences.mealPreference === undefined) {
     return false;
   }
 

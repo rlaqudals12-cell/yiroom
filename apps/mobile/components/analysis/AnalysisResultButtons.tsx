@@ -35,18 +35,10 @@ export function AnalysisResultButtons({
       >
         <Text style={styles.primaryButtonText}>{primaryText}</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.secondaryButton}
-        onPress={onGoHome}
-        testID={`${testID}-home`}
-      >
+      <TouchableOpacity style={styles.secondaryButton} onPress={onGoHome} testID={`${testID}-home`}>
         <Text style={styles.secondaryButtonText}>홈으로 돌아가기</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.retryLink}
-        onPress={onRetry}
-        testID={`${testID}-retry`}
-      >
+      <TouchableOpacity style={styles.retryLink} onPress={onRetry} testID={`${testID}-retry`}>
         <Text style={styles.retryLinkText}>다시 분석하기</Text>
       </TouchableOpacity>
     </View>

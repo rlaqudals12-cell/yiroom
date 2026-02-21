@@ -8,29 +8,13 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 // 타입 정의
-export type NutritionGoal =
-  | 'weight_loss'
-  | 'muscle_gain'
-  | 'maintenance'
-  | 'health';
+export type NutritionGoal = 'weight_loss' | 'muscle_gain' | 'maintenance' | 'health';
 export type Gender = 'male' | 'female';
-export type ActivityLevel =
-  | 'sedentary'
-  | 'light'
-  | 'moderate'
-  | 'active'
-  | 'very_active';
+export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
 export type MealStyle = 'korean' | 'western' | 'mixed' | 'vegetarian';
 export type CookingSkill = 'beginner' | 'intermediate' | 'advanced';
 export type BudgetLevel = 'low' | 'medium' | 'high';
-export type AllergyType =
-  | 'dairy'
-  | 'eggs'
-  | 'gluten'
-  | 'nuts'
-  | 'seafood'
-  | 'soy'
-  | 'shellfish';
+export type AllergyType = 'dairy' | 'eggs' | 'gluten' | 'nuts' | 'seafood' | 'soy' | 'shellfish';
 
 interface NutritionInputState {
   // 현재 단계 (1-7)
@@ -199,9 +183,6 @@ export const useNutritionInputStore = create<NutritionInputState>()(
 export function isNutritionOnboardingComplete(): boolean {
   const state = useNutritionInputStore.getState();
   return (
-    state.goal !== null &&
-    state.gender !== null &&
-    state.height !== null &&
-    state.weight !== null
+    state.goal !== null && state.gender !== null && state.height !== null && state.weight !== null
   );
 }

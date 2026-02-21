@@ -24,10 +24,7 @@ import {
 } from './api';
 import type { NotificationType } from './templates';
 import { createNotification } from './templates';
-import {
-  type NotificationSettings,
-  DEFAULT_NOTIFICATION_SETTINGS,
-} from './types';
+import { type NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from './types';
 import { pushLogger } from '../utils/logger';
 
 // Re-export for backward compatibility
@@ -78,8 +75,7 @@ export function useNotificationPermission(): UseNotificationPermissionResult {
   const requestPermission = useCallback(async (): Promise<boolean> => {
     setIsLoading(true);
 
-    const { status: existingStatus } =
-      await Notifications.getPermissionsAsync();
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
 
     if (existingStatus === 'granted') {
       setHasPermission(true);
@@ -182,12 +178,7 @@ export function usePushToken(): UsePushTokenResult {
     }
 
     try {
-      await savePushToken(
-        supabase,
-        userId,
-        token,
-        Platform.OS === 'ios' ? 'iPhone' : 'Android'
-      );
+      await savePushToken(supabase, userId, token, Platform.OS === 'ios' ? 'iPhone' : 'Android');
       pushLogger.info('Push token synced with server');
       return true;
     } catch (error) {
@@ -237,9 +228,7 @@ interface UseNotificationSettingsResult {
 }
 
 export function useNotificationSettings(): UseNotificationSettingsResult {
-  const [settings, setSettings] = useState<NotificationSettings>(
-    DEFAULT_NOTIFICATION_SETTINGS
-  );
+  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -257,27 +246,18 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
       // 로그인 상태라면 DB에서 먼저 시도
       if (isSignedIn && userId) {
         try {
-          const dbSettings = await getUserNotificationSettings(
-            supabase,
-            userId
-          );
+          const dbSettings = await getUserNotificationSettings(supabase, userId);
           if (dbSettings) {
             setSettings(dbSettings);
             // DB 데이터를 AsyncStorage에도 백업
-            await AsyncStorage.setItem(
-              SETTINGS_KEY,
-              JSON.stringify(dbSettings)
-            );
+            await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(dbSettings));
             pushLogger.info('Settings loaded from DB');
             return;
           }
           // DB에 없으면 AsyncStorage fallback
           pushLogger.info('No DB settings, falling back to AsyncStorage');
         } catch (dbError) {
-          pushLogger.warn(
-            'DB load failed, falling back to AsyncStorage:',
-            dbError
-          );
+          pushLogger.warn('DB load failed, falling back to AsyncStorage:', dbError);
         }
       }
 
@@ -321,10 +301,7 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
           await saveUserNotificationSettings(supabase, userId, newSettings);
           pushLogger.info('Settings saved to DB');
         } catch (error) {
-          pushLogger.warn(
-            'DB save failed (AsyncStorage backup exists):',
-            error
-          );
+          pushLogger.warn('DB save failed (AsyncStorage backup exists):', error);
         }
       }
     },
@@ -374,9 +351,7 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
 
     // 운동 리마인더
     if (settings.workoutReminder) {
-      const [hour, minute] = settings.workoutReminderTime
-        .split(':')
-        .map(Number);
+      const [hour, minute] = settings.workoutReminderTime.split(':').map(Number);
       await scheduleNotification('workout_reminder', { hour, minute });
     }
 
@@ -515,16 +490,14 @@ export function useNotificationResponse() {
   const router = useRouter();
 
   useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const data = response.notification.request.content.data;
-        const route = data?.route as string | undefined;
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data;
+      const route = data?.route as string | undefined;
 
-        if (route) {
-          router.push(route as never);
-        }
+      if (route) {
+        router.push(route as never);
       }
-    );
+    });
 
     return () => subscription.remove();
   }, [router]);

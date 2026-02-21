@@ -6,12 +6,7 @@
  */
 
 // 피부 타입 ID
-export type SkinTypeId =
-  | 'dry'
-  | 'oily'
-  | 'combination'
-  | 'normal'
-  | 'sensitive';
+export type SkinTypeId = 'dry' | 'oily' | 'combination' | 'normal' | 'sensitive';
 
 // 피부 고민 ID
 export type SkinConcernId =

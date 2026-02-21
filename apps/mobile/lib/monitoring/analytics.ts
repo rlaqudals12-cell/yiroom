@@ -5,11 +5,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import {
-  AnalyticsEventType,
-  AnalyticsEventProperties,
-  UserProperties,
-} from './types';
+import { AnalyticsEventType, AnalyticsEventProperties, UserProperties } from './types';
 import { analyticsLogger } from '../utils/logger';
 
 // 개발 모드 여부
@@ -121,10 +117,7 @@ export async function logWaterAdded(amount: number): Promise<void> {
 /**
  * 제품 조회 로깅
  */
-export async function logProductViewed(
-  productId: string,
-  category: string
-): Promise<void> {
+export async function logProductViewed(productId: string, category: string): Promise<void> {
   await logEvent('product_viewed', {
     product_id: productId,
     product_category: category,
@@ -143,9 +136,7 @@ export async function logAnalysisCompleted(
 /**
  * 사용자 속성 설정
  */
-export async function setUserProperties(
-  properties: UserProperties
-): Promise<void> {
+export async function setUserProperties(properties: UserProperties): Promise<void> {
   if (IS_DEV) {
     analyticsLogger.info(' 사용자 속성:', properties);
     return;
@@ -225,18 +216,15 @@ async function sendEvent(
   timestamp?: string
 ): Promise<boolean> {
   try {
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/api/analytics/event`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event_type: eventType,
-          properties,
-          timestamp: timestamp || new Date().toISOString(),
-        }),
-      }
-    );
+    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/analytics/event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_type: eventType,
+        properties,
+        timestamp: timestamp || new Date().toISOString(),
+      }),
+    });
 
     if (response.ok && timestamp) {
       await removeFromQueue(timestamp);

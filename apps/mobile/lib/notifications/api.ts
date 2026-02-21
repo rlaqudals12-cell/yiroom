@@ -91,11 +91,9 @@ export async function saveUserNotificationSettings(
 ): Promise<void> {
   const dbSettings = transformSettingsToDb(clerkUserId, settings);
 
-  const { error } = await supabase
-    .from('user_notification_settings')
-    .upsert(dbSettings, {
-      onConflict: 'clerk_user_id',
-    });
+  const { error } = await supabase.from('user_notification_settings').upsert(dbSettings, {
+    onConflict: 'clerk_user_id',
+  });
 
   if (error) {
     pushLogger.error('saveUserNotificationSettings error:', error);
@@ -197,9 +195,7 @@ export async function getActivePushTokens(
  * DB 스키마 → 앱 설정 타입 변환
  * TIME 타입은 'HH:MM:SS' 형식으로 반환됨, 'HH:MM'으로 변환
  */
-function transformDbToSettings(
-  db: DbNotificationSettings
-): NotificationSettings {
+function transformDbToSettings(db: DbNotificationSettings): NotificationSettings {
   return {
     enabled: db.enabled,
     workoutReminder: db.workout_reminder,

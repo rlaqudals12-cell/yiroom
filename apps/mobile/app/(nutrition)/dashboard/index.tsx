@@ -3,14 +3,7 @@
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  useColorScheme,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // 샘플 데이터
@@ -58,10 +51,7 @@ export default function NutritionDashboardScreen() {
     fiber: 18,
   });
 
-  const caloriePercentage = Math.min(
-    (currentNutrients.calories / DAILY_GOAL.calories) * 100,
-    100
-  );
+  const caloriePercentage = Math.min((currentNutrients.calories / DAILY_GOAL.calories) * 100, 100);
   const remainingCalories = DAILY_GOAL.calories - currentNutrients.calories;
 
   const handleRecordMeal = () => {
@@ -69,25 +59,18 @@ export default function NutritionDashboardScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* 칼로리 프로그레스 */}
         <View style={[styles.calorieCard, isDark && styles.cardDark]}>
-          <Text style={[styles.dateText, isDark && styles.textMuted]}>
-            오늘
-          </Text>
+          <Text style={[styles.dateText, isDark && styles.textMuted]}>오늘</Text>
           <View style={styles.calorieRing}>
             <View style={styles.ringOuter}>
               <View
                 style={[
                   styles.ringProgress,
                   {
-                    transform: [
-                      { rotate: `${(caloriePercentage / 100) * 360}deg` },
-                    ],
+                    transform: [{ rotate: `${(caloriePercentage / 100) * 360}deg` }],
                   },
                 ]}
               />
@@ -95,24 +78,18 @@ export default function NutritionDashboardScreen() {
                 <Text style={[styles.calorieValue, isDark && styles.textLight]}>
                   {currentNutrients.calories}
                 </Text>
-                <Text style={[styles.calorieUnit, isDark && styles.textMuted]}>
-                  kcal
-                </Text>
+                <Text style={[styles.calorieUnit, isDark && styles.textMuted]}>kcal</Text>
               </View>
             </View>
           </View>
           <Text style={[styles.remainingText, isDark && styles.textMuted]}>
-            {remainingCalories > 0
-              ? `${remainingCalories} kcal 더 섭취 가능`
-              : '목표 달성!'}
+            {remainingCalories > 0 ? `${remainingCalories} kcal 더 섭취 가능` : '목표 달성!'}
           </Text>
         </View>
 
         {/* 영양소 바 차트 */}
         <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            영양소 현황
-          </Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>영양소 현황</Text>
           <NutrientBar
             label="단백질"
             current={currentNutrients.protein}
@@ -150,9 +127,7 @@ export default function NutritionDashboardScreen() {
         {/* 오늘의 식사 */}
         <View style={[styles.section, isDark && styles.cardDark]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-              오늘의 식사
-            </Text>
+            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>오늘의 식사</Text>
             <TouchableOpacity onPress={handleRecordMeal}>
               <Text style={styles.addButton}>+ 추가</Text>
             </TouchableOpacity>
@@ -160,18 +135,11 @@ export default function NutritionDashboardScreen() {
           {SAMPLE_MEALS.map((meal) => (
             <View key={meal.id} style={styles.mealItem}>
               <View style={styles.mealInfo}>
-                <Text style={[styles.mealType, isDark && styles.textLight]}>
-                  {meal.type}
-                </Text>
-                <Text style={[styles.mealTime, isDark && styles.textMuted]}>
-                  {meal.time}
-                </Text>
+                <Text style={[styles.mealType, isDark && styles.textLight]}>{meal.type}</Text>
+                <Text style={[styles.mealTime, isDark && styles.textMuted]}>{meal.time}</Text>
               </View>
               <View style={styles.mealFoods}>
-                <Text
-                  style={[styles.mealFoodText, isDark && styles.textMuted]}
-                  numberOfLines={1}
-                >
+                <Text style={[styles.mealFoodText, isDark && styles.textMuted]} numberOfLines={1}>
                   {meal.foods.join(', ')}
                 </Text>
               </View>
@@ -183,10 +151,7 @@ export default function NutritionDashboardScreen() {
         </View>
 
         {/* 식사 기록 버튼 */}
-        <TouchableOpacity
-          style={styles.recordButton}
-          onPress={handleRecordMeal}
-        >
+        <TouchableOpacity style={styles.recordButton} onPress={handleRecordMeal}>
           <Text style={styles.recordButtonText}>식사 기록하기</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -214,19 +179,14 @@ function NutrientBar({
   return (
     <View style={styles.nutrientItem}>
       <View style={styles.nutrientHeader}>
-        <Text style={[styles.nutrientLabel, isDark && styles.textLight]}>
-          {label}
-        </Text>
+        <Text style={[styles.nutrientLabel, isDark && styles.textLight]}>{label}</Text>
         <Text style={[styles.nutrientValue, isDark && styles.textMuted]}>
           {current} / {goal} {unit}
         </Text>
       </View>
       <View style={[styles.nutrientBarBg, isDark && styles.nutrientBarBgDark]}>
         <View
-          style={[
-            styles.nutrientBarFill,
-            { width: `${percentage}%`, backgroundColor: color },
-          ]}
+          style={[styles.nutrientBarFill, { width: `${percentage}%`, backgroundColor: color }]}
         />
       </View>
     </View>

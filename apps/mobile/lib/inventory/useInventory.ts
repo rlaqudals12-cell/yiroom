@@ -80,10 +80,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
 
   const addItem = useCallback(
     async (
-      item: Omit<
-        InventoryItem,
-        'id' | 'clerkUserId' | 'createdAt' | 'updatedAt'
-      >
+      item: Omit<InventoryItem, 'id' | 'clerkUserId' | 'createdAt' | 'updatedAt'>
     ): Promise<InventoryItem | null> => {
       if (!user?.id || !supabase) return null;
 
@@ -128,16 +125,12 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
       try {
         const updateData: Record<string, unknown> = {};
         if (updates.name !== undefined) updateData.name = updates.name;
-        if (updates.subCategory !== undefined)
-          updateData.sub_category = updates.subCategory;
-        if (updates.imageUrl !== undefined)
-          updateData.image_url = updates.imageUrl;
+        if (updates.subCategory !== undefined) updateData.sub_category = updates.subCategory;
+        if (updates.imageUrl !== undefined) updateData.image_url = updates.imageUrl;
         if (updates.brand !== undefined) updateData.brand = updates.brand;
         if (updates.tags !== undefined) updateData.tags = updates.tags;
-        if (updates.isFavorite !== undefined)
-          updateData.is_favorite = updates.isFavorite;
-        if (updates.metadata !== undefined)
-          updateData.metadata = updates.metadata;
+        if (updates.isFavorite !== undefined) updateData.is_favorite = updates.isFavorite;
+        if (updates.metadata !== undefined) updateData.metadata = updates.metadata;
 
         const { error: updateError } = await supabase
           .from('inventory_items')
@@ -146,9 +139,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
 
         if (updateError) throw updateError;
 
-        setItems((prev) =>
-          prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-        );
+        setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...updates } : item)));
         return true;
       } catch (err) {
         closetLogger.error(' updateItem error:', err);
@@ -163,10 +154,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
       if (!supabase) return false;
 
       try {
-        const { error: deleteError } = await supabase
-          .from('inventory_items')
-          .delete()
-          .eq('id', id);
+        const { error: deleteError } = await supabase.from('inventory_items').delete().eq('id', id);
 
         if (deleteError) throw deleteError;
 
@@ -289,10 +277,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
 
   const saveOutfit = useCallback(
     async (
-      outfit: Omit<
-        SavedOutfit,
-        'id' | 'clerkUserId' | 'createdAt' | 'updatedAt'
-      >
+      outfit: Omit<SavedOutfit, 'id' | 'clerkUserId' | 'createdAt' | 'updatedAt'>
     ): Promise<SavedOutfit | null> => {
       if (!user?.id || !supabase) return null;
 
@@ -331,10 +316,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
       if (!supabase) return false;
 
       try {
-        const { error: deleteError } = await supabase
-          .from('saved_outfits')
-          .delete()
-          .eq('id', id);
+        const { error: deleteError } = await supabase.from('saved_outfits').delete().eq('id', id);
 
         if (deleteError) throw deleteError;
 

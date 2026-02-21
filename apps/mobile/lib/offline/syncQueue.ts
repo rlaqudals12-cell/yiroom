@@ -69,10 +69,7 @@ export async function removeFromSyncQueue(id: string): Promise<void> {
 /**
  * 동기화 큐 항목 재시도 횟수 증가
  */
-export async function incrementRetryCount(
-  id: string,
-  error?: string
-): Promise<boolean> {
+export async function incrementRetryCount(id: string, error?: string): Promise<boolean> {
   try {
     const queue = await getSyncQueue();
     const index = queue.findIndex((item) => item.id === id);
@@ -142,8 +139,7 @@ export async function processSyncQueue(
         failed++;
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const shouldRetry = await incrementRetryCount(item.id, errorMessage);
       if (!shouldRetry) {
         syncLogger.info('Giving up on item:', item.id);

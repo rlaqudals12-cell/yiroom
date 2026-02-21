@@ -4,13 +4,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import {
-  View,
-  StyleSheet,
-  Animated,
-  ViewStyle,
-  useColorScheme,
-} from 'react-native';
+import { View, StyleSheet, Animated, ViewStyle, useColorScheme } from 'react-native';
 
 type DimensionValue = number | `${number}%` | 'auto';
 
@@ -100,11 +94,7 @@ export function SkeletonText({
         <Skeleton
           key={index}
           height={14}
-          width={
-            index === lines - 1 && lines > 1
-              ? lastLineWidth
-              : ('100%' as DimensionValue)
-          }
+          width={index === lines - 1 && lines > 1 ? lastLineWidth : ('100%' as DimensionValue)}
           style={index > 0 ? { marginTop: spacing } : undefined}
         />
       ))}

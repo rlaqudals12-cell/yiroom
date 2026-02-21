@@ -3,14 +3,7 @@
  */
 
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Input, ProgressIndicator } from '../../components/ui';
@@ -39,9 +32,7 @@ export default function OnboardingStep2() {
   const { data, setBasicInfo, nextStep, prevStep } = useOnboarding();
 
   // 로컬 입력 상태
-  const [birthYear, setBirthYear] = useState(
-    data.basicInfo.birthYear?.toString() || ''
-  );
+  const [birthYear, setBirthYear] = useState(data.basicInfo.birthYear?.toString() || '');
   const [height, setHeight] = useState(data.basicInfo.height?.toString() || '');
   const [weight, setWeight] = useState(data.basicInfo.weight?.toString() || '');
 
@@ -78,9 +69,7 @@ export default function OnboardingStep2() {
   };
 
   const canProceed =
-    data.basicInfo.gender &&
-    data.basicInfo.birthYear &&
-    data.basicInfo.activityLevel;
+    data.basicInfo.gender && data.basicInfo.birthYear && data.basicInfo.activityLevel;
 
   const selectedBg = `${brand.primary}1A`;
 
@@ -89,9 +78,7 @@ export default function OnboardingStep2() {
       style={[styles.container, { backgroundColor: colors.background }]}
       testID="onboarding-step2"
     >
-      <ScrollView
-        contentContainerStyle={[styles.content, { padding: spacing.lg }]}
-      >
+      <ScrollView contentContainerStyle={[styles.content, { padding: spacing.lg }]}>
         {/* 헤더 */}
         <View style={styles.header}>
           <Text style={styles.emoji}>📝</Text>
@@ -302,19 +289,12 @@ export default function OnboardingStep2() {
         </View>
 
         {/* 진행 상황 */}
-        <ProgressIndicator
-          current={2}
-          total={3}
-          style={{ marginTop: spacing.xl }}
-        />
+        <ProgressIndicator current={2} total={3} style={{ marginTop: spacing.xl }} />
       </ScrollView>
 
       {/* 하단 버튼 */}
       <View
-        style={[
-          styles.footer,
-          { padding: spacing.lg, paddingBottom: 40, gap: spacing.sm + 4 },
-        ]}
+        style={[styles.footer, { padding: spacing.lg, paddingBottom: 40, gap: spacing.sm + 4 }]}
       >
         <Button
           variant="secondary"

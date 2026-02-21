@@ -5,10 +5,7 @@
 
 import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 
-import {
-  TodaySummaryData,
-  DEFAULT_SUMMARY_DATA,
-} from '../../lib/widgets/types';
+import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
 interface TodaySummaryWidgetProps {
   data?: TodaySummaryData;
@@ -23,31 +20,19 @@ export function TodaySummaryWidget({
   const isDark = colorScheme === 'dark';
 
   // 진행률 계산
-  const waterProgress = Math.min(
-    (data.waterIntake / data.waterGoal) * 100,
-    100
-  );
-  const caloriesProgress = Math.min(
-    (data.caloriesConsumed / data.caloriesGoal) * 100,
-    100
-  );
+  const waterProgress = Math.min((data.waterIntake / data.waterGoal) * 100, 100);
+  const caloriesProgress = Math.min((data.caloriesConsumed / data.caloriesGoal) * 100, 100);
 
   // 소형 위젯
   if (size === 'small') {
     return (
       <View style={[styles.containerSmall, isDark && styles.containerDark]}>
         <Text style={[styles.streakText, isDark && styles.textLight]}>
-          {data.currentStreak > 0
-            ? `${data.currentStreak}일 연속`
-            : '오늘 시작!'}
+          {data.currentStreak > 0 ? `${data.currentStreak}일 연속` : '오늘 시작!'}
         </Text>
         <View style={styles.iconRow}>
-          <Text style={styles.statusIcon}>
-            {data.workoutCompleted ? '✅' : '🏃'}
-          </Text>
-          <Text style={styles.statusIcon}>
-            {waterProgress >= 100 ? '✅' : '💧'}
-          </Text>
+          <Text style={styles.statusIcon}>{data.workoutCompleted ? '✅' : '🏃'}</Text>
+          <Text style={styles.statusIcon}>{waterProgress >= 100 ? '✅' : '💧'}</Text>
         </View>
       </View>
     );
@@ -58,9 +43,7 @@ export function TodaySummaryWidget({
     return (
       <View style={[styles.containerMedium, isDark && styles.containerDark]}>
         <View style={styles.header}>
-          <Text style={[styles.title, isDark && styles.textLight]}>
-            오늘의 이룸
-          </Text>
+          <Text style={[styles.title, isDark && styles.textLight]}>오늘의 이룸</Text>
           {data.currentStreak > 0 && (
             <View style={styles.streakBadge}>
               <Text style={styles.streakBadgeText}>{data.currentStreak}일</Text>
@@ -71,12 +54,8 @@ export function TodaySummaryWidget({
         <View style={styles.statsRow}>
           {/* 운동 */}
           <View style={styles.statItem}>
-            <Text style={styles.statIcon}>
-              {data.workoutCompleted ? '✅' : '🏃'}
-            </Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-              운동
-            </Text>
+            <Text style={styles.statIcon}>{data.workoutCompleted ? '✅' : '🏃'}</Text>
+            <Text style={[styles.statLabel, isDark && styles.textMuted]}>운동</Text>
             <Text style={[styles.statValue, isDark && styles.textLight]}>
               {data.workoutCompleted ? `${data.workoutMinutes}분` : '대기'}
             </Text>
@@ -85,9 +64,7 @@ export function TodaySummaryWidget({
           {/* 물 */}
           <View style={styles.statItem}>
             <Text style={styles.statIcon}>💧</Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-              물
-            </Text>
+            <Text style={[styles.statLabel, isDark && styles.textMuted]}>물</Text>
             <Text style={[styles.statValue, isDark && styles.textLight]}>
               {(data.waterIntake / 1000).toFixed(1)}L
             </Text>
@@ -96,9 +73,7 @@ export function TodaySummaryWidget({
           {/* 칼로리 */}
           <View style={styles.statItem}>
             <Text style={styles.statIcon}>🍽️</Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-              칼로리
-            </Text>
+            <Text style={[styles.statLabel, isDark && styles.textMuted]}>칼로리</Text>
             <Text style={[styles.statValue, isDark && styles.textLight]}>
               {data.caloriesConsumed}
             </Text>
@@ -112,14 +87,10 @@ export function TodaySummaryWidget({
   return (
     <View style={[styles.containerLarge, isDark && styles.containerDark]}>
       <View style={styles.header}>
-        <Text style={[styles.title, isDark && styles.textLight]}>
-          오늘의 이룸
-        </Text>
+        <Text style={[styles.title, isDark && styles.textLight]}>오늘의 이룸</Text>
         {data.currentStreak > 0 && (
           <View style={styles.streakBadge}>
-            <Text style={styles.streakBadgeText}>
-              {data.currentStreak}일 연속
-            </Text>
+            <Text style={styles.streakBadgeText}>{data.currentStreak}일 연속</Text>
           </View>
         )}
       </View>
@@ -127,13 +98,9 @@ export function TodaySummaryWidget({
       {/* 운동 */}
       <View style={styles.progressRow}>
         <View style={styles.progressHeader}>
-          <Text style={[styles.progressLabel, isDark && styles.textLight]}>
-            🏃 운동
-          </Text>
+          <Text style={[styles.progressLabel, isDark && styles.textLight]}>🏃 운동</Text>
           <Text style={[styles.progressValue, isDark && styles.textMuted]}>
-            {data.workoutCompleted
-              ? `${data.workoutMinutes}분 완료`
-              : '아직 안 함'}
+            {data.workoutCompleted ? `${data.workoutMinutes}분 완료` : '아직 안 함'}
           </Text>
         </View>
         <View style={[styles.progressBar, isDark && styles.progressBarDark]}>
@@ -150,9 +117,7 @@ export function TodaySummaryWidget({
       {/* 물 섭취 */}
       <View style={styles.progressRow}>
         <View style={styles.progressHeader}>
-          <Text style={[styles.progressLabel, isDark && styles.textLight]}>
-            💧 물 섭취
-          </Text>
+          <Text style={[styles.progressLabel, isDark && styles.textLight]}>💧 물 섭취</Text>
           <Text style={[styles.progressValue, isDark && styles.textMuted]}>
             {data.waterIntake}ml / {data.waterGoal}ml
           </Text>
@@ -172,9 +137,7 @@ export function TodaySummaryWidget({
       {/* 칼로리 */}
       <View style={styles.progressRow}>
         <View style={styles.progressHeader}>
-          <Text style={[styles.progressLabel, isDark && styles.textLight]}>
-            🍽️ 칼로리
-          </Text>
+          <Text style={[styles.progressLabel, isDark && styles.textLight]}>🍽️ 칼로리</Text>
           <Text style={[styles.progressValue, isDark && styles.textMuted]}>
             {data.caloriesConsumed} / {data.caloriesGoal} kcal
           </Text>

@@ -5,13 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  useColorScheme,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { errorLogger } from '../../lib/utils/logger';
@@ -30,10 +24,7 @@ interface ErrorBoundaryState {
 /**
  * 클래스 기반 에러 바운더리
  */
-export class ErrorBoundary extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -59,9 +50,7 @@ export class ErrorBoundary extends Component<
         return this.props.fallback;
       }
 
-      return (
-        <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />
-      );
+      return <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />;
     }
 
     return this.props.children;
@@ -71,24 +60,12 @@ export class ErrorBoundary extends Component<
 /**
  * 에러 폴백 UI
  */
-function ErrorFallback({
-  error,
-  onRetry,
-}: {
-  error: Error | null;
-  onRetry: () => void;
-}) {
+function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () => void }) {
   // 함수형 컴포넌트에서 useColorScheme 사용
   return <ErrorFallbackContent error={error} onRetry={onRetry} />;
 }
 
-function ErrorFallbackContent({
-  error,
-  onRetry,
-}: {
-  error: Error | null;
-  onRetry: () => void;
-}) {
+function ErrorFallbackContent({ error, onRetry }: { error: Error | null; onRetry: () => void }) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
@@ -96,9 +73,7 @@ function ErrorFallbackContent({
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
       <View style={styles.content}>
         <Text style={styles.emoji}>😵</Text>
-        <Text style={[styles.title, isDark && styles.textLight]}>
-          문제가 발생했어요
-        </Text>
+        <Text style={[styles.title, isDark && styles.textLight]}>문제가 발생했어요</Text>
         <Text style={[styles.message, isDark && styles.textMuted]}>
           앱에서 예상치 못한 오류가 발생했습니다.{'\n'}
           다시 시도해주세요.
@@ -109,17 +84,11 @@ function ErrorFallbackContent({
             <Text style={[styles.errorTitle, isDark && styles.textMuted]}>
               에러 정보 (개발 모드)
             </Text>
-            <Text style={[styles.errorText, isDark && styles.textMuted]}>
-              {error.message}
-            </Text>
+            <Text style={[styles.errorText, isDark && styles.textMuted]}>{error.message}</Text>
           </View>
         )}
 
-        <TouchableOpacity
-          style={styles.retryButton}
-          onPress={onRetry}
-          activeOpacity={0.8}
-        >
+        <TouchableOpacity style={styles.retryButton} onPress={onRetry} activeOpacity={0.8}>
           <Text style={styles.retryButtonText}>다시 시도</Text>
         </TouchableOpacity>
       </View>

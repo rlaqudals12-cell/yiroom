@@ -11,19 +11,10 @@ import { useTheme } from '../../lib/theme';
 
 export default function StyleTab(): React.JSX.Element {
   const router = useRouter();
-  const {
-    colors,
-    spacing,
-    typography,
-    module: moduleColors,
-    status,
-  } = useTheme();
+  const { colors, spacing, typography, module: moduleColors, status } = useTheme();
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      testID="style-tab"
-    >
+    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} testID="style-tab">
       <View style={{ padding: spacing.md }}>
         <Text
           style={[

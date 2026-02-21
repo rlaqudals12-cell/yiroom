@@ -20,21 +20,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { QuickActionsWidget } from '../../components/widgets/QuickActionsWidget';
 import { TodaySummaryWidget } from '../../components/widgets/TodaySummaryWidget';
 import { useWidgetSync } from '../../lib/widgets';
-import {
-  TodaySummaryData,
-  DEFAULT_SUMMARY_DATA,
-} from '../../lib/widgets/types';
+import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
 export default function WidgetSettingsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const { getData } = useWidgetSync({ autoSync: false });
 
-  const [widgetData, setWidgetData] =
-    useState<TodaySummaryData>(DEFAULT_SUMMARY_DATA);
-  const [selectedSize, setSelectedSize] = useState<
-    'small' | 'medium' | 'large'
-  >('medium');
+  const [widgetData, setWidgetData] = useState<TodaySummaryData>(DEFAULT_SUMMARY_DATA);
+  const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>('medium');
 
   const loadWidgetData = useCallback(async () => {
     const data = await getData();
@@ -63,10 +57,7 @@ export default function WidgetSettingsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
@@ -88,9 +79,7 @@ export default function WidgetSettingsScreen() {
         </View>
 
         {/* 위젯 크기 선택 */}
-        <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-          위젯 미리보기
-        </Text>
+        <Text style={[styles.sectionTitle, isDark && styles.textLight]}>위젯 미리보기</Text>
         <View style={styles.sizeSelector}>
           {(['small', 'medium', 'large'] as const).map((size) => (
             <TouchableOpacity
@@ -109,11 +98,7 @@ export default function WidgetSettingsScreen() {
                   selectedSize === size && styles.sizeButtonTextSelected,
                 ]}
               >
-                {size === 'small'
-                  ? '소형'
-                  : size === 'medium'
-                    ? '중형'
-                    : '대형'}
+                {size === 'small' ? '소형' : size === 'medium' ? '중형' : '대형'}
               </Text>
             </TouchableOpacity>
           ))}
@@ -121,9 +106,7 @@ export default function WidgetSettingsScreen() {
 
         {/* 오늘 요약 위젯 미리보기 */}
         <View style={styles.widgetSection}>
-          <Text style={[styles.widgetLabel, isDark && styles.textMuted]}>
-            오늘 요약
-          </Text>
+          <Text style={[styles.widgetLabel, isDark && styles.textMuted]}>오늘 요약</Text>
           <View style={styles.widgetPreview}>
             <TodaySummaryWidget data={widgetData} size={selectedSize} />
           </View>
@@ -132,13 +115,9 @@ export default function WidgetSettingsScreen() {
         {/* 빠른 실행 위젯 미리보기 */}
         {selectedSize !== 'large' && (
           <View style={styles.widgetSection}>
-            <Text style={[styles.widgetLabel, isDark && styles.textMuted]}>
-              빠른 실행
-            </Text>
+            <Text style={[styles.widgetLabel, isDark && styles.textMuted]}>빠른 실행</Text>
             <View style={styles.widgetPreview}>
-              <QuickActionsWidget
-                size={selectedSize === 'small' ? 'small' : 'medium'}
-              />
+              <QuickActionsWidget size={selectedSize === 'small' ? 'small' : 'medium'} />
             </View>
           </View>
         )}
@@ -156,18 +135,12 @@ export default function WidgetSettingsScreen() {
 
         {/* 지원 위젯 목록 */}
         <View style={styles.widgetList}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            지원 위젯
-          </Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>지원 위젯</Text>
 
           <View style={[styles.widgetItem, isDark && styles.widgetItemDark]}>
             <Text style={styles.widgetItemIcon}>📊</Text>
             <View style={styles.widgetItemContent}>
-              <Text
-                style={[styles.widgetItemTitle, isDark && styles.textLight]}
-              >
-                오늘 요약
-              </Text>
+              <Text style={[styles.widgetItemTitle, isDark && styles.textLight]}>오늘 요약</Text>
               <Text style={[styles.widgetItemDesc, isDark && styles.textMuted]}>
                 운동, 물 섭취, 칼로리 현황을 한눈에
               </Text>
@@ -182,11 +155,7 @@ export default function WidgetSettingsScreen() {
           <View style={[styles.widgetItem, isDark && styles.widgetItemDark]}>
             <Text style={styles.widgetItemIcon}>⚡</Text>
             <View style={styles.widgetItemContent}>
-              <Text
-                style={[styles.widgetItemTitle, isDark && styles.textLight]}
-              >
-                빠른 실행
-              </Text>
+              <Text style={[styles.widgetItemTitle, isDark && styles.textLight]}>빠른 실행</Text>
               <Text style={[styles.widgetItemDesc, isDark && styles.textMuted]}>
                 원탭으로 물 추가, 운동 시작
               </Text>

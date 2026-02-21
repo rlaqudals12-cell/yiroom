@@ -60,9 +60,7 @@ export default function WorkoutHistoryScreen() {
 
       const { data, error } = await supabase
         .from('workout_logs')
-        .select(
-          'id, workout_date, actual_duration, actual_calories, exercise_logs, mood, notes'
-        )
+        .select('id, workout_date, actual_duration, actual_calories, exercise_logs, mood, notes')
         .gte('workout_date', thirtyDaysAgo.toISOString().split('T')[0])
         .order('workout_date', { ascending: false });
 
@@ -72,25 +70,16 @@ export default function WorkoutHistoryScreen() {
 
       // 이번 주 통계 계산
       const weekStart = getWeekStartDate();
-      const weekLogs = (data || []).filter(
-        (log) => new Date(log.workout_date) >= weekStart
-      );
+      const weekLogs = (data || []).filter((log) => new Date(log.workout_date) >= weekStart);
 
-      const totalDuration = weekLogs.reduce(
-        (sum, log) => sum + (log.actual_duration || 0),
-        0
-      );
-      const totalCalories = weekLogs.reduce(
-        (sum, log) => sum + (log.actual_calories || 0),
-        0
-      );
+      const totalDuration = weekLogs.reduce((sum, log) => sum + (log.actual_duration || 0), 0);
+      const totalCalories = weekLogs.reduce((sum, log) => sum + (log.actual_calories || 0), 0);
 
       setWeeklyStats({
         totalWorkouts: weekLogs.length,
         totalDuration,
         totalCalories,
-        avgDuration:
-          weekLogs.length > 0 ? Math.round(totalDuration / weekLogs.length) : 0,
+        avgDuration: weekLogs.length > 0 ? Math.round(totalDuration / weekLogs.length) : 0,
       });
     } catch (error) {
       workoutLogger.error('Failed to fetch workout logs:', error);
@@ -154,10 +143,7 @@ export default function WorkoutHistoryScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -172,33 +158,19 @@ export default function WorkoutHistoryScreen() {
         {/* 이번 주 통계 */}
         {weeklyStats && (
           <View style={styles.statsSection}>
-            <Text style={[styles.statsTitle, isDark && styles.textLight]}>
-              이번 주 통계
-            </Text>
+            <Text style={[styles.statsTitle, isDark && styles.textLight]}>이번 주 통계</Text>
             <View style={styles.statsGrid}>
               <View style={[styles.statCard, isDark && styles.statCardDark]}>
-                <Text style={styles.statValue}>
-                  {weeklyStats.totalWorkouts}
-                </Text>
-                <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-                  운동 횟수
-                </Text>
+                <Text style={styles.statValue}>{weeklyStats.totalWorkouts}</Text>
+                <Text style={[styles.statLabel, isDark && styles.textMuted]}>운동 횟수</Text>
               </View>
               <View style={[styles.statCard, isDark && styles.statCardDark]}>
-                <Text style={styles.statValue}>
-                  {weeklyStats.totalDuration}
-                </Text>
-                <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-                  총 시간 (분)
-                </Text>
+                <Text style={styles.statValue}>{weeklyStats.totalDuration}</Text>
+                <Text style={[styles.statLabel, isDark && styles.textMuted]}>총 시간 (분)</Text>
               </View>
               <View style={[styles.statCard, isDark && styles.statCardDark]}>
-                <Text style={styles.statValue}>
-                  {weeklyStats.totalCalories}
-                </Text>
-                <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-                  소모 칼로리
-                </Text>
+                <Text style={styles.statValue}>{weeklyStats.totalCalories}</Text>
+                <Text style={[styles.statLabel, isDark && styles.textMuted]}>소모 칼로리</Text>
               </View>
             </View>
           </View>
@@ -206,9 +178,7 @@ export default function WorkoutHistoryScreen() {
 
         {/* 운동 기록 목록 */}
         <View style={styles.logsSection}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-            최근 기록
-          </Text>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>최근 기록</Text>
 
           {logs.length === 0 ? (
             <View style={[styles.emptyCard, isDark && styles.emptyCardDark]}>
@@ -222,10 +192,7 @@ export default function WorkoutHistoryScreen() {
             </View>
           ) : (
             logs.map((log) => (
-              <View
-                key={log.id}
-                style={[styles.logCard, isDark && styles.logCardDark]}
-              >
+              <View key={log.id} style={[styles.logCard, isDark && styles.logCardDark]}>
                 <View style={styles.logHeader}>
                   <Text style={styles.logIcon}>{getMoodIcon(log.mood)}</Text>
                   <Text style={[styles.logDate, isDark && styles.textLight]}>
@@ -236,62 +203,26 @@ export default function WorkoutHistoryScreen() {
                 <View style={styles.logStats}>
                   {log.actual_duration && (
                     <View style={styles.logStatItem}>
-                      <Text
-                        style={[
-                          styles.logStatValue,
-                          isDark && styles.textLight,
-                        ]}
-                      >
+                      <Text style={[styles.logStatValue, isDark && styles.textLight]}>
                         {log.actual_duration}분
                       </Text>
-                      <Text
-                        style={[
-                          styles.logStatLabel,
-                          isDark && styles.textMuted,
-                        ]}
-                      >
-                        시간
-                      </Text>
+                      <Text style={[styles.logStatLabel, isDark && styles.textMuted]}>시간</Text>
                     </View>
                   )}
                   {log.actual_calories && (
                     <View style={styles.logStatItem}>
-                      <Text
-                        style={[
-                          styles.logStatValue,
-                          isDark && styles.textLight,
-                        ]}
-                      >
+                      <Text style={[styles.logStatValue, isDark && styles.textLight]}>
                         {log.actual_calories}kcal
                       </Text>
-                      <Text
-                        style={[
-                          styles.logStatLabel,
-                          isDark && styles.textMuted,
-                        ]}
-                      >
-                        칼로리
-                      </Text>
+                      <Text style={[styles.logStatLabel, isDark && styles.textMuted]}>칼로리</Text>
                     </View>
                   )}
                   {log.exercise_logs && log.exercise_logs.length > 0 && (
                     <View style={styles.logStatItem}>
-                      <Text
-                        style={[
-                          styles.logStatValue,
-                          isDark && styles.textLight,
-                        ]}
-                      >
+                      <Text style={[styles.logStatValue, isDark && styles.textLight]}>
                         {log.exercise_logs.length}개
                       </Text>
-                      <Text
-                        style={[
-                          styles.logStatLabel,
-                          isDark && styles.textMuted,
-                        ]}
-                      >
-                        운동
-                      </Text>
+                      <Text style={[styles.logStatLabel, isDark && styles.textMuted]}>운동</Text>
                     </View>
                   )}
                 </View>
@@ -300,24 +231,14 @@ export default function WorkoutHistoryScreen() {
                   <View style={styles.exerciseList}>
                     {log.exercise_logs.slice(0, 4).map((ex, index) => (
                       <View key={index} style={styles.exerciseChip}>
-                        <Text
-                          style={[
-                            styles.exerciseChipText,
-                            isDark && styles.textMuted,
-                          ]}
-                        >
+                        <Text style={[styles.exerciseChipText, isDark && styles.textMuted]}>
                           {ex.exercise_name}
                         </Text>
                       </View>
                     ))}
                     {log.exercise_logs.length > 4 && (
                       <View style={styles.exerciseChip}>
-                        <Text
-                          style={[
-                            styles.exerciseChipText,
-                            isDark && styles.textMuted,
-                          ]}
-                        >
+                        <Text style={[styles.exerciseChipText, isDark && styles.textMuted]}>
                           +{log.exercise_logs.length - 4}
                         </Text>
                       </View>
@@ -326,10 +247,7 @@ export default function WorkoutHistoryScreen() {
                 )}
 
                 {log.notes && (
-                  <Text
-                    style={[styles.logNotes, isDark && styles.textMuted]}
-                    numberOfLines={2}
-                  >
+                  <Text style={[styles.logNotes, isDark && styles.textMuted]} numberOfLines={2}>
                     {log.notes}
                   </Text>
                 )}

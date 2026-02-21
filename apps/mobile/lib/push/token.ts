@@ -47,8 +47,7 @@ export async function getExpoPushToken(): Promise<string | null> {
 
   try {
     // 권한 확인
-    const { status: existingStatus } =
-      await Notifications.getPermissionsAsync();
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     if (existingStatus !== 'granted') {
@@ -118,29 +117,23 @@ export async function removePushToken(): Promise<void> {
 /**
  * 서버에 푸시 토큰 등록
  */
-export async function registerPushTokenWithServer(
-  token: string,
-  userId: string
-): Promise<boolean> {
+export async function registerPushTokenWithServer(token: string, userId: string): Promise<boolean> {
   const deviceId = await getDeviceId();
 
   try {
     // API 엔드포인트로 토큰 전송
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/api/push/register`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token,
-          userId,
-          deviceId,
-          platform: Platform.OS,
-        }),
-      }
-    );
+    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/push/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token,
+        userId,
+        deviceId,
+        platform: Platform.OS,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`서버 응답 오류: ${response.status}`);
@@ -157,25 +150,20 @@ export async function registerPushTokenWithServer(
 /**
  * 서버에서 푸시 토큰 제거
  */
-export async function unregisterPushTokenFromServer(
-  userId: string
-): Promise<boolean> {
+export async function unregisterPushTokenFromServer(userId: string): Promise<boolean> {
   const deviceId = await getDeviceId();
 
   try {
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/api/push/unregister`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          deviceId,
-        }),
-      }
-    );
+    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/push/unregister`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        deviceId,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`서버 응답 오류: ${response.status}`);
@@ -193,9 +181,7 @@ export async function unregisterPushTokenFromServer(
  * 푸시 알림 초기화
  * 앱 시작 시 호출
  */
-export async function initializePushNotifications(
-  userId?: string
-): Promise<string | null> {
+export async function initializePushNotifications(userId?: string): Promise<string | null> {
   // Android 채널 설정
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {

@@ -62,8 +62,7 @@ export default function SignUpScreen() {
       setPendingVerification(true);
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage =
-        clerkError.errors?.[0]?.message || '회원가입에 실패했습니다.';
+      const errorMessage = clerkError.errors?.[0]?.message || '회원가입에 실패했습니다.';
       Alert.alert('회원가입 실패', errorMessage);
     } finally {
       setIsLoading(false);
@@ -92,8 +91,7 @@ export default function SignUpScreen() {
       }
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage =
-        clerkError.errors?.[0]?.message || '인증에 실패했습니다.';
+      const errorMessage = clerkError.errors?.[0]?.message || '인증에 실패했습니다.';
       Alert.alert('인증 실패', errorMessage);
     } finally {
       setIsLoading(false);
@@ -119,9 +117,7 @@ export default function SignUpScreen() {
         >
           <View style={styles.header}>
             <Text style={styles.title}>이메일 인증</Text>
-            <Text style={styles.subtitle}>
-              {email}로 전송된 인증 코드를 입력해주세요
-            </Text>
+            <Text style={styles.subtitle}>{email}로 전송된 인증 코드를 입력해주세요</Text>
           </View>
 
           <View style={styles.form}>
@@ -161,10 +157,7 @@ export default function SignUpScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.title}>회원가입</Text>
           <Text style={styles.subtitle}>이룸과 함께 시작하세요</Text>

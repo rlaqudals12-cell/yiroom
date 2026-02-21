@@ -7,12 +7,7 @@
 // 알림 카테고리 및 타입
 // ============================================================
 
-export type NotificationCategory =
-  | 'workout'
-  | 'nutrition'
-  | 'social'
-  | 'achievement'
-  | 'system';
+export type NotificationCategory = 'workout' | 'nutrition' | 'social' | 'achievement' | 'system';
 
 export type NotificationType =
   // 운동 관련
@@ -190,10 +185,7 @@ export const NOTIFICATION_TEMPLATES: Record<
 /**
  * 템플릿 변수 치환
  */
-export function interpolateTemplate(
-  template: string,
-  variables: TemplateVariables
-): string {
+export function interpolateTemplate(template: string, variables: TemplateVariables): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => {
     return String(variables[key] ?? `{{${key}}}`);
   });
@@ -211,13 +203,9 @@ export function createNotification(
     throw new Error(`Unknown notification type: ${type}`);
   }
 
-  const title = variables
-    ? interpolateTemplate(template.title, variables)
-    : template.title;
+  const title = variables ? interpolateTemplate(template.title, variables) : template.title;
 
-  const body = variables
-    ? interpolateTemplate(template.body, variables)
-    : template.body;
+  const body = variables ? interpolateTemplate(template.body, variables) : template.body;
 
   return {
     type,
@@ -232,9 +220,7 @@ export function createNotification(
 /**
  * 카테고리별 알림 타입 가져오기
  */
-export function getNotificationTypesByCategory(
-  category: NotificationCategory
-): NotificationType[] {
+export function getNotificationTypesByCategory(category: NotificationCategory): NotificationType[] {
   return (
     Object.entries(NOTIFICATION_TEMPLATES) as [
       NotificationType,

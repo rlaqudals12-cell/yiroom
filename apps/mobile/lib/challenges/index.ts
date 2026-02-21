@@ -13,11 +13,7 @@ import { challengeLogger } from '../utils/logger';
 
 export type ChallengeDomain = 'workout' | 'nutrition' | 'skin' | 'combined';
 export type ChallengeDifficulty = 'easy' | 'medium' | 'hard';
-export type ChallengeStatus =
-  | 'in_progress'
-  | 'completed'
-  | 'failed'
-  | 'abandoned';
+export type ChallengeStatus = 'in_progress' | 'completed' | 'failed' | 'abandoned';
 
 export interface ChallengeTarget {
   type: 'streak' | 'count' | 'daily' | 'combined';
@@ -175,9 +171,7 @@ function toUserChallenge(row: UserChallengeRow): UserChallenge {
 /**
  * 활성 챌린지 목록 조회
  */
-export async function getActiveChallenges(
-  supabase: SupabaseClient
-): Promise<Challenge[]> {
+export async function getActiveChallenges(supabase: SupabaseClient): Promise<Challenge[]> {
   const { data, error } = await supabase
     .from('challenges')
     .select('*')
@@ -284,11 +278,7 @@ export async function joinChallenge(
   }
 
   // 이미 참여 중인지 확인
-  const isParticipating = await isUserParticipating(
-    supabase,
-    clerkUserId,
-    challengeId
-  );
+  const isParticipating = await isUserParticipating(supabase, clerkUserId, challengeId);
   if (isParticipating) {
     return { success: false, error: '이미 참여 중인 챌린지입니다' };
   }

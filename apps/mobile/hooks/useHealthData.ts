@@ -19,11 +19,7 @@ import {
   isHealthDataAvailable,
   getHealthPlatform,
 } from '@/lib/health/sync-manager';
-import type {
-  HealthDataSummary,
-  SyncState,
-  SyncResult,
-} from '@/lib/health/types';
+import type { HealthDataSummary, SyncState, SyncResult } from '@/lib/health/types';
 
 import { healthLogger } from '../lib/utils/logger';
 
@@ -90,10 +86,7 @@ export function useHealthData(): UseHealthDataResult {
       }
     };
 
-    const subscription = AppState.addEventListener(
-      'change',
-      handleAppStateChange
-    );
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => subscription.remove();
   }, [syncState?.isEnabled]);
 

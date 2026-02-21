@@ -48,10 +48,7 @@ function ThemedStack() {
           name="privacy-policy"
           options={{ title: '개인정보처리방침', headerBackTitle: '뒤로' }}
         />
-        <Stack.Screen
-          name="terms"
-          options={{ title: '이용약관', headerBackTitle: '뒤로' }}
-        />
+        <Stack.Screen name="terms" options={{ title: '이용약관', headerBackTitle: '뒤로' }} />
       </Stack>
     </>
   );
@@ -64,10 +61,7 @@ export default function RootLayout() {
   }
 
   return (
-    <ClerkProvider
-      publishableKey={CLERK_PUBLISHABLE_KEY}
-      tokenCache={tokenCache}
-    >
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
       <ClerkLoaded>
         <ThemeProvider>
           <ThemedStack />

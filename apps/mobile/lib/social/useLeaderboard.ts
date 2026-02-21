@@ -145,8 +145,7 @@ export function useMyRanking(): UseMyRankingResult {
   }, [fetchRanking]);
 
   // 상위 퍼센트 계산
-  const percentile =
-    rank && totalUsers > 0 ? Math.round((rank / totalUsers) * 100) : 100;
+  const percentile = rank && totalUsers > 0 ? Math.round((rank / totalUsers) * 100) : 100;
 
   return { rank, totalUsers, percentile, isLoading, refetch: fetchRanking };
 }

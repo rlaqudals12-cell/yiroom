@@ -61,9 +61,7 @@ export function AnalysisTrustBadge({
       accessibilityRole="text"
       accessibilityLabel={displayLabel}
     >
-      <Text style={[styles.badgeText, { color: config.textColor }]}>
-        {displayLabel}
-      </Text>
+      <Text style={[styles.badgeText, { color: config.textColor }]}>{displayLabel}</Text>
     </View>
   );
 }

@@ -24,8 +24,7 @@ export default function FriendRequestsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const { requests, isLoading, error, accept, reject, refetch } =
-    useFriendRequests();
+  const { requests, isLoading, error, accept, reject, refetch } = useFriendRequests();
 
   const handleAccept = async (request: FriendRequest) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -71,27 +70,15 @@ export default function FriendRequestsScreen() {
       <View style={styles.requestInfo}>
         <View style={styles.avatarContainer}>
           {item.requesterAvatar ? (
-            <Image
-              source={{ uri: item.requesterAvatar }}
-              style={styles.avatar}
-            />
+            <Image source={{ uri: item.requesterAvatar }} style={styles.avatar} />
           ) : (
-            <View
-              style={[
-                styles.avatarPlaceholder,
-                isDark && styles.avatarPlaceholderDark,
-              ]}
-            >
-              <Text style={styles.avatarText}>
-                {item.requesterName.charAt(0)}
-              </Text>
+            <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
+              <Text style={styles.avatarText}>{item.requesterName.charAt(0)}</Text>
             </View>
           )}
         </View>
         <View style={styles.userInfo}>
-          <Text style={[styles.userName, isDark && styles.textLight]}>
-            {item.requesterName}
-          </Text>
+          <Text style={[styles.userName, isDark && styles.textLight]}>{item.requesterName}</Text>
           <Text style={[styles.userMeta, isDark && styles.textMuted]}>
             Lv.{item.requesterLevel} · {formatDate(item.createdAt)}
           </Text>
@@ -99,19 +86,14 @@ export default function FriendRequestsScreen() {
       </View>
 
       <View style={styles.actionButtons}>
-        <TouchableOpacity
-          style={styles.acceptButton}
-          onPress={() => handleAccept(item)}
-        >
+        <TouchableOpacity style={styles.acceptButton} onPress={() => handleAccept(item)}>
           <Text style={styles.acceptButtonText}>수락</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.rejectButton, isDark && styles.rejectButtonDark]}
           onPress={() => handleReject(item)}
         >
-          <Text style={[styles.rejectButtonText, isDark && styles.textLight]}>
-            거절
-          </Text>
+          <Text style={[styles.rejectButtonText, isDark && styles.textLight]}>거절</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -128,10 +110,7 @@ export default function FriendRequestsScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 에러 메시지 */}
       {error && (
         <View style={styles.errorContainer}>
@@ -154,9 +133,7 @@ export default function FriendRequestsScreen() {
         <>
           {/* 헤더 */}
           <View style={styles.header}>
-            <Text style={[styles.headerTitle, isDark && styles.textLight]}>
-              받은 요청
-            </Text>
+            <Text style={[styles.headerTitle, isDark && styles.textLight]}>받은 요청</Text>
             <Text style={[styles.headerCount, isDark && styles.textMuted]}>
               {requests.length}개
             </Text>

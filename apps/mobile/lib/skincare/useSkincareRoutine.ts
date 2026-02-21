@@ -10,19 +10,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import { useClerkSupabaseClient } from '@/lib/supabase';
 
-import {
-  formatDuration,
-  calculateEstimatedTime,
-  getSkinTypeLabel,
-} from './mock';
+import { formatDuration, calculateEstimatedTime, getSkinTypeLabel } from './mock';
 import { generateRoutine } from './routine';
-import type {
-  SkinAnalysisData,
-  SkinTypeId,
-  SkinConcernId,
-  TimeOfDay,
-  RoutineStep,
-} from './types';
+import type { SkinAnalysisData, SkinTypeId, SkinConcernId, TimeOfDay, RoutineStep } from './types';
 import { skincareLogger } from '../utils/logger';
 
 // Hook 반환 타입
@@ -147,10 +137,7 @@ export function useSkincareRoutine(): UseSkincareRoutineReturn {
     [activeTime, morningSteps, eveningSteps]
   );
 
-  const currentEstimatedTime = useMemo(
-    () => calculateEstimatedTime(currentSteps),
-    [currentSteps]
-  );
+  const currentEstimatedTime = useMemo(() => calculateEstimatedTime(currentSteps), [currentSteps]);
 
   // 유틸리티 값들
   const skinTypeLabel = useMemo(
@@ -158,15 +145,9 @@ export function useSkincareRoutine(): UseSkincareRoutineReturn {
     [skinData]
   );
 
-  const timeLabel = useMemo(
-    () => (activeTime === 'morning' ? '아침' : '저녁'),
-    [activeTime]
-  );
+  const timeLabel = useMemo(() => (activeTime === 'morning' ? '아침' : '저녁'), [activeTime]);
 
-  const formattedTime = useMemo(
-    () => formatDuration(currentEstimatedTime),
-    [currentEstimatedTime]
-  );
+  const formattedTime = useMemo(() => formatDuration(currentEstimatedTime), [currentEstimatedTime]);
 
   // 새로고침 액션
   const refresh = useCallback(async () => {

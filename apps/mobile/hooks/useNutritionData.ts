@@ -58,8 +58,7 @@ export function useNutritionData(): UseNutritionDataReturn {
   const supabase = useClerkSupabaseClient();
 
   const [settings, setSettings] = useState<NutritionSettings | null>(null);
-  const [todaySummary, setTodaySummary] =
-    useState<DailyNutritionSummary | null>(null);
+  const [todaySummary, setTodaySummary] = useState<DailyNutritionSummary | null>(null);
   const [streak, setStreak] = useState<NutritionStreak | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -77,9 +76,7 @@ export function useNutritionData(): UseNutritionDataReturn {
       // 영양 설정
       const { data: settingsData } = await supabase
         .from('nutrition_settings')
-        .select(
-          'daily_calorie_goal, protein_goal, carbs_goal, fat_goal, water_goal, meal_count'
-        )
+        .select('daily_calorie_goal, protein_goal, carbs_goal, fat_goal, water_goal, meal_count')
         .single();
 
       if (settingsData) {
@@ -153,9 +150,7 @@ export function useNutritionData(): UseNutritionDataReturn {
       // AbortError는 정상적인 취소이므로 무시
       if (err instanceof Error && err.name === 'AbortError') return;
       nutritionLogger.error('Failed to fetch nutrition data:', err);
-      setError(
-        err instanceof Error ? err : new Error('Failed to fetch nutrition data')
-      );
+      setError(err instanceof Error ? err : new Error('Failed to fetch nutrition data'));
     } finally {
       setIsLoading(false);
     }
@@ -197,10 +192,7 @@ function isYesterday(dateStr: string | null): boolean {
 }
 
 // 칼로리 진행률 계산
-export function calculateCalorieProgress(
-  current: number,
-  goal: number
-): number {
+export function calculateCalorieProgress(current: number, goal: number): number {
   if (goal <= 0) return 0;
   return Math.min(Math.round((current / goal) * 100), 100);
 }
@@ -208,10 +200,7 @@ export function calculateCalorieProgress(
 // 영양소 상태 (눔 스타일 신호등)
 export type NutrientStatus = 'low' | 'good' | 'high';
 
-export function getNutrientStatus(
-  current: number,
-  goal: number
-): NutrientStatus {
+export function getNutrientStatus(current: number, goal: number): NutrientStatus {
   const ratio = current / goal;
   if (ratio < 0.8) return 'low';
   if (ratio <= 1.1) return 'good';

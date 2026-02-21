@@ -19,14 +19,7 @@ export interface HealthPermissions {
 }
 
 export const DEFAULT_HEALTH_PERMISSIONS: HealthPermissions = {
-  read: [
-    'StepCount',
-    'ActiveEnergyBurned',
-    'HeartRate',
-    'SleepAnalysis',
-    'BodyMass',
-    'Height',
-  ],
+  read: ['StepCount', 'ActiveEnergyBurned', 'HeartRate', 'SleepAnalysis', 'BodyMass', 'Height'],
   write: ['Workout', 'DietaryWater', 'DietaryEnergyConsumed'],
 };
 

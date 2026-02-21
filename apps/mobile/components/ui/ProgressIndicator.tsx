@@ -70,8 +70,7 @@ export function ProgressIndicator({
             style={[
               styles.dot,
               {
-                backgroundColor:
-                  i + 1 <= current ? brand.primary : colors.border,
+                backgroundColor: i + 1 <= current ? brand.primary : colors.border,
                 width: i + 1 === current ? 10 : 6,
                 height: 6,
                 borderRadius: radii.full,

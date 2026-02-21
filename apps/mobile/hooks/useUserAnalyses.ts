@@ -60,14 +60,9 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
   const supabase = useClerkSupabaseClient();
 
   const [analyses, setAnalyses] = useState<AnalysisSummary[]>([]);
-  const [personalColor, setPersonalColor] =
-    useState<PersonalColorResult | null>(null);
-  const [skinAnalysis, setSkinAnalysis] = useState<SkinAnalysisResult | null>(
-    null
-  );
-  const [bodyAnalysis, setBodyAnalysis] = useState<BodyAnalysisResult | null>(
-    null
-  );
+  const [personalColor, setPersonalColor] = useState<PersonalColorResult | null>(null);
+  const [skinAnalysis, setSkinAnalysis] = useState<SkinAnalysisResult | null>(null);
+  const [bodyAnalysis, setBodyAnalysis] = useState<BodyAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -168,9 +163,7 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
         // AbortError는 정상적인 취소이므로 무시
         if (err instanceof Error && err.name === 'AbortError') return;
         analysisLogger.error('Failed to fetch analyses:', err);
-        setError(
-          err instanceof Error ? err : new Error('Failed to fetch analyses')
-        );
+        setError(err instanceof Error ? err : new Error('Failed to fetch analyses'));
       } finally {
         setIsLoading(false);
       }

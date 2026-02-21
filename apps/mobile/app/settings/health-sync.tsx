@@ -80,17 +80,13 @@ export default function HealthSyncScreen() {
           headerBackTitle: '설정',
         }}
       />
-      <SafeAreaView
-        style={[styles.container, isDark && styles.containerDark]}
-        edges={['bottom']}
-      >
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
         <ScrollView contentContainerStyle={styles.content}>
           {/* 플랫폼 체크 */}
           {!isAvailable && (
             <View style={[styles.card, isDark && styles.cardDark]}>
               <Text style={[styles.warningText, isDark && styles.textLight]}>
-                ⚠️ {Platform.OS === 'ios' ? 'Apple Health' : 'Google Fit'}를
-                사용할 수 없습니다.
+                ⚠️ {Platform.OS === 'ios' ? 'Apple Health' : 'Google Fit'}를 사용할 수 없습니다.
                 {'\n'}시뮬레이터에서는 Mock 데이터로 테스트됩니다.
               </Text>
             </View>
@@ -122,9 +118,7 @@ export default function HealthSyncScreen() {
           {/* 연동 데이터 설명 */}
           {isEnabled && (
             <View style={[styles.card, isDark && styles.cardDark]}>
-              <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-                📊 연동 데이터
-              </Text>
+              <Text style={[styles.cardTitle, isDark && styles.textLight]}>📊 연동 데이터</Text>
               <View style={styles.dataList}>
                 <DataItem label="걸음수" emoji="👟" isDark={isDark} />
                 <DataItem label="활동 칼로리" emoji="🔥" isDark={isDark} />
@@ -137,15 +131,9 @@ export default function HealthSyncScreen() {
           {/* 오늘의 데이터 */}
           {isEnabled && todayData && (
             <View style={[styles.card, isDark && styles.cardDark]}>
-              <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-                📈 오늘의 데이터
-              </Text>
+              <Text style={[styles.cardTitle, isDark && styles.textLight]}>📈 오늘의 데이터</Text>
               <View style={styles.statsGrid}>
-                <StatItem
-                  label="걸음"
-                  value={todayData.steps.toLocaleString()}
-                  isDark={isDark}
-                />
+                <StatItem label="걸음" value={todayData.steps.toLocaleString()} isDark={isDark} />
                 <StatItem
                   label="칼로리"
                   value={`${todayData.activeCalories}kcal`}
@@ -153,11 +141,7 @@ export default function HealthSyncScreen() {
                 />
                 <StatItem
                   label="심박"
-                  value={
-                    todayData.heartRate
-                      ? `${todayData.heartRate.average}bpm`
-                      : '-'
-                  }
+                  value={todayData.heartRate ? `${todayData.heartRate.average}bpm` : '-'}
                   isDark={isDark}
                 />
                 <StatItem
@@ -181,17 +165,12 @@ export default function HealthSyncScreen() {
                   <Text style={[styles.cardTitle, isDark && styles.textLight]}>
                     🔄 마지막 동기화
                   </Text>
-                  <Text
-                    style={[styles.cardSubtitle, isDark && styles.textMuted]}
-                  >
+                  <Text style={[styles.cardSubtitle, isDark && styles.textMuted]}>
                     {formatTime(lastSyncTime)}
                   </Text>
                 </View>
                 <TouchableOpacity
-                  style={[
-                    styles.syncButton,
-                    isSyncing && styles.syncButtonDisabled,
-                  ]}
+                  style={[styles.syncButton, isSyncing && styles.syncButtonDisabled]}
                   onPress={handleSync}
                   disabled={isSyncing}
                 >
@@ -218,43 +197,21 @@ export default function HealthSyncScreen() {
   );
 }
 
-function DataItem({
-  label,
-  emoji,
-  isDark,
-}: {
-  label: string;
-  emoji: string;
-  isDark: boolean;
-}) {
+function DataItem({ label, emoji, isDark }: { label: string; emoji: string; isDark: boolean }) {
   return (
     <View style={styles.dataItem}>
       <Text style={styles.dataEmoji}>{emoji}</Text>
-      <Text style={[styles.dataLabel, isDark && styles.textLight]}>
-        {label}
-      </Text>
+      <Text style={[styles.dataLabel, isDark && styles.textLight]}>{label}</Text>
       <Text style={styles.checkmark}>✓</Text>
     </View>
   );
 }
 
-function StatItem({
-  label,
-  value,
-  isDark,
-}: {
-  label: string;
-  value: string;
-  isDark: boolean;
-}) {
+function StatItem({ label, value, isDark }: { label: string; value: string; isDark: boolean }) {
   return (
     <View style={styles.statItem}>
-      <Text style={[styles.statValue, isDark && styles.textLight]}>
-        {value}
-      </Text>
-      <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-        {label}
-      </Text>
+      <Text style={[styles.statValue, isDark && styles.textLight]}>{value}</Text>
+      <Text style={[styles.statLabel, isDark && styles.textMuted]}>{label}</Text>
     </View>
   );
 }

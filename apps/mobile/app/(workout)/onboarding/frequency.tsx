@@ -4,14 +4,7 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  useColorScheme,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // 주당 운동 횟수 옵션 (2-6회)
@@ -67,15 +60,10 @@ export default function WorkoutFrequencyScreen() {
   const isValid = frequency !== null && preferredTime !== null;
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* 주당 운동 횟수 */}
-        <Text style={[styles.title, isDark && styles.textLight]}>
-          주당 운동 횟수
-        </Text>
+        <Text style={[styles.title, isDark && styles.textLight]}>주당 운동 횟수</Text>
         <Text style={[styles.subtitle, isDark && styles.textMuted]}>
           일주일에 몇 번 운동할 수 있나요?
         </Text>
@@ -106,18 +94,11 @@ export default function WorkoutFrequencyScreen() {
                   >
                     {option.label}
                   </Text>
-                  <Text
-                    style={[
-                      styles.frequencyDescription,
-                      isDark && styles.textMuted,
-                    ]}
-                  >
+                  <Text style={[styles.frequencyDescription, isDark && styles.textMuted]}>
                     {option.description}
                   </Text>
                 </View>
-                <View
-                  style={[styles.radio, isSelected && styles.radioSelected]}
-                >
+                <View style={[styles.radio, isSelected && styles.radioSelected]}>
                   {isSelected && <View style={styles.radioInner} />}
                 </View>
               </TouchableOpacity>
@@ -126,13 +107,7 @@ export default function WorkoutFrequencyScreen() {
         </View>
 
         {/* 선호 운동 시간대 */}
-        <Text
-          style={[
-            styles.title,
-            styles.sectionMargin,
-            isDark && styles.textLight,
-          ]}
-        >
+        <Text style={[styles.title, styles.sectionMargin, isDark && styles.textLight]}>
           선호 운동 시간대
         </Text>
         <Text style={[styles.subtitle, isDark && styles.textMuted]}>
@@ -164,9 +139,7 @@ export default function WorkoutFrequencyScreen() {
                 >
                   {option.label}
                 </Text>
-                <Text
-                  style={[styles.timeDescription, isDark && styles.textMuted]}
-                >
+                <Text style={[styles.timeDescription, isDark && styles.textMuted]}>
                   {option.description}
                 </Text>
               </TouchableOpacity>

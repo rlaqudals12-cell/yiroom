@@ -78,16 +78,11 @@ export default function BodyAnalysisScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* 헤더 */}
         <View style={styles.header}>
-          <Text style={[styles.title, isDark && styles.textLight]}>
-            체형 분석
-          </Text>
+          <Text style={[styles.title, isDark && styles.textLight]}>체형 분석</Text>
           <Text style={[styles.subtitle, isDark && styles.textMuted]}>
             키, 체중과 전신 사진으로{'\n'}나에게 맞는 스타일을 찾아보세요
           </Text>
@@ -95,14 +90,10 @@ export default function BodyAnalysisScreen() {
 
         {/* 신체 정보 입력 */}
         <View style={[styles.card, isDark && styles.cardDark]}>
-          <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-            신체 정보
-          </Text>
+          <Text style={[styles.cardTitle, isDark && styles.textLight]}>신체 정보</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, isDark && styles.textMuted]}>
-              키 (cm)
-            </Text>
+            <Text style={[styles.label, isDark && styles.textMuted]}>키 (cm)</Text>
             <TextInput
               style={[styles.input, isDark && styles.inputDark]}
               placeholder="예: 165"
@@ -115,9 +106,7 @@ export default function BodyAnalysisScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, isDark && styles.textMuted]}>
-              체중 (kg)
-            </Text>
+            <Text style={[styles.label, isDark && styles.textMuted]}>체중 (kg)</Text>
             <TextInput
               style={[styles.input, isDark && styles.inputDark]}
               placeholder="예: 55"
@@ -132,9 +121,7 @@ export default function BodyAnalysisScreen() {
 
         {/* 이미지 업로드 */}
         <View style={[styles.card, isDark && styles.cardDark]}>
-          <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-            전신 사진
-          </Text>
+          <Text style={[styles.cardTitle, isDark && styles.textLight]}>전신 사진</Text>
           <Text style={[styles.cardDescription, isDark && styles.textMuted]}>
             정면에서 촬영한 전신 사진을 선택해주세요
           </Text>
@@ -148,15 +135,11 @@ export default function BodyAnalysisScreen() {
             onPress={pickImage}
           >
             {imageUri ? (
-              <Text style={styles.imagePickerTextSelected}>
-                사진이 선택되었습니다
-              </Text>
+              <Text style={styles.imagePickerTextSelected}>사진이 선택되었습니다</Text>
             ) : (
               <>
                 <Text style={[styles.imagePickerIcon]}>+</Text>
-                <Text
-                  style={[styles.imagePickerText, isDark && styles.textMuted]}
-                >
+                <Text style={[styles.imagePickerText, isDark && styles.textMuted]}>
                   갤러리에서 선택
                 </Text>
               </>
@@ -164,9 +147,7 @@ export default function BodyAnalysisScreen() {
           </TouchableOpacity>
 
           <View style={styles.guideBox}>
-            <Text style={[styles.guideTitle, isDark && styles.textLight]}>
-              촬영 가이드
-            </Text>
+            <Text style={[styles.guideTitle, isDark && styles.textLight]}>촬영 가이드</Text>
             <Text style={[styles.guideText, isDark && styles.textMuted]}>
               • 밝은 배경에서 촬영해주세요
             </Text>

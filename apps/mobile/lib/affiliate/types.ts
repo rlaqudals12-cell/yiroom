@@ -6,12 +6,7 @@
 export type AffiliatePartnerName = 'coupang' | 'iherb' | 'musinsa';
 
 // 분석 결과 기반 매칭용 타입
-export type AffiliateSkinType =
-  | 'dry'
-  | 'oily'
-  | 'combination'
-  | 'sensitive'
-  | 'normal';
+export type AffiliateSkinType = 'dry' | 'oily' | 'combination' | 'sensitive' | 'normal';
 export type AffiliateSkinConcern =
   | 'acne'
   | 'wrinkles'
@@ -19,11 +14,7 @@ export type AffiliateSkinConcern =
   | 'pores'
   | 'dryness'
   | 'redness';
-export type AffiliatePersonalColor =
-  | 'spring_warm'
-  | 'summer_cool'
-  | 'autumn_warm'
-  | 'winter_cool';
+export type AffiliatePersonalColor = 'spring_warm' | 'summer_cool' | 'autumn_warm' | 'winter_cool';
 export type AffiliateBodyType = 'straight' | 'wave' | 'natural';
 
 export interface AffiliateProduct {
@@ -72,12 +63,7 @@ export interface AffiliateProductFilter {
 }
 
 // 정렬 옵션
-export type AffiliateProductSortBy =
-  | 'rating'
-  | 'price_asc'
-  | 'price_desc'
-  | 'popular'
-  | 'newest';
+export type AffiliateProductSortBy = 'rating' | 'price_asc' | 'price_desc' | 'popular' | 'newest';
 
 // DB Row 타입 (snake_case)
 export interface AffiliateProductRow {

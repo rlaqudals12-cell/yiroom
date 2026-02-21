@@ -107,19 +107,13 @@ export default function FeedScreen() {
               style={[
                 styles.avatar,
                 isDark && styles.avatarDark,
-                item.userAvatar
-                  ? {}
-                  : { backgroundColor: isDark ? '#333' : '#e5e5e5' },
+                item.userAvatar ? {} : { backgroundColor: isDark ? '#333' : '#e5e5e5' },
               ]}
             >
-              <Text style={styles.avatarText}>
-                {item.userName.charAt(0).toUpperCase()}
-              </Text>
+              <Text style={styles.avatarText}>{item.userName.charAt(0).toUpperCase()}</Text>
             </View>
             <View style={styles.userMeta}>
-              <Text style={[styles.userName, isDark && styles.textLight]}>
-                {item.userName}
-              </Text>
+              <Text style={[styles.userName, isDark && styles.textLight]}>{item.userName}</Text>
               <Text style={[styles.timestamp, isDark && styles.textMuted]}>
                 {formatTime(item.createdAt)}
               </Text>
@@ -133,21 +127,14 @@ export default function FeedScreen() {
         {/* 컨텐츠 */}
         <View style={styles.cardContent}>
           <View style={styles.typeRow}>
-            <Text style={styles.typeIcon}>
-              {FEED_TYPE_ICONS[item.type] || '📝'}
-            </Text>
+            <Text style={styles.typeIcon}>{FEED_TYPE_ICONS[item.type] || '📝'}</Text>
             <Text style={[styles.typeLabel, isDark && styles.textMuted]}>
               {FEED_TYPE_LABELS[item.type] || item.type}
             </Text>
           </View>
-          <Text style={[styles.contentText, isDark && styles.textLight]}>
-            {item.content}
-          </Text>
+          <Text style={[styles.contentText, isDark && styles.textLight]}>{item.content}</Text>
           {item.detail && (
-            <Text
-              style={[styles.detailText, isDark && styles.textMuted]}
-              numberOfLines={2}
-            >
+            <Text style={[styles.detailText, isDark && styles.textMuted]} numberOfLines={2}>
               {item.detail}
             </Text>
           )}
@@ -155,23 +142,13 @@ export default function FeedScreen() {
 
         {/* 액션 */}
         <View style={styles.cardActions}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleLikePress(item.id)}
-          >
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleLikePress(item.id)}>
             <Text style={styles.actionIcon}>{item.isLiked ? '❤️' : '🤍'}</Text>
-            <Text style={[styles.actionText, isDark && styles.textMuted]}>
-              {item.likes}
-            </Text>
+            <Text style={[styles.actionText, isDark && styles.textMuted]}>{item.likes}</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleItemPress(item.id)}
-          >
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleItemPress(item.id)}>
             <Text style={styles.actionIcon}>💬</Text>
-            <Text style={[styles.actionText, isDark && styles.textMuted]}>
-              {item.comments}
-            </Text>
+            <Text style={[styles.actionText, isDark && styles.textMuted]}>{item.comments}</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -192,9 +169,7 @@ export default function FeedScreen() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyIcon}>📭</Text>
-        <Text style={[styles.emptyTitle, isDark && styles.textLight]}>
-          아직 피드가 없어요
-        </Text>
+        <Text style={[styles.emptyTitle, isDark && styles.textLight]}>아직 피드가 없어요</Text>
         <Text style={[styles.emptySubtitle, isDark && styles.textMuted]}>
           {activeTab === 'my'
             ? '활동을 시작해보세요!'
@@ -207,10 +182,7 @@ export default function FeedScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 탭 */}
       <View style={[styles.tabContainer, isDark && styles.tabContainerDark]}>
         {(['my', 'friends', 'all'] as FeedTab[]).map((tab) => (

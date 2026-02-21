@@ -7,11 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type FavoriteProductType =
-  | 'cosmetic'
-  | 'supplement'
-  | 'equipment'
-  | 'healthfood';
+export type FavoriteProductType = 'cosmetic' | 'supplement' | 'equipment' | 'healthfood';
 
 export interface FavoriteItem {
   productId: string;
@@ -90,10 +86,6 @@ export function getFavoritesCount(): number {
 /**
  * 타입별 즐겨찾기 개수
  */
-export function getFavoritesCountByType(
-  productType: FavoriteProductType
-): number {
-  return useFavoritesStore
-    .getState()
-    .items.filter((i) => i.productType === productType).length;
+export function getFavoritesCountByType(productType: FavoriteProductType): number {
+  return useFavoritesStore.getState().items.filter((i) => i.productType === productType).length;
 }

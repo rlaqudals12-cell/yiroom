@@ -19,11 +19,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  useCloset,
-  type ClothingCategory,
-  CLOTHING_CATEGORY_LABELS,
-} from '../../lib/inventory';
+import { useCloset, type ClothingCategory, CLOTHING_CATEGORY_LABELS } from '../../lib/inventory';
 
 type FilterCategory = ClothingCategory | 'all';
 
@@ -43,15 +39,8 @@ export default function ClosetScreen() {
   const isDark = colorScheme === 'dark';
   const router = useRouter();
 
-  const {
-    items,
-    isLoading,
-    error: _error,
-    toggleFavorite,
-    refetch,
-  } = useCloset();
-  const [selectedCategory, setSelectedCategory] =
-    useState<FilterCategory>('all');
+  const { items, isLoading, error: _error, toggleFavorite, refetch } = useCloset();
+  const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
 
   // 카테고리별 필터링
   const filteredItems = useMemo(() => {
@@ -98,35 +87,20 @@ export default function ClosetScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 통계 헤더 */}
       <View style={styles.statsContainer}>
         <View style={[styles.statCard, isDark && styles.statCardDark]}>
-          <Text style={[styles.statValue, isDark && styles.textLight]}>
-            {stats.total}
-          </Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-            전체
-          </Text>
+          <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.total}</Text>
+          <Text style={[styles.statLabel, isDark && styles.textMuted]}>전체</Text>
         </View>
         <View style={[styles.statCard, isDark && styles.statCardDark]}>
-          <Text style={[styles.statValue, isDark && styles.textLight]}>
-            {stats.favorites}
-          </Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-            즐겨찾기
-          </Text>
+          <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.favorites}</Text>
+          <Text style={[styles.statLabel, isDark && styles.textMuted]}>즐겨찾기</Text>
         </View>
         <View style={[styles.statCard, isDark && styles.statCardDark]}>
-          <Text style={[styles.statValue, isDark && styles.textLight]}>
-            {stats.categories}
-          </Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-            카테고리
-          </Text>
+          <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.categories}</Text>
+          <Text style={[styles.statLabel, isDark && styles.textMuted]}>카테고리</Text>
         </View>
       </View>
 
@@ -151,8 +125,7 @@ export default function ClosetScreen() {
                 style={[
                   styles.filterChipText,
                   isDark && styles.textMuted,
-                  selectedCategory === item.key &&
-                    styles.filterChipTextSelected,
+                  selectedCategory === item.key && styles.filterChipTextSelected,
                 ]}
               >
                 {item.label}
@@ -197,12 +170,7 @@ export default function ClosetScreen() {
                     resizeMode="cover"
                   />
                 ) : (
-                  <View
-                    style={[
-                      styles.itemPlaceholder,
-                      isDark && styles.placeholderDark,
-                    ]}
-                  >
+                  <View style={[styles.itemPlaceholder, isDark && styles.placeholderDark]}>
                     <Text style={styles.placeholderText}>📷</Text>
                   </View>
                 )}
@@ -218,16 +186,12 @@ export default function ClosetScreen() {
                 </TouchableOpacity>
               </View>
               <View style={styles.itemInfo}>
-                <Text
-                  style={[styles.itemName, isDark && styles.textLight]}
-                  numberOfLines={1}
-                >
+                <Text style={[styles.itemName, isDark && styles.textLight]} numberOfLines={1}>
                   {item.name}
                 </Text>
                 <Text style={[styles.itemCategory, isDark && styles.textMuted]}>
-                  {CLOTHING_CATEGORY_LABELS[
-                    item.subCategory as ClothingCategory
-                  ] || item.subCategory}
+                  {CLOTHING_CATEGORY_LABELS[item.subCategory as ClothingCategory] ||
+                    item.subCategory}
                 </Text>
               </View>
             </TouchableOpacity>

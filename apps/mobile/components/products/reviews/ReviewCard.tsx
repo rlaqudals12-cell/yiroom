@@ -165,9 +165,7 @@ export function ReviewCard({
       {/* 별점 */}
       <View style={styles.ratingRow}>
         <StarRating rating={review.rating} size="small" />
-        <Text
-          style={[styles.ratingText, { color: getRatingColor(review.rating) }]}
-        >
+        <Text style={[styles.ratingText, { color: getRatingColor(review.rating) }]}>
           {review.rating.toFixed(1)}
         </Text>
       </View>
@@ -192,14 +190,8 @@ export function ReviewCard({
           accessibilityLabel={`도움됨 ${helpfulCount}명`}
           accessibilityState={{ selected: isHelpful }}
         >
-          <Text
-            style={[styles.helpfulIcon, isHelpful && styles.helpfulIconActive]}
-          >
-            👍
-          </Text>
-          <Text
-            style={[styles.helpfulText, isHelpful && styles.helpfulTextActive]}
-          >
+          <Text style={[styles.helpfulIcon, isHelpful && styles.helpfulIconActive]}>👍</Text>
+          <Text style={[styles.helpfulText, isHelpful && styles.helpfulTextActive]}>
             도움됨 {helpfulCount > 0 && `(${helpfulCount})`}
           </Text>
         </Pressable>

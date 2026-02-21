@@ -31,9 +31,7 @@ interface UseAffiliateClickReturn {
  * 어필리에이트 클릭 훅
  * - 클릭 트래킹 → 딥링크 생성 → 외부 앱/브라우저 열기
  */
-export function useAffiliateClick(
-  options: UseAffiliateClickOptions
-): UseAffiliateClickReturn {
+export function useAffiliateClick(options: UseAffiliateClickOptions): UseAffiliateClickReturn {
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [isLoading, setIsLoading] = useState(false);

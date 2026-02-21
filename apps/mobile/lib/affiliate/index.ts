@@ -36,12 +36,7 @@ export {
 export { createAffiliateClick, getUserClickHistory } from './clicks';
 
 // Deeplink
-export {
-  createDeeplink,
-  openAffiliateLink,
-  trackAndOpenLink,
-  identifyPartner,
-} from './deeplink';
+export { createDeeplink, openAffiliateLink, trackAndOpenLink, identifyPartner } from './deeplink';
 
 // Hooks
 export { useAffiliateClick } from './useAffiliateClick';

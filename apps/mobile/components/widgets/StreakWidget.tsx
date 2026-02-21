@@ -36,12 +36,8 @@ export function StreakWidget({
     return (
       <View style={[styles.containerSmall, isDark && styles.containerDark]}>
         <Text style={styles.emoji}>{level.emoji}</Text>
-        <Text style={[styles.streakNumber, isDark && styles.textLight]}>
-          {streak}
-        </Text>
-        <Text style={[styles.streakLabel, isDark && styles.textMuted]}>
-          일 연속
-        </Text>
+        <Text style={[styles.streakNumber, isDark && styles.textLight]}>{streak}</Text>
+        <Text style={[styles.streakLabel, isDark && styles.textMuted]}>일 연속</Text>
       </View>
     );
   }
@@ -49,9 +45,7 @@ export function StreakWidget({
   return (
     <View style={[styles.containerMedium, isDark && styles.containerDark]}>
       <View style={styles.header}>
-        <Text style={[styles.title, isDark && styles.textLight]}>
-          연속 기록
-        </Text>
+        <Text style={[styles.title, isDark && styles.textLight]}>연속 기록</Text>
         <View style={styles.levelBadge}>
           <Text style={styles.levelText}>{level.label}</Text>
         </View>
@@ -61,9 +55,7 @@ export function StreakWidget({
         <View style={styles.streakMain}>
           <Text style={styles.bigEmoji}>{level.emoji}</Text>
           <View>
-            <Text style={[styles.streakBig, isDark && styles.textLight]}>
-              {streak}일
-            </Text>
+            <Text style={[styles.streakBig, isDark && styles.textLight]}>{streak}일</Text>
             <Text style={[styles.longestStreak, isDark && styles.textMuted]}>
               최고: {longestStreak}일
             </Text>

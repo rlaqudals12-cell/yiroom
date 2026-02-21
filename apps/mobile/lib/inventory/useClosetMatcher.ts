@@ -44,9 +44,7 @@ interface UseClosetMatcherResult {
     }
   ) => ClosetRecommendation[];
   /** 코디 조합 추천 */
-  getOutfitSuggestion: (
-    options?: Partial<MatchOptions>
-  ) => OutfitSuggestion | null;
+  getOutfitSuggestion: (options?: Partial<MatchOptions>) => OutfitSuggestion | null;
   /** 날씨 기반 추천 */
   getWeatherBasedRecommendations: (
     temp: number,
@@ -65,9 +63,7 @@ interface UseClosetMatcherResult {
  * 옷장 매칭 훅
  * 사용자의 퍼스널컬러와 체형을 기반으로 옷장에서 어울리는 아이템 추천
  */
-export function useClosetMatcher(
-  props?: UseClosetMatcherProps
-): UseClosetMatcherResult {
+export function useClosetMatcher(props?: UseClosetMatcherProps): UseClosetMatcherResult {
   const { personalColor = null, bodyType = null } = props || {};
   const { items, isLoading, error, refetch } = useCloset();
 

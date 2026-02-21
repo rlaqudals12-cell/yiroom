@@ -5,13 +5,7 @@
  * beauty/style/records 탭의 반복 패턴을 추출.
  */
 import { ChevronRight } from 'lucide-react-native';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 

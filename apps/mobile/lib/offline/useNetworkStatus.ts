@@ -3,10 +3,7 @@
  * 온라인/오프라인 상태 감지 및 자동 재연결
  */
 
-import NetInfo, {
-  NetInfoState,
-  NetInfoSubscription,
-} from '@react-native-community/netinfo';
+import NetInfo, { NetInfoState, NetInfoSubscription } from '@react-native-community/netinfo';
 import { useState, useEffect, useCallback } from 'react';
 
 import { NetworkStatus } from './types';

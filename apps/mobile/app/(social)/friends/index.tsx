@@ -47,29 +47,15 @@ export default function FriendsScreen() {
         {item.avatarUrl ? (
           <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
         ) : (
-          <View
-            style={[
-              styles.avatarPlaceholder,
-              isDark && styles.avatarPlaceholderDark,
-            ]}
-          >
+          <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
             <Text style={styles.avatarText}>{item.displayName.charAt(0)}</Text>
           </View>
         )}
-        <View
-          style={[
-            styles.tierBadge,
-            { backgroundColor: getTierColor(item.tier) },
-          ]}
-        />
+        <View style={[styles.tierBadge, { backgroundColor: getTierColor(item.tier) }]} />
       </View>
       <View style={styles.friendInfo}>
-        <Text style={[styles.friendName, isDark && styles.textLight]}>
-          {item.displayName}
-        </Text>
-        <Text style={[styles.friendLevel, isDark && styles.textMuted]}>
-          Lv.{item.level}
-        </Text>
+        <Text style={[styles.friendName, isDark && styles.textLight]}>{item.displayName}</Text>
+        <Text style={[styles.friendLevel, isDark && styles.textMuted]}>Lv.{item.level}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -85,10 +71,7 @@ export default function FriendsScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 상단 액션 */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -96,9 +79,7 @@ export default function FriendsScreen() {
           onPress={handleSearch}
         >
           <Text style={styles.actionIcon}>🔍</Text>
-          <Text style={[styles.actionText, isDark && styles.textLight]}>
-            친구 찾기
-          </Text>
+          <Text style={[styles.actionText, isDark && styles.textLight]}>친구 찾기</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, isDark && styles.actionButtonDark]}
@@ -117,27 +98,21 @@ export default function FriendsScreen() {
           <Text style={[styles.statValue, isDark && styles.textLight]}>
             {stats?.totalFriends ?? 0}
           </Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-            친구
-          </Text>
+          <Text style={[styles.statLabel, isDark && styles.textMuted]}>친구</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, isDark && styles.textLight]}>
             {stats?.pendingRequests ?? 0}
           </Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-            받은 요청
-          </Text>
+          <Text style={[styles.statLabel, isDark && styles.textMuted]}>받은 요청</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, isDark && styles.textLight]}>
             {stats?.sentRequests ?? 0}
           </Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-            보낸 요청
-          </Text>
+          <Text style={[styles.statLabel, isDark && styles.textMuted]}>보낸 요청</Text>
         </View>
       </View>
 
@@ -145,9 +120,7 @@ export default function FriendsScreen() {
       {friends.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>👥</Text>
-          <Text style={[styles.emptyText, isDark && styles.textMuted]}>
-            아직 친구가 없어요
-          </Text>
+          <Text style={[styles.emptyText, isDark && styles.textMuted]}>아직 친구가 없어요</Text>
           <Text style={[styles.emptySubtext, isDark && styles.textMuted]}>
             친구를 찾아 함께 운동해보세요!
           </Text>

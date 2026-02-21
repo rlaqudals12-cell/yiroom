@@ -2,14 +2,7 @@
  * W-1 운동 온보딩 - 시작 화면
  */
 import { router } from 'expo-router';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  useColorScheme,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function WorkoutOnboardingScreen() {
@@ -21,19 +14,14 @@ export default function WorkoutOnboardingScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* 헤더 */}
         <View style={styles.header}>
           <View style={styles.iconContainer}>
             <Text style={styles.iconText}>W</Text>
           </View>
-          <Text style={[styles.title, isDark && styles.textLight]}>
-            맞춤 운동 플랜
-          </Text>
+          <Text style={[styles.title, isDark && styles.textLight]}>맞춤 운동 플랜</Text>
           <Text style={[styles.subtitle, isDark && styles.textMuted]}>
             체형과 목표에 맞는{'\n'}나만의 운동 루틴을 만들어보세요
           </Text>
@@ -41,9 +29,7 @@ export default function WorkoutOnboardingScreen() {
 
         {/* 특징 카드 */}
         <View style={[styles.card, isDark && styles.cardDark]}>
-          <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-            이룸 운동의 특징
-          </Text>
+          <Text style={[styles.cardTitle, isDark && styles.textLight]}>이룸 운동의 특징</Text>
           <View style={styles.featureList}>
             <FeatureItem
               emoji="🎯"
@@ -74,9 +60,7 @@ export default function WorkoutOnboardingScreen() {
 
         {/* 온보딩 단계 */}
         <View style={[styles.card, isDark && styles.cardDark]}>
-          <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-            온보딩 과정 (3단계)
-          </Text>
+          <Text style={[styles.cardTitle, isDark && styles.textLight]}>온보딩 과정 (3단계)</Text>
           <View style={styles.stepList}>
             <StepItem number={1} title="운동 목표 선택" isDark={isDark} />
             <StepItem number={2} title="운동 빈도 설정" isDark={isDark} />
@@ -110,34 +94,20 @@ function FeatureItem({
     <View style={styles.featureItem}>
       <Text style={styles.featureEmoji}>{emoji}</Text>
       <View style={styles.featureContent}>
-        <Text style={[styles.featureTitle, isDark && styles.textLight]}>
-          {title}
-        </Text>
-        <Text style={[styles.featureDescription, isDark && styles.textMuted]}>
-          {description}
-        </Text>
+        <Text style={[styles.featureTitle, isDark && styles.textLight]}>{title}</Text>
+        <Text style={[styles.featureDescription, isDark && styles.textMuted]}>{description}</Text>
       </View>
     </View>
   );
 }
 
-function StepItem({
-  number,
-  title,
-  isDark,
-}: {
-  number: number;
-  title: string;
-  isDark: boolean;
-}) {
+function StepItem({ number, title, isDark }: { number: number; title: string; isDark: boolean }) {
   return (
     <View style={styles.stepItem}>
       <View style={styles.stepNumber}>
         <Text style={styles.stepNumberText}>{number}</Text>
       </View>
-      <Text style={[styles.stepTitle, isDark && styles.textLight]}>
-        {title}
-      </Text>
+      <Text style={[styles.stepTitle, isDark && styles.textLight]}>{title}</Text>
     </View>
   );
 }

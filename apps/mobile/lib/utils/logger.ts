@@ -43,10 +43,7 @@ const DEFAULT_CONFIG: LoggerConfig = {
  * @param module 모듈 이름 (예: 'Workout', 'Nutrition', 'Camera')
  * @param config 로거 설정 (선택)
  */
-export function createLogger(
-  module: string,
-  config: Partial<LoggerConfig> = {}
-) {
+export function createLogger(module: string, config: Partial<LoggerConfig> = {}) {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
   const shouldLog = (level: LogLevel): boolean => {
@@ -60,9 +57,7 @@ export function createLogger(
 
   const formatMessage = (level: LogLevel, message: string): string => {
     const prefix = `[${module}]`;
-    const timestamp = finalConfig.showTimestamp
-      ? `[${new Date().toISOString()}]`
-      : '';
+    const timestamp = finalConfig.showTimestamp ? `[${new Date().toISOString()}]` : '';
     const levelTag = `[${level.toUpperCase()}]`;
 
     return `${timestamp}${prefix}${levelTag} ${message}`.trim();

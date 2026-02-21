@@ -91,16 +91,11 @@ export function HomeQuickActions({
             운동, 영양, 뷰티 궁금한 것 무엇이든
           </Text>
         </View>
-        <Text style={{ fontSize: 28, fontWeight: '300', color: coachColor }}>
-          ›
-        </Text>
+        <Text style={{ fontSize: 28, fontWeight: '300', color: coachColor }}>›</Text>
       </Pressable>
 
       {/* 퀵 액션 */}
-      <SectionHeader
-        title="빠른 시작"
-        style={{ marginBottom: spacing.sm + 4 }}
-      />
+      <SectionHeader title="빠른 시작" style={{ marginBottom: spacing.sm + 4 }} />
       <View style={[styles.actionsRow, { gap: spacing.sm + 4 }]}>
         {actions.map((action) => (
           <Pressable

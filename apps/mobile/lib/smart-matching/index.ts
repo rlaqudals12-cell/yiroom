@@ -16,11 +16,7 @@ const API_BASE_URL =
 // ============================================
 
 export type ClothingCategory = 'top' | 'bottom' | 'outer' | 'dress' | 'shoes';
-export type SizeRecommendationBasis =
-  | 'history'
-  | 'measurements'
-  | 'brand_chart'
-  | 'general';
+export type SizeRecommendationBasis = 'history' | 'measurements' | 'brand_chart' | 'general';
 export type SizeFit = 'small' | 'perfect' | 'large';
 export type PreferredFit = 'tight' | 'regular' | 'loose';
 
@@ -71,22 +67,17 @@ export async function getSizeRecommendation(
     productId?: string;
   }
 ): Promise<SizeRecommendation> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/smart-matching/size-recommend`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(params),
-    }
-  );
+  const response = await fetch(`${API_BASE_URL}/api/smart-matching/size-recommend`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(params),
+  });
 
   if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ error: 'Unknown error' }));
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
     throw new Error(error.error || `HTTP ${response.status}`);
   }
 
@@ -97,18 +88,13 @@ export async function getSizeRecommendation(
 /**
  * 사용자 신체 치수 조회
  */
-export async function getMeasurements(
-  token: string
-): Promise<UserBodyMeasurements | null> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/smart-matching/measurements`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+export async function getMeasurements(token: string): Promise<UserBodyMeasurements | null> {
+  const response = await fetch(`${API_BASE_URL}/api/smart-matching/measurements`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
     if (response.status === 404) return null;
@@ -126,22 +112,17 @@ export async function saveMeasurements(
   token: string,
   measurements: Partial<UserBodyMeasurements>
 ): Promise<UserBodyMeasurements> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/smart-matching/measurements`,
-    {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(measurements),
-    }
-  );
+  const response = await fetch(`${API_BASE_URL}/api/smart-matching/measurements`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(measurements),
+  });
 
   if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ error: 'Unknown error' }));
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
     throw new Error(error.error || `HTTP ${response.status}`);
   }
 
@@ -152,18 +133,13 @@ export async function saveMeasurements(
 /**
  * 사이즈 기록 조회
  */
-export async function getSizeHistory(
-  token: string
-): Promise<SizeHistoryItem[]> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/smart-matching/size-history`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+export async function getSizeHistory(token: string): Promise<SizeHistoryItem[]> {
+  const response = await fetch(`${API_BASE_URL}/api/smart-matching/size-history`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);
@@ -187,22 +163,17 @@ export async function addSizeHistory(
     productId?: string;
   }
 ): Promise<SizeHistoryItem> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/smart-matching/size-history`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(item),
-    }
-  );
+  const response = await fetch(`${API_BASE_URL}/api/smart-matching/size-history`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(item),
+  });
 
   if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ error: 'Unknown error' }));
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
     throw new Error(error.error || `HTTP ${response.status}`);
   }
 

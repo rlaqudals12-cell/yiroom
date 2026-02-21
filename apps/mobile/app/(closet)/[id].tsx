@@ -82,10 +82,7 @@ export default function ItemDetailScreen() {
           <Text style={[styles.emptyText, isDark && styles.textMuted]}>
             아이템을 찾을 수 없어요
           </Text>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>돌아가기</Text>
           </TouchableOpacity>
         </View>
@@ -102,26 +99,14 @@ export default function ItemDetailScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 이미지 */}
         <View style={styles.imageContainer}>
           {item.imageUrl ? (
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={styles.image}
-              resizeMode="cover"
-            />
+            <Image source={{ uri: item.imageUrl }} style={styles.image} resizeMode="cover" />
           ) : (
-            <View
-              style={[styles.placeholder, isDark && styles.placeholderDark]}
-            >
+            <View style={[styles.placeholder, isDark && styles.placeholderDark]}>
               <Text style={styles.placeholderText}>📷</Text>
             </View>
           )}
@@ -131,13 +116,9 @@ export default function ItemDetailScreen() {
         <View style={[styles.infoCard, isDark && styles.cardDark]}>
           <View style={styles.infoHeader}>
             <View style={styles.infoHeaderContent}>
-              <Text style={[styles.itemName, isDark && styles.textLight]}>
-                {item.name}
-              </Text>
+              <Text style={[styles.itemName, isDark && styles.textLight]}>{item.name}</Text>
               <Text style={[styles.itemCategory, isDark && styles.textMuted]}>
-                {CLOTHING_CATEGORY_LABELS[
-                  item.subCategory as ClothingCategory
-                ] || item.subCategory}
+                {CLOTHING_CATEGORY_LABELS[item.subCategory as ClothingCategory] || item.subCategory}
               </Text>
             </View>
             <TouchableOpacity onPress={handleFavorite}>
@@ -151,51 +132,32 @@ export default function ItemDetailScreen() {
 
           {item.brand && (
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, isDark && styles.textMuted]}>
-                브랜드
-              </Text>
-              <Text style={[styles.infoValue, isDark && styles.textLight]}>
-                {item.brand}
-              </Text>
+              <Text style={[styles.infoLabel, isDark && styles.textMuted]}>브랜드</Text>
+              <Text style={[styles.infoValue, isDark && styles.textLight]}>{item.brand}</Text>
             </View>
           )}
 
           {metadata.size && (
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, isDark && styles.textMuted]}>
-                사이즈
-              </Text>
-              <Text style={[styles.infoValue, isDark && styles.textLight]}>
-                {metadata.size}
-              </Text>
+              <Text style={[styles.infoLabel, isDark && styles.textMuted]}>사이즈</Text>
+              <Text style={[styles.infoValue, isDark && styles.textLight]}>{metadata.size}</Text>
             </View>
           )}
 
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, isDark && styles.textMuted]}>
-              착용 횟수
-            </Text>
-            <Text style={[styles.infoValue, isDark && styles.textLight]}>
-              {item.useCount}회
-            </Text>
+            <Text style={[styles.infoLabel, isDark && styles.textMuted]}>착용 횟수</Text>
+            <Text style={[styles.infoValue, isDark && styles.textLight]}>{item.useCount}회</Text>
           </View>
         </View>
 
         {/* 색상 */}
         {metadata.color && metadata.color.length > 0 && (
           <View style={[styles.infoCard, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-              색상
-            </Text>
+            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>색상</Text>
             <View style={styles.tagsContainer}>
               {metadata.color.map((color, index) => (
-                <View
-                  key={index}
-                  style={[styles.tag, { backgroundColor: '#8b5cf620' }]}
-                >
-                  <Text style={[styles.tagText, { color: '#8b5cf6' }]}>
-                    {color}
-                  </Text>
+                <View key={index} style={[styles.tag, { backgroundColor: '#8b5cf620' }]}>
+                  <Text style={[styles.tagText, { color: '#8b5cf6' }]}>{color}</Text>
                 </View>
               ))}
             </View>
@@ -205,15 +167,10 @@ export default function ItemDetailScreen() {
         {/* 계절 */}
         {metadata.season && metadata.season.length > 0 && (
           <View style={[styles.infoCard, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-              계절
-            </Text>
+            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>계절</Text>
             <View style={styles.tagsContainer}>
               {metadata.season.map((season, index) => (
-                <View
-                  key={index}
-                  style={[styles.tag, { backgroundColor: '#3b82f620' }]}
-                >
+                <View key={index} style={[styles.tag, { backgroundColor: '#3b82f620' }]}>
                   <Text style={[styles.tagText, { color: '#3b82f6' }]}>
                     {SEASON_LABELS[season]}
                   </Text>
@@ -226,15 +183,10 @@ export default function ItemDetailScreen() {
         {/* 상황 */}
         {metadata.occasion && metadata.occasion.length > 0 && (
           <View style={[styles.infoCard, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-              상황
-            </Text>
+            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>상황</Text>
             <View style={styles.tagsContainer}>
               {metadata.occasion.map((occasion, index) => (
-                <View
-                  key={index}
-                  style={[styles.tag, { backgroundColor: '#22c55e20' }]}
-                >
+                <View key={index} style={[styles.tag, { backgroundColor: '#22c55e20' }]}>
                   <Text style={[styles.tagText, { color: '#22c55e' }]}>
                     {OCCASION_LABELS[occasion]}
                   </Text>
@@ -247,18 +199,11 @@ export default function ItemDetailScreen() {
         {/* 태그 */}
         {item.tags && item.tags.length > 0 && (
           <View style={[styles.infoCard, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-              태그
-            </Text>
+            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>태그</Text>
             <View style={styles.tagsContainer}>
               {item.tags.map((tag, index) => (
-                <View
-                  key={index}
-                  style={[styles.tag, { backgroundColor: '#f5f5f5' }]}
-                >
-                  <Text style={[styles.tagText, { color: '#666' }]}>
-                    #{tag}
-                  </Text>
+                <View key={index} style={[styles.tag, { backgroundColor: '#f5f5f5' }]}>
+                  <Text style={[styles.tagText, { color: '#666' }]}>#{tag}</Text>
                 </View>
               ))}
             </View>
@@ -268,14 +213,9 @@ export default function ItemDetailScreen() {
 
       {/* 하단 액션 버튼 */}
       <View style={[styles.actionBar, isDark && styles.actionBarDark]}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={handleDelete}
-        >
+        <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={handleDelete}>
           <Trash2 size={20} color="#ef4444" />
-          <Text style={[styles.actionButtonText, { color: '#ef4444' }]}>
-            삭제
-          </Text>
+          <Text style={[styles.actionButtonText, { color: '#ef4444' }]}>삭제</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, styles.editButton]}

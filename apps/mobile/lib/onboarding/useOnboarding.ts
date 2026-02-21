@@ -139,19 +139,16 @@ export function useOnboarding(): UseOnboardingResult {
   }, []);
 
   // 선호도 설정
-  const setPreferences = useCallback(
-    (prefs: Partial<OnboardingPreferences>) => {
-      setData((prev) => {
-        const newData = {
-          ...prev,
-          preferences: { ...prev.preferences, ...prefs },
-        };
-        saveData(newData);
-        return newData;
-      });
-    },
-    []
-  );
+  const setPreferences = useCallback((prefs: Partial<OnboardingPreferences>) => {
+    setData((prev) => {
+      const newData = {
+        ...prev,
+        preferences: { ...prev.preferences, ...prefs },
+      };
+      saveData(newData);
+      return newData;
+    });
+  }, []);
 
   // 온보딩 완료
   const completeOnboarding = useCallback(async () => {

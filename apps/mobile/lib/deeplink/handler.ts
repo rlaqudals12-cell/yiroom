@@ -7,12 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Linking } from 'react-native';
 
-import {
-  DEEP_LINK_SCHEME,
-  PATH_MAPPING,
-  ParsedDeepLink,
-  DeepLinkParams,
-} from './types';
+import { DEEP_LINK_SCHEME, PATH_MAPPING, ParsedDeepLink, DeepLinkParams } from './types';
 import { deepLinkLogger } from '../utils/logger';
 
 /**
@@ -62,11 +57,7 @@ export function navigateToDeepLink(parsed: ParsedDeepLink): boolean {
   let targetPath = PATH_MAPPING[parsed.path];
 
   // 동적 경로 처리 (예: /products/:id)
-  if (
-    !targetPath &&
-    parsed.path.startsWith('/products/') &&
-    parsed.path !== '/products/search'
-  ) {
+  if (!targetPath && parsed.path.startsWith('/products/') && parsed.path !== '/products/search') {
     const id = parsed.path.split('/').pop();
     targetPath = `/products/${id}`;
   }
@@ -84,9 +75,7 @@ export function navigateToDeepLink(parsed: ParsedDeepLink): boolean {
 
   // 파라미터가 있는 경우 쿼리스트링으로 전달
   if (Object.keys(parsed.params).length > 0) {
-    const queryString = new URLSearchParams(
-      parsed.params as Record<string, string>
-    ).toString();
+    const queryString = new URLSearchParams(parsed.params as Record<string, string>).toString();
     router.push(`${targetPath}?${queryString}` as never);
   } else {
     router.push(targetPath as never);
@@ -123,17 +112,12 @@ export async function getInitialDeepLink(): Promise<ParsedDeepLink | null> {
 /**
  * 딥링크 URL 생성
  */
-export function createDeepLinkUrl(
-  path: string,
-  params?: DeepLinkParams
-): string {
+export function createDeepLinkUrl(path: string, params?: DeepLinkParams): string {
   const normalizedPath = path.startsWith('/') ? path.substring(1) : path;
   let url = `${DEEP_LINK_SCHEME}://${normalizedPath}`;
 
   if (params && Object.keys(params).length > 0) {
-    const queryString = new URLSearchParams(
-      params as Record<string, string>
-    ).toString();
+    const queryString = new URLSearchParams(params as Record<string, string>).toString();
     url += `?${queryString}`;
   }
 

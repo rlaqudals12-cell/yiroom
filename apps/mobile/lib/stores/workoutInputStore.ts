@@ -8,12 +8,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 // 타입 정의
-export type WorkoutGoal =
-  | 'weight_loss'
-  | 'muscle_gain'
-  | 'endurance'
-  | 'flexibility'
-  | 'health';
+export type WorkoutGoal = 'weight_loss' | 'muscle_gain' | 'endurance' | 'flexibility' | 'health';
 export type WorkoutLocation = 'gym' | 'home' | 'outdoor' | 'mixed';
 export type WorkoutFrequency = '1-2' | '3-4' | '5-6' | 'daily';
 export type FitnessLevel = 'beginner' | 'intermediate' | 'advanced';
@@ -112,8 +107,7 @@ export const useWorkoutInputStore = create<WorkoutInputState>()(
           goals: state.goals.filter((g) => g !== goal),
         })),
 
-      setConcerns: (concerns) =>
-        set({ concerns: concerns.slice(0, MAX_CONCERNS) }),
+      setConcerns: (concerns) => set({ concerns: concerns.slice(0, MAX_CONCERNS) }),
 
       setFrequency: (frequency) => set({ frequency }),
 

@@ -154,10 +154,7 @@ export async function deleteCoachSession(
   supabase: SupabaseClient,
   sessionId: string
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('coach_sessions')
-    .delete()
-    .eq('id', sessionId);
+  const { error } = await supabase.from('coach_sessions').delete().eq('id', sessionId);
 
   if (error) {
     coachLogger.error('[Coach History] Session delete error:', error);

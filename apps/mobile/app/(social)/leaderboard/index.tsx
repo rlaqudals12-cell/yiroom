@@ -17,11 +17,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  getTierColor,
-  getTierLabel,
-  type RankingEntry,
-} from '../../../lib/social';
+import { getTierColor, getTierLabel, type RankingEntry } from '../../../lib/social';
 import {
   useLeaderboard,
   useFriendsLeaderboard,
@@ -37,11 +33,7 @@ export default function LeaderboardScreen() {
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
 
-  const {
-    rankings: allRankings,
-    isLoading: allLoading,
-    refetch: refetchAll,
-  } = useLeaderboard();
+  const { rankings: allRankings, isLoading: allLoading, refetch: refetchAll } = useLeaderboard();
   const {
     rankings: friendRankings,
     isLoading: friendsLoading,
@@ -70,16 +62,10 @@ export default function LeaderboardScreen() {
 
     return (
       <View
-        style={[
-          styles.rankingCard,
-          isDark && styles.rankingCardDark,
-          isMe && styles.rankingCardMe,
-        ]}
+        style={[styles.rankingCard, isDark && styles.rankingCardDark, isMe && styles.rankingCardMe]}
       >
         <View style={styles.rankBadge}>
-          <Text
-            style={[styles.rankText, item.rank <= 3 && styles.rankTextMedal]}
-          >
+          <Text style={[styles.rankText, item.rank <= 3 && styles.rankTextMedal]}>
             {getRankBadge(item.rank)}
           </Text>
         </View>
@@ -88,42 +74,22 @@ export default function LeaderboardScreen() {
           {item.avatarUrl ? (
             <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
           ) : (
-            <View
-              style={[
-                styles.avatarPlaceholder,
-                isDark && styles.avatarPlaceholderDark,
-              ]}
-            >
-              <Text style={styles.avatarText}>
-                {item.displayName.charAt(0)}
-              </Text>
+            <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
+              <Text style={styles.avatarText}>{item.displayName.charAt(0)}</Text>
             </View>
           )}
-          <View
-            style={[
-              styles.tierDot,
-              { backgroundColor: getTierColor(item.tier) },
-            ]}
-          />
+          <View style={[styles.tierDot, { backgroundColor: getTierColor(item.tier) }]} />
         </View>
 
         <View style={styles.userInfo}>
-          <Text
-            style={[
-              styles.userName,
-              isDark && styles.textLight,
-              isMe && styles.userNameMe,
-            ]}
-          >
+          <Text style={[styles.userName, isDark && styles.textLight, isMe && styles.userNameMe]}>
             {item.displayName} {isMe && '(나)'}
           </Text>
           <View style={styles.userMeta}>
             <Text style={[styles.tierText, { color: getTierColor(item.tier) }]}>
               {getTierLabel(item.tier)}
             </Text>
-            <Text style={[styles.levelText, isDark && styles.textMuted]}>
-              Lv.{item.level}
-            </Text>
+            <Text style={[styles.levelText, isDark && styles.textMuted]}>Lv.{item.level}</Text>
           </View>
         </View>
 
@@ -131,19 +97,14 @@ export default function LeaderboardScreen() {
           <Text style={[styles.scoreValue, isDark && styles.textLight]}>
             {item.score.toLocaleString()}
           </Text>
-          <Text style={[styles.scoreLabel, isDark && styles.textMuted]}>
-            XP
-          </Text>
+          <Text style={[styles.scoreLabel, isDark && styles.textMuted]}>XP</Text>
         </View>
       </View>
     );
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 내 순위 카드 */}
       {rank && (
         <View style={[styles.myRankCard, isDark && styles.myRankCardDark]}>

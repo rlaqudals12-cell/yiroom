@@ -2,14 +2,7 @@
  * S-1 피부 분석 - 시작 화면
  */
 import { router } from 'expo-router';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  useColorScheme,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SkinAnalysisScreen() {
@@ -21,19 +14,14 @@ export default function SkinAnalysisScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* 헤더 */}
         <View style={styles.header}>
           <View style={styles.iconContainer}>
             <Text style={styles.iconText}>AI</Text>
           </View>
-          <Text style={[styles.title, isDark && styles.textLight]}>
-            AI 피부 분석
-          </Text>
+          <Text style={[styles.title, isDark && styles.textLight]}>AI 피부 분석</Text>
           <Text style={[styles.subtitle, isDark && styles.textMuted]}>
             사진 한 장으로 나의 피부 타입과{'\n'}맞춤 스킨케어 루틴을 확인하세요
           </Text>
@@ -41,53 +29,21 @@ export default function SkinAnalysisScreen() {
 
         {/* 분석 항목 */}
         <View style={[styles.card, isDark && styles.cardDark]}>
-          <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-            분석 항목
-          </Text>
+          <Text style={[styles.cardTitle, isDark && styles.textLight]}>분석 항목</Text>
           <View style={styles.itemList}>
-            <AnalysisItem
-              label="피부 타입"
-              description="건성/지성/복합/민감성"
-              isDark={isDark}
-            />
-            <AnalysisItem
-              label="수분도"
-              description="피부 수분 레벨 측정"
-              isDark={isDark}
-            />
-            <AnalysisItem
-              label="유분도"
-              description="피부 유분 밸런스"
-              isDark={isDark}
-            />
-            <AnalysisItem
-              label="모공"
-              description="모공 상태 분석"
-              isDark={isDark}
-            />
-            <AnalysisItem
-              label="주름"
-              description="피부 탄력 상태"
-              isDark={isDark}
-            />
-            <AnalysisItem
-              label="색소침착"
-              description="기미/잡티 분석"
-              isDark={isDark}
-            />
-            <AnalysisItem
-              label="민감도"
-              description="피부 민감 지수"
-              isDark={isDark}
-            />
+            <AnalysisItem label="피부 타입" description="건성/지성/복합/민감성" isDark={isDark} />
+            <AnalysisItem label="수분도" description="피부 수분 레벨 측정" isDark={isDark} />
+            <AnalysisItem label="유분도" description="피부 유분 밸런스" isDark={isDark} />
+            <AnalysisItem label="모공" description="모공 상태 분석" isDark={isDark} />
+            <AnalysisItem label="주름" description="피부 탄력 상태" isDark={isDark} />
+            <AnalysisItem label="색소침착" description="기미/잡티 분석" isDark={isDark} />
+            <AnalysisItem label="민감도" description="피부 민감 지수" isDark={isDark} />
           </View>
         </View>
 
         {/* 안내 */}
         <View style={[styles.card, isDark && styles.cardDark]}>
-          <Text style={[styles.cardTitle, isDark && styles.textLight]}>
-            촬영 가이드
-          </Text>
+          <Text style={[styles.cardTitle, isDark && styles.textLight]}>촬영 가이드</Text>
           <View style={styles.guideList}>
             <Text style={[styles.guideItem, isDark && styles.textMuted]}>
               • 화장을 지운 맨 얼굴로 촬영해주세요
@@ -104,10 +60,7 @@ export default function SkinAnalysisScreen() {
 
       {/* 시작 버튼 */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.startButton}
-          onPress={handleStartAnalysis}
-        >
+        <TouchableOpacity style={styles.startButton} onPress={handleStartAnalysis}>
           <Text style={styles.startButtonText}>피부 분석 시작하기</Text>
         </TouchableOpacity>
       </View>
@@ -128,12 +81,8 @@ function AnalysisItem({
     <View style={styles.analysisItem}>
       <View style={styles.bullet} />
       <View>
-        <Text style={[styles.itemLabel, isDark && styles.textLight]}>
-          {label}
-        </Text>
-        <Text style={[styles.itemDescription, isDark && styles.textMuted]}>
-          {description}
-        </Text>
+        <Text style={[styles.itemLabel, isDark && styles.textLight]}>{label}</Text>
+        <Text style={[styles.itemDescription, isDark && styles.textMuted]}>{description}</Text>
       </View>
     </View>
   );

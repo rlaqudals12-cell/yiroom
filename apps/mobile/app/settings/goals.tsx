@@ -117,21 +117,13 @@ export default function GoalsSettingsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 물 목표 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionIcon}>💧</Text>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-              일일 물 목표
-            </Text>
+            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>일일 물 목표</Text>
           </View>
           <View style={[styles.card, isDark && styles.cardDark]}>
             <View style={styles.presetRow}>
@@ -149,8 +141,7 @@ export default function GoalsSettingsScreen() {
                     style={[
                       styles.presetButtonText,
                       isDark && styles.textMuted,
-                      goals.waterGoal === value &&
-                        styles.presetButtonTextSelected,
+                      goals.waterGoal === value && styles.presetButtonTextSelected,
                     ]}
                   >
                     {(value / 1000).toFixed(1)}L
@@ -168,11 +159,7 @@ export default function GoalsSettingsScreen() {
                 placeholder="직접 입력"
                 placeholderTextColor={isDark ? '#666' : '#999'}
               />
-              <Text
-                style={[styles.customInputUnit, isDark && styles.textMuted]}
-              >
-                ml
-              </Text>
+              <Text style={[styles.customInputUnit, isDark && styles.textMuted]}>ml</Text>
             </View>
           </View>
         </View>
@@ -181,9 +168,7 @@ export default function GoalsSettingsScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionIcon}>🍽️</Text>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-              일일 칼로리 목표
-            </Text>
+            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>일일 칼로리 목표</Text>
           </View>
           <View style={[styles.card, isDark && styles.cardDark]}>
             <View style={styles.presetRow}>
@@ -201,8 +186,7 @@ export default function GoalsSettingsScreen() {
                     style={[
                       styles.presetButtonText,
                       isDark && styles.textMuted,
-                      goals.caloriesGoal === value &&
-                        styles.presetButtonTextSelected,
+                      goals.caloriesGoal === value && styles.presetButtonTextSelected,
                     ]}
                   >
                     {value}
@@ -220,11 +204,7 @@ export default function GoalsSettingsScreen() {
                 placeholder="직접 입력"
                 placeholderTextColor={isDark ? '#666' : '#999'}
               />
-              <Text
-                style={[styles.customInputUnit, isDark && styles.textMuted]}
-              >
-                kcal
-              </Text>
+              <Text style={[styles.customInputUnit, isDark && styles.textMuted]}>kcal</Text>
             </View>
           </View>
         </View>
@@ -233,16 +213,12 @@ export default function GoalsSettingsScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionIcon}>🏃</Text>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-              운동 목표
-            </Text>
+            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>운동 목표</Text>
           </View>
           <View style={[styles.card, isDark && styles.cardDark]}>
             {/* 운동 시간 */}
             <View style={styles.goalRow}>
-              <Text style={[styles.goalLabel, isDark && styles.textLight]}>
-                일일 운동 시간
-              </Text>
+              <Text style={[styles.goalLabel, isDark && styles.textLight]}>일일 운동 시간</Text>
               <View style={styles.goalSelector}>
                 {[15, 30, 45, 60].map((value) => (
                   <TouchableOpacity
@@ -250,8 +226,7 @@ export default function GoalsSettingsScreen() {
                     style={[
                       styles.goalOption,
                       isDark && styles.goalOptionDark,
-                      goals.workoutMinutesGoal === value &&
-                        styles.goalOptionSelected,
+                      goals.workoutMinutesGoal === value && styles.goalOptionSelected,
                     ]}
                     onPress={() => handleWorkoutMinutes(value)}
                   >
@@ -259,8 +234,7 @@ export default function GoalsSettingsScreen() {
                       style={[
                         styles.goalOptionText,
                         isDark && styles.textMuted,
-                        goals.workoutMinutesGoal === value &&
-                          styles.goalOptionTextSelected,
+                        goals.workoutMinutesGoal === value && styles.goalOptionTextSelected,
                       ]}
                     >
                       {value}분
@@ -272,15 +246,9 @@ export default function GoalsSettingsScreen() {
 
             {/* 주당 운동 횟수 */}
             <View
-              style={[
-                styles.goalRow,
-                styles.goalRowBorder,
-                isDark && styles.goalRowBorderDark,
-              ]}
+              style={[styles.goalRow, styles.goalRowBorder, isDark && styles.goalRowBorderDark]}
             >
-              <Text style={[styles.goalLabel, isDark && styles.textLight]}>
-                주당 운동 일수
-              </Text>
+              <Text style={[styles.goalLabel, isDark && styles.textLight]}>주당 운동 일수</Text>
               <View style={styles.goalSelector}>
                 {[3, 4, 5, 6, 7].map((value) => (
                   <TouchableOpacity
@@ -288,8 +256,7 @@ export default function GoalsSettingsScreen() {
                     style={[
                       styles.goalOption,
                       isDark && styles.goalOptionDark,
-                      goals.workoutDaysGoal === value &&
-                        styles.goalOptionSelected,
+                      goals.workoutDaysGoal === value && styles.goalOptionSelected,
                     ]}
                     onPress={() => handleWorkoutDays(value)}
                   >
@@ -297,8 +264,7 @@ export default function GoalsSettingsScreen() {
                       style={[
                         styles.goalOptionText,
                         isDark && styles.textMuted,
-                        goals.workoutDaysGoal === value &&
-                          styles.goalOptionTextSelected,
+                        goals.workoutDaysGoal === value && styles.goalOptionTextSelected,
                       ]}
                     >
                       {value}일

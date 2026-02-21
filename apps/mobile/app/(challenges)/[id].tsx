@@ -22,10 +22,7 @@ import {
   DIFFICULTY_NAMES,
   DIFFICULTY_COLORS,
 } from '@/lib/challenges';
-import {
-  useChallenges,
-  useJoinChallenge,
-} from '@/lib/challenges/useChallenges';
+import { useChallenges, useJoinChallenge } from '@/lib/challenges/useChallenges';
 import { useAppPreferencesStore } from '@/lib/stores';
 
 // 챌린지 상세 뷰 타입 (UI 표시용)
@@ -60,10 +57,7 @@ interface ChallengeDetail {
   }[];
 }
 
-const DOMAIN_CONFIG: Record<
-  string,
-  { icon: string; color: string; label: string }
-> = {
+const DOMAIN_CONFIG: Record<string, { icon: string; color: string; label: string }> = {
   nutrition: { icon: '🥗', color: DOMAIN_COLORS.nutrition, label: '영양' },
   workout: { icon: '💪', color: DOMAIN_COLORS.workout, label: '운동' },
   skin: { icon: '✨', color: DOMAIN_COLORS.skin, label: '피부' },
@@ -82,12 +76,7 @@ export default function ChallengeDetailScreen() {
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
   // API 훅 사용
-  const {
-    challenges,
-    userChallenges,
-    isLoading: challengesLoading,
-    refetch,
-  } = useChallenges();
+  const { challenges, userChallenges, isLoading: challengesLoading, refetch } = useChallenges();
   const { join, isJoining } = useJoinChallenge(() => {
     refetch(); // 참가 성공 후 목록 새로고침
   });
@@ -116,9 +105,7 @@ export default function ChallengeDetailScreen() {
       .map((day) => ({
         day,
         target: day,
-        completed: userChallenge
-          ? (userChallenge.progress.currentDays || 0) >= day
-          : false,
+        completed: userChallenge ? (userChallenge.progress.currentDays || 0) >= day : false,
       }));
 
     return {
@@ -160,24 +147,20 @@ export default function ChallengeDetailScreen() {
     }
 
     if (challenge.isJoined) {
-      Alert.alert(
-        '챌린지 포기',
-        '정말 포기하시겠습니까? 진행 상황이 초기화됩니다.',
-        [
-          { text: '취소', style: 'cancel' },
-          {
-            text: '포기',
-            style: 'destructive',
-            onPress: async () => {
-              // 포기 기능은 추후 추가 예정
-              Alert.alert(
-                '곧 추가될 예정이에요',
-                '포기 기능을 준비하고 있어요. 조금만 기다려주세요!'
-              );
-            },
+      Alert.alert('챌린지 포기', '정말 포기하시겠습니까? 진행 상황이 초기화됩니다.', [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '포기',
+          style: 'destructive',
+          onPress: async () => {
+            // 포기 기능은 추후 추가 예정
+            Alert.alert(
+              '곧 추가될 예정이에요',
+              '포기 기능을 준비하고 있어요. 조금만 기다려주세요!'
+            );
           },
-        ]
-      );
+        },
+      ]);
     } else {
       const result = await join(id);
       if (result.success) {
@@ -204,19 +187,14 @@ export default function ChallengeDetailScreen() {
     if (!challenge) return 0;
     const end = new Date(challenge.endDate);
     const now = new Date();
-    const diff = Math.ceil(
-      (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return Math.max(0, diff);
   };
 
   // 진행률 계산
   const getProgressPercent = () => {
     if (!challenge) return 0;
-    return Math.min(
-      100,
-      Math.round((challenge.currentValue / challenge.targetValue) * 100)
-    );
+    return Math.min(100, Math.round((challenge.currentValue / challenge.targetValue) * 100));
   };
 
   if (isLoading) {
@@ -256,20 +234,11 @@ export default function ChallengeDetailScreen() {
         {/* 헤더 섹션 */}
         <View style={styles.headerSection}>
           <View style={styles.badgeRow}>
-            <View
-              style={[styles.badge, { backgroundColor: domain.color + '20' }]}
-            >
+            <View style={[styles.badge, { backgroundColor: domain.color + '20' }]}>
               <Text>{domain.icon}</Text>
-              <Text style={[styles.badgeText, { color: domain.color }]}>
-                {domain.label}
-              </Text>
+              <Text style={[styles.badgeText, { color: domain.color }]}>{domain.label}</Text>
             </View>
-            <View
-              style={[
-                styles.badge,
-                { backgroundColor: difficulty.color + '20' },
-              ]}
-            >
+            <View style={[styles.badge, { backgroundColor: difficulty.color + '20' }]}>
               <Text style={[styles.badgeText, { color: difficulty.color }]}>
                 {difficulty.label}
               </Text>
@@ -281,9 +250,7 @@ export default function ChallengeDetailScreen() {
 
           <View style={styles.statsRow}>
             <View style={styles.stat}>
-              <Text style={styles.statValue}>
-                {challenge.participants.toLocaleString()}
-              </Text>
+              <Text style={styles.statValue}>{challenge.participants.toLocaleString()}</Text>
               <Text style={styles.statLabel}>참가자</Text>
             </View>
             <View style={styles.statDivider} />
@@ -385,10 +352,7 @@ export default function ChallengeDetailScreen() {
             {challenge.leaderboard.map((entry) => (
               <View
                 key={entry.userId}
-                style={[
-                  styles.leaderboardItem,
-                  entry.rank <= 3 && styles.leaderboardItemTop,
-                ]}
+                style={[styles.leaderboardItem, entry.rank <= 3 && styles.leaderboardItemTop]}
               >
                 <Text
                   style={[
@@ -401,9 +365,7 @@ export default function ChallengeDetailScreen() {
                   {entry.rank}
                 </Text>
                 <Text style={styles.leaderboardName}>{entry.userName}</Text>
-                <Text style={styles.leaderboardProgress}>
-                  {entry.progress}%
-                </Text>
+                <Text style={styles.leaderboardProgress}>{entry.progress}%</Text>
               </View>
             ))}
           </View>
@@ -420,9 +382,7 @@ export default function ChallengeDetailScreen() {
           disabled={isJoining}
           style={({ pressed }) => [
             styles.joinButton,
-            challenge.isJoined
-              ? styles.joinButtonLeave
-              : { backgroundColor: domain.color },
+            challenge.isJoined ? styles.joinButtonLeave : { backgroundColor: domain.color },
             pressed && { opacity: 0.8 },
           ]}
         >

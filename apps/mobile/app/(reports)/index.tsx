@@ -2,14 +2,7 @@
  * R-1 통합 리포트 화면
  */
 import { router } from 'expo-router';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  useColorScheme,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // 샘플 리포트 데이터
@@ -55,10 +48,7 @@ export default function ReportsScreen() {
   const isDark = colorScheme === 'dark';
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* 샘플 데이터 안내 배너 */}
         <View style={[styles.sampleBanner, isDark && styles.sampleBannerDark]}>
@@ -71,9 +61,7 @@ export default function ReportsScreen() {
         {/* 프로필 헤더 */}
         <View style={[styles.profileCard, isDark && styles.cardDark]}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {SAMPLE_REPORT.user.name.charAt(0)}
-            </Text>
+            <Text style={styles.avatarText}>{SAMPLE_REPORT.user.name.charAt(0)}</Text>
           </View>
           <View style={styles.profileInfo}>
             <Text style={[styles.profileName, isDark && styles.textLight]}>
@@ -86,9 +74,7 @@ export default function ReportsScreen() {
         </View>
 
         {/* Phase 1 분석 결과 */}
-        <Text style={[styles.sectionLabel, isDark && styles.textMuted]}>
-          나의 분석 결과
-        </Text>
+        <Text style={[styles.sectionLabel, isDark && styles.textMuted]}>나의 분석 결과</Text>
 
         <View style={styles.analysisGrid}>
           {/* 퍼스널 컬러 */}
@@ -96,19 +82,13 @@ export default function ReportsScreen() {
             style={[styles.analysisCard, isDark && styles.cardDark]}
             onPress={() => router.push('/(analysis)/personal-color')}
           >
-            <Text style={styles.analysisEmoji}>
-              {SAMPLE_REPORT.personalColor.emoji}
-            </Text>
-            <Text style={[styles.analysisType, isDark && styles.textMuted]}>
-              퍼스널 컬러
-            </Text>
+            <Text style={styles.analysisEmoji}>{SAMPLE_REPORT.personalColor.emoji}</Text>
+            <Text style={[styles.analysisType, isDark && styles.textMuted]}>퍼스널 컬러</Text>
             <Text style={[styles.analysisValue, isDark && styles.textLight]}>
               {SAMPLE_REPORT.personalColor.season}
             </Text>
             <View style={styles.confidenceBadge}>
-              <Text style={styles.confidenceText}>
-                {SAMPLE_REPORT.personalColor.confidence}%
-              </Text>
+              <Text style={styles.confidenceText}>{SAMPLE_REPORT.personalColor.confidence}%</Text>
             </View>
           </TouchableOpacity>
 
@@ -118,9 +98,7 @@ export default function ReportsScreen() {
             onPress={() => router.push('/(analysis)/skin')}
           >
             <Text style={styles.analysisEmoji}>{SAMPLE_REPORT.skin.emoji}</Text>
-            <Text style={[styles.analysisType, isDark && styles.textMuted]}>
-              피부 타입
-            </Text>
+            <Text style={[styles.analysisType, isDark && styles.textMuted]}>피부 타입</Text>
             <Text style={[styles.analysisValue, isDark && styles.textLight]}>
               {SAMPLE_REPORT.skin.type}
             </Text>
@@ -135,9 +113,7 @@ export default function ReportsScreen() {
             onPress={() => router.push('/(analysis)/body')}
           >
             <Text style={styles.analysisEmoji}>{SAMPLE_REPORT.body.emoji}</Text>
-            <Text style={[styles.analysisType, isDark && styles.textMuted]}>
-              체형 타입
-            </Text>
+            <Text style={[styles.analysisType, isDark && styles.textMuted]}>체형 타입</Text>
             <Text style={[styles.analysisValue, isDark && styles.textLight]}>
               {SAMPLE_REPORT.body.type}
             </Text>
@@ -148,18 +124,14 @@ export default function ReportsScreen() {
         </View>
 
         {/* Phase 2 운동 현황 */}
-        <Text style={[styles.sectionLabel, isDark && styles.textMuted]}>
-          운동 현황
-        </Text>
+        <Text style={[styles.sectionLabel, isDark && styles.textMuted]}>운동 현황</Text>
 
         <TouchableOpacity
           style={[styles.workoutCard, isDark && styles.cardDark]}
           onPress={() => router.push('/(workout)/onboarding')}
         >
           <View style={styles.workoutHeader}>
-            <Text style={styles.workoutEmoji}>
-              {SAMPLE_REPORT.workout.emoji}
-            </Text>
+            <Text style={styles.workoutEmoji}>{SAMPLE_REPORT.workout.emoji}</Text>
             <View style={styles.workoutInfo}>
               <Text style={[styles.workoutType, isDark && styles.textLight]}>
                 {SAMPLE_REPORT.workout.type} 타입
@@ -170,49 +142,39 @@ export default function ReportsScreen() {
             </View>
             <View style={styles.fireStreak}>
               <Text style={styles.fireEmoji}>🔥</Text>
-              <Text style={styles.fireCount}>
-                {SAMPLE_REPORT.workout.streak}
-              </Text>
+              <Text style={styles.fireCount}>{SAMPLE_REPORT.workout.streak}</Text>
             </View>
           </View>
 
           <View style={styles.weeklyProgress}>
-            <Text style={[styles.weeklyLabel, isDark && styles.textMuted]}>
-              이번 주 운동
-            </Text>
+            <Text style={[styles.weeklyLabel, isDark && styles.textMuted]}>이번 주 운동</Text>
             <View style={styles.weekDots}>
               {[...Array(7)].map((_, i) => (
                 <View
                   key={i}
                   style={[
                     styles.weekDot,
-                    i < SAMPLE_REPORT.workout.completedThisWeek &&
-                      styles.weekDotActive,
+                    i < SAMPLE_REPORT.workout.completedThisWeek && styles.weekDotActive,
                     i < SAMPLE_REPORT.workout.weeklyGoal && styles.weekDotGoal,
                   ]}
                 />
               ))}
             </View>
             <Text style={[styles.weeklyCount, isDark && styles.textLight]}>
-              {SAMPLE_REPORT.workout.completedThisWeek}/
-              {SAMPLE_REPORT.workout.weeklyGoal}
+              {SAMPLE_REPORT.workout.completedThisWeek}/{SAMPLE_REPORT.workout.weeklyGoal}
             </Text>
           </View>
         </TouchableOpacity>
 
         {/* 영양 현황 */}
-        <Text style={[styles.sectionLabel, isDark && styles.textMuted]}>
-          영양 현황
-        </Text>
+        <Text style={[styles.sectionLabel, isDark && styles.textMuted]}>영양 현황</Text>
 
         <TouchableOpacity
           style={[styles.nutritionCard, isDark && styles.cardDark]}
           onPress={() => router.push('/(nutrition)/dashboard')}
         >
           <View style={styles.nutritionHeader}>
-            <Text style={styles.nutritionEmoji}>
-              {SAMPLE_REPORT.nutrition.emoji}
-            </Text>
+            <Text style={styles.nutritionEmoji}>{SAMPLE_REPORT.nutrition.emoji}</Text>
             <View style={styles.nutritionInfo}>
               <Text style={[styles.nutritionLabel, isDark && styles.textMuted]}>
                 평균 일일 섭취량
@@ -241,12 +203,10 @@ export default function ReportsScreen() {
         {/* 인사이트 */}
         <View style={[styles.insightCard, isDark && styles.cardDark]}>
           <Text style={styles.insightEmoji}>💡</Text>
-          <Text style={[styles.insightTitle, isDark && styles.textLight]}>
-            오늘의 인사이트
-          </Text>
+          <Text style={[styles.insightTitle, isDark && styles.textLight]}>오늘의 인사이트</Text>
           <Text style={[styles.insightText, isDark && styles.textMuted]}>
-            {SAMPLE_REPORT.personalColor.season}인 당신에게는 따뜻한 색상의
-            운동복이 잘 어울려요. 오렌지, 코랄, 피치 톤을 추천합니다!
+            {SAMPLE_REPORT.personalColor.season}인 당신에게는 따뜻한 색상의 운동복이 잘 어울려요.
+            오렌지, 코랄, 피치 톤을 추천합니다!
           </Text>
         </View>
       </ScrollView>

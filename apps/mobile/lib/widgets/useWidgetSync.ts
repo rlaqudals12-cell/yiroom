@@ -46,9 +46,7 @@ interface UseWidgetSyncReturn {
  * 위젯 동기화 훅
  * 앱 데이터 변경 시 위젯으로 자동 전파
  */
-export function useWidgetSync(
-  options: UseWidgetSyncOptions = {}
-): UseWidgetSyncReturn {
+export function useWidgetSync(options: UseWidgetSyncOptions = {}): UseWidgetSyncReturn {
   const { autoSync = true, syncInterval = 60000 } = options;
 
   // 앱 상태 변경 시 동기화
@@ -65,10 +63,7 @@ export function useWidgetSync(
       }
     };
 
-    const subscription = AppState.addEventListener(
-      'change',
-      handleAppStateChange
-    );
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
 
     return () => {
       subscription.remove();
@@ -101,12 +96,9 @@ export function useWidgetSync(
   }, []);
 
   // 운동 완료
-  const completeWorkout = useCallback(
-    async (minutes: number, calories: number) => {
-      await updateWorkoutComplete(minutes, calories);
-    },
-    []
-  );
+  const completeWorkout = useCallback(async (minutes: number, calories: number) => {
+    await updateWorkoutComplete(minutes, calories);
+  }, []);
 
   // 식사 기록
   const addMeal = useCallback(async (calories: number) => {

@@ -14,11 +14,7 @@ import {
   registerPushTokenWithServer,
   unregisterPushTokenFromServer,
 } from './token';
-import {
-  NotificationData,
-  NotificationSettings,
-  DEFAULT_NOTIFICATION_SETTINGS,
-} from './types';
+import { NotificationData, NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from './types';
 import { handleDeepLinkUrl } from '../deeplink';
 import { pushLogger } from '../utils/logger';
 
@@ -47,12 +43,9 @@ interface UsePushReturn {
  */
 export function usePush(userId?: string): UsePushReturn {
   const [pushToken, setPushToken] = useState<string | null>(null);
-  const [settings, setSettings] = useState<NotificationSettings>(
-    DEFAULT_NOTIFICATION_SETTINGS
-  );
+  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [lastNotification, setLastNotification] =
-    useState<Notifications.Notification | null>(null);
+  const [lastNotification, setLastNotification] = useState<Notifications.Notification | null>(null);
 
   const notificationListener = useRef<Notifications.Subscription | null>(null);
   const responseListener = useRef<Notifications.Subscription | null>(null);
@@ -74,51 +67,44 @@ export function usePush(userId?: string): UsePushReturn {
     async (newSettings: Partial<NotificationSettings>) => {
       const updated = { ...settings, ...newSettings };
       setSettings(updated);
-      await AsyncStorage.setItem(
-        NOTIFICATION_SETTINGS_KEY,
-        JSON.stringify(updated)
-      );
+      await AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(updated));
     },
     [settings]
   );
 
   // 알림 응답 처리 (딥링크)
-  const handleNotificationResponse = useCallback(
-    (response: Notifications.NotificationResponse) => {
-      const data = response.notification.request.content
-        .data as NotificationData;
-      pushLogger.info('알림 응답:', data);
+  const handleNotificationResponse = useCallback((response: Notifications.NotificationResponse) => {
+    const data = response.notification.request.content.data as NotificationData;
+    pushLogger.info('알림 응답:', data);
 
-      // 딥링크 처리
-      if (data.deepLink) {
-        handleDeepLinkUrl(`yiroom://${data.deepLink}`);
-      } else {
-        // 타입별 기본 네비게이션
-        switch (data.type) {
-          case 'workout_reminder':
-          case 'workout_complete':
-            router.push('/(workout)/session');
-            break;
-          case 'meal_reminder':
-            router.push('/(nutrition)/record');
-            break;
-          case 'water_reminder':
-            router.push('/(nutrition)/water');
-            break;
-          case 'challenge_update':
-            router.push('/(tabs)/profile');
-            break;
-          case 'friend_request':
-            router.push('/(tabs)/profile');
-            break;
-          case 'announcement':
-            router.push('/(tabs)');
-            break;
-        }
+    // 딥링크 처리
+    if (data.deepLink) {
+      handleDeepLinkUrl(`yiroom://${data.deepLink}`);
+    } else {
+      // 타입별 기본 네비게이션
+      switch (data.type) {
+        case 'workout_reminder':
+        case 'workout_complete':
+          router.push('/(workout)/session');
+          break;
+        case 'meal_reminder':
+          router.push('/(nutrition)/record');
+          break;
+        case 'water_reminder':
+          router.push('/(nutrition)/water');
+          break;
+        case 'challenge_update':
+          router.push('/(tabs)/profile');
+          break;
+        case 'friend_request':
+          router.push('/(tabs)/profile');
+          break;
+        case 'announcement':
+          router.push('/(tabs)');
+          break;
       }
-    },
-    []
-  );
+    }
+  }, []);
 
   // 토큰 등록
   const registerToken = useCallback(async () => {
@@ -152,17 +138,15 @@ export function usePush(userId?: string): UsePushReturn {
   // 알림 리스너 설정
   useEffect(() => {
     // 알림 수신 리스너
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        pushLogger.info('알림 수신:', notification);
-        setLastNotification(notification);
-      });
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
+      pushLogger.info('알림 수신:', notification);
+      setLastNotification(notification);
+    });
 
     // 알림 응답 리스너 (탭 시)
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener(
-        handleNotificationResponse
-      );
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(
+      handleNotificationResponse
+    );
 
     return () => {
       if (notificationListener.current) {
@@ -190,10 +174,7 @@ export function usePush(userId?: string): UsePushReturn {
     };
 
     checkInitialNotification();
-    const subscription = AppState.addEventListener(
-      'change',
-      handleAppStateChange
-    );
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
 
     return () => subscription.remove();
   }, [handleNotificationResponse]);

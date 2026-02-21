@@ -2,12 +2,7 @@
  * 피드 시스템 타입 정의
  */
 
-export type FeedItemType =
-  | 'badge'
-  | 'challenge'
-  | 'analysis'
-  | 'workout'
-  | 'nutrition';
+export type FeedItemType = 'badge' | 'challenge' | 'analysis' | 'workout' | 'nutrition';
 
 export interface FeedItem {
   id: string;

@@ -36,10 +36,7 @@ export function AnalysisErrorState({
       testID={testID}
       accessibilityRole="alert"
     >
-      <Text
-        style={[styles.errorText, isDark && styles.textLight]}
-        accessibilityLabel={message}
-      >
+      <Text style={[styles.errorText, isDark && styles.textLight]} accessibilityLabel={message}>
         {message}
       </Text>
 
@@ -64,12 +61,7 @@ export function AnalysisErrorState({
             accessibilityLabel="홈으로 돌아가기"
             testID={`${testID}-home`}
           >
-            <Text
-              style={[
-                styles.homeButtonText,
-                isDark && styles.homeButtonTextDark,
-              ]}
-            >
+            <Text style={[styles.homeButtonText, isDark && styles.homeButtonTextDark]}>
               홈으로 돌아가기
             </Text>
           </TouchableOpacity>

@@ -29,16 +29,12 @@ import type {
 /**
  * 피부 타입과 고민을 기반으로 개인화된 루틴 생성
  */
-export function generateRoutine(
-  input: RoutineGenerationInput
-): RoutineGenerationResult {
+export function generateRoutine(input: RoutineGenerationInput): RoutineGenerationResult {
   const { skinType, concerns, timeOfDay, includeOptional = true } = input;
 
   // 기본 템플릿 선택
   const baseSteps =
-    timeOfDay === 'morning'
-      ? [...MORNING_ROUTINE_STEPS]
-      : [...EVENING_ROUTINE_STEPS];
+    timeOfDay === 'morning' ? [...MORNING_ROUTINE_STEPS] : [...EVENING_ROUTINE_STEPS];
 
   // 피부 타입별 수정자 적용
   const modifier = SKIN_TYPE_MODIFIERS[skinType];
@@ -91,11 +87,7 @@ export function generateRoutine(
   const estimatedTime = calculateEstimatedTime(adjustedSteps);
 
   // 7. 개인화 노트 생성
-  const personalizationNote = generatePersonalizationNote(
-    skinType,
-    concerns,
-    modifier.warnings
-  );
+  const personalizationNote = generatePersonalizationNote(skinType, concerns, modifier.warnings);
 
   return {
     routine: adjustedSteps,

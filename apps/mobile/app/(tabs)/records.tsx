@@ -3,27 +3,11 @@
  * 오늘 요약, 수분 섭취, 운동/식단 기록, 주간 리포트
  */
 import { useRouter } from 'expo-router';
-import {
-  Dumbbell,
-  UtensilsCrossed,
-  BarChart3,
-  Calendar,
-  Droplets,
-} from 'lucide-react-native';
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Dumbbell, UtensilsCrossed, BarChart3, Calendar, Droplets } from 'lucide-react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { MenuCard, SectionHeader } from '../../components/ui';
-import {
-  useWorkoutData,
-  useNutritionData,
-  calculateCalorieProgress,
-} from '../../hooks';
+import { useWorkoutData, useNutritionData, calculateCalorieProgress } from '../../hooks';
 import { useTheme } from '../../lib/theme';
 
 export default function RecordsTab(): React.JSX.Element {
@@ -39,11 +23,7 @@ export default function RecordsTab(): React.JSX.Element {
     status,
   } = useTheme();
 
-  const {
-    streak: workoutStreak,
-    todayWorkout,
-    isLoading: workoutLoading,
-  } = useWorkoutData();
+  const { streak: workoutStreak, todayWorkout, isLoading: workoutLoading } = useWorkoutData();
   const {
     todaySummary,
     settings: nutritionSettings,
@@ -56,18 +36,12 @@ export default function RecordsTab(): React.JSX.Element {
   const mealCount = todaySummary?.mealCount || 0;
   const calorieProgress =
     todaySummary && nutritionSettings
-      ? calculateCalorieProgress(
-          todaySummary.totalCalories,
-          nutritionSettings.dailyCalorieGoal
-        )
+      ? calculateCalorieProgress(todaySummary.totalCalories, nutritionSettings.dailyCalorieGoal)
       : 0;
   const waterIntake = todaySummary?.waterIntake || 0;
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      testID="records-tab"
-    >
+    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} testID="records-tab">
       <View style={{ padding: spacing.md }}>
         <Text
           style={[
@@ -192,12 +166,7 @@ export default function RecordsTab(): React.JSX.Element {
           ]}
         >
           <View style={styles.waterLeft}>
-            <View
-              style={[
-                styles.iconCircle,
-                { backgroundColor: moduleColors.skin.light + '40' },
-              ]}
-            >
+            <View style={[styles.iconCircle, { backgroundColor: moduleColors.skin.light + '40' }]}>
               <Droplets size={20} color={moduleColors.skin.dark} />
             </View>
             <View>
@@ -216,9 +185,7 @@ export default function RecordsTab(): React.JSX.Element {
                   fontSize: typography.size.sm,
                 }}
               >
-                {nutritionSettings
-                  ? `목표: ${nutritionSettings.waterGoal}ml`
-                  : '목표 설정 필요'}
+                {nutritionSettings ? `목표: ${nutritionSettings.waterGoal}ml` : '목표 설정 필요'}
               </Text>
             </View>
           </View>
@@ -254,9 +221,7 @@ export default function RecordsTab(): React.JSX.Element {
           />
 
           <MenuCard
-            icon={
-              <UtensilsCrossed size={20} color={moduleColors.nutrition.dark} />
-            }
+            icon={<UtensilsCrossed size={20} color={moduleColors.nutrition.dark} />}
             iconBg={moduleColors.nutrition.light + '30'}
             title="식단 기록"
             description={

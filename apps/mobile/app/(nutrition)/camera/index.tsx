@@ -123,8 +123,7 @@ export default function FoodCameraScreen() {
   const analyzeFood = async (imageBase64: string) => {
     try {
       // Gemini API 호출 (lib/gemini.ts에서 Mock Fallback 포함)
-      const result: FoodAnalysisResult =
-        await analyzeFoodWithGemini(imageBase64);
+      const result: FoodAnalysisResult = await analyzeFoodWithGemini(imageBase64);
 
       // 결과를 RecognizedFood 형식으로 변환
       const recognizedFoods: RecognizedFood[] = result.foods.map((food) => ({
@@ -274,10 +273,7 @@ export default function FoodCameraScreen() {
           <Text style={[styles.permissionText, isDark && styles.textLight]}>
             카메라 권한이 필요합니다
           </Text>
-          <TouchableOpacity
-            style={styles.permissionButton}
-            onPress={requestPermission}
-          >
+          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
             <Text style={styles.permissionButtonText}>권한 허용</Text>
           </TouchableOpacity>
         </View>
@@ -290,17 +286,8 @@ export default function FoodCameraScreen() {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.centerContent}>
-          {capturedImage && (
-            <Image
-              source={{ uri: capturedImage }}
-              style={styles.analyzingImage}
-            />
-          )}
-          <ActivityIndicator
-            size="large"
-            color="#22c55e"
-            style={styles.analyzingSpinner}
-          />
+          {capturedImage && <Image source={{ uri: capturedImage }} style={styles.analyzingImage} />}
+          <ActivityIndicator size="large" color="#22c55e" style={styles.analyzingSpinner} />
           <Text style={[styles.analyzingText, isDark && styles.textLight]}>
             AI가 음식을 분석하고 있어요...
           </Text>
@@ -312,33 +299,21 @@ export default function FoodCameraScreen() {
   // 결과 화면
   if (screenState === 'result') {
     return (
-      <SafeAreaView
-        style={[styles.container, isDark && styles.containerDark]}
-        edges={['bottom']}
-      >
-        <ScrollView
-          style={styles.resultScroll}
-          showsVerticalScrollIndicator={false}
-        >
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+        <ScrollView style={styles.resultScroll} showsVerticalScrollIndicator={false}>
           {/* 촬영 이미지 */}
-          {capturedImage && (
-            <Image source={{ uri: capturedImage }} style={styles.resultImage} />
-          )}
+          {capturedImage && <Image source={{ uri: capturedImage }} style={styles.resultImage} />}
 
           {/* AI 인사이트 */}
           {aiInsight && (
             <View style={[styles.insightCard, isDark && styles.cardDark]}>
-              <Text style={[styles.insightText, isDark && styles.textMuted]}>
-                {aiInsight}
-              </Text>
+              <Text style={[styles.insightText, isDark && styles.textMuted]}>{aiInsight}</Text>
             </View>
           )}
 
           {/* AI 인식 결과 */}
           <View style={styles.resultSection}>
-            <Text style={[styles.resultTitle, isDark && styles.textLight]}>
-              AI가 인식한 음식
-            </Text>
+            <Text style={[styles.resultTitle, isDark && styles.textLight]}>AI가 인식한 음식</Text>
 
             {recognizedFoods.length === 0 ? (
               <View style={[styles.emptyCard, isDark && styles.cardDark]}>
@@ -354,20 +329,13 @@ export default function FoodCameraScreen() {
               </View>
             ) : (
               recognizedFoods.map((food) => (
-                <View
-                  key={food.id}
-                  style={[styles.foodCard, isDark && styles.cardDark]}
-                >
+                <View key={food.id} style={[styles.foodCard, isDark && styles.cardDark]}>
                   <View style={styles.foodHeader}>
                     <Text style={styles.trafficLight}>
                       {getTrafficLightEmoji(food.trafficLight)}
                     </Text>
                     <View style={styles.foodInfo}>
-                      <Text
-                        style={[styles.foodName, isDark && styles.textLight]}
-                      >
-                        {food.name}
-                      </Text>
+                      <Text style={[styles.foodName, isDark && styles.textLight]}>{food.name}</Text>
                       <Text
                         style={[
                           styles.foodCalories,
@@ -393,19 +361,10 @@ export default function FoodCameraScreen() {
                     const feedback = getConfidenceFeedback(food.confidence);
                     return (
                       <View
-                        style={[
-                          styles.confidenceBadge,
-                          { backgroundColor: feedback.color + '20' },
-                        ]}
+                        style={[styles.confidenceBadge, { backgroundColor: feedback.color + '20' }]}
                       >
-                        <Text
-                          style={[
-                            styles.confidenceBadgeText,
-                            { color: feedback.color },
-                          ]}
-                        >
-                          {feedback.message} (
-                          {Math.round(food.confidence * 100)}%)
+                        <Text style={[styles.confidenceBadgeText, { color: feedback.color }]}>
+                          {feedback.message} ({Math.round(food.confidence * 100)}%)
                         </Text>
                       </View>
                     );
@@ -413,34 +372,19 @@ export default function FoodCameraScreen() {
 
                   {/* 수량 조절 */}
                   <View style={styles.portionRow}>
-                    <Text
-                      style={[styles.portionLabel, isDark && styles.textMuted]}
-                    >
-                      수량:
-                    </Text>
+                    <Text style={[styles.portionLabel, isDark && styles.textMuted]}>수량:</Text>
                     <View style={styles.portionControls}>
                       <TouchableOpacity
-                        style={[
-                          styles.portionButton,
-                          isDark && styles.portionButtonDark,
-                        ]}
+                        style={[styles.portionButton, isDark && styles.portionButtonDark]}
                         onPress={() => handlePortionChange(food.id, -0.5)}
                       >
                         <Text style={styles.portionButtonText}>−</Text>
                       </TouchableOpacity>
-                      <Text
-                        style={[
-                          styles.portionValue,
-                          isDark && styles.textLight,
-                        ]}
-                      >
+                      <Text style={[styles.portionValue, isDark && styles.textLight]}>
                         {food.portion}인분
                       </Text>
                       <TouchableOpacity
-                        style={[
-                          styles.portionButton,
-                          isDark && styles.portionButtonDark,
-                        ]}
+                        style={[styles.portionButton, isDark && styles.portionButtonDark]}
                         onPress={() => handlePortionChange(food.id, 0.5)}
                       >
                         <Text style={styles.portionButtonText}>+</Text>
@@ -456,9 +400,7 @@ export default function FoodCameraScreen() {
               style={[styles.addFoodButton, isDark && styles.addFoodButtonDark]}
               onPress={() => router.push('/(nutrition)/search')}
             >
-              <Text style={[styles.addFoodText, isDark && styles.textMuted]}>
-                + 음식 추가하기
-              </Text>
+              <Text style={[styles.addFoodText, isDark && styles.textMuted]}>+ 음식 추가하기</Text>
             </TouchableOpacity>
           </View>
 
@@ -469,9 +411,8 @@ export default function FoodCameraScreen() {
                 총 {Math.round(totalNutrition.calories)} kcal
               </Text>
               <Text style={[styles.totalMacros, isDark && styles.textMuted]}>
-                탄 {Math.round(totalNutrition.carbs)}g · 단{' '}
-                {Math.round(totalNutrition.protein)}g · 지{' '}
-                {Math.round(totalNutrition.fat)}g
+                탄 {Math.round(totalNutrition.carbs)}g · 단 {Math.round(totalNutrition.protein)}g ·
+                지 {Math.round(totalNutrition.fat)}g
               </Text>
             </View>
           )}
@@ -480,15 +421,12 @@ export default function FoodCameraScreen() {
         {/* 하단 버튼 */}
         <View style={styles.resultFooter}>
           <TouchableOpacity style={styles.retakeButton} onPress={handleRetake}>
-            <Text style={[styles.retakeButtonText, isDark && styles.textLight]}>
-              다시 촬영
-            </Text>
+            <Text style={[styles.retakeButtonText, isDark && styles.textLight]}>다시 촬영</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.saveButton,
-              (isSaving || recognizedFoods.length === 0) &&
-                styles.saveButtonDisabled,
+              (isSaving || recognizedFoods.length === 0) && styles.saveButtonDisabled,
             ]}
             onPress={handleSave}
             disabled={isSaving || recognizedFoods.length === 0}
@@ -506,18 +444,13 @@ export default function FoodCameraScreen() {
 
   // 카메라 화면
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <View style={styles.cameraContainer}>
         <CameraView ref={cameraRef} style={styles.camera} facing="back">
           {/* 가이드 프레임 */}
           <View style={styles.guideFrame}>
             <View style={styles.guideBox}>
-              <Text style={styles.guideText}>
-                음식을 프레임 안에 맞춰주세요
-              </Text>
+              <Text style={styles.guideText}>음식을 프레임 안에 맞춰주세요</Text>
             </View>
           </View>
         </CameraView>
@@ -554,10 +487,7 @@ export default function FoodCameraScreen() {
 
       {/* 촬영 버튼 */}
       <View style={styles.cameraControls}>
-        <TouchableOpacity
-          style={styles.galleryButton}
-          onPress={handlePickImage}
-        >
+        <TouchableOpacity style={styles.galleryButton} onPress={handlePickImage}>
           <Text style={styles.galleryButtonText}>갤러리</Text>
         </TouchableOpacity>
 

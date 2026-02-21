@@ -61,9 +61,7 @@ export default function ProductsScreen() {
     category?: string;
   }>();
 
-  const [selectedCategory, setSelectedCategory] = useState(
-    initialCategory || 'all'
-  );
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'all');
   const [products, setProducts] = useState<DisplayProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -131,11 +129,7 @@ export default function ProductsScreen() {
           Winter: 'winter_cool',
         };
         const colorKey = seasonMap[querySeason];
-        if (
-          colorKey &&
-          product.personalColors &&
-          product.personalColors.includes(colorKey)
-        ) {
+        if (colorKey && product.personalColors && product.personalColors.includes(colorKey)) {
           score += 15;
         }
       }
@@ -157,12 +151,7 @@ export default function ProductsScreen() {
 
       // 피부 타입 기반 추천
       if (skinType) {
-        rawProducts = await getRecommendedProductsBySkin(
-          supabase,
-          skinType,
-          undefined,
-          20
-        );
+        rawProducts = await getRecommendedProductsBySkin(supabase, skinType, undefined, 20);
       }
       // 퍼스널 컬러 기반 추천
       else if (querySeason) {
@@ -174,12 +163,7 @@ export default function ProductsScreen() {
         };
         const colorKey = seasonMap[querySeason];
         if (colorKey) {
-          rawProducts = await getRecommendedProductsByColor(
-            supabase,
-            colorKey,
-            undefined,
-            20
-          );
+          rawProducts = await getRecommendedProductsByColor(supabase, colorKey, undefined, 20);
         }
       }
       // 일반 조회
@@ -190,20 +174,12 @@ export default function ProductsScreen() {
         if (selectedCategory !== 'all') {
           filter.category = selectedCategory;
         }
-        rawProducts = await getAffiliateProducts(
-          supabase,
-          filter,
-          'rating',
-          20,
-          0
-        );
+        rawProducts = await getAffiliateProducts(supabase, filter, 'rating', 20, 0);
       }
 
       // 카테고리 필터링 (추천 결과에도 적용)
       if (selectedCategory !== 'all') {
-        rawProducts = rawProducts.filter(
-          (p) => p.category === selectedCategory
-        );
+        rawProducts = rawProducts.filter((p) => p.category === selectedCategory);
       }
 
       // 매칭 점수 계산 및 정렬
@@ -260,10 +236,7 @@ export default function ProductsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 맞춤 추천 배너 */}
       {(filterSource || userSeason) && (
         <View style={[styles.banner, isDark && styles.bannerDark]}>
@@ -340,12 +313,7 @@ export default function ProductsScreen() {
               >
                 {/* 이미지 플레이스홀더 */}
                 <View style={styles.productImageContainer}>
-                  <View
-                    style={[
-                      styles.productImagePlaceholder,
-                      isDark && styles.placeholderDark,
-                    ]}
-                  >
+                  <View style={[styles.productImagePlaceholder, isDark && styles.placeholderDark]}>
                     <Text style={styles.placeholderEmoji}>
                       {product.category === 'skincare'
                         ? '🧴'
@@ -358,37 +326,25 @@ export default function ProductsScreen() {
                   </View>
                   {/* 매칭 점수 배지 */}
                   <View style={styles.matchBadge}>
-                    <Text style={styles.matchBadgeText}>
-                      {product.matchScore}%
-                    </Text>
+                    <Text style={styles.matchBadgeText}>{product.matchScore}%</Text>
                   </View>
                 </View>
 
                 {/* 제품 정보 */}
                 <View style={styles.productInfo}>
-                  <Text
-                    style={[styles.productBrand, isDark && styles.textMuted]}
-                  >
+                  <Text style={[styles.productBrand, isDark && styles.textMuted]}>
                     {product.brand}
                   </Text>
-                  <Text
-                    style={[styles.productName, isDark && styles.textLight]}
-                    numberOfLines={2}
-                  >
+                  <Text style={[styles.productName, isDark && styles.textLight]} numberOfLines={2}>
                     {product.name}
                   </Text>
                   <View style={styles.ratingRow}>
                     <Text style={styles.ratingStar}>★</Text>
-                    <Text
-                      style={[styles.ratingText, isDark && styles.textMuted]}
-                    >
-                      {(product.rating ?? 0).toFixed(1)} (
-                      {product.reviewCount ?? 0})
+                    <Text style={[styles.ratingText, isDark && styles.textMuted]}>
+                      {(product.rating ?? 0).toFixed(1)} ({product.reviewCount ?? 0})
                     </Text>
                   </View>
-                  <Text
-                    style={[styles.productPrice, isDark && styles.textLight]}
-                  >
+                  <Text style={[styles.productPrice, isDark && styles.textLight]}>
                     {formatPrice(product.price)}
                   </Text>
                 </View>

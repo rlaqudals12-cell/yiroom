@@ -21,9 +21,7 @@ declare module '@sentry/react-native' {
     dist?: string;
     tracesSampleRate?: number;
     beforeSend?: (event: unknown) => unknown | null;
-    beforeBreadcrumb?: (breadcrumb: {
-      data?: Record<string, unknown>;
-    }) => unknown;
+    beforeBreadcrumb?: (breadcrumb: { data?: Record<string, unknown> }) => unknown;
   }): void;
 
   export function withScope(callback: (scope: Scope) => void): void;
@@ -37,10 +35,7 @@ declare module '@sentry/react-native' {
     level?: string;
   }): void;
   export function setTag(key: string, value: string): void;
-  export function setContext(
-    name: string,
-    context: Record<string, unknown>
-  ): void;
+  export function setContext(name: string, context: Record<string, unknown>): void;
 }
 
 // Expo Store Review

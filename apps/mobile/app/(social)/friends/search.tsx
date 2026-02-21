@@ -26,8 +26,7 @@ export default function FriendSearchScreen() {
   const isDark = colorScheme === 'dark';
 
   const [searchQuery, setSearchQuery] = useState('');
-  const { results, isLoading, error, search, sendRequest, clear } =
-    useUserSearch();
+  const { results, isLoading, error, search, sendRequest, clear } = useUserSearch();
 
   const handleSearch = async () => {
     if (searchQuery.length < 2) {
@@ -91,39 +90,22 @@ export default function FriendSearchScreen() {
         {item.avatarUrl ? (
           <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
         ) : (
-          <View
-            style={[
-              styles.avatarPlaceholder,
-              isDark && styles.avatarPlaceholderDark,
-            ]}
-          >
+          <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
             <Text style={styles.avatarText}>{item.displayName.charAt(0)}</Text>
           </View>
         )}
-        <View
-          style={[
-            styles.tierBadge,
-            { backgroundColor: getTierColor(item.tier) },
-          ]}
-        />
+        <View style={[styles.tierBadge, { backgroundColor: getTierColor(item.tier) }]} />
       </View>
       <View style={styles.userInfo}>
-        <Text style={[styles.userName, isDark && styles.textLight]}>
-          {item.displayName}
-        </Text>
-        <Text style={[styles.userLevel, isDark && styles.textMuted]}>
-          Lv.{item.level}
-        </Text>
+        <Text style={[styles.userName, isDark && styles.textLight]}>{item.displayName}</Text>
+        <Text style={[styles.userLevel, isDark && styles.textMuted]}>Lv.{item.level}</Text>
       </View>
       {getStatusButton(item)}
     </View>
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 검색바 */}
       <View style={styles.searchContainer}>
         <View style={[styles.searchBar, isDark && styles.searchBarDark]}>
@@ -165,9 +147,7 @@ export default function FriendSearchScreen() {
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>👤</Text>
           <Text style={[styles.emptyText, isDark && styles.textMuted]}>
-            {searchQuery.length > 0
-              ? '검색 결과가 없습니다'
-              : '닉네임으로 친구를 검색해보세요'}
+            {searchQuery.length > 0 ? '검색 결과가 없습니다' : '닉네임으로 친구를 검색해보세요'}
           </Text>
         </View>
       ) : (

@@ -7,21 +7,9 @@
 // 카테고리 타입
 // ============================================================
 
-export type InventoryCategory =
-  | 'closet'
-  | 'beauty'
-  | 'equipment'
-  | 'supplement'
-  | 'pantry';
+export type InventoryCategory = 'closet' | 'beauty' | 'equipment' | 'supplement' | 'pantry';
 
-export type ClothingCategory =
-  | 'outer'
-  | 'top'
-  | 'bottom'
-  | 'dress'
-  | 'shoes'
-  | 'bag'
-  | 'accessory';
+export type ClothingCategory = 'outer' | 'top' | 'bottom' | 'dress' | 'shoes' | 'bag' | 'accessory';
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
 
@@ -109,15 +97,7 @@ export const MATERIAL_LABELS: Record<Material, string> = {
 export const CLOTHING_SUB_CATEGORIES: Record<ClothingCategory, string[]> = {
   outer: ['코트', '자켓', '패딩', '가디건', '점퍼', '트렌치코트', '블레이저'],
   top: ['티셔츠', '셔츠', '블라우스', '니트', '맨투맨', '후드', '탱크탑'],
-  bottom: [
-    '청바지',
-    '슬랙스',
-    '스커트',
-    '반바지',
-    '레깅스',
-    '면바지',
-    '조거팬츠',
-  ],
+  bottom: ['청바지', '슬랙스', '스커트', '반바지', '레깅스', '면바지', '조거팬츠'],
   dress: ['원피스', '점프수트', '투피스'],
   shoes: ['스니커즈', '로퍼', '부츠', '샌들', '힐', '슬리퍼', '운동화'],
   bag: ['백팩', '토트백', '크로스백', '클러치', '숄더백', '에코백'],
@@ -193,10 +173,7 @@ export interface InventoryItem {
   updatedAt: string;
 }
 
-export interface ClothingItem extends Omit<
-  InventoryItem,
-  'category' | 'metadata'
-> {
+export interface ClothingItem extends Omit<InventoryItem, 'category' | 'metadata'> {
   category: 'closet';
   subCategory: ClothingCategory;
   metadata: ClothingMetadata;

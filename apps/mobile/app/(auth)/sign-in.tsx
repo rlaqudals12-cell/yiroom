@@ -49,8 +49,7 @@ export default function SignInScreen() {
       }
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage =
-        clerkError.errors?.[0]?.message || '로그인에 실패했습니다.';
+      const errorMessage = clerkError.errors?.[0]?.message || '로그인에 실패했습니다.';
       Alert.alert('로그인 실패', errorMessage);
     } finally {
       setIsLoading(false);
@@ -68,10 +67,7 @@ export default function SignInScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.title}>이룸</Text>
           <Text style={styles.subtitle}>온전한 나를 만나다</Text>

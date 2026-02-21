@@ -120,11 +120,7 @@ export function useCoach(): UseCoachResult {
       // 세션이 없으면 새로 생성
       let sessionId = currentSessionId;
       if (!sessionId && user?.id && isConnected) {
-        const newSession = await createCoachSession(
-          supabase,
-          user.id,
-          message.trim()
-        );
+        const newSession = await createCoachSession(supabase, user.id, message.trim());
         if (newSession) {
           sessionId = newSession.id;
           setCurrentSessionId(sessionId);
@@ -195,15 +191,7 @@ export function useCoach(): UseCoachResult {
         setIsLoading(false);
       }
     },
-    [
-      isLoading,
-      isConnected,
-      getToken,
-      messages,
-      currentSessionId,
-      user?.id,
-      supabase,
-    ]
+    [isLoading, isConnected, getToken, messages, currentSessionId, user?.id, supabase]
   );
 
   const clearMessages = useCallback(() => {

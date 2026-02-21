@@ -5,14 +5,7 @@ import type { BodyType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  useColorScheme,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useColorScheme, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -43,18 +36,12 @@ const BODY_TYPE_DATA: Record<
     name: '직사각형 체형',
     description:
       '어깨, 허리, 엉덩이 너비가 비슷한 체형입니다. 허리 라인을 강조하는 스타일이 잘 어울려요.',
-    recommendations: [
-      '벨트로 허리 강조',
-      'A라인 스커트',
-      '페플럼 탑',
-      '랩 원피스',
-    ],
+    recommendations: ['벨트로 허리 강조', 'A라인 스커트', '페플럼 탑', '랩 원피스'],
     avoidItems: ['일자 실루엣', '박시한 상의'],
   },
   Triangle: {
     name: '삼각형 체형',
-    description:
-      '엉덩이가 어깨보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
+    description: '엉덩이가 어깨보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
     recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
     avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
   },
@@ -74,29 +61,25 @@ const BODY_TYPE_DATA: Record<
   },
   Oval: {
     name: '타원형 체형',
-    description:
-      '복부가 가장 넓은 체형입니다. 세로 라인을 강조하고 편안한 실루엣을 선택하세요.',
+    description: '복부가 가장 넓은 체형입니다. 세로 라인을 강조하고 편안한 실루엣을 선택하세요.',
     recommendations: ['세로 스트라이프', 'V넥', 'A라인', '하이웨이스트'],
     avoidItems: ['벨트 강조', '타이트한 복부', '가로 스트라이프'],
   },
   Diamond: {
     name: '다이아몬드 체형',
-    description:
-      '허리가 넓고 어깨와 엉덩이가 좁은 체형입니다. 상하체 균형을 맞추세요.',
+    description: '허리가 넓고 어깨와 엉덩이가 좁은 체형입니다. 상하체 균형을 맞추세요.',
     recommendations: ['어깨 강조', '와이드 팬츠', 'A라인', '스트럭처드 재킷'],
     avoidItems: ['타이트한 허리', '벨트 강조', '펜슬 스커트'],
   },
   Pear: {
     name: '배 체형',
-    description:
-      '하체가 상체보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
+    description: '하체가 상체보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
     recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
     avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
   },
   Athletic: {
     name: '운동선수 체형',
-    description:
-      '탄탄하고 균형 잡힌 체형입니다. 다양한 스타일을 소화할 수 있어요.',
+    description: '탄탄하고 균형 잡힌 체형입니다. 다양한 스타일을 소화할 수 있어요.',
     recommendations: ['핏된 옷', '스포티 룩', '캐주얼', '미니멀'],
     avoidItems: ['과도한 레이어링', '너무 루즈한 핏'],
   },
@@ -157,8 +140,7 @@ export default function BodyResultScreen() {
         athletic: 'Athletic',
       };
 
-      const mappedBodyType =
-        bodyTypeMap[analysisResult.bodyType] || 'Rectangle';
+      const mappedBodyType = bodyTypeMap[analysisResult.bodyType] || 'Rectangle';
       setBodyType(mappedBodyType);
       setBmi(analysisResult.bmi);
       setRecommendations(analysisResult.recommendations || []);
@@ -235,18 +217,12 @@ export default function BodyResultScreen() {
 
   return (
     <SafeAreaView
-      style={[
-        commonAnalysisStyles.container,
-        isDark && commonAnalysisStyles.containerDark,
-      ]}
+      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
         {/* AI 분석 신뢰도 표시 */}
-        <AnalysisTrustBadge
-          type={usedFallback ? 'fallback' : 'ai'}
-          testID="body-trust-badge"
-        />
+        <AnalysisTrustBadge type={usedFallback ? 'fallback' : 'ai'} testID="body-trust-badge" />
 
         {/* 결과 이미지 */}
         {imageUri && (
@@ -257,64 +233,37 @@ export default function BodyResultScreen() {
 
         {/* BMI 카드 */}
         <View style={[styles.bmiCard, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[styles.bmiLabel, isDark && commonAnalysisStyles.textMuted]}
-          >
-            BMI
-          </Text>
+          <Text style={[styles.bmiLabel, isDark && commonAnalysisStyles.textMuted]}>BMI</Text>
           <View style={styles.bmiValue}>
-            <Text style={[styles.bmiNumber, { color: bmiStatus.color }]}>
-              {bmi}
-            </Text>
-            <View
-              style={[styles.bmiStatus, { backgroundColor: bmiStatus.color }]}
-            >
+            <Text style={[styles.bmiNumber, { color: bmiStatus.color }]}>{bmi}</Text>
+            <View style={[styles.bmiStatus, { backgroundColor: bmiStatus.color }]}>
               <Text style={styles.bmiStatusText}>{bmiStatus.label}</Text>
             </View>
           </View>
-          <Text
-            style={[styles.bmiInfo, isDark && commonAnalysisStyles.textMuted]}
-          >
+          <Text style={[styles.bmiInfo, isDark && commonAnalysisStyles.textMuted]}>
             키 {height}cm / 체중 {weight}kg
           </Text>
         </View>
 
         {/* 체형 결과 */}
-        <View
-          style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}
-        >
-          <Text
-            style={[styles.typeLabel, isDark && commonAnalysisStyles.textMuted]}
-          >
+        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
+          <Text style={[styles.typeLabel, isDark && commonAnalysisStyles.textMuted]}>
             당신의 체형은
           </Text>
-          <Text
-            style={[styles.typeName, isDark && commonAnalysisStyles.textLight]}
-          >
+          <Text style={[styles.typeName, isDark && commonAnalysisStyles.textLight]}>
             {typeData.name}
           </Text>
           <Text
-            style={[
-              commonAnalysisStyles.description,
-              isDark && commonAnalysisStyles.textMuted,
-            ]}
+            style={[commonAnalysisStyles.description, isDark && commonAnalysisStyles.textMuted]}
           >
             {typeData.description}
           </Text>
         </View>
 
         {/* 추천 스타일 */}
-        <View
-          style={[
-            commonAnalysisStyles.section,
-            isDark && commonAnalysisStyles.cardDark,
-          ]}
-        >
+        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
           <Text
-            style={[
-              commonAnalysisStyles.sectionTitle,
-              isDark && commonAnalysisStyles.textLight,
-            ]}
+            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
           >
             추천 스타일
           </Text>
@@ -328,17 +277,9 @@ export default function BodyResultScreen() {
         </View>
 
         {/* 피해야 할 스타일 */}
-        <View
-          style={[
-            commonAnalysisStyles.section,
-            isDark && commonAnalysisStyles.cardDark,
-          ]}
-        >
+        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
           <Text
-            style={[
-              commonAnalysisStyles.sectionTitle,
-              isDark && commonAnalysisStyles.textLight,
-            ]}
+            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
           >
             피하면 좋은 스타일
           </Text>

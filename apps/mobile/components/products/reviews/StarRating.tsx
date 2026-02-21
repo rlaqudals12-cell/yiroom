@@ -5,13 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import React from 'react';
-import {
-  View,
-  Pressable,
-  Text,
-  StyleSheet,
-  AccessibilityProps,
-} from 'react-native';
+import { View, Pressable, Text, StyleSheet, AccessibilityProps } from 'react-native';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -85,10 +79,7 @@ export function StarRating({
         <Pressable
           key={index}
           onPress={() => handlePress(index)}
-          style={({ pressed }) => [
-            styles.starButton,
-            pressed && styles.starButtonPressed,
-          ]}
+          style={({ pressed }) => [styles.starButton, pressed && styles.starButtonPressed]}
           accessibilityRole="button"
           accessibilityLabel={`${index + 1}점`}
           accessibilityHint="탭하여 별점 선택"

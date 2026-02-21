@@ -3,13 +3,7 @@
  * 물 섭취량과 목표 진행률 표시
  */
 
-import {
-  View,
-  Text,
-  StyleSheet,
-  useColorScheme,
-  Pressable,
-} from 'react-native';
+import { View, Text, StyleSheet, useColorScheme, Pressable } from 'react-native';
 
 interface WaterWidgetProps {
   current: number; // ml
@@ -18,12 +12,7 @@ interface WaterWidgetProps {
   size?: 'small' | 'medium';
 }
 
-export function WaterWidget({
-  current,
-  goal,
-  onAddWater,
-  size = 'medium',
-}: WaterWidgetProps) {
+export function WaterWidget({ current, goal, onAddWater, size = 'medium' }: WaterWidgetProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
@@ -57,12 +46,8 @@ export function WaterWidget({
   return (
     <View style={[styles.containerMedium, isDark && styles.containerDark]}>
       <View style={styles.header}>
-        <Text style={[styles.title, isDark && styles.textLight]}>
-          💧 물 섭취
-        </Text>
-        <Text style={[styles.glasses, isDark && styles.textMuted]}>
-          {glasses}잔 마심
-        </Text>
+        <Text style={[styles.title, isDark && styles.textLight]}>💧 물 섭취</Text>
+        <Text style={[styles.glasses, isDark && styles.textMuted]}>{glasses}잔 마심</Text>
       </View>
 
       <View style={styles.content}>
@@ -85,13 +70,9 @@ export function WaterWidget({
             {current}
             <Text style={styles.unit}>ml</Text>
           </Text>
-          <Text style={[styles.goal, isDark && styles.textMuted]}>
-            목표: {goal}ml
-          </Text>
+          <Text style={[styles.goal, isDark && styles.textMuted]}>목표: {goal}ml</Text>
           {remaining > 0 && (
-            <Text style={[styles.remaining, isDark && styles.textMuted]}>
-              {remaining}ml 남음
-            </Text>
+            <Text style={[styles.remaining, isDark && styles.textMuted]}>{remaining}ml 남음</Text>
           )}
         </View>
 

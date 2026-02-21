@@ -5,14 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import { useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  TouchableOpacity,
-  useColorScheme,
-} from 'react-native';
+import { View, Text, StyleSheet, Animated, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { useNetworkStatus } from '../../lib/offline';
 
@@ -25,11 +18,7 @@ interface OfflineBannerProps {
   isSyncing?: boolean;
 }
 
-export function OfflineBanner({
-  pendingCount = 0,
-  onSync,
-  isSyncing = false,
-}: OfflineBannerProps) {
+export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: OfflineBannerProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const { isConnected } = useNetworkStatus();
@@ -74,9 +63,7 @@ export function OfflineBanner({
             {isConnected ? '동기화 대기 중' : '오프라인 모드'}
           </Text>
           <Text style={[styles.subtitle, isDark && styles.textMuted]}>
-            {isConnected
-              ? `${pendingCount}개 항목 동기화 필요`
-              : '인터넷 연결을 확인해주세요'}
+            {isConnected ? `${pendingCount}개 항목 동기화 필요` : '인터넷 연결을 확인해주세요'}
           </Text>
         </View>
       </View>
@@ -87,9 +74,7 @@ export function OfflineBanner({
           onPress={handleSync}
           disabled={isSyncing}
         >
-          <Text style={styles.syncButtonText}>
-            {isSyncing ? '동기화 중...' : '동기화'}
-          </Text>
+          <Text style={styles.syncButtonText}>{isSyncing ? '동기화 중...' : '동기화'}</Text>
         </TouchableOpacity>
       )}
     </Animated.View>

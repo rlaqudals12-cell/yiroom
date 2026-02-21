@@ -17,75 +17,74 @@ import type {
 // 제품 카테고리 정보
 // ================================================
 
-export const PRODUCT_CATEGORIES: Record<ProductCategory, ProductCategoryInfo> =
-  {
-    cleanser: {
-      id: 'cleanser',
-      name: '클렌저',
-      emoji: '🧴',
-      description: '피부의 노폐물과 메이크업을 제거해요',
-    },
-    toner: {
-      id: 'toner',
-      name: '토너',
-      emoji: '💧',
-      description: '피부 pH 밸런스를 맞추고 수분을 공급해요',
-    },
-    essence: {
-      id: 'essence',
-      name: '에센스',
-      emoji: '✨',
-      description: '피부에 깊은 수분과 영양을 전달해요',
-    },
-    serum: {
-      id: 'serum',
-      name: '세럼',
-      emoji: '💎',
-      description: '고농축 성분으로 특정 피부 고민을 집중 케어해요',
-    },
-    ampoule: {
-      id: 'ampoule',
-      name: '앰플',
-      emoji: '🔬',
-      description: '초고농축 성분으로 강력한 효과를 제공해요',
-    },
-    cream: {
-      id: 'cream',
-      name: '크림',
-      emoji: '🧊',
-      description: '수분을 가두고 피부 장벽을 보호해요',
-    },
-    sunscreen: {
-      id: 'sunscreen',
-      name: '선크림',
-      emoji: '☀️',
-      description: '자외선으로부터 피부를 보호해요',
-    },
-    mask: {
-      id: 'mask',
-      name: '마스크팩',
-      emoji: '🎭',
-      description: '집중 케어로 피부에 영양을 채워요',
-    },
-    eye_cream: {
-      id: 'eye_cream',
-      name: '아이크림',
-      emoji: '👁️',
-      description: '민감한 눈가 피부를 전문적으로 케어해요',
-    },
-    oil: {
-      id: 'oil',
-      name: '페이스 오일',
-      emoji: '🍯',
-      description: '영양과 윤기를 더해줘요',
-    },
-    spot_treatment: {
-      id: 'spot_treatment',
-      name: '스팟 케어',
-      emoji: '🎯',
-      description: '트러블 부위를 집중 케어해요',
-    },
-  };
+export const PRODUCT_CATEGORIES: Record<ProductCategory, ProductCategoryInfo> = {
+  cleanser: {
+    id: 'cleanser',
+    name: '클렌저',
+    emoji: '🧴',
+    description: '피부의 노폐물과 메이크업을 제거해요',
+  },
+  toner: {
+    id: 'toner',
+    name: '토너',
+    emoji: '💧',
+    description: '피부 pH 밸런스를 맞추고 수분을 공급해요',
+  },
+  essence: {
+    id: 'essence',
+    name: '에센스',
+    emoji: '✨',
+    description: '피부에 깊은 수분과 영양을 전달해요',
+  },
+  serum: {
+    id: 'serum',
+    name: '세럼',
+    emoji: '💎',
+    description: '고농축 성분으로 특정 피부 고민을 집중 케어해요',
+  },
+  ampoule: {
+    id: 'ampoule',
+    name: '앰플',
+    emoji: '🔬',
+    description: '초고농축 성분으로 강력한 효과를 제공해요',
+  },
+  cream: {
+    id: 'cream',
+    name: '크림',
+    emoji: '🧊',
+    description: '수분을 가두고 피부 장벽을 보호해요',
+  },
+  sunscreen: {
+    id: 'sunscreen',
+    name: '선크림',
+    emoji: '☀️',
+    description: '자외선으로부터 피부를 보호해요',
+  },
+  mask: {
+    id: 'mask',
+    name: '마스크팩',
+    emoji: '🎭',
+    description: '집중 케어로 피부에 영양을 채워요',
+  },
+  eye_cream: {
+    id: 'eye_cream',
+    name: '아이크림',
+    emoji: '👁️',
+    description: '민감한 눈가 피부를 전문적으로 케어해요',
+  },
+  oil: {
+    id: 'oil',
+    name: '페이스 오일',
+    emoji: '🍯',
+    description: '영양과 윤기를 더해줘요',
+  },
+  spot_treatment: {
+    id: 'spot_treatment',
+    name: '스팟 케어',
+    emoji: '🎯',
+    description: '트러블 부위를 집중 케어해요',
+  },
+};
 
 // ================================================
 // 아침 루틴 기본 템플릿
@@ -98,11 +97,7 @@ export const MORNING_ROUTINE_STEPS: RoutineStep[] = [
     name: '클렌저',
     purpose: '밤사이 분비된 피지와 노폐물 제거',
     duration: '1분',
-    tips: [
-      '미온수 사용',
-      '거품을 충분히 낸 후 부드럽게 마사지',
-      '30초 이상 꼼꼼히 세안',
-    ],
+    tips: ['미온수 사용', '거품을 충분히 낸 후 부드럽게 마사지', '30초 이상 꼼꼼히 세안'],
     isOptional: false,
   },
   {
@@ -111,11 +106,7 @@ export const MORNING_ROUTINE_STEPS: RoutineStep[] = [
     name: '토너',
     purpose: '피부 pH 밸런스 조절 및 수분 공급',
     duration: '30초',
-    tips: [
-      '화장솜보다 손으로 패팅',
-      '세안 후 바로 사용',
-      '피부가 촉촉할 때 다음 단계로',
-    ],
+    tips: ['화장솜보다 손으로 패팅', '세안 후 바로 사용', '피부가 촉촉할 때 다음 단계로'],
     isOptional: false,
   },
   {
@@ -142,11 +133,7 @@ export const MORNING_ROUTINE_STEPS: RoutineStep[] = [
     name: '크림',
     purpose: '수분 증발 방지 및 피부 장벽 보호',
     duration: '30초',
-    tips: [
-      '양 볼, 이마, 턱에 점을 찍어 펴바르기',
-      '건조한 부위는 덧바르기',
-      '목까지 함께 케어',
-    ],
+    tips: ['양 볼, 이마, 턱에 점을 찍어 펴바르기', '건조한 부위는 덧바르기', '목까지 함께 케어'],
     isOptional: false,
   },
   {
@@ -155,11 +142,7 @@ export const MORNING_ROUTINE_STEPS: RoutineStep[] = [
     name: '선크림',
     purpose: '자외선(UV) 차단 및 광노화 예방',
     duration: '30초',
-    tips: [
-      '외출 30분 전에 바르기',
-      '충분한 양(500원 동전 크기) 사용',
-      '2-3시간마다 덧바르기',
-    ],
+    tips: ['외출 30분 전에 바르기', '충분한 양(500원 동전 크기) 사용', '2-3시간마다 덧바르기'],
     isOptional: false,
   },
 ];
@@ -175,11 +158,7 @@ export const EVENING_ROUTINE_STEPS: RoutineStep[] = [
     name: '오일 클렌저',
     purpose: '메이크업 및 선크림 용해',
     duration: '1분',
-    tips: [
-      '마른 손에 덜어 마사지',
-      '물을 묻혀 유화시키기',
-      '메이크업이 녹을 때까지 충분히 마사지',
-    ],
+    tips: ['마른 손에 덜어 마사지', '물을 묻혀 유화시키기', '메이크업이 녹을 때까지 충분히 마사지'],
     isOptional: false,
   },
   {
@@ -215,10 +194,7 @@ export const EVENING_ROUTINE_STEPS: RoutineStep[] = [
     name: '세럼/앰플',
     purpose: '피부 고민에 맞는 집중 케어',
     duration: '1분',
-    tips: [
-      '비타민C, 레티놀 등 목적에 맞게 선택',
-      '점점 늘려가며 적응 기간 갖기',
-    ],
+    tips: ['비타민C, 레티놀 등 목적에 맞게 선택', '점점 늘려가며 적응 기간 갖기'],
     isOptional: true,
   },
   {
@@ -259,10 +235,7 @@ export const SKIN_TYPE_MODIFIERS: Record<SkinTypeId, RoutineModifier> = {
     addCategories: ['oil'],
     removeCategories: [],
     adjustTips: {
-      cleanser: [
-        '순한 크림 타입 클렌저 사용',
-        '이중세안 시 오일 클렌저 위주로',
-      ],
+      cleanser: ['순한 크림 타입 클렌저 사용', '이중세안 시 오일 클렌저 위주로'],
       toner: ['알코올 프리 토너 선택', '수분 토너 여러 겹 레이어링'],
       cream: ['리치한 크림 선택', '수면팩으로 마무리하면 더 좋아요'],
     },
@@ -276,10 +249,7 @@ export const SKIN_TYPE_MODIFIERS: Record<SkinTypeId, RoutineModifier> = {
       toner: ['산뜻한 워터 타입 토너', 'BHA 토너 주 2-3회 사용'],
       cream: ['가벼운 젤 크림 또는 로션', '유분기 없는 제품 선택'],
     },
-    warnings: [
-      '과도한 세안 피하기 (피지 과분비 유발)',
-      '무거운 오일 제품 피하기',
-    ],
+    warnings: ['과도한 세안 피하기 (피지 과분비 유발)', '무거운 오일 제품 피하기'],
   },
   combination: {
     addCategories: [],
@@ -309,10 +279,7 @@ export const SKIN_TYPE_MODIFIERS: Record<SkinTypeId, RoutineModifier> = {
       toner: ['무알코올, 무향료 토너', '센텔라/판테놀 함유 제품'],
       cream: ['저자극 진정 크림', '세라마이드 함유 추천'],
     },
-    warnings: [
-      '새 제품 사용 전 반드시 패치 테스트',
-      '자극 성분(향료, 알코올, 레티놀 초기) 피하기',
-    ],
+    warnings: ['새 제품 사용 전 반드시 패치 테스트', '자극 성분(향료, 알코올, 레티놀 초기) 피하기'],
   },
 };
 
@@ -368,9 +335,7 @@ export const SKIN_CONCERN_TIPS: Record<
 /**
  * 카테고리 정보 가져오기
  */
-export function getCategoryInfo(
-  category: ProductCategory
-): ProductCategoryInfo {
+export function getCategoryInfo(category: ProductCategory): ProductCategoryInfo {
   return PRODUCT_CATEGORIES[category];
 }
 

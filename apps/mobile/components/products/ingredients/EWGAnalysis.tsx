@@ -63,18 +63,14 @@ function getEWGConfig(grade?: EWGGrade) {
 
 export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
-  const [expandedIngredient, setExpandedIngredient] = useState<string | null>(
-    null
-  );
+  const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
   // 성분 통계 계산
   const stats = {
     total: ingredients.length,
     safe: ingredients.filter((i) => i.ewgGrade && i.ewgGrade <= 2).length,
-    moderate: ingredients.filter(
-      (i) => i.ewgGrade && i.ewgGrade >= 3 && i.ewgGrade <= 6
-    ).length,
+    moderate: ingredients.filter((i) => i.ewgGrade && i.ewgGrade >= 3 && i.ewgGrade <= 6).length,
     caution: ingredients.filter((i) => i.ewgGrade && i.ewgGrade >= 7).length,
     allergen: ingredients.filter((i) => i.isAllergen).length,
   };
@@ -148,9 +144,7 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
             {cautionIngredients.map((i) => i.nameKo || i.name).join(', ')}
           </Text>
           {skinType === 'sensitive' && (
-            <Text style={styles.cautionWarning}>
-              민감성 피부에는 패치 테스트를 권장합니다.
-            </Text>
+            <Text style={styles.cautionWarning}>민감성 피부에는 패치 테스트를 권장합니다.</Text>
           )}
         </View>
       )}
@@ -174,13 +168,9 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
               <View style={styles.ingredientHeader}>
                 {renderEWGBadge(ingredient.ewgGrade)}
                 <View style={styles.ingredientInfo}>
-                  <Text style={styles.ingredientName}>
-                    {ingredient.nameKo || ingredient.name}
-                  </Text>
+                  <Text style={styles.ingredientName}>{ingredient.nameKo || ingredient.name}</Text>
                   {ingredient.nameKo && (
-                    <Text style={styles.ingredientNameEn}>
-                      {ingredient.name}
-                    </Text>
+                    <Text style={styles.ingredientNameEn}>{ingredient.name}</Text>
                   )}
                 </View>
                 {ingredient.isAllergen && (
@@ -195,15 +185,11 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
                   {ingredient.functions.length > 0 && (
                     <View style={styles.functionRow}>
                       <Text style={styles.functionLabel}>기능:</Text>
-                      <Text style={styles.functionText}>
-                        {ingredient.functions.join(', ')}
-                      </Text>
+                      <Text style={styles.functionText}>{ingredient.functions.join(', ')}</Text>
                     </View>
                   )}
                   {ingredient.description && (
-                    <Text style={styles.descriptionText}>
-                      {ingredient.description}
-                    </Text>
+                    <Text style={styles.descriptionText}>{ingredient.description}</Text>
                   )}
                   {config && (
                     <Text style={[styles.safetyText, { color: config.color }]}>
@@ -224,10 +210,7 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
             if (hapticEnabled) Haptics.selectionAsync();
             setShowAll(!showAll);
           }}
-          style={({ pressed }) => [
-            styles.showMoreButton,
-            pressed && { opacity: 0.7 },
-          ]}
+          style={({ pressed }) => [styles.showMoreButton, pressed && { opacity: 0.7 }]}
         >
           <Text style={styles.showMoreText}>
             {showAll ? '접기' : `+${ingredients.length - 10}개 더보기`}
@@ -236,9 +219,7 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
       )}
 
       {/* 출처 안내 */}
-      <Text style={styles.disclaimer}>
-        * EWG (Environmental Working Group) 등급 기준
-      </Text>
+      <Text style={styles.disclaimer}>* EWG (Environmental Working Group) 등급 기준</Text>
     </View>
   );
 }
@@ -251,9 +232,7 @@ export function EWGAnalysisSkeleton() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={[styles.skeleton, { width: 80, height: 20 }]} />
-        <View
-          style={[styles.skeleton, { width: 120, height: 14, marginTop: 4 }]}
-        />
+        <View style={[styles.skeleton, { width: 120, height: 14, marginTop: 4 }]} />
       </View>
       <View style={styles.statsRow}>
         {[1, 2, 3].map((i) => (

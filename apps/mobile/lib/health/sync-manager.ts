@@ -230,9 +230,7 @@ export async function syncToServer(
       },
       body: JSON.stringify({
         stepData:
-          data.steps > 0
-            ? [{ date: data.date, steps: data.steps, source: 'HealthKit' }]
-            : [],
+          data.steps > 0 ? [{ date: data.date, steps: data.steps, source: 'HealthKit' }] : [],
         calorieData:
           data.activeCalories > 0
             ? [

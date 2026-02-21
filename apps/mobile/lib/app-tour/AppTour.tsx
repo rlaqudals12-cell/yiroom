@@ -57,17 +57,13 @@ export function AppTour({ autoStart = true, steps }: AppTourProps) {
               {currentStepIndex + 1} / {totalSteps}
             </Text>
             <Pressable onPress={skipTour} hitSlop={8}>
-              <Text className="text-sm text-neutral-500 dark:text-neutral-400">
-                건너뛰기
-              </Text>
+              <Text className="text-sm text-neutral-500 dark:text-neutral-400">건너뛰기</Text>
             </Pressable>
           </View>
 
           {/* 아이콘 + 제목 */}
           <View className="items-center mb-4">
-            {currentStep.icon && (
-              <Text className="text-4xl mb-2">{currentStep.icon}</Text>
-            )}
+            {currentStep.icon && <Text className="text-4xl mb-2">{currentStep.icon}</Text>}
             <Text className="text-xl font-bold text-neutral-900 dark:text-white">
               {currentStep.title}
             </Text>
@@ -84,9 +80,7 @@ export function AppTour({ autoStart = true, steps }: AppTourProps) {
               <View
                 key={i}
                 className={`w-2 h-2 rounded-full ${
-                  i === currentStepIndex
-                    ? 'bg-violet-500'
-                    : 'bg-neutral-300 dark:bg-neutral-700'
+                  i === currentStepIndex ? 'bg-violet-500' : 'bg-neutral-300 dark:bg-neutral-700'
                 }`}
               />
             ))}

@@ -245,10 +245,7 @@ export default function ClosetAddScreen() {
         <View style={styles.imageSection}>
           {formData.imageUri ? (
             <Pressable onPress={handleImagePick}>
-              <Image
-                source={{ uri: formData.imageUri }}
-                style={styles.previewImage}
-              />
+              <Image source={{ uri: formData.imageUri }} style={styles.previewImage} />
               <View style={styles.imageOverlay}>
                 <Text style={styles.imageOverlayText}>변경</Text>
               </View>
@@ -256,25 +253,17 @@ export default function ClosetAddScreen() {
           ) : (
             <View style={styles.imagePlaceholder}>
               <Text style={styles.imagePlaceholderIcon}>📷</Text>
-              <Text style={styles.imagePlaceholderText}>
-                사진을 추가해주세요
-              </Text>
+              <Text style={styles.imagePlaceholderText}>사진을 추가해주세요</Text>
               <View style={styles.imageButtons}>
                 <Pressable
                   onPress={handleCamera}
-                  style={({ pressed }) => [
-                    styles.imageButton,
-                    pressed && { opacity: 0.7 },
-                  ]}
+                  style={({ pressed }) => [styles.imageButton, pressed && { opacity: 0.7 }]}
                 >
                   <Text style={styles.imageButtonText}>📸 촬영</Text>
                 </Pressable>
                 <Pressable
                   onPress={handleImagePick}
-                  style={({ pressed }) => [
-                    styles.imageButton,
-                    pressed && { opacity: 0.7 },
-                  ]}
+                  style={({ pressed }) => [styles.imageButton, pressed && { opacity: 0.7 }]}
                 >
                   <Text style={styles.imageButtonText}>🖼️ 앨범</Text>
                 </Pressable>
@@ -291,9 +280,7 @@ export default function ClosetAddScreen() {
           <TextInput
             style={styles.input}
             value={formData.name}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, name: text }))
-            }
+            onChangeText={(text) => setFormData((prev) => ({ ...prev, name: text }))}
             placeholder="예: 화이트 셔츠"
             placeholderTextColor="#9CA3AF"
           />
@@ -302,9 +289,7 @@ export default function ClosetAddScreen() {
           <TextInput
             style={styles.input}
             value={formData.brand}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, brand: text }))
-            }
+            onChangeText={(text) => setFormData((prev) => ({ ...prev, brand: text }))}
             placeholder="예: ZARA"
             placeholderTextColor="#9CA3AF"
           />
@@ -320,16 +305,14 @@ export default function ClosetAddScreen() {
                 onPress={() => selectCategory(cat.value)}
                 style={[
                   styles.optionButton,
-                  formData.category === cat.value &&
-                    styles.optionButtonSelected,
+                  formData.category === cat.value && styles.optionButtonSelected,
                 ]}
               >
                 <Text style={styles.optionIcon}>{cat.icon}</Text>
                 <Text
                   style={[
                     styles.optionLabel,
-                    formData.category === cat.value &&
-                      styles.optionLabelSelected,
+                    formData.category === cat.value && styles.optionLabelSelected,
                   ]}
                 >
                   {cat.label}
@@ -349,18 +332,14 @@ export default function ClosetAddScreen() {
                 onPress={() => toggleSelection('colors', color.value)}
                 style={[
                   styles.colorButton,
-                  formData.colors.includes(color.value) &&
-                    styles.colorButtonSelected,
+                  formData.colors.includes(color.value) && styles.colorButtonSelected,
                 ]}
               >
-                <View
-                  style={[styles.colorSwatch, { backgroundColor: color.hex }]}
-                />
+                <View style={[styles.colorSwatch, { backgroundColor: color.hex }]} />
                 <Text
                   style={[
                     styles.colorLabel,
-                    formData.colors.includes(color.value) &&
-                      styles.colorLabelSelected,
+                    formData.colors.includes(color.value) && styles.colorLabelSelected,
                   ]}
                 >
                   {color.label}
@@ -380,16 +359,14 @@ export default function ClosetAddScreen() {
                 onPress={() => toggleSelection('seasons', season.value)}
                 style={[
                   styles.seasonButton,
-                  formData.seasons.includes(season.value) &&
-                    styles.seasonButtonSelected,
+                  formData.seasons.includes(season.value) && styles.seasonButtonSelected,
                 ]}
               >
                 <Text style={styles.seasonIcon}>{season.icon}</Text>
                 <Text
                   style={[
                     styles.seasonLabel,
-                    formData.seasons.includes(season.value) &&
-                      styles.seasonLabelSelected,
+                    formData.seasons.includes(season.value) && styles.seasonLabelSelected,
                   ]}
                 >
                   {season.label}
@@ -407,16 +384,12 @@ export default function ClosetAddScreen() {
               <Pressable
                 key={occ.value}
                 onPress={() => toggleSelection('occasions', occ.value)}
-                style={[
-                  styles.chip,
-                  formData.occasions.includes(occ.value) && styles.chipSelected,
-                ]}
+                style={[styles.chip, formData.occasions.includes(occ.value) && styles.chipSelected]}
               >
                 <Text
                   style={[
                     styles.chipText,
-                    formData.occasions.includes(occ.value) &&
-                      styles.chipTextSelected,
+                    formData.occasions.includes(occ.value) && styles.chipTextSelected,
                   ]}
                 >
                   {occ.label}
@@ -432,9 +405,7 @@ export default function ClosetAddScreen() {
           <TextInput
             style={[styles.input, styles.textArea]}
             value={formData.notes}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, notes: text }))
-            }
+            onChangeText={(text) => setFormData((prev) => ({ ...prev, notes: text }))}
             placeholder="이 아이템에 대한 메모를 남겨보세요"
             placeholderTextColor="#9CA3AF"
             multiline

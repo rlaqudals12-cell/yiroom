@@ -13,10 +13,7 @@ export default function CoachScreen() {
   const isDark = colorScheme === 'dark';
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <ChatInterface />
     </SafeAreaView>
   );

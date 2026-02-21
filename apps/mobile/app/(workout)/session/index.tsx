@@ -3,14 +3,7 @@
  */
 import { router } from 'expo-router';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  useColorScheme,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, useColorScheme, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // 샘플 운동 데이터
@@ -123,27 +116,16 @@ export default function WorkoutSessionScreen() {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.readyContent}>
-          <Text style={[styles.readyTitle, isDark && styles.textLight]}>
-            운동 준비
-          </Text>
+          <Text style={[styles.readyTitle, isDark && styles.textLight]}>운동 준비</Text>
           <Text style={[styles.readySubtitle, isDark && styles.textMuted]}>
             {SAMPLE_EXERCISES.length}개의 운동이 준비되어 있어요
           </Text>
 
           <View style={styles.exercisePreview}>
             {SAMPLE_EXERCISES.map((ex, index) => (
-              <View
-                key={ex.id}
-                style={[styles.previewItem, isDark && styles.previewItemDark]}
-              >
-                <Text
-                  style={[styles.previewNumber, isDark && styles.textMuted]}
-                >
-                  {index + 1}
-                </Text>
-                <Text style={[styles.previewName, isDark && styles.textLight]}>
-                  {ex.name}
-                </Text>
+              <View key={ex.id} style={[styles.previewItem, isDark && styles.previewItemDark]}>
+                <Text style={[styles.previewNumber, isDark && styles.textMuted]}>{index + 1}</Text>
+                <Text style={[styles.previewName, isDark && styles.textLight]}>{ex.name}</Text>
                 <Text style={[styles.previewSets, isDark && styles.textMuted]}>
                   {ex.sets}세트 x {ex.reps}회
                 </Text>
@@ -151,10 +133,7 @@ export default function WorkoutSessionScreen() {
             ))}
           </View>
 
-          <TouchableOpacity
-            style={styles.startButton}
-            onPress={handleStartSession}
-          >
+          <TouchableOpacity style={styles.startButton} onPress={handleStartSession}>
             <Text style={styles.startButtonText}>운동 시작</Text>
           </TouchableOpacity>
         </View>
@@ -168,9 +147,7 @@ export default function WorkoutSessionScreen() {
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.completedContent}>
           <Text style={styles.completedEmoji}>🎉</Text>
-          <Text style={[styles.completedTitle, isDark && styles.textLight]}>
-            운동 완료!
-          </Text>
+          <Text style={[styles.completedTitle, isDark && styles.textLight]}>운동 완료!</Text>
           <Text style={[styles.completedSubtitle, isDark && styles.textMuted]}>
             오늘도 열심히 했어요
           </Text>
@@ -180,25 +157,19 @@ export default function WorkoutSessionScreen() {
               <Text style={[styles.statValue, isDark && styles.textLight]}>
                 {formatTime(totalTime)}
               </Text>
-              <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-                총 시간
-              </Text>
+              <Text style={[styles.statLabel, isDark && styles.textMuted]}>총 시간</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statValue, isDark && styles.textLight]}>
                 {Math.round(caloriesBurned)}
               </Text>
-              <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-                칼로리
-              </Text>
+              <Text style={[styles.statLabel, isDark && styles.textMuted]}>칼로리</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statValue, isDark && styles.textLight]}>
                 {SAMPLE_EXERCISES.length}
               </Text>
-              <Text style={[styles.statLabel, isDark && styles.textMuted]}>
-                운동 수
-              </Text>
+              <Text style={[styles.statLabel, isDark && styles.textMuted]}>운동 수</Text>
             </View>
           </View>
 
@@ -230,12 +201,8 @@ export default function WorkoutSessionScreen() {
       <View style={styles.mainContent}>
         {sessionState === 'resting' ? (
           <>
-            <Text style={[styles.stateLabel, isDark && styles.textMuted]}>
-              휴식 중
-            </Text>
-            <Text style={[styles.timerText, isDark && styles.textLight]}>
-              {formatTime(timer)}
-            </Text>
+            <Text style={[styles.stateLabel, isDark && styles.textMuted]}>휴식 중</Text>
+            <Text style={[styles.timerText, isDark && styles.textLight]}>{formatTime(timer)}</Text>
             <Text style={[styles.nextExerciseText, isDark && styles.textMuted]}>
               다음:{' '}
               {currentSet < currentExercise.sets
@@ -244,10 +211,7 @@ export default function WorkoutSessionScreen() {
                   ? SAMPLE_EXERCISES[currentExerciseIndex + 1].name
                   : '마지막 운동 완료!'}
             </Text>
-            <TouchableOpacity
-              style={styles.skipButton}
-              onPress={handleSkipRest}
-            >
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkipRest}>
               <Text style={styles.skipButtonText}>휴식 건너뛰기</Text>
             </TouchableOpacity>
           </>
@@ -262,9 +226,7 @@ export default function WorkoutSessionScreen() {
             <Text style={[styles.repsText, isDark && styles.textLight]}>
               {currentExercise.reps}회
             </Text>
-            <Text style={[styles.timerSmall, isDark && styles.textMuted]}>
-              {formatTime(timer)}
-            </Text>
+            <Text style={[styles.timerSmall, isDark && styles.textMuted]}>{formatTime(timer)}</Text>
           </>
         )}
       </View>
@@ -272,10 +234,7 @@ export default function WorkoutSessionScreen() {
       {/* 하단 버튼 */}
       {sessionState === 'exercising' && (
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.completeButton}
-            onPress={handleCompleteSet}
-          >
+          <TouchableOpacity style={styles.completeButton} onPress={handleCompleteSet}>
             <Text style={styles.completeButtonText}>세트 완료</Text>
           </TouchableOpacity>
         </View>

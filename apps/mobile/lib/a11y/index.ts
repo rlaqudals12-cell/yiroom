@@ -30,11 +30,7 @@ interface A11yProps {
 /**
  * 버튼 접근성 속성
  */
-export function buttonA11y(
-  label: string,
-  hint?: string,
-  disabled?: boolean
-): A11yProps {
+export function buttonA11y(label: string, hint?: string, disabled?: boolean): A11yProps {
   return {
     accessible: true,
     accessibilityLabel: label,
@@ -81,16 +77,11 @@ export function headerA11y(text: string): A11yProps {
 /**
  * 체크박스 접근성 속성
  */
-export function checkboxA11y(
-  label: string,
-  checked: boolean,
-  hint?: string
-): A11yProps {
+export function checkboxA11y(label: string, checked: boolean, hint?: string): A11yProps {
   return {
     accessible: true,
     accessibilityLabel: label,
-    accessibilityHint:
-      hint || (checked ? '선택됨, 탭하여 해제' : '선택 안됨, 탭하여 선택'),
+    accessibilityHint: hint || (checked ? '선택됨, 탭하여 해제' : '선택 안됨, 탭하여 선택'),
     accessibilityRole: 'checkbox',
     accessibilityState: { checked },
   };
@@ -99,16 +90,11 @@ export function checkboxA11y(
 /**
  * 스위치 접근성 속성
  */
-export function switchA11y(
-  label: string,
-  checked: boolean,
-  hint?: string
-): A11yProps {
+export function switchA11y(label: string, checked: boolean, hint?: string): A11yProps {
   return {
     accessible: true,
     accessibilityLabel: label,
-    accessibilityHint:
-      hint || (checked ? '켜짐, 탭하여 끄기' : '꺼짐, 탭하여 켜기'),
+    accessibilityHint: hint || (checked ? '켜짐, 탭하여 끄기' : '꺼짐, 탭하여 켜기'),
     accessibilityRole: 'switch',
     accessibilityState: { checked },
   };
@@ -140,11 +126,7 @@ export function sliderA11y(
 /**
  * 프로그레스 접근성 속성
  */
-export function progressA11y(
-  label: string,
-  value: number,
-  max: number = 100
-): A11yProps {
+export function progressA11y(label: string, value: number, max: number = 100): A11yProps {
   const percentage = Math.round((value / max) * 100);
   return {
     accessible: true,
@@ -162,12 +144,7 @@ export function progressA11y(
 /**
  * 탭 접근성 속성
  */
-export function tabA11y(
-  label: string,
-  selected: boolean,
-  index: number,
-  total: number
-): A11yProps {
+export function tabA11y(label: string, selected: boolean, index: number, total: number): A11yProps {
   return {
     accessible: true,
     accessibilityLabel: `${label}, ${index + 1}/${total} 탭`,
@@ -221,13 +198,8 @@ export async function isBoldTextEnabled(): Promise<boolean> {
 /**
  * 접근성 설정 리스너
  */
-export function addScreenReaderListener(
-  callback: (enabled: boolean) => void
-): () => void {
-  const subscription = AccessibilityInfo.addEventListener(
-    'screenReaderChanged',
-    callback
-  );
+export function addScreenReaderListener(callback: (enabled: boolean) => void): () => void {
+  const subscription = AccessibilityInfo.addEventListener('screenReaderChanged', callback);
   return () => subscription.remove();
 }
 
@@ -266,11 +238,7 @@ function getLuminance(r: number, g: number, b: number): number {
 function hexToRgb(hex: string): [number, number, number] | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
-    ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16),
-      ]
+    ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
     : null;
 }
 
@@ -278,10 +246,7 @@ function hexToRgb(hex: string): [number, number, number] | null {
  * 컬러 대비율 계산
  * WCAG 기준: 일반 텍스트 4.5:1, 큰 텍스트 3:1
  */
-export function getContrastRatio(
-  foreground: string,
-  background: string
-): number {
+export function getContrastRatio(foreground: string, background: string): number {
   const fg = hexToRgb(foreground);
   const bg = hexToRgb(background);
 

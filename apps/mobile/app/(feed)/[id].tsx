@@ -223,9 +223,7 @@ export default function FeedDetailScreen() {
       };
 
       setComments((prev) => [...prev, newComment]);
-      setFeedItem((prev) =>
-        prev ? { ...prev, comments: prev.comments + 1 } : null
-      );
+      setFeedItem((prev) => (prev ? { ...prev, comments: prev.comments + 1 } : null));
       setCommentText('');
     } catch (error) {
       console.error('[Feed Detail] Comment error:', error);
@@ -253,22 +251,16 @@ export default function FeedDetailScreen() {
   const renderComment = ({ item }: { item: Comment }) => (
     <View style={[styles.commentItem, isDark && styles.commentItemDark]}>
       <View style={[styles.commentAvatar, isDark && styles.commentAvatarDark]}>
-        <Text style={styles.commentAvatarText}>
-          {item.userName.charAt(0).toUpperCase()}
-        </Text>
+        <Text style={styles.commentAvatarText}>{item.userName.charAt(0).toUpperCase()}</Text>
       </View>
       <View style={styles.commentContent}>
         <View style={styles.commentHeader}>
-          <Text style={[styles.commentUserName, isDark && styles.textLight]}>
-            {item.userName}
-          </Text>
+          <Text style={[styles.commentUserName, isDark && styles.textLight]}>{item.userName}</Text>
           <Text style={[styles.commentTime, isDark && styles.textMuted]}>
             {formatTime(item.createdAt)}
           </Text>
         </View>
-        <Text style={[styles.commentText, isDark && styles.textLight]}>
-          {item.content}
-        </Text>
+        <Text style={[styles.commentText, isDark && styles.textLight]}>{item.content}</Text>
       </View>
     </View>
   );
@@ -292,10 +284,7 @@ export default function FeedDetailScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -306,9 +295,7 @@ export default function FeedDetailScreen() {
           keyExtractor={(item) => item.id}
           renderItem={renderComment}
           ListHeaderComponent={
-            <View
-              style={[styles.postContainer, isDark && styles.postContainerDark]}
-            >
+            <View style={[styles.postContainer, isDark && styles.postContainerDark]}>
               {/* 게시물 헤더 */}
               <View style={styles.postHeader}>
                 <View style={styles.userInfo}>
@@ -321,9 +308,7 @@ export default function FeedDetailScreen() {
                     <Text style={[styles.userName, isDark && styles.textLight]}>
                       {feedItem.userName}
                     </Text>
-                    <Text
-                      style={[styles.timestamp, isDark && styles.textMuted]}
-                    >
+                    <Text style={[styles.timestamp, isDark && styles.textMuted]}>
                       {formatTime(feedItem.createdAt)}
                     </Text>
                   </View>
@@ -336,9 +321,7 @@ export default function FeedDetailScreen() {
               {/* 게시물 컨텐츠 */}
               <View style={styles.postContent}>
                 <View style={styles.typeRow}>
-                  <Text style={styles.typeIcon}>
-                    {FEED_TYPE_ICONS[feedItem.type] || '📝'}
-                  </Text>
+                  <Text style={styles.typeIcon}>{FEED_TYPE_ICONS[feedItem.type] || '📝'}</Text>
                   <Text style={[styles.typeLabel, isDark && styles.textMuted]}>
                     {feedItem.type}
                   </Text>
@@ -355,13 +338,8 @@ export default function FeedDetailScreen() {
 
               {/* 액션 버튼 */}
               <View style={styles.postActions}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={handleLike}
-                >
-                  <Text style={styles.actionIcon}>
-                    {feedItem.isLiked ? '❤️' : '🤍'}
-                  </Text>
+                <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
+                  <Text style={styles.actionIcon}>{feedItem.isLiked ? '❤️' : '🤍'}</Text>
                   <Text style={[styles.actionText, isDark && styles.textMuted]}>
                     좋아요 {feedItem.likes}
                   </Text>
@@ -376,11 +354,7 @@ export default function FeedDetailScreen() {
 
               {/* 댓글 헤더 */}
               <View style={styles.commentsHeader}>
-                <Text
-                  style={[styles.commentsTitle, isDark && styles.textLight]}
-                >
-                  댓글
-                </Text>
+                <Text style={[styles.commentsTitle, isDark && styles.textLight]}>댓글</Text>
               </View>
             </View>
           }
@@ -396,9 +370,7 @@ export default function FeedDetailScreen() {
         />
 
         {/* 댓글 입력 */}
-        <View
-          style={[styles.inputContainer, isDark && styles.inputContainerDark]}
-        >
+        <View style={[styles.inputContainer, isDark && styles.inputContainerDark]}>
           <TextInput
             style={[styles.input, isDark && styles.inputDark]}
             placeholder="댓글을 작성하세요..."
@@ -411,8 +383,7 @@ export default function FeedDetailScreen() {
           <TouchableOpacity
             style={[
               styles.sendButton,
-              (!commentText.trim() || isSubmitting) &&
-                styles.sendButtonDisabled,
+              (!commentText.trim() || isSubmitting) && styles.sendButtonDisabled,
             ]}
             onPress={handleSubmitComment}
             disabled={!commentText.trim() || isSubmitting}

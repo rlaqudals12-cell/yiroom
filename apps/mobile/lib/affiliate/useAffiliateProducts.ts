@@ -16,11 +16,7 @@ import {
   getPopularAffiliateProducts,
   getProductsByCategory,
 } from './products';
-import type {
-  AffiliateProduct,
-  AffiliateProductFilter,
-  AffiliateProductSortBy,
-} from './types';
+import type { AffiliateProduct, AffiliateProductFilter, AffiliateProductSortBy } from './types';
 
 interface UseAffiliateProductsOptions {
   filter?: AffiliateProductFilter;
@@ -62,13 +58,7 @@ export function useAffiliateProducts(
         setError(null);
 
         const currentOffset = reset ? 0 : offset;
-        const data = await getAffiliateProducts(
-          supabase,
-          filter,
-          sortBy,
-          limit,
-          currentOffset
-        );
+        const data = await getAffiliateProducts(supabase, filter, sortBy, limit, currentOffset);
 
         if (reset) {
           setProducts(data);
@@ -167,12 +157,7 @@ export function useRecommendedProductsBySkin(
       setIsLoading(true);
       setError(null);
 
-      const data = await getRecommendedProductsBySkin(
-        supabase,
-        skinType,
-        concerns,
-        limit
-      );
+      const data = await getRecommendedProductsBySkin(supabase, skinType, concerns, limit);
       setProducts(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('추천 제품 조회 실패'));
@@ -212,12 +197,7 @@ export function useRecommendedProductsByColor(
       setIsLoading(true);
       setError(null);
 
-      const data = await getRecommendedProductsByColor(
-        supabase,
-        personalColor,
-        category,
-        limit
-      );
+      const data = await getRecommendedProductsByColor(supabase, personalColor, category, limit);
       setProducts(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('추천 제품 조회 실패'));
@@ -257,12 +237,7 @@ export function useRecommendedProductsByBodyType(
       setIsLoading(true);
       setError(null);
 
-      const data = await getRecommendedProductsByBodyType(
-        supabase,
-        bodyType,
-        category,
-        limit
-      );
+      const data = await getRecommendedProductsByBodyType(supabase, bodyType, category, limit);
       setProducts(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('추천 제품 조회 실패'));

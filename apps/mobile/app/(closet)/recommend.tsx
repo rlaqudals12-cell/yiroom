@@ -38,8 +38,10 @@ export default function RecommendScreen() {
   const [temp, setTemp] = useState<number>(15);
   const locationName = '서울';
 
-  const { items, isLoading, summary, getOutfitSuggestion, refetch } =
-    useClosetMatcher({ personalColor, bodyType });
+  const { items, isLoading, summary, getOutfitSuggestion, refetch } = useClosetMatcher({
+    personalColor,
+    bodyType,
+  });
 
   const [outfit, setOutfit] = useState<OutfitSuggestion | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -83,10 +85,7 @@ export default function RecommendScreen() {
     router.push(`/(closet)/${id}`);
   };
 
-  const renderOutfitItem = (
-    label: string,
-    item: OutfitSuggestion['top'] | undefined
-  ) => {
+  const renderOutfitItem = (label: string, item: OutfitSuggestion['top'] | undefined) => {
     if (!item) return null;
 
     return (
@@ -102,24 +101,14 @@ export default function RecommendScreen() {
               resizeMode="cover"
             />
           ) : (
-            <View
-              style={[
-                styles.outfitPlaceholder,
-                isDark && styles.placeholderDark,
-              ]}
-            >
+            <View style={[styles.outfitPlaceholder, isDark && styles.placeholderDark]}>
               <Text style={styles.placeholderText}>👕</Text>
             </View>
           )}
         </View>
         <View style={styles.outfitItemInfo}>
-          <Text style={[styles.outfitItemLabel, isDark && styles.textMuted]}>
-            {label}
-          </Text>
-          <Text
-            style={[styles.outfitItemName, isDark && styles.textLight]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.outfitItemLabel, isDark && styles.textMuted]}>{label}</Text>
+          <Text style={[styles.outfitItemName, isDark && styles.textLight]} numberOfLines={1}>
             {item.item.name}
           </Text>
           <View style={styles.scoreContainer}>
@@ -128,9 +117,7 @@ export default function RecommendScreen() {
                 styles.scoreBar,
                 { width: `${item.score.total}%` },
                 item.score.total >= 70 && styles.scoreBarHigh,
-                item.score.total >= 50 &&
-                  item.score.total < 70 &&
-                  styles.scoreBarMid,
+                item.score.total >= 50 && item.score.total < 70 && styles.scoreBarMid,
                 item.score.total < 50 && styles.scoreBarLow,
               ]}
             />
@@ -158,16 +145,11 @@ export default function RecommendScreen() {
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>👗</Text>
-          <Text style={[styles.emptyText, isDark && styles.textMuted]}>
-            옷장에 아이템이 없어요
-          </Text>
+          <Text style={[styles.emptyText, isDark && styles.textMuted]}>옷장에 아이템이 없어요</Text>
           <Text style={[styles.emptySubtext, isDark && styles.textMuted]}>
             옷장에 아이템을 추가하면{'\n'}코디 추천을 받을 수 있어요
           </Text>
-          <TouchableOpacity
-            style={styles.emptyButton}
-            onPress={() => router.push('/(closet)')}
-          >
+          <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/(closet)')}>
             <Text style={styles.emptyButtonText}>옷장으로 가기</Text>
           </TouchableOpacity>
         </View>
@@ -176,43 +158,27 @@ export default function RecommendScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 날씨 정보 */}
         <View style={[styles.weatherCard, isDark && styles.weatherCardDark]}>
           <View style={styles.weatherRow}>
             <View style={styles.weatherItem}>
               <Text style={styles.weatherIcon}>📍</Text>
-              <Text style={[styles.weatherText, isDark && styles.textMuted]}>
-                {locationName}
-              </Text>
+              <Text style={[styles.weatherText, isDark && styles.textMuted]}>{locationName}</Text>
             </View>
             <View style={styles.weatherItem}>
               <Thermometer size={16} color={isDark ? '#999' : '#666'} />
-              <Text style={[styles.weatherText, isDark && styles.textMuted]}>
-                {temp}°C
-              </Text>
+              <Text style={[styles.weatherText, isDark && styles.textMuted]}>{temp}°C</Text>
             </View>
           </View>
           <View style={styles.weatherTags}>
             <View style={[styles.tag, { backgroundColor: '#8b5cf620' }]}>
-              <Text style={[styles.tagText, { color: '#8b5cf6' }]}>
-                {personalColor}
-              </Text>
+              <Text style={[styles.tagText, { color: '#8b5cf6' }]}>{personalColor}</Text>
             </View>
             <View style={[styles.tag, { backgroundColor: '#3b82f620' }]}>
               <Text style={[styles.tagText, { color: '#3b82f6' }]}>
-                {bodyType === 'S'
-                  ? '스트레이트'
-                  : bodyType === 'W'
-                    ? '웨이브'
-                    : '내추럴'}
+                {bodyType === 'S' ? '스트레이트' : bodyType === 'W' ? '웨이브' : '내추럴'}
               </Text>
             </View>
           </View>
@@ -222,9 +188,7 @@ export default function RecommendScreen() {
         {outfit ? (
           <View style={styles.outfitSection}>
             <View style={styles.outfitHeader}>
-              <Text style={[styles.outfitTitle, isDark && styles.textLight]}>
-                오늘의 추천 코디
-              </Text>
+              <Text style={[styles.outfitTitle, isDark && styles.textLight]}>오늘의 추천 코디</Text>
               <View style={styles.scoreCircle}>
                 <Text style={styles.scoreCircleText}>{outfit.totalScore}</Text>
               </View>
@@ -242,14 +206,9 @@ export default function RecommendScreen() {
             {/* 코디 팁 */}
             {outfit.tips.length > 0 && (
               <View style={[styles.tipsCard, isDark && styles.tipsCardDark]}>
-                <Text style={[styles.tipsTitle, isDark && styles.textLight]}>
-                  💡 코디 팁
-                </Text>
+                <Text style={[styles.tipsTitle, isDark && styles.textLight]}>💡 코디 팁</Text>
                 {outfit.tips.map((tip, index) => (
-                  <Text
-                    key={index}
-                    style={[styles.tipText, isDark && styles.textMuted]}
-                  >
+                  <Text key={index} style={[styles.tipText, isDark && styles.textMuted]}>
                     • {tip}
                   </Text>
                 ))}
@@ -269,34 +228,23 @@ export default function RecommendScreen() {
 
         {/* 옷장 요약 */}
         <View style={[styles.summaryCard, isDark && styles.summaryCardDark]}>
-          <Text style={[styles.summaryTitle, isDark && styles.textLight]}>
-            내 옷장 분석
-          </Text>
+          <Text style={[styles.summaryTitle, isDark && styles.textLight]}>내 옷장 분석</Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryValue, { color: '#22c55e' }]}>
-                {summary.wellMatched}
-              </Text>
-              <Text style={[styles.summaryLabel, isDark && styles.textMuted]}>
-                잘 어울림
-              </Text>
+              <Text style={[styles.summaryValue, { color: '#22c55e' }]}>{summary.wellMatched}</Text>
+              <Text style={[styles.summaryLabel, isDark && styles.textMuted]}>잘 어울림</Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={[styles.summaryValue, { color: '#f59e0b' }]}>
                 {summary.needsImprovement}
               </Text>
-              <Text style={[styles.summaryLabel, isDark && styles.textMuted]}>
-                개선 필요
-              </Text>
+              <Text style={[styles.summaryLabel, isDark && styles.textMuted]}>개선 필요</Text>
             </View>
           </View>
           {summary.suggestions.length > 0 && (
             <View style={styles.suggestionsContainer}>
               {summary.suggestions.map((suggestion, index) => (
-                <Text
-                  key={index}
-                  style={[styles.suggestionText, isDark && styles.textMuted]}
-                >
+                <Text key={index} style={[styles.suggestionText, isDark && styles.textMuted]}>
                   📌 {suggestion}
                 </Text>
               ))}

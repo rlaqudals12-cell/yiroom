@@ -34,9 +34,7 @@ export async function saveWidgetData(data: AnyWidgetData): Promise<void> {
 /**
  * 위젯 데이터 조회
  */
-export async function getWidgetData<T extends AnyWidgetData>(
-  type: WidgetType
-): Promise<T | null> {
+export async function getWidgetData<T extends AnyWidgetData>(type: WidgetType): Promise<T | null> {
   try {
     const key = `${WIDGET_DATA_KEY}_${type}`;
     const stored = await AsyncStorage.getItem(key);
@@ -151,8 +149,7 @@ export async function generateWellnessScoreData(
         sleep: Math.floor(Math.random() * 30) + 60,
         mindfulness: Math.floor(Math.random() * 30) + 60,
       },
-      trend:
-        Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
+      trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
       weeklyChange: Math.floor(Math.random() * 10) - 5,
     },
   };

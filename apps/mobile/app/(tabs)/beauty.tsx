@@ -14,10 +14,7 @@ export default function BeautyTab(): React.JSX.Element {
   const { colors, spacing, typography, module: moduleColors } = useTheme();
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      testID="beauty-tab"
-    >
+    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} testID="beauty-tab">
       <View style={{ padding: spacing.md }}>
         <Text
           style={[
@@ -62,9 +59,7 @@ export default function BeautyTab(): React.JSX.Element {
           />
 
           <MenuCard
-            icon={
-              <Sparkles size={20} color={moduleColors.personalColor.base} />
-            }
+            icon={<Sparkles size={20} color={moduleColors.personalColor.base} />}
             iconBg={moduleColors.personalColor.light + '20'}
             title="추천 제품"
             description="내 피부 타입에 맞는 화장품을 추천받으세요"

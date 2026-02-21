@@ -5,14 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import React, { useCallback } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -87,9 +80,7 @@ export function ReviewList({
         accessibilityRole="button"
         accessibilityState={{ selected: isSelected }}
       >
-        <Text style={[styles.sortText, isSelected && styles.sortTextSelected]}>
-          {option.label}
-        </Text>
+        <Text style={[styles.sortText, isSelected && styles.sortTextSelected]}>{option.label}</Text>
       </Pressable>
     );
   };
@@ -114,10 +105,7 @@ export function ReviewList({
       <Pressable
         onPress={onLoadMore}
         disabled={isLoading}
-        style={({ pressed }) => [
-          styles.loadMoreButton,
-          pressed && styles.loadMoreButtonPressed,
-        ]}
+        style={({ pressed }) => [styles.loadMoreButton, pressed && styles.loadMoreButtonPressed]}
         accessibilityRole="button"
       >
         {isLoading ? (
@@ -151,9 +139,7 @@ export function ReviewList({
   return (
     <View style={styles.container}>
       {/* 정렬 옵션 */}
-      <View style={styles.sortContainer}>
-        {SORT_OPTIONS.map(renderSortOption)}
-      </View>
+      <View style={styles.sortContainer}>{SORT_OPTIONS.map(renderSortOption)}</View>
 
       {/* 리뷰 목록 */}
       <FlatList
@@ -162,9 +148,7 @@ export function ReviewList({
         keyExtractor={(item) => item.id}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
-        contentContainerStyle={
-          reviews.length === 0 ? styles.emptyList : undefined
-        }
+        contentContainerStyle={reviews.length === 0 ? styles.emptyList : undefined}
         showsVerticalScrollIndicator={false}
         scrollEnabled={false} // 부모 ScrollView 사용
       />
@@ -175,16 +159,11 @@ export function ReviewList({
 /**
  * 리뷰 정렬 함수
  */
-export function sortReviews(
-  reviews: ReviewData[],
-  sortBy: ReviewSortBy
-): ReviewData[] {
+export function sortReviews(reviews: ReviewData[], sortBy: ReviewSortBy): ReviewData[] {
   return [...reviews].sort((a, b) => {
     switch (sortBy) {
       case 'recent':
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       case 'helpful':
         return b.helpfulCount - a.helpfulCount;
       case 'rating_high':

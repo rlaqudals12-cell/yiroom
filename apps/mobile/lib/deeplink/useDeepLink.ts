@@ -8,11 +8,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { Linking } from 'react-native';
 
-import {
-  parseDeepLink,
-  navigateToDeepLink,
-  getInitialDeepLink,
-} from './handler';
+import { parseDeepLink, navigateToDeepLink, getInitialDeepLink } from './handler';
 import { ParsedDeepLink } from './types';
 import { deepLinkLogger } from '../utils/logger';
 
@@ -37,9 +33,7 @@ interface UseDeepLinkReturn {
 /**
  * 딥링크 처리 훅
  */
-export function useDeepLink(
-  options: UseDeepLinkOptions = {}
-): UseDeepLinkReturn {
+export function useDeepLink(options: UseDeepLinkOptions = {}): UseDeepLinkReturn {
   const { autoHandle = true, onBeforeNavigate, onAfterNavigate } = options;
   // Note: 향후 네비게이션 상태 기반 처리 시 활용
   // const router = useRouter();

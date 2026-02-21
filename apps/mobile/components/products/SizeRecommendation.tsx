@@ -46,20 +46,14 @@ export function SizeRecommendation({
   const isDark = colorScheme === 'dark';
   const { isConnected } = useNetworkStatus();
 
-  const {
-    recommendation,
-    isLoading,
-    error,
-    confidenceLabel,
-    basisDescription,
-    refetch,
-  } = useSizeRecommendation({
-    brandId,
-    brandName,
-    category,
-    productId,
-    enabled: isConnected,
-  });
+  const { recommendation, isLoading, error, confidenceLabel, basisDescription, refetch } =
+    useSizeRecommendation({
+      brandId,
+      brandName,
+      category,
+      productId,
+      enabled: isConnected,
+    });
 
   // 오프라인 시 Mock 데이터 사용
   const displayRecommendation: SizeRecommendationType | null = isConnected
@@ -76,9 +70,7 @@ export function SizeRecommendation({
       <View style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color="#8b5cf6" />
-          <Text style={[styles.loadingText, isDark && styles.textMuted]}>
-            사이즈 분석 중...
-          </Text>
+          <Text style={[styles.loadingText, isDark && styles.textMuted]}>사이즈 분석 중...</Text>
         </View>
       </View>
     );
@@ -88,9 +80,7 @@ export function SizeRecommendation({
     return (
       <View style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.errorContainer}>
-          <Text style={[styles.errorText, isDark && styles.textMuted]}>
-            {error}
-          </Text>
+          <Text style={[styles.errorText, isDark && styles.textMuted]}>{error}</Text>
           <TouchableOpacity onPress={refetch} style={styles.retryButton}>
             <Text style={styles.retryButtonText}>다시 시도</Text>
           </TouchableOpacity>
@@ -109,9 +99,7 @@ export function SizeRecommendation({
       <View style={styles.header}>
         <Text style={styles.headerIcon}>📏</Text>
         <View style={styles.headerInfo}>
-          <Text style={[styles.headerTitle, isDark && styles.textLight]}>
-            맞춤 사이즈 추천
-          </Text>
+          <Text style={[styles.headerTitle, isDark && styles.textLight]}>맞춤 사이즈 추천</Text>
           <Text style={[styles.headerSubtitle, isDark && styles.textMuted]}>
             {basisDescription || '일반적인 사이즈 추정'}
           </Text>
@@ -121,16 +109,11 @@ export function SizeRecommendation({
             style={[
               styles.confidenceBadge,
               {
-                backgroundColor: getConfidenceColor(
-                  confidenceLabel.color,
-                  isDark
-                ),
+                backgroundColor: getConfidenceColor(confidenceLabel.color, isDark),
               },
             ]}
           >
-            <Text style={styles.confidenceBadgeText}>
-              {confidenceLabel.label}
-            </Text>
+            <Text style={styles.confidenceBadgeText}>{confidenceLabel.label}</Text>
           </View>
         )}
       </View>
@@ -141,22 +124,15 @@ export function SizeRecommendation({
           style={[styles.recommendedSize, isDark && styles.recommendedSizeDark]}
           onPress={() => handleSizePress(displayRecommendation.recommendedSize)}
         >
-          <Text style={styles.recommendedSizeText}>
-            {displayRecommendation.recommendedSize}
-          </Text>
-          <Text style={[styles.recommendedLabel, isDark && styles.textMuted]}>
-            추천
-          </Text>
+          <Text style={styles.recommendedSizeText}>{displayRecommendation.recommendedSize}</Text>
+          <Text style={[styles.recommendedLabel, isDark && styles.textMuted]}>추천</Text>
         </TouchableOpacity>
 
         {/* 신뢰도 바 */}
         <View style={styles.confidenceBar}>
           <View style={styles.confidenceBarTrack}>
             <View
-              style={[
-                styles.confidenceBarFill,
-                { width: `${displayRecommendation.confidence}%` },
-              ]}
+              style={[styles.confidenceBarFill, { width: `${displayRecommendation.confidence}%` }]}
             />
           </View>
           <Text style={[styles.confidenceText, isDark && styles.textMuted]}>
@@ -168,29 +144,16 @@ export function SizeRecommendation({
       {/* 대안 사이즈 */}
       {displayRecommendation.alternatives.length > 0 && (
         <View style={styles.alternatives}>
-          <Text style={[styles.alternativesTitle, isDark && styles.textMuted]}>
-            다른 옵션
-          </Text>
+          <Text style={[styles.alternativesTitle, isDark && styles.textMuted]}>다른 옵션</Text>
           <View style={styles.alternativesList}>
             {displayRecommendation.alternatives.map((alt, index) => (
               <TouchableOpacity
                 key={index}
-                style={[
-                  styles.alternativeItem,
-                  isDark && styles.alternativeItemDark,
-                ]}
+                style={[styles.alternativeItem, isDark && styles.alternativeItemDark]}
                 onPress={() => handleSizePress(alt.size)}
               >
-                <Text
-                  style={[styles.alternativeSize, isDark && styles.textLight]}
-                >
-                  {alt.size}
-                </Text>
-                <Text
-                  style={[styles.alternativeNote, isDark && styles.textMuted]}
-                >
-                  {alt.note}
-                </Text>
+                <Text style={[styles.alternativeSize, isDark && styles.textLight]}>{alt.size}</Text>
+                <Text style={[styles.alternativeNote, isDark && styles.textMuted]}>{alt.note}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -209,9 +172,7 @@ export function SizeRecommendation({
       {/* 오프라인 알림 */}
       {!isConnected && (
         <View style={styles.offlineNote}>
-          <Text style={styles.offlineNoteText}>
-            📴 오프라인 모드 - 온라인 시 정확한 추천 제공
-          </Text>
+          <Text style={styles.offlineNoteText}>📴 오프라인 모드 - 온라인 시 정확한 추천 제공</Text>
         </View>
       )}
     </View>
@@ -219,10 +180,7 @@ export function SizeRecommendation({
 }
 
 // 신뢰도 색상 헬퍼
-function getConfidenceColor(
-  color: 'green' | 'yellow' | 'gray',
-  isDark: boolean
-): string {
+function getConfidenceColor(color: 'green' | 'yellow' | 'gray', isDark: boolean): string {
   const colors = {
     green: isDark ? '#166534' : '#dcfce7',
     yellow: isDark ? '#854d0e' : '#fef9c3',

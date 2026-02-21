@@ -3,13 +3,7 @@
  * 퍼스널컬러, 체형, 날씨 기반으로 사용자 옷장에서 어울리는 아이템 추천
  */
 
-import type {
-  InventoryItem,
-  ClothingItem,
-  ClothingCategory,
-  Season,
-  Occasion,
-} from './index';
+import type { InventoryItem, ClothingItem, ClothingCategory, Season, Occasion } from './index';
 import { toClothingItem } from './index';
 
 // 체형 타입 (3-type 시스템)
@@ -125,16 +119,7 @@ const COLOR_KEYWORDS: Record<PersonalColorSeason, string[]> = {
 };
 
 const AVOID_COLOR_KEYWORDS: Record<PersonalColorSeason, string[]> = {
-  Spring: [
-    '블랙',
-    '다크',
-    '버건디',
-    '차가운',
-    'black',
-    'dark',
-    'burgundy',
-    'cool',
-  ],
+  Spring: ['블랙', '다크', '버건디', '차가운', 'black', 'dark', 'burgundy', 'cool'],
   Summer: [
     '오렌지',
     '머스타드',
@@ -146,17 +131,7 @@ const AVOID_COLOR_KEYWORDS: Record<PersonalColorSeason, string[]> = {
     'brown',
     'warm',
   ],
-  Autumn: [
-    '핑크',
-    '퓨시아',
-    '파스텔',
-    '네온',
-    'pink',
-    'fuchsia',
-    'pastel',
-    'neon',
-    'bright',
-  ],
+  Autumn: ['핑크', '퓨시아', '파스텔', '네온', 'pink', 'fuchsia', 'pastel', 'neon', 'bright'],
   Winter: [
     '베이지',
     '머스타드',
@@ -175,10 +150,7 @@ const AVOID_COLOR_KEYWORDS: Record<PersonalColorSeason, string[]> = {
 // 체형별 추천
 // ============================================================
 
-const BODY_TYPE_RECOMMENDATIONS: Record<
-  BodyType3,
-  Record<ClothingCategory, string[]>
-> = {
+const BODY_TYPE_RECOMMENDATIONS: Record<BodyType3, Record<ClothingCategory, string[]>> = {
   // Straight (I라인 실루엣)
   S: {
     outer: ['트렌치코트', '싱글 코트', '블레이저', '자켓'],
@@ -218,16 +190,7 @@ const BODY_TYPE_RECOMMENDATIONS: Record<
 const SEASON_MATERIAL_KEYWORDS: Record<Season, string[]> = {
   spring: ['면', '린넨', '얇은', 'cotton', 'linen', 'light'],
   summer: ['린넨', '면', '시원한', '통기성', 'linen', 'cotton', 'breathable'],
-  autumn: [
-    '울',
-    '니트',
-    '스웨이드',
-    '가죽',
-    'wool',
-    'knit',
-    'suede',
-    'leather',
-  ],
+  autumn: ['울', '니트', '스웨이드', '가죽', 'wool', 'knit', 'suede', 'leather'],
   winter: ['울', '캐시미어', '패딩', '플리스', 'wool', 'cashmere', 'fleece'],
 };
 
@@ -262,15 +225,13 @@ function calculateColorMatchScore(
 
     const goodMatch = goodKeywords.some(
       (keyword) =>
-        lowerColor.includes(keyword.toLowerCase()) ||
-        keyword.toLowerCase().includes(lowerColor)
+        lowerColor.includes(keyword.toLowerCase()) || keyword.toLowerCase().includes(lowerColor)
     );
     if (goodMatch) score += 25;
 
     const badMatch = badKeywords.some(
       (keyword) =>
-        lowerColor.includes(keyword.toLowerCase()) ||
-        keyword.toLowerCase().includes(lowerColor)
+        lowerColor.includes(keyword.toLowerCase()) || keyword.toLowerCase().includes(lowerColor)
     );
     if (badMatch) score -= 20;
   }
@@ -278,27 +239,19 @@ function calculateColorMatchScore(
   return Math.max(0, Math.min(100, score));
 }
 
-function calculateBodyTypeMatchScore(
-  item: ClothingItem,
-  bodyType: BodyType3
-): number {
+function calculateBodyTypeMatchScore(item: ClothingItem, bodyType: BodyType3): number {
   const category = item.subCategory;
   const recommendations = BODY_TYPE_RECOMMENDATIONS[bodyType][category];
 
   if (!recommendations) return 50;
 
   const itemName = item.name.toLowerCase();
-  const matchCount = recommendations.filter((rec) =>
-    itemName.includes(rec.toLowerCase())
-  ).length;
+  const matchCount = recommendations.filter((rec) => itemName.includes(rec.toLowerCase())).length;
 
   return Math.min(100, 50 + matchCount * 20);
 }
 
-function calculateSeasonMatchScore(
-  item: ClothingItem,
-  targetSeason: Season
-): number {
+function calculateSeasonMatchScore(item: ClothingItem, targetSeason: Season): number {
   const metadata = item.metadata;
 
   if (metadata.season && metadata.season.length > 0) {
@@ -309,9 +262,7 @@ function calculateSeasonMatchScore(
       autumn: ['spring', 'winter'],
       winter: ['autumn'],
     };
-    if (
-      metadata.season.some((s) => adjacentSeasons[targetSeason].includes(s))
-    ) {
+    if (metadata.season.some((s) => adjacentSeasons[targetSeason].includes(s))) {
       return 70;
     }
     return 30;
@@ -349,10 +300,7 @@ export interface MatchOptions {
 /**
  * 아이템 종합 매칭 점수 계산
  */
-export function calculateMatchScore(
-  item: InventoryItem,
-  options: MatchOptions
-): MatchScore {
+export function calculateMatchScore(item: InventoryItem, options: MatchOptions): MatchScore {
   const clothingItem = toClothingItem(item);
   const metadata = clothingItem.metadata;
 
@@ -364,11 +312,8 @@ export function calculateMatchScore(
     ? calculateBodyTypeMatchScore(clothingItem, options.bodyType)
     : 50;
 
-  const targetSeason =
-    options.season || (options.temp ? getSeasonFromTemp(options.temp) : null);
-  const seasonScore = targetSeason
-    ? calculateSeasonMatchScore(clothingItem, targetSeason)
-    : 50;
+  const targetSeason = options.season || (options.temp ? getSeasonFromTemp(options.temp) : null);
+  const seasonScore = targetSeason ? calculateSeasonMatchScore(clothingItem, targetSeason) : 50;
 
   let occasionBonus = 0;
   if (options.occasion && metadata.occasion?.includes(options.occasion)) {
@@ -494,9 +439,7 @@ export function suggestOutfitFromCloset(
   if (outer) scores.push(outer.score.total);
   if (shoes) scores.push(shoes.score.total);
 
-  const totalScore = Math.round(
-    scores.reduce((a, b) => a + b, 0) / scores.length
-  );
+  const totalScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 
   const tips: string[] = [];
 
@@ -569,12 +512,7 @@ export function getRecommendationSummary(
       (categoryCount[item.subCategory || 'unknown'] || 0) + 1;
   }
 
-  const essentialCategories: ClothingCategory[] = [
-    'outer',
-    'top',
-    'bottom',
-    'shoes',
-  ];
+  const essentialCategories: ClothingCategory[] = ['outer', 'top', 'bottom', 'shoes'];
   for (const cat of essentialCategories) {
     if (!categoryCount[cat] || categoryCount[cat] < 2) {
       missingCategories.push(cat);
@@ -592,15 +530,11 @@ export function getRecommendationSummary(
       bag: '가방',
       accessory: '액세서리',
     };
-    suggestions.push(
-      `${missingCategories.map((c) => categoryNames[c]).join(', ')}이 부족해요`
-    );
+    suggestions.push(`${missingCategories.map((c) => categoryNames[c]).join(', ')}이 부족해요`);
   }
 
   if (options.personalColor && wellMatched < closetItems.length * 0.3) {
-    suggestions.push(
-      `${options.personalColor} 톤에 어울리는 옷을 추가해보세요`
-    );
+    suggestions.push(`${options.personalColor} 톤에 어울리는 옷을 추가해보세요`);
   }
 
   return {

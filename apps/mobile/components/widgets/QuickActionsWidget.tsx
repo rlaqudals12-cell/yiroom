@@ -4,13 +4,7 @@
  */
 
 import * as Haptics from 'expo-haptics';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  useColorScheme,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { Linking } from 'react-native';
 
 import { widgetLogger } from '../../lib/utils/logger';
@@ -29,10 +23,7 @@ const QUICK_ACTIONS = [
   { type: 'viewDashboard' as QuickActionType, icon: '📊', label: '대시보드' },
 ];
 
-export function QuickActionsWidget({
-  size = 'medium',
-  onAction,
-}: QuickActionsWidgetProps) {
+export function QuickActionsWidget({ size = 'medium', onAction }: QuickActionsWidgetProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
@@ -83,9 +74,7 @@ export function QuickActionsWidget({
             onPress={() => handlePress(action.type)}
           >
             <Text style={styles.buttonIcon}>{action.icon}</Text>
-            <Text style={[styles.buttonLabel, isDark && styles.textMuted]}>
-              {action.label}
-            </Text>
+            <Text style={[styles.buttonLabel, isDark && styles.textMuted]}>{action.label}</Text>
           </TouchableOpacity>
         ))}
       </View>

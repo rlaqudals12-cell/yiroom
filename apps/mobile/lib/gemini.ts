@@ -92,10 +92,9 @@ async function callGeminiAPI(
     throw new Error('Gemini API key not configured');
   }
 
-  const parts: (
-    | { text: string }
-    | { inline_data: { mime_type: string; data: string } }
-  )[] = [{ text: prompt }];
+  const parts: ({ text: string } | { inline_data: { mime_type: string; data: string } })[] = [
+    { text: prompt },
+  ];
 
   if (imageBase64) {
     parts.unshift({
@@ -188,9 +187,7 @@ ${Object.entries(questionAnswers)
 /**
  * 피부 분석
  */
-export async function analyzeSkin(
-  imageBase64: string
-): Promise<SkinAnalysisResult> {
+export async function analyzeSkin(imageBase64: string): Promise<SkinAnalysisResult> {
   const prompt = `
 당신은 피부과 전문의입니다. 제공된 얼굴 이미지를 분석하여 피부 상태를 진단해주세요.
 
@@ -298,13 +295,7 @@ function generateMockPersonalColorResult(
 }
 
 function generateMockSkinResult(): SkinAnalysisResult {
-  const types: SkinType[] = [
-    'dry',
-    'oily',
-    'combination',
-    'sensitive',
-    'normal',
-  ];
+  const types: SkinType[] = ['dry', 'oily', 'combination', 'sensitive', 'normal'];
   const skinType = types[Math.floor(Math.random() * types.length)];
 
   return {
@@ -323,10 +314,7 @@ function generateMockSkinResult(): SkinAnalysisResult {
   };
 }
 
-function generateMockBodyResult(
-  height: number,
-  weight: number
-): BodyAnalysisResult {
+function generateMockBodyResult(height: number, weight: number): BodyAnalysisResult {
   const bmi = weight / (height / 100) ** 2;
   const types: BodyType[] = [
     'Rectangle',
@@ -422,9 +410,7 @@ const FOOD_ANALYSIS_PROMPT = `당신은 전문 영양사 AI입니다. 업로드�
  * @param imageBase64 - Base64 인코딩된 음식 이미지
  * @returns 음식 분석 결과
  */
-export async function analyzeFood(
-  imageBase64: string
-): Promise<FoodAnalysisResult> {
+export async function analyzeFood(imageBase64: string): Promise<FoodAnalysisResult> {
   try {
     const response = await callGeminiAPI(FOOD_ANALYSIS_PROMPT, imageBase64);
 
@@ -647,8 +633,7 @@ function generateMockFoodResult(): FoodAnalysisResult {
     totalProtein: totals.protein,
     totalCarbs: totals.carbs,
     totalFat: totals.fat,
-    insight:
-      'AI 분석이 불가하여 예시 데이터가 표시됩니다. 음식을 직접 수정해주세요.',
+    insight: 'AI 분석이 불가하여 예시 데이터가 표시됩니다. 음식을 직접 수정해주세요.',
   };
 }
 

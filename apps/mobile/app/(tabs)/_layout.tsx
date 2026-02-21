@@ -42,9 +42,7 @@ export default function TabLayout() {
         options={{
           title: '뷰티',
           tabBarLabel: '뷰티',
-          tabBarIcon: ({ color, size }) => (
-            <Sparkles color={color} size={size} />
-          ),
+          tabBarIcon: ({ color, size }) => <Sparkles color={color} size={size} />,
         }}
       />
       <Tabs.Screen
@@ -60,9 +58,7 @@ export default function TabLayout() {
         options={{
           title: '기록',
           tabBarLabel: '기록',
-          tabBarIcon: ({ color, size }) => (
-            <BookOpen color={color} size={size} />
-          ),
+          tabBarIcon: ({ color, size }) => <BookOpen color={color} size={size} />,
         }}
       />
       <Tabs.Screen

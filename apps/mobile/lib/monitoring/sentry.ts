@@ -70,10 +70,7 @@ export async function initSentry(): Promise<void> {
 /**
  * 에러 캡처
  */
-export async function captureError(
-  error: Error,
-  context?: ErrorContext
-): Promise<void> {
+export async function captureError(error: Error, context?: ErrorContext): Promise<void> {
   errorLogger.error(error.message, context);
 
   if (!isInitialized || IS_DEV) return;
@@ -208,10 +205,7 @@ export async function setTag(key: string, value: string): Promise<void> {
 /**
  * 컨텍스트 설정
  */
-export async function setContext(
-  name: string,
-  context: Record<string, unknown>
-): Promise<void> {
+export async function setContext(name: string, context: Record<string, unknown>): Promise<void> {
   if (!isInitialized || IS_DEV) return;
 
   try {

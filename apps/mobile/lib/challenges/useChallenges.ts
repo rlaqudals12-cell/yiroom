@@ -96,9 +96,7 @@ export function useJoinChallenge(
   const [isJoining, setIsJoining] = useState(false);
 
   const join = useCallback(
-    async (
-      challengeId: string
-    ): Promise<{ success: boolean; error?: string }> => {
+    async (challengeId: string): Promise<{ success: boolean; error?: string }> => {
       if (!user?.id || !supabase) {
         return { success: false, error: '로그인이 필요합니다' };
       }
@@ -162,12 +160,8 @@ export function useActiveChallenges(): UseActiveChallengesResult {
     fetchData();
   }, [fetchData]);
 
-  const activeChallenges = userChallenges.filter(
-    (uc) => uc.status === 'in_progress'
-  );
-  const completedChallenges = userChallenges.filter(
-    (uc) => uc.status === 'completed'
-  );
+  const activeChallenges = userChallenges.filter((uc) => uc.status === 'in_progress');
+  const completedChallenges = userChallenges.filter((uc) => uc.status === 'completed');
 
   return {
     activeChallenges,

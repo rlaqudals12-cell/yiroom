@@ -30,8 +30,7 @@ export function HomeTodaySection({
   notifications,
   onTaskPress,
 }: HomeTodaySectionProps): React.JSX.Element {
-  const { colors, brand, spacing, radii, shadows, typography, status } =
-    useTheme();
+  const { colors, brand, spacing, radii, shadows, typography, status } = useTheme();
 
   const remainingCount = tasks.filter((t) => !t.completed).length;
 
@@ -106,9 +105,7 @@ export function HomeTodaySection({
                 styles.checkbox,
                 {
                   borderColor: task.completed ? status.success : colors.border,
-                  backgroundColor: task.completed
-                    ? status.success
-                    : 'transparent',
+                  backgroundColor: task.completed ? status.success : 'transparent',
                 },
               ]}
             >
@@ -118,9 +115,7 @@ export function HomeTodaySection({
               style={[
                 {
                   fontSize: typography.size.base - 1,
-                  color: task.completed
-                    ? colors.mutedForeground
-                    : colors.cardForeground,
+                  color: task.completed ? colors.mutedForeground : colors.cardForeground,
                   flex: 1,
                 },
                 task.completed && styles.completedLabel,

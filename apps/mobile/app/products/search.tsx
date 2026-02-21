@@ -174,8 +174,7 @@ export default function ProductSearchScreen() {
     const query = searchQuery.toLowerCase();
     const results = ALL_PRODUCTS.filter(
       (product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.brand.toLowerCase().includes(query)
+        product.name.toLowerCase().includes(query) || product.brand.toLowerCase().includes(query)
     );
 
     // 시뮬레이션된 딜레이 후 결과 표시
@@ -223,18 +222,10 @@ export default function ProductSearchScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 검색 바 */}
       <View style={styles.searchSection}>
-        <View
-          style={[
-            styles.searchInputContainer,
-            isDark && styles.searchInputContainerDark,
-          ]}
-        >
+        <View style={[styles.searchInputContainer, isDark && styles.searchInputContainerDark]}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={[styles.searchInput, isDark && styles.searchInputDark]}
@@ -262,17 +253,9 @@ export default function ProductSearchScreen() {
             {RECENT_SEARCHES.length > 0 && (
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
-                  <Text
-                    style={[styles.sectionTitle, isDark && styles.textLight]}
-                  >
-                    최근 검색
-                  </Text>
+                  <Text style={[styles.sectionTitle, isDark && styles.textLight]}>최근 검색</Text>
                   <TouchableOpacity>
-                    <Text
-                      style={[styles.clearAllText, isDark && styles.textMuted]}
-                    >
-                      전체 삭제
-                    </Text>
+                    <Text style={[styles.clearAllText, isDark && styles.textMuted]}>전체 삭제</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.tagList}>
@@ -283,11 +266,7 @@ export default function ProductSearchScreen() {
                       onPress={() => handleSearchTermPress(term)}
                     >
                       <Text style={styles.tagIcon}>🕐</Text>
-                      <Text
-                        style={[styles.tagText, isDark && styles.textLight]}
-                      >
-                        {term}
-                      </Text>
+                      <Text style={[styles.tagText, isDark && styles.textLight]}>{term}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -296,24 +275,16 @@ export default function ProductSearchScreen() {
 
             {/* 인기 검색어 */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
-                인기 검색어
-              </Text>
+              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>인기 검색어</Text>
               <View style={styles.tagList}>
                 {POPULAR_SEARCHES.map((term, index) => (
                   <TouchableOpacity
                     key={index}
-                    style={[
-                      styles.searchTag,
-                      styles.popularTag,
-                      isDark && styles.popularTagDark,
-                    ]}
+                    style={[styles.searchTag, styles.popularTag, isDark && styles.popularTagDark]}
                     onPress={() => handleSearchTermPress(term)}
                   >
                     <Text style={styles.popularRank}>{index + 1}</Text>
-                    <Text style={[styles.tagText, isDark && styles.textLight]}>
-                      {term}
-                    </Text>
+                    <Text style={[styles.tagText, isDark && styles.textLight]}>{term}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -347,51 +318,28 @@ export default function ProductSearchScreen() {
                 style={[styles.productItem, isDark && styles.productItemDark]}
                 onPress={() => handleProductPress(product.id)}
               >
-                <View
-                  style={[
-                    styles.productImagePlaceholder,
-                    isDark && styles.placeholderDark,
-                  ]}
-                >
-                  <Text style={styles.productEmoji}>
-                    {getCategoryEmoji(product.category)}
-                  </Text>
+                <View style={[styles.productImagePlaceholder, isDark && styles.placeholderDark]}>
+                  <Text style={styles.productEmoji}>{getCategoryEmoji(product.category)}</Text>
                 </View>
                 <View style={styles.productInfo}>
-                  <Text
-                    style={[styles.productBrand, isDark && styles.textMuted]}
-                  >
+                  <Text style={[styles.productBrand, isDark && styles.textMuted]}>
                     {product.brand}
                   </Text>
-                  <Text
-                    style={[styles.productName, isDark && styles.textLight]}
-                    numberOfLines={1}
-                  >
+                  <Text style={[styles.productName, isDark && styles.textLight]} numberOfLines={1}>
                     {product.name}
                   </Text>
                   <View style={styles.productMeta}>
-                    <Text style={styles.productRating}>
-                      ★ {product.rating.toFixed(1)}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.productReviews,
-                        isDark && styles.textMuted,
-                      ]}
-                    >
+                    <Text style={styles.productRating}>★ {product.rating.toFixed(1)}</Text>
+                    <Text style={[styles.productReviews, isDark && styles.textMuted]}>
                       ({product.reviewCount})
                     </Text>
                   </View>
-                  <Text
-                    style={[styles.productPrice, isDark && styles.textLight]}
-                  >
+                  <Text style={[styles.productPrice, isDark && styles.textLight]}>
                     {formatPrice(product.price)}
                   </Text>
                 </View>
                 <View style={styles.matchBadge}>
-                  <Text style={styles.matchBadgeText}>
-                    {product.matchScore}%
-                  </Text>
+                  <Text style={styles.matchBadgeText}>{product.matchScore}%</Text>
                 </View>
               </TouchableOpacity>
             ))}

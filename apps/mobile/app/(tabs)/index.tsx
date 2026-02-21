@@ -16,11 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  HomeHeader,
-  HomeTodaySection,
-  HomeQuickActions,
-} from '../../components/home';
+import { HomeHeader, HomeTodaySection, HomeQuickActions } from '../../components/home';
 import {
   useWorkoutData,
   useNutritionData,
@@ -32,22 +28,13 @@ import { useTheme } from '../../lib/theme';
 import { useWidgetSync } from '../../lib/widgets';
 
 export default function HomeScreen(): React.JSX.Element {
-  const {
-    colors,
-    brand,
-    spacing,
-    radii,
-    shadows,
-    typography,
-    module: moduleColors,
-  } = useTheme();
+  const { colors, brand, spacing, radii, shadows, typography, module: moduleColors } = useTheme();
   const router = useRouter();
   const { user, isLoaded } = useUser();
   const [showMore, setShowMore] = useState(false);
 
   // 온보딩 체크
-  const { isCompleted: onboardingCompleted, isLoading: onboardingLoading } =
-    useOnboardingCheck();
+  const { isCompleted: onboardingCompleted, isLoading: onboardingLoading } = useOnboardingCheck();
 
   useEffect(() => {
     if (!onboardingLoading && !onboardingCompleted) {
@@ -82,14 +69,7 @@ export default function HomeScreen(): React.JSX.Element {
       workoutMinutes: 0,
       currentStreak: workoutStreak?.currentStreak || 0,
     });
-  }, [
-    workoutStreak,
-    todaySummary,
-    nutritionSettings,
-    workoutLoading,
-    nutritionLoading,
-    syncAll,
-  ]);
+  }, [workoutStreak, todaySummary, nutritionSettings, workoutLoading, nutritionLoading, syncAll]);
 
   const userName = user?.firstName || user?.username || '사용자';
 
@@ -105,9 +85,7 @@ export default function HomeScreen(): React.JSX.Element {
     tasks.push({
       id: 'workout',
       label: '오늘의 운동 완료',
-      completed:
-        workoutStreak?.lastWorkoutDate ===
-        new Date().toISOString().split('T')[0],
+      completed: workoutStreak?.lastWorkoutDate === new Date().toISOString().split('T')[0],
       route: '/(tabs)/records',
     });
 
@@ -157,9 +135,7 @@ export default function HomeScreen(): React.JSX.Element {
       });
     }
 
-    const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(
-      Boolean
-    ).length;
+    const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length;
     if (analysisCount < 3 && analysisCount > 0) {
       items.push({
         id: 'analysis-incomplete',
@@ -191,14 +167,7 @@ export default function HomeScreen(): React.JSX.Element {
     }
 
     return items;
-  }, [
-    workoutStreak,
-    personalColor,
-    skinAnalysis,
-    bodyAnalysis,
-    todaySummary,
-    nutritionSettings,
-  ]);
+  }, [workoutStreak, personalColor, skinAnalysis, bodyAnalysis, todaySummary, nutritionSettings]);
 
   // 퀵 액션
   const quickActions = useMemo(
@@ -337,21 +306,9 @@ export default function HomeScreen(): React.JSX.Element {
                 오늘의 요약
               </Text>
               <View style={styles.statsRow}>
-                <StatItem
-                  label="운동"
-                  value={workoutValue}
-                  color={moduleColors.workout.dark}
-                />
-                <StatItem
-                  label="식단"
-                  value={nutritionValue}
-                  color={moduleColors.nutrition.dark}
-                />
-                <StatItem
-                  label="분석"
-                  value={checkinValue}
-                  color={brand.primary}
-                />
+                <StatItem label="운동" value={workoutValue} color={moduleColors.workout.dark} />
+                <StatItem label="식단" value={nutritionValue} color={moduleColors.nutrition.dark} />
+                <StatItem label="분석" value={checkinValue} color={brand.primary} />
               </View>
             </View>
 

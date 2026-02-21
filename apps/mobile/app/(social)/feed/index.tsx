@@ -20,12 +20,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  feedTypeConfig,
-  formatRelativeTime,
-  type FeedItem,
-  type FeedTab,
-} from '../../../lib/feed';
+import { feedTypeConfig, formatRelativeTime, type FeedItem, type FeedTab } from '../../../lib/feed';
 import { useFeed } from '../../../lib/feed/useFeed';
 import { shareLogger } from '../../../lib/utils/logger';
 
@@ -92,50 +87,29 @@ export default function FeedScreen() {
           <View style={styles.cardHeader}>
             <View style={styles.userInfo}>
               {item.userAvatar ? (
-                <Image
-                  source={{ uri: item.userAvatar }}
-                  style={styles.avatar}
-                />
+                <Image source={{ uri: item.userAvatar }} style={styles.avatar} />
               ) : (
-                <View
-                  style={[
-                    styles.avatarPlaceholder,
-                    isDark && styles.avatarPlaceholderDark,
-                  ]}
-                >
-                  <Text style={styles.avatarText}>
-                    {item.userName.charAt(0)}
-                  </Text>
+                <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
+                  <Text style={styles.avatarText}>{item.userName.charAt(0)}</Text>
                 </View>
               )}
               <View style={styles.userMeta}>
-                <Text style={[styles.userName, isDark && styles.textLight]}>
-                  {item.userName}
-                </Text>
+                <Text style={[styles.userName, isDark && styles.textLight]}>{item.userName}</Text>
                 <Text style={[styles.timeText, isDark && styles.textMuted]}>
                   {formatRelativeTime(item.createdAt)}
                 </Text>
               </View>
             </View>
-            <View
-              style={[
-                styles.typeBadge,
-                { backgroundColor: config.color + '20' },
-              ]}
-            >
+            <View style={[styles.typeBadge, { backgroundColor: config.color + '20' }]}>
               <Text style={styles.typeBadgeEmoji}>{config.emoji}</Text>
             </View>
           </View>
 
           {/* 콘텐츠 */}
           <View style={styles.cardContent}>
-            <Text style={[styles.contentText, isDark && styles.textLight]}>
-              {item.content}
-            </Text>
+            <Text style={[styles.contentText, isDark && styles.textLight]}>{item.content}</Text>
             {item.detail && (
-              <Text style={[styles.detailText, isDark && styles.textMuted]}>
-                {item.detail}
-              </Text>
+              <Text style={[styles.detailText, isDark && styles.textMuted]}>{item.detail}</Text>
             )}
           </View>
 
@@ -149,25 +123,16 @@ export default function FeedScreen() {
 
           {/* 인터랙션 버튼 */}
           <View style={styles.cardActions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => onLike(item.id)}
-            >
-              <Text
-                style={item.isLiked ? styles.likeIconActive : styles.likeIcon}
-              >
+            <TouchableOpacity style={styles.actionButton} onPress={() => onLike(item.id)}>
+              <Text style={item.isLiked ? styles.likeIconActive : styles.likeIcon}>
                 {item.isLiked ? '❤️' : '🤍'}
               </Text>
-              <Text style={[styles.actionCount, isDark && styles.textMuted]}>
-                {item.likes}
-              </Text>
+              <Text style={[styles.actionCount, isDark && styles.textMuted]}>{item.likes}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton}>
               <Text style={styles.actionIcon}>💬</Text>
-              <Text style={[styles.actionCount, isDark && styles.textMuted]}>
-                {item.comments}
-              </Text>
+              <Text style={[styles.actionCount, isDark && styles.textMuted]}>{item.comments}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -197,33 +162,28 @@ export default function FeedScreen() {
   const renderEmpty = useCallback(() => {
     if (isLoading) return null;
 
-    const emptyMessages: Record<FeedTab, { title: string; subtitle: string }> =
-      {
-        my: {
-          title: '아직 내 활동이 없어요',
-          subtitle: '운동이나 영양 기록을 시작해보세요',
-        },
-        friends: {
-          title: '친구 활동이 없어요',
-          subtitle: '친구를 추가하면 활동을 볼 수 있어요',
-        },
-        all: {
-          title: '활동이 없어요',
-          subtitle: '첫 번째 활동을 시작해보세요',
-        },
-      };
+    const emptyMessages: Record<FeedTab, { title: string; subtitle: string }> = {
+      my: {
+        title: '아직 내 활동이 없어요',
+        subtitle: '운동이나 영양 기록을 시작해보세요',
+      },
+      friends: {
+        title: '친구 활동이 없어요',
+        subtitle: '친구를 추가하면 활동을 볼 수 있어요',
+      },
+      all: {
+        title: '활동이 없어요',
+        subtitle: '첫 번째 활동을 시작해보세요',
+      },
+    };
 
     const message = emptyMessages[activeTab];
 
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyIcon}>👥</Text>
-        <Text style={[styles.emptyTitle, isDark && styles.textLight]}>
-          {message.title}
-        </Text>
-        <Text style={[styles.emptySubtitle, isDark && styles.textMuted]}>
-          {message.subtitle}
-        </Text>
+        <Text style={[styles.emptyTitle, isDark && styles.textLight]}>{message.title}</Text>
+        <Text style={[styles.emptySubtitle, isDark && styles.textMuted]}>{message.subtitle}</Text>
         {activeTab === 'friends' && (
           <TouchableOpacity
             style={styles.emptyButton}
@@ -244,35 +204,24 @@ export default function FeedScreen() {
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#8b5cf6" />
-          <Text style={[styles.loadingText, isDark && styles.textMuted]}>
-            피드 불러오는 중...
-          </Text>
+          <Text style={[styles.loadingText, isDark && styles.textMuted]}>피드 불러오는 중...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
       {/* 탭 바 */}
       <View style={[styles.tabBar, isDark && styles.tabBarDark]}>
         {TABS.map((tab) => (
           <TouchableOpacity
             key={tab.id}
-            style={[
-              styles.tabButton,
-              activeTab === tab.id && styles.tabButtonActive,
-            ]}
+            style={[styles.tabButton, activeTab === tab.id && styles.tabButtonActive]}
             onPress={() => onTabChange(tab.id)}
           >
             <Text
-              style={[
-                styles.tabButtonText,
-                activeTab === tab.id && styles.tabButtonTextActive,
-              ]}
+              style={[styles.tabButtonText, activeTab === tab.id && styles.tabButtonTextActive]}
             >
               {tab.label}
             </Text>

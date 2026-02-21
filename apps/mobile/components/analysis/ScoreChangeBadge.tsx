@@ -113,11 +113,7 @@ export function ScoreChangeBadge({
 
   // 아이콘 선택
   const IconComponent =
-    direction === 'up'
-      ? TrendingUp
-      : direction === 'down'
-        ? TrendingDown
-        : Minus;
+    direction === 'up' ? TrendingUp : direction === 'down' ? TrendingDown : Minus;
 
   // 접두사
   const prefix = delta > 0 ? '+' : '';
@@ -156,10 +152,7 @@ export function ScoreChangeBadge({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="text"
     >
-      <IconComponent
-        size={config.iconSize}
-        color={isDark ? colors.textDark : colors.text}
-      />
+      <IconComponent size={config.iconSize} color={isDark ? colors.textDark : colors.text} />
       <Text
         style={[
           styles.text,
@@ -213,22 +206,12 @@ export interface MetricDeltaProps {
  * </View>
  * ```
  */
-export function MetricDelta({
-  delta,
-  size = 'xs',
-  isDark = false,
-}: MetricDeltaProps) {
+export function MetricDelta({ delta, size = 'xs', isDark = false }: MetricDeltaProps) {
   if (delta === 0) return null;
 
   const isPositive = delta > 0;
   const fontSize = size === 'xs' ? 10 : 12;
-  const color = isPositive
-    ? isDark
-      ? '#34d399'
-      : '#10b981'
-    : isDark
-      ? '#f87171'
-      : '#ef4444';
+  const color = isPositive ? (isDark ? '#34d399' : '#10b981') : isDark ? '#f87171' : '#ef4444';
 
   return (
     <Text
