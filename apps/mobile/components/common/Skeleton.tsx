@@ -33,7 +33,7 @@ export function Skeleton({
   circle = false,
   style,
 }: SkeletonProps) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const pulseAnim = useRef(new Animated.Value(0.3)).current;
 
   // 펄스 애니메이션
@@ -63,8 +63,8 @@ export function Skeleton({
       testID="skeleton"
       style={[
         styles.skeleton,
-        isDark && styles.skeletonDark,
         {
+          backgroundColor: colors.muted,
           width: size || width,
           height,
           borderRadius: circle ? height / 2 : borderRadius,
@@ -108,10 +108,10 @@ export function SkeletonText({
  * 카드 스켈레톤
  */
 export function SkeletonCard({ style }: { style?: ViewStyle }) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   return (
-    <View style={[styles.card, isDark && styles.cardDark, style]}>
+    <View style={[styles.card, { backgroundColor: colors.card }, style]}>
       <View style={styles.cardHeader}>
         <Skeleton circle height={40} />
         <View style={styles.cardHeaderText}>
@@ -128,10 +128,10 @@ export function SkeletonCard({ style }: { style?: ViewStyle }) {
  * 리스트 아이템 스켈레톤
  */
 export function SkeletonListItem({ style }: { style?: ViewStyle }) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   return (
-    <View style={[styles.listItem, isDark && styles.listItemDark, style]}>
+    <View style={[styles.listItem, { backgroundColor: colors.card }, style]}>
       <Skeleton circle height={48} />
       <View style={styles.listItemContent}>
         <Skeleton height={16} width="70%" />
@@ -145,10 +145,10 @@ export function SkeletonListItem({ style }: { style?: ViewStyle }) {
  * 운동 카드 스켈레톤
  */
 export function SkeletonWorkoutCard({ style }: { style?: ViewStyle }) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   return (
-    <View style={[styles.workoutCard, isDark && styles.cardDark, style]}>
+    <View style={[styles.workoutCard, { backgroundColor: colors.card }, style]}>
       <Skeleton height={120} borderRadius={12} style={{ marginBottom: 12 }} />
       <Skeleton height={18} width="80%" />
       <Skeleton height={14} width="60%" style={{ marginTop: 8 }} />
@@ -165,10 +165,10 @@ export function SkeletonWorkoutCard({ style }: { style?: ViewStyle }) {
  * 영양 요약 스켈레톤
  */
 export function SkeletonNutritionSummary({ style }: { style?: ViewStyle }) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   return (
-    <View style={[styles.nutritionCard, isDark && styles.cardDark, style]}>
+    <View style={[styles.nutritionCard, { backgroundColor: colors.card }, style]}>
       <View style={styles.nutritionHeader}>
         <Skeleton height={16} width={100} />
         <Skeleton height={24} width={60} />
@@ -196,10 +196,10 @@ export function SkeletonNutritionSummary({ style }: { style?: ViewStyle }) {
  * 제품 카드 스켈레톤
  */
 export function SkeletonProductCard({ style }: { style?: ViewStyle }) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   return (
-    <View style={[styles.productCard, isDark && styles.cardDark, style]}>
+    <View style={[styles.productCard, { backgroundColor: colors.card }, style]}>
       <Skeleton height={160} borderRadius={12} />
       <View style={styles.productContent}>
         <Skeleton height={12} width={60} style={{ marginTop: 12 }} />
@@ -214,14 +214,8 @@ export function SkeletonProductCard({ style }: { style?: ViewStyle }) {
 }
 
 const styles = StyleSheet.create({
-  skeleton: {
-    backgroundColor: '#e5e7eb',
-  },
-  skeletonDark: {
-    backgroundColor: '#374151',
-  },
+  skeleton: {},
   card: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -229,9 +223,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
-  },
-  cardDark: {
-    backgroundColor: '#1f2937',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -244,19 +235,14 @@ const styles = StyleSheet.create({
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     padding: 12,
     borderRadius: 12,
-  },
-  listItemDark: {
-    backgroundColor: '#1f2937',
   },
   listItemContent: {
     marginLeft: 12,
     flex: 1,
   },
   workoutCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
   },
@@ -266,7 +252,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   nutritionCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
   },
@@ -284,7 +269,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   productCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     overflow: 'hidden',
   },

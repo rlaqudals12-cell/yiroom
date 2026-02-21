@@ -24,7 +24,7 @@ const QUICK_ACTIONS = [
 ];
 
 export function QuickActionsWidget({ size = 'medium', onAction }: QuickActionsWidgetProps) {
-  const { isDark } = useTheme();
+  const { colors } = useTheme();
 
   const handlePress = async (action: QuickActionType) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -45,12 +45,12 @@ export function QuickActionsWidget({ size = 'medium', onAction }: QuickActionsWi
   // 소형 위젯 (2x1)
   if (size === 'small') {
     return (
-      <View style={[styles.containerSmall, isDark && styles.containerDark]}>
+      <View style={[styles.containerSmall, { backgroundColor: colors.card }]}>
         <View style={styles.smallGrid}>
           {QUICK_ACTIONS.slice(0, 2).map((action) => (
             <TouchableOpacity
               key={action.type}
-              style={[styles.smallButton, isDark && styles.buttonDark]}
+              style={[styles.smallButton, { backgroundColor: colors.muted }]}
               onPress={() => handlePress(action.type)}
             >
               <Text style={styles.buttonIcon}>{action.icon}</Text>
@@ -65,18 +65,18 @@ export function QuickActionsWidget({ size = 'medium', onAction }: QuickActionsWi
   return (
     <View
       testID="quick-actions-widget"
-      style={[styles.containerMedium, isDark && styles.containerDark]}
+      style={[styles.containerMedium, { backgroundColor: colors.card }]}
     >
-      <Text style={[styles.title, isDark && styles.textLight]}>빠른 실행</Text>
+      <Text style={[styles.title, { color: colors.foreground }]}>빠른 실행</Text>
       <View style={styles.actionsRow}>
         {QUICK_ACTIONS.map((action) => (
           <TouchableOpacity
             key={action.type}
-            style={[styles.actionButton, isDark && styles.buttonDark]}
+            style={[styles.actionButton, { backgroundColor: colors.muted }]}
             onPress={() => handlePress(action.type)}
           >
             <Text style={styles.buttonIcon}>{action.icon}</Text>
-            <Text style={[styles.buttonLabel, isDark && styles.textMuted]}>{action.label}</Text>
+            <Text style={[styles.buttonLabel, { color: colors.mutedForeground }]}>{action.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -88,7 +88,6 @@ const styles = StyleSheet.create({
   containerSmall: {
     width: 155,
     height: 155,
-    backgroundColor: '#fff',
     borderRadius: 22,
     padding: 16,
     justifyContent: 'center',
@@ -102,7 +101,6 @@ const styles = StyleSheet.create({
   containerMedium: {
     width: 329,
     height: 155,
-    backgroundColor: '#fff',
     borderRadius: 22,
     padding: 16,
     shadowColor: '#000',
@@ -111,13 +109,9 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  containerDark: {
-    backgroundColor: '#1a1a1a',
-  },
   title: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
   smallGrid: {
@@ -127,7 +121,6 @@ const styles = StyleSheet.create({
   smallButton: {
     width: 56,
     height: 56,
-    backgroundColor: '#f5f3ff',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -142,11 +135,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderRadius: 16,
-    backgroundColor: '#f5f3ff',
     minWidth: 64,
-  },
-  buttonDark: {
-    backgroundColor: '#2a2a4e',
   },
   buttonIcon: {
     fontSize: 24,
@@ -154,13 +143,6 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     fontSize: 11,
-    color: '#666',
     fontWeight: '500',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

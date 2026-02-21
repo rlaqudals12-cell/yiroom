@@ -58,7 +58,7 @@ const QUESTIONS = [
 ];
 
 export default function PersonalColorScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, brand } = useTheme();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
@@ -86,19 +86,22 @@ export default function PersonalColorScreen() {
 
   const question = QUESTIONS[currentQuestion];
   const progress = ((currentQuestion + 1) / QUESTIONS.length) * 100;
+  const isSelected = (value: string) => answers[currentQuestion] === value;
 
   return (
     <SafeAreaView
       testID="analysis-pc-screen"
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
       {/* 진행 바 */}
       <View style={styles.progressContainer}>
-        <View style={[styles.progressBar, isDark && styles.progressBarDark]}>
-          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+        <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
+          <View
+            style={[styles.progressFill, { width: `${progress}%`, backgroundColor: brand.primary }]}
+          />
         </View>
-        <Text style={[styles.progressText, isDark && styles.textMuted]}>
+        <Text style={[styles.progressText, { color: colors.mutedForeground }]}>
           {currentQuestion + 1} / {QUESTIONS.length}
         </Text>
       </View>
@@ -106,7 +109,9 @@ export default function PersonalColorScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* 질문 */}
         <View style={styles.questionContainer}>
-          <Text style={[styles.questionText, isDark && styles.textLight]}>{question.question}</Text>
+          <Text style={[styles.questionText, { color: colors.foreground }]}>
+            {question.question}
+          </Text>
         </View>
 
         {/* 선택지 */}
@@ -116,8 +121,11 @@ export default function PersonalColorScreen() {
               key={index}
               style={[
                 styles.optionButton,
-                isDark && styles.optionButtonDark,
-                answers[currentQuestion] === option.value && styles.optionSelected,
+                { backgroundColor: colors.card },
+                isSelected(option.value) && {
+                  borderColor: brand.primary,
+                  backgroundColor: colors.muted,
+                },
               ]}
               onPress={() => handleAnswer(option.value)}
               activeOpacity={0.7}
@@ -125,8 +133,11 @@ export default function PersonalColorScreen() {
               <Text
                 style={[
                   styles.optionText,
-                  isDark && styles.textLight,
-                  answers[currentQuestion] === option.value && styles.optionTextSelected,
+                  { color: colors.foreground },
+                  isSelected(option.value) && {
+                    color: brand.primary,
+                    fontWeight: '600',
+                  },
                 ]}
               >
                 {option.label}
@@ -139,7 +150,7 @@ export default function PersonalColorScreen() {
       {/* 뒤로가기 버튼 */}
       {currentQuestion > 0 && (
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.backButtonText}>이전 질문</Text>
+          <Text style={[styles.backButtonText, { color: colors.mutedForeground }]}>이전 질문</Text>
         </TouchableOpacity>
       )}
     </SafeAreaView>
@@ -149,10 +160,6 @@ export default function PersonalColorScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   progressContainer: {
     paddingHorizontal: 20,
@@ -164,21 +171,15 @@ const styles = StyleSheet.create({
   progressBar: {
     flex: 1,
     height: 4,
-    backgroundColor: '#e5e5e5',
     borderRadius: 2,
     overflow: 'hidden',
   },
-  progressBarDark: {
-    backgroundColor: '#333',
-  },
   progressFill: {
     height: '100%',
-    backgroundColor: '#2e5afa',
     borderRadius: 2,
   },
   progressText: {
     fontSize: 14,
-    color: '#666',
     fontWeight: '500',
   },
   content: {
@@ -191,52 +192,26 @@ const styles = StyleSheet.create({
   questionText: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#111',
     lineHeight: 32,
   },
   optionsContainer: {
     gap: 12,
   },
   optionButton: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 18,
     borderWidth: 2,
     borderColor: 'transparent',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  optionButtonDark: {
-    backgroundColor: '#1a1a1a',
-  },
-  optionSelected: {
-    borderColor: '#2e5afa',
-    backgroundColor: '#f0f4ff',
   },
   optionText: {
     fontSize: 16,
-    color: '#333',
     lineHeight: 24,
-  },
-  optionTextSelected: {
-    color: '#2e5afa',
-    fontWeight: '600',
   },
   backButton: {
     padding: 16,
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#666',
     fontSize: 16,
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

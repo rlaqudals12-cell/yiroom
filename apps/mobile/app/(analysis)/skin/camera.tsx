@@ -7,7 +7,10 @@ import { router } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 
+import { useTheme } from '@/lib/theme';
+
 export default function SkinCameraScreen() {
+  const { colors, brand } = useTheme();
   const [facing, setFacing] = useState<CameraType>('front');
   const [permission, requestPermission] = useCameraPermissions();
   const [isCapturing, setIsCapturing] = useState(false);
@@ -17,7 +20,7 @@ export default function SkinCameraScreen() {
   if (!permission) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#2e5afa" />
+        <ActivityIndicator size="large" color={brand.primary} />
       </View>
     );
   }
@@ -25,14 +28,14 @@ export default function SkinCameraScreen() {
   // 권한 요청 화면
   if (!permission.granted) {
     return (
-      <View style={styles.permissionContainer}>
-        <Text style={styles.permissionTitle}>카메라 권한이 필요해요</Text>
-        <Text style={styles.permissionText}>피부 분석을 위해 얼굴 사진이 필요합니다.</Text>
-        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-          <Text style={styles.permissionButtonText}>권한 허용하기</Text>
+      <View style={[styles.permissionContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.permissionTitle, { color: colors.foreground }]}>카메라 권한이 필요해요</Text>
+        <Text style={[styles.permissionText, { color: colors.mutedForeground }]}>피부 분석을 위해 얼굴 사진이 필요합니다.</Text>
+        <TouchableOpacity style={[styles.permissionButton, { backgroundColor: brand.primary }]} onPress={requestPermission}>
+          <Text style={[styles.permissionButtonText, { color: brand.primaryForeground }]}>권한 허용하기</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.galleryButton} onPress={pickFromGallery}>
-          <Text style={styles.galleryButtonText}>갤러리에서 선택</Text>
+          <Text style={[styles.galleryButtonText, { color: brand.primary }]}>갤러리에서 선택</Text>
         </TouchableOpacity>
       </View>
     );
@@ -199,7 +202,6 @@ const styles = StyleSheet.create({
   },
   permissionContainer: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -207,25 +209,21 @@ const styles = StyleSheet.create({
   permissionTitle: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
   permissionText: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 24,
   },
   permissionButton: {
-    backgroundColor: '#2e5afa',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
     marginBottom: 16,
   },
   permissionButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -234,7 +232,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   galleryButtonText: {
-    color: '#2e5afa',
     fontSize: 16,
   },
 });

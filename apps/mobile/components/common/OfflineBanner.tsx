@@ -20,7 +20,7 @@ interface OfflineBannerProps {
 }
 
 export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: OfflineBannerProps) {
-  const { colors, isDark } = useTheme();
+  const { colors, brand, status } = useTheme();
   const { isConnected } = useNetworkStatus();
 
   const slideAnim = useRef(new Animated.Value(-60)).current;
@@ -52,18 +52,17 @@ export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: O
       testID="offline-banner"
       style={[
         styles.container,
-        isDark && styles.containerDark,
-        !isConnected && styles.containerOffline,
+        { backgroundColor: isConnected ? status.warning + '20' : status.error + '20' },
         { transform: [{ translateY: slideAnim }] },
       ]}
     >
       <View style={styles.content}>
         <Text style={styles.icon}>{isConnected ? '🔄' : '📡'}</Text>
         <View style={styles.textContainer}>
-          <Text style={[styles.title, isDark && styles.textLight]}>
+          <Text style={[styles.title, { color: colors.foreground }]}>
             {isConnected ? '동기화 대기 중' : '오프라인 모드'}
           </Text>
-          <Text style={[styles.subtitle, isDark && styles.textMuted]}>
+          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             {isConnected ? `${pendingCount}개 항목 동기화 필요` : '인터넷 연결을 확인해주세요'}
           </Text>
         </View>
@@ -71,11 +70,13 @@ export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: O
 
       {isConnected && pendingCount > 0 && (
         <TouchableOpacity
-          style={[styles.syncButton, isSyncing && styles.syncButtonDisabled]}
+          style={[styles.syncButton, { backgroundColor: brand.primary }, isSyncing && styles.syncButtonDisabled]}
           onPress={handleSync}
           disabled={isSyncing}
         >
-          <Text style={styles.syncButtonText}>{isSyncing ? '동기화 중...' : '동기화'}</Text>
+          <Text style={[styles.syncButtonText, { color: brand.primaryForeground }]}>
+            {isSyncing ? '동기화 중...' : '동기화'}
+          </Text>
         </TouchableOpacity>
       )}
     </Animated.View>
@@ -88,7 +89,6 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fef3c7',
     paddingHorizontal: 16,
     paddingVertical: 12,
     flexDirection: 'row',
@@ -100,12 +100,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
-  },
-  containerDark: {
-    backgroundColor: '#3a3a1a',
-  },
-  containerOffline: {
-    backgroundColor: '#fee2e2',
   },
   content: {
     flexDirection: 'row',
@@ -122,15 +116,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111',
   },
   subtitle: {
     fontSize: 12,
-    color: '#666',
     marginTop: 2,
   },
   syncButton: {
-    backgroundColor: '#F8C8DC',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
@@ -140,14 +131,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   syncButtonText: {
-    color: '#fff',
     fontSize: 13,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

@@ -67,32 +67,36 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
 }
 
 function ErrorFallbackContent({ error, onRetry }: { error: Error | null; onRetry: () => void }) {
-  const { colors, isDark } = useTheme();
+  const { colors, brand, status } = useTheme();
 
   return (
     <SafeAreaView
       testID="error-boundary"
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
     >
       <View style={styles.content}>
         <Text style={styles.emoji}>😵</Text>
-        <Text style={[styles.title, isDark && styles.textLight]}>문제가 발생했어요</Text>
-        <Text style={[styles.message, isDark && styles.textMuted]}>
+        <Text style={[styles.title, { color: colors.foreground }]}>문제가 발생했어요</Text>
+        <Text style={[styles.message, { color: colors.mutedForeground }]}>
           앱에서 예상치 못한 오류가 발생했습니다.{'\n'}
           다시 시도해주세요.
         </Text>
 
         {__DEV__ && error && (
-          <View style={[styles.errorBox, isDark && styles.errorBoxDark]}>
-            <Text style={[styles.errorTitle, isDark && styles.textMuted]}>
+          <View style={[styles.errorBox, { backgroundColor: status.error + '20' }]}>
+            <Text style={[styles.errorTitle, { color: colors.mutedForeground }]}>
               에러 정보 (개발 모드)
             </Text>
-            <Text style={[styles.errorText, isDark && styles.textMuted]}>{error.message}</Text>
+            <Text style={[styles.errorText, { color: colors.mutedForeground }]}>{error.message}</Text>
           </View>
         )}
 
-        <TouchableOpacity style={styles.retryButton} onPress={onRetry} activeOpacity={0.8}>
-          <Text style={styles.retryButtonText}>다시 시도</Text>
+        <TouchableOpacity
+          style={[styles.retryButton, { backgroundColor: brand.primary }]}
+          onPress={onRetry}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.retryButtonText, { color: brand.primaryForeground }]}>다시 시도</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -102,10 +106,6 @@ function ErrorFallbackContent({ error, onRetry }: { error: Error | null; onRetry
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   content: {
     flex: 1,
@@ -120,54 +120,38 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
     fontSize: 15,
-    color: '#666',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 32,
   },
   errorBox: {
-    backgroundColor: '#fee2e2',
     borderRadius: 12,
     padding: 16,
     marginBottom: 32,
     width: '100%',
   },
-  errorBoxDark: {
-    backgroundColor: '#2a1a1a',
-  },
   errorTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#666',
     marginBottom: 8,
     textTransform: 'uppercase',
   },
   errorText: {
     fontSize: 12,
-    color: '#666',
     fontFamily: 'monospace',
   },
   retryButton: {
-    backgroundColor: '#F8C8DC',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

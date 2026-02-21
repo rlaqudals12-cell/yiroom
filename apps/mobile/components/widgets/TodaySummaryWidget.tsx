@@ -17,7 +17,7 @@ export function TodaySummaryWidget({
   data = DEFAULT_SUMMARY_DATA,
   size = 'medium',
 }: TodaySummaryWidgetProps) {
-  const { isDark } = useTheme();
+  const { colors, brand, status } = useTheme();
 
   // 진행률 계산
   const waterProgress = Math.min((data.waterIntake / data.waterGoal) * 100, 100);
@@ -26,8 +26,8 @@ export function TodaySummaryWidget({
   // 소형 위젯
   if (size === 'small') {
     return (
-      <View style={[styles.containerSmall, isDark && styles.containerDark]}>
-        <Text style={[styles.streakText, isDark && styles.textLight]}>
+      <View style={[styles.containerSmall, { backgroundColor: colors.card }]}>
+        <Text style={[styles.streakText, { color: colors.foreground }]}>
           {data.currentStreak > 0 ? `${data.currentStreak}일 연속` : '오늘 시작!'}
         </Text>
         <View style={styles.iconRow}>
@@ -41,12 +41,12 @@ export function TodaySummaryWidget({
   // 중형 위젯
   if (size === 'medium') {
     return (
-      <View style={[styles.containerMedium, isDark && styles.containerDark]}>
+      <View style={[styles.containerMedium, { backgroundColor: colors.card }]}>
         <View style={styles.header}>
-          <Text style={[styles.title, isDark && styles.textLight]}>오늘의 이룸</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>오늘의 이룸</Text>
           {data.currentStreak > 0 && (
-            <View style={styles.streakBadge}>
-              <Text style={styles.streakBadgeText}>{data.currentStreak}일</Text>
+            <View style={[styles.streakBadge, { backgroundColor: brand.primary }]}>
+              <Text style={[styles.streakBadgeText, { color: brand.primaryForeground }]}>{data.currentStreak}일</Text>
             </View>
           )}
         </View>
@@ -55,8 +55,8 @@ export function TodaySummaryWidget({
           {/* 운동 */}
           <View style={styles.statItem}>
             <Text style={styles.statIcon}>{data.workoutCompleted ? '✅' : '🏃'}</Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>운동</Text>
-            <Text style={[styles.statValue, isDark && styles.textLight]}>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>운동</Text>
+            <Text style={[styles.statValue, { color: colors.foreground }]}>
               {data.workoutCompleted ? `${data.workoutMinutes}분` : '대기'}
             </Text>
           </View>
@@ -64,8 +64,8 @@ export function TodaySummaryWidget({
           {/* 물 */}
           <View style={styles.statItem}>
             <Text style={styles.statIcon}>💧</Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>물</Text>
-            <Text style={[styles.statValue, isDark && styles.textLight]}>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>물</Text>
+            <Text style={[styles.statValue, { color: colors.foreground }]}>
               {(data.waterIntake / 1000).toFixed(1)}L
             </Text>
           </View>
@@ -73,8 +73,8 @@ export function TodaySummaryWidget({
           {/* 칼로리 */}
           <View style={styles.statItem}>
             <Text style={styles.statIcon}>🍽️</Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>칼로리</Text>
-            <Text style={[styles.statValue, isDark && styles.textLight]}>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>칼로리</Text>
+            <Text style={[styles.statValue, { color: colors.foreground }]}>
               {data.caloriesConsumed}
             </Text>
           </View>
@@ -87,13 +87,13 @@ export function TodaySummaryWidget({
   return (
     <View
       testID="today-summary-widget"
-      style={[styles.containerLarge, isDark && styles.containerDark]}
+      style={[styles.containerLarge, { backgroundColor: colors.card }]}
     >
       <View style={styles.header}>
-        <Text style={[styles.title, isDark && styles.textLight]}>오늘의 이룸</Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>오늘의 이룸</Text>
         {data.currentStreak > 0 && (
-          <View style={styles.streakBadge}>
-            <Text style={styles.streakBadgeText}>{data.currentStreak}일 연속</Text>
+          <View style={[styles.streakBadge, { backgroundColor: brand.primary }]}>
+            <Text style={[styles.streakBadgeText, { color: brand.primaryForeground }]}>{data.currentStreak}일 연속</Text>
           </View>
         )}
       </View>
@@ -101,17 +101,17 @@ export function TodaySummaryWidget({
       {/* 운동 */}
       <View style={styles.progressRow}>
         <View style={styles.progressHeader}>
-          <Text style={[styles.progressLabel, isDark && styles.textLight]}>🏃 운동</Text>
-          <Text style={[styles.progressValue, isDark && styles.textMuted]}>
+          <Text style={[styles.progressLabel, { color: colors.foreground }]}>🏃 운동</Text>
+          <Text style={[styles.progressValue, { color: colors.mutedForeground }]}>
             {data.workoutCompleted ? `${data.workoutMinutes}분 완료` : '아직 안 함'}
           </Text>
         </View>
-        <View style={[styles.progressBar, isDark && styles.progressBarDark]}>
+        <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
           <View
             style={[
               styles.progressFill,
-              { width: data.workoutCompleted ? '100%' : '0%' },
-              data.workoutCompleted && styles.progressComplete,
+              { width: data.workoutCompleted ? '100%' : '0%', backgroundColor: brand.primary },
+              data.workoutCompleted && { backgroundColor: status.success },
             ]}
           />
         </View>
@@ -120,18 +120,17 @@ export function TodaySummaryWidget({
       {/* 물 섭취 */}
       <View style={styles.progressRow}>
         <View style={styles.progressHeader}>
-          <Text style={[styles.progressLabel, isDark && styles.textLight]}>💧 물 섭취</Text>
-          <Text style={[styles.progressValue, isDark && styles.textMuted]}>
+          <Text style={[styles.progressLabel, { color: colors.foreground }]}>💧 물 섭취</Text>
+          <Text style={[styles.progressValue, { color: colors.mutedForeground }]}>
             {data.waterIntake}ml / {data.waterGoal}ml
           </Text>
         </View>
-        <View style={[styles.progressBar, isDark && styles.progressBarDark]}>
+        <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
           <View
             style={[
               styles.progressFill,
-              styles.progressWater,
-              { width: `${waterProgress}%` },
-              waterProgress >= 100 && styles.progressComplete,
+              { width: `${waterProgress}%`, backgroundColor: status.info },
+              waterProgress >= 100 && { backgroundColor: status.success },
             ]}
           />
         </View>
@@ -140,18 +139,17 @@ export function TodaySummaryWidget({
       {/* 칼로리 */}
       <View style={styles.progressRow}>
         <View style={styles.progressHeader}>
-          <Text style={[styles.progressLabel, isDark && styles.textLight]}>🍽️ 칼로리</Text>
-          <Text style={[styles.progressValue, isDark && styles.textMuted]}>
+          <Text style={[styles.progressLabel, { color: colors.foreground }]}>🍽️ 칼로리</Text>
+          <Text style={[styles.progressValue, { color: colors.mutedForeground }]}>
             {data.caloriesConsumed} / {data.caloriesGoal} kcal
           </Text>
         </View>
-        <View style={[styles.progressBar, isDark && styles.progressBarDark]}>
+        <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
           <View
             style={[
               styles.progressFill,
-              styles.progressCalories,
-              { width: `${caloriesProgress}%` },
-              caloriesProgress > 100 && styles.progressOver,
+              { width: `${caloriesProgress}%`, backgroundColor: status.warning },
+              caloriesProgress > 100 && { backgroundColor: status.error },
             ]}
           />
         </View>
@@ -164,7 +162,6 @@ const styles = StyleSheet.create({
   containerSmall: {
     width: 155,
     height: 155,
-    backgroundColor: '#fff',
     borderRadius: 22,
     padding: 16,
     justifyContent: 'center',
@@ -178,7 +175,6 @@ const styles = StyleSheet.create({
   containerMedium: {
     width: 329,
     height: 155,
-    backgroundColor: '#fff',
     borderRadius: 22,
     padding: 16,
     shadowColor: '#000',
@@ -190,7 +186,6 @@ const styles = StyleSheet.create({
   containerLarge: {
     width: 329,
     height: 345,
-    backgroundColor: '#fff',
     borderRadius: 22,
     padding: 20,
     shadowColor: '#000',
@@ -198,9 +193,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-  },
-  containerDark: {
-    backgroundColor: '#1a1a1a',
   },
   header: {
     flexDirection: 'row',
@@ -211,23 +203,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#111',
   },
   streakBadge: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   streakBadgeText: {
-    color: '#fff',
     fontSize: 12,
     fontWeight: '600',
   },
   streakText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
   iconRow: {
@@ -252,13 +240,11 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
     marginBottom: 2,
   },
   statValue: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
   },
   progressRow: {
     marginBottom: 16,
@@ -271,42 +257,17 @@ const styles = StyleSheet.create({
   progressLabel: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#111',
   },
   progressValue: {
     fontSize: 13,
-    color: '#666',
   },
   progressBar: {
     height: 8,
-    backgroundColor: '#f0f0f0',
     borderRadius: 4,
     overflow: 'hidden',
   },
-  progressBarDark: {
-    backgroundColor: '#333',
-  },
   progressFill: {
     height: '100%',
-    backgroundColor: '#8b5cf6',
     borderRadius: 4,
-  },
-  progressWater: {
-    backgroundColor: '#3b82f6',
-  },
-  progressCalories: {
-    backgroundColor: '#f59e0b',
-  },
-  progressComplete: {
-    backgroundColor: '#22c55e',
-  },
-  progressOver: {
-    backgroundColor: '#ef4444',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

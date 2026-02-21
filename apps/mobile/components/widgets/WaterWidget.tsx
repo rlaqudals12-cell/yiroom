@@ -15,7 +15,7 @@ interface WaterWidgetProps {
 }
 
 export function WaterWidget({ current, goal, onAddWater, size = 'medium' }: WaterWidgetProps) {
-  const { isDark } = useTheme();
+  const { colors, status } = useTheme();
 
   const progress = Math.min((current / goal) * 100, 100);
   const remaining = Math.max(goal - current, 0);
@@ -32,34 +32,34 @@ export function WaterWidget({ current, goal, onAddWater, size = 'medium' }: Wate
 
   if (size === 'small') {
     return (
-      <View style={[styles.containerSmall, isDark && styles.containerDark]}>
+      <View style={[styles.containerSmall, { backgroundColor: colors.card }]}>
         <Text style={styles.waterIcon}>💧</Text>
-        <Text style={[styles.currentSmall, isDark && styles.textLight]}>
+        <Text style={[styles.currentSmall, { color: colors.foreground }]}>
           {(current / 1000).toFixed(1)}L
         </Text>
-        <View style={styles.miniProgressBar}>
-          <View style={[styles.miniProgressFill, { width: `${progress}%` }]} />
+        <View style={[styles.miniProgressBar, { backgroundColor: colors.muted }]}>
+          <View style={[styles.miniProgressFill, { width: `${progress}%`, backgroundColor: status.info }]} />
         </View>
       </View>
     );
   }
 
   return (
-    <View testID="water-widget" style={[styles.containerMedium, isDark && styles.containerDark]}>
+    <View testID="water-widget" style={[styles.containerMedium, { backgroundColor: colors.card }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, isDark && styles.textLight]}>💧 물 섭취</Text>
-        <Text style={[styles.glasses, isDark && styles.textMuted]}>{glasses}잔 마심</Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>💧 물 섭취</Text>
+        <Text style={[styles.glasses, { color: colors.mutedForeground }]}>{glasses}잔 마심</Text>
       </View>
 
       <View style={styles.content}>
         {/* 물컵 시각화 */}
         <View style={styles.cupContainer}>
-          <View style={[styles.cup, isDark && styles.cupDark]}>
+          <View style={[styles.cup, { backgroundColor: status.info + '15', borderColor: status.info + '40' }]}>
             <View
               style={[
                 styles.water,
-                { height: `${progress}%` },
-                progress >= 100 && styles.waterFull,
+                { height: `${progress}%`, backgroundColor: status.info },
+                progress >= 100 && { backgroundColor: status.success },
               ]}
             />
           </View>
@@ -67,13 +67,13 @@ export function WaterWidget({ current, goal, onAddWater, size = 'medium' }: Wate
 
         {/* 수치 */}
         <View style={styles.stats}>
-          <Text style={[styles.currentLarge, isDark && styles.textLight]}>
+          <Text style={[styles.currentLarge, { color: colors.foreground }]}>
             {current}
             <Text style={styles.unit}>ml</Text>
           </Text>
-          <Text style={[styles.goal, isDark && styles.textMuted]}>목표: {goal}ml</Text>
+          <Text style={[styles.goal, { color: colors.mutedForeground }]}>목표: {goal}ml</Text>
           {remaining > 0 && (
-            <Text style={[styles.remaining, isDark && styles.textMuted]}>{remaining}ml 남음</Text>
+            <Text style={[styles.remaining, { color: status.info }]}>{remaining}ml 남음</Text>
           )}
         </View>
 
@@ -81,10 +81,10 @@ export function WaterWidget({ current, goal, onAddWater, size = 'medium' }: Wate
         {onAddWater && (
           <View style={styles.quickAdd}>
             <Pressable
-              style={[styles.addButton, isDark && styles.addButtonDark]}
+              style={[styles.addButton, { backgroundColor: status.info }]}
               onPress={() => onAddWater(250)}
             >
-              <Text style={styles.addButtonText}>+1잔</Text>
+              <Text style={[styles.addButtonText, { color: colors.card }]}>+1잔</Text>
             </Pressable>
           </View>
         )}
@@ -97,7 +97,6 @@ const styles = StyleSheet.create({
   containerSmall: {
     width: 155,
     height: 155,
-    backgroundColor: '#fff',
     borderRadius: 22,
     padding: 16,
     justifyContent: 'center',
@@ -111,7 +110,6 @@ const styles = StyleSheet.create({
   containerMedium: {
     width: 329,
     height: 155,
-    backgroundColor: '#fff',
     borderRadius: 22,
     padding: 16,
     shadowColor: '#000',
@@ -119,9 +117,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-  },
-  containerDark: {
-    backgroundColor: '#1a1a1a',
   },
   header: {
     flexDirection: 'row',
@@ -132,11 +127,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#111',
   },
   glasses: {
     fontSize: 13,
-    color: '#666',
   },
   content: {
     flexDirection: 'row',
@@ -150,23 +143,13 @@ const styles = StyleSheet.create({
   },
   cup: {
     flex: 1,
-    backgroundColor: '#f0f9ff',
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#bae6fd',
     overflow: 'hidden',
     justifyContent: 'flex-end',
   },
-  cupDark: {
-    backgroundColor: '#1e3a5f',
-    borderColor: '#3b82f6',
-  },
   water: {
-    backgroundColor: '#3b82f6',
     width: '100%',
-  },
-  waterFull: {
-    backgroundColor: '#22c55e',
   },
   stats: {
     flex: 1,
@@ -174,7 +157,6 @@ const styles = StyleSheet.create({
   currentLarge: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111',
   },
   unit: {
     fontSize: 14,
@@ -182,28 +164,21 @@ const styles = StyleSheet.create({
   },
   goal: {
     fontSize: 13,
-    color: '#666',
     marginTop: 2,
   },
   remaining: {
     fontSize: 12,
-    color: '#3b82f6',
     marginTop: 4,
   },
   quickAdd: {
     justifyContent: 'center',
   },
   addButton: {
-    backgroundColor: '#3b82f6',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
-  addButtonDark: {
-    backgroundColor: '#2563eb',
-  },
   addButtonText: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -214,25 +189,16 @@ const styles = StyleSheet.create({
   currentSmall: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
   },
   miniProgressBar: {
     width: '100%',
     height: 6,
-    backgroundColor: '#e5e7eb',
     borderRadius: 3,
     overflow: 'hidden',
   },
   miniProgressFill: {
     height: '100%',
-    backgroundColor: '#3b82f6',
     borderRadius: 3,
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

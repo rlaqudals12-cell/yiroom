@@ -15,10 +15,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { moduleColors, useTheme } from '@/lib/theme';
+import { useTheme } from '@/lib/theme';
 
 export default function BodyAnalysisScreen() {
-  const { colors } = useTheme();
+  const { colors, module } = useTheme();
+  const accent = module.body;
 
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
@@ -148,15 +149,15 @@ export default function BodyAnalysisScreen() {
             style={[
               styles.imagePickerButton,
               { borderColor: colors.border },
-              imageUri && styles.imagePickerButtonSelected,
+              imageUri && [styles.imagePickerButtonSelected, { borderColor: accent.base, backgroundColor: colors.muted }],
             ]}
             onPress={pickImage}
           >
             {imageUri ? (
-              <Text style={styles.imagePickerTextSelected}>사진이 선택되었습니다</Text>
+              <Text style={[styles.imagePickerTextSelected, { color: accent.base }]}>사진이 선택되었습니다</Text>
             ) : (
               <>
-                <Text style={styles.imagePickerIcon}>+</Text>
+                <Text style={[styles.imagePickerIcon, { color: colors.mutedForeground }]}>+</Text>
                 <Text style={[styles.imagePickerText, { color: colors.mutedForeground }]}>
                   갤러리에서 선택
                 </Text>
@@ -189,12 +190,13 @@ export default function BodyAnalysisScreen() {
         <TouchableOpacity
           style={[
             styles.analyzeButton,
+            { backgroundColor: accent.base },
             (!height || !weight || !imageUri) && styles.analyzeButtonDisabled,
           ]}
           onPress={handleAnalyze}
           disabled={!height || !weight || !imageUri}
         >
-          <Text style={styles.analyzeButtonText}>체형 분석하기</Text>
+          <Text style={[styles.analyzeButtonText, { color: '#fff' }]}>체형 분석하기</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -258,13 +260,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   imagePickerButtonSelected: {
-    borderColor: moduleColors.body.base,
-    backgroundColor: '#f0f4ff',
     borderStyle: 'solid',
   },
   imagePickerIcon: {
     fontSize: 32,
-    color: '#999',
     marginBottom: 8,
   },
   imagePickerText: {
@@ -272,7 +271,6 @@ const styles = StyleSheet.create({
   },
   imagePickerTextSelected: {
     fontSize: 14,
-    color: moduleColors.body.base,
     fontWeight: '600',
   },
   guideBox: {
@@ -297,16 +295,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   analyzeButton: {
-    backgroundColor: moduleColors.body.base,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   analyzeButtonDisabled: {
-    backgroundColor: '#ccc',
+    opacity: 0.5,
   },
   analyzeButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

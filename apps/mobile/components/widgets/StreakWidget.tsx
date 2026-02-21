@@ -20,7 +20,7 @@ export function StreakWidget({
   recentBadges = [],
   size = 'medium',
 }: StreakWidgetProps) {
-  const { isDark } = useTheme();
+  const { colors, brand } = useTheme();
 
   // 스트릭 레벨 계산
   const getStreakLevel = (days: number) => {
@@ -35,20 +35,20 @@ export function StreakWidget({
 
   if (size === 'small') {
     return (
-      <View style={[styles.containerSmall, isDark && styles.containerDark]}>
+      <View style={[styles.containerSmall, { backgroundColor: colors.card }]}>
         <Text style={styles.emoji}>{level.emoji}</Text>
-        <Text style={[styles.streakNumber, isDark && styles.textLight]}>{streak}</Text>
-        <Text style={[styles.streakLabel, isDark && styles.textMuted]}>일 연속</Text>
+        <Text style={[styles.streakNumber, { color: colors.foreground }]}>{streak}</Text>
+        <Text style={[styles.streakLabel, { color: colors.mutedForeground }]}>일 연속</Text>
       </View>
     );
   }
 
   return (
-    <View testID="streak-widget" style={[styles.containerMedium, isDark && styles.containerDark]}>
+    <View testID="streak-widget" style={[styles.containerMedium, { backgroundColor: colors.card }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, isDark && styles.textLight]}>연속 기록</Text>
-        <View style={styles.levelBadge}>
-          <Text style={styles.levelText}>{level.label}</Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>연속 기록</Text>
+        <View style={[styles.levelBadge, { backgroundColor: brand.primary }]}>
+          <Text style={[styles.levelText, { color: brand.primaryForeground }]}>{level.label}</Text>
         </View>
       </View>
 
@@ -56,8 +56,8 @@ export function StreakWidget({
         <View style={styles.streakMain}>
           <Text style={styles.bigEmoji}>{level.emoji}</Text>
           <View>
-            <Text style={[styles.streakBig, isDark && styles.textLight]}>{streak}일</Text>
-            <Text style={[styles.longestStreak, isDark && styles.textMuted]}>
+            <Text style={[styles.streakBig, { color: colors.foreground }]}>{streak}일</Text>
+            <Text style={[styles.longestStreak, { color: colors.mutedForeground }]}>
               최고: {longestStreak}일
             </Text>
           </View>
@@ -81,7 +81,6 @@ const styles = StyleSheet.create({
   containerSmall: {
     width: 155,
     height: 155,
-    backgroundColor: '#fff',
     borderRadius: 22,
     padding: 16,
     justifyContent: 'center',
@@ -95,7 +94,6 @@ const styles = StyleSheet.create({
   containerMedium: {
     width: 329,
     height: 155,
-    backgroundColor: '#fff',
     borderRadius: 22,
     padding: 16,
     shadowColor: '#000',
@@ -103,9 +101,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-  },
-  containerDark: {
-    backgroundColor: '#1a1a1a',
   },
   header: {
     flexDirection: 'row',
@@ -116,16 +111,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#111',
   },
   levelBadge: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   levelText: {
-    color: '#fff',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -150,20 +142,16 @@ const styles = StyleSheet.create({
   streakNumber: {
     fontSize: 36,
     fontWeight: '700',
-    color: '#111',
   },
   streakLabel: {
     fontSize: 14,
-    color: '#666',
   },
   streakBig: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#111',
   },
   longestStreak: {
     fontSize: 13,
-    color: '#666',
   },
   badgesRow: {
     flexDirection: 'row',
@@ -171,11 +159,5 @@ const styles = StyleSheet.create({
   },
   badgeEmoji: {
     fontSize: 28,
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });
