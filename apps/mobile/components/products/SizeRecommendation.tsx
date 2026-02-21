@@ -8,7 +8,6 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import { useNetworkStatus } from '../../lib/offline/useNetworkStatus';
-import { useTheme } from '../../lib/theme';
 import type {
   ClothingCategory,
   SizeRecommendation as SizeRecommendationType,
@@ -17,6 +16,7 @@ import {
   useSizeRecommendation,
   getMockSizeRecommendation,
 } from '../../lib/smart-matching/useSizeRecommendation';
+import { useTheme } from '../../lib/theme';
 
 interface SizeRecommendationProps {
   brandId: string;

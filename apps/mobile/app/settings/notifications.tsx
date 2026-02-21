@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useTheme } from '@/lib/theme';
 
 import {
@@ -26,7 +27,7 @@ import {
 } from '../../lib/notifications/useNotifications';
 
 export default function NotificationsSettingsScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, status, module: mod } = useTheme();
 
   const {
     hasPermission,
@@ -89,29 +90,32 @@ export default function NotificationsSettingsScreen() {
 
   if (permissionLoading || settingsLoading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <ActivityIndicator size="large" color={mod.body.dark} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 권한 안내 */}
         {hasPermission === false && (
           <TouchableOpacity
-            style={[styles.permissionBanner, isDark && styles.bannerDark]}
+            style={[styles.permissionBanner, { backgroundColor: status.warning + '20' }]}
             onPress={handleRequestPermission}
           >
             <Text style={styles.bannerIcon}>🔔</Text>
             <View style={styles.bannerContent}>
-              <Text style={[styles.bannerTitle, isDark && styles.textLight]}>
+              <Text style={[styles.bannerTitle, { color: colors.foreground }]}>
                 알림 권한이 필요합니다
               </Text>
-              <Text style={[styles.bannerSubtitle, isDark && styles.textMuted]}>
+              <Text style={[styles.bannerSubtitle, { color: colors.mutedForeground }]}>
                 탭하여 권한을 허용해주세요
               </Text>
             </View>
@@ -120,13 +124,15 @@ export default function NotificationsSettingsScreen() {
 
         {/* 마스터 토글 */}
         <View style={styles.section}>
-          <View style={[styles.settingsCard, isDark && styles.cardDark]}>
+          <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
             <View style={styles.settingsRow}>
               <View style={styles.settingsRowContent}>
                 <Text style={styles.settingsIcon}>🔔</Text>
                 <View style={styles.settingsTextContent}>
-                  <Text style={[styles.settingsLabel, isDark && styles.textLight]}>알림 사용</Text>
-                  <Text style={[styles.settingsDesc, isDark && styles.textMuted]}>
+                  <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                    알림 사용
+                  </Text>
+                  <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
                     모든 알림 켜기/끄기
                   </Text>
                 </View>
@@ -134,8 +140,8 @@ export default function NotificationsSettingsScreen() {
               <Switch
                 value={settings.enabled}
                 onValueChange={handleMasterToggle}
-                trackColor={{ false: '#767577', true: '#8b5cf6' }}
-                thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
+                trackColor={{ false: colors.border, true: mod.body.dark }}
+                thumbColor={Platform.OS === 'android' ? colors.card : undefined}
               />
             </View>
           </View>
@@ -145,16 +151,16 @@ export default function NotificationsSettingsScreen() {
           <>
             {/* 물 알림 */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>영양</Text>
-              <View style={[styles.settingsCard, isDark && styles.cardDark]}>
+              <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>영양</Text>
+              <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
                 <View style={styles.settingsRow}>
                   <View style={styles.settingsRowContent}>
                     <Text style={styles.settingsIcon}>💧</Text>
                     <View style={styles.settingsTextContent}>
-                      <Text style={[styles.settingsLabel, isDark && styles.textLight]}>
+                      <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
                         수분 섭취 알림
                       </Text>
-                      <Text style={[styles.settingsDesc, isDark && styles.textMuted]}>
+                      <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
                         정해진 간격으로 알림
                       </Text>
                     </View>
@@ -162,14 +168,14 @@ export default function NotificationsSettingsScreen() {
                   <Switch
                     value={settings.waterReminder}
                     onValueChange={(value) => handleToggle('waterReminder', value)}
-                    trackColor={{ false: '#767577', true: '#8b5cf6' }}
-                    thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
+                    trackColor={{ false: colors.border, true: mod.body.dark }}
+                    thumbColor={Platform.OS === 'android' ? colors.card : undefined}
                   />
                 </View>
 
                 {settings.waterReminder && (
-                  <View style={[styles.intervalSelector, isDark && styles.intervalSelectorDark]}>
-                    <Text style={[styles.intervalLabel, isDark && styles.textMuted]}>
+                  <View style={[styles.intervalSelector, { borderTopColor: colors.border }]}>
+                    <Text style={[styles.intervalLabel, { color: colors.mutedForeground }]}>
                       알림 간격
                     </Text>
                     <View style={styles.intervalOptions}>
@@ -178,18 +184,20 @@ export default function NotificationsSettingsScreen() {
                           key={hours}
                           style={[
                             styles.intervalOption,
-                            isDark && styles.intervalOptionDark,
-                            settings.waterReminderInterval === hours &&
-                              styles.intervalOptionSelected,
+                            { backgroundColor: colors.muted },
+                            settings.waterReminderInterval === hours && {
+                              backgroundColor: mod.body.dark,
+                            },
                           ]}
                           onPress={() => handleIntervalChange(hours)}
                         >
                           <Text
                             style={[
                               styles.intervalOptionText,
-                              isDark && styles.textMuted,
-                              settings.waterReminderInterval === hours &&
-                                styles.intervalOptionTextSelected,
+                              { color: colors.mutedForeground },
+                              settings.waterReminderInterval === hours && {
+                                color: colors.card,
+                              },
                             ]}
                           >
                             {hours}시간
@@ -200,16 +208,16 @@ export default function NotificationsSettingsScreen() {
                   </View>
                 )}
 
-                <View style={[styles.divider, isDark && styles.dividerDark]} />
+                <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
                 <View style={styles.settingsRow}>
                   <View style={styles.settingsRowContent}>
                     <Text style={styles.settingsIcon}>🍽️</Text>
                     <View style={styles.settingsTextContent}>
-                      <Text style={[styles.settingsLabel, isDark && styles.textLight]}>
+                      <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
                         식사 기록 알림
                       </Text>
-                      <Text style={[styles.settingsDesc, isDark && styles.textMuted]}>
+                      <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
                         아침/점심/저녁 기록 알림
                       </Text>
                     </View>
@@ -217,8 +225,8 @@ export default function NotificationsSettingsScreen() {
                   <Switch
                     value={settings.nutritionReminder}
                     onValueChange={(value) => handleToggle('nutritionReminder', value)}
-                    trackColor={{ false: '#767577', true: '#8b5cf6' }}
-                    thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
+                    trackColor={{ false: colors.border, true: mod.body.dark }}
+                    thumbColor={Platform.OS === 'android' ? colors.card : undefined}
                   />
                 </View>
               </View>
@@ -226,16 +234,16 @@ export default function NotificationsSettingsScreen() {
 
             {/* 운동 알림 */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>운동</Text>
-              <View style={[styles.settingsCard, isDark && styles.cardDark]}>
+              <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>운동</Text>
+              <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
                 <View style={styles.settingsRow}>
                   <View style={styles.settingsRowContent}>
                     <Text style={styles.settingsIcon}>🏃</Text>
                     <View style={styles.settingsTextContent}>
-                      <Text style={[styles.settingsLabel, isDark && styles.textLight]}>
+                      <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
                         운동 리마인더
                       </Text>
-                      <Text style={[styles.settingsDesc, isDark && styles.textMuted]}>
+                      <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
                         매일 아침 운동 알림
                       </Text>
                     </View>
@@ -243,21 +251,21 @@ export default function NotificationsSettingsScreen() {
                   <Switch
                     value={settings.workoutReminder}
                     onValueChange={(value) => handleToggle('workoutReminder', value)}
-                    trackColor={{ false: '#767577', true: '#8b5cf6' }}
-                    thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
+                    trackColor={{ false: colors.border, true: mod.body.dark }}
+                    thumbColor={Platform.OS === 'android' ? colors.card : undefined}
                   />
                 </View>
 
-                <View style={[styles.divider, isDark && styles.dividerDark]} />
+                <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
                 <View style={styles.settingsRow}>
                   <View style={styles.settingsRowContent}>
                     <Text style={styles.settingsIcon}>🔥</Text>
                     <View style={styles.settingsTextContent}>
-                      <Text style={[styles.settingsLabel, isDark && styles.textLight]}>
+                      <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
                         스트릭 경고
                       </Text>
-                      <Text style={[styles.settingsDesc, isDark && styles.textMuted]}>
+                      <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
                         연속 기록이 끊기기 전 알림
                       </Text>
                     </View>
@@ -265,8 +273,8 @@ export default function NotificationsSettingsScreen() {
                   <Switch
                     value={settings.streakWarning}
                     onValueChange={(value) => handleToggle('streakWarning', value)}
-                    trackColor={{ false: '#767577', true: '#8b5cf6' }}
-                    thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
+                    trackColor={{ false: colors.border, true: mod.body.dark }}
+                    thumbColor={Platform.OS === 'android' ? colors.card : undefined}
                   />
                 </View>
               </View>
@@ -274,16 +282,18 @@ export default function NotificationsSettingsScreen() {
 
             {/* 소셜 & 성취 */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isDark && styles.textMuted]}>소셜 & 성취</Text>
-              <View style={[styles.settingsCard, isDark && styles.cardDark]}>
+              <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+                소셜 & 성취
+              </Text>
+              <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
                 <View style={styles.settingsRow}>
                   <View style={styles.settingsRowContent}>
                     <Text style={styles.settingsIcon}>👥</Text>
                     <View style={styles.settingsTextContent}>
-                      <Text style={[styles.settingsLabel, isDark && styles.textLight]}>
+                      <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
                         소셜 알림
                       </Text>
-                      <Text style={[styles.settingsDesc, isDark && styles.textMuted]}>
+                      <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
                         친구 요청, 챌린지 초대
                       </Text>
                     </View>
@@ -291,21 +301,21 @@ export default function NotificationsSettingsScreen() {
                   <Switch
                     value={settings.socialNotifications}
                     onValueChange={(value) => handleToggle('socialNotifications', value)}
-                    trackColor={{ false: '#767577', true: '#8b5cf6' }}
-                    thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
+                    trackColor={{ false: colors.border, true: mod.body.dark }}
+                    thumbColor={Platform.OS === 'android' ? colors.card : undefined}
                   />
                 </View>
 
-                <View style={[styles.divider, isDark && styles.dividerDark]} />
+                <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
                 <View style={styles.settingsRow}>
                   <View style={styles.settingsRowContent}>
                     <Text style={styles.settingsIcon}>🏆</Text>
                     <View style={styles.settingsTextContent}>
-                      <Text style={[styles.settingsLabel, isDark && styles.textLight]}>
+                      <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
                         성취 알림
                       </Text>
-                      <Text style={[styles.settingsDesc, isDark && styles.textMuted]}>
+                      <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
                         레벨업, 뱃지 획득
                       </Text>
                     </View>
@@ -313,8 +323,8 @@ export default function NotificationsSettingsScreen() {
                   <Switch
                     value={settings.achievementNotifications}
                     onValueChange={(value) => handleToggle('achievementNotifications', value)}
-                    trackColor={{ false: '#767577', true: '#8b5cf6' }}
-                    thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
+                    trackColor={{ false: colors.border, true: mod.body.dark }}
+                    thumbColor={Platform.OS === 'android' ? colors.card : undefined}
                   />
                 </View>
               </View>
@@ -325,13 +335,19 @@ export default function NotificationsSettingsScreen() {
               <TouchableOpacity
                 style={[
                   styles.testButton,
-                  isDark && styles.testButtonDark,
-                  testSent && styles.testButtonSent,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: mod.body.dark,
+                  },
+                  testSent && {
+                    backgroundColor: mod.body.dark + '20',
+                    borderColor: status.success,
+                  },
                 ]}
                 onPress={handleTestNotification}
                 disabled={testSent}
               >
-                <Text style={styles.testButtonText}>
+                <Text style={[styles.testButtonText, { color: mod.body.dark }]}>
                   {testSent ? '✓ 테스트 알림 전송됨' : '테스트 알림 보내기'}
                 </Text>
               </TouchableOpacity>
@@ -341,7 +357,7 @@ export default function NotificationsSettingsScreen() {
 
         {/* 안내 */}
         <View style={styles.infoSection}>
-          <Text style={[styles.infoText, isDark && styles.textMuted]}>
+          <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
             알림은 앱이 백그라운드에 있을 때도 동작합니다.{'\n'}
             방해 금지 모드에서는 알림이 표시되지 않을 수 있습니다.
           </Text>
@@ -354,10 +370,6 @@ export default function NotificationsSettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
@@ -371,13 +383,9 @@ const styles = StyleSheet.create({
   permissionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fef3c7',
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
-  },
-  bannerDark: {
-    backgroundColor: '#3a3a1a',
   },
   bannerIcon: {
     fontSize: 24,
@@ -389,12 +397,10 @@ const styles = StyleSheet.create({
   bannerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 2,
   },
   bannerSubtitle: {
     fontSize: 13,
-    color: '#666',
   },
   section: {
     marginBottom: 24,
@@ -402,19 +408,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#666',
     marginBottom: 8,
     marginLeft: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   settingsCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
-  },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
   },
   settingsRow: {
     flexDirection: 'row',
@@ -437,32 +438,21 @@ const styles = StyleSheet.create({
   settingsLabel: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#111',
   },
   settingsDesc: {
     fontSize: 12,
-    color: '#666',
     marginTop: 2,
   },
   divider: {
     height: 1,
-    backgroundColor: '#f0f0f0',
     marginHorizontal: 16,
-  },
-  dividerDark: {
-    backgroundColor: '#2a2a2a',
   },
   intervalSelector: {
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
     padding: 16,
-  },
-  intervalSelectorDark: {
-    borderTopColor: '#2a2a2a',
   },
   intervalLabel: {
     fontSize: 13,
-    color: '#666',
     marginBottom: 12,
   },
   intervalOptions: {
@@ -472,57 +462,29 @@ const styles = StyleSheet.create({
   intervalOption: {
     flex: 1,
     paddingVertical: 10,
-    backgroundColor: '#f5f5f5',
     borderRadius: 8,
     alignItems: 'center',
   },
-  intervalOptionDark: {
-    backgroundColor: '#2a2a2a',
-  },
-  intervalOptionSelected: {
-    backgroundColor: '#8b5cf6',
-  },
   intervalOptionText: {
     fontSize: 14,
-    color: '#333',
     fontWeight: '500',
   },
-  intervalOptionTextSelected: {
-    color: '#fff',
-  },
   testButton: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#8b5cf6',
-  },
-  testButtonDark: {
-    backgroundColor: '#1a1a1a',
-  },
-  testButtonSent: {
-    backgroundColor: '#8b5cf620',
-    borderColor: '#22c55e',
   },
   testButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#8b5cf6',
   },
   infoSection: {
     paddingHorizontal: 8,
   },
   infoText: {
     fontSize: 12,
-    color: '#666',
     lineHeight: 18,
     textAlign: 'center',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

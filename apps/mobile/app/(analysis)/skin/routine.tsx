@@ -18,7 +18,6 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/lib/theme';
 
 import {
   useSkincareRoutine,
@@ -26,6 +25,7 @@ import {
   type TimeOfDay,
   type RoutineStep,
 } from '@/lib/skincare';
+import { useTheme } from '@/lib/theme';
 
 export default function SkincareRoutineScreen() {
   const { colors, isDark } = useTheme();

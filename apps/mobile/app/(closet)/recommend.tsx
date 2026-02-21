@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useTheme } from '@/lib/theme';
 
 import {
@@ -27,7 +28,7 @@ import {
 } from '../../lib/inventory/useClosetMatcher';
 
 export default function RecommendScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, module: moduleTheme, status } = useTheme();
   const router = useRouter();
 
   // TODO: 실제 사용자 프로필에서 가져오기
@@ -89,7 +90,7 @@ export default function RecommendScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.outfitItem, isDark && styles.outfitItemDark]}
+        style={[styles.outfitItem, { backgroundColor: colors.card }]}
         onPress={() => handleItemPress(item.item.id)}
       >
         <View style={styles.outfitImageContainer}>
@@ -100,24 +101,25 @@ export default function RecommendScreen() {
               resizeMode="cover"
             />
           ) : (
-            <View style={[styles.outfitPlaceholder, isDark && styles.placeholderDark]}>
+            <View style={[styles.outfitPlaceholder, { backgroundColor: colors.muted }]}>
               <Text style={styles.placeholderText}>👕</Text>
             </View>
           )}
         </View>
         <View style={styles.outfitItemInfo}>
-          <Text style={[styles.outfitItemLabel, isDark && styles.textMuted]}>{label}</Text>
-          <Text style={[styles.outfitItemName, isDark && styles.textLight]} numberOfLines={1}>
+          <Text style={[styles.outfitItemLabel, { color: colors.mutedForeground }]}>{label}</Text>
+          <Text style={[styles.outfitItemName, { color: colors.foreground }]} numberOfLines={1}>
             {item.item.name}
           </Text>
-          <View style={styles.scoreContainer}>
+          <View style={[styles.scoreContainer, { backgroundColor: colors.border }]}>
             <View
               style={[
                 styles.scoreBar,
                 { width: `${item.score.total}%` },
-                item.score.total >= 70 && styles.scoreBarHigh,
-                item.score.total >= 50 && item.score.total < 70 && styles.scoreBarMid,
-                item.score.total < 50 && styles.scoreBarLow,
+                item.score.total >= 70 && { backgroundColor: status.success },
+                item.score.total >= 50 &&
+                  item.score.total < 70 && { backgroundColor: status.warning },
+                item.score.total < 50 && { backgroundColor: status.error },
               ]}
             />
           </View>
@@ -128,10 +130,10 @@ export default function RecommendScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
-          <Text style={[styles.loadingText, isDark && styles.textMuted]}>
+          <ActivityIndicator size="large" color={moduleTheme.body.dark} />
+          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
             코디를 준비하고 있어요...
           </Text>
         </View>
@@ -141,15 +143,20 @@ export default function RecommendScreen() {
 
   if (items.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>👗</Text>
-          <Text style={[styles.emptyText, isDark && styles.textMuted]}>옷장에 아이템이 없어요</Text>
-          <Text style={[styles.emptySubtext, isDark && styles.textMuted]}>
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+            옷장에 아이템이 없어요
+          </Text>
+          <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
             옷장에 아이템을 추가하면{'\n'}코디 추천을 받을 수 있어요
           </Text>
-          <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/(closet)')}>
-            <Text style={styles.emptyButtonText}>옷장으로 가기</Text>
+          <TouchableOpacity
+            style={[styles.emptyButton, { backgroundColor: moduleTheme.body.dark }]}
+            onPress={() => router.push('/(closet)')}
+          >
+            <Text style={[styles.emptyButtonText, { color: colors.card }]}>옷장으로 가기</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -157,26 +164,33 @@ export default function RecommendScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 날씨 정보 */}
-        <View style={[styles.weatherCard, isDark && styles.weatherCardDark]}>
+        <View style={[styles.weatherCard, { backgroundColor: colors.card }]}>
           <View style={styles.weatherRow}>
             <View style={styles.weatherItem}>
               <Text style={styles.weatherIcon}>📍</Text>
-              <Text style={[styles.weatherText, isDark && styles.textMuted]}>{locationName}</Text>
+              <Text style={[styles.weatherText, { color: colors.mutedForeground }]}>
+                {locationName}
+              </Text>
             </View>
             <View style={styles.weatherItem}>
-              <Thermometer size={16} color={isDark ? '#999' : '#666'} />
-              <Text style={[styles.weatherText, isDark && styles.textMuted]}>{temp}°C</Text>
+              <Thermometer size={16} color={colors.mutedForeground} />
+              <Text style={[styles.weatherText, { color: colors.mutedForeground }]}>{temp}°C</Text>
             </View>
           </View>
           <View style={styles.weatherTags}>
-            <View style={[styles.tag, { backgroundColor: '#8b5cf620' }]}>
-              <Text style={[styles.tagText, { color: '#8b5cf6' }]}>{personalColor}</Text>
+            <View style={[styles.tag, { backgroundColor: moduleTheme.body.dark + '20' }]}>
+              <Text style={[styles.tagText, { color: moduleTheme.body.dark }]}>
+                {personalColor}
+              </Text>
             </View>
-            <View style={[styles.tag, { backgroundColor: '#3b82f620' }]}>
-              <Text style={[styles.tagText, { color: '#3b82f6' }]}>
+            <View style={[styles.tag, { backgroundColor: status.info + '20' }]}>
+              <Text style={[styles.tagText, { color: status.info }]}>
                 {bodyType === 'S' ? '스트레이트' : bodyType === 'W' ? '웨이브' : '내추럴'}
               </Text>
             </View>
@@ -187,9 +201,13 @@ export default function RecommendScreen() {
         {outfit ? (
           <View style={styles.outfitSection}>
             <View style={styles.outfitHeader}>
-              <Text style={[styles.outfitTitle, isDark && styles.textLight]}>오늘의 추천 코디</Text>
-              <View style={styles.scoreCircle}>
-                <Text style={styles.scoreCircleText}>{outfit.totalScore}</Text>
+              <Text style={[styles.outfitTitle, { color: colors.foreground }]}>
+                오늘의 추천 코디
+              </Text>
+              <View style={[styles.scoreCircle, { backgroundColor: moduleTheme.body.dark }]}>
+                <Text style={[styles.scoreCircleText, { color: colors.card }]}>
+                  {outfit.totalScore}
+                </Text>
               </View>
             </View>
 
@@ -204,10 +222,10 @@ export default function RecommendScreen() {
 
             {/* 코디 팁 */}
             {outfit.tips.length > 0 && (
-              <View style={[styles.tipsCard, isDark && styles.tipsCardDark]}>
-                <Text style={[styles.tipsTitle, isDark && styles.textLight]}>💡 코디 팁</Text>
+              <View style={[styles.tipsCard, { backgroundColor: colors.card }]}>
+                <Text style={[styles.tipsTitle, { color: colors.foreground }]}>💡 코디 팁</Text>
                 {outfit.tips.map((tip, index) => (
-                  <Text key={index} style={[styles.tipText, isDark && styles.textMuted]}>
+                  <Text key={index} style={[styles.tipText, { color: colors.mutedForeground }]}>
                     • {tip}
                   </Text>
                 ))}
@@ -216,34 +234,43 @@ export default function RecommendScreen() {
           </View>
         ) : (
           <View style={styles.noOutfitContainer}>
-            <Text style={[styles.noOutfitText, isDark && styles.textMuted]}>
+            <Text style={[styles.noOutfitText, { color: colors.mutedForeground }]}>
               추천할 코디를 찾지 못했어요
             </Text>
-            <Text style={[styles.noOutfitSubtext, isDark && styles.textMuted]}>
+            <Text style={[styles.noOutfitSubtext, { color: colors.mutedForeground }]}>
               상의와 하의가 필요해요
             </Text>
           </View>
         )}
 
         {/* 옷장 요약 */}
-        <View style={[styles.summaryCard, isDark && styles.summaryCardDark]}>
-          <Text style={[styles.summaryTitle, isDark && styles.textLight]}>내 옷장 분석</Text>
+        <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
+          <Text style={[styles.summaryTitle, { color: colors.foreground }]}>내 옷장 분석</Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryValue, { color: '#22c55e' }]}>{summary.wellMatched}</Text>
-              <Text style={[styles.summaryLabel, isDark && styles.textMuted]}>잘 어울림</Text>
+              <Text style={[styles.summaryValue, { color: status.success }]}>
+                {summary.wellMatched}
+              </Text>
+              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>
+                잘 어울림
+              </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryValue, { color: '#f59e0b' }]}>
+              <Text style={[styles.summaryValue, { color: status.warning }]}>
                 {summary.needsImprovement}
               </Text>
-              <Text style={[styles.summaryLabel, isDark && styles.textMuted]}>개선 필요</Text>
+              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>
+                개선 필요
+              </Text>
             </View>
           </View>
           {summary.suggestions.length > 0 && (
-            <View style={styles.suggestionsContainer}>
+            <View style={[styles.suggestionsContainer, { borderTopColor: colors.border }]}>
               {summary.suggestions.map((suggestion, index) => (
-                <Text key={index} style={[styles.suggestionText, isDark && styles.textMuted]}>
+                <Text
+                  key={index}
+                  style={[styles.suggestionText, { color: colors.mutedForeground }]}
+                >
                   📌 {suggestion}
                 </Text>
               ))}
@@ -254,14 +281,14 @@ export default function RecommendScreen() {
 
       {/* 새로고침 버튼 */}
       <TouchableOpacity
-        style={styles.refreshButton}
+        style={[styles.refreshButton, { backgroundColor: moduleTheme.body.dark }]}
         onPress={handleRefresh}
         disabled={isRefreshing}
       >
         {isRefreshing ? (
-          <ActivityIndicator size="small" color="#fff" />
+          <ActivityIndicator size="small" color={colors.card} />
         ) : (
-          <RefreshCw size={24} color="#fff" />
+          <RefreshCw size={24} color={colors.card} />
         )}
       </TouchableOpacity>
     </SafeAreaView>
@@ -271,10 +298,6 @@ export default function RecommendScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
@@ -283,7 +306,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 15,
-    color: '#666',
     marginTop: 12,
   },
   content: {
@@ -291,13 +313,9 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   weatherCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
-  },
-  weatherCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   weatherRow: {
     flexDirection: 'row',
@@ -311,7 +329,6 @@ const styles = StyleSheet.create({
   },
   weatherText: {
     fontSize: 14,
-    color: '#666',
   },
   weatherIcon: {
     fontSize: 14,
@@ -341,20 +358,17 @@ const styles = StyleSheet.create({
   outfitTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111',
   },
   scoreCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#8b5cf6',
     justifyContent: 'center',
     alignItems: 'center',
   },
   scoreCircleText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#fff',
   },
   outfitGrid: {
     flexDirection: 'row',
@@ -363,12 +377,8 @@ const styles = StyleSheet.create({
   },
   outfitItem: {
     width: '48%',
-    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
-  },
-  outfitItemDark: {
-    backgroundColor: '#1a1a1a',
   },
   outfitImageContainer: {
     width: '100%',
@@ -381,12 +391,8 @@ const styles = StyleSheet.create({
   outfitPlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  placeholderDark: {
-    backgroundColor: '#2a2a2a',
   },
   placeholderText: {
     fontSize: 32,
@@ -396,18 +402,15 @@ const styles = StyleSheet.create({
   },
   outfitItemLabel: {
     fontSize: 11,
-    color: '#666',
     marginBottom: 2,
   },
   outfitItemName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 6,
   },
   scoreContainer: {
     height: 4,
-    backgroundColor: '#e5e5e5',
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -415,33 +418,18 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 2,
   },
-  scoreBarHigh: {
-    backgroundColor: '#22c55e',
-  },
-  scoreBarMid: {
-    backgroundColor: '#f59e0b',
-  },
-  scoreBarLow: {
-    backgroundColor: '#ef4444',
-  },
   tipsCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
   },
-  tipsCardDark: {
-    backgroundColor: '#1a1a1a',
-  },
   tipsTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 8,
   },
   tipText: {
     fontSize: 13,
-    color: '#666',
     lineHeight: 20,
     marginBottom: 4,
   },
@@ -451,25 +439,18 @@ const styles = StyleSheet.create({
   },
   noOutfitText: {
     fontSize: 15,
-    color: '#666',
     marginBottom: 8,
   },
   noOutfitSubtext: {
     fontSize: 13,
-    color: '#999',
   },
   summaryCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
-  },
-  summaryCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   summaryTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 16,
   },
   summaryRow: {
@@ -486,17 +467,14 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#666',
     marginTop: 4,
   },
   suggestionsContainer: {
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
     paddingTop: 12,
   },
   suggestionText: {
     fontSize: 13,
-    color: '#666',
     lineHeight: 20,
     marginBottom: 4,
   },
@@ -513,23 +491,19 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#666',
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999',
     textAlign: 'center',
     marginBottom: 24,
   },
   emptyButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   emptyButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -540,7 +514,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#8b5cf6',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -548,11 +521,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

@@ -4,12 +4,12 @@
 import type { BodyType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
+
 // eslint-disable-next-line import/order
 import { captureError } from '../../../lib/monitoring/sentry';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/lib/theme';
 
 import {
   AnalysisLoadingState,
@@ -24,6 +24,7 @@ import {
   imageToBase64,
   type BodyAnalysisResult,
 } from '@/lib/gemini';
+import { useTheme } from '@/lib/theme';
 
 // 체형 타입 데이터
 const BODY_TYPE_DATA: Record<

@@ -16,6 +16,7 @@ import {
   Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useTheme } from '@/lib/theme';
 
 import { SizeRecommendation } from '../../components/products/SizeRecommendation';
@@ -190,7 +191,7 @@ const MOCK_REVIEWS: Review[] = [
 ];
 
 export default function ProductDetailScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, brand, status, isDark } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   // TODO: API 연동 시 활용 예정
   const { user: _user } = useUser();
@@ -279,19 +280,22 @@ export default function ProductDetailScreen() {
 
   if (isLoading || !product) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <ActivityIndicator size="large" color={brand.primary} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* 이미지 영역 */}
-        <View style={[styles.imageSection, isDark && styles.imageSectionDark]}>
+        <View style={[styles.imageSection, { backgroundColor: colors.muted }]}>
           <View style={styles.imagePlaceholder}>
             <Text style={styles.placeholderEmoji}>
               {product.category === '스킨케어'
@@ -305,43 +309,59 @@ export default function ProductDetailScreen() {
           </View>
           {/* 이미지 인디케이터 */}
           <View style={styles.imageIndicator}>
-            <View style={[styles.indicatorDot, styles.indicatorDotActive]} />
-            <View style={styles.indicatorDot} />
-            <View style={styles.indicatorDot} />
+            <View style={[styles.indicatorDot, { backgroundColor: colors.card }]} />
+            <View style={[styles.indicatorDot, { backgroundColor: `${colors.card}80` }]} />
+            <View style={[styles.indicatorDot, { backgroundColor: `${colors.card}80` }]} />
           </View>
         </View>
 
         {/* 제품 정보 */}
         <View style={styles.infoSection}>
-          <Text style={[styles.brand, isDark && styles.textMuted]}>{product.brand}</Text>
-          <Text style={[styles.productName, isDark && styles.textLight]}>{product.name}</Text>
+          <Text style={[styles.brand, { color: colors.mutedForeground }]}>{product.brand}</Text>
+          <Text style={[styles.productName, { color: colors.foreground }]}>{product.name}</Text>
 
           {/* 평점 */}
           <View style={styles.ratingRow}>
-            <Text style={styles.ratingStars}>{renderStars(product.rating)}</Text>
-            <Text style={[styles.ratingText, isDark && styles.textMuted]}>
+            <Text style={[styles.ratingStars, { color: status.warning }]}>
+              {renderStars(product.rating)}
+            </Text>
+            <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
               {product.rating.toFixed(1)} ({product.reviewCount}개 리뷰)
             </Text>
-            <Text style={[styles.categoryBadge, isDark && styles.categoryBadgeDark]}>
+            <Text
+              style={[
+                styles.categoryBadge,
+                { color: brand.primaryForeground, backgroundColor: `${brand.primary}30` },
+              ]}
+            >
               {product.category}
             </Text>
           </View>
 
           {/* 가격 */}
-          <Text style={[styles.price, isDark && styles.textLight]}>
+          <Text style={[styles.price, { color: colors.foreground }]}>
             {formatPrice(product.price)}
           </Text>
 
           {/* 매칭 점수 */}
-          <View style={[styles.matchCard, isDark && styles.matchCardDark]}>
+          <View style={[styles.matchCard, { backgroundColor: colors.card }]}>
             <Text style={styles.matchIcon}>🎯</Text>
             <View style={styles.matchInfo}>
-              <Text style={[styles.matchLabel, isDark && styles.textMuted]}>나와의 매칭</Text>
-              <View style={styles.matchBarContainer}>
-                <View style={[styles.matchBar, { width: `${product.matchScore}%` }]} />
+              <Text style={[styles.matchLabel, { color: colors.mutedForeground }]}>
+                나와의 매칭
+              </Text>
+              <View style={[styles.matchBarContainer, { backgroundColor: colors.border }]}>
+                <View
+                  style={[
+                    styles.matchBar,
+                    { width: `${product.matchScore}%`, backgroundColor: brand.primary },
+                  ]}
+                />
               </View>
             </View>
-            <Text style={styles.matchScore}>{product.matchScore}%</Text>
+            <Text style={[styles.matchScore, { color: brand.primaryForeground }]}>
+              {product.matchScore}%
+            </Text>
           </View>
 
           {/* 사이즈 추천 (의류 제품만) */}
@@ -356,11 +376,14 @@ export default function ProductDetailScreen() {
         </View>
 
         {/* 탭 */}
-        <View style={styles.tabRow}>
+        <View style={[styles.tabRow, { borderBottomColor: colors.border }]}>
           {(['info', 'ingredients', 'reviews'] as TabType[]).map((tab) => (
             <TouchableOpacity
               key={tab}
-              style={[styles.tab, activeTab === tab && styles.tabActive]}
+              style={[
+                styles.tab,
+                activeTab === tab && [styles.tabActive, { borderBottomColor: brand.primary }],
+              ]}
               onPress={() => {
                 Haptics.selectionAsync();
                 setActiveTab(tab);
@@ -369,8 +392,11 @@ export default function ProductDetailScreen() {
               <Text
                 style={[
                   styles.tabText,
-                  isDark && styles.textMuted,
-                  activeTab === tab && styles.tabTextActive,
+                  { color: colors.mutedForeground },
+                  activeTab === tab && {
+                    color: brand.primaryForeground,
+                    fontWeight: '600' as const,
+                  },
                 ]}
               >
                 {tab === 'info'
@@ -387,23 +413,25 @@ export default function ProductDetailScreen() {
         <View style={styles.tabContent}>
           {activeTab === 'info' && (
             <>
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>제품 설명</Text>
-              <Text style={[styles.description, isDark && styles.textMuted]}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>제품 설명</Text>
+              <Text style={[styles.description, { color: colors.mutedForeground }]}>
                 {product.description}
               </Text>
 
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>효과</Text>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>효과</Text>
               <View style={styles.benefitsList}>
                 {product.benefits.map((benefit, index) => (
                   <View key={index} style={styles.benefitItem}>
-                    <Text style={styles.benefitDot}>✓</Text>
-                    <Text style={[styles.benefitText, isDark && styles.textMuted]}>{benefit}</Text>
+                    <Text style={[styles.benefitDot, { color: status.success }]}>✓</Text>
+                    <Text style={[styles.benefitText, { color: colors.mutedForeground }]}>
+                      {benefit}
+                    </Text>
                   </View>
                 ))}
               </View>
 
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>사용 방법</Text>
-              <Text style={[styles.description, isDark && styles.textMuted]}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>사용 방법</Text>
+              <Text style={[styles.description, { color: colors.mutedForeground }]}>
                 {product.howToUse}
               </Text>
             </>
@@ -411,14 +439,14 @@ export default function ProductDetailScreen() {
 
           {activeTab === 'ingredients' && (
             <>
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>주요 성분</Text>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>주요 성분</Text>
               <View style={styles.ingredientsList}>
                 {product.ingredients.map((ingredient, index) => (
                   <View
                     key={index}
-                    style={[styles.ingredientChip, isDark && styles.ingredientChipDark]}
+                    style={[styles.ingredientChip, { backgroundColor: colors.muted }]}
                   >
-                    <Text style={[styles.ingredientText, isDark && styles.textLight]}>
+                    <Text style={[styles.ingredientText, { color: colors.foreground }]}>
                       {ingredient}
                     </Text>
                   </View>
@@ -430,18 +458,22 @@ export default function ProductDetailScreen() {
           {activeTab === 'reviews' && (
             <>
               {MOCK_REVIEWS.map((review) => (
-                <View key={review.id} style={[styles.reviewCard, isDark && styles.reviewCardDark]}>
+                <View key={review.id} style={[styles.reviewCard, { backgroundColor: colors.card }]}>
                   <View style={styles.reviewHeader}>
-                    <Text style={[styles.reviewUser, isDark && styles.textLight]}>
+                    <Text style={[styles.reviewUser, { color: colors.foreground }]}>
                       {review.userName}
                     </Text>
-                    <Text style={styles.reviewRating}>{'★'.repeat(review.rating)}</Text>
+                    <Text style={[styles.reviewRating, { color: status.warning }]}>
+                      {'★'.repeat(review.rating)}
+                    </Text>
                   </View>
-                  <Text style={[styles.reviewDate, isDark && styles.textMuted]}>{review.date}</Text>
-                  <Text style={[styles.reviewContent, isDark && styles.textMuted]}>
+                  <Text style={[styles.reviewDate, { color: colors.mutedForeground }]}>
+                    {review.date}
+                  </Text>
+                  <Text style={[styles.reviewContent, { color: colors.mutedForeground }]}>
                     {review.content}
                   </Text>
-                  <Text style={[styles.reviewHelpful, isDark && styles.textMuted]}>
+                  <Text style={[styles.reviewHelpful, { color: colors.mutedForeground }]}>
                     👍 {review.helpful}명에게 도움이 됨
                   </Text>
                 </View>
@@ -452,15 +484,28 @@ export default function ProductDetailScreen() {
       </ScrollView>
 
       {/* 하단 액션 바 */}
-      <View style={[styles.actionBar, isDark && styles.actionBarDark]}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleFavoriteToggle}>
+      <View
+        style={[styles.actionBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}
+      >
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: colors.muted }]}
+          onPress={handleFavoriteToggle}
+        >
           <Text style={styles.actionIcon}>{isFavorite ? '❤️' : '🤍'}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: colors.muted }]}
+          onPress={handleShare}
+        >
           <Text style={styles.actionIcon}>📤</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.purchaseButton} onPress={handlePurchase}>
-          <Text style={styles.purchaseButtonText}>구매하러 가기</Text>
+        <TouchableOpacity
+          style={[styles.purchaseButton, { backgroundColor: brand.primary }]}
+          onPress={handlePurchase}
+        >
+          <Text style={[styles.purchaseButtonText, { color: brand.primaryForeground }]}>
+            구매하러 가기
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -470,10 +515,6 @@ export default function ProductDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
@@ -484,13 +525,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageSection: {
-    backgroundColor: '#f0f0f0',
     aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  imageSectionDark: {
-    backgroundColor: '#1a1a1a',
   },
   imagePlaceholder: {
     justifyContent: 'center',
@@ -509,23 +546,17 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.5)',
-  },
-  indicatorDotActive: {
-    backgroundColor: '#fff',
   },
   infoSection: {
     padding: 20,
   },
   brand: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 4,
   },
   productName: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
   },
   ratingRow: {
@@ -535,40 +566,28 @@ const styles = StyleSheet.create({
   },
   ratingStars: {
     fontSize: 14,
-    color: '#f59e0b',
     marginRight: 6,
   },
   ratingText: {
     fontSize: 13,
-    color: '#666',
     flex: 1,
   },
   categoryBadge: {
     fontSize: 12,
-    color: '#8b5cf6',
-    backgroundColor: '#f5f3ff',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  categoryBadgeDark: {
-    backgroundColor: '#1a1a2e',
-  },
   price: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 16,
   },
   matchCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-  },
-  matchCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   matchIcon: {
     fontSize: 24,
@@ -579,30 +598,25 @@ const styles = StyleSheet.create({
   },
   matchLabel: {
     fontSize: 13,
-    color: '#666',
     marginBottom: 6,
   },
   matchBarContainer: {
     height: 6,
-    backgroundColor: '#e5e5e5',
     borderRadius: 3,
     overflow: 'hidden',
   },
   matchBar: {
     height: '100%',
-    backgroundColor: '#8b5cf6',
     borderRadius: 3,
   },
   matchScore: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#8b5cf6',
     marginLeft: 12,
   },
   tabRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
   },
   tab: {
     flex: 1,
@@ -611,15 +625,9 @@ const styles = StyleSheet.create({
   },
   tabActive: {
     borderBottomWidth: 2,
-    borderBottomColor: '#8b5cf6',
   },
   tabText: {
     fontSize: 14,
-    color: '#666',
-  },
-  tabTextActive: {
-    color: '#8b5cf6',
-    fontWeight: '600',
   },
   tabContent: {
     padding: 20,
@@ -627,14 +635,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
     marginTop: 8,
   },
   description: {
     fontSize: 14,
     lineHeight: 22,
-    color: '#444',
     marginBottom: 20,
   },
   benefitsList: {
@@ -647,12 +653,10 @@ const styles = StyleSheet.create({
   },
   benefitDot: {
     fontSize: 14,
-    color: '#22c55e',
     marginRight: 8,
   },
   benefitText: {
     fontSize: 14,
-    color: '#444',
   },
   ingredientsList: {
     flexDirection: 'row',
@@ -660,26 +664,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   ingredientChip: {
-    backgroundColor: '#f0f0f0',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 16,
   },
-  ingredientChipDark: {
-    backgroundColor: '#1a1a1a',
-  },
   ingredientText: {
     fontSize: 13,
-    color: '#333',
   },
   reviewCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-  },
-  reviewCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -689,45 +684,33 @@ const styles = StyleSheet.create({
   reviewUser: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111',
   },
   reviewRating: {
     fontSize: 12,
-    color: '#f59e0b',
   },
   reviewDate: {
     fontSize: 12,
-    color: '#999',
     marginBottom: 8,
   },
   reviewContent: {
     fontSize: 14,
-    color: '#444',
     lineHeight: 20,
     marginBottom: 8,
   },
   reviewHelpful: {
     fontSize: 12,
-    color: '#999',
   },
   actionBar: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
     gap: 12,
-  },
-  actionBarDark: {
-    backgroundColor: '#1a1a1a',
-    borderTopColor: '#333',
   },
   actionButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -736,20 +719,12 @@ const styles = StyleSheet.create({
   },
   purchaseButton: {
     flex: 1,
-    backgroundColor: '#8b5cf6',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
   },
   purchaseButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

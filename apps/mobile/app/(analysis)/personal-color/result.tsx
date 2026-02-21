@@ -4,12 +4,12 @@
 import type { PersonalColorSeason } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
+
 // eslint-disable-next-line import/order
 import { captureError } from '../../../lib/monitoring/sentry';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/lib/theme';
 
 import {
   AnalysisLoadingState,
@@ -24,6 +24,7 @@ import {
   imageToBase64,
   type PersonalColorAnalysisResult,
 } from '@/lib/gemini';
+import { useTheme } from '@/lib/theme';
 
 // 퍼스널 컬러 결과 데이터
 const SEASON_DATA: Record<

@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useTheme } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
@@ -45,7 +46,7 @@ const INTENSITY_OPTIONS = [
 const DURATION_OPTIONS = [15, 30, 45, 60, 90];
 
 export default function WorkoutLogScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, module: moduleColors } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -185,101 +186,123 @@ export default function WorkoutLogScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* 운동 선택 섹션 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             오늘 어떤 운동을 했나요?
           </Text>
           <View style={styles.exerciseGrid}>
-            {RECOMMENDED_EXERCISES.map((exercise) => (
-              <TouchableOpacity
-                key={exercise.id}
-                style={[
-                  styles.exerciseChip,
-                  isDark && styles.exerciseChipDark,
-                  selectedExercises.includes(exercise.id) && styles.exerciseChipSelected,
-                ]}
-                onPress={() => handleExerciseToggle(exercise.id)}
-              >
-                <Text
+            {RECOMMENDED_EXERCISES.map((exercise) => {
+              const isSelected = selectedExercises.includes(exercise.id);
+              return (
+                <TouchableOpacity
+                  key={exercise.id}
                   style={[
-                    styles.exerciseChipText,
-                    isDark && styles.textLight,
-                    selectedExercises.includes(exercise.id) && styles.exerciseChipTextSelected,
+                    styles.exerciseChip,
+                    {
+                      backgroundColor: isSelected ? moduleColors.workout.base : colors.card,
+                      borderColor: isSelected ? moduleColors.workout.base : colors.border,
+                    },
                   ]}
+                  onPress={() => handleExerciseToggle(exercise.id)}
                 >
-                  {exercise.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.exerciseChipText,
+                      { color: isSelected ? '#fff' : colors.foreground },
+                    ]}
+                  >
+                    {exercise.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
         {/* 운동 시간 섹션 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>운동 시간</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>운동 시간</Text>
           <View style={styles.durationGrid}>
-            {DURATION_OPTIONS.map((mins) => (
-              <TouchableOpacity
-                key={mins}
-                style={[
-                  styles.durationChip,
-                  isDark && styles.durationChipDark,
-                  duration === mins && styles.durationChipSelected,
-                ]}
-                onPress={() => handleDurationSelect(mins)}
-              >
-                <Text
+            {DURATION_OPTIONS.map((mins) => {
+              const isSelected = duration === mins;
+              return (
+                <TouchableOpacity
+                  key={mins}
                   style={[
-                    styles.durationText,
-                    isDark && styles.textLight,
-                    duration === mins && styles.durationTextSelected,
+                    styles.durationChip,
+                    {
+                      backgroundColor: isSelected ? moduleColors.workout.base : colors.card,
+                      borderColor: isSelected ? moduleColors.workout.base : colors.border,
+                    },
                   ]}
+                  onPress={() => handleDurationSelect(mins)}
                 >
-                  {mins}분
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.durationText,
+                      { color: isSelected ? '#fff' : colors.foreground },
+                    ]}
+                  >
+                    {mins}분
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
         {/* 운동 강도 섹션 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>강도</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>강도</Text>
           <View style={styles.intensityGrid}>
-            {INTENSITY_OPTIONS.map((option) => (
-              <TouchableOpacity
-                key={option.id}
-                style={[
-                  styles.intensityChip,
-                  isDark && styles.intensityChipDark,
-                  intensity === option.id && styles.intensityChipSelected,
-                ]}
-                onPress={() => handleIntensitySelect(option.id)}
-              >
-                <Text
+            {INTENSITY_OPTIONS.map((option) => {
+              const isSelected = intensity === option.id;
+              return (
+                <TouchableOpacity
+                  key={option.id}
                   style={[
-                    styles.intensityText,
-                    isDark && styles.textLight,
-                    intensity === option.id && styles.intensityTextSelected,
+                    styles.intensityChip,
+                    {
+                      backgroundColor: isSelected ? moduleColors.workout.base : colors.card,
+                      borderColor: isSelected ? moduleColors.workout.base : colors.border,
+                    },
                   ]}
+                  onPress={() => handleIntensitySelect(option.id)}
                 >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.intensityText,
+                      { color: isSelected ? '#fff' : colors.foreground },
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
         {/* 메모 섹션 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>메모 (선택)</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>메모 (선택)</Text>
           <TextInput
-            style={[styles.notesInput, isDark && styles.notesInputDark]}
+            style={[
+              styles.notesInput,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                color: colors.foreground,
+              },
+            ]}
             placeholder="오늘의 운동은 어땠나요?"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={colors.mutedForeground}
             value={notes}
             onChangeText={setNotes}
             multiline
@@ -288,16 +311,24 @@ export default function WorkoutLogScreen() {
         </View>
 
         {/* 예상 칼로리 */}
-        <View style={[styles.calorieCard, isDark && styles.calorieCardDark]}>
-          <Text style={[styles.calorieLabel, isDark && styles.textMuted]}>예상 소모 칼로리</Text>
-          <Text style={styles.calorieValue}>{estimatedCalories} kcal</Text>
+        <View style={[styles.calorieCard, { backgroundColor: colors.card }]}>
+          <Text style={[styles.calorieLabel, { color: colors.mutedForeground }]}>
+            예상 소모 칼로리
+          </Text>
+          <Text style={[styles.calorieValue, { color: moduleColors.workout.dark }]}>
+            {estimatedCalories} kcal
+          </Text>
         </View>
       </ScrollView>
 
       {/* 저장 버튼 */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.saveButton, isLoading && styles.saveButtonDisabled]}
+          style={[
+            styles.saveButton,
+            { backgroundColor: moduleColors.workout.base },
+            isLoading && styles.saveButtonDisabled,
+          ]}
           onPress={handleSave}
           disabled={isLoading}
         >
@@ -315,10 +346,6 @@ export default function WorkoutLogScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   scrollView: {
     flex: 1,
@@ -330,7 +357,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
   exerciseGrid: {
@@ -341,25 +367,11 @@ const styles = StyleSheet.create({
   exerciseChip: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#fff',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-  },
-  exerciseChipDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-  },
-  exerciseChipSelected: {
-    backgroundColor: '#ef4444',
-    borderColor: '#ef4444',
   },
   exerciseChipText: {
     fontSize: 14,
-    color: '#333',
-  },
-  exerciseChipTextSelected: {
-    color: '#fff',
   },
   durationGrid: {
     flexDirection: 'row',
@@ -368,27 +380,13 @@ const styles = StyleSheet.create({
   durationChip: {
     flex: 1,
     paddingVertical: 12,
-    backgroundColor: '#fff',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
     alignItems: 'center',
-  },
-  durationChipDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-  },
-  durationChipSelected: {
-    backgroundColor: '#ef4444',
-    borderColor: '#ef4444',
   },
   durationText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#333',
-  },
-  durationTextSelected: {
-    color: '#fff',
   },
   intensityGrid: {
     flexDirection: 'row',
@@ -397,70 +395,41 @@ const styles = StyleSheet.create({
   intensityChip: {
     flex: 1,
     paddingVertical: 14,
-    backgroundColor: '#fff',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
     alignItems: 'center',
-  },
-  intensityChipDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-  },
-  intensityChipSelected: {
-    backgroundColor: '#ef4444',
-    borderColor: '#ef4444',
   },
   intensityText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#333',
-  },
-  intensityTextSelected: {
-    color: '#fff',
   },
   notesInput: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
     padding: 14,
     fontSize: 14,
-    color: '#111',
     minHeight: 80,
     textAlignVertical: 'top',
   },
-  notesInputDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-    color: '#fff',
-  },
   calorieCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
     marginBottom: 20,
   },
-  calorieCardDark: {
-    backgroundColor: '#1a1a1a',
-  },
   calorieLabel: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 4,
   },
   calorieValue: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#ef4444',
   },
   footer: {
     padding: 20,
     paddingTop: 0,
   },
   saveButton: {
-    backgroundColor: '#ef4444',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -472,11 +441,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

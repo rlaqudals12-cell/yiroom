@@ -22,7 +22,7 @@ import { useNetworkStatus } from '../../lib/offline';
 import { useTheme } from '../../lib/theme';
 
 export function ChatInterface() {
-  const { colors, isDark } = useTheme();
+  const { colors, brand, status } = useTheme();
   const { isConnected } = useNetworkStatus();
 
   const {
@@ -79,15 +79,15 @@ export function ChatInterface() {
       <View
         style={[
           styles.messageBubble,
-          isUser ? styles.userBubble : styles.assistantBubble,
-          isDark && (isUser ? styles.userBubbleDark : styles.assistantBubbleDark),
+          isUser
+            ? [styles.userBubble, { backgroundColor: brand.primary }]
+            : [styles.assistantBubble, { backgroundColor: colors.card }],
         ]}
       >
         <Text
           style={[
             styles.messageText,
-            isUser && styles.userMessageText,
-            isDark && (isUser ? styles.userMessageTextDark : styles.textLight),
+            { color: isUser ? brand.primaryForeground : colors.foreground },
           ]}
         >
           {item.content}
@@ -98,21 +98,23 @@ export function ChatInterface() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={90}
     >
       {/* 오프라인 배너 */}
       {!isConnected && (
-        <View style={styles.offlineBanner}>
-          <Text style={styles.offlineBannerText}>오프라인 모드 - 기본 응답만 제공됩니다</Text>
+        <View style={[styles.offlineBanner, { backgroundColor: status.warning + '20' }]}>
+          <Text style={[styles.offlineBannerText, { color: status.warning }]}>
+            오프라인 모드 - 기본 응답만 제공됩니다
+          </Text>
         </View>
       )}
 
       {/* 에러 메시지 */}
       {error && (
-        <View style={styles.errorBanner}>
-          <Text style={styles.errorBannerText}>{error}</Text>
+        <View style={[styles.errorBanner, { backgroundColor: status.error + '15' }]}>
+          <Text style={[styles.errorBannerText, { color: status.error }]}>{error}</Text>
         </View>
       )}
 
@@ -122,31 +124,33 @@ export function ChatInterface() {
           {/* 헤더 */}
           <View style={styles.header}>
             <Text style={styles.headerEmoji}>🤖</Text>
-            <Text style={[styles.headerTitle, isDark && styles.textLight]}>AI 웰니스 코치</Text>
-            <Text style={[styles.headerSubtitle, isDark && styles.textMuted]}>
+            <Text style={[styles.headerTitle, { color: colors.foreground }]}>AI 웰니스 코치</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>
               운동, 영양, 피부 관리에 대해 물어보세요!
             </Text>
           </View>
 
           {/* 카테고리 탭 */}
-          <View style={styles.categoryTabs}>
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat.key}
-                style={[styles.categoryTab, activeCategory === cat.key && styles.categoryTabActive]}
-                onPress={() => handleCategoryChange(cat.key)}
-              >
-                <Text
-                  style={[
-                    styles.categoryTabText,
-                    isDark && styles.textMuted,
-                    activeCategory === cat.key && styles.categoryTabTextActive,
-                  ]}
+          <View style={[styles.categoryTabs, { backgroundColor: colors.muted }]}>
+            {categories.map((cat) => {
+              const isActive = activeCategory === cat.key;
+              return (
+                <TouchableOpacity
+                  key={cat.key}
+                  style={[styles.categoryTab, isActive && { backgroundColor: colors.card }]}
+                  onPress={() => handleCategoryChange(cat.key)}
                 >
-                  {cat.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.categoryTabText,
+                      { color: isActive ? brand.primary : colors.mutedForeground },
+                    ]}
+                  >
+                    {cat.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
 
           {/* 빠른 질문 */}
@@ -154,10 +158,13 @@ export function ChatInterface() {
             {QUICK_QUESTIONS[activeCategory].map((question, index) => (
               <TouchableOpacity
                 key={index}
-                style={[styles.quickQuestion, isDark && styles.quickQuestionDark]}
+                style={[
+                  styles.quickQuestion,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
                 onPress={() => handleQuickQuestion(question)}
               >
-                <Text style={[styles.quickQuestionText, isDark && styles.textLight]}>
+                <Text style={[styles.quickQuestionText, { color: colors.foreground }]}>
                   {question}
                 </Text>
               </TouchableOpacity>
@@ -182,10 +189,12 @@ export function ChatInterface() {
               {suggestedQuestions.map((question, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={[styles.suggestedButton, isDark && styles.suggestedButtonDark]}
+                  style={[styles.suggestedButton, { backgroundColor: colors.muted }]}
                   onPress={() => handleQuickQuestion(question)}
                 >
-                  <Text style={[styles.suggestedText, isDark && styles.textLight]}>{question}</Text>
+                  <Text style={[styles.suggestedText, { color: colors.foreground }]}>
+                    {question}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -196,17 +205,22 @@ export function ChatInterface() {
       {/* 로딩 인디케이터 */}
       {isLoading && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#8b5cf6" />
-          <Text style={[styles.loadingText, isDark && styles.textMuted]}>생각 중...</Text>
+          <ActivityIndicator size="small" color={brand.primary} />
+          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>생각 중...</Text>
         </View>
       )}
 
       {/* 입력 영역 */}
-      <View style={[styles.inputContainer, isDark && styles.inputContainerDark]}>
+      <View
+        style={[
+          styles.inputContainer,
+          { backgroundColor: colors.card, borderTopColor: colors.border },
+        ]}
+      >
         <TextInput
-          style={[styles.input, isDark && styles.inputDark]}
+          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground }]}
           placeholder="무엇이든 물어보세요..."
-          placeholderTextColor={isDark ? '#666' : '#999'}
+          placeholderTextColor={colors.mutedForeground}
           value={input}
           onChangeText={setInput}
           onSubmitEditing={handleSend}
@@ -215,11 +229,16 @@ export function ChatInterface() {
           maxLength={500}
         />
         <TouchableOpacity
-          style={[styles.sendButton, (!input.trim() || isLoading) && styles.sendButtonDisabled]}
+          style={[
+            styles.sendButton,
+            {
+              backgroundColor: !input.trim() || isLoading ? colors.border : brand.primary,
+            },
+          ]}
           onPress={handleSend}
           disabled={!input.trim() || isLoading}
         >
-          <Text style={styles.sendButtonText}>전송</Text>
+          <Text style={[styles.sendButtonText, { color: brand.primaryForeground }]}>전송</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -229,28 +248,20 @@ export function ChatInterface() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   offlineBanner: {
-    backgroundColor: '#fef3c7',
     padding: 8,
     alignItems: 'center',
   },
   offlineBannerText: {
-    color: '#92400e',
     fontSize: 12,
     fontWeight: '500',
   },
   errorBanner: {
-    backgroundColor: '#fee2e2',
     padding: 8,
     alignItems: 'center',
   },
   errorBannerText: {
-    color: '#dc2626',
     fontSize: 12,
     fontWeight: '500',
   },
@@ -270,17 +281,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
   },
   categoryTabs: {
     flexDirection: 'row',
-    backgroundColor: '#e5e5e5',
     borderRadius: 12,
     padding: 4,
     marginBottom: 20,
@@ -291,34 +299,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
   },
-  categoryTabActive: {
-    backgroundColor: '#fff',
-  },
   categoryTabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
-  },
-  categoryTabTextActive: {
-    color: '#8b5cf6',
   },
   quickQuestions: {
     gap: 10,
   },
   quickQuestion: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-  },
-  quickQuestionDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
   },
   quickQuestionText: {
     fontSize: 15,
-    color: '#333',
   },
   messageList: {
     padding: 16,
@@ -331,30 +325,15 @@ const styles = StyleSheet.create({
   },
   userBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: '#8b5cf6',
     borderBottomRightRadius: 4,
-  },
-  userBubbleDark: {
-    backgroundColor: '#7c3aed',
   },
   assistantBubble: {
     alignSelf: 'flex-start',
-    backgroundColor: '#fff',
     borderBottomLeftRadius: 4,
-  },
-  assistantBubbleDark: {
-    backgroundColor: '#1a1a1a',
   },
   messageText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#333',
-  },
-  userMessageText: {
-    color: '#fff',
-  },
-  userMessageTextDark: {
-    color: '#fff',
   },
   suggestedContainer: {
     paddingHorizontal: 16,
@@ -364,17 +343,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   suggestedButton: {
-    backgroundColor: '#f3f4f6',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
   },
-  suggestedButtonDark: {
-    backgroundColor: '#2a2a2a',
-  },
   suggestedText: {
     fontSize: 13,
-    color: '#333',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -385,53 +359,29 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 13,
-    color: '#666',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: 12,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
     gap: 10,
-  },
-  inputContainerDark: {
-    backgroundColor: '#1a1a1a',
-    borderTopColor: '#333',
   },
   input: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 15,
     maxHeight: 100,
-    color: '#111',
-  },
-  inputDark: {
-    backgroundColor: '#2a2a2a',
-    color: '#fff',
   },
   sendButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 20,
   },
-  sendButtonDisabled: {
-    backgroundColor: '#d1d5db',
-  },
   sendButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

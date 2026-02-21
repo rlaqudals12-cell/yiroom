@@ -6,12 +6,12 @@
 import type { SkinType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
+
 // eslint-disable-next-line import/order
 import { captureError } from '../../../lib/monitoring/sentry';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/lib/theme';
 
 import {
   CircularProgress,
@@ -27,6 +27,7 @@ import {
   imageToBase64,
   type SkinAnalysisResult,
 } from '@/lib/gemini';
+import { useTheme } from '@/lib/theme';
 
 import { SKIN_TYPE_DATA } from './constants';
 import type { SkinMetrics, SkinMetricsDelta } from './types';

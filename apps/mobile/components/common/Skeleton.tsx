@@ -5,6 +5,7 @@
 
 import { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
+
 import { useTheme } from '../../lib/theme';
 
 type DimensionValue = number | `${number}%` | 'auto';

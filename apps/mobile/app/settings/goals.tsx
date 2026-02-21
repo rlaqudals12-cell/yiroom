@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useTheme } from '@/lib/theme';
 
 import { settingsLogger } from '../../lib/utils/logger';

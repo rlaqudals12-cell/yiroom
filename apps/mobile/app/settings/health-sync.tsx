@@ -17,9 +17,9 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/lib/theme';
 
 import { useHealthData } from '@/hooks/useHealthData';
+import { useTheme } from '@/lib/theme';
 
 export default function HealthSyncScreen() {
   const { colors, isDark } = useTheme();

@@ -5,6 +5,7 @@
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+
 // eslint-disable-next-line import/order -- monitoring import
 import { captureError } from '../../lib/monitoring/sentry';
 import React, { useState, useCallback, useEffect } from 'react';
@@ -21,6 +22,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useTheme } from '@/lib/theme';
 
 import type { FeedItem } from '../../lib/feed/types';

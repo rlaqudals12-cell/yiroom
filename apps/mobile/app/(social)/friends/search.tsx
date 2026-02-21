@@ -16,6 +16,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useTheme } from '@/lib/theme';
 
 import { getTierColor, type UserSearchResult } from '../../../lib/social';

@@ -7,8 +7,8 @@ import * as Haptics from 'expo-haptics';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../../lib/theme';
 
+import { useTheme } from '../../lib/theme';
 import { errorLogger } from '../../lib/utils/logger';
 
 interface ErrorBoundaryProps {
