@@ -136,6 +136,22 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.menuSection}>
+          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>활동</Text>
+          <MenuItem
+            title="나의 뱃지"
+            colors={colors}
+            subtitle={`${[personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length}개 분석 완료`}
+            onPress={() => router.push('/badges')}
+          />
+          <MenuItem
+            title="알림"
+            colors={colors}
+            subtitle="받은 알림 확인"
+            onPress={() => router.push('/notifications')}
+          />
+        </View>
+
+        <View style={styles.menuSection}>
           <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>설정</Text>
           <MenuItem
             title="알림 설정"

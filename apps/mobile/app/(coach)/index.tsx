@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
@@ -11,25 +10,15 @@ import { useTheme } from '@/lib/theme';
 import { ChatInterface } from '../../components/coach/ChatInterface';
 
 export default function CoachScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   return (
     <SafeAreaView
       testID="coach-screen"
-      style={[styles.container, isDark && styles.containerDark]}
+      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['bottom']}
     >
       <ChatInterface />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
-  },
-});

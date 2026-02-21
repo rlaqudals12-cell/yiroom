@@ -34,8 +34,10 @@ const CATEGORIES = [
   { id: 'all', label: '전체' },
   { id: 'skincare', label: '스킨케어' },
   { id: 'makeup', label: '메이크업' },
+  { id: 'haircare', label: '헤어케어' },
   { id: 'supplement', label: '영양제' },
   { id: 'equipment', label: '운동용품' },
+  { id: 'fashion', label: '패션' },
 ];
 
 // 제품 표시용 인터페이스 (AffiliateProduct + matchScore)
@@ -323,9 +325,13 @@ export default function ProductsScreen() {
                         ? '🧴'
                         : product.category === 'makeup'
                           ? '💄'
-                          : product.category === 'supplement'
-                            ? '💊'
-                            : '🏋️'}
+                          : product.category === 'haircare'
+                            ? '💇'
+                            : product.category === 'supplement'
+                              ? '💊'
+                              : product.category === 'fashion'
+                                ? '👗'
+                                : '🏋️'}
                     </Text>
                   </View>
                   {/* 매칭 점수 배지 */}

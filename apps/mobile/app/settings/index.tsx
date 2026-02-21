@@ -80,6 +80,12 @@ export default function SettingsScreen() {
             onPress={() => handlePress('/privacy-policy')}
           />
           <SettingsItem
+            icon="❓"
+            title="도움말/FAQ"
+            colors={colors}
+            onPress={() => handlePress('/help')}
+          />
+          <SettingsItem
             icon="💬"
             title="피드백 보내기"
             colors={colors}

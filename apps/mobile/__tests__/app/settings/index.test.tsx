@@ -212,9 +212,9 @@ describe('SettingsScreen', () => {
   describe('엣지 케이스', () => {
     it('각 설정 항목에 화살표(>)가 표시된다', () => {
       const { getAllByText } = renderWithTheme(<SettingsScreen />);
-      // 6개 설정 항목 모두에 화살표 존재
+      // 7개 설정 항목 모두에 화살표 존재 (알림, 목표, 위젯, 이용약관, 개인정보, FAQ, 피드백)
       const arrows = getAllByText('\u203A'); // '>'
-      expect(arrows.length).toBe(6);
+      expect(arrows.length).toBe(7);
     });
   });
 });

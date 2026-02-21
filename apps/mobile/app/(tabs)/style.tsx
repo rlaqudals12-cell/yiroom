@@ -1,9 +1,9 @@
 /**
  * 스타일 탭
- * 체형 분석, 패션 추천, 내 옷장, 코디 추천, 제품 둘러보기
+ * 체형·자세 분석, 패션 추천, 내 옷장, 코디 추천, 제품 둘러보기
  */
 import { useRouter } from 'expo-router';
-import { Shirt, Ruler, ShoppingBag, Package, Wand2 } from 'lucide-react-native';
+import { Shirt, Ruler, ShoppingBag, Package, Wand2, PersonStanding } from 'lucide-react-native';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { MenuCard } from '../../components/ui';
@@ -38,6 +38,15 @@ export default function StyleTab(): React.JSX.Element {
             description="AI가 체형을 분석하고 어울리는 스타일을 추천해요"
             onPress={() => router.push('/(analysis)/body')}
             testID="menu-body"
+          />
+
+          <MenuCard
+            icon={<PersonStanding size={20} color={moduleColors.posture.dark} />}
+            iconBg={moduleColors.posture.light + '30'}
+            title="자세 분석"
+            description="자세 유형을 분석하고 교정 운동을 추천해요"
+            onPress={() => router.push('/(analysis)/posture')}
+            testID="menu-posture"
           />
 
           <MenuCard
