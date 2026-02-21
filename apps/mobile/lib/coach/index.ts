@@ -219,6 +219,9 @@ function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'sk
 /**
  * Mock 응답 생성 (분석 결과 기반 맞춤 응답)
  */
+// 히스토리 관련 re-export
+export { getCoachSessions, deleteCoachSession, type CoachSession } from './history';
+
 export function getMockResponse(message: string, userContext?: UserContext): CoachChatResponse {
   const category = detectQuestionCategory(message);
 

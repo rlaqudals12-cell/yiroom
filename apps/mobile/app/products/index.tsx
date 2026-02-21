@@ -46,7 +46,7 @@ interface DisplayProduct extends AffiliateProduct {
 }
 
 export default function ProductsScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, brand, status, module: moduleColors } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -239,19 +239,19 @@ export default function ProductsScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
       testID="products-screen"
     >
       {/* 맞춤 추천 배너 */}
       {(filterSource || userSeason) && (
-        <View style={[styles.banner, isDark && styles.bannerDark]}>
+        <View style={[styles.banner, { backgroundColor: brand.primary + '10' }]}>
           <Text style={styles.bannerIcon}>{filterSource ? '🎯' : '✨'}</Text>
           <View style={styles.bannerContent}>
-            <Text style={[styles.bannerTitle, isDark && styles.textLight]}>
+            <Text style={[styles.bannerTitle, { color: colors.foreground }]}>
               {filterSource ? '맞춤 제품 추천' : '나를 위한 추천'}
             </Text>
-            <Text style={[styles.bannerSubtitle, isDark && styles.textMuted]}>
+            <Text style={[styles.bannerSubtitle, { color: colors.mutedForeground }]}>
               {filterSource
                 ? filterSource
                 : `${getSeasonLabel(userSeason!)}에 맞는 제품을 추천해드려요`}
@@ -267,36 +267,42 @@ export default function ProductsScreen() {
         style={styles.categoryScroll}
         contentContainerStyle={styles.categoryContent}
       >
-        {CATEGORIES.map((category) => (
-          <TouchableOpacity
-            key={category.id}
-            style={[
-              styles.categoryChip,
-              isDark && styles.categoryChipDark,
-              selectedCategory === category.id && styles.categoryChipSelected,
-            ]}
-            onPress={() => {
-              Haptics.selectionAsync();
-              setSelectedCategory(category.id);
-            }}
-          >
-            <Text
+        {CATEGORIES.map((category) => {
+          const isSelected = selectedCategory === category.id;
+          return (
+            <TouchableOpacity
+              key={category.id}
               style={[
-                styles.categoryText,
-                isDark && styles.textMuted,
-                selectedCategory === category.id && styles.categoryTextSelected,
+                styles.categoryChip,
+                {
+                  backgroundColor: isSelected ? brand.primary : colors.card,
+                  borderColor: isSelected ? brand.primary : colors.border,
+                },
               ]}
+              onPress={() => {
+                Haptics.selectionAsync();
+                setSelectedCategory(category.id);
+              }}
             >
-              {category.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.categoryText,
+                  {
+                    color: isSelected ? brand.primaryForeground : colors.mutedForeground,
+                  },
+                ]}
+              >
+                {category.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
       {/* 제품 그리드 */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <ActivityIndicator size="large" color={brand.primary} />
         </View>
       ) : (
         <ScrollView
@@ -314,12 +320,12 @@ export default function ProductsScreen() {
             {products.map((product) => (
               <TouchableOpacity
                 key={product.id}
-                style={[styles.productCard, isDark && styles.productCardDark]}
+                style={styles.productCard}
                 onPress={() => handleProductPress(product.id)}
               >
                 {/* 이미지 플레이스홀더 */}
                 <View style={styles.productImageContainer}>
-                  <View style={[styles.productImagePlaceholder, isDark && styles.placeholderDark]}>
+                  <View style={[styles.productImagePlaceholder, { backgroundColor: colors.muted }]}>
                     <Text style={styles.placeholderEmoji}>
                       {product.category === 'skincare'
                         ? '🧴'
@@ -335,26 +341,31 @@ export default function ProductsScreen() {
                     </Text>
                   </View>
                   {/* 매칭 점수 배지 */}
-                  <View style={styles.matchBadge}>
-                    <Text style={styles.matchBadgeText}>{product.matchScore}%</Text>
+                  <View style={[styles.matchBadge, { backgroundColor: brand.primary }]}>
+                    <Text style={[styles.matchBadgeText, { color: brand.primaryForeground }]}>
+                      {product.matchScore}%
+                    </Text>
                   </View>
                 </View>
 
                 {/* 제품 정보 */}
                 <View style={styles.productInfo}>
-                  <Text style={[styles.productBrand, isDark && styles.textMuted]}>
+                  <Text style={[styles.productBrand, { color: colors.mutedForeground }]}>
                     {product.brand}
                   </Text>
-                  <Text style={[styles.productName, isDark && styles.textLight]} numberOfLines={2}>
+                  <Text
+                    style={[styles.productName, { color: colors.foreground }]}
+                    numberOfLines={2}
+                  >
                     {product.name}
                   </Text>
                   <View style={styles.ratingRow}>
-                    <Text style={styles.ratingStar}>★</Text>
-                    <Text style={[styles.ratingText, isDark && styles.textMuted]}>
+                    <Text style={[styles.ratingStar, { color: status.warning }]}>★</Text>
+                    <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
                       {(product.rating ?? 0).toFixed(1)} ({product.reviewCount ?? 0})
                     </Text>
                   </View>
-                  <Text style={[styles.productPrice, isDark && styles.textLight]}>
+                  <Text style={[styles.productPrice, { color: colors.foreground }]}>
                     {formatPrice(product.price)}
                   </Text>
                 </View>
@@ -370,22 +381,14 @@ export default function ProductsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   banner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f3ff',
     marginHorizontal: 16,
     marginTop: 16,
     padding: 16,
     borderRadius: 12,
-  },
-  bannerDark: {
-    backgroundColor: '#1a1a2e',
   },
   bannerIcon: {
     fontSize: 24,
@@ -397,11 +400,9 @@ const styles = StyleSheet.create({
   bannerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
   },
   bannerSubtitle: {
     fontSize: 13,
-    color: '#666',
     marginTop: 2,
   },
   categoryScroll: {
@@ -415,25 +416,11 @@ const styles = StyleSheet.create({
   categoryChip: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#fff',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-  },
-  categoryChipDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-  },
-  categoryChipSelected: {
-    backgroundColor: '#8b5cf6',
-    borderColor: '#8b5cf6',
   },
   categoryText: {
     fontSize: 14,
-    color: '#333',
-  },
-  categoryTextSelected: {
-    color: '#fff',
   },
   loadingContainer: {
     flex: 1,
@@ -454,19 +441,14 @@ const styles = StyleSheet.create({
     width: '50%',
     padding: 4,
   },
-  productCardDark: {},
   productImageContainer: {
     position: 'relative',
   },
   productImagePlaceholder: {
     aspectRatio: 1,
-    backgroundColor: '#f0f0f0',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  placeholderDark: {
-    backgroundColor: '#1a1a1a',
   },
   placeholderEmoji: {
     fontSize: 48,
@@ -475,13 +457,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   matchBadgeText: {
-    color: '#fff',
     fontSize: 11,
     fontWeight: '600',
   },
@@ -490,12 +470,10 @@ const styles = StyleSheet.create({
   },
   productBrand: {
     fontSize: 12,
-    color: '#666',
   },
   productName: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#111',
     marginTop: 2,
     lineHeight: 18,
   },
@@ -506,23 +484,14 @@ const styles = StyleSheet.create({
   },
   ratingStar: {
     fontSize: 12,
-    color: '#f59e0b',
     marginRight: 4,
   },
   ratingText: {
     fontSize: 12,
-    color: '#666',
   },
   productPrice: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
     marginTop: 4,
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

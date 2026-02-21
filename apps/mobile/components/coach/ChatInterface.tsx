@@ -21,7 +21,11 @@ import { useCoach } from '../../lib/coach/useCoach';
 import { useNetworkStatus } from '../../lib/offline';
 import { useTheme } from '../../lib/theme';
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  initialSessionId?: string;
+}
+
+export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
   const { colors, brand, status } = useTheme();
   const { isConnected } = useNetworkStatus();
 
@@ -31,12 +35,21 @@ export function ChatInterface() {
     error,
     suggestedQuestions,
     sendMessage,
-    clearMessages: _clearMessages,
+    loadSession,
   } = useCoach();
 
   const [input, setInput] = useState('');
   const [activeCategory, setActiveCategory] = useState<QuestionCategory>('general');
   const flatListRef = useRef<FlatList>(null);
+  const sessionLoaded = useRef(false);
+
+  // 히스토리에서 세션 선택 시 로드
+  useEffect(() => {
+    if (initialSessionId && !sessionLoaded.current) {
+      sessionLoaded.current = true;
+      loadSession(initialSessionId);
+    }
+  }, [initialSessionId, loadSession]);
 
   // 메시지 추가 시 스크롤
   useEffect(() => {

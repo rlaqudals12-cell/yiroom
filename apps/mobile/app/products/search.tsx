@@ -160,7 +160,7 @@ const POPULAR_SEARCHES = ['수분크림', '선크림', '립스틱', '비타민',
 const RECENT_SEARCHES = ['아이오페', '롬앤 립스틱'];
 
 export default function ProductSearchScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, brand, status } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -223,16 +223,21 @@ export default function ProductSearchScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
       testID="products-search-screen"
     >
       {/* 검색 바 */}
       <View style={styles.searchSection}>
-        <View style={[styles.searchInputContainer, isDark && styles.searchInputContainerDark]}>
+        <View
+          style={[
+            styles.searchInputContainer,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
-            style={[styles.searchInput, isDark && styles.searchInputDark]}
+            style={[styles.searchInput, { color: colors.foreground }]}
             placeholder="제품명 또는 브랜드 검색"
             placeholderTextColor={colors.mutedForeground}
             value={searchQuery}
@@ -243,7 +248,7 @@ export default function ProductSearchScreen() {
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={handleClearSearch}>
-              <Text style={styles.clearButton}>✕</Text>
+              <Text style={[styles.clearButton, { color: colors.mutedForeground }]}>✕</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -257,20 +262,25 @@ export default function ProductSearchScreen() {
             {RECENT_SEARCHES.length > 0 && (
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
-                  <Text style={[styles.sectionTitle, isDark && styles.textLight]}>최근 검색</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>최근 검색</Text>
                   <TouchableOpacity>
-                    <Text style={[styles.clearAllText, isDark && styles.textMuted]}>전체 삭제</Text>
+                    <Text style={[styles.clearAllText, { color: colors.mutedForeground }]}>
+                      전체 삭제
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.tagList}>
                   {RECENT_SEARCHES.map((term, index) => (
                     <TouchableOpacity
                       key={index}
-                      style={[styles.searchTag, isDark && styles.searchTagDark]}
+                      style={[
+                        styles.searchTag,
+                        { backgroundColor: colors.card, borderColor: colors.border },
+                      ]}
                       onPress={() => handleSearchTermPress(term)}
                     >
                       <Text style={styles.tagIcon}>🕐</Text>
-                      <Text style={[styles.tagText, isDark && styles.textLight]}>{term}</Text>
+                      <Text style={[styles.tagText, { color: colors.foreground }]}>{term}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -279,16 +289,19 @@ export default function ProductSearchScreen() {
 
             {/* 인기 검색어 */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isDark && styles.textLight]}>인기 검색어</Text>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>인기 검색어</Text>
               <View style={styles.tagList}>
                 {POPULAR_SEARCHES.map((term, index) => (
                   <TouchableOpacity
                     key={index}
-                    style={[styles.searchTag, styles.popularTag, isDark && styles.popularTagDark]}
+                    style={[
+                      styles.searchTag,
+                      { backgroundColor: brand.primary + '10', borderColor: brand.primary + '20' },
+                    ]}
                     onPress={() => handleSearchTermPress(term)}
                   >
-                    <Text style={styles.popularRank}>{index + 1}</Text>
-                    <Text style={[styles.tagText, isDark && styles.textLight]}>{term}</Text>
+                    <Text style={[styles.popularRank, { color: brand.primary }]}>{index + 1}</Text>
+                    <Text style={[styles.tagText, { color: colors.foreground }]}>{term}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -297,53 +310,60 @@ export default function ProductSearchScreen() {
         ) : isSearching ? (
           // 검색 중
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#8b5cf6" />
+            <ActivityIndicator size="small" color={brand.primary} />
           </View>
         ) : searchResults.length === 0 ? (
           // 검색 결과 없음
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyEmoji}>🔍</Text>
-            <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
               "{searchQuery}"에 대한 검색 결과가 없습니다
             </Text>
-            <Text style={[styles.emptyHint, isDark && styles.textMuted]}>
+            <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>
               다른 검색어를 입력해보세요
             </Text>
           </View>
         ) : (
           // 검색 결과
           <View style={styles.resultsSection}>
-            <Text style={[styles.resultCount, isDark && styles.textMuted]}>
+            <Text style={[styles.resultCount, { color: colors.mutedForeground }]}>
               {searchResults.length}개의 결과
             </Text>
             {searchResults.map((product) => (
               <TouchableOpacity
                 key={product.id}
-                style={[styles.productItem, isDark && styles.productItemDark]}
+                style={[styles.productItem, { backgroundColor: colors.card }]}
                 onPress={() => handleProductPress(product.id)}
               >
-                <View style={[styles.productImagePlaceholder, isDark && styles.placeholderDark]}>
+                <View style={[styles.productImagePlaceholder, { backgroundColor: colors.muted }]}>
                   <Text style={styles.productEmoji}>{getCategoryEmoji(product.category)}</Text>
                 </View>
                 <View style={styles.productInfo}>
-                  <Text style={[styles.productBrand, isDark && styles.textMuted]}>
+                  <Text style={[styles.productBrand, { color: colors.mutedForeground }]}>
                     {product.brand}
                   </Text>
-                  <Text style={[styles.productName, isDark && styles.textLight]} numberOfLines={1}>
+                  <Text
+                    style={[styles.productName, { color: colors.foreground }]}
+                    numberOfLines={1}
+                  >
                     {product.name}
                   </Text>
                   <View style={styles.productMeta}>
-                    <Text style={styles.productRating}>★ {product.rating.toFixed(1)}</Text>
-                    <Text style={[styles.productReviews, isDark && styles.textMuted]}>
+                    <Text style={[styles.productRating, { color: status.warning }]}>
+                      ★ {product.rating.toFixed(1)}
+                    </Text>
+                    <Text style={[styles.productReviews, { color: colors.mutedForeground }]}>
                       ({product.reviewCount})
                     </Text>
                   </View>
-                  <Text style={[styles.productPrice, isDark && styles.textLight]}>
+                  <Text style={[styles.productPrice, { color: colors.foreground }]}>
                     {formatPrice(product.price)}
                   </Text>
                 </View>
-                <View style={styles.matchBadge}>
-                  <Text style={styles.matchBadgeText}>{product.matchScore}%</Text>
+                <View style={[styles.matchBadge, { backgroundColor: brand.primary }]}>
+                  <Text style={[styles.matchBadgeText, { color: brand.primaryForeground }]}>
+                    {product.matchScore}%
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -357,10 +377,6 @@ export default function ProductSearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   searchSection: {
     padding: 16,
@@ -369,15 +385,9 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-  },
-  searchInputContainerDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
   },
   searchIcon: {
     fontSize: 16,
@@ -387,14 +397,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#111',
-  },
-  searchInputDark: {
-    color: '#fff',
   },
   clearButton: {
     fontSize: 16,
-    color: '#999',
     padding: 4,
   },
   content: {
@@ -413,12 +418,10 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
   clearAllText: {
     fontSize: 13,
-    color: '#666',
   },
   tagList: {
     flexDirection: 'row',
@@ -428,25 +431,11 @@ const styles = StyleSheet.create({
   searchTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
     gap: 6,
-  },
-  searchTagDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-  },
-  popularTag: {
-    backgroundColor: '#f5f3ff',
-    borderColor: '#e9e5ff',
-  },
-  popularTagDark: {
-    backgroundColor: '#1a1a2e',
-    borderColor: '#2a2a4e',
   },
   tagIcon: {
     fontSize: 12,
@@ -454,12 +443,10 @@ const styles = StyleSheet.create({
   popularRank: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#8b5cf6',
     marginRight: 2,
   },
   tagText: {
     fontSize: 14,
-    color: '#333',
   },
   loadingContainer: {
     paddingVertical: 40,
@@ -475,42 +462,31 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
     marginBottom: 8,
   },
   emptyHint: {
     fontSize: 14,
-    color: '#999',
   },
   resultsSection: {
     padding: 16,
   },
   resultCount: {
     fontSize: 13,
-    color: '#666',
     marginBottom: 12,
   },
   productItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
-  },
-  productItemDark: {
-    backgroundColor: '#1a1a1a',
   },
   productImagePlaceholder: {
     width: 64,
     height: 64,
     borderRadius: 8,
-    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  placeholderDark: {
-    backgroundColor: '#2a2a2a',
   },
   productEmoji: {
     fontSize: 28,
@@ -521,12 +497,10 @@ const styles = StyleSheet.create({
   },
   productBrand: {
     fontSize: 12,
-    color: '#666',
   },
   productName: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#111',
     marginTop: 2,
   },
   productMeta: {
@@ -536,34 +510,23 @@ const styles = StyleSheet.create({
   },
   productRating: {
     fontSize: 12,
-    color: '#f59e0b',
   },
   productReviews: {
     fontSize: 12,
-    color: '#666',
     marginLeft: 4,
   },
   productPrice: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111',
     marginTop: 4,
   },
   matchBadge: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
   },
   matchBadgeText: {
-    color: '#fff',
     fontSize: 12,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

@@ -2,6 +2,7 @@
  * AI 웰니스 코치 페이지
  */
 
+import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,6 +12,7 @@ import { ChatInterface } from '../../components/coach/ChatInterface';
 
 export default function CoachScreen() {
   const { colors } = useTheme();
+  const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
 
   return (
     <SafeAreaView
@@ -18,7 +20,7 @@ export default function CoachScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       edges={['bottom']}
     >
-      <ChatInterface />
+      <ChatInterface initialSessionId={sessionId} />
     </SafeAreaView>
   );
 }
