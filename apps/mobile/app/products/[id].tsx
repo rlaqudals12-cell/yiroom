@@ -191,19 +191,17 @@ const MOCK_REVIEWS: Review[] = [
 ];
 
 export default function ProductDetailScreen() {
-  const { colors, brand, status, isDark } = useTheme();
+  const { colors, brand, status } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  // TODO: API 연동 시 활용 예정
-  const { user: _user } = useUser();
-  const _supabase = useClerkSupabaseClient();
+  const { user } = useUser();
+  const supabase = useClerkSupabaseClient();
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('info');
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // 어필리에이트 클릭 훅 (제품 정보 기반)
-  const { handleClick: affiliateClick, isLoading: _isClickLoading } = useAffiliateClick({
+  const { handleClick: affiliateClick } = useAffiliateClick({
     productId: id || '',
     productUrl: product?.purchaseUrl || '',
     partner: product?.purchaseUrl ? identifyPartner(product.purchaseUrl) || 'coupang' : 'coupang',
@@ -212,26 +210,110 @@ export default function ProductDetailScreen() {
     recommendationType: 'general',
   });
 
-  // 제품 상세 조회
-  const fetchProduct = useCallback(async () => {
-    // 실제로는 API 호출
-    await new Promise((resolve) => setTimeout(resolve, 300));
+  const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
 
-    const productData = MOCK_PRODUCT_DETAIL[id || '1'] || MOCK_PRODUCT_DETAIL['1'];
+  // 제품 상세 조회 (DB 우선, mock fallback)
+  const fetchProduct = useCallback(async () => {
+    if (!id) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // DB에서 조회 시도 (UUID 형식인 경우)
+      if (id.includes('-') && user?.id) {
+        const { data: dbProduct } = await supabase
+          .from('cosmetic_products')
+          .select(
+            'id, name, brand, category, price_krw, rating, review_count, key_ingredients, purchase_url, image_url'
+          )
+          .eq('id', id)
+          .eq('is_active', true)
+          .single();
+
+        if (dbProduct) {
+          setProduct({
+            id: dbProduct.id,
+            name: dbProduct.name,
+            brand: dbProduct.brand,
+            brandId: dbProduct.brand.toLowerCase().replace(/\s/g, '-'),
+            category: dbProduct.category,
+            price: dbProduct.price_krw || 0,
+            rating: Number(dbProduct.rating) || 0,
+            reviewCount: dbProduct.review_count || 0,
+            matchScore: 85,
+            description: '',
+            ingredients: dbProduct.key_ingredients || [],
+            benefits: [],
+            howToUse: '',
+            images: dbProduct.image_url ? [dbProduct.image_url] : [],
+            purchaseUrl: dbProduct.purchase_url || '',
+            isFavorite: false,
+          });
+          setIsLoading(false);
+
+          // 리뷰도 DB에서 조회 시도
+          const { data: dbReviews } = await supabase
+            .from('product_reviews')
+            .select('id, user_name, rating, created_at, content, helpful_count')
+            .eq('product_id', id)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+          if (dbReviews && dbReviews.length > 0) {
+            setReviews(
+              dbReviews.map((r) => ({
+                id: r.id,
+                userName: r.user_name || '익명',
+                rating: r.rating,
+                date: r.created_at?.split('T')[0] || '',
+                content: r.content || '',
+                helpful: r.helpful_count || 0,
+              }))
+            );
+          }
+          return;
+        }
+      }
+    } catch {
+      // DB 조회 실패 시 mock fallback
+    }
+
+    // Mock fallback
+    const productData = MOCK_PRODUCT_DETAIL[id] || MOCK_PRODUCT_DETAIL['1'];
     setProduct(productData);
     setIsFavorite(productData.isFavorite);
     setIsLoading(false);
-  }, [id]);
+  }, [id, user?.id, supabase]);
 
   useEffect(() => {
     fetchProduct();
   }, [fetchProduct]);
 
-  // 찜하기 토글
-  const handleFavoriteToggle = () => {
+  // 찜하기 토글 (DB 저장 시도)
+  const handleFavoriteToggle = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsFavorite((prev) => !prev);
-    // 실제로는 API 호출로 저장
+    const newValue = !isFavorite;
+    setIsFavorite(newValue);
+
+    if (user?.id && product) {
+      try {
+        if (newValue) {
+          await supabase.from('product_wishlist').upsert({
+            clerk_user_id: user.id,
+            product_id: product.id,
+          });
+        } else {
+          await supabase
+            .from('product_wishlist')
+            .delete()
+            .eq('clerk_user_id', user.id)
+            .eq('product_id', product.id);
+        }
+      } catch {
+        // DB 저장 실패 시 로컬 상태만 유지
+      }
+    }
   };
 
   // 공유하기
@@ -458,7 +540,7 @@ export default function ProductDetailScreen() {
 
           {activeTab === 'reviews' && (
             <>
-              {MOCK_REVIEWS.map((review) => (
+              {reviews.map((review) => (
                 <View key={review.id} style={[styles.reviewCard, { backgroundColor: colors.card }]}>
                   <View style={styles.reviewHeader}>
                     <Text style={[styles.reviewUser, { color: colors.foreground }]}>

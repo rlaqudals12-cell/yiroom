@@ -1,63 +1,120 @@
 /**
  * N-1 영양 대시보드 화면
+ *
+ * 실 데이터 연동: useNutritionData + meal_records 조회
  */
+import { useUser } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useNutritionData } from '@/hooks/useNutritionData';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
+import type { SemanticColors } from '@/lib/theme';
 
-// 샘플 데이터
-const DAILY_GOAL = {
-  calories: 2000,
-  protein: 60,
-  carbs: 250,
-  fat: 65,
-  fiber: 25,
+// 식사 타입 라벨 매핑
+const MEAL_TYPE_LABELS: Record<string, string> = {
+  breakfast: '아침',
+  lunch: '점심',
+  dinner: '저녁',
+  snack: '간식',
 };
 
-const SAMPLE_MEALS = [
-  {
-    id: 1,
-    type: '아침',
-    time: '08:30',
-    foods: ['토스트', '스크램블 에그', '우유'],
-    calories: 450,
-  },
-  {
-    id: 2,
-    type: '점심',
-    time: '12:30',
-    foods: ['비빔밥', '된장국'],
-    calories: 620,
-  },
-  {
-    id: 3,
-    type: '간식',
-    time: '15:00',
-    foods: ['사과', '아몬드'],
-    calories: 180,
-  },
-];
+interface MealRecord {
+  id: string;
+  meal_type: string;
+  meal_time: string;
+  foods: string[] | null;
+  ai_recognized_food: string | null;
+  total_calories: number;
+}
 
 export default function NutritionDashboardScreen() {
-  const { colors, status } = useTheme();
+  const { colors, status, brand } = useTheme();
+  const { user } = useUser();
+  const supabase = useClerkSupabaseClient();
+  const { todaySummary, settings, isLoading: isNutritionLoading } = useNutritionData();
 
-  const [currentNutrients] = useState({
-    calories: 1250,
-    protein: 45,
-    carbs: 160,
-    fat: 42,
-    fiber: 18,
-  });
+  const [meals, setMeals] = useState<MealRecord[]>([]);
+  const [isMealsLoading, setIsMealsLoading] = useState(true);
 
-  const caloriePercentage = Math.min((currentNutrients.calories / DAILY_GOAL.calories) * 100, 100);
-  const remainingCalories = DAILY_GOAL.calories - currentNutrients.calories;
+  // 오늘 식사 기록 조회
+  const fetchTodayMeals = useCallback(async () => {
+    if (!user?.id) {
+      setIsMealsLoading(false);
+      return;
+    }
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const { data } = await supabase
+        .from('meal_records')
+        .select('id, meal_type, meal_time, foods, ai_recognized_food, total_calories')
+        .eq('meal_date', today)
+        .order('meal_time', { ascending: true });
+
+      setMeals(data ?? []);
+    } catch {
+      // 조회 실패 시 빈 배열 유지
+    } finally {
+      setIsMealsLoading(false);
+    }
+  }, [user?.id, supabase]);
+
+  useEffect(() => {
+    fetchTodayMeals();
+  }, [fetchTodayMeals]);
+
+  // 영양 목표 (설정값 또는 기본값)
+  const goal = {
+    calories: settings?.dailyCalorieGoal ?? 2000,
+    protein: settings?.proteinGoal ?? 100,
+    carbs: settings?.carbsGoal ?? 250,
+    fat: settings?.fatGoal ?? 65,
+  };
+
+  // 현재 섭취량
+  const current = {
+    calories: todaySummary?.totalCalories ?? 0,
+    protein: todaySummary?.totalProtein ?? 0,
+    carbs: todaySummary?.totalCarbs ?? 0,
+    fat: todaySummary?.totalFat ?? 0,
+  };
+
+  const caloriePercentage = Math.min((current.calories / goal.calories) * 100, 100);
+  const remainingCalories = goal.calories - current.calories;
+
+  const isLoading = isNutritionLoading || isMealsLoading;
 
   const handleRecordMeal = () => {
     router.push('/(nutrition)/record');
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView
+        testID="nutrition-dashboard-screen"
+        style={[styles.container, { backgroundColor: colors.background }]}
+        edges={['bottom']}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={brand.primary} />
+          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
+            영양 데이터를 불러오는 중이에요
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView
@@ -75,21 +132,23 @@ export default function NutritionDashboardScreen() {
                 style={[
                   styles.ringProgress,
                   {
-                    borderColor: status.error,
+                    borderColor: brand.primary,
                     transform: [{ rotate: `${(caloriePercentage / 100) * 360}deg` }],
                   },
                 ]}
               />
               <View style={[styles.ringInner, { backgroundColor: colors.card }]}>
                 <Text style={[styles.calorieValue, { color: colors.foreground }]}>
-                  {currentNutrients.calories}
+                  {current.calories}
                 </Text>
                 <Text style={[styles.calorieUnit, { color: colors.mutedForeground }]}>kcal</Text>
               </View>
             </View>
           </View>
           <Text style={[styles.remainingText, { color: colors.mutedForeground }]}>
-            {remainingCalories > 0 ? `${remainingCalories} kcal 더 섭취 가능` : '목표 달성!'}
+            {remainingCalories > 0
+              ? `${remainingCalories} kcal 더 섭취 가능`
+              : '목표를 달성했어요!'}
           </Text>
         </View>
 
@@ -98,34 +157,26 @@ export default function NutritionDashboardScreen() {
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>영양소 현황</Text>
           <NutrientBar
             label="단백질"
-            current={currentNutrients.protein}
-            goal={DAILY_GOAL.protein}
+            current={current.protein}
+            goal={goal.protein}
             unit="g"
             color={status.error}
             colors={colors}
           />
           <NutrientBar
             label="탄수화물"
-            current={currentNutrients.carbs}
-            goal={DAILY_GOAL.carbs}
+            current={current.carbs}
+            goal={goal.carbs}
             unit="g"
             color={status.warning}
             colors={colors}
           />
           <NutrientBar
             label="지방"
-            current={currentNutrients.fat}
-            goal={DAILY_GOAL.fat}
+            current={current.fat}
+            goal={goal.fat}
             unit="g"
             color={status.success}
-            colors={colors}
-          />
-          <NutrientBar
-            label="식이섬유"
-            current={currentNutrients.fiber}
-            goal={DAILY_GOAL.fiber}
-            unit="g"
-            color={status.info}
             colors={colors}
           />
         </View>
@@ -135,38 +186,65 @@ export default function NutritionDashboardScreen() {
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>오늘의 식사</Text>
             <TouchableOpacity onPress={handleRecordMeal}>
-              <Text style={[styles.addButton, { color: status.error }]}>+ 추가</Text>
+              <Text style={[styles.addButton, { color: brand.primary }]}>+ 추가</Text>
             </TouchableOpacity>
           </View>
-          {SAMPLE_MEALS.map((meal) => (
-            <View key={meal.id} style={[styles.mealItem, { borderBottomColor: colors.border }]}>
-              <View style={styles.mealInfo}>
-                <Text style={[styles.mealType, { color: colors.foreground }]}>{meal.type}</Text>
-                <Text style={[styles.mealTime, { color: colors.mutedForeground }]}>
-                  {meal.time}
-                </Text>
-              </View>
-              <View style={styles.mealFoods}>
-                <Text
-                  style={[styles.mealFoodText, { color: colors.mutedForeground }]}
-                  numberOfLines={1}
-                >
-                  {meal.foods.join(', ')}
-                </Text>
-              </View>
-              <Text style={[styles.mealCalories, { color: colors.foreground }]}>
-                {meal.calories} kcal
+          {meals.length === 0 ? (
+            <View style={styles.emptyMeals}>
+              <Text style={[styles.emptyEmoji]}>🍽️</Text>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                아직 기록된 식사가 없어요
+              </Text>
+              <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
+                식사를 기록하면 영양 분석을 받을 수 있어요
               </Text>
             </View>
-          ))}
+          ) : (
+            meals.map((meal) => {
+              const mealLabel = MEAL_TYPE_LABELS[meal.meal_type] ?? meal.meal_type;
+              const foodsText =
+                meal.foods?.join(', ') ?? meal.ai_recognized_food ?? '음식 정보 없음';
+              const mealTime = meal.meal_time?.substring(0, 5) ?? '';
+
+              return (
+                <View
+                  key={meal.id}
+                  style={[styles.mealItem, { borderBottomColor: colors.border }]}
+                >
+                  <View style={styles.mealInfo}>
+                    <Text style={[styles.mealType, { color: colors.foreground }]}>
+                      {mealLabel}
+                    </Text>
+                    <Text style={[styles.mealTime, { color: colors.mutedForeground }]}>
+                      {mealTime}
+                    </Text>
+                  </View>
+                  <View style={styles.mealFoods}>
+                    <Text
+                      style={[styles.mealFoodText, { color: colors.mutedForeground }]}
+                      numberOfLines={1}
+                    >
+                      {foodsText}
+                    </Text>
+                  </View>
+                  <Text style={[styles.mealCalories, { color: colors.foreground }]}>
+                    {meal.total_calories} kcal
+                  </Text>
+                </View>
+              );
+            })
+          )}
         </View>
 
         {/* 식사 기록 버튼 */}
         <TouchableOpacity
-          style={[styles.recordButton, { backgroundColor: status.error }]}
+          testID="record-meal-button"
+          style={[styles.recordButton, { backgroundColor: brand.primary }]}
           onPress={handleRecordMeal}
         >
-          <Text style={styles.recordButtonText}>식사 기록하기</Text>
+          <Text style={[styles.recordButtonText, { color: colors.background }]}>
+            식사 기록하기
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -186,7 +264,7 @@ function NutrientBar({
   goal: number;
   unit: string;
   color: string;
-  colors: import('@/lib/theme').SemanticColors;
+  colors: SemanticColors;
 }) {
   const percentage = Math.min((current / goal) * 100, 100);
 
@@ -213,6 +291,16 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
   },
   calorieCard: {
     borderRadius: 20,
@@ -307,6 +395,23 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 4,
   },
+  emptyMeals: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  emptyEmoji: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 15,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  emptySubtext: {
+    fontSize: 13,
+    textAlign: 'center',
+  },
   mealItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -342,7 +447,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   recordButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
