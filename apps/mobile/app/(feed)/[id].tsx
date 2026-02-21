@@ -47,7 +47,7 @@ interface Comment {
 }
 
 export default function FeedDetailScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUser();
@@ -261,25 +261,34 @@ export default function FeedDetailScreen() {
   };
 
   const renderComment = ({ item }: { item: Comment }) => (
-    <View style={[styles.commentItem, isDark && styles.commentItemDark]}>
-      <View style={[styles.commentAvatar, isDark && styles.commentAvatarDark]}>
-        <Text style={styles.commentAvatarText}>{item.userName.charAt(0).toUpperCase()}</Text>
+    <View
+      style={[
+        styles.commentItem,
+        { backgroundColor: colors.card, borderBottomColor: colors.border },
+      ]}
+    >
+      <View style={[styles.commentAvatar, { backgroundColor: colors.muted }]}>
+        <Text style={[styles.commentAvatarText, { color: colors.mutedForeground }]}>
+          {item.userName.charAt(0).toUpperCase()}
+        </Text>
       </View>
       <View style={styles.commentContent}>
         <View style={styles.commentHeader}>
-          <Text style={[styles.commentUserName, isDark && styles.textLight]}>{item.userName}</Text>
-          <Text style={[styles.commentTime, isDark && styles.textMuted]}>
+          <Text style={[styles.commentUserName, { color: colors.foreground }]}>
+            {item.userName}
+          </Text>
+          <Text style={[styles.commentTime, { color: colors.mutedForeground }]}>
             {formatTime(item.createdAt)}
           </Text>
         </View>
-        <Text style={[styles.commentText, isDark && styles.textLight]}>{item.content}</Text>
+        <Text style={[styles.commentText, { color: colors.foreground }]}>{item.content}</Text>
       </View>
     </View>
   );
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, isDark && styles.containerDark]}>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color="#6366f1" />
       </View>
     );
@@ -287,8 +296,8 @@ export default function FeedDetailScreen() {
 
   if (!feedItem) {
     return (
-      <View style={[styles.errorContainer, isDark && styles.containerDark]}>
-        <Text style={[styles.errorText, isDark && styles.textLight]}>
+      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.foreground }]}>
           게시물을 찾을 수 없습니다.
         </Text>
       </View>
@@ -296,7 +305,10 @@ export default function FeedDetailScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -307,25 +319,25 @@ export default function FeedDetailScreen() {
           keyExtractor={(item) => item.id}
           renderItem={renderComment}
           ListHeaderComponent={
-            <View style={[styles.postContainer, isDark && styles.postContainerDark]}>
+            <View style={[styles.postContainer, { backgroundColor: colors.card }]}>
               {/* 게시물 헤더 */}
               <View style={styles.postHeader}>
                 <View style={styles.userInfo}>
-                  <View style={[styles.avatar, isDark && styles.avatarDark]}>
-                    <Text style={styles.avatarText}>
+                  <View style={[styles.avatar, { backgroundColor: colors.muted }]}>
+                    <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
                       {feedItem.userName.charAt(0).toUpperCase()}
                     </Text>
                   </View>
                   <View style={styles.userMeta}>
-                    <Text style={[styles.userName, isDark && styles.textLight]}>
+                    <Text style={[styles.userName, { color: colors.foreground }]}>
                       {feedItem.userName}
                     </Text>
-                    <Text style={[styles.timestamp, isDark && styles.textMuted]}>
+                    <Text style={[styles.timestamp, { color: colors.mutedForeground }]}>
                       {formatTime(feedItem.createdAt)}
                     </Text>
                   </View>
                 </View>
-                <View style={styles.levelBadge}>
+                <View style={[styles.levelBadge, { backgroundColor: colors.secondary }]}>
                   <Text style={styles.levelText}>Lv.{feedItem.userLevel}</Text>
                 </View>
               </View>
@@ -334,45 +346,45 @@ export default function FeedDetailScreen() {
               <View style={styles.postContent}>
                 <View style={styles.typeRow}>
                   <Text style={styles.typeIcon}>{FEED_TYPE_ICONS[feedItem.type] || '📝'}</Text>
-                  <Text style={[styles.typeLabel, isDark && styles.textMuted]}>
+                  <Text style={[styles.typeLabel, { color: colors.mutedForeground }]}>
                     {feedItem.type}
                   </Text>
                 </View>
-                <Text style={[styles.contentText, isDark && styles.textLight]}>
+                <Text style={[styles.contentText, { color: colors.foreground }]}>
                   {feedItem.content}
                 </Text>
                 {feedItem.detail && (
-                  <Text style={[styles.detailText, isDark && styles.textMuted]}>
+                  <Text style={[styles.detailText, { color: colors.mutedForeground }]}>
                     {feedItem.detail}
                   </Text>
                 )}
               </View>
 
               {/* 액션 버튼 */}
-              <View style={styles.postActions}>
+              <View style={[styles.postActions, { borderTopColor: colors.border }]}>
                 <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
                   <Text style={styles.actionIcon}>{feedItem.isLiked ? '❤️' : '🤍'}</Text>
-                  <Text style={[styles.actionText, isDark && styles.textMuted]}>
+                  <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
                     좋아요 {feedItem.likes}
                   </Text>
                 </TouchableOpacity>
                 <View style={styles.actionButton}>
                   <Text style={styles.actionIcon}>💬</Text>
-                  <Text style={[styles.actionText, isDark && styles.textMuted]}>
+                  <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
                     댓글 {comments.length}
                   </Text>
                 </View>
               </View>
 
               {/* 댓글 헤더 */}
-              <View style={styles.commentsHeader}>
-                <Text style={[styles.commentsTitle, isDark && styles.textLight]}>댓글</Text>
+              <View style={[styles.commentsHeader, { borderTopColor: colors.border }]}>
+                <Text style={[styles.commentsTitle, { color: colors.foreground }]}>댓글</Text>
               </View>
             </View>
           }
           ListEmptyComponent={
             <View style={styles.emptyComments}>
-              <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
                 첫 번째 댓글을 작성해보세요!
               </Text>
             </View>
@@ -382,11 +394,16 @@ export default function FeedDetailScreen() {
         />
 
         {/* 댓글 입력 */}
-        <View style={[styles.inputContainer, isDark && styles.inputContainerDark]}>
+        <View
+          style={[
+            styles.inputContainer,
+            { backgroundColor: colors.card, borderTopColor: colors.border },
+          ]}
+        >
           <TextInput
-            style={[styles.input, isDark && styles.inputDark]}
+            style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground }]}
             placeholder="댓글을 작성하세요..."
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={colors.mutedForeground}
             value={commentText}
             onChangeText={setCommentText}
             multiline
@@ -415,10 +432,6 @@ export default function FeedDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   keyboardView: {
     flex: 1,
@@ -427,28 +440,21 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
   },
   errorContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
   },
   listContent: {
     paddingBottom: 20,
   },
   postContainer: {
-    backgroundColor: '#fff',
     marginBottom: 8,
     padding: 16,
-  },
-  postContainerDark: {
-    backgroundColor: '#1a1a1a',
   },
   postHeader: {
     flexDirection: 'row',
@@ -464,17 +470,12 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#e5e5e5',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  avatarDark: {
-    backgroundColor: '#333',
   },
   avatarText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#666',
   },
   userMeta: {
     marginLeft: 12,
@@ -482,15 +483,12 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   timestamp: {
     fontSize: 13,
-    color: '#999',
     marginTop: 2,
   },
   levelBadge: {
-    backgroundColor: '#f0f0ff',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 14,
@@ -514,24 +512,20 @@ const styles = StyleSheet.create({
   },
   typeLabel: {
     fontSize: 13,
-    color: '#666',
     fontWeight: '500',
   },
   contentText: {
     fontSize: 16,
-    color: '#111',
     lineHeight: 24,
   },
   detailText: {
     fontSize: 15,
-    color: '#666',
     marginTop: 8,
     lineHeight: 22,
   },
   postActions: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
     paddingTop: 16,
     gap: 32,
   },
@@ -545,18 +539,15 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    color: '#666',
   },
   commentsHeader: {
     marginTop: 20,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
   },
   commentsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   emptyComments: {
     padding: 32,
@@ -564,34 +555,22 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: '#999',
   },
   commentItem: {
     flexDirection: 'row',
     padding: 16,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  commentItemDark: {
-    backgroundColor: '#1a1a1a',
-    borderBottomColor: '#333',
   },
   commentAvatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#e5e5e5',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  commentAvatarDark: {
-    backgroundColor: '#333',
   },
   commentAvatarText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
   },
   commentContent: {
     flex: 1,
@@ -606,43 +585,28 @@ const styles = StyleSheet.create({
   commentUserName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111',
   },
   commentTime: {
     fontSize: 12,
-    color: '#999',
   },
   commentText: {
     fontSize: 14,
-    color: '#333',
     lineHeight: 20,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: 12,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
     gap: 10,
-  },
-  inputContainerDark: {
-    backgroundColor: '#1a1a1a',
-    borderTopColor: '#333',
   },
   input: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 15,
     maxHeight: 100,
-    color: '#111',
-  },
-  inputDark: {
-    backgroundColor: '#2a2a2a',
-    color: '#fff',
   },
   sendButton: {
     backgroundColor: '#6366f1',
@@ -659,11 +623,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

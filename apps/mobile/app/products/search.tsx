@@ -230,7 +230,7 @@ export default function ProductSearchScreen() {
           <TextInput
             style={[styles.searchInput, isDark && styles.searchInputDark]}
             placeholder="제품명 또는 브랜드 검색"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={colors.mutedForeground}
             value={searchQuery}
             onChangeText={setSearchQuery}
             autoCapitalize="none"

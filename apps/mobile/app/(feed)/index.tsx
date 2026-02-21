@@ -47,7 +47,7 @@ const TAB_LABELS: Record<FeedTab, string> = {
 };
 
 export default function FeedScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const router = useRouter();
 
   const {
@@ -96,30 +96,26 @@ export default function FeedScreen() {
   const renderFeedItem = ({ item }: { item: FeedItem }) => {
     return (
       <TouchableOpacity
-        style={[styles.feedCard, isDark && styles.feedCardDark]}
+        style={[styles.feedCard, { backgroundColor: colors.card }]}
         onPress={() => handleItemPress(item.id)}
         activeOpacity={0.7}
       >
         {/* 헤더 */}
         <View style={styles.cardHeader}>
           <View style={styles.userInfo}>
-            <View
-              style={[
-                styles.avatar,
-                isDark && styles.avatarDark,
-                item.userAvatar ? {} : { backgroundColor: isDark ? '#333' : '#e5e5e5' },
-              ]}
-            >
-              <Text style={styles.avatarText}>{item.userName.charAt(0).toUpperCase()}</Text>
+            <View style={[styles.avatar, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
+                {item.userName.charAt(0).toUpperCase()}
+              </Text>
             </View>
             <View style={styles.userMeta}>
-              <Text style={[styles.userName, isDark && styles.textLight]}>{item.userName}</Text>
-              <Text style={[styles.timestamp, isDark && styles.textMuted]}>
+              <Text style={[styles.userName, { color: colors.foreground }]}>{item.userName}</Text>
+              <Text style={[styles.timestamp, { color: colors.mutedForeground }]}>
                 {formatTime(item.createdAt)}
               </Text>
             </View>
           </View>
-          <View style={styles.levelBadge}>
+          <View style={[styles.levelBadge, { backgroundColor: colors.secondary }]}>
             <Text style={styles.levelText}>Lv.{item.userLevel}</Text>
           </View>
         </View>
@@ -128,27 +124,29 @@ export default function FeedScreen() {
         <View style={styles.cardContent}>
           <View style={styles.typeRow}>
             <Text style={styles.typeIcon}>{FEED_TYPE_ICONS[item.type] || '📝'}</Text>
-            <Text style={[styles.typeLabel, isDark && styles.textMuted]}>
+            <Text style={[styles.typeLabel, { color: colors.mutedForeground }]}>
               {FEED_TYPE_LABELS[item.type] || item.type}
             </Text>
           </View>
-          <Text style={[styles.contentText, isDark && styles.textLight]}>{item.content}</Text>
+          <Text style={[styles.contentText, { color: colors.foreground }]}>{item.content}</Text>
           {item.detail && (
-            <Text style={[styles.detailText, isDark && styles.textMuted]} numberOfLines={2}>
+            <Text style={[styles.detailText, { color: colors.mutedForeground }]} numberOfLines={2}>
               {item.detail}
             </Text>
           )}
         </View>
 
         {/* 액션 */}
-        <View style={styles.cardActions}>
+        <View style={[styles.cardActions, { borderTopColor: colors.border }]}>
           <TouchableOpacity style={styles.actionButton} onPress={() => handleLikePress(item.id)}>
             <Text style={styles.actionIcon}>{item.isLiked ? '❤️' : '🤍'}</Text>
-            <Text style={[styles.actionText, isDark && styles.textMuted]}>{item.likes}</Text>
+            <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{item.likes}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton} onPress={() => handleItemPress(item.id)}>
             <Text style={styles.actionIcon}>💬</Text>
-            <Text style={[styles.actionText, isDark && styles.textMuted]}>{item.comments}</Text>
+            <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
+              {item.comments}
+            </Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -169,8 +167,8 @@ export default function FeedScreen() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyIcon}>📭</Text>
-        <Text style={[styles.emptyTitle, isDark && styles.textLight]}>아직 피드가 없어요</Text>
-        <Text style={[styles.emptySubtitle, isDark && styles.textMuted]}>
+        <Text style={[styles.emptyTitle, { color: colors.foreground }]}>아직 피드가 없어요</Text>
+        <Text style={[styles.emptySubtitle, { color: colors.mutedForeground }]}>
           {activeTab === 'my'
             ? '활동을 시작해보세요!'
             : activeTab === 'friends'
@@ -182,9 +180,17 @@ export default function FeedScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       {/* 탭 */}
-      <View style={[styles.tabContainer, isDark && styles.tabContainerDark]}>
+      <View
+        style={[
+          styles.tabContainer,
+          { backgroundColor: colors.card, borderBottomColor: colors.border },
+        ]}
+      >
         {(['my', 'friends', 'all'] as FeedTab[]).map((tab) => (
           <TouchableOpacity
             key={tab}
@@ -194,7 +200,7 @@ export default function FeedScreen() {
             <Text
               style={[
                 styles.tabText,
-                isDark && styles.textMuted,
+                { color: colors.mutedForeground },
                 activeTab === tab && styles.tabTextActive,
               ]}
             >
@@ -218,7 +224,7 @@ export default function FeedScreen() {
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#6366f1" />
-          <Text style={[styles.loadingText, isDark && styles.textMuted]}>
+          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
             피드를 불러오는 중...
           </Text>
         </View>
@@ -234,11 +240,7 @@ export default function FeedScreen() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={refetch}
-              tintColor={isDark ? '#6366f1' : '#6366f1'}
-            />
+            <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#6366f1" />
           }
         />
       )}
@@ -249,21 +251,11 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
     paddingHorizontal: 16,
-  },
-  tabContainerDark: {
-    backgroundColor: '#1a1a1a',
-    borderBottomColor: '#333',
   },
   tab: {
     paddingVertical: 14,
@@ -277,7 +269,6 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#666',
   },
   tabTextActive: {
     color: '#6366f1',
@@ -310,14 +301,12 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#666',
   },
   listContent: {
     padding: 16,
     gap: 12,
   },
   feedCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -325,9 +314,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
-  },
-  feedCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -343,17 +329,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#e5e5e5',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  avatarDark: {
-    backgroundColor: '#333',
   },
   avatarText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
   },
   userMeta: {
     marginLeft: 10,
@@ -361,15 +342,12 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
   },
   timestamp: {
     fontSize: 12,
-    color: '#999',
     marginTop: 2,
   },
   levelBadge: {
-    backgroundColor: '#f0f0ff',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -393,24 +371,20 @@ const styles = StyleSheet.create({
   },
   typeLabel: {
     fontSize: 12,
-    color: '#666',
     fontWeight: '500',
   },
   contentText: {
     fontSize: 15,
-    color: '#111',
     lineHeight: 22,
   },
   detailText: {
     fontSize: 14,
-    color: '#666',
     marginTop: 6,
     lineHeight: 20,
   },
   cardActions: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
     paddingTop: 12,
     gap: 24,
   },
@@ -424,7 +398,6 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    color: '#666',
   },
   footerLoader: {
     paddingVertical: 20,
@@ -443,19 +416,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
     paddingHorizontal: 40,
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

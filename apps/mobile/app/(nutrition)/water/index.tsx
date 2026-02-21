@@ -45,7 +45,7 @@ interface WaterRecord {
 }
 
 export default function WaterTrackingScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, status } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -165,42 +165,50 @@ export default function WaterTrackingScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3b82f6" />
+          <ActivityIndicator size="large" color={status.info} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* 진행 상황 */}
         <View style={styles.progressSection}>
           <Text style={styles.progressIcon}>💧</Text>
-          <Text style={[styles.progressValue, isDark && styles.textLight]}>
+          <Text style={[styles.progressValue, { color: colors.foreground }]}>
             {totalIntake.toLocaleString()} ml
           </Text>
-          <View style={styles.progressBarContainer}>
-            <View style={[styles.progressBar, { width: `${progress}%` }]} />
+          <View style={[styles.progressBarContainer, { backgroundColor: colors.border }]}>
+            <View
+              style={[styles.progressBar, { width: `${progress}%`, backgroundColor: status.info }]}
+            />
           </View>
-          <Text style={[styles.progressLabel, isDark && styles.textMuted]}>
+          <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>
             목표: {goalAmount.toLocaleString()} ml ({Math.round(progress)}%)
           </Text>
         </View>
 
         {/* 음료 타입 선택 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>음료 종류</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>음료 종류</Text>
           <View style={styles.drinkTypeGrid}>
             {DRINK_TYPES.map((drink) => (
               <TouchableOpacity
                 key={drink.id}
                 style={[
                   styles.drinkTypeChip,
-                  isDark && styles.drinkTypeChipDark,
-                  selectedDrinkType === drink.id && styles.drinkTypeChipSelected,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                  selectedDrinkType === drink.id && [
+                    styles.drinkTypeChipSelected,
+                    { backgroundColor: status.info, borderColor: status.info },
+                  ],
                 ]}
                 onPress={() => {
                   Haptics.selectionAsync();
@@ -211,7 +219,7 @@ export default function WaterTrackingScreen() {
                 <Text
                   style={[
                     styles.drinkTypeLabel,
-                    isDark && styles.textLight,
+                    { color: colors.foreground },
                     selectedDrinkType === drink.id && styles.drinkTypeLabelSelected,
                   ]}
                 >
@@ -224,17 +232,20 @@ export default function WaterTrackingScreen() {
 
         {/* 빠른 추가 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>빠른 추가</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>빠른 추가</Text>
           <View style={styles.quickAddGrid}>
             {QUICK_ADD_OPTIONS.map((option) => (
               <TouchableOpacity
                 key={option.amount}
-                style={[styles.quickAddButton, isDark && styles.quickAddButtonDark]}
+                style={[
+                  styles.quickAddButton,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
                 onPress={() => handleAddWater(option.amount)}
                 disabled={isAdding}
               >
-                <Text style={styles.quickAddText}>{option.label}</Text>
-                <Text style={[styles.quickAddUnit, isDark && styles.textMuted]}>ml</Text>
+                <Text style={[styles.quickAddText, { color: status.info }]}>{option.label}</Text>
+                <Text style={[styles.quickAddUnit, { color: colors.mutedForeground }]}>ml</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -242,28 +253,32 @@ export default function WaterTrackingScreen() {
 
         {/* 오늘 기록 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>오늘 기록</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>오늘 기록</Text>
           {todayRecords.length === 0 ? (
-            <View style={[styles.emptyCard, isDark && styles.emptyCardDark]}>
-              <Text style={[styles.emptyText, isDark && styles.textMuted]}>아직 기록이 없어요</Text>
+            <View style={[styles.emptyCard, { backgroundColor: colors.card }]}>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                아직 기록이 없어요
+              </Text>
             </View>
           ) : (
-            <View style={[styles.recordsCard, isDark && styles.recordsCardDark]}>
+            <View style={[styles.recordsCard, { backgroundColor: colors.card }]}>
               {todayRecords.map((record, index) => (
                 <TouchableOpacity
                   key={record.id}
                   style={[
                     styles.recordItem,
-                    index < todayRecords.length - 1 && styles.recordItemBorder,
-                    isDark && styles.recordItemBorderDark,
+                    index < todayRecords.length - 1 && [
+                      styles.recordItemBorder,
+                      { borderBottomColor: colors.border },
+                    ],
                   ]}
                   onLongPress={() => handleDeleteRecord(record.id)}
                 >
                   <Text style={styles.recordIcon}>{getDrinkIcon(record.drink_type)}</Text>
-                  <Text style={[styles.recordTime, isDark && styles.textMuted]}>
+                  <Text style={[styles.recordTime, { color: colors.mutedForeground }]}>
                     {formatTime(record.record_time)}
                   </Text>
-                  <Text style={[styles.recordAmount, isDark && styles.textLight]}>
+                  <Text style={[styles.recordAmount, { color: colors.foreground }]}>
                     {record.amount_ml}ml
                   </Text>
                 </TouchableOpacity>
@@ -271,7 +286,9 @@ export default function WaterTrackingScreen() {
             </View>
           )}
           {todayRecords.length > 0 && (
-            <Text style={[styles.deleteHint, isDark && styles.textMuted]}>길게 눌러서 삭제</Text>
+            <Text style={[styles.deleteHint, { color: colors.mutedForeground }]}>
+              길게 눌러서 삭제
+            </Text>
           )}
         </View>
       </ScrollView>
@@ -282,10 +299,6 @@ export default function WaterTrackingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
@@ -307,25 +320,21 @@ const styles = StyleSheet.create({
   progressValue: {
     fontSize: 42,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 12,
   },
   progressBarContainer: {
     width: '100%',
     height: 8,
-    backgroundColor: '#e5e5e5',
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#3b82f6',
     borderRadius: 4,
   },
   progressLabel: {
     fontSize: 14,
-    color: '#666',
   },
   section: {
     marginBottom: 24,
@@ -333,7 +342,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
   drinkTypeGrid: {
@@ -344,18 +352,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 12,
-    backgroundColor: '#fff',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-  },
-  drinkTypeChipDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
   },
   drinkTypeChipSelected: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    // backgroundColor and borderColor set inline
   },
   drinkTypeIcon: {
     fontSize: 24,
@@ -363,7 +364,6 @@ const styles = StyleSheet.create({
   },
   drinkTypeLabel: {
     fontSize: 12,
-    color: '#333',
   },
   drinkTypeLabelSelected: {
     color: '#fff',
@@ -376,45 +376,28 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 16,
-    backgroundColor: '#fff',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-  },
-  quickAddButtonDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
   },
   quickAddText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#3b82f6',
   },
   quickAddUnit: {
     fontSize: 12,
-    color: '#666',
     marginTop: 2,
   },
   emptyCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 32,
     alignItems: 'center',
   },
-  emptyCardDark: {
-    backgroundColor: '#1a1a1a',
-  },
   emptyText: {
     fontSize: 14,
-    color: '#666',
   },
   recordsCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
-  },
-  recordsCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   recordItem: {
     flexDirection: 'row',
@@ -423,10 +406,6 @@ const styles = StyleSheet.create({
   },
   recordItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  recordItemBorderDark: {
-    borderBottomColor: '#333',
   },
   recordIcon: {
     fontSize: 20,
@@ -435,23 +414,14 @@ const styles = StyleSheet.create({
   recordTime: {
     flex: 1,
     fontSize: 14,
-    color: '#666',
   },
   recordAmount: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111',
   },
   deleteHint: {
     fontSize: 12,
-    color: '#999',
     textAlign: 'center',
     marginTop: 8,
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

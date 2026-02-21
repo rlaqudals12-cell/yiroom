@@ -23,7 +23,7 @@ import { getTierColor, type UserSearchResult } from '../../../lib/social';
 import { useUserSearch } from '../../../lib/social/useFriends';
 
 export default function FriendSearchScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, module: moduleColors } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const { results, isLoading, error, search, sendRequest, clear } = useUserSearch();
@@ -85,35 +85,45 @@ export default function FriendSearchScreen() {
   };
 
   const renderResult = ({ item }: { item: UserSearchResult }) => (
-    <View style={[styles.resultCard, isDark && styles.resultCardDark]}>
+    <View style={[styles.resultCard, { backgroundColor: colors.card }]}>
       <View style={styles.avatarContainer}>
         {item.avatarUrl ? (
           <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
         ) : (
-          <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
-            <Text style={styles.avatarText}>{item.displayName.charAt(0)}</Text>
+          <View style={[styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
+            <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
+              {item.displayName.charAt(0)}
+            </Text>
           </View>
         )}
-        <View style={[styles.tierBadge, { backgroundColor: getTierColor(item.tier) }]} />
+        <View
+          style={[
+            styles.tierBadge,
+            { backgroundColor: getTierColor(item.tier), borderColor: colors.card },
+          ]}
+        />
       </View>
       <View style={styles.userInfo}>
-        <Text style={[styles.userName, isDark && styles.textLight]}>{item.displayName}</Text>
-        <Text style={[styles.userLevel, isDark && styles.textMuted]}>Lv.{item.level}</Text>
+        <Text style={[styles.userName, { color: colors.foreground }]}>{item.displayName}</Text>
+        <Text style={[styles.userLevel, { color: colors.mutedForeground }]}>Lv.{item.level}</Text>
       </View>
       {getStatusButton(item)}
     </View>
   );
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       {/* 검색바 */}
       <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, isDark && styles.searchBarDark]}>
+        <View style={[styles.searchBar, { backgroundColor: colors.card }]}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
-            style={[styles.searchInput, isDark && styles.textLight]}
+            style={[styles.searchInput, { color: colors.foreground }]}
             placeholder="닉네임으로 검색"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={colors.mutedForeground}
             value={searchQuery}
             onChangeText={setSearchQuery}
             onSubmitEditing={handleSearch}
@@ -122,7 +132,7 @@ export default function FriendSearchScreen() {
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={handleClear}>
-              <Text style={styles.clearIcon}>✕</Text>
+              <Text style={[styles.clearIcon, { color: colors.mutedForeground }]}>✕</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -141,12 +151,12 @@ export default function FriendSearchScreen() {
       {/* 검색 결과 */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <ActivityIndicator size="large" color={moduleColors.body.dark} />
         </View>
       ) : results.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>👤</Text>
-          <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             {searchQuery.length > 0 ? '검색 결과가 없습니다' : '닉네임으로 친구를 검색해보세요'}
           </Text>
         </View>
@@ -166,10 +176,6 @@ export default function FriendSearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -180,13 +186,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: 14,
     height: 48,
-  },
-  searchBarDark: {
-    backgroundColor: '#1a1a1a',
   },
   searchIcon: {
     fontSize: 16,
@@ -195,11 +197,9 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: '#111',
   },
   clearIcon: {
     fontSize: 16,
-    color: '#999',
     padding: 4,
   },
   searchButton: {
@@ -237,12 +237,8 @@ const styles = StyleSheet.create({
   resultCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 14,
-  },
-  resultCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   avatarContainer: {
     position: 'relative',
@@ -256,17 +252,12 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#e5e5e5',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatarPlaceholderDark: {
-    backgroundColor: '#333',
   },
   avatarText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#666',
   },
   tierBadge: {
     position: 'absolute',
@@ -276,7 +267,6 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     borderWidth: 2,
-    borderColor: '#fff',
   },
   userInfo: {
     flex: 1,
@@ -285,11 +275,9 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   userLevel: {
     fontSize: 13,
-    color: '#666',
     marginTop: 2,
   },
   addButton: {
@@ -334,13 +322,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
-    color: '#666',
     textAlign: 'center',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

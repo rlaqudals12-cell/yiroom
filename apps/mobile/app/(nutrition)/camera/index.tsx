@@ -55,7 +55,7 @@ interface RecognizedFood {
 type ScreenState = 'camera' | 'analyzing' | 'result';
 
 export default function FoodCameraScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, status, module: moduleColors } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const cameraRef = useRef<CameraView>(null);
@@ -258,9 +258,9 @@ export default function FoodCameraScreen() {
   // 권한 없음
   if (!permission) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color="#22c55e" />
+          <ActivityIndicator size="large" color={status.success} />
         </View>
       </SafeAreaView>
     );
@@ -268,12 +268,15 @@ export default function FoodCameraScreen() {
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.centerContent}>
-          <Text style={[styles.permissionText, isDark && styles.textLight]}>
+          <Text style={[styles.permissionText, { color: colors.foreground }]}>
             카메라 권한이 필요합니다
           </Text>
-          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+          <TouchableOpacity
+            style={[styles.permissionButton, { backgroundColor: status.success }]}
+            onPress={requestPermission}
+          >
             <Text style={styles.permissionButtonText}>권한 허용</Text>
           </TouchableOpacity>
         </View>
@@ -284,11 +287,11 @@ export default function FoodCameraScreen() {
   // 분석 중
   if (screenState === 'analyzing') {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.centerContent}>
           {capturedImage && <Image source={{ uri: capturedImage }} style={styles.analyzingImage} />}
-          <ActivityIndicator size="large" color="#22c55e" style={styles.analyzingSpinner} />
-          <Text style={[styles.analyzingText, isDark && styles.textLight]}>
+          <ActivityIndicator size="large" color={status.success} style={styles.analyzingSpinner} />
+          <Text style={[styles.analyzingText, { color: colors.foreground }]}>
             AI가 음식을 분석하고 있어요...
           </Text>
         </View>
@@ -299,43 +302,55 @@ export default function FoodCameraScreen() {
   // 결과 화면
   if (screenState === 'result') {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
-        <ScrollView style={styles.resultScroll} showsVerticalScrollIndicator={false}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        edges={['bottom']}
+      >
+        <ScrollView
+          style={[styles.resultScroll, { backgroundColor: colors.background }]}
+          showsVerticalScrollIndicator={false}
+        >
           {/* 촬영 이미지 */}
           {capturedImage && <Image source={{ uri: capturedImage }} style={styles.resultImage} />}
 
           {/* AI 인사이트 */}
           {aiInsight && (
-            <View style={[styles.insightCard, isDark && styles.cardDark]}>
-              <Text style={[styles.insightText, isDark && styles.textMuted]}>{aiInsight}</Text>
+            <View style={[styles.insightCard, { backgroundColor: colors.card }]}>
+              <Text style={[styles.insightText, { color: colors.mutedForeground }]}>
+                {aiInsight}
+              </Text>
             </View>
           )}
 
           {/* AI 인식 결과 */}
           <View style={styles.resultSection}>
-            <Text style={[styles.resultTitle, isDark && styles.textLight]}>AI가 인식한 음식</Text>
+            <Text style={[styles.resultTitle, { color: colors.foreground }]}>AI가 인식한 음식</Text>
 
             {recognizedFoods.length === 0 ? (
-              <View style={[styles.emptyCard, isDark && styles.cardDark]}>
-                <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+              <View style={[styles.emptyCard, { backgroundColor: colors.card }]}>
+                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
                   음식을 인식하지 못했어요
                 </Text>
                 <TouchableOpacity
                   style={styles.searchLink}
                   onPress={() => router.push('/(nutrition)/search')}
                 >
-                  <Text style={styles.searchLinkText}>검색으로 기록하기</Text>
+                  <Text style={[styles.searchLinkText, { color: status.success }]}>
+                    검색으로 기록하기
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : (
               recognizedFoods.map((food) => (
-                <View key={food.id} style={[styles.foodCard, isDark && styles.cardDark]}>
+                <View key={food.id} style={[styles.foodCard, { backgroundColor: colors.card }]}>
                   <View style={styles.foodHeader}>
                     <Text style={styles.trafficLight}>
                       {getTrafficLightEmoji(food.trafficLight)}
                     </Text>
                     <View style={styles.foodInfo}>
-                      <Text style={[styles.foodName, isDark && styles.textLight]}>{food.name}</Text>
+                      <Text style={[styles.foodName, { color: colors.foreground }]}>
+                        {food.name}
+                      </Text>
                       <Text
                         style={[
                           styles.foodCalories,
@@ -346,11 +361,13 @@ export default function FoodCameraScreen() {
                       </Text>
                     </View>
                     <TouchableOpacity onPress={() => handleRemoveFood(food.id)}>
-                      <Text style={styles.removeButton}>✕</Text>
+                      <Text style={[styles.removeButton, { color: colors.mutedForeground }]}>
+                        ✕
+                      </Text>
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={[styles.macros, isDark && styles.textMuted]}>
+                  <Text style={[styles.macros, { color: colors.mutedForeground }]}>
                     탄 {Math.round(food.carbs * food.portion)}g · 단{' '}
                     {Math.round(food.protein * food.portion)}g · 지{' '}
                     {Math.round(food.fat * food.portion)}g
@@ -372,22 +389,24 @@ export default function FoodCameraScreen() {
 
                   {/* 수량 조절 */}
                   <View style={styles.portionRow}>
-                    <Text style={[styles.portionLabel, isDark && styles.textMuted]}>수량:</Text>
+                    <Text style={[styles.portionLabel, { color: colors.mutedForeground }]}>
+                      수량:
+                    </Text>
                     <View style={styles.portionControls}>
                       <TouchableOpacity
-                        style={[styles.portionButton, isDark && styles.portionButtonDark]}
+                        style={[styles.portionButton, { backgroundColor: colors.muted }]}
                         onPress={() => handlePortionChange(food.id, -0.5)}
                       >
-                        <Text style={styles.portionButtonText}>−</Text>
+                        <Text style={[styles.portionButtonText, { color: status.success }]}>−</Text>
                       </TouchableOpacity>
-                      <Text style={[styles.portionValue, isDark && styles.textLight]}>
+                      <Text style={[styles.portionValue, { color: colors.foreground }]}>
                         {food.portion}인분
                       </Text>
                       <TouchableOpacity
-                        style={[styles.portionButton, isDark && styles.portionButtonDark]}
+                        style={[styles.portionButton, { backgroundColor: colors.muted }]}
                         onPress={() => handlePortionChange(food.id, 0.5)}
                       >
-                        <Text style={styles.portionButtonText}>+</Text>
+                        <Text style={[styles.portionButtonText, { color: status.success }]}>+</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -397,20 +416,22 @@ export default function FoodCameraScreen() {
 
             {/* 음식 추가 버튼 */}
             <TouchableOpacity
-              style={[styles.addFoodButton, isDark && styles.addFoodButtonDark]}
+              style={[styles.addFoodButton, { borderColor: colors.border }]}
               onPress={() => router.push('/(nutrition)/search')}
             >
-              <Text style={[styles.addFoodText, isDark && styles.textMuted]}>+ 음식 추가하기</Text>
+              <Text style={[styles.addFoodText, { color: colors.mutedForeground }]}>
+                + 음식 추가하기
+              </Text>
             </TouchableOpacity>
           </View>
 
           {/* 총 영양 정보 */}
           {recognizedFoods.length > 0 && (
-            <View style={[styles.totalCard, isDark && styles.cardDark]}>
-              <Text style={[styles.totalCalories, isDark && styles.textLight]}>
+            <View style={[styles.totalCard, { backgroundColor: colors.card }]}>
+              <Text style={[styles.totalCalories, { color: status.success }]}>
                 총 {Math.round(totalNutrition.calories)} kcal
               </Text>
-              <Text style={[styles.totalMacros, isDark && styles.textMuted]}>
+              <Text style={[styles.totalMacros, { color: colors.mutedForeground }]}>
                 탄 {Math.round(totalNutrition.carbs)}g · 단 {Math.round(totalNutrition.protein)}g ·
                 지 {Math.round(totalNutrition.fat)}g
               </Text>
@@ -419,13 +440,17 @@ export default function FoodCameraScreen() {
         </ScrollView>
 
         {/* 하단 버튼 */}
-        <View style={styles.resultFooter}>
-          <TouchableOpacity style={styles.retakeButton} onPress={handleRetake}>
-            <Text style={[styles.retakeButtonText, isDark && styles.textLight]}>다시 촬영</Text>
+        <View style={[styles.resultFooter, { backgroundColor: colors.card }]}>
+          <TouchableOpacity
+            style={[styles.retakeButton, { borderColor: colors.border }]}
+            onPress={handleRetake}
+          >
+            <Text style={[styles.retakeButtonText, { color: colors.foreground }]}>다시 촬영</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.saveButton,
+              { backgroundColor: status.success },
               (isSaving || recognizedFoods.length === 0) && styles.saveButtonDisabled,
             ]}
             onPress={handleSave}
@@ -444,7 +469,7 @@ export default function FoodCameraScreen() {
 
   // 카메라 화면
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.cameraContainer}>
         <CameraView ref={cameraRef} style={styles.camera} facing="back">
           {/* 가이드 프레임 */}
@@ -463,8 +488,10 @@ export default function FoodCameraScreen() {
             key={meal.id}
             style={[
               styles.mealTypeChip,
-              isDark && styles.mealTypeChipDark,
-              selectedMealType === meal.id && styles.mealTypeChipSelected,
+              selectedMealType === meal.id && [
+                styles.mealTypeChipSelected,
+                { backgroundColor: status.success },
+              ],
             ]}
             onPress={() => {
               Haptics.selectionAsync();
@@ -475,7 +502,6 @@ export default function FoodCameraScreen() {
             <Text
               style={[
                 styles.mealTypeLabel,
-                isDark && styles.textLight,
                 selectedMealType === meal.id && styles.mealTypeLabelSelected,
               ]}
             >
@@ -511,9 +537,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
   },
-  containerDark: {
-    backgroundColor: '#000',
-  },
   centerContent: {
     flex: 1,
     justifyContent: 'center',
@@ -522,12 +545,10 @@ const styles = StyleSheet.create({
   },
   permissionText: {
     fontSize: 16,
-    color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
   },
   permissionButton: {
-    backgroundColor: '#22c55e',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -580,9 +601,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#222',
     borderRadius: 20,
     gap: 4,
-  },
-  mealTypeChipDark: {
-    backgroundColor: '#222',
   },
   mealTypeChipSelected: {
     backgroundColor: '#22c55e',
@@ -646,28 +664,22 @@ const styles = StyleSheet.create({
   },
   analyzingText: {
     fontSize: 16,
-    color: '#fff',
   },
   resultScroll: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
   },
   resultImage: {
     width: '100%',
     height: 200,
   },
   insightCard: {
-    backgroundColor: '#f0fdf4',
     borderRadius: 12,
     padding: 16,
     marginHorizontal: 20,
     marginTop: 16,
-    borderWidth: 1,
-    borderColor: '#bbf7d0',
   },
   insightText: {
     fontSize: 14,
-    color: '#166534',
     lineHeight: 20,
   },
   resultSection: {
@@ -676,21 +688,15 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
   emptyCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
   },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
-  },
   emptyText: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 12,
   },
   searchLink: {
@@ -698,11 +704,9 @@ const styles = StyleSheet.create({
   },
   searchLinkText: {
     fontSize: 14,
-    color: '#22c55e',
     fontWeight: '500',
   },
   foodCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -722,7 +726,6 @@ const styles = StyleSheet.create({
   foodName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   foodCalories: {
     fontSize: 14,
@@ -730,12 +733,10 @@ const styles = StyleSheet.create({
   },
   removeButton: {
     fontSize: 18,
-    color: '#999',
     padding: 4,
   },
   macros: {
     fontSize: 13,
-    color: '#666',
     marginBottom: 8,
   },
   confidenceBadge: {
@@ -756,7 +757,6 @@ const styles = StyleSheet.create({
   },
   portionLabel: {
     fontSize: 13,
-    color: '#666',
   },
   portionControls: {
     flexDirection: 'row',
@@ -767,22 +767,16 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  portionButtonDark: {
-    backgroundColor: '#333',
-  },
   portionButtonText: {
     fontSize: 18,
-    color: '#22c55e',
     fontWeight: '600',
   },
   portionValue: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#111',
     minWidth: 50,
     textAlign: 'center',
   },
@@ -790,19 +784,13 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e5e5e5',
     borderRadius: 12,
     borderStyle: 'dashed',
   },
-  addFoodButtonDark: {
-    borderColor: '#333',
-  },
   addFoodText: {
     fontSize: 14,
-    color: '#666',
   },
   totalCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
     marginHorizontal: 20,
@@ -812,37 +800,31 @@ const styles = StyleSheet.create({
   totalCalories: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#22c55e',
     marginBottom: 4,
   },
   totalMacros: {
     fontSize: 14,
-    color: '#666',
   },
   resultFooter: {
     flexDirection: 'row',
     gap: 12,
     padding: 20,
-    backgroundColor: '#fff',
   },
   retakeButton: {
     flex: 1,
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
     alignItems: 'center',
   },
   retakeButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
   },
   saveButton: {
     flex: 2,
     padding: 16,
     borderRadius: 12,
-    backgroundColor: '#22c55e',
     alignItems: 'center',
   },
   saveButtonDisabled: {
@@ -852,11 +834,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

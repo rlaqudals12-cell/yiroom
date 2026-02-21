@@ -15,10 +15,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/lib/theme';
+import { moduleColors, useTheme } from '@/lib/theme';
 
 export default function BodyAnalysisScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
@@ -78,26 +78,36 @@ export default function BodyAnalysisScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 헤더 */}
         <View style={styles.header}>
-          <Text style={[styles.title, isDark && styles.textLight]}>체형 분석</Text>
-          <Text style={[styles.subtitle, isDark && styles.textMuted]}>
+          <Text style={[styles.title, { color: colors.foreground }]}>체형 분석</Text>
+          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             키, 체중과 전신 사진으로{'\n'}나에게 맞는 스타일을 찾아보세요
           </Text>
         </View>
 
         {/* 신체 정보 입력 */}
-        <View style={[styles.card, isDark && styles.cardDark]}>
-          <Text style={[styles.cardTitle, isDark && styles.textLight]}>신체 정보</Text>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>신체 정보</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, isDark && styles.textMuted]}>키 (cm)</Text>
+            <Text style={[styles.label, { color: colors.mutedForeground }]}>키 (cm)</Text>
             <TextInput
-              style={[styles.input, isDark && styles.inputDark]}
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.border,
+                  color: colors.foreground,
+                  backgroundColor: colors.muted,
+                },
+              ]}
               placeholder="예: 165"
-              placeholderTextColor={isDark ? '#666' : '#999'}
+              placeholderTextColor={colors.mutedForeground}
               value={height}
               onChangeText={setHeight}
               keyboardType="numeric"
@@ -106,11 +116,18 @@ export default function BodyAnalysisScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, isDark && styles.textMuted]}>체중 (kg)</Text>
+            <Text style={[styles.label, { color: colors.mutedForeground }]}>체중 (kg)</Text>
             <TextInput
-              style={[styles.input, isDark && styles.inputDark]}
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.border,
+                  color: colors.foreground,
+                  backgroundColor: colors.muted,
+                },
+              ]}
               placeholder="예: 55"
-              placeholderTextColor={isDark ? '#666' : '#999'}
+              placeholderTextColor={colors.mutedForeground}
               value={weight}
               onChangeText={setWeight}
               keyboardType="numeric"
@@ -120,16 +137,16 @@ export default function BodyAnalysisScreen() {
         </View>
 
         {/* 이미지 업로드 */}
-        <View style={[styles.card, isDark && styles.cardDark]}>
-          <Text style={[styles.cardTitle, isDark && styles.textLight]}>전신 사진</Text>
-          <Text style={[styles.cardDescription, isDark && styles.textMuted]}>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>전신 사진</Text>
+          <Text style={[styles.cardDescription, { color: colors.mutedForeground }]}>
             정면에서 촬영한 전신 사진을 선택해주세요
           </Text>
 
           <TouchableOpacity
             style={[
               styles.imagePickerButton,
-              isDark && styles.imagePickerButtonDark,
+              { borderColor: colors.border },
               imageUri && styles.imagePickerButtonSelected,
             ]}
             onPress={pickImage}
@@ -138,23 +155,23 @@ export default function BodyAnalysisScreen() {
               <Text style={styles.imagePickerTextSelected}>사진이 선택되었습니다</Text>
             ) : (
               <>
-                <Text style={[styles.imagePickerIcon]}>+</Text>
-                <Text style={[styles.imagePickerText, isDark && styles.textMuted]}>
+                <Text style={styles.imagePickerIcon}>+</Text>
+                <Text style={[styles.imagePickerText, { color: colors.mutedForeground }]}>
                   갤러리에서 선택
                 </Text>
               </>
             )}
           </TouchableOpacity>
 
-          <View style={styles.guideBox}>
-            <Text style={[styles.guideTitle, isDark && styles.textLight]}>촬영 가이드</Text>
-            <Text style={[styles.guideText, isDark && styles.textMuted]}>
+          <View style={[styles.guideBox, { backgroundColor: colors.muted }]}>
+            <Text style={[styles.guideTitle, { color: colors.foreground }]}>촬영 가이드</Text>
+            <Text style={[styles.guideText, { color: colors.mutedForeground }]}>
               • 밝은 배경에서 촬영해주세요
             </Text>
-            <Text style={[styles.guideText, isDark && styles.textMuted]}>
+            <Text style={[styles.guideText, { color: colors.mutedForeground }]}>
               • 몸에 맞는 옷을 입고 촬영하면 좋아요
             </Text>
-            <Text style={[styles.guideText, isDark && styles.textMuted]}>
+            <Text style={[styles.guideText, { color: colors.mutedForeground }]}>
               • 정면을 바라보고 자연스럽게 서주세요
             </Text>
           </View>
@@ -162,7 +179,12 @@ export default function BodyAnalysisScreen() {
       </ScrollView>
 
       {/* 분석 버튼 */}
-      <View style={[styles.footer, isDark && styles.footerDark]}>
+      <View
+        style={[
+          styles.footer,
+          { backgroundColor: colors.background, borderTopColor: colors.border },
+        ]}
+      >
         <TouchableOpacity
           style={[
             styles.analyzeButton,
@@ -181,10 +203,6 @@ export default function BodyAnalysisScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   content: {
     padding: 20,
@@ -196,32 +214,24 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
     lineHeight: 24,
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
   },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
-  },
   cardTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 16,
   },
   cardDescription: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 16,
   },
   inputGroup: {
@@ -229,38 +239,25 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#111',
-    backgroundColor: '#f9f9f9',
-  },
-  inputDark: {
-    borderColor: '#333',
-    backgroundColor: '#2a2a2a',
-    color: '#fff',
   },
   imagePickerButton: {
     height: 120,
     borderWidth: 2,
-    borderColor: '#ddd',
     borderStyle: 'dashed',
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
-  imagePickerButtonDark: {
-    borderColor: '#444',
-  },
   imagePickerButtonSelected: {
-    borderColor: '#2e5afa',
+    borderColor: moduleColors.body.base,
     backgroundColor: '#f0f4ff',
     borderStyle: 'solid',
   },
@@ -271,27 +268,23 @@ const styles = StyleSheet.create({
   },
   imagePickerText: {
     fontSize: 14,
-    color: '#666',
   },
   imagePickerTextSelected: {
     fontSize: 14,
-    color: '#2e5afa',
+    color: moduleColors.body.base,
     fontWeight: '600',
   },
   guideBox: {
-    backgroundColor: '#f5f5f5',
     borderRadius: 12,
     padding: 16,
   },
   guideTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   guideText: {
     fontSize: 13,
-    color: '#666',
     lineHeight: 20,
   },
   footer: {
@@ -300,16 +293,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 20,
-    backgroundColor: '#f8f9fc',
     borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  footerDark: {
-    backgroundColor: '#0a0a0a',
-    borderTopColor: '#222',
   },
   analyzeButton: {
-    backgroundColor: '#2e5afa',
+    backgroundColor: moduleColors.body.base,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -321,11 +308,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

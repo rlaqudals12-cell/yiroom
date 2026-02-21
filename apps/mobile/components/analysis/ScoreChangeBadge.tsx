@@ -23,6 +23,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
+import { statusColors } from '@/lib/theme';
+
 // ============================================
 // 타입 정의
 // ============================================
@@ -191,8 +193,6 @@ export interface MetricDeltaProps {
   delta: number;
   /** 크기 */
   size?: 'xs' | 'sm';
-  /** 다크 모드 */
-  isDark?: boolean;
 }
 
 /**
@@ -206,12 +206,12 @@ export interface MetricDeltaProps {
  * </View>
  * ```
  */
-export function MetricDelta({ delta, size = 'xs', isDark = false }: MetricDeltaProps) {
+export function MetricDelta({ delta, size = 'xs' }: MetricDeltaProps) {
   if (delta === 0) return null;
 
   const isPositive = delta > 0;
   const fontSize = size === 'xs' ? 10 : 12;
-  const color = isPositive ? (isDark ? '#34d399' : '#10b981') : isDark ? '#f87171' : '#ef4444';
+  const color = isPositive ? statusColors.success : statusColors.error;
 
   return (
     <Text

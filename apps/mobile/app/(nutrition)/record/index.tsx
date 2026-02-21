@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/lib/theme';
+import { moduleColors, useTheme } from '@/lib/theme';
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
@@ -36,7 +36,7 @@ const QUICK_ADD_FOODS = [
 ];
 
 export default function NutritionRecordScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   const [selectedMealType, setSelectedMealType] = useState<MealType>('lunch');
   const [searchText, setSearchText] = useState('');
@@ -81,7 +81,10 @@ export default function NutritionRecordScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 식사 타입 선택 */}
         <View style={styles.mealTypeContainer}>
@@ -90,6 +93,7 @@ export default function NutritionRecordScreen() {
               key={meal.type}
               style={[
                 styles.mealTypeButton,
+                { backgroundColor: colors.card },
                 selectedMealType === meal.type && styles.mealTypeButtonActive,
               ]}
               onPress={() => setSelectedMealType(meal.type)}
@@ -98,6 +102,7 @@ export default function NutritionRecordScreen() {
               <Text
                 style={[
                   styles.mealTypeLabel,
+                  { color: colors.mutedForeground },
                   selectedMealType === meal.type && styles.mealTypeLabelActive,
                 ]}
               >
@@ -109,45 +114,45 @@ export default function NutritionRecordScreen() {
 
         {/* 촬영 버튼 */}
         <TouchableOpacity
-          style={[styles.photoButton, isDark && styles.cardDark]}
+          style={[styles.photoButton, { backgroundColor: colors.card }]}
           onPress={handleTakePhoto}
         >
           <Text style={styles.photoIcon}>📷</Text>
           <View>
-            <Text style={[styles.photoTitle, isDark && styles.textLight]}>음식 촬영하기</Text>
-            <Text style={[styles.photoSubtitle, isDark && styles.textMuted]}>
+            <Text style={[styles.photoTitle, { color: colors.foreground }]}>음식 촬영하기</Text>
+            <Text style={[styles.photoSubtitle, { color: colors.mutedForeground }]}>
               AI가 자동으로 음식을 인식합니다
             </Text>
           </View>
         </TouchableOpacity>
 
         {/* 검색 */}
-        <View style={[styles.searchContainer, isDark && styles.searchContainerDark]}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
-            style={[styles.searchInput, isDark && styles.textLight]}
+            style={[styles.searchInput, { color: colors.foreground }]}
             placeholder="음식 검색"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={colors.mutedForeground}
             value={searchText}
             onChangeText={setSearchText}
           />
         </View>
 
         {/* 빠른 추가 */}
-        <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>빠른 추가</Text>
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>빠른 추가</Text>
           <View style={styles.quickAddGrid}>
             {QUICK_ADD_FOODS.map((food, index) => (
               <TouchableOpacity
                 key={index}
-                style={[styles.quickAddItem, isDark && styles.quickAddItemDark]}
+                style={[styles.quickAddItem, { backgroundColor: colors.muted }]}
                 onPress={() => handleAddFood(food)}
               >
                 <Text style={styles.quickAddEmoji}>{food.emoji}</Text>
-                <Text style={[styles.quickAddName, isDark && styles.textLight]} numberOfLines={1}>
+                <Text style={[styles.quickAddName, { color: colors.foreground }]} numberOfLines={1}>
                   {food.name}
                 </Text>
-                <Text style={[styles.quickAddCalories, isDark && styles.textMuted]}>
+                <Text style={[styles.quickAddCalories, { color: colors.mutedForeground }]}>
                   {food.calories} kcal
                 </Text>
               </TouchableOpacity>
@@ -157,22 +162,27 @@ export default function NutritionRecordScreen() {
 
         {/* 추가된 음식 */}
         {addedFoods.length > 0 && (
-          <View style={[styles.section, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>추가된 음식</Text>
+          <View style={[styles.section, { backgroundColor: colors.card }]}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>추가된 음식</Text>
             {addedFoods.map((food, index) => (
-              <View key={index} style={styles.addedFoodItem}>
+              <View
+                key={index}
+                style={[styles.addedFoodItem, { borderBottomColor: colors.border }]}
+              >
                 <Text style={styles.addedFoodEmoji}>{food.emoji}</Text>
-                <Text style={[styles.addedFoodName, isDark && styles.textLight]}>{food.name}</Text>
-                <Text style={[styles.addedFoodCalories, isDark && styles.textMuted]}>
+                <Text style={[styles.addedFoodName, { color: colors.foreground }]}>
+                  {food.name}
+                </Text>
+                <Text style={[styles.addedFoodCalories, { color: colors.mutedForeground }]}>
                   {food.calories} kcal
                 </Text>
                 <TouchableOpacity onPress={() => handleRemoveFood(index)}>
-                  <Text style={styles.removeButton}>✕</Text>
+                  <Text style={[styles.removeButton, { color: colors.mutedForeground }]}>✕</Text>
                 </TouchableOpacity>
               </View>
             ))}
             <View style={styles.totalRow}>
-              <Text style={[styles.totalLabel, isDark && styles.textLight]}>총 칼로리</Text>
+              <Text style={[styles.totalLabel, { color: colors.foreground }]}>총 칼로리</Text>
               <Text style={styles.totalValue}>{totalCalories} kcal</Text>
             </View>
           </View>
@@ -180,7 +190,12 @@ export default function NutritionRecordScreen() {
       </ScrollView>
 
       {/* 저장 버튼 */}
-      <View style={[styles.footer, isDark && styles.footerDark]}>
+      <View
+        style={[
+          styles.footer,
+          { backgroundColor: colors.background, borderTopColor: colors.border },
+        ]}
+      >
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>기록 저장</Text>
         </TouchableOpacity>
@@ -192,10 +207,6 @@ export default function NutritionRecordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   content: {
     padding: 20,
@@ -208,7 +219,6 @@ const styles = StyleSheet.create({
   },
   mealTypeButton: {
     flex: 1,
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
@@ -216,8 +226,8 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   mealTypeButtonActive: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2',
+    borderColor: moduleColors.nutrition.dark,
+    backgroundColor: '#f0fdf4',
   },
   mealTypeEmoji: {
     fontSize: 24,
@@ -225,24 +235,19 @@ const styles = StyleSheet.create({
   },
   mealTypeLabel: {
     fontSize: 13,
-    color: '#666',
     fontWeight: '500',
   },
   mealTypeLabelActive: {
-    color: '#ef4444',
+    color: moduleColors.nutrition.dark,
     fontWeight: '600',
   },
   photoButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     gap: 16,
     marginBottom: 16,
-  },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
   },
   photoIcon: {
     fontSize: 40,
@@ -250,25 +255,19 @@ const styles = StyleSheet.create({
   photoTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 4,
   },
   photoSubtitle: {
     fontSize: 13,
-    color: '#666',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginBottom: 16,
     gap: 12,
-  },
-  searchContainerDark: {
-    backgroundColor: '#1a1a1a',
   },
   searchIcon: {
     fontSize: 18,
@@ -276,10 +275,8 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: '#111',
   },
   section: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
@@ -287,7 +284,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 16,
   },
   quickAddGrid: {
@@ -297,13 +293,9 @@ const styles = StyleSheet.create({
   },
   quickAddItem: {
     width: '30%',
-    backgroundColor: '#f8f9fc',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
-  },
-  quickAddItemDark: {
-    backgroundColor: '#2a2a2a',
   },
   quickAddEmoji: {
     fontSize: 28,
@@ -312,20 +304,17 @@ const styles = StyleSheet.create({
   quickAddName: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#333',
     textAlign: 'center',
     marginBottom: 4,
   },
   quickAddCalories: {
     fontSize: 11,
-    color: '#666',
   },
   addedFoodItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
     gap: 12,
   },
   addedFoodEmoji: {
@@ -334,15 +323,12 @@ const styles = StyleSheet.create({
   addedFoodName: {
     flex: 1,
     fontSize: 15,
-    color: '#111',
   },
   addedFoodCalories: {
     fontSize: 14,
-    color: '#666',
   },
   removeButton: {
     fontSize: 16,
-    color: '#999',
     padding: 4,
   },
   totalRow: {
@@ -355,12 +341,11 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
   },
   totalValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ef4444',
+    color: moduleColors.nutrition.dark,
   },
   footer: {
     position: 'absolute',
@@ -368,16 +353,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 20,
-    backgroundColor: '#f8f9fc',
     borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  footerDark: {
-    backgroundColor: '#0a0a0a',
-    borderTopColor: '#222',
   },
   saveButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: moduleColors.nutrition.dark,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -386,11 +365,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

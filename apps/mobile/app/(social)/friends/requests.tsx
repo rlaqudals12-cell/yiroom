@@ -22,7 +22,7 @@ import { type FriendRequest } from '../../../lib/social';
 import { useFriendRequests } from '../../../lib/social/useFriends';
 
 export default function FriendRequestsScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, module: moduleColors } = useTheme();
 
   const { requests, isLoading, error, accept, reject, refetch } = useFriendRequests();
 
@@ -66,20 +66,22 @@ export default function FriendRequestsScreen() {
   };
 
   const renderRequest = ({ item }: { item: FriendRequest }) => (
-    <View style={[styles.requestCard, isDark && styles.requestCardDark]}>
+    <View style={[styles.requestCard, { backgroundColor: colors.card }]}>
       <View style={styles.requestInfo}>
         <View style={styles.avatarContainer}>
           {item.requesterAvatar ? (
             <Image source={{ uri: item.requesterAvatar }} style={styles.avatar} />
           ) : (
-            <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
-              <Text style={styles.avatarText}>{item.requesterName.charAt(0)}</Text>
+            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
+                {item.requesterName.charAt(0)}
+              </Text>
             </View>
           )}
         </View>
         <View style={styles.userInfo}>
-          <Text style={[styles.userName, isDark && styles.textLight]}>{item.requesterName}</Text>
-          <Text style={[styles.userMeta, isDark && styles.textMuted]}>
+          <Text style={[styles.userName, { color: colors.foreground }]}>{item.requesterName}</Text>
+          <Text style={[styles.userMeta, { color: colors.mutedForeground }]}>
             Lv.{item.requesterLevel} · {formatDate(item.createdAt)}
           </Text>
         </View>
@@ -90,10 +92,10 @@ export default function FriendRequestsScreen() {
           <Text style={styles.acceptButtonText}>수락</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.rejectButton, isDark && styles.rejectButtonDark]}
+          style={[styles.rejectButton, { backgroundColor: colors.muted }]}
           onPress={() => handleReject(item)}
         >
-          <Text style={[styles.rejectButtonText, isDark && styles.textLight]}>거절</Text>
+          <Text style={[styles.rejectButtonText, { color: colors.foreground }]}>거절</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -101,16 +103,19 @@ export default function FriendRequestsScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <ActivityIndicator size="large" color={moduleColors.body.dark} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       {/* 에러 메시지 */}
       {error && (
         <View style={styles.errorContainer}>
@@ -122,10 +127,10 @@ export default function FriendRequestsScreen() {
       {requests.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>📬</Text>
-          <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             받은 친구 요청이 없습니다
           </Text>
-          <Text style={[styles.emptySubtext, isDark && styles.textMuted]}>
+          <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
             다른 사용자가 친구 요청을 보내면 여기에 표시됩니다
           </Text>
         </View>
@@ -133,8 +138,8 @@ export default function FriendRequestsScreen() {
         <>
           {/* 헤더 */}
           <View style={styles.header}>
-            <Text style={[styles.headerTitle, isDark && styles.textLight]}>받은 요청</Text>
-            <Text style={[styles.headerCount, isDark && styles.textMuted]}>
+            <Text style={[styles.headerTitle, { color: colors.foreground }]}>받은 요청</Text>
+            <Text style={[styles.headerCount, { color: colors.mutedForeground }]}>
               {requests.length}개
             </Text>
           </View>
@@ -157,10 +162,6 @@ export default function FriendRequestsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
@@ -188,11 +189,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   headerCount: {
     fontSize: 14,
-    color: '#666',
   },
   listContent: {
     padding: 16,
@@ -200,12 +199,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   requestCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
-  },
-  requestCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   requestInfo: {
     flexDirection: 'row',
@@ -224,17 +219,12 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#e5e5e5',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatarPlaceholderDark: {
-    backgroundColor: '#333',
   },
   avatarText: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#666',
   },
   userInfo: {
     flex: 1,
@@ -242,11 +232,9 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#111',
   },
   userMeta: {
     fontSize: 13,
-    color: '#666',
     marginTop: 3,
   },
   actionButtons: {
@@ -267,16 +255,11 @@ const styles = StyleSheet.create({
   },
   rejectButton: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
   },
-  rejectButtonDark: {
-    backgroundColor: '#2a2a2a',
-  },
   rejectButtonText: {
-    color: '#333',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -293,18 +276,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

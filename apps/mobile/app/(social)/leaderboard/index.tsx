@@ -28,7 +28,7 @@ import {
 type TabType = 'all' | 'friends';
 
 export default function LeaderboardScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, module: moduleColors } = useTheme();
   const { user } = useUser();
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
@@ -62,10 +62,16 @@ export default function LeaderboardScreen() {
 
     return (
       <View
-        style={[styles.rankingCard, isDark && styles.rankingCardDark, isMe && styles.rankingCardMe]}
+        style={[styles.rankingCard, { backgroundColor: colors.card }, isMe && styles.rankingCardMe]}
       >
         <View style={styles.rankBadge}>
-          <Text style={[styles.rankText, item.rank <= 3 && styles.rankTextMedal]}>
+          <Text
+            style={[
+              styles.rankText,
+              { color: colors.mutedForeground },
+              item.rank <= 3 && styles.rankTextMedal,
+            ]}
+          >
             {getRankBadge(item.rank)}
           </Text>
         </View>
@@ -74,40 +80,52 @@ export default function LeaderboardScreen() {
           {item.avatarUrl ? (
             <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
           ) : (
-            <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
-              <Text style={styles.avatarText}>{item.displayName.charAt(0)}</Text>
+            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
+                {item.displayName.charAt(0)}
+              </Text>
             </View>
           )}
-          <View style={[styles.tierDot, { backgroundColor: getTierColor(item.tier) }]} />
+          <View
+            style={[
+              styles.tierDot,
+              { backgroundColor: getTierColor(item.tier), borderColor: colors.card },
+            ]}
+          />
         </View>
 
         <View style={styles.userInfo}>
-          <Text style={[styles.userName, isDark && styles.textLight, isMe && styles.userNameMe]}>
+          <Text style={[styles.userName, { color: colors.foreground }, isMe && styles.userNameMe]}>
             {item.displayName} {isMe && '(나)'}
           </Text>
           <View style={styles.userMeta}>
             <Text style={[styles.tierText, { color: getTierColor(item.tier) }]}>
               {getTierLabel(item.tier)}
             </Text>
-            <Text style={[styles.levelText, isDark && styles.textMuted]}>Lv.{item.level}</Text>
+            <Text style={[styles.levelText, { color: colors.mutedForeground }]}>
+              Lv.{item.level}
+            </Text>
           </View>
         </View>
 
         <View style={styles.scoreContainer}>
-          <Text style={[styles.scoreValue, isDark && styles.textLight]}>
+          <Text style={[styles.scoreValue, { color: colors.foreground }]}>
             {item.score.toLocaleString()}
           </Text>
-          <Text style={[styles.scoreLabel, isDark && styles.textMuted]}>XP</Text>
+          <Text style={[styles.scoreLabel, { color: colors.mutedForeground }]}>XP</Text>
         </View>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       {/* 내 순위 카드 */}
       {rank && (
-        <View style={[styles.myRankCard, isDark && styles.myRankCardDark]}>
+        <View style={styles.myRankCard}>
           <View style={styles.myRankInfo}>
             <Text style={styles.myRankLabel}>내 순위</Text>
             <Text style={styles.myRankValue}>
@@ -121,15 +139,18 @@ export default function LeaderboardScreen() {
       )}
 
       {/* 탭 */}
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, { backgroundColor: colors.muted }]}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'all' && styles.tabActive]}
+          style={[
+            styles.tab,
+            activeTab === 'all' && [styles.tabActive, { backgroundColor: colors.card }],
+          ]}
           onPress={() => handleTabChange('all')}
         >
           <Text
             style={[
               styles.tabText,
-              isDark && styles.textMuted,
+              { color: colors.mutedForeground },
               activeTab === 'all' && styles.tabTextActive,
             ]}
           >
@@ -137,13 +158,16 @@ export default function LeaderboardScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'friends' && styles.tabActive]}
+          style={[
+            styles.tab,
+            activeTab === 'friends' && [styles.tabActive, { backgroundColor: colors.card }],
+          ]}
           onPress={() => handleTabChange('friends')}
         >
           <Text
             style={[
               styles.tabText,
-              isDark && styles.textMuted,
+              { color: colors.mutedForeground },
               activeTab === 'friends' && styles.tabTextActive,
             ]}
           >
@@ -155,12 +179,12 @@ export default function LeaderboardScreen() {
       {/* 리더보드 목록 */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <ActivityIndicator size="large" color={moduleColors.body.dark} />
         </View>
       ) : rankings.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>🏆</Text>
-          <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             {activeTab === 'friends'
               ? '친구를 추가하면 리더보드를 볼 수 있어요'
               : '아직 리더보드 데이터가 없어요'}
@@ -184,10 +208,6 @@ export default function LeaderboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
@@ -201,9 +221,6 @@ const styles = StyleSheet.create({
     margin: 16,
     borderRadius: 16,
     padding: 20,
-  },
-  myRankCardDark: {
-    backgroundColor: '#7c3aed',
   },
   myRankInfo: {
     flex: 1,
@@ -233,7 +250,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: 16,
     marginBottom: 8,
-    backgroundColor: '#e5e5e5',
     borderRadius: 12,
     padding: 4,
   },
@@ -244,12 +260,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   tabActive: {
-    backgroundColor: '#fff',
+    // backgroundColor set inline via colors.card
   },
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
   },
   tabTextActive: {
     color: '#8b5cf6',
@@ -261,12 +276,8 @@ const styles = StyleSheet.create({
   rankingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 14,
-  },
-  rankingCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   rankingCardMe: {
     borderWidth: 2,
@@ -280,7 +291,6 @@ const styles = StyleSheet.create({
   rankText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#666',
   },
   rankTextMedal: {
     fontSize: 22,
@@ -297,17 +307,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#e5e5e5',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatarPlaceholderDark: {
-    backgroundColor: '#333',
   },
   avatarText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
   },
   tierDot: {
     position: 'absolute',
@@ -317,7 +322,6 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#fff',
   },
   userInfo: {
     flex: 1,
@@ -326,7 +330,6 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
   },
   userNameMe: {
     color: '#8b5cf6',
@@ -343,7 +346,6 @@ const styles = StyleSheet.create({
   },
   levelText: {
     fontSize: 12,
-    color: '#666',
   },
   scoreContainer: {
     alignItems: 'flex-end',
@@ -351,11 +353,9 @@ const styles = StyleSheet.create({
   scoreValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111',
   },
   scoreLabel: {
     fontSize: 11,
-    color: '#666',
   },
   emptyContainer: {
     flex: 1,
@@ -369,13 +369,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
-    color: '#666',
     textAlign: 'center',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

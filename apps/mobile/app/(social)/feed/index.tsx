@@ -32,7 +32,7 @@ const TABS: { id: FeedTab; label: string }[] = [
 ];
 
 export default function FeedScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, module: moduleColors } = useTheme();
   const router = useRouter();
 
   const {
@@ -82,20 +82,22 @@ export default function FeedScreen() {
       const config = feedTypeConfig[item.type];
 
       return (
-        <View style={[styles.feedCard, isDark && styles.feedCardDark]}>
+        <View style={[styles.feedCard, { backgroundColor: colors.card }]}>
           {/* 사용자 정보 */}
           <View style={styles.cardHeader}>
             <View style={styles.userInfo}>
               {item.userAvatar ? (
                 <Image source={{ uri: item.userAvatar }} style={styles.avatar} />
               ) : (
-                <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
-                  <Text style={styles.avatarText}>{item.userName.charAt(0)}</Text>
+                <View style={[styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
+                  <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
+                    {item.userName.charAt(0)}
+                  </Text>
                 </View>
               )}
               <View style={styles.userMeta}>
-                <Text style={[styles.userName, isDark && styles.textLight]}>{item.userName}</Text>
-                <Text style={[styles.timeText, isDark && styles.textMuted]}>
+                <Text style={[styles.userName, { color: colors.foreground }]}>{item.userName}</Text>
+                <Text style={[styles.timeText, { color: colors.mutedForeground }]}>
                   {formatRelativeTime(item.createdAt)}
                 </Text>
               </View>
@@ -107,9 +109,11 @@ export default function FeedScreen() {
 
           {/* 콘텐츠 */}
           <View style={styles.cardContent}>
-            <Text style={[styles.contentText, isDark && styles.textLight]}>{item.content}</Text>
+            <Text style={[styles.contentText, { color: colors.foreground }]}>{item.content}</Text>
             {item.detail && (
-              <Text style={[styles.detailText, isDark && styles.textMuted]}>{item.detail}</Text>
+              <Text style={[styles.detailText, { color: colors.mutedForeground }]}>
+                {item.detail}
+              </Text>
             )}
           </View>
 
@@ -122,17 +126,21 @@ export default function FeedScreen() {
           )}
 
           {/* 인터랙션 버튼 */}
-          <View style={styles.cardActions}>
+          <View style={[styles.cardActions, { borderTopColor: colors.border }]}>
             <TouchableOpacity style={styles.actionButton} onPress={() => onLike(item.id)}>
               <Text style={item.isLiked ? styles.likeIconActive : styles.likeIcon}>
                 {item.isLiked ? '❤️' : '🤍'}
               </Text>
-              <Text style={[styles.actionCount, isDark && styles.textMuted]}>{item.likes}</Text>
+              <Text style={[styles.actionCount, { color: colors.mutedForeground }]}>
+                {item.likes}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton}>
               <Text style={styles.actionIcon}>💬</Text>
-              <Text style={[styles.actionCount, isDark && styles.textMuted]}>{item.comments}</Text>
+              <Text style={[styles.actionCount, { color: colors.mutedForeground }]}>
+                {item.comments}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -145,7 +153,7 @@ export default function FeedScreen() {
         </View>
       );
     },
-    [isDark, onLike, handleShare]
+    [colors, onLike, handleShare]
   );
 
   // 리스트 푸터 (로딩 표시)
@@ -153,7 +161,7 @@ export default function FeedScreen() {
     if (!isLoadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color="#8b5cf6" />
+        <ActivityIndicator size="small" color={moduleColors.body.dark} />
       </View>
     );
   }, [isLoadingMore]);
@@ -182,8 +190,10 @@ export default function FeedScreen() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyIcon}>👥</Text>
-        <Text style={[styles.emptyTitle, isDark && styles.textLight]}>{message.title}</Text>
-        <Text style={[styles.emptySubtitle, isDark && styles.textMuted]}>{message.subtitle}</Text>
+        <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{message.title}</Text>
+        <Text style={[styles.emptySubtitle, { color: colors.mutedForeground }]}>
+          {message.subtitle}
+        </Text>
         {activeTab === 'friends' && (
           <TouchableOpacity
             style={styles.emptyButton}
@@ -197,23 +207,28 @@ export default function FeedScreen() {
         )}
       </View>
     );
-  }, [isLoading, activeTab, isDark, router]);
+  }, [isLoading, activeTab, colors, router]);
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
-          <Text style={[styles.loadingText, isDark && styles.textMuted]}>피드 불러오는 중...</Text>
+          <ActivityIndicator size="large" color={moduleColors.body.dark} />
+          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
+            피드 불러오는 중...
+          </Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       {/* 탭 바 */}
-      <View style={[styles.tabBar, isDark && styles.tabBarDark]}>
+      <View style={[styles.tabBar, { backgroundColor: colors.background }]}>
         {TABS.map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -250,10 +265,6 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
@@ -263,17 +274,12 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: '#666',
   },
   tabBar: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 8,
-    backgroundColor: '#f8f9fc',
-  },
-  tabBarDark: {
-    backgroundColor: '#0a0a0a',
   },
   tabButton: {
     paddingHorizontal: 16,
@@ -298,7 +304,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   feedCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
     ...Platform.select({
@@ -312,9 +317,6 @@ const styles = StyleSheet.create({
         elevation: 2,
       },
     }),
-  },
-  feedCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -336,17 +338,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#e5e5e5',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatarPlaceholderDark: {
-    backgroundColor: '#333',
   },
   avatarText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#666',
   },
   userMeta: {
     marginLeft: 12,
@@ -355,11 +352,9 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
   },
   timeText: {
     fontSize: 12,
-    color: '#999',
     marginTop: 2,
   },
   typeBadge: {
@@ -378,12 +373,10 @@ const styles = StyleSheet.create({
   contentText: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#111',
     lineHeight: 22,
   },
   detailText: {
     fontSize: 14,
-    color: '#666',
     marginTop: 4,
     lineHeight: 20,
   },
@@ -409,7 +402,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
   },
   actionButton: {
     flexDirection: 'row',
@@ -432,7 +424,6 @@ const styles = StyleSheet.create({
   },
   actionCount: {
     fontSize: 13,
-    color: '#666',
     fontWeight: '500',
   },
   emptyContainer: {
@@ -448,12 +439,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -471,11 +460,5 @@ const styles = StyleSheet.create({
   footerLoader: {
     paddingVertical: 20,
     alignItems: 'center',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

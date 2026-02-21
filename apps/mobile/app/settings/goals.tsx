@@ -150,7 +150,7 @@ export default function GoalsSettingsScreen() {
                 onBlur={handleCustomWater}
                 keyboardType="number-pad"
                 placeholder="직접 입력"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={colors.mutedForeground}
               />
               <Text style={[styles.customInputUnit, isDark && styles.textMuted]}>ml</Text>
             </View>
@@ -195,7 +195,7 @@ export default function GoalsSettingsScreen() {
                 onBlur={handleCustomCalories}
                 keyboardType="number-pad"
                 placeholder="직접 입력"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={colors.mutedForeground}
               />
               <Text style={[styles.customInputUnit, isDark && styles.textMuted]}>kcal</Text>
             </View>

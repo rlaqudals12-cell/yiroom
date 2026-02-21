@@ -1,6 +1,6 @@
 /**
  * N-1 음식 검색 화면
- * 음식명 검색 → 선택 → 기록
+ * 음식명 검색 -> 선택 -> 기록
  */
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/lib/theme';
+import { moduleColors, useTheme } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { nutritionLogger } from '../../../lib/utils/logger';
@@ -323,7 +323,7 @@ interface SelectedFood extends FoodItem {
 }
 
 export default function FoodSearchScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -441,13 +441,23 @@ export default function FoodSearchScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       {/* 검색 바 */}
       <View style={styles.searchSection}>
         <TextInput
-          style={[styles.searchInput, isDark && styles.searchInputDark]}
+          style={[
+            styles.searchInput,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.foreground,
+            },
+          ]}
           placeholder="음식 이름 검색"
-          placeholderTextColor={isDark ? '#666' : '#999'}
+          placeholderTextColor={colors.mutedForeground}
           value={searchQuery}
           onChangeText={setSearchQuery}
           autoCapitalize="none"
@@ -462,7 +472,7 @@ export default function FoodSearchScreen() {
             key={meal.id}
             style={[
               styles.mealTypeChip,
-              isDark && styles.mealTypeChipDark,
+              { backgroundColor: colors.card, borderColor: colors.border },
               selectedMealType === meal.id && styles.mealTypeChipSelected,
             ]}
             onPress={() => {
@@ -474,7 +484,7 @@ export default function FoodSearchScreen() {
             <Text
               style={[
                 styles.mealTypeLabel,
-                isDark && styles.textMuted,
+                { color: colors.mutedForeground },
                 selectedMealType === meal.id && styles.mealTypeLabelSelected,
               ]}
             >
@@ -496,7 +506,7 @@ export default function FoodSearchScreen() {
             key={category}
             style={[
               styles.categoryChip,
-              isDark && styles.categoryChipDark,
+              { backgroundColor: colors.card, borderColor: colors.border },
               selectedCategory === category && styles.categoryChipSelected,
             ]}
             onPress={() => {
@@ -507,7 +517,7 @@ export default function FoodSearchScreen() {
             <Text
               style={[
                 styles.categoryText,
-                isDark && styles.textMuted,
+                { color: colors.mutedForeground },
                 selectedCategory === category && styles.categoryTextSelected,
               ]}
             >
@@ -521,7 +531,9 @@ export default function FoodSearchScreen() {
       <ScrollView style={styles.foodList} showsVerticalScrollIndicator={false}>
         {filteredFoods.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={[styles.emptyText, isDark && styles.textMuted]}>검색 결과가 없습니다</Text>
+            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+              검색 결과가 없습니다
+            </Text>
           </View>
         ) : (
           filteredFoods.map((food) => {
@@ -533,31 +545,31 @@ export default function FoodSearchScreen() {
                 key={food.id}
                 style={[
                   styles.foodItem,
-                  isDark && styles.foodItemDark,
+                  { backgroundColor: colors.card },
                   isSelected && styles.foodItemSelected,
                 ]}
                 onPress={() => handleToggleFood(food)}
               >
                 <Text style={styles.trafficLight}>{getTrafficLightEmoji(food.trafficLight)}</Text>
                 <View style={styles.foodInfo}>
-                  <Text style={[styles.foodName, isDark && styles.textLight]}>{food.name}</Text>
-                  <Text style={[styles.foodMeta, isDark && styles.textMuted]}>
+                  <Text style={[styles.foodName, { color: colors.foreground }]}>{food.name}</Text>
+                  <Text style={[styles.foodMeta, { color: colors.mutedForeground }]}>
                     {food.calories}kcal · 탄{food.carbs}g 단{food.protein}g 지{food.fat}g
                   </Text>
                 </View>
                 {isSelected && (
                   <View style={styles.portionControls}>
                     <TouchableOpacity
-                      style={styles.portionButton}
+                      style={[styles.portionButton, { backgroundColor: colors.muted }]}
                       onPress={() => handlePortionChange(food.id, -0.5)}
                     >
                       <Text style={styles.portionButtonText}>−</Text>
                     </TouchableOpacity>
-                    <Text style={[styles.portionValue, isDark && styles.textLight]}>
+                    <Text style={[styles.portionValue, { color: colors.foreground }]}>
                       {selectedFood?.portion}
                     </Text>
                     <TouchableOpacity
-                      style={styles.portionButton}
+                      style={[styles.portionButton, { backgroundColor: colors.muted }]}
                       onPress={() => handlePortionChange(food.id, 0.5)}
                     >
                       <Text style={styles.portionButtonText}>+</Text>
@@ -565,7 +577,7 @@ export default function FoodSearchScreen() {
                   </View>
                 )}
                 {!isSelected && (
-                  <View style={styles.addBadge}>
+                  <View style={[styles.addBadge, { backgroundColor: colors.muted }]}>
                     <Text style={styles.addBadgeText}>+</Text>
                   </View>
                 )}
@@ -577,9 +589,11 @@ export default function FoodSearchScreen() {
 
       {/* 선택된 음식 요약 및 저장 버튼 */}
       {selectedFoods.length > 0 && (
-        <View style={[styles.footer, isDark && styles.footerDark]}>
+        <View
+          style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.border }]}
+        >
           <View style={styles.footerInfo}>
-            <Text style={[styles.footerCount, isDark && styles.textLight]}>
+            <Text style={[styles.footerCount, { color: colors.foreground }]}>
               {selectedFoods.length}개 선택
             </Text>
             <Text style={styles.footerCalories}>{Math.round(totalNutrition.calories)} kcal</Text>
@@ -604,27 +618,16 @@ export default function FoodSearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   searchSection: {
     padding: 16,
     paddingBottom: 8,
   },
   searchInput: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-  },
-  searchInputDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-    color: '#fff',
   },
   mealTypeRow: {
     flexDirection: 'row',
@@ -638,26 +641,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#fff',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
     gap: 4,
   },
-  mealTypeChipDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-  },
   mealTypeChipSelected: {
-    backgroundColor: '#22c55e',
-    borderColor: '#22c55e',
+    backgroundColor: moduleColors.nutrition.dark,
+    borderColor: moduleColors.nutrition.dark,
   },
   mealTypeIcon: {
     fontSize: 16,
   },
   mealTypeLabel: {
     fontSize: 13,
-    color: '#333',
   },
   mealTypeLabelSelected: {
     color: '#fff',
@@ -672,22 +668,15 @@ const styles = StyleSheet.create({
   categoryChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: '#fff',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-  },
-  categoryChipDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
   },
   categoryChipSelected: {
-    backgroundColor: '#22c55e',
-    borderColor: '#22c55e',
+    backgroundColor: moduleColors.nutrition.dark,
+    borderColor: moduleColors.nutrition.dark,
   },
   categoryText: {
     fontSize: 13,
-    color: '#333',
   },
   categoryTextSelected: {
     color: '#fff',
@@ -702,22 +691,17 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: '#666',
   },
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 14,
     marginBottom: 8,
   },
-  foodItemDark: {
-    backgroundColor: '#1a1a1a',
-  },
   foodItemSelected: {
     borderWidth: 2,
-    borderColor: '#22c55e',
+    borderColor: moduleColors.nutrition.dark,
   },
   trafficLight: {
     fontSize: 18,
@@ -729,12 +713,10 @@ const styles = StyleSheet.create({
   foodName: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#111',
     marginBottom: 2,
   },
   foodMeta: {
     fontSize: 12,
-    color: '#666',
   },
   portionControls: {
     flexDirection: 'row',
@@ -745,19 +727,17 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
   },
   portionButtonText: {
     fontSize: 16,
-    color: '#22c55e',
+    color: moduleColors.nutrition.dark,
     fontWeight: '600',
   },
   portionValue: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#111',
     minWidth: 24,
     textAlign: 'center',
   },
@@ -765,13 +745,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addBadgeText: {
     fontSize: 18,
-    color: '#22c55e',
+    color: moduleColors.nutrition.dark,
     fontWeight: '600',
   },
   footer: {
@@ -779,29 +758,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
-  },
-  footerDark: {
-    backgroundColor: '#1a1a1a',
-    borderTopColor: '#333',
   },
   footerInfo: {
     flex: 1,
   },
   footerCount: {
     fontSize: 14,
-    color: '#111',
     marginBottom: 2,
   },
   footerCalories: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#22c55e',
+    color: moduleColors.nutrition.dark,
   },
   saveButton: {
-    backgroundColor: '#22c55e',
+    backgroundColor: moduleColors.nutrition.dark,
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
@@ -813,11 +785,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

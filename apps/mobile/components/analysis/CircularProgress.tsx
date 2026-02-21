@@ -22,7 +22,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 
-// React import 추가 (useDerivedValue에서 사용)
+import { lightColors, darkColors } from '@/lib/theme';
 
 // ============================================
 // 타입 정의
@@ -213,7 +213,7 @@ export function CircularProgress({
           cy={center}
           r={radius}
           fill="none"
-          stroke={isDark ? '#333333' : '#e5e5e5'}
+          stroke={isDark ? darkColors.border : lightColors.border}
           strokeWidth={config.strokeWidth}
         />
 

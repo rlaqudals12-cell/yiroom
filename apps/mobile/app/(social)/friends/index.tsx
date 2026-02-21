@@ -22,7 +22,7 @@ import { getTierColor, type Friend } from '../../../lib/social';
 import { useFriends, useFriendStats } from '../../../lib/social/useFriends';
 
 export default function FriendsScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, module: moduleColors } = useTheme();
   const router = useRouter();
 
   const { friends, isLoading, refetch } = useFriends();
@@ -40,79 +40,89 @@ export default function FriendsScreen() {
 
   const renderFriend = ({ item }: { item: Friend }) => (
     <TouchableOpacity
-      style={[styles.friendCard, isDark && styles.friendCardDark]}
+      style={[styles.friendCard, { backgroundColor: colors.card }]}
       onPress={() => Haptics.selectionAsync()}
     >
       <View style={styles.avatarContainer}>
         {item.avatarUrl ? (
           <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
         ) : (
-          <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
-            <Text style={styles.avatarText}>{item.displayName.charAt(0)}</Text>
+          <View style={[styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
+            <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
+              {item.displayName.charAt(0)}
+            </Text>
           </View>
         )}
-        <View style={[styles.tierBadge, { backgroundColor: getTierColor(item.tier) }]} />
+        <View
+          style={[
+            styles.tierBadge,
+            { backgroundColor: getTierColor(item.tier), borderColor: colors.card },
+          ]}
+        />
       </View>
       <View style={styles.friendInfo}>
-        <Text style={[styles.friendName, isDark && styles.textLight]}>{item.displayName}</Text>
-        <Text style={[styles.friendLevel, isDark && styles.textMuted]}>Lv.{item.level}</Text>
+        <Text style={[styles.friendName, { color: colors.foreground }]}>{item.displayName}</Text>
+        <Text style={[styles.friendLevel, { color: colors.mutedForeground }]}>Lv.{item.level}</Text>
       </View>
     </TouchableOpacity>
   );
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <ActivityIndicator size="large" color={moduleColors.body.dark} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       {/* 상단 액션 */}
       <View style={styles.header}>
         <TouchableOpacity
-          style={[styles.actionButton, isDark && styles.actionButtonDark]}
+          style={[styles.actionButton, { backgroundColor: colors.card }]}
           onPress={handleSearch}
         >
           <Text style={styles.actionIcon}>🔍</Text>
-          <Text style={[styles.actionText, isDark && styles.textLight]}>친구 찾기</Text>
+          <Text style={[styles.actionText, { color: colors.foreground }]}>친구 찾기</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.actionButton, isDark && styles.actionButtonDark]}
+          style={[styles.actionButton, { backgroundColor: colors.card }]}
           onPress={handleRequests}
         >
           <Text style={styles.actionIcon}>📬</Text>
-          <Text style={[styles.actionText, isDark && styles.textLight]}>
+          <Text style={[styles.actionText, { color: colors.foreground }]}>
             요청 {stats?.pendingRequests ? `(${stats.pendingRequests})` : ''}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* 통계 */}
-      <View style={[styles.statsCard, isDark && styles.statsCardDark]}>
+      <View style={[styles.statsCard, { backgroundColor: colors.card }]}>
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, isDark && styles.textLight]}>
+          <Text style={[styles.statValue, { color: colors.foreground }]}>
             {stats?.totalFriends ?? 0}
           </Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>친구</Text>
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>친구</Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, isDark && styles.textLight]}>
+          <Text style={[styles.statValue, { color: colors.foreground }]}>
             {stats?.pendingRequests ?? 0}
           </Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>받은 요청</Text>
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>받은 요청</Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, isDark && styles.textLight]}>
+          <Text style={[styles.statValue, { color: colors.foreground }]}>
             {stats?.sentRequests ?? 0}
           </Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>보낸 요청</Text>
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>보낸 요청</Text>
         </View>
       </View>
 
@@ -120,8 +130,10 @@ export default function FriendsScreen() {
       {friends.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>👥</Text>
-          <Text style={[styles.emptyText, isDark && styles.textMuted]}>아직 친구가 없어요</Text>
-          <Text style={[styles.emptySubtext, isDark && styles.textMuted]}>
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+            아직 친구가 없어요
+          </Text>
+          <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
             친구를 찾아 함께 운동해보세요!
           </Text>
           <TouchableOpacity style={styles.emptyButton} onPress={handleSearch}>
@@ -146,10 +158,6 @@ export default function FriendsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
@@ -166,13 +174,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 14,
     gap: 8,
-  },
-  actionButtonDark: {
-    backgroundColor: '#1a1a1a',
   },
   actionIcon: {
     fontSize: 18,
@@ -180,18 +184,13 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
   },
   statsCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
     marginHorizontal: 16,
     marginBottom: 16,
     borderRadius: 12,
     padding: 16,
-  },
-  statsCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   statItem: {
     flex: 1,
@@ -200,16 +199,13 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111',
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
     marginTop: 4,
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#e5e5e5',
     marginVertical: 4,
   },
   listContent: {
@@ -220,12 +216,8 @@ const styles = StyleSheet.create({
   friendCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 14,
-  },
-  friendCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   avatarContainer: {
     position: 'relative',
@@ -239,17 +231,12 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#e5e5e5',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatarPlaceholderDark: {
-    backgroundColor: '#333',
   },
   avatarText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#666',
   },
   tierBadge: {
     position: 'absolute',
@@ -259,7 +246,6 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     borderWidth: 2,
-    borderColor: '#fff',
   },
   friendInfo: {
     flex: 1,
@@ -268,11 +254,9 @@ const styles = StyleSheet.create({
   friendName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   friendLevel: {
     fontSize: 13,
-    color: '#666',
     marginTop: 2,
   },
   emptyContainer: {
@@ -288,12 +272,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -307,11 +289,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

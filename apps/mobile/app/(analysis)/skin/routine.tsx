@@ -25,10 +25,10 @@ import {
   type TimeOfDay,
   type RoutineStep,
 } from '@/lib/skincare';
-import { useTheme } from '@/lib/theme';
+import { moduleColors, useTheme } from '@/lib/theme';
 
 export default function SkincareRoutineScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
 
   const {
@@ -83,9 +83,9 @@ export default function SkincareRoutineScreen() {
   // 로딩 상태
   if (loading) {
     return (
-      <View style={[styles.centerContainer, isDark && styles.containerDark]}>
-        <ActivityIndicator size="large" color="#2e5afa" />
-        <Text style={[styles.loadingText, isDark && styles.textMuted]}>
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={moduleColors.skin.base} />
+        <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
           루틴을 준비하고 있어요...
         </Text>
       </View>
@@ -95,14 +95,17 @@ export default function SkincareRoutineScreen() {
   // 에러 상태 (피부 분석 결과 없음)
   if (error) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        edges={['bottom']}
+      >
         <View style={styles.errorContainer}>
-          <View style={[styles.errorCard, isDark && styles.cardDark]}>
+          <View style={[styles.errorCard, { backgroundColor: colors.card }]}>
             <Text style={styles.errorIcon}>😢</Text>
-            <Text style={[styles.errorTitle, isDark && styles.textLight]}>
+            <Text style={[styles.errorTitle, { color: colors.foreground }]}>
               루틴을 만들 수 없어요
             </Text>
-            <Text style={[styles.errorText, isDark && styles.textMuted]}>{error}</Text>
+            <Text style={[styles.errorText, { color: colors.mutedForeground }]}>{error}</Text>
             <TouchableOpacity style={styles.primaryButton} onPress={handleGoToAnalysis}>
               <Text style={styles.primaryButtonText}>피부 분석하러 가기</Text>
             </TouchableOpacity>
@@ -113,22 +116,25 @@ export default function SkincareRoutineScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['bottom']}
+    >
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor={isDark ? '#ffffff' : '#2e5afa'}
+            tintColor={colors.foreground}
           />
         }
       >
         {/* 헤더 */}
         <View style={styles.header}>
-          <Text style={[styles.title, isDark && styles.textLight]}>오늘의 스킨케어 루틴</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>오늘의 스킨케어 루틴</Text>
           {skinData && (
-            <Text style={[styles.subtitle, isDark && styles.textMuted]}>
+            <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
               {skinTypeLabel} 피부 맞춤 루틴
             </Text>
           )}
@@ -136,19 +142,20 @@ export default function SkincareRoutineScreen() {
 
         {/* 개인화 노트 */}
         {personalizationNote && (
-          <View style={[styles.noteCard, isDark && styles.noteCardDark]}>
+          <View style={[styles.noteCard, { backgroundColor: colors.secondary }]}>
             <Text style={styles.noteEmoji}>✨</Text>
-            <Text style={[styles.noteText, isDark && styles.textLight]}>{personalizationNote}</Text>
+            <Text style={[styles.noteText, { color: colors.foreground }]}>
+              {personalizationNote}
+            </Text>
           </View>
         )}
 
         {/* 아침/저녁 토글 */}
-        <View style={[styles.toggleContainer, isDark && styles.toggleContainerDark]}>
+        <View style={[styles.toggleContainer, { backgroundColor: colors.muted }]}>
           <TouchableOpacity
             style={[
               styles.toggleButton,
-              activeTime === 'morning' && styles.toggleButtonActive,
-              activeTime === 'morning' && isDark && styles.toggleButtonActiveDark,
+              activeTime === 'morning' && { backgroundColor: colors.card },
             ]}
             onPress={() => handleTimeToggle('morning')}
           >
@@ -156,9 +163,8 @@ export default function SkincareRoutineScreen() {
             <Text
               style={[
                 styles.toggleText,
-                activeTime === 'morning' && styles.toggleTextActive,
-                isDark && styles.textMuted,
-                activeTime === 'morning' && isDark && styles.textLight,
+                { color: colors.mutedForeground },
+                activeTime === 'morning' && { color: colors.foreground },
               ]}
             >
               아침 ({morningSteps.length}단계)
@@ -167,8 +173,7 @@ export default function SkincareRoutineScreen() {
           <TouchableOpacity
             style={[
               styles.toggleButton,
-              activeTime === 'evening' && styles.toggleButtonActive,
-              activeTime === 'evening' && isDark && styles.toggleButtonActiveDark,
+              activeTime === 'evening' && { backgroundColor: colors.card },
             ]}
             onPress={() => handleTimeToggle('evening')}
           >
@@ -176,9 +181,8 @@ export default function SkincareRoutineScreen() {
             <Text
               style={[
                 styles.toggleText,
-                activeTime === 'evening' && styles.toggleTextActive,
-                isDark && styles.textMuted,
-                activeTime === 'evening' && isDark && styles.textLight,
+                { color: colors.mutedForeground },
+                activeTime === 'evening' && { color: colors.foreground },
               ]}
             >
               저녁 ({eveningSteps.length}단계)
@@ -188,16 +192,18 @@ export default function SkincareRoutineScreen() {
 
         {/* 루틴 정보 */}
         <View style={styles.routineInfo}>
-          <Text style={[styles.routineInfoText, isDark && styles.textLight]}>
+          <Text style={[styles.routineInfoText, { color: colors.foreground }]}>
             {timeLabel} 루틴 • {currentSteps.length}단계
           </Text>
-          <Text style={[styles.routineTime, isDark && styles.textMuted]}>예상 {formattedTime}</Text>
+          <Text style={[styles.routineTime, { color: colors.mutedForeground }]}>
+            예상 {formattedTime}
+          </Text>
         </View>
 
         {/* 루틴 단계 목록 */}
         <View style={styles.stepsList}>
           {currentSteps.map((step, index) => (
-            <RoutineStepCard key={`${step.category}-${index}`} step={step} isDark={isDark} />
+            <RoutineStepCard key={`${step.category}-${index}`} step={step} />
           ))}
         </View>
 
@@ -206,7 +212,7 @@ export default function SkincareRoutineScreen() {
           <TouchableOpacity style={styles.primaryButton} onPress={handleProductRecommendation}>
             <Text style={styles.primaryButtonText}>🧴 피부 맞춤 제품 보기</Text>
           </TouchableOpacity>
-          <Text style={[styles.footerNote, isDark && styles.textMuted]}>
+          <Text style={[styles.footerNote, { color: colors.mutedForeground }]}>
             파트너사 링크를 통해 구매하시면 이룸에 도움이 돼요
           </Text>
         </View>
@@ -218,7 +224,8 @@ export default function SkincareRoutineScreen() {
 /**
  * 루틴 단계 카드 컴포넌트
  */
-function RoutineStepCard({ step, isDark }: { step: RoutineStep; isDark: boolean }) {
+function RoutineStepCard({ step }: { step: RoutineStep }) {
+  const { colors } = useTheme();
   const [expanded, setExpanded] = useState(false);
   const categoryInfo = getCategoryInfo(step.category);
 
@@ -229,7 +236,7 @@ function RoutineStepCard({ step, isDark }: { step: RoutineStep; isDark: boolean 
 
   return (
     <TouchableOpacity
-      style={[styles.stepCard, isDark && styles.cardDark]}
+      style={[styles.stepCard, { backgroundColor: colors.card }]}
       onPress={toggleExpand}
       activeOpacity={0.7}
     >
@@ -240,27 +247,33 @@ function RoutineStepCard({ step, isDark }: { step: RoutineStep; isDark: boolean 
         <View style={styles.stepInfo}>
           <View style={styles.stepTitleRow}>
             <Text style={styles.stepEmoji}>{categoryInfo.emoji}</Text>
-            <Text style={[styles.stepName, isDark && styles.textLight]}>{step.name}</Text>
+            <Text style={[styles.stepName, { color: colors.foreground }]}>{step.name}</Text>
             {step.isOptional && (
-              <View style={styles.optionalBadge}>
-                <Text style={styles.optionalText}>선택</Text>
+              <View style={[styles.optionalBadge, { backgroundColor: colors.muted }]}>
+                <Text style={[styles.optionalText, { color: colors.mutedForeground }]}>선택</Text>
               </View>
             )}
           </View>
-          <Text style={[styles.stepPurpose, isDark && styles.textMuted]}>{step.purpose}</Text>
+          <Text style={[styles.stepPurpose, { color: colors.mutedForeground }]}>
+            {step.purpose}
+          </Text>
           {step.duration && (
-            <Text style={[styles.stepDuration, isDark && styles.textMuted]}>⏱ {step.duration}</Text>
+            <Text style={[styles.stepDuration, { color: colors.mutedForeground }]}>
+              ⏱ {step.duration}
+            </Text>
           )}
         </View>
-        <Text style={[styles.expandIcon, isDark && styles.textMuted]}>{expanded ? '▲' : '▼'}</Text>
+        <Text style={[styles.expandIcon, { color: colors.mutedForeground }]}>
+          {expanded ? '▲' : '▼'}
+        </Text>
       </View>
 
       {/* 팁 (확장 시 표시) */}
       {expanded && step.tips.length > 0 && (
-        <View style={[styles.tipsContainer, isDark && styles.tipsContainerDark]}>
-          <Text style={[styles.tipsTitle, isDark && styles.textLight]}>💡 사용 팁</Text>
+        <View style={[styles.tipsContainer, { borderTopColor: colors.border }]}>
+          <Text style={[styles.tipsTitle, { color: colors.foreground }]}>💡 사용 팁</Text>
           {step.tips.map((tip, index) => (
-            <Text key={index} style={[styles.tipText, isDark && styles.textMuted]}>
+            <Text key={index} style={[styles.tipText, { color: colors.mutedForeground }]}>
               • {tip}
             </Text>
           ))}
@@ -273,16 +286,11 @@ function RoutineStepCard({ step, isDark }: { step: RoutineStep; isDark: boolean 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   centerContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
   },
   content: {
     padding: 20,
@@ -294,17 +302,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 15,
-    color: '#666',
   },
   errorContainer: {
     flex: 1,
@@ -312,7 +317,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   errorCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
@@ -324,27 +328,21 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
   },
   errorText: {
     fontSize: 15,
-    color: '#666',
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 22,
   },
   noteCard: {
     flexDirection: 'row',
-    backgroundColor: '#eef3ff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
     gap: 12,
     alignItems: 'flex-start',
-  },
-  noteCardDark: {
-    backgroundColor: '#1a2744',
   },
   noteEmoji: {
     fontSize: 20,
@@ -352,18 +350,13 @@ const styles = StyleSheet.create({
   noteText: {
     flex: 1,
     fontSize: 14,
-    color: '#333',
     lineHeight: 22,
   },
   toggleContainer: {
     flexDirection: 'row',
-    backgroundColor: '#e5e5e5',
     borderRadius: 12,
     padding: 4,
     marginBottom: 20,
-  },
-  toggleContainerDark: {
-    backgroundColor: '#2a2a2a',
   },
   toggleButton: {
     flex: 1,
@@ -374,22 +367,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     gap: 6,
   },
-  toggleButtonActive: {
-    backgroundColor: '#fff',
-  },
-  toggleButtonActiveDark: {
-    backgroundColor: '#3a3a3a',
-  },
   toggleEmoji: {
     fontSize: 16,
   },
   toggleText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
-  },
-  toggleTextActive: {
-    color: '#111',
   },
   routineInfo: {
     flexDirection: 'row',
@@ -400,23 +383,17 @@ const styles = StyleSheet.create({
   routineInfoText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   routineTime: {
     fontSize: 14,
-    color: '#666',
   },
   stepsList: {
     gap: 12,
     marginBottom: 24,
   },
   stepCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
-  },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
   },
   stepHeader: {
     flexDirection: 'row',
@@ -426,7 +403,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#2e5afa',
+    backgroundColor: moduleColors.skin.base,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -451,51 +428,39 @@ const styles = StyleSheet.create({
   stepName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   optionalBadge: {
-    backgroundColor: '#e5e5e5',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
   optionalText: {
     fontSize: 11,
-    color: '#666',
     fontWeight: '500',
   },
   stepPurpose: {
     fontSize: 13,
-    color: '#666',
     marginBottom: 4,
   },
   stepDuration: {
     fontSize: 12,
-    color: '#999',
   },
   expandIcon: {
     fontSize: 10,
-    color: '#999',
     marginLeft: 8,
   },
   tipsContainer: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-  },
-  tipsContainerDark: {
-    borderTopColor: '#333',
   },
   tipsTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   tipText: {
     fontSize: 13,
-    color: '#666',
     lineHeight: 20,
     marginBottom: 4,
   },
@@ -503,7 +468,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButton: {
-    backgroundColor: '#2e5afa',
+    backgroundColor: moduleColors.skin.base,
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 32,
@@ -518,13 +483,6 @@ const styles = StyleSheet.create({
   },
   footerNote: {
     fontSize: 12,
-    color: '#999',
     textAlign: 'center',
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

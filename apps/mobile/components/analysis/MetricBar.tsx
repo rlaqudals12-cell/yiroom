@@ -43,9 +43,7 @@ export function MetricBar({ label, value, delta, isDark = false, testID }: Metri
         <Text style={[styles.metricLabel, isDark && styles.textLight]}>{label}</Text>
         <View style={styles.metricValueContainer}>
           <Text style={[styles.metricValue, isDark && styles.textMuted]}>{value}%</Text>
-          {delta !== undefined && delta !== 0 && (
-            <MetricDelta delta={delta} size="sm" isDark={isDark} />
-          )}
+          {delta !== undefined && delta !== 0 && <MetricDelta delta={delta} size="sm" />}
         </View>
       </View>
       <View style={[styles.metricBarBg, isDark && styles.metricBarBgDark]}>

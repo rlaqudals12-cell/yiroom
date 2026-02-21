@@ -151,7 +151,7 @@ export default function WorkoutHistoryScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            tintColor={isDark ? '#fff' : '#000'}
+            tintColor={colors.foreground}
           />
         }
       >
