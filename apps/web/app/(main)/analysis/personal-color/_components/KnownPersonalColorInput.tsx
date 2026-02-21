@@ -17,30 +17,33 @@ interface KnownPersonalColorInputProps {
 }
 
 // 시즌 타입별 스타일
-const seasonStyles: Record<SeasonType, { bg: string; border: string; selected: string; accent: string }> = {
+const seasonStyles: Record<
+  SeasonType,
+  { bg: string; border: string; selected: string; accent: string }
+> = {
   spring: {
-    bg: 'bg-pink-50',
-    border: 'border-pink-200',
-    selected: 'border-pink-500 bg-pink-100',
-    accent: 'text-pink-600',
+    bg: 'bg-pink-50 dark:bg-pink-950/30',
+    border: 'border-pink-200 dark:border-pink-800',
+    selected: 'border-pink-500 bg-pink-100 dark:bg-pink-900/40',
+    accent: 'text-pink-600 dark:text-pink-400',
   },
   summer: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    selected: 'border-blue-500 bg-blue-100',
-    accent: 'text-blue-600',
+    bg: 'bg-blue-50 dark:bg-blue-950/30',
+    border: 'border-blue-200 dark:border-blue-800',
+    selected: 'border-blue-500 bg-blue-100 dark:bg-blue-900/40',
+    accent: 'text-blue-600 dark:text-blue-400',
   },
   autumn: {
-    bg: 'bg-orange-50',
-    border: 'border-orange-200',
-    selected: 'border-orange-500 bg-orange-100',
-    accent: 'text-orange-600',
+    bg: 'bg-orange-50 dark:bg-orange-950/30',
+    border: 'border-orange-200 dark:border-orange-800',
+    selected: 'border-orange-500 bg-orange-100 dark:bg-orange-900/40',
+    accent: 'text-orange-600 dark:text-orange-400',
   },
   winter: {
-    bg: 'bg-purple-50',
-    border: 'border-purple-200',
-    selected: 'border-purple-500 bg-purple-100',
-    accent: 'text-purple-600',
+    bg: 'bg-purple-50 dark:bg-purple-950/30',
+    border: 'border-purple-200 dark:border-purple-800',
+    selected: 'border-purple-500 bg-purple-100 dark:bg-purple-900/40',
+    accent: 'text-purple-600 dark:text-purple-400',
   },
 };
 
@@ -76,9 +79,7 @@ export default function KnownPersonalColorInput({
     <div data-testid="known-personal-color-input" className="space-y-6">
       {/* 헤더 */}
       <div className="text-center space-y-2">
-        <h2 className="text-xl font-bold text-foreground">
-          퍼스널 컬러를 선택해주세요
-        </h2>
+        <h2 className="text-xl font-bold text-foreground">퍼스널 컬러를 선택해주세요</h2>
         <p className="text-sm text-muted-foreground">
           이전에 진단받은 퍼스널 컬러 타입을 선택하세요
         </p>
@@ -98,9 +99,7 @@ export default function KnownPersonalColorInput({
                 key={season}
                 onClick={() => handleSeasonSelect(season)}
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
-                  isSelected
-                    ? styles.selected
-                    : `${styles.bg} ${styles.border} hover:opacity-80`
+                  isSelected ? styles.selected : `${styles.bg} ${styles.border} hover:opacity-80`
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -130,17 +129,13 @@ export default function KnownPersonalColorInput({
                   key={subtype.id}
                   onClick={() => handleSubtypeSelect(subtype)}
                   className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
-                    isSelected
-                      ? styles.selected
-                      : `bg-card ${styles.border} hover:bg-muted/50`
+                    isSelected ? styles.selected : `bg-card ${styles.border} hover:bg-muted/50`
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-medium text-foreground">{subtype.label}</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {subtype.description}
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{subtype.description}</p>
                     </div>
                     {isSelected && <Check className={`w-4 h-4 ${styles.accent}`} />}
                   </div>
@@ -158,7 +153,9 @@ export default function KnownPersonalColorInput({
 
       {/* 선택 결과 미리보기 */}
       {selectedSeason && (
-        <div className={`p-4 rounded-xl ${seasonStyles[selectedSeason].bg} border ${seasonStyles[selectedSeason].border}`}>
+        <div
+          className={`p-4 rounded-xl ${seasonStyles[selectedSeason].bg} border ${seasonStyles[selectedSeason].border}`}
+        >
           <p className="text-sm text-foreground">
             <span className="font-medium">선택한 퍼스널 컬러: </span>
             {selectedSubtype ? selectedSubtype.label : SEASON_INFO[selectedSeason].label}
@@ -173,11 +170,7 @@ export default function KnownPersonalColorInput({
 
       {/* 버튼 */}
       <div className="flex gap-3">
-        <Button
-          variant="outline"
-          onClick={onBack}
-          className="flex-1 h-12"
-        >
+        <Button variant="outline" onClick={onBack} className="flex-1 h-12">
           <ChevronLeft className="w-4 h-4 mr-1" />
           돌아가기
         </Button>

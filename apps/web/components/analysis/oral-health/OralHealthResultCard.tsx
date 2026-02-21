@@ -142,10 +142,13 @@ export function OralHealthResultCard({
  */
 function ScoreBadge({ score }: { score: number }) {
   const getScoreColor = () => {
-    if (score >= 80) return 'bg-green-100 text-green-700 border-green-200';
-    if (score >= 60) return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    if (score >= 40) return 'bg-orange-100 text-orange-700 border-orange-200';
-    return 'bg-red-100 text-red-700 border-red-200';
+    if (score >= 80)
+      return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-300 dark:border-green-800';
+    if (score >= 60)
+      return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-300 dark:border-yellow-800';
+    if (score >= 40)
+      return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-800';
+    return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300 dark:border-red-800';
   };
 
   return (
@@ -167,7 +170,7 @@ function WhiteningGoalSection({ goal }: { goal: WhiteningGoalResult }) {
   return (
     <div className="space-y-4" data-testid="whitening-goal-section">
       {/* 목표 요약 */}
-      <div className="rounded-lg bg-gradient-to-r from-cyan-50 to-blue-50 p-4">
+      <div className="rounded-lg bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-4">
         <h3 className="mb-2 font-semibold">미백 목표</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -194,11 +197,11 @@ function WhiteningGoalSection({ goal }: { goal: WhiteningGoalResult }) {
 
       {/* 과도한 미백 경고 */}
       {goal.isOverWhitening && (
-        <div className="flex items-start gap-3 rounded-lg bg-amber-50 p-3">
-          <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600" />
+        <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 p-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400" />
           <div>
-            <p className="font-medium text-amber-800">과도한 미백 주의</p>
-            <p className="text-sm text-amber-700">{goal.overWhiteningReason}</p>
+            <p className="font-medium text-amber-800 dark:text-amber-200">과도한 미백 주의</p>
+            <p className="text-sm text-amber-700 dark:text-amber-300">{goal.overWhiteningReason}</p>
           </div>
         </div>
       )}
@@ -235,9 +238,18 @@ function WhiteningGoalSection({ goal }: { goal: WhiteningGoalResult }) {
  */
 function EffectivenessBadge({ level }: { level: 'low' | 'medium' | 'high' }) {
   const config = {
-    low: { label: '낮음', className: 'bg-gray-100 text-gray-600' },
-    medium: { label: '보통', className: 'bg-blue-100 text-blue-600' },
-    high: { label: '높음', className: 'bg-green-100 text-green-600' },
+    low: {
+      label: '낮음',
+      className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
+    },
+    medium: {
+      label: '보통',
+      className: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300',
+    },
+    high: {
+      label: '높음',
+      className: 'bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300',
+    },
   };
 
   return (

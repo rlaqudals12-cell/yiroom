@@ -34,29 +34,29 @@ const STATUS_CONFIG: Record<
 > = {
   healthy: {
     label: '양호',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    color: 'text-green-600 dark:text-green-400',
+    bgColor: 'bg-green-100 dark:bg-green-900/40',
     icon: CheckCircle,
     description: '잇몸 건강 상태가 양호해요.',
   },
   mild_gingivitis: {
     label: '경미한 염증',
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100',
+    color: 'text-yellow-600 dark:text-yellow-400',
+    bgColor: 'bg-yellow-100 dark:bg-yellow-900/40',
     icon: AlertCircle,
     description: '경미한 잇몸 염증이 관찰돼요.',
   },
   moderate_gingivitis: {
     label: '중등도 염증',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100',
+    color: 'text-orange-600 dark:text-orange-400',
+    bgColor: 'bg-orange-100 dark:bg-orange-900/40',
     icon: AlertTriangle,
     description: '잇몸 염증이 있어요. 관리가 필요해요.',
   },
   severe_inflammation: {
     label: '심한 염증',
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
+    color: 'text-red-600 dark:text-red-400',
+    bgColor: 'bg-red-100 dark:bg-red-900/40',
     icon: XCircle,
     description: '잇몸 염증이 심해요. 치과 방문을 권해 드려요.',
   },
@@ -79,7 +79,7 @@ export function GumHealthIndicator({
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold">잇몸 건강</h3>
         {result.needsDentalVisit && (
-          <span className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
+          <span className="rounded-full bg-red-100 dark:bg-red-900/40 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300">
             치과 방문 권장
           </span>
         )}
@@ -141,10 +141,10 @@ export function GumHealthIndicator({
                 className={cn(
                   'rounded-full px-3 py-1 text-xs font-medium',
                   area.severity === 'severe'
-                    ? 'bg-red-100 text-red-700'
+                    ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
                     : area.severity === 'moderate'
-                      ? 'bg-orange-100 text-orange-700'
-                      : 'bg-yellow-100 text-yellow-700'
+                      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300'
+                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
                 )}
               >
                 {getAreaLabel(area.region)}
@@ -185,7 +185,12 @@ function MetricItem({
   return (
     <div className="rounded bg-muted/50 p-2">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <p className={cn('text-sm font-medium', status === 'warning' ? 'text-orange-600' : '')}>
+      <p
+        className={cn(
+          'text-sm font-medium',
+          status === 'warning' ? 'text-orange-600 dark:text-orange-400' : ''
+        )}
+      >
         {value}
       </p>
     </div>

@@ -16,43 +16,43 @@ interface KnownSkinTypeInputProps {
 }
 
 // 피부 타입별 스타일
-const skinTypeStyles: Record<SkinTypeId, { bg: string; border: string; selected: string; accent: string }> = {
+const skinTypeStyles: Record<
+  SkinTypeId,
+  { bg: string; border: string; selected: string; accent: string }
+> = {
   dry: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    selected: 'border-amber-500 bg-amber-100',
-    accent: 'text-amber-600',
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    border: 'border-amber-200 dark:border-amber-800',
+    selected: 'border-amber-500 bg-amber-100 dark:bg-amber-900/40',
+    accent: 'text-amber-600 dark:text-amber-400',
   },
   oily: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    selected: 'border-blue-500 bg-blue-100',
-    accent: 'text-blue-600',
+    bg: 'bg-blue-50 dark:bg-blue-950/30',
+    border: 'border-blue-200 dark:border-blue-800',
+    selected: 'border-blue-500 bg-blue-100 dark:bg-blue-900/40',
+    accent: 'text-blue-600 dark:text-blue-400',
   },
   combination: {
-    bg: 'bg-purple-50',
-    border: 'border-purple-200',
-    selected: 'border-purple-500 bg-purple-100',
-    accent: 'text-purple-600',
+    bg: 'bg-purple-50 dark:bg-purple-950/30',
+    border: 'border-purple-200 dark:border-purple-800',
+    selected: 'border-purple-500 bg-purple-100 dark:bg-purple-900/40',
+    accent: 'text-purple-600 dark:text-purple-400',
   },
   normal: {
-    bg: 'bg-green-50',
-    border: 'border-green-200',
-    selected: 'border-green-500 bg-green-100',
-    accent: 'text-green-600',
+    bg: 'bg-green-50 dark:bg-green-950/30',
+    border: 'border-green-200 dark:border-green-800',
+    selected: 'border-green-500 bg-green-100 dark:bg-green-900/40',
+    accent: 'text-green-600 dark:text-green-400',
   },
   sensitive: {
-    bg: 'bg-pink-50',
-    border: 'border-pink-200',
-    selected: 'border-pink-500 bg-pink-100',
-    accent: 'text-pink-600',
+    bg: 'bg-pink-50 dark:bg-pink-950/30',
+    border: 'border-pink-200 dark:border-pink-800',
+    selected: 'border-pink-500 bg-pink-100 dark:bg-pink-900/40',
+    accent: 'text-pink-600 dark:text-pink-400',
   },
 };
 
-export default function KnownSkinTypeInput({
-  onSelect,
-  onBack,
-}: KnownSkinTypeInputProps) {
+export default function KnownSkinTypeInput({ onSelect, onBack }: KnownSkinTypeInputProps) {
   const [selectedType, setSelectedType] = useState<SkinTypeId | null>(null);
   const [selectedConcerns, setSelectedConcerns] = useState<SkinConcernId[]>([]);
 
@@ -64,9 +64,7 @@ export default function KnownSkinTypeInput({
   // 피부 고민 토글 핸들러
   const handleConcernToggle = (concernId: SkinConcernId) => {
     setSelectedConcerns((prev) =>
-      prev.includes(concernId)
-        ? prev.filter((id) => id !== concernId)
-        : [...prev, concernId]
+      prev.includes(concernId) ? prev.filter((id) => id !== concernId) : [...prev, concernId]
     );
   };
 
@@ -81,9 +79,7 @@ export default function KnownSkinTypeInput({
     <div data-testid="known-skin-type-input" className="space-y-6">
       {/* 헤더 */}
       <div className="text-center space-y-2">
-        <h2 className="text-xl font-bold text-foreground">
-          피부 타입을 선택해주세요
-        </h2>
+        <h2 className="text-xl font-bold text-foreground">피부 타입을 선택해주세요</h2>
         <p className="text-sm text-muted-foreground">
           피부 타입과 고민을 알려주시면 맞춤 솔루션을 제공해드려요
         </p>
@@ -102,9 +98,7 @@ export default function KnownSkinTypeInput({
                 key={type.id}
                 onClick={() => handleTypeSelect(type.id)}
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
-                  isSelected
-                    ? styles.selected
-                    : `${styles.bg} ${styles.border} hover:opacity-80`
+                  isSelected ? styles.selected : `${styles.bg} ${styles.border} hover:opacity-80`
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -123,7 +117,8 @@ export default function KnownSkinTypeInput({
       {selectedType && (
         <div className="space-y-3">
           <p className="text-sm font-medium text-foreground">
-            2. 피부 고민 선택 <span className="text-muted-foreground font-normal">(복수 선택 가능)</span>
+            2. 피부 고민 선택{' '}
+            <span className="text-muted-foreground font-normal">(복수 선택 가능)</span>
           </p>
           <div className="grid grid-cols-2 gap-2">
             {SKIN_CONCERNS.map((concern) => {
@@ -135,7 +130,7 @@ export default function KnownSkinTypeInput({
                   onClick={() => handleConcernToggle(concern.id)}
                   className={`p-3 rounded-lg border-2 text-left transition-all ${
                     isSelected
-                      ? 'border-emerald-500 bg-emerald-50'
+                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
                       : 'bg-card border-border hover:bg-muted/50'
                   }`}
                 >
@@ -144,7 +139,9 @@ export default function KnownSkinTypeInput({
                       <span className="text-lg">{concern.emoji}</span>
                       <span className="font-medium text-sm text-foreground">{concern.label}</span>
                     </div>
-                    {isSelected && <Check className="w-4 h-4 text-emerald-600" />}
+                    {isSelected && (
+                      <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    )}
                   </div>
                 </button>
               );
@@ -160,7 +157,9 @@ export default function KnownSkinTypeInput({
 
       {/* 선택 결과 미리보기 */}
       {selectedType && (
-        <div className={`p-4 rounded-xl ${skinTypeStyles[selectedType].bg} border ${skinTypeStyles[selectedType].border}`}>
+        <div
+          className={`p-4 rounded-xl ${skinTypeStyles[selectedType].bg} border ${skinTypeStyles[selectedType].border}`}
+        >
           <p className="text-sm text-foreground">
             <span className="font-medium">선택한 피부 타입: </span>
             {SKIN_TYPES.find((t) => t.id === selectedType)?.label}
@@ -183,11 +182,7 @@ export default function KnownSkinTypeInput({
 
       {/* 버튼 */}
       <div className="flex gap-3">
-        <Button
-          variant="outline"
-          onClick={onBack}
-          className="flex-1 h-12"
-        >
+        <Button variant="outline" onClick={onBack} className="flex-1 h-12">
           <ChevronLeft className="w-4 h-4 mr-1" />
           돌아가기
         </Button>

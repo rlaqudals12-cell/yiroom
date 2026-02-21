@@ -196,7 +196,7 @@ export default function HairAnalysisPage() {
         {/* 에러 메시지 */}
         {error && (
           <div
-            className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
+            className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm"
             role="alert"
           >
             {error}
@@ -207,12 +207,12 @@ export default function HairAnalysisPage() {
         {step === 'guide' && existingAnalysis && !checkingExisting && (
           <Link
             href={`/analysis/hair/result/${existingAnalysis.id}`}
-            className="block mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 hover:shadow-md transition-shadow"
+            className="block mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl border border-amber-200 dark:border-amber-800 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                  <span className="text-lg font-bold text-amber-600">
+                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                  <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
                     {existingAnalysis.overall_score}
                   </span>
                 </div>
@@ -314,8 +314,8 @@ export default function HairAnalysisPage() {
                 onClick={handleUploadClick}
                 className="w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
               >
-                <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-amber-600" />
+                <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div className="text-center">
                   <p className="font-medium text-foreground">사진을 선택해주세요</p>
@@ -351,7 +351,7 @@ export default function HairAnalysisPage() {
         {/* 로딩 */}
         {step === 'loading' && (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mb-6 animate-pulse">
+            <div className="w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-6 animate-pulse">
               <span className="text-4xl">💇</span>
             </div>
             <p className="text-lg font-medium text-foreground">AI가 헤어를 분석하고 있어요</p>
@@ -398,7 +398,7 @@ function KnownTypeInput({
               onClick={() => setSelectedType(type.id)}
               className={`p-4 rounded-lg border-2 transition-all ${
                 selectedType === type.id
-                  ? 'border-amber-500 bg-amber-50'
+                  ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30'
                   : 'border-muted hover:border-amber-200'
               }`}
             >
@@ -456,20 +456,22 @@ function AnalysisResultView({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'good':
-        return 'text-green-600 bg-green-100';
+        return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40';
       case 'warning':
-        return 'text-red-600 bg-red-100';
+        return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40';
       default:
-        return 'text-amber-600 bg-amber-100';
+        return 'text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/40';
     }
   };
 
   return (
     <div className="space-y-6" data-testid="hair-analysis-result">
       {/* 종합 점수 */}
-      <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 text-center">
-        <div className="w-24 h-24 mx-auto rounded-full bg-white shadow-lg flex items-center justify-center mb-4">
-          <span className="text-4xl font-bold text-amber-600">{result.overallScore}</span>
+      <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl p-6 text-center">
+        <div className="w-24 h-24 mx-auto rounded-full bg-white dark:bg-amber-900/40 shadow-lg flex items-center justify-center mb-4">
+          <span className="text-4xl font-bold text-amber-600 dark:text-amber-400">
+            {result.overallScore}
+          </span>
         </div>
         <h2 className="text-xl font-bold text-foreground">
           {result.hairTypeLabel} · {result.hairThicknessLabel}
@@ -519,7 +521,10 @@ function AnalysisResultView({
         <h3 className="font-semibold mb-3">🧴 추천 성분</h3>
         <div className="flex flex-wrap gap-2">
           {result.recommendedIngredients.map((ingredient, i) => (
-            <span key={i} className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm">
+            <span
+              key={i}
+              className="px-3 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded-full text-sm"
+            >
               {ingredient}
             </span>
           ))}

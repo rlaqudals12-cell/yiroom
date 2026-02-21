@@ -57,10 +57,10 @@ function MeasurementBar({ measurement }: { measurement: PostureMeasurement }) {
           <span
             className={`text-xs px-1.5 py-0.5 rounded ${
               measurement.status === 'good'
-                ? 'bg-green-100 text-green-700'
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
                 : measurement.status === 'warning'
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-red-100 text-red-700'
+                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                  : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
             }`}
           >
             {getStatusLabel(measurement.status)}
@@ -80,7 +80,7 @@ function MeasurementBar({ measurement }: { measurement: PostureMeasurement }) {
       </div>
 
       {/* 양방향 바 (50이 중앙 = 이상적) */}
-      <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         {/* 중앙선 (이상적 기준) */}
         <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-400 z-10" />
 
@@ -236,7 +236,7 @@ export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisRe
 
       {/* AI 인사이트 */}
       <FadeInUp delay={5}>
-        <section className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6">
+        <section className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800 p-6">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-5 h-5 text-blue-500" />
             <h2 className="text-lg font-semibold text-foreground">AI 인사이트</h2>
@@ -248,11 +248,11 @@ export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisRe
       {/* C-1 체형 연동 정보 */}
       {bodyTypeCorrelation && (
         <FadeInUp delay={6}>
-          <section className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-6">
+          <section className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl border border-purple-200 dark:border-purple-800 p-6">
             <div className="flex items-center gap-2 mb-3">
               <Activity className="w-5 h-5 text-purple-500" />
               <h2 className="text-lg font-semibold text-foreground">체형 연동 분석</h2>
-              <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+              <span className="ml-auto text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 px-2 py-1 rounded-full">
                 {bodyTypeCorrelation.bodyType} 타입
               </span>
             </div>
@@ -262,7 +262,7 @@ export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisRe
                 {bodyTypeCorrelation.riskFactors.map((risk, index) => (
                   <span
                     key={index}
-                    className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs"
+                    className="px-2 py-1 bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 rounded-full text-xs"
                   >
                     {risk}
                   </span>
@@ -291,10 +291,10 @@ export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisRe
                   <span
                     className={`text-xs px-2 py-1 rounded-full ${
                       stretch.difficulty === 'easy'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
                         : stretch.difficulty === 'medium'
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-red-100 text-red-700'
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
                     }`}
                   >
                     {stretch.difficulty === 'easy'

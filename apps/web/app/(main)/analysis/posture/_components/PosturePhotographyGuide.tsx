@@ -41,7 +41,7 @@ export default function PosturePhotographyGuide({ onContinue }: PosturePhotograp
     <div className="space-y-6" data-testid="posture-photography-guide">
       {/* 가이드 헤더 */}
       <div className="bg-card rounded-xl border p-6 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center">
           <Camera className="w-8 h-8 text-blue-500" />
         </div>
         <h2 className="text-lg font-semibold text-foreground mb-2">자세 분석 촬영 가이드</h2>
@@ -54,7 +54,7 @@ export default function PosturePhotographyGuide({ onContinue }: PosturePhotograp
         <div className="space-y-4">
           {GUIDE_TIPS.map((tip, index) => (
             <div key={index} className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center flex-shrink-0">
                 <tip.icon className="w-4 h-4 text-blue-500" />
               </div>
               <div>
@@ -67,9 +67,9 @@ export default function PosturePhotographyGuide({ onContinue }: PosturePhotograp
       </div>
 
       {/* 분석 내용 미리보기 */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4">
-        <p className="text-sm font-medium text-blue-800 mb-2">분석 내용</p>
-        <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800 p-4">
+        <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">분석 내용</p>
+        <div className="grid grid-cols-2 gap-2 text-xs text-blue-700 dark:text-blue-300">
           <span>- 어깨/골반 대칭</span>
           <span>- 무릎 정렬</span>
           <span>- 거북목 여부</span>

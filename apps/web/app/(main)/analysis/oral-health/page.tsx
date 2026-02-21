@@ -175,7 +175,7 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
         {/* 에러 메시지 */}
         {error && (
           <div
-            className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
+            className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm"
             role="alert"
           >
             {error}
@@ -186,12 +186,12 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
         {step === 'guide' && existingAnalysis && !checkingExisting && (
           <Link
             href={`/analysis/oral-health/result/${existingAnalysis.id}`}
-            className="block mb-6 p-4 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 hover:shadow-md transition-shadow"
+            className="block mb-6 p-4 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 rounded-xl border border-cyan-200 dark:border-cyan-800 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center">
-                  <span className="text-lg font-bold text-cyan-600">
+                <div className="w-10 h-10 rounded-full bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center">
+                  <span className="text-lg font-bold text-cyan-600 dark:text-cyan-400">
                     {existingAnalysis.overall_score}
                   </span>
                 </div>
@@ -289,8 +289,8 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
                 onClick={handleUploadClick}
                 className="w-full aspect-[4/3] rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
               >
-                <div className="w-16 h-16 rounded-full bg-cyan-100 flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-cyan-600" />
+                <div className="w-16 h-16 rounded-full bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
                 </div>
                 <div className="text-center">
                   <p className="font-medium text-foreground">사진을 선택해주세요</p>
@@ -310,7 +310,7 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
         {/* 로딩 */}
         {step === 'loading' && (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-20 h-20 rounded-full bg-cyan-100 flex items-center justify-center mb-6 animate-pulse">
+            <div className="w-20 h-20 rounded-full bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center mb-6 animate-pulse">
               <span className="text-4xl">&#x1F9B7;</span>
             </div>
             <p className="text-lg font-medium text-foreground">AI가 구강 상태를 분석하고 있어요</p>
