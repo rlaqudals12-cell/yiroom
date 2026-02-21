@@ -32,7 +32,7 @@ const TABS: { id: FeedTab; label: string }[] = [
 ];
 
 export default function FeedScreen() {
-  const { colors, module: moduleColors } = useTheme();
+  const { colors, brand, status, module: moduleColors } = useTheme();
   const router = useRouter();
 
   const {
@@ -119,9 +119,9 @@ export default function FeedScreen() {
 
           {/* 배지 특별 표시 */}
           {item.type === 'badge' && (
-            <View style={styles.badgeHighlight}>
+            <View style={[styles.badgeHighlight, { backgroundColor: status.warning + '20' }]}>
               <Text style={styles.badgeHighlightEmoji}>🏆</Text>
-              <Text style={styles.badgeHighlightText}>배지 획득!</Text>
+              <Text style={[styles.badgeHighlightText, { color: status.warning }]}>배지 획득!</Text>
             </View>
           )}
 
@@ -196,13 +196,15 @@ export default function FeedScreen() {
         </Text>
         {activeTab === 'friends' && (
           <TouchableOpacity
-            style={styles.emptyButton}
+            style={[styles.emptyButton, { backgroundColor: brand.primary }]}
             onPress={() => {
               Haptics.selectionAsync();
               router.push('/(social)/friends/search');
             }}
           >
-            <Text style={styles.emptyButtonText}>친구 찾기</Text>
+            <Text style={[styles.emptyButtonText, { color: brand.primaryForeground }]}>
+              친구 찾기
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -230,19 +232,28 @@ export default function FeedScreen() {
     >
       {/* 탭 바 */}
       <View style={[styles.tabBar, { backgroundColor: colors.background }]}>
-        {TABS.map((tab) => (
-          <TouchableOpacity
-            key={tab.id}
-            style={[styles.tabButton, activeTab === tab.id && styles.tabButtonActive]}
-            onPress={() => onTabChange(tab.id)}
-          >
-            <Text
-              style={[styles.tabButtonText, activeTab === tab.id && styles.tabButtonTextActive]}
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <TouchableOpacity
+              key={tab.id}
+              style={[
+                styles.tabButton,
+                { backgroundColor: isActive ? brand.primary : colors.muted },
+              ]}
+              onPress={() => onTabChange(tab.id)}
             >
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.tabButtonText,
+                  { color: isActive ? brand.primaryForeground : colors.mutedForeground },
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {/* 피드 리스트 */}
@@ -286,18 +297,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#e5e5e5',
-  },
-  tabButtonActive: {
-    backgroundColor: '#8b5cf6',
   },
   tabButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
-  },
-  tabButtonTextActive: {
-    color: '#fff',
   },
   listContent: {
     padding: 16,
@@ -384,7 +387,6 @@ const styles = StyleSheet.create({
   badgeHighlight: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fef3c7',
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
@@ -396,7 +398,6 @@ const styles = StyleSheet.create({
   badgeHighlightText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#b45309',
   },
   cardActions: {
     flexDirection: 'row',
@@ -448,13 +449,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptyButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   emptyButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
   },

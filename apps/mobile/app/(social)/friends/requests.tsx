@@ -22,7 +22,7 @@ import { type FriendRequest } from '../../../lib/social';
 import { useFriendRequests } from '../../../lib/social/useFriends';
 
 export default function FriendRequestsScreen() {
-  const { colors, module: moduleColors } = useTheme();
+  const { colors, brand, status, module: moduleColors } = useTheme();
 
   const { requests, isLoading, error, accept, reject, refetch } = useFriendRequests();
 
@@ -88,8 +88,11 @@ export default function FriendRequestsScreen() {
       </View>
 
       <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.acceptButton} onPress={() => handleAccept(item)}>
-          <Text style={styles.acceptButtonText}>수락</Text>
+        <TouchableOpacity
+          style={[styles.acceptButton, { backgroundColor: brand.primary }]}
+          onPress={() => handleAccept(item)}
+        >
+          <Text style={[styles.acceptButtonText, { color: brand.primaryForeground }]}>수락</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.rejectButton, { backgroundColor: colors.muted }]}
@@ -119,8 +122,8 @@ export default function FriendRequestsScreen() {
     >
       {/* 에러 메시지 */}
       {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
+        <View style={[styles.errorContainer, { backgroundColor: status.error + '15' }]}>
+          <Text style={[styles.errorText, { color: status.error }]}>{error}</Text>
         </View>
       )}
 
@@ -172,11 +175,9 @@ const styles = StyleSheet.create({
   errorContainer: {
     margin: 16,
     padding: 12,
-    backgroundColor: '#fee2e2',
     borderRadius: 8,
   },
   errorText: {
-    color: '#dc2626',
     fontSize: 14,
     textAlign: 'center',
   },
@@ -244,13 +245,11 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     flex: 1,
-    backgroundColor: '#8b5cf6',
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
   },
   acceptButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
   },

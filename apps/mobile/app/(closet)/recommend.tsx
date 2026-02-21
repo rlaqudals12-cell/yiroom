@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { useTheme } from '@/lib/theme';
 
 import {
@@ -27,14 +28,43 @@ import {
   type BodyType3,
 } from '../../lib/inventory/useClosetMatcher';
 
+// DB 체형 → 3타입 매핑
+function mapBodyType(dbBodyType: string | undefined): BodyType3 {
+  const mapping: Record<string, BodyType3> = {
+    hourglass: 'S',
+    rectangle: 'S',
+    inverted_triangle: 'S',
+    pear: 'W',
+    apple: 'N',
+  };
+  return mapping[dbBodyType ?? ''] ?? 'S';
+}
+
+// DB 시즌 → PersonalColorSeason 매핑
+function mapSeason(dbSeason: string | undefined): PersonalColorSeason {
+  const mapping: Record<string, PersonalColorSeason> = {
+    spring: 'Spring',
+    Spring: 'Spring',
+    summer: 'Summer',
+    Summer: 'Summer',
+    autumn: 'Autumn',
+    Autumn: 'Autumn',
+    winter: 'Winter',
+    Winter: 'Winter',
+  };
+  return mapping[dbSeason ?? ''] ?? 'Spring';
+}
+
 export default function RecommendScreen() {
-  const { colors, isDark, module: moduleTheme, status } = useTheme();
+  const { colors, module: moduleTheme, status } = useTheme();
   const router = useRouter();
 
-  // TODO: 실제 사용자 프로필에서 가져오기
-  const [personalColor] = useState<PersonalColorSeason>('Spring');
-  const [bodyType] = useState<BodyType3>('S');
-  // Mock 날씨 데이터 (실제 앱에서는 날씨 API 연동)
+  // 실제 사용자 분석 결과에서 가져오기
+  const { personalColor: pcResult, bodyAnalysis } = useUserAnalyses();
+  const personalColor = mapSeason(pcResult?.season);
+  const bodyType = mapBodyType(bodyAnalysis?.bodyType);
+
+  // 계절별 온도 (향후 날씨 API 연동 가능)
   const [temp, setTemp] = useState<number>(15);
   const locationName = '서울';
 

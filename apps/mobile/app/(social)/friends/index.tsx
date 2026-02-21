@@ -22,7 +22,7 @@ import { getTierColor, type Friend } from '../../../lib/social';
 import { useFriends, useFriendStats } from '../../../lib/social/useFriends';
 
 export default function FriendsScreen() {
-  const { colors, module: moduleColors } = useTheme();
+  const { colors, brand, module: moduleColors } = useTheme();
   const router = useRouter();
 
   const { friends, isLoading, refetch } = useFriends();
@@ -137,8 +137,13 @@ export default function FriendsScreen() {
           <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
             친구를 찾아 함께 운동해보세요!
           </Text>
-          <TouchableOpacity style={styles.emptyButton} onPress={handleSearch}>
-            <Text style={styles.emptyButtonText}>친구 찾기</Text>
+          <TouchableOpacity
+            style={[styles.emptyButton, { backgroundColor: brand.primary }]}
+            onPress={handleSearch}
+          >
+            <Text style={[styles.emptyButtonText, { color: brand.primaryForeground }]}>
+              친구 찾기
+            </Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -281,13 +286,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptyButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   emptyButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
   },

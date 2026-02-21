@@ -23,7 +23,7 @@ import { getTierColor, type UserSearchResult } from '../../../lib/social';
 import { useUserSearch } from '../../../lib/social/useFriends';
 
 export default function FriendSearchScreen() {
-  const { colors, module: moduleColors } = useTheme();
+  const { colors, brand, status, module: moduleColors } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const { results, isLoading, error, search, sendRequest, clear } = useUserSearch();
@@ -55,31 +55,31 @@ export default function FriendSearchScreen() {
   const getStatusButton = (item: UserSearchResult) => {
     if (item.isFriend) {
       return (
-        <View style={[styles.statusBadge, styles.statusFriend]}>
-          <Text style={styles.statusBadgeText}>친구</Text>
+        <View style={[styles.statusBadge, { backgroundColor: status.success + '20' }]}>
+          <Text style={[styles.statusBadgeText, { color: colors.foreground }]}>친구</Text>
         </View>
       );
     }
     if (item.isPending) {
       return (
-        <View style={[styles.statusBadge, styles.statusPending]}>
-          <Text style={styles.statusBadgeText}>요청됨</Text>
+        <View style={[styles.statusBadge, { backgroundColor: status.warning + '20' }]}>
+          <Text style={[styles.statusBadgeText, { color: colors.foreground }]}>요청됨</Text>
         </View>
       );
     }
     if (item.isBlocked) {
       return (
-        <View style={[styles.statusBadge, styles.statusBlocked]}>
-          <Text style={styles.statusBadgeText}>차단됨</Text>
+        <View style={[styles.statusBadge, { backgroundColor: status.error + '15' }]}>
+          <Text style={[styles.statusBadgeText, { color: colors.foreground }]}>차단됨</Text>
         </View>
       );
     }
     return (
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, { backgroundColor: brand.primary }]}
         onPress={() => handleSendRequest(item.userId, item.displayName)}
       >
-        <Text style={styles.addButtonText}>친구 추가</Text>
+        <Text style={[styles.addButtonText, { color: brand.primaryForeground }]}>친구 추가</Text>
       </TouchableOpacity>
     );
   };
@@ -137,15 +137,18 @@ export default function FriendSearchScreen() {
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-          <Text style={styles.searchButtonText}>검색</Text>
+        <TouchableOpacity
+          style={[styles.searchButton, { backgroundColor: brand.primary }]}
+          onPress={handleSearch}
+        >
+          <Text style={[styles.searchButtonText, { color: brand.primaryForeground }]}>검색</Text>
         </TouchableOpacity>
       </View>
 
       {/* 에러 메시지 */}
       {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
+        <View style={[styles.errorContainer, { backgroundColor: status.error + '15' }]}>
+          <Text style={[styles.errorText, { color: status.error }]}>{error}</Text>
         </View>
       )}
 
@@ -204,13 +207,11 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   searchButton: {
-    backgroundColor: '#8b5cf6',
     borderRadius: 12,
     paddingHorizontal: 18,
     justifyContent: 'center',
   },
   searchButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -222,11 +223,9 @@ const styles = StyleSheet.create({
   errorContainer: {
     marginHorizontal: 16,
     padding: 12,
-    backgroundColor: '#fee2e2',
     borderRadius: 8,
   },
   errorText: {
-    color: '#dc2626',
     fontSize: 14,
     textAlign: 'center',
   },
@@ -282,13 +281,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   addButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
   },
   addButtonText: {
-    color: '#fff',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -297,19 +294,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
   },
-  statusFriend: {
-    backgroundColor: '#dcfce7',
-  },
-  statusPending: {
-    backgroundColor: '#fef3c7',
-  },
-  statusBlocked: {
-    backgroundColor: '#fee2e2',
-  },
   statusBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
   },
   emptyContainer: {
     flex: 1,

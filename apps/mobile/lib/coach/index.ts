@@ -73,7 +73,8 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://yiroom.vercel.a
 export async function sendCoachMessage(
   message: string,
   chatHistory: CoachMessage[],
-  authToken?: string
+  authToken?: string,
+  userContext?: UserContext
 ): Promise<CoachChatResponse> {
   const response = await fetch(`${API_BASE_URL}/api/coach/chat`, {
     method: 'POST',
@@ -89,6 +90,7 @@ export async function sendCoachMessage(
         content: msg.content,
         timestamp: msg.timestamp.toISOString(),
       })),
+      ...(userContext ? { userContext } : {}),
     }),
   });
 
@@ -111,6 +113,72 @@ const FALLBACK_RESPONSES: Record<string, string> = {
   skin: '피부 관련 질문이시군요! 기본적으로 클렌징, 보습, 자외선 차단이 중요해요. 피부 분석 결과를 바탕으로 더 상세한 조언을 드릴 수 있어요.',
   default:
     '좋은 질문이에요! 정확한 답변을 드리기 어려운 상황이에요. 잠시 후 다시 시도해주시거나, 더 구체적인 질문을 해주시면 도움이 될 거예요.',
+};
+
+// 분석 결과 기반 맞춤 응답
+const PERSONALIZED_RESPONSES: Record<string, (ctx: UserContext) => string> = {
+  workout: (ctx) => {
+    const parts = ['운동에 관해 궁금하시군요!'];
+    if (ctx.workout?.streak && ctx.workout.streak > 0) {
+      parts.push(`${ctx.workout.streak}일 연속 운동 중이시네요, 대단해요!`);
+    }
+    if (ctx.bodyAnalysis?.bodyType) {
+      const bodyTips: Record<string, string> = {
+        hourglass: '모래시계형 체형에는 코어 강화 운동이 좋아요.',
+        pear: '하체 중심이라면 상체 밸런스를 위한 운동을 추천해요.',
+        apple: '유산소와 코어 운동을 병행하면 효과적이에요.',
+        rectangle: '전체 근력 운동으로 실루엣을 만들어보세요.',
+        inverted_triangle: '하체 운동을 강화하면 균형 잡힌 체형이 될 수 있어요.',
+      };
+      const tip = bodyTips[ctx.bodyAnalysis.bodyType];
+      if (tip) parts.push(tip);
+    }
+    if (parts.length === 1) {
+      parts.push('주 3-4회 30분 이상 운동을 권장해요.');
+    }
+    return parts.join(' ');
+  },
+  nutrition: (ctx) => {
+    const parts = ['영양에 대한 질문이시네요!'];
+    if (ctx.nutrition?.targetCalories) {
+      parts.push(`하루 목표 칼로리 ${ctx.nutrition.targetCalories}kcal에 맞춰 식단을 구성해보세요.`);
+    }
+    if (ctx.nutrition?.streak && ctx.nutrition.streak > 0) {
+      parts.push(`${ctx.nutrition.streak}일 연속 식단 기록 중이시네요!`);
+    }
+    if (parts.length === 1) {
+      parts.push('균형 잡힌 식단과 충분한 수분 섭취가 중요해요.');
+    }
+    return parts.join(' ');
+  },
+  skin: (ctx) => {
+    const parts = ['피부 관련 질문이시군요!'];
+    if (ctx.skinAnalysis?.skinType) {
+      const skinTips: Record<string, string> = {
+        dry: '건성 피부는 보습이 핵심이에요. 세라마이드 성분의 크림을 추천해요.',
+        oily: '지성 피부는 가벼운 수분 크림과 클레이 마스크가 도움이 돼요.',
+        combination: '복합성 피부는 T존과 U존을 나눠 관리하는 게 좋아요.',
+        sensitive: '민감성 피부는 저자극 제품과 진정 성분(시카, 판테놀)이 좋아요.',
+        normal: '정상 피부라도 자외선 차단과 기본 보습은 꾸준히 해주세요.',
+      };
+      const tip = skinTips[ctx.skinAnalysis.skinType];
+      if (tip) parts.push(tip);
+    }
+    if (ctx.personalColor?.season) {
+      const seasonColor: Record<string, string> = {
+        Spring: '봄 웜톤',
+        Summer: '여름 쿨톤',
+        Autumn: '가을 웜톤',
+        Winter: '겨울 쿨톤',
+      };
+      const label = seasonColor[ctx.personalColor.season] ?? ctx.personalColor.season;
+      parts.push(`${label}에 어울리는 메이크업 색조도 함께 고려해보세요!`);
+    }
+    if (parts.length === 1) {
+      parts.push('클렌징, 보습, 자외선 차단이 기본이에요.');
+    }
+    return parts.join(' ');
+  },
 };
 
 /**
@@ -149,16 +217,30 @@ function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'sk
 }
 
 /**
- * Mock 응답 생성
+ * Mock 응답 생성 (분석 결과 기반 맞춤 응답)
  */
-export function getMockResponse(message: string): CoachChatResponse {
+export function getMockResponse(message: string, userContext?: UserContext): CoachChatResponse {
   const category = detectQuestionCategory(message);
+
+  // 사용자 컨텍스트가 있으면 맞춤 응답 생성
+  let responseMessage: string;
+  const personalizedFn = PERSONALIZED_RESPONSES[category];
+  if (userContext && personalizedFn) {
+    responseMessage = personalizedFn(userContext);
+  } else {
+    responseMessage = FALLBACK_RESPONSES[category];
+  }
+
+  // 카테고리별 맞춤 추천 질문
+  const suggestedByCategory: Record<string, string[]> = {
+    workout: ['오늘 운동 루틴 추천해줘', '스트레칭 방법 알려줘', '근육통 회복법이 궁금해'],
+    nutrition: ['건강한 간식 추천해줘', '단백질 많은 음식 알려줘', '다이어트 식단 구성법은?'],
+    skin: ['스킨케어 루틴 알려줘', '피부에 좋은 음식은?', '여드름 관리법 알려줘'],
+    default: ['오늘 운동 뭐하면 좋을까?', '건강한 간식 추천해줘', '스킨케어 루틴 알려줘'],
+  };
+
   return {
-    message: FALLBACK_RESPONSES[category],
-    suggestedQuestions: [
-      '오늘 운동 뭐하면 좋을까요?',
-      '건강한 간식 추천해줘',
-      '스킨케어 루틴 알려줘',
-    ],
+    message: responseMessage,
+    suggestedQuestions: suggestedByCategory[category] ?? suggestedByCategory.default,
   };
 }

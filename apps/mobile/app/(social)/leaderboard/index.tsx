@@ -28,7 +28,7 @@ import {
 type TabType = 'all' | 'friends';
 
 export default function LeaderboardScreen() {
-  const { colors, module: moduleColors } = useTheme();
+  const { colors, brand, module: moduleColors } = useTheme();
   const { user } = useUser();
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
@@ -62,7 +62,11 @@ export default function LeaderboardScreen() {
 
     return (
       <View
-        style={[styles.rankingCard, { backgroundColor: colors.card }, isMe && styles.rankingCardMe]}
+        style={[
+          styles.rankingCard,
+          { backgroundColor: colors.card },
+          isMe && [styles.rankingCardMe, { borderColor: brand.primary }],
+        ]}
       >
         <View style={styles.rankBadge}>
           <Text
@@ -95,7 +99,7 @@ export default function LeaderboardScreen() {
         </View>
 
         <View style={styles.userInfo}>
-          <Text style={[styles.userName, { color: colors.foreground }, isMe && styles.userNameMe]}>
+          <Text style={[styles.userName, { color: colors.foreground }, isMe && { color: brand.primary }]}>
             {item.displayName} {isMe && '(나)'}
           </Text>
           <View style={styles.userMeta}>
@@ -126,15 +130,17 @@ export default function LeaderboardScreen() {
     >
       {/* 내 순위 카드 */}
       {rank && (
-        <View style={styles.myRankCard}>
+        <View style={[styles.myRankCard, { backgroundColor: brand.primary }]}>
           <View style={styles.myRankInfo}>
-            <Text style={styles.myRankLabel}>내 순위</Text>
-            <Text style={styles.myRankValue}>
+            <Text style={[styles.myRankLabel, { color: brand.primaryForeground }]}>내 순위</Text>
+            <Text style={[styles.myRankValue, { color: brand.primaryForeground }]}>
               {rank.toLocaleString()}위 / {totalUsers.toLocaleString()}명
             </Text>
           </View>
           <View style={styles.percentileContainer}>
-            <Text style={styles.percentileValue}>상위 {percentile}%</Text>
+            <Text style={[styles.percentileValue, { color: brand.primaryForeground }]}>
+              상위 {percentile}%
+            </Text>
           </View>
         </View>
       )}
@@ -152,7 +158,7 @@ export default function LeaderboardScreen() {
             style={[
               styles.tabText,
               { color: colors.mutedForeground },
-              activeTab === 'all' && styles.tabTextActive,
+              activeTab === 'all' && { color: brand.primary },
             ]}
           >
             전체
@@ -169,7 +175,7 @@ export default function LeaderboardScreen() {
             style={[
               styles.tabText,
               { color: colors.mutedForeground },
-              activeTab === 'friends' && styles.tabTextActive,
+              activeTab === 'friends' && { color: brand.primary },
             ]}
           >
             친구
@@ -218,7 +224,6 @@ const styles = StyleSheet.create({
   myRankCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#8b5cf6',
     margin: 16,
     borderRadius: 16,
     padding: 20,
@@ -228,13 +233,12 @@ const styles = StyleSheet.create({
   },
   myRankLabel: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.8)',
+    opacity: 0.8,
     marginBottom: 4,
   },
   myRankValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#fff',
   },
   percentileContainer: {
     backgroundColor: 'rgba(255,255,255,0.2)',
@@ -245,7 +249,6 @@ const styles = StyleSheet.create({
   percentileValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -267,9 +270,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  tabTextActive: {
-    color: '#8b5cf6',
-  },
+  tabTextActive: {},
   listContent: {
     padding: 16,
     gap: 10,
@@ -282,7 +283,6 @@ const styles = StyleSheet.create({
   },
   rankingCardMe: {
     borderWidth: 2,
-    borderColor: '#8b5cf6',
   },
   rankBadge: {
     width: 36,
@@ -332,9 +332,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
-  userNameMe: {
-    color: '#8b5cf6',
-  },
+  userNameMe: {},
   userMeta: {
     flexDirection: 'row',
     alignItems: 'center',

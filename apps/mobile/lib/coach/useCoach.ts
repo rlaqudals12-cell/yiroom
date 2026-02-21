@@ -4,8 +4,11 @@
  */
 
 import { useAuth, useUser } from '@clerk/clerk-expo';
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 
+import { useUserAnalyses } from '../../hooks/useUserAnalyses';
+import { useWorkoutData } from '../../hooks/useWorkoutData';
+import { useNutritionData } from '../../hooks/useNutritionData';
 import { useNetworkStatus } from '../offline';
 import { useClerkSupabaseClient } from '../supabase';
 import {
@@ -22,6 +25,7 @@ import {
   getMockResponse,
   type CoachMessage,
   type CoachChatResponse,
+  type UserContext,
 } from './index';
 
 interface UseCoachResult {
@@ -45,6 +49,37 @@ export function useCoach(): UseCoachResult {
   const { user } = useUser();
   const { isConnected } = useNetworkStatus();
   const supabase = useClerkSupabaseClient();
+
+  // 분석 결과 기반 사용자 컨텍스트 구성
+  const { personalColor, skinAnalysis, bodyAnalysis } = useUserAnalyses();
+  const { streak: workoutStreak, analysis: workoutAnalysis } = useWorkoutData();
+  const { settings: nutritionSettings, streak: nutritionStreak } = useNutritionData();
+
+  const userContext = useMemo<UserContext>(() => {
+    const ctx: UserContext = {};
+    if (personalColor) {
+      ctx.personalColor = { season: personalColor.season, tone: personalColor.tone };
+    }
+    if (skinAnalysis) {
+      ctx.skinAnalysis = { skinType: skinAnalysis.skinType, concerns: skinAnalysis.concerns };
+    }
+    if (bodyAnalysis) {
+      ctx.bodyAnalysis = { bodyType: bodyAnalysis.bodyType, bmi: bodyAnalysis.bmi };
+    }
+    if (workoutStreak || workoutAnalysis) {
+      ctx.workout = {
+        streak: workoutStreak?.currentStreak,
+        workoutType: workoutAnalysis?.workoutType,
+      };
+    }
+    if (nutritionSettings || nutritionStreak) {
+      ctx.nutrition = {
+        targetCalories: nutritionSettings?.dailyCalorieGoal,
+        streak: nutritionStreak?.currentStreak,
+      };
+    }
+    return ctx;
+  }, [personalColor, skinAnalysis, bodyAnalysis, workoutStreak, workoutAnalysis, nutritionSettings, nutritionStreak]);
 
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -137,16 +172,17 @@ export function useCoach(): UseCoachResult {
         let response: CoachChatResponse;
 
         if (isConnected) {
-          // 온라인: API 호출
+          // 온라인: API 호출 (분석 결과 컨텍스트 포함)
           const token = await getToken();
           response = await sendCoachMessage(
             message,
             [...messages, userMessage],
-            token ?? undefined
+            token ?? undefined,
+            userContext
           );
         } else {
-          // 오프라인: Mock 응답
-          response = getMockResponse(message);
+          // 오프라인: 분석 결과 기반 맞춤 Mock 응답
+          response = getMockResponse(message, userContext);
         }
 
         // AI 응답 추가
@@ -177,8 +213,8 @@ export function useCoach(): UseCoachResult {
         coachLogger.error('[Coach] error:', err);
         setError('메시지 전송에 실패했어요. 다시 시도해주세요.');
 
-        // 에러 시 Mock 응답 사용
-        const fallbackResponse = getMockResponse(message);
+        // 에러 시 분석 결과 기반 Mock 응답 사용
+        const fallbackResponse = getMockResponse(message, userContext);
         const fallbackMessage: CoachMessage = {
           id: `assistant-${Date.now()}`,
           role: 'assistant',
@@ -191,7 +227,7 @@ export function useCoach(): UseCoachResult {
         setIsLoading(false);
       }
     },
-    [isLoading, isConnected, getToken, messages, currentSessionId, user?.id, supabase]
+    [isLoading, isConnected, getToken, messages, currentSessionId, user?.id, supabase, userContext]
   );
 
   const clearMessages = useCallback(() => {
