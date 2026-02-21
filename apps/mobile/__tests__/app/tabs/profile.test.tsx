@@ -201,6 +201,39 @@ describe('ProfileScreen', () => {
     });
   });
 
+  describe('활동 섹션', () => {
+    it('활동 섹션 제목이 표시된다', () => {
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      expect(getByText('활동')).toBeTruthy();
+    });
+
+    it('나의 뱃지 메뉴가 표시된다', () => {
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      expect(getByText('나의 뱃지')).toBeTruthy();
+    });
+
+    it('뱃지 서브타이틀에 분석 완료 개수가 표시된다', () => {
+      // PC(spring), Skin(복합성) → 2개 완료
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      expect(getByText('2개 분석 완료')).toBeTruthy();
+    });
+
+    it('알림 메뉴가 표시된다', () => {
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      expect(getByText(/받은 알림 확인/)).toBeTruthy();
+    });
+
+    it('나의 뱃지 클릭 시 /badges로 이동한다', () => {
+      const mockPush = jest.fn();
+      const { router } = require('expo-router');
+      router.push = mockPush;
+
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      fireEvent.press(getByText('나의 뱃지'));
+      expect(mockPush).toHaveBeenCalledWith('/badges');
+    });
+  });
+
   describe('설정 섹션', () => {
     it('설정 섹션 제목이 표시된다', () => {
       const { getByText } = renderWithTheme(<ProfileScreen />);
