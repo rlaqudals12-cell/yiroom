@@ -13,17 +13,16 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
-  useColorScheme,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { getTierColor, type UserSearchResult } from '../../../lib/social';
 import { useUserSearch } from '../../../lib/social/useFriends';
 
 export default function FriendSearchScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const { results, isLoading, error, search, sendRequest, clear } = useUserSearch();

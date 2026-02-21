@@ -13,12 +13,12 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  useColorScheme,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import {
   useSkincareRoutine,
@@ -28,8 +28,7 @@ import {
 } from '@/lib/skincare';
 
 export default function SkincareRoutineScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
 
   const {

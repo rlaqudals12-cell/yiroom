@@ -12,17 +12,16 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
-  useColorScheme,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { type FriendRequest } from '../../../lib/social';
 import { useFriendRequests } from '../../../lib/social/useFriends';
 
 export default function FriendRequestsScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const { requests, isLoading, error, accept, reject, refetch } = useFriendRequests();
 

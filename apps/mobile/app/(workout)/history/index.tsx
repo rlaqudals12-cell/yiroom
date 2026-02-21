@@ -8,12 +8,12 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
   ScrollView,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
@@ -39,8 +39,7 @@ interface WeeklyStats {
 }
 
 export default function WorkoutHistoryScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 

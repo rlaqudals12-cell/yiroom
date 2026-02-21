@@ -10,13 +10,13 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import {
   getAffiliateProducts,
@@ -43,8 +43,7 @@ interface DisplayProduct extends AffiliateProduct {
 }
 
 export default function ProductsScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 

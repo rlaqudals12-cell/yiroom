@@ -9,13 +9,13 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
   TouchableOpacity,
   TextInput,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 interface Product {
   id: string;
@@ -159,8 +159,7 @@ const POPULAR_SEARCHES = ['수분크림', '선크림', '립스틱', '비타민',
 const RECENT_SEARCHES = ['아이오페', '롬앤 립스틱'];
 
 export default function ProductSearchScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);

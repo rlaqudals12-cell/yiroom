@@ -10,19 +10,18 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  useColorScheme,
   Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from 'react-native';
+import { useTheme } from '@/lib/theme';
 
 export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

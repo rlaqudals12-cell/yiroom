@@ -12,10 +12,10 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  useColorScheme,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import {
   DOMAIN_NAMES,
@@ -32,8 +32,7 @@ import { useChallenges, useJoinChallenge } from '../../lib/challenges/useChallen
 type TabType = 'explore' | 'my';
 
 export default function ChallengesScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabType>('explore');

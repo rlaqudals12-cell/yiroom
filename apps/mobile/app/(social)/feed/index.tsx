@@ -14,11 +14,11 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
-  useColorScheme,
   Share,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { feedTypeConfig, formatRelativeTime, type FeedItem, type FeedTab } from '../../../lib/feed';
 import { useFeed } from '../../../lib/feed/useFeed';
@@ -31,8 +31,7 @@ const TABS: { id: FeedTab; label: string }[] = [
 ];
 
 export default function FeedScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const router = useRouter();
 
   const {

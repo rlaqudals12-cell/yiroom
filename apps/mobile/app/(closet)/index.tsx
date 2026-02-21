@@ -15,9 +15,9 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { useCloset, type ClothingCategory, CLOTHING_CATEGORY_LABELS } from '../../lib/inventory';
 
@@ -35,8 +35,7 @@ const FILTER_OPTIONS: { key: FilterCategory; label: string }[] = [
 ];
 
 export default function ClosetScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const router = useRouter();
 
   const { items, isLoading, error: _error, toggleFavorite, refetch } = useCloset();

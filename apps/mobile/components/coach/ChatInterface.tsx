@@ -14,16 +14,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 
 import { QUICK_QUESTIONS, type QuestionCategory, type CoachMessage } from '../../lib/coach';
 import { useCoach } from '../../lib/coach/useCoach';
 import { useNetworkStatus } from '../../lib/offline';
+import { useTheme } from '../../lib/theme';
 
 export function ChatInterface() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { isConnected } = useNetworkStatus();
 
   const {

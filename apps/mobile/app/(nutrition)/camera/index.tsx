@@ -12,7 +12,6 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
@@ -20,6 +19,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import {
   analyzeFood as analyzeFoodWithGemini,
@@ -54,8 +54,7 @@ interface RecognizedFood {
 type ScreenState = 'camera' | 'analyzing' | 'result';
 
 export default function FoodCameraScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const cameraRef = useRef<CameraView>(null);

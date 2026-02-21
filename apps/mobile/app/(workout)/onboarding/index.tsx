@@ -2,12 +2,12 @@
  * W-1 운동 온보딩 - 시작 화면
  */
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 export default function WorkoutOnboardingScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const handleStart = () => {
     router.push('/(workout)/onboarding/goals');

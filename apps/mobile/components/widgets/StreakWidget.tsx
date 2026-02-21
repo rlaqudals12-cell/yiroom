@@ -3,7 +3,9 @@
  * 연속 달성 일수와 배지 표시
  */
 
-import { View, Text, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+
+import { useTheme } from '../../lib/theme';
 
 interface StreakWidgetProps {
   streak: number;
@@ -18,8 +20,7 @@ export function StreakWidget({
   recentBadges = [],
   size = 'medium',
 }: StreakWidgetProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useTheme();
 
   // 스트릭 레벨 계산
   const getStreakLevel = (days: number) => {

@@ -5,9 +5,10 @@
 
 import * as Haptics from 'expo-haptics';
 import { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 
 import { useNetworkStatus } from '../../lib/offline';
+import { useTheme } from '../../lib/theme';
 
 interface OfflineBannerProps {
   // 동기화 대기 항목 수
@@ -19,8 +20,7 @@ interface OfflineBannerProps {
 }
 
 export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: OfflineBannerProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { isConnected } = useNetworkStatus();
 
   const slideAnim = useRef(new Animated.Value(-60)).current;

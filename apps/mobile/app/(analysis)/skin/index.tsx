@@ -2,12 +2,12 @@
  * S-1 피부 분석 - 시작 화면
  */
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 export default function SkinAnalysisScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const handleStartAnalysis = () => {
     router.push('/(analysis)/skin/camera');

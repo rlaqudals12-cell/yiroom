@@ -9,13 +9,13 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
   ScrollView,
   Platform,
   Linking,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { QuickActionsWidget } from '../../components/widgets/QuickActionsWidget';
 import { TodaySummaryWidget } from '../../components/widgets/TodaySummaryWidget';
@@ -23,8 +23,7 @@ import { useWidgetSync } from '../../lib/widgets';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
 export default function WidgetSettingsScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { getData } = useWidgetSync({ autoSync: false });
 
   const [widgetData, setWidgetData] = useState<TodaySummaryData>(DEFAULT_SUMMARY_DATA);

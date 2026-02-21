@@ -30,7 +30,7 @@ export function HomeTodaySection({
   notifications,
   onTaskPress,
 }: HomeTodaySectionProps): React.JSX.Element {
-  const { colors, brand, spacing, radii, shadows, typography, status } = useTheme();
+  const { colors, spacing, radii, shadows, typography, status } = useTheme();
 
   const remainingCount = tasks.filter((t) => !t.completed).length;
 

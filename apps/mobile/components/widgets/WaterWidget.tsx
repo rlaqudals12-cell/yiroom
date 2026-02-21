@@ -3,7 +3,9 @@
  * 물 섭취량과 목표 진행률 표시
  */
 
-import { View, Text, StyleSheet, useColorScheme, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+
+import { useTheme } from '../../lib/theme';
 
 interface WaterWidgetProps {
   current: number; // ml
@@ -13,8 +15,7 @@ interface WaterWidgetProps {
 }
 
 export function WaterWidget({ current, goal, onAddWater, size = 'medium' }: WaterWidgetProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useTheme();
 
   const progress = Math.min((current / goal) * 100, 100);
   const remaining = Math.max(goal - current, 0);

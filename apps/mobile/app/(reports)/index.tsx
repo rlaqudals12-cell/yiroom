@@ -2,8 +2,9 @@
  * R-1 통합 리포트 화면
  */
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 // 샘플 리포트 데이터
 const SAMPLE_REPORT = {
@@ -44,8 +45,7 @@ const SAMPLE_REPORT = {
 };
 
 export default function ReportsScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>

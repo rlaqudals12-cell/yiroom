@@ -7,8 +7,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 // eslint-disable-next-line import/order
 import { captureError } from '../../../lib/monitoring/sentry';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, useColorScheme, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import {
   AnalysisLoadingState,
@@ -88,8 +89,7 @@ const BODY_TYPE_DATA: Record<
 };
 
 export default function BodyResultScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { height, weight, imageUri, imageBase64 } = useLocalSearchParams<{
     height: string;
     weight: string;

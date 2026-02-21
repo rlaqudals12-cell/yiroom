@@ -14,10 +14,10 @@ import {
   ScrollView,
   Image,
   Alert,
-  useColorScheme,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import {
   useCloset,
@@ -30,8 +30,7 @@ import {
 } from '../../lib/inventory';
 
 export default function ItemDetailScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 

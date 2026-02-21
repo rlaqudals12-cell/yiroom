@@ -10,7 +10,6 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
   TouchableOpacity,
   TextInput,
   ScrollView,
@@ -18,6 +17,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
@@ -45,8 +45,7 @@ const INTENSITY_OPTIONS = [
 const DURATION_OPTIONS = [15, 30, 45, 60, 90];
 
 export default function WorkoutLogScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 

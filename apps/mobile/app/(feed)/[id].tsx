@@ -18,10 +18,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  useColorScheme,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import type { FeedItem } from '../../lib/feed/types';
 import { useClerkSupabaseClient } from '../../lib/supabase';
@@ -45,8 +45,7 @@ interface Comment {
 }
 
 export default function FeedDetailScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUser();

@@ -3,8 +3,9 @@
  * iOS/Android 위젯에 표시될 UI 미러링
  */
 
-import { View, Text, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
+import { useTheme } from '../../lib/theme';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
 interface TodaySummaryWidgetProps {
@@ -16,8 +17,7 @@ export function TodaySummaryWidget({
   data = DEFAULT_SUMMARY_DATA,
   size = 'medium',
 }: TodaySummaryWidgetProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useTheme();
 
   // 진행률 계산
   const waterProgress = Math.min((data.waterIntake / data.waterGoal) * 100, 100);

@@ -8,12 +8,12 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  useColorScheme,
   TouchableOpacity,
   TextInput,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
@@ -35,8 +35,7 @@ const QUICK_ADD_FOODS = [
 ];
 
 export default function NutritionRecordScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const [selectedMealType, setSelectedMealType] = useState<MealType>('lunch');
   const [searchText, setSearchText] = useState('');

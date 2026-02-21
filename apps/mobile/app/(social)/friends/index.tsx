@@ -13,16 +13,15 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { getTierColor, type Friend } from '../../../lib/social';
 import { useFriends, useFriendStats } from '../../../lib/social/useFriends';
 
 export default function FriendsScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const router = useRouter();
 
   const { friends, isLoading, refetch } = useFriends();

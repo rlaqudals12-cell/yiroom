@@ -6,16 +6,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  useColorScheme,
-  TouchableOpacity,
-  TextInput,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { settingsLogger } from '../../lib/utils/logger';
 import { setGoals as setWidgetGoals } from '../../lib/widgets';
@@ -44,8 +37,7 @@ const WATER_PRESETS = [1500, 2000, 2500, 3000];
 const CALORIE_PRESETS = [1500, 1800, 2000, 2500];
 
 export default function GoalsSettingsScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const [goals, setGoals] = useState<GoalSettings>(DEFAULT_GOALS);
   const [customWater, setCustomWater] = useState('');

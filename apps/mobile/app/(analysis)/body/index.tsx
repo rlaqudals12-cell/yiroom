@@ -9,16 +9,15 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  useColorScheme,
   TouchableOpacity,
   TextInput,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 export default function BodyAnalysisScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');

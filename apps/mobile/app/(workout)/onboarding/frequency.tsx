@@ -4,8 +4,9 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 // 주당 운동 횟수 옵션 (2-6회)
 const FREQUENCY_OPTIONS = [
@@ -25,8 +26,7 @@ const TIME_OPTIONS = [
 ];
 
 export default function WorkoutFrequencyScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const params = useLocalSearchParams<{ goals?: string }>();
 
   const [frequency, setFrequency] = useState<number | null>(null);

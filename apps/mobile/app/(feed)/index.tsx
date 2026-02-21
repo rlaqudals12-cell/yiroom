@@ -12,10 +12,10 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  useColorScheme,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import type { FeedItem, FeedTab } from '../../lib/feed/types';
 import { useFeed } from '../../lib/feed/useFeed';
@@ -46,8 +46,7 @@ const TAB_LABELS: Record<FeedTab, string> = {
 };
 
 export default function FeedScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const router = useRouter();
 
   const {

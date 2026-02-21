@@ -7,8 +7,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 // eslint-disable-next-line import/order
 import { captureError } from '../../../lib/monitoring/sentry';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, useColorScheme, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import {
   AnalysisLoadingState,
@@ -65,8 +66,7 @@ const SEASON_DATA: Record<
 };
 
 export default function PersonalColorResultScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { imageUri, imageBase64, answers } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;

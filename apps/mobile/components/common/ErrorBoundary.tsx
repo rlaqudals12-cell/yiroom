@@ -5,8 +5,9 @@
 
 import * as Haptics from 'expo-haptics';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../lib/theme';
 
 import { errorLogger } from '../../lib/utils/logger';
 
@@ -61,13 +62,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
  * 에러 폴백 UI
  */
 function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () => void }) {
-  // 함수형 컴포넌트에서 useColorScheme 사용
+  // 함수형 컴포넌트에서 useTheme 사용
   return <ErrorFallbackContent error={error} onRetry={onRetry} />;
 }
 
 function ErrorFallbackContent({ error, onRetry }: { error: Error | null; onRetry: () => void }) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>

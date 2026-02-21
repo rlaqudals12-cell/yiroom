@@ -4,9 +4,9 @@
  */
 
 import * as Haptics from 'expo-haptics';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
-import { Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 
+import { useTheme } from '../../lib/theme';
 import { widgetLogger } from '../../lib/utils/logger';
 import { WIDGET_DEEP_LINKS, QuickActionType } from '../../lib/widgets/types';
 
@@ -24,8 +24,7 @@ const QUICK_ACTIONS = [
 ];
 
 export function QuickActionsWidget({ size = 'medium', onAction }: QuickActionsWidgetProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useTheme();
 
   const handlePress = async (action: QuickActionType) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

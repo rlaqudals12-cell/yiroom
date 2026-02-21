@@ -15,9 +15,9 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import {
   useClosetMatcher,
@@ -27,8 +27,7 @@ import {
 } from '../../lib/inventory/useClosetMatcher';
 
 export default function RecommendScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const router = useRouter();
 
   // TODO: 실제 사용자 프로필에서 가져오기

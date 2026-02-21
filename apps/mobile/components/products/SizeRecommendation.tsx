@@ -5,16 +5,10 @@
 
 import * as Haptics from 'expo-haptics';
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  useColorScheme,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import { useNetworkStatus } from '../../lib/offline/useNetworkStatus';
+import { useTheme } from '../../lib/theme';
 import type {
   ClothingCategory,
   SizeRecommendation as SizeRecommendationType,
@@ -42,8 +36,7 @@ export function SizeRecommendation({
   productId,
   onSizeSelect,
 }: SizeRecommendationProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useTheme();
   const { isConnected } = useNetworkStatus();
 
   const { recommendation, isLoading, error, confidenceLabel, basisDescription, refetch } =

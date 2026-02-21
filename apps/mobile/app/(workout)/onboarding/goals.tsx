@@ -3,8 +3,9 @@
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 const GOALS = [
   {
@@ -46,8 +47,7 @@ const GOALS = [
 ];
 
 export default function WorkoutGoalsScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
   const toggleGoal = (goalId: string) => {

@@ -9,8 +9,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 // eslint-disable-next-line import/order
 import { captureError } from '../../../lib/monitoring/sentry';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, useColorScheme, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import {
   CircularProgress,
@@ -31,8 +32,7 @@ import { SKIN_TYPE_DATA } from './constants';
 import type { SkinMetrics, SkinMetricsDelta } from './types';
 
 export default function SkinResultScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;

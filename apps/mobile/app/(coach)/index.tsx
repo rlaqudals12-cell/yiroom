@@ -3,14 +3,14 @@
  */
 
 import React from 'react';
-import { useColorScheme, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { ChatInterface } from '../../components/coach/ChatInterface';
 
 export default function CoachScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>

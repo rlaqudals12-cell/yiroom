@@ -4,7 +4,8 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, ViewStyle, useColorScheme } from 'react-native';
+import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
+import { useTheme } from '../../lib/theme';
 
 type DimensionValue = number | `${number}%` | 'auto';
 
@@ -31,8 +32,7 @@ export function Skeleton({
   circle = false,
   style,
 }: SkeletonProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const pulseAnim = useRef(new Animated.Value(0.3)).current;
 
   // 펄스 애니메이션
@@ -106,8 +106,7 @@ export function SkeletonText({
  * 카드 스켈레톤
  */
 export function SkeletonCard({ style }: { style?: ViewStyle }) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   return (
     <View style={[styles.card, isDark && styles.cardDark, style]}>
@@ -127,8 +126,7 @@ export function SkeletonCard({ style }: { style?: ViewStyle }) {
  * 리스트 아이템 스켈레톤
  */
 export function SkeletonListItem({ style }: { style?: ViewStyle }) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   return (
     <View style={[styles.listItem, isDark && styles.listItemDark, style]}>
@@ -145,8 +143,7 @@ export function SkeletonListItem({ style }: { style?: ViewStyle }) {
  * 운동 카드 스켈레톤
  */
 export function SkeletonWorkoutCard({ style }: { style?: ViewStyle }) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   return (
     <View style={[styles.workoutCard, isDark && styles.cardDark, style]}>
@@ -166,8 +163,7 @@ export function SkeletonWorkoutCard({ style }: { style?: ViewStyle }) {
  * 영양 요약 스켈레톤
  */
 export function SkeletonNutritionSummary({ style }: { style?: ViewStyle }) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   return (
     <View style={[styles.nutritionCard, isDark && styles.cardDark, style]}>
@@ -198,8 +194,7 @@ export function SkeletonNutritionSummary({ style }: { style?: ViewStyle }) {
  * 제품 카드 스켈레톤
  */
 export function SkeletonProductCard({ style }: { style?: ViewStyle }) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   return (
     <View style={[styles.productCard, isDark && styles.cardDark, style]}>

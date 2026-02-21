@@ -10,7 +10,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  useColorScheme,
   Switch,
   TouchableOpacity,
   Alert,
@@ -18,6 +17,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import {
   useNotificationPermission,
@@ -26,8 +26,7 @@ import {
 } from '../../lib/notifications/useNotifications';
 
 export default function NotificationsSettingsScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const {
     hasPermission,

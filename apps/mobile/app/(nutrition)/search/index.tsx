@@ -10,7 +10,6 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
   TouchableOpacity,
   TextInput,
   ScrollView,
@@ -18,6 +17,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { nutritionLogger } from '../../../lib/utils/logger';
@@ -322,8 +322,7 @@ interface SelectedFood extends FoodItem {
 }
 
 export default function FoodSearchScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 

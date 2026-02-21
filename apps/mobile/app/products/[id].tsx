@@ -10,13 +10,13 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { SizeRecommendation } from '../../components/products/SizeRecommendation';
 import { useAffiliateClick, identifyPartner } from '../../lib/affiliate';
@@ -190,8 +190,7 @@ const MOCK_REVIEWS: Review[] = [
 ];
 
 export default function ProductDetailScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   // TODO: API 연동 시 활용 예정
   const { user: _user } = useUser();

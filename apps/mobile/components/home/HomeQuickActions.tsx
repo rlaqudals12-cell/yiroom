@@ -25,16 +25,7 @@ export function HomeQuickActions({
   onActionPress,
   onCoachPress,
 }: HomeQuickActionsProps): React.JSX.Element {
-  const {
-    colors,
-    brand,
-    spacing,
-    radii,
-    shadows,
-    typography,
-    status,
-    module: moduleColors,
-  } = useTheme();
+  const { colors, spacing, radii, shadows, typography, status, module: moduleColors } = useTheme();
 
   // AI Coach → moduleColors.workout.dark (이전 하드코딩 #10b981 대체)
   const coachColor = moduleColors.workout.dark;

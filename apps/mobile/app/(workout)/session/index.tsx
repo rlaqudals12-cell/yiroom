@@ -3,8 +3,9 @@
  */
 import { router } from 'expo-router';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, useColorScheme, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 // 샘플 운동 데이터
 const SAMPLE_EXERCISES = [
@@ -17,8 +18,7 @@ const SAMPLE_EXERCISES = [
 type SessionState = 'ready' | 'exercising' | 'resting' | 'completed';
 
 export default function WorkoutSessionScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const [sessionState, setSessionState] = useState<SessionState>('ready');
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);

@@ -11,19 +11,18 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  useColorScheme,
   TouchableOpacity,
   Switch,
   ActivityIndicator,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { useHealthData } from '@/hooks/useHealthData';
 
 export default function HealthSyncScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const {
     isAvailable,

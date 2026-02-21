@@ -9,13 +9,13 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
   TouchableOpacity,
   ScrollView,
   Alert,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { waterLogger } from '../../../lib/utils/logger';
@@ -44,8 +44,7 @@ interface WaterRecord {
 }
 
 export default function WaterTrackingScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 

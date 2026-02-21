@@ -13,9 +13,9 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/lib/theme';
 
 import { getTierColor, getTierLabel, type RankingEntry } from '../../../lib/social';
 import {
@@ -27,8 +27,7 @@ import {
 type TabType = 'all' | 'friends';
 
 export default function LeaderboardScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
   const { user } = useUser();
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
