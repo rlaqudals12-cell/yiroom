@@ -21,19 +21,21 @@ import {
   AnalysisErrorState,
   AnalysisTrustBadge,
   AnalysisResultButtons,
+  useAnalysisStyles,
 } from '@/components/analysis';
 import {
   analyzeSkin as analyzeWithGemini,
   imageToBase64,
   type SkinAnalysisResult,
 } from '@/lib/gemini';
-import { useTheme } from '@/lib/theme';
 
 import { SKIN_TYPE_DATA } from './constants';
 import type { SkinMetrics, SkinMetricsDelta } from './types';
 
 export default function SkinResultScreen() {
-  const { colors, isDark } = useTheme();
+  const { styles, module, colors, isDark } = useAnalysisStyles();
+  const accent = module.skin;
+
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
@@ -155,7 +157,7 @@ export default function SkinResultScreen() {
   const typeData = SKIN_TYPE_DATA[skinType];
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* AI 분석 신뢰도 표시 */}
         <AnalysisTrustBadge
@@ -164,9 +166,11 @@ export default function SkinResultScreen() {
         />
 
         {/* 종합 점수 카드 */}
-        <View style={[styles.scoreCard, isDark && styles.cardDark]}>
-          <View style={styles.scoreHeader}>
-            <Text style={[styles.scoreLabel, isDark && styles.textMuted]}>피부 건강 점수</Text>
+        <View style={[localStyles.scoreCard, { backgroundColor: colors.card }]}>
+          <View style={localStyles.scoreHeader}>
+            <Text style={[localStyles.scoreLabel, { color: colors.foreground }]}>
+              피부 건강 점수
+            </Text>
             {delta && delta.overall !== 0 && (
               <ScoreChangeBadge
                 delta={delta.overall}
@@ -177,11 +181,14 @@ export default function SkinResultScreen() {
               />
             )}
           </View>
-          <View style={styles.scoreContent}>
+          <View style={localStyles.scoreContent}>
             {/* 결과 이미지 (작은 원형) */}
             {imageUri && (
-              <View style={styles.smallImageContainer}>
-                <Image source={{ uri: imageUri }} style={styles.smallResultImage} />
+              <View style={localStyles.smallImageContainer}>
+                <Image
+                  source={{ uri: imageUri }}
+                  style={[localStyles.smallResultImage, { borderColor: accent.base }]}
+                />
               </View>
             )}
             {/* CircularProgress */}
@@ -197,55 +204,33 @@ export default function SkinResultScreen() {
         </View>
 
         {/* 피부 타입 결과 */}
-        <View style={[styles.resultCard, isDark && styles.cardDark]}>
-          <Text style={[styles.typeLabel, isDark && styles.textMuted]}>당신의 피부 타입은</Text>
-          <Text style={[styles.typeName, isDark && styles.textLight]}>{typeData.name}</Text>
-          <Text style={[styles.description, isDark && styles.textMuted]}>
-            {typeData.description}
-          </Text>
+        <View style={styles.resultCard}>
+          <Text style={styles.label}>당신의 피부 타입은</Text>
+          <Text style={[localStyles.typeName, { color: accent.base }]}>{typeData.name}</Text>
+          <Text style={styles.description}>{typeData.description}</Text>
         </View>
 
         {/* 피부 지표 */}
-        <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>피부 분석 지표</Text>
-          <View style={styles.metricsContainer}>
-            <MetricBar
-              label="수분도"
-              value={metrics.moisture}
-              delta={delta?.moisture}
-              isDark={isDark}
-            />
-            <MetricBar label="유분도" value={metrics.oil} delta={delta?.oil} isDark={isDark} />
-            <MetricBar label="모공" value={metrics.pores} delta={delta?.pores} isDark={isDark} />
-            <MetricBar
-              label="탄력"
-              value={metrics.elasticity}
-              delta={delta?.elasticity}
-              isDark={isDark}
-            />
-            <MetricBar
-              label="색소침착"
-              value={metrics.pigmentation}
-              delta={delta?.pigmentation}
-              isDark={isDark}
-            />
-            <MetricBar
-              label="민감도"
-              value={metrics.sensitivity}
-              delta={delta?.sensitivity}
-              isDark={isDark}
-            />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>피부 분석 지표</Text>
+          <View style={localStyles.metricsContainer}>
+            <MetricBar label="수분도" value={metrics.moisture} delta={delta?.moisture} />
+            <MetricBar label="유분도" value={metrics.oil} delta={delta?.oil} />
+            <MetricBar label="모공" value={metrics.pores} delta={delta?.pores} />
+            <MetricBar label="탄력" value={metrics.elasticity} delta={delta?.elasticity} />
+            <MetricBar label="색소침착" value={metrics.pigmentation} delta={delta?.pigmentation} />
+            <MetricBar label="민감도" value={metrics.sensitivity} delta={delta?.sensitivity} />
           </View>
         </View>
 
         {/* 스킨케어 팁 */}
-        <View style={[styles.section, isDark && styles.cardDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>스킨케어 팁</Text>
-          <View style={styles.tipsList}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>스킨케어 팁</Text>
+          <View style={localStyles.tipsList}>
             {typeData.tips.map((tip, index) => (
-              <View key={index} style={styles.tipItem}>
-                <Text style={styles.tipBullet}>•</Text>
-                <Text style={[styles.tipText, isDark && styles.textMuted]}>{tip}</Text>
+              <View key={index} style={localStyles.tipItem}>
+                <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
+                <Text style={[styles.listItem, { flex: 1 }]}>{tip}</Text>
               </View>
             ))}
           </View>
@@ -264,19 +249,8 @@ export default function SkinResultScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
-  },
-  content: {
-    padding: 20,
-  },
+const localStyles = StyleSheet.create({
   scoreCard: {
-    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 24,
     marginBottom: 16,
@@ -292,7 +266,6 @@ const styles = StyleSheet.create({
   scoreLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
   },
   scoreContent: {
     flexDirection: 'row',
@@ -307,46 +280,11 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     borderWidth: 3,
-    borderColor: '#22c55e',
-  },
-  resultCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
-  },
-  typeLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
   },
   typeName: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#22c55e',
     marginBottom: 12,
-  },
-  description: {
-    fontSize: 15,
-    color: '#666',
-    lineHeight: 24,
-    textAlign: 'center',
-  },
-  section: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111',
-    marginBottom: 16,
   },
   metricsContainer: {
     gap: 14,
@@ -359,19 +297,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tipBullet: {
-    color: '#2e5afa',
     fontSize: 16,
-  },
-  tipText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 22,
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

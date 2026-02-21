@@ -16,15 +16,13 @@ import {
   AnalysisErrorState,
   AnalysisTrustBadge,
   AnalysisResultButtons,
-  commonAnalysisStyles,
-  ANALYSIS_COLORS,
+  useAnalysisStyles,
 } from '@/components/analysis';
 import {
   analyzePersonalColor as analyzeWithGemini,
   imageToBase64,
   type PersonalColorAnalysisResult,
 } from '@/lib/gemini';
-import { useTheme } from '@/lib/theme';
 
 // 퍼스널 컬러 결과 데이터
 const SEASON_DATA: Record<
@@ -67,7 +65,9 @@ const SEASON_DATA: Record<
 };
 
 export default function PersonalColorResultScreen() {
-  const { colors, isDark } = useTheme();
+  const { styles, module, colors, isDark } = useAnalysisStyles();
+  const accent = module.personalColor;
+
   const { imageUri, imageBase64, answers } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
@@ -141,7 +141,6 @@ export default function PersonalColorResultScreen() {
     return (
       <AnalysisLoadingState
         message="퍼스널 컬러를 분석 중이에요..."
-        isDark={isDark}
         testID="personal-color-loading"
       />
     );
@@ -153,7 +152,6 @@ export default function PersonalColorResultScreen() {
         message="분석에 실패했습니다."
         onRetry={handleRetry}
         onGoHome={handleGoHome}
-        isDark={isDark}
         testID="personal-color-error"
       />
     );
@@ -162,64 +160,58 @@ export default function PersonalColorResultScreen() {
   const seasonData = SEASON_DATA[result.season];
 
   return (
-    <SafeAreaView
-      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
-      edges={['bottom']}
-    >
-      <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <ScrollView contentContainerStyle={styles.content}>
         {/* 결과 이미지 */}
         {imageUri && (
-          <View style={commonAnalysisStyles.imageContainer}>
-            <Image source={{ uri: imageUri }} style={styles.resultImage} />
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: imageUri }}
+              style={[localStyles.resultImage, { borderColor: accent.base }]}
+            />
           </View>
         )}
 
         {/* 결과 카드 */}
-        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
+        <View style={styles.resultCard}>
           {/* AI 분석 신뢰도 표시 */}
           <AnalysisTrustBadge
             type={usedFallback ? 'questionnaire' : 'ai'}
             confidence={usedFallback ? undefined : result.confidence}
             testID="personal-color-trust-badge"
           />
-          <Text style={[styles.seasonLabel, isDark && commonAnalysisStyles.textMuted]}>
-            당신의 퍼스널 컬러는
-          </Text>
-          <Text style={[styles.seasonName, isDark && commonAnalysisStyles.textLight]}>
-            {seasonData.name}
-          </Text>
-          <Text
-            style={[commonAnalysisStyles.description, isDark && commonAnalysisStyles.textMuted]}
-          >
+          <Text style={styles.label}>당신의 퍼스널 컬러는</Text>
+          <Text style={[localStyles.seasonName, { color: accent.base }]}>{seasonData.name}</Text>
+          <Text style={styles.description}>
             {result.description || seasonData.description}
           </Text>
         </View>
 
         {/* 추천 컬러 팔레트 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-          >
-            추천 컬러 팔레트
-          </Text>
-          <View style={styles.colorPalette}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>추천 컬러 팔레트</Text>
+          <View style={localStyles.colorPalette}>
             {seasonData.colors.map((color, index) => (
-              <View key={index} style={[styles.colorSwatch, { backgroundColor: color }]} />
+              <View key={index} style={[localStyles.colorSwatch, { backgroundColor: color }]} />
             ))}
           </View>
         </View>
 
         {/* 비슷한 연예인 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-          >
-            같은 타입의 연예인
-          </Text>
-          <View style={styles.celebrities}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>같은 타입의 연예인</Text>
+          <View style={localStyles.celebrities}>
             {seasonData.celebrities.map((celebrity, index) => (
-              <View key={index} style={styles.celebrityTag}>
-                <Text style={styles.celebrityText}>{celebrity}</Text>
+              <View
+                key={index}
+                style={[
+                  localStyles.celebrityTag,
+                  { backgroundColor: isDark ? accent.dark + '20' : accent.light + '30' },
+                ]}
+              >
+                <Text style={[localStyles.celebrityText, { color: accent.base }]}>
+                  {celebrity}
+                </Text>
               </View>
             ))}
           </View>
@@ -238,36 +230,18 @@ export default function PersonalColorResultScreen() {
   );
 }
 
-// 이 파일 전용 스타일 (공통 스타일은 commonAnalysisStyles 사용)
-const styles = StyleSheet.create({
-  // 결과 이미지 (원형)
+const localStyles = StyleSheet.create({
   resultImage: {
     width: 200,
     height: 200,
     borderRadius: 100,
     borderWidth: 4,
-    borderColor: ANALYSIS_COLORS.primary,
-  },
-  // 결과 카드
-  resultCard: {
-    backgroundColor: ANALYSIS_COLORS.cardBackground,
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  seasonLabel: {
-    fontSize: 14,
-    color: ANALYSIS_COLORS.textSecondary,
-    marginBottom: 8,
   },
   seasonName: {
     fontSize: 28,
     fontWeight: '700',
-    color: ANALYSIS_COLORS.primary,
     marginBottom: 16,
   },
-  // 컬러 팔레트
   colorPalette: {
     flexDirection: 'row',
     gap: 12,
@@ -282,20 +256,17 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  // 연예인 태그
   celebrities: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
   celebrityTag: {
-    backgroundColor: '#f0f4ff',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   celebrityText: {
-    color: ANALYSIS_COLORS.primary,
     fontSize: 14,
     fontWeight: '500',
   },

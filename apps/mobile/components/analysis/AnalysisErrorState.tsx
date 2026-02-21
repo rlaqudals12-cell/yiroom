@@ -7,6 +7,8 @@
  */
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
+import { useTheme } from '@/lib/theme';
+
 export interface AnalysisErrorStateProps {
   /** 에러 메시지 */
   message?: string;
@@ -16,8 +18,6 @@ export interface AnalysisErrorStateProps {
   onRetry?: () => void;
   /** 홈으로 이동 핸들러 */
   onGoHome?: () => void;
-  /** 다크 모드 여부 */
-  isDark?: boolean;
   /** 테스트 ID */
   testID?: string;
 }
@@ -27,41 +27,47 @@ export function AnalysisErrorState({
   retryText = '다시 시도하기',
   onRetry,
   onGoHome,
-  isDark = false,
   testID = 'analysis-error',
 }: AnalysisErrorStateProps) {
+  const { colors, brand } = useTheme();
+
   return (
     <View
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       testID={testID}
       accessibilityRole="alert"
     >
-      <Text style={[styles.errorText, isDark && styles.textLight]} accessibilityLabel={message}>
+      <Text
+        style={[styles.errorText, { color: colors.mutedForeground }]}
+        accessibilityLabel={message}
+      >
         {message}
       </Text>
 
       <View style={styles.buttonContainer}>
         {onRetry && (
           <TouchableOpacity
-            style={styles.retryButton}
+            style={[styles.retryButton, { backgroundColor: brand.primary }]}
             onPress={onRetry}
             accessibilityRole="button"
             accessibilityLabel={retryText}
             testID={`${testID}-retry`}
           >
-            <Text style={styles.retryButtonText}>{retryText}</Text>
+            <Text style={[styles.retryButtonText, { color: brand.primaryForeground }]}>
+              {retryText}
+            </Text>
           </TouchableOpacity>
         )}
 
         {onGoHome && (
           <TouchableOpacity
-            style={[styles.homeButton, isDark && styles.homeButtonDark]}
+            style={[styles.homeButton, { borderColor: colors.border }]}
             onPress={onGoHome}
             accessibilityRole="button"
             accessibilityLabel="홈으로 돌아가기"
             testID={`${testID}-home`}
           >
-            <Text style={[styles.homeButtonText, isDark && styles.homeButtonTextDark]}>
+            <Text style={[styles.homeButtonText, { color: colors.mutedForeground }]}>
               홈으로 돌아가기
             </Text>
           </TouchableOpacity>
@@ -76,21 +82,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
     padding: 20,
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
     marginBottom: 24,
     textAlign: 'center',
     lineHeight: 24,
-  },
-  textLight: {
-    color: '#ffffff',
   },
   buttonContainer: {
     gap: 12,
@@ -98,33 +96,23 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   retryButton: {
-    backgroundColor: '#2e5afa',
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
   },
   retryButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
   homeButton: {
     borderWidth: 1,
-    borderColor: '#ddd',
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
   },
-  homeButtonDark: {
-    borderColor: '#333',
-  },
   homeButtonText: {
-    color: '#666',
     fontSize: 16,
-  },
-  homeButtonTextDark: {
-    color: '#999',
   },
 });

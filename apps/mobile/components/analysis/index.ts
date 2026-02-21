@@ -25,7 +25,10 @@ export type { MetricBarProps } from './MetricBar';
 export { AnalysisResultButtons } from './AnalysisResultButtons';
 export type { AnalysisResultButtonsProps } from './AnalysisResultButtons';
 
-// 공통 스타일
+// 동적 스타일 훅 (useTheme 기반)
+export { useAnalysisStyles } from './styles/useAnalysisStyles';
+
+// 정적 스타일 (deprecated — useAnalysisStyles 사용 권장)
 export {
   ANALYSIS_COLORS,
   commonAnalysisStyles,

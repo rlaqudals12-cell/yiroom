@@ -5,29 +5,30 @@
  */
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
+import { useTheme } from '@/lib/theme';
+
 export interface AnalysisLoadingStateProps {
   /** 로딩 메시지 */
   message?: string;
-  /** 다크 모드 여부 */
-  isDark?: boolean;
   /** 테스트 ID */
   testID?: string;
 }
 
 export function AnalysisLoadingState({
   message = '분석 중이에요...',
-  isDark = false,
   testID = 'analysis-loading',
 }: AnalysisLoadingStateProps) {
+  const { colors, brand } = useTheme();
+
   return (
     <View
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       testID={testID}
       accessibilityLabel={message}
       accessibilityRole="progressbar"
     >
-      <ActivityIndicator size="large" color="#2e5afa" />
-      <Text style={[styles.text, isDark && styles.textLight]}>{message}</Text>
+      <ActivityIndicator size="large" color={brand.primary} />
+      <Text style={[styles.text, { color: colors.mutedForeground }]}>{message}</Text>
     </View>
   );
 }
@@ -37,19 +38,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
     padding: 20,
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   text: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
-  },
-  textLight: {
-    color: '#ffffff',
   },
 });

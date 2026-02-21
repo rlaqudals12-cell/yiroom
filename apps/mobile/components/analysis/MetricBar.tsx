@@ -5,6 +5,8 @@
  */
 import { View, Text, StyleSheet } from 'react-native';
 
+import { useTheme } from '@/lib/theme';
+
 import { MetricDelta } from './ScoreChangeBadge';
 
 export interface MetricBarProps {
@@ -14,25 +16,18 @@ export interface MetricBarProps {
   value: number;
   /** 이전 대비 변화량 */
   delta?: number;
-  /** 다크 모드 여부 */
+  /** 다크 모드 여부 (deprecated — useTheme 내부 사용) */
   isDark?: boolean;
   /** 테스트 ID */
   testID?: string;
 }
 
-/**
- * 값에 따른 색상 반환
- * - 70 이상: 초록 (좋음)
- * - 50-69: 노랑 (보통)
- * - 50 미만: 빨강 (주의)
- */
-function getColor(value: number): string {
-  if (value >= 70) return '#22c55e';
-  if (value >= 50) return '#eab308';
-  return '#ef4444';
-}
+export function MetricBar({ label, value, delta, testID }: MetricBarProps) {
+  const { colors, status } = useTheme();
 
-export function MetricBar({ label, value, delta, isDark = false, testID }: MetricBarProps) {
+  // 값에 따른 상태 색상 (70+: 좋음, 50-69: 보통, <50: 주의)
+  const barColor = value >= 70 ? status.success : value >= 50 ? status.warning : status.error;
+
   return (
     <View
       style={styles.metricItem}
@@ -40,16 +35,14 @@ export function MetricBar({ label, value, delta, isDark = false, testID }: Metri
       testID={testID}
     >
       <View style={styles.metricHeader}>
-        <Text style={[styles.metricLabel, isDark && styles.textLight]}>{label}</Text>
+        <Text style={[styles.metricLabel, { color: colors.foreground }]}>{label}</Text>
         <View style={styles.metricValueContainer}>
-          <Text style={[styles.metricValue, isDark && styles.textMuted]}>{value}%</Text>
+          <Text style={[styles.metricValue, { color: colors.mutedForeground }]}>{value}%</Text>
           {delta !== undefined && delta !== 0 && <MetricDelta delta={delta} size="sm" />}
         </View>
       </View>
-      <View style={[styles.metricBarBg, isDark && styles.metricBarBgDark]}>
-        <View
-          style={[styles.metricBarFill, { width: `${value}%`, backgroundColor: getColor(value) }]}
-        />
+      <View style={[styles.metricBarBg, { backgroundColor: colors.border }]}>
+        <View style={[styles.metricBarFill, { width: `${value}%`, backgroundColor: barColor }]} />
       </View>
     </View>
   );
@@ -70,30 +63,18 @@ const styles = StyleSheet.create({
   },
   metricLabel: {
     fontSize: 14,
-    color: '#333',
   },
   metricValue: {
     fontSize: 14,
-    color: '#666',
     fontWeight: '500',
   },
   metricBarBg: {
     height: 8,
-    backgroundColor: '#e5e5e5',
     borderRadius: 4,
     overflow: 'hidden',
-  },
-  metricBarBgDark: {
-    backgroundColor: '#333',
   },
   metricBarFill: {
     height: '100%',
     borderRadius: 4,
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

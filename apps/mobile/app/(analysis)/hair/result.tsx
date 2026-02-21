@@ -13,8 +13,7 @@ import {
   AnalysisTrustBadge,
   AnalysisResultButtons,
   MetricBar,
-  commonAnalysisStyles,
-  ANALYSIS_COLORS,
+  useAnalysisStyles,
 } from '@/components/analysis';
 import {
   analyzeHair as analyzeWithGemini,
@@ -22,7 +21,6 @@ import {
   type HairAnalysisResult,
 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { useTheme } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const TEXTURE_LABELS: Record<HairAnalysisResult['texture'], string> = {
@@ -46,7 +44,9 @@ const SCALP_LABELS: Record<HairAnalysisResult['scalpCondition'], string> = {
 };
 
 export default function HairResultScreen() {
-  const { isDark } = useTheme();
+  const { styles, module, isDark } = useAnalysisStyles();
+  const accent = module.hair;
+
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
@@ -95,7 +95,6 @@ export default function HairResultScreen() {
     return (
       <AnalysisLoadingState
         message="헤어 상태를 분석 중이에요..."
-        isDark={isDark}
         testID="hair-loading"
       />
     );
@@ -107,7 +106,6 @@ export default function HairResultScreen() {
         message="분석에 실패했습니다."
         onRetry={handleRetry}
         onGoHome={handleGoHome}
-        isDark={isDark}
         testID="hair-error"
       />
     );
@@ -116,56 +114,49 @@ export default function HairResultScreen() {
   return (
     <SafeAreaView
       testID="analysis-hair-result-screen"
-      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
+      style={styles.container}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         {imageUri && (
-          <View style={commonAnalysisStyles.imageContainer}>
-            <Image source={{ uri: imageUri }} style={styles.resultImage} />
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: imageUri }}
+              style={[localStyles.resultImage, { borderColor: accent.base }]}
+            />
           </View>
         )}
 
         {/* 주요 결과 */}
-        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
+        <View style={styles.resultCard}>
           <AnalysisTrustBadge
             type={usedFallback ? 'questionnaire' : 'ai'}
             testID="hair-trust-badge"
           />
-          <Text style={[styles.label, isDark && commonAnalysisStyles.textMuted]}>
-            모발 유형 분석 결과
-          </Text>
-          <Text style={[styles.mainResult, isDark && commonAnalysisStyles.textLight]}>
+          <Text style={styles.label}>모발 유형 분석 결과</Text>
+          <Text style={[localStyles.mainResult, { color: accent.base }]}>
             {TEXTURE_LABELS[result.texture]} / {THICKNESS_LABELS[result.thickness]}
           </Text>
-          <Text style={[styles.scalpLabel, isDark && commonAnalysisStyles.textMuted]}>
+          <Text style={styles.subLabel}>
             {SCALP_LABELS[result.scalpCondition]} · 손상도 {result.damageLevel}%
           </Text>
         </View>
 
         {/* 점수 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-          >
-            모발 점수
-          </Text>
-          <MetricBar label="윤기" value={result.scores.shine} isDark={isDark} />
-          <MetricBar label="탄력" value={result.scores.elasticity} isDark={isDark} />
-          <MetricBar label="밀도" value={result.scores.density} isDark={isDark} />
-          <MetricBar label="두피 건강" value={result.scores.scalpHealth} isDark={isDark} />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>모발 점수</Text>
+          <MetricBar label="윤기" value={result.scores.shine} />
+          <MetricBar label="탄력" value={result.scores.elasticity} />
+          <MetricBar label="밀도" value={result.scores.density} />
+          <MetricBar label="두피 건강" value={result.scores.scalpHealth} />
         </View>
 
         {/* 주요 고민 */}
         {result.mainConcerns.length > 0 && (
-          <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-            <Text
-              style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-            >
-              주요 고민
-            </Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>주요 고민</Text>
             {result.mainConcerns.map((concern, i) => (
-              <Text key={i} style={[styles.listItem, isDark && commonAnalysisStyles.textMuted]}>
+              <Text key={i} style={styles.listItem}>
                 · {concern}
               </Text>
             ))}
@@ -174,14 +165,10 @@ export default function HairResultScreen() {
 
         {/* 케어 루틴 */}
         {result.careRoutine.length > 0 && (
-          <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-            <Text
-              style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-            >
-              추천 케어 루틴
-            </Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>추천 케어 루틴</Text>
             {result.careRoutine.map((routine, i) => (
-              <Text key={i} style={[styles.listItem, isDark && commonAnalysisStyles.textMuted]}>
+              <Text key={i} style={styles.listItem}>
                 {i + 1}. {routine}
               </Text>
             ))}
@@ -190,16 +177,18 @@ export default function HairResultScreen() {
 
         {/* 추천 스타일 */}
         {result.recommendedStyles.length > 0 && (
-          <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-            <Text
-              style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-            >
-              추천 헤어스타일
-            </Text>
-            <View style={styles.styleTags}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>추천 헤어스타일</Text>
+            <View style={localStyles.styleTags}>
               {result.recommendedStyles.map((style, i) => (
-                <View key={i} style={styles.styleTag}>
-                  <Text style={styles.styleTagText}>{style}</Text>
+                <View
+                  key={i}
+                  style={[
+                    localStyles.styleTag,
+                    { backgroundColor: isDark ? accent.dark + '20' : accent.light + '30' },
+                  ]}
+                >
+                  <Text style={[localStyles.styleTagText, { color: accent.base }]}>{style}</Text>
                 </View>
               ))}
             </View>
@@ -218,31 +207,30 @@ export default function HairResultScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   resultImage: {
     width: 200,
     height: 250,
     borderRadius: 16,
     borderWidth: 4,
-    borderColor: ANALYSIS_COLORS.primary,
   },
-  resultCard: {
-    backgroundColor: ANALYSIS_COLORS.cardBackground,
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 16,
-    alignItems: 'center',
+  mainResult: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 8,
   },
-  label: { fontSize: 14, color: ANALYSIS_COLORS.textSecondary, marginBottom: 8 },
-  mainResult: { fontSize: 24, fontWeight: '700', color: ANALYSIS_COLORS.primary, marginBottom: 8 },
-  scalpLabel: { fontSize: 15, color: ANALYSIS_COLORS.textSecondary },
-  listItem: { fontSize: 15, color: '#444', lineHeight: 26 },
-  styleTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  styleTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
   styleTag: {
-    backgroundColor: '#f0f4ff',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
-  styleTagText: { color: ANALYSIS_COLORS.primary, fontSize: 14, fontWeight: '500' },
+  styleTagText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
 });

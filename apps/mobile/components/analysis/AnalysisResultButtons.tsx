@@ -1,10 +1,12 @@
 /**
  * 분석 결과 화면 공통 버튼 그룹
  *
- * 모든 분석 결과 화면(body, personal-color, skin)에서 사용하는
+ * 모든 분석 결과 화면에서 사용하는
  * 주 액션, 홈 이동, 재분석 버튼 그룹
  */
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+
+import { useTheme } from '@/lib/theme';
 
 export interface AnalysisResultButtonsProps {
   /** 주 버튼 텍스트 */
@@ -26,20 +28,32 @@ export function AnalysisResultButtons({
   onRetry,
   testID = 'analysis-result-buttons',
 }: AnalysisResultButtonsProps) {
+  const { colors, brand } = useTheme();
+
   return (
     <View style={styles.buttons} testID={testID}>
       <TouchableOpacity
-        style={styles.primaryButton}
+        style={[styles.primaryButton, { backgroundColor: brand.primary }]}
         onPress={onPrimaryPress}
         testID={`${testID}-primary`}
       >
-        <Text style={styles.primaryButtonText}>{primaryText}</Text>
+        <Text style={[styles.primaryButtonText, { color: brand.primaryForeground }]}>
+          {primaryText}
+        </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.secondaryButton} onPress={onGoHome} testID={`${testID}-home`}>
-        <Text style={styles.secondaryButtonText}>홈으로 돌아가기</Text>
+      <TouchableOpacity
+        style={[styles.secondaryButton, { borderColor: colors.border }]}
+        onPress={onGoHome}
+        testID={`${testID}-home`}
+      >
+        <Text style={[styles.secondaryButtonText, { color: colors.mutedForeground }]}>
+          홈으로 돌아가기
+        </Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.retryLink} onPress={onRetry} testID={`${testID}-retry`}>
-        <Text style={styles.retryLinkText}>다시 분석하기</Text>
+        <Text style={[styles.retryLinkText, { color: colors.mutedForeground }]}>
+          다시 분석하기
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -51,25 +65,21 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   primaryButton: {
-    backgroundColor: '#2e5afa',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#666',
     fontSize: 16,
   },
   retryLink: {
@@ -77,7 +87,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   retryLinkText: {
-    color: '#999',
     fontSize: 14,
     textDecorationLine: 'underline',
   },

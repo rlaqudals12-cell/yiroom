@@ -3,7 +3,10 @@
  *
  * AI 분석 또는 fallback 모드를 표시하는 배지
  */
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+
+import { useTheme } from '@/lib/theme';
 
 export type TrustBadgeType = 'ai' | 'fallback' | 'questionnaire';
 
@@ -18,25 +21,10 @@ export interface AnalysisTrustBadgeProps {
   testID?: string;
 }
 
-const BADGE_CONFIGS: Record<
-  TrustBadgeType,
-  { defaultLabel: string; backgroundColor: string; textColor: string }
-> = {
-  ai: {
-    defaultLabel: 'AI 분석 완료',
-    backgroundColor: '#e8f5e9',
-    textColor: '#2e7d32',
-  },
-  fallback: {
-    defaultLabel: '기본 분석 결과',
-    backgroundColor: '#fff3e0',
-    textColor: '#ef6c00',
-  },
-  questionnaire: {
-    defaultLabel: '문진 기반 분석',
-    backgroundColor: '#fff3e0',
-    textColor: '#ef6c00',
-  },
+const DEFAULT_LABELS: Record<TrustBadgeType, string> = {
+  ai: 'AI 분석 완료',
+  fallback: '기본 분석 결과',
+  questionnaire: '문진 기반 분석',
 };
 
 export function AnalysisTrustBadge({
@@ -45,23 +33,37 @@ export function AnalysisTrustBadge({
   label,
   testID = 'analysis-trust-badge',
 }: AnalysisTrustBadgeProps) {
-  const config = BADGE_CONFIGS[type];
+  const { status, isDark } = useTheme();
 
   // AI 타입이고 confidence가 있으면 퍼센트 표시
   const displayLabel =
     label ||
     (type === 'ai' && confidence !== undefined
       ? `AI 분석 ${Math.round(confidence * 100)}%`
-      : config.defaultLabel);
+      : DEFAULT_LABELS[type]);
+
+  // AI → 성공(초록), fallback/questionnaire → 경고(주황)
+  const badgeColors = useMemo(() => {
+    if (type === 'ai') {
+      return {
+        bg: isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.12)',
+        text: isDark ? '#4ADE80' : '#16A34A',
+      };
+    }
+    return {
+      bg: isDark ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.12)',
+      text: isDark ? '#FBBF24' : '#D97706',
+    };
+  }, [type, isDark]);
 
   return (
     <View
-      style={[styles.badge, { backgroundColor: config.backgroundColor }]}
+      style={[styles.badge, { backgroundColor: badgeColors.bg }]}
       testID={testID}
       accessibilityRole="text"
       accessibilityLabel={displayLabel}
     >
-      <Text style={[styles.badgeText, { color: config.textColor }]}>{displayLabel}</Text>
+      <Text style={[styles.badgeText, { color: badgeColors.text }]}>{displayLabel}</Text>
     </View>
   );
 }

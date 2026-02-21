@@ -16,15 +16,13 @@ import {
   AnalysisErrorState,
   AnalysisTrustBadge,
   AnalysisResultButtons,
-  commonAnalysisStyles,
-  ANALYSIS_COLORS,
+  useAnalysisStyles,
 } from '@/components/analysis';
 import {
   analyzeBody as analyzeWithGemini,
   imageToBase64,
   type BodyAnalysisResult,
 } from '@/lib/gemini';
-import { useTheme } from '@/lib/theme';
 
 // 체형 타입 데이터
 const BODY_TYPE_DATA: Record<
@@ -90,7 +88,9 @@ const BODY_TYPE_DATA: Record<
 };
 
 export default function BodyResultScreen() {
-  const { colors, isDark } = useTheme();
+  const { styles, module, colors, status, isDark } = useAnalysisStyles();
+  const accent = module.body;
+
   const { height, weight, imageUri, imageBase64 } = useLocalSearchParams<{
     height: string;
     weight: string;
@@ -184,17 +184,16 @@ export default function BodyResultScreen() {
   };
 
   const getBmiStatus = (bmiValue: number) => {
-    if (bmiValue < 18.5) return { label: '저체중', color: '#3b82f6' };
-    if (bmiValue < 23) return { label: '정상', color: '#22c55e' };
-    if (bmiValue < 25) return { label: '과체중', color: '#eab308' };
-    return { label: '비만', color: '#ef4444' };
+    if (bmiValue < 18.5) return { label: '저체중', color: status.info };
+    if (bmiValue < 23) return { label: '정상', color: status.success };
+    if (bmiValue < 25) return { label: '과체중', color: status.warning };
+    return { label: '비만', color: status.error };
   };
 
   if (isLoading) {
     return (
       <AnalysisLoadingState
         message="체형을 분석 중이에요..."
-        isDark={isDark}
         testID="body-analysis-loading"
       />
     );
@@ -206,7 +205,6 @@ export default function BodyResultScreen() {
         message="분석에 실패했습니다."
         onRetry={handleRetry}
         onGoHome={handleGoHome}
-        isDark={isDark}
         testID="body-analysis-error"
       />
     );
@@ -216,77 +214,77 @@ export default function BodyResultScreen() {
   const bmiStatus = getBmiStatus(bmi);
 
   return (
-    <SafeAreaView
-      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
-      edges={['bottom']}
-    >
-      <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <ScrollView contentContainerStyle={styles.content}>
         {/* AI 분석 신뢰도 표시 */}
         <AnalysisTrustBadge type={usedFallback ? 'fallback' : 'ai'} testID="body-trust-badge" />
 
         {/* 결과 이미지 */}
         {imageUri && (
-          <View style={commonAnalysisStyles.imageContainer}>
-            <Image source={{ uri: imageUri }} style={styles.resultImage} />
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: imageUri }}
+              style={[localStyles.resultImage, { borderColor: accent.base }]}
+            />
           </View>
         )}
 
         {/* BMI 카드 */}
-        <View style={[styles.bmiCard, isDark && commonAnalysisStyles.cardDark]}>
-          <Text style={[styles.bmiLabel, isDark && commonAnalysisStyles.textMuted]}>BMI</Text>
-          <View style={styles.bmiValue}>
-            <Text style={[styles.bmiNumber, { color: bmiStatus.color }]}>{bmi}</Text>
-            <View style={[styles.bmiStatus, { backgroundColor: bmiStatus.color }]}>
-              <Text style={styles.bmiStatusText}>{bmiStatus.label}</Text>
+        <View style={[localStyles.bmiCard, { backgroundColor: colors.card }]}>
+          <Text style={[localStyles.bmiLabel, { color: colors.mutedForeground }]}>BMI</Text>
+          <View style={localStyles.bmiValue}>
+            <Text style={[localStyles.bmiNumber, { color: bmiStatus.color }]}>{bmi}</Text>
+            <View style={[localStyles.bmiStatus, { backgroundColor: bmiStatus.color }]}>
+              <Text style={localStyles.bmiStatusText}>{bmiStatus.label}</Text>
             </View>
           </View>
-          <Text style={[styles.bmiInfo, isDark && commonAnalysisStyles.textMuted]}>
+          <Text style={[localStyles.bmiInfo, { color: colors.mutedForeground }]}>
             키 {height}cm / 체중 {weight}kg
           </Text>
         </View>
 
         {/* 체형 결과 */}
-        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
-          <Text style={[styles.typeLabel, isDark && commonAnalysisStyles.textMuted]}>
-            당신의 체형은
-          </Text>
-          <Text style={[styles.typeName, isDark && commonAnalysisStyles.textLight]}>
-            {typeData.name}
-          </Text>
-          <Text
-            style={[commonAnalysisStyles.description, isDark && commonAnalysisStyles.textMuted]}
-          >
-            {typeData.description}
-          </Text>
+        <View style={styles.resultCard}>
+          <Text style={styles.label}>당신의 체형은</Text>
+          <Text style={[localStyles.typeName, { color: accent.base }]}>{typeData.name}</Text>
+          <Text style={styles.description}>{typeData.description}</Text>
         </View>
 
         {/* 추천 스타일 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-          >
-            추천 스타일
-          </Text>
-          <View style={styles.tagContainer}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>추천 스타일</Text>
+          <View style={localStyles.tagContainer}>
             {typeData.recommendations.map((item, index) => (
-              <View key={index} style={styles.recommendTag}>
-                <Text style={styles.recommendTagText}>{item}</Text>
+              <View
+                key={index}
+                style={[
+                  localStyles.tag,
+                  { backgroundColor: status.success + (isDark ? '20' : '25') },
+                ]}
+              >
+                <Text style={[localStyles.tagText, { color: isDark ? '#4ADE80' : '#16A34A' }]}>
+                  {item}
+                </Text>
               </View>
             ))}
           </View>
         </View>
 
         {/* 피해야 할 스타일 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-          >
-            피하면 좋은 스타일
-          </Text>
-          <View style={styles.tagContainer}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>피하면 좋은 스타일</Text>
+          <View style={localStyles.tagContainer}>
             {typeData.avoidItems.map((item, index) => (
-              <View key={index} style={styles.avoidTag}>
-                <Text style={styles.avoidTagText}>{item}</Text>
+              <View
+                key={index}
+                style={[
+                  localStyles.tag,
+                  { backgroundColor: status.error + (isDark ? '20' : '25') },
+                ]}
+              >
+                <Text style={[localStyles.tagText, { color: isDark ? '#F87171' : '#B91C1C' }]}>
+                  {item}
+                </Text>
               </View>
             ))}
           </View>
@@ -305,19 +303,14 @@ export default function BodyResultScreen() {
   );
 }
 
-// 이 파일 전용 스타일 (공통 스타일은 commonAnalysisStyles 사용)
-const styles = StyleSheet.create({
-  // 결과 이미지
+const localStyles = StyleSheet.create({
   resultImage: {
     width: 140,
     height: 180,
     borderRadius: 12,
     borderWidth: 3,
-    borderColor: ANALYSIS_COLORS.primary,
   },
-  // BMI 카드
   bmiCard: {
-    backgroundColor: ANALYSIS_COLORS.cardBackground,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
@@ -325,7 +318,6 @@ const styles = StyleSheet.create({
   },
   bmiLabel: {
     fontSize: 14,
-    color: ANALYSIS_COLORS.textSecondary,
     marginBottom: 8,
   },
   bmiValue: {
@@ -350,52 +342,23 @@ const styles = StyleSheet.create({
   },
   bmiInfo: {
     fontSize: 14,
-    color: ANALYSIS_COLORS.textSecondary,
-  },
-  // 체형 결과 카드
-  resultCard: {
-    backgroundColor: ANALYSIS_COLORS.cardBackground,
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  typeLabel: {
-    fontSize: 14,
-    color: ANALYSIS_COLORS.textSecondary,
-    marginBottom: 8,
   },
   typeName: {
     fontSize: 24,
     fontWeight: '700',
-    color: ANALYSIS_COLORS.primary,
     marginBottom: 12,
   },
-  // 태그 스타일
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  recommendTag: {
-    backgroundColor: '#e8f5e9',
+  tag: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
   },
-  recommendTagText: {
-    color: '#2e7d32',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  avoidTag: {
-    backgroundColor: '#ffebee',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  avoidTagText: {
-    color: '#c62828',
+  tagText: {
     fontSize: 14,
     fontWeight: '500',
   },

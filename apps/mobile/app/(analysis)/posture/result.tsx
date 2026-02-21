@@ -13,8 +13,7 @@ import {
   AnalysisTrustBadge,
   AnalysisResultButtons,
   MetricBar,
-  commonAnalysisStyles,
-  ANALYSIS_COLORS,
+  useAnalysisStyles,
 } from '@/components/analysis';
 import {
   analyzePosture as analyzeWithGemini,
@@ -22,7 +21,6 @@ import {
   type PostureAnalysisResult,
 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { useTheme } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const POSTURE_TYPE_LABELS: Record<PostureAnalysisResult['postureType'], string> = {
@@ -35,7 +33,9 @@ const POSTURE_TYPE_LABELS: Record<PostureAnalysisResult['postureType'], string> 
 };
 
 export default function PostureResultScreen() {
-  const { isDark } = useTheme();
+  const { styles, module, colors } = useAnalysisStyles();
+  const accent = module.posture;
+
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
@@ -84,7 +84,6 @@ export default function PostureResultScreen() {
     return (
       <AnalysisLoadingState
         message="자세를 분석 중이에요..."
-        isDark={isDark}
         testID="posture-loading"
       />
     );
@@ -96,7 +95,6 @@ export default function PostureResultScreen() {
         message="분석에 실패했습니다."
         onRetry={handleRetry}
         onGoHome={handleGoHome}
-        isDark={isDark}
         testID="posture-error"
       />
     );
@@ -105,56 +103,47 @@ export default function PostureResultScreen() {
   return (
     <SafeAreaView
       testID="analysis-posture-result-screen"
-      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
+      style={styles.container}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         {imageUri && (
-          <View style={commonAnalysisStyles.imageContainer}>
-            <Image source={{ uri: imageUri }} style={styles.resultImage} />
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: imageUri }}
+              style={[localStyles.resultImage, { borderColor: accent.base }]}
+            />
           </View>
         )}
 
         {/* 주요 결과 */}
-        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
+        <View style={styles.resultCard}>
           <AnalysisTrustBadge
             type={usedFallback ? 'questionnaire' : 'ai'}
             testID="posture-trust-badge"
           />
-          <Text style={[styles.label, isDark && commonAnalysisStyles.textMuted]}>
-            자세 유형 분석 결과
-          </Text>
-          <Text style={[styles.mainResult, isDark && commonAnalysisStyles.textLight]}>
+          <Text style={styles.label}>자세 유형 분석 결과</Text>
+          <Text style={[localStyles.mainResult, { color: accent.base }]}>
             {POSTURE_TYPE_LABELS[result.postureType]}
           </Text>
-          <Text style={[styles.scoreLabel, isDark && commonAnalysisStyles.textMuted]}>
-            종합 점수 {result.overallScore}점
-          </Text>
+          <Text style={styles.subLabel}>종합 점수 {result.overallScore}점</Text>
         </View>
 
         {/* 점수 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-          >
-            정렬 점수
-          </Text>
-          <MetricBar label="머리 정렬" value={result.scores.headAlignment} isDark={isDark} />
-          <MetricBar label="어깨 균형" value={result.scores.shoulderBalance} isDark={isDark} />
-          <MetricBar label="척추 정렬" value={result.scores.spineAlignment} isDark={isDark} />
-          <MetricBar label="골반 정렬" value={result.scores.hipAlignment} isDark={isDark} />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>정렬 점수</Text>
+          <MetricBar label="머리 정렬" value={result.scores.headAlignment} />
+          <MetricBar label="어깨 균형" value={result.scores.shoulderBalance} />
+          <MetricBar label="척추 정렬" value={result.scores.spineAlignment} />
+          <MetricBar label="골반 정렬" value={result.scores.hipAlignment} />
         </View>
 
         {/* 발견된 문제 */}
         {result.issues.length > 0 && (
-          <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-            <Text
-              style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-            >
-              발견된 문제
-            </Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>발견된 문제</Text>
             {result.issues.map((issue, i) => (
-              <Text key={i} style={[styles.listItem, isDark && commonAnalysisStyles.textMuted]}>
+              <Text key={i} style={styles.listItem}>
                 · {issue}
               </Text>
             ))}
@@ -163,21 +152,17 @@ export default function PostureResultScreen() {
 
         {/* 교정 운동 */}
         {result.exercises.length > 0 && (
-          <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-            <Text
-              style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-            >
-              추천 교정 운동
-            </Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>추천 교정 운동</Text>
             {result.exercises.map((exercise, i) => (
-              <View key={i} style={styles.exerciseCard}>
-                <Text style={[styles.exerciseName, isDark && commonAnalysisStyles.textLight]}>
+              <View key={i} style={localStyles.exerciseCard}>
+                <Text style={[localStyles.exerciseName, { color: colors.foreground }]}>
                   {i + 1}. {exercise.name}
                 </Text>
-                <Text style={[styles.exerciseDesc, isDark && commonAnalysisStyles.textMuted]}>
+                <Text style={[localStyles.exerciseDesc, { color: colors.mutedForeground }]}>
                   {exercise.description}
                 </Text>
-                <Text style={[styles.exerciseDuration, isDark && commonAnalysisStyles.textMuted]}>
+                <Text style={[localStyles.exerciseDuration, { color: colors.mutedForeground }]}>
                   {exercise.duration}
                 </Text>
               </View>
@@ -187,14 +172,10 @@ export default function PostureResultScreen() {
 
         {/* 생활 습관 팁 */}
         {result.dailyTips.length > 0 && (
-          <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-            <Text
-              style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-            >
-              생활 습관 조언
-            </Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>생활 습관 조언</Text>
             {result.dailyTips.map((tip, i) => (
-              <Text key={i} style={[styles.listItem, isDark && commonAnalysisStyles.textMuted]}>
+              <Text key={i} style={styles.listItem}>
                 {i + 1}. {tip}
               </Text>
             ))}
@@ -213,27 +194,32 @@ export default function PostureResultScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   resultImage: {
     width: 160,
     height: 300,
     borderRadius: 16,
     borderWidth: 4,
-    borderColor: ANALYSIS_COLORS.primary,
   },
-  resultCard: {
-    backgroundColor: ANALYSIS_COLORS.cardBackground,
-    borderRadius: 16,
-    padding: 24,
+  mainResult: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  exerciseCard: {
     marginBottom: 16,
-    alignItems: 'center',
   },
-  label: { fontSize: 14, color: ANALYSIS_COLORS.textSecondary, marginBottom: 8 },
-  mainResult: { fontSize: 24, fontWeight: '700', color: ANALYSIS_COLORS.primary, marginBottom: 8 },
-  scoreLabel: { fontSize: 15, color: ANALYSIS_COLORS.textSecondary },
-  listItem: { fontSize: 15, color: '#444', lineHeight: 26 },
-  exerciseCard: { marginBottom: 16 },
-  exerciseName: { fontSize: 16, fontWeight: '600', color: '#111', marginBottom: 4 },
-  exerciseDesc: { fontSize: 14, color: '#666', lineHeight: 22, marginBottom: 4 },
-  exerciseDuration: { fontSize: 13, color: '#999' },
+  exerciseName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  exerciseDesc: {
+    fontSize: 14,
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+  exerciseDuration: {
+    fontSize: 13,
+  },
 });

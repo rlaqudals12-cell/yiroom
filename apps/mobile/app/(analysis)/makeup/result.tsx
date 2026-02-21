@@ -13,8 +13,7 @@ import {
   AnalysisTrustBadge,
   AnalysisResultButtons,
   MetricBar,
-  commonAnalysisStyles,
-  ANALYSIS_COLORS,
+  useAnalysisStyles,
 } from '@/components/analysis';
 import {
   analyzeMakeup as analyzeWithGemini,
@@ -22,7 +21,6 @@ import {
   type MakeupAnalysisResult,
 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { useTheme } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const FACE_SHAPE_LABELS: Record<MakeupAnalysisResult['faceShape'], string> = {
@@ -64,7 +62,9 @@ const RECOMMENDATION_LABELS: Record<keyof MakeupAnalysisResult['recommendations'
 };
 
 export default function MakeupResultScreen() {
-  const { isDark } = useTheme();
+  const { styles, module, colors } = useAnalysisStyles();
+  const accent = module.makeup;
+
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
@@ -113,7 +113,6 @@ export default function MakeupResultScreen() {
     return (
       <AnalysisLoadingState
         message="메이크업 스타일을 분석 중이에요..."
-        isDark={isDark}
         testID="makeup-loading"
       />
     );
@@ -125,7 +124,6 @@ export default function MakeupResultScreen() {
         message="분석에 실패했습니다."
         onRetry={handleRetry}
         onGoHome={handleGoHome}
-        isDark={isDark}
         testID="makeup-error"
       />
     );
@@ -134,60 +132,53 @@ export default function MakeupResultScreen() {
   return (
     <SafeAreaView
       testID="analysis-makeup-result-screen"
-      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
+      style={styles.container}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         {imageUri && (
-          <View style={commonAnalysisStyles.imageContainer}>
-            <Image source={{ uri: imageUri }} style={styles.resultImage} />
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: imageUri }}
+              style={[localStyles.resultImage, { borderColor: accent.base }]}
+            />
           </View>
         )}
 
         {/* 주요 결과 */}
-        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
+        <View style={styles.resultCard}>
           <AnalysisTrustBadge
             type={usedFallback ? 'questionnaire' : 'ai'}
             testID="makeup-trust-badge"
           />
-          <Text style={[styles.label, isDark && commonAnalysisStyles.textMuted]}>
-            얼굴형 · 톤 분석 결과
-          </Text>
-          <Text style={[styles.mainResult, isDark && commonAnalysisStyles.textLight]}>
+          <Text style={styles.label}>얼굴형 · 톤 분석 결과</Text>
+          <Text style={[localStyles.mainResult, { color: accent.base }]}>
             {FACE_SHAPE_LABELS[result.faceShape]} / {UNDERTONE_LABELS[result.undertone]}
           </Text>
-          <Text style={[styles.subLabel, isDark && commonAnalysisStyles.textMuted]}>
+          <Text style={styles.subLabel}>
             {EYE_SHAPE_LABELS[result.eyeShape]} · {LIP_SHAPE_LABELS[result.lipShape]}
           </Text>
         </View>
 
         {/* 점수 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-          >
-            메이크업 밸런스
-          </Text>
-          <MetricBar label="스킨톤" value={result.scores.skinTone} isDark={isDark} />
-          <MetricBar label="아이 밸런스" value={result.scores.eyeBalance} isDark={isDark} />
-          <MetricBar label="립 밸런스" value={result.scores.lipBalance} isDark={isDark} />
-          <MetricBar label="종합" value={result.scores.overall} isDark={isDark} />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>메이크업 밸런스</Text>
+          <MetricBar label="스킨톤" value={result.scores.skinTone} />
+          <MetricBar label="아이 밸런스" value={result.scores.eyeBalance} />
+          <MetricBar label="립 밸런스" value={result.scores.lipBalance} />
+          <MetricBar label="종합" value={result.scores.overall} />
         </View>
 
         {/* 맞춤 추천 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-          >
-            맞춤 메이크업 추천
-          </Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>맞춤 메이크업 추천</Text>
           {(Object.keys(result.recommendations) as (keyof MakeupAnalysisResult['recommendations'])[]).map(
             (key) => (
-              <View key={key} style={styles.recommendationItem}>
-                <Text style={[styles.recommendationLabel, isDark && commonAnalysisStyles.textLight]}>
+              <View key={key} style={localStyles.recommendationItem}>
+                <Text style={[localStyles.recommendationLabel, { color: colors.foreground }]}>
                   {RECOMMENDATION_LABELS[key]}
                 </Text>
-                <Text style={[styles.recommendationText, isDark && commonAnalysisStyles.textMuted]}>
+                <Text style={[localStyles.recommendationText, { color: colors.mutedForeground }]}>
                   {result.recommendations[key]}
                 </Text>
               </View>
@@ -197,17 +188,18 @@ export default function MakeupResultScreen() {
 
         {/* 추천 컬러 */}
         {result.bestColors.length > 0 && (
-          <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-            <Text
-              style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-            >
-              추천 컬러 팔레트
-            </Text>
-            <View style={styles.colorPalette}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>추천 컬러 팔레트</Text>
+            <View style={localStyles.colorPalette}>
               {result.bestColors.map((color, i) => (
-                <View key={i} style={styles.colorChip}>
-                  <View style={[styles.colorSwatch, { backgroundColor: color }]} />
-                  <Text style={[styles.colorLabel, isDark && commonAnalysisStyles.textMuted]}>
+                <View key={i} style={localStyles.colorChip}>
+                  <View
+                    style={[
+                      localStyles.colorSwatch,
+                      { backgroundColor: color, borderColor: colors.border },
+                    ]}
+                  />
+                  <Text style={[localStyles.colorLabel, { color: colors.mutedForeground }]}>
                     {color}
                   </Text>
                 </View>
@@ -228,29 +220,46 @@ export default function MakeupResultScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   resultImage: {
     width: 200,
     height: 250,
     borderRadius: 16,
     borderWidth: 4,
-    borderColor: ANALYSIS_COLORS.primary,
   },
-  resultCard: {
-    backgroundColor: ANALYSIS_COLORS.cardBackground,
-    borderRadius: 16,
-    padding: 24,
+  mainResult: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  recommendationItem: {
     marginBottom: 16,
-    alignItems: 'center',
   },
-  label: { fontSize: 14, color: ANALYSIS_COLORS.textSecondary, marginBottom: 8 },
-  mainResult: { fontSize: 24, fontWeight: '700', color: ANALYSIS_COLORS.primary, marginBottom: 8 },
-  subLabel: { fontSize: 15, color: ANALYSIS_COLORS.textSecondary },
-  recommendationItem: { marginBottom: 16 },
-  recommendationLabel: { fontSize: 15, fontWeight: '600', color: '#111', marginBottom: 4 },
-  recommendationText: { fontSize: 14, color: '#666', lineHeight: 22 },
-  colorPalette: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  colorChip: { alignItems: 'center', gap: 6 },
-  colorSwatch: { width: 48, height: 48, borderRadius: 24, borderWidth: 1, borderColor: '#e0e0e0' },
-  colorLabel: { fontSize: 11, color: '#999' },
+  recommendationLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  recommendationText: {
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  colorPalette: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  colorChip: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  colorSwatch: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1,
+  },
+  colorLabel: {
+    fontSize: 11,
+  },
 });

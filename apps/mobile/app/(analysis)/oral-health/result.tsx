@@ -13,8 +13,7 @@ import {
   AnalysisTrustBadge,
   AnalysisResultButtons,
   MetricBar,
-  commonAnalysisStyles,
-  ANALYSIS_COLORS,
+  useAnalysisStyles,
 } from '@/components/analysis';
 import {
   analyzeOralHealth as analyzeWithGemini,
@@ -22,7 +21,6 @@ import {
   type OralHealthAnalysisResult,
 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { useTheme } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const GUM_HEALTH_LABELS: Record<OralHealthAnalysisResult['gumHealth'], string> = {
@@ -39,7 +37,9 @@ const WHITENING_LABELS: Record<OralHealthAnalysisResult['whiteningPotential'], s
 };
 
 export default function OralHealthResultScreen() {
-  const { isDark } = useTheme();
+  const { styles, module, isDark } = useAnalysisStyles();
+  const accent = module.oralHealth;
+
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
@@ -88,7 +88,6 @@ export default function OralHealthResultScreen() {
     return (
       <AnalysisLoadingState
         message="구강 상태를 분석 중이에요..."
-        isDark={isDark}
         testID="oral-health-loading"
       />
     );
@@ -100,7 +99,6 @@ export default function OralHealthResultScreen() {
         message="분석에 실패했습니다."
         onRetry={handleRetry}
         onGoHome={handleGoHome}
-        isDark={isDark}
         testID="oral-health-error"
       />
     );
@@ -109,55 +107,53 @@ export default function OralHealthResultScreen() {
   return (
     <SafeAreaView
       testID="analysis-oral-health-result-screen"
-      style={[commonAnalysisStyles.container, isDark && commonAnalysisStyles.containerDark]}
+      style={styles.container}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={commonAnalysisStyles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         {imageUri && (
-          <View style={commonAnalysisStyles.imageContainer}>
-            <Image source={{ uri: imageUri }} style={styles.resultImage} />
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: imageUri }}
+              style={[localStyles.resultImage, { borderColor: accent.base }]}
+            />
           </View>
         )}
 
         {/* 주요 결과 */}
-        <View style={[styles.resultCard, isDark && commonAnalysisStyles.cardDark]}>
+        <View style={styles.resultCard}>
           <AnalysisTrustBadge
             type={usedFallback ? 'questionnaire' : 'ai'}
             testID="oral-health-trust-badge"
           />
-          <Text style={[styles.label, isDark && commonAnalysisStyles.textMuted]}>
-            구강건강 종합 점수
-          </Text>
-          <Text style={[styles.scoreText, isDark && commonAnalysisStyles.textLight]}>
+          <Text style={styles.label}>구강건강 종합 점수</Text>
+          <Text style={[localStyles.scoreText, { color: accent.base }]}>
             {result.overallScore}점
           </Text>
-          <Text style={[styles.subLabel, isDark && commonAnalysisStyles.textMuted]}>
+          <Text style={styles.subLabel}>
             치아 색조 {result.toothShade} · {GUM_HEALTH_LABELS[result.gumHealth]}
           </Text>
         </View>
 
         {/* 점수 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-          >
-            세부 점수
-          </Text>
-          <MetricBar label="치아 밝기" value={result.scores.whiteness} isDark={isDark} />
-          <MetricBar label="정렬도" value={result.scores.alignment} isDark={isDark} />
-          <MetricBar label="잇몸 상태" value={result.scores.gumCondition} isDark={isDark} />
-          <MetricBar label="구강 위생" value={result.scores.hygiene} isDark={isDark} />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>세부 점수</Text>
+          <MetricBar label="치아 밝기" value={result.scores.whiteness} />
+          <MetricBar label="정렬도" value={result.scores.alignment} />
+          <MetricBar label="잇몸 상태" value={result.scores.gumCondition} />
+          <MetricBar label="구강 위생" value={result.scores.hygiene} />
         </View>
 
         {/* 미백 가능성 */}
-        <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-          <Text
-            style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>미백 가능성</Text>
+          <View
+            style={[
+              localStyles.whiteningBadge,
+              { backgroundColor: isDark ? accent.dark + '20' : accent.light + '30' },
+            ]}
           >
-            미백 가능성
-          </Text>
-          <View style={styles.whiteningBadge}>
-            <Text style={styles.whiteningText}>
+            <Text style={[localStyles.whiteningText, { color: accent.base }]}>
               {WHITENING_LABELS[result.whiteningPotential]}
             </Text>
           </View>
@@ -165,14 +161,10 @@ export default function OralHealthResultScreen() {
 
         {/* 주요 고민 */}
         {result.concerns.length > 0 && (
-          <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-            <Text
-              style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-            >
-              발견된 문제
-            </Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>발견된 문제</Text>
             {result.concerns.map((concern, i) => (
-              <Text key={i} style={[styles.listItem, isDark && commonAnalysisStyles.textMuted]}>
+              <Text key={i} style={styles.listItem}>
                 · {concern}
               </Text>
             ))}
@@ -181,14 +173,10 @@ export default function OralHealthResultScreen() {
 
         {/* 추천 */}
         {result.recommendations.length > 0 && (
-          <View style={[commonAnalysisStyles.section, isDark && commonAnalysisStyles.cardDark]}>
-            <Text
-              style={[commonAnalysisStyles.sectionTitle, isDark && commonAnalysisStyles.textLight]}
-            >
-              관리 추천
-            </Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>관리 추천</Text>
             {result.recommendations.map((rec, i) => (
-              <Text key={i} style={[styles.listItem, isDark && commonAnalysisStyles.textMuted]}>
+              <Text key={i} style={styles.listItem}>
                 {i + 1}. {rec}
               </Text>
             ))}
@@ -207,31 +195,26 @@ export default function OralHealthResultScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   resultImage: {
     width: 250,
     height: 180,
     borderRadius: 16,
     borderWidth: 4,
-    borderColor: ANALYSIS_COLORS.primary,
   },
-  resultCard: {
-    backgroundColor: ANALYSIS_COLORS.cardBackground,
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 16,
-    alignItems: 'center',
+  scoreText: {
+    fontSize: 36,
+    fontWeight: '700',
+    marginBottom: 8,
   },
-  label: { fontSize: 14, color: ANALYSIS_COLORS.textSecondary, marginBottom: 8 },
-  scoreText: { fontSize: 36, fontWeight: '700', color: ANALYSIS_COLORS.primary, marginBottom: 8 },
-  subLabel: { fontSize: 15, color: ANALYSIS_COLORS.textSecondary },
   whiteningBadge: {
-    backgroundColor: '#f0f4ff',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
     alignSelf: 'flex-start',
   },
-  whiteningText: { color: ANALYSIS_COLORS.primary, fontSize: 16, fontWeight: '600' },
-  listItem: { fontSize: 15, color: '#444', lineHeight: 26 },
+  whiteningText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
