@@ -1,9 +1,12 @@
 /**
- * HomeHeader — 인사말 + 사용자명
+ * HomeHeader — 그라디언트 히어로 배너 + 인사말
  */
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { GradientBackground } from '../ui';
 import { useTheme } from '../../lib/theme';
+import { TIMING } from '../../lib/animations';
 
 interface HomeHeaderProps {
   userName: string;
@@ -20,32 +23,48 @@ function getGreeting(): string {
 }
 
 export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.Element {
-  const { colors, spacing, typography } = useTheme();
+  const { spacing, radii, typography } = useTheme();
 
   return (
-    <View style={[styles.header, { marginBottom: spacing.lg }]} testID="home-header">
-      <Text
+    <Animated.View
+      entering={FadeIn.duration(TIMING.normal)}
+      style={{ marginBottom: spacing.lg }}
+      testID="home-header"
+    >
+      <GradientBackground
+        variant="brand"
         style={{
-          fontSize: typography.size.sm,
-          color: colors.mutedForeground,
-          marginBottom: 4,
+          borderRadius: radii.xl,
+          paddingHorizontal: spacing.lg,
+          paddingVertical: spacing.lg + 4,
         }}
       >
-        {getGreeting()}
-      </Text>
-      <Text
-        style={{
-          fontSize: typography.size['2xl'],
-          fontWeight: typography.weight.bold,
-          color: colors.foreground,
-        }}
-      >
-        {isLoaded ? userName : '...'}님
-      </Text>
-    </View>
+        <Text style={[styles.greeting, { fontSize: typography.size.sm }]}>
+          {getGreeting()}
+        </Text>
+        <Text style={[styles.userName, { fontSize: typography.size['2xl'] }]}>
+          {isLoaded ? userName : '...'}님
+        </Text>
+        <Text style={[styles.slogan, { fontSize: typography.size.xs }]}>
+          온전한 나를 찾는 여정, 이룸
+        </Text>
+      </GradientBackground>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {},
+  greeting: {
+    color: 'rgba(255,255,255,0.85)',
+    marginBottom: 4,
+  },
+  userName: {
+    color: '#fff',
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  slogan: {
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 2,
+  },
 });

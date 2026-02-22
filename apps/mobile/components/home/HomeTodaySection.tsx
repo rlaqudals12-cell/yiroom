@@ -1,10 +1,14 @@
 /**
- * HomeTodaySection — 알림 배너 + 오늘 할 일 목록
+ * HomeTodaySection — 알림 배너 + GlassCard 오늘 할 일 목록
  */
+import * as Haptics from 'expo-haptics';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard } from '../ui';
 import { useTheme } from '../../lib/theme';
 import { SectionHeader } from '../ui';
+import { TIMING } from '../../lib/animations';
 
 interface TodoTask {
   id: string;
@@ -30,7 +34,7 @@ export function HomeTodaySection({
   notifications,
   onTaskPress,
 }: HomeTodaySectionProps): React.JSX.Element {
-  const { colors, spacing, radii, shadows, typography, status } = useTheme();
+  const { colors, spacing, radii, typography, status } = useTheme();
 
   const remainingCount = tasks.filter((t) => !t.completed).length;
 
@@ -46,8 +50,16 @@ export function HomeTodaySection({
     }
   };
 
+  const handleTaskPress = (route: string): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onTaskPress(route);
+  };
+
   return (
-    <View testID="home-today-section">
+    <Animated.View
+      entering={FadeInUp.delay(100).duration(TIMING.normal)}
+      testID="home-today-section"
+    >
       {/* 알림 배너 */}
       {notifications.length > 0 && (
         <View
@@ -77,15 +89,9 @@ export function HomeTodaySection({
         style={{ marginBottom: spacing.sm + 4 }}
       />
 
-      <View
-        style={[
-          styles.todoCard,
-          shadows.sm,
-          {
-            backgroundColor: colors.card,
-            borderRadius: radii.xl,
-          },
-        ]}
+      <GlassCard
+        intensity={30}
+        style={{ padding: 0, marginBottom: 24, borderRadius: radii.xl, overflow: 'hidden' }}
       >
         {tasks.map((task, index) => (
           <Pressable
@@ -98,7 +104,7 @@ export function HomeTodaySection({
               },
               pressed && styles.pressed,
             ]}
-            onPress={() => onTaskPress(task.route)}
+            onPress={() => handleTaskPress(task.route)}
           >
             <View
               style={[
@@ -125,16 +131,12 @@ export function HomeTodaySection({
             </Text>
           </Pressable>
         ))}
-      </View>
-    </View>
+      </GlassCard>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  todoCard: {
-    overflow: 'hidden',
-    marginBottom: 24,
-  },
   todoItem: {
     flexDirection: 'row',
     alignItems: 'center',

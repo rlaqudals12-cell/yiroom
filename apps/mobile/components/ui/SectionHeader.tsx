@@ -4,7 +4,7 @@
  * 제목 + 부제목(선택) + 우측 액션(선택) 헤더 패턴.
  * 홈/기록 탭의 섹션 구분에 사용.
  */
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 
@@ -16,6 +16,8 @@ interface SectionHeaderProps {
     onPress: () => void;
   };
   style?: ViewStyle;
+  /** 타이틀 텍스트 커스텀 스타일 (히어로 헤더 등) */
+  titleStyle?: TextStyle;
   testID?: string;
 }
 
@@ -24,6 +26,7 @@ export function SectionHeader({
   subtitle,
   action,
   style,
+  titleStyle,
   testID,
 }: SectionHeaderProps): React.JSX.Element {
   const { colors, brand, typography } = useTheme();
@@ -32,11 +35,14 @@ export function SectionHeader({
     <View testID={testID} style={[styles.container, style]}>
       <View style={styles.textGroup}>
         <Text
-          style={{
-            color: colors.foreground,
-            fontSize: typography.size.lg,
-            fontWeight: typography.weight.bold,
-          }}
+          style={[
+            {
+              color: colors.foreground,
+              fontSize: typography.size.lg,
+              fontWeight: typography.weight.bold,
+            },
+            titleStyle,
+          ]}
         >
           {title}
         </Text>

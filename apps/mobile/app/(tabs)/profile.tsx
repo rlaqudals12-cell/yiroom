@@ -1,18 +1,23 @@
 /**
  * 프로필 화면 (Clerk 인증 연동)
- * 분석 완료 상태 표시 + 네비게이션
+ * GlassCard 프로필 헤더 + 분석 완료 상태 + 네비게이션
  */
 import { useUser, useClerk } from '@clerk/clerk-expo';
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { ChevronRight } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Image } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GlassCard, SectionHeader } from '../../components/ui';
 import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
-import { useTheme, brand, statusColors, shadows } from '../../lib/theme';
+import { TIMING } from '../../lib/animations';
+import { useTheme } from '../../lib/theme';
 import { profileLogger } from '../../lib/utils/logger';
 
-export default function ProfileScreen() {
-  const { colors, isDark } = useTheme();
+export default function ProfileScreen(): React.JSX.Element {
+  const { colors, brand, spacing, radii, typography, status } = useTheme();
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
 
@@ -21,11 +26,15 @@ export default function ProfileScreen() {
   const { analysis: workoutAnalysis, streak: workoutStreak } = useWorkoutData();
   const { streak: nutritionStreak } = useNutritionData();
 
-  const handleSignIn = () => {
+  const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length;
+
+  const handleSignIn = (): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push('/(auth)/sign-in');
   };
 
-  const handleSignOut = async () => {
+  const handleSignOut = async (): Promise<void> => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       await signOut();
     } catch (error) {
@@ -36,204 +45,292 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView
       testID="profile-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={{ flex: 1, backgroundColor: colors.background }}
     >
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.profileHeader, { backgroundColor: colors.card }, shadows.card]}>
-          {isSignedIn && user ? (
-            <>
-              {user.imageUrl ? (
-                <Image source={{ uri: user.imageUrl }} style={styles.avatar} />
-              ) : (
-                <View style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}>
-                  <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
-                    {user.firstName?.[0] ||
-                      user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() ||
-                      '?'}
-                  </Text>
-                </View>
-              )}
-              <Text style={[styles.profileName, { color: colors.foreground }]}>
-                {user.fullName || user.emailAddresses[0]?.emailAddress || '사용자'}
-              </Text>
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: colors.mutedForeground }]}
-                onPress={handleSignOut}
-              >
-                <Text style={styles.actionButtonText}>로그아웃</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <View style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}>
-                <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>?</Text>
-              </View>
-              <Text style={[styles.profileName, { color: colors.foreground }]}>
-                로그인이 필요합니다
-              </Text>
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: brand.primary }]}
-                onPress={handleSignIn}
-              >
-                <Text style={[styles.actionButtonText, { color: brand.primaryForeground }]}>
-                  로그인
+      <ScrollView contentContainerStyle={{ padding: spacing.md, paddingBottom: 40 }}>
+        {/* 프로필 헤더 — GlassCard */}
+        <Animated.View entering={FadeIn.duration(TIMING.normal)}>
+          <GlassCard
+            intensity={35}
+            style={{ padding: spacing.lg, marginBottom: spacing.lg, alignItems: 'center' }}
+          >
+            {isSignedIn && user ? (
+              <>
+                {user.imageUrl ? (
+                  <Image source={{ uri: user.imageUrl }} style={styles.avatar} />
+                ) : (
+                  <View
+                    style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
+                  >
+                    <Text style={{ fontSize: 32, color: colors.mutedForeground }}>
+                      {user.firstName?.[0] ||
+                        user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() ||
+                        '?'}
+                    </Text>
+                  </View>
+                )}
+                <Text
+                  style={{
+                    fontSize: typography.size.lg,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                    marginBottom: 4,
+                  }}
+                >
+                  {user.fullName || user.emailAddresses[0]?.emailAddress || '사용자'}
                 </Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    color: colors.mutedForeground,
+                    marginBottom: spacing.md,
+                  }}
+                >
+                  {analysisCount}/3 분석 완료
+                </Text>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.actionButton,
+                    {
+                      backgroundColor: colors.muted,
+                      opacity: pressed ? 0.85 : 1,
+                    },
+                  ]}
+                  onPress={handleSignOut}
+                >
+                  <Text
+                    style={{
+                      color: colors.mutedForeground,
+                      fontSize: typography.size.sm,
+                      fontWeight: typography.weight.semibold,
+                    }}
+                  >
+                    로그아웃
+                  </Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <View
+                  style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
+                >
+                  <Text style={{ fontSize: 32, color: colors.mutedForeground }}>?</Text>
+                </View>
+                <Text
+                  style={{
+                    fontSize: typography.size.lg,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                    marginBottom: spacing.md,
+                  }}
+                >
+                  로그인이 필요합니다
+                </Text>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.actionButton,
+                    {
+                      backgroundColor: brand.primary,
+                      opacity: pressed ? 0.85 : 1,
+                    },
+                  ]}
+                  onPress={handleSignIn}
+                >
+                  <Text
+                    style={{
+                      color: brand.primaryForeground,
+                      fontSize: typography.size.sm,
+                      fontWeight: typography.weight.semibold,
+                    }}
+                  >
+                    로그인
+                  </Text>
+                </Pressable>
+              </>
+            )}
+          </GlassCard>
+        </Animated.View>
 
-        <View style={styles.menuSection}>
-          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>
-            분석 결과
-          </Text>
-          <MenuItem
-            title="퍼스널 컬러"
-            colors={colors}
-            completed={!!personalColor}
-            subtitle={personalColor?.season ? `${personalColor.season}` : undefined}
-            onPress={() => router.push('/(analysis)/personal-color')}
-          />
-          <MenuItem
-            title="피부 분석"
-            colors={colors}
-            completed={!!skinAnalysis}
-            subtitle={skinAnalysis?.skinType || undefined}
-            onPress={() => router.push('/(analysis)/skin')}
-          />
-          <MenuItem
-            title="체형 분석"
-            colors={colors}
-            completed={!!bodyAnalysis}
-            subtitle={bodyAnalysis?.bodyType || undefined}
-            onPress={() => router.push('/(analysis)/body')}
-          />
-        </View>
+        {/* 분석 결과 */}
+        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+          <SectionHeader title="분석 결과" style={{ marginBottom: spacing.sm + 4 }} />
+          <GlassCard intensity={20} style={{ padding: 0, marginBottom: spacing.lg, overflow: 'hidden' }}>
+            <MenuItem
+              title="퍼스널 컬러"
+              completed={!!personalColor}
+              subtitle={personalColor?.season ? `${personalColor.season}` : undefined}
+              onPress={() => router.push('/(analysis)/personal-color')}
+            />
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <MenuItem
+              title="피부 분석"
+              completed={!!skinAnalysis}
+              subtitle={skinAnalysis?.skinType || undefined}
+              onPress={() => router.push('/(analysis)/skin')}
+            />
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <MenuItem
+              title="체형 분석"
+              completed={!!bodyAnalysis}
+              subtitle={bodyAnalysis?.bodyType || undefined}
+              onPress={() => router.push('/(analysis)/body')}
+            />
+          </GlassCard>
+        </Animated.View>
 
-        <View style={styles.menuSection}>
-          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>기록</Text>
-          <MenuItem
-            title="운동 기록"
-            colors={colors}
-            completed={!!workoutAnalysis}
-            subtitle={
-              workoutStreak?.currentStreak ? `🔥 ${workoutStreak.currentStreak}일 연속` : undefined
-            }
-            onPress={() => router.push('/(tabs)/records')}
-          />
-          <MenuItem
-            title="식단 기록"
-            colors={colors}
-            completed={!!nutritionStreak}
-            subtitle={
-              nutritionStreak?.currentStreak
-                ? `🔥 ${nutritionStreak.currentStreak}일 연속`
-                : undefined
-            }
-            onPress={() => router.push('/(tabs)/records')}
-          />
-          <MenuItem title="주간 리포트" colors={colors} onPress={() => router.push('/reports')} />
-        </View>
+        {/* 기록 */}
+        <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+          <SectionHeader title="기록" style={{ marginBottom: spacing.sm + 4 }} />
+          <GlassCard intensity={20} style={{ padding: 0, marginBottom: spacing.lg, overflow: 'hidden' }}>
+            <MenuItem
+              title="운동 기록"
+              completed={!!workoutAnalysis}
+              subtitle={
+                workoutStreak?.currentStreak
+                  ? `🔥 ${workoutStreak.currentStreak}일 연속`
+                  : undefined
+              }
+              onPress={() => router.push('/(tabs)/records')}
+            />
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <MenuItem
+              title="식단 기록"
+              completed={!!nutritionStreak}
+              subtitle={
+                nutritionStreak?.currentStreak
+                  ? `🔥 ${nutritionStreak.currentStreak}일 연속`
+                  : undefined
+              }
+              onPress={() => router.push('/(tabs)/records')}
+            />
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <MenuItem
+              title="주간 리포트"
+              onPress={() => router.push('/reports')}
+            />
+          </GlassCard>
+        </Animated.View>
 
-        <View style={styles.menuSection}>
-          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>활동</Text>
-          <MenuItem
-            title="나의 뱃지"
-            colors={colors}
-            subtitle={`${[personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length}개 분석 완료`}
-            onPress={() => router.push('/badges')}
-          />
-          <MenuItem
-            title="알림"
-            colors={colors}
-            subtitle="받은 알림 확인"
-            onPress={() => router.push('/notifications')}
-          />
-        </View>
+        {/* 활동 */}
+        <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
+          <SectionHeader title="활동" style={{ marginBottom: spacing.sm + 4 }} />
+          <GlassCard intensity={20} style={{ padding: 0, marginBottom: spacing.lg, overflow: 'hidden' }}>
+            <MenuItem
+              title="나의 뱃지"
+              subtitle={`${analysisCount}개 분석 완료`}
+              onPress={() => router.push('/badges')}
+            />
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <MenuItem
+              title="알림"
+              subtitle="받은 알림 확인"
+              onPress={() => router.push('/notifications')}
+            />
+          </GlassCard>
+        </Animated.View>
 
-        <View style={styles.menuSection}>
-          <Text style={[styles.menuSectionTitle, { color: colors.mutedForeground }]}>설정</Text>
-          <MenuItem
-            title="알림 설정"
-            colors={colors}
-            subtitle="물, 운동, 식사 알림"
-            onPress={() => router.push('/settings/notifications')}
-          />
-          <MenuItem
-            title="목표 설정"
-            colors={colors}
-            subtitle="물, 칼로리, 운동 목표"
-            onPress={() => router.push('/settings/goals')}
-          />
-          <MenuItem
-            title="위젯 설정"
-            colors={colors}
-            subtitle="홈 화면 위젯"
-            onPress={() => router.push('/settings/widgets')}
-          />
-          <MenuItem title="전체 설정" colors={colors} onPress={() => router.push('/settings')} />
-        </View>
+        {/* 설정 */}
+        <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
+          <SectionHeader title="설정" style={{ marginBottom: spacing.sm + 4 }} />
+          <GlassCard intensity={20} style={{ padding: 0, overflow: 'hidden' }}>
+            <MenuItem
+              title="알림 설정"
+              subtitle="물, 운동, 식사 알림"
+              onPress={() => router.push('/settings/notifications')}
+            />
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <MenuItem
+              title="목표 설정"
+              subtitle="물, 칼로리, 운동 목표"
+              onPress={() => router.push('/settings/goals')}
+            />
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <MenuItem
+              title="위젯 설정"
+              subtitle="홈 화면 위젯"
+              onPress={() => router.push('/settings/widgets')}
+            />
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <MenuItem
+              title="전체 설정"
+              onPress={() => router.push('/settings')}
+            />
+          </GlassCard>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-interface MenuItemColors {
-  card: string;
-  foreground: string;
-  mutedForeground: string;
-}
+// --- 내부 서브 컴포넌트 ---
 
 function MenuItem({
   title,
-  colors,
   completed,
   subtitle,
   onPress,
 }: {
   title: string;
-  colors: MenuItemColors;
   completed?: boolean;
   subtitle?: string;
   onPress?: () => void;
-}) {
+}): React.JSX.Element {
+  const { colors, spacing, typography, status } = useTheme();
+
+  const handlePress = (): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress?.();
+  };
+
   return (
-    <TouchableOpacity
-      style={[styles.menuItem, { backgroundColor: colors.card }, shadows.sm]}
-      activeOpacity={0.7}
-      onPress={onPress}
+    <Pressable
+      style={({ pressed }) => [
+        styles.menuItem,
+        { paddingHorizontal: spacing.md, paddingVertical: 14 },
+        pressed && { opacity: 0.7 },
+      ]}
+      onPress={handlePress}
     >
       <View style={styles.menuItemContent}>
         <View style={styles.menuItemTitleRow}>
-          <Text style={[styles.menuItemText, { color: colors.foreground }]}>{title}</Text>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              color: colors.foreground,
+            }}
+          >
+            {title}
+          </Text>
           {completed && (
-            <Text style={[styles.menuItemCheck, { color: statusColors.success }]}>✓</Text>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: status.success,
+              }}
+            >
+              ✓
+            </Text>
           )}
         </View>
-        {subtitle && (
-          <Text style={[styles.menuItemSubtitle, { color: colors.mutedForeground }]}>
+        {subtitle ? (
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+              marginTop: 2,
+            }}
+          >
             {subtitle}
           </Text>
-        )}
+        ) : null}
       </View>
-      <Text style={[styles.menuItemArrow, { color: colors.mutedForeground }]}>→</Text>
-    </TouchableOpacity>
+      <ChevronRight size={16} color={colors.mutedForeground} />
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-  },
-  profileHeader: {
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    marginBottom: 24,
-  },
   avatar: {
     width: 80,
     height: 80,
@@ -248,39 +345,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  avatarText: {
-    fontSize: 32,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
   actionButton: {
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 8,
   },
-  actionButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  menuSection: {
-    marginBottom: 24,
-  },
-  menuSectionTitle: {
-    fontSize: 13,
-    marginBottom: 8,
-    paddingLeft: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
   menuItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginBottom: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -292,19 +362,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  menuItemText: {
-    fontSize: 15,
-  },
-  menuItemCheck: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  menuItemSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  menuItemArrow: {
-    fontSize: 16,
   },
 });

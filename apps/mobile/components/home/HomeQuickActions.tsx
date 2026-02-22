@@ -1,10 +1,15 @@
 /**
- * HomeQuickActions — AI 코치 카드 + 3개 퀵 액션 버튼
+ * HomeQuickActions — GlassCard AI 코치 + AnimatedCard 퀵 액션
  */
+import * as Haptics from 'expo-haptics';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { GlassCard, AnimatedCard } from '../ui';
+import { GradientBackground } from '../ui';
 import { SectionHeader } from '../ui';
+import { useTheme } from '../../lib/theme';
+import { TIMING } from '../../lib/animations';
 
 interface QuickAction {
   title: string;
@@ -25,140 +30,108 @@ export function HomeQuickActions({
   onActionPress,
   onCoachPress,
 }: HomeQuickActionsProps): React.JSX.Element {
-  const { colors, spacing, radii, shadows, typography, status, module: moduleColors } = useTheme();
+  const { colors, spacing, radii, typography, status, module: moduleColors } = useTheme();
 
-  // AI Coach → moduleColors.workout.dark (이전 하드코딩 #10b981 대체)
   const coachColor = moduleColors.workout.dark;
+
+  const handleActionPress = (route: string): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onActionPress(route);
+  };
+
+  const handleCoachPress = (): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onCoachPress();
+  };
 
   return (
     <View testID="home-quick-actions">
-      {/* AI Coach 카드 */}
-      <Pressable
-        style={({ pressed }) => [
-          styles.coachCard,
-          shadows.md,
-          {
-            backgroundColor: colors.card,
-            borderRadius: radii.xl,
-            padding: spacing.md,
-            borderWidth: 1,
-            borderColor: coachColor,
-            opacity: pressed ? 0.85 : 1,
-            marginBottom: spacing.lg,
-          },
-        ]}
-        onPress={onCoachPress}
-      >
-        <View
-          style={[
-            styles.coachIcon,
-            {
-              backgroundColor: coachColor + '15',
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-            },
-          ]}
+      {/* AI Coach 카드 — 그라디언트 배경 */}
+      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+        <Pressable
+          style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1, marginBottom: spacing.lg }]}
+          onPress={handleCoachPress}
         >
-          <Text style={{ fontSize: 22 }}>💬</Text>
-        </View>
-        <View style={styles.coachContent}>
-          <Text
+          <GradientBackground
+            variant="workout"
             style={{
-              fontSize: typography.size.base,
-              fontWeight: typography.weight.semibold,
-              color: colors.foreground,
-              marginBottom: 2,
+              borderRadius: radii.xl,
+              padding: spacing.md,
+              flexDirection: 'row',
+              alignItems: 'center',
             }}
           >
-            AI 코치에게 물어보세요
-          </Text>
-          <Text
-            style={{
-              fontSize: typography.size.sm - 1,
-              color: colors.mutedForeground,
-            }}
-          >
-            운동, 영양, 뷰티 궁금한 것 무엇이든
-          </Text>
-        </View>
-        <Text style={{ fontSize: 28, fontWeight: '300', color: coachColor }}>›</Text>
-      </Pressable>
+            <View style={[styles.coachIcon, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+              <Text style={{ fontSize: 22 }}>💬</Text>
+            </View>
+            <View style={styles.coachContent}>
+              <Text style={styles.coachTitle}>AI 코치에게 물어보세요</Text>
+              <Text style={styles.coachSubtitle}>운동, 영양, 뷰티 궁금한 것 무엇이든</Text>
+            </View>
+            <Text style={styles.coachArrow}>›</Text>
+          </GradientBackground>
+        </Pressable>
+      </Animated.View>
 
       {/* 퀵 액션 */}
-      <SectionHeader title="빠른 시작" style={{ marginBottom: spacing.sm + 4 }} />
-      <View style={[styles.actionsRow, { gap: spacing.sm + 4 }]}>
-        {actions.map((action) => (
-          <Pressable
-            key={action.title}
-            style={({ pressed }) => [
-              styles.actionCard,
-              shadows.sm,
-              {
-                backgroundColor: colors.card,
-                borderRadius: radii.lg,
-                padding: spacing.md,
-                opacity: pressed ? 0.85 : 1,
-              },
-              action.completed && {
-                borderWidth: 1,
-                borderColor: status.success,
-              },
-            ]}
-            onPress={() => onActionPress(action.route)}
-          >
-            <View style={styles.actionHeader}>
-              <View
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: action.color,
-                }}
-              />
-              {action.completed && (
+      <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
+        <SectionHeader title="빠른 시작" style={{ marginBottom: spacing.sm + 4 }} />
+        <View style={[styles.actionsRow, { gap: spacing.sm + 4 }]}>
+          {actions.map((action, index) => (
+            <AnimatedCard
+              key={action.title}
+              onPress={() => handleActionPress(action.route)}
+              style={{ flex: 1 }}
+              testID={`quick-action-${index}`}
+            >
+              <View style={{ padding: spacing.sm + 2 }}>
+                <View style={styles.actionHeader}>
+                  <View
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: 5,
+                      backgroundColor: action.color,
+                    }}
+                  />
+                  {action.completed && (
+                    <Text style={{ fontSize: 12, color: status.success, fontWeight: '600' }}>
+                      ✓
+                    </Text>
+                  )}
+                </View>
                 <Text
                   style={{
-                    fontSize: 12,
-                    color: status.success,
-                    fontWeight: '600',
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                    marginBottom: 2,
                   }}
                 >
-                  ✓
+                  {action.title}
                 </Text>
-              )}
-            </View>
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-                marginBottom: 2,
-              }}
-            >
-              {action.title}
-            </Text>
-            <Text
-              style={{
-                fontSize: typography.size.xs - 1,
-                color: colors.mutedForeground,
-              }}
-            >
-              {action.completed ? '완료됨' : action.subtitle}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+                <Text
+                  style={{
+                    fontSize: typography.size.xs - 1,
+                    color: colors.mutedForeground,
+                  }}
+                >
+                  {action.completed ? '완료됨' : action.subtitle}
+                </Text>
+              </View>
+            </AnimatedCard>
+          ))}
+        </View>
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  coachCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   coachIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -166,12 +139,24 @@ const styles = StyleSheet.create({
   coachContent: {
     flex: 1,
   },
+  coachTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 2,
+  },
+  coachSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.85)',
+  },
+  coachArrow: {
+    fontSize: 28,
+    fontWeight: '300',
+    color: 'rgba(255,255,255,0.8)',
+  },
   actionsRow: {
     flexDirection: 'row',
     marginBottom: 24,
-  },
-  actionCard: {
-    flex: 1,
   },
   actionHeader: {
     flexDirection: 'row',

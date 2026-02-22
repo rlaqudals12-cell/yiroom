@@ -3,6 +3,7 @@
  * 3개 섹션 컴포넌트 조립 + 접이식 확장 섹션
  */
 import { useUser } from '@clerk/clerk-expo';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -14,15 +15,18 @@ import {
   Text,
   View,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { HomeHeader, HomeTodaySection, HomeQuickActions } from '../../components/home';
+import { GlassCard, AnimatedCard, SectionHeader } from '../../components/ui';
 import {
   useWorkoutData,
   useNutritionData,
   useUserAnalyses,
   calculateCalorieProgress,
 } from '../../hooks';
+import { TIMING } from '../../lib/animations';
 import { useOnboardingCheck } from '../../lib/onboarding';
 import { useTheme } from '../../lib/theme';
 import { useWidgetSync } from '../../lib/widgets';
@@ -215,6 +219,7 @@ export default function HomeScreen(): React.JSX.Element {
       : '—';
 
   const handleToggleMore = (): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setShowMore(!showMore);
   };
@@ -250,132 +255,104 @@ export default function HomeScreen(): React.JSX.Element {
           onCoachPress={() => router.push('/(coach)')}
         />
 
-        {/* 더 보기 */}
-        <Pressable
-          style={({ pressed }) => [
-            shadows.sm,
-            {
-              backgroundColor: colors.card,
-              borderRadius: radii.lg,
-              paddingVertical: 14,
-              paddingHorizontal: spacing.md,
-              marginBottom: spacing.md,
-            },
-            styles.moreToggle,
-            pressed && styles.pressed,
-          ]}
-          onPress={handleToggleMore}
+        {/* 더 보기 토글 */}
+        <GlassCard
+          intensity={20}
+          style={{
+            marginBottom: spacing.md,
+          }}
         >
-          <Text
-            style={{
-              fontSize: typography.size.sm,
-              fontWeight: typography.weight.semibold,
-              color: colors.mutedForeground,
-              marginRight: 6,
-            }}
+          <Pressable
+            style={({ pressed }) => [
+              styles.moreToggle,
+              { paddingVertical: 14, paddingHorizontal: spacing.md },
+              pressed && styles.pressed,
+            ]}
+            onPress={handleToggleMore}
           >
-            {showMore ? '접기' : '더 보기'}
-          </Text>
-          <Text style={{ fontSize: 12, color: colors.mutedForeground }}>
-            {showMore ? '▲' : '▼'}
-          </Text>
-        </Pressable>
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+                color: colors.mutedForeground,
+                marginRight: 6,
+              }}
+            >
+              {showMore ? '접기' : '더 보기'}
+            </Text>
+            <Text style={{ fontSize: 12, color: colors.mutedForeground }}>
+              {showMore ? '▲' : '▼'}
+            </Text>
+          </Pressable>
+        </GlassCard>
 
         {showMore && (
           <>
             {/* 오늘의 요약 */}
-            <View
-              style={[
-                shadows.sm,
-                {
-                  backgroundColor: colors.card,
-                  borderRadius: radii.xl,
-                  padding: spacing.md + 4,
-                  marginBottom: spacing.lg,
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  fontSize: typography.size.base,
-                  fontWeight: typography.weight.semibold,
-                  color: colors.foreground,
-                  marginBottom: spacing.md,
-                }}
+            <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+              <GlassCard
+                intensity={30}
+                style={{ padding: spacing.md + 4, marginBottom: spacing.lg }}
               >
-                오늘의 요약
-              </Text>
-              <View style={styles.statsRow}>
-                <StatItem label="운동" value={workoutValue} color={moduleColors.workout.dark} />
-                <StatItem label="식단" value={nutritionValue} color={moduleColors.nutrition.dark} />
-                <StatItem label="분석" value={checkinValue} color={brand.primary} />
-              </View>
-            </View>
+                <SectionHeader title="오늘의 요약" style={{ marginBottom: spacing.md }} />
+                <View style={styles.statsRow}>
+                  <StatItem label="운동" value={workoutValue} color={moduleColors.workout.dark} />
+                  <StatItem label="식단" value={nutritionValue} color={moduleColors.nutrition.dark} />
+                  <StatItem label="분석" value={checkinValue} color={brand.primary} />
+                </View>
+              </GlassCard>
+            </Animated.View>
 
             {/* 모듈 카드 */}
-            <Text
-              style={{
-                fontSize: typography.size.lg,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-                marginBottom: spacing.sm + 4,
-              }}
-            >
-              나의 여정
-            </Text>
-            <View style={{ gap: spacing.sm + 4, marginBottom: spacing.lg }}>
-              <ModuleCard
-                title="운동"
-                description="맞춤 운동 플랜으로 목표 달성"
-                color={moduleColors.workout.dark}
-                onPress={() => router.push('/(workout)/onboarding')}
-              />
-              <ModuleCard
-                title="영양"
-                description="균형 잡힌 식단으로 건강 관리"
-                color={moduleColors.nutrition.dark}
-                onPress={() => router.push('/(nutrition)/dashboard')}
-              />
-              <ModuleCard
-                title="제품 추천"
-                description="나에게 맞는 제품 찾기"
-                color={brand.primary}
-                onPress={() => router.push('/products')}
-              />
-            </View>
+            <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+              <SectionHeader title="나의 여정" style={{ marginBottom: spacing.sm + 4 }} />
+              <View style={{ gap: spacing.sm + 4, marginBottom: spacing.lg }}>
+                <ModuleCard
+                  title="운동"
+                  description="맞춤 운동 플랜으로 목표 달성"
+                  color={moduleColors.workout.dark}
+                  onPress={() => router.push('/(workout)/onboarding')}
+                />
+                <ModuleCard
+                  title="영양"
+                  description="균형 잡힌 식단으로 건강 관리"
+                  color={moduleColors.nutrition.dark}
+                  onPress={() => router.push('/(nutrition)/dashboard')}
+                />
+                <ModuleCard
+                  title="제품 추천"
+                  description="나에게 맞는 제품 찾기"
+                  color={brand.primary}
+                  onPress={() => router.push('/products')}
+                />
+              </View>
+            </Animated.View>
 
             {/* 팁 */}
-            <View
-              style={[
-                shadows.sm,
-                {
-                  backgroundColor: colors.card,
-                  borderRadius: radii.xl,
-                  padding: spacing.md + 4,
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  fontSize: typography.size.xs,
-                  fontWeight: typography.weight.semibold,
-                  color: brand.primary,
-                  marginBottom: spacing.sm,
-                }}
-              >
-                💡 오늘의 팁
-              </Text>
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  color: colors.cardForeground,
-                  lineHeight: 22,
-                }}
-              >
-                꾸준한 기록이 변화의 시작입니다.{'\n'}
-                오늘도 이룸과 함께해요!
-              </Text>
-            </View>
+            <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+              <GlassCard intensity={20} style={{ padding: spacing.md + 4 }}>
+                <Text
+                  style={{
+                    fontSize: typography.size.xs,
+                    fontWeight: typography.weight.semibold,
+                    color: brand.primary,
+                    marginBottom: spacing.sm,
+                  }}
+                >
+                  💡 오늘의 팁
+                </Text>
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    color: colors.cardForeground,
+                    lineHeight: 22,
+                  }}
+                >
+                  꾸준한 기록이 변화의 시작입니다.{'\n'}
+                  오늘도 이룸과 함께해요!
+                </Text>
+              </GlassCard>
+            </Animated.View>
           </>
         )}
       </ScrollView>
@@ -430,61 +407,56 @@ function ModuleCard({
   color: string;
   onPress: () => void;
 }): React.JSX.Element {
-  const { colors, radii, shadows, spacing, typography } = useTheme();
+  const { colors, spacing, typography } = useTheme();
+
+  const handlePress = (): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+
   return (
-    <Pressable
-      style={({ pressed }) => [
-        shadows.sm,
-        {
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.md,
-          flexDirection: 'row',
-          alignItems: 'center',
-          opacity: pressed ? 0.85 : 1,
-        },
-      ]}
-      onPress={onPress}
-    >
-      <View
-        style={{
-          width: 4,
-          height: 40,
-          borderRadius: 2,
-          backgroundColor: color,
-          marginRight: spacing.md,
-        }}
-      />
-      <View style={{ flex: 1 }}>
-        <Text
+    <AnimatedCard onPress={handlePress}>
+      <View style={{ padding: spacing.md, flexDirection: 'row', alignItems: 'center' }}>
+        <View
           style={{
-            fontSize: typography.size.base,
-            fontWeight: typography.weight.semibold,
-            color: colors.foreground,
-            marginBottom: 4,
+            width: 4,
+            height: 40,
+            borderRadius: 2,
+            backgroundColor: color,
+            marginRight: spacing.md,
           }}
-        >
-          {title}
-        </Text>
+        />
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+              marginBottom: 4,
+            }}
+          >
+            {title}
+          </Text>
+          <Text
+            style={{
+              fontSize: typography.size.sm - 1,
+              color: colors.mutedForeground,
+            }}
+          >
+            {description}
+          </Text>
+        </View>
         <Text
           style={{
-            fontSize: typography.size.sm - 1,
+            fontSize: 24,
             color: colors.mutedForeground,
+            marginLeft: spacing.sm,
           }}
         >
-          {description}
+          ›
         </Text>
       </View>
-      <Text
-        style={{
-          fontSize: 24,
-          color: colors.mutedForeground,
-          marginLeft: spacing.sm,
-        }}
-      >
-        ›
-      </Text>
-    </Pressable>
+    </AnimatedCard>
   );
 }
 

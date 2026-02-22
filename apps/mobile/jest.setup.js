@@ -172,14 +172,17 @@ jest.mock('react-native-css-interop', () => ({
 // =============================================================================
 // Platform 모킹
 // =============================================================================
-jest.mock('react-native/Libraries/Utilities/Platform', () => ({
-  OS: 'ios',
-  select: (obj) => obj.ios ?? obj.default,
-  Version: 17,
-  isPad: false,
-  isTVOS: false,
-  isTV: false,
-}));
+// jest-expo 프리셋이 기본 Platform 모킹을 제공하지만,
+// node 환경에서 Platform.OS가 누락될 수 있으므로 보완
+const { Platform } = require('react-native');
+if (Platform && !Platform.OS) {
+  Platform.OS = 'ios';
+  Platform.Version = 17;
+  Platform.isPad = false;
+  Platform.isTVOS = false;
+  Platform.isTV = false;
+  Platform.select = (obj) => obj.ios ?? obj.default;
+}
 
 // =============================================================================
 // AccessibilityInfo 모킹
@@ -345,6 +348,58 @@ jest.mock('@/lib/i18n', () => ({
     i18n: { language: 'ko', changeLanguage: jest.fn() },
   })),
 }));
+
+// =============================================================================
+// react-native-svg 모킹
+// =============================================================================
+jest.mock('react-native-svg', () => {
+  const View = require('react-native').View;
+  return {
+    __esModule: true,
+    default: View,
+    Svg: View,
+    Circle: View,
+    Ellipse: View,
+    G: View,
+    Text: View,
+    TSpan: View,
+    TextPath: View,
+    Path: View,
+    Polygon: View,
+    Polyline: View,
+    Line: View,
+    Rect: View,
+    Use: View,
+    Image: View,
+    Symbol: View,
+    Defs: View,
+    LinearGradient: View,
+    RadialGradient: View,
+    Stop: View,
+    ClipPath: View,
+    Pattern: View,
+    Mask: View,
+    SvgXml: View,
+    SvgUri: View,
+    SvgCss: View,
+  };
+});
+
+// =============================================================================
+// lucide-react-native 모킹 (아이콘 → View로 대체)
+// =============================================================================
+jest.mock('lucide-react-native', () => {
+  const View = require('react-native').View;
+  return new Proxy(
+    {},
+    {
+      get: (_target, prop) => {
+        if (prop === '__esModule') return true;
+        return View;
+      },
+    }
+  );
+});
 
 // =============================================================================
 // React Native Gesture Handler 모킹
