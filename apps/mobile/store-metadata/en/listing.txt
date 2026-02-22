@@ -1,0 +1,45 @@
+App Name: Yiroom - AI Beauty & Wellness
+Short Description (80 chars): AI-powered personal color, skin, body & beauty analysis. Your beauty coach.
+
+Full Description:
+
+Know yourself, wholly. Yiroom.
+
+Yiroom is an AI-powered beauty & wellness platform that helps you discover
+your unique beauty profile. With just a photo, get comprehensive analysis
+of your personal color, skin type, body shape, hair, and makeup style
+with personalized care recommendations.
+
+--- Key Features ---
+
+[AI Beauty Analysis]
+- Personal Color : Spring/Summer/Autumn/Winter + detailed sub-tones
+- Skin Analysis : 6-point assessment (hydration, oil, sensitivity, pores, wrinkles, elasticity)
+- Body Shape : Skeleton-based classification + styling guide
+- Hair Analysis : Hair type, scalp condition, customized care routine
+- Makeup Analysis : Face shape & tone-matched makeup recommendations
+- Oral Health : Tooth color & gum health check
+
+[Personalized Recommendations]
+- Skincare routine designed from your skin analysis
+- Cosmetics matched to your personal color palette
+- Exercise & styling guide for your body type
+- Weather-based outfit recommendations
+
+[Track Your Journey]
+- Analysis history to monitor changes
+- Closet management + AI outfit styling
+- Nutrition/exercise logging + AI wellness coach
+
+[Social]
+- Share beauty routines with friends
+- Wellness challenges on the leaderboard
+
+--- Keywords ---
+personal color, skin analysis, body analysis, beauty app, AI analysis, skincare, makeup, haircare, wellness, outfit recommendation
+
+--- Category ---
+Health & Fitness / Beauty
+
+--- Content Rating ---
+Everyone
