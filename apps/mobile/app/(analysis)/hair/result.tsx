@@ -1,26 +1,33 @@
 /**
- * H-1 헤어 분석 - 결과 화면
+ * H-1 헤어 분석 — 결과 V2
+ *
+ * ResultLayout 3탭 구조:
+ *  요약: 모발 유형 + 핵심 점수 4개
+ *  상세: RadarChart 4축 + 주요 고민
+ *  추천: 케어 루틴 + 추천 헤어스타일
  */
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import {
   AnalysisLoadingState,
   AnalysisErrorState,
-  AnalysisTrustBadge,
-  AnalysisResultButtons,
+  ResultLayout,
   MetricBar,
   useAnalysisStyles,
 } from '@/components/analysis';
+import { RadarChart, type RadarDataItem } from '@/components/charts';
+import { GlassCard } from '@/components/ui';
 import {
   analyzeHair as analyzeWithGemini,
   imageToBase64,
   type HairAnalysisResult,
 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
+import { TIMING } from '@/lib/animations';
 
 // 한국어 라벨 매핑
 const TEXTURE_LABELS: Record<HairAnalysisResult['texture'], string> = {
@@ -44,7 +51,7 @@ const SCALP_LABELS: Record<HairAnalysisResult['scalpCondition'], string> = {
 };
 
 export default function HairResultScreen() {
-  const { styles, module, isDark } = useAnalysisStyles();
+  const { module, colors, isDark } = useAnalysisStyles();
   const accent = module.hair;
 
   const { imageUri, imageBase64 } = useLocalSearchParams<{
@@ -84,8 +91,6 @@ export default function HairResultScreen() {
     analyzeHair();
   }, [analyzeHair]);
 
-  const handleRetry = () => router.replace('/(analysis)/hair');
-  const handleGoHome = () => router.replace('/(tabs)');
   const handleProductRecommendation = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({ pathname: '/products', params: { category: 'haircare' } });
@@ -93,143 +98,244 @@ export default function HairResultScreen() {
 
   if (isLoading) {
     return (
-      <AnalysisLoadingState
-        message="헤어 상태를 분석 중이에요..."
-        testID="hair-loading"
-      />
+      <AnalysisLoadingState message="헤어 상태를 분석 중이에요..." testID="hair-loading" />
     );
   }
 
   if (!result) {
     return (
       <AnalysisErrorState
-        message="분석에 실패했습니다."
-        onRetry={handleRetry}
-        onGoHome={handleGoHome}
+        message="분석에 실패했어요. 다시 시도해 주세요."
+        onRetry={() => router.replace('/(analysis)/hair')}
+        onGoHome={() => router.replace('/(tabs)')}
         testID="hair-error"
       />
     );
   }
 
-  return (
-    <SafeAreaView
-      testID="analysis-hair-result-screen"
-      style={styles.container}
-      edges={['bottom']}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
-        {imageUri && (
-          <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: imageUri }}
-              style={[localStyles.resultImage, { borderColor: accent.base }]}
-            />
-          </View>
-        )}
+  // RadarChart 데이터 (4축)
+  const radarData: RadarDataItem[] = [
+    { label: '윤기', value: result.scores.shine, maxValue: 100 },
+    { label: '탄력', value: result.scores.elasticity, maxValue: 100 },
+    { label: '밀도', value: result.scores.density, maxValue: 100 },
+    { label: '두피', value: result.scores.scalpHealth, maxValue: 100 },
+  ];
 
-        {/* 주요 결과 */}
-        <View style={styles.resultCard}>
-          <AnalysisTrustBadge
-            type={usedFallback ? 'questionnaire' : 'ai'}
-            testID="hair-trust-badge"
-          />
-          <Text style={styles.label}>모발 유형 분석 결과</Text>
-          <Text style={[localStyles.mainResult, { color: accent.base }]}>
-            {TEXTURE_LABELS[result.texture]} / {THICKNESS_LABELS[result.thickness]}
-          </Text>
-          <Text style={styles.subLabel}>
-            {SCALP_LABELS[result.scalpCondition]} · 손상도 {result.damageLevel}%
-          </Text>
-        </View>
+  // 평균 점수
+  const avgScore = Math.round(
+    (result.scores.shine + result.scores.elasticity + result.scores.density + result.scores.scalpHealth) / 4
+  );
 
-        {/* 점수 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>모발 점수</Text>
+  // --- 헤더 콘텐츠 ---
+  const headerContent = (
+    <View style={localStyles.headerContent}>
+      <Text style={[localStyles.typeName, { color: accent.base }]}>
+        {TEXTURE_LABELS[result.texture]} / {THICKNESS_LABELS[result.thickness]}
+      </Text>
+      <Text style={[localStyles.subInfo, { color: colors.mutedForeground }]}>
+        {SCALP_LABELS[result.scalpCondition]} · 손상도 {result.damageLevel}%
+      </Text>
+      <View style={[localStyles.scoreBadge, { backgroundColor: accent.base }]}>
+        <Text style={localStyles.scoreBadgeText}>종합 {avgScore}점</Text>
+      </View>
+    </View>
+  );
+
+  // --- 요약 탭 ---
+  const summaryTab = (
+    <View style={localStyles.tabContent}>
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>모발 점수</Text>
+        <View style={localStyles.metricsGap}>
           <MetricBar label="윤기" value={result.scores.shine} />
           <MetricBar label="탄력" value={result.scores.elasticity} />
           <MetricBar label="밀도" value={result.scores.density} />
           <MetricBar label="두피 건강" value={result.scores.scalpHealth} />
         </View>
+      </Animated.View>
 
-        {/* 주요 고민 */}
-        {result.mainConcerns.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>주요 고민</Text>
+      {result.mainConcerns.length > 0 && (
+        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>주요 고민</Text>
+          <GlassCard style={localStyles.tipsCard}>
             {result.mainConcerns.map((concern, i) => (
-              <Text key={i} style={styles.listItem}>
-                · {concern}
-              </Text>
+              <View key={i} style={localStyles.tipItem}>
+                <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
+                <Text style={[localStyles.tipText, { color: colors.foreground }]}>{concern}</Text>
+              </View>
             ))}
-          </View>
-        )}
+          </GlassCard>
+        </Animated.View>
+      )}
+    </View>
+  );
 
-        {/* 케어 루틴 */}
-        {result.careRoutine.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>추천 케어 루틴</Text>
-            {result.careRoutine.map((routine, i) => (
-              <Text key={i} style={styles.listItem}>
-                {i + 1}. {routine}
-              </Text>
-            ))}
-          </View>
-        )}
-
-        {/* 추천 스타일 */}
-        {result.recommendedStyles.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>추천 헤어스타일</Text>
-            <View style={localStyles.styleTags}>
-              {result.recommendedStyles.map((style, i) => (
-                <View
-                  key={i}
-                  style={[
-                    localStyles.styleTag,
-                    { backgroundColor: isDark ? accent.dark + '20' : accent.light + '30' },
-                  ]}
-                >
-                  <Text style={[localStyles.styleTagText, { color: accent.base }]}>{style}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        <AnalysisResultButtons
-          primaryText="💇 헤어 제품 추천"
-          onPrimaryPress={handleProductRecommendation}
-          onGoHome={handleGoHome}
-          onRetry={handleRetry}
-          testID="hair-result-buttons"
+  // --- 상세 탭 ---
+  const detailTab = (
+    <View style={localStyles.tabContent}>
+      <Animated.View
+        entering={FadeInUp.duration(TIMING.normal)}
+        style={localStyles.chartContainer}
+      >
+        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+          모발 밸런스 차트
+        </Text>
+        <RadarChart
+          data={radarData}
+          size={220}
+          animated
+          fillColor={accent.base}
+          strokeColor={accent.base}
         />
-      </ScrollView>
-    </SafeAreaView>
+      </Animated.View>
+
+      <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
+        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>손상 정도</Text>
+        <MetricBar label={`손상도 ${result.damageLevel}%`} value={result.damageLevel} />
+      </Animated.View>
+    </View>
+  );
+
+  // --- 추천 탭 ---
+  const recommendTab = (
+    <View style={localStyles.tabContent}>
+      {result.careRoutine.length > 0 && (
+        <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+            추천 케어 루틴
+          </Text>
+          <GlassCard style={localStyles.tipsCard}>
+            {result.careRoutine.map((routine, i) => (
+              <View key={i} style={localStyles.tipItem}>
+                <Text style={[localStyles.stepNum, { color: accent.base }]}>{i + 1}.</Text>
+                <Text style={[localStyles.tipText, { color: colors.foreground }]}>{routine}</Text>
+              </View>
+            ))}
+          </GlassCard>
+        </Animated.View>
+      )}
+
+      {result.recommendedStyles.length > 0 && (
+        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+            추천 헤어스타일
+          </Text>
+          <View style={localStyles.tagContainer}>
+            {result.recommendedStyles.map((style, i) => (
+              <View
+                key={i}
+                style={[
+                  localStyles.tag,
+                  { backgroundColor: isDark ? `${accent.dark}20` : `${accent.light}30` },
+                ]}
+              >
+                <Text style={[localStyles.tagText, { color: accent.base }]}>{style}</Text>
+              </View>
+            ))}
+          </View>
+        </Animated.View>
+      )}
+    </View>
+  );
+
+  return (
+    <ResultLayout
+      moduleKey="hair"
+      title="헤어 분석 결과"
+      imageUri={imageUri}
+      imageStyle={localStyles.hairImage}
+      headerContent={headerContent}
+      trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
+      usedFallback={usedFallback}
+      summaryTab={summaryTab}
+      detailTab={detailTab}
+      recommendTab={recommendTab}
+      primaryActionText="💇 헤어 제품 추천"
+      onPrimaryAction={handleProductRecommendation}
+      retryPath="/(analysis)/hair"
+      testID="hair-analysis-result"
+    />
   );
 }
 
 const localStyles = StyleSheet.create({
-  resultImage: {
-    width: 200,
-    height: 250,
-    borderRadius: 16,
-    borderWidth: 4,
+  headerContent: {
+    alignItems: 'center',
+    gap: 6,
   },
-  mainResult: {
-    fontSize: 24,
+  typeName: {
+    fontSize: 22,
     fontWeight: '700',
-    marginBottom: 8,
   },
-  styleTags: {
+  subInfo: {
+    fontSize: 14,
+  },
+  scoreBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginTop: 4,
+  },
+  scoreBadgeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  hairImage: {
+    width: 160,
+    height: 200,
+    borderRadius: 16,
+    borderWidth: 3,
+  },
+  tabContent: {
+    gap: 20,
+    paddingBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  metricsGap: {
+    gap: 14,
+  },
+  chartContainer: {
+    alignItems: 'center',
+  },
+  tipsCard: {
+    padding: 16,
+    gap: 10,
+  },
+  tipItem: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  tipBullet: {
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  stepNum: {
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 22,
+    minWidth: 20,
+  },
+  tipText: {
+    fontSize: 14,
+    lineHeight: 22,
+    flex: 1,
+  },
+  tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  styleTag: {
+  tag: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
-  styleTagText: {
+  tagText: {
     fontSize: 14,
     fontWeight: '500',
   },

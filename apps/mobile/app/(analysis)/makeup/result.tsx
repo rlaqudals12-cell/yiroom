@@ -1,26 +1,34 @@
 /**
- * M-1 메이크업 분석 - 결과 화면
+ * M-1 메이크업 분석 — 결과 V2
+ *
+ * ResultLayout 3탭 구조:
+ *  요약: 얼굴형/톤 + 핵심 점수
+ *  상세: RadarChart 4축 + 부위별 추천
+ *  추천: 추천 컬러 팔레트 + 메이크업 팁
  */
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import {
   AnalysisLoadingState,
   AnalysisErrorState,
-  AnalysisTrustBadge,
-  AnalysisResultButtons,
+  ResultLayout,
   MetricBar,
+  ColorPalette,
   useAnalysisStyles,
 } from '@/components/analysis';
+import { RadarChart, type RadarDataItem } from '@/components/charts';
+import { GlassCard } from '@/components/ui';
 import {
   analyzeMakeup as analyzeWithGemini,
   imageToBase64,
   type MakeupAnalysisResult,
 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
+import { TIMING } from '@/lib/animations';
 
 // 한국어 라벨 매핑
 const FACE_SHAPE_LABELS: Record<MakeupAnalysisResult['faceShape'], string> = {
@@ -62,7 +70,7 @@ const RECOMMENDATION_LABELS: Record<keyof MakeupAnalysisResult['recommendations'
 };
 
 export default function MakeupResultScreen() {
-  const { styles, module, colors } = useAnalysisStyles();
+  const { module, colors, isDark } = useAnalysisStyles();
   const accent = module.makeup;
 
   const { imageUri, imageBase64 } = useLocalSearchParams<{
@@ -102,8 +110,6 @@ export default function MakeupResultScreen() {
     analyzeMakeup();
   }, [analyzeMakeup]);
 
-  const handleRetry = () => router.replace('/(analysis)/makeup');
-  const handleGoHome = () => router.replace('/(tabs)');
   const handleProductRecommendation = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({ pathname: '/products', params: { category: 'makeup' } });
@@ -121,145 +127,225 @@ export default function MakeupResultScreen() {
   if (!result) {
     return (
       <AnalysisErrorState
-        message="분석에 실패했습니다."
-        onRetry={handleRetry}
-        onGoHome={handleGoHome}
+        message="분석에 실패했어요. 다시 시도해 주세요."
+        onRetry={() => router.replace('/(analysis)/makeup')}
+        onGoHome={() => router.replace('/(tabs)')}
         testID="makeup-error"
       />
     );
   }
 
-  return (
-    <SafeAreaView
-      testID="analysis-makeup-result-screen"
-      style={styles.container}
-      edges={['bottom']}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
-        {imageUri && (
-          <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: imageUri }}
-              style={[localStyles.resultImage, { borderColor: accent.base }]}
-            />
-          </View>
-        )}
+  // RadarChart 데이터 (4축)
+  const radarData: RadarDataItem[] = [
+    { label: '스킨톤', value: result.scores.skinTone, maxValue: 100 },
+    { label: '아이', value: result.scores.eyeBalance, maxValue: 100 },
+    { label: '립', value: result.scores.lipBalance, maxValue: 100 },
+    { label: '종합', value: result.scores.overall, maxValue: 100 },
+  ];
 
-        {/* 주요 결과 */}
-        <View style={styles.resultCard}>
-          <AnalysisTrustBadge
-            type={usedFallback ? 'questionnaire' : 'ai'}
-            testID="makeup-trust-badge"
-          />
-          <Text style={styles.label}>얼굴형 · 톤 분석 결과</Text>
-          <Text style={[localStyles.mainResult, { color: accent.base }]}>
-            {FACE_SHAPE_LABELS[result.faceShape]} / {UNDERTONE_LABELS[result.undertone]}
-          </Text>
-          <Text style={styles.subLabel}>
-            {EYE_SHAPE_LABELS[result.eyeShape]} · {LIP_SHAPE_LABELS[result.lipShape]}
-          </Text>
-        </View>
+  // 추천 컬러 → ColorPalette 데이터
+  const colorItems = result.bestColors.map((hex) => ({
+    color: hex,
+    name: hex,
+  }));
 
-        {/* 점수 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>메이크업 밸런스</Text>
+  // --- 헤더 콘텐츠 ---
+  const headerContent = (
+    <View style={localStyles.headerContent}>
+      <Text style={[localStyles.typeName, { color: accent.base }]}>
+        {FACE_SHAPE_LABELS[result.faceShape]} / {UNDERTONE_LABELS[result.undertone]}
+      </Text>
+      <Text style={[localStyles.subInfo, { color: colors.mutedForeground }]}>
+        {EYE_SHAPE_LABELS[result.eyeShape]} · {LIP_SHAPE_LABELS[result.lipShape]}
+      </Text>
+    </View>
+  );
+
+  // --- 요약 탭 ---
+  const summaryTab = (
+    <View style={localStyles.tabContent}>
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+          메이크업 밸런스
+        </Text>
+        <View style={localStyles.metricsGap}>
           <MetricBar label="스킨톤" value={result.scores.skinTone} />
           <MetricBar label="아이 밸런스" value={result.scores.eyeBalance} />
           <MetricBar label="립 밸런스" value={result.scores.lipBalance} />
           <MetricBar label="종합" value={result.scores.overall} />
         </View>
+      </Animated.View>
 
-        {/* 맞춤 추천 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>맞춤 메이크업 추천</Text>
-          {(Object.keys(result.recommendations) as (keyof MakeupAnalysisResult['recommendations'])[]).map(
-            (key) => (
-              <View key={key} style={localStyles.recommendationItem}>
-                <Text style={[localStyles.recommendationLabel, { color: colors.foreground }]}>
-                  {RECOMMENDATION_LABELS[key]}
-                </Text>
-                <Text style={[localStyles.recommendationText, { color: colors.mutedForeground }]}>
-                  {result.recommendations[key]}
-                </Text>
-              </View>
-            )
-          )}
-        </View>
+      {result.bestColors.length > 0 && (
+        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+            추천 컬러 팔레트
+          </Text>
+          <ColorPalette colors={colorItems} columns={4} animated testID="makeup-best-colors" />
+        </Animated.View>
+      )}
+    </View>
+  );
 
-        {/* 추천 컬러 */}
-        {result.bestColors.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>추천 컬러 팔레트</Text>
-            <View style={localStyles.colorPalette}>
-              {result.bestColors.map((color, i) => (
-                <View key={i} style={localStyles.colorChip}>
-                  <View
-                    style={[
-                      localStyles.colorSwatch,
-                      { backgroundColor: color, borderColor: colors.border },
-                    ]}
-                  />
-                  <Text style={[localStyles.colorLabel, { color: colors.mutedForeground }]}>
-                    {color}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        <AnalysisResultButtons
-          primaryText="💄 메이크업 제품 추천"
-          onPrimaryPress={handleProductRecommendation}
-          onGoHome={handleGoHome}
-          onRetry={handleRetry}
-          testID="makeup-result-buttons"
+  // --- 상세 탭 ---
+  const detailTab = (
+    <View style={localStyles.tabContent}>
+      <Animated.View
+        entering={FadeInUp.duration(TIMING.normal)}
+        style={localStyles.chartContainer}
+      >
+        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+          밸런스 차트
+        </Text>
+        <RadarChart
+          data={radarData}
+          size={220}
+          animated
+          fillColor={accent.base}
+          strokeColor={accent.base}
         />
-      </ScrollView>
-    </SafeAreaView>
+      </Animated.View>
+
+      {/* 부위별 추천 */}
+      <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
+        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+          부위별 맞춤 추천
+        </Text>
+        {(Object.keys(result.recommendations) as (keyof MakeupAnalysisResult['recommendations'])[]).map(
+          (key) => (
+            <GlassCard key={key} style={localStyles.recCard}>
+              <Text style={[localStyles.recLabel, { color: accent.base }]}>
+                {RECOMMENDATION_LABELS[key]}
+              </Text>
+              <Text style={[localStyles.recText, { color: colors.foreground }]}>
+                {result.recommendations[key]}
+              </Text>
+            </GlassCard>
+          )
+        )}
+      </Animated.View>
+    </View>
+  );
+
+  // --- 추천 탭 ---
+  const recommendTab = (
+    <View style={localStyles.tabContent}>
+      {result.bestColors.length > 0 && (
+        <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+            나에게 어울리는 컬러
+          </Text>
+          <ColorPalette colors={colorItems} columns={3} animated testID="makeup-rec-colors" />
+        </Animated.View>
+      )}
+
+      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>메이크업 팁</Text>
+        <GlassCard style={localStyles.tipsCard}>
+          <View style={localStyles.tipItem}>
+            <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
+            <Text style={[localStyles.tipText, { color: colors.foreground }]}>
+              {FACE_SHAPE_LABELS[result.faceShape]}은 {result.recommendations.contour}
+            </Text>
+          </View>
+          <View style={localStyles.tipItem}>
+            <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
+            <Text style={[localStyles.tipText, { color: colors.foreground }]}>
+              {EYE_SHAPE_LABELS[result.eyeShape]}에는 {result.recommendations.eye}
+            </Text>
+          </View>
+          <View style={localStyles.tipItem}>
+            <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
+            <Text style={[localStyles.tipText, { color: colors.foreground }]}>
+              {LIP_SHAPE_LABELS[result.lipShape]}에는 {result.recommendations.lip}
+            </Text>
+          </View>
+        </GlassCard>
+      </Animated.View>
+    </View>
+  );
+
+  return (
+    <ResultLayout
+      moduleKey="makeup"
+      title="메이크업 분석 결과"
+      imageUri={imageUri}
+      imageStyle={localStyles.makeupImage}
+      headerContent={headerContent}
+      trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
+      usedFallback={usedFallback}
+      summaryTab={summaryTab}
+      detailTab={detailTab}
+      recommendTab={recommendTab}
+      primaryActionText="💄 메이크업 제품 추천"
+      onPrimaryAction={handleProductRecommendation}
+      retryPath="/(analysis)/makeup"
+      testID="makeup-analysis-result"
+    />
   );
 }
 
 const localStyles = StyleSheet.create({
-  resultImage: {
-    width: 200,
-    height: 250,
-    borderRadius: 16,
-    borderWidth: 4,
+  headerContent: {
+    alignItems: 'center',
+    gap: 4,
   },
-  mainResult: {
-    fontSize: 24,
+  typeName: {
+    fontSize: 22,
     fontWeight: '700',
-    marginBottom: 8,
   },
-  recommendationItem: {
-    marginBottom: 16,
+  subInfo: {
+    fontSize: 14,
   },
-  recommendationLabel: {
-    fontSize: 15,
+  makeupImage: {
+    width: 140,
+    height: 180,
+    borderRadius: 16,
+    borderWidth: 3,
+  },
+  tabContent: {
+    gap: 20,
+    paddingBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  metricsGap: {
+    gap: 14,
+  },
+  chartContainer: {
+    alignItems: 'center',
+  },
+  recCard: {
+    padding: 14,
+    marginBottom: 10,
+  },
+  recLabel: {
+    fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
-  recommendationText: {
+  recText: {
     fontSize: 14,
+    lineHeight: 20,
+  },
+  tipsCard: {
+    padding: 16,
+    gap: 10,
+  },
+  tipItem: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  tipBullet: {
+    fontSize: 16,
     lineHeight: 22,
   },
-  colorPalette: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  colorChip: {
-    alignItems: 'center',
-    gap: 6,
-  },
-  colorSwatch: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 1,
-  },
-  colorLabel: {
-    fontSize: 11,
+  tipText: {
+    fontSize: 14,
+    lineHeight: 22,
+    flex: 1,
   },
 });
