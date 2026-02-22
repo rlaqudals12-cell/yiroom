@@ -20,6 +20,10 @@ export {
 } from './tokens';
 export type { SemanticColors } from './tokens';
 
+// 그라디언트
+export { gradients, getModuleGradient } from './gradients';
+export type { GradientConfig, GradientKey } from './gradients';
+
 // 테마 컨텍스트
 export { ThemeProvider } from './ThemeProvider';
 export type { ThemeContextValue } from './ThemeProvider';

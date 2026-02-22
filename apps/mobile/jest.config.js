@@ -19,6 +19,8 @@ module.exports = {
     '^@sentry/react-native$': '<rootDir>/__mocks__/@sentry/react-native.js',
     '^react-native-css-interop(.*)$':
       '<rootDir>/__mocks__/react-native-css-interop.js',
+    '^expo-linear-gradient$': '<rootDir>/__mocks__/expo-linear-gradient.js',
+    '^expo-blur$': '<rootDir>/__mocks__/expo-blur.js',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   collectCoverageFrom: [
