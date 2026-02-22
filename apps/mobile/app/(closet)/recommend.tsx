@@ -7,13 +7,13 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { RefreshCw, Thermometer } from 'lucide-react-native';
 import React, { useState, useEffect, useCallback } from 'react';
+import { Image } from 'expo-image';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Image,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -128,7 +128,8 @@ export default function RecommendScreen() {
             <Image
               source={{ uri: item.item.imageUrl }}
               style={styles.outfitImage}
-              resizeMode="cover"
+              contentFit="cover"
+              transition={200}
             />
           ) : (
             <View style={[styles.outfitPlaceholder, { backgroundColor: colors.muted }]}>

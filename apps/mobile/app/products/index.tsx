@@ -12,6 +12,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  FlatList,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
@@ -305,8 +306,12 @@ export default function ProductsScreen() {
           <ActivityIndicator size="large" color={brand.primary} />
         </View>
       ) : (
-        <ScrollView
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
           style={styles.productScroll}
+          contentContainerStyle={styles.productGridContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -315,64 +320,67 @@ export default function ProductsScreen() {
               tintColor={colors.foreground}
             />
           }
-        >
-          <View style={styles.productGrid}>
-            {products.map((product) => (
-              <TouchableOpacity
-                key={product.id}
-                style={styles.productCard}
-                onPress={() => handleProductPress(product.id)}
-              >
-                {/* 이미지 플레이스홀더 */}
-                <View style={styles.productImageContainer}>
-                  <View style={[styles.productImagePlaceholder, { backgroundColor: colors.muted }]}>
-                    <Text style={styles.placeholderEmoji}>
-                      {product.category === 'skincare'
-                        ? '🧴'
-                        : product.category === 'makeup'
-                          ? '💄'
-                          : product.category === 'haircare'
-                            ? '💇'
-                            : product.category === 'supplement'
-                              ? '💊'
-                              : product.category === 'fashion'
-                                ? '👗'
-                                : '🏋️'}
-                    </Text>
-                  </View>
-                  {/* 매칭 점수 배지 */}
-                  <View style={[styles.matchBadge, { backgroundColor: brand.primary }]}>
-                    <Text style={[styles.matchBadgeText, { color: brand.primaryForeground }]}>
-                      {product.matchScore}%
-                    </Text>
-                  </View>
+          renderItem={({ item: product }) => (
+            <TouchableOpacity
+              style={styles.productCard}
+              onPress={() => handleProductPress(product.id)}
+            >
+              {/* 이미지 플레이스홀더 */}
+              <View style={styles.productImageContainer}>
+                <View style={[styles.productImagePlaceholder, { backgroundColor: colors.muted }]}>
+                  <Text style={styles.placeholderEmoji}>
+                    {product.category === 'skincare'
+                      ? '🧴'
+                      : product.category === 'makeup'
+                        ? '💄'
+                        : product.category === 'haircare'
+                          ? '💇'
+                          : product.category === 'supplement'
+                            ? '💊'
+                            : product.category === 'fashion'
+                              ? '👗'
+                              : '🏋️'}
+                  </Text>
                 </View>
+                {/* 매칭 점수 배지 */}
+                <View style={[styles.matchBadge, { backgroundColor: brand.primary }]}>
+                  <Text style={[styles.matchBadgeText, { color: brand.primaryForeground }]}>
+                    {product.matchScore}%
+                  </Text>
+                </View>
+              </View>
 
-                {/* 제품 정보 */}
-                <View style={styles.productInfo}>
-                  <Text style={[styles.productBrand, { color: colors.mutedForeground }]}>
-                    {product.brand}
-                  </Text>
-                  <Text
-                    style={[styles.productName, { color: colors.foreground }]}
-                    numberOfLines={2}
-                  >
-                    {product.name}
-                  </Text>
-                  <View style={styles.ratingRow}>
-                    <Text style={[styles.ratingStar, { color: status.warning }]}>★</Text>
-                    <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
-                      {(product.rating ?? 0).toFixed(1)} ({product.reviewCount ?? 0})
-                    </Text>
-                  </View>
-                  <Text style={[styles.productPrice, { color: colors.foreground }]}>
-                    {formatPrice(product.price)}
+              {/* 제품 정보 */}
+              <View style={styles.productInfo}>
+                <Text style={[styles.productBrand, { color: colors.mutedForeground }]}>
+                  {product.brand}
+                </Text>
+                <Text
+                  style={[styles.productName, { color: colors.foreground }]}
+                  numberOfLines={2}
+                >
+                  {product.name}
+                </Text>
+                <View style={styles.ratingRow}>
+                  <Text style={[styles.ratingStar, { color: status.warning }]}>★</Text>
+                  <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
+                    {(product.rating ?? 0).toFixed(1)} ({product.reviewCount ?? 0})
                   </Text>
                 </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+                <Text style={[styles.productPrice, { color: colors.foreground }]}>
+                  {formatPrice(product.price)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                추천할 제품이 없어요
+              </Text>
+            </View>
+          }
+        />
       )}
     </SafeAreaView>
   );
@@ -431,15 +439,14 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 16,
   },
-  productGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  productGridContent: {
     paddingHorizontal: 12,
     paddingBottom: 20,
   },
   productCard: {
-    width: '50%',
+    flex: 1,
     padding: 4,
+    maxWidth: '50%',
   },
   productImageContainer: {
     position: 'relative',
@@ -493,5 +500,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     marginTop: 4,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 15,
   },
 });

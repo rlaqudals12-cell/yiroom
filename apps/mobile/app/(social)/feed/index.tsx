@@ -6,13 +6,13 @@
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
+import { Image } from 'expo-image';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Image,
   ActivityIndicator,
   Share,
   Platform,
@@ -87,7 +87,7 @@ export default function FeedScreen() {
           <View style={styles.cardHeader}>
             <View style={styles.userInfo}>
               {item.userAvatar ? (
-                <Image source={{ uri: item.userAvatar }} style={styles.avatar} />
+                <Image source={{ uri: item.userAvatar }} style={styles.avatar} transition={200} />
               ) : (
                 <View style={[styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
                   <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>

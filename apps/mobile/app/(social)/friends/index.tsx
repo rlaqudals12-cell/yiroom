@@ -5,13 +5,13 @@
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React from 'react';
+import { Image } from 'expo-image';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Image,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -45,7 +45,7 @@ export default function FriendsScreen() {
     >
       <View style={styles.avatarContainer}>
         {item.avatarUrl ? (
-          <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
+          <Image source={{ uri: item.avatarUrl }} style={styles.avatar} transition={200} />
         ) : (
           <View style={[styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
             <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>

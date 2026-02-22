@@ -7,13 +7,13 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Plus, Heart } from 'lucide-react-native';
 import React, { useState, useMemo } from 'react';
+import { Image } from 'expo-image';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Image,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -171,7 +171,8 @@ export default function ClosetScreen() {
                   <Image
                     source={{ uri: item.imageUrl }}
                     style={styles.itemImage}
-                    resizeMode="cover"
+                    contentFit="cover"
+                    transition={200}
                   />
                 ) : (
                   <View style={[styles.itemPlaceholder, isDark && styles.placeholderDark]}>
