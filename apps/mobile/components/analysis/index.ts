@@ -25,6 +25,10 @@ export type { MetricBarProps } from './MetricBar';
 export { AnalysisResultButtons } from './AnalysisResultButtons';
 export type { AnalysisResultButtonsProps } from './AnalysisResultButtons';
 
+// 공통 결과 레이아웃
+export { ResultLayout } from './ResultLayout';
+export type { ResultLayoutProps } from './ResultLayout';
+
 // 색상 시각화 컴포넌트
 export { ColorSwatch } from './ColorSwatch';
 export type { ColorSwatchProps } from './ColorSwatch';
