@@ -25,6 +25,13 @@ export type { MetricBarProps } from './MetricBar';
 export { AnalysisResultButtons } from './AnalysisResultButtons';
 export type { AnalysisResultButtonsProps } from './AnalysisResultButtons';
 
+// 색상 시각화 컴포넌트
+export { ColorSwatch } from './ColorSwatch';
+export type { ColorSwatchProps } from './ColorSwatch';
+
+export { ColorPalette } from './ColorPalette';
+export type { ColorItem, ColorGroup } from './ColorPalette';
+
 // 동적 스타일 훅 (useTheme 기반)
 export { useAnalysisStyles } from './styles/useAnalysisStyles';
 

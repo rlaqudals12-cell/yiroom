@@ -1,10 +1,20 @@
 /**
  * 스켈레톤 로딩 컴포넌트
  * 콘텐츠 로딩 시 플레이스홀더 표시
+ *
+ * Reanimated 기반 shimmer 애니메이션 (UI 스레드 실행)
  */
 
-import { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
+import { useEffect } from 'react';
+import { View, StyleSheet, ViewStyle } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 
 import { useTheme } from '../../lib/theme';
 
@@ -25,6 +35,8 @@ interface SkeletonProps {
 
 /**
  * 기본 스켈레톤 컴포넌트
+ *
+ * Reanimated UI 스레드에서 실행되는 pulse 애니메이션.
  */
 export function Skeleton({
   width = '100%',
@@ -34,27 +46,22 @@ export function Skeleton({
   style,
 }: SkeletonProps) {
   const { colors } = useTheme();
-  const pulseAnim = useRef(new Animated.Value(0.3)).current;
+  const opacity = useSharedValue(0.3);
 
-  // 펄스 애니메이션
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 0.3,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ])
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.3, { duration: 800, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      false
     );
-    animation.start();
-    return () => animation.stop();
-  }, [pulseAnim]);
+  }, [opacity]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
 
   const size = circle ? height : undefined;
 
@@ -68,8 +75,8 @@ export function Skeleton({
           width: size || width,
           height,
           borderRadius: circle ? height / 2 : borderRadius,
-          opacity: pulseAnim,
         },
+        animatedStyle,
         style,
       ]}
     />

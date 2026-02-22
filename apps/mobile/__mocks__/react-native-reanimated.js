@@ -5,6 +5,21 @@
 
 const View = require('react-native').View;
 
+// Layout Animation 클래스 mock 팩토리 — duration/delay/easing/withCallback 체인 지원
+function createLayoutAnimMock() {
+  const self = {};
+  self.duration = jest.fn(() => self);
+  self.delay = jest.fn(() => self);
+  self.easing = jest.fn(() => self);
+  self.withCallback = jest.fn(() => self);
+  self.withInitialValues = jest.fn(() => self);
+  self.springify = jest.fn(() => self);
+  self.damping = jest.fn(() => self);
+  self.stiffness = jest.fn(() => self);
+  self.mass = jest.fn(() => self);
+  return self;
+}
+
 module.exports = {
   __esModule: true,
   default: {
@@ -12,6 +27,10 @@ module.exports = {
     createAnimatedComponent: (component) => component,
     addWhitelistedNativeProps: () => {},
     addWhitelistedUIProps: () => {},
+    View,
+    Text: View,
+    Image: View,
+    ScrollView: View,
   },
   useSharedValue: jest.fn((init) => ({ value: init })),
   useAnimatedStyle: jest.fn(() => ({})),
@@ -32,13 +51,23 @@ module.exports = {
   runOnJS: jest.fn((fn) => fn),
   runOnUI: jest.fn((fn) => fn),
   createAnimatedComponent: (component) => component,
-  FadeIn: { duration: jest.fn(() => ({ delay: jest.fn(() => ({})) })) },
-  FadeOut: { duration: jest.fn(() => ({ delay: jest.fn(() => ({})) })) },
-  FadeInUp: { duration: jest.fn(() => ({ delay: jest.fn(() => ({})) })) },
-  FadeOutDown: { duration: jest.fn(() => ({ delay: jest.fn(() => ({})) })) },
-  SlideInRight: { duration: jest.fn(() => ({ delay: jest.fn(() => ({})) })) },
-  SlideOutLeft: { duration: jest.fn(() => ({ delay: jest.fn(() => ({})) })) },
-  Layout: { duration: jest.fn(() => ({})) },
+  // Layout Animations — 전체 체인 지원
+  FadeIn: createLayoutAnimMock(),
+  FadeOut: createLayoutAnimMock(),
+  FadeInUp: createLayoutAnimMock(),
+  FadeInDown: createLayoutAnimMock(),
+  FadeInLeft: createLayoutAnimMock(),
+  FadeInRight: createLayoutAnimMock(),
+  FadeOutUp: createLayoutAnimMock(),
+  FadeOutDown: createLayoutAnimMock(),
+  SlideInRight: createLayoutAnimMock(),
+  SlideInDown: createLayoutAnimMock(),
+  SlideOutRight: createLayoutAnimMock(),
+  SlideOutDown: createLayoutAnimMock(),
+  SlideOutLeft: createLayoutAnimMock(),
+  ZoomIn: createLayoutAnimMock(),
+  ZoomOut: createLayoutAnimMock(),
+  Layout: createLayoutAnimMock(),
   Easing: {
     linear: jest.fn((x) => x),
     ease: jest.fn((x) => x),

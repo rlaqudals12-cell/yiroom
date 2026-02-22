@@ -13,3 +13,7 @@ export { SectionHeader } from './SectionHeader';
 export { ProgressIndicator } from './ProgressIndicator';
 export { GradientBackground } from './GradientBackground';
 export { GlassCard } from './GlassCard';
+export { AnimatedCard } from './AnimatedCard';
+export { AnimatedList } from './AnimatedList';
+export { TabView } from './TabView';
+export type { TabItem } from './TabView';
