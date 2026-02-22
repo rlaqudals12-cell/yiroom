@@ -4,6 +4,7 @@
  * variant: default | secondary | ghost | destructive | outline
  * size: sm | md | lg
  */
+import * as Haptics from 'expo-haptics';
 import { ActivityIndicator, Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
@@ -43,7 +44,12 @@ export function Button({
   return (
     <Pressable
       testID={testID}
-      onPress={onPress}
+      onPress={() => {
+        if (!isDisabled && onPress) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onPress();
+        }
+      }}
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.base,

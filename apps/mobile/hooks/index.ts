@@ -2,6 +2,12 @@
  * 모바일 앱 커스텀 훅
  */
 
+// 햅틱 피드백
+export { useHapticFeedback } from './useHapticFeedback';
+
+// 스크롤 애니메이션
+export { useScrollAnimation } from './useScrollAnimation';
+
 // 분석 결과 조회
 export {
   useUserAnalyses,
