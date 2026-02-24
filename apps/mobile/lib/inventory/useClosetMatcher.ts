@@ -20,7 +20,7 @@ import {
 } from './closetMatcher';
 import { useCloset } from './useInventory';
 
-import type { ClothingCategory, InventoryItem } from './index';
+import type { ClothingCategory, InventoryItem } from './types';
 
 interface UseClosetMatcherProps {
   personalColor?: PersonalColorSeason | null;

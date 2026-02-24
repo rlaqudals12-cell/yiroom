@@ -3,8 +3,8 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type {
   OnboardingData,
@@ -46,10 +46,16 @@ interface UseOnboardingResult {
 
 export function useOnboarding(): UseOnboardingResult {
   const router = useRouter();
+  const pathname = usePathname();
   const [data, setData] = useState<OnboardingData>(DEFAULT_ONBOARDING_DATA);
-  const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
+
+  // 현재 경로에서 step 번호 추출 (step1→1, step2→2, step3→3)
+  const currentStep = useMemo(() => {
+    const match = pathname.match(/step(\d+)/);
+    return match ? parseInt(match[1], 10) : 1;
+  }, [pathname]);
 
   // 초기 로드
   useEffect(() => {
@@ -87,7 +93,6 @@ export function useOnboarding(): UseOnboardingResult {
   const goToStep = useCallback(
     (step: number) => {
       if (step >= 1 && step <= 3) {
-        setCurrentStep(step);
         router.push(`/(onboarding)/step${step}` as never);
       }
     },
@@ -182,7 +187,6 @@ export function useOnboarding(): UseOnboardingResult {
       ]);
 
       setData(DEFAULT_ONBOARDING_DATA);
-      setCurrentStep(1);
       setIsCompleted(false);
     } catch (error) {
       onboardingLogger.error(' Reset error:', error);

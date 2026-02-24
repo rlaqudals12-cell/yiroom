@@ -3,8 +3,8 @@
  * 퍼스널컬러, 체형, 날씨 기반으로 사용자 옷장에서 어울리는 아이템 추천
  */
 
-import type { InventoryItem, ClothingItem, ClothingCategory, Season, Occasion } from './index';
-import { toClothingItem } from './index';
+import type { InventoryItem, ClothingItem, ClothingCategory, Season, Occasion } from './types';
+import { toClothingItem } from './types';
 
 // 체형 타입 (3-type 시스템)
 export type BodyType3 = 'S' | 'W' | 'N';

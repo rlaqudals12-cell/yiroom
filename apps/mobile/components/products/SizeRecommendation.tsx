@@ -4,7 +4,7 @@
  */
 
 import * as Haptics from 'expo-haptics';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import { useNetworkStatus } from '../../lib/offline';
@@ -36,7 +36,7 @@ export function SizeRecommendation({
   productId,
   onSizeSelect,
 }: SizeRecommendationProps) {
-  const { isDark } = useTheme();
+  const { colors, brand, status } = useTheme();
   const { isConnected } = useNetworkStatus();
 
   const { recommendation, isLoading, error, confidenceLabel, basisDescription, refetch } =
@@ -58,12 +58,51 @@ export function SizeRecommendation({
     onSizeSelect?.(size);
   };
 
+  // 신뢰도 배경색
+  const getConfidenceBg = (color: 'green' | 'yellow' | 'gray'): string => {
+    const map: Record<string, string> = {
+      green: status.success,
+      yellow: status.warning,
+      gray: colors.secondary,
+    };
+    return map[color];
+  };
+
+  // 테마 기반 동적 스타일
+  const themed = useMemo(
+    () => ({
+      container: { backgroundColor: colors.card },
+      loadingText: { color: colors.mutedForeground },
+      errorText: { color: colors.mutedForeground },
+      retryBtn: { backgroundColor: brand.primary },
+      retryBtnText: { color: brand.primaryForeground },
+      title: { color: colors.foreground },
+      subtitle: { color: colors.mutedForeground },
+      badgeText: { color: colors.foreground },
+      sizeBox: { backgroundColor: brand.primary },
+      sizeText: { color: brand.primaryForeground },
+      sizeLabel: { color: brand.primaryForeground },
+      barTrack: { backgroundColor: colors.border },
+      barFill: { backgroundColor: brand.primary },
+      barText: { color: colors.mutedForeground },
+      altTitle: { color: colors.mutedForeground },
+      altItem: { backgroundColor: colors.secondary },
+      altSize: { color: colors.foreground },
+      altNote: { color: colors.mutedForeground },
+      noteBox: { backgroundColor: colors.accent },
+      noteText: { color: colors.mutedForeground },
+      offlineBox: { backgroundColor: colors.secondary },
+      offlineText: { color: colors.mutedForeground },
+    }),
+    [colors, brand]
+  );
+
   if (isLoading) {
     return (
-      <View style={[styles.container, isDark && styles.containerDark]}>
+      <View style={[styles.container, themed.container]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#8b5cf6" />
-          <Text style={[styles.loadingText, isDark && styles.textMuted]}>사이즈 분석 중...</Text>
+          <ActivityIndicator size="small" color={brand.primary} />
+          <Text style={[styles.loadingText, themed.loadingText]}>사이즈 분석 중...</Text>
         </View>
       </View>
     );
@@ -71,11 +110,11 @@ export function SizeRecommendation({
 
   if (error && isConnected) {
     return (
-      <View style={[styles.container, isDark && styles.containerDark]}>
+      <View style={[styles.container, themed.container]}>
         <View style={styles.errorContainer}>
-          <Text style={[styles.errorText, isDark && styles.textMuted]}>{error}</Text>
-          <TouchableOpacity onPress={refetch} style={styles.retryButton}>
-            <Text style={styles.retryButtonText}>다시 시도</Text>
+          <Text style={[styles.errorText, themed.errorText]}>{error}</Text>
+          <TouchableOpacity onPress={refetch} style={[styles.retryButton, themed.retryBtn]}>
+            <Text style={[styles.retryButtonText, themed.retryBtnText]}>다시 시도</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -87,13 +126,13 @@ export function SizeRecommendation({
   }
 
   return (
-    <View testID="size-recommendation" style={[styles.container, isDark && styles.containerDark]}>
+    <View testID="size-recommendation" style={[styles.container, themed.container]}>
       {/* 헤더 */}
       <View style={styles.header}>
         <Text style={styles.headerIcon}>📏</Text>
         <View style={styles.headerInfo}>
-          <Text style={[styles.headerTitle, isDark && styles.textLight]}>맞춤 사이즈 추천</Text>
-          <Text style={[styles.headerSubtitle, isDark && styles.textMuted]}>
+          <Text style={[styles.headerTitle, themed.title]}>맞춤 사이즈 추천</Text>
+          <Text style={[styles.headerSubtitle, themed.subtitle]}>
             {basisDescription || '일반적인 사이즈 추정'}
           </Text>
         </View>
@@ -101,12 +140,12 @@ export function SizeRecommendation({
           <View
             style={[
               styles.confidenceBadge,
-              {
-                backgroundColor: getConfidenceColor(confidenceLabel.color, isDark),
-              },
+              { backgroundColor: getConfidenceBg(confidenceLabel.color) },
             ]}
           >
-            <Text style={styles.confidenceBadgeText}>{confidenceLabel.label}</Text>
+            <Text style={[styles.confidenceBadgeText, themed.badgeText]}>
+              {confidenceLabel.label}
+            </Text>
           </View>
         )}
       </View>
@@ -114,21 +153,27 @@ export function SizeRecommendation({
       {/* 추천 사이즈 */}
       <View style={styles.mainRecommendation}>
         <TouchableOpacity
-          style={[styles.recommendedSize, isDark && styles.recommendedSizeDark]}
+          style={[styles.recommendedSize, themed.sizeBox]}
           onPress={() => handleSizePress(displayRecommendation.recommendedSize)}
         >
-          <Text style={styles.recommendedSizeText}>{displayRecommendation.recommendedSize}</Text>
-          <Text style={[styles.recommendedLabel, isDark && styles.textMuted]}>추천</Text>
+          <Text style={[styles.recommendedSizeText, themed.sizeText]}>
+            {displayRecommendation.recommendedSize}
+          </Text>
+          <Text style={[styles.recommendedLabel, themed.sizeLabel]}>추천</Text>
         </TouchableOpacity>
 
         {/* 신뢰도 바 */}
         <View style={styles.confidenceBar}>
-          <View style={styles.confidenceBarTrack}>
+          <View style={[styles.confidenceBarTrack, themed.barTrack]}>
             <View
-              style={[styles.confidenceBarFill, { width: `${displayRecommendation.confidence}%` }]}
+              style={[
+                styles.confidenceBarFill,
+                themed.barFill,
+                { width: `${displayRecommendation.confidence}%` },
+              ]}
             />
           </View>
-          <Text style={[styles.confidenceText, isDark && styles.textMuted]}>
+          <Text style={[styles.confidenceText, themed.barText]}>
             {displayRecommendation.confidence}% 정확도
           </Text>
         </View>
@@ -137,16 +182,16 @@ export function SizeRecommendation({
       {/* 대안 사이즈 */}
       {displayRecommendation.alternatives.length > 0 && (
         <View style={styles.alternatives}>
-          <Text style={[styles.alternativesTitle, isDark && styles.textMuted]}>다른 옵션</Text>
+          <Text style={[styles.alternativesTitle, themed.altTitle]}>다른 옵션</Text>
           <View style={styles.alternativesList}>
             {displayRecommendation.alternatives.map((alt, index) => (
               <TouchableOpacity
                 key={index}
-                style={[styles.alternativeItem, isDark && styles.alternativeItemDark]}
+                style={[styles.alternativeItem, themed.altItem]}
                 onPress={() => handleSizePress(alt.size)}
               >
-                <Text style={[styles.alternativeSize, isDark && styles.textLight]}>{alt.size}</Text>
-                <Text style={[styles.alternativeNote, isDark && styles.textMuted]}>{alt.note}</Text>
+                <Text style={[styles.alternativeSize, themed.altSize]}>{alt.size}</Text>
+                <Text style={[styles.alternativeNote, themed.altNote]}>{alt.note}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -155,8 +200,8 @@ export function SizeRecommendation({
 
       {/* 브랜드 노트 */}
       {displayRecommendation.brandInfo?.sizeNote && (
-        <View style={[styles.brandNote, isDark && styles.brandNoteDark]}>
-          <Text style={[styles.brandNoteText, isDark && styles.textMuted]}>
+        <View style={[styles.brandNote, themed.noteBox]}>
+          <Text style={[styles.brandNoteText, themed.noteText]}>
             💡 {displayRecommendation.brandInfo.sizeNote}
           </Text>
         </View>
@@ -164,33 +209,22 @@ export function SizeRecommendation({
 
       {/* 오프라인 알림 */}
       {!isConnected && (
-        <View style={styles.offlineNote}>
-          <Text style={styles.offlineNoteText}>📴 오프라인 모드 - 온라인 시 정확한 추천 제공</Text>
+        <View style={[styles.offlineNote, themed.offlineBox]}>
+          <Text style={[styles.offlineNoteText, themed.offlineText]}>
+            📴 오프라인 모드 - 온라인 시 정확한 추천 제공
+          </Text>
         </View>
       )}
     </View>
   );
 }
 
-// 신뢰도 색상 헬퍼
-function getConfidenceColor(color: 'green' | 'yellow' | 'gray', isDark: boolean): string {
-  const colors = {
-    green: isDark ? '#166534' : '#dcfce7',
-    yellow: isDark ? '#854d0e' : '#fef9c3',
-    gray: isDark ? '#374151' : '#f3f4f6',
-  };
-  return colors[color];
-}
-
+// 레이아웃 관련 정적 스타일 (색상은 themed에서 오버라이드)
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
     marginVertical: 12,
-  },
-  containerDark: {
-    backgroundColor: '#1a1a1a',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -201,7 +235,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: '#666',
   },
   errorContainer: {
     alignItems: 'center',
@@ -210,17 +243,14 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   retryButtonText: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -239,11 +269,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   headerSubtitle: {
     fontSize: 12,
-    color: '#666',
     marginTop: 2,
   },
   confidenceBadge: {
@@ -254,7 +282,6 @@ const styles = StyleSheet.create({
   confidenceBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#166534',
   },
   mainRecommendation: {
     flexDirection: 'row',
@@ -264,22 +291,17 @@ const styles = StyleSheet.create({
   recommendedSize: {
     width: 72,
     height: 72,
-    backgroundColor: '#8b5cf6',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  recommendedSizeDark: {
-    backgroundColor: '#7c3aed',
-  },
   recommendedSizeText: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#fff',
   },
   recommendedLabel: {
     fontSize: 11,
-    color: 'rgba(255,255,255,0.8)',
+    opacity: 0.8,
     marginTop: 2,
   },
   confidenceBar: {
@@ -288,25 +310,21 @@ const styles = StyleSheet.create({
   },
   confidenceBarTrack: {
     height: 8,
-    backgroundColor: '#e5e5e5',
     borderRadius: 4,
     overflow: 'hidden',
   },
   confidenceBarFill: {
     height: '100%',
-    backgroundColor: '#8b5cf6',
     borderRadius: 4,
   },
   confidenceText: {
     fontSize: 12,
-    color: '#666',
   },
   alternatives: {
     marginTop: 16,
   },
   alternativesTitle: {
     fontSize: 12,
-    color: '#666',
     marginBottom: 8,
   },
   alternativesList: {
@@ -315,52 +333,33 @@ const styles = StyleSheet.create({
   },
   alternativeItem: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
     borderRadius: 12,
     padding: 12,
-  },
-  alternativeItemDark: {
-    backgroundColor: '#2a2a2a',
   },
   alternativeSize: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 4,
   },
   alternativeNote: {
     fontSize: 11,
-    color: '#666',
   },
   brandNote: {
     marginTop: 16,
-    backgroundColor: '#f5f3ff',
     borderRadius: 8,
     padding: 12,
   },
-  brandNoteDark: {
-    backgroundColor: '#1a1a2e',
-  },
   brandNoteText: {
     fontSize: 12,
-    color: '#6b21a8',
     lineHeight: 18,
   },
   offlineNote: {
     marginTop: 12,
-    backgroundColor: '#fef3c7',
     borderRadius: 8,
     padding: 10,
     alignItems: 'center',
   },
   offlineNoteText: {
     fontSize: 11,
-    color: '#92400e',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

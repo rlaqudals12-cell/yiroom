@@ -2,26 +2,34 @@
  * 푸시 알림 유틸리티
  * 운동/식단 리마인더 및 Streak 알림
  */
+import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { notificationLogger } from './utils/logger';
 
-// 알림 핸들러 설정
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Expo Go에서는 push notification 미지원 (SDK 53+)
+const IS_EXPO_GO = Constants.appOwnership === 'expo';
+
+// 알림 핸들러 설정 (Expo Go에서는 스킵)
+if (!IS_EXPO_GO) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 /**
  * 푸시 알림 권한 요청
  */
 export async function requestNotificationPermission(): Promise<boolean> {
+  if (IS_EXPO_GO) return false;
+
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
 
@@ -68,6 +76,8 @@ export async function scheduleWorkoutReminder(
   hour: number = 9,
   minute: number = 0
 ): Promise<string | null> {
+  if (IS_EXPO_GO) return null;
+
   try {
     const id = await Notifications.scheduleNotificationAsync({
       content: {
@@ -97,6 +107,8 @@ export async function scheduleMealReminder(
   hour: number,
   minute: number = 0
 ): Promise<string | null> {
+  if (IS_EXPO_GO) return null;
+
   const mealNames = {
     breakfast: '아침',
     lunch: '점심',
@@ -131,6 +143,8 @@ export async function sendStreakReminder(
   streakType: 'workout' | 'nutrition',
   currentStreak: number
 ): Promise<string | null> {
+  if (IS_EXPO_GO) return null;
+
   const typeNames = {
     workout: '운동',
     nutrition: '식단',
@@ -163,6 +177,8 @@ export async function sendWorkoutCompleteNotification(
   caloriesBurned: number,
   duration: number
 ): Promise<string | null> {
+  if (IS_EXPO_GO) return null;
+
   try {
     const id = await Notifications.scheduleNotificationAsync({
       content: {
@@ -187,6 +203,8 @@ export async function sendCalorieWarningNotification(
   currentCalories: number,
   goalCalories: number
 ): Promise<string | null> {
+  if (IS_EXPO_GO) return null;
+
   const overAmount = currentCalories - goalCalories;
 
   try {
@@ -210,6 +228,7 @@ export async function sendCalorieWarningNotification(
  * 모든 예약된 알림 취소
  */
 export async function cancelAllNotifications(): Promise<void> {
+  if (IS_EXPO_GO) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
@@ -217,6 +236,7 @@ export async function cancelAllNotifications(): Promise<void> {
  * 특정 알림 취소
  */
 export async function cancelNotification(notificationId: string): Promise<void> {
+  if (IS_EXPO_GO) return;
   await Notifications.cancelScheduledNotificationAsync(notificationId);
 }
 
@@ -225,7 +245,8 @@ export async function cancelNotification(notificationId: string): Promise<void> 
  */
 export function addNotificationListener(
   handler: (notification: Notifications.Notification) => void
-): Notifications.Subscription {
+): Notifications.Subscription | null {
+  if (IS_EXPO_GO) return null;
   return Notifications.addNotificationReceivedListener(handler);
 }
 
@@ -234,7 +255,8 @@ export function addNotificationListener(
  */
 export function addNotificationResponseListener(
   handler: (response: Notifications.NotificationResponse) => void
-): Notifications.Subscription {
+): Notifications.Subscription | null {
+  if (IS_EXPO_GO) return null;
   return Notifications.addNotificationResponseReceivedListener(handler);
 }
 
@@ -242,6 +264,8 @@ export function addNotificationResponseListener(
  * 기본 알림 설정 (앱 시작 시 호출)
  */
 export async function setupDefaultNotifications(): Promise<void> {
+  if (IS_EXPO_GO) return;
+
   const hasPermission = await requestNotificationPermission();
 
   if (hasPermission) {

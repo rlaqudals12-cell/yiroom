@@ -32,8 +32,8 @@ import {
 import { captureError } from '@/lib/monitoring/sentry';
 import { TIMING } from '@/lib/animations';
 
-import { SKIN_TYPE_DATA, SCORE_WEIGHTS } from './constants';
-import type { SkinMetrics, SkinMetricsDelta } from './types';
+import { SKIN_TYPE_DATA, SCORE_WEIGHTS } from './_utils/constants';
+import type { SkinMetrics, SkinMetricsDelta } from './_utils/types';
 
 // 피부 타입별 성분 추천/주의 데이터
 const INGREDIENT_DATA: Record<SkinType, { good: string[]; avoid: string[] }> = {

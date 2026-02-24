@@ -10,6 +10,7 @@
 
 import { useAuth } from '@clerk/clerk-expo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -34,19 +35,24 @@ export { DEFAULT_NOTIFICATION_SETTINGS } from './types';
 const SETTINGS_KEY = 'yiroom_notification_settings';
 const PUSH_TOKEN_KEY = 'yiroom_push_token';
 
+// Expo Go에서는 push notification 미지원 (SDK 53+)
+const IS_EXPO_GO = Constants.appOwnership === 'expo';
+
 // ============================================================
-// 알림 핸들러 설정
+// 알림 핸들러 설정 (Expo Go에서는 스킵)
 // ============================================================
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+if (!IS_EXPO_GO) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 // ============================================================
 // 알림 권한 훅
@@ -59,11 +65,13 @@ interface UseNotificationPermissionResult {
 }
 
 export function useNotificationPermission(): UseNotificationPermissionResult {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(IS_EXPO_GO ? false : null);
+  const [isLoading, setIsLoading] = useState(!IS_EXPO_GO);
 
   useEffect(() => {
-    checkPermission();
+    if (!IS_EXPO_GO) {
+      checkPermission();
+    }
   }, []);
 
   const checkPermission = async () => {
@@ -73,6 +81,8 @@ export function useNotificationPermission(): UseNotificationPermissionResult {
   };
 
   const requestPermission = useCallback(async (): Promise<boolean> => {
+    if (IS_EXPO_GO) return false;
+
     setIsLoading(true);
 
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -139,6 +149,8 @@ export function usePushToken(): UsePushTokenResult {
   };
 
   const registerToken = useCallback(async (): Promise<string | null> => {
+    if (IS_EXPO_GO) return null;
+
     setIsLoading(true);
 
     try {
@@ -345,6 +357,8 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
   }, [isSignedIn, userId, supabase]);
 
   const applySettings = useCallback(async () => {
+    if (IS_EXPO_GO) return;
+
     await Notifications.cancelAllScheduledNotificationsAsync();
 
     if (!settings.enabled) return;
@@ -408,6 +422,8 @@ export function useNotificationScheduler(): UseNotificationSchedulerResult {
       type: NotificationType,
       variables?: Record<string, string | number>
     ): Promise<string | null> => {
+      if (IS_EXPO_GO) return null;
+
       try {
         const notification = createNotification(type, variables);
 
@@ -440,6 +456,8 @@ export function useNotificationScheduler(): UseNotificationSchedulerResult {
       trigger: Notifications.NotificationTriggerInput,
       variables?: Record<string, string | number>
     ): Promise<string | null> => {
+      if (IS_EXPO_GO) return null;
+
       try {
         const notification = createNotification(type, variables);
 
@@ -467,10 +485,12 @@ export function useNotificationScheduler(): UseNotificationSchedulerResult {
   );
 
   const cancel = useCallback(async (notificationId: string) => {
+    if (IS_EXPO_GO) return;
     await Notifications.cancelScheduledNotificationAsync(notificationId);
   }, []);
 
   const cancelAll = useCallback(async () => {
+    if (IS_EXPO_GO) return;
     await Notifications.cancelAllScheduledNotificationsAsync();
   }, []);
 
@@ -490,6 +510,8 @@ export function useNotificationResponse() {
   const router = useRouter();
 
   useEffect(() => {
+    if (IS_EXPO_GO) return;
+
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data;
       const route = data?.route as string | undefined;

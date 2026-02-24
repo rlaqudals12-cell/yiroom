@@ -16,8 +16,8 @@ import type {
   InventoryItemRow,
   SavedOutfit,
   SavedOutfitRow,
-} from './index';
-import { rowToInventoryItem, rowToSavedOutfit, toClothingItems } from './index';
+} from './types';
+import { rowToInventoryItem, rowToSavedOutfit, toClothingItems } from './types';
 
 // ============================================================
 // 인벤토리 아이템 훅
