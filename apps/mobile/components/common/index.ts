@@ -8,6 +8,9 @@ export { OfflineBanner } from './OfflineBanner';
 // 에러 처리
 export { ErrorBoundary } from './ErrorBoundary';
 
+// 빈 상태
+export { EmptyState } from './EmptyState';
+
 // 스켈레톤 로딩
 export {
   Skeleton,

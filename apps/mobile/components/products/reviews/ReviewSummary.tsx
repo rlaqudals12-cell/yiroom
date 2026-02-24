@@ -6,6 +6,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
+import { useTheme } from '../../../lib/theme';
+
 import { StarRating, getRatingColor } from './StarRating';
 
 export interface ReviewSummaryData {
@@ -25,6 +27,7 @@ interface ReviewSummaryProps {
 }
 
 export function ReviewSummary({ summary }: ReviewSummaryProps) {
+  const { colors } = useTheme();
   const { averageRating, totalCount, ratingDistribution } = summary;
 
   // 가장 높은 평점 개수 (막대 그래프 비율 계산용)
@@ -35,8 +38,8 @@ export function ReviewSummary({ summary }: ReviewSummaryProps) {
 
     return (
       <View key={rating} style={styles.ratingRow}>
-        <Text style={styles.ratingLabel}>{rating}점</Text>
-        <View style={styles.barContainer}>
+        <Text style={[styles.ratingLabel, { color: colors.mutedForeground }]}>{rating}점</Text>
+        <View style={[styles.barContainer, { backgroundColor: colors.border }]}>
           <View
             style={[
               styles.bar,
@@ -47,18 +50,26 @@ export function ReviewSummary({ summary }: ReviewSummaryProps) {
             ]}
           />
         </View>
-        <Text style={styles.countLabel}>{count}</Text>
+        <Text style={[styles.countLabel, { color: colors.mutedForeground }]}>{count}</Text>
       </View>
     );
   };
 
   return (
-    <View testID="review-summary" style={styles.container} accessibilityRole="summary">
+    <View
+      testID="review-summary"
+      style={[styles.container, { backgroundColor: colors.card }]}
+      accessibilityRole="summary"
+    >
       {/* 평균 점수 */}
-      <View style={styles.averageSection}>
-        <Text style={styles.averageScore}>{averageRating.toFixed(1)}</Text>
+      <View style={[styles.averageSection, { borderRightColor: colors.border }]}>
+        <Text style={[styles.averageScore, { color: colors.foreground }]}>
+          {averageRating.toFixed(1)}
+        </Text>
         <StarRating rating={averageRating} size="medium" showAverage={false} />
-        <Text style={styles.totalCount}>{totalCount.toLocaleString()}개의 리뷰</Text>
+        <Text style={[styles.totalCount, { color: colors.mutedForeground }]}>
+          {totalCount.toLocaleString()}개의 리뷰
+        </Text>
       </View>
 
       {/* 평점 분포 */}
@@ -75,19 +86,21 @@ export function ReviewSummary({ summary }: ReviewSummaryProps) {
  * 리뷰 요약 스켈레톤
  */
 export function ReviewSummarySkeleton() {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
-      <View style={styles.averageSection}>
-        <View style={[styles.skeleton, { width: 60, height: 48 }]} />
-        <View style={[styles.skeleton, { width: 120, height: 24, marginTop: 8 }]} />
-        <View style={[styles.skeleton, { width: 80, height: 16, marginTop: 8 }]} />
+    <View style={[styles.container, { backgroundColor: colors.card }]}>
+      <View style={[styles.averageSection, { borderRightColor: colors.border }]}>
+        <View style={[styles.skeleton, { width: 60, height: 48, backgroundColor: colors.border }]} />
+        <View style={[styles.skeleton, { width: 120, height: 24, marginTop: 8, backgroundColor: colors.border }]} />
+        <View style={[styles.skeleton, { width: 80, height: 16, marginTop: 8, backgroundColor: colors.border }]} />
       </View>
       <View style={styles.distributionSection}>
         {[1, 2, 3, 4, 5].map((i) => (
           <View key={i} style={styles.ratingRow}>
-            <View style={[styles.skeleton, { width: 24, height: 16 }]} />
-            <View style={[styles.skeleton, { flex: 1, height: 8, marginHorizontal: 8 }]} />
-            <View style={[styles.skeleton, { width: 24, height: 16 }]} />
+            <View style={[styles.skeleton, { width: 24, height: 16, backgroundColor: colors.border }]} />
+            <View style={[styles.skeleton, { flex: 1, height: 8, marginHorizontal: 8, backgroundColor: colors.border }]} />
+            <View style={[styles.skeleton, { width: 24, height: 16, backgroundColor: colors.border }]} />
           </View>
         ))}
       </View>
@@ -128,7 +141,6 @@ export function calculateReviewSummary(reviews: { rating: number }[]): ReviewSum
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
   },
@@ -136,16 +148,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingRight: 20,
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB',
   },
   averageScore: {
     fontSize: 48,
     fontWeight: '700',
-    color: '#1F2937',
   },
   totalCount: {
     fontSize: 12,
-    color: '#6B7280',
     marginTop: 4,
   },
   distributionSection: {
@@ -161,12 +170,10 @@ const styles = StyleSheet.create({
   ratingLabel: {
     width: 28,
     fontSize: 12,
-    color: '#6B7280',
   },
   barContainer: {
     flex: 1,
     height: 8,
-    backgroundColor: '#E5E7EB',
     borderRadius: 4,
     marginHorizontal: 8,
     overflow: 'hidden',
@@ -178,11 +185,9 @@ const styles = StyleSheet.create({
   countLabel: {
     width: 28,
     fontSize: 12,
-    color: '#6B7280',
     textAlign: 'right',
   },
   skeleton: {
-    backgroundColor: '#E5E7EB',
     borderRadius: 4,
   },
 });

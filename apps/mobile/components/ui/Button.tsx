@@ -116,7 +116,7 @@ function getTextColor(
     case 'secondary':
       return colors.secondaryForeground;
     case 'destructive':
-      return '#FFFFFF';
+      return colors.destructiveForeground;
     case 'ghost':
       return colors.foreground;
     case 'outline':

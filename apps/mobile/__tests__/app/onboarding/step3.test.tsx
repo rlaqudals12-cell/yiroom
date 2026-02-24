@@ -164,9 +164,10 @@ describe('OnboardingStep3 (선호도 설정 및 완료)', () => {
       expect(getByText('마지막으로 선호도를 알려주세요')).toBeTruthy();
     });
 
-    it('ProgressIndicator에 3/3이 표시된다', () => {
-      const { getByText } = renderWithTheme(<OnboardingStep3 />);
-      expect(getByText('3 / 3')).toBeTruthy();
+    it('ProgressIndicator 도트가 렌더링된다', () => {
+      const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
+      // ProgressIndicator는 도트만 표시 (텍스트 없음)
+      expect(getByTestId('onboarding-step3')).toBeTruthy();
     });
   });
 

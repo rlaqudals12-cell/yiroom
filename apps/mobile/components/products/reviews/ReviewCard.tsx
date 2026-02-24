@@ -7,6 +7,8 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Image, Alert } from 'react-native';
 
+import { useTheme } from '../../../lib/theme';
+
 import { useAppPreferencesStore } from '@/lib/stores';
 
 import { StarRating, getRatingColor } from './StarRating';
@@ -46,6 +48,7 @@ export function ReviewCard({
   onEdit,
   onDelete,
 }: ReviewCardProps) {
+  const { colors, status } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
   const [isHelpful, setIsHelpful] = useState(review.isHelpful || false);
   const [helpfulCount, setHelpfulCount] = useState(review.helpfulCount);
@@ -121,32 +124,42 @@ export function ReviewCard({
   };
 
   return (
-    <View testID="review-card" style={styles.container} accessibilityRole="summary">
+    <View
+      testID="review-card"
+      style={[styles.container, { backgroundColor: colors.card }]}
+      accessibilityRole="summary"
+    >
       {/* 헤더 */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
           {review.userImageUrl ? (
             <Image
               source={{ uri: review.userImageUrl }}
-              style={styles.avatar}
+              style={[styles.avatar, { backgroundColor: colors.secondary }]}
               accessibilityLabel={`${review.userName} 프로필 이미지`}
             />
           ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarText}>{review.userName.charAt(0)}</Text>
+            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.border }]}>
+              <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
+                {review.userName.charAt(0)}
+              </Text>
             </View>
           )}
 
           <View style={styles.userMeta}>
             <View style={styles.nameRow}>
-              <Text style={styles.userName}>{review.userName}</Text>
+              <Text style={[styles.userName, { color: colors.foreground }]}>
+                {review.userName}
+              </Text>
               {review.verifiedPurchase && (
-                <View style={styles.verifiedBadge}>
-                  <Text style={styles.verifiedText}>구매인증</Text>
+                <View style={[styles.verifiedBadge, { backgroundColor: status.info + '20' }]}>
+                  <Text style={[styles.verifiedText, { color: status.info }]}>구매인증</Text>
                 </View>
               )}
             </View>
-            <Text style={styles.date}>{formatDate(review.createdAt)}</Text>
+            <Text style={[styles.date, { color: colors.mutedForeground }]}>
+              {formatDate(review.createdAt)}
+            </Text>
           </View>
         </View>
 
@@ -157,7 +170,7 @@ export function ReviewCard({
             accessibilityRole="button"
             accessibilityLabel="더보기"
           >
-            <Text style={styles.moreIcon}>⋮</Text>
+            <Text style={[styles.moreIcon, { color: colors.mutedForeground }]}>⋮</Text>
           </Pressable>
         )}
       </View>
@@ -171,19 +184,23 @@ export function ReviewCard({
       </View>
 
       {/* 제목 */}
-      {review.title && <Text style={styles.title}>{review.title}</Text>}
+      {review.title && (
+        <Text style={[styles.title, { color: colors.foreground }]}>{review.title}</Text>
+      )}
 
       {/* 내용 */}
-      {review.content && <Text style={styles.content}>{review.content}</Text>}
+      {review.content && (
+        <Text style={[styles.content, { color: colors.mutedForeground }]}>{review.content}</Text>
+      )}
 
       {/* 액션 */}
-      <View style={styles.actions}>
+      <View style={[styles.actions, { borderTopColor: colors.secondary }]}>
         <Pressable
           onPress={handleHelpfulToggle}
           disabled={isLoading}
           style={({ pressed }) => [
             styles.helpfulButton,
-            isHelpful && styles.helpfulButtonActive,
+            { backgroundColor: isHelpful ? status.info + '20' : colors.secondary },
             pressed && styles.helpfulButtonPressed,
           ]}
           accessibilityRole="button"
@@ -191,7 +208,13 @@ export function ReviewCard({
           accessibilityState={{ selected: isHelpful }}
         >
           <Text style={[styles.helpfulIcon, isHelpful && styles.helpfulIconActive]}>👍</Text>
-          <Text style={[styles.helpfulText, isHelpful && styles.helpfulTextActive]}>
+          <Text
+            style={[
+              styles.helpfulText,
+              { color: isHelpful ? status.info : colors.mutedForeground },
+              isHelpful && styles.helpfulTextActiveBold,
+            ]}
+          >
             도움됨 {helpfulCount > 0 && `(${helpfulCount})`}
           </Text>
         </Pressable>
@@ -202,7 +225,6 @@ export function ReviewCard({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -227,20 +249,17 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3F4F6',
   },
   avatarPlaceholder: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
   },
   userMeta: {
     marginLeft: 12,
@@ -253,10 +272,8 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1F2937',
   },
   verifiedBadge: {
-    backgroundColor: '#DBEAFE',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -264,12 +281,10 @@ const styles = StyleSheet.create({
   },
   verifiedText: {
     fontSize: 10,
-    color: '#2563EB',
     fontWeight: '500',
   },
   date: {
     fontSize: 12,
-    color: '#9CA3AF',
     marginTop: 2,
   },
   moreButton: {
@@ -277,7 +292,6 @@ const styles = StyleSheet.create({
   },
   moreIcon: {
     fontSize: 18,
-    color: '#9CA3AF',
   },
   ratingRow: {
     flexDirection: 'row',
@@ -292,12 +306,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1F2937',
     marginBottom: 4,
   },
   content: {
     fontSize: 14,
-    color: '#4B5563',
     lineHeight: 20,
   },
   actions: {
@@ -305,7 +317,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
   },
   helpfulButton: {
     flexDirection: 'row',
@@ -313,10 +324,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#F3F4F6',
-  },
-  helpfulButtonActive: {
-    backgroundColor: '#DBEAFE',
   },
   helpfulButtonPressed: {
     opacity: 0.7,
@@ -330,10 +337,8 @@ const styles = StyleSheet.create({
   },
   helpfulText: {
     fontSize: 13,
-    color: '#6B7280',
   },
-  helpfulTextActive: {
-    color: '#2563EB',
+  helpfulTextActiveBold: {
     fontWeight: '500',
   },
 });

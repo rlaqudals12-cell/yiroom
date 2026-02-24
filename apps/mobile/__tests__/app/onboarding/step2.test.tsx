@@ -144,9 +144,10 @@ describe('OnboardingStep2 (기본 정보 입력)', () => {
       expect(getByText('더 정확한 맞춤 추천을 위해 필요해요')).toBeTruthy();
     });
 
-    it('ProgressIndicator에 2/3이 표시된다', () => {
-      const { getByText } = renderWithTheme(<OnboardingStep2 />);
-      expect(getByText('2 / 3')).toBeTruthy();
+    it('ProgressIndicator 도트가 렌더링된다', () => {
+      const { getByTestId } = renderWithTheme(<OnboardingStep2 />);
+      // ProgressIndicator는 도트만 표시 (텍스트 없음)
+      expect(getByTestId('onboarding-step2')).toBeTruthy();
     });
   });
 

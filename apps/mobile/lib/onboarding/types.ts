@@ -66,6 +66,25 @@ export const GOAL_ICONS: Record<OnboardingGoal, string> = {
   better_sleep: '😴',
 };
 
+export const GOAL_DESCRIPTIONS: Record<OnboardingGoal, string> = {
+  weight_loss: '건강한 식단과 운동으로 체중을 관리해요',
+  muscle_gain: '근력 운동과 고단백 식단을 추천해요',
+  health_maintenance: '전반적인 건강 지표를 개선해요',
+  stress_relief: '유연성과 마음 챙김으로 스트레스를 줄여요',
+  better_sleep: '수면 패턴 분석으로 숙면을 도와요',
+};
+
+export const GOAL_COLORS: Record<
+  OnboardingGoal,
+  { gradient: [string, string]; bg: string }
+> = {
+  weight_loss: { gradient: ['#F472B6', '#EC4899'], bg: '#FDF2F8' },
+  muscle_gain: { gradient: ['#A78BFA', '#8B5CF6'], bg: '#F5F3FF' },
+  health_maintenance: { gradient: ['#34D399', '#10B981'], bg: '#ECFDF5' },
+  stress_relief: { gradient: ['#60A5FA', '#3B82F6'], bg: '#EFF6FF' },
+  better_sleep: { gradient: ['#818CF8', '#6366F1'], bg: '#EEF2FF' },
+};
+
 export const ACTIVITY_LEVEL_LABELS: Record<ActivityLevel, string> = {
   sedentary: '거의 안함',
   light: '가벼운 활동',

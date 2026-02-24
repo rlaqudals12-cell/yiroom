@@ -23,7 +23,7 @@ function getGreeting(): string {
 }
 
 export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.Element {
-  const { spacing, radii, typography } = useTheme();
+  const { colors, spacing, radii, typography } = useTheme();
 
   return (
     <Animated.View
@@ -39,13 +39,13 @@ export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.E
           paddingVertical: spacing.lg + 4,
         }}
       >
-        <Text style={[styles.greeting, { fontSize: typography.size.sm }]}>
+        <Text style={[styles.greeting, { fontSize: typography.size.sm, color: `${colors.overlayForeground}D9` }]}>
           {getGreeting()}
         </Text>
-        <Text style={[styles.userName, { fontSize: typography.size['2xl'] }]}>
+        <Text style={[styles.userName, { fontSize: typography.size['2xl'], color: colors.overlayForeground }]}>
           {isLoaded ? userName : '...'}님
         </Text>
-        <Text style={[styles.slogan, { fontSize: typography.size.xs }]}>
+        <Text style={[styles.slogan, { fontSize: typography.size.xs, color: `${colors.overlayForeground}B3` }]}>
           온전한 나를 찾는 여정, 이룸
         </Text>
       </GradientBackground>
@@ -55,16 +55,13 @@ export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.E
 
 const styles = StyleSheet.create({
   greeting: {
-    color: 'rgba(255,255,255,0.85)',
     marginBottom: 4,
   },
   userName: {
-    color: '#fff',
     fontWeight: '700',
     marginBottom: 4,
   },
   slogan: {
-    color: 'rgba(255,255,255,0.7)',
     marginTop: 2,
   },
 });

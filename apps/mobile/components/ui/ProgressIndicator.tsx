@@ -1,10 +1,10 @@
 /**
  * ProgressIndicator 공통 컴포넌트
  *
- * 온보딩 등 단계형 플로우의 진행 표시.
- * current/total 기반 진행 바 + 단계 텍스트.
+ * V4: 웹과 동일한 미니멀 도트 패턴 (텍스트/바 제거)
+ * 웹: h-1.5 inactive dot, w-6 active pill, bg-primary
  */
-import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 
@@ -21,85 +21,47 @@ export function ProgressIndicator({
   style,
   testID,
 }: ProgressIndicatorProps): React.JSX.Element {
-  const { colors, brand, radii, typography } = useTheme();
-
-  const progress = Math.min(current / total, 1);
+  const { colors, brand } = useTheme();
 
   return (
     <View testID={testID} style={[styles.container, style]}>
-      {/* 단계 텍스트 */}
-      <Text
-        style={{
-          color: colors.mutedForeground,
-          fontSize: typography.size.xs,
-          fontWeight: typography.weight.medium,
-          marginBottom: 6,
-          textAlign: 'center',
-        }}
-      >
-        {current} / {total}
-      </Text>
+      {Array.from({ length: total }, (_, i) => {
+        const stepNum = i + 1;
+        const isCurrent = stepNum === current;
+        const isCompleted = stepNum < current;
 
-      {/* 진행 바 */}
-      <View
-        style={[
-          styles.track,
-          {
-            backgroundColor: colors.secondary,
-            borderRadius: radii.full,
-          },
-        ]}
-      >
-        <View
-          style={[
-            styles.fill,
-            {
-              backgroundColor: brand.primary,
-              borderRadius: radii.full,
-              width: `${progress * 100}%`,
-            },
-          ]}
-        />
-      </View>
-
-      {/* 단계 도트 */}
-      <View style={styles.dots}>
-        {Array.from({ length: total }, (_, i) => (
+        return (
           <View
             key={i}
             style={[
-              styles.dot,
+              isCurrent ? styles.dotPill : styles.dot,
               {
-                backgroundColor: i + 1 <= current ? brand.primary : colors.border,
-                width: i + 1 === current ? 10 : 6,
-                height: 6,
-                borderRadius: radii.full,
+                backgroundColor:
+                  isCurrent || isCompleted ? brand.primary : colors.border,
               },
             ]}
           />
-        ))}
-      </View>
+        );
+      })}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-  },
-  track: {
-    width: '60%',
-    height: 4,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: '100%',
-  },
-  dots: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
     gap: 8,
-    marginTop: 10,
   },
-  dot: {},
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  dotPill: {
+    width: 24,
+    height: 6,
+    borderRadius: 3,
+  },
 });

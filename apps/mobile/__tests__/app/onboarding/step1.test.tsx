@@ -50,6 +50,20 @@ jest.mock('../../../lib/onboarding', () => ({
     stress_relief: '스트레스 해소',
     better_sleep: '수면 개선',
   },
+  GOAL_DESCRIPTIONS: {
+    weight_loss: '건강한 식단과 운동으로 체중을 관리해요',
+    muscle_gain: '근력 운동과 고단백 식단을 추천해요',
+    health_maintenance: '전반적인 건강 지표를 개선해요',
+    stress_relief: '유연성과 마음 챙김으로 스트레스를 줄여요',
+    better_sleep: '수면 패턴 분석으로 숙면을 도와요',
+  },
+  GOAL_COLORS: {
+    weight_loss: { gradient: ['#F472B6', '#EC4899'], bg: '#FDF2F8' },
+    muscle_gain: { gradient: ['#A78BFA', '#8B5CF6'], bg: '#F5F3FF' },
+    health_maintenance: { gradient: ['#34D399', '#10B981'], bg: '#ECFDF5' },
+    stress_relief: { gradient: ['#60A5FA', '#3B82F6'], bg: '#EFF6FF' },
+    better_sleep: { gradient: ['#818CF8', '#6366F1'], bg: '#EEF2FF' },
+  },
   GOAL_ICONS: {
     weight_loss: '⚖️',
     muscle_gain: '💪',
@@ -164,9 +178,10 @@ describe('OnboardingStep1 (목표 선택)', () => {
       expect(getByText('수면 개선')).toBeTruthy();
     });
 
-    it('ProgressIndicator에 1/3이 표시된다', () => {
-      const { getByText } = renderWithTheme(<OnboardingStep1 />);
-      expect(getByText('1 / 3')).toBeTruthy();
+    it('ProgressIndicator 도트가 렌더링된다', () => {
+      const { getByTestId } = renderWithTheme(<OnboardingStep1 />);
+      // ProgressIndicator는 도트만 표시 (텍스트 없음)
+      expect(getByTestId('onboarding-step1')).toBeTruthy();
     });
 
     it('다음 버튼이 렌더링된다', () => {
@@ -195,16 +210,15 @@ describe('OnboardingStep1 (목표 선택)', () => {
   });
 
   describe('선택 상태 표시', () => {
-    it('선택된 목표에 체크마크가 표시된다', () => {
+    it('선택된 목표에 체크마크 아이콘이 표시된다', () => {
       mockOnboardingData = {
         goals: ['weight_loss', 'muscle_gain'],
         basicInfo: {},
         preferences: {},
       };
 
-      // 체크마크 문자 존재 확인
-      const { getAllByText } = renderWithTheme(<OnboardingStep1 />);
-      const checkmarks = getAllByText('\u2713');
+      const { getAllByTestId } = renderWithTheme(<OnboardingStep1 />);
+      const checkmarks = getAllByTestId('icon-Check');
       expect(checkmarks.length).toBe(2);
     });
 
@@ -215,9 +229,9 @@ describe('OnboardingStep1 (목표 선택)', () => {
         preferences: {},
       };
 
-      const { getAllByText } = renderWithTheme(<OnboardingStep1 />);
+      const { getAllByTestId } = renderWithTheme(<OnboardingStep1 />);
       // 선택된 목표 1개만 체크마크 존재
-      const checkmarks = getAllByText('\u2713');
+      const checkmarks = getAllByTestId('icon-Check');
       expect(checkmarks.length).toBe(1);
     });
   });
@@ -289,8 +303,8 @@ describe('OnboardingStep1 (목표 선택)', () => {
         preferences: {},
       };
 
-      const { getAllByText } = renderWithTheme(<OnboardingStep1 />);
-      const checkmarks = getAllByText('\u2713');
+      const { getAllByTestId } = renderWithTheme(<OnboardingStep1 />);
+      const checkmarks = getAllByTestId('icon-Check');
       expect(checkmarks.length).toBe(5);
     });
   });

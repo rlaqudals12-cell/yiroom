@@ -4,7 +4,8 @@
  * 아이콘 + 제목 + 설명 + 화살표 카드 패턴.
  * beauty/style/records 탭의 반복 패턴을 추출.
  */
-import { ChevronRight } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+import { Check, ChevronRight } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
@@ -15,6 +16,8 @@ interface MenuCardProps {
   title: string;
   description: string;
   onPress: () => void;
+  /** 완료 상태 — 체크 뱃지 표시 */
+  isCompleted?: boolean;
   testID?: string;
   style?: ViewStyle;
 }
@@ -25,15 +28,19 @@ export function MenuCard({
   title,
   description,
   onPress,
+  isCompleted = false,
   testID,
   style,
 }: MenuCardProps): React.JSX.Element {
-  const { colors, spacing, radii, shadows, typography } = useTheme();
+  const { colors, status, spacing, radii, shadows, typography } = useTheme();
 
   return (
     <Pressable
       testID={testID}
-      onPress={onPress}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.card,
         shadows.card,
@@ -87,7 +94,18 @@ export function MenuCard({
             {description}
           </Text>
         </View>
-        <ChevronRight size={20} color={colors.mutedForeground} />
+        {isCompleted ? (
+          <View
+            style={[
+              styles.completedBadge,
+              { backgroundColor: status.success },
+            ]}
+          >
+            <Check size={14} color="#fff" strokeWidth={2.5} />
+          </View>
+        ) : (
+          <ChevronRight size={20} color={colors.mutedForeground} />
+        )}
       </View>
     </Pressable>
   );
@@ -112,5 +130,12 @@ const styles = StyleSheet.create({
   },
   title: {
     lineHeight: 24,
+  },
+  completedBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

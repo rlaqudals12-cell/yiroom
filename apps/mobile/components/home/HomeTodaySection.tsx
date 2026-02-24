@@ -115,7 +115,7 @@ export function HomeTodaySection({
                 },
               ]}
             >
-              {task.completed && <Text style={styles.checkmark}>✓</Text>}
+              {task.completed && <Text style={[styles.checkmark, { color: colors.overlayForeground }]}>✓</Text>}
             </View>
             <Text
               style={[
@@ -154,7 +154,6 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     fontSize: 12,
-    color: '#fff',
     fontWeight: '600',
   },
   completedLabel: {

@@ -4,11 +4,20 @@
  * 기존 Card 위에 Reanimated press 인터랙션을 추가.
  * onPress가 있을 때만 터치 가능하고, 없으면 일반 Card처럼 동작.
  */
+import * as Haptics from 'expo-haptics';
 import { Pressable, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import type { AnimatedProps } from 'react-native-reanimated';
 
 import { useTheme } from '../../lib/theme';
+
+import { useAppPreferencesStore } from '@/lib/stores';
+
 import { Card } from './Card';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -35,6 +44,8 @@ export function AnimatedCard({
   entering,
 }: AnimatedCardProps): React.JSX.Element {
   const { shadows } = useTheme();
+  const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
+  const reduceMotion = useReducedMotion();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -42,10 +53,12 @@ export function AnimatedCard({
   }));
 
   const handlePressIn = (): void => {
+    if (reduceMotion) return;
     scale.value = withSpring(pressedScale, SPRING_CONFIG);
   };
 
   const handlePressOut = (): void => {
+    if (reduceMotion) return;
     scale.value = withSpring(1, SPRING_CONFIG);
   };
 
@@ -62,7 +75,12 @@ export function AnimatedCard({
 
   return (
     <AnimatedPressable
-      onPress={onPress}
+      onPress={() => {
+        if (hapticEnabled) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+        onPress();
+      }}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={[animatedStyle, style]}

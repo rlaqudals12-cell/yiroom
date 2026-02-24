@@ -4,8 +4,10 @@
  */
 
 import * as Haptics from 'expo-haptics';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+
+import { useTheme } from '../../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -29,25 +31,6 @@ interface EWGAnalysisProps {
   skinType?: 'dry' | 'oily' | 'sensitive' | 'combination' | 'normal';
 }
 
-// EWG 등급별 설정
-const EWG_CONFIG = {
-  low: { min: 1, max: 2, label: '안전', color: '#22C55E', bgColor: '#DCFCE7' },
-  moderate: {
-    min: 3,
-    max: 6,
-    label: '보통',
-    color: '#F59E0B',
-    bgColor: '#FEF3C7',
-  },
-  high: {
-    min: 7,
-    max: 10,
-    label: '주의',
-    color: '#EF4444',
-    bgColor: '#FEE2E2',
-  },
-};
-
 function getEWGCategory(grade?: EWGGrade) {
   if (!grade) return null;
   if (grade <= 2) return 'low';
@@ -55,16 +38,27 @@ function getEWGCategory(grade?: EWGGrade) {
   return 'high';
 }
 
-function getEWGConfig(grade?: EWGGrade) {
-  const category = getEWGCategory(grade);
-  if (!category) return null;
-  return EWG_CONFIG[category];
-}
-
 export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
+  const { colors, status } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
   const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+
+  // 테마 기반 EWG 등급 설정
+  const ewgConfig = useMemo(
+    () => ({
+      low: { label: '안전', color: status.success, bgColor: status.success + '20' },
+      moderate: { label: '보통', color: status.warning, bgColor: status.warning + '20' },
+      high: { label: '주의', color: status.error, bgColor: status.error + '20' },
+    }),
+    [status]
+  );
+
+  function getConfig(grade?: EWGGrade) {
+    const category = getEWGCategory(grade);
+    if (!category) return null;
+    return ewgConfig[category];
+  }
 
   // 성분 통계 계산
   const stats = {
@@ -91,11 +85,11 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
   };
 
   const renderEWGBadge = (grade?: EWGGrade) => {
-    const config = getEWGConfig(grade);
+    const config = getConfig(grade);
     if (!config || !grade) {
       return (
-        <View style={[styles.ewgBadge, { backgroundColor: '#F3F4F6' }]}>
-          <Text style={[styles.ewgGrade, { color: '#6B7280' }]}>-</Text>
+        <View style={[styles.ewgBadge, { backgroundColor: colors.secondary }]}>
+          <Text style={[styles.ewgGrade, { color: colors.mutedForeground }]}>-</Text>
         </View>
       );
     }
@@ -108,43 +102,45 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
   };
 
   return (
-    <View testID="ewg-analysis" style={styles.container}>
+    <View testID="ewg-analysis" style={[styles.container, { backgroundColor: colors.card }]}>
       {/* 요약 헤더 */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>성분 분석</Text>
-        <Text style={styles.headerSubtitle}>
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>성분 분석</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>
           총 {stats.total}개 성분 중 {stats.safe}개 안전
         </Text>
       </View>
 
       {/* 등급 분포 */}
-      <View style={styles.statsRow}>
+      <View style={[styles.statsRow, { backgroundColor: colors.secondary }]}>
         <View style={styles.statItem}>
-          <View style={[styles.statDot, { backgroundColor: '#22C55E' }]} />
-          <Text style={styles.statLabel}>안전 (1-2)</Text>
-          <Text style={styles.statValue}>{stats.safe}개</Text>
+          <View style={[styles.statDot, { backgroundColor: status.success }]} />
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>안전 (1-2)</Text>
+          <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.safe}개</Text>
         </View>
         <View style={styles.statItem}>
-          <View style={[styles.statDot, { backgroundColor: '#F59E0B' }]} />
-          <Text style={styles.statLabel}>보통 (3-6)</Text>
-          <Text style={styles.statValue}>{stats.moderate}개</Text>
+          <View style={[styles.statDot, { backgroundColor: status.warning }]} />
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>보통 (3-6)</Text>
+          <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.moderate}개</Text>
         </View>
         <View style={styles.statItem}>
-          <View style={[styles.statDot, { backgroundColor: '#EF4444' }]} />
-          <Text style={styles.statLabel}>주의 (7+)</Text>
-          <Text style={styles.statValue}>{stats.caution}개</Text>
+          <View style={[styles.statDot, { backgroundColor: status.error }]} />
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>주의 (7+)</Text>
+          <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.caution}개</Text>
         </View>
       </View>
 
       {/* 주의 성분 알림 */}
       {cautionIngredients.length > 0 && (
-        <View style={styles.cautionBox}>
-          <Text style={styles.cautionTitle}>⚠️ 주의 성분</Text>
-          <Text style={styles.cautionText}>
+        <View style={[styles.cautionBox, { backgroundColor: status.error + '15' }]}>
+          <Text style={[styles.cautionTitle, { color: status.error }]}>⚠️ 주의 성분</Text>
+          <Text style={[styles.cautionText, { color: status.error }]}>
             {cautionIngredients.map((i) => i.nameKo || i.name).join(', ')}
           </Text>
           {skinType === 'sensitive' && (
-            <Text style={styles.cautionWarning}>민감성 피부에는 패치 테스트를 권장합니다.</Text>
+            <Text style={[styles.cautionWarning, { color: status.error }]}>
+              민감성 피부에는 패치 테스트를 권장합니다.
+            </Text>
           )}
         </View>
       )}
@@ -153,7 +149,7 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
       <View style={styles.ingredientList}>
         {displayIngredients.map((ingredient) => {
           const isExpanded = expandedIngredient === ingredient.name;
-          const config = getEWGConfig(ingredient.ewgGrade);
+          const config = getConfig(ingredient.ewgGrade);
 
           return (
             <Pressable
@@ -161,35 +157,45 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
               onPress={() => handleIngredientPress(ingredient.name)}
               style={({ pressed }) => [
                 styles.ingredientItem,
-                isExpanded && styles.ingredientItemExpanded,
+                { backgroundColor: isExpanded ? colors.secondary : colors.background },
                 pressed && { opacity: 0.7 },
               ]}
             >
               <View style={styles.ingredientHeader}>
                 {renderEWGBadge(ingredient.ewgGrade)}
                 <View style={styles.ingredientInfo}>
-                  <Text style={styles.ingredientName}>{ingredient.nameKo || ingredient.name}</Text>
+                  <Text style={[styles.ingredientName, { color: colors.foreground }]}>
+                    {ingredient.nameKo || ingredient.name}
+                  </Text>
                   {ingredient.nameKo && (
-                    <Text style={styles.ingredientNameEn}>{ingredient.name}</Text>
+                    <Text style={[styles.ingredientNameEn, { color: colors.mutedForeground }]}>
+                      {ingredient.name}
+                    </Text>
                   )}
                 </View>
                 {ingredient.isAllergen && (
-                  <View style={styles.allergenBadge}>
-                    <Text style={styles.allergenText}>알레르기</Text>
+                  <View style={[styles.allergenBadge, { backgroundColor: status.error + '20' }]}>
+                    <Text style={[styles.allergenText, { color: status.error }]}>알레르기</Text>
                   </View>
                 )}
               </View>
 
               {isExpanded && (
-                <View style={styles.ingredientDetails}>
+                <View style={[styles.ingredientDetails, { borderTopColor: colors.border }]}>
                   {ingredient.functions.length > 0 && (
                     <View style={styles.functionRow}>
-                      <Text style={styles.functionLabel}>기능:</Text>
-                      <Text style={styles.functionText}>{ingredient.functions.join(', ')}</Text>
+                      <Text style={[styles.functionLabel, { color: colors.mutedForeground }]}>
+                        기능:
+                      </Text>
+                      <Text style={[styles.functionText, { color: colors.mutedForeground }]}>
+                        {ingredient.functions.join(', ')}
+                      </Text>
                     </View>
                   )}
                   {ingredient.description && (
-                    <Text style={styles.descriptionText}>{ingredient.description}</Text>
+                    <Text style={[styles.descriptionText, { color: colors.mutedForeground }]}>
+                      {ingredient.description}
+                    </Text>
                   )}
                   {config && (
                     <Text style={[styles.safetyText, { color: config.color }]}>
@@ -212,14 +218,16 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
           }}
           style={({ pressed }) => [styles.showMoreButton, pressed && { opacity: 0.7 }]}
         >
-          <Text style={styles.showMoreText}>
+          <Text style={[styles.showMoreText, { color: status.info }]}>
             {showAll ? '접기' : `+${ingredients.length - 10}개 더보기`}
           </Text>
         </Pressable>
       )}
 
       {/* 출처 안내 */}
-      <Text style={styles.disclaimer}>* EWG (Environmental Working Group) 등급 기준</Text>
+      <Text style={[styles.disclaimer, { color: colors.mutedForeground }]}>
+        * EWG (Environmental Working Group) 등급 기준
+      </Text>
     </View>
   );
 }
@@ -228,21 +236,23 @@ export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
  * EWG 분석 스켈레톤
  */
 export function EWGAnalysisSkeleton() {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.card }]}>
       <View style={styles.header}>
-        <View style={[styles.skeleton, { width: 80, height: 20 }]} />
-        <View style={[styles.skeleton, { width: 120, height: 14, marginTop: 4 }]} />
+        <View style={[styles.skeleton, { width: 80, height: 20, backgroundColor: colors.border }]} />
+        <View style={[styles.skeleton, { width: 120, height: 14, marginTop: 4, backgroundColor: colors.border }]} />
       </View>
-      <View style={styles.statsRow}>
+      <View style={[styles.statsRow, { backgroundColor: colors.secondary }]}>
         {[1, 2, 3].map((i) => (
           <View key={i} style={styles.statItem}>
-            <View style={[styles.skeleton, { width: 60, height: 16 }]} />
+            <View style={[styles.skeleton, { width: 60, height: 16, backgroundColor: colors.border }]} />
           </View>
         ))}
       </View>
       {[1, 2, 3].map((i) => (
-        <View key={i} style={[styles.skeleton, { height: 56, marginTop: 8 }]} />
+        <View key={i} style={[styles.skeleton, { height: 56, marginTop: 8, backgroundColor: colors.border }]} />
       ))}
     </View>
   );
@@ -250,7 +260,6 @@ export function EWGAnalysisSkeleton() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
   },
@@ -260,18 +269,15 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
   },
   headerSubtitle: {
     fontSize: 13,
-    color: '#6B7280',
     marginTop: 2,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 12,
-    backgroundColor: '#F9FAFB',
     borderRadius: 8,
     marginBottom: 16,
   },
@@ -287,15 +293,12 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: '#6B7280',
   },
   statValue: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#1F2937',
   },
   cautionBox: {
-    backgroundColor: '#FEF2F2',
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
@@ -303,16 +306,13 @@ const styles = StyleSheet.create({
   cautionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#EF4444',
     marginBottom: 4,
   },
   cautionText: {
     fontSize: 13,
-    color: '#B91C1C',
   },
   cautionWarning: {
     fontSize: 12,
-    color: '#991B1B',
     marginTop: 8,
     fontStyle: 'italic',
   },
@@ -320,12 +320,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   ingredientItem: {
-    backgroundColor: '#F9FAFB',
     borderRadius: 8,
     padding: 12,
-  },
-  ingredientItemExpanded: {
-    backgroundColor: '#F3F4F6',
   },
   ingredientHeader: {
     flexDirection: 'row',
@@ -349,28 +345,23 @@ const styles = StyleSheet.create({
   ingredientName: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#1F2937',
   },
   ingredientNameEn: {
     fontSize: 11,
-    color: '#9CA3AF',
   },
   allergenBadge: {
-    backgroundColor: '#FEE2E2',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
   allergenText: {
     fontSize: 10,
-    color: '#EF4444',
     fontWeight: '500',
   },
   ingredientDetails: {
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
   },
   functionRow: {
     flexDirection: 'row',
@@ -378,17 +369,14 @@ const styles = StyleSheet.create({
   },
   functionLabel: {
     fontSize: 12,
-    color: '#6B7280',
     marginRight: 4,
   },
   functionText: {
     fontSize: 12,
-    color: '#4B5563',
     flex: 1,
   },
   descriptionText: {
     fontSize: 12,
-    color: '#4B5563',
     lineHeight: 18,
     marginTop: 4,
   },
@@ -404,17 +392,14 @@ const styles = StyleSheet.create({
   },
   showMoreText: {
     fontSize: 14,
-    color: '#3B82F6',
     fontWeight: '500',
   },
   disclaimer: {
     fontSize: 11,
-    color: '#9CA3AF',
     textAlign: 'center',
     marginTop: 12,
   },
   skeleton: {
-    backgroundColor: '#E5E7EB',
     borderRadius: 4,
   },
 });

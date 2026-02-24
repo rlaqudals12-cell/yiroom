@@ -1,13 +1,44 @@
 /**
  * 온보딩 Step 1: 목표 선택
+ *
+ * V4: 웹-모바일 시각 통일 — 파스텔 히어로 + 단색 CTA +
+ *     border-2 카드 + 도트 ProgressIndicator
  */
 
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import {
+  Target,
+  TrendingDown,
+  Dumbbell,
+  HeartPulse,
+  Wind,
+  Moon,
+  Check,
+} from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, ProgressIndicator } from '../../components/ui';
-import { useOnboarding, type OnboardingGoal, GOAL_LABELS, GOAL_ICONS } from '../../lib/onboarding';
+import { ProgressIndicator } from '../../components/ui';
+import { TIMING, staggeredEntry } from '../../lib/animations';
+import {
+  useOnboarding,
+  type OnboardingGoal,
+  GOAL_LABELS,
+  GOAL_DESCRIPTIONS,
+  GOAL_COLORS,
+} from '../../lib/onboarding';
 import { useTheme } from '../../lib/theme';
+
+// Lucide 아이콘 매핑
+const GOAL_ICON_MAP: Record<OnboardingGoal, typeof TrendingDown> = {
+  weight_loss: TrendingDown,
+  muscle_gain: Dumbbell,
+  health_maintenance: HeartPulse,
+  stress_relief: Wind,
+  better_sleep: Moon,
+};
 
 const GOALS: OnboardingGoal[] = [
   'weight_loss',
@@ -18,103 +49,194 @@ const GOALS: OnboardingGoal[] = [
 ];
 
 export default function OnboardingStep1() {
-  const { colors, brand, spacing, radii, shadows, typography } = useTheme();
+  const { colors, brand, spacing, radii, shadows, typography, isDark } = useTheme();
   const { data, toggleGoal, nextStep } = useOnboarding();
 
   const canProceed = data.goals.length > 0;
 
-  // 선택 상태 배경색 (brand.primary + 10% opacity)
-  const selectedBg = `${brand.primary}1A`;
+  const handleToggle = (goal: OnboardingGoal): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    toggleGoal(goal);
+  };
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       testID="onboarding-step1"
     >
-      <ScrollView contentContainerStyle={[styles.content, { padding: spacing.lg }]}>
-        {/* 헤더 */}
-        <View style={styles.header}>
-          <Text style={styles.emoji}>🎯</Text>
-          <Text
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* 파스텔 히어로 헤더 (웹 온보딩 슬라이드와 동일 패턴) */}
+        <Animated.View entering={FadeIn.duration(TIMING.slow)}>
+          <View
             style={[
-              styles.title,
-              {
-                color: colors.foreground,
-                fontSize: typography.size['2xl'],
-                fontWeight: typography.weight.bold,
-              },
+              styles.heroHeader,
+              { backgroundColor: isDark ? '#F43F5E15' : '#FFF1F2', borderRadius: radii.xl + 8 },
             ]}
           >
-            목표를 선택해주세요
-          </Text>
-          <Text
-            style={[
-              styles.subtitle,
-              {
-                color: colors.mutedForeground,
-                fontSize: typography.size.sm,
-              },
-            ]}
-          >
-            이룸이 맞춤 추천을 제공해드릴게요{'\n'}
-            (복수 선택 가능)
-          </Text>
-        </View>
+            <View style={[styles.heroIconWrap, { backgroundColor: '#F43F5E' }]}>
+              <Target size={36} color="#fff" strokeWidth={2} />
+            </View>
+            <Text style={[styles.heroTitle, { color: colors.foreground }]}>
+              목표를 선택해주세요
+            </Text>
+            <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
+              이룸이 맞춤 추천을 제공해드릴게요{'\n'}
+              (복수 선택 가능)
+            </Text>
+          </View>
+        </Animated.View>
 
         {/* 목표 선택 카드 */}
-        <View style={{ gap: spacing.sm + 4 }}>
-          {GOALS.map((goal) => {
+        <View style={{ gap: spacing.sm + 4, marginTop: spacing.lg }}>
+          {GOALS.map((goal, index) => {
             const isSelected = data.goals.includes(goal);
+            const IconComponent = GOAL_ICON_MAP[goal];
+            const goalColor = GOAL_COLORS[goal];
+
             return (
-              <TouchableOpacity
-                key={goal}
-                style={[
-                  styles.goalCard,
-                  shadows.sm,
-                  {
-                    backgroundColor: isSelected ? selectedBg : colors.card,
-                    borderRadius: radii.xl,
-                    borderColor: isSelected ? brand.primary : colors.border,
-                    borderWidth: isSelected ? 2 : 1,
-                    padding: spacing.lg - 4,
-                  },
-                ]}
-                onPress={() => toggleGoal(goal)}
-                activeOpacity={0.7}
-                testID={`goal-${goal}`}
-              >
-                <Text style={styles.goalIcon}>{GOAL_ICONS[goal]}</Text>
-                <Text
-                  style={[
-                    styles.goalLabel,
+              <Animated.View key={goal} entering={staggeredEntry(index, 100)}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.goalCard,
                     {
-                      color: isSelected ? brand.primary : colors.foreground,
-                      fontSize: typography.size.lg - 1,
-                      fontWeight: typography.weight.semibold,
+                      backgroundColor: isSelected
+                        ? `${goalColor.gradient[0]}10`
+                        : colors.card,
+                      borderRadius: radii.xl,
+                      borderColor: isSelected ? goalColor.gradient[0] : colors.border,
+                      borderWidth: 2,
+                      padding: spacing.md,
+                      opacity: pressed ? 0.85 : 1,
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                      // Android elevation 직접 지정 (shadows.lg의 0.08 opacity는 너무 약함)
+                      elevation: 3,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.12,
+                      shadowRadius: 8,
                     },
                   ]}
+                  onPress={() => handleToggle(goal)}
+                  testID={`goal-${goal}`}
                 >
-                  {GOAL_LABELS[goal]}
-                </Text>
-                {isSelected && (
-                  <View style={[styles.checkmark, { backgroundColor: brand.primary }]}>
-                    <Text style={styles.checkmarkText}>✓</Text>
+                  {/* 그라디언트 아이콘 박스 */}
+                  {isSelected ? (
+                    <LinearGradient
+                      colors={goalColor.gradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.iconBox}
+                    >
+                      <IconComponent size={24} color="#fff" strokeWidth={2} />
+                    </LinearGradient>
+                  ) : (
+                    <View
+                      style={[
+                        styles.iconBox,
+                        { backgroundColor: goalColor.bg },
+                      ]}
+                    >
+                      <IconComponent
+                        size={24}
+                        color={goalColor.gradient[0]}
+                        strokeWidth={2}
+                      />
+                    </View>
+                  )}
+
+                  {/* 텍스트 영역 (제목 + 설명) */}
+                  <View style={styles.goalTextWrap}>
+                    <Text
+                      style={{
+                        color: isSelected ? goalColor.gradient[0] : colors.foreground,
+                        fontSize: typography.size.base,
+                        fontWeight: isSelected
+                          ? typography.weight.bold
+                          : typography.weight.semibold,
+                      }}
+                    >
+                      {GOAL_LABELS[goal]}
+                    </Text>
+                    <Text
+                      style={{
+                        color: colors.mutedForeground,
+                        fontSize: typography.size.xs + 1,
+                        marginTop: 2,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {GOAL_DESCRIPTIONS[goal]}
+                    </Text>
                   </View>
-                )}
-              </TouchableOpacity>
+
+                  {/* 체크마크 */}
+                  {isSelected && (
+                    <LinearGradient
+                      colors={goalColor.gradient}
+                      style={styles.checkmark}
+                    >
+                      <Check size={14} color="#fff" strokeWidth={3} />
+                    </LinearGradient>
+                  )}
+                </Pressable>
+              </Animated.View>
             );
           })}
         </View>
 
-        {/* 진행 상황 */}
-        <ProgressIndicator current={1} total={3} style={{ marginTop: spacing.xl }} />
+        {/* 진행 표시 */}
+        <Animated.View entering={FadeInUp.delay(600).duration(TIMING.normal)}>
+          <ProgressIndicator current={1} total={3} style={{ marginTop: spacing.xl }} />
+        </Animated.View>
       </ScrollView>
 
-      {/* 다음 버튼 */}
-      <View style={[styles.footer, { padding: spacing.lg, paddingBottom: 40 }]}>
-        <Button onPress={nextStep} disabled={!canProceed} size="lg" testID="next-button">
-          다음
-        </Button>
+      {/* 푸터 페이드 + 그라디언트 CTA */}
+      <View style={styles.footerWrap}>
+        {/* 상단 페이드 */}
+        <LinearGradient
+          colors={['transparent', colors.background]}
+          style={styles.footerFade}
+          pointerEvents="none"
+        />
+        <View
+          style={[
+            styles.footer,
+            {
+              paddingHorizontal: spacing.lg,
+              paddingBottom: 40,
+              paddingTop: spacing.md,
+              backgroundColor: colors.background,
+            },
+          ]}
+        >
+          <Pressable
+            onPress={nextStep}
+            disabled={!canProceed}
+            style={({ pressed }) => [
+              shadows.md,
+              {
+                backgroundColor: canProceed ? brand.primary : colors.secondary,
+                borderRadius: radii.full,
+                height: 52,
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: !canProceed ? 0.5 : pressed ? 0.9 : 1,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              },
+            ]}
+            testID="next-button"
+          >
+            <Text
+              style={{
+                color: canProceed ? brand.primaryForeground : colors.mutedForeground,
+                fontSize: 16,
+                fontWeight: '700',
+              }}
+            >
+              다음
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -125,52 +247,64 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: 100,
+    padding: 20,
+    paddingBottom: 140,
   },
-  header: {
+  // 히어로 (웹 파스텔 패턴)
+  heroHeader: {
+    padding: 32,
     alignItems: 'center',
-    marginBottom: 28,
-    marginTop: 36,
   },
-  emoji: {
-    fontSize: 48,
-    marginBottom: 12,
+  heroIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
-  title: {
-    marginBottom: 6,
+  heroTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 8,
   },
-  subtitle: {
+  heroSubtitle: {
+    fontSize: 14,
     textAlign: 'center',
     lineHeight: 22,
   },
+  // 목표 카드
   goalCard: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  goalIcon: {
-    fontSize: 28,
-    marginRight: 16,
+  iconBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
   },
-  goalLabel: {
+  goalTextWrap: {
     flex: 1,
   },
   checkmark: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkmarkText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  footer: {
+  // 푸터
+  footerWrap: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'transparent',
   },
+  footerFade: {
+    height: 24,
+  },
+  footer: {},
 });

@@ -61,14 +61,14 @@ export function HomeQuickActions({
               alignItems: 'center',
             }}
           >
-            <View style={[styles.coachIcon, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+            <View style={[styles.coachIcon, { backgroundColor: `${colors.overlayForeground}33` }]}>
               <Text style={{ fontSize: 22 }}>💬</Text>
             </View>
             <View style={styles.coachContent}>
-              <Text style={styles.coachTitle}>AI 코치에게 물어보세요</Text>
-              <Text style={styles.coachSubtitle}>운동, 영양, 뷰티 궁금한 것 무엇이든</Text>
+              <Text style={[styles.coachTitle, { color: colors.overlayForeground }]}>AI 코치에게 물어보세요</Text>
+              <Text style={[styles.coachSubtitle, { color: `${colors.overlayForeground}D9` }]}>운동, 영양, 뷰티 궁금한 것 무엇이든</Text>
             </View>
-            <Text style={styles.coachArrow}>›</Text>
+            <Text style={[styles.coachArrow, { color: `${colors.overlayForeground}CC` }]}>›</Text>
           </GradientBackground>
         </Pressable>
       </Animated.View>
@@ -142,17 +142,14 @@ const styles = StyleSheet.create({
   coachTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#fff',
     marginBottom: 2,
   },
   coachSubtitle: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.85)',
   },
   coachArrow: {
     fontSize: 28,
     fontWeight: '300',
-    color: 'rgba(255,255,255,0.8)',
   },
   actionsRow: {
     flexDirection: 'row',

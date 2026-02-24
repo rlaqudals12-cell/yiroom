@@ -86,7 +86,7 @@ function getBadgeForeground(
     case 'secondary':
       return colors.secondaryForeground;
     case 'destructive':
-      return '#FFFFFF';
+      return colors.destructiveForeground;
     case 'outline':
       return colors.foreground;
   }

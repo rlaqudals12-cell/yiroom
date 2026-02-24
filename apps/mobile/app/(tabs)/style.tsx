@@ -31,7 +31,7 @@ export default function StyleTab(): React.JSX.Element {
             <SectionHeader
               title="스타일"
               style={{ marginBottom: 4 }}
-              titleStyle={{ color: '#fff', fontSize: 24, fontWeight: '700' }}
+              titleStyle={{ color: colors.overlayForeground, fontSize: 24, fontWeight: '700' }}
             />
           </GradientBackground>
         </Animated.View>

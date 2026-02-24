@@ -7,6 +7,9 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Pressable, Text, StyleSheet, AccessibilityProps } from 'react-native';
 
+import { useTheme } from '../../../lib/theme';
+import { statusColors } from '../../../lib/theme/tokens';
+
 import { useAppPreferencesStore } from '@/lib/stores';
 
 interface StarRatingProps extends AccessibilityProps {
@@ -36,14 +39,16 @@ export function StarRating({
   rating,
   onRatingChange,
   size = 'medium',
-  color = '#FFD700',
+  color,
   reviewCount,
   showAverage = false,
   ...accessibilityProps
 }: StarRatingProps) {
+  const { colors, status } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
   const isEditable = !!onRatingChange;
   const starSize = SIZES[size];
+  const starColor = color ?? status.warning;
 
   const handlePress = (index: number) => {
     if (!onRatingChange) return;
@@ -66,7 +71,7 @@ export function StarRating({
           styles.star,
           {
             fontSize: starSize,
-            color: filled || halfFilled ? color : '#E0E0E0',
+            color: filled || halfFilled ? starColor : colors.border,
           },
         ]}
       >
@@ -111,12 +116,22 @@ export function StarRating({
       {(showAverage || reviewCount !== undefined) && (
         <View style={styles.infoContainer}>
           {showAverage && (
-            <Text style={[styles.averageText, { fontSize: starSize * 0.6 }]}>
+            <Text
+              style={[
+                styles.averageText,
+                { fontSize: starSize * 0.6, color: colors.foreground },
+              ]}
+            >
               {rating.toFixed(1)}
             </Text>
           )}
           {reviewCount !== undefined && (
-            <Text style={[styles.countText, { fontSize: starSize * 0.5 }]}>
+            <Text
+              style={[
+                styles.countText,
+                { fontSize: starSize * 0.5, color: colors.mutedForeground },
+              ]}
+            >
               ({reviewCount.toLocaleString()})
             </Text>
           )}
@@ -138,13 +153,13 @@ export function getRatingText(rating: number): string {
 }
 
 /**
- * 별점 색상 반환
+ * 별점 색상 반환 (statusColors 기반)
  */
 export function getRatingColor(rating: number): string {
-  if (rating >= 4) return '#22C55E'; // green
-  if (rating >= 3) return '#F59E0B'; // amber
-  if (rating >= 2) return '#F97316'; // orange
-  return '#EF4444'; // red
+  if (rating >= 4) return statusColors.success;
+  if (rating >= 3) return statusColors.warning;
+  if (rating >= 2) return '#F97316'; // orange — status에 없으므로 유지
+  return statusColors.error;
 }
 
 const styles = StyleSheet.create({
@@ -172,10 +187,8 @@ const styles = StyleSheet.create({
   },
   averageText: {
     fontWeight: '600',
-    color: '#374151',
   },
   countText: {
-    color: '#6B7280',
     marginLeft: 4,
   },
 });

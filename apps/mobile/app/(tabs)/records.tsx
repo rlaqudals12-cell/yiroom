@@ -55,7 +55,7 @@ export default function RecordsTab(): React.JSX.Element {
             <SectionHeader
               title="기록"
               style={{ marginBottom: 4 }}
-              titleStyle={{ color: '#fff', fontSize: 24, fontWeight: '700' }}
+              titleStyle={{ color: colors.overlayForeground, fontSize: 24, fontWeight: '700' }}
             />
           </GradientBackground>
         </Animated.View>

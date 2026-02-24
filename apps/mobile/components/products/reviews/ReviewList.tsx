@@ -7,6 +7,10 @@ import * as Haptics from 'expo-haptics';
 import React, { useCallback } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 
+import { useTheme } from '../../../lib/theme';
+
+import { EmptyState } from '../../common';
+
 import { useAppPreferencesStore } from '@/lib/stores';
 
 import { ReviewCard, ReviewData } from './ReviewCard';
@@ -55,6 +59,7 @@ export function ReviewList({
   onEdit,
   onDelete,
 }: ReviewListProps) {
+  const { colors } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
   const handleSortPress = useCallback(
@@ -76,11 +81,22 @@ export function ReviewList({
       <Pressable
         key={option.value}
         onPress={() => handleSortPress(option.value)}
-        style={[styles.sortButton, isSelected && styles.sortButtonSelected]}
+        style={[
+          styles.sortButton,
+          { backgroundColor: isSelected ? colors.foreground : colors.secondary },
+        ]}
         accessibilityRole="button"
         accessibilityState={{ selected: isSelected }}
       >
-        <Text style={[styles.sortText, isSelected && styles.sortTextSelected]}>{option.label}</Text>
+        <Text
+          style={[
+            styles.sortText,
+            { color: isSelected ? colors.background : colors.mutedForeground },
+            isSelected && styles.sortTextSelectedBold,
+          ]}
+        >
+          {option.label}
+        </Text>
       </Pressable>
     );
   };
@@ -105,13 +121,16 @@ export function ReviewList({
       <Pressable
         onPress={onLoadMore}
         disabled={isLoading}
-        style={({ pressed }) => [styles.loadMoreButton, pressed && styles.loadMoreButtonPressed]}
+        style={({ pressed }) => [
+          styles.loadMoreButton,
+          { backgroundColor: pressed ? colors.border : colors.secondary },
+        ]}
         accessibilityRole="button"
       >
         {isLoading ? (
-          <ActivityIndicator size="small" color="#6B7280" />
+          <ActivityIndicator size="small" color={colors.mutedForeground} />
         ) : (
-          <Text style={styles.loadMoreText}>더 보기</Text>
+          <Text style={[styles.loadMoreText, { color: colors.mutedForeground }]}>더 보기</Text>
         )}
       </Pressable>
     );
@@ -121,18 +140,21 @@ export function ReviewList({
     if (isLoading) {
       return (
         <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color="#6B7280" />
-          <Text style={styles.emptyText}>리뷰를 불러오는 중...</Text>
+          <ActivityIndicator size="large" color={colors.mutedForeground} />
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+            리뷰를 불러오는 중...
+          </Text>
         </View>
       );
     }
 
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyIcon}>📝</Text>
-        <Text style={styles.emptyTitle}>아직 리뷰가 없어요</Text>
-        <Text style={styles.emptyText}>첫 번째 리뷰를 작성해보세요!</Text>
-      </View>
+      <EmptyState
+        icon={<Text style={{ fontSize: 32 }}>📝</Text>}
+        title="아직 리뷰가 없어요"
+        description="첫 번째 리뷰를 작성해보세요!"
+        testID="review-empty-state"
+      />
     );
   };
 
@@ -189,17 +211,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#F3F4F6',
-  },
-  sortButtonSelected: {
-    backgroundColor: '#1F2937',
   },
   sortText: {
     fontSize: 13,
-    color: '#6B7280',
   },
-  sortTextSelected: {
-    color: '#FFFFFF',
+  sortTextSelectedBold: {
     fontWeight: '500',
   },
   emptyList: {
@@ -210,34 +226,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 48,
   },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
   emptyText: {
     fontSize: 14,
-    color: '#6B7280',
   },
   loadMoreButton: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
     marginTop: 8,
-    backgroundColor: '#F3F4F6',
     borderRadius: 8,
-  },
-  loadMoreButtonPressed: {
-    backgroundColor: '#E5E7EB',
   },
   loadMoreText: {
     fontSize: 14,
-    color: '#4B5563',
     fontWeight: '500',
   },
 });
