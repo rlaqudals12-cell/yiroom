@@ -104,10 +104,10 @@ describe('StyleTab', () => {
     });
 
     it('메뉴 카드의 설명 텍스트가 표시된다', () => {
-      const { getByText } = renderWithTheme(<StyleTab />);
+      const { getAllByText, getByText } = renderWithTheme(<StyleTab />);
       expect(
-        getByText('AI가 체형을 분석하고 어울리는 스타일을 추천해요')
-      ).toBeTruthy();
+        getAllByText('AI가 체형을 분석하고 어울리는 스타일을 추천해요').length
+      ).toBeGreaterThanOrEqual(1);
       expect(
         getByText('옷장을 관리하고 AI 코디 추천을 받으세요')
       ).toBeTruthy();

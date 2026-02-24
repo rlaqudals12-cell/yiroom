@@ -1,19 +1,43 @@
 /**
  * 스타일 탭
- * 체형·자세 분석, 패션 추천, 내 옷장, 코디 추천, 제품 둘러보기
+ * 체형 프로필 + 옷장 프리뷰 + 오늘의 코디 + 분석/스타일링 메뉴
  */
 import { useRouter } from 'expo-router';
-import { Shirt, Ruler, ShoppingBag, Package, Wand2, PersonStanding } from 'lucide-react-native';
-import { ScrollView, View } from 'react-native';
+import {
+  Shirt,
+  Ruler,
+  ShoppingBag,
+  Package,
+  Wand2,
+  PersonStanding,
+} from 'lucide-react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { BodyProfileCard, ClosetPreviewStrip, TodayOutfitSuggestion } from '../../components/style';
 import { MenuCard, GradientBackground, SectionHeader } from '../../components/ui';
+import { useUserAnalyses } from '../../hooks';
 import { TIMING } from '../../lib/animations';
+import { useCloset, useClosetMatcher, type PersonalColorSeason, type BodyType3 } from '../../lib/inventory';
 import { useTheme } from '../../lib/theme';
 
 export default function StyleTab(): React.JSX.Element {
   const router = useRouter();
-  const { colors, spacing, module: moduleColors, status } = useTheme();
+  const { colors, spacing, radii, typography, brand, module: moduleColors, shadows, status } = useTheme();
+
+  // 분석 데이터
+  const { bodyAnalysis, personalColor } = useUserAnalyses();
+
+  // 옷장 데이터
+  const { items: closetItems } = useCloset();
+
+  // 코디 매칭
+  const { getOutfitSuggestion } = useClosetMatcher({
+    personalColor: (personalColor?.season as PersonalColorSeason) ?? null,
+    bodyType: (bodyAnalysis?.bodyType as BodyType3) ?? null,
+  });
+
+  const outfitSuggestion = getOutfitSuggestion();
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.background }} testID="style-tab">
@@ -35,6 +59,101 @@ export default function StyleTab(): React.JSX.Element {
             />
           </GradientBackground>
         </Animated.View>
+
+        {/* 체형 프로필 카드 or CTA */}
+        {bodyAnalysis ? (
+          <BodyProfileCard
+            bodyType={bodyAnalysis.bodyType}
+            height={bodyAnalysis.height}
+            weight={bodyAnalysis.weight}
+            bmi={bodyAnalysis.bmi}
+            createdAt={bodyAnalysis.createdAt}
+            style={{ marginBottom: spacing.md }}
+            testID="body-profile"
+          />
+        ) : (
+          <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+            <View
+              style={[
+                shadows.card,
+                {
+                  backgroundColor: colors.card,
+                  borderRadius: radii.xl,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  padding: spacing.md,
+                  alignItems: 'center',
+                  marginBottom: spacing.md,
+                },
+              ]}
+              testID="body-analysis-cta"
+            >
+              <Ruler size={28} color={moduleColors.body.dark} />
+              <Text
+                style={{
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  marginTop: spacing.sm,
+                }}
+              >
+                체형 분석을 해보세요
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  color: colors.mutedForeground,
+                  textAlign: 'center',
+                  marginTop: 4,
+                }}
+              >
+                AI가 체형을 분석하고 어울리는 스타일을 추천해요
+              </Text>
+              <Pressable
+                onPress={() => router.push('/(analysis)/body')}
+                accessibilityRole="button"
+                accessibilityLabel="체형 분석 시작"
+                style={({ pressed }) => ({
+                  backgroundColor: brand.primary,
+                  borderRadius: radii.lg,
+                  paddingHorizontal: spacing.lg,
+                  paddingVertical: spacing.sm,
+                  marginTop: spacing.sm + 4,
+                  opacity: pressed ? 0.85 : 1,
+                })}
+              >
+                <Text
+                  style={{
+                    color: brand.primaryForeground,
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.semibold,
+                  }}
+                >
+                  분석 시작
+                </Text>
+              </Pressable>
+            </View>
+          </Animated.View>
+        )}
+
+        {/* 옷장 프리뷰 */}
+        <ClosetPreviewStrip
+          items={closetItems}
+          onItemPress={(item) => router.push(`/(closet)/${item.id}`)}
+          onViewAll={() => router.push('/(closet)')}
+          style={{ marginBottom: spacing.md }}
+          testID="closet-preview"
+        />
+
+        {/* 오늘의 코디 */}
+        {outfitSuggestion && (
+          <TodayOutfitSuggestion
+            suggestion={outfitSuggestion}
+            onPress={() => router.push('/(closet)/recommend')}
+            style={{ marginBottom: spacing.md }}
+            testID="outfit-suggestion"
+          />
+        )}
 
         {/* 분석 */}
         <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
@@ -73,7 +192,7 @@ export default function StyleTab(): React.JSX.Element {
           />
         </Animated.View>
 
-        <View style={{ gap: spacing.sm + 4 }}>
+        <View style={{ gap: spacing.sm + 4, marginBottom: spacing.lg }}>
           <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
             <MenuCard
               icon={<Shirt size={20} color={moduleColors.body.base} />}
