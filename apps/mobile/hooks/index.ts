@@ -40,3 +40,12 @@ export {
   type NutritionStreak,
   type NutrientStatus,
 } from './useNutritionData';
+
+// 웰니스 점수
+export {
+  useWellnessScore,
+  type WellnessBreakdown,
+  type WellnessLevel,
+  type UseWellnessScoreReturn,
+  type Achievement,
+} from './useWellnessScore';

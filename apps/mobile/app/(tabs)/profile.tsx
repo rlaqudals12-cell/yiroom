@@ -1,6 +1,6 @@
 /**
  * 프로필 화면 (Clerk 인증 연동)
- * GlassCard 프로필 헤더 + 분석 완료 상태 + 네비게이션
+ * GlassCard 프로필 헤더 + 웰니스 점수 + 레벨 + 업적 + 분석/기록/설정
  */
 import { useUser, useClerk } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
@@ -10,14 +10,15 @@ import { View, Text, StyleSheet, ScrollView, Pressable, Image } from 'react-nati
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { WellnessScoreRing, LevelBadge, AchievementGrid } from '../../components/profile';
 import { GlassCard, SectionHeader } from '../../components/ui';
-import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
+import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../../hooks';
 import { TIMING } from '../../lib/animations';
 import { useTheme } from '../../lib/theme';
 import { profileLogger } from '../../lib/utils/logger';
 
 export default function ProfileScreen(): React.JSX.Element {
-  const { colors, brand, spacing, radii, typography, status } = useTheme();
+  const { colors, brand, spacing, typography, status } = useTheme();
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
 
@@ -25,6 +26,15 @@ export default function ProfileScreen(): React.JSX.Element {
   const { personalColor, skinAnalysis, bodyAnalysis } = useUserAnalyses();
   const { analysis: workoutAnalysis, streak: workoutStreak } = useWorkoutData();
   const { streak: nutritionStreak } = useNutritionData();
+
+  // 웰니스 점수 계산
+  const { score, breakdown, level, achievements } = useWellnessScore({
+    personalColor,
+    skinAnalysis,
+    bodyAnalysis,
+    workoutStreak,
+    nutritionStreak,
+  });
 
   const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length;
 
@@ -52,7 +62,7 @@ export default function ProfileScreen(): React.JSX.Element {
         <Animated.View entering={FadeIn.duration(TIMING.normal)}>
           <GlassCard
             intensity={35}
-            style={{ padding: spacing.lg, marginBottom: spacing.lg, alignItems: 'center' }}
+            style={{ padding: spacing.lg, marginBottom: spacing.md, alignItems: 'center' }}
           >
             {isSignedIn && user ? (
               <>
@@ -151,6 +161,30 @@ export default function ProfileScreen(): React.JSX.Element {
           </GlassCard>
         </Animated.View>
 
+        {/* 레벨 뱃지 */}
+        <Animated.View entering={FadeInUp.delay(50).duration(TIMING.normal)}>
+          <LevelBadge
+            level={level}
+            style={{ marginBottom: spacing.md }}
+            testID="wellness-level"
+          />
+        </Animated.View>
+
+        {/* 웰니스 점수 링 */}
+        <WellnessScoreRing
+          score={score}
+          breakdown={breakdown}
+          style={{ marginBottom: spacing.md }}
+          testID="wellness-score"
+        />
+
+        {/* 업적 그리드 */}
+        <AchievementGrid
+          achievements={achievements}
+          style={{ marginBottom: spacing.lg }}
+          testID="achievement-grid"
+        />
+
         {/* 분석 결과 */}
         <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
           <SectionHeader title="분석 결과" style={{ marginBottom: spacing.sm + 4 }} />
@@ -187,7 +221,7 @@ export default function ProfileScreen(): React.JSX.Element {
               completed={!!workoutAnalysis}
               subtitle={
                 workoutStreak?.currentStreak
-                  ? `🔥 ${workoutStreak.currentStreak}일 연속`
+                  ? `${workoutStreak.currentStreak}일 연속`
                   : undefined
               }
               onPress={() => router.push('/(tabs)/records')}
@@ -198,7 +232,7 @@ export default function ProfileScreen(): React.JSX.Element {
               completed={!!nutritionStreak}
               subtitle={
                 nutritionStreak?.currentStreak
-                  ? `🔥 ${nutritionStreak.currentStreak}일 연속`
+                  ? `${nutritionStreak.currentStreak}일 연속`
                   : undefined
               }
               onPress={() => router.push('/(tabs)/records')}
@@ -211,26 +245,8 @@ export default function ProfileScreen(): React.JSX.Element {
           </GlassCard>
         </Animated.View>
 
-        {/* 활동 */}
-        <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
-          <SectionHeader title="활동" style={{ marginBottom: spacing.sm + 4 }} />
-          <GlassCard intensity={20} style={{ padding: 0, marginBottom: spacing.lg, overflow: 'hidden' }}>
-            <MenuItem
-              title="나의 뱃지"
-              subtitle={`${analysisCount}개 분석 완료`}
-              onPress={() => router.push('/badges')}
-            />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
-            <MenuItem
-              title="알림"
-              subtitle="받은 알림 확인"
-              onPress={() => router.push('/notifications')}
-            />
-          </GlassCard>
-        </Animated.View>
-
         {/* 설정 */}
-        <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
+        <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
           <SectionHeader title="설정" style={{ marginBottom: spacing.sm + 4 }} />
           <GlassCard intensity={20} style={{ padding: 0, overflow: 'hidden' }}>
             <MenuItem
