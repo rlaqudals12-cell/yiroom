@@ -84,3 +84,30 @@ export interface SkinAnalysisData {
   concerns: SkinConcernId[];
   created_at: string;
 }
+
+// ============================================================
+// 피부 분석 결과 타입 (result 화면용)
+// ============================================================
+
+/** 피부 지표 */
+export interface SkinMetrics {
+  moisture: number;
+  oil: number;
+  pores: number;
+  wrinkles: number;
+  pigmentation: number;
+  sensitivity: number;
+  elasticity: number;
+}
+
+/** 이전 분석 대비 변화량 */
+export interface SkinMetricsDelta {
+  moisture: number;
+  oil: number;
+  pores: number;
+  wrinkles: number;
+  pigmentation: number;
+  sensitivity: number;
+  elasticity: number;
+  overall: number;
+}

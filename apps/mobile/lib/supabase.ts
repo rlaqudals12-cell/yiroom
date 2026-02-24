@@ -14,8 +14,12 @@ const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 /**
  * 공개 데이터용 Supabase 클라이언트
  * 인증 없이 사용 가능
+ * 환경변수 부재 시 더미 URL 사용 (모듈 로드 크래시 방지 → 쿼리 시점에서 안전하게 실패)
  */
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient(
+  SUPABASE_URL || 'https://placeholder.supabase.co',
+  SUPABASE_ANON_KEY || 'placeholder-anon-key'
+);
 
 /**
  * Clerk 인증 통합 Supabase 클라이언트 Hook
@@ -36,7 +40,9 @@ export function useClerkSupabaseClient(): SupabaseClient {
 
   // 클라이언트는 한 번만 생성
   const client = useMemo(() => {
-    return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    return createClient(
+      SUPABASE_URL || 'https://placeholder.supabase.co',
+      SUPABASE_ANON_KEY || 'placeholder-anon-key', {
       global: {
         fetch: async (url, options = {}) => {
           // ref에서 최신 getToken 함수 사용

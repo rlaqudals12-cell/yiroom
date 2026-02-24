@@ -14,7 +14,13 @@ export type {
   RoutineGenerationInput,
   RoutineGenerationResult,
   SkinAnalysisData,
+  SkinMetrics,
+  SkinMetricsDelta,
 } from './types';
+
+// 피부 분석 상수
+export { SKIN_TYPE_DATA, SCORE_WEIGHTS } from './analysis-constants';
+export type { SkinTypeInfo } from './analysis-constants';
 
 // Mock 데이터 및 유틸리티
 export {

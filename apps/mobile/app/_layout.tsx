@@ -6,7 +6,13 @@ import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { Text, View } from 'react-native';
+import { LogBox, Text, View } from 'react-native';
+
+// Expo Go에서 expo-notifications 경고 억제 (SDK 53+ 제한)
+LogBox.ignoreLogs([
+  'expo-notifications: Android Push notifications',
+  '`expo-notifications` functionality is not fully supported',
+]);
 
 import { OfflineBanner } from '../components/common/OfflineBanner';
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
