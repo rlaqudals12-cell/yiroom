@@ -49,3 +49,9 @@ export {
   type UseWellnessScoreReturn,
   type Achievement,
 } from './useWellnessScore';
+
+// 교차 모듈 인사이트
+export {
+  useCrossModuleInsights,
+  type CrossModuleInsight,
+} from './useCrossModuleInsights';

@@ -18,12 +18,13 @@ import {
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HomeHeader, HomeTodaySection, HomeQuickActions } from '../../components/home';
+import { HomeHeader, HomeTodaySection, HomeQuickActions, CrossModuleInsight } from '../../components/home';
 import { GlassCard, AnimatedCard, SectionHeader } from '../../components/ui';
 import {
   useWorkoutData,
   useNutritionData,
   useUserAnalyses,
+  useCrossModuleInsights,
   calculateCalorieProgress,
 } from '../../hooks';
 import { TIMING } from '../../lib/animations';
@@ -59,6 +60,9 @@ export default function HomeScreen(): React.JSX.Element {
     bodyAnalysis,
     isLoading: analysisLoading,
   } = useUserAnalyses();
+
+  // 교차 모듈 인사이트
+  const { insights } = useCrossModuleInsights();
 
   // 위젯 동기화
   const { syncAll } = useWidgetSync({ autoSync: true });
@@ -254,6 +258,16 @@ export default function HomeScreen(): React.JSX.Element {
           onActionPress={(route) => router.push(route as never)}
           onCoachPress={() => router.push('/(coach)')}
         />
+
+        {/* 교차 모듈 인사이트 */}
+        {insights.length > 0 && (
+          <CrossModuleInsight
+            insights={insights}
+            maxItems={3}
+            style={{ marginBottom: spacing.md }}
+            testID="cross-module-insight"
+          />
+        )}
 
         {/* 더 보기 토글 */}
         <GlassCard

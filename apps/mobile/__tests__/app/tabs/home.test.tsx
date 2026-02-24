@@ -85,6 +85,13 @@ jest.mock('../../../hooks/useUserAnalyses', () => ({
   })),
 }));
 
+// 교차 모듈 인사이트 mock
+jest.mock('../../../hooks/useCrossModuleInsights', () => ({
+  useCrossModuleInsights: jest.fn(() => ({
+    insights: [],
+  })),
+}));
+
 // 홈 하위 컴포넌트 mock (렌더링 오류 방지)
 jest.mock('../../../components/home', () => {
   const { View, Text } = require('react-native');
@@ -96,6 +103,7 @@ jest.mock('../../../components/home', () => {
     ),
     HomeTodaySection: () => <View testID="home-today-section" />,
     HomeQuickActions: () => <View testID="home-quick-actions" />,
+    CrossModuleInsight: () => <View testID="cross-module-insight" />,
   };
 });
 
