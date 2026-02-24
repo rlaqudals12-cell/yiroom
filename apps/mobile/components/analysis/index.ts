@@ -36,6 +36,13 @@ export type { ColorSwatchProps } from './ColorSwatch';
 export { ColorPalette } from './ColorPalette';
 export type { ColorItem, ColorGroup } from './ColorPalette';
 
+// 분석 이력 + 비교
+export { AnalysisTimeline } from './AnalysisTimeline';
+export type { AnalysisTimelineProps } from './AnalysisTimeline';
+
+export { ComparisonCard } from './ComparisonCard';
+export type { ComparisonCardProps, MetricComparison } from './ComparisonCard';
+
 // 동적 스타일 훅 (useTheme 기반)
 export { useAnalysisStyles } from './styles/useAnalysisStyles';
 
