@@ -94,9 +94,9 @@ describe('BeautyTab', () => {
       expect(getByTestId('menu-personal-color')).toBeTruthy();
     });
 
-    it('추천 제품 메뉴가 표시된다', () => {
+    it('추천 제품 섹션이 표시된다', () => {
       const { getByTestId } = renderWithTheme(<BeautyTab />);
-      expect(getByTestId('menu-products')).toBeTruthy();
+      expect(getByTestId('product-section')).toBeTruthy();
     });
 
     it('메뉴 카드의 설명 텍스트가 표시된다', () => {
