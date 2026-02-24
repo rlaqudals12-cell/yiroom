@@ -41,6 +41,7 @@ module.exports = {
   useAnimatedScrollHandler: jest.fn(() => ({})),
   useAnimatedRef: jest.fn(() => ({ current: null })),
   useAnimatedReaction: jest.fn(),
+  useAnimatedProps: jest.fn(() => ({})),
   withTiming: jest.fn((toValue) => toValue),
   withSpring: jest.fn((toValue) => toValue),
   withDecay: jest.fn(() => 0),
