@@ -19,7 +19,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
 
+import { EWGAnalysis } from '../../components/products/ingredients/EWGAnalysis';
 import { SizeRecommendation } from '../../components/products/SizeRecommendation';
+import { lookupIngredients } from '../../lib/ingredients/ewg-database';
 import { useAffiliateClick, identifyPartner } from '../../lib/affiliate';
 import type { ClothingCategory } from '../../lib/smart-matching';
 import { useClerkSupabaseClient } from '../../lib/supabase';
@@ -521,21 +523,7 @@ export default function ProductDetailScreen() {
           )}
 
           {activeTab === 'ingredients' && (
-            <>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>주요 성분</Text>
-              <View style={styles.ingredientsList}>
-                {product.ingredients.map((ingredient, index) => (
-                  <View
-                    key={index}
-                    style={[styles.ingredientChip, { backgroundColor: colors.muted }]}
-                  >
-                    <Text style={[styles.ingredientText, { color: colors.foreground }]}>
-                      {ingredient}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </>
+            <EWGAnalysis ingredients={lookupIngredients(product.ingredients)} />
           )}
 
           {activeTab === 'reviews' && (
@@ -740,19 +728,6 @@ const styles = StyleSheet.create({
   },
   benefitText: {
     fontSize: 14,
-  },
-  ingredientsList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  ingredientChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
-  ingredientText: {
-    fontSize: 13,
   },
   reviewCard: {
     borderRadius: 12,
