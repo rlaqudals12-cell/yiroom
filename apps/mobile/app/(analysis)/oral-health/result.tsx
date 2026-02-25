@@ -21,7 +21,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GlassCard } from '@/components/ui';
+import { GradientCard } from '@/components/ui';
 import {
   analyzeOralHealth as analyzeWithGemini,
   imageToBase64,
@@ -189,7 +189,7 @@ export default function OralHealthResultScreen() {
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             발견된 문제
           </Text>
-          <GlassCard style={localStyles.tipsCard}>
+          <GradientCard variant="oralHealth" style={localStyles.tipsCard}>
             {result.concerns.map((concern, i) => (
               <View key={i} style={localStyles.tipItem}>
                 <Text style={[localStyles.tipBullet, { color: isDark ? '#F87171' : '#B91C1C' }]}>
@@ -198,7 +198,7 @@ export default function OralHealthResultScreen() {
                 <Text style={[localStyles.tipText, { color: colors.foreground }]}>{concern}</Text>
               </View>
             ))}
-          </GlassCard>
+          </GradientCard>
         </Animated.View>
       )}
     </View>
@@ -212,19 +212,19 @@ export default function OralHealthResultScreen() {
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             관리 추천
           </Text>
-          <GlassCard style={localStyles.tipsCard}>
+          <GradientCard variant="oralHealth" style={localStyles.tipsCard}>
             {result.recommendations.map((rec, i) => (
               <View key={i} style={localStyles.tipItem}>
                 <Text style={[localStyles.stepNum, { color: accent.base }]}>{i + 1}.</Text>
                 <Text style={[localStyles.tipText, { color: colors.foreground }]}>{rec}</Text>
               </View>
             ))}
-          </GlassCard>
+          </GradientCard>
         </Animated.View>
       )}
 
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <GlassCard style={localStyles.tipsCard}>
+        <GradientCard variant="oralHealth" style={localStyles.tipsCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground, marginBottom: 4 }]}>
             일반 관리 팁
           </Text>
@@ -246,7 +246,7 @@ export default function OralHealthResultScreen() {
               6개월마다 스케일링 받기
             </Text>
           </View>
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
     </View>
   );

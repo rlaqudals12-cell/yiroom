@@ -38,6 +38,10 @@ jest.mock('react-native-safe-area-context', () => {
 // 분석 결과 mock
 jest.mock('../../../hooks/useUserAnalyses', () => ({
   useUserAnalyses: jest.fn(() => ({
+    analyses: [
+      { id: '1', type: 'personal-color', summary: 'Spring Warm', createdAt: new Date('2026-02-20') },
+      { id: '2', type: 'skin', summary: '복합성 피부', createdAt: new Date('2026-02-18') },
+    ],
     personalColor: { season: 'spring' },
     skinAnalysis: { skinType: '복합성' },
     bodyAnalysis: null,
@@ -156,8 +160,9 @@ describe('ProfileScreen', () => {
     });
 
     it('피부 분석 메뉴가 표시된다', () => {
-      const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('피부 분석')).toBeTruthy();
+      const { getAllByText } = renderWithTheme(<ProfileScreen />);
+      // 타임라인 + 메뉴에 각각 표시
+      expect(getAllByText('피부 분석').length).toBeGreaterThanOrEqual(1);
     });
 
     it('체형 분석 메뉴가 표시된다', () => {
@@ -283,6 +288,23 @@ describe('ProfileScreen', () => {
       const { getByText } = renderWithTheme(<ProfileScreen />);
       fireEvent.press(getByText('로그인'));
       expect(mockPush).toHaveBeenCalledWith('/(auth)/sign-in');
+    });
+  });
+
+  describe('D2-4: 시각적 강화', () => {
+    it('브랜드 그라디언트 헤더가 표시된다', () => {
+      const { getByTestId } = renderWithTheme(<ProfileScreen />);
+      expect(getByTestId('profile-gradient-header')).toBeTruthy();
+    });
+
+    it('분석 이력 타임라인이 표시된다', () => {
+      const { getByTestId } = renderWithTheme(<ProfileScreen />);
+      expect(getByTestId('analysis-timeline')).toBeTruthy();
+    });
+
+    it('타임라인에 분석 이력 항목이 표시된다', () => {
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      expect(getByText('분석 이력')).toBeTruthy();
     });
   });
 

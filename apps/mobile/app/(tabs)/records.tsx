@@ -12,7 +12,7 @@ import {
   TrendingUp,
 } from 'lucide-react-native';
 import { useMemo } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
 import {
@@ -21,6 +21,8 @@ import {
   GlassCard,
   GradientBackground,
   CollapsibleSection,
+  SkeletonText,
+  SkeletonCard,
 } from '../../components/ui';
 import {
   WeeklyCalorieChart,
@@ -198,7 +200,20 @@ export default function RecordsTab(): React.JSX.Element {
 
             {isLoading ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color={brand.primary} />
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <SkeletonText style={{ width: 40, height: 28, marginBottom: 4 }} />
+                    <SkeletonText style={{ width: 56, height: 14 }} />
+                  </View>
+                  <View style={styles.statItem}>
+                    <SkeletonText style={{ width: 40, height: 28, marginBottom: 4 }} />
+                    <SkeletonText style={{ width: 56, height: 14 }} />
+                  </View>
+                  <View style={styles.statItem}>
+                    <SkeletonText style={{ width: 40, height: 28, marginBottom: 4 }} />
+                    <SkeletonText style={{ width: 56, height: 14 }} />
+                  </View>
+                </View>
               </View>
             ) : (
               <View style={styles.statsRow}>

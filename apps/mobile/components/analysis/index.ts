@@ -43,6 +43,10 @@ export type { AnalysisTimelineProps } from './AnalysisTimeline';
 export { ComparisonCard } from './ComparisonCard';
 export type { ComparisonCardProps, MetricComparison } from './ComparisonCard';
 
+// 등급 시각화
+export { GradeDisplay, getGrade } from './GradeDisplay';
+export type { GradeDisplayProps } from './GradeDisplay';
+
 // 동적 스타일 훅 (useTheme 기반)
 export { useAnalysisStyles } from './styles/useAnalysisStyles';
 

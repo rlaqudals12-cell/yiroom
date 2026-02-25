@@ -18,6 +18,12 @@ interface BeautyProductFeedProps {
   categoryFilter: string;
   /** 고민 필터 (빈 배열이면 전체) */
   concernFilter: string[];
+  /** 성분 필터 (빈 배열이면 전체) */
+  ingredientFilter?: string[];
+  /** 가격대 필터 — { min, max } */
+  priceRange?: { min: number; max: number };
+  /** 최소 평점 필터 (0이면 전체) */
+  minRating?: number;
   onProductPress?: (product: BeautyProduct) => void;
   style?: ViewStyle;
   testID?: string;
@@ -27,6 +33,9 @@ export function BeautyProductFeed({
   products,
   categoryFilter,
   concernFilter,
+  ingredientFilter = [],
+  priceRange,
+  minRating = 0,
   onProductPress,
   style,
   testID,
@@ -39,6 +48,17 @@ export function BeautyProductFeed({
     if (concernFilter.length > 0 && !concernFilter.some((c) => p.concerns.includes(c))) {
       return false;
     }
+    // 성분 필터
+    if (ingredientFilter.length > 0) {
+      const productIngredients = p.ingredients ?? [];
+      if (!ingredientFilter.some((i) => productIngredients.includes(i))) return false;
+    }
+    // 가격대 필터
+    if (priceRange && p.price !== undefined) {
+      if (p.price < priceRange.min || p.price > priceRange.max) return false;
+    }
+    // 평점 필터
+    if (minRating > 0 && p.rating < minRating) return false;
     return true;
   });
 
@@ -61,7 +81,7 @@ export function BeautyProductFeed({
       <EmptyState
         icon={<Search size={28} color={colors.mutedForeground} />}
         title="일치하는 제품이 없어요"
-        description="다른 카테고리나 고민을 선택해보세요"
+        description="필터를 조정하거나 초기화해보세요"
         testID={testID ? `${testID}-empty` : 'product-feed-empty'}
       />
     );

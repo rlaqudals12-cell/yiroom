@@ -120,10 +120,9 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-// LayoutAnimation mock (테스트 환경에서 미지원)
-jest.mock('react-native/Libraries/LayoutAnimation/LayoutAnimation', () => ({
-  configureNext: jest.fn(),
-  Presets: { easeInEaseOut: {} },
+// expo-linear-gradient mock
+jest.mock('expo-linear-gradient', () => ({
+  LinearGradient: 'LinearGradient',
 }));
 
 import HomeScreen from '../../../app/(tabs)/index';
@@ -173,9 +172,9 @@ describe('HomeScreen', () => {
       expect(getByTestId('home-quick-actions')).toBeTruthy();
     });
 
-    it('더 보기 버튼이 표시된다', () => {
-      const { getByText } = renderWithTheme(<HomeScreen />);
-      expect(getByText('더 보기')).toBeTruthy();
+    it('오늘의 요약 카드가 표시된다', () => {
+      const { getByTestId } = renderWithTheme(<HomeScreen />);
+      expect(getByTestId('today-summary-card')).toBeTruthy();
     });
 
     it('사용자 이름을 HomeHeader에 전달한다', () => {
@@ -193,7 +192,7 @@ describe('HomeScreen', () => {
   });
 
   describe('온보딩 미완료 상태', () => {
-    it('온보딩 로딩 중에는 로딩 인디케이터를 표시한다', () => {
+    it('온보딩 로딩 중에는 스켈레톤 로더를 표시한다', () => {
       const { useOnboardingCheck } = require('../../../lib/onboarding');
       useOnboardingCheck.mockReturnValueOnce({
         isCompleted: false,
@@ -201,8 +200,9 @@ describe('HomeScreen', () => {
       });
 
       const { queryByTestId } = renderWithTheme(<HomeScreen />);
-      // 로딩 중에는 home-screen testID가 없음 (로딩 화면 표시)
+      // 로딩 중에는 home-screen testID가 없음 (스켈레톤 표시)
       expect(queryByTestId('home-screen')).toBeNull();
+      expect(queryByTestId('skeleton-hero')).toBeTruthy();
     });
   });
 });

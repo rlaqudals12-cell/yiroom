@@ -3,11 +3,12 @@
  *
  * 구조:
  *  GradientHeader (모듈별 accent + 이미지 + 핵심 점수/타입)
- *  └── AnalysisTrustBadge
+ *  └── AnalysisTrustBadge + GradeDisplay
  *  TabView (3탭: 요약 / 상세 / 추천)
+ *  ExpertCTA (전문가 상담 카드)
  *  AnalysisResultButtons (하단 액션)
  *
- * 각 분석 모듈은 ResultLayout에 탭 콘텐츠만 주입하여 사용.
+ * D2-2: GradeDisplay 통합, 그라디언트 깊이 강화, 전문가 CTA 추가
  */
 import { useCallback, type ReactNode } from 'react';
 import {
@@ -16,6 +17,7 @@ import {
   ScrollView,
   StyleSheet,
   Image,
+  Pressable,
   type ImageStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,11 +29,27 @@ import { useTheme } from '@/lib/theme';
 import { brand, moduleColors } from '@/lib/theme/tokens';
 import { TIMING } from '@/lib/animations';
 import { TabView, type TabItem } from '../ui/TabView';
+import { GradientCard } from '../ui/GradientCard';
 import { AnalysisTrustBadge, type TrustBadgeType } from './AnalysisTrustBadge';
 import { AnalysisResultButtons } from './AnalysisResultButtons';
+import { GradeDisplay } from './GradeDisplay';
 
 /** 모듈 키에 따른 악센트 색상 가져오기 */
 type ModuleKey = keyof typeof moduleColors;
+
+/** GradientCard variant 매핑 (moduleKey → GradientCard variant) */
+const MODULE_TO_VARIANT: Record<string, string> = {
+  skin: 'skin',
+  body: 'body',
+  personalColor: 'personalColor',
+  hair: 'hair',
+  makeup: 'makeup',
+  posture: 'posture',
+  oralHealth: 'oralHealth',
+  face: 'face',
+  workout: 'workout',
+  nutrition: 'nutrition',
+};
 
 export interface ResultLayoutProps {
   /** 모듈 키 (moduleColors에서 accent 결정) */
@@ -50,6 +68,8 @@ export interface ResultLayoutProps {
   confidence?: number;
   /** Mock 데이터 사용 여부 */
   usedFallback?: boolean;
+  /** GradeDisplay 표시 여부 (기본 true — confidence > 0일 때만 렌더) */
+  showGrade?: boolean;
   /** 3탭 콘텐츠 */
   summaryTab: ReactNode;
   detailTab: ReactNode;
@@ -73,6 +93,7 @@ export function ResultLayout({
   trustBadgeType,
   confidence,
   usedFallback,
+  showGrade = true,
   summaryTab,
   detailTab,
   recommendTab,
@@ -81,13 +102,21 @@ export function ResultLayout({
   retryPath,
   testID = 'analysis-result-layout',
 }: ResultLayoutProps): React.JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, spacing, radii, typography } = useTheme();
   const accent = moduleColors[moduleKey];
 
-  // 그라디언트 색상: 모듈별 accent → 투명
-  const gradientColors: readonly [string, string] = isDark
-    ? [`${accent.dark}40`, 'transparent']
-    : [`${accent.light}60`, 'transparent'];
+  // 강화된 그라디언트: 2단계 (모듈 accent → brand accent → 투명)
+  const gradientColors: readonly [string, string, string] = isDark
+    ? [`${accent.dark}50`, `${accent.dark}20`, 'transparent']
+    : [`${accent.light}70`, `${accent.light}30`, 'transparent'];
+
+  // GradeDisplay에 사용할 신뢰도 퍼센트 (0-1 → 0-100)
+  const confidencePercent =
+    confidence !== undefined ? Math.round(confidence * 100) : undefined;
+
+  // GradientCard variant 매핑
+  const cardVariant = (MODULE_TO_VARIANT[moduleKey] || 'brand') as
+    import('../ui/GradientCard').GradientCardVariant;
 
   const handleGoHome = useCallback(() => {
     router.replace('/(tabs)');
@@ -96,6 +125,10 @@ export function ResultLayout({
   const handleRetry = useCallback(() => {
     router.replace(retryPath as never);
   }, [retryPath]);
+
+  const handleExpertCta = useCallback(() => {
+    router.push('/(coach)');
+  }, []);
 
   // 3탭 구성
   const tabs: TabItem[] = [
@@ -113,7 +146,7 @@ export function ResultLayout({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 그라디언트 헤더 */}
+        {/* 강화된 그라디언트 헤더 (더 깊은 모듈 악센트) */}
         <LinearGradient
           colors={gradientColors}
           start={{ x: 0.5, y: 0 }}
@@ -172,6 +205,19 @@ export function ResultLayout({
               {headerContent}
             </Animated.View>
           )}
+
+          {/* GradeDisplay — 신뢰도 시각화 (confidence 있을 때만) */}
+          {showGrade && confidencePercent !== undefined && confidencePercent > 0 && (
+            <Animated.View
+              entering={FadeInUp.delay(400).duration(TIMING.slow)}
+              style={styles.gradeContainer}
+            >
+              <GradeDisplay
+                confidence={confidencePercent}
+                testID={`${testID}-grade`}
+              />
+            </Animated.View>
+          )}
         </LinearGradient>
 
         {/* 3탭 뷰 */}
@@ -182,6 +228,50 @@ export function ResultLayout({
             testID={`${testID}-tabs`}
           />
         </View>
+
+        {/* 전문가 상담 CTA 카드 */}
+        <Animated.View
+          entering={FadeInUp.delay(200).duration(TIMING.normal)}
+          style={styles.ctaContainer}
+        >
+          <GradientCard
+            variant={cardVariant}
+            testID={`${testID}-expert-cta`}
+          >
+            <View style={styles.ctaContent}>
+              <View style={styles.ctaTextArea}>
+                <Text
+                  style={[
+                    styles.ctaTitle,
+                    { color: colors.foreground, fontSize: typography.size.base },
+                  ]}
+                >
+                  더 자세한 분석이 궁금하다면?
+                </Text>
+                <Text
+                  style={[
+                    styles.ctaSubtitle,
+                    { color: colors.mutedForeground, fontSize: typography.size.sm },
+                  ]}
+                >
+                  AI 웰니스 코치와 1:1 상담을 받아보세요
+                </Text>
+              </View>
+              <Pressable
+                onPress={handleExpertCta}
+                style={[
+                  styles.ctaButton,
+                  { backgroundColor: accent.base, borderRadius: radii.lg },
+                ]}
+                testID={`${testID}-expert-cta-button`}
+              >
+                <Text style={[styles.ctaButtonText, { fontSize: typography.size.sm }]}>
+                  상담하기
+                </Text>
+              </Pressable>
+            </View>
+          </GradientCard>
+        </Animated.View>
 
         {/* 하단 버튼 */}
         <View style={styles.buttonsContainer}>
@@ -208,12 +298,12 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 24,
+    paddingBottom: 28,
     alignItems: 'center',
     gap: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
   },
   fallbackBanner: {
@@ -236,6 +326,10 @@ const styles = StyleSheet.create({
     borderRadius: 80,
     borderWidth: 3,
   },
+  gradeContainer: {
+    alignSelf: 'stretch',
+    marginTop: 4,
+  },
   tabContainer: {
     paddingHorizontal: 16,
     minHeight: 300,
@@ -243,6 +337,33 @@ const styles = StyleSheet.create({
   tabBar: {
     borderRadius: 12,
     marginBottom: 16,
+  },
+  ctaContainer: {
+    paddingHorizontal: 16,
+    marginTop: 16,
+  },
+  ctaContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  ctaTextArea: {
+    flex: 1,
+    gap: 4,
+  },
+  ctaTitle: {
+    fontWeight: '600',
+  },
+  ctaSubtitle: {
+    lineHeight: 20,
+  },
+  ctaButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  ctaButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   buttonsContainer: {
     paddingHorizontal: 20,

@@ -1,6 +1,7 @@
 /**
  * 프로필 화면 (Clerk 인증 연동)
- * GlassCard 프로필 헤더 + 웰니스 점수 + 레벨 + 업적 + 분석/기록/설정
+ * 그라디언트 헤더 + 웰니스 점수 + 레벨 + 업적 + 타임라인 + 기록/설정
+ * D2-4: 그라디언트 배경, AnalysisTimeline 통합, GradientCard 적용
  */
 import { useUser, useClerk } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
@@ -10,8 +11,9 @@ import { View, Text, StyleSheet, ScrollView, Pressable, Image } from 'react-nati
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AnalysisTimeline } from '../../components/analysis';
 import { WellnessScoreRing, LevelBadge, AchievementGrid } from '../../components/profile';
-import { GlassCard, SectionHeader } from '../../components/ui';
+import { GlassCard, GradientBackground, GradientCard, SectionHeader } from '../../components/ui';
 import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../../hooks';
 import { TIMING } from '../../lib/animations';
 import { useTheme } from '../../lib/theme';
@@ -23,7 +25,7 @@ export default function ProfileScreen(): React.JSX.Element {
   const { signOut } = useClerk();
 
   // 데이터 훅
-  const { personalColor, skinAnalysis, bodyAnalysis } = useUserAnalyses();
+  const { analyses, personalColor, skinAnalysis, bodyAnalysis } = useUserAnalyses();
   const { analysis: workoutAnalysis, streak: workoutStreak } = useWorkoutData();
   const { streak: nutritionStreak } = useNutritionData();
 
@@ -58,107 +60,117 @@ export default function ProfileScreen(): React.JSX.Element {
       style={{ flex: 1, backgroundColor: colors.background }}
     >
       <ScrollView contentContainerStyle={{ padding: spacing.md, paddingBottom: 40 }}>
-        {/* 프로필 헤더 — GlassCard */}
+        {/* 프로필 헤더 — 브랜드 그라디언트 + GlassCard */}
         <Animated.View entering={FadeIn.duration(TIMING.normal)}>
-          <GlassCard
-            intensity={35}
-            style={{ padding: spacing.lg, marginBottom: spacing.md, alignItems: 'center' }}
+          <GradientBackground
+            variant="brand"
+            style={{
+              borderRadius: 20,
+              padding: spacing.sm,
+              marginBottom: spacing.md,
+            }}
+            testID="profile-gradient-header"
           >
-            {isSignedIn && user ? (
-              <>
-                {user.imageUrl ? (
-                  <Image source={{ uri: user.imageUrl }} style={styles.avatar} />
-                ) : (
+            <GlassCard
+              intensity={35}
+              style={{ padding: spacing.lg, alignItems: 'center' }}
+            >
+              {isSignedIn && user ? (
+                <>
+                  {user.imageUrl ? (
+                    <Image source={{ uri: user.imageUrl }} style={styles.avatar} />
+                  ) : (
+                    <View
+                      style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
+                    >
+                      <Text style={{ fontSize: 32, color: colors.mutedForeground }}>
+                        {user.firstName?.[0] ||
+                          user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() ||
+                          '?'}
+                      </Text>
+                    </View>
+                  )}
+                  <Text
+                    style={{
+                      fontSize: typography.size.lg,
+                      fontWeight: typography.weight.semibold,
+                      color: colors.foreground,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {user.fullName || user.emailAddresses[0]?.emailAddress || '사용자'}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: typography.size.sm,
+                      color: colors.mutedForeground,
+                      marginBottom: spacing.md,
+                    }}
+                  >
+                    {analysisCount}/3 분석 완료
+                  </Text>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.actionButton,
+                      {
+                        backgroundColor: colors.muted,
+                        opacity: pressed ? 0.85 : 1,
+                      },
+                    ]}
+                    onPress={handleSignOut}
+                  >
+                    <Text
+                      style={{
+                        color: colors.mutedForeground,
+                        fontSize: typography.size.sm,
+                        fontWeight: typography.weight.semibold,
+                      }}
+                    >
+                      로그아웃
+                    </Text>
+                  </Pressable>
+                </>
+              ) : (
+                <>
                   <View
                     style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
                   >
-                    <Text style={{ fontSize: 32, color: colors.mutedForeground }}>
-                      {user.firstName?.[0] ||
-                        user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() ||
-                        '?'}
-                    </Text>
+                    <Text style={{ fontSize: 32, color: colors.mutedForeground }}>?</Text>
                   </View>
-                )}
-                <Text
-                  style={{
-                    fontSize: typography.size.lg,
-                    fontWeight: typography.weight.semibold,
-                    color: colors.foreground,
-                    marginBottom: 4,
-                  }}
-                >
-                  {user.fullName || user.emailAddresses[0]?.emailAddress || '사용자'}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: typography.size.sm,
-                    color: colors.mutedForeground,
-                    marginBottom: spacing.md,
-                  }}
-                >
-                  {analysisCount}/3 분석 완료
-                </Text>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.actionButton,
-                    {
-                      backgroundColor: colors.muted,
-                      opacity: pressed ? 0.85 : 1,
-                    },
-                  ]}
-                  onPress={handleSignOut}
-                >
                   <Text
                     style={{
-                      color: colors.mutedForeground,
-                      fontSize: typography.size.sm,
+                      fontSize: typography.size.lg,
                       fontWeight: typography.weight.semibold,
+                      color: colors.foreground,
+                      marginBottom: spacing.md,
                     }}
                   >
-                    로그아웃
+                    로그인이 필요합니다
                   </Text>
-                </Pressable>
-              </>
-            ) : (
-              <>
-                <View
-                  style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
-                >
-                  <Text style={{ fontSize: 32, color: colors.mutedForeground }}>?</Text>
-                </View>
-                <Text
-                  style={{
-                    fontSize: typography.size.lg,
-                    fontWeight: typography.weight.semibold,
-                    color: colors.foreground,
-                    marginBottom: spacing.md,
-                  }}
-                >
-                  로그인이 필요합니다
-                </Text>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.actionButton,
-                    {
-                      backgroundColor: brand.primary,
-                      opacity: pressed ? 0.85 : 1,
-                    },
-                  ]}
-                  onPress={handleSignIn}
-                >
-                  <Text
-                    style={{
-                      color: brand.primaryForeground,
-                      fontSize: typography.size.sm,
-                      fontWeight: typography.weight.semibold,
-                    }}
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.actionButton,
+                      {
+                        backgroundColor: brand.primary,
+                        opacity: pressed ? 0.85 : 1,
+                      },
+                    ]}
+                    onPress={handleSignIn}
                   >
-                    로그인
-                  </Text>
-                </Pressable>
-              </>
-            )}
-          </GlassCard>
+                    <Text
+                      style={{
+                        color: brand.primaryForeground,
+                        fontSize: typography.size.sm,
+                        fontWeight: typography.weight.semibold,
+                      }}
+                    >
+                      로그인
+                    </Text>
+                  </Pressable>
+                </>
+              )}
+            </GlassCard>
+          </GradientBackground>
         </Animated.View>
 
         {/* 레벨 뱃지 */}
@@ -184,6 +196,24 @@ export default function ProfileScreen(): React.JSX.Element {
           style={{ marginBottom: spacing.lg }}
           testID="achievement-grid"
         />
+
+        {/* 분석 이력 타임라인 */}
+        <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+          <AnalysisTimeline
+            analyses={analyses}
+            onItemPress={(item) => {
+              const routeMap: Record<string, string> = {
+                'personal-color': '/(analysis)/personal-color',
+                skin: '/(analysis)/skin',
+                body: '/(analysis)/body',
+              };
+              const route = routeMap[item.type];
+              if (route) router.push(route as never);
+            }}
+            style={{ marginBottom: spacing.lg }}
+            testID="analysis-timeline"
+          />
+        </Animated.View>
 
         {/* 분석 결과 */}
         <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>

@@ -23,7 +23,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GlassCard } from '@/components/ui';
+import { GradientCard } from '@/components/ui';
 import {
   analyzeSkin as analyzeWithGemini,
   imageToBase64,
@@ -239,11 +239,11 @@ export default function SkinResultScreen() {
   const summaryTab = (
     <View style={localStyles.tabContent}>
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <GlassCard style={localStyles.descCard}>
+        <GradientCard variant="skin" style={localStyles.descCard}>
           <Text style={[localStyles.descText, { color: colors.foreground }]}>
             {typeData.description}
           </Text>
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
 
       {/* 핵심 지표 3개 */}
@@ -299,14 +299,14 @@ export default function SkinResultScreen() {
       {/* 스킨케어 팁 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>스킨케어 팁</Text>
-        <GlassCard style={localStyles.tipsCard}>
+        <GradientCard variant="skin" style={localStyles.tipsCard}>
           {typeData.tips.map((tip, index) => (
             <View key={index} style={localStyles.tipItem}>
               <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
               <Text style={[localStyles.tipText, { color: colors.foreground }]}>{tip}</Text>
             </View>
           ))}
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
 
       {/* 추천 성분 */}

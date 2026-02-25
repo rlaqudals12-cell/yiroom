@@ -21,7 +21,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { BarChart, type BarDataItem } from '@/components/charts';
-import { GlassCard } from '@/components/ui';
+import { GradientCard } from '@/components/ui';
 import {
   analyzeBody as analyzeWithGemini,
   imageToBase64,
@@ -264,11 +264,11 @@ export default function BodyResultScreen() {
   const summaryTab = (
     <View style={localStyles.tabContent}>
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <GlassCard style={localStyles.descCard}>
+        <GradientCard variant="body" style={localStyles.descCard}>
           <Text style={[localStyles.descText, { color: colors.foreground }]}>
             {typeData.description}
           </Text>
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
 
       {/* BMI 게이지 */}
@@ -283,14 +283,14 @@ export default function BodyResultScreen() {
       {/* 운동 팁 미리보기 */}
       <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>운동 팁</Text>
-        <GlassCard style={localStyles.tipsCard}>
+        <GradientCard variant="body" style={localStyles.tipsCard}>
           {typeData.exerciseTips.map((tip, index) => (
             <View key={index} style={localStyles.tipItem}>
               <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
               <Text style={[localStyles.tipText, { color: colors.foreground }]}>{tip}</Text>
             </View>
           ))}
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
     </View>
   );
@@ -314,7 +314,7 @@ export default function BodyResultScreen() {
       {/* BMI 상세 해석 */}
       <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>BMI 상세</Text>
-        <GlassCard style={localStyles.descCard}>
+        <GradientCard variant="body" style={localStyles.descCard}>
           <View style={localStyles.bmiDetailRow}>
             <Text style={[localStyles.bmiDetailLabel, { color: colors.mutedForeground }]}>
               키
@@ -339,7 +339,7 @@ export default function BodyResultScreen() {
               {bmi.toFixed(1)} ({bmiStatus.label})
             </Text>
           </View>
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
     </View>
   );
@@ -386,14 +386,14 @@ export default function BodyResultScreen() {
       {/* 운동 추천 */}
       <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>체형별 운동</Text>
-        <GlassCard style={localStyles.tipsCard}>
+        <GradientCard variant="body" style={localStyles.tipsCard}>
           {typeData.exerciseTips.map((tip, index) => (
             <View key={index} style={localStyles.tipItem}>
               <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
               <Text style={[localStyles.tipText, { color: colors.foreground }]}>{tip}</Text>
             </View>
           ))}
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
     </View>
   );

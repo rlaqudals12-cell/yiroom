@@ -6,6 +6,7 @@
 
 export { Button } from './Button';
 export { Badge } from './Badge';
+export type { BadgeVariant, BadgeModule } from './Badge';
 export { Input } from './Input';
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './Card';
 export { MenuCard } from './MenuCard';
@@ -13,6 +14,8 @@ export { SectionHeader } from './SectionHeader';
 export { ProgressIndicator } from './ProgressIndicator';
 export { GradientBackground } from './GradientBackground';
 export { GlassCard } from './GlassCard';
+export { GradientCard } from './GradientCard';
+export type { GradientCardVariant } from './GradientCard';
 export { AnimatedCard } from './AnimatedCard';
 export { AnimatedList } from './AnimatedList';
 export { TabView } from './TabView';
@@ -24,3 +27,9 @@ export { ScoreGauge } from './ScoreGauge';
 export { CollapsibleSection } from './CollapsibleSection';
 export { ChangeIndicator } from './ChangeIndicator';
 export { InfoTooltip } from './InfoTooltip';
+export {
+  SkeletonLoader,
+  SkeletonText,
+  SkeletonCircle,
+  SkeletonCard,
+} from './SkeletonLoader';

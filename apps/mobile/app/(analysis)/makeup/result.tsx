@@ -21,7 +21,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GlassCard } from '@/components/ui';
+import { GradientCard } from '@/components/ui';
 import {
   analyzeMakeup as analyzeWithGemini,
   imageToBase64,
@@ -224,14 +224,14 @@ export default function MakeupResultScreen() {
         </Text>
         {(Object.keys(result.recommendations) as (keyof MakeupAnalysisResult['recommendations'])[]).map(
           (key) => (
-            <GlassCard key={key} style={localStyles.recCard}>
+            <GradientCard variant="makeup" key={key} style={localStyles.recCard}>
               <Text style={[localStyles.recLabel, { color: accent.base }]}>
                 {RECOMMENDATION_LABELS[key]}
               </Text>
               <Text style={[localStyles.recText, { color: colors.foreground }]}>
                 {result.recommendations[key]}
               </Text>
-            </GlassCard>
+            </GradientCard>
           )
         )}
       </Animated.View>
@@ -252,7 +252,7 @@ export default function MakeupResultScreen() {
 
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>메이크업 팁</Text>
-        <GlassCard style={localStyles.tipsCard}>
+        <GradientCard variant="makeup" style={localStyles.tipsCard}>
           <View style={localStyles.tipItem}>
             <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
             <Text style={[localStyles.tipText, { color: colors.foreground }]}>
@@ -271,7 +271,7 @@ export default function MakeupResultScreen() {
               {LIP_SHAPE_LABELS[result.lipShape]}에는 {result.recommendations.lip}
             </Text>
           </View>
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
     </View>
   );

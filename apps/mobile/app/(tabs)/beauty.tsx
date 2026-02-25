@@ -4,7 +4,6 @@
  */
 import { useRouter } from 'expo-router';
 import {
-  Sparkles,
   Palette,
   Droplets,
   Calendar,
@@ -12,14 +11,18 @@ import {
   Brush,
   SmilePlus,
 } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import {
   SkinProfileCard,
   SkinConcernFilter,
   CategoryFilter,
+  IngredientFilter,
+  PriceRangeFilter,
+  RatingFilter,
+  PRICE_RANGE_MAP,
   BeautyProductFeed,
 } from '../../components/beauty';
 import type { BeautyProduct } from '../../components/beauty';
@@ -44,6 +47,25 @@ export default function BeautyTab(): React.JSX.Element {
   // 필터 상태
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
+  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
+  const [selectedPriceRange, setSelectedPriceRange] = useState('all');
+  const [selectedRating, setSelectedRating] = useState('all');
+
+  // 필터 활성 여부 (초기화 버튼 표시 조건)
+  const hasActiveFilters =
+    selectedCategory !== 'all' ||
+    selectedConcerns.length > 0 ||
+    selectedIngredients.length > 0 ||
+    selectedPriceRange !== 'all' ||
+    selectedRating !== 'all';
+
+  const resetAllFilters = useCallback(() => {
+    setSelectedCategory('all');
+    setSelectedConcerns([]);
+    setSelectedIngredients([]);
+    setSelectedPriceRange('all');
+    setSelectedRating('all');
+  }, []);
 
   // AffiliateProduct → BeautyProduct 변환 + 매칭률 계산
   const sortedProducts = useMemo(() => {
@@ -67,8 +89,10 @@ export default function BeautyTab(): React.JSX.Element {
           imageUrl: p.imageUrl,
           matchRate,
           rating: p.rating ?? 0,
+          price: p.price,
           category: p.category ?? 'skincare',
           concerns: productConcerns,
+          ingredients: (p.tags as string[] | undefined) ?? [],
         };
       })
       .sort((a, b) => b.matchRate - a.matchRate);
@@ -169,13 +193,61 @@ export default function BeautyTab(): React.JSX.Element {
           <SkinConcernFilter
             selected={selectedConcerns}
             onSelectionChange={setSelectedConcerns}
-            style={{ marginBottom: spacing.md }}
+            style={{ marginBottom: spacing.sm + 2 }}
             testID="concern-filter"
           />
+          <IngredientFilter
+            selected={selectedIngredients}
+            onSelectionChange={setSelectedIngredients}
+            style={{ marginBottom: spacing.sm + 2 }}
+            testID="ingredient-filter"
+          />
+          <PriceRangeFilter
+            selected={selectedPriceRange}
+            onSelectionChange={setSelectedPriceRange}
+            style={{ marginBottom: spacing.sm + 2 }}
+            testID="price-filter"
+          />
+          <RatingFilter
+            selected={selectedRating}
+            onSelectionChange={setSelectedRating}
+            style={{ marginBottom: spacing.sm + 2 }}
+            testID="rating-filter"
+          />
+          {/* 필터 초기화 버튼 */}
+          {hasActiveFilters && (
+            <Pressable
+              onPress={resetAllFilters}
+              style={{
+                alignSelf: 'flex-start',
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 16,
+                backgroundColor: colors.destructive + '15',
+                marginBottom: spacing.md,
+              }}
+              testID="filter-reset-button"
+              accessibilityLabel="필터 초기화"
+              accessibilityRole="button"
+            >
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: '600',
+                  color: colors.destructive,
+                }}
+              >
+                필터 초기화
+              </Text>
+            </Pressable>
+          )}
           <BeautyProductFeed
             products={sortedProducts}
             categoryFilter={selectedCategory}
             concernFilter={selectedConcerns}
+            ingredientFilter={selectedIngredients}
+            priceRange={PRICE_RANGE_MAP[selectedPriceRange]}
+            minRating={selectedRating !== 'all' ? parseFloat(selectedRating) : 0}
             onProductPress={(p) => router.push(`/products/${p.id}`)}
             testID="product-feed"
           />

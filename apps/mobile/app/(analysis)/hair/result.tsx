@@ -20,7 +20,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GlassCard } from '@/components/ui';
+import { GradientCard } from '@/components/ui';
 import {
   analyzeHair as analyzeWithGemini,
   imageToBase64,
@@ -168,14 +168,14 @@ export default function HairResultScreen() {
       {result.mainConcerns.length > 0 && (
         <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>주요 고민</Text>
-          <GlassCard style={localStyles.tipsCard}>
+          <GradientCard variant="hair" style={localStyles.tipsCard}>
             {result.mainConcerns.map((concern, i) => (
               <View key={i} style={localStyles.tipItem}>
                 <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
                 <Text style={[localStyles.tipText, { color: colors.foreground }]}>{concern}</Text>
               </View>
             ))}
-          </GlassCard>
+          </GradientCard>
         </Animated.View>
       )}
     </View>
@@ -215,14 +215,14 @@ export default function HairResultScreen() {
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             추천 케어 루틴
           </Text>
-          <GlassCard style={localStyles.tipsCard}>
+          <GradientCard variant="hair" style={localStyles.tipsCard}>
             {result.careRoutine.map((routine, i) => (
               <View key={i} style={localStyles.tipItem}>
                 <Text style={[localStyles.stepNum, { color: accent.base }]}>{i + 1}.</Text>
                 <Text style={[localStyles.tipText, { color: colors.foreground }]}>{routine}</Text>
               </View>
             ))}
-          </GlassCard>
+          </GradientCard>
         </Animated.View>
       )}
 

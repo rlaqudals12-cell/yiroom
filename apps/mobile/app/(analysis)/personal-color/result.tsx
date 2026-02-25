@@ -21,7 +21,7 @@ import {
   MetricBar,
   useAnalysisStyles,
 } from '@/components/analysis';
-import { GlassCard } from '@/components/ui';
+import { GradientCard } from '@/components/ui';
 import {
   analyzePersonalColor as analyzeWithGemini,
   imageToBase64,
@@ -288,16 +288,16 @@ function SummaryTab({ season, accent, isDark, colors }: TabProps): React.JSX.Ele
   return (
     <View style={localStyles.tabContent}>
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <GlassCard style={localStyles.sectionCard}>
+        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             추천 컬러 팔레트
           </Text>
           <ColorPalette colors={bestColorItems} columns={3} animated testID="pc-best-colors" />
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
 
       <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-        <GlassCard style={localStyles.sectionCard}>
+        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             같은 타입의 연예인
           </Text>
@@ -314,7 +314,7 @@ function SummaryTab({ season, accent, isDark, colors }: TabProps): React.JSX.Ele
               </View>
             ))}
           </View>
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
     </View>
   );
@@ -336,7 +336,7 @@ function DetailTab({
   return (
     <View style={localStyles.tabContent}>
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <GlassCard style={localStyles.sectionCard}>
+        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             웜톤/쿨톤 분석
           </Text>
@@ -344,11 +344,11 @@ function DetailTab({
             <MetricBar label="웜톤 (Warm)" value={warmScore} testID="pc-warm-score" />
             <MetricBar label="쿨톤 (Cool)" value={coolScore} testID="pc-cool-score" />
           </View>
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
 
       <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-        <GlassCard style={localStyles.sectionCard}>
+        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             피해야 할 색상
           </Text>
@@ -356,11 +356,11 @@ function DetailTab({
             다음 색상은 피부 톤을 칙칙하게 보이게 할 수 있어요
           </Text>
           <ColorPalette colors={worstColorItems} columns={4} animated testID="pc-worst-colors" />
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
 
       <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
-        <GlassCard style={localStyles.sectionCard}>
+        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             {season.tone === 'warm' ? '웜톤이란?' : '쿨톤이란?'}
           </Text>
@@ -369,7 +369,7 @@ function DetailTab({
               ? '피부 아래에 노란 기운이 도는 타입이에요. 금색 주얼리, 따뜻한 색조의 옷이 얼굴을 환하게 밝혀줘요.'
               : '피부 아래에 파란 기운이 도는 타입이에요. 은색 주얼리, 시원한 색조의 옷이 피부를 맑게 보이게 해줘요.'}
           </Text>
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
     </View>
   );
@@ -380,7 +380,7 @@ function RecommendTab({ season, accent, colors }: TabProps): React.JSX.Element {
   return (
     <View style={localStyles.tabContent}>
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <GlassCard style={localStyles.sectionCard}>
+        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             맞춤 스타일링 팁
           </Text>
@@ -390,11 +390,11 @@ function RecommendTab({ season, accent, colors }: TabProps): React.JSX.Element {
               <Text style={[localStyles.tipText, { color: colors.mutedForeground }]}>{tip}</Text>
             </View>
           ))}
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
 
       <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-        <GlassCard style={localStyles.sectionCard}>
+        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             메이크업 포인트
           </Text>
@@ -424,7 +424,7 @@ function RecommendTab({ season, accent, colors }: TabProps): React.JSX.Element {
               subTextColor={colors.mutedForeground}
             />
           </View>
-        </GlassCard>
+        </GradientCard>
       </Animated.View>
     </View>
   );

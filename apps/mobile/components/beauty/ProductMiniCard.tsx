@@ -17,8 +17,10 @@ export interface BeautyProduct {
   imageUrl?: string;
   matchRate: number;
   rating: number;
+  price?: number;
   category: string;
   concerns: string[];
+  ingredients?: string[];
 }
 
 interface ProductMiniCardProps {
