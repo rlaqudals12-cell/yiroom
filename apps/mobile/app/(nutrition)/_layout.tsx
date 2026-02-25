@@ -47,6 +47,13 @@ export default function NutritionLayout() {
         }}
       />
       <Stack.Screen
+        name="scan/index"
+        options={{
+          title: '바코드 스캔',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
         name="search/index"
         options={{
           title: '음식 검색',
