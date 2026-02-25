@@ -1,6 +1,8 @@
 /**
  * W-1 운동 타입 결과 화면
+ * 분석 결과를 DB에 저장하고 주간 플랜을 생성
  */
+import { useUser } from '@clerk/clerk-expo';
 import type { WorkoutType } from '@yiroom/shared';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
@@ -14,7 +16,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
+import { workoutLogger } from '@/lib/utils/logger';
+import { generateWeeklyPlan, estimatePlanMinutes } from '@/lib/workout/planTemplates';
 
 // 운동 타입 데이터
 const WORKOUT_TYPE_DATA: Record<
@@ -66,6 +71,8 @@ const WORKOUT_TYPE_DATA: Record<
 
 export default function WorkoutResultScreen() {
   const { colors, isDark } = useTheme();
+  const { user } = useUser();
+  const supabase = useClerkSupabaseClient();
   const { goals, frequency, duration } = useLocalSearchParams<{
     goals: string;
     frequency: string;
@@ -74,29 +81,94 @@ export default function WorkoutResultScreen() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [workoutType, setWorkoutType] = useState<WorkoutType | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
 
-  // 운동 타입 분석 (Mock)
+  // 목표 기반 운동 타입 결정
+  const determineWorkoutType = useCallback((parsedGoals: string[]): WorkoutType => {
+    if (parsedGoals.includes('muscle_gain')) return 'builder';
+    if (parsedGoals.includes('weight_loss')) return 'burner';
+    if (parsedGoals.includes('endurance')) return 'mover';
+    if (parsedGoals.includes('flexibility') || parsedGoals.includes('stress')) return 'flexer';
+    return 'toner';
+  }, []);
+
+  // 분석 결과 DB 저장 + 주간 플랜 생성
+  const saveAnalysisAndPlan = useCallback(
+    async (type: WorkoutType) => {
+      if (!user?.id || isSaved) return;
+
+      try {
+        const parsedGoals = JSON.parse(goals || '[]') as string[];
+        const freq = parseInt(frequency || '3', 10);
+
+        // 1. workout_analyses에 저장
+        const { data: analysisData, error: analysisError } = await supabase
+          .from('workout_analyses')
+          .insert({
+            workout_type: type,
+            fitness_level: 'beginner',
+            goals: parsedGoals,
+            frequency: freq,
+          })
+          .select('id')
+          .single();
+
+        if (analysisError) {
+          workoutLogger.error('분석 저장 실패:', analysisError);
+          return;
+        }
+
+        // 2. 주간 플랜 생성
+        const weeklyPlan = generateWeeklyPlan(type, freq);
+        const totalMinutes = estimatePlanMinutes(weeklyPlan);
+
+        // 이번 주 월요일 계산
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - diff);
+        const weekStartDate = monday.toISOString().split('T')[0];
+
+        // 3. workout_plans에 저장
+        const { error: planError } = await supabase.from('workout_plans').insert({
+          analysis_id: analysisData.id,
+          week_start_date: weekStartDate,
+          week_number: 1,
+          weekly_plan: weeklyPlan,
+          total_workout_days: freq,
+          total_estimated_minutes: totalMinutes,
+        });
+
+        if (planError) {
+          workoutLogger.error('플랜 저장 실패:', planError);
+          return;
+        }
+
+        setIsSaved(true);
+        workoutLogger.info('분석 + 플랜 저장 완료', { type, frequency: freq });
+      } catch (err) {
+        workoutLogger.error('저장 중 오류:', err);
+      }
+    },
+    [user?.id, supabase, goals, frequency, isSaved]
+  );
+
+  // 운동 타입 분석
   const analyzeWorkoutType = useCallback(async () => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // 분석 진행 애니메이션용 딜레이
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // Mock 로직: 목표 기반으로 운동 타입 결정
     const parsedGoals = JSON.parse(goals || '[]') as string[];
-
-    let type: WorkoutType = 'toner';
-    if (parsedGoals.includes('muscle_gain')) {
-      type = 'builder';
-    } else if (parsedGoals.includes('weight_loss')) {
-      type = 'burner';
-    } else if (parsedGoals.includes('endurance')) {
-      type = 'mover';
-    } else if (parsedGoals.includes('flexibility') || parsedGoals.includes('stress')) {
-      type = 'flexer';
-    }
+    const type = determineWorkoutType(parsedGoals);
 
     setWorkoutType(type);
     setIsLoading(false);
-  }, [goals]);
+
+    // DB에 저장 (비동기, UI 블로킹 안 함)
+    saveAnalysisAndPlan(type);
+  }, [goals, determineWorkoutType, saveAnalysisAndPlan]);
 
   useEffect(() => {
     analyzeWorkoutType();

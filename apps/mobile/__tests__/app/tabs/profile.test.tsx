@@ -50,6 +50,7 @@ jest.mock('../../../hooks/useWorkoutData', () => ({
   useWorkoutData: jest.fn(() => ({
     streak: { currentStreak: 7 },
     todayWorkout: null,
+    weeklyLogs: [],
     analysis: { type: 'strength' },
     isLoading: false,
   })),
@@ -61,6 +62,7 @@ jest.mock('../../../hooks/useWorkoutData', () => ({
 jest.mock('../../../hooks/useNutritionData', () => ({
   useNutritionData: jest.fn(() => ({
     todaySummary: null,
+    weeklyHistory: [],
     settings: null,
     streak: { currentStreak: 3 },
     isLoading: false,

@@ -1,6 +1,7 @@
 /**
  * W-1 운동 기록 화면
  * 3탭 완료 플로우: 운동 선택 → 시간/강도 → 저장
+ * 사용자의 운동 플랜이 있으면 플랜 운동을 표시, 없으면 기본 목록 사용
  */
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
@@ -18,13 +19,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useWorkoutData } from '@/hooks/useWorkoutData';
 import { useTheme } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
 
-// 추천 운동 목록
-const RECOMMENDED_EXERCISES = [
+// 플랜이 없을 때 사용하는 기본 운동
+const DEFAULT_EXERCISES = [
   { id: 'squat', name: '스쿼트', category: 'legs' },
   { id: 'pushup', name: '푸시업', category: 'chest' },
   { id: 'lunge', name: '런지', category: 'legs' },
@@ -49,12 +51,25 @@ export default function WorkoutLogScreen() {
   const { colors, module: moduleColors } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
+  const { todayWorkout } = useWorkoutData();
 
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [duration, setDuration] = useState(30);
   const [intensity, setIntensity] = useState<string>('moderate');
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // 플랜 운동이 있으면 사용, 없으면 기본 목록
+  const availableExercises = useMemo(() => {
+    if (todayWorkout?.exercises && todayWorkout.exercises.length > 0) {
+      return todayWorkout.exercises.map((ex) => ({
+        id: ex.id,
+        name: ex.name,
+        category: ex.category,
+      }));
+    }
+    return DEFAULT_EXERCISES;
+  }, [todayWorkout]);
 
   // 칼로리 예상 계산 (MET 기반 단순화)
   const estimatedCalories = useMemo(() => {
@@ -96,7 +111,7 @@ export default function WorkoutLogScreen() {
     try {
       // 운동별 기록 데이터 구성
       const exerciseLogs = selectedExercises.map((exerciseId) => {
-        const exercise = RECOMMENDED_EXERCISES.find((e) => e.id === exerciseId);
+        const exercise = availableExercises.find((e) => e.id === exerciseId);
         return {
           exercise_id: exerciseId,
           exercise_name: exercise?.name || exerciseId,
@@ -198,7 +213,7 @@ export default function WorkoutLogScreen() {
             오늘 어떤 운동을 했나요?
           </Text>
           <View style={styles.exerciseGrid}>
-            {RECOMMENDED_EXERCISES.map((exercise) => {
+            {availableExercises.map((exercise) => {
               const isSelected = selectedExercises.includes(exercise.id);
               return (
                 <TouchableOpacity

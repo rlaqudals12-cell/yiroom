@@ -54,6 +54,7 @@ jest.mock('../../../hooks/useUserAnalyses', () => ({
 const mockUseWorkoutData = jest.fn(() => ({
   streak: { currentStreak: 0 },
   todayWorkout: null,
+  weeklyLogs: [],
   analysis: null,
   isLoading: false,
 }));
@@ -67,6 +68,7 @@ jest.mock('../../../hooks/useWorkoutData', () => ({
 // 영양 데이터 mock
 const mockUseNutritionData = jest.fn(() => ({
   todaySummary: null,
+  weeklyHistory: [],
   settings: null,
   streak: { currentStreak: 0 },
   isLoading: false,
@@ -142,11 +144,13 @@ describe('ReportsScreen', () => {
     mockUseWorkoutData.mockReturnValue({
       streak: { currentStreak: 0 },
       todayWorkout: null,
+      weeklyLogs: [],
       analysis: null,
       isLoading: false,
     });
     mockUseNutritionData.mockReturnValue({
       todaySummary: null,
+      weeklyHistory: [],
       settings: null,
       streak: { currentStreak: 0 },
       isLoading: false,
@@ -262,6 +266,7 @@ describe('ReportsScreen', () => {
       mockUseWorkoutData.mockReturnValue({
         streak: { currentStreak: 5 },
         todayWorkout: null,
+        weeklyLogs: [],
         analysis: { workoutType: 'strength' },
         isLoading: false,
       });
@@ -275,6 +280,7 @@ describe('ReportsScreen', () => {
     it('오늘 섭취 칼로리가 표시된다', () => {
       mockUseNutritionData.mockReturnValue({
         todaySummary: { totalCalories: 1850, totalProtein: 80, totalCarbs: 200, totalFat: 60, waterIntake: 1500, mealCount: 3, date: '2026-02-21' },
+        weeklyHistory: [],
         settings: { dailyCalorieGoal: 2000, proteinGoal: 100, carbsGoal: 250, fatGoal: 70, waterGoal: 2000, mealCount: 3 },
         streak: { currentStreak: 3 },
         isLoading: false,

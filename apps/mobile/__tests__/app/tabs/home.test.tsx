@@ -46,6 +46,7 @@ jest.mock('../../../hooks/useWorkoutData', () => ({
   useWorkoutData: jest.fn(() => ({
     streak: { currentStreak: 3, lastWorkoutDate: '2026-02-20' },
     todayWorkout: null,
+    weeklyLogs: [],
     analysis: null,
     isLoading: false,
   })),
@@ -61,6 +62,7 @@ jest.mock('../../../hooks/useNutritionData', () => ({
       mealCount: 2,
       waterIntake: 1200,
     },
+    weeklyHistory: [],
     settings: {
       dailyCalorieGoal: 2000,
       waterGoal: 2000,

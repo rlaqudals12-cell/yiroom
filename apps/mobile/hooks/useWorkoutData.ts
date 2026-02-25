@@ -43,10 +43,20 @@ export interface WorkoutExercise {
   category: string;
 }
 
+export interface WorkoutLog {
+  id: string;
+  workoutDate: string;
+  completedAt: string | null;
+  actualDuration: number;
+  actualCalories: number;
+  perceivedEffort: number | null;
+}
+
 interface UseWorkoutDataReturn {
   analysis: WorkoutAnalysis | null;
   streak: WorkoutStreak | null;
   todayWorkout: TodayWorkout | null;
+  weeklyLogs: WorkoutLog[];
   isLoading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
@@ -59,6 +69,7 @@ export function useWorkoutData(): UseWorkoutDataReturn {
   const [analysis, setAnalysis] = useState<WorkoutAnalysis | null>(null);
   const [streak, setStreak] = useState<WorkoutStreak | null>(null);
   const [todayWorkout, setTodayWorkout] = useState<TodayWorkout | null>(null);
+  const [weeklyLogs, setWeeklyLogs] = useState<WorkoutLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -116,8 +127,35 @@ export function useWorkoutData(): UseWorkoutDataReturn {
         });
       }
 
+      // 주간 운동 기록 (과거 7일)
+      const today = new Date();
+      const weekAgo = new Date();
+      weekAgo.setDate(today.getDate() - 6);
+      const weekAgoStr = weekAgo.toISOString().split('T')[0];
+      const todayStr = today.toISOString().split('T')[0];
+
+      const { data: logsData } = await supabase
+        .from('workout_logs')
+        .select('id, workout_date, completed_at, actual_duration, actual_calories, perceived_effort')
+        .gte('workout_date', weekAgoStr)
+        .lte('workout_date', todayStr)
+        .order('workout_date', { ascending: true });
+
+      if (logsData) {
+        setWeeklyLogs(
+          logsData.map((log) => ({
+            id: log.id,
+            workoutDate: log.workout_date,
+            completedAt: log.completed_at,
+            actualDuration: log.actual_duration || 0,
+            actualCalories: log.actual_calories || 0,
+            perceivedEffort: log.perceived_effort,
+          }))
+        );
+      }
+
       // 오늘의 운동 플랜
-      const dayOfWeek = new Date().getDay(); // 0-6
+      const dayOfWeek = today.getDay(); // 0-6
       const { data: planData } = await supabase
         .from('workout_plans')
         .select('id, weekly_plan')
@@ -181,6 +219,7 @@ export function useWorkoutData(): UseWorkoutDataReturn {
     analysis,
     streak,
     todayWorkout,
+    weeklyLogs,
     isLoading,
     error,
     refetch: fetchWorkoutData,

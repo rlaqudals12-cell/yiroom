@@ -37,6 +37,7 @@ export interface NutritionStreak {
 interface UseNutritionDataReturn {
   settings: NutritionSettings | null;
   todaySummary: DailyNutritionSummary | null;
+  weeklyHistory: DailyNutritionSummary[];
   streak: NutritionStreak | null;
   isLoading: boolean;
   error: Error | null;
@@ -59,6 +60,7 @@ export function useNutritionData(): UseNutritionDataReturn {
 
   const [settings, setSettings] = useState<NutritionSettings | null>(null);
   const [todaySummary, setTodaySummary] = useState<DailyNutritionSummary | null>(null);
+  const [weeklyHistory, setWeeklyHistory] = useState<DailyNutritionSummary[]>([]);
   const [streak, setStreak] = useState<NutritionStreak | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -122,6 +124,32 @@ export function useNutritionData(): UseNutritionDataReturn {
         });
       }
 
+      // 주간 영양 기록 (과거 7일)
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 6);
+      const weekAgoStr = weekAgo.toISOString().split('T')[0];
+
+      const { data: weeklyData } = await supabase
+        .from('daily_nutrition_summary')
+        .select('date, total_calories, total_protein, total_carbs, total_fat, water_intake, meal_count')
+        .gte('date', weekAgoStr)
+        .lte('date', today)
+        .order('date', { ascending: true });
+
+      if (weeklyData) {
+        setWeeklyHistory(
+          weeklyData.map((row) => ({
+            date: row.date,
+            totalCalories: row.total_calories || 0,
+            totalProtein: row.total_protein || 0,
+            totalCarbs: row.total_carbs || 0,
+            totalFat: row.total_fat || 0,
+            waterIntake: row.water_intake || 0,
+            mealCount: row.meal_count || 0,
+          }))
+        );
+      }
+
       // 영양 스트릭
       const { data: streakData } = await supabase
         .from('nutrition_streaks')
@@ -176,6 +204,7 @@ export function useNutritionData(): UseNutritionDataReturn {
   return {
     settings,
     todaySummary,
+    weeklyHistory,
     streak,
     isLoading,
     error,

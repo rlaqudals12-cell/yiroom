@@ -50,6 +50,7 @@ jest.mock('../../../hooks/useWorkoutData', () => ({
         { name: '런지', sets: 3, reps: 10 },
       ],
     },
+    weeklyLogs: [],
     analysis: null,
     isLoading: false,
   })),
@@ -65,6 +66,7 @@ jest.mock('../../../hooks/useNutritionData', () => ({
       mealCount: 3,
       waterIntake: 1500,
     },
+    weeklyHistory: [],
     settings: {
       dailyCalorieGoal: 2000,
       waterGoal: 2000,
@@ -189,6 +191,7 @@ describe('RecordsTab', () => {
       useWorkoutData.mockReturnValueOnce({
         streak: null,
         todayWorkout: null,
+        weeklyLogs: [],
         analysis: null,
         isLoading: true,
       });
@@ -205,6 +208,7 @@ describe('RecordsTab', () => {
       useWorkoutData.mockReturnValueOnce({
         streak: { currentStreak: 0, lastWorkoutDate: null },
         todayWorkout: null,
+        weeklyLogs: [],
         analysis: null,
         isLoading: false,
       });

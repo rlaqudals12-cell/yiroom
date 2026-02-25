@@ -54,6 +54,7 @@ jest.mock('../../../hooks/useUserAnalyses', () => ({
 const mockUseWorkoutData = jest.fn(() => ({
   streak: { currentStreak: 5 },
   todayWorkout: null,
+  weeklyLogs: [],
   analysis: null,
   isLoading: false,
 }));
@@ -67,6 +68,7 @@ jest.mock('../../../hooks/useWorkoutData', () => ({
 // 영양 데이터 mock
 const mockUseNutritionData = jest.fn(() => ({
   todaySummary: null,
+  weeklyHistory: [],
   settings: null,
   streak: { currentStreak: 4 },
   isLoading: false,
@@ -126,11 +128,13 @@ describe('BadgesScreen', () => {
     mockUseWorkoutData.mockReturnValue({
       streak: { currentStreak: 5 },
       todayWorkout: null,
+      weeklyLogs: [],
       analysis: null,
       isLoading: false,
     });
     mockUseNutritionData.mockReturnValue({
       todaySummary: null,
+      weeklyHistory: [],
       settings: null,
       streak: { currentStreak: 4 },
       isLoading: false,
@@ -216,6 +220,7 @@ describe('BadgesScreen', () => {
       mockUseWorkoutData.mockReturnValue({
         streak: { currentStreak: 7 },
         todayWorkout: null,
+        weeklyLogs: [],
         analysis: null,
         isLoading: false,
       });
@@ -238,11 +243,13 @@ describe('BadgesScreen', () => {
       mockUseWorkoutData.mockReturnValue({
         streak: { currentStreak: 0 },
         todayWorkout: null,
+        weeklyLogs: [],
         analysis: null,
         isLoading: false,
       });
       mockUseNutritionData.mockReturnValue({
         todaySummary: null,
+        weeklyHistory: [],
         settings: null,
         streak: { currentStreak: 0 },
         isLoading: false,
@@ -262,11 +269,13 @@ describe('BadgesScreen', () => {
       mockUseWorkoutData.mockReturnValue({
         streak: { currentStreak: 0 },
         todayWorkout: null,
+        weeklyLogs: [],
         analysis: null,
         isLoading: false,
       });
       mockUseNutritionData.mockReturnValue({
         todaySummary: null,
+        weeklyHistory: [],
         settings: null,
         streak: { currentStreak: 0 },
         isLoading: false,

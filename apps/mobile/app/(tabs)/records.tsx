@@ -31,30 +31,48 @@ import {
   type WeekDay,
 } from '../../components/records';
 import { useWorkoutData, useNutritionData, calculateCalorieProgress } from '../../hooks';
+import type { DailyNutritionSummary, WorkoutLog } from '../../hooks';
 import { TIMING } from '../../lib/animations';
 import { useTheme } from '../../lib/theme';
 
 // 요일 라벨 (월~일)
 const DAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'];
 
-// 오늘 데이터 기반 주간 샘플 생성 (실제 DB 연동 전 표시용)
-function generateWeeklyCalories(todayCalories: number, goal: number): DayCalorie[] {
+// DB의 주간 영양 기록을 차트 데이터로 변환
+function buildWeeklyCalories(
+  weeklyHistory: DailyNutritionSummary[],
+  todayCalories: number,
+): DayCalorie[] {
   const today = new Date();
   const dayOfWeek = (today.getDay() + 6) % 7; // 월=0 ~ 일=6
 
+  // 날짜 → 칼로리 맵
+  const dateMap = new Map<string, number>();
+  for (const entry of weeklyHistory) {
+    dateMap.set(entry.date, entry.totalCalories);
+  }
+
   return DAY_LABELS.map((label, i) => {
-    if (i === dayOfWeek) return { label, calories: todayCalories };
+    const date = new Date(today);
+    date.setDate(today.getDate() - (dayOfWeek - i));
+    const dateStr = date.toISOString().split('T')[0];
+
     if (i > dayOfWeek) return { label, calories: 0 }; // 미래
-    // 과거: 목표 기준 ±20% 랜덤 (seed 고정)
-    const seed = (i + 1) * 137;
-    const variation = ((seed % 40) - 20) / 100;
-    return { label, calories: Math.round(goal * (1 + variation)) };
+    if (i === dayOfWeek) return { label, calories: dateMap.get(dateStr) ?? todayCalories };
+    return { label, calories: dateMap.get(dateStr) ?? 0 };
   });
 }
 
-function generateWorkoutWeek(currentStreak: number): WeekDay[] {
+// DB의 주간 운동 기록을 히트맵 데이터로 변환
+function buildWorkoutWeek(weeklyLogs: WorkoutLog[]): WeekDay[] {
   const today = new Date();
   const dayOfWeek = (today.getDay() + 6) % 7;
+
+  // 날짜 → 운동 기록 맵
+  const logMap = new Map<string, WorkoutLog>();
+  for (const log of weeklyLogs) {
+    logMap.set(log.workoutDate, log);
+  }
 
   return DAY_LABELS.map((label, i) => {
     const date = new Date(today);
@@ -63,15 +81,14 @@ function generateWorkoutWeek(currentStreak: number): WeekDay[] {
 
     if (i > dayOfWeek) return { label, date: dateStr, completed: false, intensity: 0 };
 
-    // 스트릭 기반: 최근 N일은 완료
-    const daysFromToday = dayOfWeek - i;
-    const completed = daysFromToday < currentStreak;
-    return {
-      label,
-      date: dateStr,
-      completed,
-      intensity: completed ? (daysFromToday === 0 ? 3 : 2) : 0,
-    };
+    const log = logMap.get(dateStr);
+    if (!log) return { label, date: dateStr, completed: false, intensity: 0 };
+
+    // 강도: perceived_effort 1-10 → intensity 1-3
+    const effort = log.perceivedEffort ?? 5;
+    const intensity = effort <= 3 ? 1 : effort <= 7 ? 2 : 3;
+
+    return { label, date: dateStr, completed: true, intensity };
   });
 }
 
@@ -85,9 +102,15 @@ export default function RecordsTab(): React.JSX.Element {
     module: moduleColors,
   } = useTheme();
 
-  const { streak: workoutStreak, todayWorkout, isLoading: workoutLoading } = useWorkoutData();
+  const {
+    streak: workoutStreak,
+    todayWorkout,
+    weeklyLogs,
+    isLoading: workoutLoading,
+  } = useWorkoutData();
   const {
     todaySummary,
+    weeklyHistory,
     settings: nutritionSettings,
     isLoading: nutritionLoading,
   } = useNutritionData();
@@ -107,13 +130,13 @@ export default function RecordsTab(): React.JSX.Element {
   const hasNutritionData = todaySummary && todaySummary.totalCalories > 0;
 
   const weeklyCalories = useMemo(
-    () => generateWeeklyCalories(todaySummary?.totalCalories || 0, calorieGoal),
-    [todaySummary?.totalCalories, calorieGoal],
+    () => buildWeeklyCalories(weeklyHistory, todaySummary?.totalCalories || 0),
+    [weeklyHistory, todaySummary?.totalCalories],
   );
 
   const workoutWeek = useMemo(
-    () => generateWorkoutWeek(workoutCount),
-    [workoutCount],
+    () => buildWorkoutWeek(weeklyLogs),
+    [weeklyLogs],
   );
 
   const nutrientValues = useMemo(() => ({

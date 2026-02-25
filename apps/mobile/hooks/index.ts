@@ -27,6 +27,7 @@ export {
   type WorkoutStreak,
   type TodayWorkout,
   type WorkoutExercise,
+  type WorkoutLog,
 } from './useWorkoutData';
 
 // 영양 데이터 조회
