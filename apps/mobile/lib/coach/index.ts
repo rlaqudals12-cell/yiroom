@@ -22,21 +22,42 @@ export interface UserContext {
   skinAnalysis?: {
     skinType: string;
     concerns?: string[];
+    scores?: Record<string, number>;
   };
   bodyAnalysis?: {
     bodyType: string;
     bmi?: number;
+    height?: number;
+    weight?: number;
+  };
+  hairAnalysis?: {
+    hairType: string;
+    scalpType?: string;
+    concerns?: string[];
+  };
+  makeupAnalysis?: {
+    undertone: string;
+    faceShape?: string;
+    recommendedStyles?: string[];
   };
   workout?: {
     workoutType?: string;
     goal?: string;
     streak?: number;
+    fitnessLevel?: string;
   };
   nutrition?: {
     goal?: string;
     targetCalories?: number;
     streak?: number;
+    todayCalories?: number;
   };
+  recentActivity?: {
+    todayWorkout?: string;
+    todayCalories?: number;
+    waterIntake?: number;
+  };
+  closetItemCount?: number;
 }
 
 export interface CoachChatResponse {
@@ -217,33 +238,46 @@ function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'sk
 }
 
 /**
- * Mock 응답 생성 (분석 결과 기반 맞춤 응답)
+ * Mock 응답 생성 (RAG + 분석 결과 기반 맞춤 응답)
  */
 // 히스토리 관련 re-export
 export { getCoachSessions, deleteCoachSession, type CoachSession } from './history';
 
+// RAG 모듈
+import { getRAGContext, classifyQuestion } from './rag';
+
 export function getMockResponse(message: string, userContext?: UserContext): CoachChatResponse {
   const category = detectQuestionCategory(message);
 
-  // 사용자 컨텍스트가 있으면 맞춤 응답 생성
-  let responseMessage: string;
-  const personalizedFn = PERSONALIZED_RESPONSES[category];
-  if (userContext && personalizedFn) {
-    responseMessage = personalizedFn(userContext);
-  } else {
-    responseMessage = FALLBACK_RESPONSES[category];
+  // 1차: RAG 기반 도메인별 맞춤 응답
+  let responseMessage: string | null = null;
+  if (userContext) {
+    responseMessage = getRAGContext(userContext, message);
   }
 
-  // 카테고리별 맞춤 추천 질문
-  const suggestedByCategory: Record<string, string[]> = {
+  // 2차: 기존 맞춤 응답 (RAG에서 답변 못 찾은 경우)
+  if (!responseMessage) {
+    const personalizedFn = PERSONALIZED_RESPONSES[category];
+    if (userContext && personalizedFn) {
+      responseMessage = personalizedFn(userContext);
+    } else {
+      responseMessage = FALLBACK_RESPONSES[category];
+    }
+  }
+
+  // 도메인별 맞춤 추천 질문
+  const domain = classifyQuestion(message);
+  const suggestedByDomain: Record<string, string[]> = {
+    personalColor: ['내 퍼스널 컬러에 어울리는 립 색상은?', '옷 색상 추천해줘', '메이크업 색조 조합 알려줘'],
+    skin: ['스킨케어 루틴 알려줘', '피부에 좋은 음식은?', '여드름 관리법 알려줘'],
     workout: ['오늘 운동 루틴 추천해줘', '스트레칭 방법 알려줘', '근육통 회복법이 궁금해'],
     nutrition: ['건강한 간식 추천해줘', '단백질 많은 음식 알려줘', '다이어트 식단 구성법은?'],
-    skin: ['스킨케어 루틴 알려줘', '피부에 좋은 음식은?', '여드름 관리법 알려줘'],
-    default: ['오늘 운동 뭐하면 좋을까?', '건강한 간식 추천해줘', '스킨케어 루틴 알려줘'],
+    fashion: ['오늘 뭐 입을까?', '데이트룩 추천해줘', '내 체형에 맞는 옷 알려줘'],
+    general: ['오늘 운동 뭐하면 좋을까?', '건강한 간식 추천해줘', '스킨케어 루틴 알려줘'],
   };
 
   return {
     message: responseMessage,
-    suggestedQuestions: suggestedByCategory[category] ?? suggestedByCategory.default,
+    suggestedQuestions: suggestedByDomain[domain] ?? suggestedByDomain.general,
   };
 }

@@ -50,9 +50,9 @@ export function useCoach(): UseCoachResult {
   const { isConnected } = useNetworkStatus();
   const supabase = useClerkSupabaseClient();
 
-  // 분석 결과 기반 사용자 컨텍스트 구성
-  const { personalColor, skinAnalysis, bodyAnalysis } = useUserAnalyses();
-  const { streak: workoutStreak, analysis: workoutAnalysis } = useWorkoutData();
+  // 분석 결과 기반 사용자 컨텍스트 구성 (RAG 강화)
+  const { personalColor, skinAnalysis, bodyAnalysis, hairAnalysis, makeupAnalysis } = useUserAnalyses();
+  const { streak: workoutStreak, analysis: workoutAnalysis, todayWorkout } = useWorkoutData();
   const { settings: nutritionSettings, streak: nutritionStreak } = useNutritionData();
 
   const userContext = useMemo<UserContext>(() => {
@@ -61,15 +61,37 @@ export function useCoach(): UseCoachResult {
       ctx.personalColor = { season: personalColor.season, tone: personalColor.tone };
     }
     if (skinAnalysis) {
-      ctx.skinAnalysis = { skinType: skinAnalysis.skinType, concerns: skinAnalysis.concerns };
+      ctx.skinAnalysis = {
+        skinType: skinAnalysis.skinType,
+        concerns: skinAnalysis.concerns,
+      };
     }
     if (bodyAnalysis) {
-      ctx.bodyAnalysis = { bodyType: bodyAnalysis.bodyType, bmi: bodyAnalysis.bmi };
+      ctx.bodyAnalysis = {
+        bodyType: bodyAnalysis.bodyType,
+        bmi: bodyAnalysis.bmi,
+        height: bodyAnalysis.height,
+        weight: bodyAnalysis.weight,
+      };
+    }
+    if (hairAnalysis) {
+      ctx.hairAnalysis = {
+        hairType: hairAnalysis.hairType,
+        concerns: hairAnalysis.concerns,
+      };
+    }
+    if (makeupAnalysis) {
+      ctx.makeupAnalysis = {
+        undertone: makeupAnalysis.makeupStyle,
+        recommendedStyles: Object.keys(makeupAnalysis.colorRecommendations || {}),
+      };
     }
     if (workoutStreak || workoutAnalysis) {
       ctx.workout = {
         streak: workoutStreak?.currentStreak,
         workoutType: workoutAnalysis?.workoutType,
+        goal: workoutAnalysis?.goals?.[0],
+        fitnessLevel: workoutAnalysis?.fitnessLevel,
       };
     }
     if (nutritionSettings || nutritionStreak) {
@@ -78,8 +100,14 @@ export function useCoach(): UseCoachResult {
         streak: nutritionStreak?.currentStreak,
       };
     }
+    // 오늘의 활동 정보
+    if (todayWorkout) {
+      ctx.recentActivity = {
+        todayWorkout: todayWorkout.exercises?.map((e: { name: string }) => e.name).join(', '),
+      };
+    }
     return ctx;
-  }, [personalColor, skinAnalysis, bodyAnalysis, workoutStreak, workoutAnalysis, nutritionSettings, nutritionStreak]);
+  }, [personalColor, skinAnalysis, bodyAnalysis, hairAnalysis, makeupAnalysis, workoutStreak, workoutAnalysis, todayWorkout, nutritionSettings, nutritionStreak]);
 
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
