@@ -1,25 +1,34 @@
 /**
  * W-1 운동 세션 화면 (타이머 포함)
+ * DB의 workout_plans에서 오늘의 운동을 로드
  */
 import { router } from 'expo-router';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useWorkoutData, type WorkoutExercise } from '@/hooks/useWorkoutData';
 import { useTheme } from '@/lib/theme';
 
-// 샘플 운동 데이터
-const SAMPLE_EXERCISES = [
-  { id: 1, name: '스쿼트', sets: 3, reps: 15, restTime: 60 },
-  { id: 2, name: '푸쉬업', sets: 3, reps: 12, restTime: 45 },
-  { id: 3, name: '런지', sets: 3, reps: 12, restTime: 60 },
-  { id: 4, name: '플랭크', sets: 3, reps: 30, restTime: 30 },
+// 플랜이 없을 때 사용하는 기본 운동
+const DEFAULT_EXERCISES: WorkoutExercise[] = [
+  { id: '1', name: '스쿼트', sets: 3, reps: 15, restTime: 60, category: 'lower' },
+  { id: '2', name: '푸쉬업', sets: 3, reps: 12, restTime: 45, category: 'upper' },
+  { id: '3', name: '런지', sets: 3, reps: 12, restTime: 60, category: 'lower' },
+  { id: '4', name: '플랭크', sets: 3, reps: 30, restTime: 30, category: 'core' },
 ];
 
 type SessionState = 'ready' | 'exercising' | 'resting' | 'completed';
 
 export default function WorkoutSessionScreen() {
   const { colors, isDark } = useTheme();
+  const { todayWorkout, isLoading: workoutLoading } = useWorkoutData();
+
+  // DB 플랜이 있으면 사용, 없으면 기본 운동
+  const exercises = useMemo(
+    () => (todayWorkout?.exercises.length ? todayWorkout.exercises : DEFAULT_EXERCISES),
+    [todayWorkout]
+  );
 
   const [sessionState, setSessionState] = useState<SessionState>('ready');
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -29,14 +38,14 @@ export default function WorkoutSessionScreen() {
   const [caloriesBurned, setCaloriesBurned] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const currentExercise = SAMPLE_EXERCISES[currentExerciseIndex];
+  const currentExercise = exercises[currentExerciseIndex];
 
   // handleRestEnd를 먼저 정의 (useEffect에서 사용)
   const handleRestEnd = useCallback(() => {
     if (currentSet < currentExercise.sets) {
       setCurrentSet((prev) => prev + 1);
       setSessionState('exercising');
-    } else if (currentExerciseIndex < SAMPLE_EXERCISES.length - 1) {
+    } else if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex((prev) => prev + 1);
       setCurrentSet(1);
       setSessionState('exercising');
@@ -81,7 +90,7 @@ export default function WorkoutSessionScreen() {
       // 다음 세트로, 휴식 시작
       setSessionState('resting');
       setTimer(currentExercise.restTime);
-    } else if (currentExerciseIndex < SAMPLE_EXERCISES.length - 1) {
+    } else if (currentExerciseIndex < exercises.length - 1) {
       // 다음 운동으로, 휴식 시작
       setSessionState('resting');
       setTimer(currentExercise.restTime);
@@ -112,6 +121,23 @@ export default function WorkoutSessionScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // 로딩 화면
+  if (workoutLoading && sessionState === 'ready') {
+    return (
+      <SafeAreaView
+        style={[styles.container, isDark && styles.containerDark]}
+        testID="workout-session-screen"
+      >
+        <View style={styles.mainContent}>
+          <ActivityIndicator size="large" color={colors.foreground} />
+          <Text style={[styles.stateLabel, isDark && styles.textMuted, { marginTop: 16 }]}>
+            운동 플랜을 불러오는 중...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // 준비 화면
   if (sessionState === 'ready') {
     return (
@@ -122,11 +148,13 @@ export default function WorkoutSessionScreen() {
         <View style={styles.readyContent}>
           <Text style={[styles.readyTitle, isDark && styles.textLight]}>운동 준비</Text>
           <Text style={[styles.readySubtitle, isDark && styles.textMuted]}>
-            {SAMPLE_EXERCISES.length}개의 운동이 준비되어 있어요
+            {todayWorkout?.exercises.length
+              ? `오늘의 플랜: ${exercises.length}개 운동`
+              : `기본 운동 ${exercises.length}개가 준비되어 있어요`}
           </Text>
 
           <View style={styles.exercisePreview}>
-            {SAMPLE_EXERCISES.map((ex, index) => (
+            {exercises.map((ex, index) => (
               <View key={ex.id} style={[styles.previewItem, isDark && styles.previewItemDark]}>
                 <Text style={[styles.previewNumber, isDark && styles.textMuted]}>{index + 1}</Text>
                 <Text style={[styles.previewName, isDark && styles.textLight]}>{ex.name}</Text>
@@ -171,7 +199,7 @@ export default function WorkoutSessionScreen() {
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statValue, isDark && styles.textLight]}>
-                {SAMPLE_EXERCISES.length}
+                {exercises.length}
               </Text>
               <Text style={[styles.statLabel, isDark && styles.textMuted]}>운동 수</Text>
             </View>
@@ -211,8 +239,8 @@ export default function WorkoutSessionScreen() {
               다음:{' '}
               {currentSet < currentExercise.sets
                 ? `${currentExercise.name} ${currentSet + 1}세트`
-                : currentExerciseIndex < SAMPLE_EXERCISES.length - 1
-                  ? SAMPLE_EXERCISES[currentExerciseIndex + 1].name
+                : currentExerciseIndex < exercises.length - 1
+                  ? exercises[currentExerciseIndex + 1].name
                   : '마지막 운동 완료!'}
             </Text>
             <TouchableOpacity style={styles.skipButton} onPress={handleSkipRest}>
@@ -250,7 +278,7 @@ export default function WorkoutSessionScreen() {
           style={[
             styles.progressFill,
             {
-              width: `${((currentExerciseIndex * 3 + currentSet) / (SAMPLE_EXERCISES.length * 3)) * 100}%`,
+              width: `${((currentExerciseIndex * 3 + currentSet) / (exercises.length * 3)) * 100}%`,
             },
           ]}
         />

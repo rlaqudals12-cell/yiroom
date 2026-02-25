@@ -27,7 +27,11 @@ import {
   imageToBase64,
   type PersonalColorAnalysisResult,
 } from '@/lib/gemini';
+import { useUser } from '@clerk/clerk-expo';
+
+import { savePersonalColorResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
 import { TIMING } from '@/lib/animations';
 
@@ -113,6 +117,8 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
   const { module } = useAnalysisStyles();
   const { colors, isDark } = useTheme();
   const accent = module.personalColor;
+  const { user } = useUser();
+  const supabase = useClerkSupabaseClient();
 
   const { imageUri, imageBase64, answers } = useLocalSearchParams<{
     imageUri: string;
@@ -142,6 +148,11 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
 
       setUsedFallback(response.usedFallback);
       setResult(response.result);
+
+      // DB 저장 (실패해도 분석 결과는 표시)
+      if (user?.id) {
+        savePersonalColorResult(supabase, user.id, response.result, parsedAnswers, imageUri);
+      }
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'personal-color-result',

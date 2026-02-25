@@ -27,7 +27,11 @@ import {
   imageToBase64,
   type BodyAnalysisResult,
 } from '@/lib/gemini';
+import { useUser } from '@clerk/clerk-expo';
+
+import { saveBodyResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
 
 // 체형 타입 데이터
@@ -110,6 +114,8 @@ const BODY_TYPE_DATA: Record<
 export default function BodyResultScreen() {
   const { module, colors, status, isDark } = useAnalysisStyles();
   const accent = module.body;
+  const { user } = useUser();
+  const supabase = useClerkSupabaseClient();
 
   const { height, weight, imageUri, imageBase64 } = useLocalSearchParams<{
     height: string;
@@ -160,6 +166,11 @@ export default function BodyResultScreen() {
       setBodyType(bodyTypeMap[analysisResult.bodyType] || 'Rectangle');
       setBmi(analysisResult.bmi);
       setProportions(analysisResult.proportions ?? null);
+
+      // DB 저장 (실패해도 분석 결과는 표시)
+      if (user?.id) {
+        saveBodyResult(supabase, user.id, analysisResult, imageUri);
+      }
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'body-result',

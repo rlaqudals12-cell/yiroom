@@ -27,7 +27,11 @@ import {
   imageToBase64,
   type MakeupAnalysisResult,
 } from '@/lib/gemini';
+import { useUser } from '@clerk/clerk-expo';
+
+import { saveMakeupResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
 
 // 한국어 라벨 매핑
@@ -72,6 +76,8 @@ const RECOMMENDATION_LABELS: Record<keyof MakeupAnalysisResult['recommendations'
 export default function MakeupResultScreen() {
   const { module, colors, isDark } = useAnalysisStyles();
   const accent = module.makeup;
+  const { user } = useUser();
+  const supabase = useClerkSupabaseClient();
 
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
@@ -95,6 +101,11 @@ export default function MakeupResultScreen() {
       const response = await analyzeWithGemini(base64Data);
       setUsedFallback(response.usedFallback);
       setResult(response.result);
+
+      // DB 저장 (실패해도 분석 결과는 표시)
+      if (user?.id) {
+        saveMakeupResult(supabase, user.id, response.result);
+      }
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'makeup-result',

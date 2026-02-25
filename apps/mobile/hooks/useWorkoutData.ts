@@ -38,6 +38,7 @@ export interface WorkoutExercise {
   name: string;
   sets: number;
   reps: number;
+  restTime: number;
   duration?: number;
   category: string;
 }
@@ -136,10 +137,11 @@ export function useWorkoutData(): UseWorkoutDataReturn {
             exercises: (todayPlan.exercises as unknown[]).map((ex: unknown) => {
               const exercise = ex as Record<string, unknown>;
               return {
-                id: String(exercise.id || ''),
+                id: String(exercise.id || exercise.exercise_id || ''),
                 name: String(exercise.name || ''),
                 sets: Number(exercise.sets || 3),
                 reps: Number(exercise.reps || 10),
+                restTime: Number(exercise.rest_seconds || exercise.restTime || 60),
                 duration: exercise.duration ? Number(exercise.duration) : undefined,
                 category: String(exercise.category || ''),
               };

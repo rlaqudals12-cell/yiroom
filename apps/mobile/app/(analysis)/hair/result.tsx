@@ -26,7 +26,11 @@ import {
   imageToBase64,
   type HairAnalysisResult,
 } from '@/lib/gemini';
+import { useUser } from '@clerk/clerk-expo';
+
+import { saveHairResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
 
 // 한국어 라벨 매핑
@@ -53,6 +57,8 @@ const SCALP_LABELS: Record<HairAnalysisResult['scalpCondition'], string> = {
 export default function HairResultScreen() {
   const { module, colors, isDark } = useAnalysisStyles();
   const accent = module.hair;
+  const { user } = useUser();
+  const supabase = useClerkSupabaseClient();
 
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
@@ -76,6 +82,11 @@ export default function HairResultScreen() {
       const response = await analyzeWithGemini(base64Data);
       setUsedFallback(response.usedFallback);
       setResult(response.result);
+
+      // DB 저장 (실패해도 분석 결과는 표시)
+      if (user?.id) {
+        saveHairResult(supabase, user.id, response.result, imageUri);
+      }
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'hair-result',

@@ -26,99 +26,53 @@ import type { BeautyProduct } from '../../components/beauty';
 import { EmptyState } from '../../components/common/EmptyState';
 import { CollapsibleSection, MenuCard, GradientBackground, SectionHeader } from '../../components/ui';
 import { useUserAnalyses } from '../../hooks/useUserAnalyses';
+import { useAffiliateProducts } from '../../lib/affiliate/useAffiliateProducts';
 import { TIMING } from '../../lib/animations';
 import { useTheme } from '../../lib/theme';
-
-// 샘플 제품 데이터 — 추후 API 연동 시 교체
-const SAMPLE_PRODUCTS: BeautyProduct[] = [
-  {
-    id: 'p1',
-    name: '히알루론산 수분 세럼',
-    brand: '이니스프리',
-    matchRate: 92,
-    rating: 4.5,
-    category: 'skincare',
-    concerns: ['dryness', 'wrinkles'],
-  },
-  {
-    id: 'p2',
-    name: '티트리 시카 진정 토너',
-    brand: '닥터지',
-    matchRate: 88,
-    rating: 4.3,
-    category: 'skincare',
-    concerns: ['acne', 'sensitivity'],
-  },
-  {
-    id: 'p3',
-    name: '비타민C 브라이트닝 앰플',
-    brand: '클레어스',
-    matchRate: 85,
-    rating: 4.7,
-    category: 'skincare',
-    concerns: ['pigmentation', 'dryness'],
-  },
-  {
-    id: 'p4',
-    name: '톤업 선크림 SPF50+',
-    brand: '라운드랩',
-    matchRate: 80,
-    rating: 4.4,
-    category: 'suncare',
-    concerns: ['sensitivity'],
-  },
-  {
-    id: 'p5',
-    name: '글로우 쿠션 파운데이션',
-    brand: '에스티로더',
-    matchRate: 78,
-    rating: 4.2,
-    category: 'makeup',
-    concerns: ['dryness', 'pores'],
-  },
-  {
-    id: 'p6',
-    name: 'BHA 블랙헤드 파워 리퀴드',
-    brand: '코스알엑스',
-    matchRate: 91,
-    rating: 4.6,
-    category: 'skincare',
-    concerns: ['pores', 'oiliness', 'acne'],
-  },
-  {
-    id: 'p7',
-    name: '아르간 오일 헤어 에센스',
-    brand: '미쟝센',
-    matchRate: 76,
-    rating: 4.1,
-    category: 'haircare',
-    concerns: ['dryness'],
-  },
-  {
-    id: 'p8',
-    name: '시카 수분 크림',
-    brand: '라네즈',
-    matchRate: 87,
-    rating: 4.5,
-    category: 'skincare',
-    concerns: ['sensitivity', 'dryness'],
-  },
-];
 
 export default function BeautyTab(): React.JSX.Element {
   const router = useRouter();
   const { colors, spacing, module: moduleColors } = useTheme();
   const { skinAnalysis, isLoading } = useUserAnalyses();
 
+  // DB에서 제품 조회
+  const { products: affiliateProducts, isLoading: productsLoading } = useAffiliateProducts({
+    sortBy: 'rating',
+    limit: 30,
+  });
+
   // 필터 상태
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
 
-  // 매치율순 정렬
-  const sortedProducts = useMemo(
-    () => [...SAMPLE_PRODUCTS].sort((a, b) => b.matchRate - a.matchRate),
-    []
-  );
+  // AffiliateProduct → BeautyProduct 변환 + 매칭률 계산
+  const sortedProducts = useMemo(() => {
+    const userConcerns = skinAnalysis?.concerns ?? [];
+    return affiliateProducts
+      .map((p): BeautyProduct => {
+        const productConcerns = (p.skinConcerns as string[] | undefined) ?? [];
+        // 사용자 피부 고민 매칭률 (기본 60점 + 매칭 보너스 최대 40점)
+        const matchCount = userConcerns.filter((c) => productConcerns.includes(c)).length;
+        const matchRate =
+          userConcerns.length > 0
+            ? Math.round(60 + (matchCount / userConcerns.length) * 40)
+            : p.rating
+              ? Math.round(p.rating * 16)
+              : 70;
+
+        return {
+          id: p.id,
+          name: p.name,
+          brand: p.brand ?? '',
+          imageUrl: p.imageUrl,
+          matchRate,
+          rating: p.rating ?? 0,
+          category: p.category ?? 'skincare',
+          concerns: productConcerns,
+        };
+      })
+      .sort((a, b) => b.matchRate - a.matchRate);
+  }, [affiliateProducts, skinAnalysis?.concerns]);
 
   const hasSkinData = skinAnalysis !== null;
 
@@ -201,7 +155,7 @@ export default function BeautyTab(): React.JSX.Element {
         {/* 추천 제품 섹션 */}
         <CollapsibleSection
           title="추천 제품"
-          trailing={`${sortedProducts.length}개`}
+          trailing={productsLoading ? '로딩 중...' : `${sortedProducts.length}개`}
           defaultOpen
           style={{ marginBottom: spacing.lg }}
           testID="product-section"

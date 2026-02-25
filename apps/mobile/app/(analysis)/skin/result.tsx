@@ -29,7 +29,11 @@ import {
   imageToBase64,
   type SkinAnalysisResult,
 } from '@/lib/gemini';
+import { useUser } from '@clerk/clerk-expo';
+
+import { saveSkinResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
 
 import {
@@ -66,6 +70,8 @@ const INGREDIENT_DATA: Record<SkinType, { good: string[]; avoid: string[] }> = {
 export default function SkinResultScreen() {
   const { module, colors, isDark } = useAnalysisStyles();
   const accent = module.skin;
+  const { user } = useUser();
+  const supabase = useClerkSupabaseClient();
 
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
@@ -114,23 +120,42 @@ export default function SkinResultScreen() {
       );
       setOverallScore(score);
 
-      // Mock 이전 분석 데이터 (실제 구현 시 DB에서 가져옴)
-      const hasPreviousAnalysis = Math.random() > 0.5;
-      const mockPreviousScore = hasPreviousAnalysis ? Math.floor(Math.random() * 30) + 50 : null;
+      // 이전 분석 결과 조회 → 변화량 계산 (DB에서)
+      let prevScore: number | null = null;
+      let computedDelta: SkinMetricsDelta | null = null;
 
-      const mockDelta: SkinMetricsDelta = {
-        moisture: Math.floor(Math.random() * 10) - 5,
-        oil: Math.floor(Math.random() * 10) - 5,
-        pores: Math.floor(Math.random() * 8) - 4,
-        wrinkles: Math.floor(Math.random() * 6) - 3,
-        pigmentation: Math.floor(Math.random() * 8) - 4,
-        sensitivity: Math.floor(Math.random() * 10) - 5,
-        elasticity: Math.floor(Math.random() * 8) - 4,
-        overall: mockPreviousScore ? score - mockPreviousScore : 0,
-      };
+      if (user?.id) {
+        try {
+          const { data: prevData } = await supabase
+            .from('skin_analyses')
+            .select('overall_score, hydration, oil_level, pores, wrinkles, pigmentation, sensitivity')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
 
-      setDelta(mockDelta);
-      setPreviousScore(mockPreviousScore);
+          if (prevData) {
+            prevScore = prevData.overall_score;
+            computedDelta = {
+              moisture: analysisResult.metrics.moisture - (prevData.hydration ?? 0),
+              oil: analysisResult.metrics.oil - (prevData.oil_level ?? 0),
+              pores: analysisResult.metrics.pores - (prevData.pores ?? 0),
+              wrinkles: analysisResult.metrics.wrinkles - (prevData.wrinkles ?? 0),
+              pigmentation: analysisResult.metrics.pigmentation - (prevData.pigmentation ?? 0),
+              sensitivity: analysisResult.metrics.sensitivity - (prevData.sensitivity ?? 0),
+              elasticity: 0, // DB에 elasticity 컬럼 없음
+              overall: score - (prevData.overall_score ?? 0),
+            };
+          }
+        } catch {
+          // 이전 분석 조회 실패 시 무시 (첫 분석이거나 DB 오류)
+        }
+
+        // DB 저장 (이전 분석 조회 후 저장하여 자기 자신과 비교 방지)
+        saveSkinResult(supabase, user.id, analysisResult, score, imageUri);
+      }
+
+      setDelta(computedDelta);
+      setPreviousScore(prevScore);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'skin-result',

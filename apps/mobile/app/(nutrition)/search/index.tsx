@@ -1,11 +1,11 @@
 /**
  * N-1 음식 검색 화면
- * 음식명 검색 -> 선택 -> 기록
+ * DB foods 테이블에서 검색 -> 선택 -> 기록
  */
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -37,274 +37,20 @@ interface FoodItem {
   category: string;
 }
 
-// 음식 DB Mock
-const FOOD_DATABASE: FoodItem[] = [
-  // 밥/면류
-  {
-    id: '1',
-    name: '흰쌀밥',
-    calories: 300,
-    protein: 6,
-    carbs: 65,
-    fat: 1,
-    trafficLight: 'yellow',
-    category: '밥',
-  },
-  {
-    id: '2',
-    name: '현미밥',
-    calories: 280,
-    protein: 7,
-    carbs: 58,
-    fat: 2,
-    trafficLight: 'green',
-    category: '밥',
-  },
-  {
-    id: '3',
-    name: '잡곡밥',
-    calories: 290,
-    protein: 8,
-    carbs: 60,
-    fat: 2,
-    trafficLight: 'green',
-    category: '밥',
-  },
-  {
-    id: '4',
-    name: '비빔밥',
-    calories: 550,
-    protein: 18,
-    carbs: 65,
-    fat: 12,
-    trafficLight: 'yellow',
-    category: '밥',
-  },
-  {
-    id: '5',
-    name: '김밥',
-    calories: 320,
-    protein: 8,
-    carbs: 45,
-    fat: 12,
-    trafficLight: 'yellow',
-    category: '밥',
-  },
-  {
-    id: '6',
-    name: '라면',
-    calories: 500,
-    protein: 10,
-    carbs: 70,
-    fat: 18,
-    trafficLight: 'red',
-    category: '면',
-  },
-  {
-    id: '7',
-    name: '짜장면',
-    calories: 600,
-    protein: 15,
-    carbs: 85,
-    fat: 20,
-    trafficLight: 'red',
-    category: '면',
-  },
-  {
-    id: '8',
-    name: '냉면',
-    calories: 450,
-    protein: 12,
-    carbs: 80,
-    fat: 8,
-    trafficLight: 'yellow',
-    category: '면',
-  },
-  // 국/찌개
-  {
-    id: '9',
-    name: '된장찌개',
-    calories: 120,
-    protein: 9,
-    carbs: 8,
-    fat: 5,
-    trafficLight: 'green',
-    category: '국',
-  },
-  {
-    id: '10',
-    name: '김치찌개',
-    calories: 150,
-    protein: 12,
-    carbs: 10,
-    fat: 6,
-    trafficLight: 'green',
-    category: '국',
-  },
-  {
-    id: '11',
-    name: '부대찌개',
-    calories: 350,
-    protein: 20,
-    carbs: 25,
-    fat: 18,
-    trafficLight: 'yellow',
-    category: '국',
-  },
-  {
-    id: '12',
-    name: '미역국',
-    calories: 80,
-    protein: 5,
-    carbs: 6,
-    fat: 3,
-    trafficLight: 'green',
-    category: '국',
-  },
-  // 고기
-  {
-    id: '13',
-    name: '불고기',
-    calories: 350,
-    protein: 28,
-    carbs: 15,
-    fat: 20,
-    trafficLight: 'yellow',
-    category: '고기',
-  },
-  {
-    id: '14',
-    name: '삼겹살',
-    calories: 500,
-    protein: 25,
-    carbs: 2,
-    fat: 45,
-    trafficLight: 'red',
-    category: '고기',
-  },
-  {
-    id: '15',
-    name: '닭가슴살',
-    calories: 165,
-    protein: 31,
-    carbs: 0,
-    fat: 4,
-    trafficLight: 'green',
-    category: '고기',
-  },
-  {
-    id: '16',
-    name: '치킨',
-    calories: 450,
-    protein: 35,
-    carbs: 15,
-    fat: 28,
-    trafficLight: 'red',
-    category: '고기',
-  },
-  {
-    id: '17',
-    name: '제육볶음',
-    calories: 380,
-    protein: 22,
-    carbs: 20,
-    fat: 24,
-    trafficLight: 'yellow',
-    category: '고기',
-  },
-  // 채소/샐러드
-  {
-    id: '18',
-    name: '샐러드',
-    calories: 80,
-    protein: 3,
-    carbs: 10,
-    fat: 3,
-    trafficLight: 'green',
-    category: '채소',
-  },
-  {
-    id: '19',
-    name: '시금치나물',
-    calories: 50,
-    protein: 4,
-    carbs: 5,
-    fat: 2,
-    trafficLight: 'green',
-    category: '채소',
-  },
-  {
-    id: '20',
-    name: '콩나물무침',
-    calories: 40,
-    protein: 4,
-    carbs: 4,
-    fat: 1,
-    trafficLight: 'green',
-    category: '채소',
-  },
-  // 분식
-  {
-    id: '21',
-    name: '떡볶이',
-    calories: 380,
-    protein: 6,
-    carbs: 65,
-    fat: 10,
-    trafficLight: 'red',
-    category: '분식',
-  },
-  {
-    id: '22',
-    name: '순대',
-    calories: 250,
-    protein: 12,
-    carbs: 30,
-    fat: 10,
-    trafficLight: 'yellow',
-    category: '분식',
-  },
-  {
-    id: '23',
-    name: '튀김',
-    calories: 300,
-    protein: 5,
-    carbs: 35,
-    fat: 16,
-    trafficLight: 'red',
-    category: '분식',
-  },
-  // 음료
-  {
-    id: '24',
-    name: '아메리카노',
-    calories: 10,
-    protein: 0,
-    carbs: 2,
-    fat: 0,
-    trafficLight: 'green',
-    category: '음료',
-  },
-  {
-    id: '25',
-    name: '카페라떼',
-    calories: 150,
-    protein: 8,
-    carbs: 12,
-    fat: 8,
-    trafficLight: 'yellow',
-    category: '음료',
-  },
-  {
-    id: '26',
-    name: '콜라',
-    calories: 140,
-    protein: 0,
-    carbs: 35,
-    fat: 0,
-    trafficLight: 'red',
-    category: '음료',
-  },
+// DB 조회 실패 시 사용하는 기본 음식 데이터
+const FALLBACK_FOODS: FoodItem[] = [
+  { id: '1', name: '흰쌀밥', calories: 300, protein: 6, carbs: 65, fat: 1, trafficLight: 'yellow', category: '밥' },
+  { id: '2', name: '현미밥', calories: 280, protein: 7, carbs: 58, fat: 2, trafficLight: 'green', category: '밥' },
+  { id: '3', name: '비빔밥', calories: 550, protein: 18, carbs: 65, fat: 12, trafficLight: 'yellow', category: '밥' },
+  { id: '4', name: '라면', calories: 500, protein: 10, carbs: 70, fat: 18, trafficLight: 'red', category: '면' },
+  { id: '5', name: '된장찌개', calories: 120, protein: 9, carbs: 8, fat: 5, trafficLight: 'green', category: '국' },
+  { id: '6', name: '김치찌개', calories: 150, protein: 12, carbs: 10, fat: 6, trafficLight: 'green', category: '국' },
+  { id: '7', name: '불고기', calories: 350, protein: 28, carbs: 15, fat: 20, trafficLight: 'yellow', category: '고기' },
+  { id: '8', name: '닭가슴살', calories: 165, protein: 31, carbs: 0, fat: 4, trafficLight: 'green', category: '고기' },
+  { id: '9', name: '삼겹살', calories: 500, protein: 25, carbs: 2, fat: 45, trafficLight: 'red', category: '고기' },
+  { id: '10', name: '샐러드', calories: 80, protein: 3, carbs: 10, fat: 3, trafficLight: 'green', category: '채소' },
+  { id: '11', name: '떡볶이', calories: 380, protein: 6, carbs: 65, fat: 10, trafficLight: 'red', category: '분식' },
+  { id: '12', name: '아메리카노', calories: 10, protein: 0, carbs: 2, fat: 0, trafficLight: 'green', category: '음료' },
 ];
 
 // 식사 타입
@@ -315,8 +61,8 @@ const MEAL_TYPES = [
   { id: 'snack', label: '간식', icon: '🍪' },
 ];
 
-// 카테고리
-const CATEGORIES = ['전체', '밥', '면', '국', '고기', '채소', '분식', '음료'];
+// 기본 카테고리 (DB 카테고리가 비었을 때 폴백)
+const DEFAULT_CATEGORIES = ['전체', '밥', '면', '국', '고기', '채소', '분식', '음료'];
 
 interface SelectedFood extends FoodItem {
   portion: number;
@@ -332,15 +78,63 @@ export default function FoodSearchScreen() {
   const [selectedMealType, setSelectedMealType] = useState('lunch');
   const [selectedFoods, setSelectedFoods] = useState<SelectedFood[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [dbFoods, setDbFoods] = useState<FoodItem[]>([]);
+  const [foodsLoading, setFoodsLoading] = useState(true);
+
+  // DB에서 음식 데이터 로드
+  const loadFoods = useCallback(async () => {
+    setFoodsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('foods')
+        .select('id, name, category, calories, protein, carbs, fat, traffic_light')
+        .order('name')
+        .limit(200);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setDbFoods(
+          data.map((row) => ({
+            id: row.id,
+            name: row.name,
+            calories: row.calories ?? 0,
+            protein: row.protein ?? 0,
+            carbs: row.carbs ?? 0,
+            fat: row.fat ?? 0,
+            trafficLight: (row.traffic_light as TrafficLight) ?? 'yellow',
+            category: row.category ?? '기타',
+          }))
+        );
+      }
+    } catch (err) {
+      nutritionLogger.error('Failed to load foods from DB:', err);
+    } finally {
+      setFoodsLoading(false);
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    loadFoods();
+  }, [loadFoods]);
+
+  // DB 데이터 있으면 사용, 없으면 폴백
+  const foodDatabase = dbFoods.length > 0 ? dbFoods : FALLBACK_FOODS;
+
+  // DB에서 가져온 카테고리 동적 생성
+  const categories = useMemo(() => {
+    const cats = new Set(foodDatabase.map((f) => f.category));
+    return ['전체', ...Array.from(cats).sort()];
+  }, [foodDatabase]);
 
   // 필터링된 음식 목록
   const filteredFoods = useMemo(() => {
-    return FOOD_DATABASE.filter((food) => {
+    return foodDatabase.filter((food) => {
       const matchesSearch = food.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === '전체' || food.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, foodDatabase]);
 
   // 총 영양 정보
   const totalNutrition = useMemo(() => {
@@ -502,7 +296,7 @@ export default function FoodSearchScreen() {
         style={styles.categoryScroll}
         contentContainerStyle={styles.categoryContent}
       >
-        {CATEGORIES.map((category) => (
+        {(categories.length > 1 ? categories : DEFAULT_CATEGORIES).map((category) => (
           <TouchableOpacity
             key={category}
             style={[
@@ -530,7 +324,14 @@ export default function FoodSearchScreen() {
 
       {/* 음식 목록 */}
       <ScrollView style={styles.foodList} showsVerticalScrollIndicator={false}>
-        {filteredFoods.length === 0 ? (
+        {foodsLoading ? (
+          <View style={styles.emptyState}>
+            <ActivityIndicator size="small" color={moduleColors.nutrition.dark} />
+            <Text style={[styles.emptyText, { color: colors.mutedForeground, marginTop: 8 }]}>
+              음식 데이터를 불러오는 중...
+            </Text>
+          </View>
+        ) : filteredFoods.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
               검색 결과가 없습니다

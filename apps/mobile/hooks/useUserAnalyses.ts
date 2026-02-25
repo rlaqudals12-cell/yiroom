@@ -45,11 +45,29 @@ export interface BodyAnalysisResult {
   createdAt: Date;
 }
 
+export interface HairAnalysisResult {
+  id: string;
+  hairType: string;
+  overallScore: number;
+  damageLevel: number;
+  concerns: string[];
+  createdAt: Date;
+}
+
+export interface MakeupAnalysisResult {
+  id: string;
+  makeupStyle: string;
+  colorRecommendations: Record<string, unknown>;
+  createdAt: Date;
+}
+
 interface UseUserAnalysesReturn {
   analyses: AnalysisSummary[];
   personalColor: PersonalColorResult | null;
   skinAnalysis: SkinAnalysisResult | null;
   bodyAnalysis: BodyAnalysisResult | null;
+  hairAnalysis: HairAnalysisResult | null;
+  makeupAnalysis: MakeupAnalysisResult | null;
   isLoading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
@@ -63,6 +81,8 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
   const [personalColor, setPersonalColor] = useState<PersonalColorResult | null>(null);
   const [skinAnalysis, setSkinAnalysis] = useState<SkinAnalysisResult | null>(null);
   const [bodyAnalysis, setBodyAnalysis] = useState<BodyAnalysisResult | null>(null);
+  const [hairAnalysis, setHairAnalysis] = useState<HairAnalysisResult | null>(null);
+  const [makeupAnalysis, setMakeupAnalysis] = useState<MakeupAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -158,6 +178,57 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
           });
         }
 
+        // 헤어 분석 결과
+        const { data: hairData, error: hairError } = await supabase
+          .from('hair_analyses')
+          .select('id, hair_type, overall_score, damage_level, concerns, created_at')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (hairData && !hairError) {
+          const hair: HairAnalysisResult = {
+            id: hairData.id,
+            hairType: hairData.hair_type,
+            overallScore: hairData.overall_score,
+            damageLevel: hairData.damage_level,
+            concerns: hairData.concerns || [],
+            createdAt: new Date(hairData.created_at),
+          };
+          setHairAnalysis(hair);
+          results.push({
+            id: hair.id,
+            type: 'skin', // 일반적 분석 타입으로 표시
+            createdAt: hair.createdAt,
+            summary: `헤어 점수 ${hair.overallScore}점`,
+            skinScore: hair.overallScore,
+          });
+        }
+
+        // 메이크업 분석 결과
+        const { data: makeupData, error: makeupError } = await supabase
+          .from('makeup_analyses')
+          .select('id, makeup_style, color_recommendations, created_at')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (makeupData && !makeupError) {
+          const makeup: MakeupAnalysisResult = {
+            id: makeupData.id,
+            makeupStyle: makeupData.makeup_style,
+            colorRecommendations: makeupData.color_recommendations || {},
+            createdAt: new Date(makeupData.created_at),
+          };
+          setMakeupAnalysis(makeup);
+          results.push({
+            id: makeup.id,
+            type: 'personal-color', // 분석 타입으로 표시
+            createdAt: makeup.createdAt,
+            summary: `메이크업 분석`,
+          });
+        }
+
         setAnalyses(results);
       } catch (err) {
         // AbortError는 정상적인 취소이므로 무시
@@ -196,6 +267,8 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
     personalColor,
     skinAnalysis,
     bodyAnalysis,
+    hairAnalysis,
+    makeupAnalysis,
     isLoading,
     error,
     refetch: fetchAnalyses,
