@@ -5,7 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { RefreshCw, Thermometer } from 'lucide-react-native';
+import { Bookmark, RefreshCw, Thermometer } from 'lucide-react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Image } from 'expo-image';
 import {
@@ -15,12 +15,15 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { useTheme } from '@/lib/theme';
 
+import type { Season as ClothingSeason } from '../../lib/inventory/types';
+import { useSavedOutfits } from '../../lib/inventory/useInventory';
 import {
   useClosetMatcher,
   type OutfitSuggestion,
@@ -72,9 +75,11 @@ export default function RecommendScreen() {
     personalColor,
     bodyType,
   });
+  const { saveOutfit, outfits: savedOutfits } = useSavedOutfits();
 
   const [outfit, setOutfit] = useState<OutfitSuggestion | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // generateOutfit을 먼저 정의 (useEffect에서 사용)
   const generateOutfit = useCallback(() => {
@@ -113,6 +118,73 @@ export default function RecommendScreen() {
   const handleItemPress = (id: string) => {
     Haptics.selectionAsync();
     router.push(`/(closet)/${id}`);
+  };
+
+  // 현재 코디의 아이템 ID 수집
+  const getOutfitItemIds = useCallback((): string[] => {
+    if (!outfit) return [];
+    const ids: string[] = [];
+    if (outfit.top) ids.push(outfit.top.item.id);
+    if (outfit.bottom) ids.push(outfit.bottom.item.id);
+    if (outfit.outer) ids.push(outfit.outer.item.id);
+    if (outfit.shoes) ids.push(outfit.shoes.item.id);
+    if (outfit.bag) ids.push(outfit.bag.item.id);
+    if (outfit.accessory) ids.push(outfit.accessory.item.id);
+    return ids;
+  }, [outfit]);
+
+  // 현재 코디가 이미 저장되었는지 확인
+  const isOutfitAlreadySaved = useCallback((): boolean => {
+    const currentIds = getOutfitItemIds().sort().join(',');
+    if (!currentIds) return false;
+    return savedOutfits.some((saved) => saved.itemIds.sort().join(',') === currentIds);
+  }, [getOutfitItemIds, savedOutfits]);
+
+  // 현재 시즌 → Season[] 변환
+  const getCurrentSeasons = useCallback((): ClothingSeason[] => {
+    const month = new Date().getMonth();
+    if (month >= 2 && month <= 4) return ['spring'];
+    if (month >= 5 && month <= 7) return ['summer'];
+    if (month >= 8 && month <= 10) return ['autumn'];
+    return ['winter'];
+  }, []);
+
+  const handleSaveOutfit = async () => {
+    if (!outfit || isSaving) return;
+
+    if (isOutfitAlreadySaved()) {
+      Alert.alert('알림', '이미 저장된 코디예요.');
+      return;
+    }
+
+    setIsSaving(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const itemIds = getOutfitItemIds();
+    const today = new Date().toLocaleDateString('ko-KR', {
+      month: 'long',
+      day: 'numeric',
+    });
+
+    const result = await saveOutfit({
+      name: `${today} 추천 코디`,
+      description: `${personalColor} / ${bodyType === 'S' ? '스트레이트' : bodyType === 'W' ? '웨이브' : '내추럴'} / ${temp}°C`,
+      itemIds,
+      collageImageUrl: null,
+      occasion: 'casual',
+      season: getCurrentSeasons(),
+      wearCount: 0,
+      lastWornAt: null,
+    });
+
+    setIsSaving(false);
+
+    if (result) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('저장 완료', '코디가 저장되었어요!');
+    } else {
+      Alert.alert('오류', '코디 저장에 실패했어요.');
+    }
   };
 
   const renderOutfitItem = (label: string, item: OutfitSuggestion['top'] | undefined) => {
@@ -263,6 +335,46 @@ export default function RecommendScreen() {
                 ))}
               </View>
             )}
+
+            {/* 코디 저장 버튼 */}
+            <TouchableOpacity
+              style={[
+                styles.saveOutfitButton,
+                {
+                  backgroundColor: isOutfitAlreadySaved()
+                    ? colors.muted
+                    : moduleTheme.body.dark,
+                },
+                isSaving && styles.saveOutfitButtonDisabled,
+              ]}
+              onPress={handleSaveOutfit}
+              disabled={isSaving || isOutfitAlreadySaved()}
+              testID="save-outfit-button"
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color={colors.card} />
+              ) : (
+                <>
+                  <Bookmark
+                    size={18}
+                    color={isOutfitAlreadySaved() ? colors.mutedForeground : colors.card}
+                    fill={isOutfitAlreadySaved() ? colors.mutedForeground : 'none'}
+                  />
+                  <Text
+                    style={[
+                      styles.saveOutfitButtonText,
+                      {
+                        color: isOutfitAlreadySaved()
+                          ? colors.mutedForeground
+                          : colors.card,
+                      },
+                    ]}
+                  >
+                    {isOutfitAlreadySaved() ? '저장됨' : '코디 저장'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.noOutfitContainer}>
@@ -536,6 +648,22 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   emptyButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  saveOutfitButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  saveOutfitButtonDisabled: {
+    opacity: 0.6,
+  },
+  saveOutfitButtonText: {
     fontSize: 15,
     fontWeight: '600',
   },
