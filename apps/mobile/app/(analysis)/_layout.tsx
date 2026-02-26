@@ -209,6 +209,14 @@ export default function AnalysisLayout(): React.JSX.Element {
           title: '분석 이력',
         }}
       />
+      {/* 분석 비교 (제네릭) */}
+      <Stack.Screen
+        name="compare"
+        options={{
+          title: '분석 비교',
+          animation: 'fade_from_bottom',
+        }}
+      />
       {/* Posture 자세 분석 */}
       <Stack.Screen
         name="posture/index"

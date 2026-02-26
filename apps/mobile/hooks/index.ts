@@ -60,3 +60,10 @@ export {
 // 리포트
 export { useWeeklyReport } from './useWeeklyReport';
 export { useMonthlyReport } from './useMonthlyReport';
+
+// 분석 비교
+export {
+  useAnalysisComparison,
+  type ComparisonMetric,
+  type AnalysisComparisonData,
+} from './useAnalysisComparison';

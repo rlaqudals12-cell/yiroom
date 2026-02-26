@@ -44,6 +44,10 @@ export default function ProductsLayout() {
         name="wishlist"
         options={{ title: '위시리스트' }}
       />
+      <Stack.Screen
+        name="recommendations"
+        options={{ title: 'AI 맞춤 추천' }}
+      />
     </Stack>
   );
 }

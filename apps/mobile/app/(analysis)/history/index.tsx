@@ -6,6 +6,7 @@
  */
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeftRight } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
 import {
   View,
@@ -210,10 +211,40 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
           </TouchableOpacity>
         ))}
         <View style={{ flex: 1 }} />
+        {/* 비교 버튼 — 특정 모듈 선택 시 노출 */}
+        {selectedModule !== 'all' && (
+          <TouchableOpacity
+            style={[
+              styles.compareButton,
+              {
+                backgroundColor: brand.primary + '18',
+                borderRadius: radii.md,
+              },
+            ]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push(`/(analysis)/compare?module=${selectedModule}` as `/${string}`);
+            }}
+            testID="compare-button"
+          >
+            <ArrowLeftRight size={14} color={brand.primary} />
+            <Text
+              style={{
+                fontSize: typography.size.xs,
+                fontWeight: '600',
+                color: brand.primary,
+                marginLeft: 4,
+              }}
+            >
+              비교
+            </Text>
+          </TouchableOpacity>
+        )}
         <Text
           style={{
             fontSize: typography.size.xs,
             color: colors.mutedForeground,
+            marginLeft: spacing.sm,
           }}
         >
           {items.length}건
@@ -320,5 +351,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
+  },
+  compareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
 });
