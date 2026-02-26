@@ -14,10 +14,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { useTheme } from '@/lib/theme';
 
 import { useCloset, type ClothingCategory, CLOTHING_CATEGORY_LABELS } from '../../lib/inventory';
@@ -36,7 +38,7 @@ const FILTER_OPTIONS: { key: FilterCategory; label: string }[] = [
 ];
 
 export default function ClosetScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const router = useRouter();
 
   const { items, isLoading, error: _error, toggleFavorite, refetch } = useCloset();
@@ -78,9 +80,18 @@ export default function ClosetScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <View style={styles.statsContainer}>
+            <SkeletonCard style={{ flex: 1, height: 70 }} />
+            <SkeletonCard style={{ flex: 1, height: 70 }} />
+            <SkeletonCard style={{ flex: 1, height: 70 }} />
+          </View>
+          <SkeletonText style={{ width: '90%', height: 36, alignSelf: 'center' }} />
+          <View style={styles.gridRow}>
+            <SkeletonCard style={{ width: '48%', height: 180, marginTop: 16, marginLeft: 16 }} />
+            <SkeletonCard style={{ width: '48%', height: 180, marginTop: 16, marginRight: 16 }} />
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -89,24 +100,24 @@ export default function ClosetScreen() {
   return (
     <SafeAreaView
       testID="closet-screen"
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
       {/* 통계 헤더 */}
-      <View style={styles.statsContainer}>
-        <View style={[styles.statCard, isDark && styles.statCardDark]}>
-          <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.total}</Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>전체</Text>
-        </View>
-        <View style={[styles.statCard, isDark && styles.statCardDark]}>
-          <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.favorites}</Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>즐겨찾기</Text>
-        </View>
-        <View style={[styles.statCard, isDark && styles.statCardDark]}>
-          <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.categories}</Text>
-          <Text style={[styles.statLabel, isDark && styles.textMuted]}>카테고리</Text>
-        </View>
-      </View>
+      <Animated.View entering={FadeInUp.duration(350)} style={styles.statsContainer}>
+        <GlassCard style={styles.statCard}>
+          <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.total}</Text>
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>전체</Text>
+        </GlassCard>
+        <GlassCard style={styles.statCard}>
+          <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.favorites}</Text>
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>즐겨찾기</Text>
+        </GlassCard>
+        <GlassCard style={styles.statCard}>
+          <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.categories}</Text>
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>카테고리</Text>
+        </GlassCard>
+      </Animated.View>
 
       {/* 카테고리 필터 */}
       <View style={styles.filterContainer}>
@@ -120,7 +131,7 @@ export default function ClosetScreen() {
             <TouchableOpacity
               style={[
                 styles.filterChip,
-                isDark && styles.filterChipDark,
+                { backgroundColor: colors.muted },
                 selectedCategory === item.key && styles.filterChipSelected,
               ]}
               onPress={() => handleCategoryPress(item.key)}
@@ -128,7 +139,7 @@ export default function ClosetScreen() {
               <Text
                 style={[
                   styles.filterChipText,
-                  isDark && styles.textMuted,
+                  { color: colors.mutedForeground },
                   selectedCategory === item.key && styles.filterChipTextSelected,
                 ]}
               >
@@ -143,7 +154,7 @@ export default function ClosetScreen() {
       {filteredItems.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>👗</Text>
-          <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             {selectedCategory === 'all'
               ? '옷장이 비어있어요'
               : `${FILTER_OPTIONS.find((f) => f.key === selectedCategory)?.label} 아이템이 없어요`}
@@ -163,7 +174,7 @@ export default function ClosetScreen() {
           onRefresh={refetch}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={[styles.itemCard, isDark && styles.itemCardDark]}
+              style={[styles.itemCard, { backgroundColor: colors.card }]}
               onPress={() => handleItemPress(item.id)}
             >
               <View style={styles.itemImageContainer}>
@@ -175,7 +186,7 @@ export default function ClosetScreen() {
                     transition={200}
                   />
                 ) : (
-                  <View style={[styles.itemPlaceholder, isDark && styles.placeholderDark]}>
+                  <View style={[styles.itemPlaceholder, { backgroundColor: colors.muted }]}>
                     <Text style={styles.placeholderText}>📷</Text>
                   </View>
                 )}
@@ -185,16 +196,16 @@ export default function ClosetScreen() {
                 >
                   <Heart
                     size={18}
-                    color={item.isFavorite ? '#ef4444' : '#999'}
+                    color={item.isFavorite ? '#ef4444' : colors.mutedForeground}
                     fill={item.isFavorite ? '#ef4444' : 'transparent'}
                   />
                 </TouchableOpacity>
               </View>
               <View style={styles.itemInfo}>
-                <Text style={[styles.itemName, isDark && styles.textLight]} numberOfLines={1}>
+                <Text style={[styles.itemName, { color: colors.foreground }]} numberOfLines={1}>
                   {item.name}
                 </Text>
-                <Text style={[styles.itemCategory, isDark && styles.textMuted]}>
+                <Text style={[styles.itemCategory, { color: colors.mutedForeground }]}>
                   {CLOTHING_CATEGORY_LABELS[item.subCategory as ClothingCategory] ||
                     item.subCategory}
                 </Text>
@@ -215,15 +226,9 @@ export default function ClosetScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -233,22 +238,15 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
     padding: 14,
     alignItems: 'center',
-  },
-  statCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   statValue: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111',
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
     marginTop: 2,
   },
   filterContainer: {
@@ -261,12 +259,8 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#e5e5e5',
     borderRadius: 20,
     marginRight: 8,
-  },
-  filterChipDark: {
-    backgroundColor: '#2a2a2a',
   },
   filterChipSelected: {
     backgroundColor: '#8b5cf6',
@@ -274,7 +268,6 @@ const styles = StyleSheet.create({
   filterChipText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
   },
   filterChipTextSelected: {
     color: '#fff',
@@ -289,12 +282,8 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     width: '48%',
-    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
-  },
-  itemCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   itemImageContainer: {
     width: '100%',
@@ -308,12 +297,8 @@ const styles = StyleSheet.create({
   itemPlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  placeholderDark: {
-    backgroundColor: '#2a2a2a',
   },
   placeholderText: {
     fontSize: 32,
@@ -335,12 +320,10 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 2,
   },
   itemCategory: {
     fontSize: 12,
-    color: '#666',
   },
   emptyContainer: {
     flex: 1,
@@ -354,7 +337,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
-    color: '#666',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -384,11 +366,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

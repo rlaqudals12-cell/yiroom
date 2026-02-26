@@ -12,9 +12,11 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { moduleColors, useTheme } from '@/lib/theme';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { useTheme } from '@/lib/theme';
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
@@ -36,7 +38,8 @@ const QUICK_ADD_FOODS = [
 ];
 
 export default function NutritionRecordScreen() {
-  const { colors } = useTheme();
+  const { colors, module: themeModuleColors } = useTheme();
+  const nutritionColor = themeModuleColors.nutrition.dark;
 
   const [selectedMealType, setSelectedMealType] = useState<MealType>('lunch');
   const [searchText, setSearchText] = useState('');
@@ -88,47 +91,57 @@ export default function NutritionRecordScreen() {
     >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 식사 타입 선택 */}
-        <View style={styles.mealTypeContainer}>
-          {MEAL_TYPES.map((meal) => (
-            <TouchableOpacity
-              key={meal.type}
-              style={[
-                styles.mealTypeButton,
-                { backgroundColor: colors.card },
-                selectedMealType === meal.type && styles.mealTypeButtonActive,
-              ]}
-              onPress={() => setSelectedMealType(meal.type)}
-            >
-              <Text style={styles.mealTypeEmoji}>{meal.emoji}</Text>
-              <Text
+        <Animated.View entering={FadeInUp.duration(350)} style={styles.mealTypeContainer}>
+          {MEAL_TYPES.map((meal) => {
+            const isActive = selectedMealType === meal.type;
+            return (
+              <TouchableOpacity
+                key={meal.type}
                 style={[
-                  styles.mealTypeLabel,
-                  { color: colors.mutedForeground },
-                  selectedMealType === meal.type && styles.mealTypeLabelActive,
+                  styles.mealTypeButton,
+                  { backgroundColor: colors.card },
+                  isActive && {
+                    borderColor: nutritionColor,
+                    backgroundColor: `${nutritionColor}15`,
+                  },
                 ]}
+                onPress={() => setSelectedMealType(meal.type)}
               >
-                {meal.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+                <Text style={styles.mealTypeEmoji}>{meal.emoji}</Text>
+                <Text
+                  style={[
+                    styles.mealTypeLabel,
+                    { color: colors.mutedForeground },
+                    isActive && { color: nutritionColor, fontWeight: '600' },
+                  ]}
+                >
+                  {meal.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </Animated.View>
 
         {/* 촬영 버튼 */}
-        <TouchableOpacity
-          style={[styles.photoButton, { backgroundColor: colors.card }]}
-          onPress={handleTakePhoto}
-        >
-          <Text style={styles.photoIcon}>📷</Text>
-          <View>
-            <Text style={[styles.photoTitle, { color: colors.foreground }]}>음식 촬영하기</Text>
-            <Text style={[styles.photoSubtitle, { color: colors.mutedForeground }]}>
-              AI가 자동으로 음식을 인식합니다
-            </Text>
-          </View>
-        </TouchableOpacity>
+        <Animated.View entering={FadeInUp.delay(60).duration(350)}>
+          <TouchableOpacity onPress={handleTakePhoto}>
+            <GlassCard style={styles.photoButton}>
+              <Text style={styles.photoIcon}>📷</Text>
+              <View>
+                <Text style={[styles.photoTitle, { color: colors.foreground }]}>음식 촬영하기</Text>
+                <Text style={[styles.photoSubtitle, { color: colors.mutedForeground }]}>
+                  AI가 자동으로 음식을 인식합니다
+                </Text>
+              </View>
+            </GlassCard>
+          </TouchableOpacity>
+        </Animated.View>
 
         {/* 검색 */}
-        <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
+        <Animated.View
+          entering={FadeInUp.delay(120).duration(350)}
+          style={[styles.searchContainer, { backgroundColor: colors.card }]}
+        >
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={[styles.searchInput, { color: colors.foreground }]}
@@ -137,33 +150,38 @@ export default function NutritionRecordScreen() {
             value={searchText}
             onChangeText={setSearchText}
           />
-        </View>
+        </Animated.View>
 
         {/* 빠른 추가 */}
-        <View style={[styles.section, { backgroundColor: colors.card }]}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>빠른 추가</Text>
-          <View style={styles.quickAddGrid}>
-            {QUICK_ADD_FOODS.map((food, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[styles.quickAddItem, { backgroundColor: colors.muted }]}
-                onPress={() => handleAddFood(food)}
-              >
-                <Text style={styles.quickAddEmoji}>{food.emoji}</Text>
-                <Text style={[styles.quickAddName, { color: colors.foreground }]} numberOfLines={1}>
-                  {food.name}
-                </Text>
-                <Text style={[styles.quickAddCalories, { color: colors.mutedForeground }]}>
-                  {food.calories} kcal
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+        <Animated.View entering={FadeInUp.delay(180).duration(350)}>
+          <GlassCard style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>빠른 추가</Text>
+            <View style={styles.quickAddGrid}>
+              {QUICK_ADD_FOODS.map((food, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.quickAddItem, { backgroundColor: colors.muted }]}
+                  onPress={() => handleAddFood(food)}
+                >
+                  <Text style={styles.quickAddEmoji}>{food.emoji}</Text>
+                  <Text
+                    style={[styles.quickAddName, { color: colors.foreground }]}
+                    numberOfLines={1}
+                  >
+                    {food.name}
+                  </Text>
+                  <Text style={[styles.quickAddCalories, { color: colors.mutedForeground }]}>
+                    {food.calories} kcal
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </GlassCard>
+        </Animated.View>
 
         {/* 추가된 음식 */}
         {addedFoods.length > 0 && (
-          <View style={[styles.section, { backgroundColor: colors.card }]}>
+          <GlassCard style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>추가된 음식</Text>
             {addedFoods.map((food, index) => (
               <View
@@ -184,9 +202,11 @@ export default function NutritionRecordScreen() {
             ))}
             <View style={styles.totalRow}>
               <Text style={[styles.totalLabel, { color: colors.foreground }]}>총 칼로리</Text>
-              <Text style={styles.totalValue}>{totalCalories} kcal</Text>
+              <Text style={[styles.totalValue, { color: nutritionColor }]}>
+                {totalCalories} kcal
+              </Text>
             </View>
-          </View>
+          </GlassCard>
         )}
       </ScrollView>
 
@@ -197,7 +217,10 @@ export default function NutritionRecordScreen() {
           { backgroundColor: colors.background, borderTopColor: colors.border },
         ]}
       >
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+        <TouchableOpacity
+          style={[styles.saveButton, { backgroundColor: nutritionColor }]}
+          onPress={handleSave}
+        >
           <Text style={styles.saveButtonText}>기록 저장</Text>
         </TouchableOpacity>
       </View>
@@ -226,10 +249,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  mealTypeButtonActive: {
-    borderColor: moduleColors.nutrition.dark,
-    backgroundColor: '#f0fdf4',
-  },
+  mealTypeButtonActive: {},
   mealTypeEmoji: {
     fontSize: 24,
     marginBottom: 4,
@@ -238,10 +258,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
   },
-  mealTypeLabelActive: {
-    color: moduleColors.nutrition.dark,
-    fontWeight: '600',
-  },
+  mealTypeLabelActive: {},
   photoButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -346,7 +363,6 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: moduleColors.nutrition.dark,
   },
   footer: {
     position: 'absolute',
@@ -357,7 +373,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   saveButton: {
-    backgroundColor: moduleColors.nutrition.dark,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

@@ -11,11 +11,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { useTheme } from '@/lib/theme';
 
 import {
@@ -33,7 +35,7 @@ import { useChallenges, useJoinChallenge } from '../../lib/challenges/useChallen
 type TabType = 'explore' | 'my';
 
 export default function ChallengesScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabType>('explore');
@@ -80,7 +82,7 @@ export default function ChallengesScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.challengeCard, isDark && styles.challengeCardDark]}
+        style={[styles.challengeCard, { backgroundColor: colors.card }]}
         onPress={() => handleView(item.id)}
       >
         <View style={styles.cardHeader}>
@@ -108,25 +110,25 @@ export default function ChallengesScreen() {
           </View>
         </View>
 
-        <Text style={[styles.cardTitle, isDark && styles.textLight]}>{item.name}</Text>
+        <Text style={[styles.cardTitle, { color: colors.foreground }]}>{item.name}</Text>
         {item.description && (
-          <Text style={[styles.cardDescription, isDark && styles.textMuted]} numberOfLines={2}>
+          <Text style={[styles.cardDescription, { color: colors.mutedForeground }]} numberOfLines={2}>
             {item.description}
           </Text>
         )}
 
         <View style={styles.cardMeta}>
-          <Text style={[styles.metaText, isDark && styles.textMuted]}>
+          <Text style={[styles.metaText, { color: colors.mutedForeground }]}>
             {item.durationDays}일 · {item.rewardXp} XP
           </Text>
         </View>
 
         {participating ? (
           <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
+            <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
               <View style={[styles.progressFill, { width: `${progress}%` }]} />
             </View>
-            <Text style={[styles.progressText, isDark && styles.textMuted]}>{progress}% 완료</Text>
+            <Text style={[styles.progressText, { color: colors.mutedForeground }]}>{progress}% 완료</Text>
           </View>
         ) : (
           <TouchableOpacity
@@ -150,7 +152,7 @@ export default function ChallengesScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.challengeCard, isDark && styles.challengeCardDark]}
+        style={[styles.challengeCard, { backgroundColor: colors.card }]}
         onPress={() => handleView(item.challengeId)}
       >
         <View style={styles.cardHeader}>
@@ -169,15 +171,15 @@ export default function ChallengesScreen() {
           </View>
         </View>
 
-        <Text style={[styles.cardTitle, isDark && styles.textLight]}>{challenge.name}</Text>
+        <Text style={[styles.cardTitle, { color: colors.foreground }]}>{challenge.name}</Text>
 
         <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
+          <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
           <View style={styles.progressMeta}>
-            <Text style={[styles.progressText, isDark && styles.textMuted]}>{progress}% 완료</Text>
-            <Text style={[styles.daysText, isDark && styles.textMuted]}>
+            <Text style={[styles.progressText, { color: colors.mutedForeground }]}>{progress}% 완료</Text>
+            <Text style={[styles.daysText, { color: colors.mutedForeground }]}>
               {daysRemaining}일 남음
             </Text>
           </View>
@@ -188,9 +190,16 @@ export default function ChallengesScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <View style={styles.statsContainer}>
+            <SkeletonCard style={{ flex: 1, height: 80 }} />
+            <SkeletonCard style={{ flex: 1, height: 80 }} />
+            <SkeletonCard style={{ flex: 1, height: 80 }} />
+          </View>
+          <SkeletonText style={{ width: 200, height: 40, alignSelf: 'center', marginTop: 16 }} />
+          <SkeletonCard style={{ height: 120, marginHorizontal: 16, marginTop: 16 }} />
+          <SkeletonCard style={{ height: 120, marginHorizontal: 16, marginTop: 12 }} />
         </View>
       </SafeAreaView>
     );
@@ -199,40 +208,40 @@ export default function ChallengesScreen() {
   return (
     <SafeAreaView
       testID="challenges-screen"
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
       {/* 통계 카드 */}
       {stats && (
-        <View style={styles.statsContainer}>
-          <View style={[styles.statCard, isDark && styles.statCardDark]}>
+        <Animated.View entering={FadeInUp.duration(350)} style={styles.statsContainer}>
+          <GlassCard style={styles.statCard}>
             <Text style={styles.statIcon}>🔥</Text>
-            <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.inProgress}</Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>진행 중</Text>
-          </View>
-          <View style={[styles.statCard, isDark && styles.statCardDark]}>
+            <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.inProgress}</Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>진행 중</Text>
+          </GlassCard>
+          <GlassCard style={styles.statCard}>
             <Text style={styles.statIcon}>🏆</Text>
-            <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.completed}</Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>완료</Text>
-          </View>
-          <View style={[styles.statCard, isDark && styles.statCardDark]}>
+            <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.completed}</Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>완료</Text>
+          </GlassCard>
+          <GlassCard style={styles.statCard}>
             <Text style={styles.statIcon}>🎯</Text>
-            <Text style={[styles.statValue, isDark && styles.textLight]}>{stats.total}</Text>
-            <Text style={[styles.statLabel, isDark && styles.textMuted]}>전체</Text>
-          </View>
-        </View>
+            <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.total}</Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>전체</Text>
+          </GlassCard>
+        </Animated.View>
       )}
 
       {/* 탭 */}
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, { backgroundColor: colors.muted }]}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'explore' && styles.tabActive]}
+          style={[styles.tab, activeTab === 'explore' && [styles.tabActive, { backgroundColor: colors.card }]]}
           onPress={() => handleTabChange('explore')}
         >
           <Text
             style={[
               styles.tabText,
-              isDark && styles.textMuted,
+              { color: colors.mutedForeground },
               activeTab === 'explore' && styles.tabTextActive,
             ]}
           >
@@ -240,13 +249,13 @@ export default function ChallengesScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'my' && styles.tabActive]}
+          style={[styles.tab, activeTab === 'my' && [styles.tabActive, { backgroundColor: colors.card }]]}
           onPress={() => handleTabChange('my')}
         >
           <Text
             style={[
               styles.tabText,
-              isDark && styles.textMuted,
+              { color: colors.mutedForeground },
               activeTab === 'my' && styles.tabTextActive,
             ]}
           >
@@ -268,7 +277,7 @@ export default function ChallengesScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>🎯</Text>
-              <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
                 현재 참여 가능한 챌린지가 없어요
               </Text>
             </View>
@@ -286,7 +295,7 @@ export default function ChallengesScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>🔥</Text>
-              <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
                 진행 중인 챌린지가 없어요
               </Text>
               <TouchableOpacity
@@ -306,15 +315,9 @@ export default function ChallengesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -324,13 +327,8 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
     padding: 14,
     alignItems: 'center',
-  },
-  statCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   statIcon: {
     fontSize: 24,
@@ -339,18 +337,15 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111',
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
     marginTop: 2,
   },
   tabContainer: {
     flexDirection: 'row',
     marginHorizontal: 16,
     marginBottom: 8,
-    backgroundColor: '#e5e5e5',
     borderRadius: 12,
     padding: 4,
   },
@@ -360,13 +355,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
   },
-  tabActive: {
-    backgroundColor: '#fff',
-  },
+  tabActive: {},
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
   },
   tabTextActive: {
     color: '#8b5cf6',
@@ -376,12 +368,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   challengeCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
-  },
-  challengeCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -417,12 +405,10 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 4,
   },
   cardDescription: {
     fontSize: 14,
-    color: '#666',
     lineHeight: 20,
     marginBottom: 10,
   },
@@ -431,14 +417,12 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: 13,
-    color: '#666',
   },
   progressContainer: {
     marginTop: 8,
   },
   progressBar: {
     height: 8,
-    backgroundColor: '#e5e5e5',
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 6,
@@ -454,11 +438,9 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
-    color: '#666',
   },
   daysText: {
     fontSize: 12,
-    color: '#666',
   },
   joinButton: {
     backgroundColor: '#8b5cf6',
@@ -484,7 +466,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
-    color: '#666',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -498,11 +479,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

@@ -12,10 +12,12 @@ import {
   ScrollView,
   Pressable,
   StyleSheet,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import {
   calculateProgress,
   DOMAIN_COLORS,
@@ -24,6 +26,7 @@ import {
 } from '@/lib/challenges';
 import { useChallenges, useJoinChallenge } from '@/lib/challenges/useChallenges';
 import { useAppPreferencesStore } from '@/lib/stores';
+import { useTheme } from '@/lib/theme';
 
 // 챌린지 상세 뷰 타입 (UI 표시용)
 interface ChallengeDetail {
@@ -73,6 +76,7 @@ const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
 export default function ChallengeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { colors } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
   // API 훅 사용
@@ -199,18 +203,21 @@ export default function ChallengeDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6B7280" />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <SkeletonText style={{ width: 200, height: 28, marginBottom: 12 }} />
+        <SkeletonText style={{ width: 280, height: 16, marginBottom: 24 }} />
+        <SkeletonCard style={{ height: 120, width: '90%', marginBottom: 16 }} />
+        <SkeletonCard style={{ height: 80, width: '90%' }} />
       </View>
     );
   }
 
   if (!challenge) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>챌린지를 찾을 수 없습니다.</Text>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>돌아가기</Text>
+      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.mutedForeground }]}>챌린지를 찾을 수 없습니다.</Text>
+        <Pressable onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.foreground }]}>
+          <Text style={[styles.backButtonText, { color: colors.background }]}>돌아가기</Text>
         </Pressable>
       </View>
     );
@@ -232,58 +239,60 @@ export default function ChallengeDetailScreen() {
 
       <ScrollView
         testID="challenge-detail-screen"
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         showsVerticalScrollIndicator={false}
       >
         {/* 헤더 섹션 */}
-        <View style={styles.headerSection}>
-          <View style={styles.badgeRow}>
-            <View style={[styles.badge, { backgroundColor: domain.color + '20' }]}>
-              <Text>{domain.icon}</Text>
-              <Text style={[styles.badgeText, { color: domain.color }]}>{domain.label}</Text>
+        <Animated.View entering={FadeIn.duration(400)}>
+          <GlassCard style={{ ...styles.headerSection, borderBottomColor: colors.border }}>
+            <View style={styles.badgeRow}>
+              <View style={[styles.badge, { backgroundColor: domain.color + '20' }]}>
+                <Text>{domain.icon}</Text>
+                <Text style={[styles.badgeText, { color: domain.color }]}>{domain.label}</Text>
+              </View>
+              <View style={[styles.badge, { backgroundColor: difficulty.color + '20' }]}>
+                <Text style={[styles.badgeText, { color: difficulty.color }]}>
+                  {difficulty.label}
+                </Text>
+              </View>
             </View>
-            <View style={[styles.badge, { backgroundColor: difficulty.color + '20' }]}>
-              <Text style={[styles.badgeText, { color: difficulty.color }]}>
-                {difficulty.label}
-              </Text>
-            </View>
-          </View>
 
-          <Text style={styles.title}>{challenge.title}</Text>
-          <Text style={styles.description}>{challenge.description}</Text>
+            <Text style={[styles.title, { color: colors.foreground }]}>{challenge.title}</Text>
+            <Text style={[styles.description, { color: colors.mutedForeground }]}>{challenge.description}</Text>
 
-          <View style={styles.statsRow}>
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{challenge.participants.toLocaleString()}</Text>
-              <Text style={styles.statLabel}>참가자</Text>
+            <View style={[styles.statsRow, { borderTopColor: colors.border }]}>
+              <View style={styles.stat}>
+                <Text style={[styles.statValue, { color: colors.foreground }]}>{challenge.participants.toLocaleString()}</Text>
+                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>참가자</Text>
+              </View>
+              <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.stat}>
+                <Text style={[styles.statValue, { color: colors.foreground }]}>{daysRemaining}일</Text>
+                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>남음</Text>
+              </View>
+              <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.stat}>
+                <Text style={[styles.statValue, { color: colors.foreground }]}>{challenge.rewards.points}P</Text>
+                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>보상</Text>
+              </View>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{daysRemaining}일</Text>
-              <Text style={styles.statLabel}>남음</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{challenge.rewards.points}P</Text>
-              <Text style={styles.statLabel}>보상</Text>
-            </View>
-          </View>
-        </View>
+          </GlassCard>
+        </Animated.View>
 
         {/* 진행 상황 */}
         {challenge.isJoined && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>내 진행 상황</Text>
-            <View style={styles.progressCard}>
+          <Animated.View entering={FadeInUp.delay(100).duration(400)} style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>내 진행 상황</Text>
+            <GlassCard style={styles.progressCard}>
               <View style={styles.progressHeader}>
-                <Text style={styles.progressValue}>
+                <Text style={[styles.progressValue, { color: colors.mutedForeground }]}>
                   {challenge.currentValue.toLocaleString()} /{' '}
                   {challenge.targetValue.toLocaleString()}
                   {challenge.targetUnit}
                 </Text>
-                <Text style={styles.progressPercent}>{progressPercent}%</Text>
+                <Text style={[styles.progressPercent, { color: colors.foreground }]}>{progressPercent}%</Text>
               </View>
-              <View style={styles.progressBarContainer}>
+              <View style={[styles.progressBarContainer, { backgroundColor: colors.muted }]}>
                 <View
                   style={[
                     styles.progressBar,
@@ -304,19 +313,20 @@ export default function ChallengeDetailScreen() {
               >
                 <Text style={styles.logButtonText}>오늘 기록하기</Text>
               </Pressable>
-            </View>
-          </View>
+            </GlassCard>
+          </Animated.View>
         )}
 
         {/* 마일스톤 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>마일스톤</Text>
-          <View style={styles.milestones}>
+        <Animated.View entering={FadeInUp.delay(200).duration(400)} style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>마일스톤</Text>
+          <GlassCard style={styles.milestones}>
             {challenge.milestones.map((milestone, index) => (
               <View key={index} style={styles.milestoneItem}>
                 <View
                   style={[
                     styles.milestoneIcon,
+                    { backgroundColor: colors.muted },
                     milestone.completed && { backgroundColor: domain.color },
                   ]}
                 >
@@ -325,42 +335,43 @@ export default function ChallengeDetailScreen() {
                   </Text>
                 </View>
                 <View style={styles.milestoneContent}>
-                  <Text style={styles.milestoneDay}>{milestone.day}일차</Text>
-                  <Text style={styles.milestoneTarget}>
+                  <Text style={[styles.milestoneDay, { color: colors.foreground }]}>{milestone.day}일차</Text>
+                  <Text style={[styles.milestoneTarget, { color: colors.mutedForeground }]}>
                     {milestone.target.toLocaleString()}
                     {challenge.targetUnit} 달성
                   </Text>
                 </View>
               </View>
             ))}
-          </View>
-        </View>
+          </GlassCard>
+        </Animated.View>
 
         {/* 규칙 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>챌린지 규칙</Text>
-          <View style={styles.rulesCard}>
+        <Animated.View entering={FadeInUp.delay(300).duration(400)} style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>챌린지 규칙</Text>
+          <GlassCard style={styles.rulesCard}>
             {challenge.rules.map((rule, index) => (
               <View key={index} style={styles.ruleItem}>
-                <Text style={styles.ruleBullet}>•</Text>
-                <Text style={styles.ruleText}>{rule}</Text>
+                <Text style={[styles.ruleBullet, { color: colors.mutedForeground }]}>•</Text>
+                <Text style={[styles.ruleText, { color: colors.mutedForeground }]}>{rule}</Text>
               </View>
             ))}
-          </View>
-        </View>
+          </GlassCard>
+        </Animated.View>
 
         {/* 리더보드 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>순위</Text>
-          <View style={styles.leaderboard}>
+        <Animated.View entering={FadeInUp.delay(400).duration(400)} style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>순위</Text>
+          <GlassCard style={styles.leaderboard}>
             {challenge.leaderboard.map((entry) => (
               <View
                 key={entry.userId}
-                style={[styles.leaderboardItem, entry.rank <= 3 && styles.leaderboardItemTop]}
+                style={[styles.leaderboardItem, { borderBottomColor: colors.border }, entry.rank <= 3 && styles.leaderboardItemTop]}
               >
                 <Text
                   style={[
                     styles.leaderboardRank,
+                    { color: colors.foreground },
                     entry.rank === 1 && { color: '#FFD700' },
                     entry.rank === 2 && { color: '#C0C0C0' },
                     entry.rank === 3 && { color: '#CD7F32' },
@@ -368,19 +379,19 @@ export default function ChallengeDetailScreen() {
                 >
                   {entry.rank}
                 </Text>
-                <Text style={styles.leaderboardName}>{entry.userName}</Text>
-                <Text style={styles.leaderboardProgress}>{entry.progress}%</Text>
+                <Text style={[styles.leaderboardName, { color: colors.foreground }]}>{entry.userName}</Text>
+                <Text style={[styles.leaderboardProgress, { color: colors.mutedForeground }]}>{entry.progress}%</Text>
               </View>
             ))}
-          </View>
-        </View>
+          </GlassCard>
+        </Animated.View>
 
         {/* 하단 여백 */}
         <View style={{ height: 100 }} />
       </ScrollView>
 
       {/* 하단 버튼 */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <Pressable
           onPress={handleJoinToggle}
           disabled={isJoining}
@@ -390,13 +401,9 @@ export default function ChallengeDetailScreen() {
             pressed && { opacity: 0.8 },
           ]}
         >
-          {isJoining ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
-          ) : (
-            <Text style={styles.joinButtonText}>
-              {challenge.isJoined ? '챌린지 포기' : '참가하기'}
-            </Text>
-          )}
+          <Text style={[styles.joinButtonText, isJoining && { opacity: 0.7 }]}>
+            {isJoining ? '참가 중...' : challenge.isJoined ? '챌린지 포기' : '참가하기'}
+          </Text>
         </Pressable>
       </View>
     </>
@@ -406,7 +413,6 @@ export default function ChallengeDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
   },
   loadingContainer: {
     flex: 1,
@@ -421,24 +427,19 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#6B7280',
     marginBottom: 16,
   },
   backButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: '#1F2937',
     borderRadius: 8,
   },
   backButtonText: {
-    color: '#FFFFFF',
     fontWeight: '600',
   },
   headerSection: {
-    backgroundColor: '#FFFFFF',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
   },
   badgeRow: {
     flexDirection: 'row',
@@ -460,12 +461,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1F2937',
     marginBottom: 8,
   },
   description: {
     fontSize: 14,
-    color: '#6B7280',
     lineHeight: 20,
     marginBottom: 16,
   },
@@ -474,7 +473,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
   },
   stat: {
     alignItems: 'center',
@@ -482,17 +480,14 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1F2937',
   },
   statLabel: {
     fontSize: 12,
-    color: '#6B7280',
     marginTop: 2,
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: '#E5E7EB',
   },
   section: {
     padding: 20,
@@ -500,12 +495,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
     marginBottom: 12,
   },
   progressCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
     padding: 16,
   },
   progressHeader: {
@@ -515,16 +507,13 @@ const styles = StyleSheet.create({
   },
   progressValue: {
     fontSize: 14,
-    color: '#4B5563',
   },
   progressPercent: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1F2937',
   },
   progressBarContainer: {
     height: 8,
-    backgroundColor: '#E5E7EB',
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 16,
@@ -539,13 +528,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontWeight: '600',
     fontSize: 14,
   },
   milestones: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
     padding: 16,
   },
   milestoneItem: {
@@ -557,13 +544,12 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   milestoneIconText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontWeight: '600',
     fontSize: 12,
   },
@@ -573,15 +559,11 @@ const styles = StyleSheet.create({
   milestoneDay: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1F2937',
   },
   milestoneTarget: {
     fontSize: 12,
-    color: '#6B7280',
   },
   rulesCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
     padding: 16,
   },
   ruleItem: {
@@ -589,18 +571,14 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   ruleBullet: {
-    color: '#6B7280',
     marginRight: 8,
   },
   ruleText: {
     flex: 1,
     fontSize: 14,
-    color: '#4B5563',
     lineHeight: 20,
   },
   leaderboard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
     overflow: 'hidden',
   },
   leaderboardItem: {
@@ -608,7 +586,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
   },
   leaderboardItemTop: {
     backgroundColor: '#FFFBEB',
@@ -617,17 +594,14 @@ const styles = StyleSheet.create({
     width: 32,
     fontSize: 16,
     fontWeight: '700',
-    color: '#1F2937',
   },
   leaderboardName: {
     flex: 1,
     fontSize: 14,
-    color: '#1F2937',
   },
   leaderboardProgress: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
   },
   bottomBar: {
     position: 'absolute',
@@ -635,9 +609,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 16,
-    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
   },
   joinButton: {
     paddingVertical: 14,
@@ -648,7 +620,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EF4444',
   },
   joinButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontWeight: '600',
     fontSize: 16,
   },

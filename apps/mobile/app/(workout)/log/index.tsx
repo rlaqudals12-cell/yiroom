@@ -15,10 +15,11 @@ import {
   TextInput,
   ScrollView,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GlassCard } from '@/components/ui/GlassCard';
 import { useWorkoutData } from '@/hooks/useWorkoutData';
 import { useTheme } from '@/lib/theme';
 
@@ -48,7 +49,8 @@ const INTENSITY_OPTIONS = [
 const DURATION_OPTIONS = [15, 30, 45, 60, 90];
 
 export default function WorkoutLogScreen() {
-  const { colors, module: moduleColors } = useTheme();
+  const { colors, spacing, module: moduleColors } = useTheme();
+  const workoutColor = moduleColors.workout.base;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const { todayWorkout } = useWorkoutData();
@@ -208,7 +210,7 @@ export default function WorkoutLogScreen() {
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* 운동 선택 섹션 */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInUp.duration(350)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             오늘 어떤 운동을 했나요?
           </Text>
@@ -221,8 +223,8 @@ export default function WorkoutLogScreen() {
                   style={[
                     styles.exerciseChip,
                     {
-                      backgroundColor: isSelected ? moduleColors.workout.base : colors.card,
-                      borderColor: isSelected ? moduleColors.workout.base : colors.border,
+                      backgroundColor: isSelected ? workoutColor : colors.card,
+                      borderColor: isSelected ? workoutColor : colors.border,
                     },
                   ]}
                   onPress={() => handleExerciseToggle(exercise.id)}
@@ -239,10 +241,10 @@ export default function WorkoutLogScreen() {
               );
             })}
           </View>
-        </View>
+        </Animated.View>
 
         {/* 운동 시간 섹션 */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInUp.delay(60).duration(350)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>운동 시간</Text>
           <View style={styles.durationGrid}>
             {DURATION_OPTIONS.map((mins) => {
@@ -253,8 +255,8 @@ export default function WorkoutLogScreen() {
                   style={[
                     styles.durationChip,
                     {
-                      backgroundColor: isSelected ? moduleColors.workout.base : colors.card,
-                      borderColor: isSelected ? moduleColors.workout.base : colors.border,
+                      backgroundColor: isSelected ? workoutColor : colors.card,
+                      borderColor: isSelected ? workoutColor : colors.border,
                     },
                   ]}
                   onPress={() => handleDurationSelect(mins)}
@@ -271,10 +273,10 @@ export default function WorkoutLogScreen() {
               );
             })}
           </View>
-        </View>
+        </Animated.View>
 
         {/* 운동 강도 섹션 */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInUp.delay(120).duration(350)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>강도</Text>
           <View style={styles.intensityGrid}>
             {INTENSITY_OPTIONS.map((option) => {
@@ -285,8 +287,8 @@ export default function WorkoutLogScreen() {
                   style={[
                     styles.intensityChip,
                     {
-                      backgroundColor: isSelected ? moduleColors.workout.base : colors.card,
-                      borderColor: isSelected ? moduleColors.workout.base : colors.border,
+                      backgroundColor: isSelected ? workoutColor : colors.card,
+                      borderColor: isSelected ? workoutColor : colors.border,
                     },
                   ]}
                   onPress={() => handleIntensitySelect(option.id)}
@@ -303,10 +305,10 @@ export default function WorkoutLogScreen() {
               );
             })}
           </View>
-        </View>
+        </Animated.View>
 
         {/* 메모 섹션 */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInUp.delay(180).duration(350)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>메모 (선택)</Text>
           <TextInput
             style={[
@@ -324,17 +326,19 @@ export default function WorkoutLogScreen() {
             multiline
             numberOfLines={3}
           />
-        </View>
+        </Animated.View>
 
         {/* 예상 칼로리 */}
-        <View style={[styles.calorieCard, { backgroundColor: colors.card }]}>
-          <Text style={[styles.calorieLabel, { color: colors.mutedForeground }]}>
-            예상 소모 칼로리
-          </Text>
-          <Text style={[styles.calorieValue, { color: moduleColors.workout.dark }]}>
-            {estimatedCalories} kcal
-          </Text>
-        </View>
+        <Animated.View entering={FadeInUp.delay(240).duration(350)}>
+          <GlassCard style={styles.calorieCard}>
+            <Text style={[styles.calorieLabel, { color: colors.mutedForeground }]}>
+              예상 소모 칼로리
+            </Text>
+            <Text style={[styles.calorieValue, { color: workoutColor }]}>
+              {estimatedCalories} kcal
+            </Text>
+          </GlassCard>
+        </Animated.View>
       </ScrollView>
 
       {/* 저장 버튼 */}
@@ -342,17 +346,15 @@ export default function WorkoutLogScreen() {
         <TouchableOpacity
           style={[
             styles.saveButton,
-            { backgroundColor: moduleColors.workout.base },
+            { backgroundColor: workoutColor },
             isLoading && styles.saveButtonDisabled,
           ]}
           onPress={handleSave}
           disabled={isLoading}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.saveButtonText}>운동 기록하기</Text>
-          )}
+          <Text style={[styles.saveButtonText, isLoading && { opacity: 0.7 }]}>
+            {isLoading ? '저장 중...' : '운동 기록하기'}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -428,7 +430,6 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   calorieCard: {
-    borderRadius: 16,
     padding: 20,
     alignItems: 'center',
     marginBottom: 20,

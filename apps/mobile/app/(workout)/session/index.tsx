@@ -4,9 +4,12 @@
  */
 import { router } from 'expo-router';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { useWorkoutData, type WorkoutExercise } from '@/hooks/useWorkoutData';
 import { useTheme } from '@/lib/theme';
 
@@ -21,7 +24,8 @@ const DEFAULT_EXERCISES: WorkoutExercise[] = [
 type SessionState = 'ready' | 'exercising' | 'resting' | 'completed';
 
 export default function WorkoutSessionScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, spacing, module: moduleColors } = useTheme();
+  const workoutColor = moduleColors.workout.base;
   const { todayWorkout, isLoading: workoutLoading } = useWorkoutData();
 
   // DB 플랜이 있으면 사용, 없으면 기본 운동
@@ -125,14 +129,12 @@ export default function WorkoutSessionScreen() {
   if (workoutLoading && sessionState === 'ready') {
     return (
       <SafeAreaView
-        style={[styles.container, isDark && styles.containerDark]}
+        style={[styles.container, { backgroundColor: colors.background }]}
         testID="workout-session-screen"
       >
         <View style={styles.mainContent}>
-          <ActivityIndicator size="large" color={colors.foreground} />
-          <Text style={[styles.stateLabel, isDark && styles.textMuted, { marginTop: 16 }]}>
-            운동 플랜을 불러오는 중...
-          </Text>
+          <SkeletonText style={{ width: 120, height: 32, marginBottom: spacing.md }} />
+          <SkeletonText style={{ width: 200, height: 16 }} />
         </View>
       </SafeAreaView>
     );
@@ -142,30 +144,39 @@ export default function WorkoutSessionScreen() {
   if (sessionState === 'ready') {
     return (
       <SafeAreaView
-        style={[styles.container, isDark && styles.containerDark]}
+        style={[styles.container, { backgroundColor: colors.background }]}
         testID="workout-session-screen"
       >
         <View style={styles.readyContent}>
-          <Text style={[styles.readyTitle, isDark && styles.textLight]}>운동 준비</Text>
-          <Text style={[styles.readySubtitle, isDark && styles.textMuted]}>
-            {todayWorkout?.exercises.length
-              ? `오늘의 플랜: ${exercises.length}개 운동`
-              : `기본 운동 ${exercises.length}개가 준비되어 있어요`}
-          </Text>
+          <Animated.View entering={FadeInUp.duration(400)}>
+            <Text style={[styles.readyTitle, { color: colors.foreground }]}>운동 준비</Text>
+            <Text style={[styles.readySubtitle, { color: colors.mutedForeground }]}>
+              {todayWorkout?.exercises.length
+                ? `오늘의 플랜: ${exercises.length}개 운동`
+                : `기본 운동 ${exercises.length}개가 준비되어 있어요`}
+            </Text>
+          </Animated.View>
 
           <View style={styles.exercisePreview}>
             {exercises.map((ex, index) => (
-              <View key={ex.id} style={[styles.previewItem, isDark && styles.previewItemDark]}>
-                <Text style={[styles.previewNumber, isDark && styles.textMuted]}>{index + 1}</Text>
-                <Text style={[styles.previewName, isDark && styles.textLight]}>{ex.name}</Text>
-                <Text style={[styles.previewSets, isDark && styles.textMuted]}>
-                  {ex.sets}세트 x {ex.reps}회
-                </Text>
-              </View>
+              <Animated.View key={ex.id} entering={FadeInUp.delay(index * 60).duration(350)}>
+                <GlassCard style={styles.previewItem}>
+                  <Text style={[styles.previewNumber, { color: colors.mutedForeground }]}>
+                    {index + 1}
+                  </Text>
+                  <Text style={[styles.previewName, { color: colors.foreground }]}>{ex.name}</Text>
+                  <Text style={[styles.previewSets, { color: colors.mutedForeground }]}>
+                    {ex.sets}세트 x {ex.reps}회
+                  </Text>
+                </GlassCard>
+              </Animated.View>
             ))}
           </View>
 
-          <TouchableOpacity style={styles.startButton} onPress={handleStartSession}>
+          <TouchableOpacity
+            style={[styles.startButton, { backgroundColor: workoutColor }]}
+            onPress={handleStartSession}
+          >
             <Text style={styles.startButtonText}>운동 시작</Text>
           </TouchableOpacity>
         </View>
@@ -176,37 +187,41 @@ export default function WorkoutSessionScreen() {
   // 완료 화면
   if (sessionState === 'completed') {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.completedContent}>
-          <Text style={styles.completedEmoji}>🎉</Text>
-          <Text style={[styles.completedTitle, isDark && styles.textLight]}>운동 완료!</Text>
-          <Text style={[styles.completedSubtitle, isDark && styles.textMuted]}>
-            오늘도 열심히 했어요
-          </Text>
+          <Animated.View entering={FadeIn.duration(500)} style={{ alignItems: 'center' }}>
+            <Text style={styles.completedEmoji}>🎉</Text>
+            <Text style={[styles.completedTitle, { color: colors.foreground }]}>운동 완료!</Text>
+            <Text style={[styles.completedSubtitle, { color: colors.mutedForeground }]}>
+              오늘도 열심히 했어요
+            </Text>
+          </Animated.View>
 
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, isDark && styles.textLight]}>
-                {formatTime(totalTime)}
-              </Text>
-              <Text style={[styles.statLabel, isDark && styles.textMuted]}>총 시간</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, isDark && styles.textLight]}>
-                {Math.round(caloriesBurned)}
-              </Text>
-              <Text style={[styles.statLabel, isDark && styles.textMuted]}>칼로리</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, isDark && styles.textLight]}>
-                {exercises.length}
-              </Text>
-              <Text style={[styles.statLabel, isDark && styles.textMuted]}>운동 수</Text>
-            </View>
-          </View>
+          <Animated.View entering={FadeInUp.delay(200).duration(400)}>
+            <GlassCard style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: workoutColor }]}>
+                  {formatTime(totalTime)}
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>총 시간</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: workoutColor }]}>
+                  {Math.round(caloriesBurned)}
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>칼로리</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: workoutColor }]}>
+                  {exercises.length}
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>운동 수</Text>
+              </View>
+            </GlassCard>
+          </Animated.View>
 
           <TouchableOpacity
-            style={styles.finishButton}
+            style={[styles.finishButton, { backgroundColor: workoutColor }]}
             onPress={() => router.replace('/(tabs)/records')}
           >
             <Text style={styles.finishButtonText}>완료</Text>
@@ -218,13 +233,13 @@ export default function WorkoutSessionScreen() {
 
   // 운동 중 / 휴식 중 화면
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* 상단 정보 */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleEndSession}>
-          <Text style={[styles.endText, isDark && styles.textMuted]}>종료</Text>
+          <Text style={[styles.endText, { color: colors.mutedForeground }]}>종료</Text>
         </TouchableOpacity>
-        <Text style={[styles.totalTimeText, isDark && styles.textMuted]}>
+        <Text style={[styles.totalTimeText, { color: colors.mutedForeground }]}>
           {formatTime(totalTime)}
         </Text>
       </View>
@@ -233,9 +248,9 @@ export default function WorkoutSessionScreen() {
       <View style={styles.mainContent}>
         {sessionState === 'resting' ? (
           <>
-            <Text style={[styles.stateLabel, isDark && styles.textMuted]}>휴식 중</Text>
-            <Text style={[styles.timerText, isDark && styles.textLight]}>{formatTime(timer)}</Text>
-            <Text style={[styles.nextExerciseText, isDark && styles.textMuted]}>
+            <Text style={[styles.stateLabel, { color: colors.mutedForeground }]}>휴식 중</Text>
+            <Text style={[styles.timerText, { color: workoutColor }]}>{formatTime(timer)}</Text>
+            <Text style={[styles.nextExerciseText, { color: colors.mutedForeground }]}>
               다음:{' '}
               {currentSet < currentExercise.sets
                 ? `${currentExercise.name} ${currentSet + 1}세트`
@@ -243,22 +258,29 @@ export default function WorkoutSessionScreen() {
                   ? exercises[currentExerciseIndex + 1].name
                   : '마지막 운동 완료!'}
             </Text>
-            <TouchableOpacity style={styles.skipButton} onPress={handleSkipRest}>
-              <Text style={styles.skipButtonText}>휴식 건너뛰기</Text>
+            <TouchableOpacity
+              style={[styles.skipButton, { borderColor: colors.border }]}
+              onPress={handleSkipRest}
+            >
+              <Text style={[styles.skipButtonText, { color: colors.mutedForeground }]}>
+                휴식 건너뛰기
+              </Text>
             </TouchableOpacity>
           </>
         ) : (
           <>
-            <Text style={[styles.exerciseName, isDark && styles.textLight]}>
+            <Text style={[styles.exerciseName, { color: colors.foreground }]}>
               {currentExercise.name}
             </Text>
-            <Text style={[styles.setInfo, isDark && styles.textMuted]}>
+            <Text style={[styles.setInfo, { color: colors.mutedForeground }]}>
               {currentSet} / {currentExercise.sets} 세트
             </Text>
-            <Text style={[styles.repsText, isDark && styles.textLight]}>
+            <Text style={[styles.repsText, { color: workoutColor }]}>
               {currentExercise.reps}회
             </Text>
-            <Text style={[styles.timerSmall, isDark && styles.textMuted]}>{formatTime(timer)}</Text>
+            <Text style={[styles.timerSmall, { color: colors.mutedForeground }]}>
+              {formatTime(timer)}
+            </Text>
           </>
         )}
       </View>
@@ -266,18 +288,22 @@ export default function WorkoutSessionScreen() {
       {/* 하단 버튼 */}
       {sessionState === 'exercising' && (
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.completeButton} onPress={handleCompleteSet}>
+          <TouchableOpacity
+            style={[styles.completeButton, { backgroundColor: workoutColor }]}
+            onPress={handleCompleteSet}
+          >
             <Text style={styles.completeButtonText}>세트 완료</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {/* 진행 표시 */}
-      <View style={styles.progressBar}>
+      <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
         <View
           style={[
             styles.progressFill,
             {
+              backgroundColor: workoutColor,
               width: `${((currentExerciseIndex * 3 + currentSet) / (exercises.length * 3)) * 100}%`,
             },
           ]}
@@ -290,10 +316,6 @@ export default function WorkoutSessionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   header: {
     flexDirection: 'row',
@@ -304,11 +326,9 @@ const styles = StyleSheet.create({
   },
   endText: {
     fontSize: 16,
-    color: '#666',
   },
   totalTimeText: {
     fontSize: 16,
-    color: '#666',
   },
   mainContent: {
     flex: 1,
@@ -318,57 +338,47 @@ const styles = StyleSheet.create({
   },
   stateLabel: {
     fontSize: 18,
-    color: '#666',
     marginBottom: 16,
   },
   timerText: {
     fontSize: 72,
     fontWeight: '700',
-    color: '#ef4444',
     marginBottom: 16,
   },
   timerSmall: {
     fontSize: 24,
-    color: '#666',
     marginTop: 24,
   },
   nextExerciseText: {
     fontSize: 16,
-    color: '#666',
     marginBottom: 32,
   },
   skipButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
   },
   skipButtonText: {
-    color: '#666',
     fontSize: 14,
   },
   exerciseName: {
     fontSize: 36,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
   },
   setInfo: {
     fontSize: 18,
-    color: '#666',
     marginBottom: 32,
   },
   repsText: {
     fontSize: 72,
     fontWeight: '700',
-    color: '#ef4444',
   },
   footer: {
     padding: 20,
   },
   completeButton: {
-    backgroundColor: '#ef4444',
     borderRadius: 12,
     padding: 18,
     alignItems: 'center',
@@ -380,13 +390,10 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 4,
-    backgroundColor: '#e5e5e5',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#ef4444',
   },
-  // Ready screen
   readyContent: {
     flex: 1,
     padding: 20,
@@ -394,13 +401,11 @@ const styles = StyleSheet.create({
   readyTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
     textAlign: 'center',
   },
   readySubtitle: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -411,31 +416,22 @@ const styles = StyleSheet.create({
   previewItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
     padding: 16,
-  },
-  previewItemDark: {
-    backgroundColor: '#1a1a1a',
   },
   previewNumber: {
     width: 32,
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
   },
   previewName: {
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   previewSets: {
     fontSize: 14,
-    color: '#666',
   },
   startButton: {
-    backgroundColor: '#ef4444',
     borderRadius: 12,
     padding: 18,
     alignItems: 'center',
@@ -445,7 +441,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
-  // Completed screen
   completedContent: {
     flex: 1,
     padding: 20,
@@ -459,17 +454,16 @@ const styles = StyleSheet.create({
   completedTitle: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
   },
   completedSubtitle: {
     fontSize: 16,
-    color: '#666',
     marginBottom: 32,
   },
   statsContainer: {
     flexDirection: 'row',
-    gap: 32,
+    justifyContent: 'space-around',
+    padding: 20,
     marginBottom: 48,
   },
   statItem: {
@@ -478,15 +472,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#ef4444',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: '#666',
   },
   finishButton: {
-    backgroundColor: '#ef4444',
     borderRadius: 12,
     paddingHorizontal: 48,
     paddingVertical: 16,
@@ -495,11 +486,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

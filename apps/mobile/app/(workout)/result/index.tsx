@@ -6,16 +6,12 @@ import { useUser } from '@clerk/clerk-expo';
 import type { WorkoutType } from '@yiroom/shared';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
 import { workoutLogger } from '@/lib/utils/logger';
@@ -70,7 +66,8 @@ const WORKOUT_TYPE_DATA: Record<
 };
 
 export default function WorkoutResultScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, spacing, module: moduleColors } = useTheme();
+  const workoutColor = moduleColors.workout.base;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const { goals, frequency, duration } = useLocalSearchParams<{
@@ -184,26 +181,40 @@ export default function WorkoutResultScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, isDark && styles.containerDark]}>
-        <ActivityIndicator size="large" color="#ef4444" />
-        <Text style={[styles.loadingText, isDark && styles.textLight]}>
-          운동 타입을 분석 중이에요...
-        </Text>
-      </View>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        testID="workout-result-screen"
+      >
+        <View style={styles.loadingContainer}>
+          <SkeletonText style={{ width: 64, height: 64, borderRadius: 32, marginBottom: 16 }} />
+          <SkeletonText style={{ width: 160, height: 20, marginBottom: 8 }} />
+          <SkeletonText style={{ width: 100, height: 32 }} />
+          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
+            운동 타입을 분석 중이에요...
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (!workoutType) {
     return (
-      <View style={[styles.errorContainer, isDark && styles.containerDark]}>
-        <Text style={[styles.errorText, isDark && styles.textLight]}>분석에 실패했습니다.</Text>
-        <TouchableOpacity
-          style={styles.retryButton}
-          onPress={() => router.replace('/(workout)/onboarding')}
-        >
-          <Text style={styles.retryButtonText}>다시 시도하기</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        testID="workout-result-screen"
+      >
+        <View style={styles.errorContainer}>
+          <Text style={[styles.errorText, { color: colors.mutedForeground }]}>
+            분석에 실패했습니다.
+          </Text>
+          <TouchableOpacity
+            style={[styles.retryButton, { backgroundColor: workoutColor }]}
+            onPress={() => router.replace('/(workout)/onboarding')}
+          >
+            <Text style={styles.retryButtonText}>다시 시도하기</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -211,72 +222,95 @@ export default function WorkoutResultScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
       testID="workout-result-screen"
     >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 결과 헤더 */}
-        <View style={styles.resultHeader}>
-          <Text style={styles.resultEmoji}>{typeData.emoji}</Text>
-          <Text style={[styles.resultLabel, isDark && styles.textMuted]}>당신의 운동 타입은</Text>
-          <Text style={[styles.resultType, isDark && styles.textLight]}>{typeData.name}</Text>
-          <Text style={[styles.resultDescription, isDark && styles.textMuted]}>
-            {typeData.description}
-          </Text>
-        </View>
+        <Animated.View entering={FadeIn.duration(500)}>
+          <GlassCard style={styles.resultHeader}>
+            <Text style={styles.resultEmoji}>{typeData.emoji}</Text>
+            <Text style={[styles.resultLabel, { color: colors.mutedForeground }]}>
+              당신의 운동 타입은
+            </Text>
+            <Text style={[styles.resultType, { color: workoutColor }]}>{typeData.name}</Text>
+            <Text style={[styles.resultDescription, { color: colors.mutedForeground }]}>
+              {typeData.description}
+            </Text>
+          </GlassCard>
+        </Animated.View>
 
         {/* 특성 */}
-        <View style={[styles.section, isDark && styles.sectionDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>나의 운동 특성</Text>
-          <View style={styles.tagContainer}>
-            {typeData.characteristics.map((char, index) => (
-              <View key={index} style={styles.tag}>
-                <Text style={styles.tagText}>{char}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
+        <Animated.View entering={FadeInUp.delay(100).duration(400)}>
+          <GlassCard style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>나의 운동 특성</Text>
+            <View style={styles.tagContainer}>
+              {typeData.characteristics.map((char, index) => (
+                <View
+                  key={index}
+                  style={[styles.tag, { backgroundColor: `${workoutColor}20` }]}
+                >
+                  <Text style={[styles.tagText, { color: workoutColor }]}>{char}</Text>
+                </View>
+              ))}
+            </View>
+          </GlassCard>
+        </Animated.View>
 
         {/* 추천 운동 */}
-        <View style={[styles.section, isDark && styles.sectionDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>추천 운동</Text>
-          <View style={styles.exerciseList}>
-            {typeData.recommendedExercises.map((exercise, index) => (
-              <View key={index} style={styles.exerciseItem}>
-                <View style={styles.exerciseBullet} />
-                <Text style={[styles.exerciseName, isDark && styles.textLight]}>{exercise}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
+        <Animated.View entering={FadeInUp.delay(200).duration(400)}>
+          <GlassCard style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>추천 운동</Text>
+            <View style={styles.exerciseList}>
+              {typeData.recommendedExercises.map((exercise, index) => (
+                <View key={index} style={styles.exerciseItem}>
+                  <View style={[styles.exerciseBullet, { backgroundColor: workoutColor }]} />
+                  <Text style={[styles.exerciseName, { color: colors.foreground }]}>
+                    {exercise}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </GlassCard>
+        </Animated.View>
 
         {/* 설정 정보 */}
-        <View style={[styles.section, isDark && styles.sectionDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>운동 설정</Text>
-          <View style={styles.settingRow}>
-            <Text style={[styles.settingLabel, isDark && styles.textMuted]}>빈도</Text>
-            <Text style={[styles.settingValue, isDark && styles.textLight]}>
-              주 {frequency || '3-4'}회
-            </Text>
-          </View>
-          <View style={styles.settingRow}>
-            <Text style={[styles.settingLabel, isDark && styles.textMuted]}>시간</Text>
-            <Text style={[styles.settingValue, isDark && styles.textLight]}>
-              {duration || '30-45'}분
-            </Text>
-          </View>
-        </View>
+        <Animated.View entering={FadeInUp.delay(300).duration(400)}>
+          <GlassCard style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>운동 설정</Text>
+            <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.settingLabel, { color: colors.mutedForeground }]}>빈도</Text>
+              <Text style={[styles.settingValue, { color: colors.foreground }]}>
+                주 {frequency || '3-4'}회
+              </Text>
+            </View>
+            <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.settingLabel, { color: colors.mutedForeground }]}>시간</Text>
+              <Text style={[styles.settingValue, { color: colors.foreground }]}>
+                {duration || '30-45'}분
+              </Text>
+            </View>
+          </GlassCard>
+        </Animated.View>
 
         {/* 버튼 */}
-        <View style={styles.buttons}>
-          <TouchableOpacity style={styles.primaryButton} onPress={handleStartSession}>
+        <Animated.View entering={FadeInUp.delay(400).duration(400)} style={styles.buttons}>
+          <TouchableOpacity
+            style={[styles.primaryButton, { backgroundColor: workoutColor }]}
+            onPress={handleStartSession}
+          >
             <Text style={styles.primaryButtonText}>운동 시작하기</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleGoHome}>
-            <Text style={styles.secondaryButtonText}>홈으로 돌아가기</Text>
+          <TouchableOpacity
+            style={[styles.secondaryButton, { borderColor: colors.border }]}
+            onPress={handleGoHome}
+          >
+            <Text style={[styles.secondaryButtonText, { color: colors.mutedForeground }]}>
+              홈으로 돌아가기
+            </Text>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -285,10 +319,6 @@ export default function WorkoutResultScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   content: {
     padding: 20,
@@ -297,26 +327,21 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
   },
   errorContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f9fc',
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#ef4444',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -330,8 +355,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
     padding: 24,
-    backgroundColor: '#fff',
-    borderRadius: 16,
   },
   resultEmoji: {
     fontSize: 64,
@@ -339,34 +362,25 @@ const styles = StyleSheet.create({
   },
   resultLabel: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 8,
   },
   resultType: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#ef4444',
     marginBottom: 12,
   },
   resultDescription: {
     fontSize: 15,
-    color: '#666',
     textAlign: 'center',
     lineHeight: 24,
   },
   section: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-  },
-  sectionDark: {
-    backgroundColor: '#1a1a1a',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 16,
   },
   tagContainer: {
@@ -375,13 +389,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tag: {
-    backgroundColor: '#fef2f2',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
   },
   tagText: {
-    color: '#ef4444',
     fontSize: 14,
     fontWeight: '500',
   },
@@ -397,11 +409,9 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#ef4444',
   },
   exerciseName: {
     fontSize: 15,
-    color: '#333',
   },
   settingRow: {
     flexDirection: 'row',
@@ -409,23 +419,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   settingLabel: {
     fontSize: 14,
-    color: '#666',
   },
   settingValue: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
   },
   buttons: {
     marginTop: 8,
     gap: 12,
   },
   primaryButton: {
-    backgroundColor: '#ef4444',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -437,19 +443,11 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#666',
     fontSize: 16,
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

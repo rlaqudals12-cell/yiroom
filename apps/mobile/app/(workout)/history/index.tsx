@@ -4,16 +4,12 @@
  */
 import { useUser } from '@clerk/clerk-expo';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { useTheme } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
@@ -40,7 +36,8 @@ interface WeeklyStats {
 }
 
 export default function WorkoutHistoryScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, spacing, module: moduleColors } = useTheme();
+  const workoutColor = moduleColors.workout.base;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -134,9 +131,20 @@ export default function WorkoutHistoryScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#ef4444" />
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        testID="workout-history-screen"
+      >
+        <View style={[styles.scrollView, { gap: spacing.md }]}>
+          <SkeletonText style={{ width: 120, height: 24 }} />
+          <View style={styles.statsGrid}>
+            <SkeletonCard style={{ flex: 1, height: 80 }} />
+            <SkeletonCard style={{ flex: 1, height: 80 }} />
+            <SkeletonCard style={{ flex: 1, height: 80 }} />
+          </View>
+          <SkeletonText style={{ width: 100, height: 24, marginTop: spacing.md }} />
+          <SkeletonCard style={{ height: 120 }} />
+          <SkeletonCard style={{ height: 120 }} />
         </View>
       </SafeAreaView>
     );
@@ -144,7 +152,7 @@ export default function WorkoutHistoryScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
       testID="workout-history-screen"
     >
@@ -161,101 +169,130 @@ export default function WorkoutHistoryScreen() {
       >
         {/* 이번 주 통계 */}
         {weeklyStats && (
-          <View style={styles.statsSection}>
-            <Text style={[styles.statsTitle, isDark && styles.textLight]}>이번 주 통계</Text>
+          <Animated.View entering={FadeInUp.duration(350)} style={styles.statsSection}>
+            <Text style={[styles.statsTitle, { color: colors.foreground }]}>이번 주 통계</Text>
             <View style={styles.statsGrid}>
-              <View style={[styles.statCard, isDark && styles.statCardDark]}>
-                <Text style={styles.statValue}>{weeklyStats.totalWorkouts}</Text>
-                <Text style={[styles.statLabel, isDark && styles.textMuted]}>운동 횟수</Text>
-              </View>
-              <View style={[styles.statCard, isDark && styles.statCardDark]}>
-                <Text style={styles.statValue}>{weeklyStats.totalDuration}</Text>
-                <Text style={[styles.statLabel, isDark && styles.textMuted]}>총 시간 (분)</Text>
-              </View>
-              <View style={[styles.statCard, isDark && styles.statCardDark]}>
-                <Text style={styles.statValue}>{weeklyStats.totalCalories}</Text>
-                <Text style={[styles.statLabel, isDark && styles.textMuted]}>소모 칼로리</Text>
-              </View>
+              <GlassCard style={styles.statCard}>
+                <Text style={[styles.statValue, { color: workoutColor }]}>
+                  {weeklyStats.totalWorkouts}
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>운동 횟수</Text>
+              </GlassCard>
+              <GlassCard style={styles.statCard}>
+                <Text style={[styles.statValue, { color: workoutColor }]}>
+                  {weeklyStats.totalDuration}
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>
+                  총 시간 (분)
+                </Text>
+              </GlassCard>
+              <GlassCard style={styles.statCard}>
+                <Text style={[styles.statValue, { color: workoutColor }]}>
+                  {weeklyStats.totalCalories}
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>
+                  소모 칼로리
+                </Text>
+              </GlassCard>
             </View>
-          </View>
+          </Animated.View>
         )}
 
         {/* 운동 기록 목록 */}
         <View style={styles.logsSection}>
-          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>최근 기록</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>최근 기록</Text>
 
           {logs.length === 0 ? (
-            <View style={[styles.emptyCard, isDark && styles.emptyCardDark]}>
+            <GlassCard style={styles.emptyCard}>
               <Text style={styles.emptyIcon}>🏃</Text>
-              <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+              <Text style={[styles.emptyText, { color: colors.foreground }]}>
                 아직 운동 기록이 없어요
               </Text>
-              <Text style={[styles.emptySubtext, isDark && styles.textMuted]}>
+              <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
                 오늘 첫 운동을 시작해보세요!
               </Text>
-            </View>
+            </GlassCard>
           ) : (
-            logs.map((log) => (
-              <View key={log.id} style={[styles.logCard, isDark && styles.logCardDark]}>
-                <View style={styles.logHeader}>
-                  <Text style={styles.logIcon}>{getMoodIcon(log.mood)}</Text>
-                  <Text style={[styles.logDate, isDark && styles.textLight]}>
-                    {formatDate(log.workout_date)}
-                  </Text>
-                </View>
+            logs.map((log, index) => (
+              <Animated.View
+                key={log.id}
+                entering={FadeInUp.delay(index * 50).duration(350)}
+              >
+                <GlassCard style={styles.logCard}>
+                  <View style={styles.logHeader}>
+                    <Text style={styles.logIcon}>{getMoodIcon(log.mood)}</Text>
+                    <Text style={[styles.logDate, { color: colors.foreground }]}>
+                      {formatDate(log.workout_date)}
+                    </Text>
+                  </View>
 
-                <View style={styles.logStats}>
-                  {log.actual_duration && (
-                    <View style={styles.logStatItem}>
-                      <Text style={[styles.logStatValue, isDark && styles.textLight]}>
-                        {log.actual_duration}분
-                      </Text>
-                      <Text style={[styles.logStatLabel, isDark && styles.textMuted]}>시간</Text>
-                    </View>
-                  )}
-                  {log.actual_calories && (
-                    <View style={styles.logStatItem}>
-                      <Text style={[styles.logStatValue, isDark && styles.textLight]}>
-                        {log.actual_calories}kcal
-                      </Text>
-                      <Text style={[styles.logStatLabel, isDark && styles.textMuted]}>칼로리</Text>
-                    </View>
-                  )}
-                  {log.exercise_logs && log.exercise_logs.length > 0 && (
-                    <View style={styles.logStatItem}>
-                      <Text style={[styles.logStatValue, isDark && styles.textLight]}>
-                        {log.exercise_logs.length}개
-                      </Text>
-                      <Text style={[styles.logStatLabel, isDark && styles.textMuted]}>운동</Text>
-                    </View>
-                  )}
-                </View>
-
-                {log.exercise_logs && log.exercise_logs.length > 0 && (
-                  <View style={styles.exerciseList}>
-                    {log.exercise_logs.slice(0, 4).map((ex, index) => (
-                      <View key={index} style={styles.exerciseChip}>
-                        <Text style={[styles.exerciseChipText, isDark && styles.textMuted]}>
-                          {ex.exercise_name}
+                  <View style={styles.logStats}>
+                    {log.actual_duration && (
+                      <View style={styles.logStatItem}>
+                        <Text style={[styles.logStatValue, { color: colors.foreground }]}>
+                          {log.actual_duration}분
+                        </Text>
+                        <Text style={[styles.logStatLabel, { color: colors.mutedForeground }]}>
+                          시간
                         </Text>
                       </View>
-                    ))}
-                    {log.exercise_logs.length > 4 && (
-                      <View style={styles.exerciseChip}>
-                        <Text style={[styles.exerciseChipText, isDark && styles.textMuted]}>
-                          +{log.exercise_logs.length - 4}
+                    )}
+                    {log.actual_calories && (
+                      <View style={styles.logStatItem}>
+                        <Text style={[styles.logStatValue, { color: colors.foreground }]}>
+                          {log.actual_calories}kcal
+                        </Text>
+                        <Text style={[styles.logStatLabel, { color: colors.mutedForeground }]}>
+                          칼로리
+                        </Text>
+                      </View>
+                    )}
+                    {log.exercise_logs && log.exercise_logs.length > 0 && (
+                      <View style={styles.logStatItem}>
+                        <Text style={[styles.logStatValue, { color: colors.foreground }]}>
+                          {log.exercise_logs.length}개
+                        </Text>
+                        <Text style={[styles.logStatLabel, { color: colors.mutedForeground }]}>
+                          운동
                         </Text>
                       </View>
                     )}
                   </View>
-                )}
 
-                {log.notes && (
-                  <Text style={[styles.logNotes, isDark && styles.textMuted]} numberOfLines={2}>
-                    {log.notes}
-                  </Text>
-                )}
-              </View>
+                  {log.exercise_logs && log.exercise_logs.length > 0 && (
+                    <View style={styles.exerciseList}>
+                      {log.exercise_logs.slice(0, 4).map((ex, exIndex) => (
+                        <View
+                          key={exIndex}
+                          style={[styles.exerciseChip, { backgroundColor: colors.muted }]}
+                        >
+                          <Text style={[styles.exerciseChipText, { color: colors.mutedForeground }]}>
+                            {ex.exercise_name}
+                          </Text>
+                        </View>
+                      ))}
+                      {log.exercise_logs.length > 4 && (
+                        <View
+                          style={[styles.exerciseChip, { backgroundColor: colors.muted }]}
+                        >
+                          <Text style={[styles.exerciseChipText, { color: colors.mutedForeground }]}>
+                            +{log.exercise_logs.length - 4}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  )}
+
+                  {log.notes && (
+                    <Text
+                      style={[styles.logNotes, { color: colors.mutedForeground }]}
+                      numberOfLines={2}
+                    >
+                      {log.notes}
+                    </Text>
+                  )}
+                </GlassCard>
+              </Animated.View>
             ))
           )}
         </View>
@@ -278,15 +315,6 @@ function getWeekStartDate(): Date {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
@@ -298,7 +326,6 @@ const styles = StyleSheet.create({
   statsTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
   statsGrid: {
@@ -307,23 +334,16 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-  },
-  statCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   statValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#ef4444',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
   },
   logsSection: {
     marginBottom: 20,
@@ -331,17 +351,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
   emptyCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
     padding: 40,
     alignItems: 'center',
-  },
-  emptyCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   emptyIcon: {
     fontSize: 48,
@@ -350,21 +364,14 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 4,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#666',
   },
   logCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-  },
-  logCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   logHeader: {
     flexDirection: 'row',
@@ -378,7 +385,6 @@ const styles = StyleSheet.create({
   logDate: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   logStats: {
     flexDirection: 'row',
@@ -391,11 +397,9 @@ const styles = StyleSheet.create({
   logStatValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
   },
   logStatLabel: {
     fontSize: 12,
-    color: '#666',
   },
   exerciseList: {
     flexDirection: 'row',
@@ -406,22 +410,13 @@ const styles = StyleSheet.create({
   exerciseChip: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    backgroundColor: '#f5f5f5',
     borderRadius: 12,
   },
   exerciseChipText: {
     fontSize: 12,
-    color: '#666',
   },
   logNotes: {
     fontSize: 13,
-    color: '#666',
     fontStyle: 'italic',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });
