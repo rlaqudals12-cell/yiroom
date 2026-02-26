@@ -16,7 +16,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GlassCard } from '@/components/ui/GlassCard';
-import { useTheme } from '@/lib/theme';
+import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
@@ -221,7 +221,7 @@ export default function NutritionRecordScreen() {
           style={[styles.saveButton, { backgroundColor: nutritionColor }]}
           onPress={handleSave}
         >
-          <Text style={styles.saveButtonText}>기록 저장</Text>
+          <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>기록 저장</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -251,8 +251,8 @@ const styles = StyleSheet.create({
   },
   mealTypeButtonActive: {},
   mealTypeEmoji: {
-    fontSize: 24,
-    marginBottom: 4,
+    fontSize: typography.size['2xl'],
+    marginBottom: spacing.xs,
   },
   mealTypeLabel: {
     fontSize: 13,
@@ -262,18 +262,18 @@ const styles = StyleSheet.create({
   photoButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 20,
-    gap: 16,
-    marginBottom: 16,
+    gap: spacing.md,
+    marginBottom: spacing.md,
   },
   photoIcon: {
     fontSize: 40,
   },
   photoTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   photoSubtitle: {
     fontSize: 13,
@@ -282,27 +282,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 12,
-    marginBottom: 16,
+    marginBottom: spacing.md,
     gap: 12,
   },
   searchIcon: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
   },
   searchInput: {
     flex: 1,
     fontSize: 15,
   },
   section: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 20,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   quickAddGrid: {
     flexDirection: 'row',
@@ -317,13 +317,13 @@ const styles = StyleSheet.create({
   },
   quickAddEmoji: {
     fontSize: 28,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   quickAddName: {
     fontSize: 13,
     fontWeight: '500',
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   quickAddCalories: {
     fontSize: 11,
@@ -336,32 +336,32 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   addedFoodEmoji: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
   },
   addedFoodName: {
     flex: 1,
     fontSize: 15,
   },
   addedFoodCalories: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   removeButton: {
-    fontSize: 16,
-    padding: 4,
+    fontSize: typography.size.base,
+    padding: spacing.xs,
   },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 16,
-    marginTop: 8,
+    paddingTop: spacing.md,
+    marginTop: spacing.sm,
   },
   totalLabel: {
     fontSize: 15,
     fontWeight: '600',
   },
   totalValue: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: '700',
   },
   footer: {
@@ -374,12 +374,11 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
   },
 });

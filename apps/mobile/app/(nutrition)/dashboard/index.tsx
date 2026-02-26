@@ -18,7 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useNutritionData } from '@/hooks/useNutritionData';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { useTheme } from '@/lib/theme';
+import { useTheme, spacing, radii, typography } from '@/lib/theme';
 import type { SemanticColors } from '@/lib/theme';
 
 // 식사 타입 라벨 매핑
@@ -300,22 +300,22 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   calorieCard: {
     borderRadius: 20,
-    padding: 24,
+    padding: spacing.lg,
     alignItems: 'center',
     marginBottom: 20,
   },
   dateText: {
-    fontSize: 14,
-    marginBottom: 16,
+    fontSize: typography.size.sm,
+    marginBottom: spacing.md,
   },
   calorieRing: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   ringOuter: {
     width: 160,
@@ -341,46 +341,46 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   calorieValue: {
-    fontSize: 36,
+    fontSize: typography.size['4xl'],
     fontWeight: '700',
   },
   calorieUnit: {
-    fontSize: 14,
-    marginTop: 4,
+    fontSize: typography.size.sm,
+    marginTop: spacing.xs,
   },
   remainingText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   section: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 20,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: '600',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   addButton: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '600',
   },
   nutrientItem: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   nutrientHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   nutrientLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '500',
   },
   nutrientValue: {
@@ -397,16 +397,16 @@ const styles = StyleSheet.create({
   },
   emptyMeals: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: spacing.lg,
   },
   emptyEmoji: {
     fontSize: 32,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   emptyText: {
     fontSize: 15,
     fontWeight: '500',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   emptySubtext: {
     fontSize: 13,
@@ -422,11 +422,11 @@ const styles = StyleSheet.create({
     width: 60,
   },
   mealType: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '600',
   },
   mealTime: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 2,
   },
   mealFoods: {
@@ -434,20 +434,20 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   mealFoodText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   mealCalories: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '600',
   },
   recordButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   recordButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
   },
 });

@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import {
   analyzeFood as analyzeFoodWithGemini,
@@ -278,7 +278,9 @@ export default function FoodCameraScreen() {
             style={[styles.permissionButton, { backgroundColor: status.success }]}
             onPress={requestPermission}
           >
-            <Text style={styles.permissionButtonText}>권한 허용</Text>
+            <Text style={[styles.permissionButtonText, { color: colors.overlayForeground }]}>
+              권한 허용
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -458,9 +460,11 @@ export default function FoodCameraScreen() {
             disabled={isSaving || recognizedFoods.length === 0}
           >
             {isSaving ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.overlayForeground} />
             ) : (
-              <Text style={styles.saveButtonText}>기록하기</Text>
+              <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>
+                기록하기
+              </Text>
             )}
           </TouchableOpacity>
         </View>
@@ -489,10 +493,7 @@ export default function FoodCameraScreen() {
             key={meal.id}
             style={[
               styles.mealTypeChip,
-              selectedMealType === meal.id && [
-                styles.mealTypeChipSelected,
-                { backgroundColor: status.success },
-              ],
+              selectedMealType === meal.id && { backgroundColor: status.success },
             ]}
             onPress={() => {
               Haptics.selectionAsync();
@@ -534,30 +535,10 @@ export default function FoodCameraScreen() {
 }
 
 const styles = StyleSheet.create({
+  // --- 카메라 영역 (항상 dark bg → 색상 하드코딩 유지) ---
   container: {
     flex: 1,
     backgroundColor: '#000',
-  },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  permissionText: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  permissionButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  permissionButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   cameraContainer: {
     flex: 1,
@@ -575,39 +556,36 @@ const styles = StyleSheet.create({
     aspectRatio: 4 / 3,
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.5)',
-    borderRadius: 16,
+    borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
   guideText: {
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
+    fontSize: typography.size.sm,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.md,
   },
   mealTypeRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
     backgroundColor: '#111',
   },
   mealTypeChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
     backgroundColor: '#222',
     borderRadius: 20,
-    gap: 4,
-  },
-  mealTypeChipSelected: {
-    backgroundColor: '#22c55e',
+    gap: spacing.xs,
   },
   mealTypeIcon: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   mealTypeLabel: {
     fontSize: 13,
@@ -620,7 +598,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: spacing.lg,
     backgroundColor: '#111',
   },
   galleryButton: {
@@ -629,7 +607,7 @@ const styles = StyleSheet.create({
   },
   galleryButtonText: {
     color: '#ccc',
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   captureButton: {
     width: 72,
@@ -652,19 +630,41 @@ const styles = StyleSheet.create({
   },
   searchButtonText: {
     color: '#ccc',
-    fontSize: 14,
+    fontSize: typography.size.sm,
+  },
+
+  // --- 공통/결과 영역 (테마 의존 → 토큰 사용) ---
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  permissionText: {
+    fontSize: typography.size.base,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  permissionButton: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 12,
+    borderRadius: radii.md,
+  },
+  permissionButtonText: {
+    fontSize: typography.size.base,
+    fontWeight: '600',
   },
   analyzingImage: {
     width: 200,
     height: 200,
-    borderRadius: 16,
-    marginBottom: 24,
+    borderRadius: radii.xl,
+    marginBottom: spacing.lg,
   },
   analyzingSpinner: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   analyzingText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   resultScroll: {
     flex: 1,
@@ -675,75 +675,75 @@ const styles = StyleSheet.create({
   },
   insightCard: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     marginHorizontal: 20,
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   insightText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 20,
   },
   resultSection: {
     padding: 20,
   },
   resultTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: '600',
     marginBottom: 12,
   },
   emptyCard: {
     borderRadius: 12,
-    padding: 24,
+    padding: spacing.lg,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginBottom: 12,
   },
   searchLink: {
-    padding: 8,
+    padding: spacing.sm,
   },
   searchLinkText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '500',
   },
   foodCard: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     marginBottom: 12,
   },
   foodHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   trafficLight: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     marginRight: 12,
   },
   foodInfo: {
     flex: 1,
   },
   foodName: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
   },
   foodCalories: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '500',
   },
   removeButton: {
-    fontSize: 18,
-    padding: 4,
+    fontSize: typography.size.lg,
+    padding: spacing.xs,
   },
   macros: {
     fontSize: 13,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   confidenceBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: 12,
     marginBottom: 12,
   },
@@ -765,31 +765,31 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   portionButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: spacing.xl,
+    height: spacing.xl,
+    borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
   portionButtonText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: '600',
   },
   portionValue: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '500',
     minWidth: 50,
     textAlign: 'center',
   },
   addFoodButton: {
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 12,
     borderStyle: 'dashed',
   },
   addFoodText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   totalCard: {
     borderRadius: 12,
@@ -799,12 +799,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalCalories: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   totalMacros: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   resultFooter: {
     flexDirection: 'row',
@@ -813,18 +813,18 @@ const styles = StyleSheet.create({
   },
   retakeButton: {
     flex: 1,
-    padding: 16,
+    padding: spacing.md,
     borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
   },
   retakeButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '500',
   },
   saveButton: {
     flex: 2,
-    padding: 16,
+    padding: spacing.md,
     borderRadius: 12,
     alignItems: 'center',
   },
@@ -832,8 +832,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
-    color: '#fff',
   },
 });

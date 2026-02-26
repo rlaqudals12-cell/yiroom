@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import {
   lookupBarcode,
@@ -137,7 +137,9 @@ export default function BarcodeScanScreen() {
             style={[styles.permissionButton, { backgroundColor: moduleColors.nutrition.base }]}
             onPress={requestPermission}
           >
-            <Text style={styles.permissionButtonText}>권한 허용</Text>
+            <Text style={[styles.permissionButtonText, { color: colors.overlayForeground }]}>
+              권한 허용
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -188,7 +190,9 @@ export default function BarcodeScanScreen() {
               style={[styles.retryButton, { backgroundColor: moduleColors.nutrition.base }]}
               onPress={handleRetry}
             >
-              <Text style={styles.retryButtonText}>다시 스캔</Text>
+              <Text style={[styles.retryButtonText, { color: colors.overlayForeground }]}>
+                다시 스캔
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.searchButton, { borderColor: colors.border }]}
@@ -317,7 +321,7 @@ export default function BarcodeScanScreen() {
                     <Text
                       style={[
                         styles.mealTypeLabel,
-                        { color: isSelected ? '#fff' : colors.foreground },
+                        { color: isSelected ? colors.overlayForeground : colors.foreground },
                       ]}
                     >
                       {mt.label}
@@ -347,9 +351,11 @@ export default function BarcodeScanScreen() {
             disabled={isSaving}
           >
             {isSaving ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.overlayForeground} />
             ) : (
-              <Text style={styles.saveButtonText}>기록하기</Text>
+              <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>
+                기록하기
+              </Text>
             )}
           </TouchableOpacity>
         </View>
@@ -411,23 +417,22 @@ const styles = StyleSheet.create({
     padding: 40,
   },
   permissionTitle: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   permissionDesc: {
     fontSize: 15,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   permissionButton: {
-    paddingHorizontal: 32,
+    paddingHorizontal: spacing.xl,
     paddingVertical: 14,
     borderRadius: 12,
   },
   permissionButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
   },
   // 로딩
@@ -437,15 +442,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingText: {
-    fontSize: 16,
-    marginTop: 16,
+    fontSize: typography.size.base,
+    marginTop: spacing.md,
   },
   barcodeText: {
-    fontSize: 14,
-    marginTop: 8,
+    fontSize: typography.size.sm,
+    marginTop: spacing.sm,
     fontFamily: 'monospace',
   },
-  // 스캔 오버레이
+  // 스캔 오버레이 (항상 dark bg → 색상 하드코딩 유지)
   overlay: {
     ...StyleSheet.absoluteFillObject,
   },
@@ -498,24 +503,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
     alignItems: 'center',
-    paddingTop: 32,
+    paddingTop: spacing.xl,
   },
   scanGuideText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '500',
   },
   cancelButton: {
-    marginTop: 24,
-    paddingHorizontal: 32,
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.xl,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radii.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
   },
   cancelButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   // 미등록
   notFoundContainer: {
@@ -526,23 +531,23 @@ const styles = StyleSheet.create({
   },
   notFoundEmoji: {
     fontSize: 48,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   notFoundTitle: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   notFoundBarcode: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontFamily: 'monospace',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   notFoundDesc: {
     fontSize: 15,
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   notFoundButtons: {
     gap: 12,
@@ -550,30 +555,29 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
   },
   searchButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
   },
   searchButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   // 결과 화면
   resultScroll: {
     flex: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   productCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 20,
     alignItems: 'center',
     marginBottom: 12,
@@ -585,28 +589,28 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   productName: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     fontWeight: '700',
     textAlign: 'center',
   },
   productBrand: {
-    fontSize: 14,
-    marginTop: 4,
+    fontSize: typography.size.sm,
+    marginTop: spacing.xs,
   },
   sourceLabel: {
-    fontSize: 12,
-    marginTop: 8,
+    fontSize: typography.size.xs,
+    marginTop: spacing.sm,
   },
   // 영양 정보
   nutritionCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 20,
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   servingNote: {
     fontSize: 13,
@@ -614,7 +618,7 @@ const styles = StyleSheet.create({
   },
   macroGrid: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   macroItem: {
     flex: 1,
@@ -623,16 +627,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   macroValue: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: '700',
   },
   macroLabel: {
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: typography.size.xs,
+    marginTop: spacing.xs,
   },
   // 섭취량
   servingCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 20,
     marginBottom: 12,
   },
@@ -640,7 +644,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
+    gap: spacing.lg,
   },
   servingButton: {
     width: 44,
@@ -650,24 +654,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   servingButtonText: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: '600',
   },
   servingValue: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     fontWeight: '600',
     minWidth: 80,
     textAlign: 'center',
   },
   // 식사 타입
   mealTypeCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 20,
     marginBottom: 20,
   },
   mealTypeGrid: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   mealTypeChip: {
     flex: 1,
@@ -677,8 +681,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mealTypeIcon: {
-    fontSize: 20,
-    marginBottom: 4,
+    fontSize: typography.size.xl,
+    marginBottom: spacing.xs,
   },
   mealTypeLabel: {
     fontSize: 13,
@@ -687,32 +691,31 @@ const styles = StyleSheet.create({
   // 하단
   footer: {
     flexDirection: 'row',
-    padding: 16,
+    padding: spacing.md,
     gap: 12,
   },
   rescanButton: {
     flex: 1,
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
   },
   rescanButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '500',
   },
   saveButton: {
     flex: 2,
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   saveButtonDisabled: {
     opacity: 0.6,
   },
   saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
   },
 });

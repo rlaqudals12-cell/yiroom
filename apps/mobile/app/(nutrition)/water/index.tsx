@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { waterLogger } from '../../../lib/utils/logger';
@@ -220,8 +220,7 @@ export default function WaterTrackingScreen() {
                 <Text
                   style={[
                     styles.drinkTypeLabel,
-                    { color: colors.foreground },
-                    selectedDrinkType === drink.id && styles.drinkTypeLabelSelected,
+                    { color: selectedDrinkType === drink.id ? colors.overlayForeground : colors.foreground },
                   ]}
                 >
                   {drink.label}
@@ -312,11 +311,11 @@ const styles = StyleSheet.create({
   },
   progressSection: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   progressIcon: {
     fontSize: 48,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   progressValue: {
     fontSize: 42,
@@ -328,26 +327,26 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   progressBar: {
     height: '100%',
     borderRadius: 4,
   },
   progressLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
     marginBottom: 12,
   },
   drinkTypeGrid: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   drinkTypeChip: {
     flex: 1,
@@ -360,41 +359,38 @@ const styles = StyleSheet.create({
     // backgroundColor and borderColor set inline
   },
   drinkTypeIcon: {
-    fontSize: 24,
-    marginBottom: 4,
+    fontSize: typography.size['2xl'],
+    marginBottom: spacing.xs,
   },
   drinkTypeLabel: {
-    fontSize: 12,
-  },
-  drinkTypeLabelSelected: {
-    color: '#fff',
+    fontSize: typography.size.xs,
   },
   quickAddGrid: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   quickAddButton: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: spacing.md,
     borderRadius: 12,
     borderWidth: 1,
   },
   quickAddText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: '600',
   },
   quickAddUnit: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 2,
   },
   emptyCard: {
     borderRadius: 12,
-    padding: 32,
+    padding: spacing.xl,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   recordsCard: {
     borderRadius: 12,
@@ -409,20 +405,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   recordIcon: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     marginRight: 12,
   },
   recordTime: {
     flex: 1,
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   recordAmount: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '600',
   },
   deleteHint: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
 });

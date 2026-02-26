@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { moduleColors, useTheme } from '@/lib/theme';
+import { moduleColors, useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { nutritionLogger } from '../../../lib/utils/logger';
@@ -279,8 +279,7 @@ export default function FoodSearchScreen() {
             <Text
               style={[
                 styles.mealTypeLabel,
-                { color: colors.mutedForeground },
-                selectedMealType === meal.id && styles.mealTypeLabelSelected,
+                { color: selectedMealType === meal.id ? colors.overlayForeground : colors.mutedForeground },
               ]}
             >
               {meal.label}
@@ -312,8 +311,7 @@ export default function FoodSearchScreen() {
             <Text
               style={[
                 styles.categoryText,
-                { color: colors.mutedForeground },
-                selectedCategory === category && styles.categoryTextSelected,
+                { color: selectedCategory === category ? colors.overlayForeground : colors.mutedForeground },
               ]}
             >
               {category}
@@ -406,9 +404,9 @@ export default function FoodSearchScreen() {
             disabled={isSaving}
           >
             {isSaving ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.overlayForeground} />
             ) : (
-              <Text style={styles.saveButtonText}>기록하기</Text>
+              <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>기록하기</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -422,55 +420,52 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchSection: {
-    padding: 16,
-    paddingBottom: 8,
+    padding: spacing.md,
+    paddingBottom: spacing.sm,
   },
   searchInput: {
     borderRadius: 12,
     padding: 14,
-    fontSize: 16,
+    fontSize: typography.size.base,
     borderWidth: 1,
   },
   mealTypeRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
     paddingBottom: 12,
   },
   mealTypeChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
     borderWidth: 1,
-    gap: 4,
+    gap: spacing.xs,
   },
   mealTypeChipSelected: {
     backgroundColor: moduleColors.nutrition.dark,
     borderColor: moduleColors.nutrition.dark,
   },
   mealTypeIcon: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   mealTypeLabel: {
     fontSize: 13,
-  },
-  mealTypeLabelSelected: {
-    color: '#fff',
   },
   categoryScroll: {
     maxHeight: 44,
   },
   categoryContent: {
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
   },
   categoryChip: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   categoryChipSelected: {
@@ -480,33 +475,30 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 13,
   },
-  categoryTextSelected: {
-    color: '#fff',
-  },
   foodList: {
     flex: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 40,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
     padding: 14,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   foodItemSelected: {
     borderWidth: 2,
     borderColor: moduleColors.nutrition.dark,
   },
   trafficLight: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     marginRight: 12,
   },
   foodInfo: {
@@ -518,12 +510,12 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   foodMeta: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   portionControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   portionButton: {
     width: 28,
@@ -533,14 +525,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   portionButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     color: moduleColors.nutrition.dark,
     fontWeight: '600',
   },
   portionValue: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '500',
-    minWidth: 24,
+    minWidth: spacing.lg,
     textAlign: 'center',
   },
   addBadge: {
@@ -551,7 +543,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addBadgeText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     color: moduleColors.nutrition.dark,
     fontWeight: '600',
   },
@@ -559,24 +551,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: spacing.md,
     borderTopWidth: 1,
   },
   footerInfo: {
     flex: 1,
   },
   footerCount: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginBottom: 2,
   },
   footerCalories: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: '700',
     color: moduleColors.nutrition.dark,
   },
   saveButton: {
     backgroundColor: moduleColors.nutrition.dark,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 14,
     borderRadius: 12,
   },
@@ -584,8 +576,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
   },
 });
