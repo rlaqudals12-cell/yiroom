@@ -565,6 +565,59 @@ export default function ReportsScreen(): React.JSX.Element {
           )}
         </TouchableOpacity>
 
+        {/* 상세 리포트 바로가기 */}
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: spacing.sm,
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: colors.card,
+              borderRadius: radii.xl,
+              padding: spacing.md,
+              alignItems: 'center',
+            }}
+            onPress={() => router.push('/(reports)/weekly')}
+            testID="weekly-report-link"
+          >
+            <Text style={{ fontSize: 24, marginBottom: 4 }}>📊</Text>
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+                color: colors.foreground,
+              }}
+            >
+              주간 리포트
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: colors.card,
+              borderRadius: radii.xl,
+              padding: spacing.md,
+              alignItems: 'center',
+            }}
+            onPress={() => router.push('/(reports)/monthly')}
+            testID="monthly-report-link"
+          >
+            <Text style={{ fontSize: 24, marginBottom: 4 }}>📅</Text>
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+                color: colors.foreground,
+              }}
+            >
+              월간 리포트
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* 인사이트 */}
         <View
           style={{

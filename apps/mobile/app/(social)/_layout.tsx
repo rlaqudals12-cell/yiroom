@@ -42,6 +42,19 @@ export default function SocialLayout() {
           title: '리더보드',
         }}
       />
+      <Stack.Screen
+        name="feed/create"
+        options={{
+          title: '글쓰기',
+          presentation: 'modal',
+        }}
+      />
+      <Stack.Screen
+        name="feed/comments"
+        options={{
+          title: '댓글',
+        }}
+      />
     </Stack>
   );
 }

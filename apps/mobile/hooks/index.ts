@@ -56,3 +56,7 @@ export {
   useCrossModuleInsights,
   type CrossModuleInsight,
 } from './useCrossModuleInsights';
+
+// 리포트
+export { useWeeklyReport } from './useWeeklyReport';
+export { useMonthlyReport } from './useMonthlyReport';

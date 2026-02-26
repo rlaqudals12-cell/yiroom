@@ -136,7 +136,10 @@ export default function FeedScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => router.push({ pathname: '/(social)/feed/comments', params: { activityId: item.id } })}
+            >
               <Text style={styles.actionIcon}>💬</Text>
               <Text style={[styles.actionCount, { color: colors.mutedForeground }]}>
                 {item.comments}
@@ -270,6 +273,18 @@ export default function FeedScreen() {
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
       />
+
+      {/* 글쓰기 FAB */}
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: brand.primary }]}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          router.push('/(social)/feed/create');
+        }}
+        testID="feed-create-fab"
+      >
+        <Text style={[styles.fabIcon, { color: brand.primaryForeground }]}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -460,5 +475,31 @@ const styles = StyleSheet.create({
   footerLoader: {
     paddingVertical: 20,
     alignItems: 'center',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  fabIcon: {
+    fontSize: 28,
+    fontWeight: '300',
+    lineHeight: 30,
   },
 });
