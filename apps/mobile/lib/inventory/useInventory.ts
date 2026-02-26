@@ -235,8 +235,10 @@ interface UseSavedOutfitsResult {
   saveOutfit: (
     outfit: Omit<SavedOutfit, 'id' | 'clerkUserId' | 'createdAt' | 'updatedAt'>
   ) => Promise<SavedOutfit | null>;
+  updateOutfit: (id: string, updates: Partial<Pick<SavedOutfit, 'name' | 'description' | 'itemIds' | 'occasion' | 'season'>>) => Promise<boolean>;
   deleteOutfit: (id: string) => Promise<boolean>;
   recordWear: (id: string) => Promise<boolean>;
+  getOutfitById: (id: string) => SavedOutfit | undefined;
 }
 
 export function useSavedOutfits(): UseSavedOutfitsResult {
@@ -330,6 +332,40 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
     [supabase]
   );
 
+  const updateOutfit = useCallback(
+    async (
+      id: string,
+      updates: Partial<Pick<SavedOutfit, 'name' | 'description' | 'itemIds' | 'occasion' | 'season'>>
+    ): Promise<boolean> => {
+      if (!supabase) return false;
+
+      try {
+        const updateData: Record<string, unknown> = {};
+        if (updates.name !== undefined) updateData.name = updates.name;
+        if (updates.description !== undefined) updateData.description = updates.description;
+        if (updates.itemIds !== undefined) updateData.item_ids = updates.itemIds;
+        if (updates.occasion !== undefined) updateData.occasion = updates.occasion;
+        if (updates.season !== undefined) updateData.season = updates.season;
+
+        const { error: updateError } = await supabase
+          .from('saved_outfits')
+          .update(updateData)
+          .eq('id', id);
+
+        if (updateError) throw updateError;
+
+        setOutfits((prev) =>
+          prev.map((o) => (o.id === id ? { ...o, ...updates } : o))
+        );
+        return true;
+      } catch (err) {
+        closetLogger.error(' updateOutfit error:', err);
+        return false;
+      }
+    },
+    [supabase]
+  );
+
   const recordWear = useCallback(
     async (id: string): Promise<boolean> => {
       if (!supabase) return false;
@@ -368,13 +404,22 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
     [supabase, outfits]
   );
 
+  const getOutfitById = useCallback(
+    (id: string): SavedOutfit | undefined => {
+      return outfits.find((o) => o.id === id);
+    },
+    [outfits]
+  );
+
   return {
     outfits,
     isLoading,
     error,
     refetch: fetchOutfits,
     saveOutfit,
+    updateOutfit,
     deleteOutfit,
     recordWear,
+    getOutfitById,
   };
 }

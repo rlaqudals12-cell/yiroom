@@ -36,6 +36,32 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 // -------------------------------------------------------------------
+// mock: useWeather (날씨 서비스)
+// -------------------------------------------------------------------
+jest.mock('../../../lib/weather', () => ({
+  useWeather: jest.fn(() => ({
+    weather: {
+      region: 'seoul',
+      current: {
+        temp: 15,
+        feelsLike: 13,
+        humidity: 60,
+        description: '맑음',
+        icon: '01d',
+        windSpeed: 3,
+      },
+      hourly: [],
+      fetchedAt: Date.now(),
+    },
+    isLoading: false,
+    error: null,
+    refetch: jest.fn(),
+    temp: 15,
+    locationName: '서울',
+  })),
+}));
+
+// -------------------------------------------------------------------
 // mock: useUserAnalyses
 // -------------------------------------------------------------------
 const mockUseUserAnalyses = jest.fn();

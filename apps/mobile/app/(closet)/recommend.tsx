@@ -5,7 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { Bookmark, RefreshCw, Thermometer } from 'lucide-react-native';
+import { Bookmark, RefreshCw, Thermometer, CloudRain, Sun, Cloud } from 'lucide-react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Image } from 'expo-image';
 import {
@@ -30,6 +30,7 @@ import {
   type PersonalColorSeason,
   type BodyType3,
 } from '../../lib/inventory/useClosetMatcher';
+import { useWeather } from '../../lib/weather';
 
 // DB 체형 → 3타입 매핑
 function mapBodyType(dbBodyType: string | undefined): BodyType3 {
@@ -58,6 +59,17 @@ function mapSeason(dbSeason: string | undefined): PersonalColorSeason {
   return mapping[dbSeason ?? ''] ?? 'Spring';
 }
 
+// 날씨 아이콘 컴포넌트
+function WeatherIcon({ condition, color }: { condition: string; color: string }): React.JSX.Element {
+  if (condition.includes('비') || condition.includes('소나기')) {
+    return <CloudRain size={16} color={color} />;
+  }
+  if (condition.includes('맑') || condition.includes('쾌청')) {
+    return <Sun size={16} color={color} />;
+  }
+  return <Cloud size={16} color={color} />;
+}
+
 export default function RecommendScreen() {
   const { colors, module: moduleTheme, status } = useTheme();
   const router = useRouter();
@@ -67,9 +79,10 @@ export default function RecommendScreen() {
   const personalColor = mapSeason(pcResult?.season);
   const bodyType = mapBodyType(bodyAnalysis?.bodyType);
 
-  // 계절별 온도 (향후 날씨 API 연동 가능)
-  const [temp, setTemp] = useState<number>(15);
-  const locationName = '서울';
+  // 날씨 서비스 연동
+  const { temp, locationName, weather, isLoading: weatherLoading } = useWeather({
+    region: 'seoul',
+  });
 
   const { items, isLoading, summary, getOutfitSuggestion, refetch } = useClosetMatcher({
     personalColor,
@@ -87,25 +100,12 @@ export default function RecommendScreen() {
     setOutfit(suggestion);
   }, [getOutfitSuggestion, temp]);
 
-  // Mock 날씨 설정 (계절에 맞는 온도)
+  // 날씨 데이터 준비되면 코디 추천
   useEffect(() => {
-    const month = new Date().getMonth();
-    // 계절별 평균 온도 설정
-    if (month >= 2 && month <= 4)
-      setTemp(15); // 봄
-    else if (month >= 5 && month <= 7)
-      setTemp(27); // 여름
-    else if (month >= 8 && month <= 10)
-      setTemp(18); // 가을
-    else setTemp(3); // 겨울
-  }, []);
-
-  // 코디 추천
-  useEffect(() => {
-    if (!isLoading && items.length > 0) {
+    if (!isLoading && !weatherLoading && items.length > 0) {
       generateOutfit();
     }
-  }, [isLoading, items, generateOutfit]);
+  }, [isLoading, weatherLoading, items, generateOutfit]);
 
   const handleRefresh = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -286,6 +286,14 @@ export default function RecommendScreen() {
               <Thermometer size={16} color={colors.mutedForeground} />
               <Text style={[styles.weatherText, { color: colors.mutedForeground }]}>{temp}°C</Text>
             </View>
+            {weather?.current && (
+              <View style={styles.weatherItem}>
+                <WeatherIcon condition={weather.current.description} color={colors.mutedForeground} />
+                <Text style={[styles.weatherText, { color: colors.mutedForeground }]}>
+                  {weather.current.description}
+                </Text>
+              </View>
+            )}
           </View>
           <View style={styles.weatherTags}>
             <View style={[styles.tag, { backgroundColor: moduleTheme.body.dark + '20' }]}>

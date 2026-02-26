@@ -33,6 +33,18 @@ export default function ClosetLayout() {
         }}
       />
       <Stack.Screen
+        name="outfits"
+        options={{
+          title: '저장된 코디',
+        }}
+      />
+      <Stack.Screen
+        name="outfit-builder"
+        options={{
+          title: '코디 만들기',
+        }}
+      />
+      <Stack.Screen
         name="[id]"
         options={{
           title: '아이템 상세',
