@@ -22,7 +22,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 
-import { lightColors, darkColors } from '@/lib/theme';
+import { useTheme } from '@/lib/theme';
 
 // ============================================
 // 타입 정의
@@ -43,8 +43,6 @@ export interface CircularProgressProps {
   showScore?: boolean;
   /** 등급 라벨 표시 여부 */
   showGradeLabel?: boolean;
-  /** 다크 모드 */
-  isDark?: boolean;
 }
 
 // ============================================
@@ -142,8 +140,8 @@ export function CircularProgress({
   duration = 1200,
   showScore = true,
   showGradeLabel = false,
-  isDark = false,
 }: CircularProgressProps) {
+  const { colors } = useTheme();
   const config = SIZE_CONFIG[size];
   const gradeConfig = getGradeFromScore(score);
 
@@ -214,7 +212,7 @@ export function CircularProgress({
           cy={center}
           r={radius}
           fill="none"
-          stroke={isDark ? darkColors.border : lightColors.border}
+          stroke={colors.border}
           strokeWidth={config.strokeWidth}
         />
 

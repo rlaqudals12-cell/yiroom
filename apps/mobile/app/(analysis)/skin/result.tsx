@@ -220,7 +220,6 @@ export default function SkinResultScreen() {
         animate
         showScore
         showGradeLabel
-        isDark={isDark}
       />
       {delta && delta.overall !== 0 && (
         <ScoreChangeBadge
@@ -228,7 +227,6 @@ export default function SkinResultScreen() {
           size="sm"
           previousScore={previousScore || undefined}
           showPreviousScore={previousScore !== null}
-          isDark={isDark}
         />
       )}
       <Text style={[localStyles.typeName, { color: accent.base }]}>{typeData.name}</Text>

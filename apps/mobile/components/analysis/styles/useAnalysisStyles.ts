@@ -1,7 +1,6 @@
 /**
  * 분석 결과 화면 동적 스타일 훅
  *
- * ANALYSIS_COLORS + commonAnalysisStyles 대체.
  * useTheme() 기반으로 다크모드 자동 전환.
  */
 import { useMemo } from 'react';

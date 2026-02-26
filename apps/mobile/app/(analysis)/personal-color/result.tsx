@@ -115,7 +115,7 @@ const SEASON_DATA: Record<PersonalColorSeason, SeasonInfo> = {
 
 export default function PersonalColorResultScreen(): React.JSX.Element {
   const { module } = useAnalysisStyles();
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const accent = module.personalColor;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -224,7 +224,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
         />
       }
       summaryTab={
-        <SummaryTab season={season} accent={accent} colors={colors} isDark={isDark} />
+        <SummaryTab season={season} accent={accent} colors={colors} />
       }
       detailTab={
         <DetailTab
@@ -233,11 +233,10 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
           season={season}
           accent={accent}
           colors={colors}
-          isDark={isDark}
         />
       }
       recommendTab={
-        <RecommendTab season={season} accent={accent} colors={colors} isDark={isDark} />
+        <RecommendTab season={season} accent={accent} colors={colors} />
       }
       primaryActionText="💄 내 색상에 맞는 제품"
       onPrimaryAction={handleProductRecommendation}
@@ -275,11 +274,11 @@ interface TabProps {
   season: SeasonInfo;
   accent: { base: string; light: string; dark: string };
   colors: ReturnType<typeof useTheme>['colors'];
-  isDark: boolean;
 }
 
 /** 요약 탭: 대표 팔레트 + 같은 타입 연예인 */
-function SummaryTab({ season, accent, isDark, colors }: TabProps): React.JSX.Element {
+function SummaryTab({ season, accent, colors }: TabProps): React.JSX.Element {
+  const { isDark } = useTheme();
   const bestColorItems = season.bestColors.map((hex, i) => ({
     color: hex,
     name: `Color ${i + 1}`,
@@ -326,7 +325,6 @@ function DetailTab({
   coolScore,
   season,
   colors,
-  isDark,
 }: TabProps & { warmScore: number; coolScore: number }): React.JSX.Element {
   const worstColorItems = season.worstColors.map((hex, i) => ({
     color: hex,

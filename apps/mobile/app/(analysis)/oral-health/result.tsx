@@ -127,7 +127,6 @@ export default function OralHealthResultScreen() {
         animate
         showScore
         showGradeLabel
-        isDark={isDark}
       />
       <Text style={[localStyles.subInfo, { color: colors.mutedForeground }]}>
         치아 색조 {result.toothShade} · {GUM_HEALTH_LABELS[result.gumHealth]}

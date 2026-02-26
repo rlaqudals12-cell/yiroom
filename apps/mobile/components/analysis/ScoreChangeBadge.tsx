@@ -23,7 +23,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import { statusColors } from '@/lib/theme';
+import { statusColors, useTheme } from '@/lib/theme';
 
 // ============================================
 // 타입 정의
@@ -40,8 +40,6 @@ export interface ScoreChangeBadgeProps {
   previousScore?: number;
   /** 애니메이션 활성화 */
   animate?: boolean;
-  /** 다크 모드 */
-  isDark?: boolean;
 }
 
 // ============================================
@@ -105,8 +103,8 @@ export function ScoreChangeBadge({
   showPreviousScore = false,
   previousScore,
   animate = true,
-  isDark = false,
 }: ScoreChangeBadgeProps) {
+  const { isDark } = useTheme();
   const config = SIZE_CONFIG[size];
 
   // 방향 결정
