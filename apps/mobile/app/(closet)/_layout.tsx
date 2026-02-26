@@ -50,6 +50,12 @@ export default function ClosetLayout() {
           title: '아이템 상세',
         }}
       />
+      <Stack.Screen
+        name="gallery"
+        options={{
+          title: '스타일 갤러리',
+        }}
+      />
     </Stack>
   );
 }

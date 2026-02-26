@@ -59,6 +59,12 @@ export default function NutritionLayout() {
           title: '음식 검색',
         }}
       />
+      <Stack.Screen
+        name="fasting/index"
+        options={{
+          title: '단식 트래커',
+        }}
+      />
     </Stack>
   );
 }

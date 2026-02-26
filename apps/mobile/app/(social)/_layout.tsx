@@ -55,6 +55,12 @@ export default function SocialLayout() {
           title: '댓글',
         }}
       />
+      <Stack.Screen
+        name="leaderboard/profile"
+        options={{
+          title: '프로필',
+        }}
+      />
     </Stack>
   );
 }

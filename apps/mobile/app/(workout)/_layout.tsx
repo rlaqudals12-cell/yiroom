@@ -64,6 +64,12 @@ export default function WorkoutLayout() {
           title: '운동 히스토리',
         }}
       />
+      <Stack.Screen
+        name="detail/index"
+        options={{
+          title: '운동 상세',
+        }}
+      />
     </Stack>
   );
 }
