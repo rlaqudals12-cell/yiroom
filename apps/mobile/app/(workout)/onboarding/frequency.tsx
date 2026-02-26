@@ -27,7 +27,7 @@ const TIME_OPTIONS = [
 ];
 
 export default function WorkoutFrequencyScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{ goals?: string }>();
 
   const [frequency, setFrequency] = useState<number | null>(null);
@@ -62,14 +62,14 @@ export default function WorkoutFrequencyScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
       testID="workout-onboarding-frequency-screen"
     >
       <ScrollView contentContainerStyle={styles.content}>
         {/* 주당 운동 횟수 */}
-        <Text style={[styles.title, isDark && styles.textLight]}>주당 운동 횟수</Text>
-        <Text style={[styles.subtitle, isDark && styles.textMuted]}>
+        <Text style={[styles.title, { color: colors.foreground }]}>주당 운동 횟수</Text>
+        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
           일주일에 몇 번 운동할 수 있나요?
         </Text>
 
@@ -82,7 +82,7 @@ export default function WorkoutFrequencyScreen() {
                 key={option.value}
                 style={[
                   styles.frequencyCard,
-                  isDark && styles.frequencyCardDark,
+                  { backgroundColor: colors.card },
                   isSelected && styles.frequencyCardSelected,
                 ]}
                 onPress={() => handleFrequencySelect(option.value)}
@@ -93,17 +93,17 @@ export default function WorkoutFrequencyScreen() {
                   <Text
                     style={[
                       styles.frequencyLabel,
-                      isDark && styles.textLight,
+                      { color: colors.foreground },
                       isSelected && styles.frequencyLabelSelected,
                     ]}
                   >
                     {option.label}
                   </Text>
-                  <Text style={[styles.frequencyDescription, isDark && styles.textMuted]}>
+                  <Text style={[styles.frequencyDescription, { color: colors.mutedForeground }]}>
                     {option.description}
                   </Text>
                 </View>
-                <View style={[styles.radio, isSelected && styles.radioSelected]}>
+                <View style={[styles.radio, { borderColor: colors.border }, isSelected && styles.radioSelected]}>
                   {isSelected && <View style={styles.radioInner} />}
                 </View>
               </TouchableOpacity>
@@ -112,10 +112,10 @@ export default function WorkoutFrequencyScreen() {
         </View>
 
         {/* 선호 운동 시간대 */}
-        <Text style={[styles.title, styles.sectionMargin, isDark && styles.textLight]}>
+        <Text style={[styles.title, styles.sectionMargin, { color: colors.foreground }]}>
           선호 운동 시간대
         </Text>
-        <Text style={[styles.subtitle, isDark && styles.textMuted]}>
+        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
           주로 어느 시간대에 운동하시나요?
         </Text>
 
@@ -128,7 +128,7 @@ export default function WorkoutFrequencyScreen() {
                 key={option.id}
                 style={[
                   styles.timeCard,
-                  isDark && styles.timeCardDark,
+                  { backgroundColor: colors.card },
                   isSelected && styles.timeCardSelected,
                 ]}
                 onPress={() => handleTimeSelect(option.id)}
@@ -138,13 +138,13 @@ export default function WorkoutFrequencyScreen() {
                 <Text
                   style={[
                     styles.timeLabel,
-                    isDark && styles.textLight,
+                    { color: colors.foreground },
                     isSelected && styles.timeLabelSelected,
                   ]}
                 >
                   {option.label}
                 </Text>
-                <Text style={[styles.timeDescription, isDark && styles.textMuted]}>
+                <Text style={[styles.timeDescription, { color: colors.mutedForeground }]}>
                   {option.description}
                 </Text>
               </TouchableOpacity>
@@ -153,9 +153,9 @@ export default function WorkoutFrequencyScreen() {
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, isDark && styles.footerDark]}>
+      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <TouchableOpacity
-          style={[styles.nextButton, !isValid && styles.nextButtonDisabled]}
+          style={[styles.nextButton, !isValid && { backgroundColor: colors.muted }]}
           onPress={handleNext}
           disabled={!isValid}
         >
@@ -169,10 +169,6 @@ export default function WorkoutFrequencyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   content: {
     padding: 20,
@@ -181,12 +177,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
     marginBottom: 24,
   },
   sectionMargin: {
@@ -199,14 +193,10 @@ const styles = StyleSheet.create({
   frequencyCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     borderWidth: 2,
     borderColor: 'transparent',
-  },
-  frequencyCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   frequencyCardSelected: {
     borderColor: '#ef4444',
@@ -222,7 +212,6 @@ const styles = StyleSheet.create({
   frequencyLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 2,
   },
   frequencyLabelSelected: {
@@ -230,7 +219,6 @@ const styles = StyleSheet.create({
   },
   frequencyDescription: {
     fontSize: 13,
-    color: '#666',
   },
   // 라디오 버튼 스타일
   radio: {
@@ -238,7 +226,6 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#ddd',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -259,15 +246,11 @@ const styles = StyleSheet.create({
   },
   timeCard: {
     width: '47%',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
-  },
-  timeCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   timeCardSelected: {
     borderColor: '#ef4444',
@@ -280,7 +263,6 @@ const styles = StyleSheet.create({
   timeLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 4,
   },
   timeLabelSelected: {
@@ -288,7 +270,6 @@ const styles = StyleSheet.create({
   },
   timeDescription: {
     fontSize: 13,
-    color: '#666',
   },
   // Footer 스타일
   footer: {
@@ -297,13 +278,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 20,
-    backgroundColor: '#f8f9fc',
     borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  footerDark: {
-    backgroundColor: '#0a0a0a',
-    borderTopColor: '#222',
   },
   nextButton: {
     backgroundColor: '#ef4444',
@@ -311,18 +286,9 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
   },
-  nextButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
   nextButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

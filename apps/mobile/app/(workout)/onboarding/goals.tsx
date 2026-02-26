@@ -48,7 +48,7 @@ const GOALS = [
 ];
 
 export default function WorkoutGoalsScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
   const toggleGoal = (goalId: string) => {
@@ -66,13 +66,13 @@ export default function WorkoutGoalsScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
       testID="workout-onboarding-goals-screen"
     >
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, isDark && styles.textLight]}>운동 목표를 선택해주세요</Text>
-        <Text style={[styles.subtitle, isDark && styles.textMuted]}>
+        <Text style={[styles.title, { color: colors.foreground }]}>운동 목표를 선택해주세요</Text>
+        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
           복수 선택이 가능해요 (최대 3개)
         </Text>
 
@@ -86,7 +86,7 @@ export default function WorkoutGoalsScreen() {
                 key={goal.id}
                 style={[
                   styles.goalCard,
-                  isDark && styles.goalCardDark,
+                  { backgroundColor: colors.card },
                   isSelected && styles.goalCardSelected,
                   isDisabled && styles.goalCardDisabled,
                 ]}
@@ -98,17 +98,17 @@ export default function WorkoutGoalsScreen() {
                   <Text
                     style={[
                       styles.goalLabel,
-                      isDark && styles.textLight,
+                      { color: colors.foreground },
                       isSelected && styles.goalLabelSelected,
                     ]}
                   >
                     {goal.label}
                   </Text>
-                  <Text style={[styles.goalDescription, isDark && styles.textMuted]}>
+                  <Text style={[styles.goalDescription, { color: colors.mutedForeground }]}>
                     {goal.description}
                   </Text>
                 </View>
-                <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                <View style={[styles.checkbox, { borderColor: colors.border }, isSelected && styles.checkboxSelected]}>
                   {isSelected && <Text style={styles.checkmark}>✓</Text>}
                 </View>
               </TouchableOpacity>
@@ -117,9 +117,9 @@ export default function WorkoutGoalsScreen() {
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, isDark && styles.footerDark]}>
+      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <TouchableOpacity
-          style={[styles.nextButton, selectedGoals.length === 0 && styles.nextButtonDisabled]}
+          style={[styles.nextButton, selectedGoals.length === 0 && { backgroundColor: colors.muted }]}
           onPress={handleNext}
           disabled={selectedGoals.length === 0}
         >
@@ -133,10 +133,6 @@ export default function WorkoutGoalsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   content: {
     padding: 20,
@@ -145,12 +141,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
     marginBottom: 24,
   },
   goalList: {
@@ -159,14 +153,10 @@ const styles = StyleSheet.create({
   goalCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     borderWidth: 2,
     borderColor: 'transparent',
-  },
-  goalCardDark: {
-    backgroundColor: '#1a1a1a',
   },
   goalCardSelected: {
     borderColor: '#ef4444',
@@ -185,7 +175,6 @@ const styles = StyleSheet.create({
   goalLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 2,
   },
   goalLabelSelected: {
@@ -193,14 +182,12 @@ const styles = StyleSheet.create({
   },
   goalDescription: {
     fontSize: 13,
-    color: '#666',
   },
   checkbox: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#ddd',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -219,13 +206,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 20,
-    backgroundColor: '#f8f9fc',
     borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  footerDark: {
-    backgroundColor: '#0a0a0a',
-    borderTopColor: '#222',
   },
   nextButton: {
     backgroundColor: '#ef4444',
@@ -233,18 +214,9 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
   },
-  nextButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
   nextButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#ffffff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

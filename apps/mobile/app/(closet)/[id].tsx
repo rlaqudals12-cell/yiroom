@@ -14,10 +14,10 @@ import {
   ScrollView,
   Image,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { useTheme } from '@/lib/theme';
 
 import {
@@ -31,7 +31,7 @@ import {
 } from '../../lib/inventory';
 
 export default function ItemDetailScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -67,9 +67,11 @@ export default function ItemDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <SkeletonCard style={{ width: '100%', aspectRatio: 1 }} />
+          <SkeletonCard style={{ marginHorizontal: 16, marginTop: 16, height: 120, borderRadius: 12 }} />
+          <SkeletonCard style={{ marginHorizontal: 16, marginTop: 16, height: 80, borderRadius: 12 }} />
         </View>
       </SafeAreaView>
     );
@@ -77,9 +79,9 @@ export default function ItemDetailScreen() {
 
   if (!item) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText, isDark && styles.textMuted]}>
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             아이템을 찾을 수 없어요
           </Text>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -101,7 +103,7 @@ export default function ItemDetailScreen() {
   return (
     <SafeAreaView
       testID="closet-detail-screen"
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -110,54 +112,54 @@ export default function ItemDetailScreen() {
           {item.imageUrl ? (
             <Image source={{ uri: item.imageUrl }} style={styles.image} resizeMode="cover" />
           ) : (
-            <View style={[styles.placeholder, isDark && styles.placeholderDark]}>
+            <View style={[styles.placeholder, { backgroundColor: colors.muted }]}>
               <Text style={styles.placeholderText}>📷</Text>
             </View>
           )}
         </View>
 
         {/* 기본 정보 */}
-        <View style={[styles.infoCard, isDark && styles.cardDark]}>
+        <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
           <View style={styles.infoHeader}>
             <View style={styles.infoHeaderContent}>
-              <Text style={[styles.itemName, isDark && styles.textLight]}>{item.name}</Text>
-              <Text style={[styles.itemCategory, isDark && styles.textMuted]}>
+              <Text style={[styles.itemName, { color: colors.foreground }]}>{item.name}</Text>
+              <Text style={[styles.itemCategory, { color: colors.mutedForeground }]}>
                 {CLOTHING_CATEGORY_LABELS[item.subCategory as ClothingCategory] || item.subCategory}
               </Text>
             </View>
             <TouchableOpacity onPress={handleFavorite}>
               <Heart
                 size={28}
-                color={item.isFavorite ? '#ef4444' : '#999'}
+                color={item.isFavorite ? '#ef4444' : colors.mutedForeground}
                 fill={item.isFavorite ? '#ef4444' : 'transparent'}
               />
             </TouchableOpacity>
           </View>
 
           {item.brand && (
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, isDark && styles.textMuted]}>브랜드</Text>
-              <Text style={[styles.infoValue, isDark && styles.textLight]}>{item.brand}</Text>
+            <View style={[styles.infoRow, { borderTopColor: colors.border }]}>
+              <Text style={[styles.infoLabel, { color: colors.mutedForeground }]}>브랜드</Text>
+              <Text style={[styles.infoValue, { color: colors.foreground }]}>{item.brand}</Text>
             </View>
           )}
 
           {metadata.size && (
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, isDark && styles.textMuted]}>사이즈</Text>
-              <Text style={[styles.infoValue, isDark && styles.textLight]}>{metadata.size}</Text>
+            <View style={[styles.infoRow, { borderTopColor: colors.border }]}>
+              <Text style={[styles.infoLabel, { color: colors.mutedForeground }]}>사이즈</Text>
+              <Text style={[styles.infoValue, { color: colors.foreground }]}>{metadata.size}</Text>
             </View>
           )}
 
-          <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, isDark && styles.textMuted]}>착용 횟수</Text>
-            <Text style={[styles.infoValue, isDark && styles.textLight]}>{item.useCount}회</Text>
+          <View style={[styles.infoRow, { borderTopColor: colors.border }]}>
+            <Text style={[styles.infoLabel, { color: colors.mutedForeground }]}>착용 횟수</Text>
+            <Text style={[styles.infoValue, { color: colors.foreground }]}>{item.useCount}회</Text>
           </View>
         </View>
 
         {/* 색상 */}
         {metadata.color && metadata.color.length > 0 && (
-          <View style={[styles.infoCard, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>색상</Text>
+          <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>색상</Text>
             <View style={styles.tagsContainer}>
               {metadata.color.map((color, index) => (
                 <View key={index} style={[styles.tag, { backgroundColor: '#8b5cf620' }]}>
@@ -170,8 +172,8 @@ export default function ItemDetailScreen() {
 
         {/* 계절 */}
         {metadata.season && metadata.season.length > 0 && (
-          <View style={[styles.infoCard, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>계절</Text>
+          <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>계절</Text>
             <View style={styles.tagsContainer}>
               {metadata.season.map((season, index) => (
                 <View key={index} style={[styles.tag, { backgroundColor: '#3b82f620' }]}>
@@ -186,8 +188,8 @@ export default function ItemDetailScreen() {
 
         {/* 상황 */}
         {metadata.occasion && metadata.occasion.length > 0 && (
-          <View style={[styles.infoCard, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>상황</Text>
+          <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>상황</Text>
             <View style={styles.tagsContainer}>
               {metadata.occasion.map((occasion, index) => (
                 <View key={index} style={[styles.tag, { backgroundColor: '#22c55e20' }]}>
@@ -202,12 +204,12 @@ export default function ItemDetailScreen() {
 
         {/* 태그 */}
         {item.tags && item.tags.length > 0 && (
-          <View style={[styles.infoCard, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>태그</Text>
+          <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>태그</Text>
             <View style={styles.tagsContainer}>
               {item.tags.map((tag, index) => (
-                <View key={index} style={[styles.tag, { backgroundColor: '#f5f5f5' }]}>
-                  <Text style={[styles.tagText, { color: '#666' }]}>#{tag}</Text>
+                <View key={index} style={[styles.tag, { backgroundColor: colors.muted }]}>
+                  <Text style={[styles.tagText, { color: colors.mutedForeground }]}>#{tag}</Text>
                 </View>
               ))}
             </View>
@@ -216,7 +218,7 @@ export default function ItemDetailScreen() {
       </ScrollView>
 
       {/* 하단 액션 버튼 */}
-      <View style={[styles.actionBar, isDark && styles.actionBarDark]}>
+      <View style={[styles.actionBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
         <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={handleDelete}>
           <Trash2 size={20} color="#ef4444" />
           <Text style={[styles.actionButtonText, { color: '#ef4444' }]}>삭제</Text>
@@ -242,15 +244,9 @@ export default function ItemDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fc',
-  },
-  containerDark: {
-    backgroundColor: '#0a0a0a',
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   content: {
     paddingBottom: 100,
@@ -266,25 +262,17 @@ const styles = StyleSheet.create({
   placeholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  placeholderDark: {
-    backgroundColor: '#1a1a1a',
   },
   placeholderText: {
     fontSize: 64,
   },
   infoCard: {
-    backgroundColor: '#fff',
     marginHorizontal: 16,
     marginTop: 16,
     borderRadius: 12,
     padding: 16,
-  },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
   },
   infoHeader: {
     flexDirection: 'row',
@@ -299,33 +287,27 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 4,
   },
   itemCategory: {
     fontSize: 14,
-    color: '#666',
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
   },
   infoLabel: {
     fontSize: 14,
-    color: '#666',
   },
   infoValue: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#111',
   },
   sectionTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
     marginBottom: 12,
   },
   tagsContainer: {
@@ -351,14 +333,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     paddingBottom: 32,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
     gap: 12,
-  },
-  actionBarDark: {
-    backgroundColor: '#1a1a1a',
-    borderTopColor: '#2a2a2a',
   },
   actionButton: {
     flex: 1,
@@ -387,7 +363,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
-    color: '#666',
     marginBottom: 16,
   },
   backButton: {
@@ -400,11 +375,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '600',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#999',
   },
 });

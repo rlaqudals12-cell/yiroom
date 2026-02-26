@@ -13,7 +13,7 @@ import { useTheme } from '../lib/theme';
 type Lang = 'ko' | 'en';
 
 export default function PrivacyPolicyScreen() {
-  const { colors, brand: brandColors, radii, isDark } = useTheme();
+  const { colors, brand: brandColors, radii } = useTheme();
   const [lang, setLang] = useState<Lang>('ko');
 
   return (
@@ -72,9 +72,9 @@ export default function PrivacyPolicyScreen() {
         </View>
 
         {lang === 'ko' ? (
-          <KoreanContent colors={colors} isDark={isDark} />
+          <KoreanContent colors={colors} />
         ) : (
-          <EnglishContent colors={colors} isDark={isDark} />
+          <EnglishContent colors={colors} />
         )}
       </ScrollView>
     </SafeAreaView>
@@ -90,7 +90,6 @@ interface ContentProps {
     card: string;
     cardForeground: string;
   };
-  isDark: boolean;
 }
 
 function SectionTitle({ children, colors }: { children: string; colors: ContentProps['colors'] }) {
@@ -126,7 +125,8 @@ function InfoBox({
   return <View style={[styles.infoBox, { backgroundColor: colors.muted }]}>{children}</View>;
 }
 
-function KoreanContent({ colors, isDark }: ContentProps) {
+function KoreanContent({ colors }: ContentProps) {
+  const { isDark } = useTheme();
   return (
     <View>
       <Text style={[styles.lastUpdated, { color: colors.mutedForeground }]}>
@@ -223,8 +223,21 @@ function KoreanContent({ colors, isDark }: ContentProps) {
         <BulletItem colors={colors}>
           {'동의 철회: 설정 > 개인정보 메뉴에서 언제든지 철회 가능'}
         </BulletItem>
-        <View style={[styles.warningBox, isDark && styles.warningBoxDark]}>
-          <Text style={[styles.warningText, isDark && styles.warningTextDark]}>
+        <View
+          style={[
+            styles.warningBox,
+            {
+              backgroundColor: isDark ? 'rgba(245, 158, 11, 0.1)' : '#FEF3C7',
+              borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A',
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.warningText,
+              { color: isDark ? '#FCD34D' : '#92400E' },
+            ]}
+          >
             안내: 이미지 저장에 동의하지 않아도 분석 서비스는 이용 가능합니다. 다만 이전 분석
             결과와의 비교(변화 추적) 기능은 사용할 수 없습니다.
           </Text>
@@ -345,7 +358,8 @@ function KoreanContent({ colors, isDark }: ContentProps) {
   );
 }
 
-function EnglishContent({ colors, isDark }: ContentProps) {
+function EnglishContent({ colors }: ContentProps) {
+  const { isDark } = useTheme();
   return (
     <View>
       <Text style={[styles.lastUpdated, { color: colors.mutedForeground }]}>
@@ -457,8 +471,21 @@ function EnglishContent({ colors, isDark }: ContentProps) {
         <BulletItem colors={colors}>
           {'Withdrawal: Can be withdrawn anytime via Settings > Privacy'}
         </BulletItem>
-        <View style={[styles.warningBox, isDark && styles.warningBoxDark]}>
-          <Text style={[styles.warningText, isDark && styles.warningTextDark]}>
+        <View
+          style={[
+            styles.warningBox,
+            {
+              backgroundColor: isDark ? 'rgba(245, 158, 11, 0.1)' : '#FEF3C7',
+              borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A',
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.warningText,
+              { color: isDark ? '#FCD34D' : '#92400E' },
+            ]}
+          >
             Note: Analysis services are available even without consenting to image storage. However,
             comparison with previous results (progress tracking) will not be available.
           </Text>
@@ -663,21 +690,11 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 16,
     borderRadius: 12,
-    backgroundColor: '#FEF3C7',
     borderWidth: 1,
-    borderColor: '#FDE68A',
-  },
-  warningBoxDark: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    borderColor: 'rgba(245, 158, 11, 0.3)',
   },
   warningText: {
     fontSize: 14,
     lineHeight: 22,
-    color: '#92400E',
-  },
-  warningTextDark: {
-    color: '#FCD34D',
   },
   historyItem: {
     fontSize: 13,

@@ -22,7 +22,7 @@ import { useHealthData } from '@/hooks/useHealthData';
 import { useTheme } from '@/lib/theme';
 
 export default function HealthSyncScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   const {
     isAvailable,
@@ -80,15 +80,15 @@ export default function HealthSyncScreen() {
         }}
       />
       <SafeAreaView
-        style={[styles.container, isDark && styles.containerDark]}
+        style={[styles.container, { backgroundColor: colors.background }]}
         edges={['bottom']}
         testID="settings-health-sync-screen"
       >
         <ScrollView contentContainerStyle={styles.content}>
           {/* 플랫폼 체크 */}
           {!isAvailable && (
-            <View style={[styles.card, isDark && styles.cardDark]}>
-              <Text style={[styles.warningText, isDark && styles.textLight]}>
+            <View style={[styles.card, { backgroundColor: colors.card }]}>
+              <Text style={[styles.warningText, { color: colors.foreground }]}>
                 ⚠️ {Platform.OS === 'ios' ? 'Apple Health' : 'Google Fit'}를 사용할 수 없습니다.
                 {'\n'}시뮬레이터에서는 Mock 데이터로 테스트됩니다.
               </Text>
@@ -96,13 +96,13 @@ export default function HealthSyncScreen() {
           )}
 
           {/* 연동 토글 */}
-          <View style={[styles.card, isDark && styles.cardDark]}>
+          <View style={[styles.card, { backgroundColor: colors.card }]}>
             <View style={styles.toggleRow}>
               <View>
-                <Text style={[styles.cardTitle, isDark && styles.textLight]}>
+                <Text style={[styles.cardTitle, { color: colors.foreground }]}>
                   {info.icon} {info.name} 연동
                 </Text>
-                <Text style={[styles.cardSubtitle, isDark && styles.textMuted]}>
+                <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
                   걸음수, 심박수, 수면 데이터 동기화
                 </Text>
               </View>
@@ -120,32 +120,30 @@ export default function HealthSyncScreen() {
 
           {/* 연동 데이터 설명 */}
           {isEnabled && (
-            <View style={[styles.card, isDark && styles.cardDark]}>
-              <Text style={[styles.cardTitle, isDark && styles.textLight]}>📊 연동 데이터</Text>
+            <View style={[styles.card, { backgroundColor: colors.card }]}>
+              <Text style={[styles.cardTitle, { color: colors.foreground }]}>📊 연동 데이터</Text>
               <View style={styles.dataList}>
-                <DataItem label="걸음수" emoji="👟" isDark={isDark} />
-                <DataItem label="활동 칼로리" emoji="🔥" isDark={isDark} />
-                <DataItem label="심박수" emoji="❤️" isDark={isDark} />
-                <DataItem label="수면" emoji="😴" isDark={isDark} />
+                <DataItem label="걸음수" emoji="👟" />
+                <DataItem label="활동 칼로리" emoji="🔥" />
+                <DataItem label="심박수" emoji="❤️" />
+                <DataItem label="수면" emoji="😴" />
               </View>
             </View>
           )}
 
           {/* 오늘의 데이터 */}
           {isEnabled && todayData && (
-            <View style={[styles.card, isDark && styles.cardDark]}>
-              <Text style={[styles.cardTitle, isDark && styles.textLight]}>📈 오늘의 데이터</Text>
+            <View style={[styles.card, { backgroundColor: colors.card }]}>
+              <Text style={[styles.cardTitle, { color: colors.foreground }]}>📈 오늘의 데이터</Text>
               <View style={styles.statsGrid}>
-                <StatItem label="걸음" value={todayData.steps.toLocaleString()} isDark={isDark} />
+                <StatItem label="걸음" value={todayData.steps.toLocaleString()} />
                 <StatItem
                   label="칼로리"
                   value={`${todayData.activeCalories}kcal`}
-                  isDark={isDark}
                 />
                 <StatItem
                   label="심박"
                   value={todayData.heartRate ? `${todayData.heartRate.average}bpm` : '-'}
-                  isDark={isDark}
                 />
                 <StatItem
                   label="수면"
@@ -154,7 +152,6 @@ export default function HealthSyncScreen() {
                       ? `${Math.round(todayData.sleep.totalSleepMinutes / 60)}시간`
                       : '-'
                   }
-                  isDark={isDark}
                 />
               </View>
             </View>
@@ -162,13 +159,13 @@ export default function HealthSyncScreen() {
 
           {/* 동기화 상태 */}
           {isEnabled && (
-            <View style={[styles.card, isDark && styles.cardDark]}>
+            <View style={[styles.card, { backgroundColor: colors.card }]}>
               <View style={styles.syncRow}>
                 <View>
-                  <Text style={[styles.cardTitle, isDark && styles.textLight]}>
+                  <Text style={[styles.cardTitle, { color: colors.foreground }]}>
                     🔄 마지막 동기화
                   </Text>
-                  <Text style={[styles.cardSubtitle, isDark && styles.textMuted]}>
+                  <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
                     {formatTime(lastSyncTime)}
                   </Text>
                 </View>
@@ -189,7 +186,7 @@ export default function HealthSyncScreen() {
 
           {/* 개인정보 안내 */}
           <View style={styles.footer}>
-            <Text style={[styles.footerText, isDark && styles.textMuted]}>
+            <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
               🔒 건강 데이터는 안전하게 암호화되어 저장됩니다.
               {'\n'}설정 {'>'} 개인정보 보호에서 권한을 관리할 수 있습니다.
             </Text>
@@ -200,21 +197,23 @@ export default function HealthSyncScreen() {
   );
 }
 
-function DataItem({ label, emoji, isDark }: { label: string; emoji: string; isDark: boolean }) {
+function DataItem({ label, emoji }: { label: string; emoji: string }) {
+  const { colors } = useTheme();
   return (
     <View style={styles.dataItem}>
       <Text style={styles.dataEmoji}>{emoji}</Text>
-      <Text style={[styles.dataLabel, isDark && styles.textLight]}>{label}</Text>
+      <Text style={[styles.dataLabel, { color: colors.foreground }]}>{label}</Text>
       <Text style={styles.checkmark}>✓</Text>
     </View>
   );
 }
 
-function StatItem({ label, value, isDark }: { label: string; value: string; isDark: boolean }) {
+function StatItem({ label, value }: { label: string; value: string }) {
+  const { colors } = useTheme();
   return (
-    <View style={styles.statItem}>
-      <Text style={[styles.statValue, isDark && styles.textLight]}>{value}</Text>
-      <Text style={[styles.statLabel, isDark && styles.textMuted]}>{label}</Text>
+    <View style={[styles.statItem, { backgroundColor: colors.muted }]}>
+      <Text style={[styles.statValue, { color: colors.foreground }]}>{value}</Text>
+      <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{label}</Text>
     </View>
   );
 }
@@ -222,42 +221,25 @@ function StatItem({ label, value, isDark }: { label: string; value: string; isDa
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  containerDark: {
-    backgroundColor: '#121212',
   },
   content: {
     padding: 16,
     gap: 16,
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-  },
-  cardDark: {
-    backgroundColor: '#1E1E1E',
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 4,
   },
   cardSubtitle: {
     fontSize: 14,
-    color: '#666',
-  },
-  textLight: {
-    color: '#fff',
-  },
-  textMuted: {
-    color: '#888',
   },
   warningText: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
   },
   toggleRow: {
@@ -280,7 +262,6 @@ const styles = StyleSheet.create({
   dataLabel: {
     flex: 1,
     fontSize: 14,
-    color: '#333',
   },
   checkmark: {
     fontSize: 16,
@@ -294,7 +275,6 @@ const styles = StyleSheet.create({
   },
   statItem: {
     width: '48%',
-    backgroundColor: '#F5F5F5',
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
@@ -302,11 +282,9 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#333',
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
     marginTop: 4,
   },
   syncRow: {
@@ -336,7 +314,6 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: '#888',
     textAlign: 'center',
     lineHeight: 18,
   },
