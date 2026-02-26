@@ -39,5 +39,24 @@ export {
 // 루틴 생성 로직
 export { generateRoutine } from './routine';
 
+// 다이어리 타입
+export type {
+  SkinConditionScore,
+  SleepQualityScore,
+  StressLevelScore,
+  WeatherType,
+  TrendDirection,
+  SkinDiaryEntry,
+  SkinDiaryInput,
+  SkinDiaryMonthlySummary,
+} from './diary-types';
+export {
+  CONDITION_LABELS,
+  CONDITION_EMOJIS,
+  WEATHER_LABELS,
+  WEATHER_ICONS,
+  transformDbToEntry,
+} from './diary-types';
+
 // Hook
 export { useSkincareRoutine } from './useSkincareRoutine';

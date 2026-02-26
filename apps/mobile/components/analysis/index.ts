@@ -43,6 +43,9 @@ export type { AnalysisTimelineProps } from './AnalysisTimeline';
 export { ComparisonCard } from './ComparisonCard';
 export type { ComparisonCardProps, MetricComparison } from './ComparisonCard';
 
+export { AnalysisHistoryCard } from './AnalysisHistoryCard';
+export type { AnalysisHistoryCardProps } from './AnalysisHistoryCard';
+
 // 등급 시각화
 export { GradeDisplay, getGrade } from './GradeDisplay';
 export type { GradeDisplayProps } from './GradeDisplay';

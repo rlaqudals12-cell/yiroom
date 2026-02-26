@@ -40,6 +40,10 @@ export default function ProductsLayout() {
           presentation: 'modal',
         }}
       />
+      <Stack.Screen
+        name="wishlist"
+        options={{ title: '위시리스트' }}
+      />
     </Stack>
   );
 }

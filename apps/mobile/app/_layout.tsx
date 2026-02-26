@@ -60,6 +60,10 @@ function ThemedStack() {
           options={{ title: '개인정보처리방침', headerBackTitle: '뒤로' }}
         />
         <Stack.Screen name="terms" options={{ title: '이용약관', headerBackTitle: '뒤로' }} />
+        <Stack.Screen
+          name="wellness"
+          options={{ title: '웰니스 점수', headerBackTitle: '뒤로' }}
+        />
       </Stack>
     </>
   );
