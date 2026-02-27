@@ -14,7 +14,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, getTierLabel, type RankingEntry } from '../../../lib/social';
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     margin: 16,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 20,
   },
   myRankInfo: {
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: radii.lg,
   },
   tabActive: {
     // backgroundColor set inline via colors.card
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     right: 0,
     width: 12,
     height: 12,
-    borderRadius: 6,
+    borderRadius: radii.sm,
     borderWidth: 2,
   },
   userInfo: {

@@ -14,7 +14,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 interface Product {
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
   productImagePlaceholder: {
     width: 64,
     height: 64,
-    borderRadius: 8,
+    borderRadius: radii.md,
     justifyContent: 'center',
     alignItems: 'center',
   },

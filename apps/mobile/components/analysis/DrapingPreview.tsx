@@ -10,7 +10,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, radii } from '../../lib/theme';
 
 interface DrapingPreviewProps {
   /** 사용자 사진 URI */
@@ -148,12 +148,12 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   colorDot: {
     width: 12,
     height: 12,
-    borderRadius: 6,
+    borderRadius: radii.sm,
   },
   colorLabelText: {
     fontSize: 12,

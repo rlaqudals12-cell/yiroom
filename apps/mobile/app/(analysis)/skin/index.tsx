@@ -7,7 +7,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 
 export default function SkinAnalysisScreen() {
   const { colors, brand } = useTheme();
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 20,
     marginBottom: 16,
   },

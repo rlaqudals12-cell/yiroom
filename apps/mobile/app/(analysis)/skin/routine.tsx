@@ -24,7 +24,7 @@ import {
   type TimeOfDay,
   type RoutineStep,
 } from '@/lib/skincare';
-import { moduleColors, useTheme, typography} from '@/lib/theme';
+import { moduleColors, useTheme, typography, radii } from '@/lib/theme';
 
 export default function SkincareRoutineScreen() {
   const { colors, typography } = useTheme();
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: radii.lg,
     gap: 6,
   },
   toggleEmoji: {
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   stepCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
   },
   stepHeader: {

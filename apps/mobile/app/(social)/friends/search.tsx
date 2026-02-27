@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, type UserSearchResult } from '../../../lib/social';
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   errorContainer: {
     marginHorizontal: 16,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   errorText: {
     fontSize: typography.size.sm,
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   addButton: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   addButtonText: {
     fontSize: 13,
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   statusBadgeText: {
     fontSize: typography.size.xs,

@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 
 import { useNetworkStatus } from '../../lib/offline';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, radii } from '../../lib/theme';
 
 interface OfflineBannerProps {
   // 동기화 대기 항목 수
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   syncButton: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: radii.md,
     marginLeft: 12,
   },
   syncButtonDisabled: {

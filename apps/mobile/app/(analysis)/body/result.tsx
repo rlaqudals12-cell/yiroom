@@ -33,7 +33,7 @@ import { saveBodyResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
-import { typography } from '@/lib/theme';
+import { typography, radii } from '@/lib/theme';
 
 // 체형 타입 데이터
 const BODY_TYPE_DATA: Record<
@@ -461,7 +461,7 @@ const localStyles = StyleSheet.create({
   bmiBadge: {
     paddingHorizontal: 10,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: radii.lg,
   },
   bmiBadgeText: {
     fontSize: typography.size.xs,

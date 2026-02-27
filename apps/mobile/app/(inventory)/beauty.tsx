@@ -319,7 +319,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
                   selectedFilter === f.key ? brand.primary : colors.card,
                 borderColor:
                   selectedFilter === f.key ? brand.primary : colors.border,
-                borderRadius: 999,
+                borderRadius: radii.full,
               },
             ]}
             onPress={() => {

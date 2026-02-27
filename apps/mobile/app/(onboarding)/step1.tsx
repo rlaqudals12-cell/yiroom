@@ -27,7 +27,7 @@ import {
   GOAL_DESCRIPTIONS,
   GOAL_COLORS,
 } from '../../lib/onboarding';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, radii } from '../../lib/theme';
 
 // 온보딩 Step 1 히어로 색상 (rose-500 계열 — 목표 설정 아이덴티티)
 const STEP1_ACCENT = '#F43F5E';
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   iconBox: {
     width: 56,
     height: 56,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,

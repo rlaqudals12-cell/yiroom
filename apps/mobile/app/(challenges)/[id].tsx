@@ -28,7 +28,7 @@ import {
 import { useChallenges, useJoinChallenge } from '@/lib/challenges/useChallenges';
 import { staggeredEntry } from '@/lib/animations';
 import { useAppPreferencesStore } from '@/lib/stores';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 
 // 리더보드 메달 색상 (도메인 데이터 — 순위 시각화)
 const MEDAL_COLORS = {
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   backButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   backButtonText: {
     fontWeight: typography.weight.semibold,
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
   },
   logButton: {
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radii.md,
     alignItems: 'center',
   },
   logButtonText: {
@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
   milestoneIcon: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,

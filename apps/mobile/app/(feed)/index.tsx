@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginHorizontal: 16,
     marginTop: 12,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   errorText: {
     fontSize: typography.size.sm,
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   feedCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },

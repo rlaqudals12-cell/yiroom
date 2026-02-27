@@ -16,7 +16,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import {
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
   intervalOption: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: radii.md,
     alignItems: 'center',
   },
   intervalOptionText: {

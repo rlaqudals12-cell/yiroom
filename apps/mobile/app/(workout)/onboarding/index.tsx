@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 
 export default function WorkoutOnboardingScreen() {
   const { colors, brand, typography } = useTheme();
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 20,
     marginBottom: 16,
   },

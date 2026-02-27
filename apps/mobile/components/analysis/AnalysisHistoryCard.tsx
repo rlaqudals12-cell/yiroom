@@ -15,7 +15,7 @@ import {
 } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, radii } from '../../lib/theme';
 import type { AnalysisModuleType, AnalysisHistoryItem } from '../../hooks/useAnalysisHistory';
 
 interface ModuleConfig {
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   scoreBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 999,
+    borderRadius: radii.full,
     marginLeft: 8,
   },
 });

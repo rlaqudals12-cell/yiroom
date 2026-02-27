@@ -32,7 +32,7 @@ import { saveHairResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
-import { typography } from '@/lib/theme';
+import { typography, radii } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const TEXTURE_LABELS: Record<HairAnalysisResult['texture'], string> = {
@@ -303,7 +303,7 @@ const localStyles = StyleSheet.create({
   scoreBadge: {
     paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     marginTop: 4,
   },
   scoreBadgeText: {
@@ -313,7 +313,7 @@ const localStyles = StyleSheet.create({
   hairImage: {
     width: 160,
     height: 200,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 3,
   },
   tabContent: {

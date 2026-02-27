@@ -6,7 +6,7 @@
 import * as Haptics from 'expo-haptics';
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, radii } from '../../lib/theme';
 import { widgetLogger } from '../../lib/utils/logger';
 import { WIDGET_DEEP_LINKS, QuickActionType } from '../../lib/widgets/types';
 
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   smallButton: {
     width: 56,
     height: 56,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   actionButton: {
     alignItems: 'center',
     padding: 12,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     minWidth: 64,
   },
   buttonIcon: {

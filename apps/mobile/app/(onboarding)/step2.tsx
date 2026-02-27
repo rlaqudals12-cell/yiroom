@@ -31,7 +31,7 @@ import {
   GENDER_LABELS,
   ACTIVITY_LEVEL_LABELS,
 } from '../../lib/onboarding';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, radii } from '../../lib/theme';
 
 // 온보딩 Step 2 히어로 색상 (blue-500 계열 — 기본 정보 아이덴티티)
 const STEP2_ACCENT = '#3B82F6';
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
   activityIconBox: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,

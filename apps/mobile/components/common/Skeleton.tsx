@@ -16,7 +16,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, radii } from '../../lib/theme';
 
 type DimensionValue = number | `${number}%` | 'auto';
 
@@ -223,7 +223,7 @@ export function SkeletonProductCard({ style }: { style?: ViewStyle }) {
 const styles = StyleSheet.create({
   skeleton: {},
   card: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   workoutCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
   },
   workoutStats: {
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   nutritionCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
   },
   nutritionHeader: {
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   productCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     overflow: 'hidden',
   },
   productContent: {

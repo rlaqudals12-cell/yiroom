@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 
 // 주당 운동 횟수 옵션 (2-6회)
 const FREQUENCY_OPTIONS = [
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   radioInner: {
     width: 12,
     height: 12,
-    borderRadius: 6,
+    borderRadius: radii.sm,
   },
   // 시간대 그리드 스타일
   timeGrid: {

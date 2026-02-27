@@ -8,7 +8,7 @@ import { View, Text, StyleSheet, type TextStyle } from 'react-native';
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 
 import { useWeeklyReport } from '../../hooks/useWeeklyReport';
-import { useTheme, typography } from '../../lib/theme';
+import { useTheme, typography, radii } from '../../lib/theme';
 
 export default function WeeklyReportScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography, status } = useTheme();
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   barFill: { width: '100%' },
   barLabel: { marginTop: 4 },
   macroRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
-  macroChip: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: 8, borderRadius: 8, gap: 4 },
+  macroChip: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: 8, borderRadius: radii.md, gap: 4 },
   macroDot: { width: 8, height: 8, borderRadius: 4 },
   macroLabel: {},
   macroValue: { marginLeft: 'auto' },

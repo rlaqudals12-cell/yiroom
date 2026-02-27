@@ -19,7 +19,7 @@ import {
 import { QUICK_QUESTIONS, type QuestionCategory, type CoachMessage } from '../../lib/coach';
 import { useCoach } from '../../lib/coach/useCoach';
 import { useNetworkStatus } from '../../lib/offline';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, radii } from '../../lib/theme';
 
 interface ChatInterfaceProps {
   initialSessionId?: string;
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: radii.lg,
   },
   categoryTabText: {
     fontSize: 14,
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   messageBubble: {
     maxWidth: '80%',
     padding: 14,
-    borderRadius: 16,
+    borderRadius: radii.xl,
   },
   userBubble: {
     alignSelf: 'flex-end',

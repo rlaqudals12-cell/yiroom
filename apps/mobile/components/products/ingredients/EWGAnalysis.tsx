@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme, typography} from '../../../lib/theme';
+import { useTheme, typography, radii } from '../../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radii.md,
     marginBottom: 16,
   },
   statItem: {
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   cautionBox: {
-    borderRadius: 8,
+    borderRadius: radii.md,
     padding: 12,
     marginBottom: 16,
   },
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   ingredientItem: {
-    borderRadius: 8,
+    borderRadius: radii.md,
     padding: 12,
   },
   ingredientHeader: {

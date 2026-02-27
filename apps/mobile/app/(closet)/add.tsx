@@ -22,7 +22,7 @@ import {
 import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { useCloset, type ClothingCategory, type Season } from '@/lib/inventory';
 import { useAppPreferencesStore } from '@/lib/stores';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { closetLogger } from '@/lib/utils/logger';
 
 // 카테고리 옵션
@@ -510,7 +510,7 @@ function useStyles() {
       paddingHorizontal: 16,
       paddingVertical: 8,
       backgroundColor: colors.card,
-      borderRadius: 8,
+      borderRadius: radii.md,
     },
     imageButtonText: {
       color: colors.foreground,
@@ -535,7 +535,7 @@ function useStyles() {
     },
     input: {
       backgroundColor: colors.secondary,
-      borderRadius: 8,
+      borderRadius: radii.md,
       paddingHorizontal: 12,
       paddingVertical: 10,
       fontSize: typography.size.sm,
@@ -556,7 +556,7 @@ function useStyles() {
       paddingHorizontal: 12,
       paddingVertical: 8,
       backgroundColor: colors.secondary,
-      borderRadius: 8,
+      borderRadius: radii.md,
       gap: 6,
     },
     optionButtonSelected: {
@@ -583,7 +583,7 @@ function useStyles() {
       paddingHorizontal: 10,
       paddingVertical: 6,
       backgroundColor: colors.secondary,
-      borderRadius: 16,
+      borderRadius: radii.xl,
       gap: 6,
     },
     colorButtonSelected: {
@@ -592,7 +592,7 @@ function useStyles() {
     colorSwatch: {
       width: 16,
       height: 16,
-      borderRadius: 8,
+      borderRadius: radii.md,
       borderWidth: 1,
       borderColor: colors.border,
     },
@@ -612,7 +612,7 @@ function useStyles() {
       alignItems: 'center',
       paddingVertical: 12,
       backgroundColor: colors.secondary,
-      borderRadius: 8,
+      borderRadius: radii.md,
     },
     seasonButtonSelected: {
       backgroundColor: colors.foreground,
@@ -637,7 +637,7 @@ function useStyles() {
       paddingHorizontal: 14,
       paddingVertical: 8,
       backgroundColor: colors.secondary,
-      borderRadius: 16,
+      borderRadius: radii.xl,
     },
     chipSelected: {
       backgroundColor: colors.foreground,

@@ -23,7 +23,7 @@ import {
 } from '@/lib/gemini';
 import { CelebrationEffect, BadgeDrop } from '@/components/ui';
 import { captureError } from '@/lib/monitoring/sentry';
-import { typography } from '@/lib/theme';
+import { typography, radii } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const POSTURE_TYPE_LABELS: Record<PostureAnalysisResult['postureType'], string> = {
@@ -218,7 +218,7 @@ const localStyles = StyleSheet.create({
   resultImage: {
     width: 160,
     height: 300,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 4,
   },
   mainResult: {

@@ -21,7 +21,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../components/ui';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   heroTag: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 999,
+    borderRadius: radii.full,
   },
   heroTagText: {
     fontSize: typography.size.xs,

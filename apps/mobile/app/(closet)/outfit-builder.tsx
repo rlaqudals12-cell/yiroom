@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   selectedBadge: {
     minWidth: 20,
     height: 20,
-    borderRadius: 10,
+    borderRadius: radii.lg,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 6,

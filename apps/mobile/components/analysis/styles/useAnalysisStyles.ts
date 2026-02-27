@@ -6,7 +6,7 @@
 import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, radii } from '@/lib/theme';
 
 export function useAnalysisStyles() {
   const theme = useTheme();
@@ -27,7 +27,7 @@ export function useAnalysisStyles() {
         // 카드
         card: {
           backgroundColor: colors.card,
-          borderRadius: 16,
+          borderRadius: radii.xl,
           padding: 20,
           marginBottom: 16,
         },
@@ -35,7 +35,7 @@ export function useAnalysisStyles() {
         // 섹션 (카드와 동일 레이아웃, sectionTitle과 함께 사용)
         section: {
           backgroundColor: colors.card,
-          borderRadius: 16,
+          borderRadius: radii.xl,
           padding: 20,
           marginBottom: 16,
         },
@@ -49,7 +49,7 @@ export function useAnalysisStyles() {
         // 결과 카드 (가운데 정렬)
         resultCard: {
           backgroundColor: colors.card,
-          borderRadius: 16,
+          borderRadius: radii.xl,
           padding: 24,
           marginBottom: 16,
           alignItems: 'center',

@@ -25,7 +25,7 @@ import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-import { useTheme, typography, borderGlow } from '@/lib/theme';
+import { useTheme, typography, radii, borderGlow } from '@/lib/theme';
 import { brand, moduleColors } from '@/lib/theme/tokens';
 import { TIMING } from '@/lib/animations';
 import { TabView, type TabItem } from '../ui/TabView';
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   fallbackBanner: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: radii.md,
     alignSelf: 'stretch',
   },
   fallbackText: {

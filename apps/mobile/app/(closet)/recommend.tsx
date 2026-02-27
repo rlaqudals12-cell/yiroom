@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { ScreenContainer, SuccessCheckmark } from '../../components/ui';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 
 import type { Season as ClothingSeason } from '../../lib/inventory/types';
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   weatherCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
     marginBottom: 16,
   },
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   summaryCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
   },
   summaryTitle: {

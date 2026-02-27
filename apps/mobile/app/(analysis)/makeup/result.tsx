@@ -33,7 +33,7 @@ import { saveMakeupResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
-import { typography } from '@/lib/theme';
+import { typography, radii } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const FACE_SHAPE_LABELS: Record<MakeupAnalysisResult['faceShape'], string> = {
@@ -330,7 +330,7 @@ const localStyles = StyleSheet.create({
   makeupImage: {
     width: 140,
     height: 180,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 3,
   },
   tabContent: {

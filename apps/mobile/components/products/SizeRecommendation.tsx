@@ -16,7 +16,7 @@ import {
   useSizeRecommendation,
   getMockSizeRecommendation,
 } from '../../lib/smart-matching/useSizeRecommendation';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, radii } from '../../lib/theme';
 
 interface SizeRecommendationProps {
   brandId: string;
@@ -222,7 +222,7 @@ export function SizeRecommendation({
 // 레이아웃 관련 정적 스타일 (색상은 themed에서 오버라이드)
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
     marginVertical: 12,
   },
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   retryButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   retryButtonText: {
     fontSize: 14,
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   recommendedSize: {
     width: 72,
     height: 72,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   },
   brandNote: {
     marginTop: 16,
-    borderRadius: 8,
+    borderRadius: radii.md,
     padding: 12,
   },
   brandNoteText: {
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   },
   offlineNote: {
     marginTop: 12,
-    borderRadius: 8,
+    borderRadius: radii.md,
     padding: 10,
     alignItems: 'center',
   },

@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import { settingsLogger } from '../../lib/utils/logger';
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   presetButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radii.md,
     alignItems: 'center',
   },
   presetButtonText: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   customInput: {
     flex: 1,
     height: 44,
-    borderRadius: 8,
+    borderRadius: radii.md,
     paddingHorizontal: 12,
     fontSize: 15,
   },
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   goalOption: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   goalOptionText: {
     fontSize: 13,

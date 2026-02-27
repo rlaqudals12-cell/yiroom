@@ -5,7 +5,7 @@
 
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, radii } from '../../lib/theme';
 
 interface WaterWidgetProps {
   current: number; // ml
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   cup: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: radii.md,
     borderWidth: 2,
     overflow: 'hidden',
     justifyContent: 'flex-end',

@@ -29,7 +29,7 @@ import {
 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
 import { TIMING, usePulseGlow } from '@/lib/animations';
-import { typography } from '@/lib/theme';
+import { typography, radii } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const GUM_HEALTH_LABELS: Record<OralHealthAnalysisResult['gumHealth'], string> = {
@@ -305,7 +305,7 @@ const localStyles = StyleSheet.create({
   oralImage: {
     width: 200,
     height: 150,
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 3,
   },
   tabContent: {

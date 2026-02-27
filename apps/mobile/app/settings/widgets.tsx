@@ -14,7 +14,7 @@ import {
   Pressable,
 } from 'react-native';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import { QuickActionsWidget } from '../../components/widgets/QuickActionsWidget';
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   sizeBadge: {
     width: 24,
     height: 24,
-    borderRadius: 6,
+    borderRadius: radii.sm,
     textAlign: 'center',
     lineHeight: 24,
     fontSize: typography.size.xs,

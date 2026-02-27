@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 
 import { useHealthData } from '@/hooks/useHealthData';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 export default function HealthSyncScreen() {
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   },
   statItem: {
     width: '48%',
-    borderRadius: 8,
+    borderRadius: radii.md,
     padding: 12,
     alignItems: 'center',
   },
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   syncButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: radii.md,
     minWidth: 80,
     alignItems: 'center',
   },

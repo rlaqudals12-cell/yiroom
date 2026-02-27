@@ -18,7 +18,7 @@ import Animated from 'react-native-reanimated';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { staggeredEntry } from '@/lib/animations';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: radii.lg,
   },
   tabActive: {},
   tabText: {
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   challengeCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
   },
   cardHeader: {
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   domainBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   domainBadgeText: {
     fontSize: typography.size.xs,
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
   difficultyBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   difficultyBadgeText: {
     fontSize: typography.size.xs,
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   },
   joinButton: {
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: radii.lg,
     alignItems: 'center',
   },
   joinButtonText: {

@@ -415,7 +415,7 @@ export default function PantryScreen(): React.JSX.Element {
                     storageFilter === f.key ? brand.primary : colors.card,
                   borderColor:
                     storageFilter === f.key ? brand.primary : colors.border,
-                  borderRadius: 999,
+                  borderRadius: radii.full,
                 },
               ]}
               onPress={() => {

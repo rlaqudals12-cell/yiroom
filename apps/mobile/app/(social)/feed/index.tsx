@@ -17,7 +17,7 @@ import {
   Share,
   Platform,
 } from 'react-native';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { feedTypeConfig, formatRelativeTime, type FeedItem, type FeedTab } from '../../../lib/feed';
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   feedCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
     ...Platform.select({
       ios: {

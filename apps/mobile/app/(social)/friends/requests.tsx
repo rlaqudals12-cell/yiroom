@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { type FriendRequest } from '../../../lib/social';
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   errorContainer: {
     margin: 16,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   errorText: {
     fontSize: typography.size.sm,
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   requestCard: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     padding: 16,
   },
   requestInfo: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   acceptButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: radii.lg,
     alignItems: 'center',
   },
   acceptButtonText: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   rejectButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: radii.lg,
     alignItems: 'center',
   },
   rejectButtonText: {

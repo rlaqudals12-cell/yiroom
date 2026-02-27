@@ -13,7 +13,7 @@ import { staggeredEntry } from '@/lib/animations';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { useWorkoutData, type WorkoutExercise } from '@/hooks/useWorkoutData';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, radii } from '@/lib/theme';
 
 // 플랜이 없을 때 사용하는 기본 운동
 const DEFAULT_EXERCISES: WorkoutExercise[] = [
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
   skipButtonText: {
     fontSize: typography.size.sm,
