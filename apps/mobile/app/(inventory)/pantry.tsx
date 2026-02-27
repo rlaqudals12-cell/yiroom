@@ -15,7 +15,7 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   Alert,
   RefreshControl,
@@ -166,12 +166,12 @@ export default function PantryScreen(): React.JSX.Element {
                 </Text>
               )}
             </View>
-            <TouchableOpacity
+            <Pressable
               onPress={() => handleDelete(item)}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Trash2 size={16} color={colors.mutedForeground} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {/* 메타 정보 */}
@@ -295,7 +295,7 @@ export default function PantryScreen(): React.JSX.Element {
           },
         ]}
       >
-        <TouchableOpacity
+        <Pressable
           style={[
             styles.tab,
             {
@@ -330,8 +330,8 @@ export default function PantryScreen(): React.JSX.Element {
           >
             냉장고
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.tab,
             {
@@ -366,7 +366,7 @@ export default function PantryScreen(): React.JSX.Element {
           >
             영양제
           </Text>
-        </TouchableOpacity>
+        </Pressable>
         <View style={{ flex: 1 }} />
         {expiringCount > 0 && (
           <View style={styles.warningBadge}>
@@ -406,7 +406,7 @@ export default function PantryScreen(): React.JSX.Element {
             paddingVertical: spacing.sm,
           }}
           renderItem={({ item: f }) => (
-            <TouchableOpacity
+            <Pressable
               style={[
                 styles.filterChip,
                 {
@@ -434,7 +434,7 @@ export default function PantryScreen(): React.JSX.Element {
               >
                 {f.label}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         />
       )}

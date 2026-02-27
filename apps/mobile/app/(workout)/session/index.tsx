@@ -4,7 +4,7 @@
  */
 import { router } from 'expo-router';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -173,12 +173,12 @@ export default function WorkoutSessionScreen() {
             ))}
           </View>
 
-          <TouchableOpacity
+          <Pressable
             style={[styles.startButton, { backgroundColor: workoutColor }]}
             onPress={handleStartSession}
           >
-            <Text style={styles.startButtonText}>운동 시작</Text>
-          </TouchableOpacity>
+            <Text style={[styles.startButtonText, { color: colors.overlayForeground }]}>운동 시작</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -220,12 +220,12 @@ export default function WorkoutSessionScreen() {
             </GlassCard>
           </Animated.View>
 
-          <TouchableOpacity
+          <Pressable
             style={[styles.finishButton, { backgroundColor: workoutColor }]}
             onPress={() => router.replace('/(tabs)/records')}
           >
-            <Text style={styles.finishButtonText}>완료</Text>
-          </TouchableOpacity>
+            <Text style={[styles.finishButtonText, { color: colors.overlayForeground }]}>완료</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -236,9 +236,9 @@ export default function WorkoutSessionScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* 상단 정보 */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleEndSession}>
+        <Pressable onPress={handleEndSession}>
           <Text style={[styles.endText, { color: colors.mutedForeground }]}>종료</Text>
-        </TouchableOpacity>
+        </Pressable>
         <Text style={[styles.totalTimeText, { color: colors.mutedForeground }]}>
           {formatTime(totalTime)}
         </Text>
@@ -258,14 +258,14 @@ export default function WorkoutSessionScreen() {
                   ? exercises[currentExerciseIndex + 1].name
                   : '마지막 운동 완료!'}
             </Text>
-            <TouchableOpacity
+            <Pressable
               style={[styles.skipButton, { borderColor: colors.border }]}
               onPress={handleSkipRest}
             >
               <Text style={[styles.skipButtonText, { color: colors.mutedForeground }]}>
                 휴식 건너뛰기
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </>
         ) : (
           <>
@@ -288,12 +288,12 @@ export default function WorkoutSessionScreen() {
       {/* 하단 버튼 */}
       {sessionState === 'exercising' && (
         <View style={styles.footer}>
-          <TouchableOpacity
+          <Pressable
             style={[styles.completeButton, { backgroundColor: workoutColor }]}
             onPress={handleCompleteSet}
           >
-            <Text style={styles.completeButtonText}>세트 완료</Text>
-          </TouchableOpacity>
+            <Text style={[styles.completeButtonText, { color: colors.overlayForeground }]}>세트 완료</Text>
+          </Pressable>
         </View>
       )}
 
@@ -384,7 +384,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   completeButtonText: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },
@@ -437,7 +436,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startButtonText: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },
@@ -483,7 +481,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   finishButtonText: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },

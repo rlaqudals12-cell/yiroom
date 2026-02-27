@@ -251,7 +251,7 @@ export default function BodyResultScreen() {
           {bmi.toFixed(1)}
         </Text>
         <View style={[localStyles.bmiBadge, { backgroundColor: bmiStatus.color }]}>
-          <Text style={localStyles.bmiBadgeText}>{bmiStatus.label}</Text>
+          <Text style={[localStyles.bmiBadgeText, { color: colors.card }]}>{bmiStatus.label}</Text>
         </View>
       </View>
       <Text style={[localStyles.bodyInfo, { color: colors.mutedForeground }]}>
@@ -354,9 +354,9 @@ export default function BodyResultScreen() {
           {typeData.recommendations.map((item, index) => (
             <View
               key={index}
-              style={[localStyles.tag, { backgroundColor: isDark ? '#16A34A20' : '#DCFCE7' }]}
+              style={[localStyles.tag, { backgroundColor: status.success + (isDark ? '20' : '20') }]}
             >
-              <Text style={[localStyles.tagText, { color: isDark ? '#4ADE80' : '#16A34A' }]}>
+              <Text style={[localStyles.tagText, { color: status.success }]}>
                 {item}
               </Text>
             </View>
@@ -373,9 +373,9 @@ export default function BodyResultScreen() {
           {typeData.avoidItems.map((item, index) => (
             <View
               key={index}
-              style={[localStyles.tag, { backgroundColor: isDark ? '#B91C1C20' : '#FEE2E2' }]}
+              style={[localStyles.tag, { backgroundColor: status.error + '20' }]}
             >
-              <Text style={[localStyles.tagText, { color: isDark ? '#F87171' : '#B91C1C' }]}>
+              <Text style={[localStyles.tagText, { color: status.error }]}>
                 {item}
               </Text>
             </View>
@@ -445,7 +445,6 @@ const localStyles = StyleSheet.create({
     borderRadius: 10,
   },
   bmiBadgeText: {
-    color: '#fff',
     fontSize: 12,
     fontWeight: '600',
   },

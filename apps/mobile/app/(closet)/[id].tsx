@@ -10,7 +10,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   Image,
   Alert,
@@ -31,7 +31,7 @@ import {
 } from '../../lib/inventory';
 
 export default function ItemDetailScreen() {
-  const { colors } = useTheme();
+  const { colors, status, module: moduleTheme } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -84,9 +84,9 @@ export default function ItemDetailScreen() {
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             아이템을 찾을 수 없어요
           </Text>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>돌아가기</Text>
-          </TouchableOpacity>
+          <Pressable style={[styles.backButton, { backgroundColor: moduleTheme.body.dark }]} onPress={() => router.back()}>
+            <Text style={[styles.backButtonText, { color: colors.overlayForeground }]}>돌아가기</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -127,13 +127,13 @@ export default function ItemDetailScreen() {
                 {CLOTHING_CATEGORY_LABELS[item.subCategory as ClothingCategory] || item.subCategory}
               </Text>
             </View>
-            <TouchableOpacity onPress={handleFavorite}>
+            <Pressable onPress={handleFavorite}>
               <Heart
                 size={28}
-                color={item.isFavorite ? '#ef4444' : colors.mutedForeground}
-                fill={item.isFavorite ? '#ef4444' : 'transparent'}
+                color={item.isFavorite ? colors.destructive : colors.mutedForeground}
+                fill={item.isFavorite ? colors.destructive : 'transparent'}
               />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {item.brand && (
@@ -162,8 +162,8 @@ export default function ItemDetailScreen() {
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>색상</Text>
             <View style={styles.tagsContainer}>
               {metadata.color.map((color, index) => (
-                <View key={index} style={[styles.tag, { backgroundColor: '#8b5cf620' }]}>
-                  <Text style={[styles.tagText, { color: '#8b5cf6' }]}>{color}</Text>
+                <View key={index} style={[styles.tag, { backgroundColor: moduleTheme.body.dark + '20' }]}>
+                  <Text style={[styles.tagText, { color: moduleTheme.body.dark }]}>{color}</Text>
                 </View>
               ))}
             </View>
@@ -176,8 +176,8 @@ export default function ItemDetailScreen() {
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>계절</Text>
             <View style={styles.tagsContainer}>
               {metadata.season.map((season, index) => (
-                <View key={index} style={[styles.tag, { backgroundColor: '#3b82f620' }]}>
-                  <Text style={[styles.tagText, { color: '#3b82f6' }]}>
+                <View key={index} style={[styles.tag, { backgroundColor: status.info + '20' }]}>
+                  <Text style={[styles.tagText, { color: status.info }]}>
                     {SEASON_LABELS[season]}
                   </Text>
                 </View>
@@ -192,8 +192,8 @@ export default function ItemDetailScreen() {
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>상황</Text>
             <View style={styles.tagsContainer}>
               {metadata.occasion.map((occasion, index) => (
-                <View key={index} style={[styles.tag, { backgroundColor: '#22c55e20' }]}>
-                  <Text style={[styles.tagText, { color: '#22c55e' }]}>
+                <View key={index} style={[styles.tag, { backgroundColor: status.success + '20' }]}>
+                  <Text style={[styles.tagText, { color: status.success }]}>
                     {OCCASION_LABELS[occasion]}
                   </Text>
                 </View>
@@ -219,12 +219,12 @@ export default function ItemDetailScreen() {
 
       {/* 하단 액션 버튼 */}
       <View style={[styles.actionBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
-        <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={handleDelete}>
-          <Trash2 size={20} color="#ef4444" />
-          <Text style={[styles.actionButtonText, { color: '#ef4444' }]}>삭제</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
+        <Pressable style={[styles.actionButton, { backgroundColor: colors.destructive + '15' }]} onPress={handleDelete}>
+          <Trash2 size={20} color={colors.destructive} />
+          <Text style={[styles.actionButtonText, { color: colors.destructive }]}>삭제</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.actionButton, { backgroundColor: moduleTheme.body.dark }]}
           onPress={() => {
             Haptics.selectionAsync();
             Alert.alert(
@@ -233,9 +233,9 @@ export default function ItemDetailScreen() {
             );
           }}
         >
-          <Edit2 size={20} color="#fff" />
-          <Text style={[styles.actionButtonText, { color: '#fff' }]}>편집</Text>
-        </TouchableOpacity>
+          <Edit2 size={20} color={colors.overlayForeground} />
+          <Text style={[styles.actionButtonText, { color: colors.overlayForeground }]}>편집</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -345,12 +345,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
   },
-  deleteButton: {
-    backgroundColor: '#fef2f2',
-  },
-  editButton: {
-    backgroundColor: '#8b5cf6',
-  },
+  deleteButton: {},
+  editButton: {},
   actionButtonText: {
     fontSize: 15,
     fontWeight: '600',
@@ -366,13 +362,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   backButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   backButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
   },

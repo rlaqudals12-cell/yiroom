@@ -11,7 +11,7 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   ActivityIndicator,
   Alert,
@@ -102,7 +102,7 @@ export default function FeedCreateScreen(): React.JSX.Element {
               {FEED_CATEGORIES.map((cat) => {
                 const isActive = selectedType === cat.type;
                 return (
-                  <TouchableOpacity
+                  <Pressable
                     key={cat.type}
                     style={[
                       styles.categoryChip,
@@ -128,7 +128,7 @@ export default function FeedCreateScreen(): React.JSX.Element {
                     >
                       {cat.label}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 );
               })}
             </View>
@@ -196,7 +196,7 @@ export default function FeedCreateScreen(): React.JSX.Element {
 
         {/* 하단 제출 버튼 */}
         <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-          <TouchableOpacity
+          <Pressable
             style={[
               styles.submitButton,
               {
@@ -224,7 +224,7 @@ export default function FeedCreateScreen(): React.JSX.Element {
                 올리기
               </Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

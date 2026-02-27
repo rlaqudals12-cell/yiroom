@@ -4,7 +4,7 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
@@ -27,7 +27,7 @@ const TIME_OPTIONS = [
 ];
 
 export default function WorkoutFrequencyScreen() {
-  const { colors } = useTheme();
+  const { colors, brand } = useTheme();
   const params = useLocalSearchParams<{ goals?: string }>();
 
   const [frequency, setFrequency] = useState<number | null>(null);
@@ -78,15 +78,15 @@ export default function WorkoutFrequencyScreen() {
             const isSelected = frequency === option.value;
 
             return (
-              <TouchableOpacity
+              <Pressable
                 key={option.value}
                 style={[
                   styles.frequencyCard,
                   { backgroundColor: colors.card },
-                  isSelected && styles.frequencyCardSelected,
+                  isSelected && { borderColor: brand.primary, backgroundColor: brand.primary + '10' },
                 ]}
                 onPress={() => handleFrequencySelect(option.value)}
-                activeOpacity={0.7}
+
               >
                 <Text style={styles.frequencyEmoji}>{option.emoji}</Text>
                 <View style={styles.frequencyContent}>
@@ -94,7 +94,7 @@ export default function WorkoutFrequencyScreen() {
                     style={[
                       styles.frequencyLabel,
                       { color: colors.foreground },
-                      isSelected && styles.frequencyLabelSelected,
+                      isSelected && { color: brand.primary },
                     ]}
                   >
                     {option.label}
@@ -103,10 +103,10 @@ export default function WorkoutFrequencyScreen() {
                     {option.description}
                   </Text>
                 </View>
-                <View style={[styles.radio, { borderColor: colors.border }, isSelected && styles.radioSelected]}>
-                  {isSelected && <View style={styles.radioInner} />}
+                <View style={[styles.radio, { borderColor: colors.border }, isSelected && { borderColor: brand.primary }]}>
+                  {isSelected && <View style={[styles.radioInner, { backgroundColor: brand.primary }]} />}
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             );
           })}
         </View>
@@ -124,22 +124,22 @@ export default function WorkoutFrequencyScreen() {
             const isSelected = preferredTime === option.id;
 
             return (
-              <TouchableOpacity
+              <Pressable
                 key={option.id}
                 style={[
                   styles.timeCard,
                   { backgroundColor: colors.card },
-                  isSelected && styles.timeCardSelected,
+                  isSelected && { borderColor: brand.primary, backgroundColor: brand.primary + '10' },
                 ]}
                 onPress={() => handleTimeSelect(option.id)}
-                activeOpacity={0.7}
+
               >
                 <Text style={styles.timeEmoji}>{option.emoji}</Text>
                 <Text
                   style={[
                     styles.timeLabel,
                     { color: colors.foreground },
-                    isSelected && styles.timeLabelSelected,
+                    isSelected && { color: brand.primary },
                   ]}
                 >
                   {option.label}
@@ -147,20 +147,20 @@ export default function WorkoutFrequencyScreen() {
                 <Text style={[styles.timeDescription, { color: colors.mutedForeground }]}>
                   {option.description}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             );
           })}
         </View>
       </ScrollView>
 
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-        <TouchableOpacity
-          style={[styles.nextButton, !isValid && { backgroundColor: colors.muted }]}
+        <Pressable
+          style={[styles.nextButton, { backgroundColor: brand.primary }, !isValid && { backgroundColor: colors.muted }]}
           onPress={handleNext}
           disabled={!isValid}
         >
-          <Text style={styles.nextButtonText}>운동 타입 분석하기</Text>
-        </TouchableOpacity>
+          <Text style={[styles.nextButtonText, { color: brand.primaryForeground }]}>운동 타입 분석하기</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -198,10 +198,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  frequencyCardSelected: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2',
-  },
+  frequencyCardSelected: {},
   frequencyEmoji: {
     fontSize: 28,
     marginRight: 12,
@@ -214,9 +211,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 2,
   },
-  frequencyLabelSelected: {
-    color: '#ef4444',
-  },
+  frequencyLabelSelected: {},
   frequencyDescription: {
     fontSize: 13,
   },
@@ -229,14 +224,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioSelected: {
-    borderColor: '#ef4444',
-  },
+  radioSelected: {},
   radioInner: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#ef4444',
   },
   // 시간대 그리드 스타일
   timeGrid: {
@@ -252,10 +244,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  timeCardSelected: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2',
-  },
+  timeCardSelected: {},
   timeEmoji: {
     fontSize: 32,
     marginBottom: 8,
@@ -265,9 +254,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 4,
   },
-  timeLabelSelected: {
-    color: '#ef4444',
-  },
+  timeLabelSelected: {},
   timeDescription: {
     fontSize: 13,
   },
@@ -281,13 +268,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   nextButton: {
-    backgroundColor: '#ef4444',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   nextButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

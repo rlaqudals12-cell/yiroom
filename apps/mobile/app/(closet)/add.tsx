@@ -21,6 +21,7 @@ import {
 
 import { useCloset, type ClothingCategory, type Season } from '@/lib/inventory';
 import { useAppPreferencesStore } from '@/lib/stores';
+import { useTheme } from '@/lib/theme';
 import { closetLogger } from '@/lib/utils/logger';
 
 // 카테고리 옵션
@@ -83,6 +84,8 @@ export default function ClosetAddScreen() {
   const router = useRouter();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
   const { addItem } = useCloset();
+  const { colors } = useTheme();
+  const styles = useStyles();
 
   const [formData, setFormData] = useState<FormData>({
     imageUri: null,
@@ -286,7 +289,7 @@ export default function ClosetAddScreen() {
             value={formData.name}
             onChangeText={(text) => setFormData((prev) => ({ ...prev, name: text }))}
             placeholder="예: 화이트 셔츠"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.mutedForeground}
           />
 
           <Text style={styles.label}>브랜드</Text>
@@ -295,7 +298,7 @@ export default function ClosetAddScreen() {
             value={formData.brand}
             onChangeText={(text) => setFormData((prev) => ({ ...prev, brand: text }))}
             placeholder="예: ZARA"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.mutedForeground}
           />
         </View>
 
@@ -411,7 +414,7 @@ export default function ClosetAddScreen() {
             value={formData.notes}
             onChangeText={(text) => setFormData((prev) => ({ ...prev, notes: text }))}
             placeholder="이 아이템에 대한 메모를 남겨보세요"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.mutedForeground}
             multiline
             numberOfLines={3}
           />
@@ -433,7 +436,7 @@ export default function ClosetAddScreen() {
           ]}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <ActivityIndicator size="small" color={colors.overlayForeground} />
           ) : (
             <Text style={styles.submitButtonText}>옷장에 추가</Text>
           )}
@@ -443,220 +446,224 @@ export default function ClosetAddScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  imageSection: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  previewImage: {
-    width: 200,
-    height: 267,
-    borderRadius: 12,
-  },
-  imageOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 8,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
-    alignItems: 'center',
-  },
-  imageOverlayText: {
-    color: '#FFFFFF',
-    fontWeight: '500',
-  },
-  imagePlaceholder: {
-    width: 200,
-    height: 267,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imagePlaceholderIcon: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-  imagePlaceholderText: {
-    color: '#6B7280',
-    marginBottom: 16,
-  },
-  imageButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  imageButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-  },
-  imageButtonText: {
-    color: '#1F2937',
-    fontWeight: '500',
-  },
-  section: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    marginTop: 8,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 12,
-  },
-  label: {
-    fontSize: 14,
-    color: '#4B5563',
-    marginBottom: 6,
-    marginTop: 12,
-  },
-  input: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: '#1F2937',
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  optionGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  optionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    gap: 6,
-  },
-  optionButtonSelected: {
-    backgroundColor: '#1F2937',
-  },
-  optionIcon: {
-    fontSize: 16,
-  },
-  optionLabel: {
-    color: '#4B5563',
-    fontSize: 13,
-  },
-  optionLabelSelected: {
-    color: '#FFFFFF',
-  },
-  colorGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  colorButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 16,
-    gap: 6,
-  },
-  colorButtonSelected: {
-    backgroundColor: '#1F2937',
-  },
-  colorSwatch: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  colorLabel: {
-    color: '#4B5563',
-    fontSize: 12,
-  },
-  colorLabelSelected: {
-    color: '#FFFFFF',
-  },
-  optionRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  seasonButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-  },
-  seasonButtonSelected: {
-    backgroundColor: '#1F2937',
-  },
-  seasonIcon: {
-    fontSize: 24,
-    marginBottom: 4,
-  },
-  seasonLabel: {
-    color: '#4B5563',
-    fontSize: 12,
-  },
-  seasonLabelSelected: {
-    color: '#FFFFFF',
-  },
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 16,
-  },
-  chipSelected: {
-    backgroundColor: '#1F2937',
-  },
-  chipText: {
-    color: '#4B5563',
-    fontSize: 13,
-  },
-  chipTextSelected: {
-    color: '#FFFFFF',
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  submitButton: {
-    backgroundColor: '#1F2937',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#9CA3AF',
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-});
+// 동적 스타일 생성 (useTheme 색상 사용)
+function useStyles() {
+  const { colors } = useTheme();
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    imageSection: {
+      padding: 20,
+      alignItems: 'center',
+    },
+    previewImage: {
+      width: 200,
+      height: 267,
+      borderRadius: 12,
+    },
+    imageOverlay: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      padding: 8,
+      borderBottomLeftRadius: 12,
+      borderBottomRightRadius: 12,
+      alignItems: 'center',
+    },
+    imageOverlayText: {
+      color: colors.overlayForeground,
+      fontWeight: '500',
+    },
+    imagePlaceholder: {
+      width: 200,
+      height: 267,
+      backgroundColor: colors.border,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    imagePlaceholderIcon: {
+      fontSize: 48,
+      marginBottom: 8,
+    },
+    imagePlaceholderText: {
+      color: colors.mutedForeground,
+      marginBottom: 16,
+    },
+    imageButtons: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    imageButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      backgroundColor: colors.card,
+      borderRadius: 8,
+    },
+    imageButtonText: {
+      color: colors.foreground,
+      fontWeight: '500',
+    },
+    section: {
+      padding: 20,
+      backgroundColor: colors.card,
+      marginTop: 8,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.foreground,
+      marginBottom: 12,
+    },
+    label: {
+      fontSize: 14,
+      color: colors.mutedForeground,
+      marginBottom: 6,
+      marginTop: 12,
+    },
+    input: {
+      backgroundColor: colors.secondary,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 14,
+      color: colors.foreground,
+    },
+    textArea: {
+      height: 80,
+      textAlignVertical: 'top',
+    },
+    optionGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    optionButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      backgroundColor: colors.secondary,
+      borderRadius: 8,
+      gap: 6,
+    },
+    optionButtonSelected: {
+      backgroundColor: colors.foreground,
+    },
+    optionIcon: {
+      fontSize: 16,
+    },
+    optionLabel: {
+      color: colors.mutedForeground,
+      fontSize: 13,
+    },
+    optionLabelSelected: {
+      color: colors.background,
+    },
+    colorGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    colorButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      backgroundColor: colors.secondary,
+      borderRadius: 16,
+      gap: 6,
+    },
+    colorButtonSelected: {
+      backgroundColor: colors.foreground,
+    },
+    colorSwatch: {
+      width: 16,
+      height: 16,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    colorLabel: {
+      color: colors.mutedForeground,
+      fontSize: 12,
+    },
+    colorLabelSelected: {
+      color: colors.background,
+    },
+    optionRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    seasonButton: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: 12,
+      backgroundColor: colors.secondary,
+      borderRadius: 8,
+    },
+    seasonButtonSelected: {
+      backgroundColor: colors.foreground,
+    },
+    seasonIcon: {
+      fontSize: 24,
+      marginBottom: 4,
+    },
+    seasonLabel: {
+      color: colors.mutedForeground,
+      fontSize: 12,
+    },
+    seasonLabelSelected: {
+      color: colors.background,
+    },
+    chipContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    chip: {
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      backgroundColor: colors.secondary,
+      borderRadius: 16,
+    },
+    chipSelected: {
+      backgroundColor: colors.foreground,
+    },
+    chipText: {
+      color: colors.mutedForeground,
+      fontSize: 13,
+    },
+    chipTextSelected: {
+      color: colors.background,
+    },
+    bottomBar: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      padding: 16,
+      backgroundColor: colors.card,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    submitButton: {
+      backgroundColor: colors.foreground,
+      paddingVertical: 14,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    submitButtonDisabled: {
+      backgroundColor: colors.mutedForeground,
+    },
+    submitButtonText: {
+      color: colors.background,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+  });
+}

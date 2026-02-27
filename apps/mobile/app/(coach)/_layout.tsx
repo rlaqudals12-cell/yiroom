@@ -4,7 +4,7 @@
 
 import { router } from 'expo-router';
 import { Stack } from 'expo-router';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Pressable, Text, StyleSheet } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 
@@ -28,12 +28,12 @@ export default function CoachLayout() {
           title: 'AI 코치',
           headerLargeTitle: false,
           headerRight: () => (
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.push('/(coach)/history')}
               style={styles.headerButton}
             >
               <Text style={[styles.headerButtonText, { color: brand.primary }]}>기록</Text>
-            </TouchableOpacity>
+            </Pressable>
           ),
         }}
       />

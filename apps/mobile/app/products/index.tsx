@@ -10,7 +10,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   FlatList,
   ActivityIndicator,
@@ -271,7 +271,7 @@ export default function ProductsScreen() {
         {CATEGORIES.map((category) => {
           const isSelected = selectedCategory === category.id;
           return (
-            <TouchableOpacity
+            <Pressable
               key={category.id}
               style={[
                 styles.categoryChip,
@@ -295,7 +295,7 @@ export default function ProductsScreen() {
               >
                 {category.label}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </ScrollView>
@@ -321,7 +321,7 @@ export default function ProductsScreen() {
             />
           }
           renderItem={({ item: product }) => (
-            <TouchableOpacity
+            <Pressable
               style={styles.productCard}
               onPress={() => handleProductPress(product.id)}
             >
@@ -371,7 +371,7 @@ export default function ProductsScreen() {
                   {formatPrice(product.price)}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </Pressable>
           )}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>

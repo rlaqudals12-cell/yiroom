@@ -12,7 +12,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   Alert,
   ActivityIndicator,
   ScrollView,
@@ -237,11 +237,11 @@ export default function FoodCameraScreen() {
   const getTrafficLightColor = (light: TrafficLight) => {
     switch (light) {
       case 'green':
-        return '#22c55e';
+        return status.success;
       case 'yellow':
-        return '#eab308';
+        return status.warning;
       case 'red':
-        return '#ef4444';
+        return status.error;
     }
   };
 
@@ -274,14 +274,14 @@ export default function FoodCameraScreen() {
           <Text style={[styles.permissionText, { color: colors.foreground }]}>
             카메라 권한이 필요합니다
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={[styles.permissionButton, { backgroundColor: status.success }]}
             onPress={requestPermission}
           >
             <Text style={[styles.permissionButtonText, { color: colors.overlayForeground }]}>
               권한 허용
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -334,14 +334,14 @@ export default function FoodCameraScreen() {
                 <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
                   음식을 인식하지 못했어요
                 </Text>
-                <TouchableOpacity
+                <Pressable
                   style={styles.searchLink}
                   onPress={() => router.push('/(nutrition)/search')}
                 >
                   <Text style={[styles.searchLinkText, { color: status.success }]}>
                     검색으로 기록하기
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             ) : (
               recognizedFoods.map((food) => (
@@ -363,11 +363,11 @@ export default function FoodCameraScreen() {
                         {Math.round(food.calories * food.portion)} kcal
                       </Text>
                     </View>
-                    <TouchableOpacity onPress={() => handleRemoveFood(food.id)}>
+                    <Pressable onPress={() => handleRemoveFood(food.id)}>
                       <Text style={[styles.removeButton, { color: colors.mutedForeground }]}>
                         ✕
                       </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
 
                   <Text style={[styles.macros, { color: colors.mutedForeground }]}>
@@ -396,21 +396,21 @@ export default function FoodCameraScreen() {
                       수량:
                     </Text>
                     <View style={styles.portionControls}>
-                      <TouchableOpacity
+                      <Pressable
                         style={[styles.portionButton, { backgroundColor: colors.muted }]}
                         onPress={() => handlePortionChange(food.id, -0.5)}
                       >
                         <Text style={[styles.portionButtonText, { color: status.success }]}>−</Text>
-                      </TouchableOpacity>
+                      </Pressable>
                       <Text style={[styles.portionValue, { color: colors.foreground }]}>
                         {food.portion}인분
                       </Text>
-                      <TouchableOpacity
+                      <Pressable
                         style={[styles.portionButton, { backgroundColor: colors.muted }]}
                         onPress={() => handlePortionChange(food.id, 0.5)}
                       >
                         <Text style={[styles.portionButtonText, { color: status.success }]}>+</Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     </View>
                   </View>
                 </View>
@@ -418,14 +418,14 @@ export default function FoodCameraScreen() {
             )}
 
             {/* 음식 추가 버튼 */}
-            <TouchableOpacity
+            <Pressable
               style={[styles.addFoodButton, { borderColor: colors.border }]}
               onPress={() => router.push('/(nutrition)/search')}
             >
               <Text style={[styles.addFoodText, { color: colors.mutedForeground }]}>
                 + 음식 추가하기
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {/* 총 영양 정보 */}
@@ -444,13 +444,13 @@ export default function FoodCameraScreen() {
 
         {/* 하단 버튼 */}
         <View style={[styles.resultFooter, { backgroundColor: colors.card }]}>
-          <TouchableOpacity
+          <Pressable
             style={[styles.retakeButton, { borderColor: colors.border }]}
             onPress={handleRetake}
           >
             <Text style={[styles.retakeButtonText, { color: colors.foreground }]}>다시 촬영</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             style={[
               styles.saveButton,
               { backgroundColor: status.success },
@@ -466,7 +466,7 @@ export default function FoodCameraScreen() {
                 기록하기
               </Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -489,7 +489,7 @@ export default function FoodCameraScreen() {
       {/* 식사 타입 선택 */}
       <View style={styles.mealTypeRow}>
         {MEAL_TYPES.map((meal) => (
-          <TouchableOpacity
+          <Pressable
             key={meal.id}
             style={[
               styles.mealTypeChip,
@@ -509,26 +509,26 @@ export default function FoodCameraScreen() {
             >
               {meal.label}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </View>
 
       {/* 촬영 버튼 */}
       <View style={styles.cameraControls}>
-        <TouchableOpacity style={styles.galleryButton} onPress={handlePickImage}>
+        <Pressable style={styles.galleryButton} onPress={handlePickImage}>
           <Text style={styles.galleryButtonText}>갤러리</Text>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
+        <Pressable style={styles.captureButton} onPress={handleCapture}>
           <View style={styles.captureButtonInner} />
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity
+        <Pressable
           style={styles.searchButton}
           onPress={() => router.push('/(nutrition)/search')}
         >
           <Text style={styles.searchButtonText}>검색</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

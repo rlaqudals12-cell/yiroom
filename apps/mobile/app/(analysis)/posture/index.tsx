@@ -2,7 +2,7 @@
  * Posture 자세 분석 - 시작 화면
  */
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
@@ -49,15 +49,15 @@ export default function PostureAnalysisScreen() {
           ))}
         </View>
 
-        <TouchableOpacity
+        <Pressable
           style={[styles.startButton, { backgroundColor: brand.primary }]}
           onPress={handleStart}
-          activeOpacity={0.8}
+
         >
           <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>
             분석 시작하기
           </Text>
-        </TouchableOpacity>
+        </Pressable>
 
         <Text style={[styles.notice, { color: colors.mutedForeground }]}>
           옆모습이 잘 보이도록 전신 사진을 촬영해주세요

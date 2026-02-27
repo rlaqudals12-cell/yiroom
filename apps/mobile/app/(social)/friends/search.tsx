@@ -9,7 +9,7 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   Image,
   ActivityIndicator,
@@ -75,12 +75,12 @@ export default function FriendSearchScreen() {
       );
     }
     return (
-      <TouchableOpacity
+      <Pressable
         style={[styles.addButton, { backgroundColor: brand.primary }]}
         onPress={() => handleSendRequest(item.userId, item.displayName)}
       >
         <Text style={[styles.addButtonText, { color: brand.primaryForeground }]}>친구 추가</Text>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -132,17 +132,17 @@ export default function FriendSearchScreen() {
             autoFocus
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={handleClear}>
+            <Pressable onPress={handleClear}>
               <Text style={[styles.clearIcon, { color: colors.mutedForeground }]}>✕</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
-        <TouchableOpacity
+        <Pressable
           style={[styles.searchButton, { backgroundColor: brand.primary }]}
           onPress={handleSearch}
         >
           <Text style={[styles.searchButtonText, { color: brand.primaryForeground }]}>검색</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {/* 에러 메시지 */}

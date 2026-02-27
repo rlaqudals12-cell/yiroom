@@ -5,7 +5,7 @@
  * - 재시도 버튼
  * - 홈으로 돌아가기 버튼
  */
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import { useTheme } from '@/lib/theme';
 
@@ -46,7 +46,7 @@ export function AnalysisErrorState({
 
       <View style={styles.buttonContainer}>
         {onRetry && (
-          <TouchableOpacity
+          <Pressable
             style={[styles.retryButton, { backgroundColor: brand.primary }]}
             onPress={onRetry}
             accessibilityRole="button"
@@ -56,11 +56,11 @@ export function AnalysisErrorState({
             <Text style={[styles.retryButtonText, { color: brand.primaryForeground }]}>
               {retryText}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
 
         {onGoHome && (
-          <TouchableOpacity
+          <Pressable
             style={[styles.homeButton, { borderColor: colors.border }]}
             onPress={onGoHome}
             accessibilityRole="button"
@@ -70,7 +70,7 @@ export function AnalysisErrorState({
             <Text style={[styles.homeButtonText, { color: colors.mutedForeground }]}>
               홈으로 돌아가기
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
     </View>

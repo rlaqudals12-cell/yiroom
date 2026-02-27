@@ -141,7 +141,7 @@ export function AnalysisHistoryCard({
                   style={{
                     fontSize: typography.size.xs,
                     fontWeight: '600',
-                    color: '#fff',
+                    color: colors.card,
                   }}
                 >
                   {item.score}점

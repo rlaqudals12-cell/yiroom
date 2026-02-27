@@ -147,7 +147,7 @@ export default function HairResultScreen() {
         {SCALP_LABELS[result.scalpCondition]} · 손상도 {result.damageLevel}%
       </Text>
       <View style={[localStyles.scoreBadge, { backgroundColor: accent.base }]}>
-        <Text style={localStyles.scoreBadgeText}>종합 {avgScore}점</Text>
+        <Text style={[localStyles.scoreBadgeText, { color: colors.card }]}>종합 {avgScore}점</Text>
       </View>
     </View>
   );
@@ -288,7 +288,6 @@ const localStyles = StyleSheet.create({
     marginTop: 4,
   },
   scoreBadgeText: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },

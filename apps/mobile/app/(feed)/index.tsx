@@ -9,7 +9,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   ActivityIndicator,
   RefreshControl,
@@ -47,7 +47,7 @@ const TAB_LABELS: Record<FeedTab, string> = {
 };
 
 export default function FeedScreen() {
-  const { colors } = useTheme();
+  const { colors, brand, status } = useTheme();
   const router = useRouter();
 
   const {
@@ -95,10 +95,10 @@ export default function FeedScreen() {
 
   const renderFeedItem = ({ item }: { item: FeedItem }) => {
     return (
-      <TouchableOpacity
+      <Pressable
         style={[styles.feedCard, { backgroundColor: colors.card }]}
         onPress={() => handleItemPress(item.id)}
-        activeOpacity={0.7}
+
       >
         {/* 헤더 */}
         <View style={styles.cardHeader}>
@@ -116,7 +116,7 @@ export default function FeedScreen() {
             </View>
           </View>
           <View style={[styles.levelBadge, { backgroundColor: colors.secondary }]}>
-            <Text style={styles.levelText}>Lv.{item.userLevel}</Text>
+            <Text style={[styles.levelText, { color: brand.primary }]}>Lv.{item.userLevel}</Text>
           </View>
         </View>
 
@@ -138,18 +138,18 @@ export default function FeedScreen() {
 
         {/* 액션 */}
         <View style={[styles.cardActions, { borderTopColor: colors.border }]}>
-          <TouchableOpacity style={styles.actionButton} onPress={() => handleLikePress(item.id)}>
+          <Pressable style={styles.actionButton} onPress={() => handleLikePress(item.id)}>
             <Text style={styles.actionIcon}>{item.isLiked ? '❤️' : '🤍'}</Text>
             <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{item.likes}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton} onPress={() => handleItemPress(item.id)}>
+          </Pressable>
+          <Pressable style={styles.actionButton} onPress={() => handleItemPress(item.id)}>
             <Text style={styles.actionIcon}>💬</Text>
             <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
               {item.comments}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -157,7 +157,7 @@ export default function FeedScreen() {
     if (!isLoadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color="#6366f1" />
+        <ActivityIndicator size="small" color={brand.primary} />
       </View>
     );
   };
@@ -193,38 +193,38 @@ export default function FeedScreen() {
         ]}
       >
         {(['my', 'friends', 'all'] as FeedTab[]).map((tab) => (
-          <TouchableOpacity
+          <Pressable
             key={tab}
-            style={[styles.tab, activeTab === tab && styles.tabActive]}
+            style={[styles.tab, activeTab === tab && { borderBottomWidth: 2, borderBottomColor: brand.primary }]}
             onPress={() => handleTabChange(tab)}
           >
             <Text
               style={[
                 styles.tabText,
                 { color: colors.mutedForeground },
-                activeTab === tab && styles.tabTextActive,
+                activeTab === tab && { color: brand.primary, fontWeight: '600' as const },
               ]}
             >
               {TAB_LABELS[tab]}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </View>
 
       {/* 에러 */}
       {error && (
-        <View style={styles.errorBanner}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity onPress={refetch}>
-            <Text style={styles.retryText}>다시 시도</Text>
-          </TouchableOpacity>
+        <View style={[styles.errorBanner, { backgroundColor: status.error + '20' }]}>
+          <Text style={[styles.errorText, { color: status.error }]}>{error}</Text>
+          <Pressable onPress={refetch}>
+            <Text style={[styles.retryText, { color: brand.primary }]}>다시 시도</Text>
+          </Pressable>
         </View>
       )}
 
       {/* 로딩 */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#6366f1" />
+          <ActivityIndicator size="large" color={brand.primary} />
           <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
             피드를 불러오는 중...
           </Text>
@@ -241,7 +241,7 @@ export default function FeedScreen() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           refreshControl={
-            <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#6366f1" />
+            <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={brand.primary} />
           }
         />
       )}
@@ -263,34 +263,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginRight: 8,
   },
-  tabActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#6366f1',
-  },
+  tabActive: {},
   tabText: {
     fontSize: 15,
     fontWeight: '500',
   },
-  tabTextActive: {
-    color: '#6366f1',
-    fontWeight: '600',
-  },
+  tabTextActive: {},
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fee2e2',
     padding: 12,
     marginHorizontal: 16,
     marginTop: 12,
     borderRadius: 8,
   },
   errorText: {
-    color: '#dc2626',
     fontSize: 14,
   },
   retryText: {
-    color: '#6366f1',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -356,7 +347,6 @@ const styles = StyleSheet.create({
   levelText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6366f1',
   },
   cardContent: {
     marginBottom: 12,

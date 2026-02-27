@@ -311,7 +311,7 @@ export default function SkinSolutionScreen(): React.JSX.Element {
       <View
         style={[
           styles.sectionCard,
-          { backgroundColor: isDark ? colors.card : '#FFF5F5', borderColor: colors.border },
+          { backgroundColor: isDark ? colors.card : colors.destructive + '10', borderColor: colors.border },
         ]}
       >
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>

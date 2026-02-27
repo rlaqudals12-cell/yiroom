@@ -17,7 +17,7 @@ LogBox.ignoreLogs([
 import { OfflineBanner } from '../components/common/OfflineBanner';
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
 import { initSentry, SentryErrorBoundary, sentryWrap } from '../lib/monitoring/sentry';
-import { ThemeProvider, useTheme } from '../lib/theme';
+import { ThemeProvider, useTheme, lightColors } from '../lib/theme';
 import { appLogger } from '../lib/utils/logger';
 
 // ThemeProvider 내부에서 useTheme 사용 가능한 레이아웃
@@ -74,7 +74,7 @@ function SentryFallback() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
       <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>문제가 발생했어요</Text>
-      <Text style={{ fontSize: 14, color: '#666', textAlign: 'center' }}>
+      <Text style={{ fontSize: 14, color: lightColors.mutedForeground, textAlign: 'center' }}>
         앱을 다시 시작해 주세요.
       </Text>
     </View>

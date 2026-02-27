@@ -11,7 +11,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   ActivityIndicator,
   Alert,
@@ -106,7 +106,7 @@ export default function CoachHistoryScreen() {
   };
 
   const renderSession = ({ item }: { item: CoachSession }) => (
-    <TouchableOpacity
+    <Pressable
       style={[styles.sessionCard, { backgroundColor: colors.card }]}
       onPress={() => handleSessionPress(item)}
       onLongPress={() => handleDelete(item)}
@@ -122,7 +122,7 @@ export default function CoachHistoryScreen() {
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   if (isLoading) {
@@ -145,14 +145,14 @@ export default function CoachHistoryScreen() {
       edges={['bottom']}
     >
       {/* 새 대화 버튼 */}
-      <TouchableOpacity
+      <Pressable
         style={[styles.newSessionButton, { backgroundColor: brand.primary }]}
         onPress={handleNewSession}
       >
         <Text style={[styles.newSessionButtonText, { color: brand.primaryForeground }]}>
           + 새 대화 시작
         </Text>
-      </TouchableOpacity>
+      </Pressable>
 
       {/* 세션 목록 */}
       {sessions.length === 0 ? (

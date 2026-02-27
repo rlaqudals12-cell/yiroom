@@ -11,7 +11,7 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   Alert,
 } from 'react-native';
@@ -276,7 +276,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
               testID="weight-input"
             />
             <Text style={[styles.kgLabel, { color: colors.mutedForeground, fontSize: typography.size.lg }]}>kg</Text>
-            <TouchableOpacity
+            <Pressable
               style={[
                 styles.logButton,
                 {
@@ -291,7 +291,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
               <Text style={{ color: newWeight.trim() ? brand.primaryForeground : colors.mutedForeground, fontWeight: typography.weight.bold }}>
                 기록
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
 
@@ -320,7 +320,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
                 testID="target-weight-input"
               />
               <Text style={[styles.kgLabel, { color: colors.mutedForeground, fontSize: typography.size.lg }]}>kg</Text>
-              <TouchableOpacity
+              <Pressable
                 style={[
                   styles.logButton,
                   {
@@ -335,7 +335,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
                 <Text style={{ color: targetWeight.trim() ? brand.primaryForeground : colors.mutedForeground, fontWeight: typography.weight.bold }}>
                   설정
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         )}

@@ -25,7 +25,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -57,7 +57,7 @@ interface UserStats {
 }
 
 export default function LeaderboardProfileScreen(): React.JSX.Element {
-  const { colors, spacing, radii, typography, brand, shadows } = useTheme();
+  const { colors, spacing, radii, typography, brand, shadows, status, module: moduleTheme } = useTheme();
   const supabase = useClerkSupabaseClient();
   const { user: currentUser } = useUser();
   const params = useLocalSearchParams<{ userId?: string }>();
@@ -194,14 +194,14 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
         <Text style={{ fontSize: typography.size.base, fontWeight: '600', color: colors.foreground }}>
           사용자를 찾을 수 없어요
         </Text>
-        <TouchableOpacity
+        <Pressable
           style={[styles.backButton, { backgroundColor: brand.primary, borderRadius: radii.lg, marginTop: spacing.md }]}
           onPress={() => router.back()}
         >
-          <Text style={{ color: '#fff', fontWeight: '600', fontSize: typography.size.sm }}>
+          <Text style={{ color: brand.primaryForeground, fontWeight: '600', fontSize: typography.size.sm }}>
             돌아가기
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </SafeAreaView>
     );
   }
@@ -229,12 +229,12 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
           {profile.avatarUrl ? (
             <Image
               source={{ uri: profile.avatarUrl }}
-              style={[styles.avatar, { borderColor: '#fff' }]}
+              style={[styles.avatar, { borderColor: brand.primaryForeground }]}
               transition={200}
             />
           ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder, { borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-              <Text style={{ fontSize: 32, fontWeight: '700', color: '#fff' }}>
+            <View style={[styles.avatar, styles.avatarPlaceholder, { borderColor: brand.primaryForeground, backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+              <Text style={{ fontSize: 32, fontWeight: '700', color: brand.primaryForeground }}>
                 {profile.displayName.charAt(0)}
               </Text>
             </View>
@@ -244,7 +244,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
             style={{
               fontSize: typography.size.xl,
               fontWeight: typography.weight.bold,
-              color: '#fff',
+              color: brand.primaryForeground,
               marginTop: spacing.md,
             }}
           >
@@ -267,8 +267,8 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                     { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: radii.lg },
                   ]}
                 >
-                  <UserCheck size={16} color="#fff" />
-                  <Text style={{ color: '#fff', fontWeight: '600', fontSize: typography.size.sm, marginLeft: spacing.xs }}>
+                  <UserCheck size={16} color={brand.primaryForeground} />
+                  <Text style={{ color: brand.primaryForeground, fontWeight: '600', fontSize: typography.size.sm, marginLeft: spacing.xs }}>
                     친구
                   </Text>
                 </View>
@@ -284,10 +284,10 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                   </Text>
                 </View>
               ) : (
-                <TouchableOpacity
+                <Pressable
                   style={[
                     styles.friendButton,
-                    { backgroundColor: '#fff', borderRadius: radii.lg },
+                    { backgroundColor: colors.card, borderRadius: radii.lg },
                   ]}
                   onPress={handleSendRequest}
                   disabled={isSendingRequest}
@@ -309,7 +309,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                       </Text>
                     </>
                   )}
-                </TouchableOpacity>
+                </Pressable>
               )}
             </View>
           )}
@@ -365,10 +365,10 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
             </Text>
             <View style={[styles.statsGrid, { gap: spacing.sm }]}>
               {[
-                { icon: Trophy, label: '분석', value: stats.totalAnalyses, color: '#8b5cf6' },
-                { icon: Dumbbell, label: '운동', value: stats.totalWorkouts, color: '#10b981' },
-                { icon: Award, label: '뱃지', value: stats.badges, color: '#f59e0b' },
-                { icon: Flame, label: '연속', value: stats.currentStreak, color: '#ef4444', unit: '일' },
+                { icon: Trophy, label: '분석', value: stats.totalAnalyses, color: moduleTheme.body.dark },
+                { icon: Dumbbell, label: '운동', value: stats.totalWorkouts, color: status.success },
+                { icon: Award, label: '뱃지', value: stats.badges, color: status.warning },
+                { icon: Flame, label: '연속', value: stats.currentStreak, color: status.error, unit: '일' },
               ].map((stat) => (
                 <View
                   key={stat.label}

@@ -10,7 +10,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -151,7 +151,7 @@ export default function ReportsScreen(): React.JSX.Element {
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 24, fontWeight: '700', color: '#fff' }}>
+            <Text style={{ fontSize: 24, fontWeight: '700', color: brand.primaryForeground }}>
               {userName.charAt(0)}
             </Text>
           </View>
@@ -198,7 +198,7 @@ export default function ReportsScreen(): React.JSX.Element {
         ) : (
           <View style={{ flexDirection: 'row', gap: spacing.sm + 4, marginBottom: spacing.lg }}>
             {/* 퍼스널 컬러 */}
-            <TouchableOpacity
+            <Pressable
               style={{
                 flex: 1,
                 backgroundColor: colors.card,
@@ -254,10 +254,10 @@ export default function ReportsScreen(): React.JSX.Element {
                   </Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </Pressable>
 
             {/* 피부 분석 */}
-            <TouchableOpacity
+            <Pressable
               style={{
                 flex: 1,
                 backgroundColor: colors.card,
@@ -313,10 +313,10 @@ export default function ReportsScreen(): React.JSX.Element {
                   </Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </Pressable>
 
             {/* 체형 분석 */}
-            <TouchableOpacity
+            <Pressable
               style={{
                 flex: 1,
                 backgroundColor: colors.card,
@@ -372,7 +372,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   </Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </Pressable>
           </View>
         )}
 
@@ -388,7 +388,7 @@ export default function ReportsScreen(): React.JSX.Element {
           운동 현황
         </Text>
 
-        <TouchableOpacity
+        <Pressable
           style={{
             backgroundColor: colors.card,
             borderRadius: radii.xl,
@@ -461,7 +461,7 @@ export default function ReportsScreen(): React.JSX.Element {
               </Text>
             </View>
           )}
-        </TouchableOpacity>
+        </Pressable>
 
         {/* 영양 현황 */}
         <Text
@@ -475,7 +475,7 @@ export default function ReportsScreen(): React.JSX.Element {
           영양 현황
         </Text>
 
-        <TouchableOpacity
+        <Pressable
           style={{
             backgroundColor: colors.card,
             borderRadius: radii.xl,
@@ -563,7 +563,7 @@ export default function ReportsScreen(): React.JSX.Element {
               </Text>
             </View>
           )}
-        </TouchableOpacity>
+        </Pressable>
 
         {/* 상세 리포트 바로가기 */}
         <View
@@ -572,7 +572,7 @@ export default function ReportsScreen(): React.JSX.Element {
             gap: spacing.sm,
           }}
         >
-          <TouchableOpacity
+          <Pressable
             style={{
               flex: 1,
               backgroundColor: colors.card,
@@ -593,8 +593,8 @@ export default function ReportsScreen(): React.JSX.Element {
             >
               주간 리포트
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             style={{
               flex: 1,
               backgroundColor: colors.card,
@@ -615,7 +615,7 @@ export default function ReportsScreen(): React.JSX.Element {
             >
               월간 리포트
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* 인사이트 */}

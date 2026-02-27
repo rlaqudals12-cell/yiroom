@@ -76,7 +76,7 @@ const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
 export default function ChallengeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, status } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
   // API 훅 사용
@@ -311,7 +311,7 @@ export default function ChallengeDetailScreen() {
                   pressed && { opacity: 0.8 },
                 ]}
               >
-                <Text style={styles.logButtonText}>오늘 기록하기</Text>
+                <Text style={[styles.logButtonText, { color: colors.overlayForeground }]}>오늘 기록하기</Text>
               </Pressable>
             </GlassCard>
           </Animated.View>
@@ -330,7 +330,7 @@ export default function ChallengeDetailScreen() {
                     milestone.completed && { backgroundColor: domain.color },
                   ]}
                 >
-                  <Text style={styles.milestoneIconText}>
+                  <Text style={[styles.milestoneIconText, { color: colors.overlayForeground }]}>
                     {milestone.completed ? '✓' : index + 1}
                   </Text>
                 </View>
@@ -366,7 +366,7 @@ export default function ChallengeDetailScreen() {
             {challenge.leaderboard.map((entry) => (
               <View
                 key={entry.userId}
-                style={[styles.leaderboardItem, { borderBottomColor: colors.border }, entry.rank <= 3 && styles.leaderboardItemTop]}
+                style={[styles.leaderboardItem, { borderBottomColor: colors.border }, entry.rank <= 3 && { backgroundColor: status.warning + '15' }]}
               >
                 <Text
                   style={[
@@ -397,11 +397,11 @@ export default function ChallengeDetailScreen() {
           disabled={isJoining}
           style={({ pressed }) => [
             styles.joinButton,
-            challenge.isJoined ? styles.joinButtonLeave : { backgroundColor: domain.color },
+            challenge.isJoined ? { backgroundColor: colors.destructive } : { backgroundColor: domain.color },
             pressed && { opacity: 0.8 },
           ]}
         >
-          <Text style={[styles.joinButtonText, isJoining && { opacity: 0.7 }]}>
+          <Text style={[styles.joinButtonText, { color: colors.overlayForeground }, isJoining && { opacity: 0.7 }]}>
             {isJoining ? '참가 중...' : challenge.isJoined ? '챌린지 포기' : '참가하기'}
           </Text>
         </Pressable>
@@ -528,7 +528,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logButtonText: {
-    color: '#fff',
     fontWeight: '600',
     fontSize: 14,
   },
@@ -549,7 +548,6 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   milestoneIconText: {
-    color: '#fff',
     fontWeight: '600',
     fontSize: 12,
   },
@@ -587,9 +585,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderBottomWidth: 1,
   },
-  leaderboardItemTop: {
-    backgroundColor: '#FFFBEB',
-  },
   leaderboardRank: {
     width: 32,
     fontSize: 16,
@@ -616,11 +611,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  joinButtonLeave: {
-    backgroundColor: '#EF4444',
-  },
   joinButtonText: {
-    color: '#fff',
     fontWeight: '600',
     fontSize: 16,
   },

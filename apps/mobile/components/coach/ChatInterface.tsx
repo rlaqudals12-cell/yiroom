@@ -9,7 +9,7 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -149,7 +149,7 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
             {categories.map((cat) => {
               const isActive = activeCategory === cat.key;
               return (
-                <TouchableOpacity
+                <Pressable
                   key={cat.key}
                   style={[styles.categoryTab, isActive && { backgroundColor: colors.card }]}
                   onPress={() => handleCategoryChange(cat.key)}
@@ -162,7 +162,7 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
                   >
                     {cat.label}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               );
             })}
           </View>
@@ -170,7 +170,7 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
           {/* 빠른 질문 */}
           <View style={styles.quickQuestions}>
             {QUICK_QUESTIONS[activeCategory].map((question, index) => (
-              <TouchableOpacity
+              <Pressable
                 key={index}
                 style={[
                   styles.quickQuestion,
@@ -181,7 +181,7 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
                 <Text style={[styles.quickQuestionText, { color: colors.foreground }]}>
                   {question}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>
@@ -201,7 +201,7 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
           {suggestedQuestions.length > 0 && !isLoading && (
             <View style={styles.suggestedContainer}>
               {suggestedQuestions.map((question, index) => (
-                <TouchableOpacity
+                <Pressable
                   key={index}
                   style={[styles.suggestedButton, { backgroundColor: colors.muted }]}
                   onPress={() => handleQuickQuestion(question)}
@@ -209,7 +209,7 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
                   <Text style={[styles.suggestedText, { color: colors.foreground }]}>
                     {question}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
           )}
@@ -242,7 +242,7 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
           multiline
           maxLength={500}
         />
-        <TouchableOpacity
+        <Pressable
           style={[
             styles.sendButton,
             {
@@ -253,7 +253,7 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
           disabled={!input.trim() || isLoading}
         >
           <Text style={[styles.sendButtonText, { color: brand.primaryForeground }]}>전송</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </KeyboardAvoidingView>
   );

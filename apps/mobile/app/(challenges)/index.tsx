@@ -9,7 +9,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   Alert,
 } from 'react-native';
@@ -35,7 +35,7 @@ import { useChallenges, useJoinChallenge } from '../../lib/challenges/useChallen
 type TabType = 'explore' | 'my';
 
 export default function ChallengesScreen() {
-  const { colors } = useTheme();
+  const { colors, brand } = useTheme();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabType>('explore');
@@ -81,7 +81,7 @@ export default function ChallengesScreen() {
     const progress = userChallenge ? calculateProgress(userChallenge) : 0;
 
     return (
-      <TouchableOpacity
+      <Pressable
         style={[styles.challengeCard, { backgroundColor: colors.card }]}
         onPress={() => handleView(item.id)}
       >
@@ -126,20 +126,20 @@ export default function ChallengesScreen() {
         {participating ? (
           <View style={styles.progressContainer}>
             <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
-              <View style={[styles.progressFill, { width: `${progress}%` }]} />
+              <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: brand.primary }]} />
             </View>
             <Text style={[styles.progressText, { color: colors.mutedForeground }]}>{progress}% 완료</Text>
           </View>
         ) : (
-          <TouchableOpacity
-            style={styles.joinButton}
+          <Pressable
+            style={[styles.joinButton, { backgroundColor: brand.primary }]}
             onPress={() => handleJoin(item.id)}
             disabled={isJoining}
           >
-            <Text style={styles.joinButtonText}>{isJoining ? '참여 중...' : '참여하기'}</Text>
-          </TouchableOpacity>
+            <Text style={[styles.joinButtonText, { color: brand.primaryForeground }]}>{isJoining ? '참여 중...' : '참여하기'}</Text>
+          </Pressable>
         )}
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -151,7 +151,7 @@ export default function ChallengesScreen() {
     const daysRemaining = getDaysRemaining(item.targetEndAt);
 
     return (
-      <TouchableOpacity
+      <Pressable
         style={[styles.challengeCard, { backgroundColor: colors.card }]}
         onPress={() => handleView(item.challengeId)}
       >
@@ -184,7 +184,7 @@ export default function ChallengesScreen() {
             </Text>
           </View>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -234,7 +234,7 @@ export default function ChallengesScreen() {
 
       {/* 탭 */}
       <View style={[styles.tabContainer, { backgroundColor: colors.muted }]}>
-        <TouchableOpacity
+        <Pressable
           style={[styles.tab, activeTab === 'explore' && [styles.tabActive, { backgroundColor: colors.card }]]}
           onPress={() => handleTabChange('explore')}
         >
@@ -242,13 +242,13 @@ export default function ChallengesScreen() {
             style={[
               styles.tabText,
               { color: colors.mutedForeground },
-              activeTab === 'explore' && styles.tabTextActive,
+              activeTab === 'explore' && { color: brand.primary },
             ]}
           >
             탐색
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[styles.tab, activeTab === 'my' && [styles.tabActive, { backgroundColor: colors.card }]]}
           onPress={() => handleTabChange('my')}
         >
@@ -256,12 +256,12 @@ export default function ChallengesScreen() {
             style={[
               styles.tabText,
               { color: colors.mutedForeground },
-              activeTab === 'my' && styles.tabTextActive,
+              activeTab === 'my' && { color: brand.primary },
             ]}
           >
             내 챌린지 {activeChallenges.length > 0 && `(${activeChallenges.length})`}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {/* 목록 */}
@@ -298,12 +298,12 @@ export default function ChallengesScreen() {
               <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
                 진행 중인 챌린지가 없어요
               </Text>
-              <TouchableOpacity
-                style={styles.emptyButton}
+              <Pressable
+                style={[styles.emptyButton, { backgroundColor: brand.primary }]}
                 onPress={() => handleTabChange('explore')}
               >
-                <Text style={styles.emptyButtonText}>챌린지 탐색하기</Text>
-              </TouchableOpacity>
+                <Text style={[styles.emptyButtonText, { color: brand.primaryForeground }]}>챌린지 탐색하기</Text>
+              </Pressable>
             </View>
           }
         />
@@ -360,9 +360,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  tabTextActive: {
-    color: '#8b5cf6',
-  },
+  tabTextActive: {},
   listContent: {
     padding: 16,
     gap: 12,
@@ -429,7 +427,6 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#8b5cf6',
     borderRadius: 4,
   },
   progressMeta: {
@@ -443,13 +440,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   joinButton: {
-    backgroundColor: '#8b5cf6',
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
   },
   joinButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -470,13 +465,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   emptyButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
   },

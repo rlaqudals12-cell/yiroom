@@ -9,7 +9,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   TextInput,
   Alert,
 } from 'react-native';
@@ -145,7 +145,7 @@ export default function BodyAnalysisScreen() {
             정면에서 촬영한 전신 사진을 선택해주세요
           </Text>
 
-          <TouchableOpacity
+          <Pressable
             style={[
               styles.imagePickerButton,
               { borderColor: colors.border },
@@ -163,7 +163,7 @@ export default function BodyAnalysisScreen() {
                 </Text>
               </>
             )}
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={[styles.guideBox, { backgroundColor: colors.muted }]}>
             <Text style={[styles.guideTitle, { color: colors.foreground }]}>촬영 가이드</Text>
@@ -187,7 +187,7 @@ export default function BodyAnalysisScreen() {
           { backgroundColor: colors.background, borderTopColor: colors.border },
         ]}
       >
-        <TouchableOpacity
+        <Pressable
           style={[
             styles.analyzeButton,
             { backgroundColor: accent.base },
@@ -196,8 +196,8 @@ export default function BodyAnalysisScreen() {
           onPress={handleAnalyze}
           disabled={!height || !weight || !imageUri}
         >
-          <Text style={[styles.analyzeButtonText, { color: '#fff' }]}>체형 분석하기</Text>
-        </TouchableOpacity>
+          <Text style={[styles.analyzeButtonText, { color: colors.card }]}>체형 분석하기</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

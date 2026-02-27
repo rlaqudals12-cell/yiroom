@@ -6,7 +6,7 @@ import { useUser } from '@clerk/clerk-expo';
 import type { WorkoutType } from '@yiroom/shared';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -207,12 +207,12 @@ export default function WorkoutResultScreen() {
           <Text style={[styles.errorText, { color: colors.mutedForeground }]}>
             분석에 실패했습니다.
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={[styles.retryButton, { backgroundColor: workoutColor }]}
             onPress={() => router.replace('/(workout)/onboarding')}
           >
-            <Text style={styles.retryButtonText}>다시 시도하기</Text>
-          </TouchableOpacity>
+            <Text style={[styles.retryButtonText, { color: colors.overlayForeground }]}>다시 시도하기</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -296,20 +296,20 @@ export default function WorkoutResultScreen() {
 
         {/* 버튼 */}
         <Animated.View entering={FadeInUp.delay(400).duration(400)} style={styles.buttons}>
-          <TouchableOpacity
+          <Pressable
             style={[styles.primaryButton, { backgroundColor: workoutColor }]}
             onPress={handleStartSession}
           >
-            <Text style={styles.primaryButtonText}>운동 시작하기</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+            <Text style={[styles.primaryButtonText, { color: colors.overlayForeground }]}>운동 시작하기</Text>
+          </Pressable>
+          <Pressable
             style={[styles.secondaryButton, { borderColor: colors.border }]}
             onPress={handleGoHome}
           >
             <Text style={[styles.secondaryButtonText, { color: colors.mutedForeground }]}>
               홈으로 돌아가기
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
       </ScrollView>
     </SafeAreaView>
@@ -347,7 +347,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   retryButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -437,7 +436,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

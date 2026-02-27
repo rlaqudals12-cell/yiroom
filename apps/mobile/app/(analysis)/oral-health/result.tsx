@@ -45,7 +45,7 @@ const WHITENING_LABELS: Record<OralHealthAnalysisResult['whiteningPotential'], s
 };
 
 export default function OralHealthResultScreen() {
-  const { module, colors, isDark } = useAnalysisStyles();
+  const { module, colors, status, isDark } = useAnalysisStyles();
   const accent = module.oralHealth;
 
   const { imageUri, imageBase64 } = useLocalSearchParams<{
@@ -191,7 +191,7 @@ export default function OralHealthResultScreen() {
           <GradientCard variant="oralHealth" style={localStyles.tipsCard}>
             {result.concerns.map((concern, i) => (
               <View key={i} style={localStyles.tipItem}>
-                <Text style={[localStyles.tipBullet, { color: isDark ? '#F87171' : '#B91C1C' }]}>
+                <Text style={[localStyles.tipBullet, { color: status.error }]}>
                   !
                 </Text>
                 <Text style={[localStyles.tipText, { color: colors.foreground }]}>{concern}</Text>

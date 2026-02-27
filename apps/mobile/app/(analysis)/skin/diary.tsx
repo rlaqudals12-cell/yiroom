@@ -282,7 +282,7 @@ export default function SkinDiaryScreen(): React.JSX.Element {
         style={[styles.emptyButton, { backgroundColor: brand.primary }]}
         onPress={handleAddEntry}
       >
-        <Text style={[styles.emptyButtonText, { color: '#fff' }]}>
+        <Text style={[styles.emptyButtonText, { color: brand.primaryForeground }]}>
           오늘 기록하기
         </Text>
       </Pressable>
@@ -355,7 +355,7 @@ export default function SkinDiaryScreen(): React.JSX.Element {
         onPress={handleAddEntry}
         testID="add-diary-btn"
       >
-        <Plus size={24} color="#fff" />
+        <Plus size={24} color={brand.primaryForeground} />
       </Pressable>
     </View>
   );

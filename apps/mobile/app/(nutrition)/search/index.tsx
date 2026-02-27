@@ -10,7 +10,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   TextInput,
   ScrollView,
   Alert,
@@ -263,7 +263,7 @@ export default function FoodSearchScreen() {
       {/* 식사 타입 */}
       <View style={styles.mealTypeRow}>
         {MEAL_TYPES.map((meal) => (
-          <TouchableOpacity
+          <Pressable
             key={meal.id}
             style={[
               styles.mealTypeChip,
@@ -284,7 +284,7 @@ export default function FoodSearchScreen() {
             >
               {meal.label}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </View>
 
@@ -296,7 +296,7 @@ export default function FoodSearchScreen() {
         contentContainerStyle={styles.categoryContent}
       >
         {(categories.length > 1 ? categories : DEFAULT_CATEGORIES).map((category) => (
-          <TouchableOpacity
+          <Pressable
             key={category}
             style={[
               styles.categoryChip,
@@ -316,7 +316,7 @@ export default function FoodSearchScreen() {
             >
               {category}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </ScrollView>
 
@@ -341,7 +341,7 @@ export default function FoodSearchScreen() {
             const selectedFood = selectedFoods.find((f) => f.id === food.id);
 
             return (
-              <TouchableOpacity
+              <Pressable
                 key={food.id}
                 style={[
                   styles.foodItem,
@@ -359,21 +359,21 @@ export default function FoodSearchScreen() {
                 </View>
                 {isSelected && (
                   <View style={styles.portionControls}>
-                    <TouchableOpacity
+                    <Pressable
                       style={[styles.portionButton, { backgroundColor: colors.muted }]}
                       onPress={() => handlePortionChange(food.id, -0.5)}
                     >
                       <Text style={styles.portionButtonText}>−</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                     <Text style={[styles.portionValue, { color: colors.foreground }]}>
                       {selectedFood?.portion}
                     </Text>
-                    <TouchableOpacity
+                    <Pressable
                       style={[styles.portionButton, { backgroundColor: colors.muted }]}
                       onPress={() => handlePortionChange(food.id, 0.5)}
                     >
                       <Text style={styles.portionButtonText}>+</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                 )}
                 {!isSelected && (
@@ -381,7 +381,7 @@ export default function FoodSearchScreen() {
                     <Text style={styles.addBadgeText}>+</Text>
                   </View>
                 )}
-              </TouchableOpacity>
+              </Pressable>
             );
           })
         )}
@@ -398,7 +398,7 @@ export default function FoodSearchScreen() {
             </Text>
             <Text style={styles.footerCalories}>{Math.round(totalNutrition.calories)} kcal</Text>
           </View>
-          <TouchableOpacity
+          <Pressable
             style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
             onPress={handleSave}
             disabled={isSaving}
@@ -408,7 +408,7 @@ export default function FoodSearchScreen() {
             ) : (
               <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>기록하기</Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
       )}
     </SafeAreaView>

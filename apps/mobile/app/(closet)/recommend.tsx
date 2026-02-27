@@ -12,7 +12,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   ActivityIndicator,
   Alert,
@@ -191,7 +191,7 @@ export default function RecommendScreen() {
     if (!item) return null;
 
     return (
-      <TouchableOpacity
+      <Pressable
         style={[styles.outfitItem, { backgroundColor: colors.card }]}
         onPress={() => handleItemPress(item.item.id)}
       >
@@ -227,7 +227,7 @@ export default function RecommendScreen() {
             />
           </View>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -255,12 +255,12 @@ export default function RecommendScreen() {
           <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
             옷장에 아이템을 추가하면{'\n'}코디 추천을 받을 수 있어요
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={[styles.emptyButton, { backgroundColor: moduleTheme.body.dark }]}
             onPress={() => router.push('/(closet)')}
           >
             <Text style={[styles.emptyButtonText, { color: colors.card }]}>옷장으로 가기</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -345,7 +345,7 @@ export default function RecommendScreen() {
             )}
 
             {/* 코디 저장 버튼 */}
-            <TouchableOpacity
+            <Pressable
               style={[
                 styles.saveOutfitButton,
                 {
@@ -382,7 +382,7 @@ export default function RecommendScreen() {
                   </Text>
                 </>
               )}
-            </TouchableOpacity>
+            </Pressable>
           </View>
         ) : (
           <View style={styles.noOutfitContainer}>
@@ -432,7 +432,7 @@ export default function RecommendScreen() {
       </ScrollView>
 
       {/* 새로고침 버튼 */}
-      <TouchableOpacity
+      <Pressable
         style={[styles.refreshButton, { backgroundColor: moduleTheme.body.dark }]}
         onPress={handleRefresh}
         disabled={isRefreshing}
@@ -442,7 +442,7 @@ export default function RecommendScreen() {
         ) : (
           <RefreshCw size={24} color={colors.card} />
         )}
-      </TouchableOpacity>
+      </Pressable>
     </SafeAreaView>
   );
 }

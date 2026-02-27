@@ -12,7 +12,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -38,7 +38,7 @@ const FILTER_OPTIONS: { key: FilterCategory; label: string }[] = [
 ];
 
 export default function ClosetScreen() {
-  const { colors } = useTheme();
+  const { colors, module: moduleTheme, shadows: themeShadows } = useTheme();
   const router = useRouter();
 
   const { items, isLoading, error: _error, toggleFavorite, refetch } = useCloset();
@@ -128,11 +128,11 @@ export default function ClosetScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterList}
           renderItem={({ item }) => (
-            <TouchableOpacity
+            <Pressable
               style={[
                 styles.filterChip,
                 { backgroundColor: colors.muted },
-                selectedCategory === item.key && styles.filterChipSelected,
+                selectedCategory === item.key && { backgroundColor: moduleTheme.body.dark },
               ]}
               onPress={() => handleCategoryPress(item.key)}
             >
@@ -140,12 +140,12 @@ export default function ClosetScreen() {
                 style={[
                   styles.filterChipText,
                   { color: colors.mutedForeground },
-                  selectedCategory === item.key && styles.filterChipTextSelected,
+                  selectedCategory === item.key && { color: colors.overlayForeground },
                 ]}
               >
                 {item.label}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         />
       </View>
@@ -159,9 +159,9 @@ export default function ClosetScreen() {
               ? '옷장이 비어있어요'
               : `${FILTER_OPTIONS.find((f) => f.key === selectedCategory)?.label} 아이템이 없어요`}
           </Text>
-          <TouchableOpacity style={styles.emptyButton} onPress={handleAddPress}>
-            <Text style={styles.emptyButtonText}>아이템 추가하기</Text>
-          </TouchableOpacity>
+          <Pressable style={[styles.emptyButton, { backgroundColor: moduleTheme.body.dark }]} onPress={handleAddPress}>
+            <Text style={[styles.emptyButtonText, { color: colors.overlayForeground }]}>아이템 추가하기</Text>
+          </Pressable>
         </View>
       ) : (
         <FlatList
@@ -173,7 +173,7 @@ export default function ClosetScreen() {
           refreshing={isLoading}
           onRefresh={refetch}
           renderItem={({ item }) => (
-            <TouchableOpacity
+            <Pressable
               style={[styles.itemCard, { backgroundColor: colors.card }]}
               onPress={() => handleItemPress(item.id)}
             >
@@ -190,16 +190,16 @@ export default function ClosetScreen() {
                     <Text style={styles.placeholderText}>📷</Text>
                   </View>
                 )}
-                <TouchableOpacity
+                <Pressable
                   style={styles.favoriteButton}
                   onPress={() => handleFavoritePress(item.id)}
                 >
                   <Heart
                     size={18}
-                    color={item.isFavorite ? '#ef4444' : colors.mutedForeground}
-                    fill={item.isFavorite ? '#ef4444' : 'transparent'}
+                    color={item.isFavorite ? colors.destructive : colors.mutedForeground}
+                    fill={item.isFavorite ? colors.destructive : 'transparent'}
                   />
-                </TouchableOpacity>
+                </Pressable>
               </View>
               <View style={styles.itemInfo}>
                 <Text style={[styles.itemName, { color: colors.foreground }]} numberOfLines={1}>
@@ -210,15 +210,15 @@ export default function ClosetScreen() {
                     item.subCategory}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </Pressable>
           )}
         />
       )}
 
       {/* 추가 버튼 */}
-      <TouchableOpacity style={styles.addButton} onPress={handleAddPress}>
-        <Plus size={24} color="#fff" />
-      </TouchableOpacity>
+      <Pressable style={[styles.addButton, { backgroundColor: moduleTheme.body.dark, ...themeShadows.lg }]} onPress={handleAddPress}>
+        <Plus size={24} color={colors.overlayForeground} />
+      </Pressable>
     </SafeAreaView>
   );
 }
@@ -262,15 +262,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 8,
   },
-  filterChipSelected: {
-    backgroundColor: '#8b5cf6',
-  },
   filterChipText: {
     fontSize: 14,
     fontWeight: '500',
-  },
-  filterChipTextSelected: {
-    color: '#fff',
   },
   gridContent: {
     padding: 16,
@@ -341,13 +335,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   emptyButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -358,13 +350,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#8b5cf6',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
 });

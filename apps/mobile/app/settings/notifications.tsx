@@ -11,7 +11,7 @@ import {
   StyleSheet,
   ScrollView,
   Switch,
-  TouchableOpacity,
+  Pressable,
   Alert,
   Platform,
   ActivityIndicator,
@@ -107,7 +107,7 @@ export default function NotificationsSettingsScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 권한 안내 */}
         {hasPermission === false && (
-          <TouchableOpacity
+          <Pressable
             style={[styles.permissionBanner, { backgroundColor: status.warning + '20' }]}
             onPress={handleRequestPermission}
           >
@@ -120,7 +120,7 @@ export default function NotificationsSettingsScreen() {
                 탭하여 권한을 허용해주세요
               </Text>
             </View>
-          </TouchableOpacity>
+          </Pressable>
         )}
 
         {/* 마스터 토글 */}
@@ -181,7 +181,7 @@ export default function NotificationsSettingsScreen() {
                     </Text>
                     <View style={styles.intervalOptions}>
                       {[1, 2, 3, 4].map((hours) => (
-                        <TouchableOpacity
+                        <Pressable
                           key={hours}
                           style={[
                             styles.intervalOption,
@@ -203,7 +203,7 @@ export default function NotificationsSettingsScreen() {
                           >
                             {hours}시간
                           </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       ))}
                     </View>
                   </View>
@@ -333,7 +333,7 @@ export default function NotificationsSettingsScreen() {
 
             {/* 테스트 알림 */}
             <View style={styles.section}>
-              <TouchableOpacity
+              <Pressable
                 style={[
                   styles.testButton,
                   {
@@ -351,7 +351,7 @@ export default function NotificationsSettingsScreen() {
                 <Text style={[styles.testButtonText, { color: mod.body.dark }]}>
                   {testSent ? '✓ 테스트 알림 전송됨' : '테스트 알림 보내기'}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </>
         )}

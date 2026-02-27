@@ -17,7 +17,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
@@ -146,12 +146,12 @@ export default function RecommendationsScreen(): React.JSX.Element {
           ]}
         >
           <View style={styles.heroRow}>
-            <Sparkles size={24} color="#fff" />
+            <Sparkles size={24} color={brand.primaryForeground} />
             <Text
               style={{
                 fontSize: typography.size.lg,
                 fontWeight: typography.weight.bold,
-                color: '#fff',
+                color: brand.primaryForeground,
                 marginLeft: spacing.sm,
               }}
             >
@@ -161,7 +161,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
           <Text
             style={{
               fontSize: typography.size.sm,
-              color: 'rgba(255,255,255,0.85)',
+              color: brand.primaryForeground + 'D9',
               marginTop: spacing.xs,
               lineHeight: 20,
             }}
@@ -175,15 +175,15 @@ export default function RecommendationsScreen(): React.JSX.Element {
           {(personalColor || skinAnalysis) && (
             <View style={[styles.tagRow, { marginTop: spacing.sm }]}>
               {personalColor && (
-                <View style={styles.heroTag}>
-                  <Text style={styles.heroTagText}>
+                <View style={[styles.heroTag, { backgroundColor: brand.primaryForeground + '33' }]}>
+                  <Text style={[styles.heroTagText, { color: brand.primaryForeground }]}>
                     {getSeasonLabel(personalColor.season)}
                   </Text>
                 </View>
               )}
               {skinAnalysis && (
-                <View style={styles.heroTag}>
-                  <Text style={styles.heroTagText}>
+                <View style={[styles.heroTag, { backgroundColor: brand.primaryForeground + '33' }]}>
+                  <Text style={[styles.heroTagText, { color: brand.primaryForeground }]}>
                     {getSkinTypeLabel(skinAnalysis.skinType)}
                   </Text>
                 </View>
@@ -247,17 +247,17 @@ export default function RecommendationsScreen(): React.JSX.Element {
             >
               피부 분석이나 퍼스널 컬러 진단을{'\n'}먼저 진행해주세요
             </Text>
-            <TouchableOpacity
+            <Pressable
               style={[
                 styles.ctaButton,
                 { backgroundColor: brand.primary, borderRadius: radii.lg },
               ]}
               onPress={() => router.push('/(analysis)/skin')}
             >
-              <Text style={{ color: '#fff', fontWeight: '600', fontSize: typography.size.sm }}>
+              <Text style={{ color: brand.primaryForeground, fontWeight: '600', fontSize: typography.size.sm }}>
                 분석 시작하기
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </Animated.View>
         )}
 
@@ -290,7 +290,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                   {section.description}
                 </Text>
               </View>
-              <TouchableOpacity
+              <Pressable
                 onPress={() =>
                   router.push({
                     pathname: '/products',
@@ -309,12 +309,12 @@ export default function RecommendationsScreen(): React.JSX.Element {
                   전체 보기
                 </Text>
                 <ChevronRight size={14} color={brand.primary} />
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             {/* 제품 카드 */}
             {section.products.slice(0, 5).map((product, pIdx) => (
-              <TouchableOpacity
+              <Pressable
                 key={product.id}
                 style={[
                   styles.productCard,
@@ -347,7 +347,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                       style={{
                         fontSize: typography.size.xs,
                         fontWeight: typography.weight.bold,
-                        color: pIdx < 3 ? '#fff' : colors.mutedForeground,
+                        color: pIdx < 3 ? brand.primaryForeground : colors.mutedForeground,
                       }}
                     >
                       {pIdx + 1}
@@ -412,7 +412,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                     {product.price.toLocaleString()}원
                   </Text>
                 )}
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </Animated.View>
         ))}
@@ -481,7 +481,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   heroTag: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
@@ -489,7 +488,6 @@ const styles = StyleSheet.create({
   heroTagText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#fff',
   },
   center: {
     alignItems: 'center',

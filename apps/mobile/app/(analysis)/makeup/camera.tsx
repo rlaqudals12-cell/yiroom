@@ -5,7 +5,7 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 
 import { useTheme } from '@/lib/theme';
 
@@ -29,12 +29,12 @@ export default function MakeupCameraScreen() {
       <View style={[styles.permissionContainer, { backgroundColor: colors.background }]}>
         <Text style={[styles.permissionTitle, { color: colors.foreground }]}>카메라 권한이 필요해요</Text>
         <Text style={[styles.permissionText, { color: colors.mutedForeground }]}>메이크업 분석을 위해 사진이 필요합니다.</Text>
-        <TouchableOpacity style={[styles.permissionButton, { backgroundColor: brand.primary }]} onPress={requestPermission}>
+        <Pressable style={[styles.permissionButton, { backgroundColor: brand.primary }]} onPress={requestPermission}>
           <Text style={[styles.permissionButtonText, { color: brand.primaryForeground }]}>권한 허용하기</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.galleryButton} onPress={pickFromGallery}>
+        </Pressable>
+        <Pressable style={styles.galleryButton} onPress={pickFromGallery}>
           <Text style={[styles.galleryButtonText, { color: brand.primary }]}>갤러리에서 선택</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     );
   }
@@ -83,26 +83,26 @@ export default function MakeupCameraScreen() {
       <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
         <View style={styles.overlay}>
           <View style={styles.guideCircle} />
-          <Text style={styles.guideText}>정면 얼굴이 원 안에{'\n'}들어오도록 촬영해 주세요</Text>
+          <Text style={[styles.guideText, { color: colors.overlayForeground }]}>정면 얼굴이 원 안에{'\n'}들어오도록 촬영해 주세요</Text>
         </View>
         <View style={styles.controls}>
-          <TouchableOpacity style={styles.sideButton} onPress={pickFromGallery}>
-            <Text style={styles.iconText}>갤러리</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
+          <Pressable style={styles.sideButton} onPress={pickFromGallery}>
+            <Text style={[styles.iconText, { color: colors.overlayForeground }]}>갤러리</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.captureButton, { borderColor: colors.overlayForeground }, isCapturing && styles.captureButtonDisabled]}
             onPress={takePicture}
             disabled={isCapturing}
           >
             {isCapturing ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.overlayForeground} />
             ) : (
-              <View style={styles.captureInner} />
+              <View style={[styles.captureInner, { backgroundColor: colors.overlayForeground }]} />
             )}
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.sideButton} onPress={toggleCameraFacing}>
-            <Text style={styles.iconText}>전환</Text>
-          </TouchableOpacity>
+          </Pressable>
+          <Pressable style={styles.sideButton} onPress={toggleCameraFacing}>
+            <Text style={[styles.iconText, { color: colors.overlayForeground }]}>전환</Text>
+          </Pressable>
         </View>
       </CameraView>
     </View>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.6)',
     borderStyle: 'dashed',
   },
-  guideText: { marginTop: 24, color: '#fff', fontSize: 16, textAlign: 'center', lineHeight: 24 },
+  guideText: { marginTop: 24, fontSize: 16, textAlign: 'center', lineHeight: 24 },
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.3)',
   },
   sideButton: { width: 60, height: 60, alignItems: 'center', justifyContent: 'center' },
-  iconText: { color: '#fff', fontSize: 14 },
+  iconText: { fontSize: 14 },
   captureButton: {
     width: 72,
     height: 72,
@@ -140,10 +140,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
-    borderColor: '#fff',
   },
   captureButtonDisabled: { opacity: 0.5 },
-  captureInner: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fff' },
+  captureInner: { width: 56, height: 56, borderRadius: 28 },
   permissionContainer: {
     flex: 1,
     alignItems: 'center',

@@ -11,7 +11,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   TextInput,
   ScrollView,
   Alert,
@@ -218,7 +218,7 @@ export default function WorkoutLogScreen() {
             {availableExercises.map((exercise) => {
               const isSelected = selectedExercises.includes(exercise.id);
               return (
-                <TouchableOpacity
+                <Pressable
                   key={exercise.id}
                   style={[
                     styles.exerciseChip,
@@ -232,12 +232,12 @@ export default function WorkoutLogScreen() {
                   <Text
                     style={[
                       styles.exerciseChipText,
-                      { color: isSelected ? '#fff' : colors.foreground },
+                      { color: isSelected ? colors.overlayForeground : colors.foreground },
                     ]}
                   >
                     {exercise.name}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               );
             })}
           </View>
@@ -250,7 +250,7 @@ export default function WorkoutLogScreen() {
             {DURATION_OPTIONS.map((mins) => {
               const isSelected = duration === mins;
               return (
-                <TouchableOpacity
+                <Pressable
                   key={mins}
                   style={[
                     styles.durationChip,
@@ -264,12 +264,12 @@ export default function WorkoutLogScreen() {
                   <Text
                     style={[
                       styles.durationText,
-                      { color: isSelected ? '#fff' : colors.foreground },
+                      { color: isSelected ? colors.overlayForeground : colors.foreground },
                     ]}
                   >
                     {mins}분
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               );
             })}
           </View>
@@ -282,7 +282,7 @@ export default function WorkoutLogScreen() {
             {INTENSITY_OPTIONS.map((option) => {
               const isSelected = intensity === option.id;
               return (
-                <TouchableOpacity
+                <Pressable
                   key={option.id}
                   style={[
                     styles.intensityChip,
@@ -296,12 +296,12 @@ export default function WorkoutLogScreen() {
                   <Text
                     style={[
                       styles.intensityText,
-                      { color: isSelected ? '#fff' : colors.foreground },
+                      { color: isSelected ? colors.overlayForeground : colors.foreground },
                     ]}
                   >
                     {option.label}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               );
             })}
           </View>
@@ -343,7 +343,7 @@ export default function WorkoutLogScreen() {
 
       {/* 저장 버튼 */}
       <View style={styles.footer}>
-        <TouchableOpacity
+        <Pressable
           style={[
             styles.saveButton,
             { backgroundColor: workoutColor },
@@ -352,10 +352,10 @@ export default function WorkoutLogScreen() {
           onPress={handleSave}
           disabled={isLoading}
         >
-          <Text style={[styles.saveButtonText, isLoading && { opacity: 0.7 }]}>
+          <Text style={[styles.saveButtonText, { color: colors.overlayForeground }, isLoading && { opacity: 0.7 }]}>
             {isLoading ? '저장 중...' : '운동 기록하기'}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -455,7 +455,6 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   saveButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

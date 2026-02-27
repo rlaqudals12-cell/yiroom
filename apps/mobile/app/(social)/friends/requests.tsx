@@ -8,7 +8,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   Image,
   ActivityIndicator,
@@ -88,18 +88,18 @@ export default function FriendRequestsScreen() {
       </View>
 
       <View style={styles.actionButtons}>
-        <TouchableOpacity
+        <Pressable
           style={[styles.acceptButton, { backgroundColor: brand.primary }]}
           onPress={() => handleAccept(item)}
         >
           <Text style={[styles.acceptButtonText, { color: brand.primaryForeground }]}>수락</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[styles.rejectButton, { backgroundColor: colors.muted }]}
           onPress={() => handleReject(item)}
         >
           <Text style={[styles.rejectButtonText, { color: colors.foreground }]}>거절</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );

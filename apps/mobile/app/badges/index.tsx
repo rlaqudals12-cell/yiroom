@@ -3,7 +3,7 @@
  * 분석 완료, 연속 기록 등 업적 표시
  */
 import { router } from 'expo-router';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
@@ -175,7 +175,7 @@ export default function BadgesScreen(): React.JSX.Element {
 
         {/* 분석 CTA */}
         {earnedCount < badges.length && (
-          <TouchableOpacity
+          <Pressable
             style={{
               backgroundColor: brand.primary,
               borderRadius: radii.lg,
@@ -194,7 +194,7 @@ export default function BadgesScreen(): React.JSX.Element {
             >
               더 많은 뱃지를 획득해보세요!
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </ScrollView>
     </SafeAreaView>

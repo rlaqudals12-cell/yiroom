@@ -9,7 +9,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   TextInput,
   ScrollView,
   ActivityIndicator,
@@ -247,9 +247,9 @@ export default function ProductSearchScreen() {
             autoFocus
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={handleClearSearch}>
+            <Pressable onPress={handleClearSearch}>
               <Text style={[styles.clearButton, { color: colors.mutedForeground }]}>✕</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       </View>
@@ -263,15 +263,15 @@ export default function ProductSearchScreen() {
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <Text style={[styles.sectionTitle, { color: colors.foreground }]}>최근 검색</Text>
-                  <TouchableOpacity>
+                  <Pressable>
                     <Text style={[styles.clearAllText, { color: colors.mutedForeground }]}>
                       전체 삭제
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
                 <View style={styles.tagList}>
                   {RECENT_SEARCHES.map((term, index) => (
-                    <TouchableOpacity
+                    <Pressable
                       key={index}
                       style={[
                         styles.searchTag,
@@ -281,7 +281,7 @@ export default function ProductSearchScreen() {
                     >
                       <Text style={styles.tagIcon}>🕐</Text>
                       <Text style={[styles.tagText, { color: colors.foreground }]}>{term}</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   ))}
                 </View>
               </View>
@@ -292,7 +292,7 @@ export default function ProductSearchScreen() {
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>인기 검색어</Text>
               <View style={styles.tagList}>
                 {POPULAR_SEARCHES.map((term, index) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={index}
                     style={[
                       styles.searchTag,
@@ -302,7 +302,7 @@ export default function ProductSearchScreen() {
                   >
                     <Text style={[styles.popularRank, { color: brand.primary }]}>{index + 1}</Text>
                     <Text style={[styles.tagText, { color: colors.foreground }]}>{term}</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </View>
             </View>
@@ -330,7 +330,7 @@ export default function ProductSearchScreen() {
               {searchResults.length}개의 결과
             </Text>
             {searchResults.map((product) => (
-              <TouchableOpacity
+              <Pressable
                 key={product.id}
                 style={[styles.productItem, { backgroundColor: colors.card }]}
                 onPress={() => handleProductPress(product.id)}
@@ -365,7 +365,7 @@ export default function ProductSearchScreen() {
                     {product.matchScore}%
                   </Text>
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         )}

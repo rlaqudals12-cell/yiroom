@@ -9,7 +9,7 @@
  */
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeftRight, RefreshCw, Clock, BarChart3 } from 'lucide-react-native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -92,16 +92,16 @@ export default function CompareScreen(): React.JSX.Element {
         >
           비교 데이터를 불러올 수 없어요
         </Text>
-        <TouchableOpacity
+        <Pressable
           onPress={refetch}
           style={[
             styles.retryButton,
             { backgroundColor: brand.primary, borderRadius: radii.lg },
           ]}
         >
-          <RefreshCw size={16} color="#fff" />
-          <Text style={[styles.retryText, { fontSize: typography.size.sm }]}>다시 시도</Text>
-        </TouchableOpacity>
+          <RefreshCw size={16} color={brand.primaryForeground} />
+          <Text style={[styles.retryText, { fontSize: typography.size.sm, color: brand.primaryForeground }]}>다시 시도</Text>
+        </Pressable>
       </SafeAreaView>
     );
   }
@@ -175,7 +175,7 @@ export default function CompareScreen(): React.JSX.Element {
         style={{ marginTop: spacing.lg }}
       >
         {/* 이력 보기 */}
-        <TouchableOpacity
+        <Pressable
           onPress={() => router.push(MODULE_HISTORY_PATH[moduleType] as `/${string}`)}
           style={[
             styles.actionButton,
@@ -211,10 +211,10 @@ export default function CompareScreen(): React.JSX.Element {
               과거 분석 결과를 모두 확인해요
             </Text>
           </View>
-        </TouchableOpacity>
+        </Pressable>
 
         {/* 새 분석 시작 */}
-        <TouchableOpacity
+        <Pressable
           onPress={() => router.push(MODULE_START_PATH[moduleType] as `/${string}`)}
           style={[
             styles.actionButton,
@@ -226,13 +226,13 @@ export default function CompareScreen(): React.JSX.Element {
           ]}
           testID="new-analysis-button"
         >
-          <RefreshCw size={20} color="#fff" />
+          <RefreshCw size={20} color={brand.primaryForeground} />
           <View style={{ flex: 1, marginLeft: spacing.sm }}>
             <Text
               style={{
                 fontSize: typography.size.sm,
                 fontWeight: typography.weight.semibold,
-                color: '#fff',
+                color: brand.primaryForeground,
               }}
             >
               새 분석 시작
@@ -240,14 +240,14 @@ export default function CompareScreen(): React.JSX.Element {
             <Text
               style={{
                 fontSize: typography.size.xs,
-                color: 'rgba(255,255,255,0.8)',
+                color: brand.primaryForeground + 'CC',
                 marginTop: 2,
               }}
             >
               변화를 추적하려면 새 분석을 진행해요
             </Text>
           </View>
-        </TouchableOpacity>
+        </Pressable>
       </Animated.View>
     </ScrollView>
   );
@@ -266,7 +266,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   retryText: {
-    color: '#fff',
     fontWeight: '600',
   },
   dateRange: {

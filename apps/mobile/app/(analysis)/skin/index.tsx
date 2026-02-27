@@ -2,7 +2,7 @@
  * S-1 피부 분석 - 시작 화면
  */
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
@@ -70,14 +70,14 @@ export default function SkinAnalysisScreen() {
           { backgroundColor: colors.background, borderTopColor: colors.border },
         ]}
       >
-        <TouchableOpacity
+        <Pressable
           style={[styles.startButton, { backgroundColor: brand.primary }]}
           onPress={handleStartAnalysis}
         >
           <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>
             피부 분석 시작하기
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

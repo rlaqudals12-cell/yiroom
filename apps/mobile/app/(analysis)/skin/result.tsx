@@ -68,7 +68,7 @@ const INGREDIENT_DATA: Record<SkinType, { good: string[]; avoid: string[] }> = {
 };
 
 export default function SkinResultScreen() {
-  const { module, colors, isDark } = useAnalysisStyles();
+  const { module, colors, status, isDark } = useAnalysisStyles();
   const accent = module.skin;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -314,9 +314,9 @@ export default function SkinResultScreen() {
           {ingredients.good.map((item, index) => (
             <View
               key={index}
-              style={[localStyles.tag, { backgroundColor: isDark ? '#16A34A20' : '#DCFCE7' }]}
+              style={[localStyles.tag, { backgroundColor: status.success + '20' }]}
             >
-              <Text style={[localStyles.tagText, { color: isDark ? '#4ADE80' : '#16A34A' }]}>
+              <Text style={[localStyles.tagText, { color: status.success }]}>
                 {item}
               </Text>
             </View>
@@ -331,9 +331,9 @@ export default function SkinResultScreen() {
           {ingredients.avoid.map((item, index) => (
             <View
               key={index}
-              style={[localStyles.tag, { backgroundColor: isDark ? '#B91C1C20' : '#FEE2E2' }]}
+              style={[localStyles.tag, { backgroundColor: status.error + '20' }]}
             >
-              <Text style={[localStyles.tagText, { color: isDark ? '#F87171' : '#B91C1C' }]}>
+              <Text style={[localStyles.tagText, { color: status.error }]}>
                 {item}
               </Text>
             </View>

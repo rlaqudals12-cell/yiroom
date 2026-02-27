@@ -15,7 +15,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   ActivityIndicator,
   TextInput,
@@ -125,7 +125,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
 
   const renderGridItem = useCallback(
     ({ item }: { item: ClosetItem }) => (
-      <TouchableOpacity
+      <Pressable
         style={[
           styles.gridItem,
           shadows.card,
@@ -137,7 +137,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           },
         ]}
         onPress={() => handleItemPress(item.id)}
-        activeOpacity={0.7}
+
       >
         {item.imageUrl ? (
           <Image
@@ -178,14 +178,14 @@ export default function StyleGalleryScreen(): React.JSX.Element {
             <Text style={{ fontSize: 10 }}>{'\u2764\uFE0F'}</Text>
           </View>
         )}
-      </TouchableOpacity>
+      </Pressable>
     ),
     [colors, radii, shadows, spacing, typography, handleItemPress]
   );
 
   const renderListItem = useCallback(
     ({ item }: { item: ClosetItem }) => (
-      <TouchableOpacity
+      <Pressable
         style={[
           shadows.card,
           {
@@ -200,7 +200,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           },
         ]}
         onPress={() => handleItemPress(item.id)}
-        activeOpacity={0.7}
+
       >
         {item.imageUrl ? (
           <Image
@@ -223,7 +223,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           </Text>
         </View>
         {item.isFavorite && <Text style={{ fontSize: 14 }}>{'\u2764\uFE0F'}</Text>}
-      </TouchableOpacity>
+      </Pressable>
     ),
     [colors, radii, shadows, spacing, typography, handleItemPress]
   );
@@ -259,7 +259,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
             returnKeyType="search"
           />
           {/* 뷰모드 토글 */}
-          <TouchableOpacity
+          <Pressable
             onPress={() => {
               Haptics.selectionAsync();
               setViewMode((v) => (v === 'grid' ? 'list' : 'grid'));
@@ -270,7 +270,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
             ) : (
               <Grid3X3 size={20} color={colors.mutedForeground} />
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </Animated.View>
 
@@ -285,7 +285,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           renderItem={({ item: cat }) => {
             const isActive = cat.id === selectedCategory;
             return (
-              <TouchableOpacity
+              <Pressable
                 style={[
                   styles.filterChip,
                   {
@@ -304,12 +304,12 @@ export default function StyleGalleryScreen(): React.JSX.Element {
                   style={{
                     fontSize: typography.size.xs,
                     fontWeight: '600',
-                    color: isActive ? '#fff' : colors.mutedForeground,
+                    color: isActive ? brand.primaryForeground : colors.mutedForeground,
                   }}
                 >
                   {cat.label}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             );
           }}
         />

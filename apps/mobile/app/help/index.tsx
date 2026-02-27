@@ -2,7 +2,7 @@
  * 도움말/FAQ 스크린
  */
 import { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Linking, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, Linking, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '../../lib/theme';
@@ -91,7 +91,7 @@ export default function HelpScreen(): React.JSX.Element {
 
         {/* FAQ 목록 */}
         {FAQ_LIST.map((item) => (
-          <TouchableOpacity
+          <Pressable
             key={item.id}
             style={{
               backgroundColor: colors.card,
@@ -100,7 +100,7 @@ export default function HelpScreen(): React.JSX.Element {
               marginBottom: spacing.sm + 2,
             }}
             onPress={() => toggleExpand(item.id)}
-            activeOpacity={0.7}
+
           >
             <View style={styles.questionRow}>
               <Text
@@ -136,7 +136,7 @@ export default function HelpScreen(): React.JSX.Element {
                 {item.answer}
               </Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
         ))}
 
         {/* 문의하기 */}
@@ -159,7 +159,7 @@ export default function HelpScreen(): React.JSX.Element {
           >
             찾는 답이 없나요?
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={{
               backgroundColor: brand.primary,
               borderRadius: radii.md,
@@ -177,7 +177,7 @@ export default function HelpScreen(): React.JSX.Element {
             >
               문의하기
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>

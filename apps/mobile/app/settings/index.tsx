@@ -6,7 +6,7 @@
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '../../lib/theme';
@@ -125,10 +125,10 @@ function SettingsItem({
   onPress: () => void;
 }) {
   return (
-    <TouchableOpacity
+    <Pressable
       style={[styles.settingsItem, { backgroundColor: colors.card }]}
       onPress={onPress}
-      activeOpacity={0.7}
+
     >
       <Text style={styles.settingsIcon}>{icon}</Text>
       <View style={styles.settingsContent}>
@@ -140,7 +140,7 @@ function SettingsItem({
         )}
       </View>
       <Text style={[styles.settingsArrow, { color: colors.mutedForeground }]}>›</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

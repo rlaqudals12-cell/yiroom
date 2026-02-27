@@ -4,7 +4,7 @@
  */
 
 import * as Haptics from 'expo-haptics';
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 import { widgetLogger } from '../../lib/utils/logger';
@@ -48,13 +48,13 @@ export function QuickActionsWidget({ size = 'medium', onAction }: QuickActionsWi
       <View style={[styles.containerSmall, { backgroundColor: colors.card }]}>
         <View style={styles.smallGrid}>
           {QUICK_ACTIONS.slice(0, 2).map((action) => (
-            <TouchableOpacity
+            <Pressable
               key={action.type}
               style={[styles.smallButton, { backgroundColor: colors.muted }]}
               onPress={() => handlePress(action.type)}
             >
               <Text style={styles.buttonIcon}>{action.icon}</Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       </View>
@@ -70,14 +70,14 @@ export function QuickActionsWidget({ size = 'medium', onAction }: QuickActionsWi
       <Text style={[styles.title, { color: colors.foreground }]}>빠른 실행</Text>
       <View style={styles.actionsRow}>
         {QUICK_ACTIONS.map((action) => (
-          <TouchableOpacity
+          <Pressable
             key={action.type}
             style={[styles.actionButton, { backgroundColor: colors.muted }]}
             onPress={() => handlePress(action.type)}
           >
             <Text style={styles.buttonIcon}>{action.icon}</Text>
             <Text style={[styles.buttonLabel, { color: colors.mutedForeground }]}>{action.label}</Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </View>
     </View>

@@ -11,7 +11,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   ActivityIndicator,
   Share,
@@ -127,16 +127,16 @@ export default function FeedScreen() {
 
           {/* 인터랙션 버튼 */}
           <View style={[styles.cardActions, { borderTopColor: colors.border }]}>
-            <TouchableOpacity style={styles.actionButton} onPress={() => onLike(item.id)}>
+            <Pressable style={styles.actionButton} onPress={() => onLike(item.id)}>
               <Text style={item.isLiked ? styles.likeIconActive : styles.likeIcon}>
                 {item.isLiked ? '❤️' : '🤍'}
               </Text>
               <Text style={[styles.actionCount, { color: colors.mutedForeground }]}>
                 {item.likes}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
               style={styles.actionButton}
               onPress={() => router.push({ pathname: '/(social)/feed/comments', params: { activityId: item.id } })}
             >
@@ -144,14 +144,14 @@ export default function FeedScreen() {
               <Text style={[styles.actionCount, { color: colors.mutedForeground }]}>
                 {item.comments}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
               style={[styles.actionButton, styles.shareButton]}
               onPress={() => handleShare(item)}
             >
               <Text style={styles.actionIcon}>📤</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       );
@@ -198,7 +198,7 @@ export default function FeedScreen() {
           {message.subtitle}
         </Text>
         {activeTab === 'friends' && (
-          <TouchableOpacity
+          <Pressable
             style={[styles.emptyButton, { backgroundColor: brand.primary }]}
             onPress={() => {
               Haptics.selectionAsync();
@@ -208,7 +208,7 @@ export default function FeedScreen() {
             <Text style={[styles.emptyButtonText, { color: brand.primaryForeground }]}>
               친구 찾기
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
     );
@@ -238,7 +238,7 @@ export default function FeedScreen() {
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
-            <TouchableOpacity
+            <Pressable
               key={tab.id}
               style={[
                 styles.tabButton,
@@ -254,7 +254,7 @@ export default function FeedScreen() {
               >
                 {tab.label}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </View>
@@ -275,7 +275,7 @@ export default function FeedScreen() {
       />
 
       {/* 글쓰기 FAB */}
-      <TouchableOpacity
+      <Pressable
         style={[styles.fab, { backgroundColor: brand.primary }]}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -284,7 +284,7 @@ export default function FeedScreen() {
         testID="feed-create-fab"
       >
         <Text style={[styles.fabIcon, { color: brand.primaryForeground }]}>+</Text>
-      </TouchableOpacity>
+      </Pressable>
     </SafeAreaView>
   );
 }

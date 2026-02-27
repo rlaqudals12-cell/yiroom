@@ -8,7 +8,7 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
   Alert,
   ActivityIndicator,
@@ -141,17 +141,17 @@ export default function SignUpScreen() {
               />
             </View>
 
-            <TouchableOpacity
+            <Pressable
               style={[styles.button, isLoading && styles.buttonDisabled]}
               onPress={handleVerify}
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={brand.primaryForeground} />
               ) : (
                 <Text style={styles.buttonText}>인증 완료</Text>
               )}
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -235,26 +235,26 @@ export default function SignUpScreen() {
             />
           </View>
 
-          <TouchableOpacity
+          <Pressable
             testID="signup-submit-button"
             style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleSignUp}
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={brand.primaryForeground} />
             ) : (
               <Text style={styles.buttonText}>회원가입</Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
               이미 계정이 있으신가요?
             </Text>
-            <TouchableOpacity onPress={handleSignIn}>
+            <Pressable onPress={handleSignIn}>
               <Text style={styles.linkText}>로그인</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </ScrollView>

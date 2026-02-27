@@ -160,7 +160,7 @@ export default function SkinDiaryEntryScreen(): React.JSX.Element {
             <Text
               style={[
                 styles.scoreNum,
-                { color: isActive ? '#fff' : colors.foreground },
+                { color: isActive ? brand.primaryForeground : colors.foreground },
               ]}
             >
               {score}
@@ -168,7 +168,7 @@ export default function SkinDiaryEntryScreen(): React.JSX.Element {
             <Text
               style={[
                 styles.scoreLabel,
-                { color: isActive ? '#fff' : colors.muted },
+                { color: isActive ? brand.primaryForeground : colors.muted },
               ]}
               numberOfLines={1}
             >
@@ -427,7 +427,7 @@ export default function SkinDiaryEntryScreen(): React.JSX.Element {
           disabled={saving}
           testID="save-diary-btn"
         >
-          <Text style={styles.saveButtonText}>
+          <Text style={[styles.saveButtonText, { color: brand.primaryForeground }]}>
             {saving ? '저장 중...' : isEdit ? '수정하기' : '기록하기'}
           </Text>
         </Pressable>
@@ -605,7 +605,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButtonText: {
-    color: '#fff',
     fontSize: typography.size.base,
     fontWeight: '700',
   },

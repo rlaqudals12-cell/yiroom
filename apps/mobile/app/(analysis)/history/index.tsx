@@ -13,7 +13,7 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -152,7 +152,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
           keyExtractor={(item) => item.key}
           contentContainerStyle={{ paddingHorizontal: spacing.md }}
           renderItem={({ item: tab }) => (
-            <TouchableOpacity
+            <Pressable
               style={[
                 styles.filterChip,
                 {
@@ -176,7 +176,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
               >
                 {tab.label}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         />
       </View>
@@ -184,7 +184,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
       {/* 기간 필터 */}
       <View style={[styles.periodRow, { paddingHorizontal: spacing.md }]}>
         {PERIOD_TABS.map((tab) => (
-          <TouchableOpacity
+          <Pressable
             key={tab.key}
             style={[
               styles.periodChip,
@@ -208,12 +208,12 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
             >
               {tab.label}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
         <View style={{ flex: 1 }} />
         {/* 비교 버튼 — 특정 모듈 선택 시 노출 */}
         {selectedModule !== 'all' && (
-          <TouchableOpacity
+          <Pressable
             style={[
               styles.compareButton,
               {
@@ -238,7 +238,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
             >
               비교
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
         <Text
           style={{
@@ -276,14 +276,14 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
           >
             이력 조회에 실패했어요
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={[styles.retryButton, { backgroundColor: brand.primary, borderRadius: radii.md }]}
             onPress={refetch}
           >
             <Text style={{ color: colors.overlayForeground, fontSize: typography.size.sm, fontWeight: '600' }}>
               다시 시도
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       ) : (
         <FlatList

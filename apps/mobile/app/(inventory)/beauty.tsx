@@ -16,7 +16,7 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   Alert,
   RefreshControl,
@@ -145,7 +145,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
                 </Text>
               )}
             </View>
-            <TouchableOpacity
+            <Pressable
               onPress={() => handleToggleFavorite(item.id)}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
@@ -154,7 +154,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
                 color={item.isFavorite ? status.error : colors.mutedForeground}
                 fill={item.isFavorite ? status.error : 'none'}
               />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {/* 메타데이터 */}
@@ -242,7 +242,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             >
               사용 {item.useCount}회
             </Text>
-            <TouchableOpacity onPress={() => handleDelete(item)}>
+            <Pressable onPress={() => handleDelete(item)}>
               <Text
                 style={{
                   fontSize: typography.size.xs,
@@ -251,7 +251,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
               >
                 삭제
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </Animated.View>
       );
@@ -310,7 +310,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
         keyExtractor={(f) => f.key}
         contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.sm }}
         renderItem={({ item: f }) => (
-          <TouchableOpacity
+          <Pressable
             style={[
               styles.filterChip,
               {
@@ -338,7 +338,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             >
               {f.label}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
       />
 
@@ -390,7 +390,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
       {/* FAB 버튼들 */}
       <View style={[styles.fabContainer, { bottom: spacing.lg, right: spacing.md }]}>
         {/* 바코드 스캔 */}
-        <TouchableOpacity
+        <Pressable
           style={[
             styles.fabSmall,
             {
@@ -407,10 +407,10 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
           testID="barcode-scan-fab"
         >
           <Scan size={20} color={brand.primary} />
-        </TouchableOpacity>
+        </Pressable>
 
         {/* 수동 추가 — 향후 추가 모달 구현 */}
-        <TouchableOpacity
+        <Pressable
           style={[
             styles.fabMain,
             { backgroundColor: brand.primary },
@@ -425,7 +425,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
           testID="add-product-fab"
         >
           <Plus size={24} color="#fff" />
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

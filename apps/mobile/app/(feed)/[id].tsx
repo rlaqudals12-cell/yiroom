@@ -13,7 +13,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   TextInput,
   KeyboardAvoidingView,
@@ -47,7 +47,7 @@ interface Comment {
 }
 
 export default function FeedDetailScreen() {
-  const { colors } = useTheme();
+  const { colors, brand } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUser();
@@ -289,7 +289,7 @@ export default function FeedDetailScreen() {
   if (isLoading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={brand.primary} />
       </View>
     );
   }
@@ -339,7 +339,7 @@ export default function FeedDetailScreen() {
                   </View>
                 </View>
                 <View style={[styles.levelBadge, { backgroundColor: colors.secondary }]}>
-                  <Text style={styles.levelText}>Lv.{feedItem.userLevel}</Text>
+                  <Text style={[styles.levelText, { color: brand.primary }]}>Lv.{feedItem.userLevel}</Text>
                 </View>
               </View>
 
@@ -363,12 +363,12 @@ export default function FeedDetailScreen() {
 
               {/* 액션 버튼 */}
               <View style={[styles.postActions, { borderTopColor: colors.border }]}>
-                <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
+                <Pressable style={styles.actionButton} onPress={handleLike}>
                   <Text style={styles.actionIcon}>{feedItem.isLiked ? '❤️' : '🤍'}</Text>
                   <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
                     좋아요 {feedItem.likes}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
                 <View style={styles.actionButton}>
                   <Text style={styles.actionIcon}>💬</Text>
                   <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
@@ -410,20 +410,21 @@ export default function FeedDetailScreen() {
             multiline
             maxLength={500}
           />
-          <TouchableOpacity
+          <Pressable
             style={[
               styles.sendButton,
-              (!commentText.trim() || isSubmitting) && styles.sendButtonDisabled,
+              { backgroundColor: brand.primary },
+              (!commentText.trim() || isSubmitting) && { backgroundColor: colors.border },
             ]}
             onPress={handleSubmitComment}
             disabled={!commentText.trim() || isSubmitting}
           >
             {isSubmitting ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={colors.overlayForeground} />
             ) : (
-              <Text style={styles.sendButtonText}>전송</Text>
+              <Text style={[styles.sendButtonText, { color: brand.primaryForeground }]}>전송</Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -497,7 +498,6 @@ const styles = StyleSheet.create({
   levelText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6366f1',
   },
   postContent: {
     marginBottom: 16,
@@ -610,18 +610,14 @@ const styles = StyleSheet.create({
     maxHeight: 100,
   },
   sendButton: {
-    backgroundColor: '#6366f1',
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 20,
     minWidth: 60,
     alignItems: 'center',
   },
-  sendButtonDisabled: {
-    backgroundColor: '#d1d5db',
-  },
+  sendButtonDisabled: {},
   sendButtonText: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
   },

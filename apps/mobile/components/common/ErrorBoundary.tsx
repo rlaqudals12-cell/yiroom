@@ -5,7 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '../../lib/theme';
@@ -91,13 +91,12 @@ function ErrorFallbackContent({ error, onRetry }: { error: Error | null; onRetry
           </View>
         )}
 
-        <TouchableOpacity
+        <Pressable
           style={[styles.retryButton, { backgroundColor: brand.primary }]}
           onPress={onRetry}
-          activeOpacity={0.8}
         >
           <Text style={[styles.retryButtonText, { color: brand.primaryForeground }]}>다시 시도</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

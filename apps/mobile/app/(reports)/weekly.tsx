@@ -9,7 +9,7 @@ import { useWeeklyReport } from '../../hooks/useWeeklyReport';
 import { useTheme } from '../../lib/theme';
 
 export default function WeeklyReportScreen(): React.JSX.Element {
-  const { colors, brand, spacing, radii, typography } = useTheme();
+  const { colors, brand, spacing, radii, typography, status } = useTheme();
   const { report, isLoading, error } = useWeeklyReport();
 
   if (isLoading) {
@@ -179,9 +179,9 @@ export default function WeeklyReportScreen(): React.JSX.Element {
 
           {/* 매크로 평균 */}
           <View style={[styles.macroRow, { marginTop: spacing.md }]}>
-            <MacroChip label="단백질" value={`${report.nutrition.averageProtein}g`} color="#ef4444" bg={colors.muted} typography={typography} />
-            <MacroChip label="탄수화물" value={`${report.nutrition.averageCarbs}g`} color="#eab308" bg={colors.muted} typography={typography} />
-            <MacroChip label="지방" value={`${report.nutrition.averageFat}g`} color="#3b82f6" bg={colors.muted} typography={typography} />
+            <MacroChip label="단백질" value={`${report.nutrition.averageProtein}g`} color={status.error} bg={colors.muted} typography={typography} />
+            <MacroChip label="탄수화물" value={`${report.nutrition.averageCarbs}g`} color={status.warning} bg={colors.muted} typography={typography} />
+            <MacroChip label="지방" value={`${report.nutrition.averageFat}g`} color={status.info} bg={colors.muted} typography={typography} />
           </View>
         </View>
 

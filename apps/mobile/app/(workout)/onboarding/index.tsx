@@ -2,13 +2,13 @@
  * W-1 운동 온보딩 - 시작 화면
  */
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
 
 export default function WorkoutOnboardingScreen() {
-  const { colors } = useTheme();
+  const { colors, brand } = useTheme();
 
   const handleStart = () => {
     router.push('/(workout)/onboarding/goals');
@@ -23,8 +23,8 @@ export default function WorkoutOnboardingScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* 헤더 */}
         <View style={styles.header}>
-          <View style={styles.iconContainer}>
-            <Text style={styles.iconText}>W</Text>
+          <View style={[styles.iconContainer, { backgroundColor: brand.primary }]}>
+            <Text style={[styles.iconText, { color: brand.primaryForeground }]}>W</Text>
           </View>
           <Text style={[styles.title, { color: colors.foreground }]}>맞춤 운동 플랜</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
@@ -72,9 +72,9 @@ export default function WorkoutOnboardingScreen() {
 
       {/* 시작 버튼 */}
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-        <TouchableOpacity style={styles.startButton} onPress={handleStart}>
-          <Text style={styles.startButtonText}>운동 시작하기</Text>
-        </TouchableOpacity>
+        <Pressable style={[styles.startButton, { backgroundColor: brand.primary }]} onPress={handleStart}>
+          <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>운동 시작하기</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -89,7 +89,7 @@ function FeatureItem({
   title: string;
   description: string;
 }) {
-  const { colors } = useTheme();
+  const { colors, brand } = useTheme();
   return (
     <View style={styles.featureItem}>
       <Text style={styles.featureEmoji}>{emoji}</Text>
@@ -102,11 +102,11 @@ function FeatureItem({
 }
 
 function StepItem({ number, title }: { number: number; title: string }) {
-  const { colors } = useTheme();
+  const { colors, brand } = useTheme();
   return (
     <View style={styles.stepItem}>
-      <View style={styles.stepNumber}>
-        <Text style={styles.stepNumberText}>{number}</Text>
+      <View style={[styles.stepNumber, { backgroundColor: brand.primary }]}>
+        <Text style={[styles.stepNumberText, { color: brand.primaryForeground }]}>{number}</Text>
       </View>
       <Text style={[styles.stepTitle, { color: colors.foreground }]}>{title}</Text>
     </View>
@@ -129,7 +129,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#ef4444',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
@@ -137,7 +136,6 @@ const styles = StyleSheet.create({
   iconText: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#fff',
   },
   title: {
     fontSize: 26,
@@ -193,12 +191,10 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#ef4444',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepNumberText: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -214,13 +210,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   startButton: {
-    backgroundColor: '#ef4444',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   startButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

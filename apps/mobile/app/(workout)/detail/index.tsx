@@ -191,28 +191,28 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
             },
           ]}
         >
-          <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: '#fff' }}>
+          <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
             {formatDate(detail.workoutDate)}
           </Text>
           <View style={[styles.summaryRow, { marginTop: spacing.md }]}>
             {detail.actualDuration != null && (
               <View style={styles.summaryItem}>
                 <Clock size={16} color="rgba(255,255,255,0.8)" />
-                <Text style={[styles.summaryValue, { color: '#fff' }]}>{detail.actualDuration}분</Text>
+                <Text style={[styles.summaryValue, { color: colors.overlayForeground }]}>{detail.actualDuration}분</Text>
                 <Text style={[styles.summaryLabel, { color: 'rgba(255,255,255,0.7)' }]}>운동 시간</Text>
               </View>
             )}
             {detail.actualCalories != null && (
               <View style={styles.summaryItem}>
                 <Flame size={16} color="rgba(255,255,255,0.8)" />
-                <Text style={[styles.summaryValue, { color: '#fff' }]}>{detail.actualCalories}kcal</Text>
+                <Text style={[styles.summaryValue, { color: colors.overlayForeground }]}>{detail.actualCalories}kcal</Text>
                 <Text style={[styles.summaryLabel, { color: 'rgba(255,255,255,0.7)' }]}>소모 칼로리</Text>
               </View>
             )}
             {detail.exerciseLogs.length > 0 && (
               <View style={styles.summaryItem}>
                 <Dumbbell size={16} color="rgba(255,255,255,0.8)" />
-                <Text style={[styles.summaryValue, { color: '#fff' }]}>{detail.exerciseLogs.length}종목</Text>
+                <Text style={[styles.summaryValue, { color: colors.overlayForeground }]}>{detail.exerciseLogs.length}종목</Text>
                 <Text style={[styles.summaryLabel, { color: 'rgba(255,255,255,0.7)' }]}>운동 수</Text>
               </View>
             )}

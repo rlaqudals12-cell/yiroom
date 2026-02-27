@@ -8,7 +8,7 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
   Alert,
   ActivityIndicator,
@@ -117,26 +117,26 @@ export default function SignInScreen() {
             />
           </View>
 
-          <TouchableOpacity
+          <Pressable
             testID="signin-submit-button"
             style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleSignIn}
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={brand.primaryForeground} />
             ) : (
               <Text style={styles.buttonText}>로그인</Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
               계정이 없으신가요?
             </Text>
-            <TouchableOpacity onPress={handleSignUp}>
+            <Pressable onPress={handleSignUp}>
               <Text style={styles.linkText}>회원가입</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </ScrollView>

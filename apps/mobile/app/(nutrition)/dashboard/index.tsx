@@ -11,7 +11,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -185,9 +185,9 @@ export default function NutritionDashboardScreen() {
         <View style={[styles.section, { backgroundColor: colors.card }]}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>오늘의 식사</Text>
-            <TouchableOpacity onPress={handleRecordMeal}>
+            <Pressable onPress={handleRecordMeal}>
               <Text style={[styles.addButton, { color: brand.primary }]}>+ 추가</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
           {meals.length === 0 ? (
             <View style={styles.emptyMeals}>
@@ -237,7 +237,7 @@ export default function NutritionDashboardScreen() {
         </View>
 
         {/* 식사 기록 버튼 */}
-        <TouchableOpacity
+        <Pressable
           testID="record-meal-button"
           style={[styles.recordButton, { backgroundColor: brand.primary }]}
           onPress={handleRecordMeal}
@@ -245,7 +245,7 @@ export default function NutritionDashboardScreen() {
           <Text style={[styles.recordButtonText, { color: colors.background }]}>
             식사 기록하기
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );

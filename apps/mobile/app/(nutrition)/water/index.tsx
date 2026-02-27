@@ -9,7 +9,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   Alert,
   ActivityIndicator,
@@ -201,7 +201,7 @@ export default function WaterTrackingScreen() {
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>음료 종류</Text>
           <View style={styles.drinkTypeGrid}>
             {DRINK_TYPES.map((drink) => (
-              <TouchableOpacity
+              <Pressable
                 key={drink.id}
                 style={[
                   styles.drinkTypeChip,
@@ -225,7 +225,7 @@ export default function WaterTrackingScreen() {
                 >
                   {drink.label}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>
@@ -235,7 +235,7 @@ export default function WaterTrackingScreen() {
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>빠른 추가</Text>
           <View style={styles.quickAddGrid}>
             {QUICK_ADD_OPTIONS.map((option) => (
-              <TouchableOpacity
+              <Pressable
                 key={option.amount}
                 style={[
                   styles.quickAddButton,
@@ -246,7 +246,7 @@ export default function WaterTrackingScreen() {
               >
                 <Text style={[styles.quickAddText, { color: status.info }]}>{option.label}</Text>
                 <Text style={[styles.quickAddUnit, { color: colors.mutedForeground }]}>ml</Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>
@@ -263,7 +263,7 @@ export default function WaterTrackingScreen() {
           ) : (
             <View style={[styles.recordsCard, { backgroundColor: colors.card }]}>
               {todayRecords.map((record, index) => (
-                <TouchableOpacity
+                <Pressable
                   key={record.id}
                   style={[
                     styles.recordItem,
@@ -281,7 +281,7 @@ export default function WaterTrackingScreen() {
                   <Text style={[styles.recordAmount, { color: colors.foreground }]}>
                     {record.amount_ml}ml
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
           )}

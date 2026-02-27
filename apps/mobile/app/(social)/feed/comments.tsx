@@ -11,7 +11,7 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -206,7 +206,7 @@ export default function CommentsScreen(): React.JSX.Element {
             maxLength={300}
             testID="comment-input"
           />
-          <TouchableOpacity
+          <Pressable
             style={[
               styles.sendButton,
               {
@@ -225,7 +225,7 @@ export default function CommentsScreen(): React.JSX.Element {
                 전송
               </Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

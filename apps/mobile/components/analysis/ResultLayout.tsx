@@ -102,7 +102,7 @@ export function ResultLayout({
   retryPath,
   testID = 'analysis-result-layout',
 }: ResultLayoutProps): React.JSX.Element {
-  const { colors, isDark, spacing, radii, typography } = useTheme();
+  const { colors, isDark, spacing, radii, typography, brand } = useTheme();
   const accent = moduleColors[moduleKey];
 
   // 강화된 그라디언트: 2단계 (모듈 accent → brand accent → 투명)
@@ -265,7 +265,7 @@ export function ResultLayout({
                 ]}
                 testID={`${testID}-expert-cta-button`}
               >
-                <Text style={[styles.ctaButtonText, { fontSize: typography.size.sm }]}>
+                <Text style={[styles.ctaButtonText, { fontSize: typography.size.sm, color: brand.primaryForeground }]}>
                   상담하기
                 </Text>
               </Pressable>
@@ -362,7 +362,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   ctaButtonText: {
-    color: '#FFFFFF',
     fontWeight: '600',
   },
   buttonsContainer: {

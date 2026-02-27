@@ -10,7 +10,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   ActivityIndicator,
   Share,
@@ -463,7 +463,7 @@ export default function ProductDetailScreen() {
         {/* 탭 */}
         <View style={[styles.tabRow, { borderBottomColor: colors.border }]}>
           {(['info', 'ingredients', 'reviews'] as TabType[]).map((tab) => (
-            <TouchableOpacity
+            <Pressable
               key={tab}
               style={[
                 styles.tab,
@@ -490,7 +490,7 @@ export default function ProductDetailScreen() {
                     ? '성분'
                     : `리뷰 ${product.reviewCount}`}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
@@ -558,26 +558,26 @@ export default function ProductDetailScreen() {
       <View
         style={[styles.actionBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}
       >
-        <TouchableOpacity
+        <Pressable
           style={[styles.actionButton, { backgroundColor: colors.muted }]}
           onPress={handleFavoriteToggle}
         >
           <Text style={styles.actionIcon}>{isFavorite ? '❤️' : '🤍'}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[styles.actionButton, { backgroundColor: colors.muted }]}
           onPress={handleShare}
         >
           <Text style={styles.actionIcon}>📤</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[styles.purchaseButton, { backgroundColor: brand.primary }]}
           onPress={handlePurchase}
         >
           <Text style={[styles.purchaseButtonText, { color: brand.primaryForeground }]}>
             구매하러 가기
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

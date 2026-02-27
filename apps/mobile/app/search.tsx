@@ -26,7 +26,7 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -212,7 +212,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
       const IconComponent = config.icon;
 
       return (
-        <TouchableOpacity
+        <Pressable
           style={[
             shadows.card,
             {
@@ -225,7 +225,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
             },
           ]}
           onPress={() => handleResultPress(item)}
-          activeOpacity={0.7}
+
         >
           <View
             style={[
@@ -259,7 +259,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
               {config.label}
             </Text>
           </View>
-        </TouchableOpacity>
+        </Pressable>
       );
     },
     [colors, radii, spacing, typography, shadows, handleResultPress]
@@ -302,9 +302,9 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
               autoFocus
             />
             {query.length > 0 && (
-              <TouchableOpacity onPress={handleClear}>
+              <Pressable onPress={handleClear}>
                 <X size={18} color={colors.mutedForeground} />
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
         </Animated.View>
@@ -327,7 +327,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
             </Text>
             <View style={[styles.quickGrid, { gap: spacing.xs }]}>
               {QUICK_SEARCHES.map((term) => (
-                <TouchableOpacity
+                <Pressable
                   key={term}
                   style={[
                     styles.quickChip,
@@ -346,7 +346,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
                   <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>
                     {term}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
           </Animated.View>

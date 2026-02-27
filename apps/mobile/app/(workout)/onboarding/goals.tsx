@@ -3,7 +3,7 @@
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
@@ -48,7 +48,7 @@ const GOALS = [
 ];
 
 export default function WorkoutGoalsScreen() {
-  const { colors } = useTheme();
+  const { colors, brand } = useTheme();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
   const toggleGoal = (goalId: string) => {
@@ -82,16 +82,16 @@ export default function WorkoutGoalsScreen() {
             const isDisabled = !isSelected && selectedGoals.length >= 3;
 
             return (
-              <TouchableOpacity
+              <Pressable
                 key={goal.id}
                 style={[
                   styles.goalCard,
                   { backgroundColor: colors.card },
-                  isSelected && styles.goalCardSelected,
+                  isSelected && { borderColor: brand.primary, backgroundColor: brand.primary + '10' },
                   isDisabled && styles.goalCardDisabled,
                 ]}
                 onPress={() => !isDisabled && toggleGoal(goal.id)}
-                activeOpacity={isDisabled ? 1 : 0.7}
+
               >
                 <Text style={styles.goalEmoji}>{goal.emoji}</Text>
                 <View style={styles.goalContent}>
@@ -99,7 +99,7 @@ export default function WorkoutGoalsScreen() {
                     style={[
                       styles.goalLabel,
                       { color: colors.foreground },
-                      isSelected && styles.goalLabelSelected,
+                      isSelected && { color: brand.primary },
                     ]}
                   >
                     {goal.label}
@@ -108,23 +108,23 @@ export default function WorkoutGoalsScreen() {
                     {goal.description}
                   </Text>
                 </View>
-                <View style={[styles.checkbox, { borderColor: colors.border }, isSelected && styles.checkboxSelected]}>
-                  {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                <View style={[styles.checkbox, { borderColor: colors.border }, isSelected && { backgroundColor: brand.primary, borderColor: brand.primary }]}>
+                  {isSelected && <Text style={[styles.checkmark, { color: brand.primaryForeground }]}>✓</Text>}
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             );
           })}
         </View>
       </ScrollView>
 
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-        <TouchableOpacity
+        <Pressable
           style={[styles.nextButton, selectedGoals.length === 0 && { backgroundColor: colors.muted }]}
           onPress={handleNext}
           disabled={selectedGoals.length === 0}
         >
           <Text style={styles.nextButtonText}>다음 ({selectedGoals.length}/3)</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -158,10 +158,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  goalCardSelected: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2',
-  },
+  goalCardSelected: {},
   goalCardDisabled: {
     opacity: 0.5,
   },
@@ -177,9 +174,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 2,
   },
-  goalLabelSelected: {
-    color: '#ef4444',
-  },
+  goalLabelSelected: {},
   goalDescription: {
     fontSize: 13,
   },
@@ -191,12 +186,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkboxSelected: {
-    backgroundColor: '#ef4444',
-    borderColor: '#ef4444',
-  },
+  checkboxSelected: {},
   checkmark: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -209,13 +200,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   nextButton: {
-    backgroundColor: '#ef4444',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   nextButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

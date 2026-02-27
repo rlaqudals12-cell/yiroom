@@ -28,7 +28,7 @@ interface NutritionRecord {
 }
 
 export default function NutritionHistoryScreen(): React.JSX.Element {
-  const { colors, brand, spacing, radii, typography } = useTheme();
+  const { colors, brand, spacing, radii, typography, status } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -122,19 +122,19 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
         <View style={styles.macroRow}>
           <View style={styles.macroItem}>
             <Text style={[styles.macroLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>단백질</Text>
-            <Text style={[styles.macroValue, { color: '#ef4444', fontSize: typography.size.sm }]}>{item.totalProtein}g</Text>
+            <Text style={[styles.macroValue, { color: status.error, fontSize: typography.size.sm }]}>{item.totalProtein}g</Text>
           </View>
           <View style={styles.macroItem}>
             <Text style={[styles.macroLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>탄수화물</Text>
-            <Text style={[styles.macroValue, { color: '#eab308', fontSize: typography.size.sm }]}>{item.totalCarbs}g</Text>
+            <Text style={[styles.macroValue, { color: status.warning, fontSize: typography.size.sm }]}>{item.totalCarbs}g</Text>
           </View>
           <View style={styles.macroItem}>
             <Text style={[styles.macroLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>지방</Text>
-            <Text style={[styles.macroValue, { color: '#3b82f6', fontSize: typography.size.sm }]}>{item.totalFat}g</Text>
+            <Text style={[styles.macroValue, { color: status.info, fontSize: typography.size.sm }]}>{item.totalFat}g</Text>
           </View>
           <View style={styles.macroItem}>
             <Text style={[styles.macroLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>수분</Text>
-            <Text style={[styles.macroValue, { color: '#06b6d4', fontSize: typography.size.sm }]}>{item.waterIntake}ml</Text>
+            <Text style={[styles.macroValue, { color: status.info, fontSize: typography.size.sm }]}>{item.waterIntake}ml</Text>
           </View>
         </View>
       </View>

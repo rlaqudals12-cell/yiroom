@@ -17,7 +17,7 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -169,12 +169,12 @@ export default function BarcodeScanScreen(): React.JSX.Element {
             ]}
           >
             <View style={styles.infoRow}>
-              <ScanBarcode size={24} color="#fff" />
+              <ScanBarcode size={24} color={brand.primaryForeground} />
               <Text
                 style={{
                   fontSize: typography.size.lg,
                   fontWeight: typography.weight.bold,
-                  color: '#fff',
+                  color: brand.primaryForeground,
                   marginLeft: spacing.sm,
                 }}
               >
@@ -184,7 +184,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
             <Text
               style={{
                 fontSize: typography.size.sm,
-                color: 'rgba(255,255,255,0.85)',
+                color: brand.primaryForeground + 'D9',
                 marginTop: spacing.xs,
                 lineHeight: 20,
               }}
@@ -242,7 +242,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 returnKeyType="search"
                 onSubmitEditing={handleSearch}
               />
-              <TouchableOpacity
+              <Pressable
                 style={[
                   styles.searchButton,
                   {
@@ -255,11 +255,11 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 disabled={scanState === 'searching'}
               >
                 {scanState === 'searching' ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color={brand.primaryForeground} />
                 ) : (
-                  <Search size={20} color="#fff" />
+                  <Search size={20} color={brand.primaryForeground} />
                 )}
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </Animated.View>
 
@@ -327,7 +327,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 </View>
               </View>
 
-              <TouchableOpacity
+              <Pressable
                 style={[
                   styles.addButton,
                   {
@@ -338,10 +338,10 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 ]}
                 onPress={handleAddToInventory}
               >
-                <Plus size={18} color="#fff" />
+                <Plus size={18} color={brand.primaryForeground} />
                 <Text
                   style={{
-                    color: '#fff',
+                    color: brand.primaryForeground,
                     fontWeight: '600',
                     fontSize: typography.size.sm,
                     marginLeft: spacing.xs,
@@ -349,7 +349,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 >
                   내 화장대에 추가
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </Animated.View>
           )}
 
@@ -394,7 +394,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 {product?.name}
               </Text>
               <View style={styles.actionRow}>
-                <TouchableOpacity
+                <Pressable
                   style={[
                     styles.actionButton,
                     {
@@ -415,8 +415,8 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                   >
                     다른 제품 스캔
                   </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                   style={[
                     styles.actionButton,
                     {
@@ -429,14 +429,14 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 >
                   <Text
                     style={{
-                      color: '#fff',
+                      color: brand.primaryForeground,
                       fontWeight: '600',
                       fontSize: typography.size.sm,
                     }}
                   >
                     화장대 보기
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </Animated.View>
           )}
@@ -473,7 +473,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
               >
                 바코드 번호를 확인하거나{'\n'}다른 방법으로 제품을 추가해보세요
               </Text>
-              <TouchableOpacity
+              <Pressable
                 style={[
                   styles.retryButton,
                   {
@@ -486,14 +486,14 @@ export default function BarcodeScanScreen(): React.JSX.Element {
               >
                 <Text
                   style={{
-                    color: '#fff',
+                    color: brand.primaryForeground,
                     fontWeight: '600',
                     fontSize: typography.size.sm,
                   }}
                 >
                   다시 시도
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </Animated.View>
           )}
 
@@ -519,7 +519,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
               >
                 {errorMsg}
               </Text>
-              <TouchableOpacity
+              <Pressable
                 style={[
                   styles.retryButton,
                   {
@@ -532,14 +532,14 @@ export default function BarcodeScanScreen(): React.JSX.Element {
               >
                 <Text
                   style={{
-                    color: '#fff',
+                    color: brand.primaryForeground,
                     fontWeight: '600',
                     fontSize: typography.size.sm,
                   }}
                 >
                   다시 시도
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </Animated.View>
           )}
         </ScrollView>

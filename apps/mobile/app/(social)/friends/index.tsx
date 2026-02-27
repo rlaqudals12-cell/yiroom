@@ -10,7 +10,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   ActivityIndicator,
 } from 'react-native';
@@ -39,7 +39,7 @@ export default function FriendsScreen() {
   };
 
   const renderFriend = ({ item }: { item: Friend }) => (
-    <TouchableOpacity
+    <Pressable
       style={[styles.friendCard, { backgroundColor: colors.card }]}
       onPress={() => Haptics.selectionAsync()}
     >
@@ -64,7 +64,7 @@ export default function FriendsScreen() {
         <Text style={[styles.friendName, { color: colors.foreground }]}>{item.displayName}</Text>
         <Text style={[styles.friendLevel, { color: colors.mutedForeground }]}>Lv.{item.level}</Text>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   if (isLoading) {
@@ -85,14 +85,14 @@ export default function FriendsScreen() {
     >
       {/* 상단 액션 */}
       <View style={styles.header}>
-        <TouchableOpacity
+        <Pressable
           style={[styles.actionButton, { backgroundColor: colors.card }]}
           onPress={handleSearch}
         >
           <Text style={styles.actionIcon}>🔍</Text>
           <Text style={[styles.actionText, { color: colors.foreground }]}>친구 찾기</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[styles.actionButton, { backgroundColor: colors.card }]}
           onPress={handleRequests}
         >
@@ -100,7 +100,7 @@ export default function FriendsScreen() {
           <Text style={[styles.actionText, { color: colors.foreground }]}>
             요청 {stats?.pendingRequests ? `(${stats.pendingRequests})` : ''}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {/* 통계 */}
@@ -137,14 +137,14 @@ export default function FriendsScreen() {
           <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
             친구를 찾아 함께 운동해보세요!
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={[styles.emptyButton, { backgroundColor: brand.primary }]}
             onPress={handleSearch}
           >
             <Text style={[styles.emptyButtonText, { color: brand.primaryForeground }]}>
               친구 찾기
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       ) : (
         <FlatList

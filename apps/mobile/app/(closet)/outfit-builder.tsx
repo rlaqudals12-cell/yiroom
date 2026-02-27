@@ -203,7 +203,7 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
                       </View>
                     )}
                     <View style={[styles.removeIcon, { backgroundColor: colors.destructive }]}>
-                      <X size={10} color="#fff" />
+                      <X size={10} color={colors.overlayForeground} />
                     </View>
                   </Pressable>
                 ))}

@@ -231,7 +231,7 @@ export default function SkinConsultationScreen(): React.JSX.Element {
             onPress={() => handleSend()}
             disabled={!inputText.trim()}
           >
-            <Send size={18} color="#fff" />
+            <Send size={18} color={brand.primaryForeground} />
           </Pressable>
         </View>
       </View>

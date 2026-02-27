@@ -6,7 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
@@ -38,7 +38,7 @@ const WATER_PRESETS = [1500, 2000, 2500, 3000];
 const CALORIE_PRESETS = [1500, 1800, 2000, 2500];
 
 export default function GoalsSettingsScreen() {
-  const { colors } = useTheme();
+  const { colors, brand } = useTheme();
 
   const [goals, setGoals] = useState<GoalSettings>(DEFAULT_GOALS);
   const [customWater, setCustomWater] = useState('');
@@ -125,12 +125,12 @@ export default function GoalsSettingsScreen() {
           <View style={[styles.card, { backgroundColor: colors.card }]}>
             <View style={styles.presetRow}>
               {WATER_PRESETS.map((value) => (
-                <TouchableOpacity
+                <Pressable
                   key={value}
                   style={[
                     styles.presetButton,
                     { backgroundColor: colors.muted },
-                    goals.waterGoal === value && styles.presetButtonSelected,
+                    goals.waterGoal === value && { backgroundColor: brand.primary },
                   ]}
                   onPress={() => handleWaterPreset(value)}
                 >
@@ -138,12 +138,12 @@ export default function GoalsSettingsScreen() {
                     style={[
                       styles.presetButtonText,
                       { color: colors.foreground },
-                      goals.waterGoal === value && styles.presetButtonTextSelected,
+                      goals.waterGoal === value && { color: brand.primaryForeground },
                     ]}
                   >
                     {(value / 1000).toFixed(1)}L
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
             <View style={styles.customInputRow}>
@@ -170,12 +170,12 @@ export default function GoalsSettingsScreen() {
           <View style={[styles.card, { backgroundColor: colors.card }]}>
             <View style={styles.presetRow}>
               {CALORIE_PRESETS.map((value) => (
-                <TouchableOpacity
+                <Pressable
                   key={value}
                   style={[
                     styles.presetButton,
                     { backgroundColor: colors.muted },
-                    goals.caloriesGoal === value && styles.presetButtonSelected,
+                    goals.caloriesGoal === value && { backgroundColor: brand.primary },
                   ]}
                   onPress={() => handleCaloriesPreset(value)}
                 >
@@ -183,12 +183,12 @@ export default function GoalsSettingsScreen() {
                     style={[
                       styles.presetButtonText,
                       { color: colors.foreground },
-                      goals.caloriesGoal === value && styles.presetButtonTextSelected,
+                      goals.caloriesGoal === value && { color: brand.primaryForeground },
                     ]}
                   >
                     {value}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
             <View style={styles.customInputRow}>
@@ -218,12 +218,12 @@ export default function GoalsSettingsScreen() {
               <Text style={[styles.goalLabel, { color: colors.foreground }]}>일일 운동 시간</Text>
               <View style={styles.goalSelector}>
                 {[15, 30, 45, 60].map((value) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={value}
                     style={[
                       styles.goalOption,
                       { backgroundColor: colors.muted },
-                      goals.workoutMinutesGoal === value && styles.goalOptionSelected,
+                      goals.workoutMinutesGoal === value && { backgroundColor: brand.primary },
                     ]}
                     onPress={() => handleWorkoutMinutes(value)}
                   >
@@ -231,12 +231,12 @@ export default function GoalsSettingsScreen() {
                       style={[
                         styles.goalOptionText,
                         { color: colors.foreground },
-                        goals.workoutMinutesGoal === value && styles.goalOptionTextSelected,
+                        goals.workoutMinutesGoal === value && { color: brand.primaryForeground },
                       ]}
                     >
                       {value}분
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </View>
             </View>
@@ -248,12 +248,12 @@ export default function GoalsSettingsScreen() {
               <Text style={[styles.goalLabel, { color: colors.foreground }]}>주당 운동 일수</Text>
               <View style={styles.goalSelector}>
                 {[3, 4, 5, 6, 7].map((value) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={value}
                     style={[
                       styles.goalOption,
                       { backgroundColor: colors.muted },
-                      goals.workoutDaysGoal === value && styles.goalOptionSelected,
+                      goals.workoutDaysGoal === value && { backgroundColor: brand.primary },
                     ]}
                     onPress={() => handleWorkoutDays(value)}
                   >
@@ -261,12 +261,12 @@ export default function GoalsSettingsScreen() {
                       style={[
                         styles.goalOptionText,
                         { color: colors.foreground },
-                        goals.workoutDaysGoal === value && styles.goalOptionTextSelected,
+                        goals.workoutDaysGoal === value && { color: brand.primaryForeground },
                       ]}
                     >
                       {value}일
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </View>
             </View>
@@ -325,15 +325,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  presetButtonSelected: {
-    backgroundColor: '#8b5cf6',
-  },
   presetButtonText: {
     fontSize: 14,
     fontWeight: '600',
-  },
-  presetButtonTextSelected: {
-    color: '#fff',
   },
   customInputRow: {
     flexDirection: 'row',
@@ -372,15 +366,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
   },
-  goalOptionSelected: {
-    backgroundColor: '#8b5cf6',
-  },
   goalOptionText: {
     fontSize: 13,
     fontWeight: '500',
-  },
-  goalOptionTextSelected: {
-    color: '#fff',
   },
   infoSection: {
     paddingHorizontal: 8,

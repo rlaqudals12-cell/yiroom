@@ -5,7 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 
 import { useNetworkStatus } from '../../lib/offline';
 import { useTheme } from '../../lib/theme';
@@ -69,7 +69,7 @@ export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: O
       </View>
 
       {isConnected && pendingCount > 0 && (
-        <TouchableOpacity
+        <Pressable
           style={[styles.syncButton, { backgroundColor: brand.primary }, isSyncing && styles.syncButtonDisabled]}
           onPress={handleSync}
           disabled={isSyncing}
@@ -77,7 +77,7 @@ export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: O
           <Text style={[styles.syncButtonText, { color: brand.primaryForeground }]}>
             {isSyncing ? '동기화 중...' : '동기화'}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
     </Animated.View>
   );

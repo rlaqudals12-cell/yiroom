@@ -5,7 +5,7 @@
  * 한/영 토글 지원.
  */
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '../lib/theme';
@@ -25,7 +25,7 @@ export default function PrivacyPolicyScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 언어 토글 */}
         <View style={styles.langToggle}>
-          <TouchableOpacity
+          <Pressable
             style={[
               styles.langButton,
               {
@@ -46,8 +46,8 @@ export default function PrivacyPolicyScreen() {
             >
               한국어
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             style={[
               styles.langButton,
               {
@@ -68,7 +68,7 @@ export default function PrivacyPolicyScreen() {
             >
               English
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {lang === 'ko' ? (
@@ -267,11 +267,11 @@ function KoreanContent({ colors }: ContentProps) {
             이룸의 AI 분석 기능(퍼스널컬러, 피부, 체형 등)은 Google Gemini API를 활용합니다. 분석 시
             사용자의 이미지 데이터가 Google의 AI 서버로 전송되어 처리됩니다.
           </Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => Linking.openURL('https://ai.google.dev/gemini-api/terms')}
           >
             <Text style={styles.linkText}>Google Gemini API Terms of Service →</Text>
-          </TouchableOpacity>
+          </Pressable>
         </InfoBox>
         <InfoBox colors={colors}>
           <Text style={[styles.infoTitle, { color: colors.cardForeground }]}>
@@ -516,11 +516,11 @@ function EnglishContent({ colors }: ContentProps) {
             Gemini API. When you use these features, your image data is transmitted to and processed
             by Google's AI servers.
           </Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => Linking.openURL('https://ai.google.dev/gemini-api/terms')}
           >
             <Text style={styles.linkText}>Google Gemini API Terms of Service →</Text>
-          </TouchableOpacity>
+          </Pressable>
         </InfoBox>
         <InfoBox colors={colors}>
           <Text style={[styles.infoTitle, { color: colors.cardForeground }]}>

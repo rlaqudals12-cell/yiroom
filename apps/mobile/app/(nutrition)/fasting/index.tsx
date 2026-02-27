@@ -14,7 +14,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -242,13 +242,13 @@ export default function FastingTrackerScreen(): React.JSX.Element {
         >
           <Timer
             size={32}
-            color={fastingState === 'fasting' ? '#fff' : nutritionColor}
+            color={fastingState === 'fasting' ? colors.overlayForeground : nutritionColor}
           />
           <Text
             style={{
               fontSize: 48,
               fontWeight: typography.weight.bold,
-              color: fastingState === 'fasting' ? '#fff' : colors.foreground,
+              color: fastingState === 'fasting' ? colors.overlayForeground : colors.foreground,
               marginTop: spacing.md,
               fontVariant: ['tabular-nums'],
             }}
@@ -279,7 +279,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                 style={[
                   styles.progressFill,
                   {
-                    backgroundColor: '#fff',
+                    backgroundColor: colors.overlayForeground,
                     borderRadius: radii.sm,
                     width: `${Math.round(progress * 100)}%`,
                   },
@@ -289,7 +289,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
           )}
 
           {/* 시작/종료 버튼 */}
-          <TouchableOpacity
+          <Pressable
             style={[
               styles.actionButton,
               {
@@ -302,20 +302,20 @@ export default function FastingTrackerScreen(): React.JSX.Element {
           >
             {fastingState === 'fasting' ? (
               <>
-                <Square size={18} color="#fff" />
-                <Text style={[styles.actionText, { color: '#fff', marginLeft: spacing.xs }]}>
+                <Square size={18} color={colors.overlayForeground} />
+                <Text style={[styles.actionText, { color: colors.overlayForeground, marginLeft: spacing.xs }]}>
                   단식 종료
                 </Text>
               </>
             ) : (
               <>
-                <Play size={18} color="#fff" />
-                <Text style={[styles.actionText, { color: '#fff', marginLeft: spacing.xs }]}>
+                <Play size={18} color={colors.overlayForeground} />
+                <Text style={[styles.actionText, { color: colors.overlayForeground, marginLeft: spacing.xs }]}>
                   단식 시작
                 </Text>
               </>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
 
         {/* 패턴 선택 (단식 중이 아닐 때만) */}
@@ -335,7 +335,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
               {FASTING_PATTERNS.map((pattern) => {
                 const isSelected = pattern.id === selectedPattern.id;
                 return (
-                  <TouchableOpacity
+                  <Pressable
                     key={pattern.id}
                     style={[
                       styles.patternCard,
@@ -357,7 +357,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                       style={{
                         fontSize: typography.size.lg,
                         fontWeight: typography.weight.bold,
-                        color: isSelected ? '#fff' : colors.foreground,
+                        color: isSelected ? colors.overlayForeground : colors.foreground,
                       }}
                     >
                       {pattern.label}
@@ -371,7 +371,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                     >
                       {pattern.description}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 );
               })}
             </View>

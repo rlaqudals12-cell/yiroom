@@ -12,7 +12,7 @@ import {
   ScrollView,
   Platform,
   Linking,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -24,7 +24,7 @@ import { useWidgetSync } from '../../lib/widgets';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
 export default function WidgetSettingsScreen() {
-  const { colors } = useTheme();
+  const { colors, brand } = useTheme();
   const { getData } = useWidgetSync({ autoSync: false });
 
   const [widgetData, setWidgetData] = useState<TodaySummaryData>(DEFAULT_SUMMARY_DATA);
@@ -84,12 +84,12 @@ export default function WidgetSettingsScreen() {
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>위젯 미리보기</Text>
         <View style={styles.sizeSelector}>
           {(['small', 'medium', 'large'] as const).map((size) => (
-            <TouchableOpacity
+            <Pressable
               key={size}
               style={[
                 styles.sizeButton,
                 { backgroundColor: colors.card, borderColor: colors.border },
-                selectedSize === size && styles.sizeButtonSelected,
+                selectedSize === size && { backgroundColor: brand.primary, borderColor: brand.primary },
               ]}
               onPress={() => handleSizeChange(size)}
             >
@@ -97,12 +97,12 @@ export default function WidgetSettingsScreen() {
                 style={[
                   styles.sizeButtonText,
                   { color: colors.foreground },
-                  selectedSize === size && styles.sizeButtonTextSelected,
+                  selectedSize === size && { color: brand.primaryForeground, fontWeight: '600' as const },
                 ]}
               >
                 {size === 'small' ? '소형' : size === 'medium' ? '중형' : '대형'}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
@@ -125,7 +125,7 @@ export default function WidgetSettingsScreen() {
         )}
 
         {/* 위젯 추가 도움말 버튼 */}
-        <TouchableOpacity
+        <Pressable
           style={[styles.helpButton, { backgroundColor: colors.card, borderColor: colors.border }]}
           onPress={handleAddWidgetHelp}
         >
@@ -133,7 +133,7 @@ export default function WidgetSettingsScreen() {
           <Text style={[styles.helpButtonText, { color: colors.foreground }]}>
             위젯 추가 방법 알아보기
           </Text>
-        </TouchableOpacity>
+        </Pressable>
 
         {/* 지원 위젯 목록 */}
         <View style={styles.widgetList}>
@@ -222,16 +222,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
   },
-  sizeButtonSelected: {
-    backgroundColor: '#8b5cf6',
-    borderColor: '#8b5cf6',
-  },
   sizeButtonText: {
     fontSize: 14,
-  },
-  sizeButtonTextSelected: {
-    color: '#fff',
-    fontWeight: '600',
   },
   widgetSection: {
     marginBottom: 24,

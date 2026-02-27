@@ -4,7 +4,7 @@
  * 모든 분석 결과 화면에서 사용하는
  * 주 액션, 홈 이동, 재분석 버튼 그룹
  */
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useTheme } from '@/lib/theme';
 
@@ -32,7 +32,7 @@ export function AnalysisResultButtons({
 
   return (
     <View style={styles.buttons} testID={testID}>
-      <TouchableOpacity
+      <Pressable
         style={[styles.primaryButton, { backgroundColor: brand.primary }]}
         onPress={onPrimaryPress}
         testID={`${testID}-primary`}
@@ -40,8 +40,8 @@ export function AnalysisResultButtons({
         <Text style={[styles.primaryButtonText, { color: brand.primaryForeground }]}>
           {primaryText}
         </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
+      </Pressable>
+      <Pressable
         style={[styles.secondaryButton, { borderColor: colors.border }]}
         onPress={onGoHome}
         testID={`${testID}-home`}
@@ -49,12 +49,12 @@ export function AnalysisResultButtons({
         <Text style={[styles.secondaryButtonText, { color: colors.mutedForeground }]}>
           홈으로 돌아가기
         </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.retryLink} onPress={onRetry} testID={`${testID}-retry`}>
+      </Pressable>
+      <Pressable style={styles.retryLink} onPress={onRetry} testID={`${testID}-retry`}>
         <Text style={[styles.retryLinkText, { color: colors.mutedForeground }]}>
           다시 분석하기
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }

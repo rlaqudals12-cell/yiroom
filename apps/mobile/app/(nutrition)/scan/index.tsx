@@ -11,7 +11,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   Alert,
   ActivityIndicator,
   ScrollView,
@@ -42,7 +42,7 @@ const MEAL_TYPES = [
 type ScreenState = 'scanning' | 'loading' | 'result' | 'not-found';
 
 export default function BarcodeScanScreen() {
-  const { colors, module: moduleColors } = useTheme();
+  const { colors, status, module: moduleColors } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [permission, requestPermission] = useCameraPermissions();
@@ -133,14 +133,14 @@ export default function BarcodeScanScreen() {
           <Text style={[styles.permissionDesc, { color: colors.mutedForeground }]}>
             바코드를 스캔하려면 카메라 접근을 허용해주세요
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={[styles.permissionButton, { backgroundColor: moduleColors.nutrition.base }]}
             onPress={requestPermission}
           >
             <Text style={[styles.permissionButtonText, { color: colors.overlayForeground }]}>
               권한 허용
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -186,22 +186,22 @@ export default function BarcodeScanScreen() {
             직접 검색하거나 다시 스캔해보세요.
           </Text>
           <View style={styles.notFoundButtons}>
-            <TouchableOpacity
+            <Pressable
               style={[styles.retryButton, { backgroundColor: moduleColors.nutrition.base }]}
               onPress={handleRetry}
             >
               <Text style={[styles.retryButtonText, { color: colors.overlayForeground }]}>
                 다시 스캔
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               style={[styles.searchButton, { borderColor: colors.border }]}
               onPress={() => router.replace('/(nutrition)/search')}
             >
               <Text style={[styles.searchButtonText, { color: colors.foreground }]}>
                 직접 검색
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </SafeAreaView>
@@ -250,19 +250,19 @@ export default function BarcodeScanScreen() {
                 <Text style={[styles.macroLabel, { color: colors.mutedForeground }]}>kcal</Text>
               </View>
               <View style={[styles.macroItem, { backgroundColor: colors.background }]}>
-                <Text style={[styles.macroValue, { color: '#3b82f6' }]}>
+                <Text style={[styles.macroValue, { color: status.info }]}>
                   {nutrition.protein}g
                 </Text>
                 <Text style={[styles.macroLabel, { color: colors.mutedForeground }]}>단백질</Text>
               </View>
               <View style={[styles.macroItem, { backgroundColor: colors.background }]}>
-                <Text style={[styles.macroValue, { color: '#f59e0b' }]}>
+                <Text style={[styles.macroValue, { color: status.warning }]}>
                   {nutrition.carbs}g
                 </Text>
                 <Text style={[styles.macroLabel, { color: colors.mutedForeground }]}>탄수화물</Text>
               </View>
               <View style={[styles.macroItem, { backgroundColor: colors.background }]}>
-                <Text style={[styles.macroValue, { color: '#ef4444' }]}>
+                <Text style={[styles.macroValue, { color: status.error }]}>
                   {nutrition.fat}g
                 </Text>
                 <Text style={[styles.macroLabel, { color: colors.mutedForeground }]}>지방</Text>
@@ -274,21 +274,21 @@ export default function BarcodeScanScreen() {
           <View style={[styles.servingCard, { backgroundColor: colors.card }]}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>섭취량</Text>
             <View style={styles.servingControls}>
-              <TouchableOpacity
+              <Pressable
                 style={[styles.servingButton, { backgroundColor: colors.background }]}
                 onPress={() => adjustServings(-0.5)}
               >
                 <Text style={[styles.servingButtonText, { color: colors.foreground }]}>−</Text>
-              </TouchableOpacity>
+              </Pressable>
               <Text style={[styles.servingValue, { color: colors.foreground }]}>
                 {servings}인분
               </Text>
-              <TouchableOpacity
+              <Pressable
                 style={[styles.servingButton, { backgroundColor: colors.background }]}
                 onPress={() => adjustServings(0.5)}
               >
                 <Text style={[styles.servingButtonText, { color: colors.foreground }]}>+</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
 
@@ -299,7 +299,7 @@ export default function BarcodeScanScreen() {
               {MEAL_TYPES.map((mt) => {
                 const isSelected = mealType === mt.id;
                 return (
-                  <TouchableOpacity
+                  <Pressable
                     key={mt.id}
                     style={[
                       styles.mealTypeChip,
@@ -326,7 +326,7 @@ export default function BarcodeScanScreen() {
                     >
                       {mt.label}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 );
               })}
             </View>
@@ -335,13 +335,13 @@ export default function BarcodeScanScreen() {
 
         {/* 하단 버튼 */}
         <View style={styles.footer}>
-          <TouchableOpacity
+          <Pressable
             style={[styles.rescanButton, { borderColor: colors.border }]}
             onPress={handleRetry}
           >
             <Text style={[styles.rescanButtonText, { color: colors.foreground }]}>다시 스캔</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             style={[
               styles.saveButton,
               { backgroundColor: moduleColors.nutrition.base },
@@ -357,7 +357,7 @@ export default function BarcodeScanScreen() {
                 기록하기
               </Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -394,9 +394,9 @@ export default function BarcodeScanScreen() {
         </View>
         <View style={styles.overlayBottom}>
           <Text style={styles.scanGuideText}>바코드를 프레임 안에 맞춰주세요</Text>
-          <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
+          <Pressable style={styles.cancelButton} onPress={() => router.back()}>
             <Text style={styles.cancelButtonText}>취소</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </SafeAreaView>

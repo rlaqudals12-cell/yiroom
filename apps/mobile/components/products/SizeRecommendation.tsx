@@ -5,7 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 
 import { useNetworkStatus } from '../../lib/offline';
 import type {
@@ -113,9 +113,9 @@ export function SizeRecommendation({
       <View style={[styles.container, themed.container]}>
         <View style={styles.errorContainer}>
           <Text style={[styles.errorText, themed.errorText]}>{error}</Text>
-          <TouchableOpacity onPress={refetch} style={[styles.retryButton, themed.retryBtn]}>
+          <Pressable onPress={refetch} style={[styles.retryButton, themed.retryBtn]}>
             <Text style={[styles.retryButtonText, themed.retryBtnText]}>다시 시도</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     );
@@ -152,7 +152,7 @@ export function SizeRecommendation({
 
       {/* 추천 사이즈 */}
       <View style={styles.mainRecommendation}>
-        <TouchableOpacity
+        <Pressable
           style={[styles.recommendedSize, themed.sizeBox]}
           onPress={() => handleSizePress(displayRecommendation.recommendedSize)}
         >
@@ -160,7 +160,7 @@ export function SizeRecommendation({
             {displayRecommendation.recommendedSize}
           </Text>
           <Text style={[styles.recommendedLabel, themed.sizeLabel]}>추천</Text>
-        </TouchableOpacity>
+        </Pressable>
 
         {/* 신뢰도 바 */}
         <View style={styles.confidenceBar}>
@@ -185,14 +185,14 @@ export function SizeRecommendation({
           <Text style={[styles.alternativesTitle, themed.altTitle]}>다른 옵션</Text>
           <View style={styles.alternativesList}>
             {displayRecommendation.alternatives.map((alt, index) => (
-              <TouchableOpacity
+              <Pressable
                 key={index}
                 style={[styles.alternativeItem, themed.altItem]}
                 onPress={() => handleSizePress(alt.size)}
               >
                 <Text style={[styles.alternativeSize, themed.altSize]}>{alt.size}</Text>
                 <Text style={[styles.alternativeNote, themed.altNote]}>{alt.note}</Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>

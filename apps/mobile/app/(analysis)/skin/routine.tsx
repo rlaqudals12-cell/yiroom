@@ -13,7 +13,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
@@ -106,9 +106,9 @@ export default function SkincareRoutineScreen() {
               루틴을 만들 수 없어요
             </Text>
             <Text style={[styles.errorText, { color: colors.mutedForeground }]}>{error}</Text>
-            <TouchableOpacity style={styles.primaryButton} onPress={handleGoToAnalysis}>
-              <Text style={styles.primaryButtonText}>피부 분석하러 가기</Text>
-            </TouchableOpacity>
+            <Pressable style={styles.primaryButton} onPress={handleGoToAnalysis}>
+              <Text style={[styles.primaryButtonText, { color: colors.card }]}>피부 분석하러 가기</Text>
+            </Pressable>
           </View>
         </View>
       </SafeAreaView>
@@ -153,7 +153,7 @@ export default function SkincareRoutineScreen() {
 
         {/* 아침/저녁 토글 */}
         <View style={[styles.toggleContainer, { backgroundColor: colors.muted }]}>
-          <TouchableOpacity
+          <Pressable
             style={[
               styles.toggleButton,
               activeTime === 'morning' && { backgroundColor: colors.card },
@@ -170,8 +170,8 @@ export default function SkincareRoutineScreen() {
             >
               아침 ({morningSteps.length}단계)
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             style={[
               styles.toggleButton,
               activeTime === 'evening' && { backgroundColor: colors.card },
@@ -188,7 +188,7 @@ export default function SkincareRoutineScreen() {
             >
               저녁 ({eveningSteps.length}단계)
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* 루틴 정보 */}
@@ -210,9 +210,9 @@ export default function SkincareRoutineScreen() {
 
         {/* 하단 버튼 */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.primaryButton} onPress={handleProductRecommendation}>
-            <Text style={styles.primaryButtonText}>🧴 피부 맞춤 제품 보기</Text>
-          </TouchableOpacity>
+          <Pressable style={styles.primaryButton} onPress={handleProductRecommendation}>
+            <Text style={[styles.primaryButtonText, { color: colors.card }]}>🧴 피부 맞춤 제품 보기</Text>
+          </Pressable>
           <Text style={[styles.footerNote, { color: colors.mutedForeground }]}>
             파트너사 링크를 통해 구매하시면 이룸에 도움이 돼요
           </Text>
@@ -236,14 +236,14 @@ function RoutineStepCard({ step }: { step: RoutineStep }) {
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       style={[styles.stepCard, { backgroundColor: colors.card }]}
       onPress={toggleExpand}
-      activeOpacity={0.7}
+
     >
       <View style={styles.stepHeader}>
         <View style={styles.stepOrderContainer}>
-          <Text style={styles.stepOrder}>{step.order}</Text>
+          <Text style={[styles.stepOrder, { color: colors.card }]}>{step.order}</Text>
         </View>
         <View style={styles.stepInfo}>
           <View style={styles.stepTitleRow}>
@@ -280,7 +280,7 @@ function RoutineStepCard({ step }: { step: RoutineStep }) {
           ))}
         </View>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -412,7 +412,6 @@ const styles = StyleSheet.create({
   stepOrder: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#fff',
   },
   stepInfo: {
     flex: 1,
@@ -478,7 +477,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

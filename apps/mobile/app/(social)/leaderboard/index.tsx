@@ -10,7 +10,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   ActivityIndicator,
 } from 'react-native';
@@ -147,7 +147,7 @@ export default function LeaderboardScreen() {
 
       {/* 탭 */}
       <View style={[styles.tabContainer, { backgroundColor: colors.muted }]}>
-        <TouchableOpacity
+        <Pressable
           style={[
             styles.tab,
             activeTab === 'all' && [styles.tabActive, { backgroundColor: colors.card }],
@@ -163,8 +163,8 @@ export default function LeaderboardScreen() {
           >
             전체
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.tab,
             activeTab === 'friends' && [styles.tabActive, { backgroundColor: colors.card }],
@@ -180,7 +180,7 @@ export default function LeaderboardScreen() {
           >
             친구
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {/* 리더보드 목록 */}

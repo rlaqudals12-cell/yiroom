@@ -11,7 +11,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   Switch,
   ActivityIndicator,
   Platform,
@@ -22,7 +22,7 @@ import { useHealthData } from '@/hooks/useHealthData';
 import { useTheme } from '@/lib/theme';
 
 export default function HealthSyncScreen() {
-  const { colors } = useTheme();
+  const { colors, brand, status } = useTheme();
 
   const {
     isAvailable,
@@ -111,8 +111,8 @@ export default function HealthSyncScreen() {
                 onValueChange={handleToggle}
                 disabled={isLoading}
                 trackColor={{
-                  false: '#767577',
-                  true: platform === 'google' ? '#34A853' : '#4CD964',
+                  false: colors.mutedForeground,
+                  true: status.success,
                 }}
               />
             </View>
@@ -169,17 +169,17 @@ export default function HealthSyncScreen() {
                     {formatTime(lastSyncTime)}
                   </Text>
                 </View>
-                <TouchableOpacity
-                  style={[styles.syncButton, isSyncing && styles.syncButtonDisabled]}
+                <Pressable
+                  style={[styles.syncButton, { backgroundColor: brand.primary }, isSyncing && styles.syncButtonDisabled]}
                   onPress={handleSync}
                   disabled={isSyncing}
                 >
                   {isSyncing ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <ActivityIndicator size="small" color={brand.primaryForeground} />
                   ) : (
-                    <Text style={styles.syncButtonText}>동기화</Text>
+                    <Text style={[styles.syncButtonText, { color: brand.primaryForeground }]}>동기화</Text>
                   )}
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           )}
@@ -198,12 +198,12 @@ export default function HealthSyncScreen() {
 }
 
 function DataItem({ label, emoji }: { label: string; emoji: string }) {
-  const { colors } = useTheme();
+  const { colors, status } = useTheme();
   return (
     <View style={styles.dataItem}>
       <Text style={styles.dataEmoji}>{emoji}</Text>
       <Text style={[styles.dataLabel, { color: colors.foreground }]}>{label}</Text>
-      <Text style={styles.checkmark}>✓</Text>
+      <Text style={[styles.checkmark, { color: status.success }]}>✓</Text>
     </View>
   );
 }
@@ -265,7 +265,6 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     fontSize: 16,
-    color: '#4CD964',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -293,7 +292,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   syncButton: {
-    backgroundColor: '#007AFF',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -304,7 +302,6 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   syncButtonText: {
-    color: '#fff',
     fontWeight: '600',
     fontSize: 14,
   },

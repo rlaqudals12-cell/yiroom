@@ -8,7 +8,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   TextInput,
   Alert,
 } from 'react-native';
@@ -95,7 +95,7 @@ export default function NutritionRecordScreen() {
           {MEAL_TYPES.map((meal) => {
             const isActive = selectedMealType === meal.type;
             return (
-              <TouchableOpacity
+              <Pressable
                 key={meal.type}
                 style={[
                   styles.mealTypeButton,
@@ -117,14 +117,14 @@ export default function NutritionRecordScreen() {
                 >
                   {meal.label}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             );
           })}
         </Animated.View>
 
         {/* 촬영 버튼 */}
         <Animated.View entering={FadeInUp.delay(60).duration(350)}>
-          <TouchableOpacity onPress={handleTakePhoto}>
+          <Pressable onPress={handleTakePhoto}>
             <GlassCard style={styles.photoButton}>
               <Text style={styles.photoIcon}>📷</Text>
               <View>
@@ -134,7 +134,7 @@ export default function NutritionRecordScreen() {
                 </Text>
               </View>
             </GlassCard>
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
 
         {/* 검색 */}
@@ -158,7 +158,7 @@ export default function NutritionRecordScreen() {
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>빠른 추가</Text>
             <View style={styles.quickAddGrid}>
               {QUICK_ADD_FOODS.map((food, index) => (
-                <TouchableOpacity
+                <Pressable
                   key={index}
                   style={[styles.quickAddItem, { backgroundColor: colors.muted }]}
                   onPress={() => handleAddFood(food)}
@@ -173,7 +173,7 @@ export default function NutritionRecordScreen() {
                   <Text style={[styles.quickAddCalories, { color: colors.mutedForeground }]}>
                     {food.calories} kcal
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
           </GlassCard>
@@ -195,9 +195,9 @@ export default function NutritionRecordScreen() {
                 <Text style={[styles.addedFoodCalories, { color: colors.mutedForeground }]}>
                   {food.calories} kcal
                 </Text>
-                <TouchableOpacity onPress={() => handleRemoveFood(index)}>
+                <Pressable onPress={() => handleRemoveFood(index)}>
                   <Text style={[styles.removeButton, { color: colors.mutedForeground }]}>✕</Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             ))}
             <View style={styles.totalRow}>
@@ -217,12 +217,12 @@ export default function NutritionRecordScreen() {
           { backgroundColor: colors.background, borderTopColor: colors.border },
         ]}
       >
-        <TouchableOpacity
+        <Pressable
           style={[styles.saveButton, { backgroundColor: nutritionColor }]}
           onPress={handleSave}
         >
           <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>기록 저장</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

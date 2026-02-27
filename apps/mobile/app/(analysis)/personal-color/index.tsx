@@ -3,7 +3,7 @@
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
@@ -117,7 +117,7 @@ export default function PersonalColorScreen() {
         {/* 선택지 */}
         <View style={styles.optionsContainer}>
           {question.options.map((option, index) => (
-            <TouchableOpacity
+            <Pressable
               key={index}
               style={[
                 styles.optionButton,
@@ -128,7 +128,7 @@ export default function PersonalColorScreen() {
                 },
               ]}
               onPress={() => handleAnswer(option.value)}
-              activeOpacity={0.7}
+
             >
               <Text
                 style={[
@@ -142,16 +142,16 @@ export default function PersonalColorScreen() {
               >
                 {option.label}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       </ScrollView>
 
       {/* 뒤로가기 버튼 */}
       {currentQuestion > 0 && (
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+        <Pressable style={styles.backButton} onPress={handleBack}>
           <Text style={[styles.backButtonText, { color: colors.mutedForeground }]}>이전 질문</Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
     </SafeAreaView>
   );
