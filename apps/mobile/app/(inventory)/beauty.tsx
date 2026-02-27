@@ -425,7 +425,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
           }}
           testID="add-product-fab"
         >
-          <Plus size={24} color="#fff" />
+          <Plus size={24} color={colors.overlayForeground} />
         </Pressable>
       </View>
     </ScreenContainer>
