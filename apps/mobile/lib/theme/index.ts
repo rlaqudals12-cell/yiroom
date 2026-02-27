@@ -24,6 +24,10 @@ export type { SemanticColors } from './tokens';
 export { gradients, getModuleGradient } from './gradients';
 export type { GradientConfig, GradientKey } from './gradients';
 
+// 시각 효과
+export { borderGlow } from './effects';
+export type { BorderGlowVariant } from './effects';
+
 // 테마 컨텍스트
 export { ThemeProvider } from './ThemeProvider';
 export type { ThemeContextValue } from './ThemeProvider';

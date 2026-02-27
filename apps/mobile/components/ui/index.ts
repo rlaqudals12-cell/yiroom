@@ -46,3 +46,6 @@ export type { CelebrationType } from './CelebrationEffect';
 export { BadgeDrop } from './BadgeDrop';
 export type { BadgeInfo } from './BadgeDrop';
 export { SuccessCheckmark } from './SuccessCheckmark';
+export { GradientText } from './GradientText';
+export type { GradientTextVariant } from './GradientText';
+export { ScanLineOverlay } from './ScanLineOverlay';

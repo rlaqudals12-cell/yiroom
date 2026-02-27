@@ -5,11 +5,11 @@
  * 하단에 3가지 영역별 점수를 미니 바로 표시.
  */
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 
 import { ScoreGauge } from '../ui/ScoreGauge';
 import { useTheme } from '../../lib/theme';
-import { TIMING } from '../../lib/animations';
+import { TIMING, usePulseGlow } from '../../lib/animations';
 import type { WellnessBreakdown } from '../../hooks/useWellnessScore';
 
 interface WellnessScoreRingProps {
@@ -27,6 +27,9 @@ export function WellnessScoreRing({
 }: WellnessScoreRingProps): React.JSX.Element {
   const { colors, brand, spacing, radii, typography, shadows, status } = useTheme();
 
+  // 높은 점수(70+)일 때 은은한 글로우 펄스
+  const pulseGlowStyle = usePulseGlow(brand.primary, score >= 70 ? 0.2 : 0);
+
   return (
     <Animated.View
       entering={FadeInUp.duration(TIMING.normal)}
@@ -41,6 +44,7 @@ export function WellnessScoreRing({
           borderColor: colors.border,
           padding: spacing.lg,
         },
+        score >= 70 ? (pulseGlowStyle as AnimatedStyle<ViewStyle>) : undefined,
         style,
       ]}
     >

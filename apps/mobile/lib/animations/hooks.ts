@@ -135,3 +135,40 @@ export function useCountUp(
 
   return value;
 }
+
+/**
+ * PulseGlow 애니메이션 (웹 pulse-glow keyframe 대응)
+ *
+ * shadowOpacity를 min ↔ max 반복 (3초 주기).
+ * 프리미엄 카드, 높은 점수 카드에 은은한 글로우 효과.
+ *
+ * @param color 글로우 색상 (iOS shadowColor)
+ * @param intensity 최대 글로우 강도 (shadowOpacity). 기본 0.25
+ * @returns Animated style (shadowOpacity + elevation 변화)
+ */
+export function usePulseGlow(
+  color: string,
+  intensity = 0.25
+): ReturnType<typeof useAnimatedStyle> {
+  const glow = useSharedValue(intensity * 0.4);
+
+  useEffect(() => {
+    glow.value = withRepeat(
+      withSequence(
+        withTiming(intensity, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(intensity * 0.4, { duration: 1500, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    );
+    return () => cancelAnimation(glow);
+  }, [glow, intensity]);
+
+  return useAnimatedStyle(() => ({
+    shadowColor: color,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: glow.value,
+    shadowRadius: interpolate(glow.value, [intensity * 0.4, intensity], [8, 20]),
+    elevation: interpolate(glow.value, [intensity * 0.4, intensity], [2, 6]),
+  }));
+}

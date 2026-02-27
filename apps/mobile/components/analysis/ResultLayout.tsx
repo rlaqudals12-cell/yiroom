@@ -25,11 +25,12 @@ import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, borderGlow } from '@/lib/theme';
 import { brand, moduleColors } from '@/lib/theme/tokens';
 import { TIMING } from '@/lib/animations';
 import { TabView, type TabItem } from '../ui/TabView';
 import { GradientCard } from '../ui/GradientCard';
+import { GradientText, type GradientTextVariant } from '../ui/GradientText';
 import { AnalysisTrustBadge, type TrustBadgeType } from './AnalysisTrustBadge';
 import { AnalysisResultButtons } from './AnalysisResultButtons';
 import { GradeDisplay } from './GradeDisplay';
@@ -47,6 +48,19 @@ const MODULE_TO_VARIANT: Record<string, string> = {
   posture: 'posture',
   oralHealth: 'oralHealth',
   face: 'face',
+  workout: 'workout',
+  nutrition: 'nutrition',
+};
+
+/** GradientText variant 매핑 (moduleKey → GradientText variant) */
+const MODULE_TO_GRADIENT_TEXT: Record<string, GradientTextVariant> = {
+  skin: 'skin',
+  body: 'body',
+  personalColor: 'personalColor',
+  hair: 'hair',
+  makeup: 'makeup',
+  posture: 'brand',
+  oralHealth: 'oralHealth',
   workout: 'workout',
   nutrition: 'nutrition',
 };
@@ -153,13 +167,16 @@ export function ResultLayout({
           end={{ x: 0.5, y: 1 }}
           style={styles.header}
         >
-          {/* 제목 */}
-          <Animated.Text
-            entering={FadeIn.duration(TIMING.normal)}
-            style={[styles.title, { color: colors.foreground }]}
-          >
-            {title}
-          </Animated.Text>
+          {/* 제목 — 모듈별 그래디언트 텍스트 */}
+          <Animated.View entering={FadeIn.duration(TIMING.normal)}>
+            <GradientText
+              variant={MODULE_TO_GRADIENT_TEXT[moduleKey] ?? 'brand'}
+              fontSize={22}
+              fontWeight={typography.weight.bold}
+            >
+              {title}
+            </GradientText>
+          </Animated.View>
 
           {/* 신뢰도 배지 */}
           <Animated.View entering={FadeIn.delay(100).duration(TIMING.normal)}>
@@ -236,6 +253,7 @@ export function ResultLayout({
         >
           <GradientCard
             variant={cardVariant}
+            style={borderGlow.pink}
             testID={`${testID}-expert-cta`}
           >
             <View style={styles.ctaContent}>

@@ -168,7 +168,7 @@ export default function StyleTab(): React.JSX.Element {
 
         {/* 분석 */}
         <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-          <SectionHeader title="분석" style={{ marginBottom: spacing.sm + 4 }} />
+          <SectionHeader title="분석" gradient="body" style={{ marginBottom: spacing.sm + 4 }} />
         </Animated.View>
 
         <View style={{ gap: spacing.sm + 4 }}>

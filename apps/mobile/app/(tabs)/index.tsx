@@ -280,7 +280,7 @@ export default function HomeScreen(): React.JSX.Element {
 
       {/* 오늘의 요약 — StatCard 사용 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <SectionHeader title="오늘의 요약" style={{ marginBottom: spacing.sm }} />
+        <SectionHeader title="오늘의 요약" gradient="brand" style={{ marginBottom: spacing.sm }} />
         <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg }}>
           <StatCard
             value={streakCount}
@@ -309,7 +309,7 @@ export default function HomeScreen(): React.JSX.Element {
       </Animated.View>
 
       {/* 모듈 카드 — staggeredEntry 적용 */}
-      <SectionHeader title="나의 여정" style={{ marginBottom: spacing.sm + 4 }} />
+      <SectionHeader title="나의 여정" gradient="extended" style={{ marginBottom: spacing.sm + 4 }} />
       <View style={{ gap: spacing.sm + 4, marginBottom: spacing.lg }}>
         <Animated.View entering={staggeredEntry(0)}>
           <ModuleCard

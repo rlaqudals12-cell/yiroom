@@ -1,10 +1,12 @@
 /**
  * 분석 로딩 상태 컴포넌트
  *
- * 분석 진행 중일 때 표시하는 공통 로딩 UI
+ * 분석 진행 중일 때 표시하는 공통 로딩 UI.
+ * ScanLineOverlay 통합 — 웹의 scan-line 효과 대응.
  */
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
+import { ScanLineOverlay } from '@/components/ui';
 import { useTheme } from '@/lib/theme';
 
 export interface AnalysisLoadingStateProps {
@@ -27,6 +29,8 @@ export function AnalysisLoadingState({
       accessibilityLabel={message}
       accessibilityRole="progressbar"
     >
+      {/* 스캔 라인 애니메이션 (웹 scan-line 대응) */}
+      <ScanLineOverlay active height={200} color={brand.primary} />
       <ActivityIndicator size="large" color={brand.primary} />
       <Text style={[styles.text, { color: colors.mutedForeground }]}>{message}</Text>
     </View>
