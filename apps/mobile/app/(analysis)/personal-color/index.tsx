@@ -60,7 +60,7 @@ const QUESTIONS = [
 ];
 
 export default function PersonalColorScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand } = useTheme();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
 

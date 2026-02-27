@@ -42,7 +42,7 @@ const WORKOUT_FREQUENCIES: WorkoutFrequency[] = ['none', '1-2', '3-4', '5+'];
 const MEAL_PREFERENCES: MealPreference[] = ['regular', 'intermittent', 'low_carb', 'high_protein'];
 
 export default function OnboardingStep3() {
-  const { colors, brand, spacing, radii, shadows, typography, isDark } = useTheme();
+  const { colors, brand, spacing, radii, shadows, isDark } = useTheme();
   const { data, setPreferences, prevStep, completeOnboarding } = useOnboarding();
 
   const handleFrequencySelect = (freq: WorkoutFrequency): void => {

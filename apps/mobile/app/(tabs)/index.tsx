@@ -11,8 +11,9 @@ import {
   StyleSheet,
   Text,
   View,
+  type ViewStyle,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 
 import { HomeHeader, HomeTodaySection, HomeQuickActions, CrossModuleInsight } from '../../components/home';
 import {
@@ -32,7 +33,7 @@ import {
   useCrossModuleInsights,
   calculateCalorieProgress,
 } from '../../hooks';
-import { staggeredEntry, TIMING } from '../../lib/animations';
+import { staggeredEntry, TIMING, usePulseGlow } from '../../lib/animations';
 import { useOnboardingCheck } from '../../lib/onboarding';
 import { useTheme } from '../../lib/theme';
 import { useWidgetSync } from '../../lib/widgets';
@@ -230,6 +231,9 @@ export default function HomeScreen(): React.JSX.Element {
       : 0;
   const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length;
 
+  // 7일+ 연속 운동 시 StatCard 펄스 글로우
+  const streakGlowStyle = usePulseGlow(moduleColors.workout.base, 0.2);
+
   // 스켈레톤 로딩 상태 (온보딩 체크 중)
   if (onboardingLoading) {
     return (
@@ -282,14 +286,15 @@ export default function HomeScreen(): React.JSX.Element {
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
         <SectionHeader title="오늘의 요약" gradient="brand" style={{ marginBottom: spacing.sm }} />
         <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg }}>
-          <StatCard
-            value={streakCount}
-            label="연속 운동"
-            suffix="일"
-            moduleColor="workout"
-            style={{ flex: 1 }}
-            testID="stat-workout"
-          />
+          <Animated.View style={[{ flex: 1 }, streakCount >= 7 && (streakGlowStyle as AnimatedStyle<ViewStyle>)]}>
+            <StatCard
+              value={streakCount}
+              label="연속 운동"
+              suffix="일"
+              moduleColor="workout"
+              testID="stat-workout"
+            />
+          </Animated.View>
           <StatCard
             value={calorieProgress}
             label="칼로리"
@@ -395,7 +400,7 @@ function ModuleCard({
                 fontSize: typography.size.base,
                 fontWeight: typography.weight.semibold,
                 color: colors.foreground,
-                marginBottom: 4,
+                marginBottom: spacing.xs,
               }}
             >
               {title}
@@ -411,7 +416,7 @@ function ModuleCard({
           </View>
           <Text
             style={{
-              fontSize: 24,
+              fontSize: typography.size['2xl'],
               color: colors.mutedForeground,
               marginLeft: spacing.sm,
             }}

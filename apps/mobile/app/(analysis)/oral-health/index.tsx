@@ -17,7 +17,7 @@ const FEATURES = [
 ];
 
 export default function OralHealthAnalysisScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand } = useTheme();
 
   const handleStart = () => {
     router.push('/(analysis)/oral-health/camera');

@@ -10,7 +10,7 @@ import { staggeredEntry } from '../../../lib/animations';
 import { useTheme, typography} from '@/lib/theme';
 
 export default function SkinAnalysisScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand } = useTheme();
 
   const handleStartAnalysis = () => {
     router.push('/(analysis)/skin/camera');

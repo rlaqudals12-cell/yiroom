@@ -10,8 +10,8 @@ import type { SkinType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
+import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 
 import {
   CircularProgress,
@@ -23,7 +23,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GradientCard, CelebrationEffect } from '@/components/ui';
+import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
 import {
   analyzeSkin as analyzeWithGemini,
   imageToBase64,
@@ -34,7 +34,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { saveSkinResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { TIMING } from '@/lib/animations';
+import { TIMING, usePulseGlow } from '@/lib/animations';
 
 import {
   SKIN_TYPE_DATA,
@@ -86,6 +86,10 @@ export default function SkinResultScreen() {
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showBadge, setShowBadge] = useState(false);
+
+  // 높은 점수(>=70) 시 CircularProgress 펄스 글로우
+  const pulseGlowStyle = usePulseGlow(accent.base, 0.2);
 
   // 피부 분석 (lib/gemini 연동)
   const analyzeSkin = useCallback(async () => {
@@ -216,13 +220,15 @@ export default function SkinResultScreen() {
   // --- 헤더 콘텐츠 ---
   const headerContent = (
     <View style={localStyles.headerContent}>
-      <CircularProgress
-        score={overallScore}
-        size="lg"
-        animate
-        showScore
-        showGradeLabel
-      />
+      <Animated.View style={overallScore >= 70 ? (pulseGlowStyle as AnimatedStyle<ViewStyle>) : undefined}>
+        <CircularProgress
+          score={overallScore}
+          size="lg"
+          animate
+          showScore
+          showGradeLabel
+        />
+      </Animated.View>
       {delta && delta.overall !== 0 && (
         <ScoreChangeBadge
           delta={delta.overall}
@@ -350,7 +356,15 @@ export default function SkinResultScreen() {
     <CelebrationEffect
       type="analysis_complete"
       visible={showCelebration}
-      onComplete={() => setShowCelebration(false)}
+      onComplete={() => {
+        setShowCelebration(false);
+        if (!previousScore) setShowBadge(true);
+      }}
+    />
+    <BadgeDrop
+      badge={{ icon: '🔬', name: '피부 관리사', description: '피부 분석 완료!' }}
+      visible={showBadge}
+      onDismiss={() => setShowBadge(false)}
     />
     <ResultLayout
       moduleKey="skin"

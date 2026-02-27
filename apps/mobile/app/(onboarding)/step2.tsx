@@ -61,7 +61,7 @@ const ACTIVITY_ICON_MAP: Record<ActivityLevel, typeof Sofa> = {
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function OnboardingStep2() {
-  const { colors, brand, spacing, radii, shadows, typography, isDark } = useTheme();
+  const { colors, brand, spacing, radii, shadows, isDark } = useTheme();
   const { data, setBasicInfo, nextStep, prevStep } = useOnboarding();
 
   const [birthYear, setBirthYear] = useState(data.basicInfo.birthYear?.toString() || '');
@@ -465,7 +465,7 @@ function Input({
   maxLength: number;
   testID: string;
 }): React.JSX.Element {
-  const { colors, radii, typography, spacing } = useTheme();
+  const { colors, radii, spacing } = useTheme();
   return (
     <View>
       <Text

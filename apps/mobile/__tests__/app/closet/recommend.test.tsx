@@ -355,7 +355,7 @@ describe('RecommendScreen 코디 저장 기능', () => {
       expect(callArg.season.length).toBeGreaterThan(0);
     });
 
-    it('저장 성공 시 성공 Alert를 표시한다', async () => {
+    it('저장 성공 시 SuccessCheckmark를 표시한다', async () => {
       setupDefaultMocks({ saveOutfitResult: { id: 'saved1' } });
 
       const { getByTestId } = renderWithTheme(<RecommendScreen />);
@@ -364,8 +364,9 @@ describe('RecommendScreen 코디 저장 기능', () => {
         fireEvent.press(getByTestId('save-outfit-button'));
       });
 
+      // Alert.alert 대신 SuccessCheckmark 오버레이 표시
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith('저장 완료', '코디가 저장되었어요!');
+        expect(alertSpy).not.toHaveBeenCalledWith('저장 완료', '코디가 저장되었어요!');
       });
     });
 

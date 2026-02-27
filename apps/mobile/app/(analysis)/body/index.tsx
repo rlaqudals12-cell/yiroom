@@ -20,7 +20,7 @@ import { staggeredEntry } from '../../../lib/animations';
 import { useTheme, typography} from '@/lib/theme';
 
 export default function BodyAnalysisScreen() {
-  const { colors, module, typography } = useTheme();
+  const { colors, module } = useTheme();
   const accent = module.body;
 
   const [height, setHeight] = useState('');

@@ -27,11 +27,11 @@ import {
 } from '../../components/beauty';
 import type { BeautyProduct } from '../../components/beauty';
 import { EmptyState } from '../../components/common/EmptyState';
-import { CollapsibleSection, MenuCard, GradientBackground, ScreenContainer, SectionHeader } from '../../components/ui';
+import { CollapsibleSection, MenuCard, GradientBackground, ScreenContainer, SectionHeader, SkeletonCircle, SkeletonText } from '../../components/ui';
 import { useUserAnalyses } from '../../hooks/useUserAnalyses';
 import { useAffiliateProducts } from '../../lib/affiliate/useAffiliateProducts';
 import { staggeredEntry, TIMING } from '../../lib/animations';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, radii, ICON_BG_OPACITY, borderGlow } from '../../lib/theme';
 
 export default function BeautyTab(): React.JSX.Element {
   const router = useRouter();
@@ -118,15 +118,15 @@ export default function BeautyTab(): React.JSX.Element {
           <GradientBackground
             variant="personalColor"
             style={{
-              borderRadius: 20,
+              borderRadius: radii.xl + spacing.xs,
               padding: spacing.lg,
               marginBottom: spacing.lg,
             }}
           >
             <SectionHeader
               title="뷰티"
-              style={{ marginBottom: 4 }}
-              titleStyle={{ color: colors.overlayForeground, fontSize: 24, fontWeight: typography.weight.bold }}
+              style={{ marginBottom: spacing.xs }}
+              titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold }}
             />
           </GradientBackground>
         </Animated.View>
@@ -138,7 +138,7 @@ export default function BeautyTab(): React.JSX.Element {
             accessibilityLabel="피부 프로필 로딩 중"
             style={{
               backgroundColor: colors.card,
-              borderRadius: 16,
+              borderRadius: radii.xl,
               padding: spacing.md,
               marginBottom: spacing.lg,
               borderWidth: 1,
@@ -146,17 +146,17 @@ export default function BeautyTab(): React.JSX.Element {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.muted }} />
-              <View style={{ flex: 1, marginLeft: spacing.sm }}>
-                <View style={{ width: 80, height: 14, borderRadius: 7, backgroundColor: colors.muted }} />
-                <View style={{ width: 60, height: 10, borderRadius: 5, backgroundColor: colors.muted, marginTop: 6 }} />
+              <SkeletonCircle size={spacing.xl + spacing.xs} style={{ marginRight: spacing.sm }} />
+              <View style={{ flex: 1 }}>
+                <SkeletonText style={{ width: 80, marginBottom: spacing.xs }} />
+                <SkeletonText style={{ width: 60, height: 10 }} />
               </View>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.md }}>
-              <View style={{ width: 88, height: 88, borderRadius: 44, backgroundColor: colors.muted }} />
-              <View style={{ flex: 1, marginLeft: spacing.md }}>
-                <View style={{ width: 100, height: 18, borderRadius: 9, backgroundColor: colors.muted }} />
-                <View style={{ width: 70, height: 12, borderRadius: 6, backgroundColor: colors.muted, marginTop: 6 }} />
+              <SkeletonCircle size={spacing.xxl + spacing.xl + spacing.sm} style={{ marginRight: spacing.md }} />
+              <View style={{ flex: 1 }}>
+                <SkeletonText style={{ width: 100, height: 18, marginBottom: spacing.xs }} />
+                <SkeletonText style={{ width: 70 }} />
               </View>
             </View>
           </View>
@@ -166,7 +166,7 @@ export default function BeautyTab(): React.JSX.Element {
             overallScore={skinAnalysis.overallScore}
             concerns={skinAnalysis.concerns}
             createdAt={skinAnalysis.createdAt}
-            style={{ marginBottom: spacing.lg }}
+            style={{ marginBottom: spacing.lg, ...borderGlow.subtle }}
             testID="skin-profile-card"
           />
         ) : (
@@ -226,9 +226,9 @@ export default function BeautyTab(): React.JSX.Element {
               onPress={resetAllFilters}
               style={{
                 alignSelf: 'flex-start',
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 16,
+                paddingHorizontal: spacing.sm + spacing.xs,
+                paddingVertical: spacing.xs + 2,
+                borderRadius: radii.xl,
                 backgroundColor: colors.destructive + '15',
                 marginBottom: spacing.md,
               }}
@@ -238,7 +238,7 @@ export default function BeautyTab(): React.JSX.Element {
             >
               <Text
                 style={{
-                  fontSize: 13,
+                  fontSize: typography.size.sm - 1,
                   fontWeight: typography.weight.semibold,
                   color: colors.destructive,
                 }}
@@ -268,7 +268,7 @@ export default function BeautyTab(): React.JSX.Element {
           <Animated.View entering={staggeredEntry(0)}>
             <MenuCard
               icon={<Droplets size={20} color={moduleColors.skin.dark} />}
-              iconBg={moduleColors.skin.light + '30'}
+              iconBg={moduleColors.skin.light + ICON_BG_OPACITY}
               title="피부 분석"
               description="AI가 피부 상태를 분석하고 맞춤 케어를 추천해요"
               onPress={() => router.push('/(analysis)/skin')}
@@ -279,7 +279,7 @@ export default function BeautyTab(): React.JSX.Element {
           <Animated.View entering={staggeredEntry(1)}>
             <MenuCard
               icon={<Calendar size={20} color={moduleColors.skin.base} />}
-              iconBg={moduleColors.skin.light + '30'}
+              iconBg={moduleColors.skin.light + ICON_BG_OPACITY}
               title="스킨케어 루틴"
               description="내 피부에 맞는 아침/저녁 스킨케어 루틴을 확인해요"
               onPress={() => router.push('/(analysis)/skin/routine')}
@@ -290,7 +290,7 @@ export default function BeautyTab(): React.JSX.Element {
           <Animated.View entering={staggeredEntry(2)}>
             <MenuCard
               icon={<Palette size={20} color={moduleColors.personalColor.dark} />}
-              iconBg={moduleColors.personalColor.light + '30'}
+              iconBg={moduleColors.personalColor.light + ICON_BG_OPACITY}
               title="퍼스널 컬러"
               description="나에게 어울리는 색상을 찾아보세요"
               onPress={() => router.push('/(analysis)/personal-color')}
@@ -301,7 +301,7 @@ export default function BeautyTab(): React.JSX.Element {
           <Animated.View entering={staggeredEntry(3)}>
             <MenuCard
               icon={<Scissors size={20} color={moduleColors.hair.dark} />}
-              iconBg={moduleColors.hair.light + '30'}
+              iconBg={moduleColors.hair.light + ICON_BG_OPACITY}
               title="헤어 분석"
               description="모발 유형과 두피 상태를 분석하고 케어 루틴을 추천해요"
               onPress={() => router.push('/(analysis)/hair')}
@@ -312,7 +312,7 @@ export default function BeautyTab(): React.JSX.Element {
           <Animated.View entering={staggeredEntry(4)}>
             <MenuCard
               icon={<Brush size={20} color={moduleColors.makeup.dark} />}
-              iconBg={moduleColors.makeup.light + '30'}
+              iconBg={moduleColors.makeup.light + ICON_BG_OPACITY}
               title="메이크업 분석"
               description="얼굴형과 톤에 맞는 메이크업 스타일을 찾아보세요"
               onPress={() => router.push('/(analysis)/makeup')}
@@ -323,7 +323,7 @@ export default function BeautyTab(): React.JSX.Element {
           <Animated.View entering={staggeredEntry(5)}>
             <MenuCard
               icon={<SmilePlus size={20} color={moduleColors.oralHealth.dark} />}
-              iconBg={moduleColors.oralHealth.light + '30'}
+              iconBg={moduleColors.oralHealth.light + ICON_BG_OPACITY}
               title="구강건강 분석"
               description="치아 색상과 잇몸 건강을 체크해요"
               onPress={() => router.push('/(analysis)/oral-health')}

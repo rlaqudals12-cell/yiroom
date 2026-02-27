@@ -20,7 +20,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GradientCard, CelebrationEffect } from '@/components/ui';
+import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
 import {
   analyzeHair as analyzeWithGemini,
   imageToBase64,
@@ -69,6 +69,7 @@ export default function HairResultScreen() {
   const [result, setResult] = useState<HairAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showBadge, setShowBadge] = useState(false);
 
   const analyzeHair = useCallback(async () => {
     setIsLoading(true);
@@ -256,7 +257,15 @@ export default function HairResultScreen() {
     <CelebrationEffect
       type="analysis_complete"
       visible={showCelebration}
-      onComplete={() => setShowCelebration(false)}
+      onComplete={() => {
+        setShowCelebration(false);
+        setShowBadge(true);
+      }}
+    />
+    <BadgeDrop
+      badge={{ icon: '💇', name: '헤어 전문가', description: '헤어 분석 완료!' }}
+      visible={showBadge}
+      onDismiss={() => setShowBadge(false)}
     />
     <ResultLayout
       moduleKey="hair"

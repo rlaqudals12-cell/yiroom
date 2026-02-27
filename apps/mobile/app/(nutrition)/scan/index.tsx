@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SuccessCheckmark } from '@/components/ui';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import {
@@ -54,6 +55,7 @@ export default function BarcodeScanScreen() {
   const [mealType, setMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('lunch');
   const [isSaving, setIsSaving] = useState(false);
   const [isScanning, setIsScanning] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleBarcodeScanned = useCallback(
     async (result: BarcodeScanningResult) => {
@@ -92,10 +94,7 @@ export default function BarcodeScanScreen() {
       const result = await recordBarcodeFood(supabase, food, servings, mealType);
 
       if (result.success) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert('저장 완료', '식사가 기록되었어요!', [
-          { text: '확인', onPress: () => router.back() },
-        ]);
+        setShowSuccess(true);
       } else {
         Alert.alert('오류', result.error || '저장에 실패했어요');
       }
@@ -359,6 +358,13 @@ export default function BarcodeScanScreen() {
             )}
           </Pressable>
         </View>
+
+        {/* 저장 완료 애니메이션 */}
+        {showSuccess && (
+          <View style={styles.successOverlay}>
+            <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
+          </View>
+        )}
       </SafeAreaView>
     );
   }
@@ -717,5 +723,12 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
+  },
+  successOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
   },
 });

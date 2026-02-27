@@ -21,7 +21,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GradientCard, CelebrationEffect } from '@/components/ui';
+import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
 import {
   analyzeMakeup as analyzeWithGemini,
   imageToBase64,
@@ -88,6 +88,7 @@ export default function MakeupResultScreen() {
   const [result, setResult] = useState<MakeupAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showBadge, setShowBadge] = useState(false);
 
   const analyzeMakeup = useCallback(async () => {
     setIsLoading(true);
@@ -283,7 +284,15 @@ export default function MakeupResultScreen() {
     <CelebrationEffect
       type="analysis_complete"
       visible={showCelebration}
-      onComplete={() => setShowCelebration(false)}
+      onComplete={() => {
+        setShowCelebration(false);
+        setShowBadge(true);
+      }}
+    />
+    <BadgeDrop
+      badge={{ icon: '💄', name: '메이크업 전문가', description: '메이크업 분석 완료!' }}
+      visible={showBadge}
+      onDismiss={() => setShowBadge(false)}
     />
     <ResultLayout
       moduleKey="makeup"

@@ -19,6 +19,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
+import { SuccessCheckmark } from '@/components/ui';
 import { useCloset, type ClothingCategory, type Season } from '@/lib/inventory';
 import { useAppPreferencesStore } from '@/lib/stores';
 import { useTheme, typography} from '@/lib/theme';
@@ -98,6 +99,7 @@ export default function ClosetAddScreen() {
     notes: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // 이미지 선택
   const handleImagePick = async () => {
@@ -220,9 +222,7 @@ export default function ClosetAddScreen() {
       });
 
       if (result) {
-        Alert.alert('저장 완료', '옷장에 아이템이 추가되었습니다.', [
-          { text: '확인', onPress: () => router.back() },
-        ]);
+        setShowSuccess(true);
       } else {
         Alert.alert('오류', '저장에 실패했습니다. 다시 시도해주세요.');
       }
@@ -442,6 +442,13 @@ export default function ClosetAddScreen() {
           )}
         </Pressable>
       </View>
+
+      {/* 저장 완료 애니메이션 */}
+      {showSuccess && (
+        <View style={styles.successOverlay}>
+          <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
+        </View>
+      )}
     </>
   );
 }
@@ -664,6 +671,13 @@ function useStyles() {
       color: colors.background,
       fontWeight: typography.weight.semibold,
       fontSize: 16,
+    },
+    successOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 100,
     },
   });
 }

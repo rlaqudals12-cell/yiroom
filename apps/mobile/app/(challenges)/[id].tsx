@@ -84,7 +84,7 @@ const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
 export default function ChallengeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { colors, status, typography } = useTheme();
+  const { colors, status } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
   // API 훅 사용

@@ -9,8 +9,8 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
+import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 
 import {
   CircularProgress,
@@ -21,14 +21,14 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GradientCard, CelebrationEffect } from '@/components/ui';
+import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
 import {
   analyzeOralHealth as analyzeWithGemini,
   imageToBase64,
   type OralHealthAnalysisResult,
 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { TIMING } from '@/lib/animations';
+import { TIMING, usePulseGlow } from '@/lib/animations';
 
 // 한국어 라벨 매핑
 const GUM_HEALTH_LABELS: Record<OralHealthAnalysisResult['gumHealth'], string> = {
@@ -57,6 +57,10 @@ export default function OralHealthResultScreen() {
   const [result, setResult] = useState<OralHealthAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showBadge, setShowBadge] = useState(false);
+
+  // 높은 점수(>=70) 시 CircularProgress 펄스 글로우
+  const pulseGlowStyle = usePulseGlow(accent.base, 0.2);
 
   const analyzeOralHealth = useCallback(async () => {
     setIsLoading(true);
@@ -123,13 +127,15 @@ export default function OralHealthResultScreen() {
   // --- 헤더 콘텐츠 ---
   const headerContent = (
     <View style={localStyles.headerContent}>
-      <CircularProgress
-        score={result.overallScore}
-        size="lg"
-        animate
-        showScore
-        showGradeLabel
-      />
+      <Animated.View style={result.overallScore >= 70 ? (pulseGlowStyle as AnimatedStyle<ViewStyle>) : undefined}>
+        <CircularProgress
+          score={result.overallScore}
+          size="lg"
+          animate
+          showScore
+          showGradeLabel
+        />
+      </Animated.View>
       <Text style={[localStyles.subInfo, { color: colors.mutedForeground }]}>
         치아 색조 {result.toothShade} · {GUM_HEALTH_LABELS[result.gumHealth]}
       </Text>
@@ -257,7 +263,15 @@ export default function OralHealthResultScreen() {
     <CelebrationEffect
       type="analysis_complete"
       visible={showCelebration}
-      onComplete={() => setShowCelebration(false)}
+      onComplete={() => {
+        setShowCelebration(false);
+        setShowBadge(true);
+      }}
+    />
+    <BadgeDrop
+      badge={{ icon: '🦷', name: '구강건강 전문가', description: '구강건강 분석 완료!' }}
+      visible={showBadge}
+      onDismiss={() => setShowBadge(false)}
     />
     <ResultLayout
       moduleKey="oralHealth"

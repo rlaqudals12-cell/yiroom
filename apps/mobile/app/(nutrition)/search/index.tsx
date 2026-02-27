@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SuccessCheckmark } from '@/components/ui';
 import { moduleColors, useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
@@ -80,6 +81,7 @@ export default function FoodSearchScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [dbFoods, setDbFoods] = useState<FoodItem[]>([]);
   const [foodsLoading, setFoodsLoading] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // DB에서 음식 데이터 로드
   const loadFoods = useCallback(async () => {
@@ -210,10 +212,7 @@ export default function FoodSearchScreen() {
 
       if (error) throw error;
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('완료', '식사가 기록되었습니다!', [
-        { text: '확인', onPress: () => router.back() },
-      ]);
+      setShowSuccess(true);
     } catch (error) {
       nutritionLogger.error('Failed to save meal record:', error);
       Alert.alert('오류', '식사 기록 저장에 실패했습니다.');
@@ -411,6 +410,13 @@ export default function FoodSearchScreen() {
           </Pressable>
         </View>
       )}
+
+      {/* 저장 완료 애니메이션 */}
+      {showSuccess && (
+        <View style={styles.successOverlay}>
+          <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -578,5 +584,12 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
+  },
+  successOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
   },
 });

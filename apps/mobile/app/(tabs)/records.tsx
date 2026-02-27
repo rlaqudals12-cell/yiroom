@@ -25,6 +25,7 @@ import {
   GradientProgressBar,
   ScreenContainer,
   SkeletonText,
+  SkeletonCard,
 } from '../../components/ui';
 import {
   WeeklyCalorieChart,
@@ -37,7 +38,7 @@ import {
 import { useWorkoutData, useNutritionData, calculateCalorieProgress } from '../../hooks';
 import type { DailyNutritionSummary, WorkoutLog } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing, radii, ICON_BG_OPACITY } from '../../lib/theme';
 
 // 요일 라벨 (월~일)
 const DAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'];
@@ -179,15 +180,15 @@ export default function RecordsTab(): React.JSX.Element {
           <GradientBackground
             variant="brand"
             style={{
-              borderRadius: 20,
+              borderRadius: radii.xl + spacing.xs,
               padding: spacing.lg,
               marginBottom: spacing.lg,
             }}
           >
             <SectionHeader
               title="기록"
-              style={{ marginBottom: 4 }}
-              titleStyle={{ color: colors.overlayForeground, fontSize: 24, fontWeight: typography.weight.bold }}
+              style={{ marginBottom: spacing.xs }}
+              titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold }}
             />
           </GradientBackground>
         </Animated.View>
@@ -216,15 +217,15 @@ export default function RecordsTab(): React.JSX.Element {
               <View style={styles.loadingContainer}>
                 <View style={styles.statsRow}>
                   <View style={styles.statItem}>
-                    <SkeletonText style={{ width: 40, height: 28, marginBottom: 4 }} />
+                    <SkeletonText style={{ width: 40, height: 28, marginBottom: spacing.xs }} />
                     <SkeletonText style={{ width: 56, height: 14 }} />
                   </View>
                   <View style={styles.statItem}>
-                    <SkeletonText style={{ width: 40, height: 28, marginBottom: 4 }} />
+                    <SkeletonText style={{ width: 40, height: 28, marginBottom: spacing.xs }} />
                     <SkeletonText style={{ width: 56, height: 14 }} />
                   </View>
                   <View style={styles.statItem}>
-                    <SkeletonText style={{ width: 40, height: 28, marginBottom: 4 }} />
+                    <SkeletonText style={{ width: 40, height: 28, marginBottom: spacing.xs }} />
                     <SkeletonText style={{ width: 56, height: 14 }} />
                   </View>
                 </View>
@@ -368,7 +369,18 @@ export default function RecordsTab(): React.JSX.Element {
           </View>
 
           {isLoading ? (
-            <ChartSkeleton color={colors.muted} spacing={spacing} />
+            <View testID="chart-skeleton" accessibilityLabel="차트 로딩 중">
+              {[0, 1, 2].map((i) => (
+                <SkeletonCard
+                  key={i}
+                  style={{
+                    height: spacing.xl * 2 + spacing.md,
+                    marginBottom: spacing.sm,
+                    opacity: 1 - i * 0.2,
+                  }}
+                />
+              ))}
+            </View>
           ) : (
             <>
               {/* 칼로리 차트 */}
@@ -444,7 +456,7 @@ export default function RecordsTab(): React.JSX.Element {
           <Animated.View entering={staggeredEntry(0)}>
             <MenuCard
               icon={<Dumbbell size={20} color={moduleColors.workout.dark} />}
-              iconBg={moduleColors.workout.light + '30'}
+              iconBg={moduleColors.workout.light + ICON_BG_OPACITY}
               title="운동 기록"
               description={
                 todayWorkout
@@ -459,7 +471,7 @@ export default function RecordsTab(): React.JSX.Element {
           <Animated.View entering={staggeredEntry(1)}>
             <MenuCard
               icon={<UtensilsCrossed size={20} color={moduleColors.nutrition.dark} />}
-              iconBg={moduleColors.nutrition.light + '30'}
+              iconBg={moduleColors.nutrition.light + ICON_BG_OPACITY}
               title="식단 기록"
               description={
                 todaySummary && todaySummary.totalCalories > 0
@@ -474,7 +486,7 @@ export default function RecordsTab(): React.JSX.Element {
           <Animated.View entering={staggeredEntry(2)}>
             <MenuCard
               icon={<BarChart3 size={20} color={moduleColors.body.dark} />}
-              iconBg={moduleColors.body.light + '30'}
+              iconBg={moduleColors.body.light + ICON_BG_OPACITY}
               title="주간 리포트"
               description="일주일간의 활동을 분석한 리포트를 확인하세요"
               onPress={() => router.push('/reports')}
@@ -486,40 +498,15 @@ export default function RecordsTab(): React.JSX.Element {
   );
 }
 
-// 차트 영역 로딩 스켈레톤
-function ChartSkeleton({
-  color,
-  spacing,
-}: {
-  color: string;
-  spacing: { sm: number; md: number };
-}): React.JSX.Element {
-  return (
-    <View testID="chart-skeleton" accessibilityLabel="차트 로딩 중">
-      {[0, 1, 2].map((i) => (
-        <View
-          key={i}
-          style={{
-            height: 80,
-            backgroundColor: color,
-            borderRadius: 12,
-            marginBottom: spacing.sm,
-            opacity: 0.6 - i * 0.15,
-          }}
-        />
-      ))}
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   todayHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.sm + spacing.xs,
   },
   loadingContainer: {
-    paddingVertical: 16,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   statsRow: {
@@ -534,11 +521,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: spacing.xl + spacing.sm,
+    height: spacing.xl + spacing.sm,
+    borderRadius: (spacing.xl + spacing.sm) / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.sm + spacing.xs,
   },
 });

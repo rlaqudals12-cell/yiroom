@@ -21,7 +21,7 @@ import {
   MetricBar,
   useAnalysisStyles,
 } from '@/components/analysis';
-import { GradientCard, CelebrationEffect } from '@/components/ui';
+import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
 import {
   analyzePersonalColor as analyzeWithGemini,
   imageToBase64,
@@ -130,6 +130,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
   const [result, setResult] = useState<PersonalColorAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showBadge, setShowBadge] = useState(false);
 
   const analyzePersonalColor = useCallback(async () => {
     setIsLoading(true);
@@ -212,7 +213,15 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
     <CelebrationEffect
       type="analysis_complete"
       visible={showCelebration}
-      onComplete={() => setShowCelebration(false)}
+      onComplete={() => {
+        setShowCelebration(false);
+        setShowBadge(true);
+      }}
+    />
+    <BadgeDrop
+      badge={{ icon: '🎨', name: '컬러 전문가', description: '퍼스널 컬러 진단 완료!' }}
+      visible={showBadge}
+      onDismiss={() => setShowBadge(false)}
     />
     <ResultLayout
       moduleKey="personalColor"

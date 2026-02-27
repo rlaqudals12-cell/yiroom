@@ -7,6 +7,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { LogBox, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Expo Go에서 expo-notifications 경고 억제 (SDK 53+ 제한)
 LogBox.ignoreLogs([
@@ -22,7 +23,7 @@ import { appLogger } from '../lib/utils/logger';
 
 // ThemeProvider 내부에서 useTheme 사용 가능한 레이아웃
 function ThemedStack() {
-  const { colors, isDark, typography } = useTheme();
+  const { colors, isDark } = useTheme();
 
   return (
     <>
@@ -93,15 +94,17 @@ function RootLayout() {
   }
 
   return (
-    <SentryErrorBoundary fallback={SentryFallback}>
-      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
-        <ClerkLoaded>
-          <ThemeProvider>
-            <ThemedStack />
-          </ThemeProvider>
-        </ClerkLoaded>
-      </ClerkProvider>
-    </SentryErrorBoundary>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SentryErrorBoundary fallback={SentryFallback}>
+        <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+          <ClerkLoaded>
+            <ThemeProvider>
+              <ThemedStack />
+            </ThemeProvider>
+          </ClerkLoaded>
+        </ClerkProvider>
+      </SentryErrorBoundary>
+    </GestureHandlerRootView>
   );
 }
 

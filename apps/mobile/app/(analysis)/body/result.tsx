@@ -21,7 +21,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { BarChart, type BarDataItem } from '@/components/charts';
-import { GradientCard, CelebrationEffect } from '@/components/ui';
+import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
 import {
   analyzeBody as analyzeWithGemini,
   imageToBase64,
@@ -130,6 +130,7 @@ export default function BodyResultScreen() {
   const [proportions, setProportions] = useState<BodyAnalysisResult['proportions'] | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showBadge, setShowBadge] = useState(false);
 
   const analyzeBody = useCallback(async () => {
     setIsLoading(true);
@@ -405,7 +406,15 @@ export default function BodyResultScreen() {
     <CelebrationEffect
       type="analysis_complete"
       visible={showCelebration}
-      onComplete={() => setShowCelebration(false)}
+      onComplete={() => {
+        setShowCelebration(false);
+        setShowBadge(true);
+      }}
+    />
+    <BadgeDrop
+      badge={{ icon: '💪', name: '체형 분석가', description: '체형 분석 완료!' }}
+      visible={showBadge}
+      onDismiss={() => setShowBadge(false)}
     />
     <ResultLayout
       moduleKey="body"

@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -44,9 +44,9 @@ export function EmptyState({
           styles.iconCircle,
           {
             backgroundColor: colors.secondary,
-            width: 64,
-            height: 64,
-            borderRadius: 32,
+            width: spacing.xl * 2,
+            height: spacing.xl * 2,
+            borderRadius: spacing.xl,
           },
         ]}
       >
@@ -122,24 +122,24 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 48,
-    paddingHorizontal: 24,
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.lg,
   },
   iconCircle: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   title: {
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   description: {
     textAlign: 'center',
     maxWidth: 280,
   },
   actionButton: {
-    marginTop: 20,
+    marginTop: spacing.md + spacing.xs,
   },
   actionText: {
     textAlign: 'center',

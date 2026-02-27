@@ -48,7 +48,7 @@ const PERIOD_TABS: { key: HistoryPeriod; label: string }[] = [
 ];
 
 export default function AnalysisHistoryScreen(): React.JSX.Element {
-  const { colors, status, brand, typography } = useTheme();
+  const { colors, status, brand } = useTheme();
   const params = useLocalSearchParams<{ module?: string }>();
 
   // 초기 모듈 필터: URL 파라미터로 전달 가능

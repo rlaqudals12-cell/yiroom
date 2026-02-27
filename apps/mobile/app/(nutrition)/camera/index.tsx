@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SuccessCheckmark } from '@/components/ui';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import {
@@ -66,6 +67,7 @@ export default function FoodCameraScreen() {
   const [selectedMealType, setSelectedMealType] = useState('lunch');
   const [recognizedFoods, setRecognizedFoods] = useState<RecognizedFood[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // 총 영양 정보 계산
   const totalNutrition = recognizedFoods.reduce(
@@ -213,10 +215,7 @@ export default function FoodCameraScreen() {
 
       if (error) throw error;
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('완료', '식사가 기록되었습니다!', [
-        { text: '확인', onPress: () => router.back() },
-      ]);
+      setShowSuccess(true);
     } catch (error) {
       nutritionLogger.error('Failed to save meal record:', error);
       Alert.alert('오류', '식사 기록 저장에 실패했습니다.');
@@ -468,6 +467,13 @@ export default function FoodCameraScreen() {
             )}
           </Pressable>
         </View>
+
+        {/* 저장 완료 애니메이션 */}
+        {showSuccess && (
+          <View style={styles.successOverlay}>
+            <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
+          </View>
+        )}
       </SafeAreaView>
     );
   }
@@ -834,5 +840,12 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: typography.size.base,
     fontWeight: '600',
+  },
+  successOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
   },
 });

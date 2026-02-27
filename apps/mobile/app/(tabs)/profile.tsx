@@ -16,7 +16,7 @@ import { WellnessScoreRing, LevelBadge, AchievementGrid } from '../../components
 import { GlassCard, GradientBackground, GradientCard, ScreenContainer, SectionHeader } from '../../components/ui';
 import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing, radii, borderGlow } from '../../lib/theme';
 import { profileLogger } from '../../lib/utils/logger';
 
 export default function ProfileScreen(): React.JSX.Element {
@@ -66,13 +66,13 @@ export default function ProfileScreen(): React.JSX.Element {
   };
 
   return (
-    <ScreenContainer testID="profile-screen" contentContainerStyle={{ paddingBottom: 40 }} refreshing={refreshing} onRefresh={handleRefresh}>
+    <ScreenContainer testID="profile-screen" contentContainerStyle={{ paddingBottom: spacing.xl + spacing.sm }} refreshing={refreshing} onRefresh={handleRefresh}>
         {/* 프로필 헤더 — 브랜드 그라디언트 + GlassCard */}
         <Animated.View entering={FadeIn.duration(TIMING.normal)}>
           <GradientBackground
             variant="brand"
             style={{
-              borderRadius: 20,
+              borderRadius: radii.xl + spacing.xs,
               padding: spacing.sm,
               marginBottom: spacing.md,
             }}
@@ -90,7 +90,7 @@ export default function ProfileScreen(): React.JSX.Element {
                     <View
                       style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
                     >
-                      <Text style={{ fontSize: 32, color: colors.mutedForeground }}>
+                      <Text style={{ fontSize: typography.size['3xl'] + 2, color: colors.mutedForeground }}>
                         {user.firstName?.[0] ||
                           user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() ||
                           '?'}
@@ -102,7 +102,7 @@ export default function ProfileScreen(): React.JSX.Element {
                       fontSize: typography.size.lg,
                       fontWeight: typography.weight.semibold,
                       color: colors.foreground,
-                      marginBottom: 4,
+                      marginBottom: spacing.xs,
                     }}
                   >
                     {user.fullName || user.emailAddresses[0]?.emailAddress || '사용자'}
@@ -144,7 +144,7 @@ export default function ProfileScreen(): React.JSX.Element {
                   <View
                     style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
                   >
-                    <Text style={{ fontSize: 32, color: colors.mutedForeground }}>?</Text>
+                    <Text style={{ fontSize: typography.size['3xl'] + 2, color: colors.mutedForeground }}>?</Text>
                   </View>
                   <Text
                     style={{
@@ -204,7 +204,7 @@ export default function ProfileScreen(): React.JSX.Element {
         {/* 업적 그리드 */}
         <AchievementGrid
           achievements={achievements}
-          style={{ marginBottom: spacing.lg }}
+          style={{ marginBottom: spacing.lg, ...borderGlow.pink }}
           testID="achievement-grid"
         />
 
@@ -342,7 +342,7 @@ function MenuItem({
     <Pressable
       style={({ pressed }) => [
         styles.menuItem,
-        { paddingHorizontal: spacing.md, paddingVertical: 14 },
+        { paddingHorizontal: spacing.md, paddingVertical: spacing.sm + spacing.xs + 2 },
         pressed && { opacity: 0.7 },
       ]}
       onPress={handlePress}
@@ -363,7 +363,7 @@ function MenuItem({
           {completed && (
             <Text
               style={{
-                fontSize: 12,
+                fontSize: typography.size.xs,
                 fontWeight: typography.weight.semibold,
                 color: status.success,
               }}
@@ -377,7 +377,7 @@ function MenuItem({
             style={{
               fontSize: typography.size.xs,
               color: colors.mutedForeground,
-              marginTop: 2,
+              marginTop: spacing.xs / 2,
             }}
           >
             {subtitle}
@@ -389,25 +389,28 @@ function MenuItem({
   );
 }
 
+const AVATAR_SIZE = spacing.xl * 2 + spacing.md; // 80
+const AVATAR_RADIUS = AVATAR_SIZE / 2;
+
 const styles = StyleSheet.create({
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 12,
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_RADIUS,
+    marginBottom: spacing.sm + spacing.xs,
   },
   avatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_RADIUS,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.sm + spacing.xs,
   },
   actionButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 2,
+    borderRadius: radii.md,
   },
   menuItem: {
     flexDirection: 'row',
@@ -420,6 +423,6 @@ const styles = StyleSheet.create({
   menuItemTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
 });

@@ -20,7 +20,7 @@ import {
   imageToBase64,
   type PostureAnalysisResult,
 } from '@/lib/gemini';
-import { CelebrationEffect } from '@/components/ui';
+import { CelebrationEffect, BadgeDrop } from '@/components/ui';
 import { captureError } from '@/lib/monitoring/sentry';
 
 // 한국어 라벨 매핑
@@ -46,6 +46,7 @@ export default function PostureResultScreen() {
   const [result, setResult] = useState<PostureAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showBadge, setShowBadge] = useState(false);
 
   const analyzePosture = useCallback(async () => {
     setIsLoading(true);
@@ -108,7 +109,15 @@ export default function PostureResultScreen() {
     <CelebrationEffect
       type="analysis_complete"
       visible={showCelebration}
-      onComplete={() => setShowCelebration(false)}
+      onComplete={() => {
+        setShowCelebration(false);
+        setShowBadge(true);
+      }}
+    />
+    <BadgeDrop
+      badge={{ icon: '🧘', name: '자세 교정사', description: '자세 분석 완료!' }}
+      visible={showBadge}
+      onDismiss={() => setShowBadge(false)}
     />
     <SafeAreaView
       testID="analysis-posture-result-screen"

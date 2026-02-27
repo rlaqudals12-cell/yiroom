@@ -17,6 +17,7 @@ export {
   radii,
   shadows,
   typography,
+  ICON_BG_OPACITY,
 } from './tokens';
 export type { SemanticColors } from './tokens';
 

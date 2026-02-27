@@ -17,7 +17,7 @@ import {
   Alert,
 } from 'react-native';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
-import { ScreenContainer } from '../../components/ui';
+import { ScreenContainer, SuccessCheckmark } from '../../components/ui';
 import { useTheme, typography} from '@/lib/theme';
 
 import type { Season as ClothingSeason } from '../../lib/inventory/types';
@@ -91,6 +91,7 @@ export default function RecommendScreen() {
   const [outfit, setOutfit] = useState<OutfitSuggestion | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // generateOutfit을 먼저 정의 (useEffect에서 사용)
   const generateOutfit = useCallback(() => {
@@ -178,8 +179,7 @@ export default function RecommendScreen() {
     setIsSaving(false);
 
     if (result) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('저장 완료', '코디가 저장되었어요!');
+      setShowSuccess(true);
     } else {
       Alert.alert('오류', '코디 저장에 실패했어요.');
     }
@@ -438,6 +438,13 @@ export default function RecommendScreen() {
           <RefreshCw size={24} color={colors.card} />
         )}
       </Pressable>
+
+      {/* 저장 완료 애니메이션 */}
+      {showSuccess && (
+        <View style={styles.successOverlay}>
+          <SuccessCheckmark visible size={80} onComplete={() => setShowSuccess(false)} />
+        </View>
+      )}
     </ScreenContainer>
   );
 }
@@ -684,5 +691,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+  },
+  successOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
   },
 });

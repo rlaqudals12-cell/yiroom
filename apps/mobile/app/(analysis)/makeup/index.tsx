@@ -17,7 +17,7 @@ const FEATURES = [
 ];
 
 export default function MakeupAnalysisScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand } = useTheme();
 
   const handleStart = () => {
     router.push('/(analysis)/makeup/camera');

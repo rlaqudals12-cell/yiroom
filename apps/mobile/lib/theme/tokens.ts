@@ -105,6 +105,9 @@ export const radii = {
   full: 9999,
 } as const;
 
+// 아이콘 배경 투명도 (hex suffix, moduleColors.X.light + ICON_BG_OPACITY)
+export const ICON_BG_OPACITY = '30';
+
 // 그림자 (React Native 포맷, 웹 shadow 값과 일치)
 export const shadows = {
   sm: {

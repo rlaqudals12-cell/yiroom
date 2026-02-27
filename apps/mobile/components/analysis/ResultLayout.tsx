@@ -161,11 +161,12 @@ export function ResultLayout({
         showsVerticalScrollIndicator={false}
       >
         {/* 강화된 그라디언트 헤더 (더 깊은 모듈 악센트) */}
+        {/* 높은 신뢰도(>80%)에 borderGlow 강조 */}
         <LinearGradient
           colors={gradientColors}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
-          style={styles.header}
+          style={[styles.header, confidence !== undefined && confidence > 0.8 && borderGlow.pink]}
         >
           {/* 제목 — 모듈별 그래디언트 텍스트 */}
           <Animated.View entering={FadeIn.duration(TIMING.normal)}>

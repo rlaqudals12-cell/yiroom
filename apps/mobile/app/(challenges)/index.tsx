@@ -37,7 +37,7 @@ import { useChallenges, useJoinChallenge } from '../../lib/challenges/useChallen
 type TabType = 'explore' | 'my';
 
 export default function ChallengesScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand } = useTheme();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabType>('explore');

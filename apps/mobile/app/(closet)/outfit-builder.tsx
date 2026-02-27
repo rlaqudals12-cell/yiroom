@@ -18,6 +18,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
+import { SuccessCheckmark } from '@/components/ui';
 import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
 import { useCloset, useSavedOutfits } from '../../lib/inventory/useInventory';
 import type {
@@ -64,6 +65,7 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
   const [occasion, setOccasion] = useState<Occasion>('casual');
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // 카테고리별 아이템 그룹
   const groupedItems = useMemo(() => {
@@ -144,10 +146,7 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
     setIsSaving(false);
 
     if (result) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('저장 완료', '코디가 저장되었어요!', [
-        { text: '확인', onPress: () => router.back() },
-      ]);
+      setShowSuccess(true);
     } else {
       Alert.alert('오류', '코디 저장에 실패했어요.');
     }
@@ -394,6 +393,13 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
           )}
         </Pressable>
       </View>
+
+      {/* 저장 완료 애니메이션 */}
+      {showSuccess && (
+        <View style={[styles.successOverlay]}>
+          <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
+        </View>
+      )}
     </View>
   );
 }
@@ -605,5 +611,12 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
+  },
+  successOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
   },
 });
