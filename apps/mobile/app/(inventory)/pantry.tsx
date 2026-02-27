@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../components/ui';
 import {
@@ -321,7 +321,7 @@ export default function PantryScreen(): React.JSX.Element {
           <Text
             style={{
               fontSize: typography.size.sm,
-              fontWeight: '600',
+              fontWeight: typography.weight.semibold,
               color:
                 activeTab === 'pantry'
                   ? colors.overlayForeground
@@ -357,7 +357,7 @@ export default function PantryScreen(): React.JSX.Element {
           <Text
             style={{
               fontSize: typography.size.sm,
-              fontWeight: '600',
+              fontWeight: typography.weight.semibold,
               color:
                 activeTab === 'supplement'
                   ? colors.overlayForeground
@@ -376,7 +376,7 @@ export default function PantryScreen(): React.JSX.Element {
               style={{
                 fontSize: typography.size.xs,
                 color: status.warning,
-                fontWeight: '600',
+                fontWeight: typography.weight.semibold,
                 marginLeft: 4,
               }}
             >
@@ -426,7 +426,7 @@ export default function PantryScreen(): React.JSX.Element {
               <Text
                 style={{
                   fontSize: typography.size.xs,
-                  fontWeight: '600',
+                  fontWeight: typography.weight.semibold,
                   color:
                     storageFilter === f.key
                       ? colors.overlayForeground
@@ -464,7 +464,7 @@ export default function PantryScreen(): React.JSX.Element {
               <Text
                 style={{
                   fontSize: typography.size.base,
-                  fontWeight: '600',
+                  fontWeight: typography.weight.semibold,
                   color: colors.foreground,
                   marginBottom: spacing.xs,
                 }}

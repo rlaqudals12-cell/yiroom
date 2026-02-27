@@ -22,7 +22,7 @@ import { ScreenContainer } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { staggeredEntry } from '@/lib/animations';
 import { useWorkoutData } from '@/hooks/useWorkoutData';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
@@ -50,7 +50,7 @@ const INTENSITY_OPTIONS = [
 const DURATION_OPTIONS = [15, 30, 45, 60, 90];
 
 export default function WorkoutLogScreen() {
-  const { colors, spacing, module: moduleColors } = useTheme();
+  const { colors, spacing, module: moduleColors, typography } = useTheme();
   const workoutColor = moduleColors.workout.base;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   exerciseGrid: {
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   },
   durationText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   intensityGrid: {
     flexDirection: 'row',
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   },
   intensityText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   notesInput: {
     borderRadius: 12,
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   },
   calorieValue: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   footer: {
     padding: 20,
@@ -447,6 +447,6 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

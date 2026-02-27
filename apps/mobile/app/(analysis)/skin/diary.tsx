@@ -17,8 +17,7 @@ import {
 import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react-native';
 
-import { useTheme, brand } from '../../../lib/theme';
-import { spacing, radii, typography } from '../../../lib/theme';
+import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 import { useSkinDiary } from '../../../hooks/useSkinDiary';
 import {
   CONDITION_LABELS,
@@ -29,7 +28,7 @@ import {
 } from '../../../lib/skincare/diary-types';
 
 export default function SkinDiaryScreen(): React.JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, typography } = useTheme();
   const {
     entries,
     loading,
@@ -410,7 +409,7 @@ const styles = StyleSheet.create({
   },
   monthTitle: {
     fontSize: typography.size.lg,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   // 요약
   summaryCard: {
@@ -421,7 +420,7 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.sm,
   },
   summaryRow: {
@@ -434,7 +433,7 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     fontSize: typography.size.lg,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   summaryLabel: {
     fontSize: typography.size.xs,
@@ -464,7 +463,7 @@ const styles = StyleSheet.create({
   },
   entryDateText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   weatherText: {
     fontSize: typography.size.xs,
@@ -510,7 +509,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: typography.size.lg,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
   },
   emptyDesc: {
@@ -526,7 +525,7 @@ const styles = StyleSheet.create({
   },
   emptyButtonText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   // FAB
   fab: {

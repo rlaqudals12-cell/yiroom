@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
@@ -317,5 +317,5 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   sheetOptionEmoji: { fontSize: 20 },
-  sheetOptionLabel: { fontSize: 15, fontWeight: '500' },
+  sheetOptionLabel: { fontSize: 15, fontWeight: typography.weight.medium },
 });

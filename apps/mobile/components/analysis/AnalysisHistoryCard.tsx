@@ -15,7 +15,7 @@ import {
 } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 import type { AnalysisModuleType, AnalysisHistoryItem } from '../../hooks/useAnalysisHistory';
 
 interface ModuleConfig {
@@ -100,7 +100,7 @@ export function AnalysisHistoryCard({
             <Text
               style={{
                 fontSize: typography.size.sm,
-                fontWeight: '600',
+                fontWeight: typography.weight.semibold,
                 color: colors.foreground,
               }}
             >
@@ -140,7 +140,7 @@ export function AnalysisHistoryCard({
                 <Text
                   style={{
                     fontSize: typography.size.xs,
-                    fontWeight: '600',
+                    fontWeight: typography.weight.semibold,
                     color: colors.card,
                   }}
                 >

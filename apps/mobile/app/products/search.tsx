@@ -14,7 +14,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 interface Product {
@@ -159,7 +159,7 @@ const POPULAR_SEARCHES = ['수분크림', '선크림', '립스틱', '비타민',
 const RECENT_SEARCHES = ['아이오페', '롬앤 립스틱'];
 
 export default function ProductSearchScreen() {
-  const { colors, brand, status } = useTheme();
+  const { colors, brand, status, typography } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   clearAllText: {
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   },
   popularRank: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginRight: 2,
   },
   tagText: {
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     marginTop: 2,
   },
   productMeta: {
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   },
   productPrice: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginTop: 4,
   },
   matchBadge: {
@@ -527,6 +527,6 @@ const styles = StyleSheet.create({
   },
   matchBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

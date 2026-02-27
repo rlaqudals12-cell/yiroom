@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 // 주당 운동 횟수 옵션 (2-6회)
 const FREQUENCY_OPTIONS = [
@@ -27,7 +27,7 @@ const TIME_OPTIONS = [
 ];
 
 export default function WorkoutFrequencyScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
   const params = useLocalSearchParams<{ goals?: string }>();
 
   const [frequency, setFrequency] = useState<number | null>(null);
@@ -168,7 +168,7 @@ export default function WorkoutFrequencyScreen() {
 const styles = StyleSheet.create({
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   subtitle: {
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
   frequencyLabel: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 2,
   },
   frequencyLabelSelected: {},
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   },
   timeLabel: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 4,
   },
   timeLabelSelected: {},
@@ -266,6 +266,6 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

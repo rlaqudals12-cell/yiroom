@@ -14,7 +14,7 @@ import {
   Pressable,
 } from 'react-native';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import { QuickActionsWidget } from '../../components/widgets/QuickActionsWidget';
@@ -23,7 +23,7 @@ import { useWidgetSync } from '../../lib/widgets';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
 export default function WidgetSettingsScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
   const { getData } = useWidgetSync({ autoSync: false });
 
   const [widgetData, setWidgetData] = useState<TodaySummaryData>(DEFAULT_SUMMARY_DATA);
@@ -90,7 +90,7 @@ export default function WidgetSettingsScreen() {
                 style={[
                   styles.sizeButtonText,
                   { color: colors.foreground },
-                  selectedSize === size && { color: brand.primaryForeground, fontWeight: '600' as const },
+                  selectedSize === size && { color: brand.primaryForeground, fontWeight: typography.weight.semibold },
                 ]}
               >
                 {size === 'small' ? '소형' : size === 'medium' ? '중형' : '대형'}
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   },
   infoTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 4,
   },
   infoText: {
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   sizeSelector: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
   helpButtonText: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   widgetList: {
     marginTop: 8,
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   widgetItemTitle: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     marginBottom: 2,
   },
   widgetItemDesc: {
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     overflow: 'hidden',
   },
 });

@@ -31,11 +31,11 @@ import { CollapsibleSection, MenuCard, GradientBackground, ScreenContainer, Sect
 import { useUserAnalyses } from '../../hooks/useUserAnalyses';
 import { useAffiliateProducts } from '../../lib/affiliate/useAffiliateProducts';
 import { staggeredEntry, TIMING } from '../../lib/animations';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 export default function BeautyTab(): React.JSX.Element {
   const router = useRouter();
-  const { colors, spacing, module: moduleColors } = useTheme();
+  const { colors, spacing, module: moduleColors, typography } = useTheme();
   const { skinAnalysis, isLoading, refetch: refetchAnalyses } = useUserAnalyses();
 
   // DB에서 제품 조회
@@ -126,7 +126,7 @@ export default function BeautyTab(): React.JSX.Element {
             <SectionHeader
               title="뷰티"
               style={{ marginBottom: 4 }}
-              titleStyle={{ color: colors.overlayForeground, fontSize: 24, fontWeight: '700' }}
+              titleStyle={{ color: colors.overlayForeground, fontSize: 24, fontWeight: typography.weight.bold }}
             />
           </GradientBackground>
         </Animated.View>
@@ -239,7 +239,7 @@ export default function BeautyTab(): React.JSX.Element {
               <Text
                 style={{
                   fontSize: 13,
-                  fontWeight: '600',
+                  fontWeight: typography.weight.semibold,
                   color: colors.destructive,
                 }}
               >

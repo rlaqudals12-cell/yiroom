@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../components/ui';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -160,7 +160,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
         <View style={{ padding: spacing.sm }}>
           <Text
             numberOfLines={1}
-            style={{ fontSize: typography.size.xs, fontWeight: '600', color: colors.foreground }}
+            style={{ fontSize: typography.size.xs, fontWeight: typography.weight.semibold, color: colors.foreground }}
           >
             {item.name}
           </Text>
@@ -215,7 +215,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           </View>
         )}
         <View style={{ flex: 1, marginLeft: spacing.sm }}>
-          <Text numberOfLines={1} style={{ fontSize: typography.size.sm, fontWeight: '600', color: colors.foreground }}>
+          <Text numberOfLines={1} style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground }}>
             {item.name}
           </Text>
           <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: 2 }}>
@@ -304,7 +304,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
                 <Text
                   style={{
                     fontSize: typography.size.xs,
-                    fontWeight: '600',
+                    fontWeight: typography.weight.semibold,
                     color: isActive ? brand.primaryForeground : colors.mutedForeground,
                   }}
                 >
@@ -327,7 +327,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           <Text
             style={{
               fontSize: typography.size.base,
-              fontWeight: '600',
+              fontWeight: typography.weight.semibold,
               color: colors.foreground,
               marginTop: spacing.md,
             }}

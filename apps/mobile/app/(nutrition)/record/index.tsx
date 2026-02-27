@@ -38,7 +38,7 @@ const QUICK_ADD_FOODS = [
 ];
 
 export default function NutritionRecordScreen() {
-  const { colors, module: themeModuleColors } = useTheme();
+  const { colors, module: themeModuleColors, typography } = useTheme();
   const nutritionColor = themeModuleColors.nutrition.dark;
 
   const [selectedMealType, setSelectedMealType] = useState<MealType>('lunch');
@@ -113,7 +113,7 @@ export default function NutritionRecordScreen() {
                   style={[
                     styles.mealTypeLabel,
                     { color: colors.mutedForeground },
-                    isActive && { color: nutritionColor, fontWeight: '600' },
+                    isActive && { color: nutritionColor, fontWeight: typography.weight.semibold },
                   ]}
                 >
                   {meal.label}
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   mealTypeLabel: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   mealTypeLabelActive: {},
   photoButton: {
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   },
   photoTitle: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
   },
   photoSubtitle: {
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.md,
   },
   quickAddGrid: {
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   },
   quickAddName: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     textAlign: 'center',
     marginBottom: spacing.xs,
   },
@@ -352,11 +352,11 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   totalValue: {
     fontSize: typography.size.lg,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   footer: {
     position: 'absolute',
@@ -373,6 +373,6 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

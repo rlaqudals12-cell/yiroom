@@ -5,7 +5,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { GradientBackground } from '../ui';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 
 interface HomeHeaderProps {
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   userName: {
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 4,
   },
   slogan: {

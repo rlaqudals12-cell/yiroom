@@ -19,14 +19,14 @@ import {
 import { QUICK_QUESTIONS, type QuestionCategory, type CoachMessage } from '../../lib/coach';
 import { useCoach } from '../../lib/coach/useCoach';
 import { useNetworkStatus } from '../../lib/offline';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 interface ChatInterfaceProps {
   initialSessionId?: string;
 }
 
 export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
-  const { colors, brand, status } = useTheme();
+  const { colors, brand, status, typography } = useTheme();
   const { isConnected } = useNetworkStatus();
 
   const {
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   offlineBannerText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   errorBanner: {
     padding: 8,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   errorBannerText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   emptyContainer: {
     flex: 1,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   headerSubtitle: {
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   },
   categoryTabText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   quickQuestions: {
     gap: 10,
@@ -396,6 +396,6 @@ const styles = StyleSheet.create({
   },
   sendButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

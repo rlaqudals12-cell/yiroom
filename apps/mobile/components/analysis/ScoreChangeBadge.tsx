@@ -23,7 +23,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import { statusColors, useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 // ============================================
 // 타입 정의
@@ -71,27 +71,32 @@ const SIZE_CONFIG = {
   },
 } as const;
 
-// 방향별 색상
-const DIRECTION_COLORS = {
-  up: {
-    bg: '#dcfce7', // emerald-100
-    bgDark: 'rgba(16, 185, 129, 0.2)', // emerald-500/20
-    text: '#059669', // emerald-600
-    textDark: '#34d399', // emerald-400
-  },
-  down: {
-    bg: '#fee2e2', // red-100
-    bgDark: 'rgba(239, 68, 68, 0.2)', // red-500/20
-    text: '#dc2626', // red-600
-    textDark: '#f87171', // red-400
-  },
-  neutral: {
-    bg: '#f3f4f6', // gray-100
-    bgDark: 'rgba(107, 114, 128, 0.2)', // gray-500/20
-    text: '#4b5563', // gray-600
-    textDark: '#9ca3af', // gray-400
-  },
-} as const;
+// 방향별 색상 — status 토큰 기반으로 light/dark 변형 생성
+function getDirectionColors(
+  themeStatus: { success: string; error: string },
+  mutedFg: string,
+) {
+  return {
+    up: {
+      bg: `${themeStatus.success}18`,
+      bgDark: `${themeStatus.success}33`,
+      text: themeStatus.success,
+      textDark: themeStatus.success,
+    },
+    down: {
+      bg: `${themeStatus.error}18`,
+      bgDark: `${themeStatus.error}33`,
+      text: themeStatus.error,
+      textDark: themeStatus.error,
+    },
+    neutral: {
+      bg: `${mutedFg}18`,
+      bgDark: `${mutedFg}33`,
+      text: mutedFg,
+      textDark: mutedFg,
+    },
+  };
+}
 
 // ============================================
 // 메인 컴포넌트
@@ -104,12 +109,13 @@ export function ScoreChangeBadge({
   previousScore,
   animate = true,
 }: ScoreChangeBadgeProps) {
-  const { isDark } = useTheme();
+  const { isDark, typography, status, colors: themeColors } = useTheme();
   const config = SIZE_CONFIG[size];
 
   // 방향 결정
   const direction = delta > 0 ? 'up' : delta < 0 ? 'down' : 'neutral';
-  const colors = DIRECTION_COLORS[direction];
+  const directionColors = getDirectionColors(status, themeColors.mutedForeground);
+  const colors = directionColors[direction];
 
   // 아이콘 선택
   const IconComponent =
@@ -206,11 +212,12 @@ export interface MetricDeltaProps {
  * ```
  */
 export function MetricDelta({ delta, size = 'xs' }: MetricDeltaProps) {
+  const { status } = useTheme();
   if (delta === 0) return null;
 
   const isPositive = delta > 0;
   const fontSize = size === 'xs' ? 10 : 12;
-  const color = isPositive ? statusColors.success : statusColors.error;
+  const color = isPositive ? status.success : status.error;
 
   return (
     <Text
@@ -234,7 +241,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   text: {
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   previousScore: {
     opacity: 0.7,
@@ -242,7 +249,7 @@ const styles = StyleSheet.create({
   },
   metricDelta: {
     marginLeft: 4,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
 });
 

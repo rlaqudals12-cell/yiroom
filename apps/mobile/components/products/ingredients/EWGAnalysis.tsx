@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme } from '../../../lib/theme';
+import { useTheme, typography} from '../../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -39,7 +39,7 @@ function getEWGCategory(grade?: EWGGrade) {
 }
 
 export function EWGAnalysis({ ingredients, skinType }: EWGAnalysisProps) {
-  const { colors, status } = useTheme();
+  const { colors, status, typography } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
   const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   headerSubtitle: {
     fontSize: 13,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   cautionBox: {
     borderRadius: 8,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   cautionTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 4,
   },
   cautionText: {
@@ -337,14 +337,14 @@ const styles = StyleSheet.create({
   },
   ewgGrade: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   ingredientInfo: {
     flex: 1,
   },
   ingredientName: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   ingredientNameEn: {
     fontSize: 11,
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   },
   allergenText: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   ingredientDetails: {
     marginTop: 10,
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   },
   safetyText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     marginTop: 8,
   },
   showMoreButton: {
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
   },
   showMoreText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   disclaimer: {
     fontSize: 11,

@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -47,7 +47,7 @@ const TAB_LABELS: Record<FeedTab, string> = {
 };
 
 export default function FeedScreen() {
-  const { colors, brand, status } = useTheme();
+  const { colors, brand, status, typography } = useTheme();
   const router = useRouter();
 
   const {
@@ -203,7 +203,7 @@ export default function FeedScreen() {
               style={[
                 styles.tabText,
                 { color: colors.mutedForeground },
-                activeTab === tab && { color: brand.primary, fontWeight: '600' as const },
+                activeTab === tab && { color: brand.primary, fontWeight: typography.weight.semibold },
               ]}
             >
               {TAB_LABELS[tab]}
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   tabActive: {},
   tabText: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   tabTextActive: {},
   errorBanner: {
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   },
   retryText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   loadingContainer: {
     flex: 1,
@@ -327,14 +327,14 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   userMeta: {
     marginLeft: 10,
   },
   userName: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   timestamp: {
     fontSize: 12,
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   },
   levelText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   cardContent: {
     marginBottom: 12,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   typeLabel: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   contentText: {
     fontSize: 15,
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptySubtitle: {

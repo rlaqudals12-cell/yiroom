@@ -22,7 +22,19 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 
+import { statusColors, typography} from '@/lib/theme';
 import { useTheme } from '@/lib/theme';
+
+// ============================================
+// 등급 그라데이션 색상 (도메인 데이터 — 등급별 시각 아이덴티티)
+// status 토큰 기반: info(다이아), warning(골드), muted(실버), error(브론즈)
+// ============================================
+const GRADE_COLORS = {
+  diamond: { start: '#06b6d4', end: statusColors.info, text: '#06b6d4' },
+  gold: { start: statusColors.warning, end: '#f97316', text: statusColors.warning },
+  silver: { start: '#6b7280', end: '#64748b', text: '#6b7280' },
+  bronze: { start: '#f97316', end: statusColors.error, text: '#f97316' },
+} as const;
 
 // ============================================
 // 타입 정의
@@ -87,32 +99,32 @@ const GRADE_CONFIGS: GradeConfig[] = [
     label: '다이아몬드',
     minScore: 85,
     maxScore: 101,
-    colors: { start: '#06b6d4', end: '#3b82f6' }, // cyan-500 -> blue-500
-    textColor: '#06b6d4',
+    colors: { start: GRADE_COLORS.diamond.start, end: GRADE_COLORS.diamond.end },
+    textColor: GRADE_COLORS.diamond.text,
   },
   {
     grade: 'gold',
     label: '골드',
     minScore: 70,
     maxScore: 85,
-    colors: { start: '#f59e0b', end: '#f97316' }, // amber-500 -> orange-500
-    textColor: '#f59e0b',
+    colors: { start: GRADE_COLORS.gold.start, end: GRADE_COLORS.gold.end },
+    textColor: GRADE_COLORS.gold.text,
   },
   {
     grade: 'silver',
     label: '실버',
     minScore: 50,
     maxScore: 70,
-    colors: { start: '#6b7280', end: '#64748b' }, // gray-500 -> slate-500
-    textColor: '#6b7280',
+    colors: { start: GRADE_COLORS.silver.start, end: GRADE_COLORS.silver.end },
+    textColor: GRADE_COLORS.silver.text,
   },
   {
     grade: 'bronze',
     label: '브론즈',
     minScore: 0,
     maxScore: 50,
-    colors: { start: '#f97316', end: '#ef4444' }, // orange-500 -> red-500
-    textColor: '#f97316',
+    colors: { start: GRADE_COLORS.bronze.start, end: GRADE_COLORS.bronze.end },
+    textColor: GRADE_COLORS.bronze.text,
   },
 ];
 
@@ -141,7 +153,7 @@ export function CircularProgress({
   showScore = true,
   showGradeLabel = false,
 }: CircularProgressProps) {
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
   const config = SIZE_CONFIG[size];
   const gradeConfig = getGradeFromScore(score);
 
@@ -282,14 +294,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scoreText: {
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   scoreUnit: {
-    fontWeight: '400',
+    fontWeight: typography.weight.normal,
   },
   gradeLabel: {
     marginTop: 2,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
 });
 

@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard } from '../ui';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 import { SectionHeader } from '../ui';
 import { TIMING } from '../../lib/animations';
 
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   completedLabel: {
     textDecorationLine: 'line-through',

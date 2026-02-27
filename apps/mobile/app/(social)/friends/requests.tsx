@@ -14,14 +14,14 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { type FriendRequest } from '../../../lib/social';
 import { useFriendRequests } from '../../../lib/social/useFriends';
 
 export default function FriendRequestsScreen() {
-  const { colors, brand, status, module: moduleColors } = useTheme();
+  const { colors, brand, status, module: moduleColors, typography } = useTheme();
 
   const { requests, isLoading, error, accept, reject, refetch } = useFriendRequests();
 
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   headerCount: {
     fontSize: 14,
@@ -226,14 +226,14 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   userInfo: {
     flex: 1,
   },
   userName: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   userMeta: {
     fontSize: 13,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   acceptButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   rejectButton: {
     flex: 1,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   },
   rejectButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   emptyContainer: {
     flex: 1,
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptySubtext: {

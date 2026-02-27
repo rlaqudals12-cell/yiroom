@@ -13,7 +13,7 @@ import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { workoutLogger } from '@/lib/utils/logger';
 import { generateWeeklyPlan, estimatePlanMinutes } from '@/lib/workout/planTemplates';
 
@@ -66,7 +66,7 @@ const WORKOUT_TYPE_DATA: Record<
 };
 
 export default function WorkoutResultScreen() {
-  const { colors, spacing, module: moduleColors } = useTheme();
+  const { colors, spacing, module: moduleColors, typography } = useTheme();
   const workoutColor = moduleColors.workout.base;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   },
   resultType: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 12,
   },
   resultDescription: {
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 16,
   },
   tagContainer: {
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   exerciseList: {
     gap: 12,
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   },
   settingValue: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   buttons: {
     marginTop: 8,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   secondaryButton: {
     borderWidth: 1,

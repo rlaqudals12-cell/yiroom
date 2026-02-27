@@ -5,10 +5,10 @@
 import { Stack } from 'expo-router';
 import { Platform } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 export default function InventoryLayout(): React.JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, typography } = useTheme();
 
   return (
     <Stack
@@ -18,7 +18,7 @@ export default function InventoryLayout(): React.JSX.Element {
         },
         headerTintColor: colors.foreground,
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: typography.weight.semibold,
         },
         headerBackTitle: '뒤로',
         animation: 'slide_from_right',

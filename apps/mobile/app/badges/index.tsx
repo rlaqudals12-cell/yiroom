@@ -7,7 +7,7 @@ import { useCallback, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 interface Badge {
@@ -176,7 +176,7 @@ export default function BadgesScreen(): React.JSX.Element {
                     borderRadius: radii.md,
                   }}
                 >
-                  <Text style={{ fontSize: 10, fontWeight: '600', color: brand.primary }}>
+                  <Text style={{ fontSize: 10, fontWeight: typography.weight.semibold, color: brand.primary }}>
                     획득 완료
                   </Text>
                 </View>

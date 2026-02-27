@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
   Share,
 } from 'react-native';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -193,7 +193,7 @@ const MOCK_REVIEWS: Review[] = [
 ];
 
 export default function ProductDetailScreen() {
-  const { colors, brand, status } = useTheme();
+  const { colors, brand, status, typography } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -481,7 +481,7 @@ export default function ProductDetailScreen() {
                   { color: colors.mutedForeground },
                   activeTab === tab && {
                     color: brand.primaryForeground,
-                    fontWeight: '600' as const,
+                    fontWeight: typography.weight.semibold,
                   },
                 ]}
               >
@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   ratingRow: {
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 16,
   },
   matchCard: {
@@ -683,7 +683,7 @@ const styles = StyleSheet.create({
   },
   matchScore: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginLeft: 12,
   },
   tabRow: {
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
     marginTop: 8,
   },
@@ -742,7 +742,7 @@ const styles = StyleSheet.create({
   },
   reviewUser: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   reviewRating: {
     fontSize: 12,
@@ -784,6 +784,6 @@ const styles = StyleSheet.create({
   },
   purchaseButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

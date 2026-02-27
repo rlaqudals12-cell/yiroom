@@ -42,7 +42,7 @@ const MEAL_TYPES = [
 type ScreenState = 'scanning' | 'loading' | 'result' | 'not-found';
 
 export default function BarcodeScanScreen() {
-  const { colors, status, module: moduleColors } = useTheme();
+  const { colors, status, module: moduleColors, typography } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [permission, requestPermission] = useCameraPermissions();
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
   },
   permissionTitle: {
     fontSize: typography.size.xl,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: spacing.sm,
   },
   permissionDesc: {
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   },
   permissionButtonText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   // 로딩
   loadingContainer: {
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
   scanGuideText: {
     color: '#fff',
     fontSize: typography.size.base,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   cancelButton: {
     marginTop: spacing.lg,
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
   },
   notFoundTitle: {
     fontSize: typography.size.xl,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: spacing.sm,
   },
   notFoundBarcode: {
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   searchButton: {
     borderRadius: 12,
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: typography.size.xl,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     textAlign: 'center',
   },
   productBrand: {
@@ -609,7 +609,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.sm,
   },
   servingNote: {
@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
   },
   macroValue: {
     fontSize: typography.size.lg,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   macroLabel: {
     fontSize: typography.size.xs,
@@ -655,11 +655,11 @@ const styles = StyleSheet.create({
   },
   servingButtonText: {
     fontSize: typography.size['2xl'],
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   servingValue: {
     fontSize: typography.size.xl,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     minWidth: 80,
     textAlign: 'center',
   },
@@ -686,7 +686,7 @@ const styles = StyleSheet.create({
   },
   mealTypeLabel: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   // 하단
   footer: {
@@ -703,7 +703,7 @@ const styles = StyleSheet.create({
   },
   rescanButtonText: {
     fontSize: typography.size.base,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   saveButton: {
     flex: 2,
@@ -716,6 +716,6 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

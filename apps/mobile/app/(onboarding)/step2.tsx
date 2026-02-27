@@ -33,7 +33,12 @@ import {
   GENDER_LABELS,
   ACTIVITY_LEVEL_LABELS,
 } from '../../lib/onboarding';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
+
+// 온보딩 Step 2 히어로 색상 (blue-500 계열 — 기본 정보 아이덴티티)
+const STEP2_ACCENT = '#3B82F6';
+const STEP2_HERO_BG_LIGHT = '#EFF6FF';
+const STEP2_HERO_BG_DARK = `${STEP2_ACCENT}15`;
 
 const GENDERS: Gender[] = ['male', 'female', 'other'];
 const ACTIVITY_LEVELS: ActivityLevel[] = [
@@ -114,6 +119,8 @@ export default function OnboardingStep2() {
             { opacity: pressed ? 0.6 : 1 },
           ]}
           testID="mini-back-button"
+          accessibilityRole="button"
+          accessibilityLabel="이전 단계로 돌아가기"
         >
           <ChevronLeft size={20} color={colors.foreground} strokeWidth={2} />
           <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>이전</Text>
@@ -124,10 +131,10 @@ export default function OnboardingStep2() {
           <View
             style={[
               styles.heroHeader,
-              { backgroundColor: isDark ? '#3B82F615' : '#EFF6FF', borderRadius: radii.xl + 8 },
+              { backgroundColor: isDark ? STEP2_HERO_BG_DARK : STEP2_HERO_BG_LIGHT, borderRadius: radii.xl + 8 },
             ]}
           >
-            <View style={[styles.heroIconWrap, { backgroundColor: '#3B82F6' }]}>
+            <View style={[styles.heroIconWrap, { backgroundColor: STEP2_ACCENT }]}>
               <ClipboardList size={36} color="#fff" strokeWidth={2} />
             </View>
             <Text style={[styles.heroTitle, { color: colors.foreground }]}>
@@ -179,6 +186,9 @@ export default function OnboardingStep2() {
                     ]}
                     onPress={() => handleGenderSelect(gender)}
                     testID={`gender-${gender}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={GENDER_LABELS[gender]}
+                    accessibilityState={{ selected: isSelected }}
                   >
                     <Text
                       style={{
@@ -251,6 +261,7 @@ export default function OnboardingStep2() {
                     keyboardType="number-pad"
                     maxLength={3}
                     testID="height-input"
+                    accessibilityLabel="키 입력, cm"
                   />
                   <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
                     cm
@@ -276,6 +287,7 @@ export default function OnboardingStep2() {
                     keyboardType="decimal-pad"
                     maxLength={5}
                     testID="weight-input"
+                    accessibilityLabel="체중 입력, kg"
                   />
                   <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
                     kg
@@ -327,6 +339,9 @@ export default function OnboardingStep2() {
                     ]}
                     onPress={() => handleActivitySelect(level)}
                     testID={`activity-${level}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={ACTIVITY_LEVEL_LABELS[level]}
+                    accessibilityState={{ selected: isSelected }}
                   >
                     <View
                       style={[
@@ -412,12 +427,15 @@ export default function OnboardingStep2() {
               },
             ]}
             testID="next-button"
+            accessibilityRole="button"
+            accessibilityLabel="다음"
+            accessibilityState={{ disabled: !canProceed }}
           >
             <Text
               style={{
                 color: canProceed ? brand.primaryForeground : colors.mutedForeground,
                 fontSize: 16,
-                fontWeight: '700',
+                fontWeight: typography.weight.bold,
               }}
             >
               다음
@@ -477,6 +495,7 @@ function Input({
         keyboardType={keyboardType}
         maxLength={maxLength}
         testID={testID}
+        accessibilityLabel={label}
       />
     </View>
   );
@@ -513,7 +532,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   heroSubtitle: {

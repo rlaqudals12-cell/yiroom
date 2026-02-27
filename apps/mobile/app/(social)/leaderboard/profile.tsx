@@ -29,7 +29,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../../components/ui';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -192,14 +192,14 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
         edges={['bottom']}
         style={styles.center}
       >
-        <Text style={{ fontSize: typography.size.base, fontWeight: '600', color: colors.foreground }}>
+        <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>
           사용자를 찾을 수 없어요
         </Text>
         <Pressable
           style={[styles.backButton, { backgroundColor: brand.primary, borderRadius: radii.lg, marginTop: spacing.md }]}
           onPress={() => router.back()}
         >
-          <Text style={{ color: brand.primaryForeground, fontWeight: '600', fontSize: typography.size.sm }}>
+          <Text style={{ color: brand.primaryForeground, fontWeight: typography.weight.semibold, fontSize: typography.size.sm }}>
             돌아가기
           </Text>
         </Pressable>
@@ -248,7 +248,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
             />
           ) : (
             <View style={[styles.avatar, styles.avatarPlaceholder, { borderColor: brand.primaryForeground, backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-              <Text style={{ fontSize: 32, fontWeight: '700', color: brand.primaryForeground }}>
+              <Text style={{ fontSize: 32, fontWeight: typography.weight.bold, color: brand.primaryForeground }}>
                 {profile.displayName.charAt(0)}
               </Text>
             </View>
@@ -266,7 +266,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
           </Text>
 
           <View style={[styles.tierBadge, { backgroundColor: tierColor + '30', borderRadius: radii.full, marginTop: spacing.sm }]}>
-            <Text style={{ fontSize: typography.size.sm, fontWeight: '600', color: tierColor }}>
+            <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: tierColor }}>
               {getTierLabel(profile.tier)} · Lv.{profile.level}
             </Text>
           </View>
@@ -282,7 +282,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                   ]}
                 >
                   <UserCheck size={16} color={brand.primaryForeground} />
-                  <Text style={{ color: brand.primaryForeground, fontWeight: '600', fontSize: typography.size.sm, marginLeft: spacing.xs }}>
+                  <Text style={{ color: brand.primaryForeground, fontWeight: typography.weight.semibold, fontSize: typography.size.sm, marginLeft: spacing.xs }}>
                     친구
                   </Text>
                 </View>
@@ -293,7 +293,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                     { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: radii.lg },
                   ]}
                 >
-                  <Text style={{ color: 'rgba(255,255,255,0.7)', fontWeight: '600', fontSize: typography.size.sm }}>
+                  <Text style={{ color: 'rgba(255,255,255,0.7)', fontWeight: typography.weight.semibold, fontSize: typography.size.sm }}>
                     요청 보냄
                   </Text>
                 </View>
@@ -314,7 +314,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                       <Text
                         style={{
                           color: brand.primary,
-                          fontWeight: '600',
+                          fontWeight: typography.weight.semibold,
                           fontSize: typography.size.sm,
                           marginLeft: spacing.xs,
                         }}

@@ -8,7 +8,7 @@ import { Platform } from 'react-native';
 import { useTheme } from '../../lib/theme';
 
 export default function AnalysisLayout(): React.JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, typography } = useTheme();
 
   return (
     <Stack
@@ -18,7 +18,7 @@ export default function AnalysisLayout(): React.JSX.Element {
         },
         headerTintColor: colors.foreground,
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: typography.weight.semibold,
         },
         headerBackTitle: '뒤로',
         // 전환 애니메이션

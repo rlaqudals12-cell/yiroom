@@ -212,6 +212,8 @@ export function BottomSheet({
         style={StyleSheet.absoluteFill}
         onPress={onClose}
         testID={`${testID}-backdrop`}
+        accessibilityRole="button"
+        accessibilityLabel="시트 닫기"
       >
         <Animated.View
           style={[
@@ -238,7 +240,7 @@ export function BottomSheet({
           testID={`${testID}-content`}
         >
           {/* 핸들 인디케이터 */}
-          <View style={handleBarStyle} testID={`${testID}-handle`} />
+          <View style={handleBarStyle} testID={`${testID}-handle`} accessibilityLabel="드래그하여 시트 조절" />
 
           {/* 제목 (선택) */}
           {title && (

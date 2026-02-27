@@ -3,10 +3,10 @@
  */
 import { Stack } from 'expo-router';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 export default function NutritionLayout() {
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
 
   return (
     <Stack
@@ -16,7 +16,7 @@ export default function NutritionLayout() {
         },
         headerTintColor: colors.foreground,
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: typography.weight.semibold,
         },
         headerBackTitle: '뒤로',
       }}

@@ -21,7 +21,7 @@ import {
   useNutritionData,
   calculateCalorieProgress,
 } from '../../hooks';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 // 시즌 라벨 한국어 변환
 const SEASON_LABELS: Record<string, string> = {
@@ -165,7 +165,7 @@ export default function ReportsScreen(): React.JSX.Element {
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 24, fontWeight: '700', color: brand.primaryForeground }}>
+            <Text style={{ fontSize: 24, fontWeight: typography.weight.bold, color: brand.primaryForeground }}>
               {userName.charAt(0)}
             </Text>
           </View>
@@ -260,7 +260,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   <Text
                     style={{
                       fontSize: 11,
-                      fontWeight: '600',
+                      fontWeight: typography.weight.semibold,
                       color: moduleColors.personalColor.dark,
                     }}
                   >
@@ -319,7 +319,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   <Text
                     style={{
                       fontSize: 11,
-                      fontWeight: '600',
+                      fontWeight: typography.weight.semibold,
                       color: moduleColors.skin.dark,
                     }}
                   >
@@ -378,7 +378,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   <Text
                     style={{
                       fontSize: 11,
-                      fontWeight: '600',
+                      fontWeight: typography.weight.semibold,
                       color: moduleColors.body.dark,
                     }}
                   >

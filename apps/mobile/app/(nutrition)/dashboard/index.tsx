@@ -37,7 +37,7 @@ interface MealRecord {
 }
 
 export default function NutritionDashboardScreen() {
-  const { colors, status, brand } = useTheme();
+  const { colors, status, brand, typography } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const { todaySummary, settings, isLoading: isNutritionLoading, refetch: refetchNutrition } = useNutritionData();
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   },
   calorieValue: {
     fontSize: typography.size['4xl'],
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   calorieUnit: {
     fontSize: typography.size.sm,
@@ -345,12 +345,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.size.lg,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.md,
   },
   addButton: {
     fontSize: typography.size.sm,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   nutrientItem: {
     marginBottom: spacing.md,
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   },
   nutrientLabel: {
     fontSize: typography.size.sm,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   nutrientValue: {
     fontSize: 13,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     marginBottom: spacing.xs,
   },
   emptySubtext: {
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   },
   mealType: {
     fontSize: typography.size.sm,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   mealTime: {
     fontSize: typography.size.xs,
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   },
   mealCalories: {
     fontSize: typography.size.sm,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   recordButton: {
     borderRadius: 12,
@@ -429,6 +429,6 @@ const styles = StyleSheet.create({
   },
   recordButtonText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

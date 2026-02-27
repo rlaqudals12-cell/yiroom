@@ -25,7 +25,7 @@ import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { brand, moduleColors } from '@/lib/theme/tokens';
 import { TIMING } from '@/lib/animations';
 import { TabView, type TabItem } from '../ui/TabView';
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   fallbackBanner: {
     paddingHorizontal: 16,
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ctaTitle: {
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   ctaSubtitle: {
     lineHeight: 20,
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   ctaButtonText: {
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   buttonsContainer: {
     paddingHorizontal: 20,

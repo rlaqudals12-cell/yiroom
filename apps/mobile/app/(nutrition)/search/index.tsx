@@ -69,7 +69,7 @@ interface SelectedFood extends FoodItem {
 }
 
 export default function FoodSearchScreen() {
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
   },
   foodName: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     marginBottom: 2,
   },
   foodMeta: {
@@ -527,11 +527,11 @@ const styles = StyleSheet.create({
   portionButtonText: {
     fontSize: typography.size.base,
     color: moduleColors.nutrition.dark,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   portionValue: {
     fontSize: typography.size.sm,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     minWidth: spacing.lg,
     textAlign: 'center',
   },
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
   addBadgeText: {
     fontSize: typography.size.lg,
     color: moduleColors.nutrition.dark,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   footer: {
     flexDirection: 'row',
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
   },
   footerCalories: {
     fontSize: typography.size.lg,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     color: moduleColors.nutrition.dark,
   },
   saveButton: {
@@ -577,6 +577,6 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

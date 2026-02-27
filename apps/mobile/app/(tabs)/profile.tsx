@@ -16,7 +16,7 @@ import { WellnessScoreRing, LevelBadge, AchievementGrid } from '../../components
 import { GlassCard, GradientBackground, GradientCard, ScreenContainer, SectionHeader } from '../../components/ui';
 import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 import { profileLogger } from '../../lib/utils/logger';
 
 export default function ProfileScreen(): React.JSX.Element {
@@ -85,7 +85,7 @@ export default function ProfileScreen(): React.JSX.Element {
               {isSignedIn && user ? (
                 <>
                   {user.imageUrl ? (
-                    <Image source={{ uri: user.imageUrl }} style={styles.avatar} />
+                    <Image source={{ uri: user.imageUrl }} style={styles.avatar} accessibilityLabel="프로필 사진" accessibilityRole="image" />
                   ) : (
                     <View
                       style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
@@ -125,6 +125,8 @@ export default function ProfileScreen(): React.JSX.Element {
                       },
                     ]}
                     onPress={handleSignOut}
+                    accessibilityRole="button"
+                    accessibilityLabel="로그아웃"
                   >
                     <Text
                       style={{
@@ -163,6 +165,8 @@ export default function ProfileScreen(): React.JSX.Element {
                       },
                     ]}
                     onPress={handleSignIn}
+                    accessibilityRole="button"
+                    accessibilityLabel="로그인"
                   >
                     <Text
                       style={{
@@ -342,6 +346,9 @@ function MenuItem({
         pressed && { opacity: 0.7 },
       ]}
       onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={`${title}${subtitle ? `, ${subtitle}` : ''}${completed ? ', 완료됨' : ''}`}
+      accessibilityHint={`${title} 화면으로 이동합니다`}
     >
       <View style={styles.menuItemContent}>
         <View style={styles.menuItemTitleRow}>
@@ -357,7 +364,7 @@ function MenuItem({
             <Text
               style={{
                 fontSize: 12,
-                fontWeight: '600',
+                fontWeight: typography.weight.semibold,
                 color: status.success,
               }}
             >

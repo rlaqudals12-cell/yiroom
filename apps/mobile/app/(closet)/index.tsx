@@ -22,7 +22,7 @@ import { ScreenContainer } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { staggeredEntry } from '@/lib/animations';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import { useCloset, type ClothingCategory, CLOTHING_CATEGORY_LABELS } from '../../lib/inventory';
 
@@ -40,7 +40,7 @@ const FILTER_OPTIONS: { key: FilterCategory; label: string }[] = [
 ];
 
 export default function ClosetScreen() {
-  const { colors, module: moduleTheme, shadows: themeShadows } = useTheme();
+  const { colors, module: moduleTheme, shadows: themeShadows, typography } = useTheme();
   const router = useRouter();
 
   const { items, isLoading, error: _error, toggleFavorite, refetch } = useCloset();
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   statLabel: {
     fontSize: 12,
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   gridContent: {
     padding: 16,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 2,
   },
   itemCategory: {
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   },
   emptyButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   sortButton: {
     position: 'absolute',
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
   },
   sortOptionText: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     textAlign: 'center',
   },
 });

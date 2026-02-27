@@ -16,7 +16,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -47,7 +47,7 @@ interface DisplayProduct extends AffiliateProduct {
 }
 
 export default function ProductsScreen() {
-  const { colors, brand, status, module: moduleColors } = useTheme();
+  const { colors, brand, status, module: moduleColors, typography } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   bannerSubtitle: {
     fontSize: 13,
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   },
   matchBadgeText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   productInfo: {
     padding: 8,
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     marginTop: 2,
     lineHeight: 18,
   },
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   },
   productPrice: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginTop: 4,
   },
   emptyContainer: {

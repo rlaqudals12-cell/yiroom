@@ -7,7 +7,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '../../../components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 const FEATURES = [
   { icon: '🧍', title: '자세 유형 분석', desc: '거북목, 어깨 말림 등 자세 유형 진단' },
@@ -17,7 +17,7 @@ const FEATURES = [
 ];
 
 export default function PostureAnalysisScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
 
   const handleStart = () => {
     router.push('/(analysis)/posture/camera');
@@ -69,7 +69,7 @@ export default function PostureAnalysisScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 8 },
+  title: { fontSize: 28, fontWeight: typography.weight.bold, marginBottom: 8 },
   subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 32 },
   features: { gap: 12, marginBottom: 32 },
   featureCard: {
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   featureIcon: { fontSize: 28, marginRight: 16 },
   featureText: { flex: 1 },
-  featureTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
+  featureTitle: { fontSize: 16, fontWeight: typography.weight.semibold, marginBottom: 4 },
   featureDesc: { fontSize: 14, lineHeight: 20 },
   startButton: {
     borderRadius: 12,
@@ -88,6 +88,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  startButtonText: { fontSize: 17, fontWeight: '600' },
+  startButtonText: { fontSize: 17, fontWeight: typography.weight.semibold },
   notice: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
 });

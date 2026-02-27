@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme } from '../../../lib/theme';
+import { useTheme, typography} from '../../../lib/theme';
 
 import { StarRating, getRatingColor } from './StarRating';
 
@@ -27,7 +27,7 @@ interface ReviewSummaryProps {
 }
 
 export function ReviewSummary({ summary }: ReviewSummaryProps) {
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
   const { averageRating, totalCount, ratingDistribution } = summary;
 
   // 가장 높은 평점 개수 (막대 그래프 비율 계산용)
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   averageScore: {
     fontSize: 48,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   totalCount: {
     fontSize: 12,

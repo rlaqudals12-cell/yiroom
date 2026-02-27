@@ -17,8 +17,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { Check } from 'lucide-react-native';
 
-import { useTheme, brand } from '../../../lib/theme';
-import { spacing, radii, typography } from '../../../lib/theme';
+import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 import { useSkinDiary } from '../../../hooks/useSkinDiary';
 import {
   type SkinConditionScore,
@@ -57,7 +56,7 @@ const SLEEP_QUALITY_LABELS: Record<SleepQualityScore, string> = {
 };
 
 export default function SkinDiaryEntryScreen(): React.JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, typography } = useTheme();
   const params = useLocalSearchParams<{ date?: string; entryId?: string }>();
   const { saveEntry, getEntryForDate } = useSkinDiary();
   const [saving, setSaving] = useState(false);
@@ -464,16 +463,16 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: typography.size.lg,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   editBadge: {
     fontSize: typography.size.xs,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   // 섹션
   sectionTitle: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
@@ -500,7 +499,7 @@ const styles = StyleSheet.create({
   },
   conditionText: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   // 메모
   notesInput: {
@@ -551,7 +550,7 @@ const styles = StyleSheet.create({
   },
   scoreNum: {
     fontSize: typography.size.base,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   scoreLabel: {
     fontSize: 9,
@@ -595,7 +594,7 @@ const styles = StyleSheet.create({
   },
   routineText: {
     fontSize: typography.size.base,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   // 저장 버튼
   saveButton: {
@@ -606,6 +605,6 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: typography.size.base,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
 });

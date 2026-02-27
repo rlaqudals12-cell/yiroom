@@ -15,8 +15,7 @@ import {
 } from 'react-native';
 import { Send } from 'lucide-react-native';
 
-import { useTheme, brand } from '../../../lib/theme';
-import { spacing, radii, typography } from '../../../lib/theme';
+import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 
 // 빠른 질문
 const QUICK_QUESTIONS = [
@@ -64,7 +63,7 @@ interface ChatMessage {
 }
 
 export default function SkinConsultationScreen(): React.JSX.Element {
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -274,7 +273,7 @@ const styles = StyleSheet.create({
   },
   tipsTitle: {
     fontSize: typography.size.sm,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
   },
   tipText: {

@@ -17,7 +17,7 @@ import {
   Share,
   Platform,
 } from 'react-native';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { feedTypeConfig, formatRelativeTime, type FeedItem, type FeedTab } from '../../../lib/feed';
@@ -31,7 +31,7 @@ const TABS: { id: FeedTab; label: string }[] = [
 ];
 
 export default function FeedScreen() {
-  const { colors, brand, status, module: moduleColors } = useTheme();
+  const { colors, brand, status, module: moduleColors, typography } = useTheme();
   const router = useRouter();
 
   const {
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   },
   tabButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   listContent: {
     padding: 16,
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   userMeta: {
     marginLeft: 12,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   timeText: {
     fontSize: 12,
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
   contentText: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     lineHeight: 22,
   },
   detailText: {
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   },
   badgeHighlightText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   cardActions: {
     flexDirection: 'row',
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   },
   actionCount: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   emptyContainer: {
     flex: 1,
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptySubtitle: {
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   },
   emptyButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   footerLoader: {
     paddingVertical: 20,

@@ -23,15 +23,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { useTheme, brand } from '../../lib/theme';
-import { spacing, radii, typography } from '../../lib/theme';
+import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
 import { useCloset } from '../../lib/inventory/useInventory';
 import type { SavedOutfit, InventoryItem, Season, Occasion } from '../../lib/inventory/types';
 import { SEASON_LABELS, OCCASION_LABELS } from '../../lib/inventory/types';
 
 export default function OutfitsScreen(): React.JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, typography } = useTheme();
   const router = useRouter();
   const { outfits, isLoading, deleteOutfit, recordWear } = useSavedOutfits();
   const { items: closetItems } = useCloset();
@@ -319,7 +318,7 @@ const styles = StyleSheet.create({
   },
   outfitName: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   metaRow: {
     flexDirection: 'row',
@@ -344,7 +343,7 @@ const styles = StyleSheet.create({
   },
   wearCount: {
     fontSize: typography.size.lg,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   wearLabel: {
     fontSize: typography.size.xs,
@@ -382,7 +381,7 @@ const styles = StyleSheet.create({
   },
   moreText: {
     fontSize: typography.size.xs,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   noItemsText: {
     fontSize: typography.size.xs,
@@ -421,7 +420,7 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: typography.size.sm,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   // 빈 상태
   emptyContainer: {
@@ -430,7 +429,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: typography.size.lg,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginTop: spacing.md,
     marginBottom: spacing.xs,
   },
@@ -450,7 +449,7 @@ const styles = StyleSheet.create({
   },
   emptyBtnText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   // FAB
   fab: {

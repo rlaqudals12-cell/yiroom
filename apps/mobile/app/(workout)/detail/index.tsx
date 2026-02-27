@@ -17,7 +17,7 @@ import {
 import Animated from 'react-native-reanimated';
 
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
@@ -245,7 +245,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
                     <Text
                       style={{
                         fontSize: typography.size.xs,
-                        fontWeight: '600',
+                        fontWeight: typography.weight.semibold,
                         color: getDifficultyColor(ex.difficulty, status),
                       }}
                     >
@@ -301,7 +301,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
               {detail.perceivedEffort != null && (
                 <View style={styles.feelItem}>
                   <TrendingUp size={16} color={workoutColor} />
-                  <Text style={{ fontSize: typography.size.sm, fontWeight: '600', color: colors.foreground, marginLeft: spacing.xs }}>
+                  <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginLeft: spacing.xs }}>
                     체감 강도
                   </Text>
                   <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginLeft: spacing.xs }}>
@@ -312,7 +312,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
               {detail.mood && (
                 <View style={[styles.feelItem, { marginTop: detail.perceivedEffort != null ? spacing.sm : 0 }]}>
                   <Text style={{ fontSize: 16 }}>{getMoodEmoji(detail.mood)}</Text>
-                  <Text style={{ fontSize: typography.size.sm, fontWeight: '600', color: colors.foreground, marginLeft: spacing.xs }}>
+                  <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginLeft: spacing.xs }}>
                     기분
                   </Text>
                   <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginLeft: spacing.xs }}>
@@ -342,7 +342,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.xs }}>
               <MessageSquare size={14} color={colors.mutedForeground} />
-              <Text style={{ fontSize: typography.size.sm, fontWeight: '600', color: colors.foreground, marginLeft: spacing.xs }}>
+              <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginLeft: spacing.xs }}>
                 메모
               </Text>
             </View>
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   summaryLabel: {
     fontSize: 11,

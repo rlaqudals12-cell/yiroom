@@ -5,7 +5,7 @@
 
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
 interface TodaySummaryWidgetProps {
@@ -17,7 +17,7 @@ export function TodaySummaryWidget({
   data = DEFAULT_SUMMARY_DATA,
   size = 'medium',
 }: TodaySummaryWidgetProps) {
-  const { colors, brand, status } = useTheme();
+  const { colors, brand, status, typography } = useTheme();
 
   // 진행률 계산
   const waterProgress = Math.min((data.waterIntake / data.waterGoal) * 100, 100);
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   streakBadge: {
     paddingHorizontal: 10,
@@ -211,11 +211,11 @@ const styles = StyleSheet.create({
   },
   streakBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   streakText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   iconRow: {
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   progressRow: {
     marginBottom: 16,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   progressValue: {
     fontSize: 13,

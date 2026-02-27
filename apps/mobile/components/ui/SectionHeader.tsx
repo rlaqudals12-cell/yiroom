@@ -32,7 +32,7 @@ export function SectionHeader({
   const { colors, brand, typography } = useTheme();
 
   return (
-    <View testID={testID} style={[styles.container, style]}>
+    <View testID={testID} style={[styles.container, style]} accessibilityRole="header">
       <View style={styles.textGroup}>
         <Text
           style={[
@@ -59,7 +59,7 @@ export function SectionHeader({
         ) : null}
       </View>
       {action ? (
-        <Pressable onPress={action.onPress} hitSlop={8}>
+        <Pressable onPress={action.onPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={action.label}>
           <Text
             style={{
               color: brand.primary,

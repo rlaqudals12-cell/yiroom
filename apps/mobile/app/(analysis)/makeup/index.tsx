@@ -7,7 +7,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '../../../components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 const FEATURES = [
   { icon: '🎨', title: '얼굴형 분석', desc: '얼굴 윤곽과 비율을 정밀 분석' },
@@ -17,7 +17,7 @@ const FEATURES = [
 ];
 
 export default function MakeupAnalysisScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
 
   const handleStart = () => {
     router.push('/(analysis)/makeup/camera');
@@ -55,6 +55,8 @@ export default function MakeupAnalysisScreen() {
       <Pressable
         style={[styles.startButton, { backgroundColor: brand.primary }]}
         onPress={handleStart}
+        accessibilityRole="button"
+        accessibilityLabel="메이크업 분석 시작하기"
       >
         <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>
           분석 시작하기
@@ -69,7 +71,7 @@ export default function MakeupAnalysisScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 8 },
+  title: { fontSize: 28, fontWeight: typography.weight.bold, marginBottom: 8 },
   subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 32 },
   features: { gap: 12, marginBottom: 32 },
   featureCard: {
@@ -80,7 +82,7 @@ const styles = StyleSheet.create({
   },
   featureIcon: { fontSize: 28, marginRight: 16 },
   featureText: { flex: 1 },
-  featureTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
+  featureTitle: { fontSize: 16, fontWeight: typography.weight.semibold, marginBottom: 4 },
   featureDesc: { fontSize: 14, lineHeight: 20 },
   startButton: {
     borderRadius: 12,
@@ -88,6 +90,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  startButtonText: { fontSize: 17, fontWeight: '600' },
+  startButtonText: { fontSize: 17, fontWeight: typography.weight.semibold },
   notice: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
 });

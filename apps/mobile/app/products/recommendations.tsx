@@ -21,7 +21,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../components/ui';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
@@ -240,7 +240,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
               ]}
               onPress={() => router.push('/(analysis)/skin')}
             >
-              <Text style={{ color: brand.primaryForeground, fontWeight: '600', fontSize: typography.size.sm }}>
+              <Text style={{ color: brand.primaryForeground, fontWeight: typography.weight.semibold, fontSize: typography.size.sm }}>
                 분석 시작하기
               </Text>
             </Pressable>
@@ -289,7 +289,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                   style={{
                     fontSize: typography.size.xs,
                     color: brand.primary,
-                    fontWeight: '600',
+                    fontWeight: typography.weight.semibold,
                   }}
                 >
                   전체 보기
@@ -413,7 +413,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
             <Text
               style={{
                 fontSize: typography.size.base,
-                fontWeight: '600',
+                fontWeight: typography.weight.semibold,
                 color: colors.foreground,
                 marginTop: spacing.md,
               }}
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   },
   heroTagText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   center: {
     alignItems: 'center',

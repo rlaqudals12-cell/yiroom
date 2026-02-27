@@ -48,7 +48,7 @@ const PERIOD_TABS: { key: HistoryPeriod; label: string }[] = [
 ];
 
 export default function AnalysisHistoryScreen(): React.JSX.Element {
-  const { colors, status, brand } = useTheme();
+  const { colors, status, brand, typography } = useTheme();
   const params = useLocalSearchParams<{ module?: string }>();
 
   // 초기 모듈 필터: URL 파라미터로 전달 가능
@@ -117,7 +117,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
         <Text
           style={{
             fontSize: typography.size.base,
-            fontWeight: '600',
+            fontWeight: typography.weight.semibold,
             color: colors.foreground,
             marginBottom: spacing.xs,
           }}
@@ -167,7 +167,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
               <Text
                 style={{
                   fontSize: typography.size.xs,
-                  fontWeight: '600',
+                  fontWeight: typography.weight.semibold,
                   color:
                     selectedModule === tab.key
                       ? colors.overlayForeground
@@ -231,7 +231,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
             <Text
               style={{
                 fontSize: typography.size.xs,
-                fontWeight: '600',
+                fontWeight: typography.weight.semibold,
                 color: brand.primary,
                 marginLeft: 4,
               }}
@@ -280,7 +280,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
             style={[styles.retryButton, { backgroundColor: brand.primary, borderRadius: radii.md }]}
             onPress={refetch}
           >
-            <Text style={{ color: colors.overlayForeground, fontSize: typography.size.sm, fontWeight: '600' }}>
+            <Text style={{ color: colors.overlayForeground, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
               다시 시도
             </Text>
           </Pressable>

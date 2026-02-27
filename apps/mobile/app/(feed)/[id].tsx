@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import type { FeedItem } from '../../lib/feed/types';
 import { useClerkSupabaseClient } from '../../lib/supabase';
@@ -47,7 +47,7 @@ interface Comment {
 }
 
 export default function FeedDetailScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUser();
@@ -477,14 +477,14 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   userMeta: {
     marginLeft: 12,
   },
   userName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   timestamp: {
     fontSize: 13,
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   },
   levelText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   postContent: {
     marginBottom: 16,
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   },
   typeLabel: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   contentText: {
     fontSize: 16,
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
   },
   commentsTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   emptyComments: {
     padding: 32,
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   },
   commentAvatarText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   commentContent: {
     flex: 1,
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
   },
   commentUserName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   commentTime: {
     fontSize: 12,
@@ -619,6 +619,6 @@ const styles = StyleSheet.create({
   sendButtonDisabled: {},
   sendButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

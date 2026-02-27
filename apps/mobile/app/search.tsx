@@ -35,6 +35,7 @@ import {
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { moduleColors, statusColors, typography} from '@/lib/theme';
 import { useTheme } from '@/lib/theme';
 import { TIMING } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -47,16 +48,17 @@ interface SearchResult {
   route: string;
 }
 
+// 카테고리별 색상: module 토큰 및 status 토큰 사용
 const CATEGORY_CONFIG: Record<
   SearchResult['type'],
   { label: string; icon: typeof Sparkles; color: string }
 > = {
-  analysis: { label: '분석', icon: Sparkles, color: '#8b5cf6' },
-  product: { label: '제품', icon: Package, color: '#ec4899' },
-  closet: { label: '옷장', icon: Shirt, color: '#f59e0b' },
-  workout: { label: '운동', icon: Dumbbell, color: '#10b981' },
-  nutrition: { label: '영양', icon: Apple, color: '#ef4444' },
-  feed: { label: '피드', icon: MessageSquare, color: '#3b82f6' },
+  analysis: { label: '분석', icon: Sparkles, color: moduleColors.body.dark },
+  product: { label: '제품', icon: Package, color: moduleColors.personalColor.dark },
+  closet: { label: '옷장', icon: Shirt, color: statusColors.warning },
+  workout: { label: '운동', icon: Dumbbell, color: moduleColors.workout.dark },
+  nutrition: { label: '영양', icon: Apple, color: statusColors.error },
+  feed: { label: '피드', icon: MessageSquare, color: statusColors.info },
 };
 
 const QUICK_SEARCHES = [
@@ -238,7 +240,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
           <View style={{ flex: 1, marginLeft: spacing.sm }}>
             <Text
               numberOfLines={1}
-              style={{ fontSize: typography.size.sm, fontWeight: '600', color: colors.foreground }}
+              style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground }}
             >
               {item.title}
             </Text>
@@ -255,7 +257,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
               { backgroundColor: config.color + '15', borderRadius: radii.sm },
             ]}
           >
-            <Text style={{ fontSize: 10, color: config.color, fontWeight: '600' }}>
+            <Text style={{ fontSize: 10, color: config.color, fontWeight: typography.weight.semibold }}>
               {config.label}
             </Text>
           </View>
@@ -386,7 +388,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
                 <Text
                   style={{
                     fontSize: typography.size.base,
-                    fontWeight: '600',
+                    fontWeight: typography.weight.semibold,
                     color: colors.foreground,
                     marginTop: spacing.md,
                   }}

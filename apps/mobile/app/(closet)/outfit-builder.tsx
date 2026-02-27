@@ -18,8 +18,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { useTheme, brand } from '../../lib/theme';
-import { spacing, radii, typography } from '../../lib/theme';
+import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
 import { useCloset, useSavedOutfits } from '../../lib/inventory/useInventory';
 import type {
   ClothingCategory,
@@ -54,7 +53,7 @@ const CATEGORY_EMOJIS: Record<ClothingCategory, string> = {
 };
 
 export default function OutfitBuilderScreen(): React.JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, typography } = useTheme();
   const router = useRouter();
   const { items, isLoading } = useCloset();
   const { saveOutfit } = useSavedOutfits();
@@ -432,7 +431,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.sm,
   },
   previewRow: {
@@ -476,7 +475,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: typography.size.sm,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
   },
   textInput: {
@@ -499,12 +498,12 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: typography.size.xs,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   // 카테고리
   sectionHeader: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
@@ -527,7 +526,7 @@ const styles = StyleSheet.create({
   },
   categoryName: {
     fontSize: typography.size.sm,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   categoryCount: {
     fontSize: typography.size.xs,
@@ -542,7 +541,7 @@ const styles = StyleSheet.create({
   },
   selectedBadgeText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   // 아이템 그리드
   itemGrid: {
@@ -573,7 +572,7 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: typography.size.xs,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     padding: 6,
   },
   checkMark: {
@@ -605,6 +604,6 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

@@ -5,7 +5,7 @@
  */
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import { MetricDelta } from './ScoreChangeBadge';
 
@@ -23,7 +23,7 @@ export interface MetricBarProps {
 }
 
 export function MetricBar({ label, value, delta, testID }: MetricBarProps) {
-  const { colors, status } = useTheme();
+  const { colors, status, typography } = useTheme();
 
   // 값에 따른 상태 색상 (70+: 좋음, 50-69: 보통, <50: 주의)
   const barColor = value >= 70 ? status.success : value >= 50 ? status.warning : status.error;
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   },
   metricValue: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   metricBarBg: {
     height: 8,

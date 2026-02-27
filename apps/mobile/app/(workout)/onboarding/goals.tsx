@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 const GOALS = [
   {
@@ -48,7 +48,7 @@ const GOALS = [
 ];
 
 export default function WorkoutGoalsScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
   const toggleGoal = (goalId: string) => {
@@ -132,7 +132,7 @@ export default function WorkoutGoalsScreen() {
 const styles = StyleSheet.create({
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   subtitle: {
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   goalLabel: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 2,
   },
   goalLabelSelected: {},
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   checkboxSelected: {},
   checkmark: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   footer: {
     position: 'absolute',
@@ -198,6 +198,6 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

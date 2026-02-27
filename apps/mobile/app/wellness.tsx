@@ -9,8 +9,7 @@ import { TrendingUp, Target, Dumbbell, Apple, Sparkles } from 'lucide-react-nati
 
 import { WellnessScoreRing, AchievementGrid } from '../components/profile';
 import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../hooks';
-import { useTheme, brand } from '../lib/theme';
-import { spacing, radii, typography } from '../lib/theme';
+import { useTheme, brand, typography, spacing, radii } from '../lib/theme';
 import { ScreenContainer } from '../components/ui';
 
 // 영역별 개선 가이드
@@ -66,7 +65,7 @@ function getImprovementTips(
 }
 
 export default function WellnessScorePage(): React.JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, typography } = useTheme();
   const { personalColor, skinAnalysis, bodyAnalysis, refetch: refetchAnalyses } = useUserAnalyses();
   const { streak: workoutStreak, refetch: refetchWorkout } = useWorkoutData();
   const { streak: nutritionStreak, refetch: refetchNutrition } = useNutritionData();
@@ -304,7 +303,7 @@ const styles = StyleSheet.create({
   },
   levelTitle: {
     fontSize: typography.size.lg,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   levelXp: {
     fontSize: typography.size.sm,
@@ -327,7 +326,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.sm,
   },
   breakdownRow: {
@@ -347,7 +346,7 @@ const styles = StyleSheet.create({
   },
   breakdownText: {
     fontSize: typography.size.sm,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   breakdownWeight: {
     fontSize: typography.size.xs,
@@ -370,7 +369,7 @@ const styles = StyleSheet.create({
   },
   breakdownScore: {
     fontSize: typography.size.sm,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     width: 28,
     textAlign: 'right',
   },
@@ -408,7 +407,7 @@ const styles = StyleSheet.create({
   },
   guideArea: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   guideTip: {
     fontSize: typography.size.sm,
@@ -428,6 +427,6 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

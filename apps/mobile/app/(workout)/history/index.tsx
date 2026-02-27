@@ -10,7 +10,7 @@ import Animated from 'react-native-reanimated';
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { staggeredEntry } from '@/lib/animations';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
@@ -36,7 +36,7 @@ interface WeeklyStats {
 }
 
 export default function WorkoutHistoryScreen() {
-  const { colors, spacing, module: moduleColors } = useTheme();
+  const { colors, spacing, module: moduleColors, typography } = useTheme();
   const workoutColor = moduleColors.workout.base;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   },
   statsTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   statsGrid: {
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 4,
   },
   statLabel: {
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   logCard: {
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   },
   logDate: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   logStats: {
     flexDirection: 'row',
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   },
   logStatValue: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   logStatLabel: {
     fontSize: 12,

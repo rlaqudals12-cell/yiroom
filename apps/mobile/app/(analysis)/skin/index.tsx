@@ -7,10 +7,10 @@ import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 export default function SkinAnalysisScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
 
   const handleStartAnalysis = () => {
     router.push('/(analysis)/skin/camera');
@@ -75,6 +75,8 @@ export default function SkinAnalysisScreen() {
         <Pressable
           style={[styles.startButton, { backgroundColor: brand.primary }]}
           onPress={handleStartAnalysis}
+          accessibilityRole="button"
+          accessibilityLabel="피부 분석 시작하기"
         >
           <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>
             피부 분석 시작하기
@@ -123,11 +125,11 @@ const styles = StyleSheet.create({
   },
   iconText: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 12,
   },
   subtitle: {
@@ -142,7 +144,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 16,
   },
   itemList: {
@@ -161,7 +163,7 @@ const styles = StyleSheet.create({
   },
   itemLabel: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 2,
   },
   itemDescription: {
@@ -189,6 +191,6 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

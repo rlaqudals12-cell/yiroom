@@ -14,7 +14,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, getTierLabel, type RankingEntry } from '../../../lib/social';
@@ -27,7 +27,7 @@ import {
 type TabType = 'all' | 'friends';
 
 export default function LeaderboardScreen() {
-  const { colors, brand, module: moduleColors } = useTheme();
+  const { colors, brand, module: moduleColors, typography } = useTheme();
   const { user } = useUser();
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   myRankValue: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   percentileContainer: {
     backgroundColor: 'rgba(255,255,255,0.2)',
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   },
   percentileValue: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   tabTextActive: {},
   listContent: {
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   rankText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   rankTextMedal: {
     fontSize: 22,
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   tierDot: {
     position: 'absolute',
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   userNameMe: {},
   userMeta: {
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   },
   tierText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   levelText: {
     fontSize: 12,
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   },
   scoreValue: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   scoreLabel: {
     fontSize: 11,

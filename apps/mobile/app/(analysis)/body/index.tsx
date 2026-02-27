@@ -17,10 +17,10 @@ import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 export default function BodyAnalysisScreen() {
-  const { colors, module } = useTheme();
+  const { colors, module, typography } = useTheme();
   const accent = module.body;
 
   const [height, setHeight] = useState('');
@@ -116,6 +116,7 @@ export default function BodyAnalysisScreen() {
               onChangeText={setHeight}
               keyboardType="numeric"
               maxLength={5}
+              accessibilityLabel="키 입력, cm"
             />
           </View>
 
@@ -136,6 +137,7 @@ export default function BodyAnalysisScreen() {
               onChangeText={setWeight}
               keyboardType="numeric"
               maxLength={5}
+              accessibilityLabel="체중 입력, kg"
             />
           </View>
         </Animated.View>
@@ -154,6 +156,8 @@ export default function BodyAnalysisScreen() {
               imageUri && [styles.imagePickerButtonSelected, { borderColor: accent.base, backgroundColor: colors.muted }],
             ]}
             onPress={pickImage}
+            accessibilityRole="button"
+            accessibilityLabel={imageUri ? '사진이 선택됨, 다시 선택하기' : '갤러리에서 전신 사진 선택'}
           >
             {imageUri ? (
               <Text style={[styles.imagePickerTextSelected, { color: accent.base }]}>사진이 선택되었습니다</Text>
@@ -197,6 +201,9 @@ export default function BodyAnalysisScreen() {
           ]}
           onPress={handleAnalyze}
           disabled={!height || !weight || !imageUri}
+          accessibilityRole="button"
+          accessibilityLabel="체형 분석하기"
+          accessibilityState={{ disabled: !height || !weight || !imageUri }}
         >
           <Text style={[styles.analyzeButtonText, { color: colors.card }]}>체형 분석하기</Text>
         </Pressable>
@@ -218,7 +225,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   subtitle: {
@@ -232,7 +239,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 16,
   },
   cardDescription: {
@@ -273,7 +280,7 @@ const styles = StyleSheet.create({
   },
   imagePickerTextSelected: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   guideBox: {
     borderRadius: 12,
@@ -281,7 +288,7 @@ const styles = StyleSheet.create({
   },
   guideTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   guideText: {
@@ -306,6 +313,6 @@ const styles = StyleSheet.create({
   },
   analyzeButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

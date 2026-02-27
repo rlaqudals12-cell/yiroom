@@ -16,14 +16,14 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import { getCoachSessions, deleteCoachSession, type CoachSession } from '../../lib/coach';
 import { useClerkSupabaseClient } from '../../lib/supabase';
 
 export default function CoachHistoryScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
   newSessionButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   listHeader: {
     fontSize: 13,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   },
   sessionTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     marginBottom: 4,
   },
   sessionMeta: {
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptyHint: {

@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { ScreenContainer } from '../../components/ui';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import type { Season as ClothingSeason } from '../../lib/inventory/types';
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
@@ -69,7 +69,7 @@ function WeatherIcon({ condition, color }: { condition: string; color: string })
 }
 
 export default function RecommendScreen() {
-  const { colors, module: moduleTheme, status } = useTheme();
+  const { colors, module: moduleTheme, status, typography } = useTheme();
   const router = useRouter();
 
   // 실제 사용자 분석 결과에서 가져오기
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   outfitSection: {
     marginBottom: 16,
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
   },
   outfitTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   scoreCircle: {
     width: 44,
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
   },
   scoreCircleText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   outfitGrid: {
     flexDirection: 'row',
@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
   },
   outfitItemName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 6,
   },
   scoreContainer: {
@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
   },
   tipsTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   tipText: {
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 16,
   },
   summaryRow: {
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   summaryLabel: {
     fontSize: 12,
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptySubtext: {
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
   },
   emptyButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   saveOutfitButton: {
     flexDirection: 'row',
@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
   },
   saveOutfitButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   refreshButton: {
     position: 'absolute',

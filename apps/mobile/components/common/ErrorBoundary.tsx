@@ -8,7 +8,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 import { errorLogger } from '../../lib/utils/logger';
 
 interface ErrorBoundaryProps {
@@ -67,7 +67,7 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
 }
 
 function ErrorFallbackContent({ error, onRetry }: { error: Error | null; onRetry: () => void }) {
-  const { colors, brand, status } = useTheme();
+  const { colors, brand, status, typography } = useTheme();
 
   return (
     <SafeAreaView
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
     textTransform: 'uppercase',
   },
@@ -151,6 +151,6 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

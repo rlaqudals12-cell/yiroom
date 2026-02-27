@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useCallback } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 
-import { useTheme } from '../../../lib/theme';
+import { useTheme, typography} from '../../../lib/theme';
 
 import { EmptyState } from '../../common';
 
@@ -59,7 +59,7 @@ export function ReviewList({
   onEdit,
   onDelete,
 }: ReviewListProps) {
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
   const handleSortPress = useCallback(
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   sortTextSelectedBold: {
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   emptyList: {
     flex: 1,
@@ -238,6 +238,6 @@ const styles = StyleSheet.create({
   },
   loadMoreText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
 });

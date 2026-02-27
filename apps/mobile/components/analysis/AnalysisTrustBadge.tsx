@@ -6,7 +6,7 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 export type TrustBadgeType = 'ai' | 'fallback' | 'questionnaire';
 
@@ -33,7 +33,7 @@ export function AnalysisTrustBadge({
   label,
   testID = 'analysis-trust-badge',
 }: AnalysisTrustBadgeProps) {
-  const { status, isDark } = useTheme();
+  const { status, isDark, typography } = useTheme();
 
   // AI 타입이고 confidence가 있으면 퍼센트 표시
   const displayLabel =
@@ -77,6 +77,6 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
 });

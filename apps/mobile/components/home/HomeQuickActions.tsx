@@ -8,7 +8,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { GlassCard, AnimatedCard } from '../ui';
 import { GradientBackground } from '../ui';
 import { SectionHeader } from '../ui';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 
 interface QuickAction {
@@ -95,7 +95,7 @@ export function HomeQuickActions({
                     }}
                   />
                   {action.completed && (
-                    <Text style={{ fontSize: 12, color: status.success, fontWeight: '600' }}>
+                    <Text style={{ fontSize: 12, color: status.success, fontWeight: typography.weight.semibold }}>
                       ✓
                     </Text>
                   )}
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   coachTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 2,
   },
   coachSubtitle: {

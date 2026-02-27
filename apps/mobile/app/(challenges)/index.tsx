@@ -18,7 +18,7 @@ import Animated from 'react-native-reanimated';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { staggeredEntry } from '@/lib/animations';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -37,7 +37,7 @@ import { useChallenges, useJoinChallenge } from '../../lib/challenges/useChallen
 type TabType = 'explore' | 'my';
 
 export default function ChallengesScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabType>('explore');
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   statLabel: {
     fontSize: 12,
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   tabActive: {},
   tabText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   tabTextActive: {},
   listContent: {
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
   },
   domainBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   difficultyBadge: {
     paddingHorizontal: 10,
@@ -401,11 +401,11 @@ const styles = StyleSheet.create({
   },
   difficultyBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   cardTitle: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 4,
   },
   cardDescription: {
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   },
   joinButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   emptyContainer: {
     flex: 1,
@@ -474,6 +474,6 @@ const styles = StyleSheet.create({
   },
   emptyButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

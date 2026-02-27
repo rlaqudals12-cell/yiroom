@@ -19,7 +19,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { staggeredEntry } from '@/lib/animations';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { nutritionLogger } from '../../../lib/utils/logger';
 
@@ -260,7 +260,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
           <Text
             style={{
               fontSize: typography.size.sm,
-              color: fastingState === 'fasting' ? 'rgba(255,255,255,0.8)' : colors.mutedForeground,
+              color: fastingState === 'fasting' ? `${colors.overlayForeground}CC` : colors.mutedForeground,
               marginTop: spacing.xs,
             }}
           >
@@ -274,7 +274,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
             <View
               style={[
                 styles.progressBar,
-                { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: radii.sm, marginTop: spacing.md },
+                { backgroundColor: `${colors.overlayForeground}33`, borderRadius: radii.sm, marginTop: spacing.md },
               ]}
             >
               <View
@@ -295,7 +295,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
             style={[
               styles.actionButton,
               {
-                backgroundColor: fastingState === 'fasting' ? 'rgba(255,255,255,0.25)' : nutritionColor,
+                backgroundColor: fastingState === 'fasting' ? `${colors.overlayForeground}40` : nutritionColor,
                 borderRadius: radii.lg,
                 marginTop: spacing.lg,
               },
@@ -367,7 +367,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                     <Text
                       style={{
                         fontSize: typography.size.xs,
-                        color: isSelected ? 'rgba(255,255,255,0.8)' : colors.mutedForeground,
+                        color: isSelected ? `${colors.overlayForeground}CC` : colors.mutedForeground,
                         marginTop: 2,
                       }}
                     >
@@ -435,7 +435,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                   </View>
                   <View style={{ flex: 1, marginLeft: spacing.sm }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text style={{ fontSize: typography.size.sm, fontWeight: '600', color: colors.foreground }}>
+                      <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground }}>
                         {pattern?.label ?? log.pattern}
                       </Text>
                       {log.completed && (
@@ -445,7 +445,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                             { backgroundColor: status.success + '20', borderRadius: radii.sm, marginLeft: spacing.xs },
                           ]}
                         >
-                          <Text style={{ fontSize: 10, color: status.success, fontWeight: '600' }}>
+                          <Text style={{ fontSize: 10, color: status.success, fontWeight: typography.weight.semibold }}>
                             완료
                           </Text>
                         </View>
@@ -471,7 +471,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
             <Text
               style={{
                 fontSize: typography.size.base,
-                fontWeight: '600',
+                fontWeight: typography.weight.semibold,
                 color: colors.foreground,
                 marginTop: spacing.md,
               }}
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   patternGrid: {
     flexDirection: 'row',

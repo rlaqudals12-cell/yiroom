@@ -43,7 +43,7 @@ interface WaterRecord {
 }
 
 export default function WaterTrackingScreen() {
-  const { colors, status } = useTheme();
+  const { colors, status, typography } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   progressValue: {
     fontSize: 42,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 12,
   },
   progressBarContainer: {
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   drinkTypeGrid: {
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   },
   quickAddText: {
     fontSize: typography.size.lg,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   quickAddUnit: {
     fontSize: typography.size.xs,
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   },
   recordAmount: {
     fontSize: typography.size.sm,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   deleteHint: {
     fontSize: typography.size.xs,

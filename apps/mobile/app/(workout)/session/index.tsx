@@ -13,7 +13,7 @@ import { staggeredEntry } from '@/lib/animations';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { useWorkoutData, type WorkoutExercise } from '@/hooks/useWorkoutData';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 // 플랜이 없을 때 사용하는 기본 운동
 const DEFAULT_EXERCISES: WorkoutExercise[] = [
@@ -26,7 +26,7 @@ const DEFAULT_EXERCISES: WorkoutExercise[] = [
 type SessionState = 'ready' | 'exercising' | 'resting' | 'completed';
 
 export default function WorkoutSessionScreen() {
-  const { colors, isDark, spacing, module: moduleColors } = useTheme();
+  const { colors, isDark, spacing, module: moduleColors, typography } = useTheme();
   const workoutColor = moduleColors.workout.base;
   const { todayWorkout, isLoading: workoutLoading } = useWorkoutData();
 
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
   timerText: {
     fontSize: 72,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 16,
   },
   timerSmall: {
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   },
   exerciseName: {
     fontSize: 36,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   setInfo: {
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   },
   repsText: {
     fontSize: 72,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   footer: {
     padding: 20,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   },
   completeButtonText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   progressBar: {
     height: 4,
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   },
   readyTitle: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -422,12 +422,12 @@ const styles = StyleSheet.create({
   previewNumber: {
     width: 32,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   previewName: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   previewSets: {
     fontSize: 14,
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   completedContent: {
     flex: 1,
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
   },
   completedTitle: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   completedSubtitle: {
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 4,
   },
   statLabel: {
@@ -484,6 +484,6 @@ const styles = StyleSheet.create({
   },
   finishButtonText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

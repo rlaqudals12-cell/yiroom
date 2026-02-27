@@ -16,7 +16,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import {
@@ -26,7 +26,7 @@ import {
 } from '../../lib/notifications/useNotifications';
 
 export default function NotificationsSettingsScreen() {
-  const { colors, status, module: mod } = useTheme();
+  const { colors, status, module: mod, typography } = useTheme();
 
   const {
     hasPermission,
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 2,
   },
   bannerSubtitle: {
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
     marginLeft: 4,
     textTransform: 'uppercase',
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   },
   settingsLabel: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   settingsDesc: {
     fontSize: 12,
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
   },
   intervalOptionText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   testButton: {
     borderRadius: 12,
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
   },
   testButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   infoSection: {
     paddingHorizontal: 8,

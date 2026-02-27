@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import { settingsLogger } from '../../lib/utils/logger';
@@ -38,7 +38,7 @@ const WATER_PRESETS = [1500, 2000, 2500, 3000];
 const CALORIE_PRESETS = [1500, 1800, 2000, 2500];
 
 export default function GoalsSettingsScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
 
   const [goals, setGoals] = useState<GoalSettings>(DEFAULT_GOALS);
   const [customWater, setCustomWater] = useState('');
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   card: {
     borderRadius: 12,
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   },
   presetButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   customInputRow: {
     flexDirection: 'row',
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   },
   goalLabel: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
     marginBottom: 10,
   },
   goalSelector: {
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   },
   goalOptionText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   infoSection: {
     paddingHorizontal: 8,

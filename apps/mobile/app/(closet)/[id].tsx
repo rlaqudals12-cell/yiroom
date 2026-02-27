@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { ScreenContainer } from '@/components/ui';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import {
   useCloset,
@@ -29,7 +29,7 @@ import {
 } from '../../lib/inventory';
 
 export default function ItemDetailScreen() {
-  const { colors, status, module: moduleTheme } = useTheme();
+  const { colors, status, module: moduleTheme, typography } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 4,
   },
   itemCategory: {
@@ -312,11 +312,11 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   sectionTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   tagsContainer: {
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   actionBar: {
     position: 'absolute',
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   editButton: {},
   actionButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   emptyContainer: {
     flex: 1,
@@ -377,6 +377,6 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

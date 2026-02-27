@@ -16,7 +16,7 @@ import {
   useSizeRecommendation,
   getMockSizeRecommendation,
 } from '../../lib/smart-matching/useSizeRecommendation';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 interface SizeRecommendationProps {
   brandId: string;
@@ -36,7 +36,7 @@ export function SizeRecommendation({
   productId,
   onSizeSelect,
 }: SizeRecommendationProps) {
-  const { colors, brand, status } = useTheme();
+  const { colors, brand, status, typography } = useTheme();
   const { isConnected } = useNetworkStatus();
 
   const { recommendation, isLoading, error, confidenceLabel, basisDescription, refetch } =
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   header: {
     flexDirection: 'row',
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   headerSubtitle: {
     fontSize: 12,
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   },
   confidenceBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   mainRecommendation: {
     flexDirection: 'row',
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
   },
   recommendedSizeText: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   recommendedLabel: {
     fontSize: 11,
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   },
   alternativeSize: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 4,
   },
   alternativeNote: {

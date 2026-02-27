@@ -14,14 +14,14 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, type Friend } from '../../../lib/social';
 import { useFriends, useFriendStats } from '../../../lib/social/useFriends';
 
 export default function FriendsScreen() {
-  const { colors, brand, module: moduleColors } = useTheme();
+  const { colors, brand, module: moduleColors, typography } = useTheme();
   const router = useRouter();
 
   const { friends, isLoading, refetch } = useFriends();
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   statsCard: {
     flexDirection: 'row',
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   statLabel: {
     fontSize: 12,
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   tierBadge: {
     position: 'absolute',
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   friendName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   friendLevel: {
     fontSize: 13,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptySubtext: {
@@ -292,6 +292,6 @@ const styles = StyleSheet.create({
   },
   emptyButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

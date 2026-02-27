@@ -10,7 +10,7 @@ import { router } from 'expo-router';
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 import { ScreenContainer } from '../../components/ui';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
     marginLeft: 4,
     textTransform: 'uppercase',
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   },
   settingsTitle: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   settingsSubtitle: {
     fontSize: 12,
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   },
   versionLabel: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 4,
   },
   versionText: {
@@ -284,6 +284,6 @@ const styles = StyleSheet.create({
   },
   accountOptionText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

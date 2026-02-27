@@ -5,7 +5,7 @@
 
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 interface WaterWidgetProps {
   current: number; // ml
@@ -15,7 +15,7 @@ interface WaterWidgetProps {
 }
 
 export function WaterWidget({ current, goal, onAddWater, size = 'medium' }: WaterWidgetProps) {
-  const { colors, status } = useTheme();
+  const { colors, status, typography } = useTheme();
 
   const progress = Math.min((current / goal) * 100, 100);
   const remaining = Math.max(goal - current, 0);
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   glasses: {
     fontSize: 13,
@@ -156,11 +156,11 @@ const styles = StyleSheet.create({
   },
   currentLarge: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   unit: {
     fontSize: 14,
-    fontWeight: '400',
+    fontWeight: typography.weight.normal,
   },
   goal: {
     fontSize: 13,
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   waterIcon: {
     fontSize: 36,
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   currentSmall: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   miniProgressBar: {

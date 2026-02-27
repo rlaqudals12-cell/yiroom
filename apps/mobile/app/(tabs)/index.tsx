@@ -386,7 +386,7 @@ function ModuleCard({
   };
 
   return (
-    <AnimatedCard onPress={handlePress}>
+    <AnimatedCard onPress={handlePress} accessibilityLabel={`${title} 모듈로 이동`}>
       <GradientCard variant={variant} padding={spacing.md}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{ flex: 1 }}>

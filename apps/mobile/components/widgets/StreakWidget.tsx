@@ -5,7 +5,7 @@
 
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 interface StreakWidgetProps {
   streak: number;
@@ -20,7 +20,7 @@ export function StreakWidget({
   recentBadges = [],
   size = 'medium',
 }: StreakWidgetProps) {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
 
   // 스트릭 레벨 계산
   const getStreakLevel = (days: number) => {
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   levelBadge: {
     paddingHorizontal: 10,
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   levelText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   content: {
     flexDirection: 'row',
@@ -141,14 +141,14 @@ const styles = StyleSheet.create({
   },
   streakNumber: {
     fontSize: 36,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   streakLabel: {
     fontSize: 14,
   },
   streakBig: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   longestStreak: {
     fontSize: 13,

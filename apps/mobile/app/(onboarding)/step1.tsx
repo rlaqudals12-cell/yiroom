@@ -29,7 +29,12 @@ import {
   GOAL_DESCRIPTIONS,
   GOAL_COLORS,
 } from '../../lib/onboarding';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
+
+// 온보딩 Step 1 히어로 색상 (rose-500 계열 — 목표 설정 아이덴티티)
+const STEP1_ACCENT = '#F43F5E';
+const STEP1_HERO_BG_LIGHT = '#FFF1F2';
+const STEP1_HERO_BG_DARK = `${STEP1_ACCENT}15`;
 
 // Lucide 아이콘 매핑
 const GOAL_ICON_MAP: Record<OnboardingGoal, typeof TrendingDown> = {
@@ -70,10 +75,10 @@ export default function OnboardingStep1() {
           <View
             style={[
               styles.heroHeader,
-              { backgroundColor: isDark ? '#F43F5E15' : '#FFF1F2', borderRadius: radii.xl + 8 },
+              { backgroundColor: isDark ? STEP1_HERO_BG_DARK : STEP1_HERO_BG_LIGHT, borderRadius: radii.xl + 8 },
             ]}
           >
-            <View style={[styles.heroIconWrap, { backgroundColor: '#F43F5E' }]}>
+            <View style={[styles.heroIconWrap, { backgroundColor: STEP1_ACCENT }]}>
               <Target size={36} color="#fff" strokeWidth={2} />
             </View>
             <Text style={[styles.heroTitle, { color: colors.foreground }]}>
@@ -118,6 +123,9 @@ export default function OnboardingStep1() {
                   ]}
                   onPress={() => handleToggle(goal)}
                   testID={`goal-${goal}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${GOAL_LABELS[goal]}, ${GOAL_DESCRIPTIONS[goal]}`}
+                  accessibilityState={{ selected: isSelected }}
                 >
                   {/* 그라디언트 아이콘 박스 */}
                   {isSelected ? (
@@ -225,12 +233,15 @@ export default function OnboardingStep1() {
               },
             ]}
             testID="next-button"
+            accessibilityRole="button"
+            accessibilityLabel="다음"
+            accessibilityState={{ disabled: !canProceed }}
           >
             <Text
               style={{
                 color: canProceed ? brand.primaryForeground : colors.mutedForeground,
                 fontSize: 16,
-                fontWeight: '700',
+                fontWeight: typography.weight.bold,
               }}
             >
               다음
@@ -265,7 +276,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   heroSubtitle: {

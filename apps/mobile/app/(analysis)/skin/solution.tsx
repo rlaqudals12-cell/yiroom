@@ -14,8 +14,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '../../../components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, brand } from '../../../lib/theme';
-import { spacing, radii, typography } from '../../../lib/theme';
+import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 
 // 고민 카테고리
 const CONCERN_CATEGORIES = [
@@ -197,7 +196,7 @@ const SOLUTIONS: Record<ConcernId, SolutionData> = {
 };
 
 export default function SkinSolutionScreen(): React.JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, typography } = useTheme();
   const [selectedConcern, setSelectedConcern] = useState<ConcernId>('acne');
 
   const handleSelectConcern = useCallback((id: ConcernId): void => {
@@ -369,7 +368,7 @@ const styles = StyleSheet.create({
   },
   chipLabel: {
     fontSize: typography.size.sm,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   // 설명 카드
   descCard: {
@@ -380,7 +379,7 @@ const styles = StyleSheet.create({
   },
   descTitle: {
     fontSize: typography.size.lg,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: spacing.sm,
   },
   descText: {
@@ -396,7 +395,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.sm,
   },
   // 성분 행
@@ -405,7 +404,7 @@ const styles = StyleSheet.create({
   },
   ingredientName: {
     fontSize: typography.size.base,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   ingredientEffect: {
     fontSize: typography.size.sm,

@@ -6,7 +6,7 @@
 import * as Haptics from 'expo-haptics';
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 import { widgetLogger } from '../../lib/utils/logger';
 import { WIDGET_DEEP_LINKS, QuickActionType } from '../../lib/widgets/types';
 
@@ -24,7 +24,7 @@ const QUICK_ACTIONS = [
 ];
 
 export function QuickActionsWidget({ size = 'medium', onAction }: QuickActionsWidgetProps) {
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
 
   const handlePress = async (action: QuickActionType) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   smallGrid: {
@@ -143,6 +143,6 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
 });

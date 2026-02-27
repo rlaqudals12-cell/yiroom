@@ -20,7 +20,7 @@ import { MenuCard, GradientBackground, ScreenContainer, SectionHeader } from '..
 import { useUserAnalyses } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';
 import { useCloset, useClosetMatcher, type PersonalColorSeason, type BodyType3 } from '../../lib/inventory';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 export default function StyleTab(): React.JSX.Element {
   const router = useRouter();
@@ -66,7 +66,7 @@ export default function StyleTab(): React.JSX.Element {
             <SectionHeader
               title="스타일"
               style={{ marginBottom: 4 }}
-              titleStyle={{ color: colors.overlayForeground, fontSize: 24, fontWeight: '700' }}
+              titleStyle={{ color: colors.overlayForeground, fontSize: 24, fontWeight: typography.weight.bold }}
             />
           </GradientBackground>
         </Animated.View>

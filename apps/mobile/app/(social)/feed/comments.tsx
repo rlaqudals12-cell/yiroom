@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { formatRelativeTime } from '../../../lib/feed';
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   commentCard: { padding: 12 },
   commentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 },
   commentAvatar: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  commentAvatarText: { fontSize: 12, fontWeight: '600' },
+  commentAvatarText: { fontSize: 12, fontWeight: typography.weight.semibold },
   commentUser: {},
   commentTime: { marginLeft: 'auto' },
   commentContent: { lineHeight: 20, paddingLeft: 36 },

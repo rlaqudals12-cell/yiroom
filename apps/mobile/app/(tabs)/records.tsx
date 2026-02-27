@@ -37,7 +37,7 @@ import {
 import { useWorkoutData, useNutritionData, calculateCalorieProgress } from '../../hooks';
 import type { DailyNutritionSummary, WorkoutLog } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 // 요일 라벨 (월~일)
 const DAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'];
@@ -187,7 +187,7 @@ export default function RecordsTab(): React.JSX.Element {
             <SectionHeader
               title="기록"
               style={{ marginBottom: 4 }}
-              titleStyle={{ color: colors.overlayForeground, fontSize: 24, fontWeight: '700' }}
+              titleStyle={{ color: colors.overlayForeground, fontSize: 24, fontWeight: typography.weight.bold }}
             />
           </GradientBackground>
         </Animated.View>
@@ -259,15 +259,17 @@ export default function RecordsTab(): React.JSX.Element {
 
           {/* 칼로리 진행률 바 */}
           {!isLoading && (
-            <GradientProgressBar
-              value={todaySummary?.totalCalories || 0}
-              max={calorieGoal}
-              moduleColor="nutrition"
-              animated
-              showLabel
-              style={{ marginTop: spacing.sm }}
-              testID="calorie-progress-bar"
-            />
+            <View accessibilityLabel={`칼로리 진행률 ${calorieProgress}%, ${todaySummary?.totalCalories || 0}kcal / ${calorieGoal}kcal`}>
+              <GradientProgressBar
+                value={todaySummary?.totalCalories || 0}
+                max={calorieGoal}
+                moduleColor="nutrition"
+                animated
+                showLabel
+                style={{ marginTop: spacing.sm }}
+                testID="calorie-progress-bar"
+              />
+            </View>
           )}
         </Animated.View>
 
@@ -286,6 +288,7 @@ export default function RecordsTab(): React.JSX.Element {
                 alignItems: 'center',
                 justifyContent: 'space-between',
               }}
+              accessibilityLabel={`수분 섭취 ${waterIntake}ml, 목표 ${nutritionSettings?.waterGoal || 2000}ml`}
             >
               <View style={styles.waterLeft}>
                 <View

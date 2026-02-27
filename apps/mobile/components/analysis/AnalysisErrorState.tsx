@@ -7,7 +7,7 @@
  */
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 export interface AnalysisErrorStateProps {
   /** 에러 메시지 */
@@ -29,7 +29,7 @@ export function AnalysisErrorState({
   onGoHome,
   testID = 'analysis-error',
 }: AnalysisErrorStateProps) {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
 
   return (
     <View
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   homeButton: {
     borderWidth: 1,

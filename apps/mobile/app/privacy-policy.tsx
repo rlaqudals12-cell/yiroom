@@ -8,12 +8,12 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '../lib/theme';
+import { useTheme, typography} from '../lib/theme';
 
 type Lang = 'ko' | 'en';
 
 export default function PrivacyPolicyScreen() {
-  const { colors, brand: brandColors, radii } = useTheme();
+  const { colors, brand: brandColors, radii, typography } = useTheme();
   const [lang, setLang] = useState<Lang>('ko');
 
   return (
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
   },
   langButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   lastUpdated: {
     fontSize: 14,
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   paragraph: {
@@ -673,7 +673,7 @@ const styles = StyleSheet.create({
   },
   infoTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   infoText: {
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#F8C8DC',
     marginTop: 8,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   warningBox: {
     marginTop: 12,

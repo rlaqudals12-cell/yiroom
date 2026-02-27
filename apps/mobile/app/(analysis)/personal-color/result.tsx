@@ -32,7 +32,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { savePersonalColorResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { TIMING } from '@/lib/animations';
 
 // --- 정적 데이터 ---
@@ -115,7 +115,7 @@ const SEASON_DATA: Record<PersonalColorSeason, SeasonInfo> = {
 
 export default function PersonalColorResultScreen(): React.JSX.Element {
   const { module } = useAnalysisStyles();
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
   const accent = module.personalColor;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -466,7 +466,7 @@ const localStyles = StyleSheet.create({
   },
   seasonName: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   subType: {
     fontSize: 14,
@@ -486,7 +486,7 @@ const localStyles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 14,
   },
   sectionDescription: {
@@ -506,7 +506,7 @@ const localStyles = StyleSheet.create({
   },
   tagText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   metricsContainer: {
     gap: 14,
@@ -539,7 +539,7 @@ const localStyles = StyleSheet.create({
   },
   makeupTipLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   makeupTipValue: {
     fontSize: 14,

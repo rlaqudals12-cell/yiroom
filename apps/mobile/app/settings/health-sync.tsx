@@ -17,11 +17,11 @@ import {
 } from 'react-native';
 
 import { useHealthData } from '@/hooks/useHealthData';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 export default function HealthSyncScreen() {
-  const { colors, brand, status } = useTheme();
+  const { colors, brand, status, typography } = useTheme();
 
   const {
     isAvailable,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 4,
   },
   cardSubtitle: {
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   statLabel: {
     fontSize: 12,
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   syncButtonText: {
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     fontSize: 14,
   },
   footer: {

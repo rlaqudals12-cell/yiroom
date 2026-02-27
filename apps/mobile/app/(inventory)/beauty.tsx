@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../components/ui';
 import { useInventory, type InventoryItem, type BeautyMetadata } from '@/lib/inventory';
@@ -330,7 +330,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             <Text
               style={{
                 fontSize: typography.size.xs,
-                fontWeight: '600',
+                fontWeight: typography.weight.semibold,
                 color:
                   selectedFilter === f.key
                     ? colors.overlayForeground
@@ -367,7 +367,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
               <Text
                 style={{
                   fontSize: typography.size.base,
-                  fontWeight: '600',
+                  fontWeight: typography.weight.semibold,
                   color: colors.foreground,
                   marginBottom: spacing.xs,
                 }}

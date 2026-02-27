@@ -5,10 +5,10 @@ import { router } from 'expo-router';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 export default function WorkoutOnboardingScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
 
   const handleStart = () => {
     router.push('/(workout)/onboarding/goals');
@@ -126,11 +126,11 @@ const styles = StyleSheet.create({
   },
   iconText: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 12,
   },
   subtitle: {
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 16,
   },
   featureList: {
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   featureTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 2,
   },
   featureDescription: {
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   stepNumberText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   stepTitle: {
     fontSize: 15,
@@ -207,6 +207,6 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

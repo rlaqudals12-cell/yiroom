@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Image, Alert } from 'react-native';
 
-import { useTheme } from '../../../lib/theme';
+import { useTheme, typography} from '../../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -48,7 +48,7 @@ export function ReviewCard({
   onEdit,
   onDelete,
 }: ReviewCardProps) {
-  const { colors, status } = useTheme();
+  const { colors, status, typography } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
   const [isHelpful, setIsHelpful] = useState(review.isHelpful || false);
   const [helpfulCount, setHelpfulCount] = useState(review.helpfulCount);
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   userMeta: {
     marginLeft: 12,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   verifiedBadge: {
     paddingHorizontal: 6,
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   },
   verifiedText: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   date: {
     fontSize: 12,
@@ -300,12 +300,12 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginLeft: 8,
   },
   title: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 4,
   },
   content: {
@@ -339,6 +339,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   helpfulTextActiveBold: {
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
 });

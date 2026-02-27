@@ -15,14 +15,14 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, type UserSearchResult } from '../../../lib/social';
 import { useUserSearch } from '../../../lib/social/useFriends';
 
 export default function FriendSearchScreen() {
-  const { colors, brand, status, module: moduleColors } = useTheme();
+  const { colors, brand, status, module: moduleColors, typography } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const { results, isLoading, error, search, sendRequest, clear } = useUserSearch();
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   },
   searchButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   loadingContainer: {
     flex: 1,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   tierBadge: {
     position: 'absolute',
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   userLevel: {
     fontSize: 13,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   },
   statusBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   emptyContainer: {
     flex: 1,

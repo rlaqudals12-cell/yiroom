@@ -14,8 +14,7 @@ import {
 import { router } from 'expo-router';
 import { Heart, Trash2, ShoppingBag } from 'lucide-react-native';
 
-import { useTheme, brand } from '../../lib/theme';
-import { spacing, radii, typography } from '../../lib/theme';
+import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
 import {
   useFavoritesStore,
   type FavoriteItem,
@@ -37,7 +36,7 @@ const TYPE_EMOJIS: Record<FavoriteProductType, string> = {
 };
 
 export default function WishlistScreen(): React.JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, typography } = useTheme();
   const items = useFavoritesStore((s) => s.items);
   const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
   const clearAll = useFavoritesStore((s) => s.clearAll);
@@ -235,7 +234,7 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     fontSize: typography.size.lg,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   typeCountRow: {
     flexDirection: 'row',
@@ -269,7 +268,7 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   itemBrand: {
     fontSize: typography.size.sm,
@@ -291,7 +290,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: typography.size.sm,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   // 빈 상태
   emptyContainer: {
@@ -300,7 +299,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: typography.size.lg,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginTop: spacing.md,
     marginBottom: spacing.xs,
   },
@@ -317,6 +316,6 @@ const styles = StyleSheet.create({
   },
   browseBtnText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

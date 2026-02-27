@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Pressable, Text, StyleSheet, AccessibilityProps } from 'react-native';
 
-import { useTheme } from '../../../lib/theme';
+import { useTheme, typography} from '../../../lib/theme';
 import { statusColors } from '../../../lib/theme/tokens';
 
 import { useAppPreferencesStore } from '@/lib/stores';
@@ -44,7 +44,7 @@ export function StarRating({
   showAverage = false,
   ...accessibilityProps
 }: StarRatingProps) {
-  const { colors, status } = useTheme();
+  const { colors, status, typography } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
   const isEditable = !!onRatingChange;
   const starSize = SIZES[size];
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   averageText: {
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   countText: {
     marginLeft: 4,

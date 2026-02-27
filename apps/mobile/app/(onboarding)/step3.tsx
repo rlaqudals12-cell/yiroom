@@ -31,7 +31,12 @@ import {
   GOAL_LABELS,
   calculateAge,
 } from '../../lib/onboarding';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
+
+// 온보딩 Step 3 히어로 색상 (violet-500 계열 — 선호도 아이덴티티)
+const STEP3_ACCENT = '#8B5CF6';
+const STEP3_HERO_BG_LIGHT = '#F5F3FF';
+const STEP3_HERO_BG_DARK = `${STEP3_ACCENT}15`;
 
 const WORKOUT_FREQUENCIES: WorkoutFrequency[] = ['none', '1-2', '3-4', '5+'];
 const MEAL_PREFERENCES: MealPreference[] = ['regular', 'intermittent', 'low_carb', 'high_protein'];
@@ -75,6 +80,8 @@ export default function OnboardingStep3() {
             { opacity: pressed ? 0.6 : 1 },
           ]}
           testID="mini-back-button"
+          accessibilityRole="button"
+          accessibilityLabel="이전 단계로 돌아가기"
         >
           <ChevronLeft size={20} color={colors.foreground} strokeWidth={2} />
           <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>이전</Text>
@@ -85,10 +92,10 @@ export default function OnboardingStep3() {
           <View
             style={[
               styles.heroHeader,
-              { backgroundColor: isDark ? '#8B5CF615' : '#F5F3FF', borderRadius: radii.xl + 8 },
+              { backgroundColor: isDark ? STEP3_HERO_BG_DARK : STEP3_HERO_BG_LIGHT, borderRadius: radii.xl + 8 },
             ]}
           >
-            <View style={[styles.heroIconWrap, { backgroundColor: '#8B5CF6' }]}>
+            <View style={[styles.heroIconWrap, { backgroundColor: STEP3_ACCENT }]}>
               <Flag size={36} color="#fff" strokeWidth={2} />
             </View>
             <Text style={[styles.heroTitle, { color: colors.foreground }]}>
@@ -140,6 +147,9 @@ export default function OnboardingStep3() {
                     ]}
                     onPress={() => handleFrequencySelect(freq)}
                     testID={`frequency-${freq}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={WORKOUT_FREQUENCY_LABELS[freq]}
+                    accessibilityState={{ selected: isSelected }}
                   >
                     <Text
                       style={{
@@ -199,6 +209,9 @@ export default function OnboardingStep3() {
                     ]}
                     onPress={() => handleMealSelect(pref)}
                     testID={`meal-${pref}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={MEAL_PREFERENCE_LABELS[pref]}
+                    accessibilityState={{ selected: isSelected }}
                   >
                     <Text
                       style={{
@@ -259,6 +272,8 @@ export default function OnboardingStep3() {
                   trackColor={{ false: colors.border, true: brand.primary }}
                   thumbColor={colors.card}
                   testID="notifications-switch"
+                  accessibilityLabel="알림 받기"
+                  accessibilityRole="switch"
                 />
               </View>
             </GlassCard>
@@ -434,12 +449,15 @@ export default function OnboardingStep3() {
               },
             ]}
             testID="complete-button"
+            accessibilityRole="button"
+            accessibilityLabel="시작하기"
+            accessibilityState={{ disabled: !canComplete }}
           >
             <Text
               style={{
                 color: canComplete ? brand.primaryForeground : colors.mutedForeground,
                 fontSize: 16,
-                fontWeight: '700',
+                fontWeight: typography.weight.bold,
               }}
             >
               시작하기
@@ -482,7 +500,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   heroSubtitle: {

@@ -6,10 +6,10 @@ import { router } from 'expo-router';
 import { Stack } from 'expo-router';
 import { Pressable, Text, StyleSheet } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 export default function CoachLayout() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
 
   return (
     <Stack
@@ -54,6 +54,6 @@ const styles = StyleSheet.create({
   },
   headerButtonText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
 });

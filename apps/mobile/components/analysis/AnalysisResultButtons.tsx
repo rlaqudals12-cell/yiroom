@@ -6,7 +6,7 @@
  */
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 export interface AnalysisResultButtonsProps {
   /** 주 버튼 텍스트 */
@@ -28,7 +28,7 @@ export function AnalysisResultButtons({
   onRetry,
   testID = 'analysis-result-buttons',
 }: AnalysisResultButtonsProps) {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
 
   return (
     <View style={styles.buttons} testID={testID}>
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   secondaryButton: {
     borderWidth: 1,

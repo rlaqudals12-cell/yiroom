@@ -27,7 +27,14 @@ import {
 import { useChallenges, useJoinChallenge } from '@/lib/challenges/useChallenges';
 import { staggeredEntry } from '@/lib/animations';
 import { useAppPreferencesStore } from '@/lib/stores';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
+
+// 리더보드 메달 색상 (도메인 데이터 — 순위 시각화)
+const MEDAL_COLORS = {
+  gold: '#FFD700',
+  silver: '#C0C0C0',
+  bronze: '#CD7F32',
+} as const;
 
 // 챌린지 상세 뷰 타입 (UI 표시용)
 interface ChallengeDetail {
@@ -77,7 +84,7 @@ const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
 export default function ChallengeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { colors, status } = useTheme();
+  const { colors, status, typography } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
   // API 훅 사용
@@ -373,9 +380,9 @@ export default function ChallengeDetailScreen() {
                   style={[
                     styles.leaderboardRank,
                     { color: colors.foreground },
-                    entry.rank === 1 && { color: '#FFD700' },
-                    entry.rank === 2 && { color: '#C0C0C0' },
-                    entry.rank === 3 && { color: '#CD7F32' },
+                    entry.rank === 1 && { color: MEDAL_COLORS.gold },
+                    entry.rank === 2 && { color: MEDAL_COLORS.silver },
+                    entry.rank === 3 && { color: MEDAL_COLORS.bronze },
                   ]}
                 >
                   {entry.rank}
@@ -436,7 +443,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   backButtonText: {
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   headerSection: {
     padding: 20,
@@ -457,11 +464,11 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   description: {
@@ -480,7 +487,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   statLabel: {
     fontSize: 12,
@@ -495,7 +502,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
   progressCard: {
@@ -511,7 +518,7 @@ const styles = StyleSheet.create({
   },
   progressPercent: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   progressBarContainer: {
     height: 8,
@@ -529,7 +536,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logButtonText: {
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     fontSize: 14,
   },
   milestones: {
@@ -549,7 +556,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   milestoneIconText: {
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     fontSize: 12,
   },
   milestoneContent: {
@@ -557,7 +564,7 @@ const styles = StyleSheet.create({
   },
   milestoneDay: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   milestoneTarget: {
     fontSize: 12,
@@ -589,7 +596,7 @@ const styles = StyleSheet.create({
   leaderboardRank: {
     width: 32,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   leaderboardName: {
     flex: 1,
@@ -597,7 +604,7 @@ const styles = StyleSheet.create({
   },
   leaderboardProgress: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   bottomBar: {
     position: 'absolute',
@@ -613,7 +620,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   joinButtonText: {
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     fontSize: 16,
   },
 });

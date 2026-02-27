@@ -21,7 +21,7 @@ import {
 
 import { useCloset, type ClothingCategory, type Season } from '@/lib/inventory';
 import { useAppPreferencesStore } from '@/lib/stores';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { closetLogger } from '@/lib/utils/logger';
 
 // 카테고리 옵션
@@ -84,7 +84,7 @@ export default function ClosetAddScreen() {
   const router = useRouter();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
   const { addItem } = useCloset();
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
   const styles = useStyles();
 
   const [formData, setFormData] = useState<FormData>({
@@ -476,7 +476,7 @@ function useStyles() {
     },
     imageOverlayText: {
       color: colors.overlayForeground,
-      fontWeight: '500',
+      fontWeight: typography.weight.medium,
     },
     imagePlaceholder: {
       width: 200,
@@ -506,7 +506,7 @@ function useStyles() {
     },
     imageButtonText: {
       color: colors.foreground,
-      fontWeight: '500',
+      fontWeight: typography.weight.medium,
     },
     section: {
       padding: 20,
@@ -515,7 +515,7 @@ function useStyles() {
     },
     sectionTitle: {
       fontSize: 16,
-      fontWeight: '600',
+      fontWeight: typography.weight.semibold,
       color: colors.foreground,
       marginBottom: 12,
     },
@@ -662,7 +662,7 @@ function useStyles() {
     },
     submitButtonText: {
       color: colors.background,
-      fontWeight: '600',
+      fontWeight: typography.weight.semibold,
       fontSize: 16,
     },
   });

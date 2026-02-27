@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 
 import { useNetworkStatus } from '../../lib/offline';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography} from '../../lib/theme';
 
 interface OfflineBannerProps {
   // 동기화 대기 항목 수
@@ -20,7 +20,7 @@ interface OfflineBannerProps {
 }
 
 export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: OfflineBannerProps) {
-  const { colors, brand, status } = useTheme();
+  const { colors, brand, status, typography } = useTheme();
   const { isConnected } = useNetworkStatus();
 
   const slideAnim = useRef(new Animated.Value(-60)).current;
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   subtitle: {
     fontSize: 12,
@@ -132,6 +132,6 @@ const styles = StyleSheet.create({
   },
   syncButtonText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

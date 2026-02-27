@@ -26,7 +26,7 @@ import {
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 import { TIMING } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useInventory } from '@/lib/inventory';
@@ -342,7 +342,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 <Text
                   style={{
                     color: brand.primaryForeground,
-                    fontWeight: '600',
+                    fontWeight: typography.weight.semibold,
                     fontSize: typography.size.sm,
                     marginLeft: spacing.xs,
                   }}
@@ -409,7 +409,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                   <Text
                     style={{
                       color: colors.foreground,
-                      fontWeight: '600',
+                      fontWeight: typography.weight.semibold,
                       fontSize: typography.size.sm,
                     }}
                   >
@@ -430,7 +430,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                   <Text
                     style={{
                       color: brand.primaryForeground,
-                      fontWeight: '600',
+                      fontWeight: typography.weight.semibold,
                       fontSize: typography.size.sm,
                     }}
                   >
@@ -456,7 +456,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
               <Text
                 style={{
                   fontSize: typography.size.base,
-                  fontWeight: '600',
+                  fontWeight: typography.weight.semibold,
                   color: colors.foreground,
                   marginTop: spacing.md,
                 }}
@@ -487,7 +487,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 <Text
                   style={{
                     color: brand.primaryForeground,
-                    fontWeight: '600',
+                    fontWeight: typography.weight.semibold,
                     fontSize: typography.size.sm,
                   }}
                 >
@@ -533,7 +533,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 <Text
                   style={{
                     color: brand.primaryForeground,
-                    fontWeight: '600',
+                    fontWeight: typography.weight.semibold,
                     fontSize: typography.size.sm,
                   }}
                 >

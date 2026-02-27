@@ -17,12 +17,12 @@ import {
   ScrollView,
 } from 'react-native';
 
-import { brand, useTheme } from '@/lib/theme';
+import { brand, useTheme, typography} from '@/lib/theme';
 
 export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   subtitle: {
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   input: {
     borderWidth: 1,
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: brand.primaryForeground,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   footer: {
     flexDirection: 'row',
@@ -328,6 +328,6 @@ const styles = StyleSheet.create({
   linkText: {
     color: brand.primary,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
 });

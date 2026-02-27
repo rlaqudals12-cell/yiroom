@@ -24,10 +24,10 @@ import {
   type TimeOfDay,
   type RoutineStep,
 } from '@/lib/skincare';
-import { moduleColors, useTheme } from '@/lib/theme';
+import { moduleColors, useTheme, typography} from '@/lib/theme';
 
 export default function SkincareRoutineScreen() {
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
 
   const {
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: 4,
   },
   subtitle: {
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   },
   toggleText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   routineInfo: {
     flexDirection: 'row',
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   },
   routineInfoText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   routineTime: {
     fontSize: 14,
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   },
   stepOrder: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   stepInfo: {
     flex: 1,
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   },
   stepName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   optionalBadge: {
     paddingHorizontal: 8,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   optionalText: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   stepPurpose: {
     fontSize: 13,
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
   },
   tipsTitle: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   tipText: {
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   footerNote: {
     fontSize: 12,

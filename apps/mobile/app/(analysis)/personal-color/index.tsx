@@ -8,7 +8,7 @@ import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography} from '@/lib/theme';
 
 // 퍼스널 컬러 문진 질문
 const QUESTIONS = [
@@ -60,7 +60,7 @@ const QUESTIONS = [
 ];
 
 export default function PersonalColorScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, typography } = useTheme();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
@@ -98,7 +98,7 @@ export default function PersonalColorScreen() {
     >
       {/* 진행 바 */}
       <View style={styles.progressContainer}>
-        <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
+        <View style={[styles.progressBar, { backgroundColor: colors.muted }]} accessibilityLabel={`진행률 ${currentQuestion + 1}/${QUESTIONS.length}`}>
           <View
             style={[styles.progressFill, { width: `${progress}%`, backgroundColor: brand.primary }]}
           />
@@ -130,6 +130,9 @@ export default function PersonalColorScreen() {
                   },
                 ]}
                 onPress={() => handleAnswer(option.value)}
+                accessibilityRole="button"
+                accessibilityLabel={option.label}
+                accessibilityState={{ selected: isSelected(option.value) }}
               >
                 <Text
                   style={[
@@ -137,7 +140,7 @@ export default function PersonalColorScreen() {
                     { color: colors.foreground },
                     isSelected(option.value) && {
                       color: brand.primary,
-                      fontWeight: '600',
+                      fontWeight: typography.weight.semibold,
                     },
                   ]}
                 >
@@ -151,7 +154,7 @@ export default function PersonalColorScreen() {
 
       {/* 뒤로가기 버튼 */}
       {currentQuestion > 0 && (
-        <Pressable style={styles.backButton} onPress={handleBack}>
+        <Pressable style={styles.backButton} onPress={handleBack} accessibilityRole="button" accessibilityLabel="이전 질문으로 돌아가기">
           <Text style={[styles.backButtonText, { color: colors.mutedForeground }]}>이전 질문</Text>
         </Pressable>
       )}
@@ -182,7 +185,7 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
   content: {
     flex: 1,
@@ -193,7 +196,7 @@ const styles = StyleSheet.create({
   },
   questionText: {
     fontSize: 22,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     lineHeight: 32,
   },
   optionsContainer: {
