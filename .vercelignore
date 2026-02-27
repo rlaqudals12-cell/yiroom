@@ -1,0 +1,28 @@
+# Mobile app (not needed for web deployment)
+apps/mobile
+
+# Documentation
+docs
+
+# Tests
+tests
+**/*.test.ts
+**/*.test.tsx
+**/__tests__
+
+# Config files
+.claude
+.github
+.husky
+.storybook
+
+# Build artifacts
+node_modules
+.next
+coverage
+dist
+out
+
+# Large/unnecessary files
+*.md
+!apps/web/README.md
