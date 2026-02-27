@@ -125,6 +125,7 @@ export default function BeautyTab(): React.JSX.Element {
           >
             <SectionHeader
               title="뷰티"
+              gradient="personalColor"
               style={{ marginBottom: spacing.xs }}
               titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold }}
             />

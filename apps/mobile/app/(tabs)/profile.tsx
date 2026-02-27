@@ -197,7 +197,7 @@ export default function ProfileScreen(): React.JSX.Element {
         <WellnessScoreRing
           score={score}
           breakdown={breakdown}
-          style={{ marginBottom: spacing.md }}
+          style={{ marginBottom: spacing.md, ...borderGlow.pink }}
           testID="wellness-score"
         />
 

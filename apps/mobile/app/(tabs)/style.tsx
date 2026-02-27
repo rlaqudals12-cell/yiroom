@@ -66,6 +66,7 @@ export default function StyleTab(): React.JSX.Element {
           >
             <SectionHeader
               title="스타일"
+              gradient="body"
               style={{ marginBottom: spacing.xs }}
               titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold }}
             />

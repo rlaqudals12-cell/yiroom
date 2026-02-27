@@ -187,6 +187,7 @@ export default function RecordsTab(): React.JSX.Element {
           >
             <SectionHeader
               title="기록"
+              gradient="brand"
               style={{ marginBottom: spacing.xs }}
               titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold }}
             />
