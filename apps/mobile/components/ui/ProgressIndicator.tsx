@@ -6,7 +6,7 @@
  */
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 interface ProgressIndicatorProps {
   current: number;
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   dot: {
     width: 6,

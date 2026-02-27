@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 interface ScreenContainerProps {
   /** 콘텐츠 */
@@ -92,7 +92,7 @@ export function ScreenContainer({
         contentContainerStyle={[
           {
             paddingHorizontal: contentPadding,
-            paddingBottom: 24,
+            paddingBottom: spacing.lg,
           },
           contentContainerStyle,
         ]}

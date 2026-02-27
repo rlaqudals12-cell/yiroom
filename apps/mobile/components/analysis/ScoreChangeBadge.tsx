@@ -23,7 +23,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 // ============================================
 // 타입 정의
@@ -56,11 +56,11 @@ const SIZE_CONFIG = {
     gap: 2,
   },
   md: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     fontSize: 13,
     iconSize: 14,
-    gap: 4,
+    gap: spacing.xs,
   },
   lg: {
     paddingHorizontal: 12,
@@ -245,10 +245,10 @@ const styles = StyleSheet.create({
   },
   previousScore: {
     opacity: 0.7,
-    marginLeft: 4,
+    marginLeft: spacing.xs,
   },
   metricDelta: {
-    marginLeft: 4,
+    marginLeft: spacing.xs,
     fontWeight: typography.weight.medium,
   },
 });

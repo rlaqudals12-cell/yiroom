@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../components/ui';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -376,8 +376,8 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    marginLeft: 8,
-    marginRight: 8,
+    marginLeft: spacing.sm,
+    marginRight: spacing.sm,
     height: 44,
   },
   filterChip: {},

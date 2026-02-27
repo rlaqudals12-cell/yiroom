@@ -7,7 +7,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '../../../components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 const FEATURES = [
   { icon: '💇', title: '모발 질감 분석', desc: '직모/웨이브/컬리 등 모발 유형 파악' },
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   featureIcon: { fontSize: 28, marginRight: 16 },
   featureText: { flex: 1 },
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 18,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   startButtonText: { fontSize: 17, fontWeight: typography.weight.semibold },
   notice: { fontSize: 13, textAlign: 'center', lineHeight: 20 },

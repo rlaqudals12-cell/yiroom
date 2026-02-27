@@ -17,7 +17,7 @@ import {
 import Animated from 'react-native-reanimated';
 
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   },
   summaryItem: {
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
   summaryValue: {
     fontSize: typography.size.base,
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   diffBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
   },
   exerciseMeta: {

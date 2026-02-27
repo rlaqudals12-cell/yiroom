@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 
-import { useTheme, typography } from '@/lib/theme';
+import { useTheme, typography , spacing } from '@/lib/theme';
 
 export default function MakeupCameraScreen() {
   const { colors, brand } = useTheme();
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.6)',
     borderStyle: 'dashed',
   },
-  guideText: { marginTop: 24, fontSize: typography.size.base, textAlign: 'center', lineHeight: 24 },
+  guideText: { marginTop: spacing.lg, fontSize: typography.size.base, textAlign: 'center', lineHeight: 24 },
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -152,12 +152,12 @@ const styles = StyleSheet.create({
   permissionTitle: { fontSize: 22, fontWeight: '600', marginBottom: 12 },
   permissionText: { fontSize: typography.size.base, textAlign: 'center', marginBottom: 32 },
   permissionButton: {
-    paddingHorizontal: 32,
-    paddingVertical: 16,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   permissionButtonText: { fontSize: typography.size.base, fontWeight: '600' },
-  galleryButton: { paddingHorizontal: 32, paddingVertical: 16 },
+  galleryButton: { paddingHorizontal: spacing.xl, paddingVertical: 16 },
   galleryButtonText: { fontSize: 16 },
 });

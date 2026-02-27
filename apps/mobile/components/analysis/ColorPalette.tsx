@@ -9,7 +9,7 @@
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 import { ColorSwatch, type ColorSwatchProps } from './ColorSwatch';
 
 export interface ColorItem {
@@ -151,10 +151,10 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
+    gap: spacing.md,
   },
   gridItem: {
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
 });

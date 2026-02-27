@@ -29,7 +29,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../../components/ui';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tierBadge: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 6,
   },
   friendButton: {
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   backButton: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 12,
   },
   statsGrid: {

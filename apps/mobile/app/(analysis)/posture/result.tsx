@@ -23,7 +23,7 @@ import {
 } from '@/lib/gemini';
 import { CelebrationEffect, BadgeDrop } from '@/components/ui';
 import { captureError } from '@/lib/monitoring/sentry';
-import { typography, radii } from '@/lib/theme';
+import { typography, radii , spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const POSTURE_TYPE_LABELS: Record<PostureAnalysisResult['postureType'], string> = {
@@ -224,20 +224,20 @@ const localStyles = StyleSheet.create({
   mainResult: {
     fontSize: typography.size['2xl'],
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   exerciseCard: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   exerciseName: {
     fontSize: typography.size.base,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   exerciseDesc: {
     fontSize: typography.size.sm,
     lineHeight: 22,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   exerciseDuration: {
     fontSize: 13,

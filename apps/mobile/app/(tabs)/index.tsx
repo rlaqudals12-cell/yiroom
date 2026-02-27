@@ -35,7 +35,7 @@ import {
 } from '../../hooks';
 import { staggeredEntry, TIMING, usePulseGlow } from '../../lib/animations';
 import { useOnboardingCheck } from '../../lib/onboarding';
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 import { useWidgetSync } from '../../lib/widgets';
 
 export default function HomeScreen(): React.JSX.Element {

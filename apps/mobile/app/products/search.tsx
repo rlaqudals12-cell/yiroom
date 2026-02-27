@@ -14,7 +14,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 interface Product {
@@ -379,8 +379,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchSection: {
-    padding: 16,
-    paddingBottom: 8,
+    padding: spacing.md,
+    paddingBottom: spacing.sm,
   },
   searchInputContainer: {
     flexDirection: 'row',
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
   searchIcon: {
     fontSize: typography.size.base,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   searchInput: {
     flex: 1,
@@ -400,14 +400,14 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     fontSize: typography.size.base,
-    padding: 4,
+    padding: spacing.xs,
   },
   content: {
     flex: 1,
   },
   section: {
-    padding: 16,
-    paddingTop: 8,
+    padding: spacing.md,
+    paddingTop: spacing.sm,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
   tagList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   searchTag: {
     flexDirection: 'row',
@@ -458,17 +458,17 @@ const styles = StyleSheet.create({
   },
   emptyEmoji: {
     fontSize: 48,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: typography.size.base,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   emptyHint: {
     fontSize: typography.size.sm,
   },
   resultsSection: {
-    padding: 16,
+    padding: spacing.md,
   },
   resultCount: {
     fontSize: 13,
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 12,
     padding: 12,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   productImagePlaceholder: {
     width: 64,
@@ -506,19 +506,19 @@ const styles = StyleSheet.create({
   productMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   productRating: {
     fontSize: typography.size.xs,
   },
   productReviews: {
     fontSize: typography.size.xs,
-    marginLeft: 4,
+    marginLeft: spacing.xs,
   },
   productPrice: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   matchBadge: {
     paddingHorizontal: 10,

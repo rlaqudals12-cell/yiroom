@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useCallback } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 
-import { useTheme, typography, radii } from '../../../lib/theme';
+import { useTheme, typography, radii , spacing } from '../../../lib/theme';
 
 import { EmptyState } from '../../common';
 
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   sortContainer: {
     flexDirection: 'row',
     marginBottom: 12,
-    gap: 8,
+    gap: spacing.sm,
   },
   sortButton: {
     paddingHorizontal: 12,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 48,
+    paddingVertical: spacing.xxl,
   },
   emptyText: {
     fontSize: 14,
@@ -232,8 +232,8 @@ const styles = StyleSheet.create({
   loadMoreButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    marginTop: 8,
+    paddingVertical: spacing.md,
+    marginTop: spacing.sm,
     borderRadius: radii.md,
   },
   loadMoreText: {

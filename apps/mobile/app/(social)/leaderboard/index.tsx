@@ -14,7 +14,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, getTierLabel, type RankingEntry } from '../../../lib/social';
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   myRankCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: 16,
+    margin: spacing.md,
     borderRadius: radii.xl,
     padding: 20,
   },
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   myRankLabel: {
     fontSize: 13,
     opacity: 0.8,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   myRankValue: {
     fontSize: 20,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   percentileContainer: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
   },
   percentileValue: {
@@ -252,10 +252,10 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    marginHorizontal: 16,
-    marginBottom: 8,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
     borderRadius: 12,
-    padding: 4,
+    padding: spacing.xs,
   },
   tab: {
     flex: 1,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {},
   listContent: {
-    padding: 16,
+    padding: spacing.md,
     gap: 10,
   },
   rankingCard: {
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   userMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     marginTop: 3,
   },
   tierText: {
@@ -360,11 +360,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: 15,

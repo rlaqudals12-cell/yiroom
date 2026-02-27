@@ -9,7 +9,7 @@ import { Package } from 'lucide-react-native';
 import { FlatList, StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { InventoryItem } from '../../lib/inventory';
 
@@ -121,7 +121,7 @@ export function ClosetPreviewStrip({
                 style={{
                   fontSize: typography.size.xs,
                   color: colors.mutedForeground,
-                  marginTop: 4,
+                  marginTop: spacing.xs,
                   textAlign: 'center',
                   maxWidth: 72,
                 }}
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   emptyState: {
-    paddingVertical: 16,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
 });

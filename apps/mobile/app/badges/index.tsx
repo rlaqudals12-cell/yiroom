@@ -7,7 +7,7 @@ import { useCallback, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing } from '../../lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 interface Badge {
@@ -112,7 +112,7 @@ export default function BadgesScreen(): React.JSX.Element {
               fontSize: typography.size.xl,
               fontWeight: typography.weight.bold,
               color: colors.foreground,
-              marginBottom: 4,
+              marginBottom: spacing.xs,
             }}
           >
             나의 뱃지
@@ -151,7 +151,7 @@ export default function BadgesScreen(): React.JSX.Element {
                   fontWeight: typography.weight.semibold,
                   color: colors.foreground,
                   textAlign: 'center',
-                  marginBottom: 4,
+                  marginBottom: spacing.xs,
                 }}
               >
                 {badge.title}
@@ -171,7 +171,7 @@ export default function BadgesScreen(): React.JSX.Element {
                   style={{
                     marginTop: spacing.sm,
                     backgroundColor: brand.primary + '20',
-                    paddingHorizontal: 8,
+                    paddingHorizontal: spacing.sm,
                     paddingVertical: 3,
                     borderRadius: radii.md,
                   }}

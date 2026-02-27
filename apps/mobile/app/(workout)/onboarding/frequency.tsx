@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 // 주당 운동 횟수 옵션 (2-6회)
 const FREQUENCY_OPTIONS = [
@@ -169,14 +169,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: 15,
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   sectionMargin: {
-    marginTop: 32,
+    marginTop: spacing.xl,
   },
   // 주당 횟수 카드 스타일
   frequencyList: {
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   timeCard: {
     width: '47%',
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
@@ -239,12 +239,12 @@ const styles = StyleSheet.create({
   timeCardSelected: {},
   timeEmoji: {
     fontSize: 32,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   timeLabel: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   timeLabelSelected: {},
   timeDescription: {
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   nextButtonText: {

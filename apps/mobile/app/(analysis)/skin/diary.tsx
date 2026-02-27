@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   },
   factorChip: {
     paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: radii.full,
   },
   factorText: {

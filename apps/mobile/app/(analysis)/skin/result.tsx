@@ -37,7 +37,7 @@ import { saveSkinResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING, usePulseGlow } from '@/lib/animations';
-import { typography } from '@/lib/theme';
+import { typography , spacing } from '@/lib/theme';
 
 import {
   SKIN_TYPE_DATA,
@@ -414,12 +414,12 @@ export default function SkinResultScreen() {
 const localStyles = StyleSheet.create({
   headerContent: {
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   typeName: {
     fontSize: 22,
     fontWeight: '700',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   skinImage: {
     width: 100,
@@ -429,10 +429,10 @@ const localStyles = StyleSheet.create({
   },
   tabContent: {
     gap: 20,
-    paddingBottom: 8,
+    paddingBottom: spacing.sm,
   },
   descCard: {
-    padding: 16,
+    padding: spacing.md,
   },
   descText: {
     fontSize: 15,
@@ -450,12 +450,12 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
   },
   tipsCard: {
-    padding: 16,
+    padding: spacing.md,
     gap: 10,
   },
   tipItem: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   tipBullet: {
     fontSize: typography.size.base,
@@ -469,11 +469,11 @@ const localStyles = StyleSheet.create({
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   tag: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
   },
   tagText: {

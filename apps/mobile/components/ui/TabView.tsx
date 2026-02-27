@@ -26,7 +26,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { brand } from '../../lib/theme/tokens';
 
 export interface TabItem {
@@ -161,7 +161,7 @@ export function TabView({
             styles.indicator,
             {
               width: tabWidth - 32,
-              marginLeft: 16,
+              marginLeft: spacing.md,
               backgroundColor: brand.primary,
               borderRadius: radii.full,
             },

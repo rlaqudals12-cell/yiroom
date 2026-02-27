@@ -14,7 +14,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 type ToastType = 'info' | 'success' | 'error';
 
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     marginLeft: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
   },
 });

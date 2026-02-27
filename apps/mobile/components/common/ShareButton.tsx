@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { Share as ShareIcon } from 'lucide-react-native';
 import { Pressable, Share, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 interface ShareButtonProps {
   /** 공유할 텍스트 */
@@ -103,6 +103,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconButton: {
-    padding: 8,
+    padding: spacing.sm,
   },
 });

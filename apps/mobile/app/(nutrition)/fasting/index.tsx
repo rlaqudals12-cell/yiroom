@@ -19,7 +19,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { staggeredEntry } from '@/lib/animations';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { nutritionLogger } from '../../../lib/utils/logger';
 
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 32,
+    paddingHorizontal: spacing.xl,
   },
   actionText: {
     fontSize: typography.size.base,

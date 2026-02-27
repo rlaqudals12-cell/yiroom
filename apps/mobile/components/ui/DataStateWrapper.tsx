@@ -7,6 +7,7 @@
 import React, { type ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
 
+import { spacing } from '../../lib/theme';
 import { EmptyState } from '../common/EmptyState';
 
 import { ErrorState } from './ErrorState';
@@ -53,7 +54,7 @@ function DefaultLoading({ count }: { count: number }): React.JSX.Element {
       {Array.from({ length: count }).map((_, i) => (
         <View key={i} style={styles.skeletonItem}>
           <SkeletonLoader width="40%" height={14} borderRadius={4} />
-          <SkeletonText style={{ marginTop: 8, width: '70%' } as never} />
+          <SkeletonText style={{ marginTop: spacing.sm, width: '70%' } as never} />
           <SkeletonCard style={{ marginTop: 12 } as never} />
         </View>
       ))}
@@ -112,10 +113,10 @@ export function DataStateWrapper({
 
 const styles = StyleSheet.create({
   skeletonContainer: {
-    padding: 16,
-    gap: 16,
+    padding: spacing.md,
+    gap: spacing.md,
   },
   skeletonItem: {
-    gap: 4,
+    gap: spacing.xs,
   },
 });

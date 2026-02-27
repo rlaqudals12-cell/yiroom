@@ -22,7 +22,7 @@ import { ScreenContainer } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { staggeredEntry } from '@/lib/animations';
 import { useWorkoutData } from '@/hooks/useWorkoutData';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
@@ -361,7 +361,7 @@ export default function WorkoutLogScreen() {
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
     fontSize: typography.size.lg,
@@ -371,10 +371,10 @@ const styles = StyleSheet.create({
   exerciseGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   exerciseChip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   },
   durationGrid: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   durationChip: {
     flex: 1,
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   },
   intensityGrid: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   intensityChip: {
     flex: 1,
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   },
   calorieLabel: {
     fontSize: typography.size.sm,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   calorieValue: {
     fontSize: 32,
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   saveButtonDisabled: {

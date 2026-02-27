@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 const GOALS = [
   {
@@ -133,11 +133,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: 15,
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   goalList: {
     gap: 12,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   nextButtonText: {

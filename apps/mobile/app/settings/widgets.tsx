@@ -14,7 +14,7 @@ import {
   Pressable,
 } from 'react-native';
 
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import { QuickActionsWidget } from '../../components/widgets/QuickActionsWidget';
@@ -173,14 +173,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: spacing.md,
     paddingBottom: 40,
   },
   infoBanner: {
     flexDirection: 'row',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
   },
   infoIcon: {
     fontSize: typography.size['2xl'],
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   infoText: {
     fontSize: 13,
@@ -205,12 +205,12 @@ const styles = StyleSheet.create({
   },
   sizeSelector: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
     marginBottom: 20,
   },
   sizeButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
     borderWidth: 1,
   },
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   widgetSection: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   widgetLabel: {
     fontSize: 13,
@@ -232,27 +232,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
     borderWidth: 1,
   },
   helpButtonIcon: {
     fontSize: typography.size.lg,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   helpButtonText: {
     fontSize: 15,
     fontWeight: typography.weight.medium,
   },
   widgetList: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   widgetItem: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
   },
   widgetItemIcon: {
     fontSize: typography.size['2xl'],
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   sizeBadges: {
     flexDirection: 'row',
-    gap: 4,
+    gap: spacing.xs,
   },
   sizeBadge: {
     width: 24,

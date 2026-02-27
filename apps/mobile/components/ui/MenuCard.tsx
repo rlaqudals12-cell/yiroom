@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { Check, ChevronRight } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 interface MenuCardProps {
   icon: React.ReactNode;
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   title: {
     lineHeight: 24,

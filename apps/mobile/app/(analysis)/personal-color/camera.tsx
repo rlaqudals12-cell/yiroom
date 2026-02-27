@@ -7,7 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 
-import { useTheme, typography } from '@/lib/theme';
+import { useTheme, typography , spacing } from '@/lib/theme';
 
 export default function PersonalColorCameraScreen() {
   const { colors, brand } = useTheme();
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   guideText: {
-    marginTop: 24,
+    marginTop: spacing.lg,
     fontSize: typography.size.base,
     textAlign: 'center',
     lineHeight: 24,
@@ -212,22 +212,22 @@ const styles = StyleSheet.create({
   permissionText: {
     fontSize: typography.size.base,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xl,
     lineHeight: 24,
   },
   permissionButton: {
-    paddingHorizontal: 32,
-    paddingVertical: 16,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   permissionButtonText: {
     fontSize: typography.size.base,
     fontWeight: '600',
   },
   galleryButton: {
-    paddingHorizontal: 32,
-    paddingVertical: 16,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
   },
   galleryButtonText: {
     fontSize: typography.size.base,

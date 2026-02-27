@@ -17,7 +17,7 @@ import {
   ScrollView,
 } from 'react-native';
 
-import { brand, useTheme, typography} from '@/lib/theme';
+import { brand, useTheme, typography, spacing } from '@/lib/theme';
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
@@ -151,25 +151,25 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 24,
+    padding: spacing.lg,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: spacing.xxl,
   },
   title: {
     fontSize: 32,
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: typography.size.base,
   },
   form: {
-    gap: 16,
+    gap: spacing.md,
   },
   inputContainer: {
-    gap: 8,
+    gap: spacing.sm,
   },
   label: {
     fontSize: typography.size.sm,
@@ -178,15 +178,15 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     fontSize: typography.size.base,
   },
   button: {
     backgroundColor: brand.primary,
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -200,8 +200,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 16,
+    gap: spacing.sm,
+    marginTop: spacing.md,
   },
   footerText: {
     fontSize: typography.size.sm,

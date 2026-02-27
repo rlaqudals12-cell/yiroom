@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme, typography, radii } from '../../../lib/theme';
+import { useTheme, typography, radii , spacing } from '../../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -242,7 +242,7 @@ export function EWGAnalysisSkeleton() {
     <View style={[styles.container, { backgroundColor: colors.card }]}>
       <View style={styles.header}>
         <View style={[styles.skeleton, { width: 80, height: 20, backgroundColor: colors.border }]} />
-        <View style={[styles.skeleton, { width: 120, height: 14, marginTop: 4, backgroundColor: colors.border }]} />
+        <View style={[styles.skeleton, { width: 120, height: 14, marginTop: spacing.xs, backgroundColor: colors.border }]} />
       </View>
       <View style={[styles.statsRow, { backgroundColor: colors.secondary }]}>
         {[1, 2, 3].map((i) => (
@@ -252,7 +252,7 @@ export function EWGAnalysisSkeleton() {
         ))}
       </View>
       {[1, 2, 3].map((i) => (
-        <View key={i} style={[styles.skeleton, { height: 56, marginTop: 8, backgroundColor: colors.border }]} />
+        <View key={i} style={[styles.skeleton, { height: 56, marginTop: spacing.sm, backgroundColor: colors.border }]} />
       ))}
     </View>
   );
@@ -261,7 +261,7 @@ export function EWGAnalysisSkeleton() {
 const styles = StyleSheet.create({
   container: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   header: {
     marginBottom: 12,
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: 12,
     borderRadius: radii.md,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   statItem: {
     flexDirection: 'row',
@@ -301,23 +301,23 @@ const styles = StyleSheet.create({
   cautionBox: {
     borderRadius: radii.md,
     padding: 12,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   cautionTitle: {
     fontSize: 14,
     fontWeight: typography.weight.semibold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   cautionText: {
     fontSize: 13,
   },
   cautionWarning: {
     fontSize: 12,
-    marginTop: 8,
+    marginTop: spacing.sm,
     fontStyle: 'italic',
   },
   ingredientList: {
-    gap: 8,
+    gap: spacing.sm,
   },
   ingredientItem: {
     borderRadius: radii.md,
@@ -365,11 +365,11 @@ const styles = StyleSheet.create({
   },
   functionRow: {
     flexDirection: 'row',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   functionLabel: {
     fontSize: 12,
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   functionText: {
     fontSize: 12,
@@ -378,17 +378,17 @@ const styles = StyleSheet.create({
   descriptionText: {
     fontSize: 12,
     lineHeight: 18,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   safetyText: {
     fontSize: 12,
     fontWeight: typography.weight.medium,
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   showMoreButton: {
     alignItems: 'center',
     paddingVertical: 12,
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   showMoreText: {
     fontSize: 14,

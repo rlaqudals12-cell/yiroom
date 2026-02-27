@@ -16,7 +16,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -394,9 +394,9 @@ const styles = StyleSheet.create({
   banner: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 16,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    padding: spacing.md,
     borderRadius: 12,
   },
   bannerIcon: {
@@ -415,15 +415,15 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   categoryScroll: {
-    marginTop: 16,
+    marginTop: spacing.md,
     maxHeight: 44,
   },
   categoryContent: {
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
   },
   categoryChip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
   },
   productScroll: {
     flex: 1,
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   productGridContent: {
     paddingHorizontal: 12,
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   },
   productCard: {
     flex: 1,
-    padding: 4,
+    padding: spacing.xs,
     maxWidth: '50%',
   },
   productImageContainer: {
@@ -465,8 +465,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     borderRadius: 12,
   },
   matchBadgeText: {
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   productInfo: {
-    padding: 8,
+    padding: spacing.sm,
   },
   productBrand: {
     fontSize: typography.size.xs,
@@ -488,11 +488,11 @@ const styles = StyleSheet.create({
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   ratingStar: {
     fontSize: typography.size.xs,
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   ratingText: {
     fontSize: typography.size.xs,
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   emptyContainer: {
     flex: 1,

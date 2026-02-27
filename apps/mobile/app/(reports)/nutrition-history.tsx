@@ -13,7 +13,7 @@ import {
 import { DataStateWrapper, ScreenContainer } from '@/components/ui';
 
 import { useClerkSupabaseClient } from '../../lib/supabase';
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 import { getNutrientStatus, getNutrientStatusColor } from '../../hooks/useNutritionData';
 
 interface NutritionRecord {
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   recordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   recordDate: {},
   statusDot: { width: 10, height: 10, borderRadius: 5 },
-  calRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  calRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: 12 },
   calLabel: { width: 40 },
   calTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
   calFill: { height: '100%' },

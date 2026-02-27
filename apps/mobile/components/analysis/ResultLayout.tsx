@@ -25,7 +25,7 @@ import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-import { useTheme, typography, radii, borderGlow } from '@/lib/theme';
+import { useTheme, typography, radii, borderGlow, spacing } from '@/lib/theme';
 import { brand, moduleColors } from '@/lib/theme/tokens';
 import { TIMING } from '@/lib/animations';
 import { TabView, type TabItem } from '../ui/TabView';
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: spacing.md,
     paddingBottom: 28,
     alignItems: 'center',
     gap: 12,
@@ -326,8 +326,8 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.bold,
   },
   fallbackBanner: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: radii.md,
     alignSelf: 'stretch',
   },
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   imageContainer: {
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   defaultImage: {
     width: 160,
@@ -347,19 +347,19 @@ const styles = StyleSheet.create({
   },
   gradeContainer: {
     alignSelf: 'stretch',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   tabContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     minHeight: 300,
   },
   tabBar: {
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   ctaContainer: {
-    paddingHorizontal: 16,
-    marginTop: 16,
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.md,
   },
   ctaContent: {
     flexDirection: 'row',
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   },
   ctaTextArea: {
     flex: 1,
-    gap: 4,
+    gap: spacing.xs,
   },
   ctaTitle: {
     fontWeight: typography.weight.semibold,
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   ctaButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 10,
   },
   ctaButtonText: {
@@ -385,6 +385,6 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     paddingHorizontal: 20,
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
 });

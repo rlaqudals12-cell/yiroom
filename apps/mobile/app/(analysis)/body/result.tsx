@@ -33,7 +33,7 @@ import { saveBodyResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
-import { typography, radii } from '@/lib/theme';
+import { typography, radii , spacing } from '@/lib/theme';
 
 // 체형 타입 데이터
 const BODY_TYPE_DATA: Record<
@@ -449,7 +449,7 @@ const localStyles = StyleSheet.create({
   bmiRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   bmiLabel: {
     fontSize: typography.size.sm,
@@ -478,10 +478,10 @@ const localStyles = StyleSheet.create({
   },
   tabContent: {
     gap: 20,
-    paddingBottom: 8,
+    paddingBottom: spacing.sm,
   },
   descCard: {
-    padding: 16,
+    padding: spacing.md,
   },
   descText: {
     fontSize: 15,
@@ -502,7 +502,7 @@ const localStyles = StyleSheet.create({
   bmiDetailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   bmiDetailLabel: {
     fontSize: typography.size.sm,
@@ -512,12 +512,12 @@ const localStyles = StyleSheet.create({
     fontWeight: '600',
   },
   tipsCard: {
-    padding: 16,
+    padding: spacing.md,
     gap: 10,
   },
   tipItem: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   tipBullet: {
     fontSize: typography.size.base,
@@ -531,11 +531,11 @@ const localStyles = StyleSheet.create({
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   tag: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
   },
   tagText: {

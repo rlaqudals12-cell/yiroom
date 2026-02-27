@@ -8,7 +8,7 @@ import { View, Text, StyleSheet, type TextStyle } from 'react-native';
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 
 import { useMonthlyReport } from '../../hooks/useMonthlyReport';
-import { useTheme, typography } from '../../lib/theme';
+import { useTheme, typography , spacing } from '../../lib/theme';
 
 export default function MonthlyReportScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
@@ -192,10 +192,10 @@ function NutritionStat({
 }
 
 const styles = StyleSheet.create({
-  periodCard: { marginHorizontal: 16, marginTop: 12, padding: 16, alignItems: 'center' },
+  periodCard: { marginHorizontal: spacing.md, marginTop: 12, padding: spacing.md, alignItems: 'center' },
   periodLabel: { marginBottom: 4 },
   periodMonth: {},
-  card: { marginHorizontal: 16, marginTop: 12, padding: 16 },
+  card: { marginHorizontal: spacing.md, marginTop: 12, padding: 16 },
   cardTitle: { marginBottom: 12 },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   statBox: { width: '48%', padding: 12, alignItems: 'center' },
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   nutritionStatItem: { width: '48%', paddingVertical: 8 },
   nutritionStatValue: {},
   nutritionStatLabel: { marginTop: 2 },
-  insightRow: { flexDirection: 'row', marginBottom: 8, paddingRight: 8 },
-  insightDot: { fontSize: typography.size.base, marginRight: 8, lineHeight: 22 },
+  insightRow: { flexDirection: 'row', marginBottom: spacing.sm, paddingRight: 8 },
+  insightDot: { fontSize: typography.size.base, marginRight: spacing.sm, lineHeight: 22 },
   insightText: { flex: 1, lineHeight: 22 },
 });

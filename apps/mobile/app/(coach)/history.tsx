@@ -16,7 +16,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import { getCoachSessions, deleteCoachSession, type CoachSession } from '../../lib/coach';
@@ -196,8 +196,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   newSessionButton: {
-    marginHorizontal: 16,
-    marginTop: 16,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
     marginBottom: 12,
     paddingVertical: 14,
     borderRadius: 12,
@@ -209,17 +209,17 @@ const styles = StyleSheet.create({
   },
   listHeader: {
     fontSize: 13,
-    paddingHorizontal: 16,
-    marginBottom: 8,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm,
   },
   listContent: {
-    paddingHorizontal: 16,
-    gap: 8,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
+    paddingBottom: spacing.md,
   },
   sessionCard: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   sessionRow: {
     flexDirection: 'row',
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   sessionTitle: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.medium,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   sessionMeta: {
     fontSize: 13,
@@ -244,16 +244,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
   },
   emptyEmoji: {
     fontSize: 48,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   emptyHint: {
     fontSize: typography.size.sm,

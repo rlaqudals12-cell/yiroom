@@ -18,7 +18,7 @@ import Animated from 'react-native-reanimated';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { staggeredEntry } from '@/lib/animations';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -200,8 +200,8 @@ export default function ChallengesScreen() {
             <SkeletonCard style={{ flex: 1, height: 80 }} />
           </View>
           <SkeletonText style={{ width: 200, height: 40, alignSelf: 'center', marginTop: 16 }} />
-          <SkeletonCard style={{ height: 120, marginHorizontal: 16, marginTop: 16 }} />
-          <SkeletonCard style={{ height: 120, marginHorizontal: 16, marginTop: 12 }} />
+          <SkeletonCard style={{ height: 120, marginHorizontal: spacing.md, marginTop: 16 }} />
+          <SkeletonCard style={{ height: 120, marginHorizontal: spacing.md, marginTop: 12 }} />
         </View>
       </ScreenContainer>
     );
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 12,
     gap: 10,
   },
@@ -347,10 +347,10 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    marginHorizontal: 16,
-    marginBottom: 8,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
     borderRadius: 12,
-    padding: 4,
+    padding: spacing.xs,
   },
   tab: {
     flex: 1,
@@ -365,12 +365,12 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {},
   listContent: {
-    padding: 16,
+    padding: spacing.md,
     gap: 12,
   },
   challengeCard: {
     borderRadius: radii.xl,
-    padding: 16,
+    padding: spacing.md,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   },
   domainBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: radii.md,
   },
   domainBadgeText: {
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   difficultyBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: radii.md,
   },
   difficultyBadgeText: {
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 17,
     fontWeight: typography.weight.bold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   cardDescription: {
     fontSize: typography.size.sm,
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   progressContainer: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   progressBar: {
     height: 8,
@@ -455,20 +455,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
     marginTop: 60,
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: 15,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyButton: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 12,
     borderRadius: 12,
   },

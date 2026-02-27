@@ -9,7 +9,7 @@ import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
 
 import { useCountUp } from '../../lib/animations/hooks';
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 type ModuleColorKey =
   | 'workout'
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     height: 3,
   },
   value: {
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   label: {
     marginTop: 2,

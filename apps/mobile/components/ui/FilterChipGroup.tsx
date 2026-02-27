@@ -5,7 +5,7 @@
  */
 import { ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 import { FilterChip } from './FilterChip';
 
@@ -99,7 +99,7 @@ export function FilterChipGroup({
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingRight: 16,
+    paddingRight: spacing.md,
   },
   wrapContent: {
     flexDirection: 'row',

@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    marginTop: 4,
+    marginTop: spacing.xs,
     flexWrap: 'wrap',
   },
   metaText: {

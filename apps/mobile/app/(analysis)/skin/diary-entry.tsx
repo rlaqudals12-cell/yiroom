@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   },
   conditionEmoji: {
     fontSize: typography.size['2xl'],
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   conditionText: {
     fontSize: 10,
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   weatherChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.xs,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: radii.full,

@@ -17,7 +17,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 export default function BodyAnalysisScreen() {
   const { colors, module } = useTheme();
@@ -222,12 +222,12 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   title: {
     fontSize: 26,
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: typography.size.base,
@@ -236,28 +236,28 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: radii.xl,
     padding: 20,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   cardTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   cardDescription: {
     fontSize: typography.size.sm,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   label: {
     fontSize: typography.size.sm,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   input: {
     borderWidth: 1,
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     fontSize: typography.size.base,
   },
   imagePickerButton: {
@@ -267,14 +267,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   imagePickerButtonSelected: {
     borderStyle: 'solid',
   },
   imagePickerIcon: {
     fontSize: 32,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   imagePickerText: {
     fontSize: typography.size.sm,
@@ -285,12 +285,12 @@ const styles = StyleSheet.create({
   },
   guideBox: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   guideTitle: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   guideText: {
     fontSize: 13,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   },
   analyzeButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   analyzeButtonDisabled: {

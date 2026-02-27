@@ -13,7 +13,7 @@ import { staggeredEntry } from '@/lib/animations';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { useWorkoutData, type WorkoutExercise } from '@/hooks/useWorkoutData';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 // 플랜이 없을 때 사용하는 기본 운동
 const DEFAULT_EXERCISES: WorkoutExercise[] = [
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: spacing.md,
   },
   endText: {
     fontSize: typography.size.base,
@@ -334,23 +334,23 @@ const styles = StyleSheet.create({
   },
   stateLabel: {
     fontSize: typography.size.lg,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   timerText: {
     fontSize: 72,
     fontWeight: typography.weight.bold,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   timerSmall: {
     fontSize: typography.size['2xl'],
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
   nextExerciseText: {
     fontSize: typography.size.base,
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   skipButton: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 12,
     borderWidth: 1,
     borderRadius: radii.md,
@@ -361,11 +361,11 @@ const styles = StyleSheet.create({
   exerciseName: {
     fontSize: typography.size['4xl'],
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   setInfo: {
     fontSize: typography.size.lg,
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   repsText: {
     fontSize: 72,
@@ -396,22 +396,22 @@ const styles = StyleSheet.create({
   readyTitle: {
     fontSize: 28,
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   readySubtitle: {
     fontSize: typography.size.base,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   exercisePreview: {
     gap: 12,
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   previewItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.md,
   },
   previewNumber: {
     width: 32,
@@ -443,22 +443,22 @@ const styles = StyleSheet.create({
   },
   completedEmoji: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   completedTitle: {
     fontSize: 32,
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   completedSubtitle: {
     fontSize: typography.size.base,
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     padding: 20,
-    marginBottom: 48,
+    marginBottom: spacing.xxl,
   },
   statItem: {
     alignItems: 'center',
@@ -466,15 +466,15 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 28,
     fontWeight: typography.weight.bold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   statLabel: {
     fontSize: typography.size.sm,
   },
   finishButton: {
     borderRadius: 12,
-    paddingHorizontal: 48,
-    paddingVertical: 16,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.md,
   },
   finishButtonText: {
     fontSize: typography.size.lg,

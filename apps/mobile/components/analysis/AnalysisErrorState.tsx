@@ -7,7 +7,7 @@
  */
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 export interface AnalysisErrorStateProps {
   /** 에러 메시지 */
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    marginBottom: 24,
+    marginBottom: spacing.lg,
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   retryButton: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   },
   homeButton: {
     borderWidth: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',

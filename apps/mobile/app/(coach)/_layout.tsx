@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { Stack } from 'expo-router';
 import { Pressable, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing } from '../../lib/theme';
 
 export default function CoachLayout() {
   const { colors, brand, typography } = useTheme();
@@ -49,8 +49,8 @@ export default function CoachLayout() {
 
 const styles = StyleSheet.create({
   headerButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   headerButtonText: {
     fontSize: typography.size.base,

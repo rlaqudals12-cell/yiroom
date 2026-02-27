@@ -8,7 +8,7 @@ import { ArrowRight } from 'lucide-react-native';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, radii } from '../../lib/theme';
+import { useTheme, radii , spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import { MetricDelta } from './ScoreChangeBadge';
 
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
     borderRadius: radii.full,
   },

@@ -13,7 +13,7 @@ import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { workoutLogger } from '@/lib/utils/logger';
 import { generateWeeklyPlan, estimatePlanMinutes } from '@/lib/workout/planTemplates';
 
@@ -289,16 +289,16 @@ export default function WorkoutResultScreen() {
 const styles = StyleSheet.create({
   resultHeader: {
     alignItems: 'center',
-    marginBottom: 24,
-    padding: 24,
+    marginBottom: spacing.lg,
+    padding: spacing.lg,
   },
   resultEmoji: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   resultLabel: {
     fontSize: typography.size.sm,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   resultType: {
     fontSize: 32,
@@ -312,21 +312,21 @@ const styles = StyleSheet.create({
   },
   section: {
     padding: 20,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   sectionTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   tag: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
   },
   tagText: {
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
     borderBottomWidth: 1,
   },
   settingLabel: {
@@ -364,12 +364,12 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   buttons: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     gap: 12,
   },
   primaryButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   primaryButtonText: {
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderWidth: 1,
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   secondaryButtonText: {

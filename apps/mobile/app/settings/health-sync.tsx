@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 
 import { useHealthData } from '@/hooks/useHealthData';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 export default function HealthSyncScreen() {
@@ -219,17 +219,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
-    gap: 16,
+    padding: spacing.md,
+    gap: spacing.md,
   },
   card: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   cardTitle: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   cardSubtitle: {
     fontSize: typography.size.sm,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   },
   dataList: {
     marginTop: 12,
-    gap: 8,
+    gap: spacing.sm,
   },
   dataItem: {
     flexDirection: 'row',
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginTop: 12,
-    gap: 8,
+    gap: spacing.sm,
   },
   statItem: {
     width: '48%',
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: typography.size.xs,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   syncRow: {
     flexDirection: 'row',
@@ -288,8 +288,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   syncButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: radii.md,
     minWidth: 80,
     alignItems: 'center',
@@ -302,8 +302,8 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   footer: {
-    marginTop: 8,
-    paddingHorizontal: 8,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.sm,
   },
   footerText: {
     fontSize: typography.size.xs,

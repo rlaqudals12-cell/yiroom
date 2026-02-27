@@ -233,7 +233,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
                 fontSize: typography.size.xs,
                 fontWeight: typography.weight.semibold,
                 color: brand.primary,
-                marginLeft: 4,
+                marginLeft: spacing.xs,
               }}
             >
               비교

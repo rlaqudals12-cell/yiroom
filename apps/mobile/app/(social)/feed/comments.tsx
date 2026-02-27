@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { ScreenContainer } from '@/components/ui';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { formatRelativeTime } from '../../../lib/feed';
@@ -234,13 +234,13 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { textAlign: 'center' },
   commentCard: { padding: 12 },
-  commentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 },
+  commentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: 8 },
   commentAvatar: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
   commentAvatarText: { fontSize: typography.size.xs, fontWeight: typography.weight.semibold },
   commentUser: {},
   commentTime: { marginLeft: 'auto' },
   commentContent: { lineHeight: 20, paddingLeft: 36 },
-  inputBar: { flexDirection: 'row', padding: 12, gap: 8, borderTopWidth: StyleSheet.hairlineWidth, alignItems: 'center' },
-  commentInput: { flex: 1, paddingHorizontal: 16, paddingVertical: 10 },
-  sendButton: { paddingHorizontal: 16, paddingVertical: 10 },
+  inputBar: { flexDirection: 'row', padding: 12, gap: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, alignItems: 'center' },
+  commentInput: { flex: 1, paddingHorizontal: spacing.md, paddingVertical: 10 },
+  sendButton: { paddingHorizontal: spacing.md, paddingVertical: 10 },
 });

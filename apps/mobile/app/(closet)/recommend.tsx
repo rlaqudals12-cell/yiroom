@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { ScreenContainer, SuccessCheckmark } from '../../components/ui';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 import type { Season as ClothingSeason } from '../../lib/inventory/types';
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
@@ -463,13 +463,13 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   content: {
-    padding: 16,
+    padding: spacing.md,
     paddingBottom: 100,
   },
   weatherCard: {
     borderRadius: radii.xl,
-    padding: 16,
-    marginBottom: 16,
+    padding: spacing.md,
+    marginBottom: spacing.md,
   },
   weatherRow: {
     flexDirection: 'row',
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   },
   weatherTags: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   tag: {
     paddingHorizontal: 12,
@@ -501,13 +501,13 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   outfitSection: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   outfitHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   outfitTitle: {
     fontSize: typography.size.lg,
@@ -574,43 +574,43 @@ const styles = StyleSheet.create({
   },
   tipsCard: {
     borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
+    padding: spacing.md,
+    marginTop: spacing.md,
   },
   tipsTitle: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   tipText: {
     fontSize: 13,
     lineHeight: 20,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   noOutfitContainer: {
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
   },
   noOutfitText: {
     fontSize: 15,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   noOutfitSubtext: {
     fontSize: 13,
   },
   summaryCard: {
     borderRadius: radii.xl,
-    padding: 16,
+    padding: spacing.md,
   },
   summaryTitle: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   summaryItem: {
     alignItems: 'center',
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: typography.size.xs,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   suggestionsContainer: {
     borderTopWidth: 1,
@@ -630,30 +630,30 @@ const styles = StyleSheet.create({
   suggestionText: {
     fontSize: 13,
     lineHeight: 20,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: 17,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   emptySubtext: {
     fontSize: typography.size.sm,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   emptyButton: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 12,
     borderRadius: 12,
   },
@@ -665,8 +665,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 16,
+    gap: spacing.sm,
+    marginTop: spacing.md,
     paddingVertical: 14,
     borderRadius: 12,
   },

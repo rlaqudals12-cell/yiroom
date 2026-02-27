@@ -28,7 +28,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -287,13 +287,13 @@ const styles = StyleSheet.create({
     height: SCREEN_HEIGHT,
   },
   titleContainer: {
-    paddingTop: 4,
+    paddingTop: spacing.xs,
   },
   titleDivider: {
     height: StyleSheet.hairlineWidth,
   },
   content: {
     flex: 1,
-    paddingTop: 8,
+    paddingTop: spacing.sm,
   },
 });

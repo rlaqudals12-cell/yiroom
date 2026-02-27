@@ -7,7 +7,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 export default function SkinAnalysisScreen() {
   const { colors, brand } = useTheme();
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   iconContainer: {
     width: 80,
@@ -141,12 +141,12 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: radii.xl,
     padding: 20,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   cardTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   itemList: {
     gap: 12,
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   guideList: {
-    gap: 8,
+    gap: spacing.sm,
   },
   guideItem: {
     fontSize: typography.size.sm,
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   startButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   startButtonText: {

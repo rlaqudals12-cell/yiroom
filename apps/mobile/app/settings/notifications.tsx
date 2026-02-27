@@ -16,7 +16,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import {
@@ -374,15 +374,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-    padding: 16,
+    padding: spacing.md,
     paddingBottom: 40,
   },
   permissionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
   },
   bannerIcon: {
     fontSize: typography.size['2xl'],
@@ -400,13 +400,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
-    marginLeft: 4,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: spacing.md,
   },
   settingsRowContent: {
     flexDirection: 'row',
@@ -442,11 +442,11 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    marginHorizontal: 16,
+    marginHorizontal: spacing.md,
   },
   intervalSelector: {
     borderTopWidth: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   intervalLabel: {
     fontSize: 13,
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   },
   intervalOptions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   intervalOption: {
     flex: 1,
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   },
   testButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
   },
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   infoSection: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
   },
   infoText: {
     fontSize: typography.size.xs,

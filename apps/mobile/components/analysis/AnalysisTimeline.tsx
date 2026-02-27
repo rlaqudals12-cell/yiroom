@@ -8,7 +8,7 @@ import { Palette, Droplets, Ruler, Clock } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { AnalysisSummary } from '../../hooks/useUserAnalyses';
 
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   },
   timelineContent: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   timelineRow: {
     flexDirection: 'row',

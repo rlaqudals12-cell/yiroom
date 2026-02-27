@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import { settingsLogger } from '../../lib/utils/logger';
@@ -287,21 +287,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: spacing.md,
     paddingBottom: 40,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-    marginLeft: 4,
+    marginLeft: spacing.xs,
   },
   sectionIcon: {
     fontSize: 20,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   sectionTitle: {
     fontSize: typography.size.base,
@@ -309,11 +309,11 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   presetRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
     marginBottom: 12,
   },
   presetButton: {
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   customInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   customInput: {
     flex: 1,
@@ -343,10 +343,10 @@ const styles = StyleSheet.create({
     width: 40,
   },
   goalRow: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   goalRowBorder: {
-    paddingTop: 16,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
   },
   goalLabel: {
@@ -356,10 +356,10 @@ const styles = StyleSheet.create({
   },
   goalSelector: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   goalOption: {
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
     paddingHorizontal: 12,
     borderRadius: radii.md,
   },
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   infoSection: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
   },
   infoText: {
     fontSize: typography.size.xs,

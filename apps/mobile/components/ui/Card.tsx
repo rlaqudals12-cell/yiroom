@@ -6,7 +6,7 @@
  */
 import { StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 // --- Card ---
 
@@ -93,7 +93,7 @@ export function CardDescription({ children, style }: CardDescriptionProps): Reac
           color: colors.mutedForeground,
           fontSize: typography.size.sm,
           lineHeight: typography.size.sm * typography.lineHeight.normal,
-          marginTop: 4,
+          marginTop: spacing.xs,
         },
         style,
       ]}
@@ -131,20 +131,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   header: {
-    padding: 16,
-    paddingBottom: 8,
+    padding: spacing.md,
+    paddingBottom: spacing.sm,
   },
   title: {
     lineHeight: 24,
   },
   content: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
   },
 });

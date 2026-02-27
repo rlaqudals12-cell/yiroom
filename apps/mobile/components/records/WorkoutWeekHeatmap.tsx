@@ -76,7 +76,7 @@ export function WorkoutWeekHeatmap({
                 style={{
                   fontSize: typography.size.xs,
                   color: colors.mutedForeground,
-                  marginTop: 4,
+                  marginTop: spacing.xs,
                   textAlign: 'center',
                 }}
               >

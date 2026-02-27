@@ -21,7 +21,7 @@ import Animated, {
   useReducedMotion,
 } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 // ============================================
 // 등급 계산 헬퍼
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   milestoneLabels: {
     position: 'relative',
     height: 18,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   milestoneLabel: {
     position: 'absolute',

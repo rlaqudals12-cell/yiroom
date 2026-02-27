@@ -22,7 +22,7 @@ import {
   Alert,
 } from 'react-native';
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 import type { FeedItem } from '../../lib/feed/types';
 import { useClerkSupabaseClient } from '../../lib/supabase';
@@ -455,14 +455,14 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   postContainer: {
-    marginBottom: 8,
-    padding: 16,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
   },
   postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   userInfo: {
     flexDirection: 'row',
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   postContent: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   typeRow: {
     flexDirection: 'row',
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   },
   typeIcon: {
     fontSize: typography.size.lg,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   typeLabel: {
     fontSize: 13,
@@ -521,14 +521,14 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 15,
-    marginTop: 8,
+    marginTop: spacing.sm,
     lineHeight: 22,
   },
   postActions: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    paddingTop: 16,
-    gap: 32,
+    paddingTop: spacing.md,
+    gap: spacing.xl,
   },
   actionButton: {
     flexDirection: 'row',
@@ -536,14 +536,14 @@ const styles = StyleSheet.create({
   },
   actionIcon: {
     fontSize: 20,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   actionText: {
     fontSize: typography.size.sm,
   },
   commentsHeader: {
     marginTop: 20,
-    paddingTop: 16,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
   },
   commentsTitle: {
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   emptyComments: {
-    padding: 32,
+    padding: spacing.xl,
     alignItems: 'center',
   },
   emptyText: {
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
   },
   commentItem: {
     flexDirection: 'row',
-    padding: 16,
+    padding: spacing.md,
     borderBottomWidth: 1,
   },
   commentAvatar: {
@@ -581,7 +581,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   commentUserName: {
     fontSize: typography.size.sm,
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderRadius: 20,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 10,
     fontSize: 15,
     maxHeight: 100,

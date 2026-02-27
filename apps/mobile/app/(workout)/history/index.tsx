@@ -10,7 +10,7 @@ import Animated from 'react-native-reanimated';
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { staggeredEntry } from '@/lib/animations';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
@@ -282,7 +282,7 @@ function getWeekStartDate(): Date {
 
 const styles = StyleSheet.create({
   statsSection: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   statsTitle: {
     fontSize: typography.size.lg,
@@ -291,17 +291,17 @@ const styles = StyleSheet.create({
   },
   statsGrid: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   statCard: {
     flex: 1,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   statValue: {
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   statLabel: {
     fontSize: typography.size.xs,
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   logCard: {
-    padding: 16,
+    padding: spacing.md,
     marginBottom: 12,
   },
   logHeader: {
@@ -350,11 +350,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   exerciseChip: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: 12,
   },
   exerciseChipText: {

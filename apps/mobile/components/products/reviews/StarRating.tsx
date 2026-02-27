@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Pressable, Text, StyleSheet, AccessibilityProps } from 'react-native';
 
-import { useTheme, typography} from '../../../lib/theme';
+import { useTheme, typography, spacing } from '../../../lib/theme';
 import { statusColors } from '../../../lib/theme/tokens';
 
 import { useAppPreferencesStore } from '@/lib/stores';
@@ -183,12 +183,12 @@ const styles = StyleSheet.create({
   infoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   averageText: {
     fontWeight: typography.weight.semibold,
   },
   countText: {
-    marginLeft: 4,
+    marginLeft: spacing.xs,
   },
 });

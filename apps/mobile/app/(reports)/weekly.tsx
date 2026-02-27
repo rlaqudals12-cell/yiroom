@@ -8,7 +8,7 @@ import { View, Text, StyleSheet, type TextStyle } from 'react-native';
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 
 import { useWeeklyReport } from '../../hooks/useWeeklyReport';
-import { useTheme, typography, radii } from '../../lib/theme';
+import { useTheme, typography, radii , spacing } from '../../lib/theme';
 
 export default function WeeklyReportScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography, status } = useTheme();
@@ -249,10 +249,10 @@ function MacroChip({
 }
 
 const styles = StyleSheet.create({
-  periodCard: { marginHorizontal: 16, marginTop: 12, padding: 16, alignItems: 'center' },
+  periodCard: { marginHorizontal: spacing.md, marginTop: 12, padding: spacing.md, alignItems: 'center' },
   periodLabel: { marginBottom: 4 },
   periodDates: {},
-  card: { marginHorizontal: 16, marginTop: 12, padding: 16 },
+  card: { marginHorizontal: spacing.md, marginTop: 12, padding: 16 },
   cardTitle: { marginBottom: 12 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between' },
   statItem: { alignItems: 'center', flex: 1 },
@@ -266,16 +266,16 @@ const styles = StyleSheet.create({
   progressFill: { height: '100%' },
   chartContainer: { flexDirection: 'row', justifyContent: 'space-between', height: 140, alignItems: 'flex-end' },
   barCol: { flex: 1, alignItems: 'center' },
-  barValue: { marginBottom: 4, height: 16 },
+  barValue: { marginBottom: spacing.xs, height: 16 },
   barTrack: { width: 20, height: 100, borderRadius: 4, justifyContent: 'flex-end', overflow: 'hidden' },
   barFill: { width: '100%' },
   barLabel: { marginTop: 4 },
   macroRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
-  macroChip: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: 8, borderRadius: radii.md, gap: 4 },
+  macroChip: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: spacing.sm, borderRadius: radii.md, gap: 4 },
   macroDot: { width: 8, height: 8, borderRadius: 4 },
   macroLabel: {},
   macroValue: { marginLeft: 'auto' },
-  insightRow: { flexDirection: 'row', marginBottom: 8, paddingRight: 8 },
-  insightDot: { fontSize: typography.size.base, marginRight: 8, lineHeight: 22 },
+  insightRow: { flexDirection: 'row', marginBottom: spacing.sm, paddingRight: 8 },
+  insightDot: { fontSize: typography.size.base, marginRight: spacing.sm, lineHeight: 22 },
   insightText: { flex: 1, lineHeight: 22 },
 });

@@ -5,7 +5,7 @@
 
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing } from '../../lib/theme';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
 interface TodaySummaryWidgetProps {
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     width: 155,
     height: 155,
     borderRadius: 22,
-    padding: 16,
+    padding: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     width: 329,
     height: 155,
     borderRadius: 22,
-    padding: 16,
+    padding: spacing.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   title: {
     fontSize: 17,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   streakBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: 12,
   },
   streakBadgeText: {
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   },
   iconRow: {
     flexDirection: 'row',
-    gap: 16,
+    gap: spacing.md,
   },
   statusIcon: {
     fontSize: 28,
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   },
   statIcon: {
     fontSize: 24,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   statLabel: {
     fontSize: 12,
@@ -247,12 +247,12 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   progressRow: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   progressLabel: {
     fontSize: 15,

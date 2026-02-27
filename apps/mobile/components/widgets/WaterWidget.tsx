@@ -5,7 +5,7 @@
 
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
-import { useTheme, typography, radii } from '../../lib/theme';
+import { useTheme, typography, radii , spacing } from '../../lib/theme';
 
 interface WaterWidgetProps {
   current: number; // ml
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     width: 155,
     height: 155,
     borderRadius: 22,
-    padding: 16,
+    padding: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     width: 329,
     height: 155,
     borderRadius: 22,
-    padding: 16,
+    padding: spacing.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 16,
+    gap: spacing.md,
   },
   cupContainer: {
     width: 50,
@@ -168,14 +168,14 @@ const styles = StyleSheet.create({
   },
   remaining: {
     fontSize: 12,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   quickAdd: {
     justifyContent: 'center',
   },
   addButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
   },
   addButtonText: {
@@ -184,12 +184,12 @@ const styles = StyleSheet.create({
   },
   waterIcon: {
     fontSize: 36,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   currentSmall: {
     fontSize: 24,
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   miniProgressBar: {
     width: '100%',

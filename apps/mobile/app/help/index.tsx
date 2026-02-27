@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { View, Text, Pressable, Linking, StyleSheet } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 interface FAQItem {
@@ -72,7 +72,7 @@ export default function HelpScreen(): React.JSX.Element {
               fontSize: typography.size.xl,
               fontWeight: typography.weight.bold,
               color: colors.foreground,
-              marginBottom: 4,
+              marginBottom: spacing.xs,
             }}
           >
             도움말

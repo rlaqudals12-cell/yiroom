@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard } from '../ui';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing } from '../../lib/theme';
 import { SectionHeader } from '../ui';
 import { TIMING } from '../../lib/animations';
 
@@ -91,7 +91,7 @@ export function HomeTodaySection({
 
       <GlassCard
         intensity={30}
-        style={{ padding: 0, marginBottom: 24, borderRadius: radii.xl, overflow: 'hidden' }}
+        style={{ padding: 0, marginBottom: spacing.lg, borderRadius: radii.xl, overflow: 'hidden' }}
       >
         {tasks.map((task, index) => (
           <Pressable
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   todoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 14,
   },
   checkbox: {

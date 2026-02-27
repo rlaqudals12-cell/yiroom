@@ -8,7 +8,7 @@ import { Image } from 'expo-image';
 import { Star } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 export interface BeautyProduct {
   id: string;
@@ -176,6 +176,6 @@ const styles = StyleSheet.create({
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
 });

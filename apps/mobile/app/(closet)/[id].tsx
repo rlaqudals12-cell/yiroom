@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 import {
   useCloset,
@@ -79,8 +79,8 @@ export default function ItemDetailScreen() {
       <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <SkeletonCard style={{ width: '100%', aspectRatio: 1 }} />
-          <SkeletonCard style={{ marginHorizontal: 16, marginTop: 16, height: 120, borderRadius: 12 }} />
-          <SkeletonCard style={{ marginHorizontal: 16, marginTop: 16, height: 80, borderRadius: 12 }} />
+          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 120, borderRadius: 12 }} />
+          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 80, borderRadius: 12 }} />
         </View>
       </ScreenContainer>
     );
@@ -278,16 +278,16 @@ const styles = StyleSheet.create({
     fontSize: 64,
   },
   infoCard: {
-    marginHorizontal: 16,
-    marginTop: 16,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   infoHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   infoHeaderContent: {
     flex: 1,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 20,
     fontWeight: typography.weight.bold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   itemCategory: {
     fontSize: typography.size.sm,
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   tag: {
     paddingHorizontal: 12,
@@ -339,9 +339,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingBottom: 32,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    paddingBottom: spacing.xl,
     borderTopWidth: 1,
     gap: 12,
   },
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 14,
     borderRadius: 12,
-    gap: 8,
+    gap: spacing.sm,
   },
   deleteButton: {},
   editButton: {},
@@ -364,14 +364,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
   },
   emptyText: {
     fontSize: 15,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   backButton: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 12,
     borderRadius: 12,
   },

@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
   Share,
 } from 'react-native';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 16,
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   indicatorDot: {
     width: 8,
@@ -624,12 +624,12 @@ const styles = StyleSheet.create({
   },
   brand: {
     fontSize: typography.size.sm,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   productName: {
     fontSize: 22,
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   ratingRow: {
     flexDirection: 'row',
@@ -647,19 +647,19 @@ const styles = StyleSheet.create({
   categoryBadge: {
     fontSize: typography.size.xs,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: 12,
   },
   price: {
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   matchCard: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   matchIcon: {
     fontSize: typography.size['2xl'],
@@ -708,7 +708,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: 12,
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   description: {
     fontSize: typography.size.sm,
@@ -721,24 +721,24 @@ const styles = StyleSheet.create({
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   benefitDot: {
     fontSize: typography.size.sm,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   benefitText: {
     fontSize: typography.size.sm,
   },
   reviewCard: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     marginBottom: 12,
   },
   reviewHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   reviewUser: {
     fontSize: typography.size.sm,
@@ -749,12 +749,12 @@ const styles = StyleSheet.create({
   },
   reviewDate: {
     fontSize: typography.size.xs,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   reviewContent: {
     fontSize: typography.size.sm,
     lineHeight: 20,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   reviewHelpful: {
     fontSize: typography.size.xs,
@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
   actionBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.md,
     borderTopWidth: 1,
     gap: 12,
   },
@@ -779,7 +779,7 @@ const styles = StyleSheet.create({
   purchaseButton: {
     flex: 1,
     borderRadius: 12,
-    paddingVertical: 16,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   purchaseButtonText: {

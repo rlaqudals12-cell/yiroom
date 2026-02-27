@@ -22,7 +22,7 @@ import {
 import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { useCloset, type ClothingCategory, type Season } from '@/lib/inventory';
 import { useAppPreferencesStore } from '@/lib/stores';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { closetLogger } from '@/lib/utils/logger';
 
 // 카테고리 옵션
@@ -477,7 +477,7 @@ function useStyles() {
       left: 0,
       right: 0,
       backgroundColor: 'rgba(0,0,0,0.5)',
-      padding: 8,
+      padding: spacing.sm,
       borderBottomLeftRadius: 12,
       borderBottomRightRadius: 12,
       alignItems: 'center',
@@ -496,19 +496,19 @@ function useStyles() {
     },
     imagePlaceholderIcon: {
       fontSize: 48,
-      marginBottom: 8,
+      marginBottom: spacing.sm,
     },
     imagePlaceholderText: {
       color: colors.mutedForeground,
-      marginBottom: 16,
+      marginBottom: spacing.md,
     },
     imageButtons: {
       flexDirection: 'row',
       gap: 12,
     },
     imageButton: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
       backgroundColor: colors.card,
       borderRadius: radii.md,
     },
@@ -519,7 +519,7 @@ function useStyles() {
     section: {
       padding: 20,
       backgroundColor: colors.card,
-      marginTop: 8,
+      marginTop: spacing.sm,
     },
     sectionTitle: {
       fontSize: typography.size.base,
@@ -548,13 +548,13 @@ function useStyles() {
     optionGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: spacing.sm,
     },
     optionButton: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: 12,
-      paddingVertical: 8,
+      paddingVertical: spacing.sm,
       backgroundColor: colors.secondary,
       borderRadius: radii.md,
       gap: 6,
@@ -575,7 +575,7 @@ function useStyles() {
     colorGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: spacing.sm,
     },
     colorButton: {
       flexDirection: 'row',
@@ -605,7 +605,7 @@ function useStyles() {
     },
     optionRow: {
       flexDirection: 'row',
-      gap: 8,
+      gap: spacing.sm,
     },
     seasonButton: {
       flex: 1,
@@ -619,7 +619,7 @@ function useStyles() {
     },
     seasonIcon: {
       fontSize: typography.size['2xl'],
-      marginBottom: 4,
+      marginBottom: spacing.xs,
     },
     seasonLabel: {
       color: colors.mutedForeground,
@@ -631,11 +631,11 @@ function useStyles() {
     chipContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: spacing.sm,
     },
     chip: {
       paddingHorizontal: 14,
-      paddingVertical: 8,
+      paddingVertical: spacing.sm,
       backgroundColor: colors.secondary,
       borderRadius: radii.xl,
     },
@@ -654,7 +654,7 @@ function useStyles() {
       bottom: 0,
       left: 0,
       right: 0,
-      padding: 16,
+      padding: spacing.md,
       backgroundColor: colors.card,
       borderTopWidth: 1,
       borderTopColor: colors.border,

@@ -31,7 +31,7 @@ import {
   GENDER_LABELS,
   ACTIVITY_LEVEL_LABELS,
 } from '../../lib/onboarding';
-import { useTheme, typography, radii } from '../../lib/theme';
+import { useTheme, typography, radii , spacing } from '../../lib/theme';
 
 // 온보딩 Step 2 히어로 색상 (blue-500 계열 — 기본 정보 아이덴티티)
 const STEP2_ACCENT = '#3B82F6';
@@ -468,7 +468,7 @@ function Input({
           color: colors.foreground,
           fontSize: typography.size.sm,
           fontWeight: typography.weight.semibold,
-          marginBottom: 8,
+          marginBottom: spacing.sm,
         }}
       >
         {label}
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   },
   // 히어로 (웹 파스텔 패턴)
   heroHeader: {
-    padding: 32,
+    padding: spacing.xl,
     alignItems: 'center',
   },
   heroIconWrap: {
@@ -523,12 +523,12 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   heroTitle: {
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   heroSubtitle: {
     fontSize: typography.size.sm,
@@ -545,22 +545,22 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     flex: 1,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   customInput: {
     flex: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   inputRow: {
     flexDirection: 'row',
-    gap: 16,
+    gap: spacing.md,
   },
   inputGroup: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   activityButton: {
     flexDirection: 'row',

@@ -5,7 +5,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { GradientBackground } from '../ui';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 
 interface HomeHeaderProps {
@@ -55,11 +55,11 @@ export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.E
 
 const styles = StyleSheet.create({
   greeting: {
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   userName: {
     fontWeight: typography.weight.bold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   slogan: {
     marginTop: 2,

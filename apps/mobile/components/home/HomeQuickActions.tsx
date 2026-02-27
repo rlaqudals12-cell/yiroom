@@ -8,7 +8,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { GlassCard, AnimatedCard } from '../ui';
 import { GradientBackground } from '../ui';
 import { SectionHeader } from '../ui';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 
 interface QuickAction {
@@ -153,12 +153,12 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: 'row',
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   actionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
 });

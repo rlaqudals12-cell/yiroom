@@ -17,7 +17,7 @@ import {
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 
 import { useClerkSupabaseClient } from '../../lib/supabase';
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 interface WeightEntry {
   id: string;

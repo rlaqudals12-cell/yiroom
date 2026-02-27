@@ -4,7 +4,7 @@
  */
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 // 알림 항목 (향후 DB 연동)
@@ -37,7 +37,7 @@ export default function NotificationsScreen(): React.JSX.Element {
               fontSize: typography.size.xl,
               fontWeight: typography.weight.bold,
               color: colors.foreground,
-              marginBottom: 4,
+              marginBottom: spacing.xs,
             }}
           >
             알림
@@ -93,7 +93,7 @@ export default function NotificationsScreen(): React.JSX.Element {
                 </View>
                 <Text
                   style={{
-                    marginTop: 4,
+                    marginTop: spacing.xs,
                     fontSize: typography.size.sm,
                     color: colors.mutedForeground,
                     lineHeight: 20,

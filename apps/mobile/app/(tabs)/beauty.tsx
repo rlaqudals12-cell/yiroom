@@ -31,7 +31,7 @@ import { CollapsibleSection, MenuCard, GradientBackground, ScreenContainer, Sect
 import { useUserAnalyses } from '../../hooks/useUserAnalyses';
 import { useAffiliateProducts } from '../../lib/affiliate/useAffiliateProducts';
 import { staggeredEntry, TIMING } from '../../lib/animations';
-import { useTheme, typography, radii, ICON_BG_OPACITY, borderGlow } from '../../lib/theme';
+import { useTheme, typography, radii, ICON_BG_OPACITY, borderGlow , spacing } from '../../lib/theme';
 
 export default function BeautyTab(): React.JSX.Element {
   const router = useRouter();

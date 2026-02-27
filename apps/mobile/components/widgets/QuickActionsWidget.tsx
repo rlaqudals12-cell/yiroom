@@ -6,7 +6,7 @@
 import * as Haptics from 'expo-haptics';
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 
-import { useTheme, typography, radii } from '../../lib/theme';
+import { useTheme, typography, radii , spacing } from '../../lib/theme';
 import { widgetLogger } from '../../lib/utils/logger';
 import { WIDGET_DEEP_LINKS, QuickActionType } from '../../lib/widgets/types';
 
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     width: 155,
     height: 155,
     borderRadius: 22,
-    padding: 16,
+    padding: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     width: 329,
     height: 155,
     borderRadius: 22,
-    padding: 16,
+    padding: spacing.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   smallGrid: {
     flexDirection: 'row',
-    gap: 16,
+    gap: spacing.md,
   },
   smallButton: {
     width: 56,
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   buttonIcon: {
     fontSize: 24,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   buttonLabel: {
     fontSize: 11,

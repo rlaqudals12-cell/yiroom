@@ -14,7 +14,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, type Friend } from '../../../lib/social';
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    padding: 16,
+    padding: spacing.md,
     gap: 12,
   },
   actionButton: {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 12,
     padding: 14,
-    gap: 8,
+    gap: spacing.sm,
   },
   actionIcon: {
     fontSize: typography.size.lg,
@@ -193,10 +193,10 @@ const styles = StyleSheet.create({
   },
   statsCard: {
     flexDirection: 'row',
-    marginHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   statItem: {
     flex: 1,
@@ -208,14 +208,14 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: typography.size.xs,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   statDivider: {
     width: 1,
-    marginVertical: 4,
+    marginVertical: spacing.xs,
   },
   listContent: {
-    padding: 16,
+    padding: spacing.md,
     paddingTop: 0,
     gap: 10,
   },
@@ -269,24 +269,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   emptySubtext: {
     fontSize: typography.size.sm,
-    marginBottom: 24,
+    marginBottom: spacing.lg,
     textAlign: 'center',
   },
   emptyButton: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 12,
     borderRadius: 12,
   },

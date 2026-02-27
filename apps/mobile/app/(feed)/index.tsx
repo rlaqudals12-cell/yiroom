@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -257,12 +257,12 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
   },
   tab: {
     paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginRight: 8,
+    paddingHorizontal: spacing.md,
+    marginRight: spacing.sm,
   },
   tabActive: {},
   tabText: {
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 12,
-    marginHorizontal: 16,
+    marginHorizontal: spacing.md,
     marginTop: 12,
     borderRadius: radii.md,
   },
@@ -296,12 +296,12 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   listContent: {
-    padding: 16,
+    padding: spacing.md,
     gap: 12,
   },
   feedCard: {
     borderRadius: radii.xl,
-    padding: 16,
+    padding: spacing.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   },
   levelBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: 12,
   },
   levelText: {
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   typeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   typeIcon: {
     fontSize: typography.size.base,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderTopWidth: 1,
     paddingTop: 12,
-    gap: 24,
+    gap: spacing.lg,
   },
   actionButton: {
     flexDirection: 'row',
@@ -403,12 +403,12 @@ const styles = StyleSheet.create({
   },
   emptyIcon: {
     fontSize: 48,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   emptySubtitle: {
     fontSize: typography.size.sm,

@@ -17,7 +17,7 @@ import {
   Share,
   Platform,
 } from 'react-native';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { feedTypeConfig, formatRelativeTime, type FeedItem, type FeedTab } from '../../../lib/feed';
@@ -304,13 +304,13 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 12,
-    gap: 8,
+    gap: spacing.sm,
   },
   tabButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
   },
   tabButtonText: {
@@ -318,13 +318,13 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   listContent: {
-    padding: 16,
-    paddingTop: 8,
+    padding: spacing.md,
+    paddingTop: spacing.sm,
     gap: 12,
   },
   feedCard: {
     borderRadius: radii.xl,
-    padding: 16,
+    padding: spacing.md,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: typography.size.sm,
-    marginTop: 4,
+    marginTop: spacing.xs,
     lineHeight: 20,
   },
   badgeHighlight: {
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
-    gap: 8,
+    gap: spacing.sm,
   },
   badgeHighlightEmoji: {
     fontSize: typography.size['2xl'],
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 20,
-    gap: 4,
+    gap: spacing.xs,
   },
   shareButton: {
     marginLeft: 'auto',
@@ -451,20 +451,20 @@ const styles = StyleSheet.create({
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   emptySubtitle: {
     fontSize: typography.size.sm,
-    marginBottom: 24,
+    marginBottom: spacing.lg,
     textAlign: 'center',
   },
   emptyButton: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 12,
     borderRadius: 12,
   },

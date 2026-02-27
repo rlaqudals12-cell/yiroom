@@ -8,7 +8,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing } from '../../lib/theme';
 import { errorLogger } from '../../lib/utils/logger';
 
 interface ErrorBoundaryProps {
@@ -110,11 +110,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: spacing.lg,
   },
   emoji: {
     fontSize: 64,
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   title: {
     fontSize: 22,
@@ -126,18 +126,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   errorBox: {
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 32,
+    padding: spacing.md,
+    marginBottom: spacing.xl,
     width: '100%',
   },
   errorTitle: {
     fontSize: 12,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     textTransform: 'uppercase',
   },
   errorText: {
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   retryButton: {
-    paddingHorizontal: 32,
+    paddingHorizontal: spacing.xl,
     paddingVertical: 14,
     borderRadius: 12,
   },

@@ -8,7 +8,7 @@ import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 
 import { ScoreGauge } from '../ui/ScoreGauge';
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 import { TIMING, usePulseGlow } from '../../lib/animations';
 import type { WellnessBreakdown } from '../../hooks/useWellnessScore';
 
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   breakdownHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   barTrack: {
     height: 6,

@@ -15,7 +15,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 interface InfoTooltipProps {
   /** 툴팁 텍스트 */
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconButton: {
-    marginLeft: 4,
+    marginLeft: spacing.xs,
     padding: 2,
   },
   tooltip: {},

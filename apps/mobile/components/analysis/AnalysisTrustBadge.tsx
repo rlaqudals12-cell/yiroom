@@ -6,7 +6,7 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 export type TrustBadgeType = 'ai' | 'fallback' | 'questionnaire';
 
@@ -71,7 +71,7 @@ export function AnalysisTrustBadge({
 const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: 12,
     alignSelf: 'center',
   },

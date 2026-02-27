@@ -6,7 +6,7 @@
 import { FlatList, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { Achievement } from '../../hooks/useWellnessScore';
 
@@ -125,7 +125,7 @@ function AchievementItem({
           fontWeight: typography.weight.medium,
           color: achievement.unlocked ? colors.foreground : colors.mutedForeground,
           textAlign: 'center',
-          marginTop: 4,
+          marginTop: spacing.xs,
         }}
         numberOfLines={1}
       >
@@ -145,8 +145,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   gridRow: {
-    gap: 8,
-    marginBottom: 8,
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
   item: {
     flex: 1,

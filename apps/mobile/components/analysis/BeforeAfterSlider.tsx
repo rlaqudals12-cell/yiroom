@@ -17,7 +17,7 @@ import Animated, {
   useReducedMotion,
 } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 interface BeforeAfterSliderProps {
   /** 이전(왼쪽) 이미지 URI */
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     right: 8,
   },
   overlayLabel: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
     borderRadius: 4,
     fontSize: 12,
@@ -214,11 +214,11 @@ const styles = StyleSheet.create({
   },
   sideBySide: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   sideBySideHalf: {
     flex: 1,
-    gap: 4,
+    gap: spacing.xs,
   },
   label: {
     textAlign: 'center',

@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -117,20 +117,20 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 48,
-    paddingHorizontal: 24,
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.lg,
   },
   iconCircle: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emoji: {
     fontSize: 28,
   },
   title: {
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   message: {
     textAlign: 'center',

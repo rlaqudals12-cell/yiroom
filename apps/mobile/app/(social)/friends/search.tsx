@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, type UserSearchResult } from '../../../lib/social';
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flexDirection: 'row',
-    padding: 16,
+    padding: spacing.md,
     gap: 10,
   },
   searchBar: {
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   searchIcon: {
     fontSize: typography.size.base,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   searchInput: {
     flex: 1,
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   clearIcon: {
     fontSize: typography.size.base,
-    padding: 4,
+    padding: spacing.xs,
   },
   searchButton: {
     borderRadius: 12,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   errorContainer: {
-    marginHorizontal: 16,
+    marginHorizontal: spacing.md,
     padding: 12,
     borderRadius: radii.md,
   },
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   listContent: {
-    padding: 16,
+    padding: spacing.md,
     paddingTop: 0,
     gap: 10,
   },
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
     borderRadius: radii.md,
   },
   addButtonText: {
@@ -302,11 +302,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: 15,

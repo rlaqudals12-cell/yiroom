@@ -14,7 +14,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { ComparisonCard } from '@/components/analysis/ComparisonCard';
-import { useTheme } from '@/lib/theme';
+import { useTheme , spacing } from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { useAnalysisComparison } from '@/hooks/useAnalysisComparison';
 import type { AnalysisModuleType } from '@/hooks/useAnalysisHistory';

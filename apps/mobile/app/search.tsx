@@ -35,8 +35,7 @@ import {
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { ScreenContainer } from '@/components/ui';
 
-import { moduleColors, statusColors, typography} from '@/lib/theme';
-import { useTheme } from '@/lib/theme';
+import { moduleColors, statusColors, useTheme, typography, spacing } from '@/lib/theme';
 import { TIMING } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 
@@ -439,8 +438,8 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    marginLeft: 8,
-    marginRight: 8,
+    marginLeft: spacing.sm,
+    marginRight: spacing.sm,
     height: 48,
   },
   quickGrid: {
@@ -460,7 +459,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   typeBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
   },
 });

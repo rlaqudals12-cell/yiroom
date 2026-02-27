@@ -29,7 +29,7 @@ import {
 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
 import { TIMING, usePulseGlow } from '@/lib/animations';
-import { typography, radii } from '@/lib/theme';
+import { typography, radii , spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const GUM_HEALTH_LABELS: Record<OralHealthAnalysisResult['gumHealth'], string> = {
@@ -297,7 +297,7 @@ export default function OralHealthResultScreen() {
 const localStyles = StyleSheet.create({
   headerContent: {
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   subInfo: {
     fontSize: typography.size.sm,
@@ -310,7 +310,7 @@ const localStyles = StyleSheet.create({
   },
   tabContent: {
     gap: 20,
-    paddingBottom: 8,
+    paddingBottom: spacing.sm,
   },
   sectionTitle: {
     fontSize: typography.size.base,
@@ -334,12 +334,12 @@ const localStyles = StyleSheet.create({
     fontWeight: '600',
   },
   tipsCard: {
-    padding: 16,
+    padding: spacing.md,
     gap: 10,
   },
   tipItem: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   tipBullet: {
     fontSize: typography.size.base,

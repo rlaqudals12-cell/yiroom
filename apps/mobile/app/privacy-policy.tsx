@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography} from '../lib/theme';
+import { useTheme, typography, spacing } from '../lib/theme';
 
 type Lang = 'ko' | 'en';
 
@@ -616,17 +616,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
-    paddingBottom: 48,
+    padding: spacing.md,
+    paddingBottom: spacing.xxl,
   },
   langToggle: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 24,
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   langButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   langButtonText: {
     fontSize: typography.size.sm,
@@ -634,10 +634,10 @@ const styles = StyleSheet.create({
   },
   lastUpdated: {
     fontSize: typography.size.sm,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   section: {
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
   sectionTitle: {
     fontSize: typography.size.lg,
@@ -647,16 +647,16 @@ const styles = StyleSheet.create({
   paragraph: {
     fontSize: 15,
     lineHeight: 24,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   bulletRow: {
     flexDirection: 'row',
-    paddingLeft: 8,
+    paddingLeft: spacing.sm,
     marginBottom: 6,
   },
   bullet: {
     fontSize: 15,
-    marginRight: 8,
+    marginRight: spacing.sm,
     marginTop: 1,
   },
   bulletText: {
@@ -666,13 +666,13 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     marginTop: 12,
-    padding: 16,
+    padding: spacing.md,
     borderRadius: 12,
   },
   infoTitle: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   infoText: {
     fontSize: typography.size.sm,
@@ -681,12 +681,12 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: typography.size.sm,
     color: '#F8C8DC',
-    marginTop: 8,
+    marginTop: spacing.sm,
     fontWeight: typography.weight.medium,
   },
   warningBox: {
     marginTop: 12,
-    padding: 16,
+    padding: spacing.md,
     borderRadius: 12,
     borderWidth: 1,
   },
@@ -697,7 +697,7 @@ const styles = StyleSheet.create({
   historyItem: {
     fontSize: 13,
     lineHeight: 20,
-    marginTop: 4,
-    paddingLeft: 8,
+    marginTop: spacing.xs,
+    paddingLeft: spacing.sm,
   },
 });

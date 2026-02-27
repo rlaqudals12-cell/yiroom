@@ -16,7 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useEffect } from 'react';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { brand } from '../../lib/theme/tokens';
 
 export interface BarDataItem {
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   horizontalLabel: {
     width: 56,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   horizontalTrack: {
     flex: 1,
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   horizontalValue: {
     width: 36,
     textAlign: 'right',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   // Vertical
   verticalContainer: {
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   verticalValue: {
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   verticalLabel: {
     marginTop: 6,

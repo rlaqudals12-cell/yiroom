@@ -22,7 +22,7 @@ import { ScreenContainer } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { staggeredEntry } from '@/lib/animations';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 import { useCloset, type ClothingCategory, CLOTHING_CATEGORY_LABELS } from '../../lib/inventory';
 
@@ -119,8 +119,8 @@ export default function ClosetScreen() {
           </View>
           <SkeletonText style={{ width: '90%', height: 36, alignSelf: 'center' }} />
           <View style={styles.gridRow}>
-            <SkeletonCard style={{ width: '48%', height: 180, marginTop: 16, marginLeft: 16 }} />
-            <SkeletonCard style={{ width: '48%', height: 180, marginTop: 16, marginRight: 16 }} />
+            <SkeletonCard style={{ width: '48%', height: 180, marginTop: spacing.md, marginLeft: 16 }} />
+            <SkeletonCard style={{ width: '48%', height: 180, marginTop: spacing.md, marginRight: 16 }} />
           </View>
         </View>
       </ScreenContainer>
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 12,
     gap: 10,
   },
@@ -324,24 +324,24 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   filterContainer: {
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   filterList: {
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
   },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   filterChipText: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   gridContent: {
-    padding: 16,
+    padding: spacing.md,
     paddingBottom: 100,
   },
   gridRow: {
@@ -397,19 +397,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: 15,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyButton: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 12,
     borderRadius: 12,
   },
@@ -439,9 +439,9 @@ const styles = StyleSheet.create({
   },
   sortOption: {
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     borderRadius: radii.lg,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   sortOptionText: {
     fontSize: 15,

@@ -10,7 +10,7 @@ import { router } from 'expo-router';
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing } from '../../lib/theme';
 import { ScreenContainer } from '../../components/ui';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 
@@ -224,27 +224,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: spacing.md,
     paddingBottom: 40,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
-    marginLeft: 4,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   settingsItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 14,
     borderRadius: 12,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   settingsIcon: {
     fontSize: 20,
@@ -266,20 +266,20 @@ const styles = StyleSheet.create({
   },
   versionSection: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: spacing.lg,
   },
   versionLabel: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   versionText: {
     fontSize: 13,
   },
   accountOption: {
     paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 8,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm,
     alignItems: 'center',
   },
   accountOptionText: {

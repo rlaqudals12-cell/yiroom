@@ -7,7 +7,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '../../../components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 const FEATURES = [
   { icon: '🦷', title: '치아 색상 분석', desc: 'VITA 기준 치아 색조 측정' },
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   featureIcon: { fontSize: 28, marginRight: 16 },
   featureText: { flex: 1 },
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 18,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   startButtonText: { fontSize: 17, fontWeight: typography.weight.semibold },
   notice: { fontSize: 13, textAlign: 'center', lineHeight: 20 },

@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography} from '../../../lib/theme';
+import { useTheme, typography, spacing } from '../../../lib/theme';
 
 import { StarRating, getRatingColor } from './StarRating';
 
@@ -92,14 +92,14 @@ export function ReviewSummarySkeleton() {
     <View style={[styles.container, { backgroundColor: colors.card }]}>
       <View style={[styles.averageSection, { borderRightColor: colors.border }]}>
         <View style={[styles.skeleton, { width: 60, height: 48, backgroundColor: colors.border }]} />
-        <View style={[styles.skeleton, { width: 120, height: 24, marginTop: 8, backgroundColor: colors.border }]} />
-        <View style={[styles.skeleton, { width: 80, height: 16, marginTop: 8, backgroundColor: colors.border }]} />
+        <View style={[styles.skeleton, { width: 120, height: 24, marginTop: spacing.sm, backgroundColor: colors.border }]} />
+        <View style={[styles.skeleton, { width: 80, height: 16, marginTop: spacing.sm, backgroundColor: colors.border }]} />
       </View>
       <View style={styles.distributionSection}>
         {[1, 2, 3, 4, 5].map((i) => (
           <View key={i} style={styles.ratingRow}>
             <View style={[styles.skeleton, { width: 24, height: 16, backgroundColor: colors.border }]} />
-            <View style={[styles.skeleton, { flex: 1, height: 8, marginHorizontal: 8, backgroundColor: colors.border }]} />
+            <View style={[styles.skeleton, { flex: 1, height: 8, marginHorizontal: spacing.sm, backgroundColor: colors.border }]} />
             <View style={[styles.skeleton, { width: 24, height: 16, backgroundColor: colors.border }]} />
           </View>
         ))}
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   averageSection: {
     alignItems: 'center',
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
   totalCount: {
     fontSize: 12,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   distributionSection: {
     flex: 1,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 8,
     borderRadius: 4,
-    marginHorizontal: 8,
+    marginHorizontal: spacing.sm,
     overflow: 'hidden',
   },
   bar: {

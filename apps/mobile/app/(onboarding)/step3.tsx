@@ -29,7 +29,7 @@ import {
   GOAL_LABELS,
   calculateAge,
 } from '../../lib/onboarding';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing } from '../../lib/theme';
 
 // 온보딩 Step 3 히어로 색상 (violet-500 계열 — 선호도 아이덴티티)
 const STEP3_ACCENT = '#8B5CF6';
@@ -386,7 +386,7 @@ export default function OnboardingStep3() {
                 style={{
                   fontSize: typography.size.xs + 1,
                   color: colors.mutedForeground,
-                  marginLeft: 8,
+                  marginLeft: spacing.sm,
                 }}
               >
                 모든 정보는 안전하게 보관돼요
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
   },
   // 히어로 (웹 파스텔 패턴)
   heroHeader: {
-    padding: 32,
+    padding: spacing.xl,
     alignItems: 'center',
   },
   heroIconWrap: {
@@ -491,12 +491,12 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   heroTitle: {
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   heroSubtitle: {
     fontSize: typography.size.sm,

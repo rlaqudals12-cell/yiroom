@@ -33,7 +33,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { savePersonalColorResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { TIMING } from '@/lib/animations';
 
 // --- 정적 데이터 ---
@@ -496,7 +496,7 @@ const localStyles = StyleSheet.create({
   headerContent: {
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
   },
   seasonName: {
     fontSize: 28,
@@ -509,11 +509,11 @@ const localStyles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 24,
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   tabContent: {
-    gap: 16,
-    paddingVertical: 8,
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
   },
   sectionCard: {
     padding: 20,
@@ -531,11 +531,11 @@ const localStyles = StyleSheet.create({
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   tag: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
   },
   tagText: {
@@ -555,7 +555,7 @@ const localStyles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   tipText: {
     flex: 1,

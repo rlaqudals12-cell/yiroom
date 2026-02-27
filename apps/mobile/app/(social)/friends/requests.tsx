@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { type FriendRequest } from '../../../lib/social';
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   errorContainer: {
-    margin: 16,
+    margin: spacing.md,
     padding: 12,
     borderRadius: radii.md,
   },
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 12,
   },
   headerTitle: {
@@ -196,13 +196,13 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   listContent: {
-    padding: 16,
+    padding: spacing.md,
     paddingTop: 0,
     gap: 12,
   },
   requestCard: {
     borderRadius: radii.xl,
-    padding: 16,
+    padding: spacing.md,
   },
   requestInfo: {
     flexDirection: 'row',
@@ -267,16 +267,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   emptySubtext: {
     fontSize: typography.size.sm,

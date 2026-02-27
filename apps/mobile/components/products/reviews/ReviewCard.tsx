@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Image, Alert } from 'react-native';
 
-import { useTheme, typography, radii } from '../../../lib/theme';
+import { useTheme, typography, radii , spacing } from '../../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -226,7 +226,7 @@ export function ReviewCard({
 const styles = StyleSheet.create({
   container: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   verifiedText: {
     fontSize: 10,
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   moreButton: {
-    padding: 4,
+    padding: spacing.xs,
   },
   moreIcon: {
     fontSize: 18,
@@ -296,17 +296,17 @@ const styles = StyleSheet.create({
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   ratingText: {
     fontSize: 14,
     fontWeight: typography.weight.semibold,
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   title: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   content: {
     fontSize: 14,
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   },
   helpfulIcon: {
     fontSize: 14,
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   helpfulIconActive: {
     opacity: 1,

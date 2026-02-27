@@ -24,7 +24,7 @@ import {
   type TimeOfDay,
   type RoutineStep,
 } from '@/lib/skincare';
-import { moduleColors, useTheme, typography, radii } from '@/lib/theme';
+import { moduleColors, useTheme, typography, radii , spacing } from '@/lib/theme';
 
 export default function SkincareRoutineScreen() {
   const { colors, typography } = useTheme();
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: 15,
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   noteCard: {
     flexDirection: 'row',
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     marginBottom: 20,
     gap: 12,
     alignItems: 'flex-start',
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   toggleContainer: {
     flexDirection: 'row',
     borderRadius: 12,
-    padding: 4,
+    padding: spacing.xs,
     marginBottom: 20,
   },
   toggleButton: {
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   routineInfoText: {
     fontSize: typography.size.base,
@@ -317,11 +317,11 @@ const styles = StyleSheet.create({
   },
   stepsList: {
     gap: 12,
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   stepCard: {
     borderRadius: radii.xl,
-    padding: 16,
+    padding: spacing.md,
   },
   stepHeader: {
     flexDirection: 'row',
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   stepEmoji: {
     fontSize: typography.size.lg,
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   optionalBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderRadius: 4,
   },
@@ -367,14 +367,14 @@ const styles = StyleSheet.create({
   },
   stepPurpose: {
     fontSize: 13,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   stepDuration: {
     fontSize: typography.size.xs,
   },
   expandIcon: {
     fontSize: 10,
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   tipsContainer: {
     marginTop: 12,
@@ -384,12 +384,12 @@ const styles = StyleSheet.create({
   tipsTitle: {
     fontSize: 13,
     fontWeight: typography.weight.semibold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   tipText: {
     fontSize: 13,
     lineHeight: 20,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   footer: {
     alignItems: 'center',
@@ -397,8 +397,8 @@ const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: moduleColors.skin.base,
     borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
     width: '100%',
     alignItems: 'center',
     marginBottom: 12,

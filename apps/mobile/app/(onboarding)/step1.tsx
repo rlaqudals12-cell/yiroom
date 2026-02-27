@@ -27,7 +27,7 @@ import {
   GOAL_DESCRIPTIONS,
   GOAL_COLORS,
 } from '../../lib/onboarding';
-import { useTheme, typography, radii } from '../../lib/theme';
+import { useTheme, typography, radii , spacing } from '../../lib/theme';
 
 // 온보딩 Step 1 히어로 색상 (rose-500 계열 — 목표 설정 아이덴티티)
 const STEP1_ACCENT = '#F43F5E';
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   // 히어로 (웹 파스텔 패턴)
   heroHeader: {
-    padding: 32,
+    padding: spacing.xl,
     alignItems: 'center',
   },
   heroIconWrap: {
@@ -267,12 +267,12 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   heroTitle: {
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   heroSubtitle: {
     fontSize: typography.size.sm,

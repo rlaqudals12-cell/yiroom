@@ -14,7 +14,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 interface CollapsibleHeaderProps {
   /** 헤더 타이틀 */
@@ -222,6 +222,6 @@ const styles = StyleSheet.create({
     right: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
   },
 });

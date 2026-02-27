@@ -32,7 +32,7 @@ import { saveHairResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
-import { typography, radii } from '@/lib/theme';
+import { typography, radii , spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const TEXTURE_LABELS: Record<HairAnalysisResult['texture'], string> = {
@@ -304,7 +304,7 @@ const localStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: radii.xl,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   scoreBadgeText: {
     fontSize: typography.size.sm,
@@ -318,7 +318,7 @@ const localStyles = StyleSheet.create({
   },
   tabContent: {
     gap: 20,
-    paddingBottom: 8,
+    paddingBottom: spacing.sm,
   },
   sectionTitle: {
     fontSize: typography.size.base,
@@ -332,12 +332,12 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
   },
   tipsCard: {
-    padding: 16,
+    padding: spacing.md,
     gap: 10,
   },
   tipItem: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   tipBullet: {
     fontSize: typography.size.base,
@@ -357,11 +357,11 @@ const localStyles = StyleSheet.create({
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   tag: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
   },
   tagText: {

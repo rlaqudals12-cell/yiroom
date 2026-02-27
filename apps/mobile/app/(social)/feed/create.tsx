@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { ScreenContainer } from '@/components/ui';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
@@ -294,22 +294,22 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   flex: { flex: 1 },
   sectionTitle: { marginBottom: 4 },
-  categoryRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  categoryChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, gap: 4 },
+  categoryRow: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
+  categoryChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: spacing.sm, gap: 4 },
   categoryEmoji: { fontSize: 16 },
   categoryLabel: {},
   input: { padding: 14, height: 48 },
   textArea: { padding: 14, minHeight: 120 },
   charCount: { textAlign: 'right', marginTop: 4 },
-  footer: { padding: 16, borderTopWidth: StyleSheet.hairlineWidth },
-  submitButton: { padding: 16, alignItems: 'center' },
+  footer: { padding: spacing.md, borderTopWidth: StyleSheet.hairlineWidth },
+  submitButton: { padding: spacing.md, alignItems: 'center' },
   submitText: {},
   sheetOption: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 8,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm,
     gap: 10,
   },
   sheetOptionEmoji: { fontSize: 20 },

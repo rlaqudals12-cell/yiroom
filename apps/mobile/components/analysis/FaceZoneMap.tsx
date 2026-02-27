@@ -12,7 +12,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 
 import { TIMING } from '../../lib/animations';
-import { useTheme } from '../../lib/theme';
+import { useTheme , spacing } from '../../lib/theme';
 
 export interface FaceZone {
   /** zone 식별자 */
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   },
   scoreBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: 12,
   },
   scoreText: {
@@ -252,12 +252,12 @@ const styles = StyleSheet.create({
   },
   legend: {
     flexDirection: 'row',
-    gap: 16,
+    gap: spacing.md,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
   legendDot: {
     width: 8,

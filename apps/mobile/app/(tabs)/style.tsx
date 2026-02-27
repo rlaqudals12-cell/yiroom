@@ -21,7 +21,7 @@ import { MenuCard, GradientBackground, ScreenContainer, SectionHeader } from '..
 import { useUserAnalyses } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';
 import { useCloset, useClosetMatcher, type PersonalColorSeason, type BodyType3 } from '../../lib/inventory';
-import { useTheme, typography, radii, ICON_BG_OPACITY, borderGlow } from '../../lib/theme';
+import { useTheme, typography, radii, ICON_BG_OPACITY, borderGlow , spacing } from '../../lib/theme';
 
 export default function StyleTab(): React.JSX.Element {
   const router = useRouter();

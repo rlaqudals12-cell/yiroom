@@ -26,7 +26,7 @@ import {
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { TIMING } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useInventory } from '@/lib/inventory';
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   retryButton: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 12,
   },
 });

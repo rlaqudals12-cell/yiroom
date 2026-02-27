@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 export default function WorkoutOnboardingScreen() {
   const { colors, brand, typography } = useTheme();
@@ -114,7 +114,7 @@ function StepItem({ number, title }: { number: number; title: string }) {
 const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   iconContainer: {
     width: 80,
@@ -141,15 +141,15 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: radii.xl,
     padding: 20,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   cardTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   featureList: {
-    gap: 16,
+    gap: spacing.md,
   },
   featureItem: {
     flexDirection: 'row',
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   startButton: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     alignItems: 'center',
   },
   startButtonText: {

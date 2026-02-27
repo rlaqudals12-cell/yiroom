@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../components/ui';
 import { useInventory, type InventoryItem, type BeautyMetadata } from '@/lib/inventory';
@@ -224,7 +224,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
                   fontSize: typography.size.xs,
                   fontWeight: typography.weight.semibold,
                   color: expired ? status.error : status.warning,
-                  marginLeft: 4,
+                  marginLeft: spacing.xs,
                 }}
               >
                 {expiryLabel}
@@ -280,7 +280,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
               fontSize: typography.size.sm,
               color: colors.foreground,
               fontWeight: typography.weight.semibold,
-              marginLeft: 4,
+              marginLeft: spacing.xs,
             }}
           >
             {items.length}개
@@ -294,7 +294,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
                 fontSize: typography.size.sm,
                 color: status.warning,
                 fontWeight: typography.weight.semibold,
-                marginLeft: 4,
+                marginLeft: spacing.xs,
               }}
             >
               기한 임박 {expiringCount}개
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: spacing.md,
   },
   summaryItem: {
     flexDirection: 'row',
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderWidth: 1,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   itemCard: {
     borderWidth: 1,
@@ -462,14 +462,14 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   metaChip: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
   expiryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
   },
   itemFooter: {

@@ -21,7 +21,7 @@ import {
   useNutritionData,
   calculateCalorieProgress,
 } from '../../hooks';
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography, spacing } from '../../lib/theme';
 
 // 시즌 라벨 한국어 변환
 const SEASON_LABELS: Record<string, string> = {
@@ -175,7 +175,7 @@ export default function ReportsScreen(): React.JSX.Element {
                 fontSize: typography.size.lg,
                 fontWeight: typography.weight.semibold,
                 color: colors.foreground,
-                marginBottom: 4,
+                marginBottom: spacing.xs,
               }}
             >
               {userName}
@@ -230,7 +230,7 @@ export default function ReportsScreen(): React.JSX.Element {
                 style={{
                   fontSize: typography.size.xs,
                   color: colors.mutedForeground,
-                  marginBottom: 4,
+                  marginBottom: spacing.xs,
                 }}
               >
                 퍼스널 컬러
@@ -252,8 +252,8 @@ export default function ReportsScreen(): React.JSX.Element {
                 <View
                   style={{
                     backgroundColor: moduleColors.personalColor.light + '30',
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: spacing.xs,
                     borderRadius: radii.md,
                   }}
                 >
@@ -289,7 +289,7 @@ export default function ReportsScreen(): React.JSX.Element {
                 style={{
                   fontSize: typography.size.xs,
                   color: colors.mutedForeground,
-                  marginBottom: 4,
+                  marginBottom: spacing.xs,
                 }}
               >
                 피부 타입
@@ -311,8 +311,8 @@ export default function ReportsScreen(): React.JSX.Element {
                 <View
                   style={{
                     backgroundColor: moduleColors.skin.light + '30',
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: spacing.xs,
                     borderRadius: radii.md,
                   }}
                 >
@@ -348,7 +348,7 @@ export default function ReportsScreen(): React.JSX.Element {
                 style={{
                   fontSize: typography.size.xs,
                   color: colors.mutedForeground,
-                  marginBottom: 4,
+                  marginBottom: spacing.xs,
                 }}
               >
                 체형 타입
@@ -370,8 +370,8 @@ export default function ReportsScreen(): React.JSX.Element {
                 <View
                   style={{
                     backgroundColor: moduleColors.body.light + '30',
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: spacing.xs,
                     borderRadius: radii.md,
                   }}
                 >
@@ -422,7 +422,7 @@ export default function ReportsScreen(): React.JSX.Element {
                       fontSize: typography.size.lg,
                       fontWeight: typography.weight.semibold,
                       color: colors.foreground,
-                      marginBottom: 4,
+                      marginBottom: spacing.xs,
                     }}
                   >
                     {workoutAnalysis?.workoutType
@@ -460,7 +460,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   fontSize: typography.size.base,
                   fontWeight: typography.weight.semibold,
                   color: colors.foreground,
-                  marginBottom: 4,
+                  marginBottom: spacing.xs,
                 }}
               >
                 운동을 시작해보세요
@@ -508,7 +508,7 @@ export default function ReportsScreen(): React.JSX.Element {
                     style={{
                       fontSize: typography.size.sm,
                       color: colors.mutedForeground,
-                      marginBottom: 4,
+                      marginBottom: spacing.xs,
                     }}
                   >
                     오늘 섭취량
@@ -562,7 +562,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   fontSize: typography.size.base,
                   fontWeight: typography.weight.semibold,
                   color: colors.foreground,
-                  marginBottom: 4,
+                  marginBottom: spacing.xs,
                 }}
               >
                 식단을 기록해보세요
@@ -671,11 +671,11 @@ const styles = StyleSheet.create({
   workoutHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   nutritionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
 });

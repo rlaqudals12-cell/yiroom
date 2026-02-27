@@ -16,7 +16,7 @@ import {
   useSizeRecommendation,
   getMockSizeRecommendation,
 } from '../../lib/smart-matching/useSizeRecommendation';
-import { useTheme, typography, radii } from '../../lib/theme';
+import { useTheme, typography, radii , spacing } from '../../lib/theme';
 
 interface SizeRecommendationProps {
   brandId: string;
@@ -223,22 +223,22 @@ export function SizeRecommendation({
 const styles = StyleSheet.create({
   container: {
     borderRadius: radii.xl,
-    padding: 16,
+    padding: spacing.md,
     marginVertical: 12,
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    gap: 8,
+    padding: spacing.md,
+    gap: spacing.sm,
   },
   loadingText: {
     fontSize: 14,
   },
   errorContainer: {
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.md,
     gap: 12,
   },
   errorText: {
@@ -246,8 +246,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   retryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: radii.md,
   },
   retryButtonText: {
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   headerIcon: {
     fontSize: 24,
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   },
   confidenceBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: 12,
   },
   confidenceBadgeText: {
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   mainRecommendation: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: spacing.md,
   },
   recommendedSize: {
     width: 72,
@@ -321,15 +321,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   alternatives: {
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   alternativesTitle: {
     fontSize: 12,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   alternativesList: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   alternativeItem: {
     flex: 1,
@@ -339,13 +339,13 @@ const styles = StyleSheet.create({
   alternativeSize: {
     fontSize: 18,
     fontWeight: typography.weight.semibold,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   alternativeNote: {
     fontSize: 11,
   },
   brandNote: {
-    marginTop: 16,
+    marginTop: spacing.md,
     borderRadius: radii.md,
     padding: 12,
   },

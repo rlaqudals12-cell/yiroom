@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography, spacing } from '@/lib/theme';
 import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../components/ui';
 import {
@@ -257,7 +257,7 @@ export default function PantryScreen(): React.JSX.Element {
                     : expiring
                       ? status.warning
                       : colors.mutedForeground,
-                  marginLeft: 4,
+                  marginLeft: spacing.xs,
                 }}
               >
                 {expiryLabel}
@@ -326,7 +326,7 @@ export default function PantryScreen(): React.JSX.Element {
                 activeTab === 'pantry'
                   ? colors.overlayForeground
                   : colors.mutedForeground,
-              marginLeft: 4,
+              marginLeft: spacing.xs,
             }}
           >
             냉장고
@@ -362,7 +362,7 @@ export default function PantryScreen(): React.JSX.Element {
                 activeTab === 'supplement'
                   ? colors.overlayForeground
                   : colors.mutedForeground,
-              marginLeft: 4,
+              marginLeft: spacing.xs,
             }}
           >
             영양제
@@ -377,7 +377,7 @@ export default function PantryScreen(): React.JSX.Element {
                 fontSize: typography.size.xs,
                 color: status.warning,
                 fontWeight: typography.weight.semibold,
-                marginLeft: 4,
+                marginLeft: spacing.xs,
               }}
             >
               {expiringCount}
@@ -497,8 +497,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginRight: 8,
+    paddingVertical: spacing.sm,
+    marginRight: spacing.sm,
   },
   warningBadge: {
     flexDirection: 'row',
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderWidth: 1,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   itemCard: {
     borderWidth: 1,
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
   },
   center: {

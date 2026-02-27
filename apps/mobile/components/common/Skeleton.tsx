@@ -16,7 +16,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 
-import { useTheme, radii } from '../../lib/theme';
+import { useTheme, radii , spacing } from '../../lib/theme';
 
 type DimensionValue = number | `${number}%` | 'auto';
 
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   skeleton: {},
   card: {
     borderRadius: radii.xl,
-    padding: 16,
+    padding: spacing.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   workoutCard: {
     borderRadius: radii.xl,
-    padding: 16,
+    padding: spacing.md,
   },
   workoutStats: {
     flexDirection: 'row',
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   nutritionCard: {
     borderRadius: radii.xl,
-    padding: 16,
+    padding: spacing.md,
   },
   nutritionHeader: {
     flexDirection: 'row',
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   nutritionStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   nutritionStat: {
     alignItems: 'center',

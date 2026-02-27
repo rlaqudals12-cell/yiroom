@@ -7,7 +7,7 @@
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
 import { ScanLineOverlay } from '@/components/ui';
-import { useTheme } from '@/lib/theme';
+import { useTheme , spacing } from '@/lib/theme';
 
 export interface AnalysisLoadingStateProps {
   /** 로딩 메시지 */
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   text: {
-    marginTop: 16,
+    marginTop: spacing.md,
     fontSize: 16,
     textAlign: 'center',
   },

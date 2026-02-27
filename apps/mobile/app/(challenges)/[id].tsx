@@ -28,7 +28,7 @@ import {
 import { useChallenges, useJoinChallenge } from '@/lib/challenges/useChallenges';
 import { staggeredEntry } from '@/lib/animations';
 import { useAppPreferencesStore } from '@/lib/stores';
-import { useTheme, typography, radii } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 // 리더보드 메달 색상 (도메인 데이터 — 순위 시각화)
 const MEDAL_COLORS = {
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: typography.size.base,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   backButton: {
     paddingHorizontal: 20,
@@ -457,16 +457,16 @@ const styles = StyleSheet.create({
   },
   badgeRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
     marginBottom: 12,
   },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
     borderRadius: 12,
-    gap: 4,
+    gap: spacing.xs,
   },
   badgeText: {
     fontSize: typography.size.xs,
@@ -475,17 +475,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   description: {
     fontSize: typography.size.sm,
     lineHeight: 20,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: 16,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
   },
   stat: {
@@ -512,12 +512,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   progressCard: {
-    padding: 16,
+    padding: spacing.md,
   },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   progressValue: {
     fontSize: typography.size.sm,
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     overflow: 'hidden',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   progressBar: {
     height: '100%',
@@ -546,12 +546,12 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   milestones: {
-    padding: 16,
+    padding: spacing.md,
   },
   milestoneItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   milestoneIcon: {
     width: 32,
@@ -576,14 +576,14 @@ const styles = StyleSheet.create({
     fontSize: typography.size.xs,
   },
   rulesCard: {
-    padding: 16,
+    padding: spacing.md,
   },
   ruleItem: {
     flexDirection: 'row',
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
   },
   ruleBullet: {
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   ruleText: {
     flex: 1,
@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 16,
+    padding: spacing.md,
     borderTopWidth: 1,
   },
   joinButton: {

@@ -10,7 +10,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { useTheme, radii } from '../../lib/theme';
+import { useTheme, radii , spacing } from '../../lib/theme';
 
 interface DrapingPreviewProps {
   /** 사용자 사진 URI */
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
     marginBottom: 6,
   },
   paletteContainer: {
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 10,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
   },
   paletteItem: {
     width: 36,

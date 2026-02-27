@@ -19,7 +19,7 @@ import {
 import { QUICK_QUESTIONS, type QuestionCategory, type CoachMessage } from '../../lib/coach';
 import { useCoach } from '../../lib/coach/useCoach';
 import { useNetworkStatus } from '../../lib/offline';
-import { useTheme, typography, radii } from '../../lib/theme';
+import { useTheme, typography, radii , spacing } from '../../lib/theme';
 
 interface ChatInterfaceProps {
   initialSessionId?: string;
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   offlineBanner: {
-    padding: 8,
+    padding: spacing.sm,
     alignItems: 'center',
   },
   offlineBannerText: {
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   errorBanner: {
-    padding: 8,
+    padding: spacing.sm,
     alignItems: 'center',
   },
   errorBannerText: {
@@ -281,12 +281,12 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
   },
   header: {
     alignItems: 'center',
     marginTop: 40,
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   headerEmoji: {
     fontSize: 48,
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: typography.weight.bold,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   headerSubtitle: {
     fontSize: 14,
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   categoryTabs: {
     flexDirection: 'row',
     borderRadius: 12,
-    padding: 4,
+    padding: spacing.xs,
     marginBottom: 20,
   },
   categoryTab: {
@@ -322,14 +322,14 @@ const styles = StyleSheet.create({
   },
   quickQuestion: {
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
     borderWidth: 1,
   },
   quickQuestionText: {
     fontSize: 15,
   },
   messageList: {
-    padding: 16,
+    padding: spacing.md,
     gap: 12,
   },
   messageBubble: {
@@ -350,15 +350,15 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   suggestedContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   suggestedButton: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
     borderRadius: 20,
   },
   suggestedText: {
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    gap: 8,
+    gap: spacing.sm,
   },
   loadingText: {
     fontSize: 13,
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderRadius: 20,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 10,
     fontSize: 15,
     maxHeight: 100,
