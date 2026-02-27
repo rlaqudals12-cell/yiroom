@@ -8,7 +8,7 @@ import { View, Text, StyleSheet, type TextStyle } from 'react-native';
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 
 import { useMonthlyReport } from '../../hooks/useMonthlyReport';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography } from '../../lib/theme';
 
 export default function MonthlyReportScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
@@ -212,6 +212,6 @@ const styles = StyleSheet.create({
   nutritionStatValue: {},
   nutritionStatLabel: { marginTop: 2 },
   insightRow: { flexDirection: 'row', marginBottom: 8, paddingRight: 8 },
-  insightDot: { fontSize: 16, marginRight: 8, lineHeight: 22 },
+  insightDot: { fontSize: typography.size.base, marginRight: 8, lineHeight: 22 },
   insightText: { flex: 1, lineHeight: 22 },
 });

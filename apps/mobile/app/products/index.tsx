@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   bannerIcon: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginRight: 12,
   },
   bannerContent: {
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   categoryText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   loadingContainer: {
     flex: 1,
@@ -477,10 +477,10 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   productBrand: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   productName: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
     marginTop: 2,
     lineHeight: 18,
@@ -491,11 +491,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   ratingStar: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginRight: 4,
   },
   ratingText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   productPrice: {
     fontSize: 15,

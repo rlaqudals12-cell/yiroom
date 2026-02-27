@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   summaryValue: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
   },
   summaryLabel: {

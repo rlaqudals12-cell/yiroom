@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   thumbEmoji: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
   },
   moreIndicator: {
     width: 44,

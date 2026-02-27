@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   statsTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
@@ -299,18 +299,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   logsSection: {
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
@@ -324,11 +324,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   logIcon: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginRight: 10,
   },
   logDate: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   logStats: {
@@ -340,11 +340,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logStatValue: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   logStatLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   exerciseList: {
     flexDirection: 'row',
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   exerciseChipText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   logNotes: {
     fontSize: 13,

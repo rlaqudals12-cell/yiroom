@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   bannerIcon: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginRight: 12,
   },
   bannerContent: {
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingsIcon: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginRight: 12,
   },
   settingsTextContent: {
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   settingsDesc: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 2,
   },
   divider: {
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   intervalOptionText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   testButton: {
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   infoText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     lineHeight: 18,
     textAlign: 'center',
   },

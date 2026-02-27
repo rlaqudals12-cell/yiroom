@@ -8,7 +8,7 @@ import { View, Text, StyleSheet, type TextStyle } from 'react-native';
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 
 import { useWeeklyReport } from '../../hooks/useWeeklyReport';
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography } from '../../lib/theme';
 
 export default function WeeklyReportScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography, status } = useTheme();
@@ -276,6 +276,6 @@ const styles = StyleSheet.create({
   macroLabel: {},
   macroValue: { marginLeft: 'auto' },
   insightRow: { flexDirection: 'row', marginBottom: 8, paddingRight: 8 },
-  insightDot: { fontSize: 16, marginRight: 8, lineHeight: 22 },
+  insightDot: { fontSize: typography.size.base, marginRight: 8, lineHeight: 22 },
   insightText: { flex: 1, lineHeight: 22 },
 });

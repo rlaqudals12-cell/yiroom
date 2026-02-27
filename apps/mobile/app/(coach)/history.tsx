@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   newSessionButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   listHeader: {
@@ -226,14 +226,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   categoryEmoji: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginRight: 12,
   },
   sessionInfo: {
     flex: 1,
   },
   sessionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.medium,
     marginBottom: 4,
   },
@@ -251,16 +251,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptyHint: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textAlign: 'center',
   },
   deleteHint: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     textAlign: 'center',
     paddingVertical: 12,
   },

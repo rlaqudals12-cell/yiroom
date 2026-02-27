@@ -235,7 +235,7 @@ export default function OnboardingStep1() {
             <Text
               style={{
                 color: canProceed ? brand.primaryForeground : colors.mutedForeground,
-                fontSize: 16,
+                fontSize: typography.size.base,
                 fontWeight: typography.weight.bold,
               }}
             >
@@ -270,12 +270,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   heroTitle: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   heroSubtitle: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textAlign: 'center',
     lineHeight: 22,
   },

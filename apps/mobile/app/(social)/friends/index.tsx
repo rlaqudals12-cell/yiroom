@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionIcon: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
   },
   actionText: {
     fontSize: 15,
@@ -203,11 +203,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 4,
   },
   statDivider: {
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
   },
   tierBadge: {
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     marginLeft: 14,
   },
   friendName: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   friendLevel: {
@@ -276,12 +276,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginBottom: 24,
     textAlign: 'center',
   },

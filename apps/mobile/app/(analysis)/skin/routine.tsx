@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
     marginBottom: 4,
   },
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   noteText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 22,
   },
   toggleContainer: {
@@ -296,10 +296,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   toggleEmoji: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   toggleText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   routineInfo: {
@@ -309,11 +309,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   routineInfoText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   routineTime: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   stepsList: {
     gap: 12,
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   stepOrder: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.bold,
   },
   stepInfo: {
@@ -350,10 +350,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   stepEmoji: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
   },
   stepName: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   optionalBadge: {
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   stepDuration: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   expandIcon: {
     fontSize: 10,
@@ -404,11 +404,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   footerNote: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     textAlign: 'center',
   },
 });

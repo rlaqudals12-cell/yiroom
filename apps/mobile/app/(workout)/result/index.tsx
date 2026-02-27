@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   resultLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginBottom: 8,
   },
   resultType: {
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 16,
   },
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   tagText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   exerciseList: {
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   settingLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   settingValue: {
     fontSize: 15,
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   secondaryButton: {
@@ -383,6 +383,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
 });

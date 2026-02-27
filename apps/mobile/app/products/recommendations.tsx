@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   heroTagText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   center: {

@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   actionText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
   },
   patternGrid: {

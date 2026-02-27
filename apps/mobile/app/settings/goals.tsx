@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   card: {
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   presetButtonText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   customInputRow: {
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   customInputUnit: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     width: 40,
   },
   goalRow: {
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   goalLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
     marginBottom: 10,
   },
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   infoText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     lineHeight: 18,
     textAlign: 'center',
   },

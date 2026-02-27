@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   exerciseChipText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   durationGrid: {
     flexDirection: 'row',
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   durationText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   intensityGrid: {
@@ -409,14 +409,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   intensityText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   notesInput: {
     borderRadius: 12,
     borderWidth: 1,
     padding: 14,
-    fontSize: 14,
+    fontSize: typography.size.sm,
     minHeight: 80,
     textAlignVertical: 'top',
   },
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   calorieLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginBottom: 4,
   },
   calorieValue: {
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
 });

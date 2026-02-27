@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   previewEmoji: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
   },
   removeIcon: {
     position: 'absolute',
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   categoryEmoji: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
   },
   categoryName: {
     fontSize: typography.size.sm,

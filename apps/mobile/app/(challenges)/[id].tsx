@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     marginBottom: 16,
   },
   backButton: {
@@ -469,16 +469,16 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.medium,
   },
   title: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   description: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 20,
     marginBottom: 16,
   },
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.bold,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 2,
   },
   statDivider: {
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
@@ -520,10 +520,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   progressValue: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   progressPercent: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   progressBarContainer: {
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   },
   logButtonText: {
     fontWeight: typography.weight.semibold,
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   milestones: {
     padding: 16,
@@ -563,17 +563,17 @@ const styles = StyleSheet.create({
   },
   milestoneIconText: {
     fontWeight: typography.weight.semibold,
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   milestoneContent: {
     flex: 1,
   },
   milestoneDay: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   milestoneTarget: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   rulesCard: {
     padding: 16,
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
   },
   ruleText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 20,
   },
   leaderboard: {
@@ -601,15 +601,15 @@ const styles = StyleSheet.create({
   },
   leaderboardRank: {
     width: 32,
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
   },
   leaderboardName: {
     flex: 1,
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   leaderboardProgress: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   bottomBar: {
@@ -627,6 +627,6 @@ const styles = StyleSheet.create({
   },
   joinButtonText: {
     fontWeight: typography.weight.semibold,
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
 });

@@ -321,10 +321,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   endText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   totalTimeText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   mainContent: {
     flex: 1,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   stateLabel: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     marginBottom: 16,
   },
   timerText: {
@@ -342,11 +342,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   timerSmall: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginTop: 24,
   },
   nextExerciseText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     marginBottom: 32,
   },
   skipButton: {
@@ -356,15 +356,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   skipButtonText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   exerciseName: {
-    fontSize: 36,
+    fontSize: typography.size['4xl'],
     fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
   setInfo: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     marginBottom: 32,
   },
   repsText: {
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   completeButtonText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
   },
   progressBar: {
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   readySubtitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -415,16 +415,16 @@ const styles = StyleSheet.create({
   },
   previewNumber: {
     width: 32,
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   previewName: {
     flex: 1,
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   previewSets: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   startButton: {
     borderRadius: 12,
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startButtonText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
   },
   completedContent: {
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   completedSubtitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     marginBottom: 32,
   },
   statsContainer: {
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   finishButton: {
     borderRadius: 12,
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   finishButtonText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
   },
 });

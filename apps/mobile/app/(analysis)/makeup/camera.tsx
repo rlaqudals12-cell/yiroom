@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography } from '@/lib/theme';
 
 export default function MakeupCameraScreen() {
   const { colors, brand } = useTheme();
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.6)',
     borderStyle: 'dashed',
   },
-  guideText: { marginTop: 24, fontSize: 16, textAlign: 'center', lineHeight: 24 },
+  guideText: { marginTop: 24, fontSize: typography.size.base, textAlign: 'center', lineHeight: 24 },
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -150,14 +150,14 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   permissionTitle: { fontSize: 22, fontWeight: '600', marginBottom: 12 },
-  permissionText: { fontSize: 16, textAlign: 'center', marginBottom: 32 },
+  permissionText: { fontSize: typography.size.base, textAlign: 'center', marginBottom: 32 },
   permissionButton: {
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
     marginBottom: 16,
   },
-  permissionButtonText: { fontSize: 16, fontWeight: '600' },
+  permissionButtonText: { fontSize: typography.size.base, fontWeight: '600' },
   galleryButton: { paddingHorizontal: 32, paddingVertical: 16 },
   galleryButtonText: { fontSize: 16 },
 });

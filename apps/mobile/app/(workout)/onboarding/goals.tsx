@@ -131,7 +131,7 @@ export default function WorkoutGoalsScreen() {
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   goalLabel: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: 2,
   },
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   checkboxSelected: {},
   checkmark: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.bold,
   },
   footer: {
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nextButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
 });

@@ -114,7 +114,7 @@ export default function HelpScreen(): React.JSX.Element {
               </Text>
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: typography.size.base,
                   color: colors.mutedForeground,
                   marginLeft: spacing.sm,
                 }}

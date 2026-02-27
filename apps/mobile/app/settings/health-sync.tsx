@@ -227,15 +227,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: 4,
   },
   cardSubtitle: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   warningText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textAlign: 'center',
   },
   toggleRow: {
@@ -257,10 +257,10 @@ const styles = StyleSheet.create({
   },
   dataLabel: {
     flex: 1,
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   checkmark: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.bold,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 4,
   },
   syncRow: {
@@ -299,14 +299,14 @@ const styles = StyleSheet.create({
   },
   syncButtonText: {
     fontWeight: typography.weight.semibold,
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   footer: {
     marginTop: 8,
     paddingHorizontal: 8,
   },
   footerText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     textAlign: 'center',
     lineHeight: 18,
   },

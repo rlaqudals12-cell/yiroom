@@ -74,8 +74,8 @@ function ThemedStack() {
 function SentryFallback() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-      <Text style={{ fontSize: 18, fontWeight: typography.weight.semibold, marginBottom: 8 }}>문제가 발생했어요</Text>
-      <Text style={{ fontSize: 14, color: lightColors.mutedForeground, textAlign: 'center' }}>
+      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, marginBottom: 8 }}>문제가 발생했어요</Text>
+      <Text style={{ fontSize: typography.size.sm, color: lightColors.mutedForeground, textAlign: 'center' }}>
         앱을 다시 시작해 주세요.
       </Text>
     </View>

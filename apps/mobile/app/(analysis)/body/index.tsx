@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     lineHeight: 24,
   },
   card: {
@@ -239,26 +239,26 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 16,
   },
   cardDescription: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginBottom: 16,
   },
   inputGroup: {
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
     borderRadius: 12,
     padding: 16,
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   imagePickerButton: {
     height: 120,
@@ -277,10 +277,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   imagePickerText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   imagePickerTextSelected: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   guideBox: {
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   guideTitle: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   analyzeButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
 });

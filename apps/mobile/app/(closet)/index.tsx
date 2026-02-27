@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.bold,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 2,
   },
   filterContainer: {
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   filterChipText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   gridContent: {
@@ -386,12 +386,12 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   itemName: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
     marginBottom: 2,
   },
   itemCategory: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   emptyContainer: {
     flex: 1,

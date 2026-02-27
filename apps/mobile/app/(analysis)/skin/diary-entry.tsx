@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   conditionEmoji: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginBottom: 4,
   },
   conditionText: {
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   weatherEmoji: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   weatherLabel: {
     fontSize: typography.size.xs,

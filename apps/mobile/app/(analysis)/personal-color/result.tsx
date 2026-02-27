@@ -503,7 +503,7 @@ const localStyles = StyleSheet.create({
     fontWeight: typography.weight.bold,
   },
   subType: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   description: {
     fontSize: 15,
@@ -524,7 +524,7 @@ const localStyles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionDescription: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 20,
     marginBottom: 14,
   },
@@ -539,7 +539,7 @@ const localStyles = StyleSheet.create({
     borderRadius: 20,
   },
   tagText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   metricsContainer: {
@@ -559,7 +559,7 @@ const localStyles = StyleSheet.create({
   },
   tipText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 22,
   },
   makeupGrid: {
@@ -572,10 +572,10 @@ const localStyles = StyleSheet.create({
     paddingVertical: 6,
   },
   makeupTipLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   makeupTipValue: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
 });

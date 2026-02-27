@@ -32,6 +32,7 @@ import { saveHairResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
+import { typography } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const TEXTURE_LABELS: Record<HairAnalysisResult['texture'], string> = {
@@ -297,7 +298,7 @@ const localStyles = StyleSheet.create({
     fontWeight: '700',
   },
   subInfo: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   scoreBadge: {
     paddingHorizontal: 14,
@@ -306,7 +307,7 @@ const localStyles = StyleSheet.create({
     marginTop: 4,
   },
   scoreBadgeText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '600',
   },
   hairImage: {
@@ -320,7 +321,7 @@ const localStyles = StyleSheet.create({
     paddingBottom: 8,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '700',
     marginBottom: 12,
   },
@@ -339,17 +340,17 @@ const localStyles = StyleSheet.create({
     gap: 8,
   },
   tipBullet: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     lineHeight: 22,
   },
   stepNum: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '600',
     lineHeight: 22,
     minWidth: 20,
   },
   tipText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 22,
     flex: 1,
   },
@@ -364,7 +365,7 @@ const localStyles = StyleSheet.create({
     borderRadius: 20,
   },
   tagText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '500',
   },
 });

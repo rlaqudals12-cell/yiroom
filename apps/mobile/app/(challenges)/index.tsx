@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statIcon: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginBottom: 6,
   },
   statValue: {
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.bold,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 2,
   },
   tabContainer: {
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   tabActive: {},
   tabText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   tabTextActive: {},
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   domainBadgeText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   difficultyBadge: {
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   difficultyBadgeText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   cardTitle: {
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   cardDescription: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 20,
     marginBottom: 10,
   },
@@ -437,10 +437,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   progressText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   daysText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   joinButton: {
     paddingVertical: 12,

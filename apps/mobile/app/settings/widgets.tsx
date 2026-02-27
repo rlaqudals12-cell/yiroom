@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   infoIcon: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginRight: 12,
   },
   infoContent: {
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   sizeButtonText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   widgetSection: {
     marginBottom: 24,
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   helpButtonIcon: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     marginRight: 8,
   },
   helpButtonText: {
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   widgetItemIcon: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginRight: 12,
   },
   widgetItemContent: {
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     textAlign: 'center',
     lineHeight: 24,
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
     overflow: 'hidden',
   },

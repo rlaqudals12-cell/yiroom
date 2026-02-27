@@ -482,10 +482,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   weatherText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   weatherIcon: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   weatherTags: {
     flexDirection: 'row',
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   tagText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   outfitSection: {
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   outfitTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.bold,
   },
   scoreCircle: {
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scoreCircleText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
   },
   outfitGrid: {
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   outfitItemName: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
     marginBottom: 6,
   },
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   summaryTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: 16,
   },
@@ -620,7 +620,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.bold,
   },
   summaryLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 4,
   },
   suggestionsContainer: {
@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textAlign: 'center',
     marginBottom: 24,
   },

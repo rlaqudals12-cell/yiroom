@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   settingsSubtitle: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 2,
   },
   settingsArrow: {
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   versionLabel: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: 4,
   },

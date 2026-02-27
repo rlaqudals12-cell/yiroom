@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   chipEmoji: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   chipLabel: {
     fontSize: typography.size.sm,

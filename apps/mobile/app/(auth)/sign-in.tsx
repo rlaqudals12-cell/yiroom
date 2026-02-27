@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   form: {
     gap: 16,
@@ -172,14 +172,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   input: {
     borderWidth: 1,
     borderRadius: 12,
     padding: 16,
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   button: {
     backgroundColor: brand.primary,
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: brand.primaryForeground,
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   footer: {
@@ -204,11 +204,11 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   linkText: {
     color: brand.primary,
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
 });

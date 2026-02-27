@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   brand: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginBottom: 4,
   },
   productName: {
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   ratingStars: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginRight: 6,
   },
   ratingText: {
@@ -645,13 +645,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categoryBadge: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   price: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
     marginBottom: 16,
   },
@@ -662,7 +662,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   matchIcon: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginRight: 12,
   },
   matchInfo: {
@@ -699,19 +699,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
   },
   tabText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   tabContent: {
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: 12,
     marginTop: 8,
   },
   description: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 22,
     marginBottom: 20,
   },
@@ -724,11 +724,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   benefitDot: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginRight: 8,
   },
   benefitText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   reviewCard: {
     borderRadius: 12,
@@ -741,23 +741,23 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   reviewUser: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   reviewRating: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   reviewDate: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginBottom: 8,
   },
   reviewContent: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 20,
     marginBottom: 8,
   },
   reviewHelpful: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   actionBar: {
     flexDirection: 'row',
@@ -783,7 +783,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   purchaseButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
 });

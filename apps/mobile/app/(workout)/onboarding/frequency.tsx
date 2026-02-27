@@ -167,7 +167,7 @@ export default function WorkoutFrequencyScreen() {
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
     marginBottom: 8,
   },
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   frequencyLabel: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: 2,
   },
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   timeLabel: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: 4,
   },
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nextButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
 });

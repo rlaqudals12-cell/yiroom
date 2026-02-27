@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   headerButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.medium,
   },
 });

@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   iconText: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
   },
   title: {
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 16,
   },
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   guideItem: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 22,
   },
   footer: {
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
 });

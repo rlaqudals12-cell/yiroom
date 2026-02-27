@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 16,
   },
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   featureEmoji: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
   },
   featureContent: {
     flex: 1,
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepNumberText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   stepTitle: {
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
 });

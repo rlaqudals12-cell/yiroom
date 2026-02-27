@@ -33,6 +33,7 @@ import { saveMakeupResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
+import { typography } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const FACE_SHAPE_LABELS: Record<MakeupAnalysisResult['faceShape'], string> = {
@@ -324,7 +325,7 @@ const localStyles = StyleSheet.create({
     fontWeight: '700',
   },
   subInfo: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   makeupImage: {
     width: 140,
@@ -337,7 +338,7 @@ const localStyles = StyleSheet.create({
     paddingBottom: 8,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '700',
     marginBottom: 12,
   },
@@ -352,12 +353,12 @@ const localStyles = StyleSheet.create({
     marginBottom: 10,
   },
   recLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '600',
     marginBottom: 4,
   },
   recText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 20,
   },
   tipsCard: {
@@ -369,11 +370,11 @@ const localStyles = StyleSheet.create({
     gap: 8,
   },
   tipBullet: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     lineHeight: 22,
   },
   tipText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 22,
     flex: 1,
   },

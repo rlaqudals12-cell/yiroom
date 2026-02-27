@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   percentileValue: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   tabContainer: {
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     // backgroundColor set inline via colors.card
   },
   tabText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   tabTextActive: {},
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   rankText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
   },
   rankTextMedal: {
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   tierDot: {
@@ -340,17 +340,17 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   tierText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   levelText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   scoreContainer: {
     alignItems: 'flex-end',
   },
   scoreValue: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.bold,
   },
   scoreLabel: {

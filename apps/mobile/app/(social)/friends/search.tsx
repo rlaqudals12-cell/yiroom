@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     height: 48,
   },
   searchIcon: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     marginRight: 8,
   },
   searchInput: {
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   clearIcon: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     padding: 4,
   },
   searchButton: {
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   errorText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textAlign: 'center',
   },
   listContent: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
   },
   tierBadge: {
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     marginLeft: 14,
   },
   userName: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   userLevel: {
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   statusBadgeText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   emptyContainer: {

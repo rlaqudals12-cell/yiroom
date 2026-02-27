@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   commentCard: { padding: 12 },
   commentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 },
   commentAvatar: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  commentAvatarText: { fontSize: 12, fontWeight: typography.weight.semibold },
+  commentAvatarText: { fontSize: typography.size.xs, fontWeight: typography.weight.semibold },
   commentUser: {},
   commentTime: { marginLeft: 'auto' },
   commentContent: { lineHeight: 20, paddingLeft: 36 },

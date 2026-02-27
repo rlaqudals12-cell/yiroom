@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   itemCategory: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   infoRow: {
     flexDirection: 'row',
@@ -308,10 +308,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   sectionTitle: {

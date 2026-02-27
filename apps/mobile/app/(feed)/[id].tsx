@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   errorText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   listContent: {
     paddingBottom: 20,
@@ -476,14 +476,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
   },
   userMeta: {
     marginLeft: 12,
   },
   userName: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   timestamp: {
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   typeIcon: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     marginRight: 8,
   },
   typeLabel: {
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   contentText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     lineHeight: 24,
   },
   detailText: {
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   actionText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   commentsHeader: {
     marginTop: 20,
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   commentsTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   emptyComments: {
@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   commentItem: {
     flexDirection: 'row',
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   commentAvatarText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   commentContent: {
@@ -584,14 +584,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   commentUserName: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   commentTime: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   commentText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 20,
   },
   inputContainer: {

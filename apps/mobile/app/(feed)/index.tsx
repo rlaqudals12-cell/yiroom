@@ -280,10 +280,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   errorText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   retryText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   loadingContainer: {
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   listContent: {
     padding: 16,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   userMeta: {
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   timestamp: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 2,
   },
   levelBadge: {
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   levelText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   cardContent: {
@@ -358,11 +358,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   typeIcon: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     marginRight: 6,
   },
   typeLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.medium,
   },
   contentText: {
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   detailText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginTop: 6,
     lineHeight: 20,
   },
@@ -385,11 +385,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionIcon: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     marginRight: 6,
   },
   actionText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   footerLoader: {
     paddingVertical: 20,
@@ -406,12 +406,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textAlign: 'center',
     paddingHorizontal: 40,
   },

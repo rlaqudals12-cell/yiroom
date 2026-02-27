@@ -390,16 +390,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   searchIcon: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
     paddingVertical: 14,
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   clearButton: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     padding: 4,
   },
   content: {
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
@@ -438,15 +438,15 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   tagIcon: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   popularRank: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.bold,
     marginRight: 2,
   },
   tagText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   loadingContainer: {
     paddingVertical: 40,
@@ -461,11 +461,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     marginBottom: 8,
   },
   emptyHint: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   resultsSection: {
     padding: 16,
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   productBrand: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   productName: {
     fontSize: 15,
@@ -509,14 +509,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   productRating: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   productReviews: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginLeft: 4,
   },
   productPrice: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
     marginTop: 4,
   },
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   matchBadgeText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
 });

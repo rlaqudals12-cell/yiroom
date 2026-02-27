@@ -33,6 +33,7 @@ import { saveBodyResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
+import { typography } from '@/lib/theme';
 
 // 체형 타입 데이터
 const BODY_TYPE_DATA: Record<
@@ -451,7 +452,7 @@ const localStyles = StyleSheet.create({
     gap: 8,
   },
   bmiLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   bmiNumber: {
     fontSize: 28,
@@ -463,11 +464,11 @@ const localStyles = StyleSheet.create({
     borderRadius: 10,
   },
   bmiBadgeText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: '600',
   },
   bodyInfo: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   bodyImage: {
     width: 120,
@@ -487,12 +488,12 @@ const localStyles = StyleSheet.create({
     lineHeight: 22,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '700',
     marginBottom: 12,
   },
   bmiGuide: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 6,
   },
   chartContainer: {
@@ -504,10 +505,10 @@ const localStyles = StyleSheet.create({
     paddingVertical: 8,
   },
   bmiDetailLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   bmiDetailValue: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '600',
   },
   tipsCard: {
@@ -519,11 +520,11 @@ const localStyles = StyleSheet.create({
     gap: 8,
   },
   tipBullet: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     lineHeight: 22,
   },
   tipText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 22,
     flex: 1,
   },

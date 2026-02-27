@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, typography } from '@/lib/theme';
 
 export default function SkinCameraScreen() {
   const { colors, brand } = useTheme();
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   },
   guideText: {
     marginTop: 24,
-    fontSize: 16,
+    fontSize: typography.size.base,
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   captureButton: {
     width: 72,
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   permissionText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 24,
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   permissionButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
   },
   galleryButton: {
@@ -228,6 +228,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   galleryButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
 });

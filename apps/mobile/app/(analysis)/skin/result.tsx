@@ -37,6 +37,7 @@ import { saveSkinResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING, usePulseGlow } from '@/lib/animations';
+import { typography } from '@/lib/theme';
 
 import {
   SKIN_TYPE_DATA,
@@ -438,7 +439,7 @@ const localStyles = StyleSheet.create({
     lineHeight: 22,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '700',
     marginBottom: 12,
   },
@@ -457,11 +458,11 @@ const localStyles = StyleSheet.create({
     gap: 8,
   },
   tipBullet: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     lineHeight: 22,
   },
   tipText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 22,
     flex: 1,
   },

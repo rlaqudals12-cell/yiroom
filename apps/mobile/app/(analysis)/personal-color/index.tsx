@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   content: {
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   optionText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     lineHeight: 24,
   },
   backButton: {
@@ -218,6 +218,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
 });

@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   errorText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textAlign: 'center',
   },
   header: {
@@ -189,11 +189,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   headerCount: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   listContent: {
     padding: 16,
@@ -274,12 +274,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textAlign: 'center',
   },
 });

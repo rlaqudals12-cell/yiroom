@@ -392,18 +392,18 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   langButtonText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   lastUpdated: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginBottom: 16,
   },
   section: {
     marginTop: 24,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 12,
   },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   bulletText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 22,
     flex: 1,
   },
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   contactText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 22,
   },
 });

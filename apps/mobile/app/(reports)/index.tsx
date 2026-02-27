@@ -165,7 +165,7 @@ export default function ReportsScreen(): React.JSX.Element {
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 24, fontWeight: typography.weight.bold, color: brand.primaryForeground }}>
+            <Text style={{ fontSize: typography.size['2xl'], fontWeight: typography.weight.bold, color: brand.primaryForeground }}>
               {userName.charAt(0)}
             </Text>
           </View>
@@ -597,7 +597,7 @@ export default function ReportsScreen(): React.JSX.Element {
             onPress={() => router.push('/(reports)/weekly')}
             testID="weekly-report-link"
           >
-            <Text style={{ fontSize: 24, marginBottom: 4 }}>📊</Text>
+            <Text style={{ fontSize: typography.size['2xl'], marginBottom: 4 }}>📊</Text>
             <Text
               style={{
                 fontSize: typography.size.sm,
@@ -619,7 +619,7 @@ export default function ReportsScreen(): React.JSX.Element {
             onPress={() => router.push('/(reports)/monthly')}
             testID="monthly-report-link"
           >
-            <Text style={{ fontSize: 24, marginBottom: 4 }}>📅</Text>
+            <Text style={{ fontSize: typography.size['2xl'], marginBottom: 4 }}>📅</Text>
             <Text
               style={{
                 fontSize: typography.size.sm,

@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   tabBar: {
     flexDirection: 'row',
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   tabButtonText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   listContent: {
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
   },
   userMeta: {
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   timeText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: 2,
   },
   typeBadge: {
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   typeBadgeEmoji: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
   },
   cardContent: {
     marginBottom: 12,
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   detailText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginTop: 4,
     lineHeight: 20,
   },
@@ -408,10 +408,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   badgeHighlightEmoji: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
   },
   badgeHighlightText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   cardActions: {
@@ -431,13 +431,13 @@ const styles = StyleSheet.create({
     marginRight: 0,
   },
   actionIcon: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
   },
   likeIcon: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
   },
   likeIconActive: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
   },
   actionCount: {
     fontSize: 13,
@@ -454,12 +454,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginBottom: 24,
     textAlign: 'center',
   },

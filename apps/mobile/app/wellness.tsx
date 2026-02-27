@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   breakdownEmoji: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   breakdownText: {
     fontSize: typography.size.sm,

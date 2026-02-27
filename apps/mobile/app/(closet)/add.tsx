@@ -522,13 +522,13 @@ function useStyles() {
       marginTop: 8,
     },
     sectionTitle: {
-      fontSize: 16,
+      fontSize: typography.size.base,
       fontWeight: typography.weight.semibold,
       color: colors.foreground,
       marginBottom: 12,
     },
     label: {
-      fontSize: 14,
+      fontSize: typography.size.sm,
       color: colors.mutedForeground,
       marginBottom: 6,
       marginTop: 12,
@@ -538,7 +538,7 @@ function useStyles() {
       borderRadius: 8,
       paddingHorizontal: 12,
       paddingVertical: 10,
-      fontSize: 14,
+      fontSize: typography.size.sm,
       color: colors.foreground,
     },
     textArea: {
@@ -563,7 +563,7 @@ function useStyles() {
       backgroundColor: colors.foreground,
     },
     optionIcon: {
-      fontSize: 16,
+      fontSize: typography.size.base,
     },
     optionLabel: {
       color: colors.mutedForeground,
@@ -598,7 +598,7 @@ function useStyles() {
     },
     colorLabel: {
       color: colors.mutedForeground,
-      fontSize: 12,
+      fontSize: typography.size.xs,
     },
     colorLabelSelected: {
       color: colors.background,
@@ -618,12 +618,12 @@ function useStyles() {
       backgroundColor: colors.foreground,
     },
     seasonIcon: {
-      fontSize: 24,
+      fontSize: typography.size['2xl'],
       marginBottom: 4,
     },
     seasonLabel: {
       color: colors.mutedForeground,
-      fontSize: 12,
+      fontSize: typography.size.xs,
     },
     seasonLabelSelected: {
       color: colors.background,
@@ -671,7 +671,7 @@ function useStyles() {
     submitButtonText: {
       color: colors.background,
       fontWeight: typography.weight.semibold,
-      fontSize: 16,
+      fontSize: typography.size.base,
     },
     successOverlay: {
       ...StyleSheet.absoluteFillObject,

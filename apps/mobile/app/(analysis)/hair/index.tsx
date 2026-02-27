@@ -72,7 +72,7 @@ export default function HairAnalysisScreen() {
 
 const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: typography.weight.bold, marginBottom: 8 },
-  subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 32 },
+  subtitle: { fontSize: typography.size.base, lineHeight: 24, marginBottom: 32 },
   features: { gap: 12, marginBottom: 32 },
   featureCard: {
     flexDirection: 'row',
@@ -82,8 +82,8 @@ const styles = StyleSheet.create({
   },
   featureIcon: { fontSize: 28, marginRight: 16 },
   featureText: { flex: 1 },
-  featureTitle: { fontSize: 16, fontWeight: typography.weight.semibold, marginBottom: 4 },
-  featureDesc: { fontSize: 14, lineHeight: 20 },
+  featureTitle: { fontSize: typography.size.base, fontWeight: typography.weight.semibold, marginBottom: 4 },
+  featureDesc: { fontSize: typography.size.sm, lineHeight: 20 },
   startButton: {
     borderRadius: 12,
     padding: 18,

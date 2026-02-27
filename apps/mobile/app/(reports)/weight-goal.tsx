@@ -214,7 +214,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
           </Text>
           {latestWeight > 0 ? (
             <View style={styles.currentWeightRow}>
-              <Text style={[styles.bigWeight, { color: brand.primary, fontSize: 36, fontWeight: typography.weight.bold }]}>
+              <Text style={[styles.bigWeight, { color: brand.primary, fontSize: typography.size['4xl'], fontWeight: typography.weight.bold }]}>
                 {latestWeight}
               </Text>
               <Text style={[styles.weightUnit, { color: colors.mutedForeground, fontSize: typography.size.lg }]}>kg</Text>
