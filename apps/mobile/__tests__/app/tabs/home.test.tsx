@@ -172,9 +172,12 @@ describe('HomeScreen', () => {
       expect(getByTestId('home-quick-actions')).toBeTruthy();
     });
 
-    it('오늘의 요약 카드가 표시된다', () => {
+    it('오늘의 요약 StatCard가 표시된다', () => {
       const { getByTestId } = renderWithTheme(<HomeScreen />);
-      expect(getByTestId('today-summary-card')).toBeTruthy();
+      // StatCard countUp 애니메이션은 Jest에서 미동작 → testID + accessibilityLabel로 검증
+      expect(getByTestId('stat-workout')).toBeTruthy();
+      expect(getByTestId('stat-calorie')).toBeTruthy();
+      expect(getByTestId('stat-analysis')).toBeTruthy();
     });
 
     it('사용자 이름을 HomeHeader에 전달한다', () => {

@@ -12,7 +12,7 @@ import {
   SmilePlus,
 } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import {
@@ -27,10 +27,10 @@ import {
 } from '../../components/beauty';
 import type { BeautyProduct } from '../../components/beauty';
 import { EmptyState } from '../../components/common/EmptyState';
-import { CollapsibleSection, MenuCard, GradientBackground, SectionHeader } from '../../components/ui';
+import { CollapsibleSection, MenuCard, GradientBackground, ScreenContainer, SectionHeader } from '../../components/ui';
 import { useUserAnalyses } from '../../hooks/useUserAnalyses';
 import { useAffiliateProducts } from '../../lib/affiliate/useAffiliateProducts';
-import { TIMING } from '../../lib/animations';
+import { staggeredEntry, TIMING } from '../../lib/animations';
 import { useTheme } from '../../lib/theme';
 
 export default function BeautyTab(): React.JSX.Element {
@@ -101,12 +101,7 @@ export default function BeautyTab(): React.JSX.Element {
   const hasSkinData = skinAnalysis !== null;
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      testID="beauty-tab"
-      contentContainerStyle={{ paddingBottom: spacing.xl }}
-    >
-      <View style={{ padding: spacing.md }}>
+    <ScreenContainer testID="beauty-tab" contentContainerStyle={{ paddingBottom: spacing.xl }}>
         {/* 히어로 헤더 */}
         <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
           <GradientBackground
@@ -259,7 +254,7 @@ export default function BeautyTab(): React.JSX.Element {
         </Animated.View>
 
         <View style={{ gap: spacing.sm + 4 }}>
-          <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(0)}>
             <MenuCard
               icon={<Droplets size={20} color={moduleColors.skin.dark} />}
               iconBg={moduleColors.skin.light + '30'}
@@ -270,7 +265,7 @@ export default function BeautyTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(1)}>
             <MenuCard
               icon={<Calendar size={20} color={moduleColors.skin.base} />}
               iconBg={moduleColors.skin.light + '30'}
@@ -281,7 +276,7 @@ export default function BeautyTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(250).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(2)}>
             <MenuCard
               icon={<Palette size={20} color={moduleColors.personalColor.dark} />}
               iconBg={moduleColors.personalColor.light + '30'}
@@ -292,7 +287,7 @@ export default function BeautyTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(3)}>
             <MenuCard
               icon={<Scissors size={20} color={moduleColors.hair.dark} />}
               iconBg={moduleColors.hair.light + '30'}
@@ -303,7 +298,7 @@ export default function BeautyTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(4)}>
             <MenuCard
               icon={<Brush size={20} color={moduleColors.makeup.dark} />}
               iconBg={moduleColors.makeup.light + '30'}
@@ -314,7 +309,7 @@ export default function BeautyTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(5)}>
             <MenuCard
               icon={<SmilePlus size={20} color={moduleColors.oralHealth.dark} />}
               iconBg={moduleColors.oralHealth.light + '30'}
@@ -325,7 +320,6 @@ export default function BeautyTab(): React.JSX.Element {
             />
           </Animated.View>
         </View>
-      </View>
-    </ScrollView>
+    </ScreenContainer>
   );
 }

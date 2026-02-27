@@ -11,13 +11,13 @@ import {
   Wand2,
   PersonStanding,
 } from 'lucide-react-native';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { BodyProfileCard, ClosetPreviewStrip, TodayOutfitSuggestion } from '../../components/style';
-import { MenuCard, GradientBackground, SectionHeader } from '../../components/ui';
+import { MenuCard, GradientBackground, ScreenContainer, SectionHeader } from '../../components/ui';
 import { useUserAnalyses } from '../../hooks';
-import { TIMING } from '../../lib/animations';
+import { staggeredEntry, TIMING } from '../../lib/animations';
 import { useCloset, useClosetMatcher, type PersonalColorSeason, type BodyType3 } from '../../lib/inventory';
 import { useTheme } from '../../lib/theme';
 
@@ -40,8 +40,7 @@ export default function StyleTab(): React.JSX.Element {
   const outfitSuggestion = getOutfitSuggestion();
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} testID="style-tab">
-      <View style={{ padding: spacing.md }}>
+    <ScreenContainer testID="style-tab">
         {/* 히어로 헤더 */}
         <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
           <GradientBackground
@@ -161,7 +160,7 @@ export default function StyleTab(): React.JSX.Element {
         </Animated.View>
 
         <View style={{ gap: spacing.sm + 4 }}>
-          <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(0)}>
             <MenuCard
               icon={<Ruler size={20} color={moduleColors.body.dark} />}
               iconBg={moduleColors.body.light + '30'}
@@ -172,7 +171,7 @@ export default function StyleTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(1)}>
             <MenuCard
               icon={<PersonStanding size={20} color={moduleColors.posture.dark} />}
               iconBg={moduleColors.posture.light + '30'}
@@ -193,7 +192,7 @@ export default function StyleTab(): React.JSX.Element {
         </Animated.View>
 
         <View style={{ gap: spacing.sm + 4, marginBottom: spacing.lg }}>
-          <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(0)}>
             <MenuCard
               icon={<Shirt size={20} color={moduleColors.body.base} />}
               iconBg={moduleColors.body.light + '20'}
@@ -204,7 +203,7 @@ export default function StyleTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(1)}>
             <MenuCard
               icon={<Package size={20} color={moduleColors.body.dark} />}
               iconBg={moduleColors.body.light + '20'}
@@ -215,7 +214,7 @@ export default function StyleTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(2)}>
             <MenuCard
               icon={<Wand2 size={20} color={moduleColors.personalColor.dark} />}
               iconBg={moduleColors.personalColor.light + '20'}
@@ -226,7 +225,7 @@ export default function StyleTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(450).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(3)}>
             <MenuCard
               icon={<ShoppingBag size={20} color={status.success} />}
               iconBg={status.success + '20'}
@@ -237,7 +236,6 @@ export default function StyleTab(): React.JSX.Element {
             />
           </Animated.View>
         </View>
-      </View>
-    </ScrollView>
+    </ScreenContainer>
   );
 }

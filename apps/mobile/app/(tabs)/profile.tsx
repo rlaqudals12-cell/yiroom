@@ -7,15 +7,14 @@ import { useUser, useClerk } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
-import { View, Text, StyleSheet, ScrollView, Pressable, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnalysisTimeline } from '../../components/analysis';
 import { WellnessScoreRing, LevelBadge, AchievementGrid } from '../../components/profile';
-import { GlassCard, GradientBackground, GradientCard, SectionHeader } from '../../components/ui';
+import { GlassCard, GradientBackground, GradientCard, ScreenContainer, SectionHeader } from '../../components/ui';
 import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../../hooks';
-import { TIMING } from '../../lib/animations';
+import { staggeredEntry, TIMING } from '../../lib/animations';
 import { useTheme } from '../../lib/theme';
 import { profileLogger } from '../../lib/utils/logger';
 
@@ -55,11 +54,7 @@ export default function ProfileScreen(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView
-      testID="profile-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-    >
-      <ScrollView contentContainerStyle={{ padding: spacing.md, paddingBottom: 40 }}>
+    <ScreenContainer testID="profile-screen" contentContainerStyle={{ paddingBottom: 40 }}>
         {/* 프로필 헤더 — 브랜드 그라디언트 + GlassCard */}
         <Animated.View entering={FadeIn.duration(TIMING.normal)}>
           <GradientBackground
@@ -216,7 +211,7 @@ export default function ProfileScreen(): React.JSX.Element {
         </Animated.View>
 
         {/* 분석 결과 */}
-        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+        <Animated.View entering={staggeredEntry(0)}>
           <SectionHeader title="분석 결과" style={{ marginBottom: spacing.sm + 4 }} />
           <GlassCard intensity={20} style={{ padding: 0, marginBottom: spacing.lg, overflow: 'hidden' }}>
             <MenuItem
@@ -243,7 +238,7 @@ export default function ProfileScreen(): React.JSX.Element {
         </Animated.View>
 
         {/* 기록 */}
-        <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+        <Animated.View entering={staggeredEntry(1)}>
           <SectionHeader title="기록" style={{ marginBottom: spacing.sm + 4 }} />
           <GlassCard intensity={20} style={{ padding: 0, marginBottom: spacing.lg, overflow: 'hidden' }}>
             <MenuItem
@@ -276,7 +271,7 @@ export default function ProfileScreen(): React.JSX.Element {
         </Animated.View>
 
         {/* 설정 */}
-        <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
+        <Animated.View entering={staggeredEntry(2)}>
           <SectionHeader title="설정" style={{ marginBottom: spacing.sm + 4 }} />
           <GlassCard intensity={20} style={{ padding: 0, overflow: 'hidden' }}>
             <MenuItem
@@ -303,8 +298,7 @@ export default function ProfileScreen(): React.JSX.Element {
             />
           </GlassCard>
         </Animated.View>
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

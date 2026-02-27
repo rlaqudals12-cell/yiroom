@@ -12,7 +12,7 @@ import {
   TrendingUp,
 } from 'lucide-react-native';
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
 import {
@@ -21,8 +21,10 @@ import {
   GlassCard,
   GradientBackground,
   CollapsibleSection,
+  StatCard,
+  GradientProgressBar,
+  ScreenContainer,
   SkeletonText,
-  SkeletonCard,
 } from '../../components/ui';
 import {
   WeeklyCalorieChart,
@@ -34,7 +36,7 @@ import {
 } from '../../components/records';
 import { useWorkoutData, useNutritionData, calculateCalorieProgress } from '../../hooks';
 import type { DailyNutritionSummary, WorkoutLog } from '../../hooks';
-import { TIMING } from '../../lib/animations';
+import { staggeredEntry, TIMING } from '../../lib/animations';
 import { useTheme } from '../../lib/theme';
 
 // 요일 라벨 (월~일)
@@ -158,8 +160,7 @@ export default function RecordsTab(): React.JSX.Element {
   }), [nutritionSettings, calorieGoal]);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} testID="records-tab">
-      <View style={{ padding: spacing.md, paddingBottom: spacing.xl }}>
+    <ScreenContainer testID="records-tab" contentContainerStyle={{ paddingBottom: spacing.xl }}>
         {/* 히어로 헤더 */}
         <Animated.View entering={FadeIn.duration(TIMING.normal)}>
           <GradientBackground
@@ -216,67 +217,45 @@ export default function RecordsTab(): React.JSX.Element {
                 </View>
               </View>
             ) : (
-              <View style={styles.statsRow}>
-                <View style={styles.statItem}>
-                  <Text
-                    style={{
-                      color: brand.primary,
-                      fontSize: typography.size['2xl'],
-                      fontWeight: typography.weight.bold,
-                    }}
-                  >
-                    {workoutCount}일
-                  </Text>
-                  <Text
-                    style={{
-                      color: colors.mutedForeground,
-                      fontSize: typography.size.sm,
-                    }}
-                  >
-                    연속 운동
-                  </Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text
-                    style={{
-                      color: brand.primary,
-                      fontSize: typography.size['2xl'],
-                      fontWeight: typography.weight.bold,
-                    }}
-                  >
-                    {mealCount}
-                  </Text>
-                  <Text
-                    style={{
-                      color: colors.mutedForeground,
-                      fontSize: typography.size.sm,
-                    }}
-                  >
-                    식사
-                  </Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text
-                    style={{
-                      color: brand.primary,
-                      fontSize: typography.size['2xl'],
-                      fontWeight: typography.weight.bold,
-                    }}
-                  >
-                    {calorieProgress}%
-                  </Text>
-                  <Text
-                    style={{
-                      color: colors.mutedForeground,
-                      fontSize: typography.size.sm,
-                    }}
-                  >
-                    칼로리
-                  </Text>
-                </View>
+              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <StatCard
+                  value={workoutCount}
+                  label="연속 운동"
+                  suffix="일"
+                  moduleColor="workout"
+                  style={{ flex: 1 }}
+                  testID="record-stat-workout"
+                />
+                <StatCard
+                  value={mealCount}
+                  label="식사"
+                  style={{ flex: 1 }}
+                  testID="record-stat-meal"
+                />
+                <StatCard
+                  value={calorieProgress}
+                  label="칼로리"
+                  suffix="%"
+                  moduleColor="nutrition"
+                  style={{ flex: 1 }}
+                  testID="record-stat-calorie"
+                />
               </View>
             )}
           </GlassCard>
+
+          {/* 칼로리 진행률 바 */}
+          {!isLoading && (
+            <GradientProgressBar
+              value={todaySummary?.totalCalories || 0}
+              max={calorieGoal}
+              moduleColor="nutrition"
+              animated
+              showLabel
+              style={{ marginTop: spacing.sm }}
+              testID="calorie-progress-bar"
+            />
+          )}
         </Animated.View>
 
         {/* 수분 섭취 — GlassCard */}
@@ -336,6 +315,16 @@ export default function RecordsTab(): React.JSX.Element {
                 {waterIntake}ml
               </Text>
             </View>
+
+            {/* 수분 진행률 바 */}
+            <GradientProgressBar
+              value={waterIntake}
+              max={nutritionSettings?.waterGoal || 2000}
+              moduleColor="skin"
+              animated
+              style={{ marginTop: spacing.sm }}
+              testID="water-progress-bar"
+            />
           </GlassCard>
         </Animated.View>
 
@@ -436,7 +425,7 @@ export default function RecordsTab(): React.JSX.Element {
         </Animated.View>
 
         <View style={{ gap: spacing.sm + 4 }}>
-          <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(0)}>
             <MenuCard
               icon={<Dumbbell size={20} color={moduleColors.workout.dark} />}
               iconBg={moduleColors.workout.light + '30'}
@@ -451,7 +440,7 @@ export default function RecordsTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(450).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(1)}>
             <MenuCard
               icon={<UtensilsCrossed size={20} color={moduleColors.nutrition.dark} />}
               iconBg={moduleColors.nutrition.light + '30'}
@@ -466,7 +455,7 @@ export default function RecordsTab(): React.JSX.Element {
             />
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(2)}>
             <MenuCard
               icon={<BarChart3 size={20} color={moduleColors.body.dark} />}
               iconBg={moduleColors.body.light + '30'}
@@ -477,8 +466,7 @@ export default function RecordsTab(): React.JSX.Element {
             />
           </Animated.View>
         </View>
-      </View>
-    </ScrollView>
+    </ScreenContainer>
   );
 }
 

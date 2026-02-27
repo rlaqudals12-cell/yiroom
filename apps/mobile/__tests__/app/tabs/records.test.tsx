@@ -126,22 +126,20 @@ describe('RecordsTab', () => {
     });
 
     it('연속 운동 일수가 표시된다', () => {
-      const { getByText } = renderWithTheme(<RecordsTab />);
-      expect(getByText('5일')).toBeTruthy();
-      expect(getByText('연속 운동')).toBeTruthy();
+      // StatCard countUp 애니메이션은 Jest에서 미동작 → accessibilityLabel로 검증
+      const { getByLabelText } = renderWithTheme(<RecordsTab />);
+      expect(getByLabelText('연속 운동 5일')).toBeTruthy();
     });
 
     it('식사 횟수가 표시된다', () => {
-      const { getByText } = renderWithTheme(<RecordsTab />);
-      expect(getByText('3')).toBeTruthy();
-      expect(getByText('식사')).toBeTruthy();
+      const { getByLabelText } = renderWithTheme(<RecordsTab />);
+      expect(getByLabelText('식사 3')).toBeTruthy();
     });
 
     it('칼로리 진행률이 표시된다', () => {
-      const { getByText } = renderWithTheme(<RecordsTab />);
+      const { getByLabelText } = renderWithTheme(<RecordsTab />);
       // calculateCalorieProgress(1800, 2000) = 90
-      expect(getByText('90%')).toBeTruthy();
-      expect(getByText('칼로리')).toBeTruthy();
+      expect(getByLabelText('칼로리 90%')).toBeTruthy();
     });
   });
 
@@ -196,9 +194,9 @@ describe('RecordsTab', () => {
         isLoading: true,
       });
 
-      const { queryByText } = renderWithTheme(<RecordsTab />);
-      // 로딩 중에는 통계 값이 표시되지 않음
-      expect(queryByText('5일')).toBeNull();
+      const { queryByTestId } = renderWithTheme(<RecordsTab />);
+      // 로딩 중에는 StatCard가 렌더되지 않음 (SkeletonText 표시)
+      expect(queryByTestId('record-stat-workout')).toBeNull();
     });
   });
 
