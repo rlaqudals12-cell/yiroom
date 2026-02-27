@@ -24,8 +24,8 @@ import {
   ScrollView,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ScreenContainer } from '@/components/ui';
 import { useTheme, typography} from '@/lib/theme';
 import { TIMING } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -138,9 +138,9 @@ export default function BarcodeScanScreen(): React.JSX.Element {
   }, []);
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="barcode-scan-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
+      scrollable={false}
       edges={['bottom']}
     >
       <KeyboardAvoidingView
@@ -544,7 +544,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

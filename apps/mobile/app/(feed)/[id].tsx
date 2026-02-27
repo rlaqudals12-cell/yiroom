@@ -21,8 +21,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { ScreenContainer } from '@/components/ui';
 import { useTheme, typography} from '@/lib/theme';
 
 import type { FeedItem } from '../../lib/feed/types';
@@ -288,26 +287,30 @@ export default function FeedDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={brand.primary} />
-      </View>
+      <ScreenContainer scrollable={false} edges={['bottom']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={brand.primary} />
+        </View>
+      </ScreenContainer>
     );
   }
 
   if (!feedItem) {
     return (
-      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
-        <Text style={[styles.errorText, { color: colors.foreground }]}>
-          게시물을 찾을 수 없습니다.
-        </Text>
-      </View>
+      <ScreenContainer scrollable={false} edges={['bottom']}>
+        <View style={styles.errorContainer}>
+          <Text style={[styles.errorText, { color: colors.foreground }]}>
+            게시물을 찾을 수 없습니다.
+          </Text>
+        </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="feed-detail-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      scrollable={false}
       edges={['bottom']}
     >
       <KeyboardAvoidingView
@@ -427,14 +430,11 @@ export default function FeedDetailScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   keyboardView: {
     flex: 1,
   },

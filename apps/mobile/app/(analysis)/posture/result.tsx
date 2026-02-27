@@ -4,8 +4,9 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Image } from 'react-native';
+
+import { ScreenContainer } from '@/components/ui';
 
 import {
   AnalysisLoadingState,
@@ -119,12 +120,12 @@ export default function PostureResultScreen() {
       visible={showBadge}
       onDismiss={() => setShowBadge(false)}
     />
-    <SafeAreaView
+    <ScreenContainer
       testID="analysis-posture-result-screen"
       style={styles.container}
+      contentContainerStyle={styles.content}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={styles.content}>
         {imageUri && (
           <View style={styles.imageContainer}>
             <Image
@@ -207,8 +208,7 @@ export default function PostureResultScreen() {
           onRetry={handleRetry}
           testID="posture-result-buttons"
         />
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
     </>
   );
 }

@@ -5,9 +5,9 @@
  * 한/영 토글 지원.
  */
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 
+import { ScreenContainer } from '@/components/ui';
 import { useTheme, typography} from '../lib/theme';
 
 type Lang = 'ko' | 'en';
@@ -17,12 +17,11 @@ export default function TermsScreen() {
   const [lang, setLang] = useState<Lang>('ko');
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <ScreenContainer
       edges={['bottom']}
       testID="terms-screen"
+      contentContainerStyle={styles.content}
     >
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 언어 토글 */}
         <View style={styles.langToggle}>
           <Pressable
@@ -72,8 +71,7 @@ export default function TermsScreen() {
         </View>
 
         {lang === 'ko' ? <KoreanTerms colors={colors} /> : <EnglishTerms colors={colors} />}
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
@@ -380,9 +378,6 @@ function EnglishTerms({ colors }: TermsProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     padding: 16,
     paddingBottom: 48,

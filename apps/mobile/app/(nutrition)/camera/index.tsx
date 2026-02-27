@@ -305,7 +305,7 @@ export default function FoodCameraScreen() {
       <ScreenContainer
         scrollable={false}
         contentPadding={0}
-        style={[styles.container, { backgroundColor: colors.background }]}
+        style={{ ...styles.container, backgroundColor: colors.background }}
         edges={['bottom']}
       >
         <ScrollView
