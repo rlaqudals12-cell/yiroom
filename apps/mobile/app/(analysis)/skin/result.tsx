@@ -20,8 +20,10 @@ import {
   AnalysisLoadingState,
   AnalysisErrorState,
   ResultLayout,
+  FaceZoneMap,
   useAnalysisStyles,
 } from '@/components/analysis';
+import type { FaceZone } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
 import {
@@ -42,6 +44,18 @@ import {
   type SkinMetrics,
   type SkinMetricsDelta,
 } from '@/lib/skincare';
+
+// 메트릭 → 얼굴 존 변환 (피부 생리학 기반 추정)
+function buildFaceZones(m: SkinMetrics): FaceZone[] {
+  return [
+    { id: 'forehead', label: '이마', score: Math.round((m.oil + m.pores) / 2), description: '유분과 모공이 집중되는 영역' },
+    { id: 'tzone', label: 'T존', score: Math.round((m.oil * 0.6 + m.pores * 0.4)), description: '피지 분비가 가장 활발한 영역' },
+    { id: 'leftCheek', label: '볼(L)', score: Math.round((m.moisture + m.sensitivity) / 2), description: '수분과 민감도가 중요한 영역' },
+    { id: 'rightCheek', label: '볼(R)', score: Math.round((m.moisture + m.sensitivity) / 2), description: '수분과 민감도가 중요한 영역' },
+    { id: 'nose', label: '코', score: Math.round((m.oil * 0.5 + m.pores * 0.5)), description: '블랙헤드와 모공 관리 영역' },
+    { id: 'chin', label: '턱', score: Math.round((m.moisture + m.elasticity + m.sensitivity) / 3), description: '탄력과 수분 균형이 중요한 영역' },
+  ];
+}
 
 // 피부 타입별 성분 추천/주의 데이터
 const INGREDIENT_DATA: Record<SkinType, { good: string[]; avoid: string[] }> = {
@@ -284,8 +298,18 @@ export default function SkinResultScreen() {
         />
       </Animated.View>
 
-      {/* 전체 MetricBar */}
+      {/* 피부 존 맵 */}
       <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
+        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>피부 존 맵</Text>
+        <FaceZoneMap
+          zones={buildFaceZones(metrics)}
+          size={200}
+          testID="face-zone-map"
+        />
+      </Animated.View>
+
+      {/* 전체 MetricBar */}
+      <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>세부 지표</Text>
         <View style={localStyles.metricsGap}>
           <MetricBar label="수분도" value={metrics.moisture} delta={delta?.moisture} />

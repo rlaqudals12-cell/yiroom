@@ -19,6 +19,7 @@ import {
   ResultLayout,
   ColorPalette,
   MetricBar,
+  DrapingPreview,
   useAnalysisStyles,
 } from '@/components/analysis';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
@@ -253,7 +254,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
         />
       }
       recommendTab={
-        <RecommendTab season={season} accent={accent} colors={colors} />
+        <RecommendTab season={season} accent={accent} colors={colors} imageUri={imageUri} />
       }
       primaryActionText="💄 내 색상에 맞는 제품"
       onPrimaryAction={handleProductRecommendation}
@@ -392,10 +393,28 @@ function DetailTab({
 }
 
 /** 추천 탭: 스타일링 팁 + 메이크업 포인트 */
-function RecommendTab({ season, accent, colors }: TabProps): React.JSX.Element {
+function RecommendTab({ season, accent, colors, imageUri }: TabProps & { imageUri?: string }): React.JSX.Element {
   return (
     <View style={localStyles.tabContent}>
-      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+      {/* 드레이핑 프리뷰 — 내 사진에 색상 입혀보기 */}
+      {imageUri && (
+        <Animated.View entering={FadeInUp.delay(50).duration(TIMING.normal)}>
+          <GradientCard variant="personalColor" style={localStyles.sectionCard}>
+            <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+              이 색상 입혀보기
+            </Text>
+            <DrapingPreview
+              imageUri={imageUri}
+              palette={season.bestColors}
+              seasonName={season.name}
+              seasonDescription={`${season.tone === 'warm' ? '웜톤' : '쿨톤'} ${season.subType}`}
+              testID="draping-preview"
+            />
+          </GradientCard>
+        </Animated.View>
+      )}
+
+      <Animated.View entering={FadeInUp.delay(imageUri ? 150 : 100).duration(TIMING.normal)}>
         <GradientCard variant="personalColor" style={localStyles.sectionCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             맞춤 스타일링 팁
@@ -409,7 +428,7 @@ function RecommendTab({ season, accent, colors }: TabProps): React.JSX.Element {
         </GradientCard>
       </Animated.View>
 
-      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+      <Animated.View entering={FadeInUp.delay(imageUri ? 250 : 200).duration(TIMING.normal)}>
         <GradientCard variant="personalColor" style={localStyles.sectionCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             메이크업 포인트

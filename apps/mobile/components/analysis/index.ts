@@ -50,6 +50,12 @@ export type { AnalysisHistoryCardProps } from './AnalysisHistoryCard';
 export { GradeDisplay, getGrade } from './GradeDisplay';
 export type { GradeDisplayProps } from './GradeDisplay';
 
+// 시각화 컴포넌트
+export { BeforeAfterSlider } from './BeforeAfterSlider';
+export { FaceZoneMap } from './FaceZoneMap';
+export type { FaceZone } from './FaceZoneMap';
+export { DrapingPreview } from './DrapingPreview';
+
 // 동적 스타일 훅 (useTheme 기반)
 export { useAnalysisStyles } from './styles/useAnalysisStyles';
 
