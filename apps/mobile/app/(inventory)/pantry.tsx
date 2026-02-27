@@ -20,11 +20,11 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
 import { useTheme } from '@/lib/theme';
-import { TIMING } from '@/lib/animations';
+import { staggeredEntry } from '@/lib/animations';
+import { ScreenContainer } from '../../components/ui';
 import {
   useInventory,
   type InventoryItem,
@@ -125,7 +125,7 @@ export default function PantryScreen(): React.JSX.Element {
 
       return (
         <Animated.View
-          entering={FadeInUp.delay(index * 40).duration(TIMING.normal)}
+          entering={staggeredEntry(index)}
           style={[
             styles.itemCard,
             shadows.card,
@@ -278,10 +278,11 @@ export default function PantryScreen(): React.JSX.Element {
       : '영양제를 추가하고 복용을 관리해보세요';
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="pantry-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 탭 전환 */}
       <View
@@ -483,7 +484,7 @@ export default function PantryScreen(): React.JSX.Element {
           }
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

@@ -15,9 +15,8 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, type UserSearchResult } from '../../../lib/social';
 import { useUserSearch } from '../../../lib/social/useFriends';
@@ -112,10 +111,11 @@ export default function FriendSearchScreen() {
   );
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="social-friend-search-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 검색바 */}
       <View style={styles.searchContainer}>
@@ -173,7 +173,7 @@ export default function FriendSearchScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

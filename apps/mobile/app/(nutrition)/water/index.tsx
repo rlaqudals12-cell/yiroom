@@ -10,12 +10,10 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  ScrollView,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
@@ -163,23 +161,16 @@ export default function WaterTrackingScreen() {
     return DRINK_TYPES.find((d) => d.id === drinkType)?.icon || '💧';
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={status.info} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="nutrition-water-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
+      contentPadding={20}
     >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <DataStateWrapper
+        isLoading={isLoading}
+        isEmpty={false}
+      >
         {/* 진행 상황 */}
         <View style={styles.progressSection}>
           <Text style={styles.progressIcon}>💧</Text>
@@ -291,24 +282,12 @@ export default function WaterTrackingScreen() {
             </Text>
           )}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </DataStateWrapper>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollView: {
-    flex: 1,
-    padding: 20,
-  },
   progressSection: {
     alignItems: 'center',
     marginBottom: spacing.xl,

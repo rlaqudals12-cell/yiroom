@@ -13,12 +13,14 @@ import {
   FlatList,
   Alert,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
+import { staggeredEntry } from '@/lib/animations';
 import { useTheme } from '@/lib/theme';
+
+import { ScreenContainer } from '../../components/ui';
 
 import {
   DOMAIN_NAMES,
@@ -190,7 +192,7 @@ export default function ChallengesScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <View style={styles.statsContainer}>
             <SkeletonCard style={{ flex: 1, height: 80 }} />
@@ -201,19 +203,20 @@ export default function ChallengesScreen() {
           <SkeletonCard style={{ height: 120, marginHorizontal: 16, marginTop: 16 }} />
           <SkeletonCard style={{ height: 120, marginHorizontal: 16, marginTop: 12 }} />
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="challenges-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 통계 카드 */}
       {stats && (
-        <Animated.View entering={FadeInUp.duration(350)} style={styles.statsContainer}>
+        <Animated.View entering={staggeredEntry(0)} style={styles.statsContainer}>
           <GlassCard style={styles.statCard}>
             <Text style={styles.statIcon}>🔥</Text>
             <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.inProgress}</Text>
@@ -308,7 +311,7 @@ export default function ChallengesScreen() {
           }
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

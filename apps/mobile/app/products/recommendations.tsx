@@ -16,16 +16,14 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Pressable,
   ActivityIndicator,
-  RefreshControl,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
 import { useTheme } from '@/lib/theme';
-import { TIMING } from '@/lib/animations';
+import { staggeredEntry } from '@/lib/animations';
+import { ScreenContainer } from '../../components/ui';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import {
@@ -114,26 +112,14 @@ export default function RecommendationsScreen(): React.JSX.Element {
   const noAnalysis = !personalColor && !skinAnalysis && !analysisLoading;
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="recommendations-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['bottom']}
+      onRefresh={fetchRecommendations}
     >
-      <ScrollView
-        contentContainerStyle={{
-          padding: spacing.md,
-          paddingBottom: spacing.xxl,
-        }}
-        refreshControl={
-          <RefreshControl
-            refreshing={false}
-            onRefresh={fetchRecommendations}
-          />
-        }
-      >
         {/* 헤더 카드 */}
         <Animated.View
-          entering={FadeInUp.duration(TIMING.normal)}
+          entering={staggeredEntry(0)}
           style={[
             styles.heroCard,
             shadows.card,
@@ -211,7 +197,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
         {/* 분석 없음 → CTA */}
         {noAnalysis && !loading && (
           <Animated.View
-            entering={FadeInUp.delay(100).duration(TIMING.normal)}
+            entering={staggeredEntry(1)}
             style={[
               styles.ctaCard,
               shadows.card,
@@ -265,7 +251,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
         {sections.map((section, sIdx) => (
           <Animated.View
             key={section.title}
-            entering={FadeInUp.delay(sIdx * 100 + 100).duration(TIMING.normal)}
+            entering={staggeredEntry(sIdx + 1)}
             style={{ marginBottom: spacing.lg }}
           >
             {/* 섹션 헤더 */}
@@ -420,7 +406,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
         {/* 결과 없음 (분석 있는데 제품 없음) */}
         {!loading && !noAnalysis && sections.length === 0 && (
           <Animated.View
-            entering={FadeInUp.delay(100).duration(TIMING.normal)}
+            entering={staggeredEntry(1)}
             style={[styles.center, { paddingVertical: spacing.xxl }]}
           >
             <ShoppingBag size={48} color={colors.mutedForeground} />
@@ -446,8 +432,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
             </Text>
           </Animated.View>
         )}
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

@@ -9,13 +9,13 @@
  */
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeftRight, RefreshCw, Clock, BarChart3 } from 'lucide-react-native';
-import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { ComparisonCard } from '@/components/analysis/ComparisonCard';
 import { useTheme } from '@/lib/theme';
-import { TIMING } from '@/lib/animations';
+import { staggeredEntry } from '@/lib/animations';
 import { useAnalysisComparison } from '@/hooks/useAnalysisComparison';
 import type { AnalysisModuleType } from '@/hooks/useAnalysisHistory';
 
@@ -54,220 +54,164 @@ export default function CompareScreen(): React.JSX.Element {
 
   const { data, isLoading, error, refetch } = useAnalysisComparison(moduleType);
 
-  // 로딩
-  if (isLoading) {
-    return (
-      <SafeAreaView
-        edges={['bottom']}
-        style={[styles.center, { flex: 1, backgroundColor: colors.background }]}
-      >
-        <ActivityIndicator size="large" color={brand.primary} />
-        <Text
-          style={{
-            marginTop: spacing.md,
-            fontSize: typography.size.sm,
-            color: colors.mutedForeground,
-          }}
-        >
-          비교 데이터를 불러오고 있어요
-        </Text>
-      </SafeAreaView>
-    );
-  }
-
-  // 에러
-  if (error) {
-    return (
-      <SafeAreaView
-        edges={['bottom']}
-        style={[styles.center, { flex: 1, backgroundColor: colors.background }]}
-      >
-        <Text
-          style={{
-            fontSize: typography.size.base,
-            color: colors.mutedForeground,
-            textAlign: 'center',
-            marginBottom: spacing.md,
-          }}
-        >
-          비교 데이터를 불러올 수 없어요
-        </Text>
-        <Pressable
-          onPress={refetch}
-          style={[
-            styles.retryButton,
-            { backgroundColor: brand.primary, borderRadius: radii.lg },
-          ]}
-        >
-          <RefreshCw size={16} color={brand.primaryForeground} />
-          <Text style={[styles.retryText, { fontSize: typography.size.sm, color: brand.primaryForeground }]}>다시 시도</Text>
-        </Pressable>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xxl }}
-      testID="compare-screen"
-    >
-      {/* 날짜 범위 표시 */}
-      {data && data.previousDate && data.currentDate && (
-        <Animated.View
-          entering={FadeInUp.duration(TIMING.normal)}
-          style={[
-            styles.dateRange,
-            {
-              backgroundColor: colors.card,
-              borderRadius: radii.lg,
-              borderColor: colors.border,
-              padding: spacing.md,
-              marginBottom: spacing.md,
-            },
-            shadows.card,
-          ]}
-        >
-          <View style={styles.dateItem}>
-            <Clock size={14} color={colors.mutedForeground} />
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                color: colors.mutedForeground,
-                marginLeft: spacing.xs,
-              }}
-            >
-              이전: {formatDate(data.previousDate)}
-            </Text>
-          </View>
-          <ArrowLeftRight size={16} color={brand.primary} />
-          <View style={styles.dateItem}>
-            <Clock size={14} color={brand.primary} />
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                color: colors.foreground,
-                fontWeight: typography.weight.semibold,
-                marginLeft: spacing.xs,
-              }}
-            >
-              현재: {formatDate(data.currentDate)}
-            </Text>
-          </View>
-        </Animated.View>
-      )}
-
-      {/* 비교 카드 */}
-      {data && (
-        <ComparisonCard
-          title={data.title}
-          metrics={data.metrics}
-          previousTotal={data.previousTotal}
-          currentTotal={data.currentTotal}
-          isFirstAnalysis={data.isFirstAnalysis}
-          testID="comparison-card"
-        />
-      )}
-
-      {/* 액션 버튼 */}
-      <Animated.View
-        entering={FadeInUp.delay(200).duration(TIMING.normal)}
-        style={{ marginTop: spacing.lg }}
+    <ScreenContainer testID="compare-screen" edges={['bottom']}>
+      <DataStateWrapper
+        isLoading={isLoading}
+        error={error ? String(error) : undefined}
+        onRetry={refetch}
+        isEmpty={!data}
+        emptyConfig={{
+          icon: <ArrowLeftRight size={48} color={colors.mutedForeground} />,
+          title: '비교할 데이터가 없어요',
+          description: '분석을 2회 이상 진행하면 비교할 수 있어요',
+          actionLabel: '분석하러 가기',
+          onAction: () => router.push(MODULE_START_PATH[moduleType] as `/${string}`),
+        }}
       >
-        {/* 이력 보기 */}
-        <Pressable
-          onPress={() => router.push(MODULE_HISTORY_PATH[moduleType] as `/${string}`)}
-          style={[
-            styles.actionButton,
-            {
-              backgroundColor: colors.card,
-              borderRadius: radii.lg,
-              borderColor: colors.border,
-              padding: spacing.md,
-              marginBottom: spacing.sm,
-            },
-            shadows.card,
-          ]}
-          testID="view-history-button"
-        >
-          <BarChart3 size={20} color={brand.primary} />
-          <View style={{ flex: 1, marginLeft: spacing.sm }}>
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-              }}
-            >
-              전체 이력 보기
-            </Text>
-            <Text
-              style={{
-                fontSize: typography.size.xs,
-                color: colors.mutedForeground,
-                marginTop: 2,
-              }}
-            >
-              과거 분석 결과를 모두 확인해요
-            </Text>
-          </View>
-        </Pressable>
+        {/* 날짜 범위 표시 */}
+        {data && data.previousDate && data.currentDate && (
+          <Animated.View
+            entering={staggeredEntry(0)}
+            style={[
+              styles.dateRange,
+              {
+                backgroundColor: colors.card,
+                borderRadius: radii.lg,
+                borderColor: colors.border,
+                padding: spacing.md,
+                marginBottom: spacing.md,
+              },
+              shadows.card,
+            ]}
+          >
+            <View style={styles.dateItem}>
+              <Clock size={14} color={colors.mutedForeground} />
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  color: colors.mutedForeground,
+                  marginLeft: spacing.xs,
+                }}
+              >
+                이전: {formatDate(data.previousDate)}
+              </Text>
+            </View>
+            <ArrowLeftRight size={16} color={brand.primary} />
+            <View style={styles.dateItem}>
+              <Clock size={14} color={brand.primary} />
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  color: colors.foreground,
+                  fontWeight: typography.weight.semibold,
+                  marginLeft: spacing.xs,
+                }}
+              >
+                현재: {formatDate(data.currentDate)}
+              </Text>
+            </View>
+          </Animated.View>
+        )}
 
-        {/* 새 분석 시작 */}
-        <Pressable
-          onPress={() => router.push(MODULE_START_PATH[moduleType] as `/${string}`)}
-          style={[
-            styles.actionButton,
-            {
-              backgroundColor: brand.primary,
-              borderRadius: radii.lg,
-              padding: spacing.md,
-            },
-          ]}
-          testID="new-analysis-button"
+        {/* 비교 카드 */}
+        {data && (
+          <ComparisonCard
+            title={data.title}
+            metrics={data.metrics}
+            previousTotal={data.previousTotal}
+            currentTotal={data.currentTotal}
+            isFirstAnalysis={data.isFirstAnalysis}
+            testID="comparison-card"
+          />
+        )}
+
+        {/* 액션 버튼 */}
+        <Animated.View
+          entering={staggeredEntry(2)}
+          style={{ marginTop: spacing.lg }}
         >
-          <RefreshCw size={20} color={brand.primaryForeground} />
-          <View style={{ flex: 1, marginLeft: spacing.sm }}>
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                fontWeight: typography.weight.semibold,
-                color: brand.primaryForeground,
-              }}
-            >
-              새 분석 시작
-            </Text>
-            <Text
-              style={{
-                fontSize: typography.size.xs,
-                color: brand.primaryForeground + 'CC',
-                marginTop: 2,
-              }}
-            >
-              변화를 추적하려면 새 분석을 진행해요
-            </Text>
-          </View>
-        </Pressable>
-      </Animated.View>
-    </ScrollView>
+          {/* 이력 보기 */}
+          <Pressable
+            onPress={() => router.push(MODULE_HISTORY_PATH[moduleType] as `/${string}`)}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: colors.card,
+                borderRadius: radii.lg,
+                borderColor: colors.border,
+                padding: spacing.md,
+                marginBottom: spacing.sm,
+              },
+              shadows.card,
+            ]}
+            testID="view-history-button"
+          >
+            <BarChart3 size={20} color={brand.primary} />
+            <View style={{ flex: 1, marginLeft: spacing.sm }}>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                }}
+              >
+                전체 이력 보기
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  color: colors.mutedForeground,
+                  marginTop: 2,
+                }}
+              >
+                과거 분석 결과를 모두 확인해요
+              </Text>
+            </View>
+          </Pressable>
+
+          {/* 새 분석 시작 */}
+          <Pressable
+            onPress={() => router.push(MODULE_START_PATH[moduleType] as `/${string}`)}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: brand.primary,
+                borderRadius: radii.lg,
+                padding: spacing.md,
+              },
+            ]}
+            testID="new-analysis-button"
+          >
+            <RefreshCw size={20} color={brand.primaryForeground} />
+            <View style={{ flex: 1, marginLeft: spacing.sm }}>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                  color: brand.primaryForeground,
+                }}
+              >
+                새 분석 시작
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  color: brand.primaryForeground + 'CC',
+                  marginTop: 2,
+                }}
+              >
+                변화를 추적하려면 새 분석을 진행해요
+              </Text>
+            </View>
+          </Pressable>
+        </Animated.View>
+      </DataStateWrapper>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  retryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 6,
-  },
-  retryText: {
-    fontWeight: '600',
-  },
   dateRange: {
     flexDirection: 'row',
     alignItems: 'center',

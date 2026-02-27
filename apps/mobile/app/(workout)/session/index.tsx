@@ -5,8 +5,10 @@
 import { router } from 'expo-router';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
-import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { staggeredEntry } from '@/lib/animations';
 
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
@@ -159,7 +161,7 @@ export default function WorkoutSessionScreen() {
 
           <View style={styles.exercisePreview}>
             {exercises.map((ex, index) => (
-              <Animated.View key={ex.id} entering={FadeInUp.delay(index * 60).duration(350)}>
+              <Animated.View key={ex.id} entering={staggeredEntry(index)}>
                 <GlassCard style={styles.previewItem}>
                   <Text style={[styles.previewNumber, { color: colors.mutedForeground }]}>
                     {index + 1}
@@ -197,7 +199,7 @@ export default function WorkoutSessionScreen() {
             </Text>
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(200).duration(400)}>
+          <Animated.View entering={staggeredEntry(1)}>
             <GlassCard style={styles.statsContainer}>
               <View style={styles.statItem}>
                 <Text style={[styles.statValue, { color: workoutColor }]}>

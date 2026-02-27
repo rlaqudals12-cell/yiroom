@@ -3,9 +3,9 @@
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 
+import { ScreenContainer } from '@/components/ui';
 import { useTheme } from '@/lib/theme';
 
 const GOALS = [
@@ -65,12 +65,12 @@ export default function WorkoutGoalsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <ScreenContainer
       edges={['bottom']}
+      contentPadding={20}
+      contentContainerStyle={{ paddingBottom: 100 }}
       testID="workout-onboarding-goals-screen"
     >
-      <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: colors.foreground }]}>운동 목표를 선택해주세요</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
           복수 선택이 가능해요 (최대 3개)
@@ -115,7 +115,6 @@ export default function WorkoutGoalsScreen() {
             );
           })}
         </View>
-      </ScrollView>
 
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <Pressable
@@ -126,18 +125,11 @@ export default function WorkoutGoalsScreen() {
           <Text style={styles.nextButtonText}>다음 ({selectedGoals.length}/3)</Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 100,
-  },
   title: {
     fontSize: 24,
     fontWeight: '700',

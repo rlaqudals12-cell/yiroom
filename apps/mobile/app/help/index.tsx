@@ -2,10 +2,10 @@
  * 도움말/FAQ 스크린
  */
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Linking, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Pressable, Linking, StyleSheet } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 interface FAQItem {
   id: string;
@@ -61,12 +61,10 @@ export default function HelpScreen(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="help-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={{ padding: spacing.md + 4 }}>
         {/* 헤더 */}
         <View style={{ marginBottom: spacing.lg }}>
           <Text
@@ -179,8 +177,7 @@ export default function HelpScreen(): React.JSX.Element {
             </Text>
           </Pressable>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

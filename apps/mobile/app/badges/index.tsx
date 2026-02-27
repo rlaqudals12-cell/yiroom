@@ -3,11 +3,11 @@
  * 분석 완료, 연속 기록 등 업적 표시
  */
 import { router } from 'expo-router';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
 import { useTheme } from '../../lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 interface Badge {
   id: string;
@@ -86,12 +86,10 @@ export default function BadgesScreen(): React.JSX.Element {
   const earnedCount = badges.filter((b) => b.earned).length;
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="badges-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={{ padding: spacing.md + 4 }}>
         {/* 헤더 */}
         <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
           <Text style={{ fontSize: 48, marginBottom: spacing.sm }}>🏅</Text>
@@ -196,8 +194,7 @@ export default function BadgesScreen(): React.JSX.Element {
             </Text>
           </Pressable>
         )}
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

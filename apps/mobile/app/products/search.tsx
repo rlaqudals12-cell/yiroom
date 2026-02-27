@@ -14,9 +14,8 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 interface Product {
   id: string;
@@ -222,10 +221,11 @@ export default function ProductSearchScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
+    <ScreenContainer
       testID="products-search-screen"
+      scrollable={false}
+      edges={['bottom']}
+      contentPadding={0}
     >
       {/* 검색 바 */}
       <View style={styles.searchSection}>
@@ -370,7 +370,7 @@ export default function ProductSearchScreen() {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

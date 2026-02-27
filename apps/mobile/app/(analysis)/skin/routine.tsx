@@ -12,13 +12,12 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Pressable,
-  ActivityIndicator,
-  RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer, DataStateWrapper } from '../../../components/ui';
+import { staggeredEntry } from '../../../lib/animations';
 import {
   useSkincareRoutine,
   getCategoryInfo,
@@ -80,79 +79,48 @@ export default function SkincareRoutineScreen() {
     });
   }, [skinData]);
 
-  // 로딩 상태
-  if (loading) {
-    return (
-      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={moduleColors.skin.base} />
-        <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
-          루틴을 준비하고 있어요...
-        </Text>
-      </View>
-    );
-  }
-
-  // 에러 상태 (피부 분석 결과 없음)
-  if (error) {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        edges={['bottom']}
-      >
-        <View style={styles.errorContainer}>
-          <View style={[styles.errorCard, { backgroundColor: colors.card }]}>
-            <Text style={styles.errorIcon}>😢</Text>
-            <Text style={[styles.errorTitle, { color: colors.foreground }]}>
-              루틴을 만들 수 없어요
-            </Text>
-            <Text style={[styles.errorText, { color: colors.mutedForeground }]}>{error}</Text>
-            <Pressable style={styles.primaryButton} onPress={handleGoToAnalysis}>
-              <Text style={[styles.primaryButtonText, { color: colors.card }]}>피부 분석하러 가기</Text>
-            </Pressable>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="analysis-skin-routine-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.foreground}
-          />
-        }
+      <DataStateWrapper
+        isLoading={loading}
+        error={error}
+        onRetry={handleGoToAnalysis}
+        emptyConfig={{
+          icon: <Text style={{ fontSize: 48 }}>😢</Text>,
+          title: '루틴을 만들 수 없어요',
+          description: '피부 분석을 먼저 진행해주세요.',
+          actionLabel: '피부 분석하러 가기',
+          onAction: handleGoToAnalysis,
+        }}
+        isEmpty={!skinData}
       >
         {/* 헤더 */}
-        <View style={styles.header}>
+        <Animated.View entering={staggeredEntry(0)} style={styles.header}>
           <Text style={[styles.title, { color: colors.foreground }]}>오늘의 스킨케어 루틴</Text>
           {skinData && (
             <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
               {skinTypeLabel} 피부 맞춤 루틴
             </Text>
           )}
-        </View>
+        </Animated.View>
 
         {/* 개인화 노트 */}
         {personalizationNote && (
-          <View style={[styles.noteCard, { backgroundColor: colors.secondary }]}>
+          <Animated.View entering={staggeredEntry(1)} style={[styles.noteCard, { backgroundColor: colors.secondary }]}>
             <Text style={styles.noteEmoji}>✨</Text>
             <Text style={[styles.noteText, { color: colors.foreground }]}>
               {personalizationNote}
             </Text>
-          </View>
+          </Animated.View>
         )}
 
         {/* 아침/저녁 토글 */}
-        <View style={[styles.toggleContainer, { backgroundColor: colors.muted }]}>
+        <Animated.View entering={staggeredEntry(2)} style={[styles.toggleContainer, { backgroundColor: colors.muted }]}>
           <Pressable
             style={[
               styles.toggleButton,
@@ -189,7 +157,7 @@ export default function SkincareRoutineScreen() {
               저녁 ({eveningSteps.length}단계)
             </Text>
           </Pressable>
-        </View>
+        </Animated.View>
 
         {/* 루틴 정보 */}
         <View style={styles.routineInfo}>
@@ -217,8 +185,8 @@ export default function SkincareRoutineScreen() {
             파트너사 링크를 통해 구매하시면 이룸에 도움이 돼요
           </Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </DataStateWrapper>
+    </ScreenContainer>
   );
 }
 
@@ -285,18 +253,6 @@ function RoutineStepCard({ step }: { step: RoutineStep }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centerContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 40,
-  },
   header: {
     marginBottom: 20,
   },
@@ -307,35 +263,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 15,
-  },
-  errorContainer: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-  },
-  errorCard: {
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-  },
-  errorIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  errorText: {
-    fontSize: 15,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 22,
   },
   noteCard: {
     flexDirection: 'row',

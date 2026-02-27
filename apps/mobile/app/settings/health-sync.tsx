@@ -10,16 +10,15 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Pressable,
   Switch,
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useHealthData } from '@/hooks/useHealthData';
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 export default function HealthSyncScreen() {
   const { colors, brand, status } = useTheme();
@@ -79,12 +78,10 @@ export default function HealthSyncScreen() {
           headerBackTitle: '설정',
         }}
       />
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        edges={['bottom']}
+      <ScreenContainer
         testID="settings-health-sync-screen"
+        edges={['bottom']}
       >
-        <ScrollView contentContainerStyle={styles.content}>
           {/* 플랫폼 체크 */}
           {!isAvailable && (
             <View style={[styles.card, { backgroundColor: colors.card }]}>
@@ -191,8 +188,7 @@ export default function HealthSyncScreen() {
               {'\n'}설정 {'>'} 개인정보 보호에서 권한을 관리할 수 있습니다.
             </Text>
           </View>
-        </ScrollView>
-      </SafeAreaView>
+      </ScreenContainer>
     </>
   );
 }

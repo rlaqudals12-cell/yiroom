@@ -9,13 +9,12 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TextInput,
   Pressable,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 
 import { useClerkSupabaseClient } from '../../lib/supabase';
 import { useTheme } from '../../lib/theme';
@@ -172,16 +171,6 @@ export default function WeightGoalScreen(): React.JSX.Element {
     return `${d.getMonth() + 1}/${d.getDate()}`;
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
-        <View style={styles.center} testID="weight-goal-loading">
-          <ActivityIndicator size="large" color={brand.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   const latestWeight = entries[0]?.weight ?? 0;
   const progressPercent = goal
     ? Math.min(
@@ -195,12 +184,16 @@ export default function WeightGoalScreen(): React.JSX.Element {
     : 0;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <ScreenContainer
       edges={['bottom']}
+      contentPadding={spacing.md}
       testID="weight-goal-screen"
+      contentContainerStyle={{ gap: spacing.md }}
     >
-      <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md, paddingBottom: spacing.lg }}>
+      <DataStateWrapper
+        isLoading={isLoading}
+        isEmpty={false}
+      >
         {/* 현재 상태 */}
         <View style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground, fontSize: typography.size.lg, fontWeight: typography.weight.bold }]}>
@@ -358,14 +351,12 @@ export default function WeightGoalScreen(): React.JSX.Element {
             ))}
           </View>
         )}
-      </ScrollView>
-    </SafeAreaView>
+      </DataStateWrapper>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   card: { padding: 16 },
   cardTitle: { marginBottom: 12 },
   currentWeightRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },

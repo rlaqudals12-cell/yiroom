@@ -14,9 +14,8 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, type Friend } from '../../../lib/social';
 import { useFriends, useFriendStats } from '../../../lib/social/useFriends';
@@ -69,19 +68,20 @@ export default function FriendsScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={moduleColors.body.dark} />
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="social-friends-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 상단 액션 */}
       <View style={styles.header}>
@@ -157,7 +157,7 @@ export default function FriendsScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

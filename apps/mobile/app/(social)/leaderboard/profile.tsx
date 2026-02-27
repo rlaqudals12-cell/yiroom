@@ -24,15 +24,14 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Pressable,
   ActivityIndicator,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
 import { useTheme } from '@/lib/theme';
-import { TIMING } from '@/lib/animations';
+import { staggeredEntry } from '@/lib/animations';
+import { ScreenContainer } from '../../../components/ui';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { getTierColor, getTierLabel, sendFriendRequest } from '../../../lib/social';
 import { socialLogger } from '../../../lib/utils/logger';
@@ -174,22 +173,24 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
 
   if (isLoading) {
     return (
-      <SafeAreaView
+      <ScreenContainer
         testID="leaderboard-profile-screen"
-        style={[styles.center, { flex: 1, backgroundColor: colors.background }]}
+        scrollable={false}
         edges={['bottom']}
+        style={styles.center}
       >
         <ActivityIndicator size="large" color={brand.primary} />
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   if (!profile) {
     return (
-      <SafeAreaView
+      <ScreenContainer
         testID="leaderboard-profile-screen"
-        style={[styles.center, { flex: 1, backgroundColor: colors.background }]}
+        scrollable={false}
         edges={['bottom']}
+        style={styles.center}
       >
         <Text style={{ fontSize: typography.size.base, fontWeight: '600', color: colors.foreground }}>
           사용자를 찾을 수 없어요
@@ -202,22 +203,22 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
             돌아가기
           </Text>
         </Pressable>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   const tierColor = getTierColor(profile.tier);
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="leaderboard-profile-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['bottom']}
+      contentPadding={0}
+      contentContainerStyle={{ paddingBottom: spacing.xxl }}
     >
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
         {/* 프로필 히어로 */}
         <Animated.View
-          entering={FadeInUp.duration(TIMING.normal)}
+          entering={staggeredEntry(0)}
           style={[
             {
               backgroundColor: brand.primary,
@@ -317,7 +318,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
 
         {/* XP 카드 */}
         <Animated.View
-          entering={FadeInUp.delay(80).duration(TIMING.normal)}
+          entering={staggeredEntry(1)}
           style={[
             shadows.card,
             {
@@ -350,7 +351,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
         {/* 활동 통계 */}
         {stats && (
           <Animated.View
-            entering={FadeInUp.delay(160).duration(TIMING.normal)}
+            entering={staggeredEntry(2)}
             style={{ paddingHorizontal: spacing.md }}
           >
             <Text
@@ -405,8 +406,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
             </View>
           </Animated.View>
         )}
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

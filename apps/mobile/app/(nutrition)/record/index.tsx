@@ -7,15 +7,15 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Pressable,
   TextInput,
   Alert,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { staggeredEntry } from '@/lib/animations';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
@@ -84,14 +84,15 @@ export default function NutritionRecordScreen() {
   };
 
   return (
-    <SafeAreaView
-      testID="nutrition-record-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
+    <View style={{ flex: 1 }}>
+      <ScreenContainer
+        testID="nutrition-record-screen"
+        edges={['bottom']}
+        contentPadding={20}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
         {/* 식사 타입 선택 */}
-        <Animated.View entering={FadeInUp.duration(350)} style={styles.mealTypeContainer}>
+        <Animated.View entering={staggeredEntry(0)} style={styles.mealTypeContainer}>
           {MEAL_TYPES.map((meal) => {
             const isActive = selectedMealType === meal.type;
             return (
@@ -123,7 +124,7 @@ export default function NutritionRecordScreen() {
         </Animated.View>
 
         {/* 촬영 버튼 */}
-        <Animated.View entering={FadeInUp.delay(60).duration(350)}>
+        <Animated.View entering={staggeredEntry(1)}>
           <Pressable onPress={handleTakePhoto}>
             <GlassCard style={styles.photoButton}>
               <Text style={styles.photoIcon}>📷</Text>
@@ -139,7 +140,7 @@ export default function NutritionRecordScreen() {
 
         {/* 검색 */}
         <Animated.View
-          entering={FadeInUp.delay(120).duration(350)}
+          entering={staggeredEntry(2)}
           style={[styles.searchContainer, { backgroundColor: colors.card }]}
         >
           <Text style={styles.searchIcon}>🔍</Text>
@@ -153,7 +154,7 @@ export default function NutritionRecordScreen() {
         </Animated.View>
 
         {/* 빠른 추가 */}
-        <Animated.View entering={FadeInUp.delay(180).duration(350)}>
+        <Animated.View entering={staggeredEntry(3)}>
           <GlassCard style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>빠른 추가</Text>
             <View style={styles.quickAddGrid}>
@@ -208,7 +209,7 @@ export default function NutritionRecordScreen() {
             </View>
           </GlassCard>
         )}
-      </ScrollView>
+      </ScreenContainer>
 
       {/* 저장 버튼 */}
       <View
@@ -224,18 +225,11 @@ export default function NutritionRecordScreen() {
           <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>기록 저장</Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 100,
-  },
   mealTypeContainer: {
     flexDirection: 'row',
     gap: 12,

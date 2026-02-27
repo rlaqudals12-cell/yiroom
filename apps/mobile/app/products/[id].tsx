@@ -15,9 +15,9 @@ import {
   ActivityIndicator,
   Share,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+
+import { ScreenContainer } from '../../components/ui';
 
 import { EWGAnalysis } from '../../components/products/ingredients/EWGAnalysis';
 import { SizeRecommendation } from '../../components/products/SizeRecommendation';
@@ -364,19 +364,20 @@ export default function ProductDetailScreen() {
 
   if (isLoading || !product) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={brand.primary} />
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
+    <ScreenContainer
       testID="product-detail-screen"
+      scrollable={false}
+      edges={['bottom']}
+      contentPadding={0}
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* 이미지 영역 */}
@@ -579,7 +580,7 @@ export default function ProductDetailScreen() {
           </Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

@@ -13,15 +13,13 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Pressable,
-  ActivityIndicator,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer, DataStateWrapper } from '@/components/ui';
+import { staggeredEntry } from '@/lib/animations';
 import { useTheme } from '@/lib/theme';
-import { TIMING } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { nutritionLogger } from '../../../lib/utils/logger';
 
@@ -207,28 +205,19 @@ export default function FastingTrackerScreen(): React.JSX.Element {
   const targetSeconds = selectedPattern.fastHours * 3600;
   const progress = fastingState === 'fasting' ? Math.min(elapsed / targetSeconds, 1) : 0;
 
-  if (fastingState === 'loading') {
-    return (
-      <SafeAreaView
-        testID="fasting-tracker-screen"
-        style={[styles.center, { flex: 1, backgroundColor: colors.background }]}
-        edges={['bottom']}
-      >
-        <ActivityIndicator size="large" color={nutritionColor} />
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="fasting-tracker-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['bottom']}
+      contentPadding={spacing.md}
     >
-      <ScrollView contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xxl }}>
+      <DataStateWrapper
+        isLoading={fastingState === 'loading'}
+        isEmpty={false}
+      >
         {/* 타이머 카드 */}
         <Animated.View
-          entering={FadeInUp.duration(TIMING.normal)}
+          entering={staggeredEntry(0)}
           style={[
             shadows.card,
             {
@@ -320,7 +309,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
 
         {/* 패턴 선택 (단식 중이 아닐 때만) */}
         {fastingState === 'idle' && (
-          <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(1)}>
             <Text
               style={{
                 fontSize: typography.size.base,
@@ -380,7 +369,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
 
         {/* 최근 기록 */}
         {logs.length > 0 && (
-          <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)} style={{ marginTop: spacing.lg }}>
+          <Animated.View entering={staggeredEntry(2)} style={{ marginTop: spacing.lg }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
               <History size={16} color={colors.mutedForeground} />
               <Text
@@ -462,7 +451,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
         {/* 빈 상태 */}
         {logs.length === 0 && fastingState === 'idle' && (
           <Animated.View
-            entering={FadeInUp.delay(160).duration(TIMING.normal)}
+            entering={staggeredEntry(2)}
             style={[styles.center, { paddingVertical: spacing.xxl }]}
           >
             <Clock size={48} color={colors.mutedForeground} />
@@ -488,8 +477,8 @@ export default function FastingTrackerScreen(): React.JSX.Element {
             </Text>
           </Animated.View>
         )}
-      </ScrollView>
-    </SafeAreaView>
+      </DataStateWrapper>
+    </ScreenContainer>
   );
 }
 

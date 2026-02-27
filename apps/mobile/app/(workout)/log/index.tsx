@@ -16,10 +16,11 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { staggeredEntry } from '@/lib/animations';
 import { useWorkoutData } from '@/hooks/useWorkoutData';
 import { useTheme } from '@/lib/theme';
 
@@ -203,14 +204,13 @@ export default function WorkoutLogScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <ScreenContainer
       edges={['bottom']}
+      contentPadding={20}
       testID="workout-log-screen"
     >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* 운동 선택 섹션 */}
-        <Animated.View entering={FadeInUp.duration(350)} style={styles.section}>
+        <Animated.View entering={staggeredEntry(0)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             오늘 어떤 운동을 했나요?
           </Text>
@@ -244,7 +244,7 @@ export default function WorkoutLogScreen() {
         </Animated.View>
 
         {/* 운동 시간 섹션 */}
-        <Animated.View entering={FadeInUp.delay(60).duration(350)} style={styles.section}>
+        <Animated.View entering={staggeredEntry(1)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>운동 시간</Text>
           <View style={styles.durationGrid}>
             {DURATION_OPTIONS.map((mins) => {
@@ -276,7 +276,7 @@ export default function WorkoutLogScreen() {
         </Animated.View>
 
         {/* 운동 강도 섹션 */}
-        <Animated.View entering={FadeInUp.delay(120).duration(350)} style={styles.section}>
+        <Animated.View entering={staggeredEntry(2)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>강도</Text>
           <View style={styles.intensityGrid}>
             {INTENSITY_OPTIONS.map((option) => {
@@ -308,7 +308,7 @@ export default function WorkoutLogScreen() {
         </Animated.View>
 
         {/* 메모 섹션 */}
-        <Animated.View entering={FadeInUp.delay(180).duration(350)} style={styles.section}>
+        <Animated.View entering={staggeredEntry(3)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>메모 (선택)</Text>
           <TextInput
             style={[
@@ -329,7 +329,7 @@ export default function WorkoutLogScreen() {
         </Animated.View>
 
         {/* 예상 칼로리 */}
-        <Animated.View entering={FadeInUp.delay(240).duration(350)}>
+        <Animated.View entering={staggeredEntry(4)}>
           <GlassCard style={styles.calorieCard}>
             <Text style={[styles.calorieLabel, { color: colors.mutedForeground }]}>
               예상 소모 칼로리
@@ -339,8 +339,6 @@ export default function WorkoutLogScreen() {
             </Text>
           </GlassCard>
         </Animated.View>
-      </ScrollView>
-
       {/* 저장 버튼 */}
       <View style={styles.footer}>
         <Pressable
@@ -357,18 +355,11 @@ export default function WorkoutLogScreen() {
           </Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-    padding: 20,
-  },
   section: {
     marginBottom: 24,
   },

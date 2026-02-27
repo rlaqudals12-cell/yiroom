@@ -14,9 +14,9 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+
+import { ScreenContainer } from '../../components/ui';
 
 import type { FeedItem, FeedTab } from '../../lib/feed/types';
 import { useFeed } from '../../lib/feed/useFeed';
@@ -180,10 +180,11 @@ export default function FeedScreen() {
   };
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="feed-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 탭 */}
       <View
@@ -245,7 +246,7 @@ export default function FeedScreen() {
           }
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

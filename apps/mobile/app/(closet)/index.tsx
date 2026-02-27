@@ -15,10 +15,11 @@ import {
   Pressable,
   FlatList,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
 import { GlassCard } from '@/components/ui/GlassCard';
+import { ScreenContainer } from '@/components/ui';
+import { staggeredEntry } from '@/lib/animations';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { useTheme } from '@/lib/theme';
 
@@ -80,7 +81,7 @@ export default function ClosetScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer scrollable={false} testID="closet-screen">
         <View style={styles.loadingContainer}>
           <View style={styles.statsContainer}>
             <SkeletonCard style={{ flex: 1, height: 70 }} />
@@ -93,18 +94,19 @@ export default function ClosetScreen() {
             <SkeletonCard style={{ width: '48%', height: 180, marginTop: 16, marginRight: 16 }} />
           </View>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="closet-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 통계 헤더 */}
-      <Animated.View entering={FadeInUp.duration(350)} style={styles.statsContainer}>
+      <Animated.View entering={staggeredEntry(0)} style={styles.statsContainer}>
         <GlassCard style={styles.statCard}>
           <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.total}</Text>
           <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>전체</Text>
@@ -219,7 +221,7 @@ export default function ClosetScreen() {
       <Pressable style={[styles.addButton, { backgroundColor: moduleTheme.body.dark, ...themeShadows.lg }]} onPress={handleAddPress}>
         <Plus size={24} color={colors.overlayForeground} />
       </Pressable>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

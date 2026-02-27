@@ -9,9 +9,10 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { DataStateWrapper } from '@/components/ui';
 
 import { useClerkSupabaseClient } from '../../lib/supabase';
 import { useTheme } from '../../lib/theme';
@@ -28,7 +29,7 @@ interface NutritionRecord {
 }
 
 export default function NutritionHistoryScreen(): React.JSX.Element {
-  const { colors, brand, spacing, radii, typography, status } = useTheme();
+  const { colors, spacing, radii, typography, status } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -141,33 +142,21 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
     );
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
-        <View style={styles.center} testID="nutrition-history-loading">
-          <ActivityIndicator size="large" color={brand.primary} />
-          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
-            영양 이력을 불러오는 중...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
       testID="nutrition-history-screen"
     >
-      {records.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={{ fontSize: 40, marginBottom: 8 }}>🥗</Text>
-          <Text style={[styles.emptyText, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
-            아직 영양 기록이 없어요.{'\n'}식사를 기록해보세요!
-          </Text>
-        </View>
-      ) : (
+      <DataStateWrapper
+        isLoading={isLoading}
+        isEmpty={records.length === 0}
+        emptyConfig={{
+          icon: <Text style={{ fontSize: 48 }}>🥗</Text>,
+          title: '아직 영양 기록이 없어요',
+          description: '식사를 기록해보세요!',
+        }}
+      >
         <FlatList
           data={records}
           keyExtractor={(item) => item.date}
@@ -175,16 +164,13 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
           contentContainerStyle={{ padding: spacing.md, gap: 12, paddingBottom: spacing.lg }}
           showsVerticalScrollIndicator={false}
         />
-      )}
+      </DataStateWrapper>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { marginTop: 12 },
-  emptyText: { textAlign: 'center', lineHeight: 22 },
   recordCard: { padding: 16 },
   recordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   recordDate: {},

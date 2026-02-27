@@ -2,9 +2,11 @@
  * OH-1 구강건강 분석 - 시작 화면
  */
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer } from '../../../components/ui';
+import { staggeredEntry } from '../../../lib/animations';
 import { useTheme } from '@/lib/theme';
 
 const FEATURES = [
@@ -22,54 +24,51 @@ export default function OralHealthAnalysisScreen() {
   };
 
   return (
-    <SafeAreaView
-      testID="analysis-oral-health-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
+    <ScreenContainer testID="analysis-oral-health-screen" edges={['bottom']}>
+      <Animated.View entering={staggeredEntry(0)}>
         <Text style={[styles.title, { color: colors.foreground }]}>구강건강 분석</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
           AI가 치아와 잇몸 상태를 분석하고{'\n'}맞춤 관리법을 알려드려요
         </Text>
+      </Animated.View>
 
-        <View style={styles.features}>
-          {FEATURES.map((feature, index) => (
-            <View key={index} style={[styles.featureCard, { backgroundColor: colors.card }]}>
-              <Text style={styles.featureIcon}>{feature.icon}</Text>
-              <View style={styles.featureText}>
-                <Text style={[styles.featureTitle, { color: colors.foreground }]}>
-                  {feature.title}
-                </Text>
-                <Text style={[styles.featureDesc, { color: colors.mutedForeground }]}>
-                  {feature.desc}
-                </Text>
-              </View>
+      <View style={styles.features}>
+        {FEATURES.map((feature, index) => (
+          <Animated.View
+            key={index}
+            entering={staggeredEntry(index + 1)}
+            style={[styles.featureCard, { backgroundColor: colors.card }]}
+          >
+            <Text style={styles.featureIcon}>{feature.icon}</Text>
+            <View style={styles.featureText}>
+              <Text style={[styles.featureTitle, { color: colors.foreground }]}>
+                {feature.title}
+              </Text>
+              <Text style={[styles.featureDesc, { color: colors.mutedForeground }]}>
+                {feature.desc}
+              </Text>
             </View>
-          ))}
-        </View>
+          </Animated.View>
+        ))}
+      </View>
 
-        <Pressable
-          style={[styles.startButton, { backgroundColor: brand.primary }]}
-          onPress={handleStart}
-
-        >
-          <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>
-            분석 시작하기
-          </Text>
-        </Pressable>
-
-        <Text style={[styles.notice, { color: colors.mutedForeground }]}>
-          밝은 곳에서 입을 벌린 상태로 촬영해주세요
+      <Pressable
+        style={[styles.startButton, { backgroundColor: brand.primary }]}
+        onPress={handleStart}
+      >
+        <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>
+          분석 시작하기
         </Text>
-      </ScrollView>
-    </SafeAreaView>
+      </Pressable>
+
+      <Text style={[styles.notice, { color: colors.mutedForeground }]}>
+        밝은 곳에서 입을 벌린 상태로 촬영해주세요
+      </Text>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 20 },
   title: { fontSize: 28, fontWeight: '700', marginBottom: 8 },
   subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 32 },
   features: { gap: 12, marginBottom: 32 },

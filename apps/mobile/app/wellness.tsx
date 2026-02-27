@@ -2,7 +2,7 @@
  * 웰니스 점수 상세 페이지
  * 종합 점수 + 영역별 분석 + 업적 + 개선 가이드
  */
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { TrendingUp, Target, Dumbbell, Apple, Sparkles } from 'lucide-react-native';
 
@@ -10,6 +10,7 @@ import { WellnessScoreRing, AchievementGrid } from '../components/profile';
 import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../hooks';
 import { useTheme, brand } from '../lib/theme';
 import { spacing, radii, typography } from '../lib/theme';
+import { ScreenContainer } from '../components/ui';
 
 // 영역별 개선 가이드
 function getImprovementTips(
@@ -86,10 +87,9 @@ export default function WellnessScorePage(): React.JSX.Element {
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
+    <ScreenContainer
       testID="wellness-score-screen"
+      edges={['bottom']}
     >
       {/* 메인 점수 */}
       <WellnessScoreRing score={score} breakdown={breakdown} />
@@ -218,7 +218,7 @@ export default function WellnessScorePage(): React.JSX.Element {
           </Text>
         </Pressable>
       )}
-    </ScrollView>
+    </ScreenContainer>
   );
 }
 

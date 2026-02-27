@@ -14,9 +14,8 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../../components/ui';
 
 import { type FriendRequest } from '../../../lib/social';
 import { useFriendRequests } from '../../../lib/social/useFriends';
@@ -106,19 +105,20 @@ export default function FriendRequestsScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={moduleColors.body.dark} />
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="social-friend-requests-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 에러 메시지 */}
       {error && (
@@ -159,7 +159,7 @@ export default function FriendRequestsScreen() {
           />
         </>
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

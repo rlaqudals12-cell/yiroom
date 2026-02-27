@@ -13,15 +13,12 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  RefreshControl,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { useTheme } from '@/lib/theme';
-import { TIMING } from '@/lib/animations';
+import { staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
 
@@ -138,49 +135,27 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
     fetchDetail();
   }, [fetchDetail]);
 
-  if (isLoading) {
-    return (
-      <SafeAreaView
-        testID="workout-detail-screen"
-        style={[styles.center, { flex: 1, backgroundColor: colors.background }]}
-        edges={['bottom']}
-      >
-        <ActivityIndicator size="large" color={workoutColor} />
-        <Text style={{ marginTop: spacing.sm, fontSize: typography.size.sm, color: colors.mutedForeground }}>
-          운동 기록을 불러오고 있어요
-        </Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (!detail) {
-    return (
-      <SafeAreaView
-        testID="workout-detail-screen"
-        style={[styles.center, { flex: 1, backgroundColor: colors.background }]}
-        edges={['bottom']}
-      >
-        <Dumbbell size={48} color={colors.mutedForeground} />
-        <Text style={{ marginTop: spacing.md, fontSize: typography.size.base, fontWeight: '600', color: colors.foreground }}>
-          운동 기록을 찾을 수 없어요
-        </Text>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="workout-detail-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['bottom']}
+      refreshing={false}
+      onRefresh={fetchDetail}
     >
-      <ScrollView
-        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xxl }}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={fetchDetail} />}
+      <DataStateWrapper
+        isLoading={isLoading}
+        isEmpty={!detail}
+        emptyConfig={{
+          icon: <Dumbbell size={48} color={colors.mutedForeground} />,
+          title: '운동 기록을 찾을 수 없어요',
+          description: '다른 기록을 확인해보세요',
+        }}
+        onRetry={fetchDetail}
       >
+        {detail && (<>
         {/* 날짜 + 요약 */}
         <Animated.View
-          entering={FadeInUp.duration(TIMING.normal)}
+          entering={staggeredEntry(0)}
           style={[
             shadows.card,
             {
@@ -221,7 +196,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
 
         {/* 운동 종목 */}
         {detail.exerciseLogs.length > 0 && (
-          <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+          <Animated.View entering={staggeredEntry(1)}>
             <Text
               style={{
                 fontSize: typography.size.base,
@@ -308,7 +283,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
         {/* 체감/기분 */}
         {(detail.perceivedEffort != null || detail.mood) && (
           <Animated.View
-            entering={FadeInUp.delay(160).duration(TIMING.normal)}
+            entering={staggeredEntry(2)}
             style={[
               shadows.card,
               {
@@ -352,7 +327,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
         {/* 메모 */}
         {detail.notes && (
           <Animated.View
-            entering={FadeInUp.delay(240).duration(TIMING.normal)}
+            entering={staggeredEntry(3)}
             style={[
               shadows.card,
               {
@@ -376,16 +351,13 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
             </Text>
           </Animated.View>
         )}
-      </ScrollView>
-    </SafeAreaView>
+        </>)}
+      </DataStateWrapper>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',

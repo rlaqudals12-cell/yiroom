@@ -20,11 +20,11 @@ import {
   ActivityIndicator,
   TextInput,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
 import { useTheme } from '@/lib/theme';
-import { TIMING } from '@/lib/animations';
+import { staggeredEntry } from '@/lib/animations';
+import { ScreenContainer } from '../../components/ui';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { closetLogger } from '../../lib/utils/logger';
 
@@ -229,14 +229,15 @@ export default function StyleGalleryScreen(): React.JSX.Element {
   );
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="style-gallery-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 검색바 */}
       <Animated.View
-        entering={FadeInUp.duration(TIMING.normal)}
+        entering={staggeredEntry(0)}
         style={{ paddingHorizontal: spacing.md, paddingTop: spacing.sm }}
       >
         <View
@@ -275,7 +276,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
       </Animated.View>
 
       {/* 카테고리 필터 */}
-      <Animated.View entering={FadeInUp.delay(60).duration(TIMING.normal)}>
+      <Animated.View entering={staggeredEntry(1)}>
         <FlatList
           horizontal
           data={CATEGORIES}
@@ -363,7 +364,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

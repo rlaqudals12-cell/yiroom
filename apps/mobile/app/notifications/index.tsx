@@ -2,10 +2,10 @@
  * 알림 인박스 스크린
  * 받은 알림 목록 표시
  */
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 // 알림 항목 (향후 DB 연동)
 interface NotificationItem {
@@ -26,12 +26,10 @@ export default function NotificationsScreen(): React.JSX.Element {
   const notifications = SAMPLE_NOTIFICATIONS;
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="notifications-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={{ padding: spacing.md + 4 }}>
         {/* 헤더 */}
         <View style={{ marginBottom: spacing.lg }}>
           <Text
@@ -137,8 +135,7 @@ export default function NotificationsScreen(): React.JSX.Element {
             </Text>
           </View>
         )}
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

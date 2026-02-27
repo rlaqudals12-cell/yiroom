@@ -21,11 +21,11 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
 import { useTheme } from '@/lib/theme';
-import { TIMING } from '@/lib/animations';
+import { staggeredEntry } from '@/lib/animations';
+import { ScreenContainer } from '../../components/ui';
 import { useInventory, type InventoryItem, type BeautyMetadata } from '@/lib/inventory';
 
 // 뷰티 서브 카테고리 필터
@@ -108,7 +108,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
 
       return (
         <Animated.View
-          entering={FadeInUp.delay(index * 40).duration(TIMING.normal)}
+          entering={staggeredEntry(index)}
           style={[
             styles.itemCard,
             shadows.card,
@@ -260,10 +260,11 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
   );
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="beauty-inventory-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 헤더 요약 */}
       <View
@@ -427,7 +428,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
           <Plus size={24} color="#fff" />
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

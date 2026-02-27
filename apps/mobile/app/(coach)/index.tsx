@@ -4,9 +4,8 @@
 
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 import { ChatInterface } from '../../components/coach/ChatInterface';
 
@@ -15,12 +14,13 @@ export default function CoachScreen() {
   const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="coach-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       <ChatInterface initialSessionId={sessionId} />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

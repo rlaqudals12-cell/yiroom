@@ -4,12 +4,12 @@
  */
 import { useUser } from '@clerk/clerk-expo';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
+import { staggeredEntry } from '@/lib/animations';
 import { useTheme } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
@@ -129,47 +129,27 @@ export default function WorkoutHistoryScreen() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        testID="workout-history-screen"
-      >
-        <View style={[styles.scrollView, { gap: spacing.md }]}>
-          <SkeletonText style={{ width: 120, height: 24 }} />
-          <View style={styles.statsGrid}>
-            <SkeletonCard style={{ flex: 1, height: 80 }} />
-            <SkeletonCard style={{ flex: 1, height: 80 }} />
-            <SkeletonCard style={{ flex: 1, height: 80 }} />
-          </View>
-          <SkeletonText style={{ width: 100, height: 24, marginTop: spacing.md }} />
-          <SkeletonCard style={{ height: 120 }} />
-          <SkeletonCard style={{ height: 120 }} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <ScreenContainer
       edges={['bottom']}
+      contentPadding={20}
       testID="workout-history-screen"
+      refreshing={isRefreshing}
+      onRefresh={handleRefresh}
     >
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.foreground}
-          />
-        }
+      <DataStateWrapper
+        isLoading={isLoading}
+        isEmpty={logs.length === 0 && !weeklyStats}
+        emptyConfig={{
+          icon: <Text style={{ fontSize: 48 }}>🏃</Text>,
+          title: '아직 운동 기록이 없어요',
+          description: '오늘 첫 운동을 시작해보세요!',
+        }}
+        onRetry={handleRefresh}
       >
         {/* 이번 주 통계 */}
         {weeklyStats && (
-          <Animated.View entering={FadeInUp.duration(350)} style={styles.statsSection}>
+          <Animated.View entering={staggeredEntry(0)} style={styles.statsSection}>
             <Text style={[styles.statsTitle, { color: colors.foreground }]}>이번 주 통계</Text>
             <View style={styles.statsGrid}>
               <GlassCard style={styles.statCard}>
@@ -202,21 +182,10 @@ export default function WorkoutHistoryScreen() {
         <View style={styles.logsSection}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>최근 기록</Text>
 
-          {logs.length === 0 ? (
-            <GlassCard style={styles.emptyCard}>
-              <Text style={styles.emptyIcon}>🏃</Text>
-              <Text style={[styles.emptyText, { color: colors.foreground }]}>
-                아직 운동 기록이 없어요
-              </Text>
-              <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
-                오늘 첫 운동을 시작해보세요!
-              </Text>
-            </GlassCard>
-          ) : (
-            logs.map((log, index) => (
+          {logs.map((log, index) => (
               <Animated.View
                 key={log.id}
-                entering={FadeInUp.delay(index * 50).duration(350)}
+                entering={staggeredEntry(index + 1)}
               >
                 <GlassCard style={styles.logCard}>
                   <View style={styles.logHeader}>
@@ -293,11 +262,10 @@ export default function WorkoutHistoryScreen() {
                   )}
                 </GlassCard>
               </Animated.View>
-            ))
-          )}
+            ))}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </DataStateWrapper>
+    </ScreenContainer>
   );
 }
 
@@ -313,13 +281,6 @@ function getWeekStartDate(): Date {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-    padding: 20,
-  },
   statsSection: {
     marginBottom: 24,
   },
@@ -352,22 +313,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
-  },
-  emptyCard: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  emptySubtext: {
-    fontSize: 14,
   },
   logCard: {
     padding: 16,

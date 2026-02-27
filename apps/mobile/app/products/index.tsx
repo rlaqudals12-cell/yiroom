@@ -16,9 +16,9 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+
+import { ScreenContainer } from '../../components/ui';
 
 import {
   getAffiliateProducts,
@@ -239,10 +239,11 @@ export default function ProductsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
+    <ScreenContainer
       testID="products-screen"
+      scrollable={false}
+      edges={['bottom']}
+      contentPadding={0}
     >
       {/* 맞춤 추천 배너 */}
       {(filterSource || userSeason) && (
@@ -382,7 +383,7 @@ export default function ProductsScreen() {
           }
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

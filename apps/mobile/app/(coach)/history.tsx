@@ -16,9 +16,8 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 import { getCoachSessions, deleteCoachSession, type CoachSession } from '../../lib/coach';
 import { useClerkSupabaseClient } from '../../lib/supabase';
@@ -127,22 +126,23 @@ export default function CoachHistoryScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
+      <ScreenContainer
+        scrollable={false}
         edges={['bottom']}
       >
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={brand.primary} />
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="coach-history-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 새 대화 버튼 */}
       <Pressable
@@ -182,7 +182,7 @@ export default function CoachHistoryScreen() {
           </Text>
         </>
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

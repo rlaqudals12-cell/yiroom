@@ -14,9 +14,8 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../../components/ui';
 
 import { getTierColor, getTierLabel, type RankingEntry } from '../../../lib/social';
 import {
@@ -123,10 +122,11 @@ export default function LeaderboardScreen() {
   };
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="social-leaderboard-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 내 순위 카드 */}
       {rank && (
@@ -208,7 +208,7 @@ export default function LeaderboardScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

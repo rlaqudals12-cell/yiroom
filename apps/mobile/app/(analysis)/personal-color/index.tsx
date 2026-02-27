@@ -4,8 +4,10 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { staggeredEntry } from '../../../lib/animations';
 import { useTheme } from '@/lib/theme';
 
 // 퍼스널 컬러 문진 질문
@@ -108,41 +110,41 @@ export default function PersonalColorScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* 질문 */}
-        <View style={styles.questionContainer}>
+        <Animated.View entering={staggeredEntry(0)} style={styles.questionContainer}>
           <Text style={[styles.questionText, { color: colors.foreground }]}>
             {question.question}
           </Text>
-        </View>
+        </Animated.View>
 
         {/* 선택지 */}
         <View style={styles.optionsContainer}>
           {question.options.map((option, index) => (
-            <Pressable
-              key={index}
-              style={[
-                styles.optionButton,
-                { backgroundColor: colors.card },
-                isSelected(option.value) && {
-                  borderColor: brand.primary,
-                  backgroundColor: colors.muted,
-                },
-              ]}
-              onPress={() => handleAnswer(option.value)}
-
-            >
-              <Text
+            <Animated.View key={index} entering={staggeredEntry(index + 1)}>
+              <Pressable
                 style={[
-                  styles.optionText,
-                  { color: colors.foreground },
+                  styles.optionButton,
+                  { backgroundColor: colors.card },
                   isSelected(option.value) && {
-                    color: brand.primary,
-                    fontWeight: '600',
+                    borderColor: brand.primary,
+                    backgroundColor: colors.muted,
                   },
                 ]}
+                onPress={() => handleAnswer(option.value)}
               >
-                {option.label}
-              </Text>
-            </Pressable>
+                <Text
+                  style={[
+                    styles.optionText,
+                    { color: colors.foreground },
+                    isSelected(option.value) && {
+                      color: brand.primary,
+                      fontWeight: '600',
+                    },
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            </Animated.View>
           ))}
         </View>
       </ScrollView>

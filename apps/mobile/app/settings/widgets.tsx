@@ -9,14 +9,13 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Platform,
   Linking,
   Pressable,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 import { QuickActionsWidget } from '../../components/widgets/QuickActionsWidget';
 import { TodaySummaryWidget } from '../../components/widgets/TodaySummaryWidget';
@@ -55,16 +54,10 @@ export default function WidgetSettingsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
+    <ScreenContainer
       testID="settings-widgets-screen"
+      edges={['bottom']}
     >
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
         {/* 안내 배너 */}
         <View style={[styles.infoBanner, { backgroundColor: colors.muted }]}>
           <Text style={styles.infoIcon}>📱</Text>
@@ -168,8 +161,7 @@ export default function WidgetSettingsScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

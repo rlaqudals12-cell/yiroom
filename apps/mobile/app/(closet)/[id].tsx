@@ -11,13 +11,11 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  ScrollView,
   Image,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { SkeletonCard } from '@/components/ui/SkeletonLoader';
+import { ScreenContainer } from '@/components/ui';
 import { useTheme } from '@/lib/theme';
 
 import {
@@ -67,19 +65,19 @@ export default function ItemDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
+      <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <SkeletonCard style={{ width: '100%', aspectRatio: 1 }} />
           <SkeletonCard style={{ marginHorizontal: 16, marginTop: 16, height: 120, borderRadius: 12 }} />
           <SkeletonCard style={{ marginHorizontal: 16, marginTop: 16, height: 80, borderRadius: 12 }} />
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   if (!item) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.emptyContainer}>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             아이템을 찾을 수 없어요
@@ -88,7 +86,7 @@ export default function ItemDetailScreen() {
             <Text style={[styles.backButtonText, { color: colors.overlayForeground }]}>돌아가기</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
@@ -101,12 +99,12 @@ export default function ItemDetailScreen() {
   };
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="closet-detail-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
+      contentPadding={0}
+      contentContainerStyle={styles.content}
     >
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 이미지 */}
         <View style={styles.imageContainer}>
           {item.imageUrl ? (
@@ -215,8 +213,6 @@ export default function ItemDetailScreen() {
             </View>
           </View>
         )}
-      </ScrollView>
-
       {/* 하단 액션 버튼 */}
       <View style={[styles.actionBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
         <Pressable style={[styles.actionButton, { backgroundColor: colors.destructive + '15' }]} onPress={handleDelete}>
@@ -237,7 +233,7 @@ export default function ItemDetailScreen() {
           <Text style={[styles.actionButtonText, { color: colors.overlayForeground }]}>편집</Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

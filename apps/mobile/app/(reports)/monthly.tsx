@@ -2,8 +2,9 @@
  * 월간 리포트 상세 화면
  * 이번 달 운동/영양 데이터를 주차별로 시각화
  */
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, type TextStyle } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, type TextStyle } from 'react-native';
+
+import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 
 import { useMonthlyReport } from '../../hooks/useMonthlyReport';
 import { useTheme } from '../../lib/theme';
@@ -12,44 +13,21 @@ export default function MonthlyReportScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
   const { report, isLoading, error } = useMonthlyReport();
 
-  if (isLoading) {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        edges={['bottom']}
-      >
-        <View style={styles.center} testID="monthly-report-loading">
-          <ActivityIndicator size="large" color={brand.primary} />
-          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
-            월간 리포트를 준비하고 있어요...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (error || !report) {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        edges={['bottom']}
-      >
-        <View style={styles.center}>
-          <Text style={[styles.errorText, { color: colors.mutedForeground }]}>
-            월간 리포트를 불러올 수 없어요
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <ScreenContainer
       edges={['bottom']}
       testID="monthly-report-screen"
     >
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.lg }}>
+      <DataStateWrapper
+        isLoading={isLoading}
+        isEmpty={!!error || !report}
+        emptyConfig={{
+          icon: <Text style={{ fontSize: 48 }}>📅</Text>,
+          title: '월간 리포트를 불러올 수 없어요',
+          description: '잠시 후 다시 시도해주세요',
+        }}
+      >
+        {report && (<>
         {/* 기간 헤더 */}
         <View style={[styles.periodCard, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
           <Text style={[styles.periodLabel, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
@@ -168,8 +146,9 @@ export default function MonthlyReportScreen(): React.JSX.Element {
             </View>
           ))}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+        </>)}
+      </DataStateWrapper>
+    </ScreenContainer>
   );
 }
 
@@ -199,10 +178,6 @@ function NutritionStat({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { marginTop: 12 },
-  errorText: { textAlign: 'center' },
   periodCard: { marginHorizontal: 16, marginTop: 12, padding: 16, alignItems: 'center' },
   periodLabel: { marginBottom: 4 },
   periodMonth: {},

@@ -9,16 +9,15 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Switch,
   Pressable,
   Alert,
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 import {
   useNotificationPermission,
@@ -90,21 +89,19 @@ export default function NotificationsSettingsScreen() {
 
   if (permissionLoading || settingsLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={mod.body.dark} />
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
+    <ScreenContainer
       testID="settings-notifications-screen"
+      edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 권한 안내 */}
         {hasPermission === false && (
           <Pressable
@@ -363,8 +360,7 @@ export default function NotificationsSettingsScreen() {
             방해 금지 모드에서는 알림이 표시되지 않을 수 있습니다.
           </Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

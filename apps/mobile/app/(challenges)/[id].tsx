@@ -14,7 +14,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
@@ -25,6 +25,7 @@ import {
   DIFFICULTY_COLORS,
 } from '@/lib/challenges';
 import { useChallenges, useJoinChallenge } from '@/lib/challenges/useChallenges';
+import { staggeredEntry } from '@/lib/animations';
 import { useAppPreferencesStore } from '@/lib/stores';
 import { useTheme } from '@/lib/theme';
 
@@ -281,7 +282,7 @@ export default function ChallengeDetailScreen() {
 
         {/* 진행 상황 */}
         {challenge.isJoined && (
-          <Animated.View entering={FadeInUp.delay(100).duration(400)} style={styles.section}>
+          <Animated.View entering={staggeredEntry(1)} style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>내 진행 상황</Text>
             <GlassCard style={styles.progressCard}>
               <View style={styles.progressHeader}>
@@ -318,7 +319,7 @@ export default function ChallengeDetailScreen() {
         )}
 
         {/* 마일스톤 */}
-        <Animated.View entering={FadeInUp.delay(200).duration(400)} style={styles.section}>
+        <Animated.View entering={staggeredEntry(2)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>마일스톤</Text>
           <GlassCard style={styles.milestones}>
             {challenge.milestones.map((milestone, index) => (
@@ -347,7 +348,7 @@ export default function ChallengeDetailScreen() {
         </Animated.View>
 
         {/* 규칙 */}
-        <Animated.View entering={FadeInUp.delay(300).duration(400)} style={styles.section}>
+        <Animated.View entering={staggeredEntry(3)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>챌린지 규칙</Text>
           <GlassCard style={styles.rulesCard}>
             {challenge.rules.map((rule, index) => (
@@ -360,7 +361,7 @@ export default function ChallengeDetailScreen() {
         </Animated.View>
 
         {/* 리더보드 */}
-        <Animated.View entering={FadeInUp.delay(400).duration(400)} style={styles.section}>
+        <Animated.View entering={staggeredEntry(4)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>순위</Text>
           <GlassCard style={styles.leaderboard}>
             {challenge.leaderboard.map((entry) => (

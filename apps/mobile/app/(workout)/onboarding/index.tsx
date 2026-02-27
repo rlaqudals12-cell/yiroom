@@ -2,9 +2,9 @@
  * W-1 운동 온보딩 - 시작 화면
  */
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 
+import { ScreenContainer } from '@/components/ui';
 import { useTheme } from '@/lib/theme';
 
 export default function WorkoutOnboardingScreen() {
@@ -15,12 +15,12 @@ export default function WorkoutOnboardingScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <ScreenContainer
       edges={['bottom']}
+      contentPadding={20}
+      contentContainerStyle={{ paddingBottom: 100 }}
       testID="workout-onboarding-screen"
     >
-      <ScrollView contentContainerStyle={styles.content}>
         {/* 헤더 */}
         <View style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: brand.primary }]}>
@@ -68,15 +68,13 @@ export default function WorkoutOnboardingScreen() {
             <StepItem number={3} title="운동 타입 분석" />
           </View>
         </View>
-      </ScrollView>
-
       {/* 시작 버튼 */}
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <Pressable style={[styles.startButton, { backgroundColor: brand.primary }]} onPress={handleStart}>
           <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>운동 시작하기</Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
@@ -114,13 +112,6 @@ function StepItem({ number, title }: { number: number; title: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 100,
-  },
   header: {
     alignItems: 'center',
     marginBottom: 32,

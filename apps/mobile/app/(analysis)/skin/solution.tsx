@@ -10,7 +10,10 @@ import {
   Pressable,
   StyleSheet,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer } from '../../../components/ui';
+import { staggeredEntry } from '../../../lib/animations';
 import { useTheme, brand } from '../../../lib/theme';
 import { spacing, radii, typography } from '../../../lib/theme';
 
@@ -205,11 +208,7 @@ export default function SkinSolutionScreen(): React.JSX.Element {
   const selectedCategory = CONCERN_CATEGORIES.find((c) => c.id === selectedConcern);
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
-      testID="skin-solution-screen"
-    >
+    <ScreenContainer testID="skin-solution-screen" edges={['bottom']}>
       {/* 고민 선택 */}
       <ScrollView
         horizontal
@@ -245,7 +244,8 @@ export default function SkinSolutionScreen(): React.JSX.Element {
       </ScrollView>
 
       {/* 설명 */}
-      <View
+      <Animated.View
+        entering={staggeredEntry(0)}
         style={[
           styles.descCard,
           { backgroundColor: colors.card, borderColor: colors.border },
@@ -257,10 +257,11 @@ export default function SkinSolutionScreen(): React.JSX.Element {
         <Text style={[styles.descText, { color: colors.foreground }]}>
           {solution.description}
         </Text>
-      </View>
+      </Animated.View>
 
       {/* 추천 성분 */}
-      <View
+      <Animated.View
+        entering={staggeredEntry(1)}
         style={[
           styles.sectionCard,
           { backgroundColor: colors.card, borderColor: colors.border },
@@ -288,10 +289,11 @@ export default function SkinSolutionScreen(): React.JSX.Element {
             </Text>
           </View>
         ))}
-      </View>
+      </Animated.View>
 
       {/* 루틴 팁 */}
-      <View
+      <Animated.View
+        entering={staggeredEntry(2)}
         style={[
           styles.sectionCard,
           { backgroundColor: colors.card, borderColor: colors.border },
@@ -305,10 +307,11 @@ export default function SkinSolutionScreen(): React.JSX.Element {
             {i + 1}. {tip}
           </Text>
         ))}
-      </View>
+      </Animated.View>
 
       {/* 피해야 할 성분 */}
-      <View
+      <Animated.View
+        entering={staggeredEntry(3)}
         style={[
           styles.sectionCard,
           { backgroundColor: isDark ? colors.card : colors.destructive + '10', borderColor: colors.border },
@@ -322,10 +325,11 @@ export default function SkinSolutionScreen(): React.JSX.Element {
             ⚠️ {item}
           </Text>
         ))}
-      </View>
+      </Animated.View>
 
       {/* 생활 습관 팁 */}
-      <View
+      <Animated.View
+        entering={staggeredEntry(4)}
         style={[
           styles.sectionCard,
           { backgroundColor: colors.card, borderColor: colors.border },
@@ -339,19 +343,12 @@ export default function SkinSolutionScreen(): React.JSX.Element {
             • {tip}
           </Text>
         ))}
-      </View>
-    </ScrollView>
+      </Animated.View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: spacing.md,
-    paddingBottom: spacing.xl * 2,
-  },
   // 칩 행
   chipRow: {
     flexDirection: 'row',

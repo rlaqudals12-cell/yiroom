@@ -3,8 +3,10 @@
  */
 import { router } from 'expo-router';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { staggeredEntry } from '../../../lib/animations';
 import { useTheme } from '@/lib/theme';
 
 export default function SkinAnalysisScreen() {
@@ -20,9 +22,9 @@ export default function SkinAnalysisScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 헤더 */}
-        <View style={styles.header}>
+        <Animated.View entering={staggeredEntry(0)} style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: brand.primary }]}>
             <Text style={[styles.iconText, { color: brand.primaryForeground }]}>AI</Text>
           </View>
@@ -30,10 +32,10 @@ export default function SkinAnalysisScreen() {
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             사진 한 장으로 나의 피부 타입과{'\n'}맞춤 스킨케어 루틴을 확인하세요
           </Text>
-        </View>
+        </Animated.View>
 
         {/* 분석 항목 */}
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
+        <Animated.View entering={staggeredEntry(1)} style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>분석 항목</Text>
           <View style={styles.itemList}>
             <AnalysisItem label="피부 타입" description="건성/지성/복합/민감성" />
@@ -44,10 +46,10 @@ export default function SkinAnalysisScreen() {
             <AnalysisItem label="색소침착" description="기미/잡티 분석" />
             <AnalysisItem label="민감도" description="피부 민감 지수" />
           </View>
-        </View>
+        </Animated.View>
 
         {/* 안내 */}
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
+        <Animated.View entering={staggeredEntry(2)} style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>촬영 가이드</Text>
           <View style={styles.guideList}>
             <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
@@ -60,7 +62,7 @@ export default function SkinAnalysisScreen() {
               • 정면을 바라보고 촬영해주세요
             </Text>
           </View>
-        </View>
+        </Animated.View>
       </ScrollView>
 
       {/* 시작 버튼 */}

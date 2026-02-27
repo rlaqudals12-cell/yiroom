@@ -13,8 +13,10 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { staggeredEntry } from '../../../lib/animations';
 import { useTheme } from '@/lib/theme';
 
 export default function BodyAnalysisScreen() {
@@ -84,17 +86,17 @@ export default function BodyAnalysisScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 헤더 */}
-        <View style={styles.header}>
+        <Animated.View entering={staggeredEntry(0)} style={styles.header}>
           <Text style={[styles.title, { color: colors.foreground }]}>체형 분석</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             키, 체중과 전신 사진으로{'\n'}나에게 맞는 스타일을 찾아보세요
           </Text>
-        </View>
+        </Animated.View>
 
         {/* 신체 정보 입력 */}
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
+        <Animated.View entering={staggeredEntry(1)} style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>신체 정보</Text>
 
           <View style={styles.inputGroup}>
@@ -136,10 +138,10 @@ export default function BodyAnalysisScreen() {
               maxLength={5}
             />
           </View>
-        </View>
+        </Animated.View>
 
         {/* 이미지 업로드 */}
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
+        <Animated.View entering={staggeredEntry(2)} style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>전신 사진</Text>
           <Text style={[styles.cardDescription, { color: colors.mutedForeground }]}>
             정면에서 촬영한 전신 사진을 선택해주세요
@@ -177,7 +179,7 @@ export default function BodyAnalysisScreen() {
               • 정면을 바라보고 자연스럽게 서주세요
             </Text>
           </View>
-        </View>
+        </Animated.View>
       </ScrollView>
 
       {/* 분석 버튼 */}

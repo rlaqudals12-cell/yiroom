@@ -4,9 +4,9 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 
+import { ScreenContainer } from '@/components/ui';
 import { useTheme } from '@/lib/theme';
 
 // 주당 운동 횟수 옵션 (2-6회)
@@ -61,12 +61,12 @@ export default function WorkoutFrequencyScreen() {
   const isValid = frequency !== null && preferredTime !== null;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <ScreenContainer
       edges={['bottom']}
+      contentPadding={20}
+      contentContainerStyle={{ paddingBottom: 100 }}
       testID="workout-onboarding-frequency-screen"
     >
-      <ScrollView contentContainerStyle={styles.content}>
         {/* 주당 운동 횟수 */}
         <Text style={[styles.title, { color: colors.foreground }]}>주당 운동 횟수</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
@@ -151,7 +151,6 @@ export default function WorkoutFrequencyScreen() {
             );
           })}
         </View>
-      </ScrollView>
 
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <Pressable
@@ -162,18 +161,11 @@ export default function WorkoutFrequencyScreen() {
           <Text style={[styles.nextButtonText, { color: brand.primaryForeground }]}>운동 타입 분석하기</Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 100,
-  },
   title: {
     fontSize: 24,
     fontWeight: '700',

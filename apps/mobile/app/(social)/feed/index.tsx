@@ -17,9 +17,8 @@ import {
   Share,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../../components/ui';
 
 import { feedTypeConfig, formatRelativeTime, type FeedItem, type FeedTab } from '../../../lib/feed';
 import { useFeed } from '../../../lib/feed/useFeed';
@@ -216,22 +215,23 @@ export default function FeedScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={moduleColors.body.dark} />
           <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
             피드 불러오는 중...
           </Text>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="social-feed-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      scrollable={false}
       edges={['bottom']}
+      contentPadding={0}
     >
       {/* 탭 바 */}
       <View style={[styles.tabBar, { backgroundColor: colors.background }]}>
@@ -285,7 +285,7 @@ export default function FeedScreen() {
       >
         <Text style={[styles.fabIcon, { color: brand.primaryForeground }]}>+</Text>
       </Pressable>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

@@ -6,10 +6,10 @@
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 export default function SettingsScreen() {
   const { colors, isDark } = useTheme();
@@ -27,12 +27,10 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
+    <ScreenContainer
       testID="settings-screen"
+      edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 알림 및 목표 */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>알림 및 목표</Text>
@@ -100,8 +98,7 @@ export default function SettingsScreen() {
             버전 {appVersion}
           </Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

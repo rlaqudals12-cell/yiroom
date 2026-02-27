@@ -9,11 +9,11 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Pressable,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { ScreenContainer } from '@/components/ui';
 
 import {
   useUserAnalyses,
@@ -97,12 +97,11 @@ export default function ReportsScreen(): React.JSX.Element {
   }, [personalColor, skinAnalysis, hasWorkout, workoutStreak]);
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="reports-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['bottom']}
+      contentPadding={spacing.md + 4}
     >
-      <ScrollView contentContainerStyle={{ padding: spacing.md + 4 }}>
         {/* 데이터 없을 때 안내 배너 */}
         {!isLoading && !hasAnyAnalysis && !hasWorkout && !hasNutrition && (
           <View
@@ -649,8 +648,7 @@ export default function ReportsScreen(): React.JSX.Element {
             {insightMessage}
           </Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

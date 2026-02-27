@@ -13,13 +13,11 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  ScrollView,
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
+import { ScreenContainer } from '../../components/ui';
 import { useTheme } from '@/lib/theme';
 
 import type { Season as ClothingSeason } from '../../lib/inventory/types';
@@ -233,20 +231,20 @@ export default function RecommendScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer testID="closet-recommend-screen" edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={moduleTheme.body.dark} />
           <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
             코디를 준비하고 있어요...
           </Text>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   if (items.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer testID="closet-recommend-screen" edges={['bottom']}>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>👗</Text>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
@@ -262,17 +260,16 @@ export default function RecommendScreen() {
             <Text style={[styles.emptyButtonText, { color: colors.card }]}>옷장으로 가기</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="closet-recommend-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
+      contentPadding={0}
     >
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 날씨 정보 */}
         <View style={[styles.weatherCard, { backgroundColor: colors.card }]}>
           <View style={styles.weatherRow}>
@@ -429,8 +426,6 @@ export default function RecommendScreen() {
             </View>
           )}
         </View>
-      </ScrollView>
-
       {/* 새로고침 버튼 */}
       <Pressable
         style={[styles.refreshButton, { backgroundColor: moduleTheme.body.dark }]}
@@ -443,7 +438,7 @@ export default function RecommendScreen() {
           <RefreshCw size={24} color={colors.card} />
         )}
       </Pressable>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

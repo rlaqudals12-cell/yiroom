@@ -2,9 +2,11 @@
  * Posture 자세 분석 - 시작 화면
  */
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer } from '../../../components/ui';
+import { staggeredEntry } from '../../../lib/animations';
 import { useTheme } from '@/lib/theme';
 
 const FEATURES = [
@@ -22,54 +24,51 @@ export default function PostureAnalysisScreen() {
   };
 
   return (
-    <SafeAreaView
-      testID="analysis-posture-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
+    <ScreenContainer testID="analysis-posture-screen" edges={['bottom']}>
+      <Animated.View entering={staggeredEntry(0)}>
         <Text style={[styles.title, { color: colors.foreground }]}>자세 분석</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
           AI가 자세를 분석하고{'\n'}맞춤 교정 운동을 추천해 드려요
         </Text>
+      </Animated.View>
 
-        <View style={styles.features}>
-          {FEATURES.map((feature, index) => (
-            <View key={index} style={[styles.featureCard, { backgroundColor: colors.card }]}>
-              <Text style={styles.featureIcon}>{feature.icon}</Text>
-              <View style={styles.featureText}>
-                <Text style={[styles.featureTitle, { color: colors.foreground }]}>
-                  {feature.title}
-                </Text>
-                <Text style={[styles.featureDesc, { color: colors.mutedForeground }]}>
-                  {feature.desc}
-                </Text>
-              </View>
+      <View style={styles.features}>
+        {FEATURES.map((feature, index) => (
+          <Animated.View
+            key={index}
+            entering={staggeredEntry(index + 1)}
+            style={[styles.featureCard, { backgroundColor: colors.card }]}
+          >
+            <Text style={styles.featureIcon}>{feature.icon}</Text>
+            <View style={styles.featureText}>
+              <Text style={[styles.featureTitle, { color: colors.foreground }]}>
+                {feature.title}
+              </Text>
+              <Text style={[styles.featureDesc, { color: colors.mutedForeground }]}>
+                {feature.desc}
+              </Text>
             </View>
-          ))}
-        </View>
+          </Animated.View>
+        ))}
+      </View>
 
-        <Pressable
-          style={[styles.startButton, { backgroundColor: brand.primary }]}
-          onPress={handleStart}
-
-        >
-          <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>
-            분석 시작하기
-          </Text>
-        </Pressable>
-
-        <Text style={[styles.notice, { color: colors.mutedForeground }]}>
-          옆모습이 잘 보이도록 전신 사진을 촬영해주세요
+      <Pressable
+        style={[styles.startButton, { backgroundColor: brand.primary }]}
+        onPress={handleStart}
+      >
+        <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>
+          분석 시작하기
         </Text>
-      </ScrollView>
-    </SafeAreaView>
+      </Pressable>
+
+      <Text style={[styles.notice, { color: colors.mutedForeground }]}>
+        옆모습이 잘 보이도록 전신 사진을 촬영해주세요
+      </Text>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 20 },
   title: { fontSize: 28, fontWeight: '700', marginBottom: 8 },
   subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 32 },
   features: { gap: 12, marginBottom: 32 },

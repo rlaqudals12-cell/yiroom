@@ -10,12 +10,10 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Pressable,
-  ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { useNutritionData } from '@/hooks/useNutritionData';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
@@ -99,30 +97,16 @@ export default function NutritionDashboardScreen() {
     router.push('/(nutrition)/record');
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView
-        testID="nutrition-dashboard-screen"
-        style={[styles.container, { backgroundColor: colors.background }]}
-        edges={['bottom']}
-      >
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={brand.primary} />
-          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
-            영양 데이터를 불러오는 중이에요
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView
+    <ScreenContainer
       testID="nutrition-dashboard-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
+      contentPadding={20}
     >
-      <ScrollView contentContainerStyle={styles.content}>
+      <DataStateWrapper
+        isLoading={isLoading}
+        isEmpty={false}
+      >
         {/* 칼로리 프로그레스 */}
         <View style={[styles.calorieCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.dateText, { color: colors.mutedForeground }]}>오늘</Text>
@@ -246,8 +230,8 @@ export default function NutritionDashboardScreen() {
             식사 기록하기
           </Text>
         </Pressable>
-      </ScrollView>
-    </SafeAreaView>
+      </DataStateWrapper>
+    </ScreenContainer>
   );
 }
 
@@ -286,22 +270,6 @@ function NutrientBar({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    fontSize: typography.size.sm,
-  },
   calorieCard: {
     borderRadius: 20,
     padding: spacing.lg,

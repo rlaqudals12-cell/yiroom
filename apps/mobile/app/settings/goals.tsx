@@ -6,10 +6,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 
 import { useTheme } from '@/lib/theme';
+import { ScreenContainer } from '../../components/ui';
 
 import { settingsLogger } from '../../lib/utils/logger';
 import { setGoals as setWidgetGoals } from '../../lib/widgets';
@@ -110,12 +110,10 @@ export default function GoalsSettingsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
+    <ScreenContainer
       testID="settings-goals-screen"
+      edges={['bottom']}
     >
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 물 목표 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -280,8 +278,7 @@ export default function GoalsSettingsScreen() {
             현실적인 목표 설정으로 꾸준히 달성해보세요!
           </Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

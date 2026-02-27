@@ -6,12 +6,12 @@ import { useUser } from '@clerk/clerk-expo';
 import type { WorkoutType } from '@yiroom/shared';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { SkeletonText } from '@/components/ui/SkeletonLoader';
+import { staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
 import { workoutLogger } from '@/lib/utils/logger';
@@ -179,74 +179,44 @@ export default function WorkoutResultScreen() {
     router.replace('/(tabs)');
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        testID="workout-result-screen"
-      >
-        <View style={styles.loadingContainer}>
-          <SkeletonText style={{ width: 64, height: 64, borderRadius: 32, marginBottom: 16 }} />
-          <SkeletonText style={{ width: 160, height: 20, marginBottom: 8 }} />
-          <SkeletonText style={{ width: 100, height: 32 }} />
-          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
-            운동 타입을 분석 중이에요...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (!workoutType) {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        testID="workout-result-screen"
-      >
-        <View style={styles.errorContainer}>
-          <Text style={[styles.errorText, { color: colors.mutedForeground }]}>
-            분석에 실패했습니다.
-          </Text>
-          <Pressable
-            style={[styles.retryButton, { backgroundColor: workoutColor }]}
-            onPress={() => router.replace('/(workout)/onboarding')}
-          >
-            <Text style={[styles.retryButtonText, { color: colors.overlayForeground }]}>다시 시도하기</Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const typeData = WORKOUT_TYPE_DATA[workoutType];
+  const typeData = workoutType ? WORKOUT_TYPE_DATA[workoutType] : null;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <ScreenContainer
       edges={['bottom']}
+      contentPadding={20}
       testID="workout-result-screen"
     >
-      <ScrollView contentContainerStyle={styles.content}>
+      <DataStateWrapper
+        isLoading={isLoading}
+        isEmpty={!workoutType}
+        emptyConfig={{
+          icon: <Text style={{ fontSize: 48 }}>🏋️</Text>,
+          title: '분석에 실패했어요',
+          description: '다시 시도해주세요',
+        }}
+        onRetry={() => router.replace('/(workout)/onboarding')}
+      >
         {/* 결과 헤더 */}
-        <Animated.View entering={FadeIn.duration(500)}>
+        <Animated.View entering={staggeredEntry(0)}>
           <GlassCard style={styles.resultHeader}>
-            <Text style={styles.resultEmoji}>{typeData.emoji}</Text>
+            <Text style={styles.resultEmoji}>{typeData!.emoji}</Text>
             <Text style={[styles.resultLabel, { color: colors.mutedForeground }]}>
               당신의 운동 타입은
             </Text>
-            <Text style={[styles.resultType, { color: workoutColor }]}>{typeData.name}</Text>
+            <Text style={[styles.resultType, { color: workoutColor }]}>{typeData!.name}</Text>
             <Text style={[styles.resultDescription, { color: colors.mutedForeground }]}>
-              {typeData.description}
+              {typeData!.description}
             </Text>
           </GlassCard>
         </Animated.View>
 
         {/* 특성 */}
-        <Animated.View entering={FadeInUp.delay(100).duration(400)}>
+        <Animated.View entering={staggeredEntry(1)}>
           <GlassCard style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>나의 운동 특성</Text>
             <View style={styles.tagContainer}>
-              {typeData.characteristics.map((char, index) => (
+              {typeData!.characteristics.map((char, index) => (
                 <View
                   key={index}
                   style={[styles.tag, { backgroundColor: `${workoutColor}20` }]}
@@ -259,11 +229,11 @@ export default function WorkoutResultScreen() {
         </Animated.View>
 
         {/* 추천 운동 */}
-        <Animated.View entering={FadeInUp.delay(200).duration(400)}>
+        <Animated.View entering={staggeredEntry(2)}>
           <GlassCard style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>추천 운동</Text>
             <View style={styles.exerciseList}>
-              {typeData.recommendedExercises.map((exercise, index) => (
+              {typeData!.recommendedExercises.map((exercise, index) => (
                 <View key={index} style={styles.exerciseItem}>
                   <View style={[styles.exerciseBullet, { backgroundColor: workoutColor }]} />
                   <Text style={[styles.exerciseName, { color: colors.foreground }]}>
@@ -276,7 +246,7 @@ export default function WorkoutResultScreen() {
         </Animated.View>
 
         {/* 설정 정보 */}
-        <Animated.View entering={FadeInUp.delay(300).duration(400)}>
+        <Animated.View entering={staggeredEntry(3)}>
           <GlassCard style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>운동 설정</Text>
             <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
@@ -295,7 +265,7 @@ export default function WorkoutResultScreen() {
         </Animated.View>
 
         {/* 버튼 */}
-        <Animated.View entering={FadeInUp.delay(400).duration(400)} style={styles.buttons}>
+        <Animated.View entering={staggeredEntry(4)} style={styles.buttons}>
           <Pressable
             style={[styles.primaryButton, { backgroundColor: workoutColor }]}
             onPress={handleStartSession}
@@ -311,45 +281,12 @@ export default function WorkoutResultScreen() {
             </Text>
           </Pressable>
         </Animated.View>
-      </ScrollView>
-    </SafeAreaView>
+      </DataStateWrapper>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  errorText: {
-    fontSize: 16,
-    marginBottom: 16,
-  },
-  retryButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
   resultHeader: {
     alignItems: 'center',
     marginBottom: 24,
