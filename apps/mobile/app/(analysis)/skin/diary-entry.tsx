@@ -17,6 +17,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { Check } from 'lucide-react-native';
 
+import { ScreenContainer } from '@/components/ui';
 import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 import { useSkinDiary } from '../../../hooks/useSkinDiary';
 import {
@@ -180,15 +181,15 @@ export default function SkinDiaryEntryScreen(): React.JSX.Element {
   );
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        contentContainerStyle={styles.content}
-        testID="skin-diary-entry-screen"
+    <ScreenContainer scrollable={false} contentPadding={0} testID="skin-diary-entry-screen" edges={['bottom']}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.content}
+        >
         {/* 날짜 표시 */}
         <View
           style={[
@@ -430,8 +431,9 @@ export default function SkinDiaryEntryScreen(): React.JSX.Element {
             {saving ? '저장 중...' : isEdit ? '수정하기' : '기록하기'}
           </Text>
         </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenContainer>
   );
 }
 

@@ -5,8 +5,8 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ScreenContainer } from '@/components/ui';
 import { staggeredEntry } from '../../../lib/animations';
 import { useTheme, typography} from '@/lib/theme';
 
@@ -91,9 +91,10 @@ export default function PersonalColorScreen() {
   const isSelected = (value: string) => answers[currentQuestion] === value;
 
   return (
-    <SafeAreaView
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
       testID="analysis-pc-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
       {/* 진행 바 */}
@@ -158,7 +159,7 @@ export default function PersonalColorScreen() {
           <Text style={[styles.backButtonText, { color: colors.mutedForeground }]}>이전 질문</Text>
         </Pressable>
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

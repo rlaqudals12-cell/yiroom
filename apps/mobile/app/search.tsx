@@ -33,7 +33,7 @@ import {
   Platform,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenContainer } from '@/components/ui';
 
 import { moduleColors, statusColors, typography} from '@/lib/theme';
 import { useTheme } from '@/lib/theme';
@@ -268,11 +268,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
   );
 
   return (
-    <SafeAreaView
-      testID="unified-search-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      edges={['bottom']}
-    >
+    <ScreenContainer scrollable={false} contentPadding={0} testID="unified-search-screen" edges={['bottom']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -418,7 +414,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
           </View>
         )}
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

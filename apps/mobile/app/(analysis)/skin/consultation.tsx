@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { Send } from 'lucide-react-native';
 
+import { ScreenContainer } from '@/components/ui';
 import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 
 // 빠른 질문
@@ -159,15 +160,13 @@ export default function SkinConsultationScreen(): React.JSX.Element {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={90}
-    >
-      <View
-        style={[styles.container, { backgroundColor: colors.background }]}
-        testID="skin-consultation-screen"
+    <ScreenContainer scrollable={false} contentPadding={0} testID="skin-consultation-screen" edges={['bottom']}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={90}
       >
+        <View style={styles.container}>
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -233,8 +232,9 @@ export default function SkinConsultationScreen(): React.JSX.Element {
             <Send size={18} color={brand.primaryForeground} />
           </Pressable>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </ScreenContainer>
   );
 }
 

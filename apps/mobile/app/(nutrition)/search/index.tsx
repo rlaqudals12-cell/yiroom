@@ -16,9 +16,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { SuccessCheckmark } from '@/components/ui';
+import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { moduleColors, useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
@@ -234,11 +232,7 @@ export default function FoodSearchScreen() {
   };
 
   return (
-    <SafeAreaView
-      testID="nutrition-search-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
-    >
+    <ScreenContainer scrollable={false} contentPadding={0} testID="nutrition-search-screen" edges={['bottom']}>
       {/* 검색 바 */}
       <View style={styles.searchSection}>
         <TextInput
@@ -417,7 +411,7 @@ export default function FoodSearchScreen() {
           <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
         </View>
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

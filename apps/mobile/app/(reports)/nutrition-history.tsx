@@ -10,9 +10,7 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { DataStateWrapper } from '@/components/ui';
+import { DataStateWrapper, ScreenContainer } from '@/components/ui';
 
 import { useClerkSupabaseClient } from '../../lib/supabase';
 import { useTheme } from '../../lib/theme';
@@ -143,11 +141,7 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
-      testID="nutrition-history-screen"
-    >
+    <ScreenContainer scrollable={false} contentPadding={0} testID="nutrition-history-screen" edges={['bottom']}>
       <DataStateWrapper
         isLoading={isLoading}
         isEmpty={records.length === 0}
@@ -165,7 +159,7 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
           showsVerticalScrollIndicator={false}
         />
       </DataStateWrapper>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

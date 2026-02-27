@@ -18,7 +18,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenContainer } from '@/components/ui';
 
 import { useTheme, typography} from '@/lib/theme';
 import { BottomSheet } from '@/components/ui/BottomSheet';
@@ -100,11 +100,7 @@ export default function FeedCreateScreen(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
-      testID="feed-create-screen"
-    >
+    <ScreenContainer scrollable={false} contentPadding={0} testID="feed-create-screen" edges={['bottom']}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -290,7 +286,7 @@ export default function FeedCreateScreen(): React.JSX.Element {
           })}
         </BottomSheet>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

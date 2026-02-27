@@ -6,8 +6,7 @@
  */
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { ScreenContainer } from '@/components/ui';
 import { useTheme, typography} from '../lib/theme';
 
 type Lang = 'ko' | 'en';
@@ -17,8 +16,7 @@ export default function PrivacyPolicyScreen() {
   const [lang, setLang] = useState<Lang>('ko');
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+    <ScreenContainer
       edges={['bottom']}
       testID="privacy-policy-screen"
     >
@@ -77,7 +75,7 @@ export default function PrivacyPolicyScreen() {
           <EnglishContent colors={colors} />
         )}
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
@@ -126,7 +124,7 @@ function InfoBox({
 }
 
 function KoreanContent({ colors }: ContentProps) {
-  const { isDark } = useTheme();
+  const { status } = useTheme();
   return (
     <View>
       <Text style={[styles.lastUpdated, { color: colors.mutedForeground }]}>
@@ -227,15 +225,15 @@ function KoreanContent({ colors }: ContentProps) {
           style={[
             styles.warningBox,
             {
-              backgroundColor: isDark ? 'rgba(245, 158, 11, 0.1)' : '#FEF3C7',
-              borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A',
+              backgroundColor: status.warning + '15',
+              borderColor: status.warning + '30',
             },
           ]}
         >
           <Text
             style={[
               styles.warningText,
-              { color: isDark ? '#FCD34D' : '#92400E' },
+              { color: status.warning },
             ]}
           >
             안내: 이미지 저장에 동의하지 않아도 분석 서비스는 이용 가능합니다. 다만 이전 분석
@@ -359,7 +357,7 @@ function KoreanContent({ colors }: ContentProps) {
 }
 
 function EnglishContent({ colors }: ContentProps) {
-  const { isDark } = useTheme();
+  const { status } = useTheme();
   return (
     <View>
       <Text style={[styles.lastUpdated, { color: colors.mutedForeground }]}>
@@ -475,15 +473,15 @@ function EnglishContent({ colors }: ContentProps) {
           style={[
             styles.warningBox,
             {
-              backgroundColor: isDark ? 'rgba(245, 158, 11, 0.1)' : '#FEF3C7',
-              borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A',
+              backgroundColor: status.warning + '15',
+              borderColor: status.warning + '30',
             },
           ]}
         >
           <Text
             style={[
               styles.warningText,
-              { color: isDark ? '#FCD34D' : '#92400E' },
+              { color: status.warning },
             ]}
           >
             Note: Analysis services are available even without consenting to image storage. However,

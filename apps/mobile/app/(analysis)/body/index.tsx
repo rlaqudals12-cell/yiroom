@@ -14,8 +14,8 @@ import {
   Alert,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ScreenContainer } from '@/components/ui';
 import { staggeredEntry } from '../../../lib/animations';
 import { useTheme, typography} from '@/lib/theme';
 
@@ -81,9 +81,10 @@ export default function BodyAnalysisScreen() {
   };
 
   return (
-    <SafeAreaView
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
       testID="analysis-body-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -208,7 +209,7 @@ export default function BodyAnalysisScreen() {
           <Text style={[styles.analyzeButtonText, { color: colors.card }]}>체형 분석하기</Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

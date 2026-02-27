@@ -17,6 +17,7 @@ import {
 import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react-native';
 
+import { ScreenContainer } from '@/components/ui';
 import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 import { useSkinDiary } from '../../../hooks/useSkinDiary';
 import {
@@ -290,42 +291,37 @@ export default function SkinDiaryScreen(): React.JSX.Element {
 
   if (loading && entries.length === 0) {
     return (
-      <View
-        style={[styles.center, { backgroundColor: colors.background }]}
-        testID="skin-diary-screen"
-      >
-        <ActivityIndicator size="large" color={brand.primary} />
-        <Text style={[styles.loadingText, { color: colors.muted }]}>
-          다이어리를 불러오는 중...
-        </Text>
-      </View>
+      <ScreenContainer scrollable={false} contentPadding={0} testID="skin-diary-screen" edges={['bottom']}>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={brand.primary} />
+          <Text style={[styles.loadingText, { color: colors.muted }]}>
+            다이어리를 불러오는 중...
+          </Text>
+        </View>
+      </ScreenContainer>
     );
   }
 
   if (error && entries.length === 0) {
     return (
-      <View
-        style={[styles.center, { backgroundColor: colors.background }]}
-        testID="skin-diary-screen"
-      >
-        <Text style={[styles.errorText, { color: colors.destructive }]}>
-          {error}
-        </Text>
-        <Pressable
-          style={[styles.retryButton, { borderColor: brand.primary }]}
-          onPress={refresh}
-        >
-          <Text style={{ color: brand.primary }}>다시 시도</Text>
-        </Pressable>
-      </View>
+      <ScreenContainer scrollable={false} contentPadding={0} testID="skin-diary-screen" edges={['bottom']}>
+        <View style={styles.center}>
+          <Text style={[styles.errorText, { color: colors.destructive }]}>
+            {error}
+          </Text>
+          <Pressable
+            style={[styles.retryButton, { borderColor: brand.primary }]}
+            onPress={refresh}
+          >
+            <Text style={{ color: brand.primary }}>다시 시도</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: colors.background }]}
-      testID="skin-diary-screen"
-    >
+    <ScreenContainer scrollable={false} contentPadding={0} testID="skin-diary-screen" edges={['bottom']}>
       <FlatList
         data={entries}
         keyExtractor={(item) => item.id}
@@ -356,7 +352,7 @@ export default function SkinDiaryScreen(): React.JSX.Element {
       >
         <Plus size={24} color={brand.primaryForeground} />
       </Pressable>
-    </View>
+    </ScreenContainer>
   );
 }
 

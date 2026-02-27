@@ -19,7 +19,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { SuccessCheckmark } from '@/components/ui';
+import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { useCloset, type ClothingCategory, type Season } from '@/lib/inventory';
 import { useAppPreferencesStore } from '@/lib/stores';
 import { useTheme, typography} from '@/lib/theme';
@@ -243,8 +243,8 @@ export default function ClosetAddScreen() {
         }}
       />
 
+      <ScreenContainer scrollable={false} contentPadding={0} testID="closet-add-screen" edges={['bottom']}>
       <ScrollView
-        testID="closet-add-screen"
         style={styles.container}
         showsVerticalScrollIndicator={false}
       >
@@ -449,6 +449,7 @@ export default function ClosetAddScreen() {
           <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
         </View>
       )}
+      </ScreenContainer>
     </>
   );
 }

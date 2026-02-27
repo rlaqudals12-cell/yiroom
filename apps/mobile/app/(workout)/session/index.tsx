@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenContainer } from '@/components/ui';
 
 import { staggeredEntry } from '@/lib/animations';
 
@@ -130,25 +130,19 @@ export default function WorkoutSessionScreen() {
   // 로딩 화면
   if (workoutLoading && sessionState === 'ready') {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        testID="workout-session-screen"
-      >
+      <ScreenContainer scrollable={false} contentPadding={0} testID="workout-session-screen">
         <View style={styles.mainContent}>
           <SkeletonText style={{ width: 120, height: 32, marginBottom: spacing.md }} />
           <SkeletonText style={{ width: 200, height: 16 }} />
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   // 준비 화면
   if (sessionState === 'ready') {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        testID="workout-session-screen"
-      >
+      <ScreenContainer scrollable={false} contentPadding={0} testID="workout-session-screen">
         <View style={styles.readyContent}>
           <Animated.View entering={FadeInUp.duration(400)}>
             <Text style={[styles.readyTitle, { color: colors.foreground }]}>운동 준비</Text>
@@ -182,14 +176,14 @@ export default function WorkoutSessionScreen() {
             <Text style={[styles.startButtonText, { color: colors.overlayForeground }]}>운동 시작</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   // 완료 화면
   if (sessionState === 'completed') {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenContainer scrollable={false} contentPadding={0}>
         <View style={styles.completedContent}>
           <Animated.View entering={FadeIn.duration(500)} style={{ alignItems: 'center' }}>
             <Text style={styles.completedEmoji}>🎉</Text>
@@ -229,13 +223,13 @@ export default function WorkoutSessionScreen() {
             <Text style={[styles.finishButtonText, { color: colors.overlayForeground }]}>완료</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   // 운동 중 / 휴식 중 화면
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScreenContainer scrollable={false} contentPadding={0}>
       {/* 상단 정보 */}
       <View style={styles.header}>
         <Pressable onPress={handleEndSession}>
@@ -311,7 +305,7 @@ export default function WorkoutSessionScreen() {
           ]}
         />
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

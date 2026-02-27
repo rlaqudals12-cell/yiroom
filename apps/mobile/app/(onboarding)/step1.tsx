@@ -18,9 +18,7 @@ import {
 } from 'lucide-react-native';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { ProgressIndicator } from '../../components/ui';
+import { ProgressIndicator, ScreenContainer } from '../../components/ui';
 import { TIMING, staggeredEntry } from '../../lib/animations';
 import {
   useOnboarding,
@@ -65,10 +63,7 @@ export default function OnboardingStep1() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      testID="onboarding-step1"
-    >
+    <ScreenContainer scrollable={false} contentPadding={0} testID="onboarding-step1">
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 파스텔 히어로 헤더 (웹 온보딩 슬라이드와 동일 패턴) */}
         <Animated.View entering={FadeIn.duration(TIMING.slow)}>
@@ -249,7 +244,7 @@ export default function OnboardingStep1() {
           </Pressable>
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

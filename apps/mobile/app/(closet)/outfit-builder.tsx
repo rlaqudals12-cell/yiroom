@@ -18,7 +18,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { SuccessCheckmark } from '@/components/ui';
+import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
 import { useCloset, useSavedOutfits } from '../../lib/inventory/useInventory';
 import type {
@@ -154,23 +154,19 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
 
   if (isLoading) {
     return (
-      <View
-        style={[styles.container, styles.center, { backgroundColor: colors.background }]}
-        testID="outfit-builder-screen"
-      >
-        <ActivityIndicator size="large" color={brand.primary} />
-        <Text style={[styles.loadingText, { color: colors.muted }]}>
-          옷장을 불러오고 있어요...
-        </Text>
-      </View>
+      <ScreenContainer scrollable={false} contentPadding={0} testID="outfit-builder-screen">
+        <View style={[styles.container, styles.center]}>
+          <ActivityIndicator size="large" color={brand.primary} />
+          <Text style={[styles.loadingText, { color: colors.muted }]}>
+            옷장을 불러오고 있어요...
+          </Text>
+        </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: colors.background }]}
-      testID="outfit-builder-screen"
-    >
+    <ScreenContainer scrollable={false} contentPadding={0} testID="outfit-builder-screen">
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 선택된 아이템 미리보기 */}
         {selectedItems.length > 0 && (
@@ -400,7 +396,7 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
           <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
         </View>
       )}
-    </View>
+    </ScreenContainer>
   );
 }
 

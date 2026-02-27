@@ -17,7 +17,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenContainer } from '@/components/ui';
 
 import { useTheme, typography} from '@/lib/theme';
 
@@ -156,11 +156,7 @@ export default function CommentsScreen(): React.JSX.Element {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      edges={['bottom']}
-      testID="comments-screen"
-    >
+    <ScreenContainer scrollable={false} contentPadding={0} testID="comments-screen" edges={['bottom']}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -228,7 +224,7 @@ export default function CommentsScreen(): React.JSX.Element {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

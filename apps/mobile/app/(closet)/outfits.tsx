@@ -23,6 +23,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
+import { ScreenContainer } from '@/components/ui';
 import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
 import { useCloset } from '../../lib/inventory/useInventory';
@@ -209,20 +210,16 @@ export default function OutfitsScreen(): React.JSX.Element {
 
   if (isLoading) {
     return (
-      <View
-        style={[styles.container, styles.center, { backgroundColor: colors.background }]}
-        testID="outfits-screen"
-      >
-        <ActivityIndicator size="large" color={brand.primary} />
-      </View>
+      <ScreenContainer scrollable={false} contentPadding={0} testID="outfits-screen">
+        <View style={[styles.container, styles.center]}>
+          <ActivityIndicator size="large" color={brand.primary} />
+        </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: colors.background }]}
-      testID="outfits-screen"
-    >
+    <ScreenContainer scrollable={false} contentPadding={0} testID="outfits-screen">
       <FlatList
         data={outfits}
         keyExtractor={(item) => item.id}
@@ -241,7 +238,7 @@ export default function OutfitsScreen(): React.JSX.Element {
           <Plus size={24} color={brand.primaryForeground} />
         </Pressable>
       )}
-    </View>
+    </ScreenContainer>
   );
 }
 

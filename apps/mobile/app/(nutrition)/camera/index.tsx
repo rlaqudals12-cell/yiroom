@@ -18,9 +18,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { SuccessCheckmark } from '@/components/ui';
+import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import {
@@ -258,17 +256,17 @@ export default function FoodCameraScreen() {
   // 권한 없음
   if (!permission) {
     return (
-      <SafeAreaView style={styles.container}>
+      <ScreenContainer scrollable={false} contentPadding={0} style={styles.container}>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={status.success} />
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={styles.container}>
+      <ScreenContainer scrollable={false} contentPadding={0} style={styles.container}>
         <View style={styles.centerContent}>
           <Text style={[styles.permissionText, { color: colors.foreground }]}>
             카메라 권한이 필요합니다
@@ -282,14 +280,14 @@ export default function FoodCameraScreen() {
             </Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   // 분석 중
   if (screenState === 'analyzing') {
     return (
-      <SafeAreaView style={styles.container}>
+      <ScreenContainer scrollable={false} contentPadding={0} style={styles.container}>
         <View style={styles.centerContent}>
           {capturedImage && <Image source={{ uri: capturedImage }} style={styles.analyzingImage} />}
           <ActivityIndicator size="large" color={status.success} style={styles.analyzingSpinner} />
@@ -297,14 +295,16 @@ export default function FoodCameraScreen() {
             AI가 음식을 분석하고 있어요...
           </Text>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   // 결과 화면
   if (screenState === 'result') {
     return (
-      <SafeAreaView
+      <ScreenContainer
+        scrollable={false}
+        contentPadding={0}
         style={[styles.container, { backgroundColor: colors.background }]}
         edges={['bottom']}
       >
@@ -474,13 +474,13 @@ export default function FoodCameraScreen() {
             <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
           </View>
         )}
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   // 카메라 화면
   return (
-    <SafeAreaView testID="nutrition-camera-screen" style={styles.container} edges={['bottom']}>
+    <ScreenContainer scrollable={false} contentPadding={0} testID="nutrition-camera-screen" style={styles.container} edges={['bottom']}>
       <View style={styles.cameraContainer}>
         <CameraView ref={cameraRef} style={styles.camera} facing="back">
           {/* 가이드 프레임 */}
@@ -536,7 +536,7 @@ export default function FoodCameraScreen() {
           <Text style={styles.searchButtonText}>검색</Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

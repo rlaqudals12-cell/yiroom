@@ -17,9 +17,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { SuccessCheckmark } from '@/components/ui';
+import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import {
@@ -121,8 +119,10 @@ export default function BarcodeScanScreen() {
   // 카메라 권한 없음
   if (!permission?.granted) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
+      <ScreenContainer
+        scrollable={false}
+        contentPadding={0}
+        style={{ backgroundColor: colors.background }}
         testID="barcode-scan-screen"
       >
         <View style={styles.permissionContainer}>
@@ -141,15 +141,17 @@ export default function BarcodeScanScreen() {
             </Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   // 로딩 상태
   if (screenState === 'loading') {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
+      <ScreenContainer
+        scrollable={false}
+        contentPadding={0}
+        style={{ backgroundColor: colors.background }}
         testID="barcode-scan-screen"
       >
         <View style={styles.loadingContainer}>
@@ -161,15 +163,17 @@ export default function BarcodeScanScreen() {
             {scannedBarcode}
           </Text>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   // 미등록 바코드
   if (screenState === 'not-found') {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
+      <ScreenContainer
+        scrollable={false}
+        contentPadding={0}
+        style={{ backgroundColor: colors.background }}
         testID="barcode-scan-screen"
       >
         <View style={styles.notFoundContainer}>
@@ -203,7 +207,7 @@ export default function BarcodeScanScreen() {
             </Pressable>
           </View>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
@@ -212,8 +216,10 @@ export default function BarcodeScanScreen() {
     const nutrition = calculateNutrition(food, servings);
 
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
+      <ScreenContainer
+        scrollable={false}
+        contentPadding={0}
+        style={{ backgroundColor: colors.background }}
         edges={['bottom']}
         testID="barcode-scan-screen"
       >
@@ -365,14 +371,16 @@ export default function BarcodeScanScreen() {
             <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
           </View>
         )}
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   // 스캔 화면 (기본)
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: '#000' }]}
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
+      style={{ backgroundColor: '#000' }}
       edges={['bottom']}
       testID="barcode-scan-screen"
     >
@@ -391,10 +399,10 @@ export default function BarcodeScanScreen() {
         <View style={styles.overlayMiddle}>
           <View style={styles.overlaySide} />
           <View style={styles.scanFrame}>
-            <View style={[styles.corner, styles.cornerTL]} />
-            <View style={[styles.corner, styles.cornerTR]} />
-            <View style={[styles.corner, styles.cornerBL]} />
-            <View style={[styles.corner, styles.cornerBR]} />
+            <View style={[styles.corner, styles.cornerTL, { borderColor: status.success }]} />
+            <View style={[styles.corner, styles.cornerTR, { borderColor: status.success }]} />
+            <View style={[styles.corner, styles.cornerBL, { borderColor: status.success }]} />
+            <View style={[styles.corner, styles.cornerBR, { borderColor: status.success }]} />
           </View>
           <View style={styles.overlaySide} />
         </View>
@@ -405,7 +413,7 @@ export default function BarcodeScanScreen() {
           </Pressable>
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
@@ -479,7 +487,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 24,
     height: 24,
-    borderColor: '#22c55e',
+    borderColor: 'transparent',
   },
   cornerTL: {
     top: 0,

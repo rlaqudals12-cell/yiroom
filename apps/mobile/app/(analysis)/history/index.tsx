@@ -16,8 +16,7 @@ import {
   Pressable,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { ScreenContainer } from '@/components/ui';
 import { AnalysisHistoryCard } from '../../../components/analysis/AnalysisHistoryCard';
 import {
   useAnalysisHistory,
@@ -138,9 +137,10 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
   }, [isLoading, colors]);
 
   return (
-    <SafeAreaView
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
       testID="analysis-history-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
       {/* 모듈 필터 */}
@@ -304,7 +304,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

@@ -4,8 +4,8 @@
 import { router } from 'expo-router';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ScreenContainer } from '@/components/ui';
 import { staggeredEntry } from '../../../lib/animations';
 import { useTheme, typography} from '@/lib/theme';
 
@@ -17,9 +17,10 @@ export default function SkinAnalysisScreen() {
   };
 
   return (
-    <SafeAreaView
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
       testID="analysis-skin-screen"
-      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['bottom']}
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -83,7 +84,7 @@ export default function SkinAnalysisScreen() {
           </Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
+import { ScreenContainer } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import {
@@ -211,23 +212,27 @@ export default function ChallengeDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
-        <SkeletonText style={{ width: 200, height: 28, marginBottom: 12 }} />
-        <SkeletonText style={{ width: 280, height: 16, marginBottom: 24 }} />
-        <SkeletonCard style={{ height: 120, width: '90%', marginBottom: 16 }} />
-        <SkeletonCard style={{ height: 80, width: '90%' }} />
-      </View>
+      <ScreenContainer scrollable={false} contentPadding={0}>
+        <View style={styles.loadingContainer}>
+          <SkeletonText style={{ width: 200, height: 28, marginBottom: 12 }} />
+          <SkeletonText style={{ width: 280, height: 16, marginBottom: 24 }} />
+          <SkeletonCard style={{ height: 120, width: '90%', marginBottom: 16 }} />
+          <SkeletonCard style={{ height: 80, width: '90%' }} />
+        </View>
+      </ScreenContainer>
     );
   }
 
   if (!challenge) {
     return (
-      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
-        <Text style={[styles.errorText, { color: colors.mutedForeground }]}>챌린지를 찾을 수 없습니다.</Text>
-        <Pressable onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.foreground }]}>
-          <Text style={[styles.backButtonText, { color: colors.background }]}>돌아가기</Text>
-        </Pressable>
-      </View>
+      <ScreenContainer scrollable={false} contentPadding={0}>
+        <View style={styles.errorContainer}>
+          <Text style={[styles.errorText, { color: colors.mutedForeground }]}>챌린지를 찾을 수 없습니다.</Text>
+          <Pressable onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.foreground }]}>
+            <Text style={[styles.backButtonText, { color: colors.background }]}>돌아가기</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
     );
   }
 
@@ -245,9 +250,9 @@ export default function ChallengeDetailScreen() {
         }}
       />
 
+      <ScreenContainer scrollable={false} contentPadding={0} testID="challenge-detail-screen" edges={['bottom']}>
       <ScrollView
-        testID="challenge-detail-screen"
-        style={[styles.container, { backgroundColor: colors.background }]}
+        style={styles.container}
         showsVerticalScrollIndicator={false}
       >
         {/* 헤더 섹션 */}
@@ -414,6 +419,7 @@ export default function ChallengeDetailScreen() {
           </Text>
         </Pressable>
       </View>
+      </ScreenContainer>
     </>
   );
 }

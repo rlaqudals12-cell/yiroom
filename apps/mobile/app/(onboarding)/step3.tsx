@@ -18,9 +18,7 @@ import {
 } from 'lucide-react-native';
 import { View, Text, StyleSheet, ScrollView, Pressable, Switch } from 'react-native';
 import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { Button, GlassCard, ProgressIndicator } from '../../components/ui';
+import { Button, GlassCard, ProgressIndicator, ScreenContainer } from '../../components/ui';
 import { TIMING } from '../../lib/animations';
 import {
   useOnboarding,
@@ -67,10 +65,7 @@ export default function OnboardingStep3() {
   const age = data.basicInfo.birthYear ? calculateAge(data.basicInfo.birthYear) : null;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      testID="onboarding-step3"
-    >
+    <ScreenContainer scrollable={false} contentPadding={0} testID="onboarding-step3">
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 미니 백 버튼 */}
         <Pressable
@@ -465,7 +460,7 @@ export default function OnboardingStep3() {
           </Pressable>
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
