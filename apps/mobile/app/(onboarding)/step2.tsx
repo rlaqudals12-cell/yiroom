@@ -130,7 +130,7 @@ export default function OnboardingStep2() {
             ]}
           >
             <View style={[styles.heroIconWrap, { backgroundColor: STEP2_ACCENT }]}>
-              <ClipboardList size={36} color="#fff" strokeWidth={2} />
+              <ClipboardList size={36} color={colors.overlayForeground} strokeWidth={2} />
             </View>
             <Text style={[styles.heroTitle, { color: colors.foreground }]}>
               기본 정보를 알려주세요

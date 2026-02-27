@@ -91,7 +91,7 @@ export default function OnboardingStep3() {
             ]}
           >
             <View style={[styles.heroIconWrap, { backgroundColor: STEP3_ACCENT }]}>
-              <Flag size={36} color="#fff" strokeWidth={2} />
+              <Flag size={36} color={colors.overlayForeground} strokeWidth={2} />
             </View>
             <Text style={[styles.heroTitle, { color: colors.foreground }]}>
               거의 다 왔어요!

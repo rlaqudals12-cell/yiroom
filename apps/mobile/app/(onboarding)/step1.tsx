@@ -74,7 +74,7 @@ export default function OnboardingStep1() {
             ]}
           >
             <View style={[styles.heroIconWrap, { backgroundColor: STEP1_ACCENT }]}>
-              <Target size={36} color="#fff" strokeWidth={2} />
+              <Target size={36} color={colors.overlayForeground} strokeWidth={2} />
             </View>
             <Text style={[styles.heroTitle, { color: colors.foreground }]}>
               목표를 선택해주세요
@@ -130,7 +130,7 @@ export default function OnboardingStep1() {
                       end={{ x: 1, y: 1 }}
                       style={styles.iconBox}
                     >
-                      <IconComponent size={24} color="#fff" strokeWidth={2} />
+                      <IconComponent size={24} color={colors.overlayForeground} strokeWidth={2} />
                     </LinearGradient>
                   ) : (
                     <View
@@ -178,7 +178,7 @@ export default function OnboardingStep1() {
                       colors={goalColor.gradient}
                       style={styles.checkmark}
                     >
-                      <Check size={14} color="#fff" strokeWidth={3} />
+                      <Check size={14} color={colors.overlayForeground} strokeWidth={3} />
                     </LinearGradient>
                   )}
                 </Pressable>
