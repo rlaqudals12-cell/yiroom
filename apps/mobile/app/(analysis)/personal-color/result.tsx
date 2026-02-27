@@ -149,6 +149,9 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
       setUsedFallback(response.usedFallback);
       setResult(response.result);
 
+      // 분석 완료 성공 햅틱
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
       // DB 저장 (실패해도 분석 결과는 표시)
       if (user?.id) {
         savePersonalColorResult(supabase, user.id, response.result, parsedAnswers, imageUri);

@@ -417,6 +417,24 @@ jest.mock('lucide-react-native', () => {
 // =============================================================================
 jest.mock('react-native-gesture-handler', () => {
   const View = require('react-native').View;
+
+  // Gesture API v2 모킹 — 체이닝 패턴 지원
+  const createGestureMock = () => {
+    const gesture = {};
+    const methods = [
+      'onStart', 'onUpdate', 'onEnd', 'onFinalize', 'onBegin',
+      'onTouchesBegan', 'onTouchesEnded', 'onTouchesCancelled', 'onTouchesMove',
+      'enabled', 'minDistance', 'minPointers', 'maxPointers',
+      'activeOffsetX', 'activeOffsetY', 'failOffsetX', 'failOffsetY',
+      'hitSlop', 'shouldCancelWhenOutside', 'simultaneousWithExternalGesture',
+      'requireExternalGestureToFail', 'withTestId',
+    ];
+    methods.forEach((method) => {
+      gesture[method] = jest.fn(() => gesture);
+    });
+    return gesture;
+  };
+
   return {
     Swipeable: View,
     DrawerLayout: View,
@@ -445,6 +463,21 @@ jest.mock('react-native-gesture-handler', () => {
     gestureHandlerRootHOC: jest.fn((component) => component),
     Directions: {},
     GestureHandlerRootView: View,
+    // Gesture API v2 모킹
+    GestureDetector: ({ children }) => children,
+    Gesture: {
+      Pan: () => createGestureMock(),
+      Tap: () => createGestureMock(),
+      Pinch: () => createGestureMock(),
+      Rotation: () => createGestureMock(),
+      Fling: () => createGestureMock(),
+      LongPress: () => createGestureMock(),
+      Native: () => createGestureMock(),
+      Manual: () => createGestureMock(),
+      Race: (...gestures) => gestures,
+      Simultaneous: (...gestures) => gestures,
+      Exclusive: (...gestures) => gestures,
+    },
   };
 });
 

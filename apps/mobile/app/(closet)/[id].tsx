@@ -5,7 +5,7 @@
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Heart, Trash2, Edit2 } from 'lucide-react-native';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -33,7 +33,18 @@ export default function ItemDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { items, isLoading, toggleFavorite, deleteItem } = useCloset();
+  const { items, isLoading, toggleFavorite, deleteItem, refetch: refetchCloset } = useCloset();
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetchCloset();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchCloset]);
 
   const item = useMemo(() => {
     return items.find((i) => i.id === id);
@@ -104,6 +115,8 @@ export default function ItemDetailScreen() {
       edges={['bottom']}
       contentPadding={0}
       contentContainerStyle={styles.content}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
         {/* 이미지 */}
         <View style={styles.imageContainer}>

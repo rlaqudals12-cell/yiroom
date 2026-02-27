@@ -3,18 +3,23 @@
  * 알림, 목표, 위젯, 앱 정보 등
  */
 
+import { useAuth } from '@clerk/clerk-expo';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 import { ScreenContainer } from '../../components/ui';
+import { BottomSheet } from '../../components/ui/BottomSheet';
 
 export default function SettingsScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, brand, spacing, radii, typography } = useTheme();
+  const { signOut } = useAuth();
 
   const appVersion = Constants.expoConfig?.version || '0.1.0';
+  const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false);
 
   const handlePress = (route: string) => {
     Haptics.selectionAsync();
@@ -25,6 +30,39 @@ export default function SettingsScreen() {
     Haptics.selectionAsync();
     Linking.openURL(url);
   };
+
+  const handleOpenAccountSheet = useCallback((): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsAccountSheetOpen(true);
+  }, []);
+
+  const handleCloseAccountSheet = useCallback((): void => {
+    setIsAccountSheetOpen(false);
+  }, []);
+
+  // 로그아웃 확인 후 실행
+  const handleLogout = useCallback((): void => {
+    setIsAccountSheetOpen(false);
+    Alert.alert(
+      '로그아웃',
+      '정말 로그아웃 하시겠어요?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '로그아웃',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut();
+              router.replace('/(auth)/sign-in');
+            } catch {
+              Alert.alert('오류', '로그아웃에 실패했어요. 다시 시도해주세요.');
+            }
+          },
+        },
+      ]
+    );
+  }, [signOut]);
 
   return (
     <ScreenContainer
@@ -90,6 +128,46 @@ export default function SettingsScreen() {
             onPress={() => handleLink('mailto:support@yiroom.app')}
           />
         </View>
+
+        {/* 계정 관리 */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>계정</Text>
+          <SettingsItem
+            icon="👤"
+            title="계정 관리"
+            subtitle="로그아웃, 데이터 관리"
+            colors={colors}
+            onPress={handleOpenAccountSheet}
+          />
+        </View>
+
+        {/* 계정 바텀 시트 */}
+        <BottomSheet
+          isVisible={isAccountSheetOpen}
+          onClose={handleCloseAccountSheet}
+          snapPoints={['30%']}
+          title="계정 관리"
+          testID="settings-account-sheet"
+        >
+          <Pressable
+            style={[styles.accountOption, { backgroundColor: colors.muted, borderRadius: radii.lg }]}
+            onPress={handleLogout}
+            testID="settings-logout-button"
+          >
+            <Text style={[styles.accountOptionText, { color: colors.destructive }]}>
+              로그아웃
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.accountOption, { backgroundColor: colors.muted, borderRadius: radii.lg }]}
+            onPress={handleCloseAccountSheet}
+            testID="settings-account-cancel"
+          >
+            <Text style={[styles.accountOptionText, { color: colors.foreground }]}>
+              취소
+            </Text>
+          </Pressable>
+        </BottomSheet>
 
         {/* 버전 정보 */}
         <View style={styles.versionSection}>
@@ -197,5 +275,15 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 13,
+  },
+  accountOption: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  accountOptionText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

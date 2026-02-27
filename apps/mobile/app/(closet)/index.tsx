@@ -5,8 +5,8 @@
 
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { Plus, Heart } from 'lucide-react-native';
-import React, { useState, useMemo } from 'react';
+import { Plus, Heart, SlidersHorizontal } from 'lucide-react-native';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Image } from 'expo-image';
 import {
   View,
@@ -19,6 +19,7 @@ import Animated from 'react-native-reanimated';
 
 import { GlassCard } from '@/components/ui/GlassCard';
 import { ScreenContainer } from '@/components/ui';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 import { staggeredEntry } from '@/lib/animations';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { useTheme } from '@/lib/theme';
@@ -44,12 +45,40 @@ export default function ClosetScreen() {
 
   const { items, isLoading, error: _error, toggleFavorite, refetch } = useCloset();
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
+  const [isSortSheetOpen, setIsSortSheetOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'name'>('newest');
 
-  // 카테고리별 필터링
+  const handleOpenSortSheet = useCallback((): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsSortSheetOpen(true);
+  }, []);
+
+  const handleCloseSortSheet = useCallback((): void => {
+    setIsSortSheetOpen(false);
+  }, []);
+
+  const handleSortSelect = useCallback((order: 'newest' | 'oldest' | 'name'): void => {
+    Haptics.selectionAsync();
+    setSortOrder(order);
+    setIsSortSheetOpen(false);
+  }, []);
+
+  // 카테고리별 필터링 + 정렬
   const filteredItems = useMemo(() => {
-    if (selectedCategory === 'all') return items;
-    return items.filter((item) => item.subCategory === selectedCategory);
-  }, [items, selectedCategory]);
+    let result = selectedCategory === 'all'
+      ? [...items]
+      : items.filter((item) => item.subCategory === selectedCategory);
+
+    // 정렬 적용
+    if (sortOrder === 'name') {
+      result = result.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortOrder === 'oldest') {
+      result = result.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    }
+    // 'newest'는 기본 순서 (최신순)
+
+    return result;
+  }, [items, selectedCategory, sortOrder]);
 
   // 통계
   const stats = useMemo(() => {
@@ -217,10 +246,53 @@ export default function ClosetScreen() {
         />
       )}
 
+      {/* 정렬 버튼 */}
+      <Pressable
+        style={[styles.sortButton, { backgroundColor: colors.card, ...themeShadows.md }]}
+        onPress={handleOpenSortSheet}
+        testID="closet-sort-button"
+      >
+        <SlidersHorizontal size={20} color={colors.foreground} />
+      </Pressable>
+
       {/* 추가 버튼 */}
       <Pressable style={[styles.addButton, { backgroundColor: moduleTheme.body.dark, ...themeShadows.lg }]} onPress={handleAddPress}>
         <Plus size={24} color={colors.overlayForeground} />
       </Pressable>
+
+      {/* 정렬 바텀 시트 */}
+      <BottomSheet
+        isVisible={isSortSheetOpen}
+        onClose={handleCloseSortSheet}
+        snapPoints={['35%']}
+        title="정렬"
+        testID="closet-sort-sheet"
+      >
+        {(['newest', 'oldest', 'name'] as const).map((order) => {
+          const labels = { newest: '최신순', oldest: '오래된순', name: '이름순' };
+          const isActive = sortOrder === order;
+          return (
+            <Pressable
+              key={order}
+              style={[
+                styles.sortOption,
+                { backgroundColor: isActive ? moduleTheme.body.dark : colors.muted },
+              ]}
+              onPress={() => handleSortSelect(order)}
+              testID={`sort-option-${order}`}
+            >
+              <Text
+                style={[
+                  styles.sortOptionText,
+                  { color: isActive ? colors.overlayForeground : colors.foreground },
+                ]}
+              >
+                {labels[order]}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </BottomSheet>
     </ScreenContainer>
   );
 }
@@ -345,6 +417,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
+  sortButton: {
+    position: 'absolute',
+    bottom: 24,
+    left: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   addButton: {
     position: 'absolute',
     bottom: 24,
@@ -354,5 +436,16 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  sortOption: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 8,
+  },
+  sortOptionText: {
+    fontSize: 15,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });

@@ -36,13 +36,24 @@ import { useTheme } from '../../lib/theme';
 export default function BeautyTab(): React.JSX.Element {
   const router = useRouter();
   const { colors, spacing, module: moduleColors } = useTheme();
-  const { skinAnalysis, isLoading } = useUserAnalyses();
+  const { skinAnalysis, isLoading, refetch: refetchAnalyses } = useUserAnalyses();
 
   // DB에서 제품 조회
-  const { products: affiliateProducts, isLoading: productsLoading } = useAffiliateProducts({
+  const { products: affiliateProducts, isLoading: productsLoading, refetch: refetchProducts } = useAffiliateProducts({
     sortBy: 'rating',
     limit: 30,
   });
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchAnalyses(), refetchProducts()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchAnalyses, refetchProducts]);
 
   // 필터 상태
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -101,7 +112,7 @@ export default function BeautyTab(): React.JSX.Element {
   const hasSkinData = skinAnalysis !== null;
 
   return (
-    <ScreenContainer testID="beauty-tab" contentContainerStyle={{ paddingBottom: spacing.xl }}>
+    <ScreenContainer testID="beauty-tab" contentContainerStyle={{ paddingBottom: spacing.xl }} refreshing={refreshing} onRefresh={handleRefresh}>
         {/* 히어로 헤더 */}
         <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
           <GradientBackground

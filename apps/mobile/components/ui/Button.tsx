@@ -46,7 +46,12 @@ export function Button({
       testID={testID}
       onPress={() => {
         if (!isDisabled && onPress) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          // 파괴적 액션은 Warning, 일반은 Light 햅틱
+          if (variant === 'destructive') {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          } else {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
           onPress();
         }
       }}

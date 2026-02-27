@@ -49,7 +49,7 @@ export function ColorSwatch({
   const handlePress = useCallback(async () => {
     if (!copyOnPress) return;
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.selectionAsync();
     scale.value = withSpring(0.85, { damping: 12, stiffness: 300 });
     setTimeout(() => {
       scale.value = withSpring(1, { damping: 12, stiffness: 300 });

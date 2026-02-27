@@ -6,7 +6,7 @@
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -52,18 +52,31 @@ export default function HomeScreen(): React.JSX.Element {
   }, [onboardingLoading, onboardingCompleted, router]);
 
   // 데이터 훅
-  const { streak: workoutStreak, isLoading: workoutLoading } = useWorkoutData();
+  const { streak: workoutStreak, isLoading: workoutLoading, refetch: refetchWorkout } = useWorkoutData();
   const {
     todaySummary,
     settings: nutritionSettings,
     isLoading: nutritionLoading,
+    refetch: refetchNutrition,
   } = useNutritionData();
   const {
     personalColor,
     skinAnalysis,
     bodyAnalysis,
     isLoading: analysisLoading,
+    refetch: refetchAnalyses,
   } = useUserAnalyses();
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchWorkout(), refetchNutrition(), refetchAnalyses()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchWorkout, refetchNutrition, refetchAnalyses]);
 
   // 교차 모듈 인사이트
   const { insights } = useCrossModuleInsights();
@@ -240,7 +253,7 @@ export default function HomeScreen(): React.JSX.Element {
   }
 
   return (
-    <ScreenContainer testID="home-screen" contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScreenContainer testID="home-screen" contentContainerStyle={{ paddingBottom: 40 }} refreshing={refreshing} onRefresh={handleRefresh}>
       <HomeHeader userName={userName} isLoaded={isLoaded} />
 
       <HomeTodaySection

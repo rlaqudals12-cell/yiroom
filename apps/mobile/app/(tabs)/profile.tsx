@@ -7,6 +7,7 @@ import { useUser, useClerk } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
+import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
@@ -24,9 +25,20 @@ export default function ProfileScreen(): React.JSX.Element {
   const { signOut } = useClerk();
 
   // 데이터 훅
-  const { analyses, personalColor, skinAnalysis, bodyAnalysis } = useUserAnalyses();
-  const { analysis: workoutAnalysis, streak: workoutStreak } = useWorkoutData();
-  const { streak: nutritionStreak } = useNutritionData();
+  const { analyses, personalColor, skinAnalysis, bodyAnalysis, refetch: refetchAnalyses } = useUserAnalyses();
+  const { analysis: workoutAnalysis, streak: workoutStreak, refetch: refetchWorkout } = useWorkoutData();
+  const { streak: nutritionStreak, refetch: refetchNutrition } = useNutritionData();
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchAnalyses(), refetchWorkout(), refetchNutrition()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchAnalyses, refetchWorkout, refetchNutrition]);
 
   // 웰니스 점수 계산
   const { score, breakdown, level, achievements } = useWellnessScore({
@@ -54,7 +66,7 @@ export default function ProfileScreen(): React.JSX.Element {
   };
 
   return (
-    <ScreenContainer testID="profile-screen" contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScreenContainer testID="profile-screen" contentContainerStyle={{ paddingBottom: 40 }} refreshing={refreshing} onRefresh={handleRefresh}>
         {/* 프로필 헤더 — 브랜드 그라디언트 + GlassCard */}
         <Animated.View entering={FadeIn.duration(TIMING.normal)}>
           <GradientBackground

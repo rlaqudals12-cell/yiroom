@@ -183,12 +183,25 @@ export default function WeightGoalScreen(): React.JSX.Element {
       )
     : 0;
 
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchData();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchData]);
+
   return (
     <ScreenContainer
       edges={['bottom']}
       contentPadding={spacing.md}
       testID="weight-goal-screen"
       contentContainerStyle={{ gap: spacing.md }}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
       <DataStateWrapper
         isLoading={isLoading}

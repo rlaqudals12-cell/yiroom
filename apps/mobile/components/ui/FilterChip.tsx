@@ -54,7 +54,7 @@ export function FilterChip({
   };
 
   const handlePress = (): void => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.selectionAsync();
     onPress?.();
   };
 

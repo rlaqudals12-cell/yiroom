@@ -11,6 +11,7 @@ import {
   Wand2,
   PersonStanding,
 } from 'lucide-react-native';
+import { useCallback, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -26,10 +27,21 @@ export default function StyleTab(): React.JSX.Element {
   const { colors, spacing, radii, typography, brand, module: moduleColors, shadows, status } = useTheme();
 
   // 분석 데이터
-  const { bodyAnalysis, personalColor } = useUserAnalyses();
+  const { bodyAnalysis, personalColor, refetch: refetchAnalyses } = useUserAnalyses();
 
   // 옷장 데이터
-  const { items: closetItems } = useCloset();
+  const { items: closetItems, refetch: refetchCloset } = useCloset();
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchAnalyses(), refetchCloset()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchAnalyses, refetchCloset]);
 
   // 코디 매칭
   const { getOutfitSuggestion } = useClosetMatcher({
@@ -40,7 +52,7 @@ export default function StyleTab(): React.JSX.Element {
   const outfitSuggestion = getOutfitSuggestion();
 
   return (
-    <ScreenContainer testID="style-tab">
+    <ScreenContainer testID="style-tab" refreshing={refreshing} onRefresh={handleRefresh}>
         {/* 히어로 헤더 */}
         <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
           <GradientBackground

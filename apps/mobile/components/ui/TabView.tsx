@@ -80,7 +80,7 @@ export function TabView({
     (index: number) => {
       if (index === activeIndex) return;
 
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Haptics.selectionAsync();
       setActiveIndex(index);
       indicatorX.value = withSpring(index * tabWidth, SPRING_CONFIG);
       scrollRef.current?.scrollTo({ x: index * screenWidth, animated: true });
@@ -94,7 +94,7 @@ export function TabView({
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const newIndex = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
       if (newIndex !== activeIndex && newIndex >= 0 && newIndex < tabs.length) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        Haptics.selectionAsync();
         setActiveIndex(newIndex);
         indicatorX.value = withSpring(newIndex * tabWidth, SPRING_CONFIG);
         onTabChange?.(newIndex);

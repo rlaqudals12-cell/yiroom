@@ -2,6 +2,7 @@
  * 월간 리포트 상세 화면
  * 이번 달 운동/영양 데이터를 주차별로 시각화
  */
+import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, type TextStyle } from 'react-native';
 
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
@@ -11,12 +12,25 @@ import { useTheme } from '../../lib/theme';
 
 export default function MonthlyReportScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
-  const { report, isLoading, error } = useMonthlyReport();
+  const { report, isLoading, error, refetch } = useMonthlyReport();
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
 
   return (
     <ScreenContainer
       edges={['bottom']}
       testID="monthly-report-screen"
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
       <DataStateWrapper
         isLoading={isLoading}

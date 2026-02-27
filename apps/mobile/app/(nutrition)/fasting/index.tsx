@@ -205,11 +205,24 @@ export default function FastingTrackerScreen(): React.JSX.Element {
   const targetSeconds = selectedPattern.fastHours * 3600;
   const progress = fastingState === 'fasting' ? Math.min(elapsed / targetSeconds, 1) : 0;
 
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadData();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadData]);
+
   return (
     <ScreenContainer
       testID="fasting-tracker-screen"
       edges={['bottom']}
       contentPadding={spacing.md}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
       <DataStateWrapper
         isLoading={fastingState === 'loading'}

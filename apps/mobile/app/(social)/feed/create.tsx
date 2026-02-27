@@ -5,7 +5,7 @@
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/lib/theme';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import type { FeedItemType } from '../../../lib/feed';
@@ -50,6 +51,22 @@ export default function FeedCreateScreen(): React.JSX.Element {
   const [description, setDescription] = useState('');
   const [selectedType, setSelectedType] = useState<FeedItemType>('workout');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
+
+  const handleOpenCategorySheet = useCallback((): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsCategorySheetOpen(true);
+  }, []);
+
+  const handleCloseCategorySheet = useCallback((): void => {
+    setIsCategorySheetOpen(false);
+  }, []);
+
+  const handleCategorySelect = useCallback((type: FeedItemType): void => {
+    Haptics.selectionAsync();
+    setSelectedType(type);
+    setIsCategorySheetOpen(false);
+  }, []);
 
   const canSubmit = title.trim().length > 0 && !isSubmitting;
 
@@ -133,6 +150,16 @@ export default function FeedCreateScreen(): React.JSX.Element {
               })}
             </View>
           </View>
+
+          {/* 카테고리 바텀 시트에서도 선택 가능 */}
+          <Pressable
+            onPress={handleOpenCategorySheet}
+            testID="feed-category-expand"
+          >
+            <Text style={{ color: brand.primary, fontSize: typography.size.xs, marginTop: spacing.xs }}>
+              전체 카테고리 보기
+            </Text>
+          </Pressable>
 
           {/* 제목 */}
           <View>
@@ -226,6 +253,42 @@ export default function FeedCreateScreen(): React.JSX.Element {
             )}
           </Pressable>
         </View>
+        {/* 카테고리 바텀 시트 */}
+        <BottomSheet
+          isVisible={isCategorySheetOpen}
+          onClose={handleCloseCategorySheet}
+          snapPoints={['40%']}
+          title="카테고리 선택"
+          testID="feed-category-sheet"
+        >
+          {FEED_CATEGORIES.map((cat) => {
+            const isActive = selectedType === cat.type;
+            return (
+              <Pressable
+                key={cat.type}
+                style={[
+                  styles.sheetOption,
+                  {
+                    backgroundColor: isActive ? brand.primary : colors.muted,
+                    borderRadius: radii.lg,
+                  },
+                ]}
+                onPress={() => handleCategorySelect(cat.type)}
+                testID={`sheet-category-${cat.type}`}
+              >
+                <Text style={styles.sheetOptionEmoji}>{cat.emoji}</Text>
+                <Text
+                  style={[
+                    styles.sheetOptionLabel,
+                    { color: isActive ? brand.primaryForeground : colors.foreground },
+                  ]}
+                >
+                  {cat.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </BottomSheet>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -245,4 +308,14 @@ const styles = StyleSheet.create({
   footer: { padding: 16, borderTopWidth: StyleSheet.hairlineWidth },
   submitButton: { padding: 16, alignItems: 'center' },
   submitText: {},
+  sheetOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    gap: 10,
+  },
+  sheetOptionEmoji: { fontSize: 20 },
+  sheetOptionLabel: { fontSize: 15, fontWeight: '500' },
 });

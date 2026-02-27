@@ -2,6 +2,7 @@
  * 주간 리포트 상세 화면
  * 이번 주 운동/영양 데이터를 일별로 시각화
  */
+import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, type TextStyle } from 'react-native';
 
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
@@ -11,7 +12,18 @@ import { useTheme } from '../../lib/theme';
 
 export default function WeeklyReportScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography, status } = useTheme();
-  const { report, isLoading, error } = useWeeklyReport();
+  const { report, isLoading, error, refetch } = useWeeklyReport();
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
 
   const maxCal = report ? Math.max(
     ...report.dailyData.map((d) => d.workout.calories),
@@ -22,6 +34,8 @@ export default function WeeklyReportScreen(): React.JSX.Element {
     <ScreenContainer
       edges={['bottom']}
       testID="weekly-report-screen"
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
       <DataStateWrapper
         isLoading={isLoading}

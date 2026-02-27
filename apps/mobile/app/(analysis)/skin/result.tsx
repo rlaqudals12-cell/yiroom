@@ -156,6 +156,9 @@ export default function SkinResultScreen() {
 
       setDelta(computedDelta);
       setPreviousScore(prevScore);
+
+      // 분석 완료 성공 햅틱
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'skin-result',

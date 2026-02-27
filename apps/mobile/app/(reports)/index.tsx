@@ -4,7 +4,7 @@
  */
 import { useUser } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -59,15 +59,28 @@ export default function ReportsScreen(): React.JSX.Element {
     skinAnalysis,
     bodyAnalysis,
     isLoading: analysisLoading,
+    refetch: refetchAnalyses,
   } = useUserAnalyses();
-  const { analysis: workoutAnalysis, streak: workoutStreak, isLoading: workoutLoading } = useWorkoutData();
+  const { analysis: workoutAnalysis, streak: workoutStreak, isLoading: workoutLoading, refetch: refetchWorkout } = useWorkoutData();
   const {
     todaySummary,
     settings: nutritionSettings,
     isLoading: nutritionLoading,
+    refetch: refetchNutrition,
   } = useNutritionData();
 
   const isLoading = analysisLoading || workoutLoading || nutritionLoading;
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchAnalyses(), refetchWorkout(), refetchNutrition()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchAnalyses, refetchWorkout, refetchNutrition]);
 
   // 데이터 존재 여부
   const hasAnyAnalysis = !!(personalColor || skinAnalysis || bodyAnalysis);
@@ -101,6 +114,8 @@ export default function ReportsScreen(): React.JSX.Element {
       testID="reports-screen"
       edges={['bottom']}
       contentPadding={spacing.md + 4}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
         {/* 데이터 없을 때 안내 배너 */}
         {!isLoading && !hasAnyAnalysis && !hasWorkout && !hasNutrition && (

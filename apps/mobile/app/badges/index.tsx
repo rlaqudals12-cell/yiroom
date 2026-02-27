@@ -3,6 +3,7 @@
  * 분석 완료, 연속 기록 등 업적 표시
  */
 import { router } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
@@ -19,9 +20,20 @@ interface Badge {
 
 export default function BadgesScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
-  const { personalColor, skinAnalysis, bodyAnalysis } = useUserAnalyses();
-  const { streak: workoutStreak } = useWorkoutData();
-  const { streak: nutritionStreak } = useNutritionData();
+  const { personalColor, skinAnalysis, bodyAnalysis, refetch: refetchAnalyses } = useUserAnalyses();
+  const { streak: workoutStreak, refetch: refetchWorkout } = useWorkoutData();
+  const { streak: nutritionStreak, refetch: refetchNutrition } = useNutritionData();
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchAnalyses(), refetchWorkout(), refetchNutrition()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchAnalyses, refetchWorkout, refetchNutrition]);
 
   // 뱃지 목록 (실 데이터 기반 earned 상태)
   const badges: Badge[] = [
@@ -89,6 +101,8 @@ export default function BadgesScreen(): React.JSX.Element {
     <ScreenContainer
       testID="badges-screen"
       edges={['bottom']}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
         {/* 헤더 */}
         <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>

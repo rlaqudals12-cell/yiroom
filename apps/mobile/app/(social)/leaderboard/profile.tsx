@@ -209,12 +209,25 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
 
   const tierColor = getTierColor(profile.tier);
 
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchProfile();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchProfile]);
+
   return (
     <ScreenContainer
       testID="leaderboard-profile-screen"
       edges={['bottom']}
       contentPadding={0}
       contentContainerStyle={{ paddingBottom: spacing.xxl }}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
         {/* 프로필 히어로 */}
         <Animated.View

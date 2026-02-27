@@ -161,11 +161,24 @@ export default function WaterTrackingScreen() {
     return DRINK_TYPES.find((d) => d.id === drinkType)?.icon || '💧';
   };
 
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchTodayRecords();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchTodayRecords]);
+
   return (
     <ScreenContainer
       testID="nutrition-water-screen"
       edges={['bottom']}
       contentPadding={20}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
       <DataStateWrapper
         isLoading={isLoading}

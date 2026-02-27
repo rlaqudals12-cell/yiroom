@@ -63,7 +63,7 @@ export function BrandTabBar({
               });
 
               if (!isFocused && !event.defaultPrevented) {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                Haptics.selectionAsync();
                 navigation.navigate(route.name, route.params);
               }
             }}

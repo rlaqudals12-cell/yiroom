@@ -11,7 +11,7 @@ import {
   Droplets,
   TrendingUp,
 } from 'lucide-react-native';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
@@ -111,15 +111,28 @@ export default function RecordsTab(): React.JSX.Element {
     todayWorkout,
     weeklyLogs,
     isLoading: workoutLoading,
+    refetch: refetchWorkout,
   } = useWorkoutData();
   const {
     todaySummary,
     weeklyHistory,
     settings: nutritionSettings,
     isLoading: nutritionLoading,
+    refetch: refetchNutrition,
   } = useNutritionData();
 
   const isLoading = workoutLoading || nutritionLoading;
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchWorkout(), refetchNutrition()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchWorkout, refetchNutrition]);
 
   const workoutCount = workoutStreak?.currentStreak || 0;
   const mealCount = todaySummary?.mealCount || 0;
@@ -160,7 +173,7 @@ export default function RecordsTab(): React.JSX.Element {
   }), [nutritionSettings, calorieGoal]);
 
   return (
-    <ScreenContainer testID="records-tab" contentContainerStyle={{ paddingBottom: spacing.xl }}>
+    <ScreenContainer testID="records-tab" contentContainerStyle={{ paddingBottom: spacing.xl }} refreshing={refreshing} onRefresh={handleRefresh}>
         {/* 히어로 헤더 */}
         <Animated.View entering={FadeIn.duration(TIMING.normal)}>
           <GradientBackground

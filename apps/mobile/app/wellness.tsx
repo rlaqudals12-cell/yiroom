@@ -2,6 +2,7 @@
  * 웰니스 점수 상세 페이지
  * 종합 점수 + 영역별 분석 + 업적 + 개선 가이드
  */
+import { useCallback, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { TrendingUp, Target, Dumbbell, Apple, Sparkles } from 'lucide-react-native';
@@ -66,9 +67,20 @@ function getImprovementTips(
 
 export default function WellnessScorePage(): React.JSX.Element {
   const { colors, isDark } = useTheme();
-  const { personalColor, skinAnalysis, bodyAnalysis } = useUserAnalyses();
-  const { streak: workoutStreak } = useWorkoutData();
-  const { streak: nutritionStreak } = useNutritionData();
+  const { personalColor, skinAnalysis, bodyAnalysis, refetch: refetchAnalyses } = useUserAnalyses();
+  const { streak: workoutStreak, refetch: refetchWorkout } = useWorkoutData();
+  const { streak: nutritionStreak, refetch: refetchNutrition } = useNutritionData();
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchAnalyses(), refetchWorkout(), refetchNutrition()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchAnalyses, refetchWorkout, refetchNutrition]);
 
   const { score, breakdown, level, achievements } = useWellnessScore({
     personalColor,
@@ -90,6 +102,8 @@ export default function WellnessScorePage(): React.JSX.Element {
     <ScreenContainer
       testID="wellness-score-screen"
       edges={['bottom']}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
       {/* 메인 점수 */}
       <WellnessScoreRing score={score} breakdown={breakdown} />

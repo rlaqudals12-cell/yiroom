@@ -57,7 +57,7 @@ export function StarRating({
     onRatingChange(newRating);
 
     if (hapticEnabled) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Haptics.selectionAsync();
     }
   };
 

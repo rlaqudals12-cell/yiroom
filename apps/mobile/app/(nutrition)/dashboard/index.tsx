@@ -40,7 +40,7 @@ export default function NutritionDashboardScreen() {
   const { colors, status, brand } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
-  const { todaySummary, settings, isLoading: isNutritionLoading } = useNutritionData();
+  const { todaySummary, settings, isLoading: isNutritionLoading, refetch: refetchNutrition } = useNutritionData();
 
   const [meals, setMeals] = useState<MealRecord[]>([]);
   const [isMealsLoading, setIsMealsLoading] = useState(true);
@@ -93,6 +93,17 @@ export default function NutritionDashboardScreen() {
 
   const isLoading = isNutritionLoading || isMealsLoading;
 
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchNutrition(), fetchTodayMeals()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchNutrition, fetchTodayMeals]);
+
   const handleRecordMeal = () => {
     router.push('/(nutrition)/record');
   };
@@ -102,6 +113,8 @@ export default function NutritionDashboardScreen() {
       testID="nutrition-dashboard-screen"
       edges={['bottom']}
       contentPadding={20}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     >
       <DataStateWrapper
         isLoading={isLoading}
