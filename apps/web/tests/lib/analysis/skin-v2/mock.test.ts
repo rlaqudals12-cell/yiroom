@@ -5,7 +5,7 @@
  * @description generateMockZoneMetrics, generateMockZoneAnalysis, generateMockSkinAnalysisV2Result 테스트
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   generateMockZoneMetrics,
   generateMockZoneAnalysis,
@@ -14,8 +14,6 @@ import {
 import type {
   SkinZoneType,
   SkinTypeV2,
-  ZoneMetricsV2,
-  ZoneAnalysisV2,
   SkinAnalysisV2Result,
   ZoneGroup,
 } from '@/lib/analysis/skin-v2/types';
@@ -23,9 +21,14 @@ import { ZONE_GROUP_MAPPING, VITALITY_GRADE_THRESHOLDS } from '@/lib/analysis/sk
 
 describe('generateMockZoneMetrics', () => {
   const allZones: SkinZoneType[] = [
-    'forehead', 'nose', 'leftCheek', 'rightCheek', 'chin', 'eyeArea', 'lipArea'
+    'forehead',
+    'nose',
+    'leftCheek',
+    'rightCheek',
+    'chin',
+    'eyeArea',
+    'lipArea',
   ];
-  const allSkinTypes: SkinTypeV2[] = ['dry', 'oily', 'combination', 'normal', 'sensitive'];
 
   describe('기본 동작', () => {
     it('피부 타입 없이 호출해도 메트릭을 반환한다', () => {
@@ -73,9 +76,7 @@ describe('generateMockZoneMetrics', () => {
   describe('피부 타입별 특성', () => {
     it('건성 피부는 낮은 수분도와 유분도를 가진다', () => {
       // 여러 번 생성하여 평균 확인
-      const samples = Array.from({ length: 10 }, () =>
-        generateMockZoneMetrics('leftCheek', 'dry')
-      );
+      const samples = Array.from({ length: 10 }, () => generateMockZoneMetrics('leftCheek', 'dry'));
       const avgHydration = samples.reduce((sum, m) => sum + m.hydration, 0) / samples.length;
       const avgOiliness = samples.reduce((sum, m) => sum + m.oiliness, 0) / samples.length;
 
@@ -84,9 +85,7 @@ describe('generateMockZoneMetrics', () => {
     });
 
     it('지성 피부는 높은 유분도를 가진다', () => {
-      const samples = Array.from({ length: 10 }, () =>
-        generateMockZoneMetrics('forehead', 'oily')
-      );
+      const samples = Array.from({ length: 10 }, () => generateMockZoneMetrics('forehead', 'oily'));
       const avgOiliness = samples.reduce((sum, m) => sum + m.oiliness, 0) / samples.length;
 
       expect(avgOiliness).toBeGreaterThan(60);
@@ -111,8 +110,10 @@ describe('generateMockZoneMetrics', () => {
         generateMockZoneMetrics('leftCheek', 'normal')
       );
 
-      const avgForeheadOil = foreheadSamples.reduce((sum, m) => sum + m.oiliness, 0) / foreheadSamples.length;
-      const avgCheekOil = cheekSamples.reduce((sum, m) => sum + m.oiliness, 0) / cheekSamples.length;
+      const avgForeheadOil =
+        foreheadSamples.reduce((sum, m) => sum + m.oiliness, 0) / foreheadSamples.length;
+      const avgCheekOil =
+        cheekSamples.reduce((sum, m) => sum + m.oiliness, 0) / cheekSamples.length;
 
       // T존 유분 보너스가 적용됨
       expect(avgForeheadOil).toBeGreaterThan(avgCheekOil);
@@ -127,7 +128,8 @@ describe('generateMockZoneMetrics', () => {
       );
 
       const avgNoseOil = noseSamples.reduce((sum, m) => sum + m.oiliness, 0) / noseSamples.length;
-      const avgCheekOil = cheekSamples.reduce((sum, m) => sum + m.oiliness, 0) / cheekSamples.length;
+      const avgCheekOil =
+        cheekSamples.reduce((sum, m) => sum + m.oiliness, 0) / cheekSamples.length;
 
       expect(avgNoseOil).toBeGreaterThan(avgCheekOil);
     });
@@ -142,8 +144,10 @@ describe('generateMockZoneMetrics', () => {
         generateMockZoneMetrics('leftCheek', 'normal')
       );
 
-      const avgEyeSensitivity = eyeSamples.reduce((sum, m) => sum + m.sensitivity, 0) / eyeSamples.length;
-      const avgCheekSensitivity = cheekSamples.reduce((sum, m) => sum + m.sensitivity, 0) / cheekSamples.length;
+      const avgEyeSensitivity =
+        eyeSamples.reduce((sum, m) => sum + m.sensitivity, 0) / eyeSamples.length;
+      const avgCheekSensitivity =
+        cheekSamples.reduce((sum, m) => sum + m.sensitivity, 0) / cheekSamples.length;
 
       expect(avgEyeSensitivity).toBeGreaterThan(avgCheekSensitivity);
     });
@@ -501,7 +505,7 @@ describe('generateMockSkinAnalysisV2Result', () => {
 
     it('루틴 단계가 1부터 5까지이다', () => {
       const result = generateMockSkinAnalysisV2Result();
-      const steps = result.routineRecommendations?.map(r => r.step) || [];
+      const steps = result.routineRecommendations?.map((r) => r.step) || [];
 
       expect(steps).toEqual([1, 2, 3, 4, 5]);
     });
@@ -519,21 +523,21 @@ describe('generateMockSkinAnalysisV2Result', () => {
   describe('피부 타입별 루틴 차이', () => {
     it('지성 피부는 살리실산이 포함된 클렌저를 추천받는다', () => {
       const result = generateMockSkinAnalysisV2Result('oily');
-      const cleanser = result.routineRecommendations?.find(r => r.category === 'cleanser');
+      const cleanser = result.routineRecommendations?.find((r) => r.category === 'cleanser');
 
       expect(cleanser?.ingredients).toContain('살리실산');
     });
 
     it('건성 피부는 히알루론산 세럼을 추천받는다', () => {
       const result = generateMockSkinAnalysisV2Result('dry');
-      const serum = result.routineRecommendations?.find(r => r.category === 'serum');
+      const serum = result.routineRecommendations?.find((r) => r.category === 'serum');
 
       expect(serum?.ingredients).toContain('히알루론산');
     });
 
     it('민감성 피부는 SLS를 피해야 한다', () => {
       const result = generateMockSkinAnalysisV2Result('sensitive');
-      const cleanser = result.routineRecommendations?.find(r => r.category === 'cleanser');
+      const cleanser = result.routineRecommendations?.find((r) => r.category === 'cleanser');
 
       expect(cleanser?.avoidIngredients).toContain('SLS');
     });

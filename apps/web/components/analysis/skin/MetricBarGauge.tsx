@@ -67,15 +67,6 @@ function getTextColorClass(score: number): string {
 }
 
 /**
- * 백분위에 따른 라벨
- */
-function getPercentileLabel(percentile: number): string {
-  if (percentile >= 80) return '상위';
-  if (percentile >= 50) return '상위';
-  return '하위';
-}
-
-/**
  * 나이를 10년 단위 연령대로 변환
  * 예: 25 → 20, 33 → 30, 19 → 10
  */

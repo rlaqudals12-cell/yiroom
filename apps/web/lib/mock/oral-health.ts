@@ -140,7 +140,7 @@ export function generateMockGumHealthResult(options?: {
  */
 export function generateMockWhiteningGoalResult(
   season: PersonalColorSeason,
-  currentShade: VitaShade
+  _currentShade: VitaShade
 ): WhiteningGoalResult {
   const seasonTargets: Record<PersonalColorSeason, VitaShade> = {
     spring: 'A1',

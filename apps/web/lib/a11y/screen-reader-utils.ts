@@ -56,28 +56,6 @@ const REQUIRED_ARIA_BY_ROLE: Record<string, string[]> = {
 };
 
 /**
- * 허용된 ARIA 속성 (역할별)
- */
-const ALLOWED_ARIA_BY_ROLE: Record<string, string[]> = {
-  button: ['aria-pressed', 'aria-expanded', 'aria-haspopup', 'aria-disabled', 'aria-label', 'aria-describedby'],
-  checkbox: ['aria-checked', 'aria-disabled', 'aria-label', 'aria-describedby'],
-  dialog: ['aria-labelledby', 'aria-describedby', 'aria-modal'],
-  img: ['aria-label', 'aria-describedby', 'aria-hidden'],
-  link: ['aria-disabled', 'aria-label', 'aria-describedby'],
-  list: ['aria-label', 'aria-describedby'],
-  listbox: ['aria-label', 'aria-labelledby', 'aria-describedby', 'aria-multiselectable', 'aria-required'],
-  listitem: ['aria-selected', 'aria-checked'],
-  menu: ['aria-label', 'aria-labelledby', 'aria-orientation'],
-  menuitem: ['aria-disabled', 'aria-haspopup'],
-  option: ['aria-selected', 'aria-disabled'],
-  progressbar: ['aria-valuenow', 'aria-valuemin', 'aria-valuemax', 'aria-valuetext', 'aria-label'],
-  tab: ['aria-selected', 'aria-controls', 'aria-disabled'],
-  tablist: ['aria-label', 'aria-labelledby', 'aria-orientation'],
-  tabpanel: ['aria-labelledby', 'aria-label'],
-  textbox: ['aria-required', 'aria-invalid', 'aria-readonly', 'aria-disabled', 'aria-label', 'aria-describedby'],
-};
-
-/**
  * 요소의 접근 가능한 이름 계산
  * (simplified version of accessible name computation)
  */
@@ -95,7 +73,11 @@ export function getAccessibleName(element: HTMLElement): string {
   if (ariaLabel) return ariaLabel;
 
   // 3. Native label (for form elements)
-  if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+  if (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement
+  ) {
     const id = element.id;
     if (id) {
       const label = document.querySelector(`label[for="${id}"]`);
@@ -190,7 +172,16 @@ export function validateAriaAttributes(element: HTMLElement): AriaValidationResu
 
   // 1. 접근 가능한 이름 확인
   const accessibleName = getAccessibleName(element);
-  const interactiveRoles = ['button', 'link', 'checkbox', 'radio', 'textbox', 'combobox', 'listbox', 'slider'];
+  const interactiveRoles = [
+    'button',
+    'link',
+    'checkbox',
+    'radio',
+    'textbox',
+    'combobox',
+    'listbox',
+    'slider',
+  ];
 
   if (interactiveRoles.includes(role) && !accessibleName) {
     issues.push({
@@ -219,7 +210,8 @@ export function validateAriaAttributes(element: HTMLElement): AriaValidationResu
     const hasAlt = element.hasAttribute('alt');
     const altValue = element.alt;
     const hasAriaLabel = !!element.getAttribute('aria-label');
-    const isDecorative = element.getAttribute('aria-hidden') === 'true' || (hasAlt && altValue === '');
+    const isDecorative =
+      element.getAttribute('aria-hidden') === 'true' || (hasAlt && altValue === '');
 
     if (!isDecorative && !altValue && !hasAriaLabel) {
       issues.push({
@@ -373,120 +365,84 @@ export const SCREEN_READER_CHECKLIST: ScreenReaderTestItem[] = [
     id: 'sr-1',
     category: '페이지 구조',
     description: '페이지 랜드마크 탐색',
-    steps: [
-      'VoiceOver: VO + U (로터) → 랜드마크',
-      'NVDA: D 키로 랜드마크 이동',
-    ],
+    steps: ['VoiceOver: VO + U (로터) → 랜드마크', 'NVDA: D 키로 랜드마크 이동'],
     expectedResult: 'main, navigation, banner 등 랜드마크가 올바르게 인식됨',
   },
   {
     id: 'sr-2',
     category: '페이지 구조',
     description: '제목 계층 탐색',
-    steps: [
-      'VoiceOver: VO + U (로터) → 제목',
-      'NVDA: H 키로 제목 이동',
-    ],
+    steps: ['VoiceOver: VO + U (로터) → 제목', 'NVDA: H 키로 제목 이동'],
     expectedResult: 'h1~h6 순서대로 인식되며, 논리적 계층 구조',
   },
   {
     id: 'sr-3',
     category: '폼',
     description: '폼 컨트롤 레이블',
-    steps: [
-      '폼 입력 필드로 포커스 이동',
-      '스크린리더가 읽는 내용 확인',
-    ],
+    steps: ['폼 입력 필드로 포커스 이동', '스크린리더가 읽는 내용 확인'],
     expectedResult: '입력 필드의 목적이 명확하게 읽힘',
   },
   {
     id: 'sr-4',
     category: '폼',
     description: '폼 오류 메시지',
-    steps: [
-      '잘못된 입력 후 제출',
-      '오류 메시지 확인',
-    ],
+    steps: ['잘못된 입력 후 제출', '오류 메시지 확인'],
     expectedResult: '오류 메시지가 자동으로 읽히거나 쉽게 접근 가능',
   },
   {
     id: 'sr-5',
     category: '인터랙션',
     description: '버튼 접근성',
-    steps: [
-      'Tab 키로 버튼으로 이동',
-      '스크린리더가 읽는 내용 확인',
-    ],
+    steps: ['Tab 키로 버튼으로 이동', '스크린리더가 읽는 내용 확인'],
     expectedResult: '버튼 이름과 역할이 명확하게 읽힘',
   },
   {
     id: 'sr-6',
     category: '인터랙션',
     description: '링크 접근성',
-    steps: [
-      'VoiceOver: VO + U (로터) → 링크',
-      'NVDA: K 키로 링크 이동',
-    ],
+    steps: ['VoiceOver: VO + U (로터) → 링크', 'NVDA: K 키로 링크 이동'],
     expectedResult: '링크 텍스트가 목적지를 명확히 설명',
   },
   {
     id: 'sr-7',
     category: '동적 콘텐츠',
     description: '라이브 리전 알림',
-    steps: [
-      '동적 콘텐츠 업데이트 트리거',
-      '스크린리더 알림 확인',
-    ],
+    steps: ['동적 콘텐츠 업데이트 트리거', '스크린리더 알림 확인'],
     expectedResult: '중요한 업데이트가 자동으로 읽힘',
   },
   {
     id: 'sr-8',
     category: '동적 콘텐츠',
     description: '분석 결과 알림',
-    steps: [
-      '분석 시작 버튼 클릭',
-      '분석 완료 시 알림 확인',
-    ],
+    steps: ['분석 시작 버튼 클릭', '분석 완료 시 알림 확인'],
     expectedResult: '"분석 결과가 준비되었습니다" 등 완료 알림이 읽힘',
   },
   {
     id: 'sr-9',
     category: '모달',
     description: '모달 포커스 트랩',
-    steps: [
-      '모달 열기',
-      'Tab 키로 포커스 이동',
-    ],
+    steps: ['모달 열기', 'Tab 키로 포커스 이동'],
     expectedResult: '포커스가 모달 내에서만 순환',
   },
   {
     id: 'sr-10',
     category: '모달',
     description: '모달 닫기',
-    steps: [
-      '모달이 열린 상태에서 Escape 키',
-      '포커스 위치 확인',
-    ],
+    steps: ['모달이 열린 상태에서 Escape 키', '포커스 위치 확인'],
     expectedResult: '모달이 닫히고 포커스가 트리거 요소로 복귀',
   },
   {
     id: 'sr-11',
     category: '이미지',
     description: '이미지 대체 텍스트',
-    steps: [
-      '이미지로 포커스/탐색 이동',
-      '스크린리더가 읽는 내용 확인',
-    ],
+    steps: ['이미지로 포커스/탐색 이동', '스크린리더가 읽는 내용 확인'],
     expectedResult: '의미 있는 이미지는 설명이 읽히고, 장식용은 무시됨',
   },
   {
     id: 'sr-12',
     category: '분석 결과',
     description: 'AI 분석 결과 카드',
-    steps: [
-      '분석 결과 카드로 이동',
-      '전체 내용 탐색',
-    ],
+    steps: ['분석 결과 카드로 이동', '전체 내용 탐색'],
     expectedResult: '분석 유형, 신뢰도, 결과 내용이 논리적 순서로 읽힘',
   },
 ];

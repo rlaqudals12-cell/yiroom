@@ -6,24 +6,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  performZoneAnalysis,
-  FACE_ZONES,
-  calculateZoneBrightness,
-  analyzeZoneBrightness,
-  calculateUniformity,
-  calculateLeftRightAsymmetry,
-  calculateVerticalGradient,
-  uniformityToScore,
-} from '@/lib/image-engine/cie-4/zone-analyzer';
-import type { RGBImageData, NormalizedRect, LightingZoneAnalysis } from '@/lib/image-engine/types';
+import { performZoneAnalysis, uniformityToScore } from '@/lib/image-engine/cie-4/zone-analyzer';
+import type { RGBImageData, NormalizedRect } from '@/lib/image-engine/types';
 
 // 테스트용 이미지 데이터 생성 헬퍼
-function createTestImageData(
-  width: number,
-  height: number,
-  fillBrightness: number
-): RGBImageData {
+function createTestImageData(width: number, height: number, fillBrightness: number): RGBImageData {
   const data = new Uint8Array(width * height * 3);
 
   for (let i = 0; i < width * height; i++) {
@@ -151,12 +138,8 @@ describe('performZoneAnalysis 통합 테스트', () => {
       const imageData = createLeftBrightImage(100, 100);
       const result = performZoneAnalysis(imageData, fullFaceRegion);
 
-      const leftZones = result.zones.filter(
-        (z) => z.name.includes('left')
-      );
-      const rightZones = result.zones.filter(
-        (z) => z.name.includes('right')
-      );
+      const leftZones = result.zones.filter((z) => z.name.includes('left'));
+      const rightZones = result.zones.filter((z) => z.name.includes('right'));
 
       const leftAvg = leftZones.reduce((a, b) => a + b.brightness, 0) / leftZones.length;
       const rightAvg = rightZones.reduce((a, b) => a + b.brightness, 0) / rightZones.length;

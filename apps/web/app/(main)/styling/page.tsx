@@ -77,19 +77,19 @@ export default function StylingPage() {
   }, [isLoaded, user, supabase]);
 
   // 제품 클릭 핸들러 (어필리에이트 연동)
-  const handleProductClick = (combinationId: string) => {
+  const handleProductClick = (_combinationId: string) => {
     // 향후 어필리에이트 제품 페이지로 연결
     router.push('/products');
   };
 
   // 운동복 제품 클릭 핸들러
-  const handleWorkoutProductClick = (combinationId: string, partner: 'musinsa' | 'coupang') => {
+  const handleWorkoutProductClick = (_combinationId: string, _partner: 'musinsa' | 'coupang') => {
     // 향후 파트너별 제품 페이지로 연결
     router.push('/products?category=workout');
   };
 
   // 저장 핸들러
-  const handleSave = (combinationId: string) => {
+  const handleSave = (_combinationId: string) => {
     // 향후 저장 기능 구현
   };
 

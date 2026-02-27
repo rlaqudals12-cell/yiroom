@@ -4,14 +4,13 @@
  * K-1 성별 중립화: 성별 및 스타일 선호도 선택 컴포넌트
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import {
   GenderSelector,
   GENDER_OPTIONS,
   STYLE_OPTIONS,
 } from '@/components/onboarding/GenderSelector';
-import type { UserGenderProfile } from '@/lib/content/gender-adaptive';
 
 describe('GenderSelector', () => {
   describe('렌더링', () => {
@@ -30,9 +29,7 @@ describe('GenderSelector', () => {
     it('성별 선택 설명이 표시됨', () => {
       render(<GenderSelector />);
 
-      expect(
-        screen.getByText('맞춤 스타일링을 위해 성별을 선택해주세요')
-      ).toBeInTheDocument();
+      expect(screen.getByText('맞춤 스타일링을 위해 성별을 선택해주세요')).toBeInTheDocument();
     });
 
     it('3개의 성별 옵션이 표시됨', () => {
@@ -120,10 +117,7 @@ describe('GenderSelector', () => {
       fireEvent.click(femaleButton);
 
       expect(femaleButton).toHaveAttribute('aria-pressed', 'true');
-      expect(screen.getByTestId('gender-option-male')).toHaveAttribute(
-        'aria-pressed',
-        'false'
-      );
+      expect(screen.getByTestId('gender-option-male')).toHaveAttribute('aria-pressed', 'false');
     });
   });
 
@@ -139,9 +133,7 @@ describe('GenderSelector', () => {
 
       // 스타일 선호도 섹션이 표시됨
       expect(screen.getByText('스타일 선호도')).toBeInTheDocument();
-      expect(
-        screen.getByText('선호하는 스타일을 선택해주세요')
-      ).toBeInTheDocument();
+      expect(screen.getByText('선호하는 스타일을 선택해주세요')).toBeInTheDocument();
     });
 
     it('3개의 스타일 옵션이 표시됨', () => {
@@ -193,9 +185,7 @@ describe('GenderSelector', () => {
       fireEvent.click(screen.getByTestId('gender-option-female'));
       fireEvent.click(screen.getByTestId('style-option-feminine'));
 
-      expect(
-        screen.getByTestId('gender-selector-confirm')
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('gender-selector-confirm')).toBeInTheDocument();
       expect(screen.getByText('선택 완료')).toBeInTheDocument();
     });
 
@@ -218,17 +208,9 @@ describe('GenderSelector', () => {
 
   describe('초기값', () => {
     it('initialProfile로 초기 성별이 설정됨', () => {
-      render(
-        <GenderSelector
-          initialProfile={{ gender: 'male' }}
-          includeStylePreference
-        />
-      );
+      render(<GenderSelector initialProfile={{ gender: 'male' }} includeStylePreference />);
 
-      expect(screen.getByTestId('gender-option-male')).toHaveAttribute(
-        'aria-pressed',
-        'true'
-      );
+      expect(screen.getByTestId('gender-option-male')).toHaveAttribute('aria-pressed', 'true');
       // 스타일 선호도 섹션도 표시됨
       expect(screen.getByText('스타일 선호도')).toBeInTheDocument();
     });
@@ -241,10 +223,7 @@ describe('GenderSelector', () => {
         />
       );
 
-      expect(screen.getByTestId('style-option-unisex')).toHaveAttribute(
-        'aria-pressed',
-        'true'
-      );
+      expect(screen.getByTestId('style-option-unisex')).toHaveAttribute('aria-pressed', 'true');
     });
   });
 
@@ -259,11 +238,7 @@ describe('GenderSelector', () => {
 
     it('disabled=true일 때 스타일 버튼이 비활성화됨', () => {
       render(
-        <GenderSelector
-          disabled
-          initialProfile={{ gender: 'female' }}
-          includeStylePreference
-        />
+        <GenderSelector disabled initialProfile={{ gender: 'female' }} includeStylePreference />
       );
 
       expect(screen.getByTestId('style-option-feminine')).toBeDisabled();
@@ -297,14 +272,8 @@ describe('GenderSelector', () => {
     it('성별 버튼에 aria-label이 있음', () => {
       render(<GenderSelector />);
 
-      expect(screen.getByTestId('gender-option-female')).toHaveAttribute(
-        'aria-label',
-        '여성 선택'
-      );
-      expect(screen.getByTestId('gender-option-male')).toHaveAttribute(
-        'aria-label',
-        '남성 선택'
-      );
+      expect(screen.getByTestId('gender-option-female')).toHaveAttribute('aria-label', '여성 선택');
+      expect(screen.getByTestId('gender-option-male')).toHaveAttribute('aria-label', '남성 선택');
       expect(screen.getByTestId('gender-option-neutral')).toHaveAttribute(
         'aria-label',
         '선택 안함 선택'

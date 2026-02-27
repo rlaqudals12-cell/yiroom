@@ -32,12 +32,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Accordion,
   AccordionContent,
@@ -48,10 +43,7 @@ import { cn } from '@/lib/utils';
 
 import type { OutfitRecommendation, StyleCategory } from '@/lib/fashion';
 import { STYLE_CATEGORY_LABELS } from '@/lib/fashion';
-import type {
-  MatchScore,
-  ClosetRecommendation,
-} from '@/lib/inventory/closetMatcher';
+import type { MatchScore, ClosetRecommendation } from '@/lib/inventory/closetMatcher';
 import type { InventoryItem } from '@/types/inventory';
 
 // 옷장 아이템 타입 (InventoryItem 기반)
@@ -62,9 +54,9 @@ function getItemColor(item: InventoryItem): string {
   const metadata = item.metadata as Record<string, unknown>;
   if (metadata?.color) {
     if (Array.isArray(metadata.color)) {
-      return metadata.color[0] as string || '#e5e5e5';
+      return (metadata.color[0] as string) || '#e5e5e5';
     }
-    return metadata.color as string || '#e5e5e5';
+    return (metadata.color as string) || '#e5e5e5';
   }
   return '#e5e5e5';
 }
@@ -134,7 +126,7 @@ interface ClosetIntegrationProps {
  */
 export function ClosetIntegration({
   closetItems,
-  recommendation,
+  recommendation: _recommendation,
   styleCategory = 'casual',
   closetRecommendations = [],
   matchScore,
@@ -193,9 +185,7 @@ export function ClosetIntegration({
               )}
             </div>
             {styleCategory && (
-              <CardDescription>
-                {STYLE_CATEGORY_LABELS[styleCategory]} 스타일 기준
-              </CardDescription>
+              <CardDescription>{STYLE_CATEGORY_LABELS[styleCategory]} 스타일 기준</CardDescription>
             )}
           </CardHeader>
           <CardContent className="space-y-4">
@@ -204,16 +194,11 @@ export function ClosetIntegration({
               <div className="flex-1">
                 <div className="flex items-baseline justify-between mb-1">
                   <span className="text-sm font-medium">종합 매칭도</span>
-                  <span className={cn('text-2xl font-bold', scoreGrade.color)}>
-                    {totalScore}점
-                  </span>
+                  <span className={cn('text-2xl font-bold', scoreGrade.color)}>{totalScore}점</span>
                 </div>
                 <Progress value={totalScore} className="h-3" />
               </div>
-              <Badge
-                variant={totalScore >= 70 ? 'default' : 'secondary'}
-                className="shrink-0"
-              >
+              <Badge variant={totalScore >= 70 ? 'default' : 'secondary'} className="shrink-0">
                 {scoreGrade.label}
               </Badge>
             </div>
@@ -237,14 +222,9 @@ export function ClosetIntegration({
                               <span className="text-xs text-muted-foreground truncate">
                                 {category.label}
                               </span>
-                              <span className="text-sm font-medium ml-1">
-                                {score}
-                              </span>
+                              <span className="text-sm font-medium ml-1">{score}</span>
                             </div>
-                            <Progress
-                              value={score}
-                              className="h-1.5 mt-1"
-                            />
+                            <Progress value={score} className="h-1.5 mt-1" />
                           </div>
                         </div>
                       </TooltipTrigger>
@@ -273,16 +253,12 @@ export function ClosetIntegration({
             <CardTitle className="text-lg flex items-center gap-2">
               <Shirt className="h-5 w-5" />내 옷장에서 추천
             </CardTitle>
-            <CardDescription>
-              보유한 아이템 중 이 코디와 잘 어울리는 아이템
-            </CardDescription>
+            <CardDescription>보유한 아이템 중 이 코디와 잘 어울리는 아이템</CardDescription>
           </CardHeader>
           <CardContent>
             <Accordion type="single" collapsible className="w-full">
               {closetRecommendations.map((rec, index) => {
-                const isSelected = selectedItems.some(
-                  (i) => i.id === rec.item.id
-                );
+                const isSelected = selectedItems.some((i) => i.id === rec.item.id);
                 const itemScore = rec.score.total;
                 const itemGrade = getScoreGrade(itemScore);
 
@@ -298,16 +274,14 @@ export function ClosetIntegration({
                         <div
                           className="h-10 w-10 rounded-lg border shadow-sm shrink-0"
                           style={{
-                            backgroundColor: getItemColor(rec.item)
+                            backgroundColor: getItemColor(rec.item),
                           }}
                         />
 
                         {/* 아이템 정보 */}
                         <div className="flex-1 text-left">
                           <p className="font-medium text-sm">{rec.item.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {rec.item.category}
-                          </p>
+                          <p className="text-xs text-muted-foreground">{rec.item.category}</p>
                         </div>
 
                         {/* 점수 */}
@@ -319,9 +293,7 @@ export function ClosetIntegration({
                         </Badge>
 
                         {/* 선택 표시 */}
-                        {isSelected && (
-                          <Check className="h-4 w-4 text-green-500 shrink-0" />
-                        )}
+                        {isSelected && <Check className="h-4 w-4 text-green-500 shrink-0" />}
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
@@ -335,10 +307,7 @@ export function ClosetIntegration({
                             </p>
                             <ul className="space-y-1">
                               {rec.reasons.map((reason, i) => (
-                                <li
-                                  key={i}
-                                  className="text-sm flex items-start gap-2"
-                                >
+                                <li key={i} className="text-sm flex items-start gap-2">
                                   <Check className="h-3 w-3 text-green-500 mt-1 shrink-0" />
                                   {reason}
                                 </li>
@@ -351,27 +320,19 @@ export function ClosetIntegration({
                         <div className="grid grid-cols-4 gap-2 text-center">
                           <div className="p-2 rounded bg-muted/50">
                             <p className="text-xs text-muted-foreground">색상</p>
-                            <p className="text-sm font-medium">
-                              {rec.score.colorScore}
-                            </p>
+                            <p className="text-sm font-medium">{rec.score.colorScore}</p>
                           </div>
                           <div className="p-2 rounded bg-muted/50">
                             <p className="text-xs text-muted-foreground">체형</p>
-                            <p className="text-sm font-medium">
-                              {rec.score.bodyTypeScore}
-                            </p>
+                            <p className="text-sm font-medium">{rec.score.bodyTypeScore}</p>
                           </div>
                           <div className="p-2 rounded bg-muted/50">
                             <p className="text-xs text-muted-foreground">계절</p>
-                            <p className="text-sm font-medium">
-                              {rec.score.seasonScore}
-                            </p>
+                            <p className="text-sm font-medium">{rec.score.seasonScore}</p>
                           </div>
                           <div className="p-2 rounded bg-muted/50">
                             <p className="text-xs text-muted-foreground">스타일</p>
-                            <p className="text-sm font-medium">
-                              {rec.score.styleScore}
-                            </p>
+                            <p className="text-sm font-medium">{rec.score.styleScore}</p>
                           </div>
                         </div>
 
@@ -408,7 +369,7 @@ export function ClosetIntegration({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-2">
-                  {selectedItems.slice(0, 4).map((item, idx) => (
+                  {selectedItems.slice(0, 4).map((item, _idx) => (
                     <div
                       key={item.id}
                       className="h-8 w-8 rounded-full border-2 border-background shadow-sm"
@@ -460,11 +421,7 @@ interface MatchScoreCardProps {
   className?: string;
 }
 
-export function MatchScoreCard({
-  score,
-  title = '매칭 점수',
-  className,
-}: MatchScoreCardProps) {
+export function MatchScoreCard({ score, title = '매칭 점수', className }: MatchScoreCardProps) {
   const totalScore = score.total;
   const grade = getScoreGrade(totalScore);
 
@@ -475,14 +432,7 @@ export function MatchScoreCard({
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-4 mb-4">
-          <div
-            className={cn(
-              'text-4xl font-bold',
-              grade.color
-            )}
-          >
-            {totalScore}
-          </div>
+          <div className={cn('text-4xl font-bold', grade.color)}>{totalScore}</div>
           <div className="flex-1">
             <Progress value={totalScore} className="h-2" />
             <p className="text-xs text-muted-foreground mt-1">{grade.label}</p>
@@ -495,10 +445,7 @@ export function MatchScoreCard({
             const categoryScore = score[category.key] ?? 0;
 
             return (
-              <div
-                key={category.key}
-                className="flex items-center gap-2 text-sm"
-              >
+              <div key={category.key} className="flex items-center gap-2 text-sm">
                 <Icon className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">{category.label}</span>
                 <span className="font-medium ml-auto">{categoryScore}</span>
@@ -511,9 +458,7 @@ export function MatchScoreCard({
           <div className="flex items-center gap-2 text-sm mt-3 pt-3 border-t">
             <TrendingUp className="h-4 w-4 text-primary" />
             <span className="text-muted-foreground">트렌드 보너스</span>
-            <span className="font-medium text-primary ml-auto">
-              +{score.trendBonus}
-            </span>
+            <span className="font-medium text-primary ml-auto">+{score.trendBonus}</span>
           </div>
         )}
       </CardContent>

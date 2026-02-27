@@ -91,7 +91,7 @@ export async function analyzeToothColor(
  */
 async function extractToothLabFromImage(
   imageBase64: string,
-  roi?: { x: number; y: number; width: number; height: number }
+  _roi?: { x: number; y: number; width: number; height: number }
 ): Promise<LabColor> {
   // Gemini 브릿지를 통한 Lab 추출 시도
   const geminiResult = await extractToothLabWithGemini(imageBase64);

@@ -14,15 +14,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
-import {
-  Grid3X3,
-  List,
-  Filter,
-  Sparkles,
-  Calendar,
-  Briefcase,
-  SortAsc,
-} from 'lucide-react';
+import { Grid3X3, List, Filter, Sparkles, Calendar, Briefcase, SortAsc } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -99,7 +91,7 @@ interface StyleGalleryProps {
  * 스타일 갤러리 컴포넌트
  */
 export function StyleGallery({
-  userPersonalColor,
+  userPersonalColor: _userPersonalColor,
   initialCategory = 'casual',
   onOutfitSelect,
   className,

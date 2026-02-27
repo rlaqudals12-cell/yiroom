@@ -5,7 +5,7 @@
  * @description 프롬프트 생성 및 JSON 파싱 유틸리티 테스트
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   PERSONAL_COLOR_SYSTEM_PROMPT,
   generateAnalysisPrompt,
@@ -120,7 +120,7 @@ describe('generateAnalysisPrompt', () => {
 
     it('기본값은 true이다', () => {
       const defaultPrompt = generateAnalysisPrompt();
-      const explicitPrompt = generateAnalysisPrompt({ includeDetailedAnalysis: true });
+      generateAnalysisPrompt({ includeDetailedAnalysis: true });
 
       expect(defaultPrompt).toContain('detailedAnalysis');
     });
@@ -275,10 +275,18 @@ describe('generateMakeupRecommendationPrompt', () => {
 
   describe('모든 톤에 대해 동작', () => {
     const allTones: TwelveTone[] = [
-      'light-spring', 'true-spring', 'bright-spring',
-      'light-summer', 'true-summer', 'muted-summer',
-      'muted-autumn', 'true-autumn', 'deep-autumn',
-      'deep-winter', 'true-winter', 'bright-winter',
+      'light-spring',
+      'true-spring',
+      'bright-spring',
+      'light-summer',
+      'true-summer',
+      'muted-summer',
+      'muted-autumn',
+      'true-autumn',
+      'deep-autumn',
+      'deep-winter',
+      'true-winter',
+      'bright-winter',
     ];
 
     it('모든 12톤에 대해 프롬프트를 생성한다', () => {
@@ -442,10 +450,18 @@ describe('extractJsonFromResponse', () => {
 describe('validateToneValue', () => {
   describe('유효한 톤 검증', () => {
     const validTones: TwelveTone[] = [
-      'light-spring', 'true-spring', 'bright-spring',
-      'light-summer', 'true-summer', 'muted-summer',
-      'muted-autumn', 'true-autumn', 'deep-autumn',
-      'deep-winter', 'true-winter', 'bright-winter',
+      'light-spring',
+      'true-spring',
+      'bright-spring',
+      'light-summer',
+      'true-summer',
+      'muted-summer',
+      'muted-autumn',
+      'true-autumn',
+      'deep-autumn',
+      'deep-winter',
+      'true-winter',
+      'bright-winter',
     ];
 
     it('모든 유효한 톤에 대해 해당 톤을 반환한다', () => {

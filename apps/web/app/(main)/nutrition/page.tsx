@@ -672,7 +672,7 @@ export default function NutritionPage() {
   );
 
   // 기록 클릭 핸들러 (상세 보기)
-  const handleRecordClick = useCallback((record: MealRecord) => {
+  const handleRecordClick = useCallback((_record: MealRecord) => {
     // 향후 기록 상세/수정 페이지로 이동
     // router.push(`/nutrition/record/${record.id}`);
   }, []);

@@ -37,12 +37,15 @@ const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
 // 타임아웃 설정
 const AI_TIMEOUT_MS = 3000;
-const MAX_RETRIES = 2;
+const _MAX_RETRIES = 2;
 
 /**
  * S-1 분석 결과 조회
  */
-async function fetchSkinAnalysis(userId: string, analysisId?: string): Promise<{
+async function fetchSkinAnalysis(
+  userId: string,
+  analysisId?: string
+): Promise<{
   skinType: string;
   hydration: number;
   oilLevel: number;
@@ -190,7 +193,10 @@ async function* streamGeminiResponse(prompt: string): AsyncGenerator<string, voi
 /**
  * Mock 응답 생성 (폴백)
  */
-function generateMockStreamResponse(message: string, skinType?: string): {
+function generateMockStreamResponse(
+  message: string,
+  skinType?: string
+): {
   content: string;
   products: ProductRecommendation[];
 } {
@@ -247,7 +253,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     const stream = new ReadableStream({
       async start(controller) {
         let usedFallback = false;
-        let accumulatedContent = '';
+        let _accumulatedContent = '';
 
         try {
           // Gemini 스트리밍 시도
@@ -260,7 +266,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 
           const streamPromise = (async () => {
             for await (const chunk of streamGeminiResponse(prompt)) {
-              accumulatedContent += chunk;
+              _accumulatedContent += chunk;
               const data = JSON.stringify({ type: 'chunk', content: chunk });
               controller.enqueue(encoder.encode(`data: ${data}\n\n`));
             }
@@ -273,7 +279,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 
           // Mock 폴백
           const mockResponse = generateMockStreamResponse(message, skinAnalysis?.skinType);
-          accumulatedContent = mockResponse.content;
+          _accumulatedContent = mockResponse.content;
 
           // Mock 응답을 청크로 전송 (실시간 효과)
           const words = mockResponse.content.split(' ');

@@ -31,14 +31,6 @@ const ZONE_LABELS: Record<SkinZoneType, string> = {
   lipArea: '입술 주변',
 };
 
-// 존 그룹 라벨
-const GROUP_LABELS = {
-  tZone: 'T존',
-  uZone: 'U존',
-  eyeZone: '아이존',
-  lipZone: '립존',
-};
-
 // 바이탈리티 등급 색상
 const GRADE_COLORS: Record<string, string> = {
   S: 'bg-emerald-500',

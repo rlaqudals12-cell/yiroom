@@ -12,14 +12,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Upstash Redis 동적 import 타입 (any로 처리하여 패키지 미설치 시에도 컴파일 가능)
- 
+
 let RedisRateLimit: any = null;
- 
+
 let Redis: any = null;
 
 // Upstash 사용 가능 여부 체크
-const UPSTASH_ENABLED =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+const UPSTASH_ENABLED = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
 
 // 동적 import 시도 (빌드 타임에 실패해도 무시)
 if (UPSTASH_ENABLED) {
@@ -51,9 +50,9 @@ const rateLimitStore = new Map<string, RateLimitEntry>();
 const dailyLimitStore = new Map<string, DailyLimitEntry>();
 
 // Upstash Redis 인스턴스 (지연 초기화)
- 
+
 let redisClient: any = null;
- 
+
 let dailyRateLimiter: any = null;
 
 function getRedisClient() {
@@ -112,9 +111,6 @@ export interface RateLimitConfig {
   dailyMaxRequests?: number;
 }
 
-// 24시간 (밀리초)
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 // 기본 설정 (분당 100회, 일일 제한 없음)
 const defaultConfig: RateLimitConfig = {
   windowMs: 60 * 1000, // 1분 (60초)
@@ -153,12 +149,9 @@ export const rateLimitConfigs: Record<string, RateLimitConfig> = {
  */
 function getNextMidnightUTC(): number {
   const now = new Date();
-  const tomorrow = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() + 1,
-    0, 0, 0, 0
-  ));
+  const tomorrow = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0)
+  );
   return tomorrow.getTime();
 }
 
@@ -234,7 +227,13 @@ async function checkDailyLimitRedis(
 export function checkRateLimit(
   identifier: string,
   endpoint: string
-): { success: boolean; remaining: number; resetTime: number; dailyRemaining?: number; dailyResetTime?: number } {
+): {
+  success: boolean;
+  remaining: number;
+  resetTime: number;
+  dailyRemaining?: number;
+  dailyResetTime?: number;
+} {
   const config = getConfigForEndpoint(endpoint);
   const key = `${identifier}:${getEndpointKey(endpoint)}`;
   const now = Date.now();
@@ -266,11 +265,7 @@ export function checkRateLimit(
   }
 
   // 일일 제한 체크 (인메모리 - 동기)
-  const dailyResult = checkDailyLimitInMemory(
-    identifier,
-    endpoint,
-    config.dailyMaxRequests
-  );
+  const dailyResult = checkDailyLimitInMemory(identifier, endpoint, config.dailyMaxRequests);
 
   return {
     success: minuteSuccess && dailyResult.success,
@@ -288,7 +283,13 @@ export function checkRateLimit(
 export async function checkRateLimitAsync(
   identifier: string,
   endpoint: string
-): Promise<{ success: boolean; remaining: number; resetTime: number; dailyRemaining?: number; dailyResetTime?: number }> {
+): Promise<{
+  success: boolean;
+  remaining: number;
+  resetTime: number;
+  dailyRemaining?: number;
+  dailyResetTime?: number;
+}> {
   const config = getConfigForEndpoint(endpoint);
   const key = `${identifier}:${getEndpointKey(endpoint)}`;
   const now = Date.now();
@@ -322,11 +323,7 @@ export async function checkRateLimitAsync(
   let dailyResult = await checkDailyLimitRedis(identifier);
   if (!dailyResult) {
     // Redis 실패 또는 미설정 - 인메모리 폴백
-    dailyResult = checkDailyLimitInMemory(
-      identifier,
-      endpoint,
-      config.dailyMaxRequests
-    );
+    dailyResult = checkDailyLimitInMemory(identifier, endpoint, config.dailyMaxRequests);
   }
 
   return {
@@ -425,8 +422,10 @@ export function applyRateLimit(
 
   // 커스텀 설정이 있으면 해당 엔드포인트 설정 덮어쓰기
   const config = customConfig || getConfigForEndpoint(endpoint);
-  const { success, remaining, resetTime, dailyRemaining, dailyResetTime } =
-    checkRateLimit(identifier, endpoint);
+  const { success, remaining, resetTime, dailyRemaining, dailyResetTime } = checkRateLimit(
+    identifier,
+    endpoint
+  );
 
   const headers = getRateLimitHeaders(
     remaining,
@@ -440,9 +439,10 @@ export function applyRateLimit(
   if (!success) {
     // 일일 한도 초과인지 분당 한도 초과인지 구분
     const isDailyExceeded = dailyRemaining !== undefined && dailyRemaining <= 0;
-    const retryAfter = isDailyExceeded && dailyResetTime
-      ? Math.ceil((dailyResetTime - Date.now()) / 1000)
-      : Math.ceil((resetTime - Date.now()) / 1000);
+    const retryAfter =
+      isDailyExceeded && dailyResetTime
+        ? Math.ceil((dailyResetTime - Date.now()) / 1000)
+        : Math.ceil((resetTime - Date.now()) / 1000);
 
     const errorMessage = isDailyExceeded
       ? '일일 요청 한도를 초과했습니다. 내일 다시 시도해주세요.'
@@ -511,9 +511,10 @@ export async function applyRateLimitAsync(
 
   if (!success) {
     const isDailyExceeded = dailyRemaining !== undefined && dailyRemaining <= 0;
-    const retryAfter = isDailyExceeded && dailyResetTime
-      ? Math.ceil((dailyResetTime - Date.now()) / 1000)
-      : Math.ceil((resetTime - Date.now()) / 1000);
+    const retryAfter =
+      isDailyExceeded && dailyResetTime
+        ? Math.ceil((dailyResetTime - Date.now()) / 1000)
+        : Math.ceil((resetTime - Date.now()) / 1000);
 
     const errorMessage = isDailyExceeded
       ? '일일 요청 한도를 초과했습니다. 내일 다시 시도해주세요.'

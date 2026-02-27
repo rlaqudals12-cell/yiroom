@@ -69,10 +69,7 @@ function initializeCentroidsKMeansPlusPlus(pixels: RGBColor[], k: number): RGBCo
 /**
  * 픽셀을 가장 가까운 클러스터에 할당
  */
-function assignPixelsToClusters(
-  pixels: RGBColor[],
-  centroids: RGBColor[]
-): number[] {
+function assignPixelsToClusters(pixels: RGBColor[], centroids: RGBColor[]): number[] {
   return pixels.map((pixel) => {
     let minDist = Infinity;
     let closestCluster = 0;
@@ -92,11 +89,7 @@ function assignPixelsToClusters(
 /**
  * 클러스터 중심점 업데이트
  */
-function updateCentroids(
-  pixels: RGBColor[],
-  assignments: number[],
-  k: number
-): RGBColor[] {
+function updateCentroids(pixels: RGBColor[], assignments: number[], k: number): RGBColor[] {
   const sums: { r: number; g: number; b: number; count: number }[] = Array(k)
     .fill(null)
     .map(() => ({ r: 0, g: 0, b: 0, count: 0 }));
@@ -146,10 +139,7 @@ function hasConverged(
  * @param options - K-means 옵션
  * @returns 색상 클러스터 배열
  */
-export function kMeansClustering(
-  pixels: RGBColor[],
-  options: KMeansOptions = {}
-): ColorCluster[] {
+export function kMeansClustering(pixels: RGBColor[], options: KMeansOptions = {}): ColorCluster[] {
   const { k, iterations, convergenceThreshold } = {
     ...DEFAULT_KMEANS_OPTIONS,
     ...options,
@@ -161,7 +151,7 @@ export function kMeansClustering(
 
   if (pixels.length <= k) {
     // 픽셀 수가 k 이하면 각 픽셀이 하나의 클러스터
-    return pixels.map((pixel, index) => ({
+    return pixels.map((pixel, _index) => ({
       centroid: { ...pixel },
       count: 1,
       percentage: 100 / pixels.length,

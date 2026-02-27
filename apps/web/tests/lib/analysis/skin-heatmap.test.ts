@@ -472,7 +472,6 @@ describe('히스토그램 분포', () => {
   });
 
   it('should handle edge value 1.0', () => {
-    const bins = 10;
     const value = 1.0;
     const bin = Math.min(9, Math.floor(value * 10));
 
@@ -480,7 +479,6 @@ describe('히스토그램 분포', () => {
   });
 
   it('should handle edge value 0.0', () => {
-    const bins = 10;
     const value = 0.0;
     const bin = Math.min(9, Math.floor(value * 10));
 
@@ -590,7 +588,10 @@ describe('analyzePigments', () => {
     const height = 10;
     // 피부톤 범위 내 색상 (hue 0-50, sat 10-70%, light 20-85%)
     const imageData = createMockImageData(width, height, () => [
-      210, 180, 140, 255, // 밝은 피부톤
+      210,
+      180,
+      140,
+      255, // 밝은 피부톤
     ]);
     const faceMask = new Uint8Array(width * height).fill(255);
 
@@ -605,9 +606,7 @@ describe('analyzePigments', () => {
   it('should skip pixels outside face mask', () => {
     const width = 10;
     const height = 10;
-    const imageData = createMockImageData(width, height, () => [
-      210, 180, 140, 255,
-    ]);
+    const imageData = createMockImageData(width, height, () => [210, 180, 140, 255]);
     // 마스크 절반만 활성화
     const faceMask = new Uint8Array(width * height);
     for (let i = 0; i < 50; i++) {
@@ -625,9 +624,7 @@ describe('analyzePigments', () => {
     const width = 10;
     const height = 10;
     // 파란색 (피부톤 범위 밖)
-    const imageData = createMockImageData(width, height, () => [
-      0, 0, 255, 255,
-    ]);
+    const imageData = createMockImageData(width, height, () => [0, 0, 255, 255]);
     const faceMask = new Uint8Array(width * height).fill(255);
 
     const result = analyzePigments(imageData, faceMask);
@@ -683,9 +680,7 @@ describe('analyzePigments', () => {
   it('should handle empty face mask', () => {
     const width = 5;
     const height = 5;
-    const imageData = createMockImageData(width, height, () => [
-      210, 180, 140, 255,
-    ]);
+    const imageData = createMockImageData(width, height, () => [210, 180, 140, 255]);
     const faceMask = new Uint8Array(width * height).fill(0);
 
     const result = analyzePigments(imageData, faceMask);
@@ -797,14 +792,7 @@ describe('analyzeRegion', () => {
     const faceMask = new Uint8Array(width * height).fill(255);
     const landmarks = createMockLandmarks(width, height);
 
-    const result = analyzeRegion(
-      pigmentMaps,
-      faceMask,
-      landmarks,
-      'forehead',
-      width,
-      height
-    );
+    const result = analyzeRegion(pigmentMaps, faceMask, landmarks, 'forehead', width, height);
 
     expect(result.melanin).toBeGreaterThanOrEqual(0);
     expect(result.melanin).toBeLessThanOrEqual(1);
@@ -831,14 +819,7 @@ describe('analyzeRegion', () => {
     ];
 
     regions.forEach((region) => {
-      const result = analyzeRegion(
-        pigmentMaps,
-        faceMask,
-        landmarks,
-        region,
-        width,
-        height
-      );
+      const result = analyzeRegion(pigmentMaps, faceMask, landmarks, region, width, height);
 
       expect(typeof result.melanin).toBe('number');
       expect(typeof result.hemoglobin).toBe('number');
@@ -856,14 +837,7 @@ describe('analyzeRegion', () => {
     const faceMask = new Uint8Array(width * height).fill(0);
     const landmarks = createMockLandmarks(width, height);
 
-    const result = analyzeRegion(
-      pigmentMaps,
-      faceMask,
-      landmarks,
-      'nose',
-      width,
-      height
-    );
+    const result = analyzeRegion(pigmentMaps, faceMask, landmarks, 'nose', width, height);
 
     expect(result.melanin).toBe(0);
     expect(result.hemoglobin).toBe(0);

@@ -187,9 +187,9 @@ function getUserMessage(result: CIE1Output): string {
  * 품질 검증 결과 로깅 (개발용)
  */
 export function logQualityResult(
-  module: string,
-  result: CIE1Output,
-  imageSize?: { width: number; height: number }
+  _module: string,
+  _result: CIE1Output,
+  _imageSize?: { width: number; height: number }
 ): void {
   // 함수 시그니처 유지, 프로덕션 로깅 제거됨
 }

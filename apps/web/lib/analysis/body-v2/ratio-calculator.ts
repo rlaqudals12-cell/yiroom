@@ -245,7 +245,7 @@ export function calculateBodyRatios(poseResult: PoseDetectionResult): BodyRatios
 export function convertToCentimeters(
   ratios: BodyRatios,
   heightCm: number,
-  imageHeight = 1.0
+  _imageHeight = 1.0
 ): BodyRatios {
   // 이미지에서 전신 비율 추정 (머리부터 발목까지)
   const totalBodyHeight = ratios.upperBodyLength + ratios.lowerBodyLength;

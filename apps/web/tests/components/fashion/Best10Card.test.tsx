@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Best10Card, Best10List } from '@/components/fashion/Best10Card';
-import type { OutfitRecommendation, StyleCategory } from '@/lib/fashion';
+import type { OutfitRecommendation } from '@/lib/fashion';
 
 // 테스트용 코디 추천 생성 헬퍼
 function createMockRecommendation(
@@ -117,9 +117,7 @@ describe('Best10Card', () => {
   it('트렌드 아이템이 있으면 트렌드 배지를 표시해야 한다', () => {
     // isTrendItem2026 함수가 인식하는 2026 트렌드 아이템 사용
     const recommendation = createMockRecommendation({
-      items: [
-        { name: '그래픽 티', category: 'top', color: '#000000' },
-      ],
+      items: [{ name: '그래픽 티', category: 'top', color: '#000000' }],
     });
 
     render(<Best10Card recommendation={recommendation} rank={1} />);
@@ -144,13 +142,7 @@ describe('Best10Card', () => {
     const onItemClick = vi.fn();
     const recommendation = createMockRecommendation();
 
-    render(
-      <Best10Card
-        recommendation={recommendation}
-        rank={1}
-        onItemClick={onItemClick}
-      />
-    );
+    render(<Best10Card recommendation={recommendation} rank={1} onItemClick={onItemClick} />);
 
     const card = screen.getByTestId('best10-card-1');
     await user.click(card);
@@ -240,13 +232,7 @@ describe('Best10Card', () => {
   it('className prop이 적용되어야 한다', () => {
     const recommendation = createMockRecommendation();
 
-    render(
-      <Best10Card
-        recommendation={recommendation}
-        rank={1}
-        className="custom-class"
-      />
-    );
+    render(<Best10Card recommendation={recommendation} rank={1} className="custom-class" />);
 
     expect(screen.getByTestId('best10-card-1')).toHaveClass('custom-class');
   });
@@ -255,13 +241,7 @@ describe('Best10Card', () => {
     const user = userEvent.setup();
     const recommendation = createMockRecommendation();
 
-    render(
-      <Best10Card
-        recommendation={recommendation}
-        rank={1}
-        styleCategory="casual"
-      />
-    );
+    render(<Best10Card recommendation={recommendation} rank={1} styleCategory="casual" />);
 
     await user.click(screen.getByTestId('best10-card-1'));
 
@@ -298,20 +278,13 @@ describe('Best10List', () => {
   });
 
   it('커스텀 제목을 사용할 수 있어야 한다', () => {
-    render(
-      <Best10List recommendations={mockRecommendations} title="인기 코디 TOP 10" />
-    );
+    render(<Best10List recommendations={mockRecommendations} title="인기 코디 TOP 10" />);
 
     expect(screen.getByText('인기 코디 TOP 10')).toBeInTheDocument();
   });
 
   it('스타일 카테고리에 따른 제목을 표시해야 한다', () => {
-    render(
-      <Best10List
-        recommendations={mockRecommendations}
-        styleCategory="formal"
-      />
-    );
+    render(<Best10List recommendations={mockRecommendations} styleCategory="formal" />);
 
     expect(screen.getByText(/포멀 Best 10/)).toBeInTheDocument();
   });
@@ -333,12 +306,7 @@ describe('Best10List', () => {
     const user = userEvent.setup();
     const onItemClick = vi.fn();
 
-    render(
-      <Best10List
-        recommendations={mockRecommendations}
-        onItemClick={onItemClick}
-      />
-    );
+    render(<Best10List recommendations={mockRecommendations} onItemClick={onItemClick} />);
 
     await user.click(screen.getByTestId('best10-card-1'));
 
@@ -346,12 +314,7 @@ describe('Best10List', () => {
   });
 
   it('className prop이 적용되어야 한다', () => {
-    render(
-      <Best10List
-        recommendations={mockRecommendations}
-        className="custom-list-class"
-      />
-    );
+    render(<Best10List recommendations={mockRecommendations} className="custom-list-class" />);
 
     expect(screen.getByTestId('best10-list')).toHaveClass('custom-list-class');
   });

@@ -96,14 +96,6 @@ function getScoreColor(score: number): string {
   return 'rgb(239, 68, 68)'; // red
 }
 
-/** 점수 기반 테두리 색상 */
-function getScoreBorderColor(score: number): string {
-  if (score >= 80) return 'border-green-500';
-  if (score >= 60) return 'border-blue-500';
-  if (score >= 40) return 'border-yellow-500';
-  return 'border-red-500';
-}
-
 export interface MetricScore {
   type: SkinMetricType;
   score: number;

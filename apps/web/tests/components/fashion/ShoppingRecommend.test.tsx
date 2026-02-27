@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   ShoppingRecommend,
@@ -16,9 +16,7 @@ Object.defineProperty(window, 'open', {
 });
 
 // 테스트용 쇼핑 아이템 생성 헬퍼
-function createMockShoppingItem(
-  overrides: Partial<ShoppingItem> = {}
-): ShoppingItem {
+function createMockShoppingItem(overrides: Partial<ShoppingItem> = {}): ShoppingItem {
   return {
     id: `product-${Math.random().toString(36).slice(2)}`,
     name: '테스트 상품',
@@ -67,17 +65,9 @@ describe('ShoppingRecommend', () => {
     });
 
     it('스타일 카테고리를 표시해야 한다', () => {
-      const missingItems: OutfitItem[] = [
-        { name: '테스트', category: 'top', color: '#FFF' },
-      ];
+      const missingItems: OutfitItem[] = [{ name: '테스트', category: 'top', color: '#FFF' }];
 
-      render(
-        <ShoppingRecommend
-          items={[]}
-          missingItems={missingItems}
-          styleCategory="formal"
-        />
-      );
+      render(<ShoppingRecommend items={[]} missingItems={missingItems} styleCategory="formal" />);
 
       expect(screen.getByText(/포멀 스타일 코디를 완성/)).toBeInTheDocument();
     });
@@ -98,10 +88,7 @@ describe('ShoppingRecommend', () => {
     });
 
     it('상품 개수 배지를 표시해야 한다', () => {
-      const items = [
-        createMockShoppingItem({ id: '1' }),
-        createMockShoppingItem({ id: '2' }),
-      ];
+      const items = [createMockShoppingItem({ id: '1' }), createMockShoppingItem({ id: '2' })];
 
       render(<ShoppingRecommend items={items} />);
 
@@ -172,9 +159,7 @@ describe('ShoppingRecommend', () => {
 
       render(<ShoppingRecommend items={items} />);
 
-      expect(
-        screen.getByText('퍼스널 컬러에 잘 어울리는 색상이에요')
-      ).toBeInTheDocument();
+      expect(screen.getByText('퍼스널 컬러에 잘 어울리는 색상이에요')).toBeInTheDocument();
     });
   });
 
@@ -256,9 +241,7 @@ describe('ShoppingRecommend', () => {
       const onAddToWishlist = vi.fn();
       const item = createMockShoppingItem();
 
-      render(
-        <ShoppingRecommend items={[item]} onAddToWishlist={onAddToWishlist} />
-      );
+      render(<ShoppingRecommend items={[item]} onAddToWishlist={onAddToWishlist} />);
 
       // testid로 하트 버튼 찾기
       const heartButton = screen
@@ -359,9 +342,7 @@ describe('ShoppingRecommend', () => {
 
       // 필터 버튼 중 하나에 활성 필터 개수가 표시됨
       const updatedFilterButtons = screen.getAllByRole('button', { name: /필터/ });
-      const hasFilterCount = updatedFilterButtons.some(
-        (btn) => btn.textContent?.includes('1')
-      );
+      const hasFilterCount = updatedFilterButtons.some((btn) => btn.textContent?.includes('1'));
       expect(hasFilterCount).toBe(true);
     });
   });
@@ -420,9 +401,7 @@ describe('ShoppingRecommend', () => {
       await user.click(filterButtons[0]);
       await user.click(screen.getByText('트렌드 상품만'));
 
-      expect(
-        screen.getByRole('button', { name: '필터 초기화' })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '필터 초기화' })).toBeInTheDocument();
     });
   });
 
@@ -527,8 +506,6 @@ describe('ShoppingItemCard', () => {
 
     render(<ShoppingItemCard item={item} className="custom-card-class" />);
 
-    expect(screen.getByTestId('shopping-item-card')).toHaveClass(
-      'custom-card-class'
-    );
+    expect(screen.getByTestId('shopping-item-card')).toHaveClass('custom-card-class');
   });
 });

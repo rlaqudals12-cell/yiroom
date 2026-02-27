@@ -39,13 +39,9 @@ import {
   generateRandomCIE4Mock,
   generateConditionedCIE4Mock,
 } from '@/lib/image-engine/cie-4';
-import type { RGBImageData, BoundingBox } from '@/lib/image-engine/types';
+import type { RGBImageData } from '@/lib/image-engine/types';
 
-function createTestRGBImageData(
-  width: number,
-  height: number,
-  fillValue = 128
-): RGBImageData {
+function createTestRGBImageData(width: number, height: number, fillValue = 128): RGBImageData {
   const data = new Uint8Array(width * height * 3);
   data.fill(fillValue);
   return { data, width, height, channels: 3 };

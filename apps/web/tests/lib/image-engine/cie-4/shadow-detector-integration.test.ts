@@ -8,21 +8,13 @@
 import { describe, it, expect } from 'vitest';
 import {
   performShadowAnalysis,
-  detectShadowDirection,
-  calculateShadowIntensity,
-  calculateDarkAreaRatio,
-  calculateOverexposedRatio,
   shadowToScore,
   SHADOW_THRESHOLDS,
 } from '@/lib/image-engine/cie-4/shadow-detector';
 import type { RGBImageData, NormalizedRect, ShadowAnalysis } from '@/lib/image-engine/types';
 
 // 테스트용 이미지 데이터 생성 헬퍼
-function createTestImageData(
-  width: number,
-  height: number,
-  fillBrightness: number
-): RGBImageData {
+function createTestImageData(width: number, height: number, fillBrightness: number): RGBImageData {
   const data = new Uint8Array(width * height * 3);
 
   for (let i = 0; i < width * height; i++) {

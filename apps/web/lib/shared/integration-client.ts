@@ -127,10 +127,7 @@ async function cacheIntegration<T>(
 /**
  * 캐시 삭제
  */
-export async function invalidateCache(
-  sourceModule: SourceModule,
-  userId: string
-): Promise<void> {
+export async function invalidateCache(sourceModule: SourceModule, userId: string): Promise<void> {
   const cacheKey = getCacheKey(sourceModule, userId);
   memoryCache.delete(cacheKey);
 }
@@ -155,8 +152,8 @@ export async function invalidateUserCache(userId: string): Promise<void> {
  * 실제 구현에서는 Supabase 클라이언트 사용
  */
 async function getLatestAnalysis<T>(
-  sourceModule: SourceModule,
-  userId: string
+  _sourceModule: SourceModule,
+  _userId: string
 ): Promise<{ data: T; metadata: IntegrationMetadata } | null> {
   // 실제 구현:
   // const { data, error } = await supabase
@@ -196,7 +193,7 @@ export function getTableName(module: SourceModule | TargetModule | string): stri
     'W-1': 'workout_plans',
     'W-2': 'stretching_plans',
     'N-1': 'nutrition_assessments',
-    'Report': 'reports',
+    Report: 'reports',
   };
   return tables[module as AllModules] ?? module.toLowerCase().replace('-', '_');
 }
@@ -208,13 +205,8 @@ export function getTableName(module: SourceModule | TargetModule | string): stri
 /**
  * 연동 기본값 반환
  */
-export function getDefaultIntegrationData<T>(
-  sourceModule: SourceModule,
-  targetModule?: string
-): T {
-  const key = targetModule
-    ? `${sourceModule}→${targetModule}`
-    : sourceModule;
+export function getDefaultIntegrationData<T>(sourceModule: SourceModule, targetModule?: string): T {
+  const key = targetModule ? `${sourceModule}→${targetModule}` : sourceModule;
 
   // integration-types.ts의 DEFAULT_INTEGRATION_DATA 사용
   const defaultData = DEFAULT_INTEGRATION_DATA[key as keyof typeof DEFAULT_INTEGRATION_DATA];
@@ -335,10 +327,7 @@ export async function fetchIntegrationData<T>(
     // 2. DB에서 최신 결과 조회 (타임아웃 적용)
     const fetchPromise = getLatestAnalysis<T>(sourceModule, userId);
     const timeoutPromise = new Promise<null>((_, reject) => {
-      setTimeout(
-        () => reject(new IntegrationTimeoutError(sourceModule, timeout)),
-        timeout
-      );
+      setTimeout(() => reject(new IntegrationTimeoutError(sourceModule, timeout)), timeout);
     });
 
     const latest = await Promise.race([fetchPromise, timeoutPromise]);
@@ -367,8 +356,7 @@ export async function fetchIntegrationData<T>(
     throw new IntegrationDataNotFoundError(sourceModule, userId);
   } catch (error) {
     // 에러 처리
-    if (error instanceof IntegrationDataNotFoundError ||
-        error instanceof IntegrationTimeoutError) {
+    if (error instanceof IntegrationDataNotFoundError || error instanceof IntegrationTimeoutError) {
       if (fallbackToDefault) {
         const defaultData = getDefaultIntegrationData<T>(sourceModule);
         return handleIntegrationError(error, defaultData);

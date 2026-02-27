@@ -15,20 +15,12 @@ import {
   MAKEUP_CONCERNS,
   UNDERTONE_LABELS,
   EYE_SHAPE_LABELS,
-  LIP_SHAPE_LABELS,
   FACE_SHAPE_LABELS,
-  MAKEUP_STYLE_LABELS,
-  MAKEUP_CONCERN_LABELS,
   MAKEUP_CATEGORY_LABELS,
 } from '@/lib/analysis/makeup';
 import type {
   UndertoneType,
   EyeShapeType,
-  LipShapeType,
-  FaceShapeType,
-  MakeupStyleType,
-  MakeupConcernType,
-  MakeupCategoryType,
   ColorRecommendation,
   MakeupTip,
 } from '@/lib/analysis/makeup';
@@ -67,7 +59,12 @@ describe('generateMockMakeupAnalysisResult', () => {
   it('유효한 눈 모양 타입을 반환해야 한다', () => {
     const result = generateMockMakeupAnalysisResult();
     const validEyeShapes: EyeShapeType[] = [
-      'monolid', 'double', 'hooded', 'round', 'almond', 'downturned',
+      'monolid',
+      'double',
+      'hooded',
+      'round',
+      'almond',
+      'downturned',
     ];
     expect(validEyeShapes).toContain(result.eyeShape);
   });

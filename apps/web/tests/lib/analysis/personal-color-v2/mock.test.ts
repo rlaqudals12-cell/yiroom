@@ -5,7 +5,7 @@
  * @description TONE_PALETTES 상수, generateMockClassification, generateMockResult 등 테스트
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   TONE_PALETTES,
   generateMockClassification,
@@ -13,8 +13,11 @@ import {
   getTonePalette,
   getToneLabel,
 } from '@/lib/analysis/personal-color-v2/mock';
-import type { TwelveTone, TonePalette } from '@/lib/analysis/personal-color-v2/types';
-import { TWELVE_TONE_LABELS, TWELVE_TONE_REFERENCE_LAB } from '@/lib/analysis/personal-color-v2/types';
+import type { TwelveTone } from '@/lib/analysis/personal-color-v2/types';
+import {
+  TWELVE_TONE_LABELS,
+  TWELVE_TONE_REFERENCE_LAB,
+} from '@/lib/analysis/personal-color-v2/types';
 
 describe('TONE_PALETTES 상수', () => {
   const allTones: TwelveTone[] = [
@@ -156,10 +159,18 @@ describe('generateMockClassification', () => {
 
     it('tone이 12톤 중 하나이다', () => {
       const validTones: TwelveTone[] = [
-        'light-spring', 'true-spring', 'bright-spring',
-        'light-summer', 'true-summer', 'muted-summer',
-        'muted-autumn', 'true-autumn', 'deep-autumn',
-        'deep-winter', 'true-winter', 'bright-winter',
+        'light-spring',
+        'true-spring',
+        'bright-spring',
+        'light-summer',
+        'true-summer',
+        'muted-summer',
+        'muted-autumn',
+        'true-autumn',
+        'deep-autumn',
+        'deep-winter',
+        'true-winter',
+        'bright-winter',
       ];
 
       const result = generateMockClassification();
@@ -241,10 +252,18 @@ describe('generateMockClassification', () => {
     it('12톤 모두에 대한 점수가 포함된다', () => {
       const result = generateMockClassification();
       const allTones: TwelveTone[] = [
-        'light-spring', 'true-spring', 'bright-spring',
-        'light-summer', 'true-summer', 'muted-summer',
-        'muted-autumn', 'true-autumn', 'deep-autumn',
-        'deep-winter', 'true-winter', 'bright-winter',
+        'light-spring',
+        'true-spring',
+        'bright-spring',
+        'light-summer',
+        'true-summer',
+        'muted-summer',
+        'muted-autumn',
+        'true-autumn',
+        'deep-autumn',
+        'deep-winter',
+        'true-winter',
+        'bright-winter',
       ];
 
       for (const tone of allTones) {
@@ -385,14 +404,14 @@ describe('generateMockResult', () => {
       // deep/bright subtype → high contrast
       const deepResult = generateMockResult({
         preferredTone: 'deep-autumn',
-        includeDetailedAnalysis: true
+        includeDetailedAnalysis: true,
       });
       expect(deepResult.detailedAnalysis?.contrastLevel).toBe('high');
 
       // light/muted subtype → low contrast
       const lightResult = generateMockResult({
         preferredTone: 'light-spring',
-        includeDetailedAnalysis: true
+        includeDetailedAnalysis: true,
       });
       expect(lightResult.detailedAnalysis?.contrastLevel).toBe('low');
     });
@@ -400,13 +419,13 @@ describe('generateMockResult', () => {
     it('detailedAnalysis의 saturationLevel이 subtype과 연관된다', () => {
       const brightResult = generateMockResult({
         preferredTone: 'bright-spring',
-        includeDetailedAnalysis: true
+        includeDetailedAnalysis: true,
       });
       expect(brightResult.detailedAnalysis?.saturationLevel).toBe('bright');
 
       const mutedResult = generateMockResult({
         preferredTone: 'muted-summer',
-        includeDetailedAnalysis: true
+        includeDetailedAnalysis: true,
       });
       expect(mutedResult.detailedAnalysis?.saturationLevel).toBe('muted');
     });
@@ -414,13 +433,13 @@ describe('generateMockResult', () => {
     it('detailedAnalysis의 valueLevel이 subtype과 연관된다', () => {
       const lightResult = generateMockResult({
         preferredTone: 'light-summer',
-        includeDetailedAnalysis: true
+        includeDetailedAnalysis: true,
       });
       expect(lightResult.detailedAnalysis?.valueLevel).toBe('light');
 
       const deepResult = generateMockResult({
         preferredTone: 'deep-winter',
-        includeDetailedAnalysis: true
+        includeDetailedAnalysis: true,
       });
       expect(deepResult.detailedAnalysis?.valueLevel).toBe('deep');
     });
@@ -445,10 +464,18 @@ describe('getTonePalette', () => {
 
   it('모든 12톤에 대해 팔레트를 반환한다', () => {
     const allTones: TwelveTone[] = [
-      'light-spring', 'true-spring', 'bright-spring',
-      'light-summer', 'true-summer', 'muted-summer',
-      'muted-autumn', 'true-autumn', 'deep-autumn',
-      'deep-winter', 'true-winter', 'bright-winter',
+      'light-spring',
+      'true-spring',
+      'bright-spring',
+      'light-summer',
+      'true-summer',
+      'muted-summer',
+      'muted-autumn',
+      'true-autumn',
+      'deep-autumn',
+      'deep-winter',
+      'true-winter',
+      'bright-winter',
     ];
 
     for (const tone of allTones) {
@@ -467,10 +494,18 @@ describe('getToneLabel', () => {
 
   it('모든 12톤에 대해 라벨을 반환한다', () => {
     const allTones: TwelveTone[] = [
-      'light-spring', 'true-spring', 'bright-spring',
-      'light-summer', 'true-summer', 'muted-summer',
-      'muted-autumn', 'true-autumn', 'deep-autumn',
-      'deep-winter', 'true-winter', 'bright-winter',
+      'light-spring',
+      'true-spring',
+      'bright-spring',
+      'light-summer',
+      'true-summer',
+      'muted-summer',
+      'muted-autumn',
+      'true-autumn',
+      'deep-autumn',
+      'deep-winter',
+      'true-winter',
+      'bright-winter',
     ];
 
     for (const tone of allTones) {

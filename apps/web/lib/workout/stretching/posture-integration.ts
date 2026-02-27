@@ -13,11 +13,7 @@
  * 4. 맞춤 스트레칭 처방 생성
  */
 
-import type {
-  PostureAnalysis,
-  PostureIssue,
-  BodyAnalysisV2Result,
-} from '@/lib/analysis/body-v2';
+import type { PostureAnalysis, PostureIssue, BodyAnalysisV2Result } from '@/lib/analysis/body-v2';
 
 import type {
   PostureImbalanceType,
@@ -32,9 +28,7 @@ import type {
   Difficulty,
 } from '@/types/stretching';
 
-import {
-  generatePostureCorrectionPrescription,
-} from './routine-generator';
+import { generatePostureCorrectionPrescription } from './routine-generator';
 
 // ============================================
 // 타입 매핑 상수
@@ -50,10 +44,10 @@ import {
 export const POSTURE_ISSUE_TO_IMBALANCE_MAP: Record<PostureIssue['type'], PostureImbalanceType> = {
   'forward-head': 'forward_head',
   'rounded-shoulders': 'rounded_shoulder',
-  lordosis: 'pelvic_tilt_ant',  // 요추전만 = 골반 전방경사
-  kyphosis: 'upper_cross',       // 흉추후만 = 상부교차증후군 구성요소
-  'shoulder-imbalance': 'rounded_shoulder',  // 일반 어깨 불균형 → 라운드숄더로 처리
-  'hip-imbalance': 'pelvic_tilt_ant',        // 일반 골반 불균형 → 전방경사로 처리
+  lordosis: 'pelvic_tilt_ant', // 요추전만 = 골반 전방경사
+  kyphosis: 'upper_cross', // 흉추후만 = 상부교차증후군 구성요소
+  'shoulder-imbalance': 'rounded_shoulder', // 일반 어깨 불균형 → 라운드숄더로 처리
+  'hip-imbalance': 'pelvic_tilt_ant', // 일반 골반 불균형 → 전방경사로 처리
 };
 
 /**
@@ -89,7 +83,7 @@ export function mapPostureIssueToImbalance(issue: PostureIssue): PostureImbalanc
   return {
     type: POSTURE_ISSUE_TO_IMBALANCE_MAP[issue.type],
     severity: mapSeverity(issue.severity),
-    affectedAngles: [issue.type],  // 원본 타입 보존
+    affectedAngles: [issue.type], // 원본 타입 보존
     description: issue.description,
   };
 }
@@ -99,22 +93,20 @@ export function mapPostureIssueToImbalance(issue: PostureIssue): PostureImbalanc
  *
  * 여러 자세 문제가 동시 발견되면 교차증후군으로 업그레이드
  */
-export function detectCompoundSyndromes(
-  issues: PostureIssue[]
-): PostureImbalanceType | null {
-  const issueTypes = issues.map(i => i.type);
+export function detectCompoundSyndromes(issues: PostureIssue[]): PostureImbalanceType | null {
+  const issueTypes = issues.map((i) => i.type);
 
   // 상부교차증후군 체크 (2개 이상 일치)
-  const upperCrossMatches = COMPOUND_SYNDROME_RULES.upper_cross.filter(
-    t => issueTypes.includes(t as PostureIssue['type'])
+  const upperCrossMatches = COMPOUND_SYNDROME_RULES.upper_cross.filter((t) =>
+    issueTypes.includes(t as PostureIssue['type'])
   );
   if (upperCrossMatches.length >= 2) {
     return 'upper_cross';
   }
 
   // 하부교차증후군 체크 (2개 이상 일치)
-  const lowerCrossMatches = COMPOUND_SYNDROME_RULES.lower_cross.filter(
-    t => issueTypes.includes(t as PostureIssue['type'])
+  const lowerCrossMatches = COMPOUND_SYNDROME_RULES.lower_cross.filter((t) =>
+    issueTypes.includes(t as PostureIssue['type'])
   );
   if (lowerCrossMatches.length >= 2) {
     return 'lower_cross';
@@ -140,14 +132,15 @@ export function convertToStretchingPostureAnalysis(
 
   // 복합 증후군이 있으면 추가
   if (compoundSyndrome) {
-    const maxSeverity = Math.max(...issues.map(i => i.severity));
+    const maxSeverity = Math.max(...issues.map((i) => i.severity));
     imbalances.unshift({
       type: compoundSyndrome,
       severity: mapSeverity(maxSeverity),
-      affectedAngles: issues.map(i => i.type),
-      description: compoundSyndrome === 'upper_cross'
-        ? '상부교차증후군: 거북목과 라운드숄더가 복합적으로 나타남'
-        : '하부교차증후군: 골반 전방경사와 요추전만이 복합적으로 나타남',
+      affectedAngles: issues.map((i) => i.type),
+      description:
+        compoundSyndrome === 'upper_cross'
+          ? '상부교차증후군: 거북목과 라운드숄더가 복합적으로 나타남'
+          : '하부교차증후군: 골반 전방경사와 요추전만이 복합적으로 나타남',
     });
   }
 
@@ -158,8 +151,8 @@ export function convertToStretchingPostureAnalysis(
   const angles: PostureAnalysisResult['angles'] = {
     cva,
     shoulderTilt,
-    thoracicKyphosis: issues.some(i => i.type === 'kyphosis') ? 50 : 30,
-    lumbarLordosis: issues.some(i => i.type === 'lordosis') ? 70 : 50,
+    thoracicKyphosis: issues.some((i) => i.type === 'kyphosis') ? 50 : 30,
+    lumbarLordosis: issues.some((i) => i.type === 'lordosis') ? 70 : 50,
     pelvicTilt: hipTilt,
   };
 
@@ -168,10 +161,14 @@ export function convertToStretchingPostureAnalysis(
   const weakMuscles = extractWeakMuscles(issues);
 
   // 카테고리 결정
-  const category = spineAlignment >= 80 ? 'excellent'
-    : spineAlignment >= 60 ? 'good'
-    : spineAlignment >= 40 ? 'moderate'
-    : 'poor';
+  const category =
+    spineAlignment >= 80
+      ? 'excellent'
+      : spineAlignment >= 60
+        ? 'good'
+        : spineAlignment >= 40
+          ? 'moderate'
+          : 'poor';
 
   return {
     assessmentId,
@@ -251,34 +248,6 @@ function extractWeakMuscles(issues: PostureIssue[]): MuscleGroup[] {
   return Array.from(muscles);
 }
 
-/**
- * 자세 문제에서 추천 사항 생성 (내부 사용)
- */
-function generateRecommendationsFromIssues(issues: PostureIssue[]): string[] {
-  const recommendations: string[] = [];
-
-  // 일반 권장사항
-  recommendations.push('매일 10-15분 스트레칭 습관화');
-
-  // 문제별 권장사항
-  if (issues.some(i => i.type === 'forward-head' || i.type === 'rounded-shoulders')) {
-    recommendations.push('장시간 컴퓨터 사용 시 30분마다 목/어깨 스트레칭');
-    recommendations.push('모니터 높이를 눈높이에 맞추기');
-  }
-
-  if (issues.some(i => i.type === 'lordosis' || i.type === 'hip-imbalance')) {
-    recommendations.push('코어 근력 강화 운동 병행');
-    recommendations.push('장시간 앉아있지 않기, 1시간마다 기립');
-  }
-
-  if (issues.some(i => i.type === 'kyphosis')) {
-    recommendations.push('흉추 가동성 운동 추가');
-    recommendations.push('폼롤러 흉추 신전 운동');
-  }
-
-  return recommendations;
-}
-
 // ============================================
 // 사용자 프로필 생성
 // ============================================
@@ -310,7 +279,7 @@ export function createStretchingProfileFromBodyAnalysis(
   // 자세 문제가 있으면 contraindications에 추가 권장사항 포함
   if (postureAnalysis) {
     // 심각한 문제가 있으면 주의사항 추가
-    const severeIssues = postureAnalysis.issues.filter(i => i.severity >= 4);
+    const severeIssues = postureAnalysis.issues.filter((i) => i.severity >= 4);
     for (const issue of severeIssues) {
       contraindications.push(`${issue.description} - 주의 필요`);
     }
@@ -325,9 +294,9 @@ export function createStretchingProfileFromBodyAnalysis(
     age: userInfo.age,
     gender: userInfo.gender,
     fitnessLevel: userInfo.fitnessLevel || 'beginner',
-    stretchingExperience: 'none',  // 기본값
+    stretchingExperience: 'none', // 기본값
     primarySports: userInfo.primarySports || [],
-    sportsFrequency: 'weekly',     // 기본값
+    sportsFrequency: 'weekly', // 기본값
     contraindications,
     specialConditions: userInfo.specialConditions || [],
     availableEquipment,
@@ -404,7 +373,7 @@ export function calculateStretchingNeed(postureAnalysis: PostureAnalysis): numbe
 
   // 문제 개수와 심각도에 따라 가중
   const severitySum = issues.reduce((sum, i) => sum + i.severity, 0);
-  const issueWeight = Math.min(severitySum * 5, 30);  // 최대 30점 추가
+  const issueWeight = Math.min(severitySum * 5, 30); // 최대 30점 추가
 
   need = Math.min(need + issueWeight, 100);
 
@@ -414,9 +383,7 @@ export function calculateStretchingNeed(postureAnalysis: PostureAnalysis): numbe
 /**
  * 주요 타겟 근육군 추출
  */
-export function getTargetMusclesFromPosture(
-  postureAnalysis: PostureAnalysis
-): string[] {
+export function getTargetMusclesFromPosture(postureAnalysis: PostureAnalysis): string[] {
   const muscles = new Set<string>();
 
   for (const issue of postureAnalysis.issues) {
@@ -460,9 +427,7 @@ export function getTargetMusclesFromPosture(
  *
  * @returns 우선 처리해야 할 자세 문제 목록 (심각도 순)
  */
-export function prioritizePostureIssues(
-  issues: PostureIssue[]
-): PostureIssue[] {
+export function prioritizePostureIssues(issues: PostureIssue[]): PostureIssue[] {
   return [...issues].sort((a, b) => {
     // 1. 심각도 높은 순
     if (b.severity !== a.severity) {
@@ -470,10 +435,10 @@ export function prioritizePostureIssues(
     }
     // 2. 통증 유발 가능성 높은 문제 우선
     const painPriority: Record<PostureIssue['type'], number> = {
-      'forward-head': 5,      // 두통, 목 통증
-      lordosis: 4,            // 허리 통증
+      'forward-head': 5, // 두통, 목 통증
+      lordosis: 4, // 허리 통증
       'rounded-shoulders': 3, // 어깨 통증
-      kyphosis: 3,            // 등 통증
+      kyphosis: 3, // 등 통증
       'hip-imbalance': 2,
       'shoulder-imbalance': 1,
     };
@@ -485,8 +450,4 @@ export function prioritizePostureIssues(
 // 타입 익스포트
 // ============================================
 
-export type {
-  PostureAnalysis,
-  PostureIssue,
-  BodyAnalysisV2Result,
-} from '@/lib/analysis/body-v2';
+export type { PostureAnalysis, PostureIssue, BodyAnalysisV2Result } from '@/lib/analysis/body-v2';

@@ -158,7 +158,7 @@ function calculateHealthyWeightRange(heightCm: number): { min: number; max: numb
 function calculateWeightDifference(
   heightCm: number,
   weightKg: number,
-  category: BMICategory
+  _category: BMICategory
 ): number {
   const heightM = heightCm / 100;
   const heightSquared = heightM * heightM;

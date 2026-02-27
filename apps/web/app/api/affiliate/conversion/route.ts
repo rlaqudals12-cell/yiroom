@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
 /**
  * 전환 이벤트 로깅 (클릭 ID 없는 경우)
  */
-async function logConversionEvent(body: ConversionWebhookBody): Promise<void> {
+async function logConversionEvent(_body: ConversionWebhookBody): Promise<void> {
   // 향후 DB 로깅 시 사용 예정
   // const supabase = createServiceRoleClient();
   // 향후 affiliate_conversion_logs 테이블 추가 가능

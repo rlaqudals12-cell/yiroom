@@ -14,7 +14,7 @@ import {
   generateMockBodyAnalysisResult,
   mockGenerators,
 } from '@/lib/analysis/body-v2/mock';
-import type { BodyShapeType, Landmark33 } from '@/lib/analysis/body-v2';
+import type { BodyShapeType } from '@/lib/analysis/body-v2';
 
 // =============================================================================
 // generateMockLandmarks 테스트
@@ -92,10 +92,7 @@ describe('generateMockLandmarks', () => {
     const shoulderWidth2 = Math.abs(landmarks2[11].x - landmarks2[12].x);
 
     // 완전히 같을 확률은 매우 낮음
-    expect(
-      shoulderWidth1 !== shoulderWidth2 ||
-        landmarks1[23].x !== landmarks2[23].x
-    ).toBe(true);
+    expect(shoulderWidth1 !== shoulderWidth2 || landmarks1[23].x !== landmarks2[23].x).toBe(true);
   });
 });
 
@@ -137,8 +134,7 @@ describe('generateMockPoseResult', () => {
     const result = generateMockPoseResult();
 
     const calculatedAvg =
-      result.landmarks.reduce((sum, lm) => sum + lm.visibility, 0) /
-      result.landmarks.length;
+      result.landmarks.reduce((sum, lm) => sum + lm.visibility, 0) / result.landmarks.length;
 
     expect(result.overallVisibility).toBeCloseTo(calculatedAvg, 5);
   });
@@ -251,16 +247,10 @@ describe('generateMockBodyRatios', () => {
     const ratios = generateMockBodyRatios();
 
     // shoulderToWaistRatio = shoulderWidth / waistWidth
-    expect(ratios.shoulderToWaistRatio).toBeCloseTo(
-      ratios.shoulderWidth / ratios.waistWidth,
-      5
-    );
+    expect(ratios.shoulderToWaistRatio).toBeCloseTo(ratios.shoulderWidth / ratios.waistWidth, 5);
 
     // waistToHipRatio = waistWidth / hipWidth
-    expect(ratios.waistToHipRatio).toBeCloseTo(
-      ratios.waistWidth / ratios.hipWidth,
-      5
-    );
+    expect(ratios.waistToHipRatio).toBeCloseTo(ratios.waistWidth / ratios.hipWidth, 5);
 
     // upperToLowerRatio = upperBodyLength / lowerBodyLength
     expect(ratios.upperToLowerRatio).toBeCloseTo(
@@ -269,10 +259,7 @@ describe('generateMockBodyRatios', () => {
     );
 
     // armToTorsoRatio = armLength / upperBodyLength
-    expect(ratios.armToTorsoRatio).toBeCloseTo(
-      ratios.armLength / ratios.upperBodyLength,
-      5
-    );
+    expect(ratios.armToTorsoRatio).toBeCloseTo(ratios.armLength / ratios.upperBodyLength, 5);
   });
 });
 
@@ -409,9 +396,7 @@ describe('generateMockBodyAnalysisResult', () => {
   });
 
   it('should generate unique UUIDs', () => {
-    const results = Array.from({ length: 10 }, () =>
-      generateMockBodyAnalysisResult()
-    );
+    const results = Array.from({ length: 10 }, () => generateMockBodyAnalysisResult());
 
     const ids = results.map((r) => r.id);
     const uniqueIds = new Set(ids);
@@ -621,9 +606,7 @@ describe('Body-v2 Mock Edge Cases', () => {
   });
 
   it('should handle rapid successive calls without issues', () => {
-    const results = Array.from({ length: 100 }, () =>
-      generateMockBodyAnalysisResult()
-    );
+    const results = Array.from({ length: 100 }, () => generateMockBodyAnalysisResult());
 
     // 모든 결과가 유효해야 함
     results.forEach((result) => {

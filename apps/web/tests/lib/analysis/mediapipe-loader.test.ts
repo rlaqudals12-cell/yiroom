@@ -5,14 +5,15 @@
  * @description isFaceMeshLoaded, closeFaceMesh, checkMediaPipeCDN 테스트
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+/* eslint-disable @next/next/no-assign-module-variable */
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // 모듈을 동적으로 import하기 위해 변수 선언
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 let isFaceMeshLoaded: () => boolean;
 let closeFaceMesh: () => void;
 let checkMediaPipeCDN: () => Promise<boolean>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 let initFaceMesh: (...args: any[]) => Promise<any>;
 let preloadFaceMesh: () => void;
 
@@ -305,9 +306,7 @@ describe('initFaceMesh', () => {
     const module = await import('@/lib/analysis/mediapipe-loader');
     await module.initFaceMesh({ maxNumFaces: 2 });
 
-    expect(mockSetOptions).toHaveBeenCalledWith(
-      expect.objectContaining({ maxNumFaces: 2 })
-    );
+    expect(mockSetOptions).toHaveBeenCalledWith(expect.objectContaining({ maxNumFaces: 2 }));
   });
 
   it('기본 옵션이 적용된다', async () => {

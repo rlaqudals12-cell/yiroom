@@ -38,9 +38,6 @@ export interface FashionSearchResult {
   generalTips: string[];
 }
 
-/** 질문 의도 분석 */
-type FashionIntent = 'outfit' | 'top' | 'bottom' | 'accessory' | 'shoes' | 'general';
-
 /** 질문에서 TPO 추출 */
 function detectOccasion(query: string): Occasion | null {
   const lowerQuery = query.toLowerCase();
@@ -75,33 +72,6 @@ function detectOccasion(query: string): Occasion | null {
   }
 
   return null;
-}
-
-/** 질문 의도 추출 */
-function analyzeFashionIntent(query: string): FashionIntent {
-  const lowerQuery = query.toLowerCase();
-
-  if (lowerQuery.includes('코디') || lowerQuery.includes('전체')) {
-    return 'outfit';
-  }
-  if (lowerQuery.includes('상의') || lowerQuery.includes('티셔츠') || lowerQuery.includes('셔츠')) {
-    return 'top';
-  }
-  if (lowerQuery.includes('하의') || lowerQuery.includes('바지') || lowerQuery.includes('스커트')) {
-    return 'bottom';
-  }
-  if (lowerQuery.includes('신발') || lowerQuery.includes('운동화') || lowerQuery.includes('구두')) {
-    return 'shoes';
-  }
-  if (
-    lowerQuery.includes('악세서리') ||
-    lowerQuery.includes('시계') ||
-    lowerQuery.includes('가방')
-  ) {
-    return 'accessory';
-  }
-
-  return 'general';
 }
 
 /** TPO별 스타일링 팁 */
@@ -160,7 +130,7 @@ export async function searchFashionItems(
 ): Promise<FashionSearchResult> {
   try {
     const occasion = detectOccasion(query) || 'casual';
-    // intent는 향후 카테고리별 필터링에 사용 예정: analyzeFashionIntent(query)
+    // intent는 향후 카테고리별 필터링에 사용 예정
     const seasonType = userContext?.personalColor?.season;
     const bodyType = userContext?.bodyAnalysis?.bodyType;
 
