@@ -23,7 +23,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GradientCard } from '@/components/ui';
+import { GradientCard, CelebrationEffect } from '@/components/ui';
 import {
   analyzeSkin as analyzeWithGemini,
   imageToBase64,
@@ -85,6 +85,7 @@ export default function SkinResultScreen() {
   const [delta, setDelta] = useState<SkinMetricsDelta | null>(null);
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // 피부 분석 (lib/gemini 연동)
   const analyzeSkin = useCallback(async () => {
@@ -156,9 +157,7 @@ export default function SkinResultScreen() {
 
       setDelta(computedDelta);
       setPreviousScore(prevScore);
-
-      // 분석 완료 성공 햅틱
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setShowCelebration(true);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'skin-result',
@@ -347,6 +346,12 @@ export default function SkinResultScreen() {
   );
 
   return (
+    <>
+    <CelebrationEffect
+      type="analysis_complete"
+      visible={showCelebration}
+      onComplete={() => setShowCelebration(false)}
+    />
     <ResultLayout
       moduleKey="skin"
       title="피부 분석 결과"
@@ -363,6 +368,7 @@ export default function SkinResultScreen() {
       retryPath="/(analysis)/skin"
       testID="skin-analysis-result"
     />
+    </>
   );
 }
 

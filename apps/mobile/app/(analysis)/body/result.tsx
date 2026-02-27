@@ -21,7 +21,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { BarChart, type BarDataItem } from '@/components/charts';
-import { GradientCard } from '@/components/ui';
+import { GradientCard, CelebrationEffect } from '@/components/ui';
 import {
   analyzeBody as analyzeWithGemini,
   imageToBase64,
@@ -129,6 +129,7 @@ export default function BodyResultScreen() {
   const [bmi, setBmi] = useState<number | null>(null);
   const [proportions, setProportions] = useState<BodyAnalysisResult['proportions'] | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const analyzeBody = useCallback(async () => {
     setIsLoading(true);
@@ -166,6 +167,7 @@ export default function BodyResultScreen() {
       setBodyType(bodyTypeMap[analysisResult.bodyType] || 'Rectangle');
       setBmi(analysisResult.bmi);
       setProportions(analysisResult.proportions ?? null);
+      setShowCelebration(true);
 
       // DB 저장 (실패해도 분석 결과는 표시)
       if (user?.id) {
@@ -399,6 +401,12 @@ export default function BodyResultScreen() {
   );
 
   return (
+    <>
+    <CelebrationEffect
+      type="analysis_complete"
+      visible={showCelebration}
+      onComplete={() => setShowCelebration(false)}
+    />
     <ResultLayout
       moduleKey="body"
       title="체형 분석 결과"
@@ -415,6 +423,7 @@ export default function BodyResultScreen() {
       retryPath="/(analysis)/body"
       testID="body-analysis-result"
     />
+    </>
   );
 }
 

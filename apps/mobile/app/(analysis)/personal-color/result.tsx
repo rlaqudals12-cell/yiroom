@@ -21,7 +21,7 @@ import {
   MetricBar,
   useAnalysisStyles,
 } from '@/components/analysis';
-import { GradientCard } from '@/components/ui';
+import { GradientCard, CelebrationEffect } from '@/components/ui';
 import {
   analyzePersonalColor as analyzeWithGemini,
   imageToBase64,
@@ -129,6 +129,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<PersonalColorAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const analyzePersonalColor = useCallback(async () => {
     setIsLoading(true);
@@ -148,9 +149,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
 
       setUsedFallback(response.usedFallback);
       setResult(response.result);
-
-      // 분석 완료 성공 햅틱
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setShowCelebration(true);
 
       // DB 저장 (실패해도 분석 결과는 표시)
       if (user?.id) {
@@ -209,6 +208,12 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
   const coolScore = 100 - warmScore;
 
   return (
+    <>
+    <CelebrationEffect
+      type="analysis_complete"
+      visible={showCelebration}
+      onComplete={() => setShowCelebration(false)}
+    />
     <ResultLayout
       moduleKey="personalColor"
       title="퍼스널 컬러 진단"
@@ -246,6 +251,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
       retryPath="/(analysis)/personal-color"
       testID="analysis-personal-color-result-screen"
     />
+    </>
   );
 }
 

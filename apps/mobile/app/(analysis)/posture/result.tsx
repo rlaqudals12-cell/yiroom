@@ -20,6 +20,7 @@ import {
   imageToBase64,
   type PostureAnalysisResult,
 } from '@/lib/gemini';
+import { CelebrationEffect } from '@/components/ui';
 import { captureError } from '@/lib/monitoring/sentry';
 
 // 한국어 라벨 매핑
@@ -44,6 +45,7 @@ export default function PostureResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<PostureAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const analyzePosture = useCallback(async () => {
     setIsLoading(true);
@@ -58,6 +60,7 @@ export default function PostureResultScreen() {
       const response = await analyzeWithGemini(base64Data);
       setUsedFallback(response.usedFallback);
       setResult(response.result);
+      setShowCelebration(true);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'posture-result',
@@ -101,6 +104,12 @@ export default function PostureResultScreen() {
   }
 
   return (
+    <>
+    <CelebrationEffect
+      type="analysis_complete"
+      visible={showCelebration}
+      onComplete={() => setShowCelebration(false)}
+    />
     <SafeAreaView
       testID="analysis-posture-result-screen"
       style={styles.container}
@@ -191,6 +200,7 @@ export default function PostureResultScreen() {
         />
       </ScrollView>
     </SafeAreaView>
+    </>
   );
 }
 

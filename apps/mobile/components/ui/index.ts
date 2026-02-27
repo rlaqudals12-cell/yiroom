@@ -41,3 +41,8 @@ export { PressableCard } from './PressableCard';
 export { ScreenContainer } from './ScreenContainer';
 export { BottomSheet } from './BottomSheet';
 export { CollapsibleHeader } from './CollapsibleHeader';
+export { CelebrationEffect } from './CelebrationEffect';
+export type { CelebrationType } from './CelebrationEffect';
+export { BadgeDrop } from './BadgeDrop';
+export type { BadgeInfo } from './BadgeDrop';
+export { SuccessCheckmark } from './SuccessCheckmark';

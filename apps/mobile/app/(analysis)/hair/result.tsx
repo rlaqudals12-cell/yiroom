@@ -20,7 +20,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GradientCard } from '@/components/ui';
+import { GradientCard, CelebrationEffect } from '@/components/ui';
 import {
   analyzeHair as analyzeWithGemini,
   imageToBase64,
@@ -68,6 +68,7 @@ export default function HairResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<HairAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const analyzeHair = useCallback(async () => {
     setIsLoading(true);
@@ -82,6 +83,7 @@ export default function HairResultScreen() {
       const response = await analyzeWithGemini(base64Data);
       setUsedFallback(response.usedFallback);
       setResult(response.result);
+      setShowCelebration(true);
 
       // DB 저장 (실패해도 분석 결과는 표시)
       if (user?.id) {
@@ -250,6 +252,12 @@ export default function HairResultScreen() {
   );
 
   return (
+    <>
+    <CelebrationEffect
+      type="analysis_complete"
+      visible={showCelebration}
+      onComplete={() => setShowCelebration(false)}
+    />
     <ResultLayout
       moduleKey="hair"
       title="헤어 분석 결과"
@@ -266,6 +274,7 @@ export default function HairResultScreen() {
       retryPath="/(analysis)/hair"
       testID="hair-analysis-result"
     />
+    </>
   );
 }
 

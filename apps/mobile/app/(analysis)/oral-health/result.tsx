@@ -21,7 +21,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GradientCard } from '@/components/ui';
+import { GradientCard, CelebrationEffect } from '@/components/ui';
 import {
   analyzeOralHealth as analyzeWithGemini,
   imageToBase64,
@@ -56,6 +56,7 @@ export default function OralHealthResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<OralHealthAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const analyzeOralHealth = useCallback(async () => {
     setIsLoading(true);
@@ -70,6 +71,7 @@ export default function OralHealthResultScreen() {
       const response = await analyzeWithGemini(base64Data);
       setUsedFallback(response.usedFallback);
       setResult(response.result);
+      setShowCelebration(true);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'oral-health-result',
@@ -251,6 +253,12 @@ export default function OralHealthResultScreen() {
   );
 
   return (
+    <>
+    <CelebrationEffect
+      type="analysis_complete"
+      visible={showCelebration}
+      onComplete={() => setShowCelebration(false)}
+    />
     <ResultLayout
       moduleKey="oralHealth"
       title="구강건강 분석 결과"
@@ -267,6 +275,7 @@ export default function OralHealthResultScreen() {
       retryPath="/(analysis)/oral-health"
       testID="oral-health-analysis-result"
     />
+    </>
   );
 }
 

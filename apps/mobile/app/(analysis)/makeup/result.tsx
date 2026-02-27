@@ -21,7 +21,7 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { GradientCard } from '@/components/ui';
+import { GradientCard, CelebrationEffect } from '@/components/ui';
 import {
   analyzeMakeup as analyzeWithGemini,
   imageToBase64,
@@ -87,6 +87,7 @@ export default function MakeupResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<MakeupAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const analyzeMakeup = useCallback(async () => {
     setIsLoading(true);
@@ -101,6 +102,7 @@ export default function MakeupResultScreen() {
       const response = await analyzeWithGemini(base64Data);
       setUsedFallback(response.usedFallback);
       setResult(response.result);
+      setShowCelebration(true);
 
       // DB 저장 (실패해도 분석 결과는 표시)
       if (user?.id) {
@@ -277,6 +279,12 @@ export default function MakeupResultScreen() {
   );
 
   return (
+    <>
+    <CelebrationEffect
+      type="analysis_complete"
+      visible={showCelebration}
+      onComplete={() => setShowCelebration(false)}
+    />
     <ResultLayout
       moduleKey="makeup"
       title="메이크업 분석 결과"
@@ -293,6 +301,7 @@ export default function MakeupResultScreen() {
       retryPath="/(analysis)/makeup"
       testID="makeup-analysis-result"
     />
+    </>
   );
 }
 
