@@ -21,7 +21,7 @@ import Animated, {
   useReducedMotion,
 } from 'react-native-reanimated';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme , spacing, gradeColors } from '../../lib/theme';
 
 // ============================================
 // 등급 계산 헬퍼
@@ -41,15 +41,15 @@ export function getGrade(confidence: number): GradeInfo {
   const clamped = Math.max(0, Math.min(100, confidence));
 
   if (clamped >= 95) {
-    return { name: 'Diamond', color: '#60A5FA', icon: '\u25C6' };
+    return { name: 'Diamond', color: gradeColors.diamond.light, icon: '\u25C6' };
   }
   if (clamped >= 85) {
-    return { name: 'Gold', color: '#F59E0B', icon: '\u2605' };
+    return { name: 'Gold', color: gradeColors.gold.base, icon: '\u2605' };
   }
   if (clamped >= 70) {
-    return { name: 'Silver', color: '#9CA3AF', icon: '\u25CF' };
+    return { name: 'Silver', color: gradeColors.silver.base, icon: '\u25CF' };
   }
-  return { name: 'Bronze', color: '#CD7F32', icon: '\u25B2' };
+  return { name: 'Bronze', color: gradeColors.bronze.base, icon: '\u25B2' };
 }
 
 // ============================================

@@ -6,7 +6,7 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, spacing, trustColors } from '@/lib/theme';
 
 export type TrustBadgeType = 'ai' | 'fallback' | 'questionnaire';
 
@@ -47,12 +47,12 @@ export function AnalysisTrustBadge({
     if (type === 'ai') {
       return {
         bg: isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.12)',
-        text: isDark ? '#4ADE80' : '#16A34A',
+        text: isDark ? trustColors.ai.dark : trustColors.ai.light,
       };
     }
     return {
       bg: isDark ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.12)',
-      text: isDark ? '#FBBF24' : '#D97706',
+      text: isDark ? trustColors.fallback.dark : trustColors.fallback.light,
     };
   }, [type, isDark]);
 

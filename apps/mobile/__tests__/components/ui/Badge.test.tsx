@@ -331,6 +331,6 @@ describe('Badge - trust variant', () => {
       ? Object.assign({}, ...textEl.props.style.filter(Boolean))
       : textEl.props.style;
 
-    expect(textStyle.color).toBe('#86EFAC');
+    expect(textStyle.color).toBe('#4ADE80');
   });
 });

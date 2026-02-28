@@ -13,6 +13,7 @@
 import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { brand } from '../../lib/theme/tokens';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -30,7 +31,7 @@ interface ScanLineOverlayProps {
   active: boolean;
   /** 컨테이너 높이 (px). 기본 300 */
   height?: number;
-  /** 스캔 라인 색상. 기본 핑크 (#F8C8DC) */
+  /** 스캔 라인 색상. 기본 brand.primary 핑크 */
   color?: string;
   /** 테스트 ID */
   testID?: string;
@@ -39,7 +40,7 @@ interface ScanLineOverlayProps {
 export function ScanLineOverlay({
   active,
   height = 300,
-  color = '#F8C8DC',
+  color = brand.primary,
   testID,
 }: ScanLineOverlayProps): React.JSX.Element | null {
   const reducedMotion = useReducedMotion();

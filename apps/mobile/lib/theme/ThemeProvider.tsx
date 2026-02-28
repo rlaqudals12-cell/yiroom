@@ -13,6 +13,10 @@ import {
   darkColors,
   moduleColors,
   statusColors,
+  gradeColors,
+  nutrientColors,
+  scoreColors,
+  trustColors,
   spacing,
   radii,
   shadows,
@@ -29,6 +33,14 @@ export interface ThemeContextValue {
   module: typeof moduleColors;
   /** 상태 색상 */
   status: typeof statusColors;
+  /** 등급 색상 (diamond/gold/silver/bronze) */
+  grade: typeof gradeColors;
+  /** 영양소 색상 (탄단지) */
+  nutrient: typeof nutrientColors;
+  /** 점수 구간 색상 (excellent/good/caution/poor) */
+  score: typeof scoreColors;
+  /** 신뢰도 배지 색상 (ai/fallback) */
+  trust: typeof trustColors;
   /** 스페이싱 */
   spacing: typeof spacing;
   /** 보더 반지름 */
@@ -59,6 +71,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       brand,
       module: moduleColors,
       status: statusColors,
+      grade: gradeColors,
+      nutrient: nutrientColors,
+      score: scoreColors,
+      trust: trustColors,
       spacing,
       radii,
       shadows,

@@ -7,7 +7,7 @@
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
-import { moduleColors, brand as brandTokens } from '../../lib/theme/tokens';
+import { moduleColors, brand as brandTokens, trustColors } from '../../lib/theme/tokens';
 
 /** 기본 뱃지 스타일 variant */
 export type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline' | 'trust';
@@ -47,7 +47,7 @@ export function Badge({
   } else if (variant === 'trust') {
     // 신뢰도 뱃지: 녹색 기반
     bg = isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.1)';
-    fg = isDark ? '#86EFAC' : '#16A34A';
+    fg = isDark ? trustColors.ai.dark : trustColors.ai.light;
     borderColor = isDark ? 'rgba(34, 197, 94, 0.3)' : 'rgba(34, 197, 94, 0.2)';
   } else {
     bg = getBadgeBackground(variant, colors, brand);

@@ -119,7 +119,7 @@ describe('getGrade 헬퍼 함수', () => {
 
   describe('등급별 색상', () => {
     it('Diamond 등급은 파란 계열 색상이어야 한다', () => {
-      expect(getGrade(95).color).toBe('#60A5FA');
+      expect(getGrade(95).color).toBe('#67E8F9');
     });
 
     it('Gold 등급은 금색 계열 색상이어야 한다', () => {

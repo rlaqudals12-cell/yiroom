@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Pressable, Text, StyleSheet, AccessibilityProps } from 'react-native';
 
-import { useTheme, typography, spacing } from '../../../lib/theme';
+import { useTheme, typography, spacing, scoreColors } from '../../../lib/theme';
 import { statusColors } from '../../../lib/theme/tokens';
 
 import { useAppPreferencesStore } from '@/lib/stores';
@@ -158,7 +158,7 @@ export function getRatingText(rating: number): string {
 export function getRatingColor(rating: number): string {
   if (rating >= 4) return statusColors.success;
   if (rating >= 3) return statusColors.warning;
-  if (rating >= 2) return '#F97316'; // orange — status에 없으므로 유지
+  if (rating >= 2) return scoreColors.caution; // orange
   return statusColors.error;
 }
 

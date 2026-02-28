@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { Check, ChevronRight } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme , spacing, radii } from '../../lib/theme';
 
 interface MenuCardProps {
   icon: React.ReactNode;
@@ -64,7 +64,7 @@ export function MenuCard({
               backgroundColor: iconBg,
               width: 40,
               height: 40,
-              borderRadius: 20,
+              borderRadius: radii.circle,
             },
           ]}
         >
@@ -101,7 +101,7 @@ export function MenuCard({
               { backgroundColor: status.success },
             ]}
           >
-            <Check size={14} color="#fff" strokeWidth={2.5} />
+            <Check size={14} color={colors.overlayForeground} strokeWidth={2.5} />
           </View>
         ) : (
           <ChevronRight size={20} color={colors.mutedForeground} />
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   iconCircle: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   textContainer: {
     flex: 1,
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   completedBadge: {
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     alignItems: 'center',
     justifyContent: 'center',
   },

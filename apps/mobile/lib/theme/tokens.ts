@@ -86,22 +86,29 @@ export const professionalColors = {
   highlight: '#D4C88A',
 } as const;
 
-// 스페이싱 (8px 기반, 웹 :root와 동일)
+// 스페이싱 (8px 기반, 웹 :root와 동일 + 중간값 보충)
 export const spacing = {
+  xxs: 2,
   xs: 4,
   sm: 8,
+  smd: 10,
+  smx: 12,
   md: 16,
+  mlg: 20,
   lg: 24,
   xl: 32,
   xxl: 48,
 } as const;
 
-// 보더 반지름 (웹 --radius: 0.625rem = 10px 기반)
+// 보더 반지름 (웹 --radius: 0.625rem = 10px 기반 + 중간값 보충)
 export const radii = {
   sm: 6,
   md: 8,
   lg: 10,
+  smx: 12,
+  xlg: 14,
   xl: 16,
+  circle: 20,
   full: 9999,
 } as const;
 
@@ -164,6 +171,35 @@ export const typography = {
     normal: 1.5,
     relaxed: 1.625,
   },
+} as const;
+
+// 등급 색상 (분석 결과 등급 시각화 — 도메인 데이터)
+export const gradeColors = {
+  diamond: { base: '#06B6D4', light: '#67E8F9', dark: '#0891B2', text: '#06B6D4' },
+  gold: { base: '#F59E0B', light: '#FCD34D', dark: '#D97706', text: '#F59E0B' },
+  silver: { base: '#9CA3AF', light: '#D1D5DB', dark: '#6B7280', text: '#9CA3AF' },
+  bronze: { base: '#CD7F32', light: '#E8B87A', dark: '#A0652A', text: '#CD7F32' },
+} as const;
+
+// 영양소 색상 (탄단지 비율 시각화 — 도메인 데이터)
+export const nutrientColors = {
+  carbs: '#60A5FA',
+  protein: '#34D399',
+  fat: '#FBBF24',
+} as const;
+
+// 점수 구간 색상 (피부 zone 맵 등 — 도메인 데이터)
+export const scoreColors = {
+  excellent: '#22C55E',
+  good: '#EAB308',
+  caution: '#F97316',
+  poor: '#EF4444',
+} as const;
+
+// 신뢰도 배지 색상 (AI/fallback 신뢰도 표시)
+export const trustColors = {
+  ai: { light: '#16A34A', dark: '#4ADE80' },
+  fallback: { light: '#D97706', dark: '#FBBF24' },
 } as const;
 
 // 시맨틱 색상 타입 (ThemeProvider에서 사용)

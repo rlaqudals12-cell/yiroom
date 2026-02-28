@@ -38,7 +38,7 @@ export function SuccessCheckmark({
   size = 60,
   onComplete,
 }: SuccessCheckmarkProps): React.JSX.Element | null {
-  const { colors } = useTheme();
+  const { colors, status } = useTheme();
   const reducedMotion = useReducedMotion();
 
   // 체크마크 path 길이 (M6 13 L10 17 L18 9 의 근사치)
@@ -117,7 +117,7 @@ export function SuccessCheckmark({
   if (!visible) return null;
 
   const strokeWidth = size > 50 ? 3 : 2;
-  const successColor = '#22C55E';
+  const successColor = status.success;
 
   return (
     <Animated.View

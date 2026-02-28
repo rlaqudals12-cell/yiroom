@@ -6,7 +6,7 @@
 import { View, Text, type ViewStyle } from 'react-native';
 
 import { FilterChipGroup, type FilterChipItem } from '../ui/FilterChipGroup';
-import { useTheme } from '../../lib/theme';
+import { useTheme, statusColors } from '../../lib/theme';
 
 const RATING_OPTIONS: FilterChipItem[] = [
   { key: 'all', label: '전체' },
@@ -47,7 +47,7 @@ export function RatingFilter({
         selected={selected}
         onSelectionChange={(sel) => onSelectionChange(sel as string)}
         multiSelect={false}
-        activeColor="#F59E0B"
+        activeColor={statusColors.warning}
         testID={testID ? `${testID}-chips` : undefined}
       />
     </View>

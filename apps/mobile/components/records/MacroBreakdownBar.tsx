@@ -5,7 +5,7 @@
  */
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, nutrientColors } from '../../lib/theme';
 
 interface MacroBreakdownBarProps {
   /** 탄수화물 g */
@@ -20,12 +20,8 @@ interface MacroBreakdownBarProps {
   testID?: string;
 }
 
-// 영양소별 색상
-const MACRO_COLORS = {
-  carbs: '#60a5fa',   // 파란
-  protein: '#34d399',  // 초록
-  fat: '#fbbf24',      // 노란
-} as const;
+// 영양소별 색상 (중앙 토큰 참조)
+const MACRO_COLORS = nutrientColors;
 
 export function MacroBreakdownBar({
   carbs,

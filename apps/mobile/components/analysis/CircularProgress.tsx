@@ -22,18 +22,15 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 
-import { statusColors, typography} from '@/lib/theme';
+import { statusColors, gradeColors, typography} from '@/lib/theme';
 import { useTheme } from '@/lib/theme';
 
-// ============================================
-// 등급 그라데이션 색상 (도메인 데이터 — 등급별 시각 아이덴티티)
-// status 토큰 기반: info(다이아), warning(골드), muted(실버), error(브론즈)
-// ============================================
+// 등급 그라데이션 색상 (gradeColors 토큰 기반 — 등급별 시각 아이덴티티)
 const GRADE_COLORS = {
-  diamond: { start: '#06b6d4', end: statusColors.info, text: '#06b6d4' },
-  gold: { start: statusColors.warning, end: '#f97316', text: statusColors.warning },
-  silver: { start: '#6b7280', end: '#64748b', text: '#6b7280' },
-  bronze: { start: '#f97316', end: statusColors.error, text: '#f97316' },
+  diamond: { start: gradeColors.diamond.base, end: statusColors.info, text: gradeColors.diamond.text },
+  gold: { start: statusColors.warning, end: gradeColors.bronze.base, text: statusColors.warning },
+  silver: { start: gradeColors.silver.dark, end: '#64748b', text: gradeColors.silver.dark },
+  bronze: { start: gradeColors.bronze.base, end: statusColors.error, text: gradeColors.bronze.base },
 } as const;
 
 // ============================================

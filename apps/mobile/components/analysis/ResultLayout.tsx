@@ -25,7 +25,7 @@ import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-import { useTheme, typography, radii, borderGlow, spacing } from '@/lib/theme';
+import { useTheme, typography, radii, borderGlow, spacing, trustColors } from '@/lib/theme';
 import { brand, moduleColors } from '@/lib/theme/tokens';
 import { TIMING } from '@/lib/animations';
 import { TabView, type TabItem } from '../ui/TabView';
@@ -193,7 +193,7 @@ export function ResultLayout({
               entering={FadeIn.delay(200).duration(TIMING.normal)}
               style={[styles.fallbackBanner, { backgroundColor: isDark ? '#78350F20' : '#FEF3C720' }]}
             >
-              <Text style={[styles.fallbackText, { color: isDark ? '#FBBF24' : '#D97706' }]}>
+              <Text style={[styles.fallbackText, { color: isDark ? trustColors.fallback.dark : trustColors.fallback.light }]}>
                 AI 서비스 일시 제한으로 기본 분석 결과를 표시해요
               </Text>
             </Animated.View>

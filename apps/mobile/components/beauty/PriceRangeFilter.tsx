@@ -6,7 +6,7 @@
 import { View, Text, type ViewStyle } from 'react-native';
 
 import { FilterChipGroup, type FilterChipItem } from '../ui/FilterChipGroup';
-import { useTheme } from '../../lib/theme';
+import { useTheme, statusColors } from '../../lib/theme';
 
 const PRICE_RANGES: FilterChipItem[] = [
   { key: 'all', label: '전체' },
@@ -57,7 +57,7 @@ export function PriceRangeFilter({
         selected={selected}
         onSelectionChange={(sel) => onSelectionChange(sel as string)}
         multiSelect={false}
-        activeColor="#22C55E"
+        activeColor={statusColors.success}
         testID={testID ? `${testID}-chips` : undefined}
       />
     </View>

@@ -12,7 +12,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 
 import { TIMING } from '../../lib/animations';
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme , spacing, scoreColors } from '../../lib/theme';
 
 export interface FaceZone {
   /** zone 식별자 */
@@ -37,10 +37,10 @@ interface FaceZoneMapProps {
 
 // 점수 → 색상
 function scoreToColor(score: number): string {
-  if (score >= 80) return '#22C55E'; // 초록
-  if (score >= 60) return '#EAB308'; // 노랑
-  if (score >= 40) return '#F97316'; // 주황
-  return '#EF4444'; // 빨강
+  if (score >= 80) return scoreColors.excellent; // 초록
+  if (score >= 60) return scoreColors.good; // 노랑
+  if (score >= 40) return scoreColors.caution; // 주황
+  return scoreColors.poor; // 빨강
 }
 
 // 점수 → 한국어 등급
@@ -201,10 +201,10 @@ export function FaceZoneMap({
       {/* 범례 */}
       <View style={styles.legend}>
         {[
-          { color: '#22C55E', label: '좋음' },
-          { color: '#EAB308', label: '보통' },
-          { color: '#F97316', label: '주의' },
-          { color: '#EF4444', label: '관리' },
+          { color: scoreColors.excellent, label: '좋음' },
+          { color: scoreColors.good, label: '보통' },
+          { color: scoreColors.caution, label: '주의' },
+          { color: scoreColors.poor, label: '관리' },
         ].map(({ color, label }) => (
           <View key={label} style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: color }]} />

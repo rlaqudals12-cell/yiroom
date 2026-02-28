@@ -36,13 +36,13 @@ export function ProductMiniCard({
   style,
   testID,
 }: ProductMiniCardProps): React.JSX.Element {
-  const { colors, spacing, radii, typography, brand: brandColors, shadows } = useTheme();
+  const { colors, spacing, radii, typography, brand: brandColors, shadows, status } = useTheme();
 
   const matchColor =
     product.matchRate >= 80
-      ? '#22C55E'
+      ? status.success
       : product.matchRate >= 60
-        ? '#F59E0B'
+        ? status.warning
         : colors.mutedForeground;
 
   return (
@@ -124,7 +124,7 @@ export function ProductMiniCard({
               </Text>
             </View>
             <View style={styles.ratingRow}>
-              <Star size={12} color="#F59E0B" fill="#F59E0B" />
+              <Star size={12} color={status.warning} fill={status.warning} />
               <Text
                 style={{
                   fontSize: typography.size.xs,
