@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="apps/web/public/logo.png" alt="이룸 로고" width="200" />
+  <img src="apps/web/public/logo.svg" alt="이룸 로고" width="200" />
 
   <h1>이룸 (Yiroom)</h1>
   <h3>"온전한 나는?" | "Know yourself, wholly."</h3>
@@ -70,19 +70,19 @@
 
 ### Phase 1: 분석 기능
 
-| 모듈 | 설명 |
-|------|------|
+| 모듈                 | 설명                                         |
+| -------------------- | -------------------------------------------- |
 | **PC-1 퍼스널 컬러** | 10개 문진 + AI 이미지 분석 → 4계절 16톤 진단 |
-| **S-1 피부 분석** | 7가지 피부 지표 분석 + 맞춤 스킨케어 루틴 |
-| **C-1 체형 분석** | 8가지 체형 분류 + 스타일 추천 |
+| **S-1 피부 분석**    | 7가지 피부 지표 분석 + 맞춤 스킨케어 루틴    |
+| **C-1 체형 분석**    | 8가지 체형 분류 + 스타일 추천                |
 
 ### Phase 2: 운동/영양
 
-| 모듈 | 설명 |
-|------|------|
-| **W-1 운동** | 5가지 운동 타입 분류 + 주간 플랜 + 연예인 루틴 매칭 |
-| **N-1 영양** | AI 음식 인식 + 신호등 시스템 + 간헐적 단식 타이머 |
-| **R-1 리포트** | 주간/월간 통합 리포트 + AI 인사이트 |
+| 모듈           | 설명                                                |
+| -------------- | --------------------------------------------------- |
+| **W-1 운동**   | 5가지 운동 타입 분류 + 주간 플랜 + 연예인 루틴 매칭 |
+| **N-1 영양**   | AI 음식 인식 + 신호등 시스템 + 간헐적 단식 타이머   |
+| **R-1 리포트** | 주간/월간 통합 리포트 + AI 인사이트                 |
 
 ### Phase 3+: 고도화
 
@@ -96,29 +96,29 @@
 
 ### 프레임워크
 
-| 기술 | 버전 | 용도 |
-|------|------|------|
-| Next.js | 16+ | App Router, Turbopack |
-| React | 19 | UI 라이브러리 |
-| TypeScript | 5+ | 타입 안전성 |
-| Tailwind CSS | v4 | 스타일링 |
+| 기술         | 버전 | 용도                  |
+| ------------ | ---- | --------------------- |
+| Next.js      | 16+  | App Router, Turbopack |
+| React        | 19   | UI 라이브러리         |
+| TypeScript   | 5+   | 타입 안전성           |
+| Tailwind CSS | v4   | 스타일링              |
 
 ### 백엔드 & AI
 
-| 기술 | 용도 |
-|------|------|
-| Supabase | PostgreSQL + RLS + Storage |
-| Clerk | 인증 (clerk_user_id 기반) |
-| Gemini 3 Flash | AI 이미지/텍스트 분석 |
-| pgvector | RAG 벡터 검색 |
+| 기술           | 용도                       |
+| -------------- | -------------------------- |
+| Supabase       | PostgreSQL + RLS + Storage |
+| Clerk          | 인증 (clerk_user_id 기반)  |
+| Gemini 3 Flash | AI 이미지/텍스트 분석      |
+| pgvector       | RAG 벡터 검색              |
 
 ### 테스트 & 품질
 
-| 기술 | 용도 |
-|------|------|
-| Vitest | 단위/통합 테스트 (2,776개) |
-| Playwright | E2E 테스트 |
-| ESLint | 코드 린팅 |
+| 기술       | 용도                       |
+| ---------- | -------------------------- |
+| Vitest     | 단위/통합 테스트 (2,776개) |
+| Playwright | E2E 테스트                 |
+| ESLint     | 코드 린팅                  |
 
 ---
 
@@ -225,12 +225,12 @@ cd apps/web && npm run e2e
 
 ## 문서
 
-| 문서 | 내용 |
-|------|------|
-| [CLAUDE.md](CLAUDE.md) | AI 에이전트용 프로젝트 가이드 |
-| [DATABASE-SCHEMA.md](docs/DATABASE-SCHEMA.md) | DB 스키마 및 RLS 정책 |
-| [PROGRESS-ALL.md](docs/PROGRESS-ALL.md) | 전체 개발 진행 상황 |
-| [HOOK-MODEL.md](docs/HOOK-MODEL.md) | 사용자 리텐션 모델 |
+| 문서                                          | 내용                          |
+| --------------------------------------------- | ----------------------------- |
+| [CLAUDE.md](CLAUDE.md)                        | AI 에이전트용 프로젝트 가이드 |
+| [DATABASE-SCHEMA.md](docs/DATABASE-SCHEMA.md) | DB 스키마 및 RLS 정책         |
+| [PROGRESS-ALL.md](docs/PROGRESS-ALL.md)       | 전체 개발 진행 상황           |
+| [HOOK-MODEL.md](docs/HOOK-MODEL.md)           | 사용자 리텐션 모델            |
 
 ---
 

@@ -1,28 +1,34 @@
-# Mobile app (not needed for web deployment)
+# Mobile app
 apps/mobile
 
-# Documentation
+# Documentation & configs
 docs
-
-# Tests
-tests
-**/*.test.ts
-**/*.test.tsx
-**/__tests__
-
-# Config files
 .claude
 .github
 .husky
 .storybook
 
-# Build artifacts
-node_modules
+# Build artifacts & caches
 .next
 coverage
 dist
 out
+.turbo
+.expo
 
-# Large/unnecessary files
+# Tests
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/__tests__
+**/__mocks__
+tests
+
+# Unnecessary files
 *.md
-!apps/web/README.md
+*.mdx
+eslint-errors.txt
+eslint-out.json
+*.stories.tsx
+*.stories.ts
