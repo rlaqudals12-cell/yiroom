@@ -51,6 +51,12 @@ export default function ReportsLayout() {
           title: '체중 목표',
         }}
       />
+      <Stack.Screen
+        name="body-progress"
+        options={{
+          title: '체형 변화 추적',
+        }}
+      />
     </Stack>
   );
 }
