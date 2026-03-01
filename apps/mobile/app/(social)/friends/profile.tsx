@@ -5,8 +5,10 @@
  */
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { useTheme } from '../../../lib/theme';
+import { staggeredEntry, TIMING } from '../../../lib/animations';
 
 interface FriendProfile {
   nickname: string;
@@ -136,9 +138,10 @@ export default function FriendProfileScreen(): React.ReactElement {
             공유된 분석 결과
           </Text>
           <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
-            {friend.sharedResults.map((result) => (
-              <View
+            {friend.sharedResults.map((result, idx) => (
+              <Animated.View
                 key={result.type}
+                entering={staggeredEntry(idx)}
                 style={{
                   backgroundColor: colors.card,
                   borderRadius: radii.lg,
@@ -157,7 +160,7 @@ export default function FriendProfileScreen(): React.ReactElement {
                 <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: brand.primary }}>
                   {result.value}
                 </Text>
-              </View>
+              </Animated.View>
             ))}
           </View>
         </>
@@ -169,8 +172,9 @@ export default function FriendProfileScreen(): React.ReactElement {
       </Text>
       <View style={{ gap: spacing.xs }}>
         {friend.recentActivities.map((activity, index) => (
-          <View
+          <Animated.View
             key={index}
+            entering={staggeredEntry(index)}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -192,7 +196,7 @@ export default function FriendProfileScreen(): React.ReactElement {
             </View>
             <Text style={{ flex: 1, fontSize: typography.size.sm, color: colors.foreground }}>{activity.action}</Text>
             <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{activity.date}</Text>
-          </View>
+          </Animated.View>
         ))}
       </View>
     </ScrollView>

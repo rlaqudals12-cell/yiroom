@@ -4,8 +4,10 @@
  * 한 해 동안의 웰니스 여정을 요약하고 주요 성과를 보여준다.
  */
 import { View, Text, ScrollView } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { useTheme } from '../../lib/theme';
+import { staggeredEntry, TIMING } from '../../lib/animations';
 
 interface YearlyStats {
   year: number;
@@ -106,12 +108,13 @@ export default function YearlyReviewScreen(): React.ReactElement {
         성장 지표
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
-        {review.improvements.map((item) => {
+        {review.improvements.map((item, index) => {
           const improved = item.after > item.before;
           const percent = Math.round(((item.after - item.before) / item.before) * 100);
           return (
-            <View
+            <Animated.View
               key={item.label}
+              entering={staggeredEntry(index)}
               style={{
                 backgroundColor: colors.card,
                 borderRadius: radii.lg,
@@ -144,7 +147,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
                   {item.after}{item.unit}
                 </Text>
               </View>
-            </View>
+            </Animated.View>
           );
         })}
       </View>
@@ -155,8 +158,9 @@ export default function YearlyReviewScreen(): React.ReactElement {
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
         {review.highlights.map((highlight, index) => (
-          <View
+          <Animated.View
             key={highlight.month}
+            entering={staggeredEntry(index)}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -184,7 +188,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
               </Text>
               <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{highlight.month}</Text>
             </View>
-          </View>
+          </Animated.View>
         ))}
       </View>
 

@@ -5,8 +5,10 @@
  */
 import { useRouter } from 'expo-router';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { useTheme } from '../../../lib/theme';
+import { staggeredEntry } from '../../../lib/animations';
 
 interface DayPlan {
   day: string;
@@ -141,9 +143,10 @@ export default function WorkoutPlanScreen(): React.ReactElement {
 
       {/* 일별 상세 */}
       <View style={{ gap: spacing.sm }}>
-        {MOCK_WEEK_PLAN.map((day) => (
-          <View
+        {MOCK_WEEK_PLAN.map((day, index) => (
+          <Animated.View
             key={day.day}
+            entering={staggeredEntry(index)}
             style={{
               backgroundColor: colors.card,
               borderRadius: radii.lg,
@@ -181,7 +184,7 @@ export default function WorkoutPlanScreen(): React.ReactElement {
                 <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>{ex.duration}</Text>
               </View>
             ))}
-          </View>
+          </Animated.View>
         ))}
       </View>
 

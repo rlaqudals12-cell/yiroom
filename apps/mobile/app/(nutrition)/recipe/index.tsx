@@ -6,8 +6,10 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { useTheme } from '../../../lib/theme';
+import { staggeredEntry } from '../../../lib/animations';
 
 type RecipeCategory = 'all' | 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
@@ -110,9 +112,9 @@ export default function RecipeListScreen(): React.ReactElement {
 
       {/* 레시피 목록 */}
       <View style={{ gap: spacing.sm }}>
-        {filteredRecipes.map((recipe) => (
+        {filteredRecipes.map((recipe, index) => (
+          <Animated.View key={recipe.id} entering={staggeredEntry(index)}>
           <Pressable
-            key={recipe.id}
             accessibilityLabel={`${recipe.name}, ${recipe.calories}kcal`}
             onPress={() => router.push({ pathname: '/(nutrition)/recipe/[id]' as never, params: { id: recipe.id } })}
             style={{
@@ -148,6 +150,7 @@ export default function RecipeListScreen(): React.ReactElement {
               ))}
             </View>
           </Pressable>
+          </Animated.View>
         ))}
       </View>
     </ScrollView>

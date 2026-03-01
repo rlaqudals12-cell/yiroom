@@ -5,8 +5,10 @@
  */
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { useTheme } from '../../lib/theme';
+import { staggeredEntry, TIMING } from '../../lib/animations';
 
 type MoodLevel = 'great' | 'good' | 'okay' | 'bad' | 'terrible';
 
@@ -131,9 +133,9 @@ export default function MentalHealthScreen(): React.ReactElement {
         마인드풀니스
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
-        {MINDFULNESS_TIPS.map((tip) => (
+        {MINDFULNESS_TIPS.map((tip, index) => (
+          <Animated.View key={tip.title} entering={staggeredEntry(index)}>
           <Pressable
-            key={tip.title}
             accessibilityLabel={`${tip.title} 가이드`}
             style={{
               backgroundColor: colors.card,
@@ -154,6 +156,7 @@ export default function MentalHealthScreen(): React.ReactElement {
               <Text style={{ fontSize: typography.size.xs, color: brand.primary }}>{tip.duration}</Text>
             </View>
           </Pressable>
+          </Animated.View>
         ))}
       </View>
 
@@ -162,11 +165,12 @@ export default function MentalHealthScreen(): React.ReactElement {
         기분 기록
       </Text>
       <View style={{ gap: spacing.xs }}>
-        {MOCK_MOOD_HISTORY.map((entry) => {
+        {MOCK_MOOD_HISTORY.map((entry, index) => {
           const moodOption = MOOD_OPTIONS.find((o) => o.level === entry.mood);
           return (
-            <View
+            <Animated.View
               key={entry.date}
+              entering={staggeredEntry(index)}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -185,7 +189,7 @@ export default function MentalHealthScreen(): React.ReactElement {
                 ) : null}
               </View>
               <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{entry.date}</Text>
-            </View>
+            </Animated.View>
           );
         })}
       </View>

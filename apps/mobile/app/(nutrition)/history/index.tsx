@@ -5,8 +5,10 @@
  */
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { useTheme } from '../../../lib/theme';
+import { staggeredEntry } from '../../../lib/animations';
 
 interface DailyRecord {
   date: string;
@@ -98,14 +100,14 @@ export default function NutritionHistoryScreen(): React.ReactElement {
 
       {/* 일별 기록 */}
       <View style={{ gap: spacing.sm }}>
-        {MOCK_HISTORY.map((record) => {
+        {MOCK_HISTORY.map((record, index) => {
           const expanded = expandedDate === record.date;
           const ratio = Math.round((record.totalCalories / record.targetCalories) * 100);
           const calorieColor = getCalorieColor(record.totalCalories, record.targetCalories);
 
           return (
+            <Animated.View key={record.date} entering={staggeredEntry(index)}>
             <Pressable
-              key={record.date}
               accessibilityLabel={`${record.dayLabel} 영양 기록, ${record.totalCalories}kcal`}
               onPress={() => setExpandedDate((prev) => (prev === record.date ? null : record.date))}
               style={{
@@ -192,6 +194,7 @@ export default function NutritionHistoryScreen(): React.ReactElement {
                 </>
               )}
             </Pressable>
+            </Animated.View>
           );
         })}
       </View>

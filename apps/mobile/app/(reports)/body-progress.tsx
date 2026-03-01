@@ -4,8 +4,10 @@
  * 체형 분석 결과의 시간에 따른 변화를 추적한다.
  */
 import { View, Text, ScrollView } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { useTheme } from '../../lib/theme';
+import { staggeredEntry, TIMING } from '../../lib/animations';
 
 interface BodyMeasurement {
   date: string;
@@ -166,8 +168,9 @@ export default function BodyProgressScreen(): React.ReactElement {
       </Text>
       <View style={{ gap: spacing.sm }}>
         {MOCK_MEASUREMENTS.map((measurement, index) => (
-          <View
+          <Animated.View
             key={measurement.date}
+            entering={staggeredEntry(index)}
             style={{
               backgroundColor: colors.card,
               borderRadius: radii.lg,
@@ -195,7 +198,7 @@ export default function BodyProgressScreen(): React.ReactElement {
               <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>허리 {measurement.waist}cm</Text>
               <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>힙 {measurement.hips}cm</Text>
             </View>
-          </View>
+          </Animated.View>
         ))}
       </View>
     </ScrollView>
