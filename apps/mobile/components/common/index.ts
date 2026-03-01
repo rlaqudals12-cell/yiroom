@@ -2,6 +2,12 @@
  * 공통 컴포넌트 모듈
  */
 
+// AI 투명성 (AI 기본법 제31조)
+export { AIBadge } from './AIBadge';
+export type { AIBadgeVariant } from './AIBadge';
+export { AITransparencyNotice } from './AITransparencyNotice';
+export { MockDataNotice } from './MockDataNotice';
+
 // 오프라인 상태
 export { OfflineBanner } from './OfflineBanner';
 
