@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, spacing } from '../lib/theme';
+import { useTheme, typography, spacing, brand } from '../lib/theme';
 
 type Lang = 'ko' | 'en';
 
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: typography.size.sm,
-    color: '#F8C8DC',
+    color: brand.primary,
     marginTop: spacing.sm,
     fontWeight: typography.weight.medium,
   },

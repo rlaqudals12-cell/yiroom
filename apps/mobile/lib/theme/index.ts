@@ -35,5 +35,5 @@ export type { BorderGlowVariant } from './effects';
 
 // 테마 컨텍스트
 export { ThemeProvider } from './ThemeProvider';
-export type { ThemeContextValue } from './ThemeProvider';
+export type { ThemeContextValue, ThemeMode } from './ThemeProvider';
 export { useTheme } from './useTheme';

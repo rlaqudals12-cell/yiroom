@@ -11,11 +11,19 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 
 import { useTheme, typography, spacing } from '../../lib/theme';
+import type { ThemeMode } from '../../lib/theme';
 import { ScreenContainer } from '../../components/ui';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 
+// 테마 모드 옵션
+const THEME_OPTIONS: { key: ThemeMode; label: string; icon: string }[] = [
+  { key: 'system', label: '시스템', icon: '📱' },
+  { key: 'light', label: '라이트', icon: '☀️' },
+  { key: 'dark', label: '다크', icon: '🌙' },
+];
+
 export default function SettingsScreen() {
-  const { colors, isDark, brand, spacing, radii, typography } = useTheme();
+  const { colors, isDark, brand, spacing, radii, typography, themeMode, setThemeMode } = useTheme();
   const { signOut } = useAuth();
 
   const appVersion = Constants.expoConfig?.version || '0.1.0';
@@ -69,6 +77,49 @@ export default function SettingsScreen() {
       testID="settings-screen"
       edges={['bottom']}
     >
+        {/* 테마 */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>테마</Text>
+          <View style={[styles.themeSelector, { backgroundColor: colors.card, borderRadius: radii.smx }]}>
+            {THEME_OPTIONS.map((option) => {
+              const isSelected = themeMode === option.key;
+              return (
+                <Pressable
+                  key={option.key}
+                  style={[
+                    styles.themeOption,
+                    {
+                      backgroundColor: isSelected ? brand.primary : 'transparent',
+                      borderRadius: radii.md,
+                    },
+                  ]}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setThemeMode(option.key);
+                  }}
+                  testID={`theme-option-${option.key}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${option.label} 모드`}
+                  accessibilityState={{ selected: isSelected }}
+                >
+                  <Text style={styles.themeOptionIcon}>{option.icon}</Text>
+                  <Text
+                    style={[
+                      styles.themeOptionLabel,
+                      {
+                        color: isSelected ? brand.primaryForeground : colors.foreground,
+                        fontWeight: isSelected ? typography.weight.semibold : typography.weight.normal,
+                      },
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
         {/* 알림 및 목표 */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>알림 및 목표</Text>
@@ -285,5 +336,24 @@ const styles = StyleSheet.create({
   accountOptionText: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
+  },
+  themeSelector: {
+    flexDirection: 'row',
+    padding: spacing.xs,
+    gap: spacing.xs,
+  },
+  themeOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.smd,
+    gap: spacing.xs,
+  },
+  themeOptionIcon: {
+    fontSize: typography.size.base,
+  },
+  themeOptionLabel: {
+    fontSize: typography.size.sm,
   },
 });

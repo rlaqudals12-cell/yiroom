@@ -3,9 +3,12 @@
  *
  * 앱 전체에 라이트/다크 모드 색상을 제공하는 React Context.
  * 각 화면에서 useColorScheme()을 직접 호출하는 대신 useTheme()을 사용.
+ *
+ * 사용자 테마 선택(system/light/dark)은 AsyncStorage에 영속 저장.
  */
-import { createContext, useMemo, type ReactNode } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useColorScheme, type ColorSchemeName } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
   brand,
@@ -23,6 +26,11 @@ import {
   typography,
 } from './tokens';
 import type { SemanticColors } from './tokens';
+
+/** 사용자 테마 모드 */
+export type ThemeMode = 'system' | 'light' | 'dark';
+
+const THEME_STORAGE_KEY = '@yiroom/theme-mode';
 
 export interface ThemeContextValue {
   /** 현재 모드에 맞는 시맨틱 색상 */
@@ -53,6 +61,10 @@ export interface ThemeContextValue {
   isDark: boolean;
   /** 시스템 colorScheme 값 */
   colorScheme: ColorSchemeName;
+  /** 사용자 선택 테마 모드 */
+  themeMode: ThemeMode;
+  /** 테마 모드 변경 (AsyncStorage에 영속 저장) */
+  setThemeMode: (mode: ThemeMode) => void;
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -62,8 +74,29 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const systemColorScheme = useColorScheme();
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
+
+  // AsyncStorage에서 저장된 테마 모드 로드
+  useEffect(() => {
+    AsyncStorage.getItem(THEME_STORAGE_KEY).then((saved) => {
+      if (saved === 'light' || saved === 'dark' || saved === 'system') {
+        setThemeModeState(saved);
+      }
+    });
+  }, []);
+
+  // 테마 모드 변경 + AsyncStorage 영속
+  const setThemeMode = useCallback((mode: ThemeMode) => {
+    setThemeModeState(mode);
+    AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
+  }, []);
+
+  // themeMode에 따라 isDark 결정
+  const isDark =
+    themeMode === 'system'
+      ? systemColorScheme === 'dark'
+      : themeMode === 'dark';
 
   const value = useMemo<ThemeContextValue>(
     () => ({
@@ -80,9 +113,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       shadows,
       typography,
       isDark,
-      colorScheme,
+      colorScheme: systemColorScheme,
+      themeMode,
+      setThemeMode,
     }),
-    [isDark, colorScheme]
+    [isDark, systemColorScheme, themeMode, setThemeMode]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
