@@ -108,7 +108,7 @@ export default function FriendProfileScreen(): React.ReactElement {
       </View>
 
       {/* 뱃지 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
         획득 뱃지
       </Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg }}>
@@ -134,7 +134,7 @@ export default function FriendProfileScreen(): React.ReactElement {
       {/* 공유 분석 결과 */}
       {friend.sharedResults.length > 0 && (
         <>
-          <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+          <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
             공유된 분석 결과
           </Text>
           <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
@@ -167,7 +167,7 @@ export default function FriendProfileScreen(): React.ReactElement {
       )}
 
       {/* 최근 활동 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
         최근 활동
       </Text>
       <View style={{ gap: spacing.xs }}>

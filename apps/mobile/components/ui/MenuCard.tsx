@@ -54,7 +54,9 @@ export function MenuCard({
         style,
       ]}
       accessibilityRole="button"
-      accessibilityLabel={title}
+      accessibilityLabel={`${title}${isCompleted ? ', 완료됨' : ''}`}
+      accessibilityHint={description}
+      accessibilityState={{ disabled: false, selected: isCompleted }}
     >
       <View style={styles.row}>
         <View

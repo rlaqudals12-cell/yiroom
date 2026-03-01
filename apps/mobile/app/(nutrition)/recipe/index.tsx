@@ -99,7 +99,7 @@ export default function RecipeListScreen(): React.ReactElement {
                   style={{
                     fontSize: typography.size.sm,
                     fontWeight: active ? typography.weight.semibold : typography.weight.normal,
-                    color: active ? '#FFFFFF' : colors.foreground,
+                    color: active ? colors.overlayForeground : colors.foreground,
                   }}
                 >
                   {tab.label}

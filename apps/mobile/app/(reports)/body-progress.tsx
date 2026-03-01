@@ -122,7 +122,7 @@ export default function BodyProgressScreen(): React.ReactElement {
       </View>
 
       {/* 측정 비교 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
         측정 비교
       </Text>
       <View
@@ -163,7 +163,7 @@ export default function BodyProgressScreen(): React.ReactElement {
       </View>
 
       {/* 히스토리 타임라인 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
         변화 히스토리
       </Text>
       <View style={{ gap: spacing.sm }}>

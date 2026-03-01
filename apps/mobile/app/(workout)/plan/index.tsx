@@ -129,12 +129,12 @@ export default function WorkoutPlanScreen(): React.ReactElement {
               style={{
                 fontSize: typography.size.xs,
                 fontWeight: day.isToday ? typography.weight.bold : typography.weight.normal,
-                color: day.isToday ? '#FFFFFF' : colors.mutedForeground,
+                color: day.isToday ? colors.overlayForeground : colors.mutedForeground,
               }}
             >
               {day.dayShort}
             </Text>
-            <Text style={{ fontSize: 10, marginTop: 2, color: day.isToday ? '#FFFFFF' : colors.mutedForeground }}>
+            <Text style={{ fontSize: 10, marginTop: 2, color: day.isToday ? colors.overlayForeground : colors.mutedForeground }}>
               {day.isRest ? '휴식' : `${day.exercises.length}개`}
             </Text>
           </View>
@@ -200,7 +200,7 @@ export default function WorkoutPlanScreen(): React.ReactElement {
           marginTop: spacing.lg,
         }}
       >
-        <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: '#FFFFFF' }}>
+        <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
           오늘 운동 시작하기
         </Text>
       </Pressable>

@@ -63,7 +63,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
         <Text style={{ fontSize: typography.size['4xl'], fontWeight: typography.weight.bold, color: brand.primary }}>
           {review.year}
         </Text>
-        <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.semibold, color: colors.foreground, marginTop: spacing.xs }}>
+        <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.semibold, color: colors.foreground, marginTop: spacing.xs }} accessibilityRole="header">
           나의 웰니스 여정
         </Text>
         <Text style={{ fontSize: typography.size.base, color: colors.mutedForeground, marginTop: spacing.xxs }}>
@@ -104,7 +104,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
       </View>
 
       {/* 개선 지표 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
         성장 지표
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
@@ -153,7 +153,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
       </View>
 
       {/* 하이라이트 타임라인 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
         하이라이트
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>

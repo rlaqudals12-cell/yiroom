@@ -51,6 +51,9 @@ export function HomeQuickActions({
         <Pressable
           style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1, marginBottom: spacing.lg }]}
           onPress={handleCoachPress}
+          accessibilityRole="button"
+          accessibilityLabel="AI 코치에게 물어보세요"
+          accessibilityHint="운동, 영양, 뷰티 관련 질문을 할 수 있어요"
         >
           <GradientBackground
             variant="workout"
@@ -83,6 +86,8 @@ export function HomeQuickActions({
               onPress={() => handleActionPress(action.route)}
               style={{ flex: 1 }}
               testID={`quick-action-${index}`}
+              accessibilityLabel={`${action.title}${action.completed ? ', 완료됨' : ''}`}
+              accessibilityHint={action.subtitle}
             >
               <View style={{ padding: spacing.sm + 2 }}>
                 <View style={styles.actionHeader}>

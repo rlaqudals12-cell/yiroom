@@ -129,7 +129,7 @@ export default function MentalHealthScreen(): React.ReactElement {
       </View>
 
       {/* 마인드풀니스 가이드 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
         마인드풀니스
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
@@ -161,7 +161,7 @@ export default function MentalHealthScreen(): React.ReactElement {
       </View>
 
       {/* 기분 히스토리 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
         기분 기록
       </Text>
       <View style={{ gap: spacing.xs }}>

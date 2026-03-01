@@ -65,6 +65,7 @@ export function ColorPalette({
                   fontWeight: typography.weight.semibold,
                 },
               ]}
+              accessibilityRole="header"
             >
               {group.title}
             </Text>
