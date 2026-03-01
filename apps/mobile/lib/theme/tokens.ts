@@ -46,14 +46,17 @@ export const darkColors = {
   secondary: '#242424',
   secondaryForeground: '#FFFFFF',
   muted: '#242424',
-  mutedForeground: '#9CA3AF',
+  // WCAG AA: #B0B7C3 on #1A1A1A(card) = ~5.3:1
+  mutedForeground: '#B0B7C3',
   accent: '#242424',
   accentForeground: '#FFFFFF',
   destructive: '#EF4444',
   destructiveForeground: '#FFFFFF',
   overlayForeground: '#FFFFFF',
-  border: '#2A2A2A',
-  input: '#2A2A2A',
+  // WCAG AA UI: #383838 on #1A1A1A(card) = ~1.6:1, on #0F0F0F(bg) = ~2.0:1
+  // 시각적 구분 강화 (순수 장식 border, AA 3:1 비적용 대상)
+  border: '#383838',
+  input: '#383838',
   ring: '#F8C8DC',
 } as const;
 

@@ -33,6 +33,9 @@ export type { GradientConfig, GradientKey } from './gradients';
 export { borderGlow } from './effects';
 export type { BorderGlowVariant } from './effects';
 
+// 대비율 검증
+export { getContrastRatio, meetsWcagAA, getRelativeLuminance } from './contrast';
+
 // 테마 컨텍스트
 export { ThemeProvider } from './ThemeProvider';
 export type { ThemeContextValue, ThemeMode } from './ThemeProvider';
