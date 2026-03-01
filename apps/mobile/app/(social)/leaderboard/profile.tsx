@@ -65,6 +65,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSendingRequest, setIsSendingRequest] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const isMe = currentUser?.id === params.userId;
 
@@ -150,6 +151,15 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
     }
   }, [params.userId, currentUser?.id, supabase]);
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchProfile();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchProfile]);
+
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
@@ -208,17 +218,6 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
   }
 
   const tierColor = getTierColor(profile.tier);
-
-  // Pull-to-refresh
-  const [refreshing, setRefreshing] = useState(false);
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await fetchProfile();
-    } finally {
-      setRefreshing(false);
-    }
-  }, [fetchProfile]);
 
   return (
     <ScreenContainer
