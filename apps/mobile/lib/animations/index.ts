@@ -12,7 +12,21 @@
 export { ENTERING, EXITING, staggeredEntry, TIMING } from './presets';
 
 // 커스텀 훅
-export { useShimmer, usePulse, usePressScale, useCountUp, usePulseGlow } from './hooks';
+export {
+  useShimmer,
+  usePulse,
+  usePressScale,
+  useCountUp,
+  usePulseGlow,
+  useWeave,
+  useWeaveStagger,
+  useSparkle,
+  useConfetti,
+  useSuccessBounce,
+  useBounceSlow,
+  useMedalDrop,
+  useScanLine,
+} from './hooks';
 
 // 스크린 전환
 export * as transitions from './transitions';

@@ -11,6 +11,14 @@ import {
   usePressScale,
   useCountUp,
   usePulseGlow,
+  useWeave,
+  useWeaveStagger,
+  useSparkle,
+  useConfetti,
+  useSuccessBounce,
+  useBounceSlow,
+  useMedalDrop,
+  useScanLine,
 } from '../../../lib/animations/hooks';
 
 describe('useShimmer', () => {
@@ -172,6 +180,147 @@ describe('usePulseGlow', () => {
   it('높은 intensity 값으로도 동작해야 한다', () => {
     const { result } = renderHook(() => usePulseGlow('#F8C8DC', 1.0));
 
+    expect(result.current).toBeDefined();
+  });
+});
+
+describe('useWeave', () => {
+  it('animated style 객체를 반환해야 한다', () => {
+    const { result } = renderHook(() => useWeave());
+    expect(result.current).toBeDefined();
+    expect(typeof result.current).toBe('object');
+  });
+
+  it('커스텀 amplitude와 duration을 받아야 한다', () => {
+    const { result } = renderHook(() => useWeave(8, 2000));
+    expect(result.current).toBeDefined();
+  });
+});
+
+describe('useWeaveStagger', () => {
+  it('animated style 객체를 반환해야 한다', () => {
+    const { result } = renderHook(() => useWeaveStagger(0));
+    expect(result.current).toBeDefined();
+  });
+
+  it('다른 인덱스로 여러 인스턴스를 생성할 수 있어야 한다', () => {
+    const { result: r0 } = renderHook(() => useWeaveStagger(0));
+    const { result: r1 } = renderHook(() => useWeaveStagger(1));
+    const { result: r2 } = renderHook(() => useWeaveStagger(2));
+    expect(r0.current).toBeDefined();
+    expect(r1.current).toBeDefined();
+    expect(r2.current).toBeDefined();
+  });
+
+  it('커스텀 amplitude와 staggerDelay를 받아야 한다', () => {
+    const { result } = renderHook(() => useWeaveStagger(3, 6, 200));
+    expect(result.current).toBeDefined();
+  });
+});
+
+describe('useSparkle', () => {
+  it('animated style 객체를 반환해야 한다', () => {
+    const { result } = renderHook(() => useSparkle());
+    expect(result.current).toBeDefined();
+    expect(typeof result.current).toBe('object');
+  });
+
+  it('커스텀 duration을 받아야 한다', () => {
+    const { result } = renderHook(() => useSparkle(2000));
+    expect(result.current).toBeDefined();
+  });
+});
+
+describe('useConfetti', () => {
+  it('particles 배열과 triggerConfetti 함수를 반환해야 한다', () => {
+    const { result } = renderHook(() => useConfetti());
+    expect(result.current.particles).toBeDefined();
+    expect(Array.isArray(result.current.particles)).toBe(true);
+    expect(result.current.particles.length).toBe(20);
+    expect(typeof result.current.triggerConfetti).toBe('function');
+  });
+
+  it('커스텀 count를 받아야 한다', () => {
+    const { result } = renderHook(() => useConfetti(10));
+    expect(result.current.particles.length).toBe(10);
+  });
+
+  it('triggerConfetti 호출 시 에러가 발생하지 않아야 한다', () => {
+    const { result } = renderHook(() => useConfetti(5));
+    expect(() => {
+      act(() => {
+        result.current.triggerConfetti();
+      });
+    }).not.toThrow();
+  });
+
+  it('각 particle에 translateY, rotate, opacity SharedValue가 있어야 한다', () => {
+    const { result } = renderHook(() => useConfetti(3));
+    const particle = result.current.particles[0];
+    expect(particle.translateY).toHaveProperty('value');
+    expect(particle.rotate).toHaveProperty('value');
+    expect(particle.opacity).toHaveProperty('value');
+  });
+});
+
+describe('useSuccessBounce', () => {
+  it('animated style 객체를 반환해야 한다', () => {
+    const { result } = renderHook(() => useSuccessBounce(false));
+    expect(result.current).toBeDefined();
+    expect(typeof result.current).toBe('object');
+  });
+
+  it('trigger=true일 때 에러 없이 동작해야 한다', () => {
+    const { result } = renderHook(() => useSuccessBounce(true));
+    expect(result.current).toBeDefined();
+  });
+
+  it('커스텀 maxScale을 받아야 한다', () => {
+    const { result } = renderHook(() => useSuccessBounce(true, 1.2));
+    expect(result.current).toBeDefined();
+  });
+});
+
+describe('useBounceSlow', () => {
+  it('animated style 객체를 반환해야 한다', () => {
+    const { result } = renderHook(() => useBounceSlow());
+    expect(result.current).toBeDefined();
+    expect(typeof result.current).toBe('object');
+  });
+
+  it('커스텀 minScale, maxScale을 받아야 한다', () => {
+    const { result } = renderHook(() => useBounceSlow(0.95, 1.1));
+    expect(result.current).toBeDefined();
+  });
+});
+
+describe('useMedalDrop', () => {
+  it('animated style 객체를 반환해야 한다', () => {
+    const { result } = renderHook(() => useMedalDrop(false));
+    expect(result.current).toBeDefined();
+    expect(typeof result.current).toBe('object');
+  });
+
+  it('trigger=true일 때 에러 없이 동작해야 한다', () => {
+    const { result } = renderHook(() => useMedalDrop(true));
+    expect(result.current).toBeDefined();
+  });
+
+  it('커스텀 dropHeight를 받아야 한다', () => {
+    const { result } = renderHook(() => useMedalDrop(true, 500));
+    expect(result.current).toBeDefined();
+  });
+});
+
+describe('useScanLine', () => {
+  it('animated style 객체를 반환해야 한다', () => {
+    const { result } = renderHook(() => useScanLine(300));
+    expect(result.current).toBeDefined();
+    expect(typeof result.current).toBe('object');
+  });
+
+  it('커스텀 duration을 받아야 한다', () => {
+    const { result } = renderHook(() => useScanLine(200, 3000));
     expect(result.current).toBeDefined();
   });
 });

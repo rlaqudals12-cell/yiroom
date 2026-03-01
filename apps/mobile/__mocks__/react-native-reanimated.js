@@ -61,6 +61,7 @@ module.exports = {
   FadeInRight: createLayoutAnimMock(),
   FadeOutUp: createLayoutAnimMock(),
   FadeOutDown: createLayoutAnimMock(),
+  SlideInLeft: createLayoutAnimMock(),
   SlideInRight: createLayoutAnimMock(),
   SlideInDown: createLayoutAnimMock(),
   SlideOutRight: createLayoutAnimMock(),

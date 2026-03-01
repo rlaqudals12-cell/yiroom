@@ -10,10 +10,12 @@ describe('ENTERING presets', () => {
     expect(ENTERING.scaleIn).toBeDefined();
     expect(ENTERING.slideInRight).toBeDefined();
     expect(ENTERING.slideInDown).toBeDefined();
+    expect(ENTERING.slideInLeft).toBeDefined();
     expect(ENTERING.fadeIn).toBeDefined();
     expect(ENTERING.fadeInDown).toBeDefined();
     expect(ENTERING.fadeInLeft).toBeDefined();
     expect(ENTERING.fadeInRight).toBeDefined();
+    expect(ENTERING.successBounce).toBeDefined();
   });
 });
 
@@ -52,7 +54,7 @@ describe('staggeredEntry', () => {
 });
 
 describe('TIMING', () => {
-  it('should have correct timing values', () => {
+  it('should have correct base timing values', () => {
     expect(TIMING.fast).toBe(150);
     expect(TIMING.normal).toBe(300);
     expect(TIMING.slow).toBe(500);
@@ -62,5 +64,16 @@ describe('TIMING', () => {
   it('should maintain ordering: fast < normal < slow', () => {
     expect(TIMING.fast).toBeLessThan(TIMING.normal);
     expect(TIMING.normal).toBeLessThan(TIMING.slow);
+  });
+
+  it('should have new animation timing constants', () => {
+    expect(TIMING.weave).toBe(1500);
+    expect(TIMING.weaveFast).toBe(800);
+    expect(TIMING.sparkle).toBe(1000);
+    expect(TIMING.medalDrop).toBe(1000);
+    expect(TIMING.scanLine).toBe(2000);
+    expect(TIMING.bounceSlow).toBe(2000);
+    expect(TIMING.successBounce).toBe(500);
+    expect(TIMING.confetti).toBe(2500);
   });
 });

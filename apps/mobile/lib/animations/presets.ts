@@ -19,6 +19,7 @@ import {
   FadeOutDown,
   FadeOutUp,
   SlideInDown,
+  SlideInLeft,
   SlideInRight,
   SlideOutDown,
   SlideOutRight,
@@ -47,11 +48,17 @@ export const ENTERING = {
   // slide-in-down (모달, 시트용)
   slideInDown: SlideInDown.duration(500).easing(EASE_OUT),
 
+  // slide-in-left (웹 @keyframes slide-in-left 대응)
+  slideInLeft: SlideInLeft.duration(400).easing(EASE_OUT),
+
   // 기본 페이드
   fadeIn: FadeIn.duration(300),
   fadeInDown: FadeInDown.duration(400).easing(EASE_OUT),
   fadeInLeft: FadeInLeft.duration(400).easing(EASE_OUT),
   fadeInRight: FadeInRight.duration(400).easing(EASE_OUT),
+
+  // success-bounce: scale 1→1.1→1 (0.5s ease-out) — 성공 체크마크
+  successBounce: ZoomIn.duration(500).easing(EASE_OUT),
 } as const;
 
 /** 퇴장 애니메이션 프리셋 */
@@ -94,4 +101,20 @@ export const TIMING = {
   slow: 500,
   /** 순차 등장 간격 */
   staggerInterval: 80,
+  /** 위브 기본 주기 */
+  weave: 1500,
+  /** 위브 빠른 주기 */
+  weaveFast: 800,
+  /** 스파클 주기 */
+  sparkle: 1000,
+  /** 메달 드롭 */
+  medalDrop: 1000,
+  /** 스캔 라인 주기 */
+  scanLine: 2000,
+  /** 느린 바운스 주기 */
+  bounceSlow: 2000,
+  /** 성공 바운스 */
+  successBounce: 500,
+  /** 컨페티 지속 시간 */
+  confetti: 2500,
 } as const;
