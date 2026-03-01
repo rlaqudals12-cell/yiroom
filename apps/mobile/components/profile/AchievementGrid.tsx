@@ -45,6 +45,7 @@ export function AchievementGrid({
       {/* 헤더 */}
       <View style={[styles.header, { marginBottom: spacing.sm + 4 }]}>
         <Text
+          accessibilityRole="header"
           style={{
             fontSize: typography.size.base,
             fontWeight: typography.weight.semibold,

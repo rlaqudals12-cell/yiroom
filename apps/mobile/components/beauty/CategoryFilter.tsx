@@ -35,6 +35,7 @@ export function CategoryFilter({
   return (
     <View style={style} testID={testID} accessibilityLabel="카테고리 필터">
       <Text
+        accessibilityRole="header"
         style={{
           fontSize: typography.size.sm,
           fontWeight: typography.weight.semibold,

@@ -63,7 +63,7 @@ export function StrengthsFirst({
       <View
         style={[styles.section, { backgroundColor: `${status.success}10`, borderColor: `${status.success}30` }]}
       >
-        <Text style={[styles.sectionTitle, { color: status.success, fontSize: typography.size.sm }]}>
+        <Text accessibilityRole="header" style={[styles.sectionTitle, { color: status.success, fontSize: typography.size.sm }]}>
           나의 강점
         </Text>
 
@@ -100,7 +100,7 @@ export function StrengthsFirst({
         <View
           style={[styles.section, styles.growthSection, { backgroundColor: `${status.warning}10`, borderColor: `${status.warning}30` }]}
         >
-          <Text style={[styles.sectionTitle, { color: status.warning, fontSize: typography.size.sm }]}>
+          <Text accessibilityRole="header" style={[styles.sectionTitle, { color: status.warning, fontSize: typography.size.sm }]}>
             성장 가능성
           </Text>
           {growthItems.map((item) => (

@@ -38,6 +38,7 @@ export function IngredientFilter({
   return (
     <View style={style} testID={testID} accessibilityLabel="성분 필터">
       <Text
+        accessibilityRole="header"
         style={{
           fontSize: typography.size.sm,
           fontWeight: typography.weight.semibold,

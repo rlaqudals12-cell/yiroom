@@ -29,7 +29,7 @@ export default function SkinAnalysisScreen() {
           <View style={[styles.iconContainer, { backgroundColor: brand.primary }]}>
             <Text style={[styles.iconText, { color: brand.primaryForeground }]}>AI</Text>
           </View>
-          <Text style={[styles.title, { color: colors.foreground }]}>AI 피부 분석</Text>
+          <Text accessibilityRole="header" style={[styles.title, { color: colors.foreground }]}>AI 피부 분석</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             사진 한 장으로 나의 피부 타입과{'\n'}맞춤 스킨케어 루틴을 확인하세요
           </Text>
@@ -37,7 +37,7 @@ export default function SkinAnalysisScreen() {
 
         {/* 분석 항목 */}
         <Animated.View entering={staggeredEntry(1)} style={[styles.card, { backgroundColor: colors.card }]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>분석 항목</Text>
+          <Text accessibilityRole="header" style={[styles.cardTitle, { color: colors.foreground }]}>분석 항목</Text>
           <View style={styles.itemList}>
             <AnalysisItem label="피부 타입" description="건성/지성/복합/민감성" />
             <AnalysisItem label="수분도" description="피부 수분 레벨 측정" />
@@ -51,7 +51,7 @@ export default function SkinAnalysisScreen() {
 
         {/* 안내 */}
         <Animated.View entering={staggeredEntry(2)} style={[styles.card, { backgroundColor: colors.card }]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>촬영 가이드</Text>
+          <Text accessibilityRole="header" style={[styles.cardTitle, { color: colors.foreground }]}>촬영 가이드</Text>
           <View style={styles.guideList}>
             <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
               • 화장을 지운 맨 얼굴로 촬영해주세요

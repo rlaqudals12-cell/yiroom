@@ -31,7 +31,9 @@ export function MetricBar({ label, value, delta, testID }: MetricBarProps) {
   return (
     <View
       style={styles.metricItem}
+      accessibilityRole="adjustable"
       accessibilityLabel={`${label}: ${value}%${delta ? `, 변화: ${delta > 0 ? '+' : ''}${delta}` : ''}`}
+      accessibilityValue={{ min: 0, max: 100, now: value }}
       testID={testID}
     >
       <View style={styles.metricHeader}>

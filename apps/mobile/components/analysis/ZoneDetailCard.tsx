@@ -83,7 +83,7 @@ export function ZoneDetailCard({
       {/* 발견된 문제 */}
       {concerns.length > 0 && (
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
+          <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
             발견된 문제
           </Text>
           {concerns.map((concern, i) => (
@@ -100,7 +100,7 @@ export function ZoneDetailCard({
       {/* 추천 관리법 */}
       {recommendations.length > 0 && (
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
+          <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
             추천 관리
           </Text>
           {recommendations.map((rec, i) => (

@@ -166,6 +166,9 @@ export default function ClosetScreen() {
                 selectedCategory === item.key && { backgroundColor: moduleTheme.body.dark },
               ]}
               onPress={() => handleCategoryPress(item.key)}
+              accessibilityRole="tab"
+              accessibilityLabel={`${item.label} 카테고리`}
+              accessibilityState={{ selected: selectedCategory === item.key }}
             >
               <Text
                 style={[
@@ -207,6 +210,9 @@ export default function ClosetScreen() {
             <Pressable
               style={[styles.itemCard, { backgroundColor: colors.card }]}
               onPress={() => handleItemPress(item.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.name}, ${CLOTHING_CATEGORY_LABELS[item.subCategory as ClothingCategory] || item.subCategory}`}
+              accessibilityHint="아이템 상세 보기"
             >
               <View style={styles.itemImageContainer}>
                 {item.imageUrl ? (
@@ -224,6 +230,8 @@ export default function ClosetScreen() {
                 <Pressable
                   style={styles.favoriteButton}
                   onPress={() => handleFavoritePress(item.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
                 >
                   <Heart
                     size={18}
@@ -251,12 +259,19 @@ export default function ClosetScreen() {
         style={[styles.sortButton, { backgroundColor: colors.card, ...themeShadows.md }]}
         onPress={handleOpenSortSheet}
         testID="closet-sort-button"
+        accessibilityRole="button"
+        accessibilityLabel="정렬 옵션"
       >
         <SlidersHorizontal size={20} color={colors.foreground} />
       </Pressable>
 
       {/* 추가 버튼 */}
-      <Pressable style={[styles.addButton, { backgroundColor: moduleTheme.body.dark, ...themeShadows.lg }]} onPress={handleAddPress}>
+      <Pressable
+        style={[styles.addButton, { backgroundColor: moduleTheme.body.dark, ...themeShadows.lg }]}
+        onPress={handleAddPress}
+        accessibilityRole="button"
+        accessibilityLabel="아이템 추가"
+      >
         <Plus size={24} color={colors.overlayForeground} />
       </Pressable>
 
@@ -280,6 +295,9 @@ export default function ClosetScreen() {
               ]}
               onPress={() => handleSortSelect(order)}
               testID={`sort-option-${order}`}
+              accessibilityRole="radio"
+              accessibilityLabel={labels[order]}
+              accessibilityState={{ selected: isActive }}
             >
               <Text
                 style={[

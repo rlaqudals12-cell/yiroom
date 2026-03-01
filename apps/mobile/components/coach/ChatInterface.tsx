@@ -153,6 +153,9 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
                   key={cat.key}
                   style={[styles.categoryTab, isActive && { backgroundColor: colors.card }]}
                   onPress={() => handleCategoryChange(cat.key)}
+                  accessibilityRole="tab"
+                  accessibilityLabel={`${cat.label} 카테고리`}
+                  accessibilityState={{ selected: isActive }}
                 >
                   <Text
                     style={[
@@ -177,6 +180,9 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
                   { backgroundColor: colors.card, borderColor: colors.border },
                 ]}
                 onPress={() => handleQuickQuestion(question)}
+                accessibilityRole="button"
+                accessibilityLabel={question}
+                accessibilityHint="이 질문을 코치에게 전송합니다"
               >
                 <Text style={[styles.quickQuestionText, { color: colors.foreground }]}>
                   {question}
@@ -205,6 +211,9 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
                   key={index}
                   style={[styles.suggestedButton, { backgroundColor: colors.muted }]}
                   onPress={() => handleQuickQuestion(question)}
+                  accessibilityRole="button"
+                  accessibilityLabel={question}
+                  accessibilityHint="이 질문을 코치에게 전송합니다"
                 >
                   <Text style={[styles.suggestedText, { color: colors.foreground }]}>
                     {question}
@@ -241,6 +250,8 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
           returnKeyType="send"
           multiline
           maxLength={500}
+          accessibilityLabel="코치에게 보낼 메시지"
+          accessibilityHint="메시지를 입력한 후 전송 버튼을 눌러주세요"
         />
         <Pressable
           style={[
@@ -251,6 +262,9 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
           ]}
           onPress={handleSend}
           disabled={!input.trim() || isLoading}
+          accessibilityRole="button"
+          accessibilityLabel="메시지 전송"
+          accessibilityState={{ disabled: !input.trim() || isLoading }}
         >
           <Text style={[styles.sendButtonText, { color: brand.primaryForeground }]}>전송</Text>
         </Pressable>

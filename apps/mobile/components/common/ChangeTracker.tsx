@@ -49,7 +49,7 @@ export function ChangeTracker({
       accessibilityLabel={`${title} 변화 추적`}
       testID="change-tracker"
     >
-      <Text style={[styles.title, { color: colors.foreground, fontSize: typography.size.lg }]}>
+      <Text accessibilityRole="header" style={[styles.title, { color: colors.foreground, fontSize: typography.size.lg }]}>
         {title}
       </Text>
 

@@ -62,7 +62,7 @@ export function LightingGuide({
       testID="lighting-guide"
       accessibilityLabel={`조명 가이드: ${allPassed ? '모든 항목 통과' : '일부 항목 미통과'}`}
     >
-      <Text style={[styles.title, { color: colors.foreground, fontSize: typography.size.base }]}>
+      <Text accessibilityRole="header" style={[styles.title, { color: colors.foreground, fontSize: typography.size.base }]}>
         촬영 환경 체크
       </Text>
 

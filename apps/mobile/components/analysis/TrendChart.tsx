@@ -89,7 +89,7 @@ export function TrendChart({
     >
       {/* 헤더 */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.foreground, fontSize: typography.size.base }]}>
+        <Text accessibilityRole="header" style={[styles.title, { color: colors.foreground, fontSize: typography.size.base }]}>
           점수 추이
         </Text>
         <View style={styles.trendBadge}>
