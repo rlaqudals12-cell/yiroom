@@ -29,14 +29,24 @@ interface HomeTodaySectionProps {
   onTaskPress: (route: string) => void;
 }
 
+// 시간대별 한국어 인사 (웹 교차 모듈 패턴 포팅)
+function getTimeGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 6) return '좋은 새벽이에요';
+  if (hour < 12) return '좋은 아침이에요';
+  if (hour < 18) return '좋은 오후예요';
+  return '좋은 저녁이에요';
+}
+
 export function HomeTodaySection({
   tasks,
   notifications,
   onTaskPress,
 }: HomeTodaySectionProps): React.JSX.Element {
-  const { colors, spacing, radii, typography, status } = useTheme();
+  const { colors, spacing, radii, typography, status, brand } = useTheme();
 
   const remainingCount = tasks.filter((t) => !t.completed).length;
+  const greeting = getTimeGreeting();
 
   // 알림 타입별 배경색
   const getNotificationBg = (type: Notification['type']): string => {
@@ -60,6 +70,19 @@ export function HomeTodaySection({
       entering={FadeInUp.delay(100).duration(TIMING.normal)}
       testID="home-today-section"
     >
+      {/* 시간대별 인사 */}
+      <Text
+        style={{
+          fontSize: typography.size.lg,
+          fontWeight: typography.weight.semibold,
+          color: colors.foreground,
+          marginBottom: spacing.sm,
+        }}
+        accessibilityRole="header"
+      >
+        {greeting}
+      </Text>
+
       {/* 알림 배너 */}
       {notifications.length > 0 && (
         <View
