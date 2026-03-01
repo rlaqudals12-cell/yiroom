@@ -34,6 +34,8 @@ import { GradientText, type GradientTextVariant } from '../ui/GradientText';
 import { AnalysisTrustBadge, type TrustBadgeType } from './AnalysisTrustBadge';
 import { AnalysisResultButtons } from './AnalysisResultButtons';
 import { GradeDisplay } from './GradeDisplay';
+import { AITransparencyNotice } from '../common/AITransparencyNotice';
+import { MockDataNotice } from '../common/MockDataNotice';
 
 /** 모듈 키에 따른 악센트 색상 가져오기 */
 type ModuleKey = keyof typeof moduleColors;
@@ -187,15 +189,13 @@ export function ResultLayout({
             />
           </Animated.View>
 
-          {/* Mock 경고 */}
+          {/* Mock 경고 — MockDataNotice 컴포넌트 (AI 투명성) */}
           {usedFallback && (
             <Animated.View
               entering={FadeIn.delay(200).duration(TIMING.normal)}
-              style={[styles.fallbackBanner, { backgroundColor: isDark ? '#78350F20' : '#FEF3C720' }]}
+              style={styles.fallbackContainer}
             >
-              <Text style={[styles.fallbackText, { color: isDark ? trustColors.fallback.dark : trustColors.fallback.light }]}>
-                AI 서비스 일시 제한으로 기본 분석 결과를 표시해요
-              </Text>
+              <MockDataNotice compact />
             </Animated.View>
           )}
 
@@ -246,6 +246,14 @@ export function ResultLayout({
             testID={`${testID}-tabs`}
           />
         </View>
+
+        {/* AI 기술 사용 안내 (AI 기본법 제31조 준수) */}
+        <Animated.View
+          entering={FadeInUp.delay(150).duration(TIMING.normal)}
+          style={styles.transparencyContainer}
+        >
+          <AITransparencyNotice compact />
+        </Animated.View>
 
         {/* 전문가 상담 CTA 카드 */}
         <Animated.View
@@ -325,16 +333,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: typography.weight.bold,
   },
-  fallbackBanner: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+  fallbackContainer: {
     alignSelf: 'stretch',
   },
-  fallbackText: {
-    fontSize: 13,
-    textAlign: 'center',
-    lineHeight: 18,
+  transparencyContainer: {
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.sm,
   },
   imageContainer: {
     marginTop: spacing.xs,
