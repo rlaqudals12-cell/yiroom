@@ -56,6 +56,46 @@ export { FaceZoneMap } from './FaceZoneMap';
 export type { FaceZone } from './FaceZoneMap';
 export { DrapingPreview } from './DrapingPreview';
 
+// 비주얼 리포트
+export { VisualReportCard } from './VisualReportCard';
+export type { VisualReportCardProps, AnalysisType, MetricItem } from './VisualReportCard';
+
+export { ZoneDetailCard } from './ZoneDetailCard';
+export type { ZoneDetailCardProps, ZoneStatus } from './ZoneDetailCard';
+
+export { TrendChart } from './TrendChart';
+export type { TrendChartProps, TrendDataPoint, TrendMetric } from './TrendChart';
+
+export { StrengthsFirst } from './StrengthsFirst';
+export type { StrengthsFirstProps } from './StrengthsFirst';
+
+export { LightingGuide } from './LightingGuide';
+export type { LightingGuideProps, BrightnessLevel, UniformityLevel } from './LightingGuide';
+
+export { SkinVitalityScore } from './SkinVitalityScore';
+export type { SkinVitalityScoreProps } from './SkinVitalityScore';
+
+export { DetailedFaceZoneMap } from './DetailedFaceZoneMap';
+export type {
+  DetailedFaceZoneMapProps,
+  DetailedZoneId,
+  DetailedStatusLevel,
+  DetailedZoneStatus,
+} from './DetailedFaceZoneMap';
+
+export { PhotoOverlayMap } from './PhotoOverlayMap';
+export type {
+  PhotoOverlayMapProps,
+  OverlayZoneId,
+  OverlayZoneStatus,
+} from './PhotoOverlayMap';
+
+export { ContextLinkingCard } from './ContextLinkingCard';
+export type { ContextLinkingCardProps, ContextLink } from './ContextLinkingCard';
+
+export { SolutionPanel } from './SolutionPanel';
+export type { SolutionPanelProps, SolutionStep } from './SolutionPanel';
+
 // 동적 스타일 훅 (useTheme 기반)
 export { useAnalysisStyles } from './styles/useAnalysisStyles';
 
