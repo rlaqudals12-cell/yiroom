@@ -65,6 +65,24 @@ export default function NutritionLayout() {
           title: '단식 트래커',
         }}
       />
+      <Stack.Screen
+        name="recipe/index"
+        options={{
+          title: '맞춤 레시피',
+        }}
+      />
+      <Stack.Screen
+        name="recipe/[id]"
+        options={{
+          title: '레시피 상세',
+        }}
+      />
+      <Stack.Screen
+        name="history/index"
+        options={{
+          title: '영양 히스토리',
+        }}
+      />
     </Stack>
   );
 }

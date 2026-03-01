@@ -70,6 +70,24 @@ export default function WorkoutLayout() {
           title: '운동 상세',
         }}
       />
+      <Stack.Screen
+        name="plan/index"
+        options={{
+          title: '주간 운동 플랜',
+        }}
+      />
+      <Stack.Screen
+        name="stretching/index"
+        options={{
+          title: '스트레칭 가이드',
+        }}
+      />
+      <Stack.Screen
+        name="exercise/[id]"
+        options={{
+          title: '운동 상세',
+        }}
+      />
     </Stack>
   );
 }
