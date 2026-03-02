@@ -4,8 +4,9 @@
  * 분석/영양/운동 데이터 교차 분석 결과를 카드 리스트로 표시.
  * useCrossModuleInsights 훅 결과를 시각화.
  */
+import { LinearGradient } from 'expo-linear-gradient';
 import { Lightbulb } from 'lucide-react-native';
-import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Platform, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { useTheme, typography } from '../../lib/theme';
@@ -26,7 +27,7 @@ export function CrossModuleInsight({
   style,
   testID,
 }: CrossModuleInsightProps): React.JSX.Element | null {
-  const { colors, spacing, radii, typography, brand, shadows } = useTheme();
+  const { colors, spacing, radii, typography, brand, shadows, isDark } = useTheme();
 
   const visibleInsights = insights.slice(0, maxItems);
 
@@ -48,10 +49,23 @@ export function CrossModuleInsight({
         style,
       ]}
     >
-      {/* 헤더 */}
+      {/* 헤더 — 그라디언트 아이콘 배지 (웹 gradient icon square 패턴) */}
       <View style={styles.header}>
-        <View style={[styles.iconBadge, { backgroundColor: brand.primary + '20' }]}>
-          <Lightbulb size={18} color={brand.primary} />
+        <View style={[
+          styles.iconBadge,
+          !isDark ? Platform.select({
+            ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 6 },
+            android: { elevation: 3 },
+          }) ?? {} : {},
+        ]}>
+          <LinearGradient
+            colors={[brand.primary, brand.gradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.iconBadgeGradient}
+          >
+            <Lightbulb size={18} color={colors.overlayForeground} />
+          </LinearGradient>
         </View>
         <Text
           style={{
@@ -122,8 +136,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+  },
+  iconBadgeGradient: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   insightItem: {
     flexDirection: 'row',

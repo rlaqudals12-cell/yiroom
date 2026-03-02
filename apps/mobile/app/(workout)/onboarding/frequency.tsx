@@ -4,9 +4,11 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 // 주당 운동 횟수 옵션 (2-6회)
@@ -27,7 +29,7 @@ const TIME_OPTIONS = [
 ];
 
 export default function WorkoutFrequencyScreen() {
-  const { colors, brand, typography, spacing} = useTheme();
+  const { colors, brand, typography, spacing, radii, shadows, isDark } = useTheme();
   const params = useLocalSearchParams<{ goals?: string }>();
 
   const [frequency, setFrequency] = useState<number | null>(null);
@@ -73,7 +75,10 @@ export default function WorkoutFrequencyScreen() {
           일주일에 몇 번 운동할 수 있나요?
         </Text>
 
-        <View style={styles.frequencyList}>
+        <Animated.View
+          entering={FadeInUp.delay(100).duration(TIMING.normal)}
+          style={styles.frequencyList}
+        >
           {FREQUENCY_OPTIONS.map((option) => {
             const isSelected = frequency === option.value;
 
@@ -82,11 +87,14 @@ export default function WorkoutFrequencyScreen() {
                 key={option.value}
                 style={[
                   styles.frequencyCard,
-                  { backgroundColor: colors.card },
-                  isSelected && { borderColor: brand.primary, backgroundColor: brand.primary + '10' },
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: isSelected ? brand.primary : colors.border,
+                    ...(isSelected ? { backgroundColor: brand.primary + '10' } : {}),
+                  },
+                  shadows.card,
                 ]}
                 onPress={() => handleFrequencySelect(option.value)}
-
               >
                 <Text style={styles.frequencyEmoji}>{option.emoji}</Text>
                 <View style={styles.frequencyContent}>
@@ -109,7 +117,7 @@ export default function WorkoutFrequencyScreen() {
               </Pressable>
             );
           })}
-        </View>
+        </Animated.View>
 
         {/* 선호 운동 시간대 */}
         <Text style={[styles.title, styles.sectionMargin, { color: colors.foreground }]}>
@@ -119,7 +127,10 @@ export default function WorkoutFrequencyScreen() {
           주로 어느 시간대에 운동하시나요?
         </Text>
 
-        <View style={styles.timeGrid}>
+        <Animated.View
+          entering={FadeInUp.delay(200).duration(TIMING.normal)}
+          style={styles.timeGrid}
+        >
           {TIME_OPTIONS.map((option) => {
             const isSelected = preferredTime === option.id;
 
@@ -128,11 +139,14 @@ export default function WorkoutFrequencyScreen() {
                 key={option.id}
                 style={[
                   styles.timeCard,
-                  { backgroundColor: colors.card },
-                  isSelected && { borderColor: brand.primary, backgroundColor: brand.primary + '10' },
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: isSelected ? brand.primary : colors.border,
+                    ...(isSelected ? { backgroundColor: brand.primary + '10' } : {}),
+                  },
+                  shadows.card,
                 ]}
                 onPress={() => handleTimeSelect(option.id)}
-
               >
                 <Text style={styles.timeEmoji}>{option.emoji}</Text>
                 <Text
@@ -150,11 +164,19 @@ export default function WorkoutFrequencyScreen() {
               </Pressable>
             );
           })}
-        </View>
+        </Animated.View>
 
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <Pressable
-          style={[styles.nextButton, { backgroundColor: brand.primary }, !isValid && { backgroundColor: colors.muted }]}
+          style={[
+            styles.nextButton,
+            { backgroundColor: brand.primary },
+            !isValid && { backgroundColor: colors.muted },
+            isValid && !isDark ? Platform.select({
+              ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+              android: { elevation: 4 },
+            }) ?? {} : {},
+          ]}
           onPress={handleNext}
           disabled={!isValid}
         >
@@ -185,10 +207,9 @@ const styles = StyleSheet.create({
   frequencyCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
   },
   frequencyCardSelected: {},
   frequencyEmoji: {
@@ -230,11 +251,10 @@ const styles = StyleSheet.create({
   },
   timeCard: {
     width: '47%',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
   },
   timeCardSelected: {},
   timeEmoji: {
@@ -260,7 +280,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   nextButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
   },

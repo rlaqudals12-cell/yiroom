@@ -3,9 +3,11 @@
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 const GOALS = [
@@ -48,7 +50,7 @@ const GOALS = [
 ];
 
 export default function WorkoutGoalsScreen() {
-  const { colors, brand, typography, spacing} = useTheme();
+  const { colors, brand, typography, spacing, radii, shadows, isDark } = useTheme();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
   const toggleGoal = (goalId: string) => {
@@ -76,23 +78,32 @@ export default function WorkoutGoalsScreen() {
           복수 선택이 가능해요 (최대 3개)
         </Text>
 
-        <View style={styles.goalList}>
-          {GOALS.map((goal) => {
+        <Animated.View
+          entering={FadeInUp.delay(100).duration(TIMING.normal)}
+          style={styles.goalList}
+        >
+          {GOALS.map((goal, idx) => {
             const isSelected = selectedGoals.includes(goal.id);
             const isDisabled = !isSelected && selectedGoals.length >= 3;
 
             return (
-              <Pressable
+              <Animated.View
                 key={goal.id}
-                style={[
-                  styles.goalCard,
-                  { backgroundColor: colors.card },
-                  isSelected && { borderColor: brand.primary, backgroundColor: brand.primary + '10' },
-                  isDisabled && styles.goalCardDisabled,
-                ]}
-                onPress={() => !isDisabled && toggleGoal(goal.id)}
-
+                entering={FadeInUp.delay(100 + idx * 60).duration(TIMING.normal)}
               >
+                <Pressable
+                  style={[
+                    styles.goalCard,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: isSelected ? brand.primary : colors.border,
+                      ...(isSelected ? { backgroundColor: brand.primary + '10' } : {}),
+                    },
+                    shadows.card,
+                    isDisabled && styles.goalCardDisabled,
+                  ]}
+                  onPress={() => !isDisabled && toggleGoal(goal.id)}
+                >
                 <Text style={styles.goalEmoji}>{goal.emoji}</Text>
                 <View style={styles.goalContent}>
                   <Text
@@ -111,18 +122,29 @@ export default function WorkoutGoalsScreen() {
                 <View style={[styles.checkbox, { borderColor: colors.border }, isSelected && { backgroundColor: brand.primary, borderColor: brand.primary }]}>
                   {isSelected && <Text style={[styles.checkmark, { color: brand.primaryForeground }]}>✓</Text>}
                 </View>
-              </Pressable>
+                </Pressable>
+              </Animated.View>
             );
           })}
-        </View>
+        </Animated.View>
 
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <Pressable
-          style={[styles.nextButton, selectedGoals.length === 0 && { backgroundColor: colors.muted }]}
+          style={[
+            styles.nextButton,
+            { backgroundColor: brand.primary },
+            selectedGoals.length === 0 && { backgroundColor: colors.muted },
+            selectedGoals.length > 0 && !isDark ? Platform.select({
+              ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+              android: { elevation: 4 },
+            }) ?? {} : {},
+          ]}
           onPress={handleNext}
           disabled={selectedGoals.length === 0}
         >
-          <Text style={styles.nextButtonText}>다음 ({selectedGoals.length}/3)</Text>
+          <Text style={[styles.nextButtonText, { color: brand.primaryForeground }]}>
+            다음 ({selectedGoals.length}/3)
+          </Text>
         </Pressable>
       </View>
     </ScreenContainer>
@@ -145,10 +167,9 @@ const styles = StyleSheet.create({
   goalCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
   },
   goalCardSelected: {},
   goalCardDisabled: {
@@ -192,7 +213,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   nextButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
   },

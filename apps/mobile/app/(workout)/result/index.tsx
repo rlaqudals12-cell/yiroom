@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     gap: spacing.smx,
   },
   primaryButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
   },
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     borderWidth: 1,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
   },

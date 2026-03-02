@@ -15,6 +15,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Dumbbell, Apple, ShoppingBag, ChevronRight } from 'lucide-react-native';
 
 import { HomeHeader, HomeTodaySection, HomeQuickActions, CrossModuleInsight } from '../../components/home';
 import {
@@ -294,6 +296,7 @@ export default function HomeScreen(): React.JSX.Element {
               value={streakCount}
               label="연속 운동"
               suffix="일"
+              emoji="🔥"
               moduleColor="workout"
               testID="stat-workout"
             />
@@ -302,6 +305,7 @@ export default function HomeScreen(): React.JSX.Element {
             value={calorieProgress}
             label="칼로리"
             suffix="%"
+            emoji="🍽️"
             moduleColor="nutrition"
             style={{ flex: 1 }}
             testID="stat-calorie"
@@ -310,6 +314,7 @@ export default function HomeScreen(): React.JSX.Element {
             value={analysisCount}
             label="분석 완료"
             suffix="/3"
+            emoji="✨"
             style={{ flex: 1 }}
             testID="stat-analysis"
           />
@@ -376,7 +381,17 @@ export default function HomeScreen(): React.JSX.Element {
   );
 }
 
-/** 모듈 카드 — GradientCard variant 적용 */
+// 모듈 카드 아이콘 매핑 (웹 w-11 h-11 gradient icon square 대응)
+const MODULE_CARD_META: Record<string, {
+  icon: typeof Dumbbell;
+  gradientColors: [string, string];
+}> = {
+  workout: { icon: Dumbbell, gradientColors: ['#4ADE80', '#22C55E'] },
+  nutrition: { icon: Apple, gradientColors: ['#4ADE80', '#22C55E'] },
+  brand: { icon: ShoppingBag, gradientColors: ['#F8C8DC', '#FFB6C1'] },
+};
+
+/** 모듈 카드 — 웹 gradient icon square + GradientCard + ChevronRight */
 function ModuleCard({
   title,
   description,
@@ -388,24 +403,55 @@ function ModuleCard({
   variant: 'workout' | 'nutrition' | 'brand';
   onPress: () => void;
 }): React.JSX.Element {
-  const { colors, spacing, typography } = useTheme();
+  const { colors, spacing, radii, typography, isDark } = useTheme();
 
   const handlePress = (): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress();
   };
 
+  const meta = MODULE_CARD_META[variant];
+  const IconComponent = meta.icon;
+
   return (
     <AnimatedCard onPress={handlePress} accessibilityLabel={`${title} 모듈로 이동`}>
       <GradientCard variant={variant} padding={spacing.md}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {/* 그라디언트 아이콘 스퀘어 (웹 w-11 h-11 rounded-xl gradient 매칭) */}
+          <View style={[
+            { marginRight: spacing.smx, borderRadius: radii.smx },
+            !isDark ? Platform.select({
+              ios: {
+                shadowColor: meta.gradientColors[1],
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+              },
+              android: { elevation: 4 },
+            }) ?? {} : {},
+          ]}>
+            <LinearGradient
+              colors={meta.gradientColors}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: radii.smx,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <IconComponent size={22} color="#FFFFFF" strokeWidth={2} />
+            </LinearGradient>
+          </View>
           <View style={{ flex: 1 }}>
             <Text
               style={{
                 fontSize: typography.size.base,
                 fontWeight: typography.weight.semibold,
                 color: colors.foreground,
-                marginBottom: spacing.xs,
+                marginBottom: spacing.xxs,
               }}
             >
               {title}
@@ -419,15 +465,7 @@ function ModuleCard({
               {description}
             </Text>
           </View>
-          <Text
-            style={{
-              fontSize: typography.size['2xl'],
-              color: colors.mutedForeground,
-              marginLeft: spacing.sm,
-            }}
-          >
-            ›
-          </Text>
+          <ChevronRight size={20} color={colors.mutedForeground} strokeWidth={1.5} />
         </View>
       </GradientCard>
     </AnimatedCard>

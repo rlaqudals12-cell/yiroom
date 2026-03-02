@@ -40,6 +40,8 @@ interface StatCardProps {
   moduleColor?: ModuleColorKey;
   /** countUp 애니메이션 시간 (ms) */
   duration?: number;
+  /** 아이콘 이모지 (숫자 왼쪽 표시) */
+  emoji?: string;
   /** 추가 스타일 */
   style?: ViewStyle;
   /** 테스트 ID */
@@ -55,6 +57,7 @@ export function StatCard({
   trend,
   moduleColor,
   duration = 1000,
+  emoji,
   style,
   testID = 'stat-card',
 }: StatCardProps): React.JSX.Element {
@@ -95,7 +98,7 @@ export function StatCard({
         style,
       ]}
     >
-      {/* 모듈 색상 악센트 바 */}
+      {/* 모듈 색상 악센트 바 (4px 두께 — 시각적 존재감) */}
       <View
         style={[
           styles.accentBar,
@@ -106,6 +109,19 @@ export function StatCard({
         ]}
       />
 
+      {/* 이모지 아이콘 (있을 경우) */}
+      {emoji && (
+        <Text
+          style={{
+            fontSize: typography.size.lg,
+            marginTop: spacing.sm,
+            marginBottom: spacing.xxs,
+          }}
+        >
+          {emoji}
+        </Text>
+      )}
+
       {/* 숫자 */}
       <Text
         style={[
@@ -114,6 +130,7 @@ export function StatCard({
             color: colors.foreground,
             fontSize: typography.size['2xl'],
             fontWeight: typography.weight.bold,
+            marginTop: emoji ? 0 : spacing.xs,
           },
         ]}
         accessibilityLabel={`${label} ${prefix}${value}${suffix}`}
@@ -168,11 +185,9 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 3,
+    height: 4,
   },
-  value: {
-    marginTop: spacing.xs,
-  },
+  value: {},
   label: {
     marginTop: spacing.xxs,
   },
