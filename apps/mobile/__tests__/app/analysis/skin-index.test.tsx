@@ -88,9 +88,9 @@ describe('SkinAnalysisScreen (시작 화면)', () => {
       ).toBeTruthy();
     });
 
-    it('"AI" 아이콘 텍스트가 표시되어야 한다', () => {
+    it('피부 모듈 아이콘이 표시되어야 한다', () => {
       const { getByText } = renderWithTheme(<SkinAnalysisScreen />);
-      expect(getByText('AI')).toBeTruthy();
+      expect(getByText('💧')).toBeTruthy();
     });
   });
 

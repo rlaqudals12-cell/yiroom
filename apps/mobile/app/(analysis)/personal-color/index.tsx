@@ -3,7 +3,7 @@
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { Platform, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
@@ -60,7 +60,7 @@ const QUESTIONS = [
 ];
 
 export default function PersonalColorScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, spacing, radii, typography, isDark, module: moduleColors } = useTheme();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
@@ -101,7 +101,7 @@ export default function PersonalColorScreen() {
       <View style={styles.progressContainer}>
         <View style={[styles.progressBar, { backgroundColor: colors.muted }]} accessibilityLabel={`진행률 ${currentQuestion + 1}/${QUESTIONS.length}`}>
           <View
-            style={[styles.progressFill, { width: `${progress}%`, backgroundColor: brand.primary }]}
+            style={[styles.progressFill, { width: `${progress}%`, backgroundColor: moduleColors.personalColor.base }]}
           />
         </View>
         <Text style={[styles.progressText, { color: colors.mutedForeground }]}>
@@ -110,8 +110,14 @@ export default function PersonalColorScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* 질문 */}
+        {/* 모듈 아이콘 + 질문 */}
         <Animated.View entering={staggeredEntry(0)} style={styles.questionContainer}>
+          <View style={[
+            styles.moduleIcon,
+            { backgroundColor: `${moduleColors.personalColor.base}18` },
+          ]}>
+            <Text style={{ fontSize: 22 }}>🎨</Text>
+          </View>
           <Text style={[styles.questionText, { color: colors.foreground }]}>
             {question.question}
           </Text>
@@ -124,10 +130,19 @@ export default function PersonalColorScreen() {
               <Pressable
                 style={[
                   styles.optionButton,
-                  { backgroundColor: colors.card },
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                  },
+                  !isDark
+                    ? Platform.select({
+                        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6 },
+                        android: { elevation: 1 },
+                      }) ?? {}
+                    : {},
                   isSelected(option.value) && {
-                    borderColor: brand.primary,
-                    backgroundColor: colors.muted,
+                    borderColor: moduleColors.personalColor.base,
+                    backgroundColor: `${moduleColors.personalColor.base}10`,
                   },
                 ]}
                 onPress={() => handleAnswer(option.value)}
@@ -140,7 +155,7 @@ export default function PersonalColorScreen() {
                     styles.optionText,
                     { color: colors.foreground },
                     isSelected(option.value) && {
-                      color: brand.primary,
+                      color: moduleColors.personalColor.base,
                       fontWeight: typography.weight.semibold,
                     },
                   ]}
@@ -192,6 +207,14 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.mlg,
   },
+  moduleIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
   questionContainer: {
     marginBottom: spacing.xl,
   },
@@ -204,10 +227,9 @@ const styles = StyleSheet.create({
     gap: spacing.smx,
   },
   optionButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: 18,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
   },
   optionText: {
     fontSize: typography.size.base,

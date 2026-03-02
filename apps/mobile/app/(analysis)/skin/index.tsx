@@ -2,7 +2,7 @@
  * S-1 피부 분석 - 시작 화면
  */
 import { router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { Platform, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
@@ -10,7 +10,7 @@ import { staggeredEntry } from '../../../lib/animations';
 import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 export default function SkinAnalysisScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, spacing, radii, typography, isDark, module: moduleColors } = useTheme();
 
   const handleStartAnalysis = () => {
     router.push('/(analysis)/skin/camera');
@@ -26,8 +26,17 @@ export default function SkinAnalysisScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 헤더 */}
         <Animated.View entering={staggeredEntry(0)} style={styles.header}>
-          <View style={[styles.iconContainer, { backgroundColor: brand.primary }]}>
-            <Text style={[styles.iconText, { color: brand.primaryForeground }]}>AI</Text>
+          <View style={[
+            styles.iconContainer,
+            { backgroundColor: `${moduleColors.skin.base}18` },
+            !isDark
+              ? Platform.select({
+                  ios: { shadowColor: moduleColors.skin.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12 },
+                  android: { elevation: 3 },
+                }) ?? {}
+              : {},
+          ]}>
+            <Text style={styles.iconText}>💧</Text>
           </View>
           <Text accessibilityRole="header" style={[styles.title, { color: colors.foreground }]}>AI 피부 분석</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
@@ -36,7 +45,16 @@ export default function SkinAnalysisScreen() {
         </Animated.View>
 
         {/* 분석 항목 */}
-        <Animated.View entering={staggeredEntry(1)} style={[styles.card, { backgroundColor: colors.card }]}>
+        <Animated.View entering={staggeredEntry(1)} style={[
+          styles.card,
+          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+          !isDark
+            ? Platform.select({
+                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+                android: { elevation: 2 },
+              }) ?? {}
+            : {},
+        ]}>
           <Text accessibilityRole="header" style={[styles.cardTitle, { color: colors.foreground }]}>분석 항목</Text>
           <View style={styles.itemList}>
             <AnalysisItem label="피부 타입" description="건성/지성/복합/민감성" />
@@ -50,7 +68,16 @@ export default function SkinAnalysisScreen() {
         </Animated.View>
 
         {/* 안내 */}
-        <Animated.View entering={staggeredEntry(2)} style={[styles.card, { backgroundColor: colors.card }]}>
+        <Animated.View entering={staggeredEntry(2)} style={[
+          styles.card,
+          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+          !isDark
+            ? Platform.select({
+                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+                android: { elevation: 2 },
+              }) ?? {}
+            : {},
+        ]}>
           <Text accessibilityRole="header" style={[styles.cardTitle, { color: colors.foreground }]}>촬영 가이드</Text>
           <View style={styles.guideList}>
             <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
@@ -74,12 +101,21 @@ export default function SkinAnalysisScreen() {
         ]}
       >
         <Pressable
-          style={[styles.startButton, { backgroundColor: brand.primary }]}
+          style={[
+            styles.startButton,
+            { backgroundColor: moduleColors.skin.base },
+            !isDark
+              ? Platform.select({
+                  ios: { shadowColor: moduleColors.skin.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                  android: { elevation: 4 },
+                }) ?? {}
+              : {},
+          ]}
           onPress={handleStartAnalysis}
           accessibilityRole="button"
           accessibilityLabel="피부 분석 시작하기"
         >
-          <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>
+          <Text style={[styles.startButtonText, { color: colors.overlayForeground }]}>
             피부 분석 시작하기
           </Text>
         </Pressable>
@@ -89,12 +125,12 @@ export default function SkinAnalysisScreen() {
 }
 
 function AnalysisItem({ label, description }: { label: string; description: string }) {
-  const { colors, brand } = useTheme();
+  const { colors, module: moduleColors } = useTheme();
 
   return (
     <View style={styles.analysisItem}>
-      <View style={[styles.bullet, { backgroundColor: brand.primary }]} />
-      <View>
+      <View style={[styles.bullet, { backgroundColor: moduleColors.skin.base }]} />
+      <View style={{ flex: 1 }}>
         <Text style={[styles.itemLabel, { color: colors.foreground }]}>{label}</Text>
         <Text style={[styles.itemDescription, { color: colors.mutedForeground }]}>
           {description}
@@ -125,8 +161,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.mlg,
   },
   iconText: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold,
+    fontSize: 32,
   },
   title: {
     fontSize: 26,
@@ -186,8 +221,9 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   startButton: {
-    borderRadius: radii.smx,
-    padding: spacing.md,
+    borderRadius: radii.full,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     alignItems: 'center',
   },
   startButtonText: {

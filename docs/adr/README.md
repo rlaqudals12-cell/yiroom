@@ -126,6 +126,12 @@ Architecture Decision Records는 프로젝트에서 내린 중요한 아키텍�
 | [ADR-060](./ADR-060-claude-code-headless-mode.md)      | Claude Code Headless Mode 도입 보류 | deferred | 2026-01-31 |
 | [ADR-061](./ADR-061-data-platform-architecture.md)     | 데이터 플랫폼 아키텍처              | accepted | 2026-02-01 |
 | [ADR-062](./ADR-062-gradient-text-vertical-bug-fix.md) | 그라디언트 텍스트 세로 버그 수정    | accepted | 2026-02-03 |
+| [ADR-063](./ADR-063-pc1-terminology-simplification.md) | PC-1 용어 단순화                    | accepted | 2026-02-05 |
+| [ADR-064](./ADR-064-pc1-result-tab-consolidation.md)   | PC-1 결과 탭 통합                   | accepted | 2026-02-05 |
+| [ADR-065](./ADR-065-pc1-mock-fallback-policy.md)       | PC-1 AI 실패 시 Mock Fallback 금지  | accepted | 2026-02-06 |
+| [ADR-066](./ADR-066-ssot-consolidation-strategy.md)    | SSOT 통합 전략                      | accepted | 2026-02-06 |
+| [ADR-067](./ADR-067-affiliate-partner-api-strategy.md) | 어필리에이트 파트너 API 전략        | accepted | 2026-02-08 |
+| [ADR-068](./ADR-068-analysis-api-db-resilience.md)     | 분석 API DB 저장 실패 시 합성 응답  | accepted | 2026-03-03 |
 
 ## ADR 카테고리
 
@@ -150,6 +156,9 @@ Architecture Decision Records는 프로젝트에서 내린 중요한 아키텍�
 - ADR-010: AI 파이프라인 아키텍처
 - ADR-055: Multi-AI 백업 전략
 - ADR-059: Contextual Retrieval 적용 보류 (deferred)
+- ADR-065: PC-1 AI 실패 시 Mock Fallback 금지
+- ADR-067: 어필리에이트 파트너 API 전략
+- ADR-068: 분석 API DB 저장 실패 시 합성 응답
 
 ### 인프라/운영 (Infrastructure/Operations)
 
@@ -220,6 +229,12 @@ Architecture Decision Records는 프로젝트에서 내린 중요한 아키텍�
 - ADR-057: 디자인 시스템 v2
 - ADR-058: Hub 패턴 연기 결정
 - ADR-062: 그라디언트 텍스트 세로 버그 수정
+- ADR-063: PC-1 용어 단순화
+- ADR-064: PC-1 결과 탭 통합
+
+### 데이터 통합 (Data Consolidation)
+
+- ADR-066: SSOT 통합 전략
 
 ### DevOps/인프라 (DevOps/Infrastructure)
 
@@ -280,4 +295,4 @@ Architecture Decision Records는 프로젝트에서 내린 중요한 아키텍�
 
 ---
 
-**Version**: 7.9 | **Updated**: 2026-02-01 | ADR-061 추가 (데이터 플랫폼 아키텍처)
+**Version**: 8.0 | **Updated**: 2026-03-03 | ADR-063~068 추가 (PC-1 UX, Mock Fallback, SSOT, DB Resilience)

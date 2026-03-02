@@ -21,30 +21,30 @@
 
 ### 물리적 한계
 
-| 항목 | 한계 |
-|------|------|
-| Mock 품질 | AI의 개인화 수준 완벽 재현 불가 |
-| 실시간 학습 | Mock은 정적, AI는 동적 |
+| 항목        | 한계                              |
+| ----------- | --------------------------------- |
+| Mock 품질   | AI의 개인화 수준 완벽 재현 불가   |
+| 실시간 학습 | Mock은 정적, AI는 동적            |
 | 에지 케이스 | 비정형 입력에 대한 Mock 대응 한계 |
 
 ### 100점 기준
 
-| 지표 | 100점 기준 | 현재 | 비고 |
-|------|-----------|------|------|
-| 장애 시 가용성 | 100% | 100% | ✅ 달성 |
-| Mock 품질 (AI 대비) | 90% | 70% | 개선 필요 |
-| 자동 복구 | Circuit Breaker | try-catch | 향후 개선 |
-| 개발 비용 절감 | 100% | 90% | FORCE_MOCK_AI |
+| 지표                | 100점 기준      | 현재      | 비고          |
+| ------------------- | --------------- | --------- | ------------- |
+| 장애 시 가용성      | 100%            | 100%      | ✅ 달성       |
+| Mock 품질 (AI 대비) | 90%             | 70%       | 개선 필요     |
+| 자동 복구           | Circuit Breaker | try-catch | 향후 개선     |
+| 개발 비용 절감      | 100%            | 90%       | FORCE_MOCK_AI |
 
 ### 현재 목표: 85%
 
 ### 의도적 제외
 
-| 제외 항목 | 이유 | 재검토 시점 |
-|----------|------|------------|
-| Circuit Breaker | 현재 try-catch 충분 | 장애 빈도 증가 시 |
-| Mock 자동 생성 | AI 결과 기반 자동 생성 | Phase 2 |
-| A/B Mock 테스트 | 복잡도 대비 ROI 낮음 | 필요 시 |
+| 제외 항목       | 이유                   | 재검토 시점       |
+| --------------- | ---------------------- | ----------------- |
+| Circuit Breaker | 현재 try-catch 충분    | 장애 빈도 증가 시 |
+| Mock 자동 생성  | AI 결과 기반 자동 생성 | Phase 2           |
+| A/B Mock 테스트 | 복잡도 대비 ROI 낮음   | 필요 시           |
 
 ---
 
@@ -82,11 +82,11 @@ try {
 
 ## 대안 (Alternatives Considered)
 
-| 대안 | 장점 | 단점 | 제외 사유 |
-|------|------|------|----------|
-| 에러 페이지 표시 | 구현 간단 | 사용자 경험 저하 | `NOT_NEEDED` - 대안 제공 가능 |
-| 재시도만 수행 | 일시적 장애 해결 | 장기 장애 시 무한 대기 | `ALT_SUFFICIENT` - 재시도 + Fallback 조합 |
-| 캐시된 결과 사용 | 개인화된 결과 | 첫 분석 시 불가 | `PREREQ_MISSING` - 첫 사용자 대응 불가 |
+| 대안             | 장점             | 단점                   | 제외 사유                                 |
+| ---------------- | ---------------- | ---------------------- | ----------------------------------------- |
+| 에러 페이지 표시 | 구현 간단        | 사용자 경험 저하       | `NOT_NEEDED` - 대안 제공 가능             |
+| 재시도만 수행    | 일시적 장애 해결 | 장기 장애 시 무한 대기 | `ALT_SUFFICIENT` - 재시도 + Fallback 조합 |
+| 캐시된 결과 사용 | 개인화된 결과    | 첫 분석 시 불가        | `PREREQ_MISSING` - 첫 사용자 대응 불가    |
 
 ## 결과 (Consequences)
 
@@ -105,6 +105,7 @@ try {
 ### 리스크
 
 - Mock 품질 저하 → **Hybrid 패턴으로 최신 Mock 유지 (ADR-002)**
+- ~~DB 저장 실패 시 분석 결과 유실~~ → **2026-03-03 수정 완료**: 모든 분석 API에서 DB 실패 시 합성 ID로 결과 반환 ([트러블슈팅](../troubleshooting/2026-03-03-analysis-api-db-resilience.md))
 
 ## 구현 가이드
 
@@ -133,8 +134,8 @@ export function generateMockSkinAnalysis(input: SkinAnalysisInput): SkinAnalysis
     hydration: baseScore - 5 + Math.floor(Math.random() * 10),
     oiliness: baseScore - 10 + Math.floor(Math.random() * 20),
     // ...
-    isMock: true,  // Mock 여부 표시 필수
-    confidence: 0.5,  // 낮은 신뢰도 표시
+    isMock: true, // Mock 여부 표시 필수
+    confidence: 0.5, // 낮은 신뢰도 표시
   };
 }
 ```
@@ -149,18 +150,50 @@ FORCE_MOCK_AI=true  # 개발/테스트 시 Mock 강제
 ### UI 신뢰도 표시
 
 ```tsx
-{result.isMock && (
-  <Badge variant="outline" className="text-amber-600">
-    AI 연결 불안정 - 임시 결과
-  </Badge>
-)}
+{
+  result.isMock && (
+    <Badge variant="outline" className="text-amber-600">
+      AI 연결 불안정 - 임시 결과
+    </Badge>
+  );
+}
+```
+
+### DB 저장 실패 시 합성 응답 (2026-03-03 추가)
+
+```typescript
+// DB 저장 실패 시에도 분석 결과를 반드시 반환
+// usedMock 여부와 무관하게 적용
+} catch (dbOperationError) {
+  console.warn('[Module] DB operations failed, using synthetic response');
+  const syntheticId = crypto.randomUUID();
+  return NextResponse.json({
+    success: true,
+    data: { id: syntheticId, clerk_user_id: userId, created_at: new Date().toISOString() },
+    result,
+    usedMock,
+    dbSaveFailed: true,    // 클라이언트에서 DB 실패 인지용
+    gamification: { badgeResults: [], xpAwarded: 0 },
+  });
+}
+```
+
+**금지 패턴**:
+
+```typescript
+// ❌ 금지: Mock 모드에서만 합성 응답
+if (usedMock) { return synthetic; }
+throw dbOperationError;  // Real AI 결과 유실!
+
+// ❌ 금지: Real AI 성공 시 DB 에러로 500 반환
+if (!usedMock) { return dbError(...); }  // AI 결과 유실!
 ```
 
 ### 타임아웃 설정
 
 ```typescript
-const TIMEOUT_MS = 3000;    // 3초 타임아웃
-const MAX_RETRIES = 2;      // 2회 재시도 후 Mock
+const TIMEOUT_MS = 3000; // 3초 타임아웃
+const MAX_RETRIES = 2; // 2회 재시도 후 Mock
 
 async function analyzeWithFallback<T>(
   analyze: () => Promise<T>,
@@ -194,17 +227,20 @@ claude.ai 딥 리서치 요청:
 ## 관련 문서
 
 ### 원리 문서 (과학적 기초)
+
 - [원리: AI 추론](../principles/ai-inference.md) - 5단계 Fallback, 서킷 브레이커
 
 ### 관련 ADR
+
 - [ADR-002: Hybrid 데이터 패턴](./ADR-002-hybrid-data-pattern.md)
 - [ADR-003: AI 모델 선택](./ADR-003-ai-model-selection.md)
 
 ### 규칙 파일 (이 ADR 참조)
+
 - [AI Integration Rules](../../.claude/rules/ai-integration.md) - Gemini 통합, Fallback 요약
 - [Hybrid Data Pattern](../../.claude/rules/hybrid-data-pattern.md) - DB + Mock 조합
 - [Error Handling Patterns](../../.claude/rules/error-handling-patterns.md) - 3단계 폴백
 
 ---
 
-**Author**: Claude Code | **Version**: 1.1 | **Updated**: 2026-01-28
+**Author**: Claude Code | **Version**: 1.2 | **Updated**: 2026-03-03

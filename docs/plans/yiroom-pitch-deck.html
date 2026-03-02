@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Yiroom Pitch Deck - GFSA Korea 2026</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; }
+  .slide {
+    width: 100%; height: 100vh; padding: 60px 80px;
+    display: flex; flex-direction: column; justify-content: center;
+    page-break-after: always; position: relative;
+  }
+  .slide:last-child { page-break-after: avoid; }
+  .slide-number {
+    position: absolute; bottom: 30px; right: 50px;
+    font-size: 14px; color: #999;
+  }
+  .logo-bar {
+    position: absolute; top: 30px; left: 50px;
+    font-size: 16px; font-weight: 700; color: #6366f1;
+  }
+  h1 { font-size: 48px; font-weight: 800; margin-bottom: 20px; color: #1a1a1a; }
+  h2 { font-size: 36px; font-weight: 700; margin-bottom: 30px; color: #1a1a1a; }
+  h3 { font-size: 24px; font-weight: 600; margin-bottom: 15px; color: #6366f1; }
+  p { font-size: 20px; line-height: 1.6; color: #444; }
+  .subtitle { font-size: 24px; color: #6366f1; font-weight: 600; margin-bottom: 10px; }
+  .tagline { font-size: 28px; color: #666; margin-bottom: 40px; }
+  .big-number { font-size: 64px; font-weight: 800; color: #6366f1; }
+  .metric-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 20px;
+  }
+  .metric-box {
+    background: #f8f9fc; border-radius: 16px; padding: 30px; text-align: center;
+  }
+  .metric-box .number { font-size: 36px; font-weight: 800; color: #6366f1; }
+  .metric-box .label { font-size: 16px; color: #666; margin-top: 8px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .module-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px;
+  }
+  .module-box {
+    background: #f0f0ff; border-radius: 12px; padding: 20px; text-align: center;
+  }
+  .module-box .icon { font-size: 32px; margin-bottom: 8px; }
+  .module-box .name { font-size: 16px; font-weight: 600; color: #333; }
+  .timeline-row {
+    display: flex; justify-content: space-between; margin-top: 20px; gap: 12px;
+  }
+  .timeline-item {
+    flex: 1; background: #f8f9fc; border-radius: 12px; padding: 20px; text-align: center;
+  }
+  .timeline-item .week { font-size: 14px; font-weight: 700; color: #6366f1; margin-bottom: 8px; }
+  .timeline-item .goal { font-size: 14px; color: #444; }
+  ul { font-size: 20px; line-height: 1.8; color: #444; padding-left: 24px; }
+  li { margin-bottom: 8px; }
+  .highlight { color: #6366f1; font-weight: 700; }
+  .cover-slide {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white; text-align: center;
+  }
+  .cover-slide h1 { color: white; font-size: 64px; }
+  .cover-slide .tagline { color: rgba(255,255,255,0.85); }
+  .cover-slide p { color: rgba(255,255,255,0.9); }
+  .end-slide {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white; text-align: center;
+  }
+  .end-slide h1 { color: white; }
+  .end-slide p { color: rgba(255,255,255,0.9); font-size: 24px; }
+  .funnel { display: flex; align-items: center; gap: 12px; margin: 20px 0; font-size: 22px; font-weight: 600; }
+  .funnel .arrow { color: #6366f1; font-size: 28px; }
+  .risk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+  .risk-box { background: #fff8f0; border-radius: 12px; padding: 20px; }
+  .risk-box .title { font-weight: 700; color: #e67e22; margin-bottom: 8px; font-size: 16px; }
+  .risk-box .fix { font-size: 15px; color: #444; }
+  table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 18px; }
+  th { text-align: left; padding: 12px 16px; background: #6366f1; color: white; }
+  td { padding: 12px 16px; border-bottom: 1px solid #eee; }
+  tr:nth-child(even) td { background: #f8f9fc; }
+</style>
+</head>
+<body>
+
+<!-- Slide 1: Cover -->
+<div class="slide cover-slide">
+  <p style="font-size: 18px; letter-spacing: 4px; margin-bottom: 10px; opacity: 0.8;">&#51060;&#47492;</p>
+  <h1>Yiroom</h1>
+  <div class="tagline">AI-Powered Personal Beauty & Wellness Platform</div>
+  <p style="font-size: 22px; margin-top: 20px;">Know yourself, wholly.</p>
+  <p style="margin-top: 40px; font-size: 18px;">GFSA Korea 2026 Application &middot; Byungmin Kim, Founder & CEO</p>
+  <p style="margin-top: 10px; font-size: 16px;">https://yiroom.vercel.app &middot; March 2026</p>
+</div>
+
+<!-- Slide 2: Problem -->
+<div class="slide">
+  <div class="logo-bar">Yiroom</div>
+  <h2>The Problem</h2>
+  <div class="two-col">
+    <div>
+      <h3>Expensive & Fragmented</h3>
+      <ul>
+        <li>Personal color diagnosis: <span class="highlight">$60-150</span> per session</li>
+        <li>2-3 week booking wait times</li>
+        <li>Limited availability outside Seoul</li>
+        <li>Skin, body analysis = separate consultations</li>
+        <li>No unified platform connecting diagnosis to action</li>
+      </ul>
+    </div>
+    <div>
+      <h3>The Gap</h3>
+      <p style="font-size: 18px; margin-bottom: 20px;">Consumers get a paper printout with zero digital continuity. No follow-up, no tracking, no product recommendations.</p>
+      <div style="background: #f0f0ff; border-radius: 16px; padding: 30px; text-align: center;">
+        <div style="font-size: 18px; color: #666;">Cost reduction</div>
+        <div style="font-size: 42px; font-weight: 800; color: #6366f1;">$120 → $0</div>
+        <div style="font-size: 18px; color: #666; margin-top: 10px;">Time reduction</div>
+        <div style="font-size: 42px; font-weight: 800; color: #6366f1;">60 min → 30 sec</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">2</div>
+</div>
+
+<!-- Slide 3: Solution -->
+<div class="slide">
+  <div class="logo-bar">Yiroom</div>
+  <h2>Our Solution: 8 AI Analysis Modules</h2>
+  <div class="module-grid">
+    <div class="module-box"><div class="icon">&#127912;</div><div class="name">Personal Color</div><div style="font-size:13px;color:#666">12-Tone System</div></div>
+    <div class="module-box"><div class="icon">&#129490;</div><div class="name">Skin Analysis</div><div style="font-size:13px;color:#666">7-Zone Deep Scan</div></div>
+    <div class="module-box"><div class="icon">&#128170;</div><div class="name">Body Type</div><div style="font-size:13px;color:#666">5 Classifications</div></div>
+    <div class="module-box"><div class="icon">&#128135;</div><div class="name">Hair Analysis</div><div style="font-size:13px;color:#666">Style + Color</div></div>
+    <div class="module-box"><div class="icon">&#128132;</div><div class="name">Makeup</div><div style="font-size:13px;color:#666">AI Styling</div></div>
+    <div class="module-box"><div class="icon">&#129463;</div><div class="name">Oral Health</div><div style="font-size:13px;color:#666">Assessment</div></div>
+    <div class="module-box"><div class="icon">&#127947;</div><div class="name">Workout</div><div style="font-size:13px;color:#666">MET-Based Plans</div></div>
+    <div class="module-box"><div class="icon">&#129367;</div><div class="name">Nutrition</div><div style="font-size:13px;color:#666">Meal Planning</div></div>
+  </div>
+  <div class="funnel" style="margin-top: 30px; justify-content: center;">
+    <span>Diagnose</span><span class="arrow">&rarr;</span>
+    <span>Recommend</span><span class="arrow">&rarr;</span>
+    <span>Purchase</span><span class="arrow">&rarr;</span>
+    <span>Track</span><span class="arrow">&rarr;</span>
+    <span>Improve</span>
+  </div>
+  <p style="text-align: center; font-size: 16px; color: #666; margin-top: 10px;">Full-funnel integration &mdash; no competitor covers this complete journey</p>
+  <div class="slide-number">3</div>
+</div>
+
+<!-- Slide 4: AI Technology -->
+<div class="slide">
+  <div class="logo-bar">Yiroom</div>
+  <h2>AI Technology: Google Gemini-First</h2>
+  <div class="two-col">
+    <div>
+      <h3>Core Engine</h3>
+      <ul>
+        <li><span class="highlight">Gemini 3 Flash</span> — zero-shot VLM analyzer</li>
+        <li>Structured output with <span class="highlight">Zod schema validation</span></li>
+        <li>CIEDE2000 color-distance verification layer</li>
+        <li>Mock fallback: 3s timeout &rarr; 2 retries &rarr; mock data</li>
+        <li>100% uptime guarantee</li>
+      </ul>
+      <h3 style="margin-top: 20px;">Google Cloud Roadmap</h3>
+      <ul>
+        <li>Vertex AI fine-tuning for Korean 12-tone</li>
+        <li>BigQuery ML for cross-module insights</li>
+        <li>Cloud Run for AI inference autoscaling</li>
+        <li>Pub/Sub for event-driven pipelines</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Technical Challenges for Google</h3>
+      <div style="background:#f8f9fc; border-radius:12px; padding:20px; margin-bottom:15px;">
+        <div style="font-weight:700; color:#6366f1;">1. Scaling Gemini Inference</div>
+        <p style="font-size:16px;">Vertex AI batch prediction, Flash/Pro tiered routing, prompt caching (90% discount)</p>
+      </div>
+      <div style="background:#f8f9fc; border-radius:12px; padding:20px; margin-bottom:15px;">
+        <div style="font-weight:700; color:#6366f1;">2. Korean Beauty AI Benchmark</div>
+        <p style="font-size:16px;">5,000+ expert-annotated images, fine-tuning to 95%+ accuracy on 12-tone classification</p>
+      </div>
+      <div style="background:#f8f9fc; border-radius:12px; padding:20px;">
+        <div style="font-weight:700; color:#6366f1;">3. Cross-Module Data Pipeline</div>
+        <p style="font-size:16px;">BigQuery ML + Vertex AI Pipelines for personalized wellness recommendations</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">4</div>
+</div>
+
+<!-- Slide 5: Market -->
+<div class="slide">
+  <div class="logo-bar">Yiroom</div>
+  <h2>Market Opportunity</h2>
+  <div class="two-col">
+    <div>
+      <div class="metric-grid" style="grid-template-columns: 1fr;">
+        <div class="metric-box">
+          <div class="number">$4.4B</div>
+          <div class="label">TAM (2025) &mdash; Global AI in Beauty</div>
+          <div class="label">21% CAGR &rarr; $9.4B by 2029</div>
+        </div>
+        <div class="metric-box">
+          <div class="number">$800M</div>
+          <div class="label">SAM &mdash; Korea + K-beauty export markets</div>
+        </div>
+        <div class="metric-box">
+          <div class="number">$200K &rarr; $1M</div>
+          <div class="label">SOM &mdash; Year 1 &rarr; Year 3</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3>Why Now</h3>
+      <ul>
+        <li>K-beauty exports hit <span class="highlight">$11.4B in 2025</span> (record, 202 countries)</li>
+        <li>Personal color diagnosis trending #1 on Korean social media</li>
+        <li>Gemini 3 Flash reached production-grade multimodal analysis</li>
+        <li>Korea = <span class="highlight">4th largest</span> mobile app market</li>
+        <li>Highest smartphone penetration globally</li>
+      </ul>
+      <h3 style="margin-top: 20px;">Revenue Model</h3>
+      <ul>
+        <li><span class="highlight">Freemium</span>: $4.99/mo premium</li>
+        <li><span class="highlight">Affiliate</span>: 5-12% K-beauty commissions</li>
+        <li><span class="highlight">B2B API</span>: $0.05/analysis call</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-number">5</div>
+</div>
+
+<!-- Slide 6: Traction -->
+<div class="slide">
+  <div class="logo-bar">Yiroom</div>
+  <h2>Traction: Technical MVP Complete</h2>
+  <div class="metric-grid">
+    <div class="metric-box">
+      <div class="number">8</div>
+      <div class="label">AI Analysis Modules<br>All S-grade (95+/100)</div>
+    </div>
+    <div class="metric-box">
+      <div class="number">17,500+</div>
+      <div class="label">Automated Tests Passing<br>Web 15K+ / Mobile 2.7K+</div>
+    </div>
+    <div class="metric-box">
+      <div class="number">137</div>
+      <div class="label">Production Pages<br>Bilingual PWA</div>
+    </div>
+    <div class="metric-box">
+      <div class="number">130+</div>
+      <div class="label">Mobile Components<br>Expo SDK 54</div>
+    </div>
+    <div class="metric-box">
+      <div class="number">520+</div>
+      <div class="label">Commits in 80 Days<br>6.5/day avg</div>
+    </div>
+    <div class="metric-box">
+      <div class="number">$0</div>
+      <div class="label">External Funding<br>100% Bootstrapped</div>
+    </div>
+  </div>
+  <p style="text-align: center; margin-top: 30px; font-size: 18px; color: #666;">
+    Live at <span class="highlight">yiroom.vercel.app</span> &middot; GitHub available for review
+  </p>
+  <div class="slide-number">6</div>
+</div>
+
+<!-- Slide 7: Competitive Advantage -->
+<div class="slide">
+  <div class="logo-bar">Yiroom</div>
+  <h2>Competitive Advantage</h2>
+  <table>
+    <tr>
+      <th>Feature</th>
+      <th>Yiroom</th>
+      <th>Dressika</th>
+      <th>Perfect Corp</th>
+    </tr>
+    <tr>
+      <td>Color Analysis</td>
+      <td><span class="highlight">12-tone Korean system</span></td>
+      <td>4-season basic</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Skin Analysis</td>
+      <td><span class="highlight">7-zone deep scan</span></td>
+      <td>N/A</td>
+      <td>Basic skin score</td>
+    </tr>
+    <tr>
+      <td>Body / Workout / Nutrition</td>
+      <td><span class="highlight">Full suite</span></td>
+      <td>N/A</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Product Recommendations</td>
+      <td><span class="highlight">AI-matched to analysis</span></td>
+      <td>Limited</td>
+      <td>B2B only</td>
+    </tr>
+    <tr>
+      <td>Longitudinal Tracking</td>
+      <td><span class="highlight">Cross-module timeline</span></td>
+      <td>N/A</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>AI Engine</td>
+      <td><span class="highlight">Gemini 3 Flash</span></td>
+      <td>Proprietary</td>
+      <td>Proprietary</td>
+    </tr>
+    <tr>
+      <td>Target</td>
+      <td>B2C consumers</td>
+      <td>B2C consumers</td>
+      <td>B2B enterprise</td>
+    </tr>
+  </table>
+  <p style="margin-top: 20px; font-size: 18px;"><span class="highlight">First beauty tech in GFSA Korea alumni</span> &mdash; filling a portfolio gap in Korea's largest export industry</p>
+  <div class="slide-number">7</div>
+</div>
+
+<!-- Slide 8: GFSA Fit + Credits -->
+<div class="slide">
+  <div class="logo-bar">Yiroom</div>
+  <h2>Why GFSA + $350K Credit Plan</h2>
+  <div class="two-col">
+    <div>
+      <h3>Google Cloud Credit Allocation</h3>
+      <table style="font-size:16px;">
+        <tr><th>Service</th><th>Annual Cost</th></tr>
+        <tr><td>Gemini API inference (Vertex AI)</td><td>~$55K</td></tr>
+        <tr><td>Vertex AI fine-tuning</td><td>~$20K</td></tr>
+        <tr><td>Cloud Run + BigQuery</td><td>~$25K</td></tr>
+        <tr><td>Prompt caching savings</td><td style="color:#22c55e;">-$22K</td></tr>
+        <tr><td style="font-weight:700;">Net annual cost</td><td style="font-weight:700;">~$78K/yr</td></tr>
+      </table>
+      <p style="font-size:16px; margin-top:15px; color:#666;">$350K over 2 years = <span class="highlight">4+ years</span> of AI infrastructure runway</p>
+    </div>
+    <div>
+      <h3>What We Need from Google</h3>
+      <ul style="font-size:17px;">
+        <li><span class="highlight">Vertex AI</span> mentoring for Gemini fine-tuning</li>
+        <li><span class="highlight">Google Play</span> featuring in Health & Beauty</li>
+        <li><span class="highlight">Hiring network</span> for AI/ML engineer + growth marketer</li>
+        <li><span class="highlight">GTM guidance</span> for solo &rarr; team transition</li>
+      </ul>
+      <h3 style="margin-top: 20px;">Mutual Value for Google</h3>
+      <ul style="font-size:17px;">
+        <li>Gemini VLM showcase in $11.4B K-beauty market</li>
+        <li>First Korean beauty AI benchmark dataset</li>
+        <li>Portfolio gap: first beauty tech in GFSA Korea</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-number">8</div>
+</div>
+
+<!-- Slide 9: 10-Week Milestones -->
+<div class="slide">
+  <div class="logo-bar">Yiroom</div>
+  <h2>10-Week GFSA Milestones</h2>
+  <div class="timeline-row">
+    <div class="timeline-item">
+      <div class="week">Week 1-2</div>
+      <div class="goal">Google Play Launch<br>+ Vertex AI Setup</div>
+    </div>
+    <div class="timeline-item">
+      <div class="week">Week 3-4</div>
+      <div class="goal">Korean 12-Tone<br>Benchmark + Fine-tuning</div>
+    </div>
+    <div class="timeline-item">
+      <div class="week">Week 5-6</div>
+      <div class="goal">Organic Growth<br>5K Downloads, 1.5K MAU</div>
+    </div>
+    <div class="timeline-item">
+      <div class="week">Week 7-8</div>
+      <div class="goal">Affiliate Partnerships<br>2+ K-beauty Brands</div>
+    </div>
+    <div class="timeline-item">
+      <div class="week">Week 9-10</div>
+      <div class="goal">Demo Day<br>95%+ Accuracy, Seed Pitch</div>
+    </div>
+  </div>
+  <h3 style="margin-top: 40px;">Risk Awareness & Mitigation</h3>
+  <div class="risk-grid">
+    <div class="risk-box">
+      <div class="title">AI Cost Scaling</div>
+      <div class="fix">Prompt caching (90% discount) + Flash/Pro tiered routing + batch processing = 60% cost reduction</div>
+    </div>
+    <div class="risk-box">
+      <div class="title">User Acquisition</div>
+      <div class="fix">Free personal color as zero-CAC viral hook; fallback: micro-influencer partnerships via affiliate revenue</div>
+    </div>
+    <div class="risk-box">
+      <div class="title">Accuracy Targets</div>
+      <div class="fix">Benchmark first (Weeks 3-4), then data-driven goals. 95% is post-fine-tuning target, not launch requirement</div>
+    </div>
+  </div>
+  <div class="slide-number">9</div>
+</div>
+
+<!-- Slide 10: Team & Ask -->
+<div class="slide end-slide">
+  <h1 style="font-size: 52px; margin-bottom: 30px;">Yiroom</h1>
+  <p style="font-size: 28px; margin-bottom: 40px;">AI-Powered Personal Beauty & Wellness Platform</p>
+  <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 40px;">
+    <div style="text-align: center;">
+      <div style="font-size: 36px; font-weight: 800;">8</div>
+      <div style="font-size: 16px; opacity: 0.8;">AI Modules</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="font-size: 36px; font-weight: 800;">17,500+</div>
+      <div style="font-size: 16px; opacity: 0.8;">Tests</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="font-size: 36px; font-weight: 800;">80 Days</div>
+      <div style="font-size: 16px; opacity: 0.8;">To MVP</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="font-size: 36px; font-weight: 800;">$0</div>
+      <div style="font-size: 16px; opacity: 0.8;">Funding</div>
+    </div>
+  </div>
+  <p style="font-size: 20px;">Byungmin Kim &middot; Solo Technical Founder & CEO</p>
+  <p style="font-size: 18px; margin-top: 10px; opacity: 0.8;">rlaqudals12@gmail.com &middot; https://yiroom.vercel.app</p>
+  <p style="font-size: 18px; margin-top: 5px; opacity: 0.8;">https://github.com/rlaqudals12-cell/yiroom</p>
+  <div class="slide-number" style="color: rgba(255,255,255,0.5);">10</div>
+</div>
+
+</body>
+</html>

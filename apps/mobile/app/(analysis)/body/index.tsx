@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
+  Platform,
   View,
   Text,
   StyleSheet,
@@ -20,8 +21,8 @@ import { staggeredEntry } from '../../../lib/animations';
 import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 export default function BodyAnalysisScreen() {
-  const { colors, module } = useTheme();
-  const accent = module.body;
+  const { colors, spacing, radii, typography, isDark, module: moduleColors } = useTheme();
+  const accent = moduleColors.body;
 
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
@@ -90,6 +91,18 @@ export default function BodyAnalysisScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 헤더 */}
         <Animated.View entering={staggeredEntry(0)} style={styles.header}>
+          <View style={[
+            styles.moduleIcon,
+            { backgroundColor: `${accent.base}18` },
+            !isDark
+              ? Platform.select({
+                  ios: { shadowColor: accent.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12 },
+                  android: { elevation: 3 },
+                }) ?? {}
+              : {},
+          ]}>
+            <Text style={{ fontSize: 28 }}>📐</Text>
+          </View>
           <Text style={[styles.title, { color: colors.foreground }]}>체형 분석</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             키, 체중과 전신 사진으로{'\n'}나에게 맞는 스타일을 찾아보세요
@@ -97,7 +110,16 @@ export default function BodyAnalysisScreen() {
         </Animated.View>
 
         {/* 신체 정보 입력 */}
-        <Animated.View entering={staggeredEntry(1)} style={[styles.card, { backgroundColor: colors.card }]}>
+        <Animated.View entering={staggeredEntry(1)} style={[
+          styles.card,
+          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+          !isDark
+            ? Platform.select({
+                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+                android: { elevation: 2 },
+              }) ?? {}
+            : {},
+        ]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>신체 정보</Text>
 
           <View style={styles.inputGroup}>
@@ -144,7 +166,16 @@ export default function BodyAnalysisScreen() {
         </Animated.View>
 
         {/* 이미지 업로드 */}
-        <Animated.View entering={staggeredEntry(2)} style={[styles.card, { backgroundColor: colors.card }]}>
+        <Animated.View entering={staggeredEntry(2)} style={[
+          styles.card,
+          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+          !isDark
+            ? Platform.select({
+                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+                android: { elevation: 2 },
+              }) ?? {}
+            : {},
+        ]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>전신 사진</Text>
           <Text style={[styles.cardDescription, { color: colors.mutedForeground }]}>
             정면에서 촬영한 전신 사진을 선택해주세요
@@ -172,7 +203,7 @@ export default function BodyAnalysisScreen() {
             )}
           </Pressable>
 
-          <View style={[styles.guideBox, { backgroundColor: colors.muted }]}>
+          <View style={[styles.guideBox, { backgroundColor: `${accent.base}10` }]}>
             <Text style={[styles.guideTitle, { color: colors.foreground }]}>촬영 가이드</Text>
             <Text style={[styles.guideText, { color: colors.mutedForeground }]}>
               • 밝은 배경에서 촬영해주세요
@@ -198,6 +229,12 @@ export default function BodyAnalysisScreen() {
           style={[
             styles.analyzeButton,
             { backgroundColor: accent.base },
+            !isDark
+              ? Platform.select({
+                  ios: { shadowColor: accent.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                  android: { elevation: 4 },
+                }) ?? {}
+              : {},
             (!height || !weight || !imageUri) && styles.analyzeButtonDisabled,
           ]}
           onPress={handleAnalyze}
@@ -206,7 +243,7 @@ export default function BodyAnalysisScreen() {
           accessibilityLabel="체형 분석하기"
           accessibilityState={{ disabled: !height || !weight || !imageUri }}
         >
-          <Text style={[styles.analyzeButtonText, { color: colors.card }]}>체형 분석하기</Text>
+          <Text style={[styles.analyzeButtonText, { color: colors.overlayForeground }]}>체형 분석하기</Text>
         </Pressable>
       </View>
     </ScreenContainer>
@@ -222,15 +259,25 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   header: {
+    alignItems: 'center',
     marginBottom: spacing.lg,
+  },
+  moduleIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
   },
   title: {
     fontSize: 26,
     fontWeight: typography.weight.bold,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.smx,
   },
   subtitle: {
     fontSize: typography.size.base,
+    textAlign: 'center',
     lineHeight: 24,
   },
   card: {
@@ -264,7 +311,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
@@ -284,7 +331,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   guideBox: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
   },
   guideTitle: {
@@ -305,8 +352,9 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   analyzeButton: {
-    borderRadius: radii.smx,
-    padding: spacing.md,
+    borderRadius: radii.full,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     alignItems: 'center',
   },
   analyzeButtonDisabled: {

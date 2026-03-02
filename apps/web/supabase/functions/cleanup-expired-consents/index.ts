@@ -29,6 +29,7 @@ interface ExpiredConsent {
   retention_until: string;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- edge function handler
 Deno.serve(async (req) => {
   // CORS 헤더
   const corsHeaders = {
