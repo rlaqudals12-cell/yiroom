@@ -38,7 +38,7 @@ import { saveSkinResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING, usePulseGlow } from '@/lib/animations';
-import { typography , spacing } from '@/lib/theme';
+import { typography , spacing, radii} from '@/lib/theme';
 
 import {
   SKIN_TYPE_DATA,
@@ -430,7 +430,7 @@ const localStyles = StyleSheet.create({
     borderWidth: 3,
   },
   tabContent: {
-    gap: 20,
+    gap: spacing.mlg,
     paddingBottom: spacing.sm,
   },
   descCard: {
@@ -443,7 +443,7 @@ const localStyles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.size.base,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   metricsGap: {
     gap: 14,
@@ -453,7 +453,7 @@ const localStyles = StyleSheet.create({
   },
   tipsCard: {
     padding: spacing.md,
-    gap: 10,
+    gap: spacing.smd,
   },
   tipItem: {
     flexDirection: 'row',
@@ -476,7 +476,7 @@ const localStyles = StyleSheet.create({
   tag: {
     paddingHorizontal: 14,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
   },
   tagText: {
     fontSize: 13,

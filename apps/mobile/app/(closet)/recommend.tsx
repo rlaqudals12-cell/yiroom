@@ -69,7 +69,7 @@ function WeatherIcon({ condition, color }: { condition: string; color: string })
 }
 
 export default function RecommendScreen() {
-  const { colors, module: moduleTheme, status, typography } = useTheme();
+  const { colors, module: moduleTheme, status, typography, spacing} = useTheme();
   const router = useRouter();
 
   // 실제 사용자 분석 결과에서 가져오기
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 15,
-    marginTop: 12,
+    marginTop: spacing.smx,
   },
   content: {
     padding: spacing.md,
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
   weatherRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   weatherItem: {
     flexDirection: 'row',
@@ -492,9 +492,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   tag: {
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   tagText: {
     fontSize: typography.size.xs,
@@ -527,11 +527,11 @@ const styles = StyleSheet.create({
   outfitGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: spacing.smx,
   },
   outfitItem: {
     width: '48%',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     overflow: 'hidden',
   },
   outfitImageContainer: {
@@ -552,11 +552,11 @@ const styles = StyleSheet.create({
     fontSize: 32,
   },
   outfitItemInfo: {
-    padding: 10,
+    padding: spacing.smd,
   },
   outfitItemLabel: {
     fontSize: 11,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   outfitItemName: {
     fontSize: typography.size.sm,
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   tipsCard: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     marginTop: spacing.md,
   },
@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
   },
   suggestionsContainer: {
     borderTopWidth: 1,
-    paddingTop: 12,
+    paddingTop: spacing.smx,
   },
   suggestionText: {
     fontSize: 13,
@@ -654,8 +654,8 @@ const styles = StyleSheet.create({
   },
   emptyButton: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: spacing.smx,
+    borderRadius: radii.smx,
   },
   emptyButtonText: {
     fontSize: 15,
@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: spacing.md,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   saveOutfitButtonDisabled: {
     opacity: 0.6,

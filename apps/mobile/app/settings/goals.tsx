@@ -38,7 +38,7 @@ const WATER_PRESETS = [1500, 2000, 2500, 3000];
 const CALORIE_PRESETS = [1500, 1800, 2000, 2500];
 
 export default function GoalsSettingsScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand, typography, spacing, radii} = useTheme();
 
   const [goals, setGoals] = useState<GoalSettings>(DEFAULT_GOALS);
   const [customWater, setCustomWater] = useState('');
@@ -296,11 +296,11 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
     marginLeft: spacing.xs,
   },
   sectionIcon: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     marginRight: spacing.sm,
   },
   sectionTitle: {
@@ -308,17 +308,17 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   card: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
   },
   presetRow: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   presetButton: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderRadius: radii.md,
     alignItems: 'center',
   },
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     borderRadius: radii.md,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     fontSize: 15,
   },
   customInputUnit: {
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   goalLabel: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
-    marginBottom: 10,
+    marginBottom: spacing.smd,
   },
   goalSelector: {
     flexDirection: 'row',
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   goalOption: {
     paddingVertical: spacing.sm,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     borderRadius: radii.md,
   },
   goalOptionText: {

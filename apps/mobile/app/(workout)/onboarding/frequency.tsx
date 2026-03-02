@@ -27,7 +27,7 @@ const TIME_OPTIONS = [
 ];
 
 export default function WorkoutFrequencyScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand, typography, spacing} = useTheme();
   const params = useLocalSearchParams<{ goals?: string }>();
 
   const [frequency, setFrequency] = useState<number | null>(null);
@@ -180,12 +180,12 @@ const styles = StyleSheet.create({
   },
   // 주당 횟수 카드 스타일
   frequencyList: {
-    gap: 12,
+    gap: spacing.smx,
   },
   frequencyCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     borderWidth: 2,
     borderColor: 'transparent',
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   frequencyCardSelected: {},
   frequencyEmoji: {
     fontSize: 28,
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   frequencyContent: {
     flex: 1,
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   frequencyLabel: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   frequencyLabelSelected: {},
   frequencyDescription: {
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   radio: {
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -226,11 +226,11 @@ const styles = StyleSheet.create({
   timeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: spacing.smx,
   },
   timeCard: {
     width: '47%',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 2,
@@ -256,11 +256,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 20,
+    padding: spacing.mlg,
     borderTopWidth: 1,
   },
   nextButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },

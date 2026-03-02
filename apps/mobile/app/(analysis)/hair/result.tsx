@@ -319,13 +319,13 @@ const localStyles = StyleSheet.create({
     borderWidth: 3,
   },
   tabContent: {
-    gap: 20,
+    gap: spacing.mlg,
     paddingBottom: spacing.sm,
   },
   sectionTitle: {
     fontSize: typography.size.base,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   metricsGap: {
     gap: 14,
@@ -335,7 +335,7 @@ const localStyles = StyleSheet.create({
   },
   tipsCard: {
     padding: spacing.md,
-    gap: 10,
+    gap: spacing.smd,
   },
   tipItem: {
     flexDirection: 'row',
@@ -364,7 +364,7 @@ const localStyles = StyleSheet.create({
   tag: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
   },
   tagText: {
     fontSize: typography.size.sm,

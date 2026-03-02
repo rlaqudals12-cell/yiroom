@@ -54,7 +54,7 @@ interface RecognizedFood {
 type ScreenState = 'camera' | 'analyzing' | 'result';
 
 export default function FoodCameraScreen() {
-  const { colors, status, module: moduleColors } = useTheme();
+  const { colors, status, module: moduleColors, spacing, radii} = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const cameraRef = useRef<CameraView>(null);
@@ -584,10 +584,10 @@ const styles = StyleSheet.create({
   mealTypeChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: spacing.sm,
     backgroundColor: '#222',
-    borderRadius: 20,
+    borderRadius: radii.circle,
     gap: spacing.xs,
   },
   mealTypeIcon: {
@@ -644,16 +644,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: spacing.mlg,
   },
   permissionText: {
     fontSize: typography.size.base,
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
     textAlign: 'center',
   },
   permissionButton: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderRadius: radii.md,
   },
   permissionButtonText: {
@@ -680,9 +680,9 @@ const styles = StyleSheet.create({
     height: 200,
   },
   insightCard: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
-    marginHorizontal: 20,
+    marginHorizontal: spacing.mlg,
     marginTop: spacing.md,
   },
   insightText: {
@@ -690,21 +690,21 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   resultSection: {
-    padding: 20,
+    padding: spacing.mlg,
   },
   resultTitle: {
     fontSize: typography.size.lg,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   emptyCard: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.lg,
     alignItems: 'center',
   },
   emptyText: {
     fontSize: typography.size.sm,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   searchLink: {
     padding: spacing.sm,
@@ -714,9 +714,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   foodCard: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   foodHeader: {
     flexDirection: 'row',
@@ -725,7 +725,7 @@ const styles = StyleSheet.create({
   },
   trafficLight: {
     fontSize: typography.size.xl,
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   foodInfo: {
     flex: 1,
@@ -748,10 +748,10 @@ const styles = StyleSheet.create({
   },
   confidenceBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: 12,
-    marginBottom: 12,
+    borderRadius: radii.smx,
+    marginBottom: spacing.smx,
   },
   confidenceBadgeText: {
     fontSize: 11,
@@ -768,7 +768,7 @@ const styles = StyleSheet.create({
   portionControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smx,
   },
   portionButton: {
     width: spacing.xl,
@@ -791,17 +791,17 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderStyle: 'dashed',
   },
   addFoodText: {
     fontSize: typography.size.sm,
   },
   totalCard: {
-    borderRadius: 12,
-    padding: 20,
-    marginHorizontal: 20,
-    marginBottom: 20,
+    borderRadius: radii.smx,
+    padding: spacing.mlg,
+    marginHorizontal: spacing.mlg,
+    marginBottom: spacing.mlg,
     alignItems: 'center',
   },
   totalCalories: {
@@ -814,13 +814,13 @@ const styles = StyleSheet.create({
   },
   resultFooter: {
     flexDirection: 'row',
-    gap: 12,
-    padding: 20,
+    gap: spacing.smx,
+    padding: spacing.mlg,
   },
   retakeButton: {
     flex: 1,
     padding: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -831,7 +831,7 @@ const styles = StyleSheet.create({
   saveButton: {
     flex: 2,
     padding: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     alignItems: 'center',
   },
   saveButtonDisabled: {

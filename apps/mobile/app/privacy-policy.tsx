@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, spacing, brand } from '../lib/theme';
+import { useTheme, typography, spacing, brand, radii } from '../lib/theme';
 
 type Lang = 'ko' | 'en';
 
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   paragraph: {
     fontSize: 15,
@@ -665,9 +665,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   infoBox: {
-    marginTop: 12,
+    marginTop: spacing.smx,
     padding: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   infoTitle: {
     fontSize: 15,
@@ -685,9 +685,9 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   warningBox: {
-    marginTop: 12,
+    marginTop: spacing.smx,
     padding: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
   },
   warningText: {

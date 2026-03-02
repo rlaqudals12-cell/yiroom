@@ -29,7 +29,7 @@ import {
 } from '../../../lib/skincare/diary-types';
 
 export default function SkinDiaryScreen(): React.JSX.Element {
-  const { colors, isDark, typography } = useTheme();
+  const { colors, isDark } = useTheme();
   const {
     entries,
     loading,
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: typography.size.xs,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   trendText: {
     fontSize: typography.size.xs,
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   conditionEmoji: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
   },
   conditionLabel: {
     fontSize: typography.size.base,

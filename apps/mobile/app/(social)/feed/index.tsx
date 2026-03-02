@@ -31,7 +31,7 @@ const TABS: { id: FeedTab; label: string }[] = [
 ];
 
 export default function FeedScreen() {
-  const { colors, brand, status, module: moduleColors, typography } = useTheme();
+  const { colors, brand, status, module: moduleColors, typography, spacing, radii} = useTheme();
   const router = useRouter();
 
   const {
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smx,
   },
   loadingText: {
     fontSize: typography.size.sm,
@@ -305,13 +305,13 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     gap: spacing.sm,
   },
   tabButton: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
   },
   tabButtonText: {
     fontSize: typography.size.sm,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.md,
     paddingTop: spacing.sm,
-    gap: 12,
+    gap: spacing.smx,
   },
   feedCard: {
     borderRadius: radii.xl,
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   userInfo: {
     flexDirection: 'row',
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   userMeta: {
-    marginLeft: 12,
+    marginLeft: spacing.smx,
     flex: 1,
   },
   userName: {
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: typography.size.xs,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   typeBadge: {
     width: 36,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.lg,
   },
   cardContent: {
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   contentText: {
     fontSize: 15,
@@ -402,9 +402,9 @@ const styles = StyleSheet.create({
   badgeHighlight: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    borderRadius: radii.smx,
+    padding: spacing.smx,
+    marginBottom: spacing.smx,
     gap: spacing.sm,
   },
   badgeHighlightEmoji: {
@@ -417,13 +417,13 @@ const styles = StyleSheet.create({
   cardActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 12,
+    paddingTop: spacing.smx,
     borderTopWidth: 1,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 20,
+    marginRight: spacing.mlg,
     gap: spacing.xs,
   },
   shareButton: {
@@ -465,15 +465,15 @@ const styles = StyleSheet.create({
   },
   emptyButton: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: spacing.smx,
+    borderRadius: radii.smx,
   },
   emptyButtonText: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
   },
   footerLoader: {
-    paddingVertical: 20,
+    paddingVertical: spacing.mlg,
     alignItems: 'center',
   },
   fab: {

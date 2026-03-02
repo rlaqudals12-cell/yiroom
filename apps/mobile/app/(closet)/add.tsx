@@ -85,7 +85,7 @@ export default function ClosetAddScreen() {
   const router = useRouter();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
   const { addItem } = useCloset();
-  const { colors, typography } = useTheme();
+  const { colors, typography, spacing, radii} = useTheme();
   const styles = useStyles();
 
   const [formData, setFormData] = useState<FormData>({
@@ -463,13 +463,13 @@ function useStyles() {
       backgroundColor: colors.background,
     },
     imageSection: {
-      padding: 20,
+      padding: spacing.mlg,
       alignItems: 'center',
     },
     previewImage: {
       width: 200,
       height: 267,
-      borderRadius: 12,
+      borderRadius: radii.smx,
     },
     imageOverlay: {
       position: 'absolute',
@@ -478,8 +478,8 @@ function useStyles() {
       right: 0,
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: spacing.sm,
-      borderBottomLeftRadius: 12,
-      borderBottomRightRadius: 12,
+      borderBottomLeftRadius: radii.smx,
+      borderBottomRightRadius: radii.smx,
       alignItems: 'center',
     },
     imageOverlayText: {
@@ -490,7 +490,7 @@ function useStyles() {
       width: 200,
       height: 267,
       backgroundColor: colors.border,
-      borderRadius: 12,
+      borderRadius: radii.smx,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -504,7 +504,7 @@ function useStyles() {
     },
     imageButtons: {
       flexDirection: 'row',
-      gap: 12,
+      gap: spacing.smx,
     },
     imageButton: {
       paddingHorizontal: spacing.md,
@@ -517,7 +517,7 @@ function useStyles() {
       fontWeight: typography.weight.medium,
     },
     section: {
-      padding: 20,
+      padding: spacing.mlg,
       backgroundColor: colors.card,
       marginTop: spacing.sm,
     },
@@ -525,19 +525,19 @@ function useStyles() {
       fontSize: typography.size.base,
       fontWeight: typography.weight.semibold,
       color: colors.foreground,
-      marginBottom: 12,
+      marginBottom: spacing.smx,
     },
     label: {
       fontSize: typography.size.sm,
       color: colors.mutedForeground,
       marginBottom: 6,
-      marginTop: 12,
+      marginTop: spacing.smx,
     },
     input: {
       backgroundColor: colors.secondary,
       borderRadius: radii.md,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
+      paddingHorizontal: spacing.smx,
+      paddingVertical: spacing.smd,
       fontSize: typography.size.sm,
       color: colors.foreground,
     },
@@ -553,7 +553,7 @@ function useStyles() {
     optionButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 12,
+      paddingHorizontal: spacing.smx,
       paddingVertical: spacing.sm,
       backgroundColor: colors.secondary,
       borderRadius: radii.md,
@@ -580,7 +580,7 @@ function useStyles() {
     colorButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 10,
+      paddingHorizontal: spacing.smd,
       paddingVertical: 6,
       backgroundColor: colors.secondary,
       borderRadius: radii.xl,
@@ -610,7 +610,7 @@ function useStyles() {
     seasonButton: {
       flex: 1,
       alignItems: 'center',
-      paddingVertical: 12,
+      paddingVertical: spacing.smx,
       backgroundColor: colors.secondary,
       borderRadius: radii.md,
     },
@@ -662,7 +662,7 @@ function useStyles() {
     submitButton: {
       backgroundColor: colors.foreground,
       paddingVertical: 14,
-      borderRadius: 12,
+      borderRadius: radii.smx,
       alignItems: 'center',
     },
     submitButtonDisabled: {

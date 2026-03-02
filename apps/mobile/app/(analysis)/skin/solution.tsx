@@ -196,7 +196,7 @@ const SOLUTIONS: Record<ConcernId, SolutionData> = {
 };
 
 export default function SkinSolutionScreen(): React.JSX.Element {
-  const { colors, isDark, typography } = useTheme();
+  const { colors, isDark, typography, spacing} = useTheme();
   const [selectedConcern, setSelectedConcern] = useState<ConcernId>('acne');
 
   const handleSelectConcern = useCallback((id: ConcernId): void => {
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   },
   ingredientEffect: {
     fontSize: typography.size.sm,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   // 팁 텍스트
   tipText: {

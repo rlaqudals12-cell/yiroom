@@ -21,7 +21,7 @@ import { useTheme, typography, radii , spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 export default function HealthSyncScreen() {
-  const { colors, brand, status, typography } = useTheme();
+  const { colors, brand, status, typography, spacing, radii} = useTheme();
 
   const {
     isAvailable,
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   card: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
   },
   cardTitle: {
@@ -244,16 +244,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dataList: {
-    marginTop: 12,
+    marginTop: spacing.smx,
     gap: spacing.sm,
   },
   dataItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smx,
   },
   dataEmoji: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
   },
   dataLabel: {
     flex: 1,
@@ -265,17 +265,17 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 12,
+    marginTop: spacing.smx,
     gap: spacing.sm,
   },
   statItem: {
     width: '48%',
     borderRadius: radii.md,
-    padding: 12,
+    padding: spacing.smx,
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     fontWeight: typography.weight.bold,
   },
   statLabel: {

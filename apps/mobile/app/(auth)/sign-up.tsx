@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import { brand, useTheme, typography, spacing } from '@/lib/theme';
+import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
 export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
@@ -308,13 +308,13 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     fontSize: typography.size.base,
   },
   button: {
     backgroundColor: brand.primary,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
     marginTop: spacing.sm,

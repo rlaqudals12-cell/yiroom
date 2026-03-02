@@ -29,7 +29,7 @@ import {
   GOAL_LABELS,
   calculateAge,
 } from '../../lib/onboarding';
-import { useTheme, typography, spacing } from '../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
 // 온보딩 Step 3 히어로 색상 (violet-500 계열 — 선호도 아이덴티티)
 const STEP3_ACCENT = '#8B5CF6';
@@ -246,7 +246,7 @@ export default function OnboardingStep3() {
                         fontSize: typography.size.sm,
                         fontWeight: typography.weight.semibold,
                         color: colors.foreground,
-                        marginBottom: 2,
+                        marginBottom: spacing.xxs,
                       }}
                     >
                       알림 받기
@@ -469,15 +469,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 20,
+    padding: spacing.mlg,
     paddingBottom: 140,
   },
   // 미니 백 버튼
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
-    marginBottom: 12,
+    gap: spacing.xxs,
+    marginBottom: spacing.smx,
     alignSelf: 'flex-start',
   },
   // 히어로 (웹 파스텔 패턴)
@@ -505,12 +505,12 @@ const styles = StyleSheet.create({
   sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   optionGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: spacing.smd,
   },
   optionButton: {
     paddingVertical: 14,
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   switchLabel: {
     flex: 1,
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: spacing.smd,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   summaryFooter: {
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
   checkCircle: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
     alignItems: 'center',
     justifyContent: 'center',
   },

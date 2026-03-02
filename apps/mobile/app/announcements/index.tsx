@@ -13,7 +13,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Bell, ChevronRight, Megaphone, AlertTriangle, Sparkles, Info } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
-import { useTheme } from '@/lib/theme';
+import { useTheme, spacing} from '@/lib/theme';
 import { ScreenContainer, BottomSheet } from '@/components/ui';
 
 interface Announcement {
@@ -157,7 +157,7 @@ export default function AnnouncementsScreen(): React.JSX.Element {
                         backgroundColor: catColor + '15',
                         borderRadius: radii.sm,
                         paddingHorizontal: spacing.sm,
-                        paddingVertical: 2,
+                        paddingVertical: spacing.xxs,
                       },
                     ]}
                   >
@@ -246,7 +246,7 @@ export default function AnnouncementsScreen(): React.JSX.Element {
                     backgroundColor: CATEGORY_CONFIG[selected.category].color(theme) + '15',
                     borderRadius: radii.sm,
                     paddingHorizontal: spacing.sm,
-                    paddingVertical: 2,
+                    paddingVertical: spacing.xxs,
                   },
                 ]}
               >

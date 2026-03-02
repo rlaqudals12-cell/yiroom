@@ -270,7 +270,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                   style={{
                     fontSize: typography.size.xs,
                     color: colors.mutedForeground,
-                    marginTop: 2,
+                    marginTop: spacing.xxs,
                   }}
                 >
                   {section.description}
@@ -357,7 +357,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                         style={{
                           fontSize: typography.size.xs,
                           color: colors.mutedForeground,
-                          marginTop: 2,
+                          marginTop: spacing.xxs,
                         }}
                       >
                         {product.brand}
@@ -377,7 +377,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                         fontSize: typography.size.xs,
                         fontWeight: typography.weight.bold,
                         color: status.success,
-                        marginLeft: 2,
+                        marginLeft: spacing.xxs,
                       }}
                     >
                       {product.matchScore}%
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   heroTag: {
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
     borderRadius: radii.full,
   },
@@ -481,13 +481,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   ctaButton: {
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     alignItems: 'center',
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   seeAllButton: {
     flexDirection: 'row',

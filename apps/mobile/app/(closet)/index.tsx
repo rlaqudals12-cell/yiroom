@@ -40,7 +40,7 @@ const FILTER_OPTIONS: { key: FilterCategory; label: string }[] = [
 ];
 
 export default function ClosetScreen() {
-  const { colors, module: moduleTheme, shadows: themeShadows, typography } = useTheme();
+  const { colors, module: moduleTheme, shadows: themeShadows, typography, spacing} = useTheme();
   const router = useRouter();
 
   const { items, isLoading, error: _error, toggleFavorite, refetch } = useCloset();
@@ -119,8 +119,8 @@ export default function ClosetScreen() {
           </View>
           <SkeletonText style={{ width: '90%', height: 36, alignSelf: 'center' }} />
           <View style={styles.gridRow}>
-            <SkeletonCard style={{ width: '48%', height: 180, marginTop: spacing.md, marginLeft: 16 }} />
-            <SkeletonCard style={{ width: '48%', height: 180, marginTop: spacing.md, marginRight: 16 }} />
+            <SkeletonCard style={{ width: '48%', height: 180, marginTop: spacing.md, marginLeft: spacing.md }} />
+            <SkeletonCard style={{ width: '48%', height: 180, marginTop: spacing.md, marginRight: spacing.md }} />
           </View>
         </View>
       </ScreenContainer>
@@ -325,8 +325,8 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    gap: 10,
+    paddingVertical: spacing.smx,
+    gap: spacing.smd,
   },
   statCard: {
     flex: 1,
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: typography.size.xs,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   filterContainer: {
     paddingVertical: spacing.sm,
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
     marginRight: spacing.sm,
   },
   filterChipText: {
@@ -364,11 +364,11 @@ const styles = StyleSheet.create({
   },
   gridRow: {
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   itemCard: {
     width: '48%',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     overflow: 'hidden',
   },
   itemImageContainer: {
@@ -401,12 +401,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemInfo: {
-    padding: 10,
+    padding: spacing.smd,
   },
   itemName: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   itemCategory: {
     fontSize: typography.size.xs,
@@ -428,8 +428,8 @@ const styles = StyleSheet.create({
   },
   emptyButton: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: spacing.smx,
+    borderRadius: radii.smx,
   },
   emptyButtonText: {
     fontSize: 15,

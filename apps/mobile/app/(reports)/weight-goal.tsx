@@ -370,9 +370,9 @@ export default function WeightGoalScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  card: { padding: 16 },
-  cardTitle: { marginBottom: 12 },
-  currentWeightRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+  card: { padding: spacing.md },
+  cardTitle: { marginBottom: spacing.smx },
+  currentWeightRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.xs },
   bigWeight: {},
   weightUnit: {},
   noData: {},
@@ -381,11 +381,11 @@ const styles = StyleSheet.create({
   goalTrack: { height: 10, borderRadius: 5, overflow: 'hidden' },
   goalFill: { height: '100%' },
   goalPercent: { textAlign: 'center' },
-  inputRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  weightInput: { flex: 1, padding: 12, textAlign: 'center' },
+  inputRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  weightInput: { flex: 1, padding: spacing.smx, textAlign: 'center' },
   kgLabel: {},
-  logButton: { paddingHorizontal: 20, paddingVertical: 12 },
-  entryRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  logButton: { paddingHorizontal: spacing.mlg, paddingVertical: spacing.smx },
+  entryRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.smd, borderBottomWidth: StyleSheet.hairlineWidth },
   entryDate: {},
   entryWeight: {},
 });

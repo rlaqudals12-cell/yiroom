@@ -21,7 +21,7 @@ import { type FriendRequest } from '../../../lib/social';
 import { useFriendRequests } from '../../../lib/social/useFriends';
 
 export default function FriendRequestsScreen() {
-  const { colors, brand, status, module: moduleColors, typography } = useTheme();
+  const { colors, brand, status, module: moduleColors, typography, spacing} = useTheme();
 
   const { requests, isLoading, error, accept, reject, refetch } = useFriendRequests();
 
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   errorContainer: {
     margin: spacing.md,
-    padding: 12,
+    padding: spacing.smx,
     borderRadius: radii.md,
   },
   errorText: {
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
   },
   headerTitle: {
     fontSize: typography.size.base,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.md,
     paddingTop: 0,
-    gap: 12,
+    gap: spacing.smx,
   },
   requestCard: {
     borderRadius: radii.xl,
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   avatarContainer: {
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   avatar: {
     width: 52,
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     fontWeight: typography.weight.semibold,
   },
   userInfo: {
@@ -241,11 +241,11 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 10,
+    gap: spacing.smd,
   },
   acceptButton: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderRadius: radii.lg,
     alignItems: 'center',
   },
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   },
   rejectButton: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderRadius: radii.lg,
     alignItems: 'center',
   },

@@ -64,7 +64,7 @@ interface ChatMessage {
 }
 
 export default function SkinConsultationScreen(): React.JSX.Element {
-  const { colors, typography } = useTheme();
+  const { colors } = useTheme();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: typography.size.sm,
     lineHeight: 20,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   // 빠른 질문
   quickQuestionsContainer: {
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   sendButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radii.circle,
     alignItems: 'center',
     justifyContent: 'center',
   },

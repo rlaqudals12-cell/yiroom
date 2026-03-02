@@ -445,12 +445,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: spacing.mlg,
+    paddingVertical: spacing.smd,
   },
   backButton: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
   },
   statsGrid: {
     flexDirection: 'row',

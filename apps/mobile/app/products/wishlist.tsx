@@ -36,7 +36,7 @@ const TYPE_EMOJIS: Record<FavoriteProductType, string> = {
 };
 
 export default function WishlistScreen(): React.JSX.Element {
-  const { colors, isDark, typography } = useTheme();
+  const { colors, isDark, typography, spacing} = useTheme();
   const items = useFavoritesStore((s) => s.items);
   const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
   const clearAll = useFavoritesStore((s) => s.clearAll);
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   },
   itemBrand: {
     fontSize: typography.size.sm,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   metaRow: {
     flexDirection: 'row',
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   typeChip: {
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.full,
   },
   typeText: {

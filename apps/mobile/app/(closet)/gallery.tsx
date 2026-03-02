@@ -218,11 +218,11 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           <Text numberOfLines={1} style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground }}>
             {item.name}
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: 2 }}>
+          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
             {item.brand ?? '브랜드 미지정'} {item.color ? `· ${item.color}` : ''}
           </Text>
         </View>
-        {item.isFavorite && <Text style={{ fontSize: 14 }}>{'\u2764\uFE0F'}</Text>}
+        {item.isFavorite && <Text style={{ fontSize: typography.size.sm }}>{'\u2764\uFE0F'}</Text>}
       </Pressable>
     ),
     [colors, radii, shadows, spacing, typography, handleItemPress]

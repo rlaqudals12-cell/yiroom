@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 20,
+    padding: spacing.mlg,
     paddingBottom: 100,
   },
   header: {
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: radii.xl,
-    padding: 20,
+    padding: spacing.mlg,
     marginBottom: spacing.md,
   },
   cardTitle: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     fontSize: typography.size.base,
   },
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   guideBox: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
   },
   guideTitle: {
@@ -301,11 +301,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 20,
+    padding: spacing.mlg,
     borderTopWidth: 1,
   },
   analyzeButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },

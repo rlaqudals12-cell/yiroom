@@ -7,7 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 
-import { useTheme, typography , spacing } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 export default function PersonalColorCameraScreen() {
   const { colors, brand } = useTheme();
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingVertical: 40,
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.mlg,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   galleryIconButton: {
@@ -202,12 +202,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: spacing.mlg,
   },
   permissionTitle: {
     fontSize: 22,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   permissionText: {
     fontSize: typography.size.base,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   permissionButton: {
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     marginBottom: spacing.md,
   },
   permissionButtonText: {

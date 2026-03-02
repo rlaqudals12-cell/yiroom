@@ -215,7 +215,7 @@ export default function FeedbackScreen(): React.JSX.Element {
                     style={{
                       fontSize: typography.size.xs,
                       color: isSelected ? brand.primaryForeground + 'CC' : colors.mutedForeground,
-                      marginTop: 2,
+                      marginTop: spacing.xxs,
                     }}
                   >
                     {option.description}

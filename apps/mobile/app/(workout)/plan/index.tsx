@@ -134,7 +134,7 @@ export default function WorkoutPlanScreen(): React.ReactElement {
             >
               {day.dayShort}
             </Text>
-            <Text style={{ fontSize: 10, marginTop: 2, color: day.isToday ? colors.overlayForeground : colors.mutedForeground }}>
+            <Text style={{ fontSize: 10, marginTop: spacing.xxs, color: day.isToday ? colors.overlayForeground : colors.mutedForeground }}>
               {day.isRest ? '휴식' : `${day.exercises.length}개`}
             </Text>
           </View>

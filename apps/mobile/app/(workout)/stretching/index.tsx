@@ -147,7 +147,7 @@ export default function StretchingScreen(): React.ReactElement {
                 style={{
                   width: 28,
                   height: 28,
-                  borderRadius: 14,
+                  borderRadius: radii.xlg,
                   backgroundColor: moduleColors.workout.base + '20',
                   alignItems: 'center',
                   justifyContent: 'center',

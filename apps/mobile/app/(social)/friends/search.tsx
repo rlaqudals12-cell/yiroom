@@ -22,7 +22,7 @@ import { getTierColor, type UserSearchResult } from '../../../lib/social';
 import { useUserSearch } from '../../../lib/social/useFriends';
 
 export default function FriendSearchScreen() {
-  const { colors, brand, status, module: moduleColors, typography } = useTheme();
+  const { colors, brand, status, module: moduleColors, typography, spacing, radii} = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const { results, isLoading, error, search, sendRequest, clear } = useUserSearch();
@@ -184,13 +184,13 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     padding: spacing.md,
-    gap: 10,
+    gap: spacing.smd,
   },
   searchBar: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     paddingHorizontal: 14,
     height: 48,
   },
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     padding: spacing.xs,
   },
   searchButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     paddingHorizontal: 18,
     justifyContent: 'center',
   },
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   errorContainer: {
     marginHorizontal: spacing.md,
-    padding: 12,
+    padding: spacing.smx,
     borderRadius: radii.md,
   },
   errorText: {
@@ -232,12 +232,12 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.md,
     paddingTop: 0,
-    gap: 10,
+    gap: spacing.smd,
   },
   resultCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: 14,
   },
   avatarContainer: {
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   },
   userLevel: {
     fontSize: 13,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   addButton: {
     paddingHorizontal: 14,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   statusBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: 6,
     borderRadius: radii.md,
   },

@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 import { staggeredEntry } from '../../../lib/animations';
 
@@ -23,7 +23,7 @@ import { getTierColor, type Friend } from '../../../lib/social';
 import { useFriends, useFriendStats } from '../../../lib/social/useFriends';
 
 export default function FriendsScreen() {
-  const { colors, brand, module: moduleColors, typography } = useTheme();
+  const { colors, brand, module: moduleColors, typography, spacing, radii} = useTheme();
   const router = useRouter();
 
   const { friends, isLoading, refetch } = useFriends();
@@ -177,14 +177,14 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     padding: spacing.md,
-    gap: 12,
+    gap: spacing.smx,
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: 14,
     gap: spacing.sm,
   },
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
   },
   statItem: {
@@ -221,12 +221,12 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.md,
     paddingTop: 0,
-    gap: 10,
+    gap: spacing.smd,
   },
   friendCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: 14,
   },
   avatarContainer: {
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   friendLevel: {
     fontSize: 13,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   emptyContainer: {
     flex: 1,
@@ -291,8 +291,8 @@ const styles = StyleSheet.create({
   },
   emptyButton: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: spacing.smx,
+    borderRadius: radii.smx,
   },
   emptyButtonText: {
     fontSize: 15,

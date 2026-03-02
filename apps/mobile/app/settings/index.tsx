@@ -11,7 +11,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import { useTheme, typography, spacing } from '../../lib/theme';
+import { useTheme, typography, spacing, radii } from '../../lib/theme';
 import type { ThemeMode } from '../../lib/theme';
 import { ScreenContainer } from '../../components/ui';
 import { BottomSheet } from '../../components/ui/BottomSheet';
@@ -295,12 +295,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     marginBottom: spacing.sm,
   },
   settingsIcon: {
-    fontSize: 20,
-    marginRight: 12,
+    fontSize: typography.size.xl,
+    marginRight: spacing.smx,
   },
   settingsContent: {
     flex: 1,
@@ -311,10 +311,10 @@ const styles = StyleSheet.create({
   },
   settingsSubtitle: {
     fontSize: typography.size.xs,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   settingsArrow: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
   },
   versionSection: {
     alignItems: 'center',

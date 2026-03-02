@@ -164,7 +164,7 @@ export default function OnboardingStep1() {
                       style={{
                         color: colors.mutedForeground,
                         fontSize: typography.size.xs + 1,
-                        marginTop: 2,
+                        marginTop: spacing.xxs,
                       }}
                       numberOfLines={1}
                     >
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 20,
+    padding: spacing.mlg,
     paddingBottom: 140,
   },
   // 히어로 (웹 파스텔 패턴)

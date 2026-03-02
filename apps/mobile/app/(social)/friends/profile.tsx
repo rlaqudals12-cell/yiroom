@@ -71,7 +71,7 @@ export default function FriendProfileScreen(): React.ReactElement {
             marginBottom: spacing.sm,
           }}
         >
-          <Text style={{ fontSize: 36 }}>{friend.emoji}</Text>
+          <Text style={{ fontSize: typography.size['4xl'] }}>{friend.emoji}</Text>
         </View>
         <Text style={{ fontSize: typography.size['2xl'], fontWeight: typography.weight.bold, color: colors.foreground }}>
           {friend.nickname}

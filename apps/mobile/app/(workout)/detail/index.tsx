@@ -311,7 +311,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
               )}
               {detail.mood && (
                 <View style={[styles.feelItem, { marginTop: detail.perceivedEffort != null ? spacing.sm : 0 }]}>
-                  <Text style={{ fontSize: 16 }}>{getMoodEmoji(detail.mood)}</Text>
+                  <Text style={{ fontSize: typography.size.base }}>{getMoodEmoji(detail.mood)}</Text>
                   <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginLeft: spacing.xs }}>
                     기분
                   </Text>
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   },
   exerciseMeta: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.smx,
   },
   feelRow: {},
   feelItem: {

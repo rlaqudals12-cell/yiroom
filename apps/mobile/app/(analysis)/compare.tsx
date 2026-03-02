@@ -162,7 +162,7 @@ export default function CompareScreen(): React.JSX.Element {
                 style={{
                   fontSize: typography.size.xs,
                   color: colors.mutedForeground,
-                  marginTop: 2,
+                  marginTop: spacing.xxs,
                 }}
               >
                 과거 분석 결과를 모두 확인해요
@@ -198,7 +198,7 @@ export default function CompareScreen(): React.JSX.Element {
                 style={{
                   fontSize: typography.size.xs,
                   color: brand.primaryForeground + 'CC',
-                  marginTop: 2,
+                  marginTop: spacing.xxs,
                 }}
               >
                 변화를 추적하려면 새 분석을 진행해요

@@ -65,7 +65,7 @@ function getImprovementTips(
 }
 
 export default function WellnessScorePage(): React.JSX.Element {
-  const { colors, isDark, typography } = useTheme();
+  const { colors, isDark, typography, spacing} = useTheme();
   const { personalColor, skinAnalysis, bodyAnalysis, refetch: refetchAnalyses } = useUserAnalyses();
   const { streak: workoutStreak, refetch: refetchWorkout } = useWorkoutData();
   const { streak: nutritionStreak, refetch: refetchNutrition } = useNutritionData();
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   guideTip: {
     fontSize: typography.size.sm,
     lineHeight: 20,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
     paddingLeft: spacing.lg,
   },
   // CTA

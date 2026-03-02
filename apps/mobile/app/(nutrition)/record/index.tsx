@@ -38,7 +38,7 @@ const QUICK_ADD_FOODS = [
 ];
 
 export default function NutritionRecordScreen() {
-  const { colors, module: themeModuleColors, typography } = useTheme();
+  const { colors, module: themeModuleColors, typography, spacing, radii} = useTheme();
   const nutritionColor = themeModuleColors.nutrition.dark;
 
   const [selectedMealType, setSelectedMealType] = useState<MealType>('lunch');
@@ -232,13 +232,13 @@ export default function NutritionRecordScreen() {
 const styles = StyleSheet.create({
   mealTypeContainer: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
+    gap: spacing.smx,
+    marginBottom: spacing.mlg,
   },
   mealTypeButton: {
     flex: 1,
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: radii.smx,
+    padding: spacing.smx,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radii.xl,
-    padding: 20,
+    padding: spacing.mlg,
     gap: spacing.md,
     marginBottom: spacing.md,
   },
@@ -275,11 +275,11 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     marginBottom: spacing.md,
-    gap: 12,
+    gap: spacing.smx,
   },
   searchIcon: {
     fontSize: typography.size.lg,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   },
   section: {
     borderRadius: radii.xl,
-    padding: 20,
+    padding: spacing.mlg,
     marginBottom: spacing.md,
   },
   sectionTitle: {
@@ -301,12 +301,12 @@ const styles = StyleSheet.create({
   quickAddGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: spacing.smx,
   },
   quickAddItem: {
     width: '30%',
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: radii.smx,
+    padding: spacing.smx,
     alignItems: 'center',
   },
   quickAddEmoji: {
@@ -325,9 +325,9 @@ const styles = StyleSheet.create({
   addedFoodItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderBottomWidth: 1,
-    gap: 12,
+    gap: spacing.smx,
   },
   addedFoodEmoji: {
     fontSize: typography.size['2xl'],
@@ -363,11 +363,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 20,
+    padding: spacing.mlg,
     borderTopWidth: 1,
   },
   saveButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },

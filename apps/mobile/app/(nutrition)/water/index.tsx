@@ -43,7 +43,7 @@ interface WaterRecord {
 }
 
 export default function WaterTrackingScreen() {
-  const { colors, status, typography } = useTheme();
+  const { colors, status, typography, spacing, radii} = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   progressValue: {
     fontSize: 42,
     fontWeight: typography.weight.bold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   progressBarContainer: {
     width: '100%',
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   drinkTypeGrid: {
     flexDirection: 'row',
@@ -343,8 +343,8 @@ const styles = StyleSheet.create({
   drinkTypeChip: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: spacing.smx,
+    borderRadius: radii.smx,
     borderWidth: 1,
   },
   drinkTypeChipSelected: {
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
   },
   quickAddText: {
@@ -374,10 +374,10 @@ const styles = StyleSheet.create({
   },
   quickAddUnit: {
     fontSize: typography.size.xs,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   emptyCard: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.xl,
     alignItems: 'center',
   },
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   recordsCard: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     overflow: 'hidden',
   },
   recordItem: {
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   },
   recordIcon: {
     fontSize: typography.size.xl,
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   recordTime: {
     flex: 1,

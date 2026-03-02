@@ -26,7 +26,7 @@ const DEFAULT_EXERCISES: WorkoutExercise[] = [
 type SessionState = 'ready' | 'exercising' | 'resting' | 'completed';
 
 export default function WorkoutSessionScreen() {
-  const { colors, isDark, spacing, module: moduleColors, typography } = useTheme();
+  const { colors, isDark, spacing, module: moduleColors, typography, radii} = useTheme();
   const workoutColor = moduleColors.workout.base;
   const { todayWorkout, isLoading: workoutLoading } = useWorkoutData();
 
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.mlg,
     paddingVertical: spacing.md,
   },
   endText: {
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: spacing.mlg,
   },
   stateLabel: {
     fontSize: typography.size.lg,
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderWidth: 1,
     borderRadius: radii.md,
   },
@@ -372,10 +372,10 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.bold,
   },
   footer: {
-    padding: 20,
+    padding: spacing.mlg,
   },
   completeButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: 18,
     alignItems: 'center',
   },
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
   readyContent: {
     flex: 1,
-    padding: 20,
+    padding: spacing.mlg,
   },
   readyTitle: {
     fontSize: 28,
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   exercisePreview: {
-    gap: 12,
+    gap: spacing.smx,
     marginBottom: spacing.xl,
   },
   previewItem: {
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   startButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: 18,
     alignItems: 'center',
   },
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
   },
   completedContent: {
     flex: 1,
-    padding: 20,
+    padding: spacing.mlg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 20,
+    padding: spacing.mlg,
     marginBottom: spacing.xxl,
   },
   statItem: {
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   finishButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     paddingHorizontal: spacing.xxl,
     paddingVertical: spacing.md,
   },

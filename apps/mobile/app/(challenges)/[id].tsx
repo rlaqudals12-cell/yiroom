@@ -85,7 +85,7 @@ const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
 export default function ChallengeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { colors, status } = useTheme();
+  const { colors, status, spacing, radii, typography} = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
   // API 훅 사용
@@ -214,9 +214,9 @@ export default function ChallengeDetailScreen() {
     return (
       <ScreenContainer scrollable={false} contentPadding={0}>
         <View style={styles.loadingContainer}>
-          <SkeletonText style={{ width: 200, height: 28, marginBottom: 12 }} />
-          <SkeletonText style={{ width: 280, height: 16, marginBottom: 24 }} />
-          <SkeletonCard style={{ height: 120, width: '90%', marginBottom: 16 }} />
+          <SkeletonText style={{ width: 200, height: 28, marginBottom: spacing.smx }} />
+          <SkeletonText style={{ width: 280, height: 16, marginBottom: spacing.lg }} />
+          <SkeletonCard style={{ height: 120, width: '90%', marginBottom: spacing.md }} />
           <SkeletonCard style={{ height: 80, width: '90%' }} />
         </View>
       </ScreenContainer>
@@ -437,35 +437,35 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: spacing.mlg,
   },
   errorText: {
     fontSize: typography.size.base,
     marginBottom: spacing.md,
   },
   backButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: spacing.mlg,
+    paddingVertical: spacing.smd,
     borderRadius: radii.md,
   },
   backButtonText: {
     fontWeight: typography.weight.semibold,
   },
   headerSection: {
-    padding: 20,
+    padding: spacing.mlg,
     borderBottomWidth: 1,
   },
   badgeRow: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     gap: spacing.xs,
   },
   badgeText: {
@@ -492,24 +492,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     fontWeight: typography.weight.bold,
   },
   statLabel: {
     fontSize: typography.size.xs,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   statDivider: {
     width: 1,
     height: 40,
   },
   section: {
-    padding: 20,
+    padding: spacing.mlg,
   },
   sectionTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   progressCard: {
     padding: spacing.md,
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   logButton: {
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderRadius: radii.md,
     alignItems: 'center',
   },
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   milestoneIconText: {
     fontWeight: typography.weight.semibold,
@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
   leaderboardItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: spacing.smx,
     borderBottomWidth: 1,
   },
   leaderboardRank: {
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   },
   joinButton: {
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     alignItems: 'center',
   },
   joinButtonText: {

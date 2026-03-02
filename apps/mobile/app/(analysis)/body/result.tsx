@@ -461,7 +461,7 @@ const localStyles = StyleSheet.create({
     fontWeight: '700',
   },
   bmiBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: 3,
     borderRadius: radii.lg,
   },
@@ -475,11 +475,11 @@ const localStyles = StyleSheet.create({
   bodyImage: {
     width: 120,
     height: 160,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 3,
   },
   tabContent: {
-    gap: 20,
+    gap: spacing.mlg,
     paddingBottom: spacing.sm,
   },
   descCard: {
@@ -492,7 +492,7 @@ const localStyles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.size.base,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   bmiGuide: {
     fontSize: typography.size.xs,
@@ -515,7 +515,7 @@ const localStyles = StyleSheet.create({
   },
   tipsCard: {
     padding: spacing.md,
-    gap: 10,
+    gap: spacing.smd,
   },
   tipItem: {
     flexDirection: 'row',
@@ -538,7 +538,7 @@ const localStyles = StyleSheet.create({
   tag: {
     paddingHorizontal: 14,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
   },
   tagText: {
     fontSize: 13,

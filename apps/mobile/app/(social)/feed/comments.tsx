@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { ScreenContainer } from '@/components/ui';
 
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { formatRelativeTime } from '../../../lib/feed';
@@ -168,7 +168,7 @@ export default function CommentsScreen(): React.JSX.Element {
           </View>
         ) : comments.length === 0 ? (
           <View style={styles.center}>
-            <Text style={{ fontSize: 40, marginBottom: 8 }}>💬</Text>
+            <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>💬</Text>
             <Text style={[styles.emptyText, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
               아직 댓글이 없어요. 첫 댓글을 남겨보세요!
             </Text>
@@ -178,7 +178,7 @@ export default function CommentsScreen(): React.JSX.Element {
             data={comments}
             keyExtractor={(item) => item.id}
             renderItem={renderComment}
-            contentContainerStyle={{ padding: spacing.md, gap: 12 }}
+            contentContainerStyle={{ padding: spacing.md, gap: spacing.smx }}
             showsVerticalScrollIndicator={false}
           />
         )}
@@ -233,14 +233,14 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { textAlign: 'center' },
-  commentCard: { padding: 12 },
-  commentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: 8 },
-  commentAvatar: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  commentCard: { padding: spacing.smx },
+  commentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.sm },
+  commentAvatar: { width: 28, height: 28, borderRadius: radii.xlg, justifyContent: 'center', alignItems: 'center' },
   commentAvatarText: { fontSize: typography.size.xs, fontWeight: typography.weight.semibold },
   commentUser: {},
   commentTime: { marginLeft: 'auto' },
   commentContent: { lineHeight: 20, paddingLeft: 36 },
-  inputBar: { flexDirection: 'row', padding: 12, gap: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, alignItems: 'center' },
-  commentInput: { flex: 1, paddingHorizontal: spacing.md, paddingVertical: 10 },
-  sendButton: { paddingHorizontal: spacing.md, paddingVertical: 10 },
+  inputBar: { flexDirection: 'row', padding: spacing.smx, gap: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, alignItems: 'center' },
+  commentInput: { flex: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.smd },
+  sendButton: { paddingHorizontal: spacing.md, paddingVertical: spacing.smd },
 });

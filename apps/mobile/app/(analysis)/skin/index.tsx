@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 20,
+    padding: spacing.mlg,
     paddingBottom: 100,
   },
   header: {
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   iconText: {
     fontSize: typography.size['2xl'],
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: typography.weight.bold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   subtitle: {
     fontSize: typography.size.base,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: radii.xl,
-    padding: 20,
+    padding: spacing.mlg,
     marginBottom: spacing.md,
   },
   cardTitle: {
@@ -149,12 +149,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   itemList: {
-    gap: 12,
+    gap: spacing.smx,
   },
   analysisItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: spacing.smx,
   },
   bullet: {
     width: 8,
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   itemLabel: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   itemDescription: {
     fontSize: 13,
@@ -182,11 +182,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 20,
+    padding: spacing.mlg,
     borderTopWidth: 1,
   },
   startButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },

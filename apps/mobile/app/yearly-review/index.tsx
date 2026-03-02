@@ -93,7 +93,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
             { label: '레벨 성장', value: `+${review.levelGained}`, emoji: '⭐' },
           ].map((stat) => (
             <View key={stat.label} style={{ width: '33.33%', alignItems: 'center', paddingVertical: spacing.sm }}>
-              <Text style={{ fontSize: 24 }}>{stat.emoji}</Text>
+              <Text style={{ fontSize: typography.size['2xl'] }}>{stat.emoji}</Text>
               <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: colors.foreground, marginTop: spacing.xxs }}>
                 {stat.value}
               </Text>
@@ -180,7 +180,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
                 marginRight: spacing.smx,
               }}
             >
-              <Text style={{ fontSize: 18 }}>{highlight.emoji}</Text>
+              <Text style={{ fontSize: typography.size.lg }}>{highlight.emoji}</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>

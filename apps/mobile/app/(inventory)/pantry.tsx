@@ -159,7 +159,7 @@ export default function PantryScreen(): React.JSX.Element {
                   style={{
                     fontSize: typography.size.xs,
                     color: colors.mutedForeground,
-                    marginTop: 2,
+                    marginTop: spacing.xxs,
                   }}
                 >
                   {item.brand}
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: spacing.sm,
     marginRight: spacing.sm,
   },
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterChip: {
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: 6,
     borderWidth: 1,
     marginRight: spacing.sm,
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.smx,
   },
   expiryBadge: {
     flexDirection: 'row',

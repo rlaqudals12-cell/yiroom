@@ -27,7 +27,7 @@ import {
 type TabType = 'all' | 'friends';
 
 export default function LeaderboardScreen() {
-  const { colors, brand, module: moduleColors, typography } = useTheme();
+  const { colors, brand, module: moduleColors, typography, spacing, radii} = useTheme();
   const { user } = useUser();
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     margin: spacing.md,
     borderRadius: radii.xl,
-    padding: 20,
+    padding: spacing.mlg,
   },
   myRankInfo: {
     flex: 1,
@@ -237,14 +237,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   myRankValue: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     fontWeight: typography.weight.bold,
   },
   percentileContainer: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: 14,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
   },
   percentileValue: {
     fontSize: typography.size.sm,
@@ -254,12 +254,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: spacing.md,
     marginBottom: spacing.sm,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.xs,
   },
   tab: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: spacing.smd,
     alignItems: 'center',
     borderRadius: radii.lg,
   },
@@ -273,12 +273,12 @@ const styles = StyleSheet.create({
   tabTextActive: {},
   listContent: {
     padding: spacing.md,
-    gap: 10,
+    gap: spacing.smd,
   },
   rankingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: 14,
   },
   rankingCardMe: {
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   rankBadge: {
     width: 36,
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: spacing.smd,
   },
   rankText: {
     fontSize: typography.size.base,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.smx,
   },
   userName: {
     fontSize: 15,

@@ -37,7 +37,7 @@ import { useChallenges, useJoinChallenge } from '../../lib/challenges/useChallen
 type TabType = 'explore' | 'my';
 
 export default function ChallengesScreen() {
-  const { colors, brand } = useTheme();
+  const { colors, brand, spacing, radii} = useTheme();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabType>('explore');
@@ -199,9 +199,9 @@ export default function ChallengesScreen() {
             <SkeletonCard style={{ flex: 1, height: 80 }} />
             <SkeletonCard style={{ flex: 1, height: 80 }} />
           </View>
-          <SkeletonText style={{ width: 200, height: 40, alignSelf: 'center', marginTop: 16 }} />
-          <SkeletonCard style={{ height: 120, marginHorizontal: spacing.md, marginTop: 16 }} />
-          <SkeletonCard style={{ height: 120, marginHorizontal: spacing.md, marginTop: 12 }} />
+          <SkeletonText style={{ width: 200, height: 40, alignSelf: 'center', marginTop: spacing.md }} />
+          <SkeletonCard style={{ height: 120, marginHorizontal: spacing.md, marginTop: spacing.md }} />
+          <SkeletonCard style={{ height: 120, marginHorizontal: spacing.md, marginTop: spacing.smx }} />
         </View>
       </ScreenContainer>
     );
@@ -325,8 +325,8 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    gap: 10,
+    paddingVertical: spacing.smx,
+    gap: spacing.smd,
   },
   statCard: {
     flex: 1,
@@ -343,18 +343,18 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: typography.size.xs,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   tabContainer: {
     flexDirection: 'row',
     marginHorizontal: spacing.md,
     marginBottom: spacing.sm,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.xs,
   },
   tab: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: spacing.smd,
     alignItems: 'center',
     borderRadius: radii.lg,
   },
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   tabTextActive: {},
   listContent: {
     padding: spacing.md,
-    gap: 12,
+    gap: spacing.smx,
   },
   challengeCard: {
     borderRadius: radii.xl,
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 10,
+    marginBottom: spacing.smd,
   },
   cardIcon: {
     fontSize: 32,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   domainBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
     borderRadius: radii.md,
   },
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   difficultyBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
     borderRadius: radii.md,
   },
@@ -411,10 +411,10 @@ const styles = StyleSheet.create({
   cardDescription: {
     fontSize: typography.size.sm,
     lineHeight: 20,
-    marginBottom: 10,
+    marginBottom: spacing.smd,
   },
   cardMeta: {
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   metaText: {
     fontSize: 13,
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.xs,
   },
   joinButton: {
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderRadius: radii.lg,
     alignItems: 'center',
   },
@@ -469,8 +469,8 @@ const styles = StyleSheet.create({
   },
   emptyButton: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: spacing.smx,
+    borderRadius: radii.smx,
   },
   emptyButtonText: {
     fontSize: 15,

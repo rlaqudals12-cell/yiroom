@@ -57,7 +57,7 @@ const SLEEP_QUALITY_LABELS: Record<SleepQualityScore, string> = {
 };
 
 export default function SkinDiaryEntryScreen(): React.JSX.Element {
-  const { colors, isDark, typography } = useTheme();
+  const { colors, isDark, typography, spacing} = useTheme();
   const params = useLocalSearchParams<{ date?: string; entryId?: string }>();
   const { saveEntry, getEntryForDate } = useSkinDiary();
   const [saving, setSaving] = useState(false);
@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     fontSize: 9,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   // 날씨
   weatherGrid: {

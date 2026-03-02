@@ -37,7 +37,7 @@ interface MealRecord {
 }
 
 export default function NutritionDashboardScreen() {
-  const { colors, status, brand, typography } = useTheme();
+  const { colors, status, brand, typography, spacing, radii} = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const { todaySummary, settings, isLoading: isNutritionLoading, refetch: refetchNutrition } = useNutritionData();
@@ -284,10 +284,10 @@ function NutrientBar({
 
 const styles = StyleSheet.create({
   calorieCard: {
-    borderRadius: 20,
+    borderRadius: radii.circle,
     padding: spacing.lg,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   dateText: {
     fontSize: typography.size.sm,
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   section: {
     borderRadius: radii.xl,
-    padding: 20,
+    padding: spacing.mlg,
     marginBottom: spacing.md,
   },
   sectionHeader: {
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   mealItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderBottomWidth: 1,
   },
   mealInfo: {
@@ -408,11 +408,11 @@ const styles = StyleSheet.create({
   },
   mealTime: {
     fontSize: typography.size.xs,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   mealFoods: {
     flex: 1,
-    marginHorizontal: 12,
+    marginHorizontal: spacing.smx,
   },
   mealFoodText: {
     fontSize: typography.size.sm,
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   recordButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
     marginTop: spacing.sm,

@@ -22,7 +22,7 @@ import {
   Alert,
 } from 'react-native';
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import type { FeedItem } from '../../lib/feed/types';
 import { useClerkSupabaseClient } from '../../lib/supabase';
@@ -46,7 +46,7 @@ interface Comment {
 }
 
 export default function FeedDetailScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand, typography, spacing, radii} = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUser();
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.base,
   },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: spacing.mlg,
   },
   postContainer: {
     marginBottom: spacing.sm,
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   userMeta: {
-    marginLeft: 12,
+    marginLeft: spacing.smx,
   },
   userName: {
     fontSize: typography.size.base,
@@ -488,12 +488,12 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 13,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   levelBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: 6,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
   },
   levelText: {
     fontSize: 13,
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   typeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: spacing.smd,
   },
   typeIcon: {
     fontSize: typography.size.lg,
@@ -535,14 +535,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionIcon: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     marginRight: spacing.sm,
   },
   actionText: {
     fontSize: typography.size.sm,
   },
   commentsHeader: {
-    marginTop: 20,
+    marginTop: spacing.mlg,
     paddingTop: spacing.md,
     borderTopWidth: 1,
   },
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
   },
   commentContent: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.smx,
   },
   commentHeader: {
     flexDirection: 'row',
@@ -597,22 +597,22 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    padding: 12,
+    padding: spacing.smx,
     borderTopWidth: 1,
-    gap: 10,
+    gap: spacing.smd,
   },
   input: {
     flex: 1,
-    borderRadius: 20,
+    borderRadius: radii.circle,
     paddingHorizontal: spacing.md,
-    paddingVertical: 10,
+    paddingVertical: spacing.smd,
     fontSize: 15,
     maxHeight: 100,
   },
   sendButton: {
     paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingVertical: spacing.smd,
+    borderRadius: radii.circle,
     minWidth: 60,
     alignItems: 'center',
   },

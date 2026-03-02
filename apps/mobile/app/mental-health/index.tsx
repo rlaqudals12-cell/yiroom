@@ -179,7 +179,7 @@ export default function MentalHealthScreen(): React.ReactElement {
                 padding: spacing.sm,
               }}
             >
-              <Text style={{ fontSize: 24, marginRight: spacing.sm }}>{moodOption?.emoji}</Text>
+              <Text style={{ fontSize: typography.size['2xl'], marginRight: spacing.sm }}>{moodOption?.emoji}</Text>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground }}>
                   {moodOption?.label}

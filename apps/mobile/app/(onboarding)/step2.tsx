@@ -501,15 +501,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 20,
+    padding: spacing.mlg,
     paddingBottom: 140,
   },
   // 미니 백 버튼
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
-    marginBottom: 12,
+    gap: spacing.xxs,
+    marginBottom: spacing.smx,
     alignSelf: 'flex-start',
   },
   // 히어로 (웹 파스텔 패턴)
@@ -537,11 +537,11 @@ const styles = StyleSheet.create({
   sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   optionRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.smx,
   },
   optionButton: {
     flex: 1,
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   // 푸터
   footerWrap: {

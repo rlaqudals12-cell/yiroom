@@ -155,7 +155,7 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
           data={records}
           keyExtractor={(item) => item.date}
           renderItem={renderRecord}
-          contentContainerStyle={{ padding: spacing.md, gap: 12, paddingBottom: spacing.lg }}
+          contentContainerStyle={{ padding: spacing.md, gap: spacing.smx, paddingBottom: spacing.lg }}
           showsVerticalScrollIndicator={false}
         />
       </DataStateWrapper>
@@ -165,17 +165,17 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  recordCard: { padding: 16 },
-  recordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  recordCard: { padding: spacing.md },
+  recordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.smx },
   recordDate: {},
   statusDot: { width: 10, height: 10, borderRadius: 5 },
-  calRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: 12 },
+  calRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.smx },
   calLabel: { width: 40 },
   calTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
   calFill: { height: '100%' },
   calValue: { width: 50, textAlign: 'right' },
   macroRow: { flexDirection: 'row', justifyContent: 'space-between' },
   macroItem: { alignItems: 'center' },
-  macroLabel: { marginBottom: 2 },
+  macroLabel: { marginBottom: spacing.xxs },
   macroValue: {},
 });

@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, spacing } from '../lib/theme';
+import { useTheme, typography, spacing, radii } from '../lib/theme';
 
 type Lang = 'ko' | 'en';
 
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   paragraph: {
     fontSize: 15,
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   contactBox: {
     marginTop: spacing.xl,
     padding: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   contactTitle: {
     fontSize: 15,

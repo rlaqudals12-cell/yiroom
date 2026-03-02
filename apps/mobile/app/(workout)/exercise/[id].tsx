@@ -151,7 +151,7 @@ export default function ExerciseDetailScreen(): React.ReactElement {
               style={{
                 width: 24,
                 height: 24,
-                borderRadius: 12,
+                borderRadius: radii.smx,
                 backgroundColor: moduleColors.workout.base,
                 alignItems: 'center',
                 justifyContent: 'center',

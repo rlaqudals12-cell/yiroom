@@ -235,7 +235,7 @@ export default function OralHealthResultScreen() {
 
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
         <GradientCard variant="oralHealth" style={localStyles.tipsCard}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground, marginBottom: 4 }]}>
+          <Text style={[localStyles.sectionTitle, { color: colors.foreground, marginBottom: spacing.xs }]}>
             일반 관리 팁
           </Text>
           <View style={localStyles.tipItem}>
@@ -311,13 +311,13 @@ const localStyles = StyleSheet.create({
     borderWidth: 3,
   },
   tabContent: {
-    gap: 20,
+    gap: spacing.mlg,
     paddingBottom: spacing.sm,
   },
   sectionTitle: {
     fontSize: typography.size.base,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   metricsGap: {
     gap: 14,
@@ -326,9 +326,9 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
   },
   whiteningBadge: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingHorizontal: spacing.mlg,
+    paddingVertical: spacing.smd,
+    borderRadius: radii.circle,
     alignSelf: 'flex-start',
   },
   whiteningText: {
@@ -337,7 +337,7 @@ const localStyles = StyleSheet.create({
   },
   tipsCard: {
     padding: spacing.md,
-    gap: 10,
+    gap: spacing.smd,
   },
   tipItem: {
     flexDirection: 'row',

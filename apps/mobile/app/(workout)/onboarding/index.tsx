@@ -8,7 +8,7 @@ import { ScreenContainer } from '@/components/ui';
 import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 export default function WorkoutOnboardingScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand, typography, spacing, radii} = useTheme();
 
   const handleStart = () => {
     router.push('/(workout)/onboarding/goals');
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   iconText: {
     fontSize: 32,
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: typography.weight.bold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   subtitle: {
     fontSize: typography.size.base,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: radii.xl,
-    padding: 20,
+    padding: spacing.mlg,
     marginBottom: spacing.md,
   },
   cardTitle: {
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   featureItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: spacing.smx,
   },
   featureEmoji: {
     fontSize: typography.size['2xl'],
@@ -165,23 +165,23 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   featureDescription: {
     fontSize: 13,
   },
   stepList: {
-    gap: 12,
+    gap: spacing.smx,
   },
   stepItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smx,
   },
   stepNumber: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -197,11 +197,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 20,
+    padding: spacing.mlg,
     borderTopWidth: 1,
   },
   startButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },

@@ -10,7 +10,7 @@ import Animated from 'react-native-reanimated';
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { staggeredEntry } from '@/lib/animations';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   statsTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -307,25 +307,25 @@ const styles = StyleSheet.create({
     fontSize: typography.size.xs,
   },
   logsSection: {
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   sectionTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   logCard: {
     padding: spacing.md,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   logHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   logIcon: {
     fontSize: typography.size['2xl'],
-    marginRight: 10,
+    marginRight: spacing.smd,
   },
   logDate: {
     fontSize: typography.size.base,
@@ -333,8 +333,8 @@ const styles = StyleSheet.create({
   },
   logStats: {
     flexDirection: 'row',
-    gap: 20,
-    marginBottom: 12,
+    gap: spacing.mlg,
+    marginBottom: spacing.smx,
   },
   logStatItem: {
     alignItems: 'center',
@@ -353,9 +353,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   exerciseChip: {
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   exerciseChipText: {
     fontSize: typography.size.xs,

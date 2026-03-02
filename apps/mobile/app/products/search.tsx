@@ -159,7 +159,7 @@ const POPULAR_SEARCHES = ['수분크림', '선크림', '립스틱', '비타민',
 const RECENT_SEARCHES = ['아이오페', '롬앤 립스틱'];
 
 export default function ProductSearchScreen() {
-  const { colors, brand, status, typography } = useTheme();
+  const { colors, brand, status, typography, spacing, radii} = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     paddingHorizontal: 14,
     borderWidth: 1,
   },
@@ -413,12 +413,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   sectionTitle: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   clearAllText: {
     fontSize: 13,
@@ -432,8 +432,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingVertical: spacing.smd,
+    borderRadius: radii.circle,
     borderWidth: 1,
     gap: 6,
   },
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   popularRank: {
     fontSize: typography.size.xs,
     fontWeight: typography.weight.bold,
-    marginRight: 2,
+    marginRight: spacing.xxs,
   },
   tagText: {
     fontSize: typography.size.sm,
@@ -472,13 +472,13 @@ const styles = StyleSheet.create({
   },
   resultCount: {
     fontSize: 13,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   productItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: radii.smx,
+    padding: spacing.smx,
     marginBottom: spacing.sm,
   },
   productImagePlaceholder: {
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
   },
   productInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.smx,
   },
   productBrand: {
     fontSize: typography.size.xs,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 15,
     fontWeight: typography.weight.medium,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   productMeta: {
     flexDirection: 'row',
@@ -521,9 +521,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   matchBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   matchBadgeText: {
     fontSize: typography.size.xs,

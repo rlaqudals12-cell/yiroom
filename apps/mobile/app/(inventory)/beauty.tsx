@@ -138,7 +138,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
                   style={{
                     fontSize: typography.size.xs,
                     color: colors.mutedForeground,
-                    marginTop: 2,
+                    marginTop: spacing.xxs,
                   }}
                 >
                   {item.brand}
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterChip: {
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: 6,
     borderWidth: 1,
     marginRight: spacing.sm,
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   },
   metaChip: {
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
   },
   expiryBadge: {
     flexDirection: 'row',

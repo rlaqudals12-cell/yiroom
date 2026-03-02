@@ -126,7 +126,7 @@ export default function FAQScreen(): React.JSX.Element {
                       marginBottom: spacing.xs,
                       alignSelf: 'flex-start',
                       paddingHorizontal: spacing.sm,
-                      paddingVertical: 2,
+                      paddingVertical: spacing.xxs,
                     },
                   ]}
                 >
