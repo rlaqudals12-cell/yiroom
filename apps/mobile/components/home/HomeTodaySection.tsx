@@ -90,7 +90,7 @@ export function HomeTodaySection({
             backgroundColor: getNotificationBg(notifications[0].type),
             borderRadius: radii.lg,
             paddingHorizontal: spacing.md,
-            paddingVertical: spacing.sm + 4,
+            paddingVertical: spacing.smx,
             marginBottom: spacing.md,
           }}
         >
@@ -109,11 +109,11 @@ export function HomeTodaySection({
       <SectionHeader
         title="오늘 할 일"
         action={{ label: `${remainingCount}개 남음`, onPress: () => {} }}
-        style={{ marginBottom: spacing.sm + 4 }}
+        style={{ marginBottom: spacing.smx }}
       />
 
       <GlassCard
-        intensity={30}
+        intensity={50}
         style={{ padding: 0, marginBottom: spacing.lg, borderRadius: radii.xl, overflow: 'hidden' }}
       >
         {tasks.map((task, index) => (

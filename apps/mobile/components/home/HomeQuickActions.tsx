@@ -78,8 +78,8 @@ export function HomeQuickActions({
 
       {/* 퀵 액션 */}
       <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
-        <SectionHeader title="빠른 시작" style={{ marginBottom: spacing.sm + 4 }} />
-        <View style={[styles.actionsRow, { gap: spacing.sm + 4 }]}>
+        <SectionHeader title="빠른 시작" style={{ marginBottom: spacing.smx }} />
+        <View style={[styles.actionsRow, { gap: spacing.smx }]}>
           {actions.map((action, index) => (
             <AnimatedCard
               key={action.title}
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   coachTitle: {
-    fontSize: 15,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
     marginBottom: spacing.xxs,
   },

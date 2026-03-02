@@ -314,8 +314,8 @@ export default function HomeScreen(): React.JSX.Element {
       </Animated.View>
 
       {/* 모듈 카드 — staggeredEntry 적용 */}
-      <SectionHeader title="나의 여정" gradient="extended" style={{ marginBottom: spacing.sm + 4 }} />
-      <View style={{ gap: spacing.sm + 4, marginBottom: spacing.lg }}>
+      <SectionHeader title="나의 여정" gradient="extended" style={{ marginBottom: spacing.smx }} />
+      <View style={{ gap: spacing.smx, marginBottom: spacing.lg }}>
         <Animated.View entering={staggeredEntry(0)}>
           <ModuleCard
             title="운동"
