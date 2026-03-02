@@ -226,7 +226,7 @@ const localStyles = StyleSheet.create({
   },
   mainResult: {
     fontSize: typography.size['2xl'],
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: spacing.sm,
   },
   exerciseCard: {
@@ -234,7 +234,7 @@ const localStyles = StyleSheet.create({
   },
   exerciseName: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
   },
   exerciseDesc: {

@@ -316,7 +316,7 @@ const localStyles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.size.base,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: spacing.smx,
   },
   metricsGap: {
@@ -333,7 +333,7 @@ const localStyles = StyleSheet.create({
   },
   whiteningText: {
     fontSize: typography.size.base,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
   },
   tipsCard: {
     padding: spacing.md,
@@ -346,11 +346,11 @@ const localStyles = StyleSheet.create({
   tipBullet: {
     fontSize: typography.size.base,
     lineHeight: 22,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   stepNum: {
     fontSize: typography.size.sm,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     lineHeight: 22,
     minWidth: 20,
   },

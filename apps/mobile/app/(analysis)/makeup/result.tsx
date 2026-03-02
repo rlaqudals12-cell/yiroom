@@ -324,7 +324,7 @@ const localStyles = StyleSheet.create({
   },
   typeName: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
   },
   subInfo: {
     fontSize: typography.size.sm,
@@ -341,7 +341,7 @@ const localStyles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.size.base,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: spacing.smx,
   },
   metricsGap: {
@@ -356,7 +356,7 @@ const localStyles = StyleSheet.create({
   },
   recLabel: {
     fontSize: typography.size.sm,
-    fontWeight: '600',
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
   },
   recText: {

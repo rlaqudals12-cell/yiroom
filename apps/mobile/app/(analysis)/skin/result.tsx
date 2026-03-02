@@ -420,7 +420,7 @@ const localStyles = StyleSheet.create({
   },
   typeName: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginTop: spacing.xs,
   },
   skinImage: {
@@ -442,7 +442,7 @@ const localStyles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: typography.size.base,
-    fontWeight: '700',
+    fontWeight: typography.weight.bold,
     marginBottom: spacing.smx,
   },
   metricsGap: {
@@ -480,6 +480,6 @@ const localStyles = StyleSheet.create({
   },
   tagText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: typography.weight.medium,
   },
 });
