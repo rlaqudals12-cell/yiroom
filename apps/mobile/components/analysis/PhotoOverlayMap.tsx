@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, statusColors } from '../../lib/theme';
 
 export type OverlayZoneId = 'forehead' | 'tZone' | 'eyes' | 'cheeks' | 'uZone' | 'chin';
 
@@ -27,9 +27,9 @@ export interface PhotoOverlayMapProps {
 }
 
 const ZONE_COLORS: Record<'good' | 'normal' | 'warning', string> = {
-  good: '#22C55E',
-  normal: '#F59E0B',
-  warning: '#EF4444',
+  good: statusColors.success,
+  normal: statusColors.warning,
+  warning: statusColors.error,
 };
 
 // 존 위치 (비율)

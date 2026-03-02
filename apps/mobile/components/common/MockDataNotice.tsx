@@ -9,7 +9,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, spacing, radii, typography } from '../../lib/theme';
+import { useTheme, mockColors, spacing, radii, typography } from '../../lib/theme';
 
 interface MockDataNoticeProps {
   /** 컴팩트 모드 (짧은 메시지만) */
@@ -20,12 +20,13 @@ export function MockDataNotice({
   compact = false,
 }: MockDataNoticeProps): React.ReactElement {
   const { isDark } = useTheme();
+  const mode = isDark ? 'dark' : 'light';
 
-  const bg = isDark ? 'rgba(245,158,11,0.1)' : '#FFFBEB';
-  const border = isDark ? 'rgba(245,158,11,0.25)' : '#FDE68A';
-  const iconBg = isDark ? 'rgba(245,158,11,0.2)' : '#FEF3C7';
-  const titleColor = isDark ? '#FDE68A' : '#92400E';
-  const textColor = isDark ? '#FBBF24' : '#A16207';
+  const bg = mockColors.background[mode];
+  const border = mockColors.border[mode];
+  const iconBg = mockColors.iconBg[mode];
+  const titleColor = mockColors.title[mode];
+  const textColor = mockColors.text[mode];
 
   if (compact) {
     return (

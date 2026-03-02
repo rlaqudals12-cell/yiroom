@@ -8,7 +8,7 @@
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Svg, { Ellipse, Rect } from 'react-native-svg';
-import { useTheme } from '../../lib/theme';
+import { useTheme, zoneColors } from '../../lib/theme';
 
 export type DetailedZoneId =
   | 'forehead_center' | 'forehead_left' | 'forehead_right'
@@ -41,13 +41,7 @@ const SIZE_MAP = {
   lg: { width: 280, height: 392 },
 };
 
-const STATUS_COLORS: Record<DetailedStatusLevel, string> = {
-  excellent: '#22C55E',
-  good: '#4ADE80',
-  normal: '#F59E0B',
-  warning: '#F97316',
-  critical: '#EF4444',
-};
+const STATUS_COLORS: Record<DetailedStatusLevel, string> = zoneColors;
 
 const LEGEND_ITEMS: Array<{ status: DetailedStatusLevel; label: string }> = [
   { status: 'excellent', label: '매우 좋음' },

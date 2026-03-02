@@ -9,7 +9,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, spacing, radii, typography } from '../../lib/theme';
+import { useTheme, aiColors, spacing, radii, typography } from '../../lib/theme';
 
 export type AIBadgeVariant = 'default' | 'small' | 'inline' | 'card';
 
@@ -27,7 +27,8 @@ export function AIBadge({
   label = 'AI 분석 결과',
   description = '이 결과는 AI 기술을 사용하여 생성되었어요',
 }: AIBadgeProps): React.ReactElement {
-  const { colors, isDark } = useTheme();
+  const { isDark } = useTheme();
+  const mode = isDark ? 'dark' : 'light';
 
   const sizeStyle = VARIANT_STYLES[variant];
 
@@ -37,8 +38,8 @@ export function AIBadge({
         styles.container,
         sizeStyle.container,
         {
-          backgroundColor: isDark ? 'rgba(139,92,246,0.15)' : '#F5F3FF',
-          borderColor: isDark ? 'rgba(139,92,246,0.3)' : '#DDD6FE',
+          backgroundColor: aiColors.background[mode],
+          borderColor: aiColors.border[mode],
         },
       ]}
       accessibilityRole="text"
@@ -46,7 +47,7 @@ export function AIBadge({
       testID="ai-badge"
     >
       <Text
-        style={[sizeStyle.icon, { color: isDark ? '#C4B5FD' : '#7C3AED' }]}
+        style={[sizeStyle.icon, { color: aiColors.text[mode] }]}
         accessibilityElementsHidden
       >
         ✨
@@ -55,7 +56,7 @@ export function AIBadge({
         style={[
           sizeStyle.label,
           {
-            color: isDark ? '#C4B5FD' : '#6D28D9',
+            color: aiColors.title[mode],
             fontWeight: typography.weight.medium,
           },
         ]}

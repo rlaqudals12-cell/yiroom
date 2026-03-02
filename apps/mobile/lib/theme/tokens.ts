@@ -199,6 +199,33 @@ export const scoreColors = {
   poor: '#EF4444',
 } as const;
 
+// 존 건강 시각화 5단계 색상 (분석 결과 존 맵)
+export const zoneColors = {
+  excellent: '#22C55E',
+  good: '#4ADE80',
+  normal: '#F59E0B',
+  warning: '#F97316',
+  critical: '#EF4444',
+} as const;
+
+// AI 브랜딩 색상 (AI 투명성 컴포넌트)
+export const aiColors = {
+  background: { light: '#F5F3FF', dark: 'rgba(139,92,246,0.15)' },
+  border: { light: '#DDD6FE', dark: 'rgba(139,92,246,0.3)' },
+  iconBg: { light: '#EDE9FE', dark: 'rgba(139,92,246,0.2)' },
+  text: { light: '#7C3AED', dark: '#C4B5FD' },
+  title: { light: '#6D28D9', dark: '#E9D5FF' },
+} as const;
+
+// Mock 데이터 표시 색상
+export const mockColors = {
+  background: { light: '#FFFBEB', dark: 'rgba(245,158,11,0.1)' },
+  border: { light: '#FDE68A', dark: 'rgba(245,158,11,0.25)' },
+  iconBg: { light: '#FEF3C7', dark: 'rgba(245,158,11,0.2)' },
+  title: { light: '#92400E', dark: '#FDE68A' },
+  text: { light: '#A16207', dark: '#FBBF24' },
+} as const;
+
 // 신뢰도 배지 색상 (AI/fallback 신뢰도 표시)
 export const trustColors = {
   ai: { light: '#16A34A', dark: '#4ADE80' },

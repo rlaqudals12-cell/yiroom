@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, statusColors } from '../../lib/theme';
 
 export type ZoneId = 'forehead' | 'tZone' | 'eyes' | 'cheeks' | 'uZone' | 'chin';
 
@@ -35,9 +35,9 @@ export interface ZoneVisualizationProps {
 }
 
 const STATUS_COLORS: Record<ZoneStatusLevel, string> = {
-  good: '#22C55E',
-  normal: '#F59E0B',
-  warning: '#EF4444',
+  good: statusColors.success,
+  normal: statusColors.warning,
+  warning: statusColors.error,
 };
 
 const ZONE_LABELS: Record<ZoneId, string> = {

@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, zoneColors } from '../../lib/theme';
 import type { DetailedZoneId, DetailedStatusLevel, DetailedZoneStatus } from './DetailedFaceZoneMap';
 
 export type ViewMode = 'overview' | 'detailed';
@@ -46,13 +46,7 @@ const STATUS_LABELS: Record<DetailedStatusLevel, string> = {
   critical: '관리 필요',
 };
 
-const STATUS_COLORS: Record<DetailedStatusLevel, string> = {
-  excellent: '#22C55E',
-  good: '#4ADE80',
-  normal: '#F59E0B',
-  warning: '#F97316',
-  critical: '#EF4444',
-};
+const STATUS_COLORS: Record<DetailedStatusLevel, string> = zoneColors;
 
 export function ProfessionalSkinMap({
   zones,
