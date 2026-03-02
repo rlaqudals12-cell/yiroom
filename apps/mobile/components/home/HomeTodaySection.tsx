@@ -43,7 +43,7 @@ export function HomeTodaySection({
   notifications,
   onTaskPress,
 }: HomeTodaySectionProps): React.JSX.Element {
-  const { colors, spacing, radii, typography, status, brand } = useTheme();
+  const { colors, spacing, radii, typography, status, brand, shadows } = useTheme();
 
   const remainingCount = tasks.filter((t) => !t.completed).length;
   const greeting = getTimeGreeting();
@@ -83,16 +83,21 @@ export function HomeTodaySection({
         {greeting}
       </Text>
 
-      {/* 알림 배너 */}
+      {/* 알림 배너 — 서브틀 보더 + 그림자 추가 */}
       {notifications.length > 0 && (
         <View
-          style={{
-            backgroundColor: getNotificationBg(notifications[0].type),
-            borderRadius: radii.lg,
-            paddingHorizontal: spacing.md,
-            paddingVertical: spacing.smx,
-            marginBottom: spacing.md,
-          }}
+          style={[
+            {
+              backgroundColor: getNotificationBg(notifications[0].type),
+              borderRadius: radii.xl,
+              paddingHorizontal: spacing.md,
+              paddingVertical: spacing.smx,
+              marginBottom: spacing.md,
+              borderWidth: 1,
+              borderColor: getNotificationBg(notifications[0].type).replace('20', '35'),
+            },
+            shadows.sm,
+          ]}
         >
           <Text
             style={{
@@ -164,7 +169,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
   },
   checkbox: {
     width: 22,

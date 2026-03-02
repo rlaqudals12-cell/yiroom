@@ -2,7 +2,7 @@
  * HomeHeader — 그라디언트 히어로 배너 + 인사말
  */
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import { GradientBackground } from '../ui';
 import { useTheme, typography, spacing } from '../../lib/theme';
@@ -23,20 +23,30 @@ function getGreeting(): string {
 }
 
 export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.Element {
-  const { colors, spacing, radii, typography } = useTheme();
+  const { colors, spacing, radii, typography, shadows, isDark, brand } = useTheme();
 
   return (
     <Animated.View
       entering={FadeIn.duration(TIMING.normal)}
-      style={{ marginBottom: spacing.lg }}
+      style={[
+        {
+          marginBottom: spacing.lg,
+          borderRadius: radii.xl + 8,
+        },
+        // 히어로 배너 그림자 (웹 shadow-lg 매칭)
+        isDark ? {} : Platform.select({
+          ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 16 },
+          android: { elevation: 4 },
+        }) ?? {},
+      ]}
       testID="home-header"
     >
       <GradientBackground
         variant="brand"
         style={{
-          borderRadius: radii.xl,
+          borderRadius: radii.xl + 8,
           paddingHorizontal: spacing.lg,
-          paddingVertical: spacing.lg + 4,
+          paddingVertical: spacing.xl,
         }}
       >
         <Text style={[styles.greeting, { fontSize: typography.size.sm, color: `${colors.overlayForeground}D9` }]}>

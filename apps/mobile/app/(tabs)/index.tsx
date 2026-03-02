@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Platform,
   StyleSheet,
   Text,
   View,
@@ -284,8 +285,8 @@ export default function HomeScreen(): React.JSX.Element {
 
       {/* 오늘의 요약 — StatCard 사용 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <SectionHeader title="오늘의 요약" gradient="brand" style={{ marginBottom: spacing.sm }} />
-        <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg }}>
+        <SectionHeader title="오늘의 요약" gradient="brand" style={{ marginBottom: spacing.smx }} />
+        <View style={{ flexDirection: 'row', gap: spacing.smx, marginBottom: spacing.lg }}>
           <Animated.View style={[{ flex: 1 }, streakCount >= 7 && (streakGlowStyle as AnimatedStyle<ViewStyle>)]}>
             <StatCard
               value={streakCount}
@@ -315,7 +316,7 @@ export default function HomeScreen(): React.JSX.Element {
 
       {/* 모듈 카드 — staggeredEntry 적용 */}
       <SectionHeader title="나의 여정" gradient="extended" style={{ marginBottom: spacing.smx }} />
-      <View style={{ gap: spacing.smx, marginBottom: spacing.lg }}>
+      <View style={{ gap: spacing.md, marginBottom: spacing.lg }}>
         <Animated.View entering={staggeredEntry(0)}>
           <ModuleCard
             title="운동"

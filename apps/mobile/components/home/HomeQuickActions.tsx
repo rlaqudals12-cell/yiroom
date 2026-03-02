@@ -2,7 +2,7 @@
  * HomeQuickActions — GlassCard AI 코치 + AnimatedCard 퀵 액션
  */
 import * as Haptics from 'expo-haptics';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, AnimatedCard } from '../ui';
@@ -30,9 +30,7 @@ export function HomeQuickActions({
   onActionPress,
   onCoachPress,
 }: HomeQuickActionsProps): React.JSX.Element {
-  const { colors, spacing, radii, typography, status, module: moduleColors } = useTheme();
-
-  const coachColor = moduleColors.workout.dark;
+  const { colors, spacing, radii, typography, status, module: moduleColors, shadows, isDark, brand } = useTheme();
 
   const handleActionPress = (route: string): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -46,10 +44,21 @@ export function HomeQuickActions({
 
   return (
     <View testID="home-quick-actions">
-      {/* AI Coach 카드 — 그라디언트 배경 */}
+      {/* AI Coach 카드 — 그라디언트 배경 + 글로우 섀도 */}
       <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
         <Pressable
-          style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1, marginBottom: spacing.lg }]}
+          style={({ pressed }) => [
+            {
+              opacity: pressed ? 0.9 : 1,
+              marginBottom: spacing.lg,
+              borderRadius: radii.xl + 4,
+            },
+            // 코치 카드 글로우 그림자
+            isDark ? {} : Platform.select({
+              ios: { shadowColor: moduleColors.workout.base, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 16 },
+              android: { elevation: 5 },
+            }) ?? {},
+          ]}
           onPress={handleCoachPress}
           accessibilityRole="button"
           accessibilityLabel="AI 코치에게 물어보세요"
@@ -58,7 +67,7 @@ export function HomeQuickActions({
           <GradientBackground
             variant="workout"
             style={{
-              borderRadius: radii.xl,
+              borderRadius: radii.xl + 4,
               padding: spacing.md,
               flexDirection: 'row',
               alignItems: 'center',
@@ -89,13 +98,13 @@ export function HomeQuickActions({
               accessibilityLabel={`${action.title}${action.completed ? ', 완료됨' : ''}`}
               accessibilityHint={action.subtitle}
             >
-              <View style={{ padding: spacing.sm + 2 }}>
+              <View style={{ padding: spacing.smx }}>
                 <View style={styles.actionHeader}>
                   <View
                     style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: 5,
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
                       backgroundColor: action.color,
                     }}
                   />
@@ -134,9 +143,9 @@ export function HomeQuickActions({
 
 const styles = StyleSheet.create({
   coachIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.smx,
