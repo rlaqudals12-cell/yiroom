@@ -1,10 +1,10 @@
 /**
  * 스트레칭 가이드 화면
  *
- * 운동 전후 스트레칭 루틴을 안내한다.
+ * V2: 웹 비주얼 싱크 — 카드 그림자/테두리, 탭 pill 강화
  */
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { Platform, View, Text, ScrollView, Pressable } from 'react-native';
 
 import { useTheme } from '../../../lib/theme';
 
@@ -47,14 +47,23 @@ const MOCK_STRETCHES: Record<StretchType, StretchExercise[]> = {
 };
 
 export default function StretchingScreen(): React.ReactElement {
-  const { colors, brand, spacing, radii, typography, module: moduleColors } = useTheme();
+  const { colors, spacing, radii, typography, isDark, module: moduleColors } = useTheme();
   const [activeTab, setActiveTab] = useState<StretchType>('warmup');
+  const workoutColor = moduleColors.workout.base;
 
   const stretches = MOCK_STRETCHES[activeTab];
   const totalDuration = stretches.reduce((sum, s) => {
     const seconds = s.duration.includes('분') ? parseInt(s.duration) * 60 : parseInt(s.duration);
     return sum + seconds;
   }, 0);
+
+  // 카드 공통 그림자 (웹 shadow-sm border 매칭)
+  const cardShadow = !isDark
+    ? Platform.select({
+        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+        android: { elevation: 2 },
+      }) ?? {}
+    : {};
 
   return (
     <ScrollView
@@ -91,13 +100,24 @@ export default function StretchingScreen(): React.ReactElement {
               key={tab.id}
               accessibilityLabel={`${tab.label} 스트레칭`}
               onPress={() => setActiveTab(tab.id)}
-              style={{
-                flex: 1,
-                paddingVertical: spacing.sm,
-                borderRadius: radii.lg,
-                backgroundColor: active ? moduleColors.workout.base : colors.card,
-                alignItems: 'center',
-              }}
+              style={[
+                {
+                  flex: 1,
+                  paddingVertical: spacing.sm,
+                  borderRadius: radii.xl,
+                  backgroundColor: active ? workoutColor : colors.card,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: active ? workoutColor : colors.border,
+                },
+                active && !isDark
+                  ? Platform.select({
+                      ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 8 },
+                      android: { elevation: 3 },
+                    }) ?? {}
+                  : {},
+                !active ? cardShadow : {},
+              ]}
             >
               <Text style={{ fontSize: typography.size.sm }}>{tab.emoji}</Text>
               <Text
@@ -117,16 +137,20 @@ export default function StretchingScreen(): React.ReactElement {
 
       {/* 총 소요시간 */}
       <View
-        style={{
-          backgroundColor: moduleColors.workout.base + '15',
-          borderRadius: radii.lg,
-          padding: spacing.md,
-          alignItems: 'center',
-          marginBottom: spacing.lg,
-        }}
+        style={[
+          {
+            backgroundColor: workoutColor + '15',
+            borderRadius: radii.xl,
+            padding: spacing.md,
+            alignItems: 'center',
+            marginBottom: spacing.lg,
+            borderWidth: 1,
+            borderColor: workoutColor + '30',
+          },
+        ]}
       >
         <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>예상 소요시간</Text>
-        <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.bold, color: moduleColors.workout.base }}>
+        <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.bold, color: workoutColor }}>
           약 {Math.ceil(totalDuration / 60)}분
         </Text>
       </View>
@@ -136,25 +160,30 @@ export default function StretchingScreen(): React.ReactElement {
         {stretches.map((stretch, index) => (
           <View
             key={stretch.id}
-            style={{
-              backgroundColor: colors.card,
-              borderRadius: radii.lg,
-              padding: spacing.md,
-            }}
+            style={[
+              {
+                backgroundColor: colors.card,
+                borderRadius: radii.xl,
+                padding: spacing.md,
+                borderWidth: 1,
+                borderColor: colors.border,
+              },
+              cardShadow,
+            ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
               <View
                 style={{
                   width: 28,
                   height: 28,
-                  borderRadius: radii.xlg,
-                  backgroundColor: moduleColors.workout.base + '20',
+                  borderRadius: 14,
+                  backgroundColor: workoutColor + '20',
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginRight: spacing.smx,
                 }}
               >
-                <Text style={{ fontSize: typography.size.xs, fontWeight: typography.weight.bold, color: moduleColors.workout.base }}>
+                <Text style={{ fontSize: typography.size.xs, fontWeight: typography.weight.bold, color: workoutColor }}>
                   {index + 1}
                 </Text>
               </View>

@@ -4,7 +4,7 @@
  */
 import { router } from 'expo-router';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import { Platform, View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { ScreenContainer } from '@/components/ui';
 
@@ -170,7 +170,16 @@ export default function WorkoutSessionScreen() {
           </View>
 
           <Pressable
-            style={[styles.startButton, { backgroundColor: workoutColor }]}
+            style={[
+              styles.startButton,
+              { backgroundColor: workoutColor },
+              !isDark
+                ? Platform.select({
+                    ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                    android: { elevation: 4 },
+                  }) ?? {}
+                : {},
+            ]}
             onPress={handleStartSession}
           >
             <Text style={[styles.startButtonText, { color: colors.overlayForeground }]}>운동 시작</Text>
@@ -217,7 +226,16 @@ export default function WorkoutSessionScreen() {
           </Animated.View>
 
           <Pressable
-            style={[styles.finishButton, { backgroundColor: workoutColor }]}
+            style={[
+              styles.finishButton,
+              { backgroundColor: workoutColor },
+              !isDark
+                ? Platform.select({
+                    ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                    android: { elevation: 4 },
+                  }) ?? {}
+                : {},
+            ]}
             onPress={() => router.replace('/(tabs)/records')}
           >
             <Text style={[styles.finishButtonText, { color: colors.overlayForeground }]}>완료</Text>
@@ -285,7 +303,16 @@ export default function WorkoutSessionScreen() {
       {sessionState === 'exercising' && (
         <View style={styles.footer}>
           <Pressable
-            style={[styles.completeButton, { backgroundColor: workoutColor }]}
+            style={[
+              styles.completeButton,
+              { backgroundColor: workoutColor },
+              !isDark
+                ? Platform.select({
+                    ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                    android: { elevation: 4 },
+                  }) ?? {}
+                : {},
+            ]}
             onPress={handleCompleteSet}
           >
             <Text style={[styles.completeButtonText, { color: colors.overlayForeground }]}>세트 완료</Text>
@@ -375,7 +402,7 @@ const styles = StyleSheet.create({
     padding: spacing.mlg,
   },
   completeButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: 18,
     alignItems: 'center',
   },
@@ -427,7 +454,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   startButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: 18,
     alignItems: 'center',
   },
@@ -472,7 +499,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   finishButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     paddingHorizontal: spacing.xxl,
     paddingVertical: spacing.md,
   },

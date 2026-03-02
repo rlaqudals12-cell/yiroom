@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useState, useMemo } from 'react';
 import {
+  Platform,
   View,
   Text,
   StyleSheet,
@@ -50,7 +51,7 @@ const INTENSITY_OPTIONS = [
 const DURATION_OPTIONS = [15, 30, 45, 60, 90];
 
 export default function WorkoutLogScreen() {
-  const { colors, spacing, module: moduleColors, typography } = useTheme();
+  const { colors, spacing, radii, module: moduleColors, typography, isDark } = useTheme();
   const workoutColor = moduleColors.workout.base;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -346,6 +347,12 @@ export default function WorkoutLogScreen() {
             styles.saveButton,
             { backgroundColor: workoutColor },
             isLoading && styles.saveButtonDisabled,
+            !isLoading && !isDark
+              ? Platform.select({
+                  ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                  android: { elevation: 4 },
+                }) ?? {}
+              : {},
           ]}
           onPress={handleSave}
           disabled={isLoading}
@@ -438,7 +445,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   saveButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
   },
