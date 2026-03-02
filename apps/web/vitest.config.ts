@@ -17,11 +17,11 @@ export default defineConfig({
     pool: 'forks', // threads보다 메모리 효율적
     poolOptions: {
       forks: {
-        maxForks: 4, // 동시 워커 수 제한
+        maxForks: 2, // Windows 메모리 제한 대응 (4→2)
         minForks: 1,
       },
     },
-    maxConcurrency: 10, // 동시 테스트 수 제한
+    maxConcurrency: 5, // 동시 테스트 수 제한 (10→5)
     testTimeout: 30000, // 30초 타임아웃
     hookTimeout: 30000,
     coverage: {

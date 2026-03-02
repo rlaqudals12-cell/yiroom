@@ -14,11 +14,19 @@ import {
   Pressable,
 } from 'react-native';
 
+import Svg, { Circle } from 'react-native-svg';
+
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { useNutritionData } from '@/hooks/useNutritionData';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 import type { SemanticColors } from '@/lib/theme';
+
+// SVG 원형 프로그레스 링 상수
+const RING_SIZE = 160;
+const RING_STROKE = 12;
+const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 // 식사 타입 라벨 매핑
 const MEAL_TYPE_LABELS: Record<string, string> = {
@@ -134,17 +142,32 @@ export default function NutritionDashboardScreen() {
         ]}>
           <Text style={[styles.dateText, { color: colors.mutedForeground }]}>오늘</Text>
           <View style={styles.calorieRing}>
-            <View style={[styles.ringOuter, { backgroundColor: colors.border }]}>
-              <View
-                style={[
-                  styles.ringProgress,
-                  {
-                    borderColor: brand.primary,
-                    transform: [{ rotate: `${(caloriePercentage / 100) * 360}deg` }],
-                  },
-                ]}
-              />
-              <View style={[styles.ringInner, { backgroundColor: colors.card }]}>
+            <View style={{ width: RING_SIZE, height: RING_SIZE }}>
+              <Svg width={RING_SIZE} height={RING_SIZE} viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}>
+                {/* 배경 원 */}
+                <Circle
+                  cx={RING_SIZE / 2}
+                  cy={RING_SIZE / 2}
+                  r={RING_RADIUS}
+                  stroke={colors.border}
+                  strokeWidth={RING_STROKE}
+                  fill="none"
+                />
+                {/* 진행 원 */}
+                <Circle
+                  cx={RING_SIZE / 2}
+                  cy={RING_SIZE / 2}
+                  r={RING_RADIUS}
+                  stroke={brand.primary}
+                  strokeWidth={RING_STROKE}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${RING_CIRCUMFERENCE}`}
+                  strokeDashoffset={`${RING_CIRCUMFERENCE * (1 - caloriePercentage / 100)}`}
+                  transform={`rotate(-90 ${RING_SIZE / 2} ${RING_SIZE / 2})`}
+                />
+              </Svg>
+              <View style={styles.ringCenter}>
                 <Text style={[styles.calorieValue, { color: colors.foreground }]}>
                   {current.calories}
                 </Text>
@@ -264,7 +287,16 @@ export default function NutritionDashboardScreen() {
         {/* 식사 기록 버튼 */}
         <Pressable
           testID="record-meal-button"
-          style={[styles.recordButton, { backgroundColor: brand.primary }]}
+          style={[
+            styles.recordButton,
+            { backgroundColor: brand.primary },
+            !isDark
+              ? Platform.select({
+                  ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                  android: { elevation: 4 },
+                }) ?? {}
+              : {},
+          ]}
           onPress={handleRecordMeal}
         >
           <Text style={[styles.recordButtonText, { color: colors.background }]}>
@@ -326,26 +358,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
-  ringOuter: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ringProgress: {
+  ringCenter: {
     position: 'absolute',
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    borderWidth: 12,
-    borderTopColor: 'transparent',
-    borderRightColor: 'transparent',
-  },
-  ringInner: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },

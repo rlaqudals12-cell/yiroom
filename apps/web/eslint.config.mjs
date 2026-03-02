@@ -90,6 +90,9 @@ const eslintConfig = [
       "sonarjs/no-gratuitous-expressions": "warn", // 테스트 표현식 허용
       "sonarjs/no-collection-size-mischeck": "warn", // 테스트 컬렉션 검사 허용
       "sonarjs/no-dead-store": "off", // 테스트용 변수 할당 허용
+      "sonarjs/slow-regex": "off", // 테스트 입력은 제어 가능하므로 ReDoS 위험 없음
+      "sonarjs/no-hardcoded-ip": "off", // 테스트용 Mock IP 허용
+      "no-restricted-syntax": "off", // 테스트에서 하드코딩 색상 검증 허용
     },
   },
 ];

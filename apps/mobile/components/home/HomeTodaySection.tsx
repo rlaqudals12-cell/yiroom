@@ -83,7 +83,7 @@ export function HomeTodaySection({
         {greeting}
       </Text>
 
-      {/* 알림 배너 — 서브틀 보더 + 그림자 추가 */}
+      {/* 알림 배너 — 아이콘 + 색상 보더 + 그림자 */}
       {notifications.length > 0 && (
         <View
           style={[
@@ -94,15 +94,21 @@ export function HomeTodaySection({
               paddingVertical: spacing.smx,
               marginBottom: spacing.md,
               borderWidth: 1,
-              borderColor: getNotificationBg(notifications[0].type).replace('20', '35'),
+              borderColor: getNotificationBg(notifications[0].type).replace('20', '40'),
+              flexDirection: 'row',
+              alignItems: 'center',
             },
             shadows.sm,
           ]}
         >
+          <Text style={{ fontSize: 16, marginRight: spacing.sm }}>
+            {notifications[0].type === 'success' ? '🎉' : notifications[0].type === 'warning' ? '⚠️' : '💡'}
+          </Text>
           <Text
             style={{
               fontSize: typography.size.sm,
               color: colors.cardForeground,
+              flex: 1,
             }}
           >
             {notifications[0].message}
@@ -172,9 +178,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     borderWidth: 2,
     marginRight: spacing.smx,
     alignItems: 'center',

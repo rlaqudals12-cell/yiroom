@@ -273,18 +273,20 @@ export default function HomeScreen(): React.JSX.Element {
         onCoachPress={() => router.push('/(coach)')}
       />
 
-      {/* 교차 모듈 인사이트 */}
+      {/* 교차 모듈 인사이트 — staggered entry */}
       {insights.length > 0 && (
-        <CrossModuleInsight
-          insights={insights}
-          maxItems={3}
-          style={{ marginBottom: spacing.md }}
-          testID="cross-module-insight"
-        />
+        <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>
+          <CrossModuleInsight
+            insights={insights}
+            maxItems={3}
+            style={{ marginBottom: spacing.md }}
+            testID="cross-module-insight"
+          />
+        </Animated.View>
       )}
 
-      {/* 오늘의 요약 — StatCard 사용 */}
-      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+      {/* 오늘의 요약 — StatCard 사용, staggered entry */}
+      <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
         <SectionHeader title="오늘의 요약" gradient="brand" style={{ marginBottom: spacing.smx }} />
         <View style={{ flexDirection: 'row', gap: spacing.smx, marginBottom: spacing.lg }}>
           <Animated.View style={[{ flex: 1 }, streakCount >= 7 && (streakGlowStyle as AnimatedStyle<ViewStyle>)]}>
@@ -315,7 +317,9 @@ export default function HomeScreen(): React.JSX.Element {
       </Animated.View>
 
       {/* 모듈 카드 — staggeredEntry 적용 */}
-      <SectionHeader title="나의 여정" gradient="extended" style={{ marginBottom: spacing.smx }} />
+      <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
+        <SectionHeader title="나의 여정" gradient="extended" style={{ marginBottom: spacing.smx }} />
+      </Animated.View>
       <View style={{ gap: spacing.md, marginBottom: spacing.lg }}>
         <Animated.View entering={staggeredEntry(0)}>
           <ModuleCard

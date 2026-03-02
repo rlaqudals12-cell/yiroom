@@ -2,6 +2,7 @@
  * HomeQuickActions — GlassCard AI 코치 + AnimatedCard 퀵 액션
  */
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -24,6 +25,13 @@ interface HomeQuickActionsProps {
   onActionPress: (route: string) => void;
   onCoachPress: () => void;
 }
+
+// 퀵 액션 아이콘 메타 — 그라디언트 + 이모지 (웹 gradient icon square 대응)
+const ACTION_META: Record<string, { emoji: string; moduleKey: 'personalColor' | 'skin' | 'body' }> = {
+  '퍼스널 컬러': { emoji: '🎨', moduleKey: 'personalColor' },
+  '피부 분석': { emoji: '💧', moduleKey: 'skin' },
+  '체형 분석': { emoji: '✨', moduleKey: 'body' },
+};
 
 export function HomeQuickActions({
   actions,
@@ -89,52 +97,81 @@ export function HomeQuickActions({
       <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
         <SectionHeader title="빠른 시작" style={{ marginBottom: spacing.smx }} />
         <View style={[styles.actionsRow, { gap: spacing.smx }]}>
-          {actions.map((action, index) => (
-            <AnimatedCard
-              key={action.title}
-              onPress={() => handleActionPress(action.route)}
-              style={{ flex: 1 }}
-              testID={`quick-action-${index}`}
-              accessibilityLabel={`${action.title}${action.completed ? ', 완료됨' : ''}`}
-              accessibilityHint={action.subtitle}
-            >
-              <View style={{ padding: spacing.smx }}>
-                <View style={styles.actionHeader}>
-                  <View
-                    style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: 6,
-                      backgroundColor: action.color,
-                    }}
-                  />
+          {actions.map((action, index) => {
+            const meta = ACTION_META[action.title];
+            const modColors = moduleColors[meta?.moduleKey ?? 'personalColor'];
+            return (
+              <AnimatedCard
+                key={action.title}
+                onPress={() => handleActionPress(action.route)}
+                style={{ flex: 1 }}
+                testID={`quick-action-${index}`}
+                accessibilityLabel={`${action.title}${action.completed ? ', 완료됨' : ''}`}
+                accessibilityHint={action.subtitle}
+              >
+                <View style={{ padding: spacing.smx, alignItems: 'center' }}>
+                  {/* 그라디언트 아이콘 스퀘어 (웹 w-11 h-11 rounded-xl gradient 매칭) */}
+                  <View style={[
+                    { marginBottom: spacing.sm, borderRadius: radii.smx },
+                    !isDark ? Platform.select({
+                      ios: { shadowColor: action.color, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 8 },
+                      android: { elevation: 3 },
+                    }) ?? {} : {},
+                  ]}>
+                    <LinearGradient
+                      colors={[modColors.base, modColors.dark]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: radii.smx,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text style={{ fontSize: 20 }}>{meta?.emoji ?? '✦'}</Text>
+                    </LinearGradient>
+                  </View>
                   {action.completed && (
-                    <Text style={{ fontSize: typography.size.xs, color: status.success, fontWeight: typography.weight.semibold }}>
-                      ✓
-                    </Text>
+                    <View style={{
+                      position: 'absolute',
+                      top: spacing.xs,
+                      right: spacing.xs,
+                      backgroundColor: status.success,
+                      borderRadius: radii.full,
+                      width: 18,
+                      height: 18,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      <Text style={{ fontSize: 10, color: colors.overlayForeground, fontWeight: typography.weight.bold }}>✓</Text>
+                    </View>
                   )}
+                  <Text
+                    style={{
+                      fontSize: typography.size.sm,
+                      fontWeight: typography.weight.semibold,
+                      color: colors.foreground,
+                      marginBottom: spacing.xxs,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {action.title}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: typography.size.xs - 1,
+                      color: colors.mutedForeground,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {action.completed ? '완료됨' : action.subtitle}
+                  </Text>
                 </View>
-                <Text
-                  style={{
-                    fontSize: typography.size.sm,
-                    fontWeight: typography.weight.semibold,
-                    color: colors.foreground,
-                    marginBottom: spacing.xxs,
-                  }}
-                >
-                  {action.title}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: typography.size.xs - 1,
-                    color: colors.mutedForeground,
-                  }}
-                >
-                  {action.completed ? '완료됨' : action.subtitle}
-                </Text>
-              </View>
-            </AnimatedCard>
-          ))}
+              </AnimatedCard>
+            );
+          })}
         </View>
       </Animated.View>
     </View>
@@ -168,11 +205,5 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: 'row',
     marginBottom: spacing.lg,
-  },
-  actionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sm,
   },
 });

@@ -25,6 +25,9 @@ out
 **/__mocks__
 tests
 
+# Temp files
+.tmp.driveupload
+
 # Unnecessary files
 *.md
 *.mdx

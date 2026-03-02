@@ -92,16 +92,19 @@ export default function WorkoutPlanScreen(): React.ReactElement {
       style={{ flex: 1, backgroundColor: colors.background }}
       contentContainerStyle={{ padding: spacing.md }}
     >
-      <Text
-        style={{
-          fontSize: typography.size['2xl'],
-          fontWeight: typography.weight.bold,
-          color: colors.foreground,
-          marginBottom: spacing.xs,
-        }}
-      >
-        주간 운동 플랜
-      </Text>
+      {/* 타이틀 + 운동 모듈 accent 바 */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.xs }}>
+        <View style={{ width: 4, height: 24, borderRadius: 2, backgroundColor: moduleColors.workout.base, marginRight: spacing.sm }} />
+        <Text
+          style={{
+            fontSize: typography.size['2xl'],
+            fontWeight: typography.weight.bold,
+            color: colors.foreground,
+          }}
+        >
+          주간 운동 플랜
+        </Text>
+      </View>
       <Text
         style={{
           fontSize: typography.size.base,
@@ -194,13 +197,24 @@ export default function WorkoutPlanScreen(): React.ReactElement {
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  paddingVertical: spacing.xs,
+                  paddingVertical: spacing.smx,
                   borderTopWidth: idx > 0 ? 1 : 0,
                   borderTopColor: colors.border,
                 }}
               >
-                <Text style={{ fontSize: typography.size.lg, marginRight: spacing.smx }}>{ex.emoji}</Text>
-                <Text style={{ flex: 1, fontSize: typography.size.sm, color: colors.foreground }}>{ex.name}</Text>
+                {/* 운동 이모지 colored 서클 배경 */}
+                <View style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: `${moduleColors.workout.base}18`,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: spacing.smx,
+                }}>
+                  <Text style={{ fontSize: 18 }}>{ex.emoji}</Text>
+                </View>
+                <Text style={{ flex: 1, fontSize: typography.size.sm, fontWeight: typography.weight.medium, color: colors.foreground }}>{ex.name}</Text>
                 <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>{ex.duration}</Text>
               </View>
             ))}

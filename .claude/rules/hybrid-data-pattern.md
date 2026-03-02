@@ -170,11 +170,63 @@ export interface PersonalColorResult {
 2. **타입 일관성**: Mock과 Result 타입 동기화 유지
 3. **Fallback 처리**: 새 필드는 선택적으로, UI에서 null 체크
 
+## DB 저장 실패 시 합성 응답 패턴
+
+> **관련**: [ADR-068](../../docs/adr/ADR-068-analysis-api-db-resilience.md), [트러블슈팅](../../docs/troubleshooting/2026-03-03-analysis-api-db-resilience.md)
+
+DB 저장이 실패해도 분석 결과를 사용자에게 반환하는 패턴입니다.
+
+### 동작 흐름
+
+```
+AI/Mock 분석 성공
+  ↓
+DB 저장 시도
+  ├─ 성공 → 정상 응답 (DB data + result)
+  └─ 실패 → 합성 응답 (syntheticId + result + dbSaveFailed: true)
+```
+
+### 합성 응답 구조
+
+```typescript
+// DB 실패 시 반환하는 합성 응답
+{
+  success: true,
+  data: {
+    id: crypto.randomUUID(),    // 합성 ID
+    clerk_user_id: userId,
+    created_at: new Date().toISOString(),
+  },
+  result,                       // AI/Mock 분석 결과 (유실 없음)
+  usedMock: true,               // V1: usedMock / V2: usedFallback
+  dbSaveFailed: true,           // 클라이언트 감지용 플래그
+  gamification: { badgeResults: [], xpAwarded: 0 },
+}
+```
+
+### V1 vs V2 정책 차이
+
+| 구분              | V1 라우트             | V2 라우트                    |
+| ----------------- | --------------------- | ---------------------------- |
+| DB INSERT 에러 시 | Mock일 때만 합성 응답 | **항상** 합성 응답           |
+| catch 블록        | Mock일 때만 합성 응답 | **항상** 합성 응답           |
+| Real AI + DB 실패 | 500 에러              | 합성 응답 (사용자 경험 우선) |
+
+### 적용 범위
+
+11개 분석 API 전체 적용 (V1 6개 + V2 4개 + ingredients 제외):
+
+- `personal-color`, `skin`, `body`, `hair`, `makeup`, `posture` (V1)
+- `personal-color-v2`, `skin-v2`, `body-v2`, `hair-v2` (V2)
+
 ## 관련 문서
 
 > **AI Mock Fallback 전략**: [ADR-007](../../docs/adr/ADR-007-mock-fallback-strategy.md) 참조
 > (타임아웃, 재시도, Mock 파일 구조 등)
+>
+> **DB 폴백 확장**: [ADR-068](../../docs/adr/ADR-068-analysis-api-db-resilience.md) 참조
+> (합성 응답, dbSaveFailed 플래그, V1/V2 정책 차이)
 
 ---
 
-**Version**: 1.1 | **Updated**: 2026-01-28 | **Applies to**: PC-1, S-1, C-1, H-1
+**Version**: 1.2 | **Updated**: 2026-03-03 | DB 저장 실패 합성 응답 패턴 추가 | **Applies to**: 전체 분석 API
