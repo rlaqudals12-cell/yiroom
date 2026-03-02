@@ -67,7 +67,7 @@ export default function NotificationsScreen(): React.JSX.Element {
                 gap: spacing.sm + 2,
               }}
             >
-              <Text style={{ fontSize: 24 }}>{item.emoji}</Text>
+              <Text style={{ fontSize: typography.size['2xl'] }}>{item.emoji}</Text>
               <View style={{ flex: 1 }}>
                 <View style={styles.titleRow}>
                   <Text

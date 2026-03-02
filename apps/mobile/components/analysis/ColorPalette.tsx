@@ -65,6 +65,7 @@ export function ColorPalette({
                   fontWeight: typography.weight.semibold,
                 },
               ]}
+              accessibilityRole="header"
             >
               {group.title}
             </Text>
@@ -146,7 +147,7 @@ function ColorGrid({
 const styles = StyleSheet.create({
   container: {},
   groupTitle: {
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   grid: {
     flexDirection: 'row',

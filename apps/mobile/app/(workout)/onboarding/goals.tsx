@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 const GOALS = [
   {
@@ -48,7 +48,7 @@ const GOALS = [
 ];
 
 export default function WorkoutGoalsScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand, typography, spacing} = useTheme();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
   const toggleGoal = (goalId: string) => {
@@ -140,12 +140,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   goalList: {
-    gap: 12,
+    gap: spacing.smx,
   },
   goalCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     borderWidth: 2,
     borderColor: 'transparent',
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   goalEmoji: {
     fontSize: 28,
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   goalContent: {
     flex: 1,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   goalLabel: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   goalLabelSelected: {},
   goalDescription: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -188,11 +188,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 20,
+    padding: spacing.mlg,
     borderTopWidth: 1,
   },
   nextButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },

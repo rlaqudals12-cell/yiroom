@@ -138,7 +138,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
                   style={{
                     fontSize: typography.size.xs,
                     color: colors.mutedForeground,
-                    marginTop: 2,
+                    marginTop: spacing.xxs,
                   }}
                 >
                   {item.brand}
@@ -148,6 +148,8 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             <Pressable
               onPress={() => handleToggleFavorite(item.id)}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={item.isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
             >
               <Heart
                 size={18}
@@ -242,7 +244,11 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             >
               사용 {item.useCount}회
             </Text>
-            <Pressable onPress={() => handleDelete(item)}>
+            <Pressable
+              onPress={() => handleDelete(item)}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.name} 삭제`}
+            >
               <Text
                 style={{
                   fontSize: typography.size.xs,
@@ -326,6 +332,9 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
               Haptics.selectionAsync();
               setSelectedFilter(f.key);
             }}
+            accessibilityRole="tab"
+            accessibilityLabel={f.label + ' 필터'}
+            accessibilityState={{ selected: selectedFilter === f.key }}
           >
             <Text
               style={{
@@ -406,6 +415,8 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             router.push('/(inventory)/barcode-scan');
           }}
           testID="barcode-scan-fab"
+          accessibilityRole="button"
+          accessibilityLabel="바코드 스캔"
         >
           <Scan size={20} color={brand.primary} />
         </Pressable>
@@ -424,6 +435,8 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             ]);
           }}
           testID="add-product-fab"
+          accessibilityRole="button"
+          accessibilityLabel="제품 추가"
         >
           <Plus size={24} color={colors.overlayForeground} />
         </Pressable>
@@ -443,7 +456,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterChip: {
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: 6,
     borderWidth: 1,
     marginRight: spacing.sm,
@@ -463,7 +476,7 @@ const styles = StyleSheet.create({
   },
   metaChip: {
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
   },
   expiryBadge: {
     flexDirection: 'row',

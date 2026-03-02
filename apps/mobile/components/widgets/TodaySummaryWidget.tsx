@@ -5,7 +5,7 @@
 
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography, spacing } from '../../lib/theme';
+import { useTheme, typography, spacing, radii } from '../../lib/theme';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
 interface TodaySummaryWidgetProps {
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     width: 329,
     height: 345,
     borderRadius: 22,
-    padding: 20,
+    padding: spacing.mlg,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -205,18 +205,18 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   streakBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   streakBadgeText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   streakText: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   iconRow: {
     flexDirection: 'row',
@@ -235,12 +235,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statIcon: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginBottom: spacing.xs,
   },
   statLabel: {
-    fontSize: 12,
-    marginBottom: 2,
+    fontSize: typography.size.xs,
+    marginBottom: spacing.xxs,
   },
   statValue: {
     fontSize: 15,

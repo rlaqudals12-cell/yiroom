@@ -41,7 +41,7 @@ const MEAL_TYPES = [
 type ScreenState = 'scanning' | 'loading' | 'result' | 'not-found';
 
 export default function BarcodeScanScreen() {
-  const { colors, status, module: moduleColors, typography } = useTheme();
+  const { colors, status, module: moduleColors, typography, spacing, radii} = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [permission, requestPermission] = useCameraPermissions();
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   permissionButton: {
     paddingHorizontal: spacing.xl,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   permissionButtonText: {
     fontSize: typography.size.base,
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     marginTop: spacing.lg,
     paddingHorizontal: spacing.xl,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
@@ -564,11 +564,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   notFoundButtons: {
-    gap: 12,
+    gap: spacing.smx,
     width: '100%',
   },
   retryButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },
@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   searchButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
@@ -592,15 +592,15 @@ const styles = StyleSheet.create({
   },
   productCard: {
     borderRadius: radii.xl,
-    padding: 20,
+    padding: spacing.mlg,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   productImage: {
     width: 120,
     height: 120,
-    borderRadius: 12,
-    marginBottom: 12,
+    borderRadius: radii.smx,
+    marginBottom: spacing.smx,
   },
   productName: {
     fontSize: typography.size.xl,
@@ -618,8 +618,8 @@ const styles = StyleSheet.create({
   // 영양 정보
   nutritionCard: {
     borderRadius: radii.xl,
-    padding: 20,
-    marginBottom: 12,
+    padding: spacing.mlg,
+    marginBottom: spacing.smx,
   },
   sectionTitle: {
     fontSize: typography.size.base,
@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
   },
   servingNote: {
     fontSize: 13,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   macroGrid: {
     flexDirection: 'row',
@@ -636,8 +636,8 @@ const styles = StyleSheet.create({
   },
   macroItem: {
     flex: 1,
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: radii.smx,
+    padding: spacing.smx,
     alignItems: 'center',
   },
   macroValue: {
@@ -651,8 +651,8 @@ const styles = StyleSheet.create({
   // 섭취량
   servingCard: {
     borderRadius: radii.xl,
-    padding: 20,
-    marginBottom: 12,
+    padding: spacing.mlg,
+    marginBottom: spacing.smx,
   },
   servingControls: {
     flexDirection: 'row',
@@ -680,8 +680,8 @@ const styles = StyleSheet.create({
   // 식사 타입
   mealTypeCard: {
     borderRadius: radii.xl,
-    padding: 20,
-    marginBottom: 20,
+    padding: spacing.mlg,
+    marginBottom: spacing.mlg,
   },
   mealTypeGrid: {
     flexDirection: 'row',
@@ -689,8 +689,8 @@ const styles = StyleSheet.create({
   },
   mealTypeChip: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: spacing.smx,
+    borderRadius: radii.smx,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -706,11 +706,11 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     padding: spacing.md,
-    gap: 12,
+    gap: spacing.smx,
   },
   rescanButton: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
@@ -721,7 +721,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 2,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },

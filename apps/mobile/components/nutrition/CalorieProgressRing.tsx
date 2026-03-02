@@ -28,7 +28,7 @@ export const CalorieProgressRing = memo(function CalorieProgressRing({
   strokeWidth = 10,
   style,
 }: CalorieProgressRingProps): React.JSX.Element {
-  const { colors, module, spacing, typography, radii } = useTheme();
+  const { colors, module, spacing, typography, radii, status } = useTheme();
 
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -39,7 +39,7 @@ export const CalorieProgressRing = memo(function CalorieProgressRing({
 
   // 초과 시 경고색
   const isOver = consumed > goal;
-  const ringColor = isOver ? '#EF4444' : module.nutrition.base;
+  const ringColor = isOver ? status.error : module.nutrition.base;
 
   return (
     <View

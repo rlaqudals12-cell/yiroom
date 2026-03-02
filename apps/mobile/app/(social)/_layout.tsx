@@ -61,6 +61,12 @@ export default function SocialLayout() {
           title: '프로필',
         }}
       />
+      <Stack.Screen
+        name="friends/profile"
+        options={{
+          title: '친구 프로필',
+        }}
+      />
     </Stack>
   );
 }

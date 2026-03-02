@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   smallGrid: {
     flexDirection: 'row',
@@ -133,12 +133,12 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     alignItems: 'center',
-    padding: 12,
+    padding: spacing.smx,
     borderRadius: radii.xl,
     minWidth: 64,
   },
   buttonIcon: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     marginBottom: spacing.xs,
   },
   buttonLabel: {

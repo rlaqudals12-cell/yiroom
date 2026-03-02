@@ -6,7 +6,7 @@
 
 import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
 export type MuscleGroup = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core' | 'full_body' | 'cardio';
@@ -117,12 +117,12 @@ export const ExerciseCard = memo(function ExerciseCard({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1, padding: 14 },
-  compactContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1 },
+  compactContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.smx, borderBottomWidth: 1 },
   compactLeft: { flex: 1 },
-  compactMeta: { flexDirection: 'row', gap: 8, marginTop: 2 },
+  compactMeta: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xxs },
   header: { flexDirection: 'row', alignItems: 'flex-start' },
-  diffBadge: { paddingHorizontal: 8, paddingVertical: 3 },
+  diffBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
   muscleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  muscleBadge: { paddingHorizontal: 8, paddingVertical: 3 },
-  metaRow: { flexDirection: 'row', gap: 12 },
+  muscleBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
+  metaRow: { flexDirection: 'row', gap: spacing.smx },
 });

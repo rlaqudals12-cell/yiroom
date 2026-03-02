@@ -16,14 +16,14 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
 import { getCoachSessions, deleteCoachSession, type CoachSession } from '../../lib/coach';
 import { useClerkSupabaseClient } from '../../lib/supabase';
 
 export default function CoachHistoryScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand, typography, spacing, radii} = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -198,9 +198,9 @@ const styles = StyleSheet.create({
   newSessionButton: {
     marginHorizontal: spacing.md,
     marginTop: spacing.md,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     alignItems: 'center',
   },
   newSessionButtonText: {
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   sessionCard: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
   },
   sessionRow: {
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   categoryEmoji: {
     fontSize: typography.size['2xl'],
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   sessionInfo: {
     flex: 1,
@@ -262,6 +262,6 @@ const styles = StyleSheet.create({
   deleteHint: {
     fontSize: typography.size.xs,
     textAlign: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
   },
 });

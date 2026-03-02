@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   actionButton: {
-    marginLeft: 12,
+    marginLeft: spacing.smx,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
   },

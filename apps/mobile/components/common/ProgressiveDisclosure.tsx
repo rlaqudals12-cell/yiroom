@@ -12,7 +12,7 @@ import Animated, {
   withTiming,
   useSharedValue,
 } from 'react-native-reanimated';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 
 export interface ProgressiveDisclosureProps {
   /** 항상 보이는 콘텐츠 */
@@ -86,20 +86,20 @@ export function ProgressiveDisclosure({
 
 const styles = StyleSheet.create({
   detailContainer: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   toggleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    marginTop: 4,
+    paddingVertical: spacing.sm,
+    marginTop: spacing.xs,
   },
   toggleText: {
     fontWeight: '500',
   },
   toggleArrow: {
-    marginLeft: 4,
+    marginLeft: spacing.xs,
     fontSize: 10,
   },
 });

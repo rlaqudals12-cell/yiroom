@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { GumHealthIndicator, type GumHealthResult } from './GumHealthIndicator';
 
 export interface ToothColorInfo {
@@ -123,7 +123,7 @@ export function OralHealthResultCard({
                   </View>
                   <Text style={{ color: colors.foreground, fontSize: typography.size.xs, fontWeight: '600' }}>{toothColor.brightness}%</Text>
                 </View>
-                <View style={[styles.metricRow, { marginTop: 8 }]}>
+                <View style={[styles.metricRow, { marginTop: spacing.sm }]}>
                   <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>황색도</Text>
                   <View style={[styles.progressBg, { backgroundColor: colors.secondary, borderRadius: radii.full }]}>
                     <View style={[styles.progressFill, { width: `${toothColor.yellowness}%`, backgroundColor: status.warning, borderRadius: radii.full }]} />
@@ -176,7 +176,7 @@ export function OralHealthResultCard({
                   </View>
                 )}
 
-                <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginTop: spacing.md, marginBottom: 8 }}>
+                <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginTop: spacing.md, marginBottom: spacing.sm }}>
                   추천 방법
                 </Text>
                 {whiteningGoal.methods.map((method, index) => {
@@ -205,11 +205,11 @@ export function OralHealthResultCard({
       {/* 추천사항 */}
       {recommendations.length > 0 && (
         <View style={[styles.recsSection, { borderTopColor: colors.border, padding: spacing.md }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
             추천사항
           </Text>
           {recommendations.slice(0, 4).map((rec, index) => (
-            <Text key={index} style={{ color: colors.mutedForeground, fontSize: typography.size.xs, lineHeight: 18, marginBottom: 4 }}>
+            <Text key={index} style={{ color: colors.mutedForeground, fontSize: typography.size.xs, lineHeight: 18, marginBottom: spacing.xs }}>
               • {rec}
             </Text>
           ))}
@@ -221,19 +221,19 @@ export function OralHealthResultCard({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1, overflow: 'hidden' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.smx },
   headerText: { flex: 1 },
   title: { fontWeight: '700' },
-  scoreBadge: { alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6 },
-  tabs: { flexDirection: 'row', borderBottomWidth: 1, marginTop: 8 },
-  tab: { flex: 1, alignItems: 'center', paddingVertical: 10 },
+  scoreBadge: { alignItems: 'center', paddingHorizontal: spacing.smx, paddingVertical: 6 },
+  tabs: { flexDirection: 'row', borderBottomWidth: 1, marginTop: spacing.sm },
+  tab: { flex: 1, alignItems: 'center', paddingVertical: spacing.smd },
   shadeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   shadeCircle: { width: 48, height: 48, borderRadius: 24, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  metricRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  metricRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   progressBg: { flex: 1, height: 6 },
   progressFill: { height: 6 },
   goalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   warningBox: {},
-  methodRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1 },
+  methodRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm, borderBottomWidth: 1 },
   recsSection: { borderTopWidth: 1 },
 });

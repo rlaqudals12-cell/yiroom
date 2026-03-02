@@ -51,6 +51,9 @@ export function HomeQuickActions({
         <Pressable
           style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1, marginBottom: spacing.lg }]}
           onPress={handleCoachPress}
+          accessibilityRole="button"
+          accessibilityLabel="AI 코치에게 물어보세요"
+          accessibilityHint="운동, 영양, 뷰티 관련 질문을 할 수 있어요"
         >
           <GradientBackground
             variant="workout"
@@ -83,6 +86,8 @@ export function HomeQuickActions({
               onPress={() => handleActionPress(action.route)}
               style={{ flex: 1 }}
               testID={`quick-action-${index}`}
+              accessibilityLabel={`${action.title}${action.completed ? ', 완료됨' : ''}`}
+              accessibilityHint={action.subtitle}
             >
               <View style={{ padding: spacing.sm + 2 }}>
                 <View style={styles.actionHeader}>
@@ -95,7 +100,7 @@ export function HomeQuickActions({
                     }}
                   />
                   {action.completed && (
-                    <Text style={{ fontSize: 12, color: status.success, fontWeight: typography.weight.semibold }}>
+                    <Text style={{ fontSize: typography.size.xs, color: status.success, fontWeight: typography.weight.semibold }}>
                       ✓
                     </Text>
                   )}
@@ -105,7 +110,7 @@ export function HomeQuickActions({
                     fontSize: typography.size.sm,
                     fontWeight: typography.weight.semibold,
                     color: colors.foreground,
-                    marginBottom: 2,
+                    marginBottom: spacing.xxs,
                   }}
                 >
                   {action.title}
@@ -134,7 +139,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   coachContent: {
     flex: 1,
@@ -142,10 +147,10 @@ const styles = StyleSheet.create({
   coachTitle: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   coachSubtitle: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   coachArrow: {
     fontSize: 28,

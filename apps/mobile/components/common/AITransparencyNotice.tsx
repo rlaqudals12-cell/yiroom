@@ -9,7 +9,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, spacing, radii, typography } from '../../lib/theme';
+import { useTheme, aiColors, spacing, radii, typography } from '../../lib/theme';
 
 interface AITransparencyNoticeProps {
   /** 컴팩트 모드 (짧은 설명만) */
@@ -19,14 +19,15 @@ interface AITransparencyNoticeProps {
 export function AITransparencyNotice({
   compact = false,
 }: AITransparencyNoticeProps): React.ReactElement {
-  const { isDark } = useTheme();
+  const { colors, isDark } = useTheme();
+  const mode = isDark ? 'dark' : 'light';
 
-  const bg = isDark ? 'rgba(139,92,246,0.1)' : '#F5F3FF';
-  const border = isDark ? 'rgba(139,92,246,0.25)' : '#DDD6FE';
-  const iconBg = isDark ? 'rgba(139,92,246,0.2)' : '#EDE9FE';
-  const titleColor = isDark ? '#E9D5FF' : '#1C1C1E';
-  const textColor = isDark ? '#C4B5FD' : '#6B7280';
-  const iconColor = isDark ? '#C4B5FD' : '#7C3AED';
+  const bg = aiColors.background[mode];
+  const border = aiColors.border[mode];
+  const iconBg = aiColors.iconBg[mode];
+  const titleColor = isDark ? aiColors.title.dark : colors.foreground;
+  const textColor = isDark ? aiColors.text.dark : colors.mutedForeground;
+  const iconColor = aiColors.text[mode];
 
   if (compact) {
     return (

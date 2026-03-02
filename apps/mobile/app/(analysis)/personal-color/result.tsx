@@ -30,10 +30,11 @@ import {
 } from '@/lib/gemini';
 import { useUser } from '@clerk/clerk-expo';
 
+import { AIBadge } from '@/components/common/AIBadge';
 import { savePersonalColorResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import { TIMING } from '@/lib/animations';
 
 // --- 정적 데이터 ---
@@ -233,13 +234,16 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
       confidence={usedFallback ? undefined : result.confidence}
       usedFallback={usedFallback}
       headerContent={
-        <HeaderContent
-          seasonName={season.name}
-          subType={season.subType}
-          accentColor={accent.base}
-          description={result.description || season.description}
-          textColor={colors.mutedForeground}
-        />
+        <>
+          <AIBadge variant="small" />
+          <HeaderContent
+            seasonName={season.name}
+            subType={season.subType}
+            accentColor={accent.base}
+            description={result.description || season.description}
+            textColor={colors.mutedForeground}
+          />
+        </>
       }
       summaryTab={
         <SummaryTab season={season} accent={accent} colors={colors} />
@@ -516,7 +520,7 @@ const localStyles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   sectionCard: {
-    padding: 20,
+    padding: spacing.mlg,
   },
   sectionTitle: {
     fontSize: 17,
@@ -536,7 +540,7 @@ const localStyles = StyleSheet.create({
   tag: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
   },
   tagText: {
     fontSize: typography.size.sm,
@@ -548,8 +552,8 @@ const localStyles = StyleSheet.create({
   tipItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
-    marginBottom: 12,
+    gap: spacing.smd,
+    marginBottom: spacing.smx,
   },
   tipBullet: {
     width: 6,
@@ -563,7 +567,7 @@ const localStyles = StyleSheet.create({
     lineHeight: 22,
   },
   makeupGrid: {
-    gap: 12,
+    gap: spacing.smx,
   },
   makeupTipItem: {
     flexDirection: 'row',

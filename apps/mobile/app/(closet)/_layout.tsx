@@ -104,6 +104,12 @@ export default function ClosetLayout() {
           title: '색상 분석',
         }}
       />
+      <Stack.Screen
+        name="style"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }

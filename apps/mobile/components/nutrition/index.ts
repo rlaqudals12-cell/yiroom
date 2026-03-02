@@ -51,3 +51,11 @@ export type { NutritionStreakProps } from './NutritionStreak';
 // 신호등 영양 등급
 export { TrafficLight } from './TrafficLight';
 export type { TrafficLightProps, TrafficLightItem, TrafficLightLevel } from './TrafficLight';
+
+// 식사 구간 카드
+export { MealSectionCard } from './MealSectionCard';
+export type { MealSectionCardProps } from './MealSectionCard';
+
+// 영양소 분석 카드
+export { NutrientBreakdownCard } from './NutrientBreakdownCard';
+export type { NutrientBreakdownCardProps } from './NutrientBreakdownCard';

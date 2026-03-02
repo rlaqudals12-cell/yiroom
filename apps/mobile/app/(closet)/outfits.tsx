@@ -31,7 +31,7 @@ import type { SavedOutfit, InventoryItem, Season, Occasion } from '../../lib/inv
 import { SEASON_LABELS, OCCASION_LABELS } from '../../lib/inventory/types';
 
 export default function OutfitsScreen(): React.JSX.Element {
-  const { colors, isDark, typography } = useTheme();
+  const { colors, isDark, typography, spacing} = useTheme();
   const router = useRouter();
   const { outfits, isLoading, deleteOutfit, recordWear } = useSavedOutfits();
   const { items: closetItems } = useCloset();
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   },
   metaChip: {
     paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.full,
   },
   metaChipText: {

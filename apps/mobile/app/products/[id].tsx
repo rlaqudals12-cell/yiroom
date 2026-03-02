@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
   Share,
 } from 'react-native';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -193,7 +193,7 @@ const MOCK_REVIEWS: Review[] = [
 ];
 
 export default function ProductDetailScreen() {
-  const { colors, brand, status, typography } = useTheme();
+  const { colors, brand, status, typography, spacing, radii} = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
   },
   imageIndicator: {
     position: 'absolute',
-    bottom: 16,
+    bottom: spacing.md,
     flexDirection: 'row',
     gap: spacing.sm,
   },
@@ -620,7 +620,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   infoSection: {
-    padding: 20,
+    padding: spacing.mlg,
   },
   brand: {
     fontSize: typography.size.sm,
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   ratingStars: {
     fontSize: typography.size.sm,
@@ -646,9 +646,9 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     fontSize: typography.size.xs,
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   price: {
     fontSize: typography.size['2xl'],
@@ -658,12 +658,12 @@ const styles = StyleSheet.create({
   matchCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
   },
   matchIcon: {
     fontSize: typography.size['2xl'],
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   matchInfo: {
     flex: 1,
@@ -682,9 +682,9 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   matchScore: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     fontWeight: typography.weight.bold,
-    marginLeft: 12,
+    marginLeft: spacing.smx,
   },
   tabRow: {
     flexDirection: 'row',
@@ -702,21 +702,21 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   tabContent: {
-    padding: 20,
+    padding: spacing.mlg,
   },
   sectionTitle: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
     marginTop: spacing.sm,
   },
   description: {
     fontSize: typography.size.sm,
     lineHeight: 22,
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   benefitsList: {
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   benefitItem: {
     flexDirection: 'row',
@@ -731,9 +731,9 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   reviewCard: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -764,7 +764,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.md,
     borderTopWidth: 1,
-    gap: 12,
+    gap: spacing.smx,
   },
   actionButton: {
     width: 48,
@@ -774,11 +774,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionIcon: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
   },
   purchaseButton: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     paddingVertical: spacing.md,
     alignItems: 'center',
   },

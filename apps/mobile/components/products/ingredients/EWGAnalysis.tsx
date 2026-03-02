@@ -260,24 +260,24 @@ export function EWGAnalysisSkeleton() {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
   },
   header: {
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
   },
   headerSubtitle: {
     fontSize: 13,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderRadius: radii.md,
     marginBottom: spacing.md,
   },
@@ -292,19 +292,19 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   statValue: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   cautionBox: {
     borderRadius: radii.md,
-    padding: 12,
+    padding: spacing.smx,
     marginBottom: spacing.md,
   },
   cautionTitle: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
   },
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   cautionWarning: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: spacing.sm,
     fontStyle: 'italic',
   },
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   },
   ingredientItem: {
     borderRadius: radii.md,
-    padding: 12,
+    padding: spacing.smx,
   },
   ingredientHeader: {
     flexDirection: 'row',
@@ -330,20 +330,20 @@ const styles = StyleSheet.create({
   ewgBadge: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: spacing.smd,
   },
   ewgGrade: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.bold,
   },
   ingredientInfo: {
     flex: 1,
   },
   ingredientName: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   ingredientNameEn: {
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   },
   allergenBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     borderRadius: 4,
   },
   allergenText: {
@@ -359,8 +359,8 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   ingredientDetails: {
-    marginTop: 10,
-    paddingTop: 10,
+    marginTop: spacing.smd,
+    paddingTop: spacing.smd,
     borderTopWidth: 1,
   },
   functionRow: {
@@ -368,36 +368,36 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   functionLabel: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginRight: spacing.xs,
   },
   functionText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     flex: 1,
   },
   descriptionText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     lineHeight: 18,
     marginTop: spacing.xs,
   },
   safetyText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.medium,
     marginTop: spacing.sm,
   },
   showMoreButton: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     marginTop: spacing.sm,
   },
   showMoreText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   disclaimer: {
     fontSize: 11,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: spacing.smx,
   },
   skeleton: {
     borderRadius: 4,

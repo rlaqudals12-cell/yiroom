@@ -6,7 +6,7 @@
  */
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 import { moduleColors, brand as brandTokens, trustColors } from '../../lib/theme/tokens';
 
 /** 기본 뱃지 스타일 variant */
@@ -136,7 +136,7 @@ function hexToRgba(hex: string, alpha: number): string {
 const styles = StyleSheet.create({
   badge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: 3,
   },
   outlined: {

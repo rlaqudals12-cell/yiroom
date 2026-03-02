@@ -368,7 +368,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                       style={{
                         fontSize: typography.size.xs,
                         color: isSelected ? `${colors.overlayForeground}CC` : colors.mutedForeground,
-                        marginTop: 2,
+                        marginTop: spacing.xxs,
                       }}
                     >
                       {pattern.description}
@@ -451,7 +451,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                         </View>
                       )}
                     </View>
-                    <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: 2 }}>
+                    <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
                       {formatRelativeDate(log.startedAt)} · {hours}시간 {mins}분
                     </Text>
                   </View>
@@ -533,6 +533,6 @@ const styles = StyleSheet.create({
   },
   completeBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
   },
 });

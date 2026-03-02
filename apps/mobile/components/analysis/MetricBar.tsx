@@ -5,7 +5,7 @@
  */
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography } from '@/lib/theme';
 
 import { MetricDelta } from './ScoreChangeBadge';
 
@@ -31,7 +31,9 @@ export function MetricBar({ label, value, delta, testID }: MetricBarProps) {
   return (
     <View
       style={styles.metricItem}
+      accessibilityRole="adjustable"
       accessibilityLabel={`${label}: ${value}%${delta ? `, 변화: ${delta > 0 ? '+' : ''}${delta}` : ''}`}
+      accessibilityValue={{ min: 0, max: 100, now: value }}
       testID={testID}
     >
       <View style={styles.metricHeader}>
@@ -62,10 +64,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   metricLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   metricValue: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   metricBarBg: {

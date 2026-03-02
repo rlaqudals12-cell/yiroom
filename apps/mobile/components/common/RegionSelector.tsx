@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, FlatList } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii, typography } from '../../lib/theme';
 
 /** 지원 국가 코드 */
 export type SupportedCountry = 'KR' | 'US' | 'JP' | 'CN' | 'GB';
@@ -140,20 +140,20 @@ export function RegionSelector({
 
 const styles = StyleSheet.create({
   label: {
-    marginBottom: 4,
+    marginBottom: spacing.xs,
     fontWeight: '500',
   },
   selector: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: spacing.smd,
+    paddingHorizontal: spacing.smx,
+    borderRadius: radii.md,
     borderWidth: 1,
   },
   flag: {
-    fontSize: 20,
-    marginRight: 8,
+    fontSize: typography.size.xl,
+    marginRight: spacing.sm,
   },
   selectedName: {
     flex: 1,
@@ -164,29 +164,29 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xl,
   },
   modal: {
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: radii.xl,
+    padding: spacing.mlg,
     width: '100%',
     maxHeight: 400,
   },
   modalTitle: {
     fontWeight: '700',
-    marginBottom: 16,
+    marginBottom: spacing.md,
     textAlign: 'center',
   },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: spacing.smx,
+    paddingHorizontal: spacing.smx,
+    borderRadius: radii.md,
   },
   optionFlag: {
-    fontSize: 24,
-    marginRight: 12,
+    fontSize: typography.size['2xl'],
+    marginRight: spacing.smx,
   },
   optionName: {
     flex: 1,

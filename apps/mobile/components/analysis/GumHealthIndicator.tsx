@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export type GumHealthStatus =
   | 'healthy'
@@ -104,7 +104,7 @@ export function GumHealthIndicator({
       {/* 영향 부위 */}
       {!compact && result.affectedAreas && result.affectedAreas.length > 0 && (
         <View style={[styles.areasSection, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
             영향 부위
           </Text>
           <View style={styles.areasList}>
@@ -127,11 +127,11 @@ export function GumHealthIndicator({
       {/* 추천사항 */}
       {!compact && result.recommendations && result.recommendations.length > 0 && (
         <View style={[styles.recsSection, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
             추천사항
           </Text>
           {result.recommendations.slice(0, 4).map((rec, index) => (
-            <Text key={index} style={{ color: colors.mutedForeground, fontSize: typography.size.xs, lineHeight: 18, marginBottom: 4 }}>
+            <Text key={index} style={{ color: colors.mutedForeground, fontSize: typography.size.xs, lineHeight: 18, marginBottom: spacing.xs }}>
               • {rec}
             </Text>
           ))}
@@ -143,15 +143,15 @@ export function GumHealthIndicator({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1 },
-  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.smx },
   statusText: { flex: 1 },
   statusLabel: { fontWeight: '700' },
-  inflammationSection: { marginBottom: 8 },
+  inflammationSection: { marginBottom: spacing.sm },
   inflammationHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   progressBg: { height: 8 },
   progressFill: { height: 8 },
   areasSection: { borderTopWidth: 1 },
   areasList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  areaBadge: { paddingHorizontal: 8, paddingVertical: 4 },
+  areaBadge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
   recsSection: { borderTopWidth: 1 },
 });

@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii, typography } from '../../lib/theme';
 
 export type ZoneStatus = 'good' | 'normal' | 'warning';
 
@@ -83,7 +83,7 @@ export function ZoneDetailCard({
       {/* 발견된 문제 */}
       {concerns.length > 0 && (
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
+          <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
             발견된 문제
           </Text>
           {concerns.map((concern, i) => (
@@ -100,7 +100,7 @@ export function ZoneDetailCard({
       {/* 추천 관리법 */}
       {recommendations.length > 0 && (
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
+          <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
             추천 관리
           </Text>
           {recommendations.map((rec, i) => (
@@ -119,52 +119,52 @@ export function ZoneDetailCard({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   zoneName: {
     fontWeight: '700',
   },
   closeIcon: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: '600',
   },
   scoreRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   score: {
     fontWeight: '800',
   },
   scoreUnit: {
-    marginLeft: 2,
-    marginRight: 12,
+    marginLeft: spacing.xxs,
+    marginRight: spacing.smx,
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.smx,
   },
   statusIcon: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: '700',
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   statusLabel: {
     fontWeight: '600',
   },
   section: {
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   sectionTitle: {
     fontWeight: '600',
@@ -173,12 +173,12 @@ const styles = StyleSheet.create({
   bulletRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   bulletIcon: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginRight: 6,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   bulletText: {
     flex: 1,

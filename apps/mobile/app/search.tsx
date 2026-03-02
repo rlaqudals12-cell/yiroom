@@ -245,7 +245,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
             </Text>
             <Text
               numberOfLines={1}
-              style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: 2 }}
+              style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}
             >
               {item.subtitle}
             </Text>

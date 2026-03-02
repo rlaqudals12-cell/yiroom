@@ -7,7 +7,7 @@
  */
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 export interface AnalysisErrorStateProps {
   /** 에러 메시지 */
@@ -82,37 +82,37 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: spacing.mlg,
   },
   errorText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     marginBottom: spacing.lg,
     textAlign: 'center',
     lineHeight: 24,
   },
   buttonContainer: {
-    gap: 12,
+    gap: spacing.smx,
     width: '100%',
     maxWidth: 280,
   },
   retryButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     alignItems: 'center',
   },
   retryButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   homeButton: {
     borderWidth: 1,
     paddingHorizontal: spacing.lg,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     alignItems: 'center',
   },
   homeButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
 });

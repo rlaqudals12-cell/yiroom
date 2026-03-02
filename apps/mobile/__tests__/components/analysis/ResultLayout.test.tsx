@@ -333,7 +333,7 @@ describe('ResultLayout 컴포넌트', () => {
         <ResultLayout {...createDefaultProps({ usedFallback: true })} />
       );
       expect(
-        getByText('AI 서비스 일시 제한으로 기본 분석 결과를 표시해요')
+        getByText('샘플 결과')
       ).toBeTruthy();
     });
 
@@ -342,7 +342,7 @@ describe('ResultLayout 컴포넌트', () => {
         <ResultLayout {...createDefaultProps({ usedFallback: false })} />
       );
       expect(
-        queryByText('AI 서비스 일시 제한으로 기본 분석 결과를 표시해요')
+        queryByText('샘플 결과')
       ).toBeNull();
     });
 
@@ -351,7 +351,7 @@ describe('ResultLayout 컴포넌트', () => {
         <ResultLayout {...createDefaultProps()} />
       );
       expect(
-        queryByText('AI 서비스 일시 제한으로 기본 분석 결과를 표시해요')
+        queryByText('샘플 결과')
       ).toBeNull();
     });
   });
@@ -445,7 +445,7 @@ describe('ResultLayout 컴포넌트', () => {
         true
       );
       expect(
-        getByText('AI 서비스 일시 제한으로 기본 분석 결과를 표시해요')
+        getByText('샘플 결과')
       ).toBeTruthy();
     });
 

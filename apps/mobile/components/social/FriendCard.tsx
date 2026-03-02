@@ -6,7 +6,7 @@
 import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, radii} from '../../lib/theme';
 
 export interface FriendCardProps {
   id: string;
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     right: 0,
     width: 12,
     height: 12,
-    borderRadius: 6,
+    borderRadius: radii.sm,
     borderWidth: 2,
   },
   info: {

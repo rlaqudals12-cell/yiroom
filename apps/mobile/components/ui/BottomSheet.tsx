@@ -238,6 +238,9 @@ export function BottomSheet({
             sheetAnimatedStyle,
           ]}
           testID={`${testID}-content`}
+          accessibilityViewIsModal
+          accessibilityRole="none"
+          accessibilityLabel={title ? `${title} 시트` : '하단 시트'}
         >
           {/* 핸들 인디케이터 */}
           <View style={handleBarStyle} testID={`${testID}-handle`} accessibilityLabel="드래그하여 시트 조절" />
@@ -253,6 +256,7 @@ export function BottomSheet({
                   textAlign: 'center',
                 }}
                 testID={`${testID}-title`}
+                accessibilityRole="header"
               >
                 {title}
               </Text>

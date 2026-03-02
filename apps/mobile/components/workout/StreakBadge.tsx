@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export type StreakLevel = 'sprout' | 'runner' | 'challenger' | 'master' | 'legend';
 
@@ -62,6 +62,6 @@ export function StreakBadge({ streak, compact = false }: StreakBadgeProps): Reac
 }
 
 const styles = StyleSheet.create({
-  container: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 10 },
-  compact: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3 },
+  container: { flexDirection: 'row', alignItems: 'center', gap: spacing.smd, paddingHorizontal: 14, paddingVertical: spacing.smd },
+  compact: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingHorizontal: spacing.sm, paddingVertical: 3 },
 });

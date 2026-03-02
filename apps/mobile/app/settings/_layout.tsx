@@ -46,9 +46,21 @@ export default function SettingsLayout() {
         }}
       />
       <Stack.Screen
+        name="health-sync"
+        options={{
+          title: '건강 데이터 연동',
+        }}
+      />
+      <Stack.Screen
         name="privacy"
         options={{
-          title: '개인정보 관리',
+          title: '개인정보 설정',
+        }}
+      />
+      <Stack.Screen
+        name="my-info"
+        options={{
+          title: '내 정보 수정',
         }}
       />
     </Stack>

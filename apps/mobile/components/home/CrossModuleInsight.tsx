@@ -8,7 +8,7 @@ import { Lightbulb } from 'lucide-react-native';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, typography } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { CrossModuleInsight as InsightType } from '../../hooks/useCrossModuleInsights';
 
@@ -95,7 +95,7 @@ export function CrossModuleInsight({
               <Text
                 numberOfLines={2}
                 style={{
-                  marginTop: 2,
+                  marginTop: spacing.xxs,
                   fontSize: typography.size.xs,
                   color: colors.mutedForeground,
                 }}
@@ -130,6 +130,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emoji: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
   },
 });

@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 import { FriendCard, type FriendCardProps } from './FriendCard';
 
 export interface FriendListProps {
@@ -72,6 +72,6 @@ export function FriendList({
 
 const styles = StyleSheet.create({
   empty: {
-    paddingVertical: 32,
+    paddingVertical: spacing.xl,
   },
 });

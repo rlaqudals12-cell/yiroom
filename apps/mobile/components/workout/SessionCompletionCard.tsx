@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface SessionCompletionCardProps {
   totalDuration: number;
@@ -94,9 +94,9 @@ export function SessionCompletionCard({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1, alignItems: 'center' },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, width: '100%' },
-  statItem: { width: '47%', alignItems: 'center', padding: 12, gap: 2 },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, width: '100%' },
+  statItem: { width: '47%', alignItems: 'center', padding: spacing.smx, gap: spacing.xxs },
   completionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' },
-  actionRow: { flexDirection: 'row', gap: 10 },
-  actionBtn: { paddingHorizontal: 20, paddingVertical: 10 },
+  actionRow: { flexDirection: 'row', gap: spacing.smd },
+  actionBtn: { paddingHorizontal: spacing.mlg, paddingVertical: spacing.smd },
 });

@@ -63,3 +63,11 @@ export type { SetTrackerProps, SetRecord, SetStatus } from './SetTracker';
 // 세션 완료 카드
 export { SessionCompletionCard } from './SessionCompletionCard';
 export type { SessionCompletionCardProps } from './SessionCompletionCard';
+
+// 운동 요약 카드
+export { WorkoutSummaryCard } from './WorkoutSummaryCard';
+export type { WorkoutSummaryCardProps } from './WorkoutSummaryCard';
+
+// 운동 상세 카드
+export { ExerciseDetailCard } from './ExerciseDetailCard';
+export type { ExerciseDetailCardProps } from './ExerciseDetailCard';

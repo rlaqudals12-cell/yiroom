@@ -8,7 +8,7 @@
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Svg, { Ellipse, Rect } from 'react-native-svg';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, typography, zoneColors } from '../../lib/theme';
 
 export type DetailedZoneId =
   | 'forehead_center' | 'forehead_left' | 'forehead_right'
@@ -41,13 +41,7 @@ const SIZE_MAP = {
   lg: { width: 280, height: 392 },
 };
 
-const STATUS_COLORS: Record<DetailedStatusLevel, string> = {
-  excellent: '#22C55E',
-  good: '#4ADE80',
-  normal: '#F59E0B',
-  warning: '#F97316',
-  critical: '#EF4444',
-};
+const STATUS_COLORS: Record<DetailedStatusLevel, string> = zoneColors;
 
 const LEGEND_ITEMS: Array<{ status: DetailedStatusLevel; label: string }> = [
   { status: 'excellent', label: '매우 좋음' },
@@ -183,8 +177,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'wrap',
-    marginTop: 12,
-    gap: 8,
+    marginTop: spacing.smx,
+    gap: spacing.sm,
   },
   legendItem: {
     flexDirection: 'row',
@@ -194,7 +188,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   legendLabel: {},
 });

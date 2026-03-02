@@ -29,6 +29,7 @@ import {
 } from '@/lib/gemini';
 import { useUser } from '@clerk/clerk-expo';
 
+import { AIBadge } from '@/components/common/AIBadge';
 import { saveMakeupResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -167,6 +168,7 @@ export default function MakeupResultScreen() {
   // --- 헤더 콘텐츠 ---
   const headerContent = (
     <View style={localStyles.headerContent}>
+      <AIBadge variant="small" />
       <Text style={[localStyles.typeName, { color: accent.base }]}>
         {FACE_SHAPE_LABELS[result.faceShape]} / {UNDERTONE_LABELS[result.undertone]}
       </Text>
@@ -334,13 +336,13 @@ const localStyles = StyleSheet.create({
     borderWidth: 3,
   },
   tabContent: {
-    gap: 20,
+    gap: spacing.mlg,
     paddingBottom: spacing.sm,
   },
   sectionTitle: {
     fontSize: typography.size.base,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   metricsGap: {
     gap: 14,
@@ -350,7 +352,7 @@ const localStyles = StyleSheet.create({
   },
   recCard: {
     padding: 14,
-    marginBottom: 10,
+    marginBottom: spacing.smd,
   },
   recLabel: {
     fontSize: typography.size.sm,
@@ -363,7 +365,7 @@ const localStyles = StyleSheet.create({
   },
   tipsCard: {
     padding: spacing.md,
-    gap: 10,
+    gap: spacing.smd,
   },
   tipItem: {
     flexDirection: 'row',

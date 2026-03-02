@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   title: {
     fontSize: 17,
@@ -155,19 +155,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   currentLarge: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
   },
   unit: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.normal,
   },
   goal: {
     fontSize: 13,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   remaining: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: spacing.xs,
   },
   quickAdd: {
@@ -176,18 +176,18 @@ const styles = StyleSheet.create({
   addButton: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
   },
   addButtonText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   waterIcon: {
-    fontSize: 36,
+    fontSize: typography.size['4xl'],
     marginBottom: spacing.sm,
   },
   currentSmall: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
     marginBottom: spacing.sm,
   },

@@ -166,13 +166,13 @@ const styles = StyleSheet.create({
   iconBadge: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radii.circle,
     alignItems: 'center',
     justifyContent: 'center',
   },
   content: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.smx,
   },
   headerRow: {
     flexDirection: 'row',
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   },
   scoreBadge: {
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.full,
     marginLeft: spacing.sm,
   },

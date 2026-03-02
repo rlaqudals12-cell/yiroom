@@ -54,7 +54,9 @@ export function MenuCard({
         style,
       ]}
       accessibilityRole="button"
-      accessibilityLabel={title}
+      accessibilityLabel={`${title}${isCompleted ? ', 완료됨' : ''}`}
+      accessibilityHint={description}
+      accessibilityState={{ disabled: false, selected: isCompleted }}
     >
       <View style={styles.row}>
         <View
@@ -88,7 +90,7 @@ export function MenuCard({
               color: colors.mutedForeground,
               fontSize: typography.size.sm,
               lineHeight: typography.size.sm * typography.lineHeight.normal,
-              marginTop: 2,
+              marginTop: spacing.xxs,
             }}
           >
             {description}

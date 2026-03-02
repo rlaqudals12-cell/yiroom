@@ -8,7 +8,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 // 퍼스널 컬러 문진 질문
 const QUESTIONS = [
@@ -168,11 +168,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.mlg,
     paddingVertical: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smx,
   },
   progressBar: {
     flex: 1,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: spacing.mlg,
   },
   questionContainer: {
     marginBottom: spacing.xl,
@@ -201,10 +201,10 @@ const styles = StyleSheet.create({
     lineHeight: 32,
   },
   optionsContainer: {
-    gap: 12,
+    gap: spacing.smx,
   },
   optionButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: 18,
     borderWidth: 2,
     borderColor: 'transparent',

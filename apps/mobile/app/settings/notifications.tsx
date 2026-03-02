@@ -26,7 +26,7 @@ import {
 } from '../../lib/notifications/useNotifications';
 
 export default function NotificationsSettingsScreen() {
-  const { colors, status, module: mod, typography } = useTheme();
+  const { colors, status, module: mod, typography, spacing, radii} = useTheme();
 
   const {
     hasPermission,
@@ -107,6 +107,9 @@ export default function NotificationsSettingsScreen() {
           <Pressable
             style={[styles.permissionBanner, { backgroundColor: status.warning + '20' }]}
             onPress={handleRequestPermission}
+            accessibilityRole="button"
+            accessibilityLabel="알림 권한 허용하기"
+            accessibilityHint="탭하여 알림 권한을 요청합니다"
           >
             <Text style={styles.bannerIcon}>🔔</Text>
             <View style={styles.bannerContent}>
@@ -140,6 +143,8 @@ export default function NotificationsSettingsScreen() {
                 onValueChange={handleMasterToggle}
                 trackColor={{ false: colors.border, true: mod.body.dark }}
                 thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                accessibilityLabel="알림 사용"
+                accessibilityRole="switch"
               />
             </View>
           </View>
@@ -149,7 +154,7 @@ export default function NotificationsSettingsScreen() {
           <>
             {/* 물 알림 */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>영양</Text>
+              <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.mutedForeground }]}>영양</Text>
               <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
                 <View style={styles.settingsRow}>
                   <View style={styles.settingsRowContent}>
@@ -168,6 +173,8 @@ export default function NotificationsSettingsScreen() {
                     onValueChange={(value) => handleToggle('waterReminder', value)}
                     trackColor={{ false: colors.border, true: mod.body.dark }}
                     thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                    accessibilityLabel="수분 섭취 알림"
+                    accessibilityRole="switch"
                   />
                 </View>
 
@@ -188,6 +195,9 @@ export default function NotificationsSettingsScreen() {
                             },
                           ]}
                           onPress={() => handleIntervalChange(hours)}
+                          accessibilityRole="radio"
+                          accessibilityLabel={`${hours}시간 간격`}
+                          accessibilityState={{ selected: settings.waterReminderInterval === hours }}
                         >
                           <Text
                             style={[
@@ -225,6 +235,8 @@ export default function NotificationsSettingsScreen() {
                     onValueChange={(value) => handleToggle('nutritionReminder', value)}
                     trackColor={{ false: colors.border, true: mod.body.dark }}
                     thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                    accessibilityLabel="식사 기록 알림"
+                    accessibilityRole="switch"
                   />
                 </View>
               </View>
@@ -232,7 +244,7 @@ export default function NotificationsSettingsScreen() {
 
             {/* 운동 알림 */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>운동</Text>
+              <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.mutedForeground }]}>운동</Text>
               <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
                 <View style={styles.settingsRow}>
                   <View style={styles.settingsRowContent}>
@@ -251,6 +263,8 @@ export default function NotificationsSettingsScreen() {
                     onValueChange={(value) => handleToggle('workoutReminder', value)}
                     trackColor={{ false: colors.border, true: mod.body.dark }}
                     thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                    accessibilityLabel="운동 리마인더"
+                    accessibilityRole="switch"
                   />
                 </View>
 
@@ -273,6 +287,8 @@ export default function NotificationsSettingsScreen() {
                     onValueChange={(value) => handleToggle('streakWarning', value)}
                     trackColor={{ false: colors.border, true: mod.body.dark }}
                     thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                    accessibilityLabel="스트릭 경고"
+                    accessibilityRole="switch"
                   />
                 </View>
               </View>
@@ -280,7 +296,7 @@ export default function NotificationsSettingsScreen() {
 
             {/* 소셜 & 성취 */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+              <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
                 소셜 & 성취
               </Text>
               <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
@@ -301,6 +317,8 @@ export default function NotificationsSettingsScreen() {
                     onValueChange={(value) => handleToggle('socialNotifications', value)}
                     trackColor={{ false: colors.border, true: mod.body.dark }}
                     thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                    accessibilityLabel="소셜 알림"
+                    accessibilityRole="switch"
                   />
                 </View>
 
@@ -323,6 +341,8 @@ export default function NotificationsSettingsScreen() {
                     onValueChange={(value) => handleToggle('achievementNotifications', value)}
                     trackColor={{ false: colors.border, true: mod.body.dark }}
                     thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                    accessibilityLabel="성취 알림"
+                    accessibilityRole="switch"
                   />
                 </View>
               </View>
@@ -344,6 +364,9 @@ export default function NotificationsSettingsScreen() {
                 ]}
                 onPress={handleTestNotification}
                 disabled={testSent}
+                accessibilityRole="button"
+                accessibilityLabel={testSent ? '테스트 알림 전송됨' : '테스트 알림 보내기'}
+                accessibilityState={{ disabled: testSent }}
               >
                 <Text style={[styles.testButtonText, { color: mod.body.dark }]}>
                   {testSent ? '✓ 테스트 알림 전송됨' : '테스트 알림 보내기'}
@@ -380,13 +403,13 @@ const styles = StyleSheet.create({
   permissionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     marginBottom: spacing.lg,
   },
   bannerIcon: {
     fontSize: typography.size['2xl'],
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   bannerContent: {
     flex: 1,
@@ -394,7 +417,7 @@ const styles = StyleSheet.create({
   bannerTitle: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   bannerSubtitle: {
     fontSize: 13,
@@ -411,7 +434,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   settingsCard: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     overflow: 'hidden',
   },
   settingsRow: {
@@ -427,7 +450,7 @@ const styles = StyleSheet.create({
   },
   settingsIcon: {
     fontSize: typography.size['2xl'],
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   settingsTextContent: {
     flex: 1,
@@ -438,7 +461,7 @@ const styles = StyleSheet.create({
   },
   settingsDesc: {
     fontSize: typography.size.xs,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   divider: {
     height: 1,
@@ -450,7 +473,7 @@ const styles = StyleSheet.create({
   },
   intervalLabel: {
     fontSize: 13,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   intervalOptions: {
     flexDirection: 'row',
@@ -458,7 +481,7 @@ const styles = StyleSheet.create({
   },
   intervalOption: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: spacing.smd,
     borderRadius: radii.md,
     alignItems: 'center',
   },
@@ -467,7 +490,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   testButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,

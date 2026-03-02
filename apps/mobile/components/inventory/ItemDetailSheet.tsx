@@ -173,7 +173,7 @@ export function ItemDetailSheet({
               style={{
                 fontSize: typography.size.sm,
                 fontWeight: typography.weight.medium,
-                color: '#FFFFFF',
+                color: colors.overlayForeground,
                 textAlign: 'center',
               }}
             >

@@ -21,14 +21,14 @@ export function useAnalysisStyles() {
           backgroundColor: colors.background,
         },
         content: {
-          padding: 20,
+          padding: spacing.mlg,
         },
 
         // 카드
         card: {
           backgroundColor: colors.card,
           borderRadius: radii.xl,
-          padding: 20,
+          padding: spacing.mlg,
           marginBottom: spacing.md,
         },
 
@@ -36,7 +36,7 @@ export function useAnalysisStyles() {
         section: {
           backgroundColor: colors.card,
           borderRadius: radii.xl,
-          padding: 20,
+          padding: spacing.mlg,
           marginBottom: spacing.md,
         },
         sectionTitle: {
@@ -80,7 +80,7 @@ export function useAnalysisStyles() {
         // 이미지 컨테이너
         imageContainer: {
           alignItems: 'center',
-          marginBottom: 20,
+          marginBottom: spacing.mlg,
         },
       }),
     [colors, brand]

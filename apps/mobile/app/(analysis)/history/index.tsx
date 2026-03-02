@@ -16,7 +16,9 @@ import {
   Pressable,
   ActivityIndicator,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { ScreenContainer } from '@/components/ui';
+import { staggeredEntry } from '@/lib/animations';
 import { AnalysisHistoryCard } from '../../../components/analysis/AnalysisHistoryCard';
 import {
   useAnalysisHistory,
@@ -89,12 +91,14 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
   }, []);
 
   const renderItem = useCallback(
-    ({ item }: { item: AnalysisHistoryItem }) => (
-      <AnalysisHistoryCard
-        item={item}
-        onPress={handleItemPress}
-        style={{ marginBottom: spacing.sm }}
-      />
+    ({ item, index }: { item: AnalysisHistoryItem; index: number }) => (
+      <Animated.View entering={staggeredEntry(index)}>
+        <AnalysisHistoryCard
+          item={item}
+          onPress={handleItemPress}
+          style={{ marginBottom: spacing.sm }}
+        />
+      </Animated.View>
     ),
     [handleItemPress]
   );

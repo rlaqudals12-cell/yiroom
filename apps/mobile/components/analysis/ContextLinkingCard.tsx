@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii, typography } from '../../lib/theme';
 
 export interface ContextLink {
   id: string;
@@ -70,35 +70,35 @@ export function ContextLinkingCard({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   title: {
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   linkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: spacing.smd,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   linkIcon: {
-    fontSize: 20,
-    marginRight: 12,
+    fontSize: typography.size.xl,
+    marginRight: spacing.smx,
   },
   linkContent: {
     flex: 1,
   },
   linkTitle: {
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   linkDesc: {},
   arrow: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
 });

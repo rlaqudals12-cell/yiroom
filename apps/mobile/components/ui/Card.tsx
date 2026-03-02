@@ -61,6 +61,7 @@ export function CardTitle({ children, style }: CardTitleProps): React.JSX.Elemen
 
   return (
     <Text
+      accessibilityRole="header"
       style={[
         styles.title,
         {

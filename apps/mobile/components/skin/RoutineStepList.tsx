@@ -83,7 +83,7 @@ export function RoutineStepList({
             ]}
           >
             {step.completed && (
-              <Text style={{ fontSize: 10, color: '#FFFFFF', textAlign: 'center' }}>✓</Text>
+              <Text style={{ fontSize: 10, color: colors.overlayForeground, textAlign: 'center' }}>✓</Text>
             )}
           </View>
 

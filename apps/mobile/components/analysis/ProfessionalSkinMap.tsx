@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, zoneColors } from '../../lib/theme';
 import type { DetailedZoneId, DetailedStatusLevel, DetailedZoneStatus } from './DetailedFaceZoneMap';
 
 export type ViewMode = 'overview' | 'detailed';
@@ -46,13 +46,7 @@ const STATUS_LABELS: Record<DetailedStatusLevel, string> = {
   critical: '관리 필요',
 };
 
-const STATUS_COLORS: Record<DetailedStatusLevel, string> = {
-  excellent: '#22C55E',
-  good: '#4ADE80',
-  normal: '#F59E0B',
-  warning: '#F97316',
-  critical: '#EF4444',
-};
+const STATUS_COLORS: Record<DetailedStatusLevel, string> = zoneColors;
 
 export function ProfessionalSkinMap({
   zones,
@@ -133,7 +127,7 @@ export function ProfessionalSkinMap({
       {/* 선택된 존 상세 */}
       {selectedZone && selectedData && (
         <View style={[styles.detailPanel, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border, marginTop: spacing.md, padding: spacing.md }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700', marginBottom: spacing.sm }}>
             {ZONE_LABELS[selectedZone]} 상세
           </Text>
           <View style={styles.detailRow}>
@@ -149,8 +143,8 @@ export function ProfessionalSkinMap({
             </Text>
           </View>
           {selectedData.concerns && selectedData.concerns.length > 0 && (
-            <View style={{ marginTop: 8 }}>
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: 4 }}>고민</Text>
+            <View style={{ marginTop: spacing.sm }}>
+              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: spacing.xs }}>고민</Text>
               {selectedData.concerns.map((concern, i) => (
                 <Text key={i} style={{ color: colors.foreground, fontSize: typography.size.xs, lineHeight: 18 }}>
                   • {concern}
@@ -166,9 +160,9 @@ export function ProfessionalSkinMap({
 
 const styles = StyleSheet.create({
   avgRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  zoneGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  zoneCard: { width: '31%', borderWidth: 1, padding: 10, alignItems: 'center', gap: 2 },
-  zoneDot: { width: 8, height: 8, borderRadius: 4, marginBottom: 2 },
+  zoneGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  zoneCard: { width: '31%', borderWidth: 1, padding: spacing.smd, alignItems: 'center', gap: spacing.xxs },
+  zoneDot: { width: 8, height: 8, borderRadius: 4, marginBottom: spacing.xxs },
   detailPanel: { borderWidth: 1 },
   detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
 });

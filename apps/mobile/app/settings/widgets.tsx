@@ -23,7 +23,7 @@ import { useWidgetSync } from '../../lib/widgets';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
 export default function WidgetSettingsScreen() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand, typography, spacing, radii} = useTheme();
   const { getData } = useWidgetSync({ autoSync: false });
 
   const [widgetData, setWidgetData] = useState<TodaySummaryData>(DEFAULT_SUMMARY_DATA);
@@ -178,13 +178,13 @@ const styles = StyleSheet.create({
   },
   infoBanner: {
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     marginBottom: spacing.lg,
   },
   infoIcon: {
     fontSize: typography.size['2xl'],
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   infoContent: {
     flex: 1,
@@ -201,17 +201,17 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   sizeSelector: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   sizeButton: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
     borderWidth: 1,
   },
   sizeButtonText: {
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   widgetLabel: {
     fontSize: 13,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   widgetPreview: {
     alignItems: 'center',
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     marginBottom: spacing.lg,
     borderWidth: 1,
@@ -250,13 +250,13 @@ const styles = StyleSheet.create({
   widgetItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     marginBottom: spacing.sm,
   },
   widgetItemIcon: {
     fontSize: typography.size['2xl'],
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   widgetItemContent: {
     flex: 1,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   widgetItemTitle: {
     fontSize: 15,
     fontWeight: typography.weight.medium,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   widgetItemDesc: {
     fontSize: 13,

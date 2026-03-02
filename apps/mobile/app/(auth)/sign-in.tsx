@@ -16,8 +16,9 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import { brand, useTheme, typography, spacing } from '@/lib/theme';
+import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
@@ -67,77 +68,84 @@ export default function SignInScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
+        {/* 로고/타이틀 */}
+        <Animated.View entering={FadeInDown.delay(0).duration(300)} style={styles.header}>
           <Text style={[styles.title, { color: colors.foreground }]}>이룸</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             온전한 나를 만나다
           </Text>
-        </View>
+        </Animated.View>
 
         <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.foreground }]}>이메일</Text>
-            <TextInput
-              testID="signin-email-input"
-              style={[
-                styles.input,
-                {
-                  borderColor: colors.border,
-                  color: colors.foreground,
-                  backgroundColor: colors.muted,
-                },
-              ]}
-              placeholder="이메일을 입력하세요"
-              placeholderTextColor={colors.mutedForeground}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
+          {/* 입력 필드 */}
+          <Animated.View entering={FadeInDown.delay(100).duration(300)}>
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { color: colors.foreground }]}>이메일</Text>
+              <TextInput
+                testID="signin-email-input"
+                style={[
+                  styles.input,
+                  {
+                    borderColor: colors.border,
+                    color: colors.foreground,
+                    backgroundColor: colors.muted,
+                  },
+                ]}
+                placeholder="이메일을 입력하세요"
+                placeholderTextColor={colors.mutedForeground}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.foreground }]}>비밀번호</Text>
-            <TextInput
-              testID="signin-password-input"
-              style={[
-                styles.input,
-                {
-                  borderColor: colors.border,
-                  color: colors.foreground,
-                  backgroundColor: colors.muted,
-                },
-              ]}
-              placeholder="비밀번호를 입력하세요"
-              placeholderTextColor={colors.mutedForeground}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-          </View>
+            <View style={[styles.inputContainer, { marginTop: spacing.md }]}>
+              <Text style={[styles.label, { color: colors.foreground }]}>비밀번호</Text>
+              <TextInput
+                testID="signin-password-input"
+                style={[
+                  styles.input,
+                  {
+                    borderColor: colors.border,
+                    color: colors.foreground,
+                    backgroundColor: colors.muted,
+                  },
+                ]}
+                placeholder="비밀번호를 입력하세요"
+                placeholderTextColor={colors.mutedForeground}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            </View>
+          </Animated.View>
 
-          <Pressable
-            testID="signin-submit-button"
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleSignIn}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color={brand.primaryForeground} />
-            ) : (
-              <Text style={styles.buttonText}>로그인</Text>
-            )}
-          </Pressable>
-
-          <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-              계정이 없으신가요?
-            </Text>
-            <Pressable onPress={handleSignUp}>
-              <Text style={styles.linkText}>회원가입</Text>
+          {/* 버튼 */}
+          <Animated.View entering={FadeInDown.delay(200).duration(300)}>
+            <Pressable
+              testID="signin-submit-button"
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleSignIn}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={brand.primaryForeground} />
+              ) : (
+                <Text style={styles.buttonText}>로그인</Text>
+              )}
             </Pressable>
-          </View>
+
+            <View style={styles.footer}>
+              <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
+                계정이 없으신가요?
+              </Text>
+              <Pressable onPress={handleSignUp}>
+                <Text style={styles.linkText}>회원가입</Text>
+              </Pressable>
+            </View>
+          </Animated.View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -177,13 +185,13 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     fontSize: typography.size.base,
   },
   button: {
     backgroundColor: brand.primary,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
     marginTop: spacing.sm,

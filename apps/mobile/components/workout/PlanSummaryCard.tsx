@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface PlanSummaryCardProps {
   totalExercises: number;
@@ -53,7 +53,7 @@ export function PlanSummaryCard({
       </View>
 
       <View style={[styles.focusRow, { marginTop: spacing.xs }]}>
-        <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginRight: 8 }}>집중 부위</Text>
+        <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginRight: spacing.sm }}>집중 부위</Text>
         {focusAreas.slice(0, 3).map((area, i) => (
           <View key={i} style={[styles.focusBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm }]}>
             <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>{area}</Text>
@@ -66,9 +66,9 @@ export function PlanSummaryCard({
 
 const styles = StyleSheet.create({
   container: {},
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  statItem: { width: '47%', alignItems: 'center', padding: 10 },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  statItem: { width: '47%', alignItems: 'center', padding: spacing.smd },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  focusRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 },
-  focusBadge: { paddingHorizontal: 8, paddingVertical: 3 },
+  focusRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: spacing.xs },
+  focusBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
 });

@@ -34,3 +34,11 @@ export type { FeedCardProps } from './FeedCard';
 
 export { CommunityStats } from './CommunityStats';
 export type { CommunityStatsProps } from './CommunityStats';
+
+// 챌린지
+export { ChallengeCard } from './ChallengeCard';
+export type { ChallengeCardProps } from './ChallengeCard';
+
+// 리더보드
+export { LeaderboardCard } from './LeaderboardCard';
+export type { LeaderboardCardProps } from './LeaderboardCard';

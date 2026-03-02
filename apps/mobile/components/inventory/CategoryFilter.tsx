@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 
 export interface CategoryOption {
   id: string;
@@ -91,7 +91,7 @@ export function CategoryFilter({
 
 const styles = StyleSheet.create({
   row: {
-    paddingHorizontal: 4,
+    paddingHorizontal: spacing.xs,
   },
   chip: {
     flexDirection: 'row',

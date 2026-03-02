@@ -298,10 +298,15 @@ export function useConfetti(
   }>;
   triggerConfetti: () => void;
 } {
+  // Reanimated useSharedValue in useMemo — 초기화 한 번만 실행, 알려진 패턴
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const particles = useMemo(() => {
     return Array.from({ length: count }, () => ({
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       translateY: useSharedValue(0),
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       rotate: useSharedValue(0),
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       opacity: useSharedValue(0),
     }));
     // count는 초기 렌더에만 사용

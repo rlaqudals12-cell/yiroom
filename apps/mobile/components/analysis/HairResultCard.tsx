@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export type FaceShapeType =
   | 'oval' | 'round' | 'square' | 'heart'
@@ -172,7 +172,7 @@ export function HairResultCard({
                   />
                 </View>
                 {style.description && (
-                  <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: 4 }}>
+                  <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: spacing.xs }}>
                     {style.description}
                   </Text>
                 )}
@@ -221,7 +221,7 @@ export function HairResultCard({
                     <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600' }}>
                       {tip.title}
                     </Text>
-                    <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: 2 }}>
+                    <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: spacing.xxs }}>
                       {tip.description}
                     </Text>
                   </View>
@@ -237,22 +237,22 @@ export function HairResultCard({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1, overflow: 'hidden' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.smx },
   headerText: { flex: 1 },
   faceShapeLabel: { fontWeight: '700' },
-  badge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, marginTop: 4 },
+  badge: { alignSelf: 'flex-start', paddingHorizontal: spacing.sm, paddingVertical: spacing.xxs, marginTop: spacing.xs },
   badgeText: { fontWeight: '600' },
   infoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  infoBadge: { paddingHorizontal: 8, paddingVertical: 3 },
-  tabs: { flexDirection: 'row', borderBottomWidth: 1, marginTop: 8 },
-  tab: { flex: 1, alignItems: 'center', paddingVertical: 10 },
-  styleCard: { paddingVertical: 10, borderBottomWidth: 1 },
+  infoBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
+  tabs: { flexDirection: 'row', borderBottomWidth: 1, marginTop: spacing.sm },
+  tab: { flex: 1, alignItems: 'center', paddingVertical: spacing.smd },
+  styleCard: { paddingVertical: spacing.smd, borderBottomWidth: 1 },
   styleHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   styleName: { fontWeight: '600' },
   progressBg: { height: 6 },
   progressFill: { height: 6 },
-  colorCard: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1 },
-  colorSwatch: { width: 36, height: 36, marginRight: 12 },
+  colorCard: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.smd, borderBottomWidth: 1 },
+  colorSwatch: { width: 36, height: 36, marginRight: spacing.smx },
   colorInfo: { flex: 1 },
-  tipCard: { flexDirection: 'row', paddingVertical: 10, borderBottomWidth: 1 },
+  tipCard: { flexDirection: 'row', paddingVertical: spacing.smd, borderBottomWidth: 1 },
 });

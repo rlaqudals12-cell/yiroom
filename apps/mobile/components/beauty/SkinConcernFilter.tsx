@@ -38,6 +38,7 @@ export function SkinConcernFilter({
   return (
     <View style={style} testID={testID} accessibilityLabel="피부 고민 필터">
       <Text
+        accessibilityRole="header"
         style={{
           fontSize: typography.size.sm,
           fontWeight: typography.weight.semibold,

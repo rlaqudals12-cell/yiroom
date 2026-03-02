@@ -122,7 +122,7 @@ export function FriendRequestCard({
               style={{
                 fontSize: typography.size.sm,
                 fontWeight: typography.weight.bold,
-                color: '#FFFFFF',
+                color: colors.overlayForeground,
                 textAlign: 'center',
               }}
             >

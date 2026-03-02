@@ -49,7 +49,7 @@ export function SkinConsultantCTA({
           style={{
             fontSize: typography.size.base,
             fontWeight: typography.weight.bold,
-            color: '#FFFFFF',
+            color: colors.overlayForeground,
           }}
         >
           {title}
@@ -80,7 +80,7 @@ export function SkinConsultantCTA({
           style={{
             fontSize: typography.size.sm,
             fontWeight: typography.weight.bold,
-            color: '#FFFFFF',
+            color: colors.overlayForeground,
             textAlign: 'center',
           }}
         >

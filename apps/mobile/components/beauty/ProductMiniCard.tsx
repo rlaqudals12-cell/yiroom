@@ -81,9 +81,10 @@ export function ProductMiniCard({
               style={styles.image}
               contentFit="cover"
               transition={200}
+              accessibilityLabel={`${product.name} 제품 이미지`}
             />
           ) : (
-            <Text style={{ fontSize: 28 }}>🧴</Text>
+            <Text style={{ fontSize: 28 }} accessibilityLabel={`${product.name} 기본 아이콘`}>🧴</Text>
           )}
         </View>
 
@@ -103,7 +104,7 @@ export function ProductMiniCard({
               fontSize: typography.size.sm,
               fontWeight: typography.weight.semibold,
               color: colors.foreground,
-              marginTop: 2,
+              marginTop: spacing.xxs,
             }}
             numberOfLines={2}
           >
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
   },
   matchBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     borderRadius: 4,
   },
   ratingRow: {

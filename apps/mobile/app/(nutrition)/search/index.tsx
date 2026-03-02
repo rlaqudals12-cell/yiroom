@@ -68,7 +68,7 @@ interface SelectedFood extends FoodItem {
 }
 
 export default function FoodSearchScreen() {
-  const { colors, typography } = useTheme();
+  const { colors, typography, spacing, radii} = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -318,7 +318,7 @@ export default function FoodSearchScreen() {
         {foodsLoading ? (
           <View style={styles.emptyState}>
             <ActivityIndicator size="small" color={moduleColors.nutrition.dark} />
-            <Text style={[styles.emptyText, { color: colors.mutedForeground, marginTop: 8 }]}>
+            <Text style={[styles.emptyText, { color: colors.mutedForeground, marginTop: spacing.sm }]}>
               음식 데이터를 불러오는 중...
             </Text>
           </View>
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   searchInput: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: 14,
     fontSize: typography.size.base,
     borderWidth: 1,
@@ -434,14 +434,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
-    paddingBottom: 12,
+    paddingBottom: spacing.smx,
   },
   mealTypeChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
     borderWidth: 1,
     gap: spacing.xs,
   },
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: 14,
     marginBottom: spacing.sm,
   },
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   },
   trafficLight: {
     fontSize: typography.size.lg,
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   foodInfo: {
     flex: 1,
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   foodName: {
     fontSize: 15,
     fontWeight: typography.weight.medium,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   foodMeta: {
     fontSize: typography.size.xs,
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
   portionButton: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
   addBadge: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
   },
   footerCount: {
     fontSize: typography.size.sm,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   footerCalories: {
     fontSize: typography.size.lg,
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
     backgroundColor: moduleColors.nutrition.dark,
     paddingHorizontal: spacing.lg,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   saveButtonDisabled: {
     opacity: 0.5,

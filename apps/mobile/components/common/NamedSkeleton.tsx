@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 import { Skeleton } from './Skeleton';
 
 export type SkeletonVariant =
@@ -35,7 +35,7 @@ export function NamedSkeleton({
   return (
     <View testID="named-skeleton" accessibilityLabel="로딩 중">
       {items.map((i) => (
-        <View key={i} style={i > 0 ? styles.gap : undefined}>
+        <View key={i} style={i > 0 ? { marginTop: spacing.smx } : undefined}>
           {renderVariant(variant, colors)}
         </View>
       ))}
@@ -99,7 +99,7 @@ function renderVariant(
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.row}>
             <Skeleton width={48} height={48} borderRadius={8} />
-            <View style={{ flex: 1, marginLeft: 12 }}>
+            <View style={{ flex: 1, marginLeft: spacing.smx }}>
               <Skeleton width="60%" height={14} />
               <Skeleton width="40%" height={12} />
             </View>
@@ -126,7 +126,7 @@ function renderVariant(
         <View style={[styles.rankingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Skeleton width={32} height={32} borderRadius={16} />
           <Skeleton width={32} height={32} borderRadius={16} />
-          <View style={{ flex: 1, marginLeft: 8 }}>
+          <View style={{ flex: 1, marginLeft: spacing.sm }}>
             <Skeleton width={80} height={14} />
           </View>
           <Skeleton width={50} height={14} />
@@ -152,23 +152,23 @@ function renderVariant(
 
 const styles = StyleSheet.create({
   gap: {
-    marginTop: 12,
+    marginTop: spacing.smx,
   },
   card: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
-    padding: 16,
-    gap: 8,
+    padding: spacing.md,
+    gap: spacing.sm,
   },
   analysisHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   analysisMeta: {
     flex: 1,
-    marginLeft: 16,
-    gap: 8,
+    marginLeft: spacing.md,
+    gap: spacing.sm,
   },
   profileRow: {
     flexDirection: 'row',
@@ -176,35 +176,35 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     flex: 1,
-    marginLeft: 16,
-    gap: 8,
+    marginLeft: spacing.md,
+    gap: spacing.sm,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   nutritionBars: {
-    gap: 8,
-    marginVertical: 8,
+    gap: spacing.sm,
+    marginVertical: spacing.sm,
   },
   rankingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
+    padding: spacing.smx,
+    borderRadius: radii.smx,
     borderWidth: 1,
-    gap: 8,
+    gap: spacing.sm,
   },
   timelineBars: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-around',
-    marginTop: 8,
+    marginTop: spacing.sm,
     height: 100,
   },
 });

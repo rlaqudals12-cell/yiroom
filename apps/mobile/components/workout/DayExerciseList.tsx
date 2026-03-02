@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface DayExercise {
   id: string;
@@ -82,8 +82,8 @@ export function DayExerciseList({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1, padding: 14 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  headerMeta: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  exerciseRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1 },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.smd },
+  headerMeta: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
+  exerciseRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.smd, paddingVertical: spacing.smd, borderBottomWidth: 1 },
+  statusDot: { width: spacing.sm, height: spacing.sm, borderRadius: 4 },
 });

@@ -48,6 +48,10 @@ export default function ProductsLayout() {
         name="recommendations"
         options={{ title: 'AI 맞춤 추천' }}
       />
+      <Stack.Screen
+        name="qa"
+        options={{ title: '제품 Q&A' }}
+      />
     </Stack>
   );
 }

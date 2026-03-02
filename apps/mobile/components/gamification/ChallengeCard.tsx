@@ -106,7 +106,7 @@ export function ChallengeCard({
             style={{
               fontSize: typography.size.xs,
               fontWeight: typography.weight.medium,
-              color: '#FFFFFF',
+              color: colors.overlayForeground,
             }}
           >
             {STATUS_LABEL[status]}

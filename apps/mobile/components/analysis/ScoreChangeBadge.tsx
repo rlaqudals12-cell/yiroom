@@ -50,10 +50,10 @@ export interface ScoreChangeBadgeProps {
 const SIZE_CONFIG = {
   sm: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     fontSize: 11,
     iconSize: 12,
-    gap: 2,
+    gap: spacing.xxs,
   },
   md: {
     paddingHorizontal: spacing.sm,
@@ -63,7 +63,7 @@ const SIZE_CONFIG = {
     gap: spacing.xs,
   },
   lg: {
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: 6,
     fontSize: 15,
     iconSize: 18,

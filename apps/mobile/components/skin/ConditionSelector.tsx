@@ -85,7 +85,7 @@ export function ConditionSelector({
                 style={{
                   fontSize: typography.size.sm,
                   fontWeight: isActive ? typography.weight.bold : typography.weight.normal,
-                  color: isActive ? '#FFFFFF' : colors.foreground,
+                  color: isActive ? colors.overlayForeground : colors.foreground,
                 }}
               >
                 {opt.label}

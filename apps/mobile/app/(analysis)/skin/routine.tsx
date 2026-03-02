@@ -27,7 +27,7 @@ import {
 import { moduleColors, useTheme, typography, radii , spacing } from '@/lib/theme';
 
 export default function SkincareRoutineScreen() {
-  const { colors, typography } = useTheme();
+  const { colors } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
 
   const {
@@ -254,7 +254,7 @@ function RoutineStepCard({ step }: { step: RoutineStep }) {
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   title: {
     fontSize: typography.size['2xl'],
@@ -266,14 +266,14 @@ const styles = StyleSheet.create({
   },
   noteCard: {
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
-    marginBottom: 20,
-    gap: 12,
+    marginBottom: spacing.mlg,
+    gap: spacing.smx,
     alignItems: 'flex-start',
   },
   noteEmoji: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
   },
   noteText: {
     flex: 1,
@@ -282,16 +282,16 @@ const styles = StyleSheet.create({
   },
   toggleContainer: {
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.xs,
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   toggleButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderRadius: radii.lg,
     gap: 6,
   },
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   stepsList: {
-    gap: 12,
+    gap: spacing.smx,
     marginBottom: spacing.lg,
   },
   stepCard: {
@@ -330,11 +330,11 @@ const styles = StyleSheet.create({
   stepOrderContainer: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
     backgroundColor: moduleColors.skin.base,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   stepOrder: {
     fontSize: typography.size.sm,
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   },
   optionalBadge: {
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     borderRadius: 4,
   },
   optionalText: {
@@ -377,8 +377,8 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
   },
   tipsContainer: {
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: spacing.smx,
+    paddingTop: spacing.smx,
     borderTopWidth: 1,
   },
   tipsTitle: {
@@ -396,12 +396,12 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     backgroundColor: moduleColors.skin.base,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   primaryButtonText: {
     fontSize: typography.size.base,

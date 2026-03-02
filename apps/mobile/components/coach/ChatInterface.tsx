@@ -153,6 +153,9 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
                   key={cat.key}
                   style={[styles.categoryTab, isActive && { backgroundColor: colors.card }]}
                   onPress={() => handleCategoryChange(cat.key)}
+                  accessibilityRole="tab"
+                  accessibilityLabel={`${cat.label} 카테고리`}
+                  accessibilityState={{ selected: isActive }}
                 >
                   <Text
                     style={[
@@ -177,6 +180,9 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
                   { backgroundColor: colors.card, borderColor: colors.border },
                 ]}
                 onPress={() => handleQuickQuestion(question)}
+                accessibilityRole="button"
+                accessibilityLabel={question}
+                accessibilityHint="이 질문을 코치에게 전송합니다"
               >
                 <Text style={[styles.quickQuestionText, { color: colors.foreground }]}>
                   {question}
@@ -205,6 +211,9 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
                   key={index}
                   style={[styles.suggestedButton, { backgroundColor: colors.muted }]}
                   onPress={() => handleQuickQuestion(question)}
+                  accessibilityRole="button"
+                  accessibilityLabel={question}
+                  accessibilityHint="이 질문을 코치에게 전송합니다"
                 >
                   <Text style={[styles.suggestedText, { color: colors.foreground }]}>
                     {question}
@@ -241,6 +250,8 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
           returnKeyType="send"
           multiline
           maxLength={500}
+          accessibilityLabel="코치에게 보낼 메시지"
+          accessibilityHint="메시지를 입력한 후 전송 버튼을 눌러주세요"
         />
         <Pressable
           style={[
@@ -251,6 +262,9 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
           ]}
           onPress={handleSend}
           disabled={!input.trim() || isLoading}
+          accessibilityRole="button"
+          accessibilityLabel="메시지 전송"
+          accessibilityState={{ disabled: !input.trim() || isLoading }}
         >
           <Text style={[styles.sendButtonText, { color: brand.primaryForeground }]}>전송</Text>
         </Pressable>
@@ -268,7 +282,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   offlineBannerText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.medium,
   },
   errorBanner: {
@@ -276,7 +290,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   errorBannerText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.medium,
   },
   emptyContainer: {
@@ -289,8 +303,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   headerEmoji: {
-    fontSize: 48,
-    marginBottom: 12,
+    fontSize: spacing.xxl,
+    marginBottom: spacing.smx,
   },
   headerTitle: {
     fontSize: 22,
@@ -298,30 +312,30 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textAlign: 'center',
   },
   categoryTabs: {
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.xs,
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   categoryTab: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: spacing.smd,
     alignItems: 'center',
     borderRadius: radii.lg,
   },
   categoryTabText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   quickQuestions: {
-    gap: 10,
+    gap: spacing.smd,
   },
   quickQuestion: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     borderWidth: 1,
   },
@@ -330,7 +344,7 @@ const styles = StyleSheet.create({
   },
   messageList: {
     padding: spacing.md,
-    gap: 12,
+    gap: spacing.smx,
   },
   messageBubble: {
     maxWidth: '80%',
@@ -359,7 +373,7 @@ const styles = StyleSheet.create({
   suggestedButton: {
     paddingHorizontal: 14,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radii.circle,
   },
   suggestedText: {
     fontSize: 13,
@@ -368,7 +382,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     gap: spacing.sm,
   },
   loadingText: {
@@ -377,22 +391,22 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    padding: 12,
+    padding: spacing.smx,
     borderTopWidth: 1,
-    gap: 10,
+    gap: spacing.smd,
   },
   input: {
     flex: 1,
-    borderRadius: 20,
+    borderRadius: radii.circle,
     paddingHorizontal: spacing.md,
-    paddingVertical: 10,
+    paddingVertical: spacing.smd,
     fontSize: 15,
     maxHeight: 100,
   },
   sendButton: {
     paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingVertical: spacing.smd,
+    borderRadius: radii.circle,
   },
   sendButtonText: {
     fontSize: 15,

@@ -225,9 +225,9 @@ export function ReviewCard({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   userInfo: {
     flexDirection: 'row',
@@ -248,21 +248,21 @@ const styles = StyleSheet.create({
   avatar: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radii.circle,
   },
   avatarPlaceholder: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radii.circle,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   userMeta: {
-    marginLeft: 12,
+    marginLeft: spacing.smx,
     flex: 1,
   },
   nameRow: {
@@ -270,12 +270,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   userName: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   verifiedBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     borderRadius: 4,
     marginLeft: spacing.sm,
   },
@@ -284,14 +284,14 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   date: {
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: typography.size.xs,
+    marginTop: spacing.xxs,
   },
   moreButton: {
     padding: spacing.xs,
   },
   moreIcon: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
   },
   ratingRow: {
     flexDirection: 'row',
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   ratingText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
     marginLeft: spacing.sm,
   },
@@ -309,19 +309,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   content: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     lineHeight: 20,
   },
   actions: {
     flexDirection: 'row',
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: spacing.smx,
+    paddingTop: spacing.smx,
     borderTopWidth: 1,
   },
   helpfulButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: 6,
     borderRadius: radii.xl,
   },
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   helpfulIcon: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginRight: spacing.xs,
   },
   helpfulIconActive: {

@@ -204,12 +204,12 @@ const styles = StyleSheet.create({
   tab: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     flexDirection: 'row',
     gap: 6,
   },
   tabIcon: {
-    marginRight: 2,
+    marginRight: spacing.xxs,
   },
   tabText: {
     textAlign: 'center',

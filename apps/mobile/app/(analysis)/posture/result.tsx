@@ -5,6 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
 
@@ -22,6 +23,7 @@ import {
   type PostureAnalysisResult,
 } from '@/lib/gemini';
 import { CelebrationEffect, BadgeDrop } from '@/components/ui';
+import { AIBadge } from '@/components/common/AIBadge';
 import { captureError } from '@/lib/monitoring/sentry';
 import { typography, radii , spacing } from '@/lib/theme';
 
@@ -128,51 +130,52 @@ export default function PostureResultScreen() {
       edges={['bottom']}
     >
         {imageUri && (
-          <View style={styles.imageContainer}>
+          <Animated.View entering={FadeInDown.delay(0).duration(300)} style={styles.imageContainer}>
             <Image
               source={{ uri: imageUri }}
               style={[localStyles.resultImage, { borderColor: accent.base }]}
             />
-          </View>
+          </Animated.View>
         )}
 
         {/* 주요 결과 */}
-        <View style={styles.resultCard}>
+        <Animated.View entering={FadeInDown.delay(60).duration(300)} style={styles.resultCard}>
           <AnalysisTrustBadge
             type={usedFallback ? 'questionnaire' : 'ai'}
             testID="posture-trust-badge"
           />
+          <AIBadge variant="small" />
           <Text style={styles.label}>자세 유형 분석 결과</Text>
           <Text style={[localStyles.mainResult, { color: accent.base }]}>
             {POSTURE_TYPE_LABELS[result.postureType]}
           </Text>
           <Text style={styles.subLabel}>종합 점수 {result.overallScore}점</Text>
-        </View>
+        </Animated.View>
 
         {/* 점수 */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.delay(120).duration(300)} style={styles.section}>
           <Text style={styles.sectionTitle}>정렬 점수</Text>
           <MetricBar label="머리 정렬" value={result.scores.headAlignment} />
           <MetricBar label="어깨 균형" value={result.scores.shoulderBalance} />
           <MetricBar label="척추 정렬" value={result.scores.spineAlignment} />
           <MetricBar label="골반 정렬" value={result.scores.hipAlignment} />
-        </View>
+        </Animated.View>
 
         {/* 발견된 문제 */}
         {result.issues.length > 0 && (
-          <View style={styles.section}>
+          <Animated.View entering={FadeInDown.delay(180).duration(300)} style={styles.section}>
             <Text style={styles.sectionTitle}>발견된 문제</Text>
             {result.issues.map((issue, i) => (
               <Text key={i} style={styles.listItem}>
                 · {issue}
               </Text>
             ))}
-          </View>
+          </Animated.View>
         )}
 
         {/* 교정 운동 */}
         {result.exercises.length > 0 && (
-          <View style={styles.section}>
+          <Animated.View entering={FadeInDown.delay(240).duration(300)} style={styles.section}>
             <Text style={styles.sectionTitle}>추천 교정 운동</Text>
             {result.exercises.map((exercise, i) => (
               <View key={i} style={localStyles.exerciseCard}>
@@ -187,19 +190,19 @@ export default function PostureResultScreen() {
                 </Text>
               </View>
             ))}
-          </View>
+          </Animated.View>
         )}
 
         {/* 생활 습관 팁 */}
         {result.dailyTips.length > 0 && (
-          <View style={styles.section}>
+          <Animated.View entering={FadeInDown.delay(300).duration(300)} style={styles.section}>
             <Text style={styles.sectionTitle}>생활 습관 조언</Text>
             {result.dailyTips.map((tip, i) => (
               <Text key={i} style={styles.listItem}>
                 {i + 1}. {tip}
               </Text>
             ))}
-          </View>
+          </Animated.View>
         )}
 
         <AnalysisResultButtons

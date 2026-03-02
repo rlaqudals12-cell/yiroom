@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: radii.xl,
     padding: spacing.md,
-    marginVertical: 12,
+    marginVertical: spacing.smx,
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -234,15 +234,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   loadingText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   errorContainer: {
     alignItems: 'center',
     padding: spacing.md,
-    gap: 12,
+    gap: spacing.smx,
   },
   errorText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textAlign: 'center',
   },
   retryButton: {
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   retryButtonText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   header: {
@@ -260,27 +260,27 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   headerIcon: {
-    fontSize: 24,
-    marginRight: 12,
+    fontSize: typography.size['2xl'],
+    marginRight: spacing.smx,
   },
   headerInfo: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   headerSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: typography.size.xs,
+    marginTop: spacing.xxs,
   },
   confidenceBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   confidenceBadgeText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   mainRecommendation: {
@@ -296,13 +296,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   recommendedSizeText: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
   },
   recommendedLabel: {
     fontSize: 11,
     opacity: 0.8,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   confidenceBar: {
     flex: 1,
@@ -318,13 +318,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   confidenceText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   alternatives: {
     marginTop: spacing.md,
   },
   alternativesTitle: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginBottom: spacing.sm,
   },
   alternativesList: {
@@ -333,11 +333,11 @@ const styles = StyleSheet.create({
   },
   alternativeItem: {
     flex: 1,
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: radii.smx,
+    padding: spacing.smx,
   },
   alternativeSize: {
-    fontSize: 18,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
   },
@@ -347,16 +347,16 @@ const styles = StyleSheet.create({
   brandNote: {
     marginTop: spacing.md,
     borderRadius: radii.md,
-    padding: 12,
+    padding: spacing.smx,
   },
   brandNoteText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     lineHeight: 18,
   },
   offlineNote: {
-    marginTop: 12,
+    marginTop: spacing.smx,
     borderRadius: radii.md,
-    padding: 10,
+    padding: spacing.smd,
     alignItems: 'center',
   },
   offlineNoteText: {

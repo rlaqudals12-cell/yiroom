@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, statusColors } from '../../lib/theme';
 
 export type ZoneId = 'forehead' | 'tZone' | 'eyes' | 'cheeks' | 'uZone' | 'chin';
 
@@ -35,9 +35,9 @@ export interface ZoneVisualizationProps {
 }
 
 const STATUS_COLORS: Record<ZoneStatusLevel, string> = {
-  good: '#22C55E',
-  normal: '#F59E0B',
-  warning: '#EF4444',
+  good: statusColors.success,
+  normal: statusColors.warning,
+  warning: statusColors.error,
 };
 
 const ZONE_LABELS: Record<ZoneId, string> = {
@@ -176,7 +176,7 @@ export function ZoneVisualization({
           {/* 고민 */}
           {selectedData.concerns && selectedData.concerns.length > 0 && (
             <View style={{ marginTop: spacing.sm }}>
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: 4 }}>고민</Text>
+              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: spacing.xs }}>고민</Text>
               <View style={styles.tagRow}>
                 {selectedData.concerns.map((concern, i) => (
                   <View key={i} style={[styles.tag, { backgroundColor: `${status.warning}15`, borderRadius: radii.sm }]}>
@@ -190,7 +190,7 @@ export function ZoneVisualization({
           {/* 추천 */}
           {selectedData.recommendations && selectedData.recommendations.length > 0 && (
             <View style={{ marginTop: spacing.sm }}>
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: 4 }}>추천</Text>
+              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: spacing.xs }}>추천</Text>
               {selectedData.recommendations.slice(0, 3).map((rec, i) => (
                 <Text key={i} style={{ color: colors.foreground, fontSize: typography.size.xs, lineHeight: 18 }}>
                   • {rec}
@@ -221,21 +221,21 @@ export function ZoneVisualization({
 }
 
 const styles = StyleSheet.create({
-  summaryRow: { flexDirection: 'row', gap: 10 },
-  summaryCard: { flex: 1, alignItems: 'center', padding: 12, borderWidth: 1 },
-  zoneGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  zoneItem: { width: '31%', borderWidth: 1, padding: 10, alignItems: 'center' },
+  summaryRow: { flexDirection: 'row', gap: spacing.smd },
+  summaryCard: { flex: 1, alignItems: 'center', padding: spacing.smx, borderWidth: 1 },
+  zoneGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  zoneItem: { width: '31%', borderWidth: 1, padding: spacing.smd, alignItems: 'center' },
   zoneItemContent: { alignItems: 'center' },
-  zonePressable: { alignItems: 'center', gap: 4 },
+  zonePressable: { alignItems: 'center', gap: spacing.xs },
   zoneDot: { width: 8, height: 8, borderRadius: 4 },
   detailPanel: { borderWidth: 1 },
   detailHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  statusBadge: { paddingHorizontal: 8, paddingVertical: 3 },
+  statusBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
   metricsSection: {},
-  metricRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+  metricRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: 6 },
   metricBar: { flex: 1, height: 6 },
   metricFill: { height: 6 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  tag: { paddingHorizontal: 8, paddingVertical: 3 },
+  tag: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
   concernsSection: {},
 });

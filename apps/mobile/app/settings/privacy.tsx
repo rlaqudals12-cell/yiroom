@@ -1,225 +1,328 @@
 /**
- * 개인정보/동의 관리 화면
- *
- * 이미지 저장 동의, 데이터 내보내기, 계정 삭제 등 개인정보 관련 설정.
+ * 개인정보 설정 화면
+ * 데이터 수집, 프로필 공개, 데이터 관리 설정
  */
-import { useState } from 'react';
-import { View, Text, Switch, Pressable, Alert } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import * as Haptics from 'expo-haptics';
+import { Stack } from 'expo-router';
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Switch,
+  Pressable,
+  Alert,
+  Platform,
+} from 'react-native';
+
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../components/ui';
 
-interface ConsentItem {
-  id: string;
-  title: string;
-  description: string;
-  defaultValue: boolean;
-  required?: boolean;
+interface PrivacySettings {
+  analyticsConsent: boolean;
+  marketingConsent: boolean;
+  profilePublic: boolean;
+  shareResults: boolean;
 }
 
-const CONSENT_ITEMS: ConsentItem[] = [
-  {
-    id: 'biometric',
-    title: '생체정보(이미지) 저장 동의',
-    description: '분석 이미지를 저장하여 변화 추적에 활용해요. 미동의 시에도 분석은 가능해요.',
-    defaultValue: false,
-  },
-  {
-    id: 'marketing',
-    title: '마케팅 정보 수신 동의',
-    description: '새로운 기능, 이벤트, 맞춤 추천 알림을 받아요.',
-    defaultValue: false,
-  },
-  {
-    id: 'analytics',
-    title: '서비스 개선 데이터 수집',
-    description: '앱 사용 패턴을 익명으로 수집하여 서비스를 개선해요.',
-    defaultValue: true,
-  },
-];
+const DEFAULT_SETTINGS: PrivacySettings = {
+  analyticsConsent: true,
+  marketingConsent: false,
+  profilePublic: false,
+  shareResults: false,
+};
 
-export default function PrivacySettingsScreen(): React.ReactElement {
-  const { colors, brand, spacing, radii, typography, status } = useTheme();
+export default function PrivacySettingsScreen(): React.JSX.Element {
+  const { colors, brand, status, typography, spacing, radii } = useTheme();
 
-  const [consents, setConsents] = useState<Record<string, boolean>>(
-    Object.fromEntries(CONSENT_ITEMS.map((item) => [item.id, item.defaultValue]))
-  );
+  const [settings, setSettings] = useState<PrivacySettings>(DEFAULT_SETTINGS);
 
-  const toggleConsent = (id: string): void => {
-    setConsents((prev) => ({ ...prev, [id]: !prev[id] }));
+  const handleToggle = (key: keyof PrivacySettings, value: boolean): void => {
+    Haptics.selectionAsync();
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleExportData = (): void => {
+  const handleDownloadData = (): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
-      '데이터 내보내기',
-      '내 데이터를 JSON 파일로 내보내요. 이메일로 전송될 예정이에요.',
-      [
-        { text: '취소', style: 'cancel' },
-        { text: '내보내기', onPress: () => Alert.alert('알림', '데이터 내보내기 요청이 접수되었어요.') },
-      ]
+      '데이터 다운로드',
+      '내 데이터를 다운로드할 준비가 되면 이메일로 알려드릴게요. 최대 24시간이 소요될 수 있어요.',
+      [{ text: '확인' }]
     );
   };
 
   const handleDeleteAccount = (): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Alert.alert(
       '계정 삭제',
-      '모든 데이터가 영구 삭제되며 복구할 수 없어요. 정말 삭제하시겠어요?',
+      '정말 계정을 삭제하시겠어요? 모든 데이터가 영구적으로 삭제되며 복구할 수 없어요.',
       [
         { text: '취소', style: 'cancel' },
         {
           text: '삭제',
           style: 'destructive',
-          onPress: () => Alert.alert('알림', '계정 삭제 요청이 접수되었어요. 30일 이내 처리돼요.'),
+          onPress: () => {
+            // 계정 삭제 로직 (추후 구현)
+            Alert.alert('안내', '계정 삭제 요청이 접수되었어요.');
+          },
         },
       ]
     );
   };
 
   return (
-    <ScreenContainer testID="privacy-settings-screen" edges={['bottom']}>
-      <Text
-        style={{
-          fontSize: typography.size['2xl'],
-          fontWeight: typography.weight.bold,
-          color: colors.foreground,
-          marginBottom: spacing.xs,
+    <>
+      <Stack.Screen
+        options={{
+          title: '개인정보 설정',
+          headerBackTitle: '설정',
         }}
+      />
+      <ScreenContainer
+        testID="settings-privacy-screen"
+        edges={['bottom']}
       >
-        개인정보 관리
-      </Text>
-      <Text
-        style={{
-          fontSize: typography.size.base,
-          color: colors.mutedForeground,
-          marginBottom: spacing.lg,
-        }}
-      >
-        동의 설정 및 데이터 관리
-      </Text>
-
-      {/* 동의 관리 */}
-      <Text
-        style={{
-          fontSize: typography.size.lg,
-          fontWeight: typography.weight.semibold,
-          color: colors.foreground,
-          marginBottom: spacing.sm,
-        }}
-      >
-        동의 관리
-      </Text>
-      <View style={{ gap: spacing.sm, marginBottom: spacing.xl }}>
-        {CONSENT_ITEMS.map((item) => (
-          <View
-            key={item.id}
-            style={{
-              backgroundColor: colors.card,
-              borderRadius: radii.lg,
-              padding: spacing.md,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
+        {/* 데이터 수집 */}
+        <View style={styles.section}>
+          <Text
+            accessibilityRole="header"
+            style={[styles.sectionTitle, { color: colors.mutedForeground }]}
           >
-            <View style={{ flex: 1, marginRight: spacing.sm }}>
-              <Text
-                style={{
-                  fontSize: typography.size.base,
-                  fontWeight: typography.weight.semibold,
-                  color: colors.foreground,
-                  marginBottom: spacing.xxs,
-                }}
-              >
-                {item.title}
-              </Text>
-              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                {item.description}
-              </Text>
+            데이터 수집
+          </Text>
+          <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsRowContent}>
+                <Text style={styles.settingsIcon}>📊</Text>
+                <View style={styles.settingsTextContent}>
+                  <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                    분석 데이터 수집 동의
+                  </Text>
+                  <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                    서비스 개선을 위한 익명 데이터 수집
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={settings.analyticsConsent}
+                onValueChange={(value) => handleToggle('analyticsConsent', value)}
+                trackColor={{ false: colors.border, true: brand.primary }}
+                thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                accessibilityLabel="분석 데이터 수집 동의"
+                accessibilityRole="switch"
+              />
             </View>
-            <Switch
-              value={consents[item.id]}
-              onValueChange={() => toggleConsent(item.id)}
-              trackColor={{ false: colors.secondary, true: brand.primary + '80' }}
-              thumbColor={consents[item.id] ? brand.primary : colors.mutedForeground}
-              accessibilityLabel={`${item.title} ${consents[item.id] ? '동의함' : '동의 안 함'}`}
-            />
-          </View>
-        ))}
-      </View>
 
-      {/* 데이터 관리 */}
-      <Text
-        style={{
-          fontSize: typography.size.lg,
-          fontWeight: typography.weight.semibold,
-          color: colors.foreground,
-          marginBottom: spacing.sm,
-        }}
-      >
-        데이터 관리
-      </Text>
-      <View style={{ gap: spacing.sm, marginBottom: spacing.xl }}>
-        <Pressable
-          accessibilityLabel="내 데이터 내보내기"
-          onPress={handleExportData}
-          style={{
-            backgroundColor: colors.card,
-            borderRadius: radii.lg,
-            padding: spacing.md,
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ fontSize: typography.size.lg, marginRight: spacing.smx }}>📦</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>
-              내 데이터 내보내기
-            </Text>
-            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-              JSON 형식으로 이메일 전송
-            </Text>
-          </View>
-          <Text style={{ fontSize: typography.size.lg, color: colors.mutedForeground }}>›</Text>
-        </Pressable>
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-        <Pressable
-          accessibilityLabel="계정 삭제"
-          onPress={handleDeleteAccount}
-          style={{
-            backgroundColor: status.error + '10',
-            borderRadius: radii.lg,
-            padding: spacing.md,
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderWidth: 1,
-            borderColor: status.error + '30',
-          }}
-        >
-          <Text style={{ fontSize: typography.size.lg, marginRight: spacing.smx }}>🗑️</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: status.error }}>
-              계정 삭제
-            </Text>
-            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-              모든 데이터가 영구 삭제돼요
-            </Text>
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsRowContent}>
+                <Text style={styles.settingsIcon}>📮</Text>
+                <View style={styles.settingsTextContent}>
+                  <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                    마케팅 정보 수신
+                  </Text>
+                  <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                    이벤트, 할인, 새 기능 소식 알림
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={settings.marketingConsent}
+                onValueChange={(value) => handleToggle('marketingConsent', value)}
+                trackColor={{ false: colors.border, true: brand.primary }}
+                thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                accessibilityLabel="마케팅 정보 수신"
+                accessibilityRole="switch"
+              />
+            </View>
           </View>
-          <Text style={{ fontSize: typography.size.lg, color: status.error }}>›</Text>
-        </Pressable>
-      </View>
+        </View>
 
-      {/* 안내 */}
-      <View
-        style={{
-          backgroundColor: status.info + '10',
-          borderRadius: radii.lg,
-          padding: spacing.md,
-        }}
-      >
-        <Text style={{ fontSize: typography.size.sm, color: status.info, lineHeight: 20 }}>
-          개인정보 관련 문의: privacy@yiroom.app{'\n'}
-          동의 변경은 즉시 적용되며, 과거 수집 데이터에는 영향을 주지 않아요.
-        </Text>
-      </View>
-    </ScreenContainer>
+        {/* 프로필 공개 */}
+        <View style={styles.section}>
+          <Text
+            accessibilityRole="header"
+            style={[styles.sectionTitle, { color: colors.mutedForeground }]}
+          >
+            프로필 공개
+          </Text>
+          <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsRowContent}>
+                <Text style={styles.settingsIcon}>👤</Text>
+                <View style={styles.settingsTextContent}>
+                  <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                    프로필 공개
+                  </Text>
+                  <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                    다른 사용자가 내 프로필을 볼 수 있어요
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={settings.profilePublic}
+                onValueChange={(value) => handleToggle('profilePublic', value)}
+                trackColor={{ false: colors.border, true: brand.primary }}
+                thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                accessibilityLabel="프로필 공개"
+                accessibilityRole="switch"
+              />
+            </View>
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsRowContent}>
+                <Text style={styles.settingsIcon}>🔗</Text>
+                <View style={styles.settingsTextContent}>
+                  <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                    분석 결과 공유 허용
+                  </Text>
+                  <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                    분석 결과를 친구와 공유할 수 있어요
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={settings.shareResults}
+                onValueChange={(value) => handleToggle('shareResults', value)}
+                trackColor={{ false: colors.border, true: brand.primary }}
+                thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                accessibilityLabel="분석 결과 공유 허용"
+                accessibilityRole="switch"
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* 데이터 관리 */}
+        <View style={styles.section}>
+          <Text
+            accessibilityRole="header"
+            style={[styles.sectionTitle, { color: colors.mutedForeground }]}
+          >
+            데이터 관리
+          </Text>
+          <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
+            <Pressable
+              style={styles.actionRow}
+              onPress={handleDownloadData}
+              accessibilityRole="button"
+              accessibilityLabel="내 데이터 다운로드"
+            >
+              <View style={styles.settingsRowContent}>
+                <Text style={styles.settingsIcon}>📥</Text>
+                <View style={styles.settingsTextContent}>
+                  <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                    내 데이터 다운로드
+                  </Text>
+                  <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                    저장된 모든 데이터를 파일로 받아보세요
+                  </Text>
+                </View>
+              </View>
+              <Text style={[styles.actionArrow, { color: colors.mutedForeground }]}>›</Text>
+            </Pressable>
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+            <Pressable
+              style={styles.actionRow}
+              onPress={handleDeleteAccount}
+              accessibilityRole="button"
+              accessibilityLabel="계정 삭제"
+            >
+              <View style={styles.settingsRowContent}>
+                <Text style={styles.settingsIcon}>🗑️</Text>
+                <View style={styles.settingsTextContent}>
+                  <Text style={[styles.settingsLabel, { color: colors.destructive }]}>
+                    계정 삭제
+                  </Text>
+                  <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                    모든 데이터가 영구 삭제돼요
+                  </Text>
+                </View>
+              </View>
+              <Text style={[styles.actionArrow, { color: colors.mutedForeground }]}>›</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* 안내 */}
+        <View style={styles.infoSection}>
+          <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
+            개인정보는 안전하게 암호화되어 저장됩니다.{'\n'}
+            자세한 내용은 개인정보 처리방침을 확인해주세요.
+          </Text>
+        </View>
+      </ScreenContainer>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  section: {
+    marginBottom: spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: typography.weight.semibold,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  settingsCard: {
+    borderRadius: radii.smx,
+    overflow: 'hidden',
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.md,
+  },
+  settingsRowContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  settingsIcon: {
+    fontSize: typography.size['2xl'],
+    marginRight: spacing.smx,
+  },
+  settingsTextContent: {
+    flex: 1,
+  },
+  settingsLabel: {
+    fontSize: 15,
+    fontWeight: typography.weight.medium,
+  },
+  settingsDesc: {
+    fontSize: typography.size.xs,
+    marginTop: spacing.xxs,
+  },
+  divider: {
+    height: 1,
+    marginHorizontal: spacing.md,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.md,
+  },
+  actionArrow: {
+    fontSize: typography.size.xl,
+  },
+  infoSection: {
+    paddingHorizontal: spacing.sm,
+  },
+  infoText: {
+    fontSize: typography.size.xs,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+});

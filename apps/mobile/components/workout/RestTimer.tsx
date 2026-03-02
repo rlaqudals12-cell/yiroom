@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface RestTimerProps {
   /** 초 단위 */
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   container: { borderWidth: 1, alignItems: 'center' },
   progressBar: { height: 6, width: '100%' },
   progressFill: { height: 6 },
-  adjustRow: { flexDirection: 'row', gap: 10 },
-  adjustBtn: { paddingHorizontal: 16, paddingVertical: 8 },
-  skipBtn: { paddingVertical: 8 },
+  adjustRow: { flexDirection: 'row', gap: spacing.smd },
+  adjustBtn: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
+  skipBtn: { paddingVertical: spacing.sm },
 });

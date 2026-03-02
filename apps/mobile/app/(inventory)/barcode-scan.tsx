@@ -307,7 +307,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                       style={{
                         fontSize: typography.size.xs,
                         color: colors.mutedForeground,
-                        marginTop: 2,
+                        marginTop: spacing.xxs,
                       }}
                     >
                       {product.brand}
@@ -318,7 +318,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                       style={{
                         fontSize: typography.size.xs,
                         color: colors.mutedForeground,
-                        marginTop: 2,
+                        marginTop: spacing.xxs,
                       }}
                     >
                       {product.price.toLocaleString()}원
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
   },
   center: {
     alignItems: 'center',
@@ -594,11 +594,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   actionButton: {
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     alignItems: 'center',
   },
   retryButton: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
   },
 });

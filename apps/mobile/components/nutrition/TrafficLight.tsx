@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export type TrafficLightLevel = 'green' | 'amber' | 'red';
 
@@ -29,12 +29,6 @@ export interface TrafficLightProps {
   style?: ViewStyle;
 }
 
-const LEVEL_COLORS: Record<TrafficLightLevel, string> = {
-  green: '#22C55E',
-  amber: '#F59E0B',
-  red: '#EF4444',
-};
-
 const LEVEL_LABELS: Record<TrafficLightLevel, string> = {
   green: '양호',
   amber: '보통',
@@ -46,7 +40,14 @@ export function TrafficLight({
   productName,
   style,
 }: TrafficLightProps): React.JSX.Element {
-  const { colors, spacing, typography, radii, shadows } = useTheme();
+  const { colors, spacing, typography, radii, shadows, status } = useTheme();
+
+  // status 토큰을 사용하기 위해 컴포넌트 내부에서 색상 맵 정의
+  const LEVEL_COLORS: Record<TrafficLightLevel, string> = {
+    green: status.success,
+    amber: status.warning,
+    red: status.error,
+  };
 
   return (
     <View
@@ -118,7 +119,7 @@ export function TrafficLight({
                   fontSize: typography.size.sm,
                   fontWeight: typography.weight.bold,
                   color: colors.foreground,
-                  marginTop: 2,
+                  marginTop: spacing.xxs,
                 }}
               >
                 {item.value}
@@ -128,7 +129,7 @@ export function TrafficLight({
                   style={{
                     fontSize: 10,
                     color: colors.mutedForeground,
-                    marginTop: 2,
+                    marginTop: spacing.xxs,
                   }}
                 >
                   {item.perServing}
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   itemsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   item: {
     flex: 1,
@@ -166,8 +167,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   indicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: spacing.smx,
+    height: spacing.smx,
+    borderRadius: radii.sm,
   },
 });

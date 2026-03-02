@@ -6,8 +6,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { useTheme, typography , spacing } from '@/lib/theme';
+import { useTheme, typography, radii , spacing } from '@/lib/theme';
 
 export default function HairCameraScreen() {
   const { colors, brand } = useTheme();
@@ -81,10 +82,10 @@ export default function HairCameraScreen() {
   return (
     <View testID="analysis-hair-camera-screen" style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
-        <View style={styles.overlay}>
+        <Animated.View entering={FadeIn.duration(400)} style={styles.overlay}>
           <View style={styles.guideRect} />
           <Text style={[styles.guideText, { color: colors.overlayForeground }]}>헤어가 잘 보이도록{'\n'}촬영해 주세요</Text>
-        </View>
+        </Animated.View>
         <View style={styles.controls}>
           <Pressable style={styles.sideButton} onPress={pickFromGallery}>
             <Text style={[styles.iconText, { color: colors.overlayForeground }]}>갤러리</Text>
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
   guideRect: {
     width: 280,
     height: 340,
-    borderRadius: 20,
+    borderRadius: radii.circle,
     borderWidth: 3,
     borderColor: 'rgba(255,255,255,0.6)',
     borderStyle: 'dashed',
@@ -127,11 +128,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingVertical: 40,
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.mlg,
     backgroundColor: 'rgba(0,0,0,0.3)',
   },
   sideButton: { width: 60, height: 60, alignItems: 'center', justifyContent: 'center' },
-  iconText: { fontSize: 14 },
+  iconText: { fontSize: typography.size.sm },
   captureButton: {
     width: 72,
     height: 72,
@@ -147,17 +148,17 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: spacing.mlg,
   },
-  permissionTitle: { fontSize: 22, fontWeight: '600', marginBottom: 12 },
-  permissionText: { fontSize: typography.size.base, textAlign: 'center', marginBottom: 32 },
+  permissionTitle: { fontSize: 22, fontWeight: '600', marginBottom: spacing.smx },
+  permissionText: { fontSize: typography.size.base, textAlign: 'center', marginBottom: spacing.xl },
   permissionButton: {
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     marginBottom: spacing.md,
   },
   permissionButtonText: { fontSize: typography.size.base, fontWeight: '600' },
-  galleryButton: { paddingHorizontal: spacing.xl, paddingVertical: 16 },
-  galleryButtonText: { fontSize: 16 },
+  galleryButton: { paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
+  galleryButtonText: { fontSize: typography.size.base },
 });

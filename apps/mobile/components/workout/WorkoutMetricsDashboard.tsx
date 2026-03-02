@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface WorkoutMetrics {
   totalWorkouts: number;
@@ -65,7 +65,7 @@ export function WorkoutMetricsDashboard({
       {/* 개인 최고 기록 */}
       {metrics.personalBests && metrics.personalBests.length > 0 && (
         <View style={{ marginTop: spacing.sm }}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 4 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.xs }}>
             🏆 개인 최고 기록
           </Text>
           {metrics.personalBests.slice(0, 3).map((pb, i) => (
@@ -81,10 +81,10 @@ export function WorkoutMetricsDashboard({
 }
 
 const styles = StyleSheet.create({
-  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  metricCard: { width: '47%', alignItems: 'center', padding: 12, borderWidth: 1, gap: 2 },
-  intensityRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  metricCard: { width: '47%', alignItems: 'center', padding: spacing.smx, borderWidth: 1, gap: spacing.xxs },
+  intensityRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   intensityBar: { flex: 1, height: 6 },
   intensityFill: { height: 6 },
-  pbRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
+  pbRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.xs },
 });

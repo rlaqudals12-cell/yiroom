@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 import {
   useCloset,
@@ -29,7 +29,7 @@ import {
 } from '../../lib/inventory';
 
 export default function ItemDetailScreen() {
-  const { colors, status, module: moduleTheme, typography } = useTheme();
+  const { colors, status, module: moduleTheme, typography, spacing, radii} = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -79,8 +79,8 @@ export default function ItemDetailScreen() {
       <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <SkeletonCard style={{ width: '100%', aspectRatio: 1 }} />
-          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 120, borderRadius: 12 }} />
-          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 80, borderRadius: 12 }} />
+          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 120, borderRadius: radii.smx }} />
+          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 80, borderRadius: radii.smx }} />
         </View>
       </ScreenContainer>
     );
@@ -236,10 +236,7 @@ export default function ItemDetailScreen() {
           style={[styles.actionButton, { backgroundColor: moduleTheme.body.dark }]}
           onPress={() => {
             Haptics.selectionAsync();
-            Alert.alert(
-              '곧 추가될 예정이에요',
-              '편집 기능을 준비하고 있어요. 조금만 기다려주세요!'
-            );
+            router.push(`/(closet)/${id}/edit`);
           }}
         >
           <Edit2 size={20} color={colors.overlayForeground} />
@@ -280,7 +277,7 @@ const styles = StyleSheet.create({
   infoCard: {
     marginHorizontal: spacing.md,
     marginTop: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
   },
   infoHeader: {
@@ -291,10 +288,10 @@ const styles = StyleSheet.create({
   },
   infoHeaderContent: {
     flex: 1,
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   itemName: {
-    fontSize: 20,
+    fontSize: typography.size.xl,
     fontWeight: typography.weight.bold,
     marginBottom: spacing.xs,
   },
@@ -304,7 +301,7 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     borderTopWidth: 1,
   },
   infoLabel: {
@@ -317,7 +314,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -325,9 +322,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   tag: {
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   tagText: {
     fontSize: 13,
@@ -343,7 +340,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingBottom: spacing.xl,
     borderTopWidth: 1,
-    gap: 12,
+    gap: spacing.smx,
   },
   actionButton: {
     flex: 1,
@@ -351,7 +348,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     gap: spacing.sm,
   },
   deleteButton: {},
@@ -372,8 +369,8 @@ const styles = StyleSheet.create({
   },
   backButton: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: spacing.smx,
+    borderRadius: radii.smx,
   },
   backButtonText: {
     fontSize: 15,

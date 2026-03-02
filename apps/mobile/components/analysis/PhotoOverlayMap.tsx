@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, statusColors, radii, spacing} from '../../lib/theme';
 
 export type OverlayZoneId = 'forehead' | 'tZone' | 'eyes' | 'cheeks' | 'uZone' | 'chin';
 
@@ -27,9 +27,9 @@ export interface PhotoOverlayMapProps {
 }
 
 const ZONE_COLORS: Record<'good' | 'normal' | 'warning', string> = {
-  good: '#22C55E',
-  normal: '#F59E0B',
-  warning: '#EF4444',
+  good: statusColors.success,
+  normal: statusColors.warning,
+  warning: statusColors.error,
 };
 
 // 존 위치 (비율)
@@ -93,7 +93,7 @@ export function PhotoOverlayMap({
             >
               {showLabels && (
                 <View style={[styles.labelBadge, { backgroundColor: `${zoneColor}CC` }]}>
-                  <Text style={[styles.labelText, { fontSize: typography.size.xs }]}>
+                  <Text style={[styles.labelText, { fontSize: typography.size.xs, color: colors.overlayForeground }]}>
                     {zoneData.label} {zoneData.score}
                   </Text>
                 </View>
@@ -108,7 +108,7 @@ export function PhotoOverlayMap({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 1,
     overflow: 'hidden',
     aspectRatio: 3 / 4,
@@ -121,17 +121,16 @@ const styles = StyleSheet.create({
   zoneOverlay: {
     position: 'absolute',
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   labelBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     borderRadius: 4,
   },
   labelText: {
-    color: '#FFFFFF',
     fontWeight: '600',
   },
 });

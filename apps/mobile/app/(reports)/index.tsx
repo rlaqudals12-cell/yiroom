@@ -130,7 +130,7 @@ export default function ReportsScreen(): React.JSX.Element {
               gap: spacing.sm,
             }}
           >
-            <Text style={{ fontSize: 18 }}>💡</Text>
+            <Text style={{ fontSize: typography.size.lg }}>💡</Text>
             <Text
               style={{
                 flex: 1,
@@ -439,7 +439,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   </Text>
                 </View>
                 <View style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: 24 }}>🔥</Text>
+                  <Text style={{ fontSize: typography.size['2xl'] }}>🔥</Text>
                   <Text
                     style={{
                       fontSize: typography.size.sm,
@@ -597,7 +597,7 @@ export default function ReportsScreen(): React.JSX.Element {
             onPress={() => router.push('/(reports)/weekly')}
             testID="weekly-report-link"
           >
-            <Text style={{ fontSize: typography.size['2xl'], marginBottom: 4 }}>📊</Text>
+            <Text style={{ fontSize: typography.size['2xl'], marginBottom: spacing.xs }}>📊</Text>
             <Text
               style={{
                 fontSize: typography.size.sm,
@@ -619,7 +619,7 @@ export default function ReportsScreen(): React.JSX.Element {
             onPress={() => router.push('/(reports)/monthly')}
             testID="monthly-report-link"
           >
-            <Text style={{ fontSize: typography.size['2xl'], marginBottom: 4 }}>📅</Text>
+            <Text style={{ fontSize: typography.size['2xl'], marginBottom: spacing.xs }}>📅</Text>
             <Text
               style={{
                 fontSize: typography.size.sm,

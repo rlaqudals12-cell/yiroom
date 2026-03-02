@@ -22,7 +22,7 @@ import { ScreenContainer } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { staggeredEntry } from '@/lib/animations';
 import { useWorkoutData } from '@/hooks/useWorkoutData';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { workoutLogger } from '../../../lib/utils/logger';
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   exerciseGrid: {
     flexDirection: 'row',
@@ -375,8 +375,8 @@ const styles = StyleSheet.create({
   },
   exerciseChip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingVertical: spacing.smd,
+    borderRadius: radii.circle,
     borderWidth: 1,
   },
   exerciseChipText: {
@@ -388,8 +388,8 @@ const styles = StyleSheet.create({
   },
   durationChip: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: spacing.smx,
+    borderRadius: radii.smx,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   intensityChip: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   notesInput: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
     padding: 14,
     fontSize: typography.size.sm,
@@ -421,9 +421,9 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   calorieCard: {
-    padding: 20,
+    padding: spacing.mlg,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.mlg,
   },
   calorieLabel: {
     fontSize: typography.size.sm,
@@ -434,11 +434,11 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.bold,
   },
   footer: {
-    padding: 20,
+    padding: spacing.mlg,
     paddingTop: 0,
   },
   saveButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },

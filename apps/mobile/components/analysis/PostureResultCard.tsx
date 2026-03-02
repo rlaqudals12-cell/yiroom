@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export type PostureType =
   | 'ideal' | 'forward_head' | 'rounded_shoulders'
@@ -118,7 +118,7 @@ export function PostureResultCard({
       {/* 전면 측정 */}
       {frontMeasurements.length > 0 && (
         <View style={[styles.section, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
             전면 분석
           </Text>
           <View style={styles.measurementGrid}>
@@ -143,7 +143,7 @@ export function PostureResultCard({
       {/* 측면 측정 */}
       {sideMeasurements.length > 0 && (
         <View style={[styles.section, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
             측면 분석
           </Text>
           <View style={styles.measurementGrid}>
@@ -174,14 +174,14 @@ export function PostureResultCard({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1, overflow: 'hidden' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.smx },
   headerText: { flex: 1 },
   typeLabel: { fontWeight: '700' },
-  scoreBadge: { alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6 },
+  scoreBadge: { alignItems: 'center', paddingHorizontal: spacing.smx, paddingVertical: 6 },
   issueAlert: {},
   idealBanner: {},
   section: { borderTopWidth: 1 },
-  measurementGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  measurementCard: { width: '47%', padding: 10, alignItems: 'center' },
+  measurementGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  measurementCard: { width: '47%', padding: spacing.smd, alignItems: 'center' },
   footer: { borderTopWidth: 1 },
 });

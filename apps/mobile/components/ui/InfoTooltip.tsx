@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     marginLeft: spacing.xs,
-    padding: 2,
+    padding: spacing.xxs,
   },
   tooltip: {},
 });

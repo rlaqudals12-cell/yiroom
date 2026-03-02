@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 
 export interface ScientificTermTooltipProps {
   /** 과학 용어 (예: "TEWL", "pH") */
@@ -45,7 +45,7 @@ export function ScientificTermTooltip({
               backgroundColor: `${brand.primary}15`,
               borderRadius: radii.sm,
               paddingHorizontal: spacing.xs,
-              paddingVertical: 2,
+              paddingVertical: spacing.xxs,
             },
           ]}
         >
@@ -124,11 +124,11 @@ const styles = StyleSheet.create({
   },
   tooltipTerm: {
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   tooltipDef: {
     lineHeight: 22,
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   closeHint: {
     textAlign: 'center',

@@ -35,6 +35,8 @@ interface AnimatedCardProps {
   entering?: AnimatedProps<object>['entering'];
   /** 접근성 라벨 */
   accessibilityLabel?: string;
+  /** 접근성 힌트 */
+  accessibilityHint?: string;
 }
 
 export function AnimatedCard({
@@ -45,6 +47,7 @@ export function AnimatedCard({
   pressedScale = 0.97,
   entering,
   accessibilityLabel,
+  accessibilityHint,
 }: AnimatedCardProps): React.JSX.Element {
   const { shadows } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
@@ -91,6 +94,7 @@ export function AnimatedCard({
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
     >
       <Card>{children}</Card>
     </AnimatedPressable>

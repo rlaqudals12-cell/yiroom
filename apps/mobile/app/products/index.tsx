@@ -16,9 +16,11 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import Animated from 'react-native-reanimated';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
+import { staggeredEntry } from '../../lib/animations';
 
 import {
   getAffiliateProducts,
@@ -321,7 +323,8 @@ export default function ProductsScreen() {
               tintColor={colors.foreground}
             />
           }
-          renderItem={({ item: product }) => (
+          renderItem={({ item: product, index }) => (
+            <Animated.View entering={staggeredEntry(index)} style={{ flex: 1, maxWidth: '50%' }}>
             <Pressable
               style={styles.productCard}
               onPress={() => handleProductPress(product.id)}
@@ -373,6 +376,7 @@ export default function ProductsScreen() {
                 </Text>
               </View>
             </Pressable>
+            </Animated.View>
           )}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -397,11 +401,11 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.md,
     marginTop: spacing.md,
     padding: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   bannerIcon: {
     fontSize: typography.size['2xl'],
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   bannerContent: {
     flex: 1,
@@ -412,7 +416,7 @@ const styles = StyleSheet.create({
   },
   bannerSubtitle: {
     fontSize: 13,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   categoryScroll: {
     marginTop: spacing.md,
@@ -424,8 +428,8 @@ const styles = StyleSheet.create({
   },
   categoryChip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingVertical: spacing.smd,
+    borderRadius: radii.circle,
     borderWidth: 1,
   },
   categoryText: {
@@ -441,20 +445,19 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   productGridContent: {
-    paddingHorizontal: 12,
-    paddingBottom: 20,
+    paddingHorizontal: spacing.smx,
+    paddingBottom: spacing.mlg,
   },
   productCard: {
     flex: 1,
     padding: spacing.xs,
-    maxWidth: '50%',
   },
   productImageContainer: {
     position: 'relative',
   },
   productImagePlaceholder: {
     aspectRatio: 1,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -467,7 +470,7 @@ const styles = StyleSheet.create({
     right: 8,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   matchBadgeText: {
     fontSize: 11,
@@ -482,7 +485,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
-    marginTop: 2,
+    marginTop: spacing.xxs,
     lineHeight: 18,
   },
   ratingRow: {
