@@ -182,7 +182,7 @@ export default function RecipeDetailScreen(): React.ReactElement {
                 marginRight: spacing.smx,
               }}
             >
-              <Text style={{ fontSize: typography.size.xs, fontWeight: typography.weight.bold, color: '#FFFFFF' }}>
+              <Text style={{ fontSize: typography.size.xs, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
                 {index + 1}
               </Text>
             </View>
@@ -204,7 +204,7 @@ export default function RecipeDetailScreen(): React.ReactElement {
           alignItems: 'center',
         }}
       >
-        <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: '#FFFFFF' }}>
+        <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
           식사 기록하기
         </Text>
       </Pressable>

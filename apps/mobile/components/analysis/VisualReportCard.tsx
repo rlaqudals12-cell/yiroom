@@ -108,7 +108,7 @@ export function VisualReportCard({
               <Text style={[styles.metricName, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
                 {metric.name}
               </Text>
-              <View style={styles.metricBarOuter}>
+              <View style={[styles.metricBarOuter, { backgroundColor: `${colors.secondary}20` }]}>
                 <View
                   style={[
                     styles.metricBarInner,
@@ -223,7 +223,6 @@ const styles = StyleSheet.create({
   metricBarOuter: {
     flex: 1,
     height: 6,
-    backgroundColor: '#E5E7EB20',
     borderRadius: 3,
     marginHorizontal: spacing.sm,
     overflow: 'hidden',

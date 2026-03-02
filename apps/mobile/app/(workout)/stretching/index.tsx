@@ -104,7 +104,7 @@ export default function StretchingScreen(): React.ReactElement {
                 style={{
                   fontSize: typography.size.xs,
                   fontWeight: active ? typography.weight.bold : typography.weight.normal,
-                  color: active ? '#FFFFFF' : colors.foreground,
+                  color: active ? colors.overlayForeground : colors.foreground,
                   marginTop: spacing.xxs,
                 }}
               >
