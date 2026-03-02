@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   colorCircle: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
     marginBottom: spacing.xs,
   },
   colorName: {

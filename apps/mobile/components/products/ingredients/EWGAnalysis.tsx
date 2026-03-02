@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   ewgBadge: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.smd,

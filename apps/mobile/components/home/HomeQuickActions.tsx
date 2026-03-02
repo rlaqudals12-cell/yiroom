@@ -100,7 +100,7 @@ export function HomeQuickActions({
                     }}
                   />
                   {action.completed && (
-                    <Text style={{ fontSize: 12, color: status.success, fontWeight: typography.weight.semibold }}>
+                    <Text style={{ fontSize: typography.size.xs, color: status.success, fontWeight: typography.weight.semibold }}>
                       ✓
                     </Text>
                   )}

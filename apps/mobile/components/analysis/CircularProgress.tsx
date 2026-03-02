@@ -63,13 +63,13 @@ const SIZE_CONFIG = {
   sm: {
     size: 80,
     strokeWidth: 6,
-    fontSize: 18,
+    fontSize: typography.size.lg,
     labelSize: 10,
   },
   md: {
     size: 120,
     strokeWidth: 8,
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
     labelSize: 12,
   },
   lg: {

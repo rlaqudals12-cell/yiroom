@@ -5,7 +5,7 @@
  */
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, radii} from '../../lib/theme';
 import type { WellnessLevel } from '../../hooks/useWellnessScore';
 
 interface LevelBadgeProps {
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   levelCircle: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radii.circle,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,

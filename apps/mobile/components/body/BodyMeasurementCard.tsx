@@ -9,7 +9,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { ArrowUp, ArrowDown, Ruler } from 'lucide-react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, radii} from '../../lib/theme';
 
 export interface BodyMeasurementCardProps {
   label: string;
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     top: -3,
     width: 12,
     height: 12,
-    borderRadius: 6,
+    borderRadius: radii.sm,
     borderWidth: 2,
     marginLeft: -6,
   },

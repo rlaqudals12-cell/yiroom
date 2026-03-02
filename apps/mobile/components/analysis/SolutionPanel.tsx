@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   stepNumber: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.smx,

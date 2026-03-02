@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   compactIcon: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   compactLabel: {
     fontSize: 10,

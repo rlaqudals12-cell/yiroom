@@ -121,7 +121,7 @@ export function CrossModuleAlert({
               gap: spacing.sm,
             })}
           >
-            <Text style={{ fontSize: 18 }}>{link.emoji}</Text>
+            <Text style={{ fontSize: typography.size.lg }}>{link.emoji}</Text>
             <Text
               style={{
                 fontSize: typography.size.sm,

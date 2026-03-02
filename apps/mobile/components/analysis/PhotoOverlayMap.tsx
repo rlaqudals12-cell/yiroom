@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
-import { useTheme, statusColors } from '../../lib/theme';
+import { useTheme, statusColors, radii} from '../../lib/theme';
 
 export type OverlayZoneId = 'forehead' | 'tZone' | 'eyes' | 'cheeks' | 'uZone' | 'chin';
 
@@ -108,7 +108,7 @@ export function PhotoOverlayMap({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 1,
     overflow: 'hidden',
     aspectRatio: 3 / 4,
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   zoneOverlay: {
     position: 'absolute',
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
   },

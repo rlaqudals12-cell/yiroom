@@ -6,7 +6,7 @@
 import { FlatList, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme , spacing, typography} from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { Achievement } from '../../hooks/useWellnessScore';
 
@@ -156,6 +156,6 @@ const styles = StyleSheet.create({
     minHeight: 72,
   },
   emoji: {
-    fontSize: 24,
+    fontSize: typography.size['2xl'],
   },
 });

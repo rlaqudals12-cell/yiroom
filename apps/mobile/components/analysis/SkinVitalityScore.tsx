@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, radii} from '../../lib/theme';
 
 export interface SkinVitalityScoreProps {
   /** 0-100 */
@@ -111,7 +111,7 @@ export function SkinVitalityScore({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   levelBadge: {
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   levelText: {
     fontWeight: '600',
