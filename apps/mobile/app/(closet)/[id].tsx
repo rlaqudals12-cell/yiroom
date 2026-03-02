@@ -236,10 +236,7 @@ export default function ItemDetailScreen() {
           style={[styles.actionButton, { backgroundColor: moduleTheme.body.dark }]}
           onPress={() => {
             Haptics.selectionAsync();
-            Alert.alert(
-              '곧 추가될 예정이에요',
-              '편집 기능을 준비하고 있어요. 조금만 기다려주세요!'
-            );
+            router.push(`/(closet)/${id}/edit`);
           }}
         >
           <Edit2 size={20} color={colors.overlayForeground} />
