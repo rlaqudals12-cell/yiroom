@@ -28,6 +28,7 @@ import {
 } from '@/lib/gemini';
 import { useUser } from '@clerk/clerk-expo';
 
+import { AIBadge } from '@/components/common/AIBadge';
 import { saveHairResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -144,6 +145,7 @@ export default function HairResultScreen() {
   // --- 헤더 콘텐츠 ---
   const headerContent = (
     <View style={localStyles.headerContent}>
+      <AIBadge variant="small" />
       <Text style={[localStyles.typeName, { color: accent.base }]}>
         {TEXTURE_LABELS[result.texture]} / {THICKNESS_LABELS[result.thickness]}
       </Text>

@@ -30,6 +30,7 @@ import {
 } from '@/lib/gemini';
 import { useUser } from '@clerk/clerk-expo';
 
+import { AIBadge } from '@/components/common/AIBadge';
 import { savePersonalColorResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -233,13 +234,16 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
       confidence={usedFallback ? undefined : result.confidence}
       usedFallback={usedFallback}
       headerContent={
-        <HeaderContent
-          seasonName={season.name}
-          subType={season.subType}
-          accentColor={accent.base}
-          description={result.description || season.description}
-          textColor={colors.mutedForeground}
-        />
+        <>
+          <AIBadge variant="small" />
+          <HeaderContent
+            seasonName={season.name}
+            subType={season.subType}
+            accentColor={accent.base}
+            description={result.description || season.description}
+            textColor={colors.mutedForeground}
+          />
+        </>
       }
       summaryTab={
         <SummaryTab season={season} accent={accent} colors={colors} />

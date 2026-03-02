@@ -29,6 +29,7 @@ import {
 } from '@/lib/gemini';
 import { useUser } from '@clerk/clerk-expo';
 
+import { AIBadge } from '@/components/common/AIBadge';
 import { saveMakeupResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -167,6 +168,7 @@ export default function MakeupResultScreen() {
   // --- 헤더 콘텐츠 ---
   const headerContent = (
     <View style={localStyles.headerContent}>
+      <AIBadge variant="small" />
       <Text style={[localStyles.typeName, { color: accent.base }]}>
         {FACE_SHAPE_LABELS[result.faceShape]} / {UNDERTONE_LABELS[result.undertone]}
       </Text>

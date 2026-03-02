@@ -27,6 +27,7 @@ import {
   imageToBase64,
   type OralHealthAnalysisResult,
 } from '@/lib/gemini';
+import { AIBadge } from '@/components/common/AIBadge';
 import { captureError } from '@/lib/monitoring/sentry';
 import { TIMING, usePulseGlow } from '@/lib/animations';
 import { typography, radii , spacing } from '@/lib/theme';
@@ -128,6 +129,7 @@ export default function OralHealthResultScreen() {
   // --- 헤더 콘텐츠 ---
   const headerContent = (
     <View style={localStyles.headerContent}>
+      <AIBadge variant="small" />
       <Animated.View style={result.overallScore >= 70 ? (pulseGlowStyle as AnimatedStyle<ViewStyle>) : undefined}>
         <CircularProgress
           score={result.overallScore}

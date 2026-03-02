@@ -23,6 +23,7 @@ import {
   type PostureAnalysisResult,
 } from '@/lib/gemini';
 import { CelebrationEffect, BadgeDrop } from '@/components/ui';
+import { AIBadge } from '@/components/common/AIBadge';
 import { captureError } from '@/lib/monitoring/sentry';
 import { typography, radii , spacing } from '@/lib/theme';
 
@@ -143,6 +144,7 @@ export default function PostureResultScreen() {
             type={usedFallback ? 'questionnaire' : 'ai'}
             testID="posture-trust-badge"
           />
+          <AIBadge variant="small" />
           <Text style={styles.label}>자세 유형 분석 결과</Text>
           <Text style={[localStyles.mainResult, { color: accent.base }]}>
             {POSTURE_TYPE_LABELS[result.postureType]}
