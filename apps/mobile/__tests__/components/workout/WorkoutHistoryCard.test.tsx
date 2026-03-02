@@ -29,13 +29,11 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 }
 
 const defaultProps = {
-  id: 'hist-1',
   date: '2026-02-28',
-  workoutName: '상체 운동',
+  workoutType: '상체 운동',
   duration: 45,
   caloriesBurned: 320,
   exerciseCount: 5,
-  intensity: 'medium' as const,
 };
 
 describe('WorkoutHistoryCard', () => {
@@ -44,48 +42,48 @@ describe('WorkoutHistoryCard', () => {
     expect(getByTestId('workout-history-card')).toBeTruthy();
   });
 
-  it('운동 이름을 표시한다', () => {
-    const { getByText } = renderWithTheme(<WorkoutHistoryCard {...defaultProps} />);
-    expect(getByText('상체 운동')).toBeTruthy();
-  });
-
   it('날짜를 표시한다', () => {
     const { getByText } = renderWithTheme(<WorkoutHistoryCard {...defaultProps} />);
     expect(getByText('2026-02-28')).toBeTruthy();
   });
 
-  it('강도 뱃지를 표시한다', () => {
+  it('운동 유형 뱃지를 표시한다', () => {
     const { getByText } = renderWithTheme(<WorkoutHistoryCard {...defaultProps} />);
-    expect(getByText('중강도')).toBeTruthy();
+    expect(getByText('상체 운동')).toBeTruthy();
   });
 
-  it('저강도를 표시한다', () => {
-    const { getByText } = renderWithTheme(<WorkoutHistoryCard {...defaultProps} intensity="low" />);
-    expect(getByText('저강도')).toBeTruthy();
-  });
-
-  it('고강도를 표시한다', () => {
-    const { getByText } = renderWithTheme(<WorkoutHistoryCard {...defaultProps} intensity="high" />);
-    expect(getByText('고강도')).toBeTruthy();
-  });
-
-  it('통계를 표시한다', () => {
+  it('시간을 표시한다', () => {
     const { getByText } = renderWithTheme(<WorkoutHistoryCard {...defaultProps} />);
-    expect(getByText('⏱️ 45분')).toBeTruthy();
-    expect(getByText('🔥 320kcal')).toBeTruthy();
-    expect(getByText('💪 5개')).toBeTruthy();
+    expect(getByText('45분')).toBeTruthy();
+  });
+
+  it('칼로리를 표시한다', () => {
+    const { getByText } = renderWithTheme(<WorkoutHistoryCard {...defaultProps} />);
+    expect(getByText('320kcal')).toBeTruthy();
+  });
+
+  it('운동 수를 표시한다', () => {
+    const { getByText } = renderWithTheme(<WorkoutHistoryCard {...defaultProps} />);
+    expect(getByText('5개')).toBeTruthy();
   });
 
   it('onPress 콜백이 호출된다', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(<WorkoutHistoryCard {...defaultProps} onPress={onPress} />);
     fireEvent.press(getByTestId('workout-history-card'));
-    expect(onPress).toHaveBeenCalledWith('hist-1');
+    expect(onPress).toHaveBeenCalled();
   });
 
   it('접근성 레이블이 있다', () => {
     const { getByLabelText } = renderWithTheme(<WorkoutHistoryCard {...defaultProps} />);
-    expect(getByLabelText('2026-02-28 상체 운동, 45분, 320kcal')).toBeTruthy();
+    expect(getByLabelText('2026-02-28 상체 운동 운동, 45분, 320kcal')).toBeTruthy();
+  });
+
+  it('커스텀 testID를 사용한다', () => {
+    const { getByTestId } = renderWithTheme(
+      <WorkoutHistoryCard {...defaultProps} testID="custom-id" />,
+    );
+    expect(getByTestId('custom-id')).toBeTruthy();
   });
 
   it('다크모드에서 렌더링된다', () => {

@@ -1,198 +1,263 @@
 /**
- * WaterIntakeCard — 수분 섭취 추적 카드
+ * 수분 섭취 카드
  *
- * 하루 수분 섭취량 + 목표 대비 진행률 + 증감 버튼.
+ * 하루 수분 섭취량 추적. 원형 프로그레스, 현재/목표 ml, 물 한 잔 추가 버튼.
+ * 햅틱 피드백 포함.
  */
+
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Droplets, Plus } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../lib/theme';
 
 export interface WaterIntakeCardProps {
-  /** 현재 섭취량 (ml) */
   current: number;
-  /** 목표량 (ml) */
-  goal: number;
-  /** 1회 증가량 (기본 250ml) */
-  step?: number;
-  /** 증가 콜백 */
-  onAdd?: (amount: number) => void;
-  /** 감소 콜백 */
-  onRemove?: (amount: number) => void;
-  style?: ViewStyle;
+  target: number;
+  onAddGlass?: () => void;
+  testID?: string;
 }
+
+// 수분 섭취 테마 색상
+const WATER_COLOR = '#60A5FA';
+const WATER_LIGHT = '#DBEAFE';
 
 export function WaterIntakeCard({
   current,
-  goal,
-  step = 250,
-  onAdd,
-  onRemove,
-  style,
-}: WaterIntakeCardProps): React.JSX.Element {
+  target,
+  onAddGlass,
+  testID = 'water-intake-card',
+}: WaterIntakeCardProps): React.ReactElement {
   const { colors, spacing, typography, radii, shadows, status } = useTheme();
 
-  const pct = goal > 0 ? Math.min(Math.round((current / goal) * 100), 100) : 0;
-  const glasses = Math.floor(current / step);
-  const isComplete = current >= goal;
+  const pct = target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
+  const isComplete = current >= target;
+
+  // 원형 프로그레스 계산 (SVG 없이 단순 원형 표현)
+  const circleSize = 96;
+  const strokeWidth = 8;
+  const innerSize = circleSize - strokeWidth * 2;
+
+  const handleAddGlass = (): void => {
+    if (onAddGlass) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      onAddGlass();
+    }
+  };
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.md,
-          ...shadows.card,
-        },
-        style,
-      ]}
-      testID="water-intake-card"
-      accessibilityLabel={`수분 섭취 ${current}/${goal}ml, ${pct}% 달성`}
-    >
-      {/* 헤더 */}
-      <View style={styles.header}>
-        <Text
-          style={{
-            fontSize: typography.size.base,
-            fontWeight: typography.weight.bold,
-            color: colors.foreground,
-          }}
-        >
-          💧 수분 섭취
-        </Text>
-        <Text
-          style={{
-            fontSize: typography.size.sm,
-            color: isComplete ? status.success : colors.mutedForeground,
-            fontWeight: typography.weight.semibold,
-          }}
-        >
-          {isComplete ? '달성!' : `${pct}%`}
-        </Text>
-      </View>
-
-      {/* 물잔 표시 */}
-      <View style={[styles.glassRow, { marginTop: spacing.sm }]}>
-        {Array.from({ length: Math.ceil(goal / step) }, (_, i) => (
-          <View
-            key={i}
-            style={[
-              styles.glass,
-              {
-                backgroundColor: i < glasses ? '#60A5FA' : colors.muted,
-                borderRadius: radii.sm,
-              },
-            ]}
-          />
-        ))}
-      </View>
-
-      {/* 수치 */}
-      <View style={[styles.valueRow, { marginTop: spacing.sm }]}>
-        <Text
-          style={{
-            fontSize: typography.size['2xl'],
-            fontWeight: typography.weight.bold,
-            color: colors.foreground,
-          }}
-        >
-          {current}
-        </Text>
-        <Text
-          style={{
-            fontSize: typography.size.sm,
-            color: colors.mutedForeground,
-            marginLeft: spacing.xs,
-          }}
-        >
-          / {goal}ml
-        </Text>
-      </View>
-
-      {/* 버튼 */}
-      <View style={[styles.btnRow, { marginTop: spacing.sm }]}>
-        {onRemove && (
-          <Pressable
-            style={[
-              styles.btn,
-              {
-                backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
-              },
-            ]}
-            onPress={() => onRemove(step)}
-            accessibilityLabel={`${step}ml 감소`}
-            accessibilityRole="button"
-          >
+    <Animated.View entering={FadeInDown.duration(400)} testID={testID}>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: colors.card,
+            borderRadius: radii.xl,
+            padding: spacing.md,
+            ...shadows.card,
+          },
+        ]}
+        accessibilityLabel={`수분 섭취 ${current}ml / ${target}ml, ${pct}% 달성`}
+      >
+        {/* 헤더 */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Droplets size={18} color={WATER_COLOR} />
             <Text
               style={{
-                fontSize: typography.size.sm,
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.bold,
+                color: colors.foreground,
+                marginLeft: spacing.sm,
+              }}
+            >
+              수분 섭취
+            </Text>
+          </View>
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.semibold,
+              color: isComplete ? status.success : colors.mutedForeground,
+            }}
+          >
+            {isComplete ? '목표 달성!' : `${pct}%`}
+          </Text>
+        </View>
+
+        {/* 원형 프로그레스 + 수치 */}
+        <View style={[styles.progressArea, { marginTop: spacing.md }]}>
+          {/* 원형 배경 */}
+          <View
+            style={[
+              styles.circleOuter,
+              {
+                width: circleSize,
+                height: circleSize,
+                borderRadius: circleSize / 2,
+                borderWidth: strokeWidth,
+                borderColor: WATER_LIGHT,
+              },
+            ]}
+          >
+            {/* 내부 원: 채워진 정도를 배경색 높이로 표현 */}
+            <View
+              style={[
+                styles.circleInner,
+                {
+                  width: innerSize,
+                  height: innerSize,
+                  borderRadius: innerSize / 2,
+                  overflow: 'hidden',
+                },
+              ]}
+            >
+              {/* 채워진 부분 (아래에서 위로) */}
+              <View style={styles.fillContainer}>
+                <View
+                  style={[
+                    styles.fillBar,
+                    {
+                      height: `${pct}%` as unknown as number,
+                      backgroundColor: `${WATER_COLOR}30`,
+                    },
+                  ]}
+                />
+              </View>
+              {/* 중앙 텍스트 */}
+              <View style={styles.centerText}>
+                <Droplets size={20} color={WATER_COLOR} />
+                <Text
+                  style={{
+                    fontSize: typography.size.lg,
+                    fontWeight: typography.weight.bold,
+                    color: colors.foreground,
+                    marginTop: 2,
+                  }}
+                >
+                  {pct}%
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* 수치 */}
+          <View style={[styles.valueArea, { marginLeft: spacing.md }]}>
+            <Text
+              style={{
+                fontSize: typography.size['2xl'],
                 fontWeight: typography.weight.bold,
                 color: colors.foreground,
               }}
             >
-              -{step}ml
+              {current}
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.normal,
+                  color: colors.mutedForeground,
+                }}
+              >
+                ml
+              </Text>
             </Text>
-          </Pressable>
-        )}
-        {onAdd && (
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                color: colors.mutedForeground,
+                marginTop: spacing.xs,
+              }}
+            >
+              목표 {target}ml
+            </Text>
+            <Text
+              style={{
+                fontSize: typography.size.xs,
+                color: colors.mutedForeground,
+                marginTop: spacing.xs,
+              }}
+            >
+              {target - current > 0 ? `${target - current}ml 남음` : '목표 달성'}
+            </Text>
+          </View>
+        </View>
+
+        {/* 물 한 잔 추가 버튼 */}
+        {onAddGlass && (
           <Pressable
+            onPress={handleAddGlass}
             style={[
-              styles.btn,
+              styles.addButton,
               {
-                backgroundColor: '#60A5FA',
+                backgroundColor: WATER_COLOR,
                 borderRadius: radii.lg,
+                marginTop: spacing.md,
+                paddingVertical: spacing.smd,
               },
             ]}
-            onPress={() => onAdd(step)}
-            accessibilityLabel={`${step}ml 추가`}
+            accessibilityLabel="물 한 잔 (250ml) 추가"
             accessibilityRole="button"
           >
+            <Plus size={16} color={colors.overlayForeground} />
             <Text
               style={{
                 fontSize: typography.size.sm,
                 fontWeight: typography.weight.bold,
                 color: colors.overlayForeground,
+                marginLeft: spacing.xs,
               }}
             >
-              +{step}ml
+              물 한 잔 추가 (250ml)
             </Text>
           </Pressable>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {},
+  container: {},
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  glassRow: {
+  headerLeft: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-  },
-  glass: {
-    width: 20,
-    height: 28,
-  },
-  valueRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  btnRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  btn: {
-    flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
+  },
+  progressArea: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  circleOuter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  circleInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fillContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'flex-end',
+  },
+  fillBar: {
+    width: '100%',
+  },
+  centerText: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  valueArea: {
+    flex: 1,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

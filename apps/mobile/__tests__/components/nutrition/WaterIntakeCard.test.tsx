@@ -31,76 +31,81 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 describe('WaterIntakeCard', () => {
   it('렌더링된다', () => {
     const { getByTestId } = renderWithTheme(
-      <WaterIntakeCard current={1000} goal={2000} />,
+      <WaterIntakeCard current={1000} target={2000} />,
     );
     expect(getByTestId('water-intake-card')).toBeTruthy();
   });
 
   it('제목을 표시한다', () => {
     const { getByText } = renderWithTheme(
-      <WaterIntakeCard current={1000} goal={2000} />,
+      <WaterIntakeCard current={1000} target={2000} />,
     );
-    expect(getByText('💧 수분 섭취')).toBeTruthy();
+    expect(getByText('수분 섭취')).toBeTruthy();
+  });
+
+  it('퍼센트를 표시한다', () => {
+    const { getAllByText } = renderWithTheme(
+      <WaterIntakeCard current={1000} target={2000} />,
+    );
+    // 헤더와 원형 프로그레스 양쪽에 퍼센트가 표시됨
+    expect(getAllByText('50%').length).toBeGreaterThanOrEqual(1);
   });
 
   it('현재 섭취량을 표시한다', () => {
     const { getByText } = renderWithTheme(
-      <WaterIntakeCard current={1000} goal={2000} />,
+      <WaterIntakeCard current={1500} target={2000} />,
     );
-    expect(getByText('1000')).toBeTruthy();
-    expect(getByText('/ 2000ml')).toBeTruthy();
+    expect(getByText('목표 2000ml')).toBeTruthy();
   });
 
-  it('퍼센트를 표시한다', () => {
+  it('남은 양을 표시한다', () => {
     const { getByText } = renderWithTheme(
-      <WaterIntakeCard current={1000} goal={2000} />,
+      <WaterIntakeCard current={1500} target={2000} />,
     );
-    expect(getByText('50%')).toBeTruthy();
+    expect(getByText('500ml 남음')).toBeTruthy();
   });
 
   it('목표 달성 시 달성 표시한다', () => {
     const { getByText } = renderWithTheme(
-      <WaterIntakeCard current={2000} goal={2000} />,
+      <WaterIntakeCard current={2000} target={2000} />,
     );
-    expect(getByText('달성!')).toBeTruthy();
+    expect(getByText('목표 달성!')).toBeTruthy();
+    expect(getByText('목표 달성')).toBeTruthy();
   });
 
-  it('추가 버튼이 동작한다', () => {
-    const onAdd = jest.fn();
+  it('물 한 잔 추가 버튼이 동작한다', () => {
+    const onAddGlass = jest.fn();
     const { getByLabelText } = renderWithTheme(
-      <WaterIntakeCard current={1000} goal={2000} onAdd={onAdd} />,
+      <WaterIntakeCard current={1000} target={2000} onAddGlass={onAddGlass} />,
     );
-    fireEvent.press(getByLabelText('250ml 추가'));
-    expect(onAdd).toHaveBeenCalledWith(250);
+    fireEvent.press(getByLabelText('물 한 잔 (250ml) 추가'));
+    expect(onAddGlass).toHaveBeenCalled();
   });
 
-  it('감소 버튼이 동작한다', () => {
-    const onRemove = jest.fn();
-    const { getByLabelText } = renderWithTheme(
-      <WaterIntakeCard current={1000} goal={2000} onRemove={onRemove} />,
+  it('onAddGlass가 없으면 버튼이 표시되지 않는다', () => {
+    const { queryByLabelText } = renderWithTheme(
+      <WaterIntakeCard current={1000} target={2000} />,
     );
-    fireEvent.press(getByLabelText('250ml 감소'));
-    expect(onRemove).toHaveBeenCalledWith(250);
-  });
-
-  it('커스텀 스텝을 사용한다', () => {
-    const onAdd = jest.fn();
-    const { getByText } = renderWithTheme(
-      <WaterIntakeCard current={1000} goal={2000} step={500} onAdd={onAdd} />,
-    );
-    expect(getByText('+500ml')).toBeTruthy();
+    expect(queryByLabelText('물 한 잔 (250ml) 추가')).toBeNull();
   });
 
   it('접근성 레이블이 있다', () => {
     const { getByLabelText } = renderWithTheme(
-      <WaterIntakeCard current={1000} goal={2000} />,
+      <WaterIntakeCard current={1000} target={2000} />,
     );
-    expect(getByLabelText('수분 섭취 1000/2000ml, 50% 달성')).toBeTruthy();
+    expect(getByLabelText('수분 섭취 1000ml / 2000ml, 50% 달성')).toBeTruthy();
+  });
+
+  it('커스텀 testID를 사용한다', () => {
+    const { getByTestId } = renderWithTheme(
+      <WaterIntakeCard current={500} target={2000} testID="custom-water" />,
+    );
+    expect(getByTestId('custom-water')).toBeTruthy();
   });
 
   it('다크모드에서 렌더링된다', () => {
     const { getByTestId } = renderWithTheme(
-      <WaterIntakeCard current={1000} goal={2000} />, true,
+      <WaterIntakeCard current={1000} target={2000} />, true,
     );
     expect(getByTestId('water-intake-card')).toBeTruthy();
   });

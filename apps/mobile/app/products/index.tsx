@@ -16,9 +16,11 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useTheme, typography, spacing } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
+import { staggeredEntry } from '../../lib/animations';
 
 import {
   getAffiliateProducts,
@@ -321,7 +323,8 @@ export default function ProductsScreen() {
               tintColor={colors.foreground}
             />
           }
-          renderItem={({ item: product }) => (
+          renderItem={({ item: product, index }) => (
+            <Animated.View entering={staggeredEntry(index)} style={{ flex: 1, maxWidth: '50%' }}>
             <Pressable
               style={styles.productCard}
               onPress={() => handleProductPress(product.id)}
@@ -373,6 +376,7 @@ export default function ProductsScreen() {
                 </Text>
               </View>
             </Pressable>
+            </Animated.View>
           )}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -447,7 +451,6 @@ const styles = StyleSheet.create({
   productCard: {
     flex: 1,
     padding: spacing.xs,
-    maxWidth: '50%',
   },
   productImageContainer: {
     position: 'relative',

@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { useTheme, typography, spacing } from '../../lib/theme';
 import type { ThemeMode } from '../../lib/theme';
@@ -78,7 +79,7 @@ export default function SettingsScreen() {
       edges={['bottom']}
     >
         {/* 테마 */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.delay(0).duration(300)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>테마</Text>
           <View style={[styles.themeSelector, { backgroundColor: colors.card, borderRadius: radii.smx }]}>
             {THEME_OPTIONS.map((option) => {
@@ -118,10 +119,10 @@ export default function SettingsScreen() {
               );
             })}
           </View>
-        </View>
+        </Animated.View>
 
         {/* 알림 및 목표 */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.delay(80).duration(300)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>알림 및 목표</Text>
           <SettingsItem
             icon="🔔"
@@ -137,10 +138,10 @@ export default function SettingsScreen() {
             colors={colors}
             onPress={() => handlePress('/settings/goals')}
           />
-        </View>
+        </Animated.View>
 
         {/* 위젯 */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.delay(160).duration(300)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>위젯</Text>
           <SettingsItem
             icon="📱"
@@ -149,10 +150,10 @@ export default function SettingsScreen() {
             colors={colors}
             onPress={() => handlePress('/settings/widgets')}
           />
-        </View>
+        </Animated.View>
 
         {/* 앱 정보 — 네이티브 페이지로 이동 */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.delay(240).duration(300)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>앱 정보</Text>
           <SettingsItem
             icon="📖"
@@ -178,10 +179,10 @@ export default function SettingsScreen() {
             colors={colors}
             onPress={() => handleLink('mailto:support@yiroom.app')}
           />
-        </View>
+        </Animated.View>
 
         {/* 계정 관리 */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.delay(320).duration(300)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>계정</Text>
           <SettingsItem
             icon="👤"
@@ -190,7 +191,7 @@ export default function SettingsScreen() {
             colors={colors}
             onPress={handleOpenAccountSheet}
           />
-        </View>
+        </Animated.View>
 
         {/* 계정 바텀 시트 */}
         <BottomSheet
@@ -221,12 +222,12 @@ export default function SettingsScreen() {
         </BottomSheet>
 
         {/* 버전 정보 */}
-        <View style={styles.versionSection}>
+        <Animated.View entering={FadeInDown.delay(400).duration(300)} style={styles.versionSection}>
           <Text style={[styles.versionLabel, { color: colors.foreground }]}>이룸</Text>
           <Text style={[styles.versionText, { color: colors.mutedForeground }]}>
             버전 {appVersion}
           </Text>
-        </View>
+        </Animated.View>
     </ScreenContainer>
   );
 }

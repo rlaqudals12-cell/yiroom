@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { useTheme, typography , spacing } from '@/lib/theme';
 
@@ -97,10 +98,10 @@ export default function SkinCameraScreen() {
     <View testID="analysis-skin-camera-screen" style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing={facing} mirror={facing === 'front'}>
         {/* 가이드 오버레이 */}
-        <View style={styles.overlay}>
+        <Animated.View entering={FadeIn.duration(400)} style={styles.overlay}>
           <View style={styles.guideOval} />
           <Text style={[styles.guideText, { color: colors.overlayForeground }]}>얼굴 전체가 보이도록{'\n'}정면을 바라봐 주세요</Text>
-        </View>
+        </Animated.View>
 
         {/* 하단 컨트롤 */}
         <View style={styles.controls}>

@@ -14,8 +14,10 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useTheme, typography, spacing } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
+import { staggeredEntry } from '../../../lib/animations';
 
 import { getTierColor, type Friend } from '../../../lib/social';
 import { useFriends, useFriendStats } from '../../../lib/social/useFriends';
@@ -37,33 +39,35 @@ export default function FriendsScreen() {
     router.push('/(social)/friends/requests');
   };
 
-  const renderFriend = ({ item }: { item: Friend }) => (
-    <Pressable
-      style={[styles.friendCard, { backgroundColor: colors.card }]}
-      onPress={() => Haptics.selectionAsync()}
-    >
-      <View style={styles.avatarContainer}>
-        {item.avatarUrl ? (
-          <Image source={{ uri: item.avatarUrl }} style={styles.avatar} transition={200} />
-        ) : (
-          <View style={[styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
-            <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
-              {item.displayName.charAt(0)}
-            </Text>
-          </View>
-        )}
-        <View
-          style={[
-            styles.tierBadge,
-            { backgroundColor: getTierColor(item.tier), borderColor: colors.card },
-          ]}
-        />
-      </View>
-      <View style={styles.friendInfo}>
-        <Text style={[styles.friendName, { color: colors.foreground }]}>{item.displayName}</Text>
-        <Text style={[styles.friendLevel, { color: colors.mutedForeground }]}>Lv.{item.level}</Text>
-      </View>
-    </Pressable>
+  const renderFriend = ({ item, index }: { item: Friend; index: number }) => (
+    <Animated.View entering={staggeredEntry(index)}>
+      <Pressable
+        style={[styles.friendCard, { backgroundColor: colors.card }]}
+        onPress={() => Haptics.selectionAsync()}
+      >
+        <View style={styles.avatarContainer}>
+          {item.avatarUrl ? (
+            <Image source={{ uri: item.avatarUrl }} style={styles.avatar} transition={200} />
+          ) : (
+            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
+                {item.displayName.charAt(0)}
+              </Text>
+            </View>
+          )}
+          <View
+            style={[
+              styles.tierBadge,
+              { backgroundColor: getTierColor(item.tier), borderColor: colors.card },
+            ]}
+          />
+        </View>
+        <View style={styles.friendInfo}>
+          <Text style={[styles.friendName, { color: colors.foreground }]}>{item.displayName}</Text>
+          <Text style={[styles.friendLevel, { color: colors.mutedForeground }]}>Lv.{item.level}</Text>
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 
   if (isLoading) {

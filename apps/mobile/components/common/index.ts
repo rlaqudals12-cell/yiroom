@@ -61,3 +61,11 @@ export type { RegionOption, RegionSelectorProps } from './RegionSelector';
 // 도메인별 스켈레톤
 export { NamedSkeleton } from './NamedSkeleton';
 export type { SkeletonVariant, NamedSkeletonProps } from './NamedSkeleton';
+
+// 앱 투어
+export { AppTour } from './AppTour';
+export type { AppTourProps, TourStep } from './AppTour';
+
+// 도움말 툴팁
+export { InfoTooltip } from './InfoTooltip';
+export type { InfoTooltipProps } from './InfoTooltip';

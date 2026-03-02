@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { useTheme, typography , spacing } from '@/lib/theme';
 
@@ -81,10 +82,10 @@ export default function HairCameraScreen() {
   return (
     <View testID="analysis-hair-camera-screen" style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
-        <View style={styles.overlay}>
+        <Animated.View entering={FadeIn.duration(400)} style={styles.overlay}>
           <View style={styles.guideRect} />
           <Text style={[styles.guideText, { color: colors.overlayForeground }]}>헤어가 잘 보이도록{'\n'}촬영해 주세요</Text>
-        </View>
+        </Animated.View>
         <View style={styles.controls}>
           <Pressable style={styles.sideButton} onPress={pickFromGallery}>
             <Text style={[styles.iconText, { color: colors.overlayForeground }]}>갤러리</Text>
