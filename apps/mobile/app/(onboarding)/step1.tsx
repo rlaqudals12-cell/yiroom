@@ -16,7 +16,7 @@ import {
   Moon,
   Check,
 } from 'lucide-react-native';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { Platform, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { ProgressIndicator, ScreenContainer } from '../../components/ui';
 import { TIMING, staggeredEntry } from '../../lib/animations';
@@ -70,10 +70,28 @@ export default function OnboardingStep1() {
           <View
             style={[
               styles.heroHeader,
-              { backgroundColor: isDark ? STEP1_HERO_BG_DARK : STEP1_HERO_BG_LIGHT, borderRadius: radii.xl + 8 },
+              {
+                backgroundColor: isDark ? STEP1_HERO_BG_DARK : STEP1_HERO_BG_LIGHT,
+                borderRadius: radii.xl + 8,
+                borderWidth: 1,
+                borderColor: isDark ? `${STEP1_ACCENT}20` : `${STEP1_ACCENT}15`,
+                ...(isDark ? {} : Platform.select({
+                  ios: { shadowColor: STEP1_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12 },
+                  android: { elevation: 2 },
+                }) ?? {}),
+              },
             ]}
           >
-            <View style={[styles.heroIconWrap, { backgroundColor: STEP1_ACCENT }]}>
+            <View style={[
+              styles.heroIconWrap,
+              {
+                backgroundColor: STEP1_ACCENT,
+                ...(Platform.select({
+                  ios: { shadowColor: STEP1_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
+                  android: { elevation: 6 },
+                }) ?? {}),
+              },
+            ]}>
               <Target size={36} color={colors.overlayForeground} strokeWidth={2} />
             </View>
             <Text style={[styles.heroTitle, { color: colors.foreground }]}>
@@ -87,7 +105,7 @@ export default function OnboardingStep1() {
         </Animated.View>
 
         {/* 목표 선택 카드 */}
-        <View style={{ gap: spacing.sm + 4, marginTop: spacing.lg }}>
+        <View style={{ gap: spacing.md, marginTop: spacing.lg }}>
           {GOALS.map((goal, index) => {
             const isSelected = data.goals.includes(goal);
             const IconComponent = GOAL_ICON_MAP[goal];
@@ -100,15 +118,15 @@ export default function OnboardingStep1() {
                     styles.goalCard,
                     {
                       backgroundColor: isSelected
-                        ? `${goalColor.gradient[0]}10`
+                        ? `${goalColor.gradient[0]}18`
                         : colors.card,
                       borderRadius: radii.xl,
                       borderColor: isSelected ? goalColor.gradient[0] : colors.border,
-                      borderWidth: 2,
+                      borderWidth: isSelected ? 2 : 1,
                       padding: spacing.md,
                       opacity: pressed ? 0.85 : 1,
                       transform: [{ scale: pressed ? 0.98 : 1 }],
-                      ...shadows.card,
+                      ...(isSelected ? shadows.md : shadows.card),
                     },
                   ]}
                   onPress={() => handleToggle(goal)}
@@ -191,6 +209,9 @@ export default function OnboardingStep1() {
                 borderRadius: radii.xl,
                 padding: spacing.md,
                 marginTop: spacing.md,
+                borderWidth: 1,
+                borderColor: `${brand.primary}25`,
+                ...shadows.sm,
               }}
             >
               <Text
@@ -314,12 +335,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconBox: {
-    width: 56,
-    height: 56,
-    borderRadius: radii.xl,
+    width: 60,
+    height: 60,
+    borderRadius: radii.xl + 2,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 14,
+    marginRight: spacing.md,
   },
   goalTextWrap: {
     flex: 1,

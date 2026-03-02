@@ -20,7 +20,7 @@ import {
   Flame,
   Zap,
 } from 'lucide-react-native';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
+import { Platform, View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { GlassCard, ProgressIndicator, Button, ScreenContainer } from '../../components/ui';
 import { TIMING } from '../../lib/animations';
@@ -126,10 +126,28 @@ export default function OnboardingStep2() {
           <View
             style={[
               styles.heroHeader,
-              { backgroundColor: isDark ? STEP2_HERO_BG_DARK : STEP2_HERO_BG_LIGHT, borderRadius: radii.xl + 8 },
+              {
+                backgroundColor: isDark ? STEP2_HERO_BG_DARK : STEP2_HERO_BG_LIGHT,
+                borderRadius: radii.xl + 8,
+                borderWidth: 1,
+                borderColor: isDark ? `${STEP2_ACCENT}20` : `${STEP2_ACCENT}15`,
+                ...(isDark ? {} : Platform.select({
+                  ios: { shadowColor: STEP2_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12 },
+                  android: { elevation: 2 },
+                }) ?? {}),
+              },
             ]}
           >
-            <View style={[styles.heroIconWrap, { backgroundColor: STEP2_ACCENT }]}>
+            <View style={[
+              styles.heroIconWrap,
+              {
+                backgroundColor: STEP2_ACCENT,
+                ...(Platform.select({
+                  ios: { shadowColor: STEP2_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
+                  android: { elevation: 6 },
+                }) ?? {}),
+              },
+            ]}>
               <ClipboardList size={36} color={colors.overlayForeground} strokeWidth={2} />
             </View>
             <Text style={[styles.heroTitle, { color: colors.foreground }]}>
@@ -166,13 +184,13 @@ export default function OnboardingStep2() {
                     style={({ pressed }) => [
                       styles.optionButton,
                       {
-                        backgroundColor: isSelected ? `${brand.primary}14` : colors.card,
+                        backgroundColor: isSelected ? `${brand.primary}18` : colors.card,
                         borderRadius: radii.xl,
                         borderColor: isSelected ? brand.primary : colors.border,
-                        borderWidth: 2,
+                        borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...shadows.card,
+                        ...(isSelected ? shadows.md : shadows.card),
                       },
                     ]}
                     onPress={() => handleGenderSelect(gender)}
@@ -315,13 +333,13 @@ export default function OnboardingStep2() {
                     style={({ pressed }) => [
                       styles.activityButton,
                       {
-                        backgroundColor: isSelected ? `${brand.primary}14` : colors.card,
+                        backgroundColor: isSelected ? `${brand.primary}18` : colors.card,
                         borderRadius: radii.xl,
                         borderColor: isSelected ? brand.primary : colors.border,
-                        borderWidth: 2,
+                        borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...shadows.card,
+                        ...(isSelected ? shadows.md : shadows.card),
                       },
                     ]}
                     onPress={() => handleActivitySelect(level)}
@@ -374,6 +392,9 @@ export default function OnboardingStep2() {
                 borderRadius: radii.xl,
                 padding: spacing.md,
                 marginBottom: spacing.md,
+                borderWidth: 1,
+                borderColor: `${STEP2_ACCENT}20`,
+                ...shadows.sm,
               }}
             >
               <Text
@@ -599,7 +620,7 @@ const styles = StyleSheet.create({
   activityButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
+    padding: spacing.md,
   },
   activityIconBox: {
     width: 36,
