@@ -45,6 +45,18 @@ export default function SettingsLayout() {
           title: '위젯 설정',
         }}
       />
+      <Stack.Screen
+        name="privacy"
+        options={{
+          title: '개인정보 설정',
+        }}
+      />
+      <Stack.Screen
+        name="my-info"
+        options={{
+          title: '내 정보 수정',
+        }}
+      />
     </Stack>
   );
 }
