@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 
 export interface ActivityItem {
   id: string;
@@ -107,7 +107,7 @@ export function ActivityFeed({
 
 const styles = StyleSheet.create({
   empty: {
-    paddingVertical: 32,
+    paddingVertical: spacing.xl,
   },
   item: {},
   row: {

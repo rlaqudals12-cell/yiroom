@@ -160,7 +160,7 @@ export function MakeupResultCard({
             ) : (
               colorCategories.map((cat) => (
                 <View key={cat.id} style={[styles.colorCategory, { marginBottom: spacing.md }]}>
-                  <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+                  <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
                     {cat.category}
                   </Text>
                   <View style={styles.swatchRow}>
@@ -198,7 +198,7 @@ export function MakeupResultCard({
                       {s.suitability}%
                     </Text>
                   </View>
-                  <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: 2 }}>
+                  <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: spacing.xxs }}>
                     {s.description}
                   </Text>
                 </View>

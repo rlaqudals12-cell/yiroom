@@ -75,7 +75,7 @@ function StatBox({
         style={{
           fontSize: typography.size.xs,
           color: colors.mutedForeground,
-          marginTop: 2,
+          marginTop: spacing.xxs,
         }}
       >
         {label}

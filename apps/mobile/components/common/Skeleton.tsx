@@ -126,7 +126,7 @@ export function SkeletonCard({ style }: { style?: ViewStyle }) {
           <Skeleton height={12} width={80} style={{ marginTop: 6 }} />
         </View>
       </View>
-      <SkeletonText lines={3} style={{ marginTop: 12 }} />
+      <SkeletonText lines={3} style={{ marginTop: spacing.smx }} />
     </View>
   );
 }
@@ -156,9 +156,9 @@ export function SkeletonWorkoutCard({ style }: { style?: ViewStyle }) {
 
   return (
     <View style={[styles.workoutCard, { backgroundColor: colors.card }, style]}>
-      <Skeleton height={120} borderRadius={12} style={{ marginBottom: 12 }} />
+      <Skeleton height={120} borderRadius={12} style={{ marginBottom: spacing.smx }} />
       <Skeleton height={18} width="80%" />
-      <Skeleton height={14} width="60%" style={{ marginTop: 8 }} />
+      <Skeleton height={14} width="60%" style={{ marginTop: spacing.sm }} />
       <View style={styles.workoutStats}>
         <Skeleton height={12} width={60} />
         <Skeleton height={12} width={60} />
@@ -180,7 +180,7 @@ export function SkeletonNutritionSummary({ style }: { style?: ViewStyle }) {
         <Skeleton height={16} width={100} />
         <Skeleton height={24} width={60} />
       </View>
-      <Skeleton height={8} borderRadius={4} style={{ marginTop: 12 }} />
+      <Skeleton height={8} borderRadius={4} style={{ marginTop: spacing.smx }} />
       <View style={styles.nutritionStats}>
         <View style={styles.nutritionStat}>
           <Skeleton circle height={40} />
@@ -209,8 +209,8 @@ export function SkeletonProductCard({ style }: { style?: ViewStyle }) {
     <View style={[styles.productCard, { backgroundColor: colors.card }, style]}>
       <Skeleton height={160} borderRadius={12} />
       <View style={styles.productContent}>
-        <Skeleton height={12} width={60} style={{ marginTop: 12 }} />
-        <Skeleton height={16} width="90%" style={{ marginTop: 8 }} />
+        <Skeleton height={12} width={60} style={{ marginTop: spacing.smx }} />
+        <Skeleton height={16} width="90%" style={{ marginTop: spacing.sm }} />
         <View style={styles.productPrice}>
           <Skeleton height={18} width={80} />
           <Skeleton height={14} width={40} />

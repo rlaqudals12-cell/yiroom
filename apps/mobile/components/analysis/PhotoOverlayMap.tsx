@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
-import { useTheme, statusColors, radii} from '../../lib/theme';
+import { useTheme, statusColors, radii, spacing} from '../../lib/theme';
 
 export type OverlayZoneId = 'forehead' | 'tZone' | 'eyes' | 'cheeks' | 'uZone' | 'chin';
 
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   },
   labelBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     borderRadius: 4,
   },
   labelText: {

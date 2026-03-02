@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   retryButton: {
-    marginTop: 20,
+    marginTop: spacing.mlg,
   },
   retryText: {
     textAlign: 'center',

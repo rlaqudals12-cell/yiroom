@@ -6,7 +6,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 
 export interface DayEntry {
   date: number;
@@ -183,6 +183,6 @@ const styles = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
 });

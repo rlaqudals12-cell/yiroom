@@ -110,7 +110,7 @@ export function HomeQuickActions({
                     fontSize: typography.size.sm,
                     fontWeight: typography.weight.semibold,
                     color: colors.foreground,
-                    marginBottom: 2,
+                    marginBottom: spacing.xxs,
                   }}
                 >
                   {action.title}

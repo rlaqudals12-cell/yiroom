@@ -118,7 +118,7 @@ export function PostureResultCard({
       {/* 전면 측정 */}
       {frontMeasurements.length > 0 && (
         <View style={[styles.section, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
             전면 분석
           </Text>
           <View style={styles.measurementGrid}>
@@ -143,7 +143,7 @@ export function PostureResultCard({
       {/* 측면 측정 */}
       {sideMeasurements.length > 0 && (
         <View style={[styles.section, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
             측면 분석
           </Text>
           <View style={styles.measurementGrid}>

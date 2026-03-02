@@ -121,7 +121,7 @@ export const FoodCard = memo(function FoodCard({
               style={{
                 fontSize: typography.size.xs,
                 color: colors.mutedForeground,
-                marginTop: 2,
+                marginTop: spacing.xxs,
               }}
             >
               {category}

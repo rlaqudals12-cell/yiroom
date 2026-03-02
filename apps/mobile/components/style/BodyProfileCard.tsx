@@ -127,7 +127,7 @@ export function BodyProfileCard({
             style={{
               fontSize: typography.size.sm,
               color: colors.mutedForeground,
-              marginTop: 2,
+              marginTop: spacing.xxs,
             }}
           >
             BMI {bmi.toFixed(1)} ({bmiLabel})

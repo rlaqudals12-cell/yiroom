@@ -149,7 +149,7 @@ export function AnalysisTimeline({
                   </View>
                   <Text
                     style={{
-                      marginTop: 2,
+                      marginTop: spacing.xxs,
                       fontSize: typography.size.xs,
                       color: colors.mutedForeground,
                     }}
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   line: {
     width: 2,
     flex: 1,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   timelineContent: {
     flex: 1,
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyState: {
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     alignItems: 'center',
   },
 });

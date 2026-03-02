@@ -6,7 +6,7 @@
  */
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 
 interface ChangeIndicatorProps {
   /** 현재 값 */
@@ -77,7 +77,7 @@ export function ChangeIndicator({
           color: textColor,
           fontSize,
           fontWeight: typography.weight.medium,
-          marginLeft: 2,
+          marginLeft: spacing.xxs,
         }}
       >
         {diffText}

@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   label: {
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   trendContainer: {
     flexDirection: 'row',

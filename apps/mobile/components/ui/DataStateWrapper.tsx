@@ -55,7 +55,7 @@ function DefaultLoading({ count }: { count: number }): React.JSX.Element {
         <View key={i} style={styles.skeletonItem}>
           <SkeletonLoader width="40%" height={14} borderRadius={4} />
           <SkeletonText style={{ marginTop: spacing.sm, width: '70%' } as never} />
-          <SkeletonCard style={{ marginTop: 12 } as never} />
+          <SkeletonCard style={{ marginTop: spacing.smx } as never} />
         </View>
       ))}
     </View>

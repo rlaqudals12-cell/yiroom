@@ -104,7 +104,7 @@ export function ProductMiniCard({
               fontSize: typography.size.sm,
               fontWeight: typography.weight.semibold,
               color: colors.foreground,
-              marginTop: 2,
+              marginTop: spacing.xxs,
             }}
             numberOfLines={2}
           >
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   matchBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: spacing.xxs,
     borderRadius: 4,
   },
   ratingRow: {

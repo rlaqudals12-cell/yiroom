@@ -95,7 +95,7 @@ export function CrossModuleInsight({
               <Text
                 numberOfLines={2}
                 style={{
-                  marginTop: 2,
+                  marginTop: spacing.xxs,
                   fontSize: typography.size.xs,
                   color: colors.mutedForeground,
                 }}

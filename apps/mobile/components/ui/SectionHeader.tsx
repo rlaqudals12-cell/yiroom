@@ -7,7 +7,7 @@
  */
 import { Pressable, StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 import { GradientText, type GradientTextVariant } from './GradientText';
 
 interface SectionHeaderProps {
@@ -66,7 +66,7 @@ export function SectionHeader({
             style={{
               color: colors.mutedForeground,
               fontSize: typography.size.sm,
-              marginTop: 2,
+              marginTop: spacing.xxs,
             }}
           >
             {subtitle}

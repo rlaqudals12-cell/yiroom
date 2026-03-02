@@ -85,7 +85,7 @@ export function CollapsibleSection({
         </View>
         <View style={styles.headerRight}>
           {trailingIcon}
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginLeft: 4 }}>
+          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginLeft: spacing.xs }}>
             {isOpen ? '▲' : '▼'}
           </Text>
         </View>

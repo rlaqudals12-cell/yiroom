@@ -109,7 +109,7 @@ export function SkinProfileCard({
             style={{
               fontSize: typography.size.sm,
               color: colors.mutedForeground,
-              marginTop: 2,
+              marginTop: spacing.xxs,
             }}
           >
             전체 점수 {overallScore}점
@@ -124,7 +124,7 @@ export function SkinProfileCard({
             <Badge
               key={concern}
               variant="outline"
-              style={{ marginRight: 6, marginBottom: 4 }}
+              style={{ marginRight: 6, marginBottom: spacing.xs }}
             >
               {concern}
             </Badge>
@@ -132,7 +132,7 @@ export function SkinProfileCard({
           {concerns.length > 4 && (
             <Badge
               variant="outline"
-              style={{ marginBottom: 4 }}
+              style={{ marginBottom: spacing.xs }}
             >
               {`+${concerns.length - 4}`}
             </Badge>

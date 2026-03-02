@@ -9,7 +9,7 @@ import { Wand2 } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { OutfitSuggestion, ClosetRecommendation } from '../../lib/inventory';
 
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   emptyState: {
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     alignItems: 'center',
   },
 });

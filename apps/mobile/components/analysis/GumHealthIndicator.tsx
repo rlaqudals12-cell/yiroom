@@ -104,7 +104,7 @@ export function GumHealthIndicator({
       {/* 영향 부위 */}
       {!compact && result.affectedAreas && result.affectedAreas.length > 0 && (
         <View style={[styles.areasSection, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
             영향 부위
           </Text>
           <View style={styles.areasList}>
@@ -127,11 +127,11 @@ export function GumHealthIndicator({
       {/* 추천사항 */}
       {!compact && result.recommendations && result.recommendations.length > 0 && (
         <View style={[styles.recsSection, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
             추천사항
           </Text>
           {result.recommendations.slice(0, 4).map((rec, index) => (
-            <Text key={index} style={{ color: colors.mutedForeground, fontSize: typography.size.xs, lineHeight: 18, marginBottom: 4 }}>
+            <Text key={index} style={{ color: colors.mutedForeground, fontSize: typography.size.xs, lineHeight: 18, marginBottom: spacing.xs }}>
               • {rec}
             </Text>
           ))}

@@ -178,7 +178,7 @@ export function MultiAngleCapture({
                     <View style={styles.angleCardContent}>
                       <Image source={{ uri: images[angle] }} style={[styles.anglePreview, { borderRadius: radii.md }]} />
                       <Pressable onPress={() => handleRetake(angle)}>
-                        <Text style={{ color: status.info, fontSize: typography.size.xs, marginTop: 4 }}>다시 촬영</Text>
+                        <Text style={{ color: status.info, fontSize: typography.size.xs, marginTop: spacing.xs }}>다시 촬영</Text>
                       </Pressable>
                     </View>
                   ) : (
@@ -220,7 +220,7 @@ export function MultiAngleCapture({
           <Text style={{ color: colors.foreground, fontSize: typography.size.lg, fontWeight: '700', textAlign: 'center', marginTop: spacing.sm }}>
             촬영이 완료되었습니다
           </Text>
-          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center', marginTop: 4 }}>
+          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center', marginTop: spacing.xs }}>
             {Object.keys(images).length}장의 사진이 준비되었어요
           </Text>
         </View>

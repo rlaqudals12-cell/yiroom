@@ -127,7 +127,7 @@ export function ProfessionalSkinMap({
       {/* 선택된 존 상세 */}
       {selectedZone && selectedData && (
         <View style={[styles.detailPanel, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border, marginTop: spacing.md, padding: spacing.md }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700', marginBottom: spacing.sm }}>
             {ZONE_LABELS[selectedZone]} 상세
           </Text>
           <View style={styles.detailRow}>
@@ -143,8 +143,8 @@ export function ProfessionalSkinMap({
             </Text>
           </View>
           {selectedData.concerns && selectedData.concerns.length > 0 && (
-            <View style={{ marginTop: 8 }}>
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: 4 }}>고민</Text>
+            <View style={{ marginTop: spacing.sm }}>
+              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: spacing.xs }}>고민</Text>
               {selectedData.concerns.map((concern, i) => (
                 <Text key={i} style={{ color: colors.foreground, fontSize: typography.size.xs, lineHeight: 18 }}>
                   • {concern}

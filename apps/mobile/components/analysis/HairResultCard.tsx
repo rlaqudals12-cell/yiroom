@@ -172,7 +172,7 @@ export function HairResultCard({
                   />
                 </View>
                 {style.description && (
-                  <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: 4 }}>
+                  <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: spacing.xs }}>
                     {style.description}
                   </Text>
                 )}
@@ -221,7 +221,7 @@ export function HairResultCard({
                     <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600' }}>
                       {tip.title}
                     </Text>
-                    <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: 2 }}>
+                    <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: spacing.xxs }}>
                       {tip.description}
                     </Text>
                   </View>

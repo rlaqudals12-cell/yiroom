@@ -123,7 +123,7 @@ export function OralHealthResultCard({
                   </View>
                   <Text style={{ color: colors.foreground, fontSize: typography.size.xs, fontWeight: '600' }}>{toothColor.brightness}%</Text>
                 </View>
-                <View style={[styles.metricRow, { marginTop: 8 }]}>
+                <View style={[styles.metricRow, { marginTop: spacing.sm }]}>
                   <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>황색도</Text>
                   <View style={[styles.progressBg, { backgroundColor: colors.secondary, borderRadius: radii.full }]}>
                     <View style={[styles.progressFill, { width: `${toothColor.yellowness}%`, backgroundColor: status.warning, borderRadius: radii.full }]} />
@@ -176,7 +176,7 @@ export function OralHealthResultCard({
                   </View>
                 )}
 
-                <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginTop: spacing.md, marginBottom: 8 }}>
+                <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginTop: spacing.md, marginBottom: spacing.sm }}>
                   추천 방법
                 </Text>
                 {whiteningGoal.methods.map((method, index) => {
@@ -205,11 +205,11 @@ export function OralHealthResultCard({
       {/* 추천사항 */}
       {recommendations.length > 0 && (
         <View style={[styles.recsSection, { borderTopColor: colors.border, padding: spacing.md }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
             추천사항
           </Text>
           {recommendations.slice(0, 4).map((rec, index) => (
-            <Text key={index} style={{ color: colors.mutedForeground, fontSize: typography.size.xs, lineHeight: 18, marginBottom: 4 }}>
+            <Text key={index} style={{ color: colors.mutedForeground, fontSize: typography.size.xs, lineHeight: 18, marginBottom: spacing.xs }}>
               • {rec}
             </Text>
           ))}

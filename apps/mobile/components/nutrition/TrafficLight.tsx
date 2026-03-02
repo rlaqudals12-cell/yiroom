@@ -119,7 +119,7 @@ export function TrafficLight({
                   fontSize: typography.size.sm,
                   fontWeight: typography.weight.bold,
                   color: colors.foreground,
-                  marginTop: 2,
+                  marginTop: spacing.xxs,
                 }}
               >
                 {item.value}
@@ -129,7 +129,7 @@ export function TrafficLight({
                   style={{
                     fontSize: 10,
                     color: colors.mutedForeground,
-                    marginTop: 2,
+                    marginTop: spacing.xxs,
                   }}
                 >
                   {item.perServing}

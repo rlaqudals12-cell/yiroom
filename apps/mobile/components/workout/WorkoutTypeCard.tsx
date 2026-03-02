@@ -48,14 +48,14 @@ export function WorkoutTypeCard({
       accessibilityLabel={`${info.label} 운동 유형${isSelected ? ', 선택됨' : ''}`}
     >
       <Text style={{ fontSize: typography.size['2xl'] }}>{info.emoji}</Text>
-      <Text style={{ color: isSelected ? baseColor : colors.foreground, fontSize: typography.size.sm, fontWeight: '700', marginTop: 4 }}>
+      <Text style={{ color: isSelected ? baseColor : colors.foreground, fontSize: typography.size.sm, fontWeight: '700', marginTop: spacing.xs }}>
         {info.label}
       </Text>
       <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, textAlign: 'center' }}>
         {info.description}
       </Text>
       {count !== undefined && (
-        <Text style={{ color: baseColor, fontSize: typography.size.xs, fontWeight: '600', marginTop: 4 }}>
+        <Text style={{ color: baseColor, fontSize: typography.size.xs, fontWeight: '600', marginTop: spacing.xs }}>
           {count}개
         </Text>
       )}

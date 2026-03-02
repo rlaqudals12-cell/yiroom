@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   emptyState: {
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     alignItems: 'center',
   },
 });

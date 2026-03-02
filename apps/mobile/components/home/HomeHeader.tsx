@@ -62,6 +62,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   slogan: {
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
 });

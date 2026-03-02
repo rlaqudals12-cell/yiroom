@@ -90,7 +90,7 @@ export function MenuCard({
               color: colors.mutedForeground,
               fontSize: typography.size.sm,
               lineHeight: typography.size.sm * typography.lineHeight.normal,
-              marginTop: 2,
+              marginTop: spacing.xxs,
             }}
           >
             {description}

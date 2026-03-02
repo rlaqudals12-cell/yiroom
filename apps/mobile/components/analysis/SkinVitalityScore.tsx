@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme, radii} from '../../lib/theme';
+import { useTheme, radii, spacing} from '../../lib/theme';
 
 export interface SkinVitalityScoreProps {
   /** 0-100 */
@@ -117,28 +117,28 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: 16,
+    paddingVertical: spacing.mlg,
+    paddingHorizontal: spacing.md,
   },
   headerLabel: {
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   score: {
     fontWeight: '800',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   levelBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.smx,
+    paddingVertical: spacing.xs,
     borderRadius: radii.smx,
   },
   levelText: {
     fontWeight: '600',
   },
   progressSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.smx,
   },
   progressTrack: {
     height: 8,
@@ -152,25 +152,25 @@ const styles = StyleSheet.create({
   progressLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   progressLabel: {},
   factorsSection: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
   },
   factorGroup: {},
   negativeGroup: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   factorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   factorIcon: {
     fontSize: 10,
-    marginRight: 8,
+    marginRight: spacing.sm,
     fontWeight: '700',
   },
   factorText: {},

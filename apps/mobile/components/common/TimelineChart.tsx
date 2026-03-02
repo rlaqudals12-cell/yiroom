@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 
 export interface TimelineDataPoint {
   date: string;
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   title: {
     fontWeight: '600',
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   chartContent: {
-    paddingRight: 8,
+    paddingRight: spacing.sm,
   },
   chartArea: {
     flexDirection: 'row',
@@ -196,10 +196,10 @@ const styles = StyleSheet.create({
     minHeight: 2,
   },
   scoreLabel: {
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   dateLabel: {
-    marginTop: 4,
+    marginTop: spacing.xs,
     textAlign: 'center',
   },
   empty: {

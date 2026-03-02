@@ -73,7 +73,7 @@ export function StretchingRecommendation({
               </View>
             </View>
 
-            <View style={[styles.targetBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm, alignSelf: 'flex-start', marginBottom: 8 }]}>
+            <View style={[styles.targetBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm, alignSelf: 'flex-start', marginBottom: spacing.sm }]}>
               <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>
                 {item.targetArea}
               </Text>

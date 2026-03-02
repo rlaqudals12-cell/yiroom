@@ -134,7 +134,7 @@ export function WaterIntakeCard({
                     fontSize: typography.size.lg,
                     fontWeight: typography.weight.bold,
                     color: colors.foreground,
-                    marginTop: 2,
+                    marginTop: spacing.xxs,
                   }}
                 >
                   {pct}%

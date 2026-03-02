@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing} from '../../lib/theme';
 
 export interface MealSuggestionCardProps {
   /** 추천 식사명 */
@@ -80,7 +80,7 @@ export function MealSuggestionCard({
             style={{
               fontSize: typography.size.sm,
               color: colors.mutedForeground,
-              marginTop: 2,
+              marginTop: spacing.xxs,
             }}
           >
             {calories}kcal
@@ -184,8 +184,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   matchBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.smd,
+    paddingVertical: spacing.xs,
   },
   tagRow: {
     flexDirection: 'row',
@@ -193,8 +193,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   selectBtn: {},
 });
