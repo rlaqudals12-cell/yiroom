@@ -29,12 +29,6 @@ export interface TrafficLightProps {
   style?: ViewStyle;
 }
 
-const LEVEL_COLORS: Record<TrafficLightLevel, string> = {
-  green: '#22C55E',
-  amber: '#F59E0B',
-  red: '#EF4444',
-};
-
 const LEVEL_LABELS: Record<TrafficLightLevel, string> = {
   green: '양호',
   amber: '보통',
@@ -46,7 +40,14 @@ export function TrafficLight({
   productName,
   style,
 }: TrafficLightProps): React.JSX.Element {
-  const { colors, spacing, typography, radii, shadows } = useTheme();
+  const { colors, spacing, typography, radii, shadows, status } = useTheme();
+
+  // status 토큰을 사용하기 위해 컴포넌트 내부에서 색상 맵 정의
+  const LEVEL_COLORS: Record<TrafficLightLevel, string> = {
+    green: status.success,
+    amber: status.warning,
+    red: status.error,
+  };
 
   return (
     <View

@@ -30,7 +30,7 @@ export function DailyCalorieSummary({
   fat,
   style,
 }: DailyCalorieSummaryProps): React.JSX.Element {
-  const { colors, module, spacing, typography, radii, shadows } = useTheme();
+  const { colors, module, spacing, typography, radii, shadows, status } = useTheme();
 
   const remaining = Math.max(goal - consumed, 0);
   const pct = goal > 0 ? Math.round((consumed / goal) * 100) : 0;
@@ -89,7 +89,7 @@ export function DailyCalorieSummary({
             styles.progressFill,
             {
               width: `${Math.min(pct, 100)}%` as unknown as number,
-              backgroundColor: consumed > goal ? '#EF4444' : module.nutrition.base,
+              backgroundColor: consumed > goal ? status.error : module.nutrition.base,
               borderRadius: radii.full,
             },
           ]}
@@ -118,7 +118,7 @@ export function DailyCalorieSummary({
           label="남은"
           value={`${remaining}`}
           unit="kcal"
-          color={remaining > 0 ? module.nutrition.base : '#EF4444'}
+          color={remaining > 0 ? module.nutrition.base : status.error}
           muted={colors.mutedForeground}
           typography={typography}
         />

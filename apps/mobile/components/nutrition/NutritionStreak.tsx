@@ -103,7 +103,7 @@ export function NutritionStreak({
               ]}
             >
               {done && (
-                <Text style={{ fontSize: 10, color: '#FFFFFF' }}>✓</Text>
+                <Text style={{ fontSize: 10, color: colors.overlayForeground }}>✓</Text>
               )}
             </View>
             <Text

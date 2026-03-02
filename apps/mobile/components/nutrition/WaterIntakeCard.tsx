@@ -154,7 +154,7 @@ export function WaterIntakeCard({
               style={{
                 fontSize: typography.size.sm,
                 fontWeight: typography.weight.bold,
-                color: '#FFFFFF',
+                color: colors.overlayForeground,
               }}
             >
               +{step}ml

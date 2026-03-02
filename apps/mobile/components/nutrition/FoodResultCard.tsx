@@ -32,12 +32,6 @@ export interface FoodResultCardProps {
   style?: ViewStyle;
 }
 
-const HEALTH_LABELS: Record<string, { label: string; color: string }> = {
-  good: { label: '건강해요', color: '#22C55E' },
-  moderate: { label: '보통이에요', color: '#F59E0B' },
-  caution: { label: '주의하세요', color: '#EF4444' },
-};
-
 export function FoodResultCard({
   name,
   confidence,
@@ -51,7 +45,14 @@ export function FoodResultCard({
   onAdd,
   style,
 }: FoodResultCardProps): React.JSX.Element {
-  const { colors, module, spacing, typography, radii, shadows } = useTheme();
+  const { colors, module, spacing, typography, radii, shadows, status } = useTheme();
+
+  // status 토큰을 사용하기 위해 컴포넌트 내부에서 색상 맵 정의
+  const HEALTH_LABELS: Record<string, { label: string; color: string }> = {
+    good: { label: '건강해요', color: status.success },
+    moderate: { label: '보통이에요', color: status.warning },
+    caution: { label: '주의하세요', color: status.error },
+  };
 
   const health = healthRating ? HEALTH_LABELS[healthRating] : null;
 
@@ -189,7 +190,7 @@ export function FoodResultCard({
             style={{
               fontSize: typography.size.sm,
               fontWeight: typography.weight.bold,
-              color: '#FFFFFF',
+              color: colors.overlayForeground,
               textAlign: 'center',
             }}
           >

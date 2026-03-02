@@ -144,7 +144,7 @@ export function DiaryCalendar({
                   style={{
                     fontSize: typography.size.sm,
                     fontWeight: isSelected ? typography.weight.bold : typography.weight.normal,
-                    color: isSelected ? '#FFFFFF' : colors.foreground,
+                    color: isSelected ? colors.overlayForeground : colors.foreground,
                     textAlign: 'center',
                   }}
                 >

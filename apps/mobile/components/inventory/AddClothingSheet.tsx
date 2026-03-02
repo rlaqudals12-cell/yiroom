@@ -104,7 +104,7 @@ export function AddClothingSheet({
             <Text
               style={{
                 fontSize: typography.size.xs,
-                color: category === cat.key ? '#FFFFFF' : colors.foreground,
+                color: category === cat.key ? colors.overlayForeground : colors.foreground,
                 marginTop: spacing.xxs,
               }}
             >

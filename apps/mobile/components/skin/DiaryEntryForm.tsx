@@ -94,7 +94,7 @@ export function DiaryEntryForm({
               style={{
                 fontSize: typography.size.xs,
                 fontWeight: typography.weight.medium,
-                color: condition === c.key ? '#FFFFFF' : colors.foreground,
+                color: condition === c.key ? colors.overlayForeground : colors.foreground,
                 marginTop: spacing.xxs,
               }}
             >
@@ -156,7 +156,7 @@ export function DiaryEntryForm({
             style={{
               fontSize: typography.size.sm,
               fontWeight: typography.weight.bold,
-              color: '#FFFFFF',
+              color: colors.overlayForeground,
               textAlign: 'center',
             }}
           >

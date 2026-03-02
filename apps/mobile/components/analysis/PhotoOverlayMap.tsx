@@ -93,7 +93,7 @@ export function PhotoOverlayMap({
             >
               {showLabels && (
                 <View style={[styles.labelBadge, { backgroundColor: `${zoneColor}CC` }]}>
-                  <Text style={[styles.labelText, { fontSize: typography.size.xs }]}>
+                  <Text style={[styles.labelText, { fontSize: typography.size.xs, color: colors.overlayForeground }]}>
                     {zoneData.label} {zoneData.score}
                   </Text>
                 </View>
@@ -131,7 +131,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   labelText: {
-    color: '#FFFFFF',
     fontWeight: '600',
   },
 });

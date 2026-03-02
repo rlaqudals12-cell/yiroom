@@ -101,7 +101,7 @@ export function DeleteAccountDialog({
               style={{
                 fontSize: typography.size.sm,
                 fontWeight: typography.weight.bold,
-                color: '#FFFFFF',
+                color: colors.overlayForeground,
                 textAlign: 'center',
               }}
             >

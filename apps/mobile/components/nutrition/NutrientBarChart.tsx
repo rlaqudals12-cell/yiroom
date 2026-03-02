@@ -34,7 +34,7 @@ export function NutrientBarChart({
   title,
   style,
 }: NutrientBarChartProps): React.JSX.Element {
-  const { colors, spacing, typography, radii, shadows } = useTheme();
+  const { colors, spacing, typography, radii, shadows, status } = useTheme();
 
   return (
     <View
@@ -104,7 +104,7 @@ export function NutrientBarChart({
                   width: `${pct}%` as unknown as number,
                   height: '100%',
                   borderRadius: radii.full,
-                  backgroundColor: isOver ? '#EF4444' : nutrient.color,
+                  backgroundColor: isOver ? status.error : nutrient.color,
                 }}
               />
             </View>
@@ -113,7 +113,7 @@ export function NutrientBarChart({
             <Text
               style={{
                 fontSize: typography.size.xs,
-                color: isOver ? '#EF4444' : colors.mutedForeground,
+                color: isOver ? status.error : colors.mutedForeground,
                 fontWeight: typography.weight.medium,
                 width: 70,
                 textAlign: 'right',
