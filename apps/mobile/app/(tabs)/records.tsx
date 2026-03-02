@@ -232,7 +232,7 @@ export default function RecordsTab(): React.JSX.Element {
                 </View>
               </View>
             ) : (
-              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              <View style={{ flexDirection: 'row', gap: spacing.smx }}>
                 <StatCard
                   value={workoutCount}
                   label="연속 운동"
@@ -362,7 +362,7 @@ export default function RecordsTab(): React.JSX.Element {
                 color: colors.foreground,
                 fontSize: typography.size.lg,
                 fontWeight: typography.weight.semibold,
-                marginLeft: spacing.xs + 2,
+                marginLeft: spacing.sm,
               }}
             >
               주간 트렌드
@@ -449,11 +449,11 @@ export default function RecordsTab(): React.JSX.Element {
         <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>
           <SectionHeader
             title="상세 기록"
-            style={{ marginBottom: spacing.sm + 4, marginTop: spacing.sm }}
+            style={{ marginBottom: spacing.smx, marginTop: spacing.smx }}
           />
         </Animated.View>
 
-        <View style={{ gap: spacing.sm + 4 }}>
+        <View style={{ gap: spacing.md }}>
           <Animated.View entering={staggeredEntry(0)}>
             <MenuCard
               icon={<Dumbbell size={20} color={moduleColors.workout.dark} />}

@@ -7,6 +7,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import {
+  Platform,
   View,
   Text,
   StyleSheet,
@@ -37,7 +38,7 @@ interface MealRecord {
 }
 
 export default function NutritionDashboardScreen() {
-  const { colors, status, brand, typography, spacing, radii} = useTheme();
+  const { colors, status, brand, typography, spacing, radii, shadows, isDark } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const { todaySummary, settings, isLoading: isNutritionLoading, refetch: refetchNutrition } = useNutritionData();
@@ -121,7 +122,16 @@ export default function NutritionDashboardScreen() {
         isEmpty={false}
       >
         {/* 칼로리 프로그레스 */}
-        <View style={[styles.calorieCard, { backgroundColor: colors.card }]}>
+        <View style={[
+          styles.calorieCard,
+          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+          !isDark
+            ? Platform.select({
+                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 12 },
+                android: { elevation: 3 },
+              }) ?? {}
+            : {},
+        ]}>
           <Text style={[styles.dateText, { color: colors.mutedForeground }]}>오늘</Text>
           <View style={styles.calorieRing}>
             <View style={[styles.ringOuter, { backgroundColor: colors.border }]}>
@@ -150,7 +160,16 @@ export default function NutritionDashboardScreen() {
         </View>
 
         {/* 영양소 바 차트 */}
-        <View style={[styles.section, { backgroundColor: colors.card }]}>
+        <View style={[
+          styles.section,
+          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+          !isDark
+            ? Platform.select({
+                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+                android: { elevation: 2 },
+              }) ?? {}
+            : {},
+        ]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>영양소 현황</Text>
           <NutrientBar
             label="단백질"
@@ -179,7 +198,16 @@ export default function NutritionDashboardScreen() {
         </View>
 
         {/* 오늘의 식사 */}
-        <View style={[styles.section, { backgroundColor: colors.card }]}>
+        <View style={[
+          styles.section,
+          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+          !isDark
+            ? Platform.select({
+                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+                android: { elevation: 2 },
+              }) ?? {}
+            : {},
+        ]}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>오늘의 식사</Text>
             <Pressable onPress={handleRecordMeal}>
@@ -365,16 +393,16 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   nutrientValue: {
-    fontSize: 13,
+    fontSize: typography.size.xs,
   },
   nutrientBarBg: {
-    height: 8,
-    borderRadius: 4,
+    height: 10,
+    borderRadius: 5,
     overflow: 'hidden',
   },
   nutrientBarFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 5,
   },
   emptyMeals: {
     alignItems: 'center',
@@ -385,12 +413,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
     marginBottom: spacing.xs,
   },
   emptySubtext: {
-    fontSize: 13,
+    fontSize: typography.size.xs,
     textAlign: 'center',
   },
   mealItem: {
@@ -422,13 +450,14 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   recordButton: {
-    borderRadius: radii.smx,
-    padding: spacing.md,
+    borderRadius: radii.full,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     alignItems: 'center',
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
   },
   recordButtonText: {
     fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
+    fontWeight: typography.weight.bold,
   },
 });

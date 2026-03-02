@@ -4,7 +4,7 @@
  * 사용자의 운동 유형 결과 기반으로 주간 운동 계획을 표시한다.
  */
 import { useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { Platform, View, Text, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useTheme } from '../../../lib/theme';
@@ -84,7 +84,7 @@ const MOCK_WEEK_PLAN: DayPlan[] = [
 
 export default function WorkoutPlanScreen(): React.ReactElement {
   const router = useRouter();
-  const { colors, brand, spacing, radii, typography, status, module: moduleColors } = useTheme();
+  const { colors, brand, spacing, radii, typography, status, shadows, isDark, module: moduleColors } = useTheme();
 
   return (
     <ScrollView
@@ -117,13 +117,23 @@ export default function WorkoutPlanScreen(): React.ReactElement {
         {MOCK_WEEK_PLAN.map((day) => (
           <View
             key={day.day}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              paddingVertical: spacing.sm,
-              borderRadius: radii.lg,
-              backgroundColor: day.isToday ? moduleColors.workout.base : day.isRest ? colors.secondary : colors.card,
-            }}
+            style={[
+              {
+                flex: 1,
+                alignItems: 'center',
+                paddingVertical: spacing.smx,
+                borderRadius: radii.xl,
+                backgroundColor: day.isToday ? moduleColors.workout.base : day.isRest ? colors.secondary : colors.card,
+                borderWidth: 1,
+                borderColor: day.isToday ? moduleColors.workout.base : colors.border,
+              },
+              day.isToday && !isDark
+                ? Platform.select({
+                    ios: { shadowColor: moduleColors.workout.base, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 8 },
+                    android: { elevation: 3 },
+                  }) ?? {}
+                : {},
+            ]}
           >
             <Text
               style={{
@@ -142,19 +152,29 @@ export default function WorkoutPlanScreen(): React.ReactElement {
       </View>
 
       {/* 일별 상세 */}
-      <View style={{ gap: spacing.sm }}>
+      <View style={{ gap: spacing.smx }}>
         {MOCK_WEEK_PLAN.map((day, index) => (
           <Animated.View
             key={day.day}
             entering={staggeredEntry(index)}
-            style={{
-              backgroundColor: colors.card,
-              borderRadius: radii.lg,
-              padding: spacing.md,
-              borderLeftWidth: day.isToday ? 3 : 0,
-              borderLeftColor: day.isToday ? moduleColors.workout.base : undefined,
-              opacity: day.isRest ? 0.6 : 1,
-            }}
+            style={[
+              {
+                backgroundColor: colors.card,
+                borderRadius: radii.xl,
+                padding: spacing.md,
+                borderLeftWidth: day.isToday ? 3 : 0,
+                borderLeftColor: day.isToday ? moduleColors.workout.base : undefined,
+                borderWidth: 1,
+                borderColor: colors.border,
+                opacity: day.isRest ? 0.6 : 1,
+              },
+              !isDark
+                ? Platform.select({
+                    ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+                    android: { elevation: 2 },
+                  }) ?? {}
+                : {},
+            ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: day.isRest ? 0 : spacing.sm }}>
               <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground, flex: 1 }}>
@@ -192,13 +212,21 @@ export default function WorkoutPlanScreen(): React.ReactElement {
       <Pressable
         accessibilityLabel="오늘 운동 시작하기"
         onPress={() => router.push('/(workout)/session')}
-        style={{
-          backgroundColor: moduleColors.workout.base,
-          borderRadius: radii.lg,
-          paddingVertical: spacing.smx,
-          alignItems: 'center',
-          marginTop: spacing.lg,
-        }}
+        style={[
+          {
+            backgroundColor: moduleColors.workout.base,
+            borderRadius: radii.full,
+            paddingVertical: spacing.md,
+            alignItems: 'center',
+            marginTop: spacing.lg,
+          },
+          !isDark
+            ? Platform.select({
+                ios: { shadowColor: moduleColors.workout.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                android: { elevation: 4 },
+              }) ?? {}
+            : {},
+        ]}
       >
         <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
           오늘 운동 시작하기
