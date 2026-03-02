@@ -155,10 +155,12 @@ export default function PostureResultScreen() {
         {/* 점수 */}
         <Animated.View entering={FadeInDown.delay(120).duration(300)} style={styles.section}>
           <Text style={styles.sectionTitle}>정렬 점수</Text>
-          <MetricBar label="머리 정렬" value={result.scores.headAlignment} />
-          <MetricBar label="어깨 균형" value={result.scores.shoulderBalance} />
-          <MetricBar label="척추 정렬" value={result.scores.spineAlignment} />
-          <MetricBar label="골반 정렬" value={result.scores.hipAlignment} />
+          <View style={localStyles.metricsGap}>
+            <MetricBar label="머리 정렬" value={result.scores.headAlignment} />
+            <MetricBar label="어깨 균형" value={result.scores.shoulderBalance} />
+            <MetricBar label="척추 정렬" value={result.scores.spineAlignment} />
+            <MetricBar label="골반 정렬" value={result.scores.hipAlignment} />
+          </View>
         </Animated.View>
 
         {/* 발견된 문제 */}
@@ -229,8 +231,14 @@ const localStyles = StyleSheet.create({
     fontWeight: typography.weight.bold,
     marginBottom: spacing.sm,
   },
+  metricsGap: {
+    gap: 14,
+  },
   exerciseCard: {
     marginBottom: spacing.md,
+    paddingBottom: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.06)',
   },
   exerciseName: {
     fontSize: typography.size.base,
@@ -243,6 +251,7 @@ const localStyles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   exerciseDuration: {
-    fontSize: 13,
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.medium,
   },
 });

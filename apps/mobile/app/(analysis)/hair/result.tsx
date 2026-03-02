@@ -293,7 +293,7 @@ export default function HairResultScreen() {
 const localStyles = StyleSheet.create({
   headerContent: {
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.sm,
   },
   typeName: {
     fontSize: 22,
@@ -303,8 +303,8 @@ const localStyles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   scoreBadge: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: radii.xl,
     marginTop: spacing.xs,
   },

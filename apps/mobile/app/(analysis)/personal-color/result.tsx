@@ -499,7 +499,7 @@ const localStyles = StyleSheet.create({
   },
   headerContent: {
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.sm,
     paddingHorizontal: spacing.md,
   },
   seasonName: {
@@ -510,8 +510,8 @@ const localStyles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   description: {
-    fontSize: 15,
-    lineHeight: 24,
+    fontSize: typography.size.sm,
+    lineHeight: 22,
     textAlign: 'center',
     marginTop: spacing.xs,
   },
@@ -523,14 +523,14 @@ const localStyles = StyleSheet.create({
     padding: spacing.mlg,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: typography.weight.semibold,
-    marginBottom: 14,
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.bold,
+    marginBottom: spacing.smx,
   },
   sectionDescription: {
     fontSize: typography.size.sm,
     lineHeight: 20,
-    marginBottom: 14,
+    marginBottom: spacing.smx,
   },
   tagRow: {
     flexDirection: 'row',
@@ -573,7 +573,9 @@ const localStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 6,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.06)',
   },
   makeupTipLabel: {
     fontSize: typography.size.sm,

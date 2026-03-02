@@ -323,11 +323,11 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    paddingHorizontal: spacing.mlg,
-    paddingTop: spacing.md,
-    paddingBottom: 28,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.mlg,
+    paddingBottom: spacing.xl,
     alignItems: 'center',
-    gap: spacing.smx,
+    gap: spacing.md,
   },
   title: {
     fontSize: 22,
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   imageContainer: {
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
   },
   defaultImage: {
     width: 160,
@@ -351,19 +351,21 @@ const styles = StyleSheet.create({
   },
   gradeContainer: {
     alignSelf: 'stretch',
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.sm,
   },
   tabContainer: {
     paddingHorizontal: spacing.md,
     minHeight: 300,
+    marginTop: spacing.sm,
   },
   tabBar: {
     borderRadius: radii.smx,
-    marginBottom: spacing.md,
+    marginBottom: spacing.mlg,
   },
   ctaContainer: {
     paddingHorizontal: spacing.md,
-    marginTop: spacing.md,
+    marginTop: spacing.mlg,
   },
   ctaContent: {
     flexDirection: 'row',
@@ -381,14 +383,14 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   ctaButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.smd,
+    paddingHorizontal: spacing.mlg,
+    paddingVertical: spacing.smx,
   },
   ctaButtonText: {
     fontWeight: typography.weight.semibold,
   },
   buttonsContainer: {
     paddingHorizontal: spacing.mlg,
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
   },
 });

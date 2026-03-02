@@ -351,7 +351,7 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
   },
   recCard: {
-    padding: 14,
+    padding: spacing.md,
     marginBottom: spacing.smd,
   },
   recLabel: {

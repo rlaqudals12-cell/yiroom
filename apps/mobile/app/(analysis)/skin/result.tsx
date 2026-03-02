@@ -437,7 +437,7 @@ const localStyles = StyleSheet.create({
     padding: spacing.md,
   },
   descText: {
-    fontSize: 15,
+    fontSize: typography.size.sm,
     lineHeight: 22,
   },
   sectionTitle: {
@@ -474,12 +474,12 @@ const localStyles = StyleSheet.create({
     gap: spacing.sm,
   },
   tag: {
-    paddingHorizontal: 14,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radii.circle,
   },
   tagText: {
-    fontSize: 13,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
 });
