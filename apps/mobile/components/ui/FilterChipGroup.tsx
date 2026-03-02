@@ -84,6 +84,7 @@ export function FilterChipGroup({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={[styles.scrollContent, style]}
         testID={testID}
+        accessibilityRole="tablist"
       >
         {chipContent}
       </ScrollView>
@@ -91,7 +92,7 @@ export function FilterChipGroup({
   }
 
   return (
-    <View style={[styles.wrapContent, style]} testID={testID}>
+    <View style={[styles.wrapContent, style]} testID={testID} accessibilityRole="tablist">
       {chipContent}
     </View>
   );
