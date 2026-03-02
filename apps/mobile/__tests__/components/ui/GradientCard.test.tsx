@@ -402,7 +402,7 @@ describe('GradientCard', () => {
         ? gradient.props.style
         : [gradient.props.style];
       const hasOpacity = flatStyle.some(
-        (s: Record<string, unknown>) => s && s.opacity === 0.15
+        (s: Record<string, unknown>) => s && s.opacity === 0.18
       );
       expect(hasOpacity).toBe(true);
     });

@@ -174,7 +174,7 @@ describe('GlassCard', () => {
         : [card.props.style];
       const hasDarkBg = flatStyle.some(
         (s: Record<string, unknown>) =>
-          s && s.backgroundColor === 'rgba(26,26,26,0.85)'
+          s && s.backgroundColor === 'rgba(26,26,26,0.88)'
       );
       expect(hasDarkBg).toBe(true);
     });
@@ -210,7 +210,7 @@ describe('GlassCard', () => {
         : [card.props.style];
       const hasLightBg = flatStyle.some(
         (s: Record<string, unknown>) =>
-          s && s.backgroundColor === 'rgba(255,255,255,0.85)'
+          s && s.backgroundColor === 'rgba(255,255,255,0.88)'
       );
       expect(hasLightBg).toBe(true);
     });

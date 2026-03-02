@@ -25,11 +25,11 @@ interface GlassCardProps {
 
 export function GlassCard({
   children,
-  intensity = 40,
+  intensity = 60,
   style,
   testID,
 }: GlassCardProps): React.JSX.Element {
-  const { isDark, colors, radii, shadows } = useTheme();
+  const { isDark, radii, shadows } = useTheme();
 
   // Android에서 BlurView 성능 이슈 시 반투명 배경 폴백
   if (Platform.OS === 'android') {
@@ -38,10 +38,10 @@ export function GlassCard({
         testID={testID}
         style={[
           styles.container,
-          shadows.card,
+          shadows.md,
           {
-            backgroundColor: isDark ? 'rgba(26,26,26,0.85)' : 'rgba(255,255,255,0.85)',
-            borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.3)',
+            backgroundColor: isDark ? 'rgba(26,26,26,0.88)' : 'rgba(255,255,255,0.88)',
+            borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.40)',
             borderRadius: radii.xl,
           },
           style,
@@ -57,9 +57,9 @@ export function GlassCard({
       testID={testID}
       style={[
         styles.container,
-        shadows.card,
+        shadows.md,
         {
-          borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.3)',
+          borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.40)',
           borderRadius: radii.xl,
           overflow: 'hidden',
         },
@@ -76,7 +76,7 @@ export function GlassCard({
         style={[
           StyleSheet.absoluteFill,
           {
-            backgroundColor: isDark ? 'rgba(26,26,26,0.3)' : 'rgba(255,255,255,0.4)',
+            backgroundColor: isDark ? 'rgba(26,26,26,0.25)' : 'rgba(255,255,255,0.35)',
           },
         ]}
       />

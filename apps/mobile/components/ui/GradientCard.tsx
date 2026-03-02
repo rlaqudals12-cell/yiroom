@@ -89,8 +89,8 @@ export function GradientCard({
   const glowColor = getGlowColor(variant);
   const borderColor = getBorderColor(variant, isDark);
 
-  // 그라디언트 투명도: 라이트 0.15 / 다크 0.25 (콘텐츠 가독성 유지)
-  const gradientOpacity = isDark ? 0.25 : 0.15;
+  // 그라디언트 투명도: 라이트 0.18 / 다크 0.25 (은은하면서도 시각적 존재감)
+  const gradientOpacity = isDark ? 0.25 : 0.18;
 
   const contentPadding = padding ?? spacing.md;
 

@@ -33,13 +33,16 @@ export function Button({
   testID,
   style: externalStyle,
 }: ButtonProps): React.JSX.Element {
-  const { colors, brand, radii, typography } = useTheme();
+  const { colors, brand, radii, shadows, typography } = useTheme();
   const isDisabled = disabled || isLoading;
 
   const bgColor = getBackgroundColor(variant, colors, brand);
   const textColor = getTextColor(variant, colors, brand);
   const borderColor = variant === 'outline' ? colors.border : 'transparent';
   const sizeStyle = getSizeStyle(size);
+
+  // default/destructive variant에 미세한 그림자 추가 (깊이감)
+  const needsShadow = variant === 'default' || variant === 'destructive';
 
   return (
     <Pressable
@@ -58,6 +61,7 @@ export function Button({
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.base,
+        needsShadow && shadows.sm,
         {
           backgroundColor: bgColor,
           borderColor,
@@ -136,11 +140,11 @@ function getSizeStyle(size: ButtonSize): {
 } {
   switch (size) {
     case 'sm':
-      return { px: 12, py: 6, fontSize: 13 };
+      return { px: 14, py: 8, fontSize: 13 };
     case 'md':
-      return { px: 20, py: 10, fontSize: 15 };
+      return { px: 24, py: 12, fontSize: 15 };
     case 'lg':
-      return { px: 28, py: 14, fontSize: 17 };
+      return { px: 32, py: 16, fontSize: 17 };
   }
 }
 

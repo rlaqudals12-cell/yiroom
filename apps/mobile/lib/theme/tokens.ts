@@ -118,35 +118,44 @@ export const radii = {
 // 아이콘 배경 투명도 (hex suffix, moduleColors.X.light + ICON_BG_OPACITY)
 export const ICON_BG_OPACITY = '30';
 
-// 그림자 (React Native 포맷, 웹 shadow 값과 일치)
+// 그림자 (React Native 포맷, 웹 shadow 값과 매칭)
 export const shadows = {
   sm: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
     elevation: 1,
   },
   md: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.07,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 3,
   },
   lg: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.10,
     shadowRadius: 16,
-    elevation: 4,
+    elevation: 5,
   },
+  // 웹 shadow-xl 대응 — 대시보드 히어로, 피처드 카드에 사용
+  xl: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  // 기본 카드 (웹 shadow 클래스 대응) — 전역 카드 그림자
   card: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 3,
   },
 } as const;
 

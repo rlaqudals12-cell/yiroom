@@ -136,8 +136,8 @@ function hexToRgba(hex: string, alpha: number): string {
 const styles = StyleSheet.create({
   badge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: spacing.smd,
-    paddingVertical: 3,
+    paddingHorizontal: spacing.smx,
+    paddingVertical: 4,
   },
   outlined: {
     borderWidth: 1,
