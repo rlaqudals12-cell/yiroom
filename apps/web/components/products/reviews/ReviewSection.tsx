@@ -291,11 +291,10 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
       </CardHeader>
       <CardContent className="space-y-6">
         {/* 리뷰 요약 */}
-        {isLoading ? (
-          <ReviewSummarySkeleton />
-        ) : summary && summary.totalCount > 0 ? (
+        {isLoading && <ReviewSummarySkeleton />}
+        {!isLoading && summary && summary.totalCount > 0 && (
           <ReviewSummary summary={summary} />
-        ) : null}
+        )}
 
         {/* AI 리뷰 분석 (리뷰 5개 이상일 때) */}
         {!isLoading && aiSummary && (

@@ -182,11 +182,12 @@ export default function NewOutfitPage() {
               </p>
             </div>
 
-            {loading ? (
+            {loading && (
               <div className="text-center py-8 text-muted-foreground">
                 로딩 중...
               </div>
-            ) : items.length === 0 ? (
+            )}
+            {!loading && items.length === 0 && (
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">
                   옷장에 등록된 옷이 없어요
@@ -195,7 +196,8 @@ export default function NewOutfitPage() {
                   옷 추가하기
                 </Button>
               </div>
-            ) : (
+            )}
+            {!loading && items.length > 0 && (
               <OutfitBuilder
                 items={items}
                 initialSelection={selectedItems}

@@ -21,6 +21,7 @@ import type {
 } from '@/types/analysis-history';
 
 // 인사이트 생성 함수
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 function generateInsights(
   type: AnalysisType,
   before: Record<string, unknown>,
@@ -120,6 +121,7 @@ function calculatePeriod(fromDate: string, toDate: string): string {
   }
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function GET(request: Request) {
   try {
     const { userId } = await auth();

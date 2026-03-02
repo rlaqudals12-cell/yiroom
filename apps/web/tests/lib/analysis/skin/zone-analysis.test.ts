@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import {
   analyzeTZone,
   analyzeUZone,
@@ -117,7 +118,7 @@ describe('combineZoneAnalysis', () => {
   ): ZoneAnalysis {
     return {
       zoneType,
-      avgSebum: skinCondition === 'dry' ? 50 : skinCondition === 'normal' ? 100 : 180,
+      avgSebum: selectByKey(skinCondition, { dry: 50, normal: 100 }, 180)!,
       avgHydration: 60,
       avgLabColor: { L: 70, a: 10, b: 15 },
       skinCondition,

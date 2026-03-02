@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Sun, Moon, Calendar, AlertTriangle, Lightbulb } from 'lucide-react';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import {
   SKIN_TYPE_CLEANSER_ROUTINE,
   CLEANSER_TYPES,
@@ -84,11 +85,7 @@ export function SkinTypeRecommendation({ skinType, className }: SkinTypeRecommen
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            {skinType === 'oily'
-              ? '아침에도 가볍게 클렌징하여 밤사이 분비된 피지를 제거하세요.'
-              : skinType === 'dry' || skinType === 'sensitive'
-                ? '아침에는 순한 클렌저로 가볍게, 또는 물세안도 괜찮아요.'
-                : '상태에 따라 선택하세요.'}
+            {selectByKey(skinType, { oily: '아침에도 가볍게 클렌징하여 밤사이 분비된 피지를 제거하세요.', dry: '아침에는 순한 클렌저로 가볍게, 또는 물세안도 괜찮아요.', sensitive: '아침에는 순한 클렌저로 가볍게, 또는 물세안도 괜찮아요.' }, '상태에 따라 선택하세요.')}
           </p>
         </div>
 

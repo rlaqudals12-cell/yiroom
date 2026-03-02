@@ -13,6 +13,7 @@
  */
 
 import type { Exercise, WorkoutType, ExerciseCategory, BodyPart } from '@/types/workout';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { getAllExercises } from './exercises';
 import { getRecommendedRepsAndSets, calculateRecommendedWeight, roundToNearest } from './calculations';
 import { calculateCaloriesWithMET } from './calorieCalculations';
@@ -457,8 +458,10 @@ function generateDayPlan(
   // 운동별 세부 정보 계산
   const plannedExercises: PlannedExercise[] = selectedExercises.map(ex => {
     const recommendation = getRecommendedRepsAndSets(
-      template.goal === 'hypertrophy' ? 'hypertrophy' :
-        template.goal === 'strength' ? 'strength' : 'endurance',
+      selectByKey(template.goal, {
+        hypertrophy: 'hypertrophy' as const,
+        strength: 'strength' as const,
+      }, 'endurance' as const)!,
       fitnessLevel
     );
 

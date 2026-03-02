@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -35,25 +36,19 @@ const MonthlyReportCard = memo(function MonthlyReportCard({
   const [year, monthNum] = month.split('-');
   const monthLabel = `${year}년 ${parseInt(monthNum)}월`;
 
-  // 트렌드 아이콘/색상
-  const TrendIcon =
-    trendDirection === 'improving'
-      ? TrendingUp
-      : trendDirection === 'declining'
-        ? TrendingDown
-        : Minus;
-  const trendColor =
-    trendDirection === 'improving'
-      ? 'text-green-500'
-      : trendDirection === 'declining'
-        ? 'text-red-500'
-        : 'text-muted-foreground';
-  const trendLabel =
-    trendDirection === 'improving'
-      ? '개선 중'
-      : trendDirection === 'declining'
-        ? '주의 필요'
-        : '안정적';
+  // 트렌드 아이콘/색상/라벨
+  const TrendIcon = selectByKey(trendDirection, {
+    improving: TrendingUp,
+    declining: TrendingDown,
+  }, Minus)!;
+  const trendColor = selectByKey(trendDirection, {
+    improving: 'text-green-500',
+    declining: 'text-red-500',
+  }, 'text-muted-foreground')!;
+  const trendLabel = selectByKey(trendDirection, {
+    improving: '개선 중',
+    declining: '주의 필요',
+  }, '안정적')!;
 
   // 평균 컨디션에 가장 가까운 점수
   const nearestScore = Math.round(avgCondition) as 1 | 2 | 3 | 4 | 5;

@@ -14,6 +14,7 @@ import type {
   TwelveToneClassificationResult,
 } from './types';
 import { TWELVE_TONE_REFERENCE_LAB, TWELVE_TONE_LABELS } from './types';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 톤별 추천 팔레트
@@ -266,13 +267,13 @@ export function generateMockClassification(options?: {
   const subtype = parts[0] as 'light' | 'true' | 'bright' | 'muted' | 'deep';
   const season = parts[1] as 'spring' | 'summer' | 'autumn' | 'winter';
 
-  // 언더톤 결정
-  const undertone =
-    season === 'spring' || season === 'autumn'
-      ? 'warm'
-      : season === 'summer' || season === 'winter'
-        ? 'cool'
-        : 'neutral';
+  // 언더톤 결정: 시즌별 매핑
+  const undertone = selectByKey(season, {
+    spring: 'warm' as const,
+    autumn: 'warm' as const,
+    summer: 'cool' as const,
+    winter: 'cool' as const,
+  }, 'neutral' as const)!;
 
   return {
     tone,
@@ -313,12 +314,11 @@ export function generateMockResult(options?: {
     palette,
     stylingRecommendations: {
       clothing: palette.mainColors.slice(0, 4),
-      metals:
-        classification.undertone === 'warm'
-          ? ['gold', 'rose-gold']
-          : classification.undertone === 'cool'
-            ? ['silver']
-            : ['gold', 'silver'],
+      metals: selectByKey(classification.undertone, {
+        warm: ['gold', 'rose-gold'],
+        cool: ['silver'],
+        neutral: ['gold', 'silver'],
+      }, ['gold', 'silver'])!,
       jewelry: palette.accentColors.slice(0, 2),
     },
     analyzedAt: new Date().toISOString(),
@@ -339,24 +339,27 @@ export function generateMockResult(options?: {
         a: 1 + Math.random() * 3,
         b: 3 + Math.random() * 7,
       },
-      contrastLevel:
-        classification.subtype === 'deep' || classification.subtype === 'bright'
-          ? 'high'
-          : classification.subtype === 'light' || classification.subtype === 'muted'
-            ? 'low'
-            : 'medium',
-      saturationLevel:
-        classification.subtype === 'bright'
-          ? 'bright'
-          : classification.subtype === 'muted'
-            ? 'muted'
-            : 'medium',
-      valueLevel:
-        classification.subtype === 'light'
-          ? 'light'
-          : classification.subtype === 'deep'
-            ? 'deep'
-            : 'medium',
+      contrastLevel: selectByKey(classification.subtype, {
+        deep: 'high' as const,
+        bright: 'high' as const,
+        light: 'low' as const,
+        muted: 'low' as const,
+        true: 'medium' as const,
+      }, 'medium' as const)!,
+      saturationLevel: selectByKey(classification.subtype, {
+        bright: 'bright' as const,
+        muted: 'muted' as const,
+        light: 'medium' as const,
+        deep: 'medium' as const,
+        true: 'medium' as const,
+      }, 'medium' as const)!,
+      valueLevel: selectByKey(classification.subtype, {
+        light: 'light' as const,
+        deep: 'deep' as const,
+        bright: 'medium' as const,
+        muted: 'medium' as const,
+        true: 'medium' as const,
+      }, 'medium' as const)!,
     };
   }
 

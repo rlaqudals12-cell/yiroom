@@ -70,6 +70,7 @@ export interface MatchResult {
  * - 퍼스널 컬러 매칭: 0-20점 (메이크업만)
  * - 기본 점수: 20점
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- cosmetic match scoring
 function calculateCosmeticMatchScore(product: CosmeticProduct, profile: UserProfile): MatchResult {
   const reasons: MatchReason[] = [];
   let score = 20; // 기본 점수
@@ -200,6 +201,7 @@ function calculateCosmeticMatchScore(product: CosmeticProduct, profile: UserProf
  * - 모발 고민 매칭: 0-20점
  * - 기본 점수: 20점
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function calculateHaircareMatchScore(
   product: CosmeticProduct,
   profile: UserProfile,

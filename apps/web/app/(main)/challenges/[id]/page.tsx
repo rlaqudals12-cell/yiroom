@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, Trophy, Gift, AlertTriangle } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
 import { ChallengeProgress } from '@/components/challenges';
 import { ChallengeDetailSkeleton } from '@/components/challenges/ChallengesSkeleton';
 import {
@@ -200,6 +201,11 @@ export default function ChallengeDetailPage({ params }: PageProps) {
   const isCompleted = userChallenge?.status === 'completed';
   const canClaimReward = isCompleted && !userChallenge?.rewardClaimed;
 
+  // 챌린지 상태에 따른 조건값 사전 계산 (중첩 삼항 방지)
+  let statusCondition: boolean | null = null;
+  if (isCompleted) statusCondition = true;
+  else if (isInProgress) statusCondition = false;
+
   return (
     <div className="min-h-screen px-4 py-8">
       <div className="max-w-2xl mx-auto space-y-6">
@@ -255,11 +261,12 @@ export default function ChallengeDetailPage({ params }: PageProps) {
               <h3 className="text-lg font-semibold">진행 상황</h3>
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  isCompleted
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : isInProgress
-                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                      : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                  selectByCondition(
+                    statusCondition,
+                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                    'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                    'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                  )
                 }`}
               >
                 {STATUS_NAMES[userChallenge.status]}
@@ -303,11 +310,12 @@ export default function ChallengeDetailPage({ params }: PageProps) {
 
         {/* 액션 버튼 */}
         <section className="flex gap-3">
-          {!isParticipating ? (
+          {!isParticipating && (
             <Button onClick={handleJoin} disabled={isJoining || !user} className="flex-1" size="lg">
               {isJoining ? '참여 중...' : '챌린지 참여하기'}
             </Button>
-          ) : isInProgress ? (
+          )}
+          {isParticipating && isInProgress && (
             <>
               <Button
                 onClick={() => router.push('/challenges')}
@@ -348,7 +356,8 @@ export default function ChallengeDetailPage({ params }: PageProps) {
                 </AlertDialogContent>
               </AlertDialog>
             </>
-          ) : (
+          )}
+          {isParticipating && !isInProgress && (
             <Button
               onClick={() => router.push('/challenges')}
               variant="outline"

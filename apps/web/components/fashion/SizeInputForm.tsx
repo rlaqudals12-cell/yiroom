@@ -99,6 +99,7 @@ export function SizeInputForm({
   );
 
   // 유효성 검사
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
   const validate = useCallback((): boolean => {
     const newErrors: FormErrors = {};
 

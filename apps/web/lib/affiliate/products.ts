@@ -53,6 +53,7 @@ function mapProductRow(row: AffiliateProductRow): AffiliateProduct {
 /**
  * 제품 목록 조회 (필터/정렬/페이징)
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function getAffiliateProducts(
   filter?: AffiliateProductFilter,
   sortBy: AffiliateProductSortBy = 'rating',

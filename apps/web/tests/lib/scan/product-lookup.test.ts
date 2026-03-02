@@ -10,6 +10,7 @@ vi.mock('@/lib/supabase/client', () => ({
   getSupabaseClient: vi.fn(() => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({
+        // eslint-disable-next-line sonarjs/no-nested-functions
         eq: vi.fn(() => ({
           single: vi.fn(() => ({
             data: null,

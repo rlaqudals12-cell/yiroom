@@ -393,6 +393,7 @@ export function degreesToRadians(degrees: number): number {
  * @param kernel - 컨볼루션 커널
  * @returns 컨볼루션 결과
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function convolve2D(image: number[][], kernel: number[][]): number[][] {
   const imageHeight = image.length;
   const imageWidth = image[0]?.length ?? 0;

@@ -335,11 +335,14 @@ export default function BeforeAfterSlider({
 // 프리셋 컴포넌트
 // ============================================
 
+/** 슬라이더 프리셋 타입 */
+export type SliderPreset = 'subtle' | 'natural' | 'enhanced';
+
 export interface SliderPresetButtonsProps {
   /** 현재 프리셋 */
-  activePreset: 'subtle' | 'natural' | 'enhanced';
+  activePreset: SliderPreset;
   /** 프리셋 변경 핸들러 */
-  onPresetChange: (preset: 'subtle' | 'natural' | 'enhanced') => void;
+  onPresetChange: (preset: SliderPreset) => void;
   /** 비활성화 */
   disabled?: boolean;
   /** 클래스 */
@@ -355,7 +358,7 @@ export function SliderPresetButtons({
   disabled,
   className,
 }: SliderPresetButtonsProps) {
-  const presets: Array<{ key: 'subtle' | 'natural' | 'enhanced'; label: string }> = [
+  const presets: Array<{ key: SliderPreset; label: string }> = [
     { key: 'subtle', label: '미묘하게' },
     { key: 'natural', label: '자연스럽게' },
     { key: 'enhanced', label: '강조' },

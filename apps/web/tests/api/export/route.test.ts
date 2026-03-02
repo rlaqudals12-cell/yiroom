@@ -66,9 +66,11 @@ describe('GET /api/export', () => {
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             order: vi.fn(() => ({
+              // eslint-disable-next-line sonarjs/no-nested-functions
               limit: vi.fn(() => ({
                 maybeSingle: vi.fn().mockResolvedValue({ data: null }),
               })),
+              // eslint-disable-next-line sonarjs/no-nested-functions
               then: vi.fn((resolve) => resolve({ data: [] })),
             })),
           })),
@@ -97,9 +99,11 @@ describe('GET /api/export', () => {
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             order: vi.fn(() => ({
+              // eslint-disable-next-line sonarjs/no-nested-functions
               limit: vi.fn(() => ({
                 maybeSingle: vi.fn().mockResolvedValue({ data: null }),
               })),
+              // eslint-disable-next-line sonarjs/no-nested-functions
               then: vi.fn((resolve) => resolve({ data: [] })),
             })),
           })),
@@ -124,9 +128,11 @@ describe('GET /api/export', () => {
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             order: vi.fn(() => ({
+              // eslint-disable-next-line sonarjs/no-nested-functions
               limit: vi.fn(() => ({
                 maybeSingle: vi.fn().mockResolvedValue({ data: null }),
               })),
+              // eslint-disable-next-line sonarjs/no-nested-functions
               then: vi.fn((resolve) => resolve({ data: [] })),
             })),
           })),

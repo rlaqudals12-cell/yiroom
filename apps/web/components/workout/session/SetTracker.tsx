@@ -2,6 +2,7 @@
 
 import { Check, X, Circle } from 'lucide-react';
 import type { SetRecord } from '@/types/workout';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface SetTrackerProps {
   sets: SetRecord[];
@@ -54,13 +55,10 @@ export function SetTracker({
           <div
             key={set.setNumber}
             className={`flex-1 h-2 rounded-full transition-colors ${
-              set.status === 'completed'
-                ? 'bg-status-success'
-                : set.status === 'skipped'
-                  ? 'bg-muted-foreground'
-                  : index === currentSetIndex
-                    ? 'bg-primary'
-                    : 'bg-muted'
+              selectByKey(set.status, {
+                completed: 'bg-status-success',
+                skipped: 'bg-muted-foreground',
+              }, index === currentSetIndex ? 'bg-primary' : 'bg-muted')
             }`}
           />
         ))}

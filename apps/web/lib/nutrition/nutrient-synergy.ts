@@ -15,15 +15,12 @@
 // 타입 정의
 // ============================================
 
-/** 시너지/길항 계수 타입 */
-export type InteractionFactor = number;
-
 /** 상호작용 타입 */
 export type InteractionType = 'synergy' | 'independent' | 'antagonist';
 
 /** 상호작용 정보 */
 export interface NutrientInteraction {
-  factor: InteractionFactor;
+  factor: number;
   type: InteractionType;
   reference?: string;
   description?: string;
@@ -41,7 +38,7 @@ export interface NutrientInteraction {
  *
  * 참고: nutrition-science.md 섹션 2.2
  */
-export const NUTRIENT_INTERACTION_MATRIX: Record<string, Record<string, InteractionFactor>> = {
+export const NUTRIENT_INTERACTION_MATRIX: Record<string, Record<string, number>> = {
   // 비타민 A 상호작용
   vitaminA: {
     vitaminC: 1.0, // 독립
@@ -120,7 +117,7 @@ export const NUTRIENT_INTERACTION_MATRIX: Record<string, Record<string, Interact
  * @param nutrient2 - 두 번째 영양소
  * @returns 상호작용 계수 (기본값 1.0)
  */
-export function getInteractionFactor(nutrient1: string, nutrient2: string): InteractionFactor {
+export function getInteractionFactor(nutrient1: string, nutrient2: string): number {
   return NUTRIENT_INTERACTION_MATRIX[nutrient1]?.[nutrient2] ?? 1.0;
 }
 
@@ -130,7 +127,7 @@ export function getInteractionFactor(nutrient1: string, nutrient2: string): Inte
  * @param factor - 상호작용 계수
  * @returns 상호작용 타입
  */
-export function getInteractionType(factor: InteractionFactor): InteractionType {
+export function getInteractionType(factor: number): InteractionType {
   if (factor > 1.05) return 'synergy';
   if (factor < 0.95) return 'antagonist';
   return 'independent';

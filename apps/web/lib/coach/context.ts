@@ -15,6 +15,7 @@ export { summarizeContext } from './types';
  * 사용자 컨텍스트 수집
  * @param clerkUserId - Clerk 사용자 ID
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- context aggregation
 export async function getUserContext(clerkUserId: string): Promise<UserContext | null> {
   try {
     const supabase = createClerkSupabaseClient();

@@ -203,6 +203,7 @@ export function recommendTargetShade(
 /**
  * 시즌별 미백 방법 추천
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function getWhiteningMethodsForSeason(
   season: PersonalColorSeason,
   shadeSteps: number

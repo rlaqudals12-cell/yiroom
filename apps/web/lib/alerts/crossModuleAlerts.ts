@@ -9,6 +9,7 @@ import {
   type AlertPriority,
   ALERT_TYPE_CONFIG,
 } from './types';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 /**
  * 알림 ID 생성
@@ -206,8 +207,7 @@ export function createHairLossPreventionAlert(
   riskLevel: 'low' | 'medium' | 'high'
 ): CrossModuleAlertData {
   const config = ALERT_TYPE_CONFIG.hair_loss_prevention;
-  const level: AlertLevel =
-    riskLevel === 'high' ? 'danger' : riskLevel === 'medium' ? 'warning' : 'info';
+  const level: AlertLevel = selectByKey(riskLevel, { high: 'danger' as const, medium: 'warning' as const }, 'info' as const)!;
 
   const messages: Record<string, string> = {
     high: '모발 밀도가 낮아요. 단백질, 철분 섭취를 강화해보세요',

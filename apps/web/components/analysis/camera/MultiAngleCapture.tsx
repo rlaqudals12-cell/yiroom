@@ -7,6 +7,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { Button } from '@/components/ui/button';
 import { Camera, RotateCcw, Loader2 } from 'lucide-react';
 import { FaceGuideOverlay } from './FaceGuideOverlay';
@@ -103,8 +104,8 @@ export function MultiAngleCapture({
       ctx.scale(-1, 1);
       ctx.drawImage(video, 0, 0);
 
-      // Base64 변환
-      const imageBase64 = canvas.toDataURL('image/jpeg', 0.9);
+      // Base64 변환 (0.8 품질: Vercel 4.5MB body 제한 대응)
+      const imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
       // 검증 (옵션)
       if (onValidate) {
@@ -124,12 +125,7 @@ export function MultiAngleCapture({
       }
 
       // 이미지 저장
-      const imageKey =
-        currentAngle === 'front'
-          ? 'frontImageBase64'
-          : currentAngle === 'left'
-            ? 'leftImageBase64'
-            : 'rightImageBase64';
+      const imageKey = selectByKey(currentAngle, { front: 'frontImageBase64' as const, left: 'leftImageBase64' as const }, 'rightImageBase64' as const)!;
 
       setImages((prev) => ({ ...prev, [imageKey]: imageBase64 }));
       setCapturedAngles((prev) => [...prev, currentAngle]);
@@ -352,6 +348,7 @@ export function MultiAngleCapture({
                 </div>
                 {images.frontImageBase64 && (
                   <div className="relative aspect-[3/4] w-full max-w-[280px] mx-auto rounded-2xl overflow-hidden border-2 border-green-400 shadow-lg">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- 카메라 촬영 base64 이미지 미리보기 */}
                     <img
                       src={images.frontImageBase64}
                       alt="정면 사진"
@@ -382,6 +379,7 @@ export function MultiAngleCapture({
                   <div className="flex-1 max-w-[180px]">
                     {capturedAngles.includes('left') && images.leftImageBase64 ? (
                       <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-green-400 shadow-md">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- 카메라 촬영 base64 이미지 미리보기 */}
                         <img
                           src={images.leftImageBase64}
                           alt="좌측 사진"
@@ -412,6 +410,7 @@ export function MultiAngleCapture({
                   <div className="flex-1 max-w-[180px]">
                     {capturedAngles.includes('right') && images.rightImageBase64 ? (
                       <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-green-400 shadow-md">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- 카메라 촬영 base64 이미지 미리보기 */}
                         <img
                           src={images.rightImageBase64}
                           alt="우측 사진"

@@ -328,6 +328,7 @@ function detectKyphosis(landmarks: Landmark33[]): PostureIssue | null {
  * if (posture.issues.length > 0) {
  * }
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function analyzePosture(poseResult: PoseDetectionResult): PostureAnalysis {
   const { landmarks } = poseResult;
 

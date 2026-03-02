@@ -58,12 +58,14 @@ export function calculateNutritionScore(input: NutritionScoreInput): {
   const balanceScore = percentToScore(avgBalance, SCORE_WEIGHTS.nutrition.balance);
 
   // 수분 섭취 점수 (0-5)
-  const waterPercent =
-    input.targetWaterCups > 0
-      ? (input.waterCups / input.targetWaterCups) * 100
-      : input.waterCups >= 8
-        ? 100
-        : (input.waterCups / 8) * 100;
+  let waterPercent: number;
+  if (input.targetWaterCups > 0) {
+    waterPercent = (input.waterCups / input.targetWaterCups) * 100;
+  } else if (input.waterCups >= 8) {
+    waterPercent = 100;
+  } else {
+    waterPercent = (input.waterCups / 8) * 100;
+  }
   const waterScore = percentToScore(waterPercent, SCORE_WEIGHTS.nutrition.water);
 
   const total = calorieScore + balanceScore + waterScore;

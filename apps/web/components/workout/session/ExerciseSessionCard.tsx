@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, Play, CheckCircle, SkipForward, Info } from 'lucide-react';
 import { SetTracker } from './SetTracker';
 import type { ExerciseSessionRecord } from '@/types/workout';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
 
 interface ExerciseSessionCardProps {
   record: ExerciseSessionRecord;
@@ -78,9 +79,7 @@ export function ExerciseSessionCard({
             className={`w-10 h-10 rounded-full flex items-center justify-center ${
               isCompleted
                 ? 'bg-status-success'
-                : isCurrentExercise
-                  ? 'bg-primary'
-                  : 'bg-muted'
+                : selectByCondition(isCurrentExercise, 'bg-primary', 'bg-muted')
             }`}
           >
             {isCompleted ? (

@@ -26,6 +26,7 @@ import {
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
+import { classifyByRange, mapToClass } from '@/lib/utils/conditional-helpers';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useUserMatching } from '@/hooks/useUserMatching';
 import { IngredientFavoriteFilter } from '@/components/beauty/IngredientFavoriteFilter';
@@ -85,8 +86,7 @@ const mainCategories: { id: MainCategory; label: string }[] = [
 ];
 
 // 세부 카테고리 (대분류별)
-type SubCategory = string;
-const subCategories: Record<MainCategory, { id: SubCategory; label: string }[]> = {
+const subCategories: Record<MainCategory, { id: string; label: string }[]> = {
   all: [],
   cleansing: [
     { id: 'cleansing_foam', label: '클렌징폼' },
@@ -446,6 +446,18 @@ function getProductImageUrl(imageUrl: string | null | undefined, brand: string):
   return `https://placehold.co/400x400/${colors[colorIndex]}/${colors[colorIndex]}`;
 }
 
+// 성분 목록에서 특정 이름과 매칭되는 성분이 있는지 확인
+function hasMatchingIngredient(
+  ingredients: string[] | undefined | null,
+  names: string[]
+): boolean {
+  return (
+    ingredients?.some((ing) =>
+      names.some((name) => ing.toLowerCase().includes(name))
+    ) ?? false
+  );
+}
+
 export default function BeautyPage() {
   const router = useRouter();
   const supabase = useClerkSupabaseClient();
@@ -464,7 +476,7 @@ export default function BeautyPage() {
   const [selectedSkinTypes, setSelectedSkinTypes] = useState<SkinType[]>(['combination']);
   const [selectedConcerns, setSelectedConcerns] = useState<SkinConcern[]>(['hydration']);
   const [mainCategory, setMainCategory] = useState<MainCategory>('all');
-  const [subCategory, setSubCategory] = useState<SubCategory | null>(null);
+  const [subCategory, setSubCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [showSortSheet, setShowSortSheet] = useState(false);
   const [matchFilterOn, setMatchFilterOn] = useState(true);
@@ -573,6 +585,7 @@ export default function BeautyPage() {
 
   // 제품 데이터 조회
   useEffect(() => {
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
     const fetchProducts = async () => {
       setProductsLoading(true);
       try {
@@ -686,9 +699,7 @@ export default function BeautyPage() {
         if (favoriteIngredients.length > 0) {
           const favoriteNames = favoriteIngredients.map((f) => f.itemName.toLowerCase());
           filteredProducts = filteredProducts.filter((p) =>
-            p.keyIngredients?.some((ing) =>
-              favoriteNames.some((fav) => ing.toLowerCase().includes(fav))
-            )
+            hasMatchingIngredient(p.keyIngredients, favoriteNames)
           );
         }
 
@@ -696,10 +707,7 @@ export default function BeautyPage() {
         if (avoidIngredients.length > 0) {
           const avoidNames = avoidIngredients.map((a) => a.itemName.toLowerCase());
           filteredProducts = filteredProducts.filter(
-            (p) =>
-              !p.keyIngredients?.some((ing) =>
-                avoidNames.some((avoid) => ing.toLowerCase().includes(avoid))
-              )
+            (p) => !hasMatchingIngredient(p.keyIngredients, avoidNames)
           );
         }
 
@@ -1100,13 +1108,11 @@ export default function BeautyPage() {
                     <div
                       className={cn(
                         'w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0',
-                        product.rank === 1
-                          ? 'bg-yellow-500 text-white'
-                          : product.rank === 2
-                            ? 'bg-gray-400 text-white'
-                            : product.rank === 3
-                              ? 'bg-amber-700 text-white'
-                              : 'bg-muted text-muted-foreground'
+                        mapToClass(product.rank, {
+                          1: 'bg-yellow-500 text-white',
+                          2: 'bg-gray-400 text-white',
+                          3: 'bg-amber-700 text-white',
+                        }, 'bg-muted text-muted-foreground')
                       )}
                     >
                       {product.rank === 1 ? (
@@ -1206,7 +1212,7 @@ export default function BeautyPage() {
                 {productsLoading ? '로딩...' : `${products.length}개 제품`}
               </span>
             </div>
-            {productsLoading ? (
+            {productsLoading && (
               <div className="grid grid-cols-2 gap-3">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="bg-card rounded-2xl border p-3 animate-pulse">
@@ -1217,12 +1223,14 @@ export default function BeautyPage() {
                   </div>
                 ))}
               </div>
-            ) : products.length === 0 ? (
+            )}
+            {!productsLoading && products.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <p>조건에 맞는 제품이 없습니다.</p>
                 <p className="text-sm mt-1">필터를 조정해 보세요.</p>
               </div>
-            ) : (
+            )}
+            {!productsLoading && products.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
                 {products.map((product) => (
                   <button
@@ -1243,11 +1251,11 @@ export default function BeautyPage() {
                         <div
                           className={cn(
                             'absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-bold z-10',
-                            product.matchRate >= 95
-                              ? 'bg-green-500 text-white'
-                              : product.matchRate >= 90
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted text-muted-foreground'
+                            classifyByRange(product.matchRate, [
+                              { max: 90, result: 'bg-muted text-muted-foreground' },
+                              { min: 90, max: 95, result: 'bg-primary text-primary-foreground' },
+                              { min: 95, result: 'bg-green-500 text-white' },
+                            ])
                           )}
                         >
                           {product.matchRate}%

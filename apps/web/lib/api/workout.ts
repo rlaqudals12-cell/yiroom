@@ -427,6 +427,7 @@ export async function getWorkoutStreak(userId: string): Promise<WorkoutStreak | 
  * - 기존 JSONB badges_earned 유지 (하위 호환)
  * - 새로운 user_badges 테이블에도 동기화
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function updateWorkoutStreak(
   userId: string,
   workoutDate: string

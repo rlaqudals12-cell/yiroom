@@ -254,7 +254,8 @@ export async function getCoupangCategoryProducts(
  * 쿠팡 API 응답 → AffiliateProduct 변환
  */
 function mapCoupangProduct(product: CoupangProductResponse, subId?: string): AffiliateProduct {
-  const affiliateUrl = `https://link.coupang.com/a/${product.productId}${subId ? `?subId=${subId}` : ''}`;
+  const subIdParam = subId ? `?subId=${subId}` : '';
+  const affiliateUrl = `https://link.coupang.com/a/${product.productId}${subIdParam}`;
 
   return {
     id: `coupang-${product.productId}`,

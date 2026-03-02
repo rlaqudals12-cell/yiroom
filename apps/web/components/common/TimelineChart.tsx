@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { selectByKey, getTrendDirection, getTrendColorClass } from '@/lib/utils/conditional-helpers';
 
 // recharts 컴포넌트들을 동적 import (SSR 비활성화)
 const AreaChart = dynamic(() => import('recharts').then((mod) => mod.AreaChart), { ssr: false });
@@ -172,8 +173,10 @@ export function TimelineChart({
   const maxScore = Math.max(...scores, targetScore || -Infinity);
   const domain = yDomain || [Math.max(0, minScore - 10), Math.min(100, maxScore + 10)];
 
-  const TrendIcon =
-    trend === 'improving' ? TrendingUp : trend === 'declining' ? TrendingDown : Minus;
+  const TrendIcon = selectByKey(trend, {
+    improving: TrendingUp,
+    declining: TrendingDown,
+  }, Minus)!;
 
   // 데이터가 없을 때
   if (data.length === 0) {
@@ -374,11 +377,7 @@ export function TimelineChart({
               <p
                 className={cn(
                   'font-medium',
-                  data[0].score - data[data.length - 1].score > 0
-                    ? 'text-green-600'
-                    : data[0].score - data[data.length - 1].score < 0
-                      ? 'text-red-600'
-                      : ''
+                  getTrendColorClass(getTrendDirection(data[0].score - data[data.length - 1].score))
                 )}
               >
                 {data[0].score - data[data.length - 1].score > 0 ? '+' : ''}

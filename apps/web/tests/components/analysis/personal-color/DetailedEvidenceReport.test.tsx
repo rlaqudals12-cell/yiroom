@@ -34,8 +34,8 @@ const mockWorstColors: ColorInfo[] = [
 ];
 
 describe('DetailedEvidenceReport', () => {
-  it('renders nothing when no evidence and no image quality', () => {
-    const { container } = render(
+  it('renders season explanation even when no evidence and no image quality', () => {
+    render(
       <DetailedEvidenceReport
         evidence={null}
         imageQuality={null}
@@ -45,7 +45,8 @@ describe('DetailedEvidenceReport', () => {
         worstColors={mockWorstColors}
       />
     );
-    expect(container.firstChild).toBeNull();
+    // 시즌 설명 카드는 evidence 없이도 항상 표시
+    expect(screen.getByTestId('detailed-evidence-report')).toBeInTheDocument();
   });
 
   it('renders tone spectrum bar for cool tone', () => {

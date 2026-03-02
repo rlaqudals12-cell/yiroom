@@ -14,6 +14,9 @@ import type { DrapeColor, MetalType } from '@/types/visual-analysis';
 // 광학 속성 타입 정의
 // ============================================
 
+/** 퍼스널컬러 시즌 (봄/여름/가을/겨울) */
+type DrapeSeason = 'spring' | 'summer' | 'autumn' | 'winter';
+
 /** 드레이프의 광학 속성 */
 export interface DrapeOpticalProperties {
   /** RGB 색상값 */
@@ -23,7 +26,7 @@ export interface DrapeOpticalProperties {
   /** 색상 이름 (한국어) */
   name: string;
   /** 소속 시즌 */
-  season: 'spring' | 'summer' | 'autumn' | 'winter';
+  season: DrapeSeason;
   /**
    * 반사율 (0.0 ~ 1.0)
    * - 높을수록 피부에서 많이 반사됨 → 피부가 밝아보임
@@ -558,7 +561,7 @@ function generateDescription(
  */
 export function analyzeWithSeason(
   skin: SkinToneCharacteristics,
-  season: 'spring' | 'summer' | 'autumn' | 'winter'
+  season: DrapeSeason
 ): DrapeInteractionResult[] {
   const palette = getSeasonPalette(season);
   return palette
@@ -571,7 +574,7 @@ export function analyzeWithSeason(
  * (광학적 분석 - drape-reflectance의 analyzeFullPalette와 구분)
  */
 export function analyzeFullPaletteOptical(skin: SkinToneCharacteristics): {
-  recommendedSeason: 'spring' | 'summer' | 'autumn' | 'winter';
+  recommendedSeason: DrapeSeason;
   seasonScores: Record<string, number>;
   topColors: DrapeInteractionResult[];
   avoidColors: DrapeInteractionResult[];
@@ -618,7 +621,7 @@ function calculateSeasonAverage(results: DrapeInteractionResult[], season: strin
  * 시즌별 팔레트 반환
  */
 export function getSeasonPalette(
-  season: 'spring' | 'summer' | 'autumn' | 'winter'
+  season: DrapeSeason
 ): DrapeOpticalProperties[] {
   switch (season) {
     case 'spring':

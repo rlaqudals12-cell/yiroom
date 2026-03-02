@@ -12,6 +12,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { AIBadge } from '@/components/common/AIBadge';
+import { mapToClass } from '@/lib/utils/conditional-helpers';
 
 // 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
 const ContextLinkingCard = dynamic(
@@ -387,11 +388,7 @@ export default function HairAnalysisResultPage() {
                           <div
                             className={cn(
                               'h-full rounded-full transition-all',
-                              metric.status === 'good'
-                                ? 'bg-green-500'
-                                : metric.status === 'warning'
-                                  ? 'bg-red-500'
-                                  : 'bg-amber-500'
+                              mapToClass(metric.status, { good: 'bg-green-500', warning: 'bg-red-500' }, 'bg-amber-500')
                             )}
                             style={{ width: `${metric.value}%` }}
                           />

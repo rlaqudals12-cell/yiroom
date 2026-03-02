@@ -258,7 +258,8 @@ export const wishlistLogger = createLogger('Wishlist');
  */
 export function formatError(error: unknown): string {
   if (error instanceof Error) {
-    return `${error.name}: ${error.message}${error.stack ? `\n${error.stack}` : ''}`;
+    const stackSuffix = error.stack ? `\n${error.stack}` : '';
+    return `${error.name}: ${error.message}${stackSuffix}`;
   }
   return String(error);
 }

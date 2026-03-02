@@ -98,6 +98,7 @@ function createDeeplink(productUrl: string, campaignId: string, publisherId: str
   return `https://prf.hn/click/camref:${campaignId}/pubref:${publisherId}/destination:${encodedUrl}`;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(request: NextRequest) {
   const supabase = createServiceRoleClient();
 

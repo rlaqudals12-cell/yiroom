@@ -84,6 +84,7 @@ function quantizeGrayscale(gray: Uint8Array, levels: number): Uint8Array {
  * @param angle - Analysis angle in radians (default: 0)
  * @param levels - Quantization levels (default: 64)
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function calculateGLCM(
   imageData: ImageData,
   distance: number = GLCM_DEFAULTS.distance,
@@ -140,6 +141,7 @@ export function calculateGLCM(
  * Extract Haralick texture features from GLCM
  * @see docs/principles/skin-physiology.md Section 5.1
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function extractHaralickFeatures(glcm: GLCMMatrix): HaralickFeatures {
   const { matrix, levels } = glcm;
 

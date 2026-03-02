@@ -137,7 +137,7 @@ describe('TimelineChart', () => {
   it('accepts custom unit', () => {
     render(<TimelineChart data={mockData} unit="%" />);
     // 요약 통계에 단위가 적용됨
-    const changeElements = screen.getAllByText(/점|%/);
+    const changeElements = screen.getAllByText(/[점%]/);
     expect(changeElements.length).toBeGreaterThan(0);
   });
 

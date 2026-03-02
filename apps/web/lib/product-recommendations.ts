@@ -648,6 +648,7 @@ export function getRoutineForSkinType(skinType: SkinType): RoutineStep[] {
  * @param skinType - 피부 타입
  * @returns 추천 제품 목록
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function getProductsForConcerns(
   concerns: string[],
   skinType: SkinType

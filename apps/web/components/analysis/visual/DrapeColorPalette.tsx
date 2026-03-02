@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import type { DeviceCapability, MetalType } from '@/types/visual-analysis';
 
 // ============================================
@@ -210,15 +211,7 @@ export default function DrapeColorPalette({
               onClick={() => setActiveSeasonFilter(filter)}
               className="text-xs px-2 py-1 h-7"
             >
-              {filter === 'all'
-                ? '전체 보기'
-                : filter === 'spring'
-                  ? '봄'
-                  : filter === 'summer'
-                    ? '여름'
-                    : filter === 'autumn'
-                      ? '가을'
-                      : '겨울'}
+              {selectByKey(filter, { all: '전체 보기', spring: '봄', summer: '여름', autumn: '가을' }, '겨울')}
               {/* 사용자 시즌 표시 */}
               {userSeason && filter === userSeason && (
                 <span className="ml-1 text-[10px] text-primary">★</span>
@@ -268,11 +261,7 @@ export default function DrapeColorPalette({
 
       {/* 성능 모드 표시 */}
       <p className="text-xs text-muted-foreground text-center">
-        {deviceCapability.tier === 'high'
-          ? '상세 모드 (128색)'
-          : deviceCapability.tier === 'medium'
-            ? '표준 모드 (64색)'
-            : '빠른 모드 (16색)'}
+        {selectByKey(deviceCapability.tier, { high: '상세 모드 (128색)', medium: '표준 모드 (64색)' }, '빠른 모드 (16색)')}
       </p>
     </div>
   );

@@ -13,6 +13,7 @@ import { ArrowLeft, RefreshCw, Thermometer, Sparkles, ChevronRight } from 'lucid
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -194,13 +195,11 @@ export default function ClosetRecommendPage() {
           <p className="text-sm font-medium truncate">{item.name}</p>
           <div className="mt-1.5 h-1 bg-muted rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full ${
-                score.total >= 70
-                  ? 'bg-green-500'
-                  : score.total >= 50
-                    ? 'bg-yellow-500'
-                    : 'bg-red-500'
-              }`}
+              className={`h-full rounded-full ${classifyByRange(score.total, [
+                { max: 50, result: 'bg-red-500' },
+                { max: 70, result: 'bg-yellow-500' },
+                { min: 70, result: 'bg-green-500' },
+              ], 'bg-red-500')}`}
               style={{ width: `${score.total}%` }}
             />
           </div>

@@ -6,6 +6,7 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Clock, ArrowRight, Upload, Loader2 } from 'lucide-react';
+import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
 import { generateMockMakeupAnalysisResult, UNDERTONES } from '@/lib/analysis/makeup';
 import { Button } from '@/components/ui/button';
@@ -107,13 +108,8 @@ export default function MakeupAnalysisPage() {
     setError(null);
 
     try {
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-      });
-      reader.readAsDataURL(imageFile);
-      const imageBase64 = await base64Promise;
+      // 파일을 압축된 Base64로 변환 (Vercel 4.5MB body 제한 대응)
+      const imageBase64 = await compressFileToBase64(imageFile);
 
       const response = await fetch('/api/analyze/makeup', {
         method: 'POST',

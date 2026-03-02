@@ -314,9 +314,7 @@ describe('GET /api/reports/weekly', () => {
     });
 
     it('날짜 형식이 맞으면 정상 처리된다', async () => {
-      vi.mocked(getWeekStart).mockImplementation((date) => {
-        return date ? '2025-12-09' : '2025-12-09';
-      });
+      vi.mocked(getWeekStart).mockReturnValue('2025-12-09');
 
       const response = await GET(
         createMockGetRequest('http://localhost/api/reports/weekly?weekStart=2025-12-09')

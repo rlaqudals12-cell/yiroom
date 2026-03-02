@@ -346,7 +346,7 @@ export function MultiAngleBodyCapture({
       {/* 추가 촬영 단계 */}
       {step === 'additional' && (
         <>
-          {streamRef.current ? (
+          {streamRef.current && (
             // 추가 각도 촬영 중
             <div className="relative flex-1 bg-black">
               <video
@@ -392,7 +392,8 @@ export function MultiAngleBodyCapture({
                 </div>
               )}
             </div>
-          ) : showMethodChoice ? (
+          )}
+          {!streamRef.current && showMethodChoice && (
             // 카메라/갤러리 선택 화면
             <div className="flex flex-col items-center justify-start pt-12 p-6">
               <div className="text-center mb-8">
@@ -416,7 +417,8 @@ export function MultiAngleBodyCapture({
                 뒤로
               </Button>
             </div>
-          ) : (
+          )}
+          {!streamRef.current && !showMethodChoice && (
             // 추가 각도 선택 화면 (갤러리 카드 스타일)
             <div className="flex flex-col items-center justify-start pt-8 p-6">
               <BodyAngleSelector

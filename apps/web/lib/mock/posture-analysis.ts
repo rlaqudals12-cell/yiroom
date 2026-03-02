@@ -23,11 +23,14 @@ export type PostureType =
   | 'flatback'
   | 'lordosis';
 
+// 자세 측정 상태
+export type PostureStatus = 'good' | 'warning' | 'alert';
+
 // 자세 분석 지표
 export interface PostureMeasurement {
   name: string;
   value: number; // 0-100 (50이 이상적)
-  status: 'good' | 'warning' | 'alert';
+  status: PostureStatus;
   description: string;
 }
 
@@ -373,6 +376,8 @@ const INSIGHTS: Record<PostureType, string[]> = {
   ],
 };
 
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
+
 // 헬퍼 함수
 function getRandomItem<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
@@ -409,23 +414,20 @@ export function generateMockPostureAnalysis(bodyType?: string): PostureAnalysisR
 
   // 정면 분석 측정값
   const isIdeal = postureType === 'ideal';
+  // 이상적 자세가 아닐 때 랜덤으로 경고 여부 결정
+  const shoulderIsGood = isIdeal || getRandomInRange(0, 1) === 0;
+  const pelvisIsGood = isIdeal || getRandomInRange(0, 1) === 0;
   const frontAnalysis = {
     shoulderSymmetry: {
       name: '어깨 대칭',
       value: isIdeal ? getRandomInRange(45, 55) : getRandomInRange(30, 70),
-      status: (isIdeal ? 'good' : getRandomInRange(0, 1) ? 'warning' : 'good') as
-        | 'good'
-        | 'warning'
-        | 'alert',
+      status: selectByCondition(shoulderIsGood, 'good' as const, 'warning' as const)!,
       description: '좌우 어깨 높이 균형도',
     },
     pelvisSymmetry: {
       name: '골반 대칭',
       value: isIdeal ? getRandomInRange(45, 55) : getRandomInRange(35, 65),
-      status: (isIdeal ? 'good' : getRandomInRange(0, 1) ? 'warning' : 'good') as
-        | 'good'
-        | 'warning'
-        | 'alert',
+      status: selectByCondition(pelvisIsGood, 'good' as const, 'warning' as const)!,
       description: '좌우 골반 높이 균형도',
     },
     kneeAlignment: {
@@ -461,7 +463,7 @@ export function generateMockPostureAnalysis(bodyType?: string): PostureAnalysisR
     }
   };
 
-  const getStatus = (value: number): 'good' | 'warning' | 'alert' => {
+  const getStatus = (value: number): PostureStatus => {
     if (value >= 40 && value <= 60) return 'good';
     if (value >= 30 && value <= 70) return 'warning';
     return 'alert';
@@ -577,7 +579,7 @@ export function getPostureTypeBgColor(type: PostureType): string {
 /**
  * 점수별 상태 반환
  */
-export function getScoreStatus(score: number): 'good' | 'warning' | 'alert' {
+export function getScoreStatus(score: number): PostureStatus {
   if (score >= 70) return 'good';
   if (score >= 50) return 'warning';
   return 'alert';

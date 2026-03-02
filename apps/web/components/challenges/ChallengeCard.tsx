@@ -149,7 +149,7 @@ export function ChallengeCard({
 
       {/* 버튼 */}
       <div className="mt-4 flex gap-2">
-        {!isParticipating ? (
+        {!isParticipating && (
           <Button
             onClick={onJoin}
             disabled={loading}
@@ -158,7 +158,8 @@ export function ChallengeCard({
           >
             {loading ? '참여 중...' : '참여하기'}
           </Button>
-        ) : isCompleted && !userChallenge?.rewardClaimed ? (
+        )}
+        {isParticipating && isCompleted && !userChallenge?.rewardClaimed && (
           <Button
             onClick={onView}
             className="flex-1 bg-green-500 hover:bg-green-600"
@@ -166,7 +167,8 @@ export function ChallengeCard({
           >
             보상 받기
           </Button>
-        ) : (
+        )}
+        {isParticipating && !(isCompleted && !userChallenge?.rewardClaimed) && (
           <Button
             onClick={onView}
             variant="outline"

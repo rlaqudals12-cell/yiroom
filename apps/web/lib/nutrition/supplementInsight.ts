@@ -284,6 +284,7 @@ export interface SupplementInsightResult {
 /**
  * 목표 + 피부 상태 기반 영양제 추천
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function getSupplementRecommendations(
   goal: NutritionGoal,
   skinConcerns?: SkinConcern[]

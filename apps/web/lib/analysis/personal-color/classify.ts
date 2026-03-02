@@ -126,6 +126,7 @@ export function determineUndertone(lab: LabColor): UndertoneResult {
 /**
  * 4계절 타입 판정
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function determineSeason(lab: LabColor, undertone: UndertoneResult): Season {
   const { springAutumnBoundaryL, summerWinterBoundaryL } = KOREAN_ADJUSTMENTS;
 
@@ -151,6 +152,7 @@ export function determineSeason(lab: LabColor, undertone: UndertoneResult): Seas
 /**
  * 계절 내 서브타입 판정
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function determineSubtype(lab: LabColor, season: Season): Subtype {
   const { chroma } = calculateDerivedMetrics(lab);
 

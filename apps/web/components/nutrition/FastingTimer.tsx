@@ -117,6 +117,7 @@ export default function FastingTimer({
     }, [fastingStartTime, eatingWindowHours]);
 
   // 현재 상태 계산 (단식 중 / 식사 가능)
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
   const { isFasting, remainingMinutes, progressPercent } = useMemo(() => {
     if (!enabled || !fastingStartTime || !eatingWindowHours) {
       return { isFasting: false, remainingMinutes: 0, progressPercent: 0 };

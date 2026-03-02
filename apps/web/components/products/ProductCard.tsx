@@ -42,9 +42,12 @@ export function ProductCard({ product, matchScore, className, priority = false }
   // 이미지 URL (없으면 플레이스홀더 사용)
   const rawImageUrl = 'imageUrl' in product ? product.imageUrl : undefined;
   // 제품 카테고리에 따른 플레이스홀더 색상
-  const placeholderColor = 'skinTypes' in product ? 'f8e8ee' :
-                           'benefits' in product ? 'e8f8ee' :
-                           'targetMuscles' in product ? 'e8eef8' : 'f0f0f0';
+  const placeholderColor = (() => {
+    if ('skinTypes' in product) return 'f8e8ee';
+    if ('benefits' in product) return 'e8f8ee';
+    if ('targetMuscles' in product) return 'e8eef8';
+    return 'f0f0f0';
+  })();
   const placeholderUrl = `https://placehold.co/400x400/${placeholderColor}/888?text=${encodeURIComponent(product.brand.slice(0, 3))}`;
   const imageUrl = rawImageUrl || placeholderUrl;
 

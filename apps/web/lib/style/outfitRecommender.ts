@@ -11,6 +11,7 @@ import type {
   TempLayerInfo,
 } from '@/types/weather';
 import { TEMP_LAYERS, BODY_TYPE_ADJUSTMENTS } from '@/types/weather';
+import { selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // 체형별 아우터 추천
 const OUTER_BY_BODY_TYPE: Record<string, string[]> = {
@@ -137,12 +138,14 @@ function generateLayers(
 
   // 상의
   const topName = selectByBodyType(TOP_BY_BODY_TYPE, bodyType);
-  const topReason =
-    layerInfo.layers >= 2
-      ? '레이어링하기 좋은 아이템'
-      : feelsLike >= 23
-        ? '시원한 소재의 상의'
-        : '편안한 데일리 상의';
+  let topReason: string;
+  if (layerInfo.layers >= 2) {
+    topReason = '레이어링하기 좋은 아이템';
+  } else if (feelsLike >= 23) {
+    topReason = '시원한 소재의 상의';
+  } else {
+    topReason = '편안한 데일리 상의';
+  }
 
   layers.push({
     type: 'top',
@@ -157,18 +160,16 @@ function generateLayers(
   layers.push({
     type: 'bottom',
     name: bottomName,
-    reason: `${bodyAdjust.focus === 'straight_lines' ? '스트레이트 체형' : bodyAdjust.focus === 'fitted_waist' ? '웨이브 체형' : '내추럴 체형'}에 어울리는 핏`,
+    reason: `${selectByKey(bodyAdjust.focus, { straight_lines: '스트레이트 체형', fitted_waist: '웨이브 체형' }, '내추럴 체형')}에 어울리는 핏`,
   });
 
   // 신발
-  const shoes =
-    feelsLike < 5
-      ? '부츠'
-      : feelsLike < 15
-        ? '로퍼'
-        : feelsLike < 23
-          ? '스니커즈'
-          : '샌들';
+  const shoes = classifyByRange(feelsLike, [
+    { max: 5, result: '부츠' },
+    { min: 5, max: 15, result: '로퍼' },
+    { min: 15, max: 23, result: '스니커즈' },
+    { min: 23, result: '샌들' },
+  ])!;
 
   layers.push({
     type: 'shoes',

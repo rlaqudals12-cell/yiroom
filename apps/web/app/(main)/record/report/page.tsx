@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 /**
  * 리포트 상세 페이지 - UX 리스트럭처링
@@ -238,7 +239,11 @@ function GoalProgressBar({ goal }: { goal: GoalProgress }) {
           <div
             className={cn(
               'h-full rounded-full transition-all',
-              progress >= 100 ? 'bg-green-500' : progress >= 70 ? 'bg-primary' : 'bg-amber-500'
+              classifyByRange(progress, [
+                { max: 70, result: 'bg-amber-500' },
+                { max: 100, result: 'bg-primary' },
+                { min: 100, result: 'bg-green-500' },
+              ], 'bg-amber-500')!
             )}
             style={{ width: `${progress}%` }}
           />

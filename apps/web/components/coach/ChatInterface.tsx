@@ -50,6 +50,7 @@ export function ChatInterface({
 
   // 스트리밍 API를 통한 메시지 전송
   const handleStreamingSend = useCallback(
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
     async (messageText: string, currentMessages: CoachMessage[]) => {
       // 이전 요청 중단
       if (abortControllerRef.current) {

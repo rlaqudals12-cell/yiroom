@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, Calendar, Flame } from 'lucide-react';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 interface TodayData {
   hasCheckin: boolean;
@@ -262,16 +263,16 @@ function TrendItem({
   const percentage = (value / max) * 100;
   // 역방향이면 낮을수록 좋음 (스트레스)
   const color = inverse
-    ? percentage < 40
-      ? 'bg-green-500'
-      : percentage < 70
-        ? 'bg-yellow-500'
-        : 'bg-red-500'
-    : percentage > 60
-      ? 'bg-green-500'
-      : percentage > 40
-        ? 'bg-yellow-500'
-        : 'bg-red-500';
+    ? classifyByRange(percentage, [
+        { max: 40, result: 'bg-green-500' },
+        { min: 40, max: 70, result: 'bg-yellow-500' },
+        { min: 70, result: 'bg-red-500' },
+      ])!
+    : classifyByRange(percentage, [
+        { max: 41, result: 'bg-red-500' },
+        { min: 41, max: 61, result: 'bg-yellow-500' },
+        { min: 61, result: 'bg-green-500' },
+      ])!;
 
   return (
     <div>

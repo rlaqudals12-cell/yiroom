@@ -45,15 +45,15 @@ export interface FoodSafetyKoreaResult {
 // API 타임아웃 (5초 - 공공데이터 API는 좀 느림)
 const API_TIMEOUT_MS = 5000;
 
-// 영양성분 파싱 정규식
+// 영양성분 파싱 정규식 (길이 제한으로 ReDoS 방지)
 const NUTRIENT_PATTERNS = {
-  calories: /열량\s*[:：]?\s*([\d.]+)\s*k?cal/i,
-  protein: /단백질\s*[:：]?\s*([\d.]+)\s*g/i,
-  carbs: /탄수화물\s*[:：]?\s*([\d.]+)\s*g/i,
-  fat: /지방\s*[:：]?\s*([\d.]+)\s*g/i,
-  sugar: /당류\s*[:：]?\s*([\d.]+)\s*g/i,
-  sodium: /나트륨\s*[:：]?\s*([\d.]+)\s*m?g/i,
-  fiber: /식이섬유\s*[:：]?\s*([\d.]+)\s*g/i,
+  calories: /열량\s{0,5}[:：]?\s{0,5}([\d.]{1,10})\s{0,3}k?cal/i,
+  protein: /단백질\s{0,5}[:：]?\s{0,5}([\d.]{1,10})\s{0,3}g/i,
+  carbs: /탄수화물\s{0,5}[:：]?\s{0,5}([\d.]{1,10})\s{0,3}g/i,
+  fat: /지방\s{0,5}[:：]?\s{0,5}([\d.]{1,10})\s{0,3}g/i,
+  sugar: /당류\s{0,5}[:：]?\s{0,5}([\d.]{1,10})\s{0,3}g/i,
+  sodium: /나트륨\s{0,5}[:：]?\s{0,5}([\d.]{1,10})\s{0,3}m?g/i,
+  fiber: /식이섬유\s{0,5}[:：]?\s{0,5}([\d.]{1,10})\s{0,3}g/i,
 };
 
 /**
@@ -72,7 +72,7 @@ function parseNutrientValue(text: string, pattern: RegExp): number | undefined {
  * 예: "120g" -> { size: 120, unit: "g" }
  */
 function parseCapacity(capacity: string): { size: number; unit: string } {
-  const match = capacity.match(/([\d.]+)\s*(g|ml|kg|l)/i);
+  const match = capacity.match(/([\d.]{1,10})\s{0,3}(g|ml|kg|l)/i);
   if (match) {
     let size = parseFloat(match[1]);
     let unit = match[2].toLowerCase();

@@ -58,6 +58,11 @@ function getRemainingTime(): { hours: number; minutes: number; seconds: number }
   };
 }
 
+// 문자열 해시 계산 (일관된 가상 데이터 생성용)
+function hashString(str: string): number {
+  return str.split('').reduce((a: number, b: string) => a + b.charCodeAt(0), 0);
+}
+
 /**
  * 타임딜 섹션 (화해/올리브영 스타일)
  * - DB에서 인기 제품 불러와서 타임딜로 표시
@@ -96,9 +101,7 @@ export function TimeDealSection({ className }: TimeDealSectionProps) {
           const salePrice = Math.round(originalPrice * (1 - discountRate / 100));
 
           // 가상 재고/판매량 (일관된 값 생성을 위해 ID 해시 사용)
-          const hash = product.id
-            .split('')
-            .reduce((a: number, b: string) => a + b.charCodeAt(0), 0);
+          const hash = hashString(product.id);
           const stock = 50 + (hash % 50);
           const soldCount = Math.round(stock * (0.5 + (hash % 40) / 100));
 

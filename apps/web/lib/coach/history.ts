@@ -36,8 +36,9 @@ export async function createCoachSession(
   const supabase = createClerkSupabaseClient();
 
   // 첫 메시지에서 제목 추출 (최대 50자)
+  const truncationSuffix = firstMessage && firstMessage.length > 50 ? '...' : '';
   const title = firstMessage
-    ? firstMessage.slice(0, 50) + (firstMessage.length > 50 ? '...' : '')
+    ? firstMessage.slice(0, 50) + truncationSuffix
     : null;
 
   const { data, error } = await supabase

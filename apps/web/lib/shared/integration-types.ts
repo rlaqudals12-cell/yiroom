@@ -16,6 +16,12 @@
 // 공통 타입 정의
 // =============================================================================
 
+/** 수준/심각도 (low-medium-high) */
+export type SeverityLevel = 'low' | 'medium' | 'high';
+
+/** 피부 톤 */
+export type SkinToneType = 'warm' | 'cool' | 'neutral';
+
 /** Lab 색공간 좌표 */
 export interface LabColor {
   L: number; // 0-100 (명도)
@@ -106,7 +112,7 @@ export interface S2ToSK1IntegrationData {
   skinConcerns: SkinConcern[];
 
   /** 민감도 수준 */
-  sensitivityLevel: 'low' | 'medium' | 'high';
+  sensitivityLevel: SeverityLevel;
 
   /** 추정 피부 나이 (선택) */
   estimatedSkinAge?: number;
@@ -218,10 +224,10 @@ export interface PC2ToM1IntegrationData {
   avoidColors: LabColor[];
 
   /** 피부 톤 */
-  skinTone: 'warm' | 'cool' | 'neutral';
+  skinTone: SkinToneType;
 
   /** 대비 수준 */
-  contrastLevel: 'low' | 'medium' | 'high';
+  contrastLevel: SeverityLevel;
 
   /** 베스트 립 컬러 (Lab) */
   bestLipColors?: LabColor[];
@@ -264,13 +270,13 @@ export interface PC2ToH1IntegrationData {
   subType: SeasonSubType;
 
   /** 피부 톤 */
-  skinTone: 'warm' | 'cool' | 'neutral';
+  skinTone: SkinToneType;
 
   /** 추천 헤어 컬러 레벨 범위 */
   recommendedLevelRange: { min: number; max: number }; // 1-10 레벨
 
   /** 추천 언더톤 */
-  recommendedUndertone: 'warm' | 'cool' | 'neutral';
+  recommendedUndertone: SkinToneType;
 
   /** 분석 신뢰도 */
   confidence: number;
@@ -283,7 +289,7 @@ export interface H1HairColorRecommendation {
   colorId: string;
   nameKo: string;
   level: number; // 1-10
-  undertone: 'warm' | 'cool' | 'neutral';
+  undertone: SkinToneType;
   labColor: LabColor;
   matchScore: number;
   seasonHarmony: string;
@@ -311,7 +317,7 @@ export interface OH1ToN1IntegrationData {
   toothStaining: 'none' | 'mild' | 'moderate' | 'severe';
 
   /** 충치 위험도 */
-  cavityRisk: 'low' | 'medium' | 'high';
+  cavityRisk: SeverityLevel;
 
   /** 치주 상태 */
   periodontalStatus?: 'healthy' | 'gingivitis' | 'periodontitis';
@@ -357,7 +363,7 @@ export interface S2ToM1IntegrationData {
   poreVisibility: number;
 
   /** 민감도 수준 */
-  sensitivityLevel: 'low' | 'medium' | 'high';
+  sensitivityLevel: SeverityLevel;
 
   /** 피부 톤 (Lab) */
   skinToneLab: LabColor;
@@ -510,7 +516,7 @@ export interface CIE4ToAnalysisData {
 /** 조명 문제 유형 */
 export interface LightingIssue {
   type: 'uneven' | 'too_dark' | 'too_bright' | 'color_cast' | 'harsh_shadow';
-  severity: 'low' | 'medium' | 'high';
+  severity: SeverityLevel;
   region?: string;
   suggestion?: string;
 }
@@ -548,7 +554,7 @@ export interface CIE1ToAnalysisData {
 /** 품질 문제 유형 */
 export interface QualityIssue {
   type: 'blur' | 'low_resolution' | 'overexposed' | 'underexposed' | 'noise';
-  severity: 'low' | 'medium' | 'high';
+  severity: SeverityLevel;
   description: string;
 }
 

@@ -8,6 +8,7 @@ import { Camera, ImageIcon } from 'lucide-react';
 import type { SkinAnalysisResult } from '@/lib/mock/skin-analysis';
 import type { MultiAngleImages } from '@/types/visual-analysis';
 import type { ImageConsent } from '@/components/analysis/consent/types';
+import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import LightingGuide from './_components/LightingGuide';
 import GalleryMultiAngleSkinUpload from './_components/GalleryMultiAngleSkinUpload';
 import MultiAngleSkinCapture from './_components/MultiAngleSkinCapture';
@@ -66,6 +67,7 @@ export default function SkinAnalysisPage() {
   useEffect(() => {
     let isRedirecting = false;
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- result page render
     async function checkExistingAnalysis() {
       // forceNew 파라미터가 있으면 자동 리디렉트 건너뛰기
       if (forceNew) {
@@ -306,16 +308,6 @@ export default function SkinAnalysisPage() {
     proceedToAnalysis(pendingImageFile, pendingMultiAngleImages);
   }, [pendingImageFile, pendingMultiAngleImages, proceedToAnalysis]);
 
-  // 이미지를 Base64로 변환
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   // AI 분석 실행 (API 호출) - 다각도 모드 지원 (카메라/갤러리 모두)
   const runAnalysis = useCallback(async () => {
     // 다각도 이미지가 있는지 확인 (카메라/갤러리 모드 공통)
@@ -342,7 +334,7 @@ export default function SkinAnalysisPage() {
         };
       } else if (hasSingleImage) {
         // 구버전 호환: 단일 이미지를 frontImageBase64로 전송
-        const imageBase64 = await fileToBase64(imageFile);
+        const imageBase64 = await compressFileToBase64(imageFile);
         requestBody = {
           frontImageBase64: imageBase64,
         };
@@ -410,7 +402,7 @@ export default function SkinAnalysisPage() {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [imageFile, multiAngleImages, captureMode, isSignedIn]);
+  }, [imageFile, multiAngleImages, captureMode, isSignedIn, router]);
 
   // 로딩 애니메이션 완료 시 분석 시작
   const handleAnalysisComplete = useCallback(() => {

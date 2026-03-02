@@ -299,12 +299,9 @@ describe('workoutSessionStore', () => {
       useWorkoutSessionStore.getState().completeExercise();
 
       const { exerciseRecords } = useWorkoutSessionStore.getState();
-      exerciseRecords[0].sets.forEach((set, idx) => {
-        if (idx === 0) {
-          expect(set.status).toBe('skipped'); // in_progress였던 세트
-        } else {
-          expect(set.status).toBe('skipped');
-        }
+      // 모든 세트가 skipped 처리됨 (in_progress였던 첫 번째 세트 포함)
+      exerciseRecords[0].sets.forEach((set) => {
+        expect(set.status).toBe('skipped');
       });
     });
   });

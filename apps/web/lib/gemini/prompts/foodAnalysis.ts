@@ -280,7 +280,7 @@ export function calculateTrafficLight(
  * 예: "1인분 (약 210g)" -> 210
  */
 export function extractGramsFromPortion(portion: string): number | null {
-  const match = portion.match(/(\d+)\s*g/i);
+  const match = portion.match(/(\d{1,6})\s{0,3}g/i);
   if (match) {
     return parseInt(match[1], 10);
   }
@@ -293,6 +293,7 @@ export function extractGramsFromPortion(portion: string): number | null {
  * @param responseText - AI 응답 텍스트
  * @returns 파싱된 결과 또는 에러
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function parseFoodAnalysisResponse(responseText: string): {
   data: GeminiFoodAnalysisResult | null;
   validation: FoodAnalysisValidationResult;

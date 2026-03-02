@@ -215,6 +215,7 @@ export async function upsertProductMeasurements(input: {
 /**
  * 신체 치수로 사이즈 추천
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- size chart matching logic
 export function recommendSizeFromMeasurements(
   sizeChart: BrandSizeChart,
   userMeasurements: {

@@ -32,6 +32,7 @@ import { FadeInUp, ScaleIn, CountUp } from '@/components/animations';
 import { RecommendedClothingCard, BodyStyleImage } from '@/components/analysis/body';
 import { getOutfitExamples } from '@/lib/color-recommendations';
 import { BodyEvidenceSummary } from '@/components/analysis/EvidenceSummary';
+import { mapToClass } from '@/lib/utils/conditional-helpers';
 
 // 체형 분석 근거 타입
 interface BodyAnalysisEvidence {
@@ -144,11 +145,10 @@ export default function AnalysisResult({
                 </p>
                 <p
                   className={`text-xs ${
-                    bmiCategory === '정상'
-                      ? 'text-green-500'
-                      : bmiCategory === '저체중'
-                        ? 'text-blue-500'
-                        : 'text-orange-500'
+                    mapToClass(bmiCategory, {
+                      '정상': 'text-green-500',
+                      '저체중': 'text-blue-500',
+                    }, 'text-orange-500')
                   }`}
                 >
                   {bmiCategory}
@@ -198,11 +198,10 @@ export default function AnalysisResult({
                 key={keyword}
                 className={`px-3 py-1 rounded-full text-sm ${
                   is3Type
-                    ? type3 === 'S'
-                      ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
-                      : type3 === 'W'
-                        ? 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300'
-                        : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
+                    ? mapToClass(type3, {
+                        S: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+                        W: 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300',
+                      }, 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300')
                     : 'bg-muted text-muted-foreground'
                 }`}
               >

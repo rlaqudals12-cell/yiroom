@@ -152,6 +152,7 @@ export function ProductsPageClient() {
     if (!hasUIFilters && !hasAnalysisParams) return rawProducts;
     if (!isFilterableCategory && !hasAnalysisParams) return rawProducts;
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
     return rawProducts.filter((product) => {
       // 화장품만 필터링 (skinTypes, skinConcerns, personalColorSeasons 체크)
       const cosmetic = product as CosmeticProduct;

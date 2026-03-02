@@ -126,11 +126,14 @@ export function ShelfList({ className }: ShelfListProps) {
       <ShelfFilters selectedStatus={selectedStatus} counts={counts} onChange={setSelectedStatus} />
 
       {/* 목록 */}
-      {loading && items.length === 0 ? (
+      {/* 로딩 상태 */}
+      {loading && items.length === 0 && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      ) : items.length === 0 ? (
+      )}
+      {/* 빈 상태 */}
+      {!(loading && items.length === 0) && items.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
           <Package className="h-12 w-12 text-muted-foreground" />
           <div>
@@ -139,7 +142,9 @@ export function ShelfList({ className }: ShelfListProps) {
           </div>
           <Button onClick={() => router.push('/scan')}>제품 스캔하기</Button>
         </div>
-      ) : (
+      )}
+      {/* 목록 */}
+      {items.length > 0 && (
         <>
           <div className="flex flex-col gap-2">
             {items.map((item) => (

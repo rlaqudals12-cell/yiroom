@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { StarRating } from './StarRating';
 import type { ReviewSummary as ReviewSummaryType } from '@/types/review';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 interface ReviewSummaryProps {
   /** 리뷰 요약 데이터 */
@@ -51,11 +52,11 @@ export function ReviewSummary({ summary, className }: ReviewSummaryProps) {
                   <div
                     className={cn(
                       'h-full rounded-full transition-all duration-300',
-                      rating >= 4
-                        ? 'bg-green-500'
-                        : rating >= 3
-                          ? 'bg-yellow-500'
-                          : 'bg-red-500'
+                      classifyByRange(rating, [
+                        { max: 3, result: 'bg-red-500' },
+                        { max: 4, result: 'bg-yellow-500' },
+                        { result: 'bg-green-500' },
+                      ])!
                     )}
                     style={{ width: `${barWidth}%` }}
                   />

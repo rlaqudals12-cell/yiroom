@@ -60,6 +60,7 @@ interface DailyRecord {
   meals: MealRecord[];
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function GET(req: Request) {
   try {
     // Clerk 인증 확인

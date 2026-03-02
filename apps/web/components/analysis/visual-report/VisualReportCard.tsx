@@ -10,6 +10,7 @@ import { GradeDisplay } from './GradeDisplay';
 import { StrengthsFirst } from './StrengthsFirst';
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from './constants';
 import type { VisualReportCardProps } from './types';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 분석 타입별 아이콘
 const ANALYSIS_ICONS = {
@@ -107,13 +108,7 @@ export function VisualReportCard({
             {/* 등급 표시 - 분석 타입별 맞춤 메시지 */}
             <GradeDisplay
               score={displayScore}
-              label={
-                analysisType === 'skin'
-                  ? '피부 건강 점수'
-                  : analysisType === 'body'
-                    ? '체형 균형 점수'
-                    : '진단 신뢰도'
-              }
+              label={selectByKey(analysisType, { skin: '피부 건강 점수', body: '체형 균형 점수' }, '진단 신뢰도')!}
               analysisType={analysisType}
               showProgress
               showScore

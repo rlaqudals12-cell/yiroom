@@ -251,6 +251,11 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
     }
   };
 
+  // 태그 삭제
+  const removeTag = (tag: string): void => {
+    setTags((prev) => prev.filter((t) => t !== tag));
+  };
+
   // 저장
   const handleSave = async () => {
     if (!imageBase64 || !name) return;
@@ -512,7 +517,7 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
                         key={tag}
                         variant="secondary"
                         className="cursor-pointer"
-                        onClick={() => setTags((prev) => prev.filter((t) => t !== tag))}
+                        onClick={() => removeTag(tag)}
                       >
                         #{tag} x
                       </Badge>

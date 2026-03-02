@@ -101,6 +101,7 @@ export default function BodyAnalysisResultPage() {
   );
 
   // DB에서 분석 결과 조회
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- result page render
   const fetchAnalysis = useCallback(async () => {
     if (!isSignedIn || !analysisId || fetchedRef.current) return;
 

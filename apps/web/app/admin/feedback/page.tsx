@@ -160,19 +160,21 @@ export default function AdminFeedbackPage() {
 
       {/* 피드백 목록 */}
       <div className="space-y-4" data-testid="feedback-list">
-        {isLoading ? (
+        {isLoading && (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
               불러오는 중...
             </CardContent>
           </Card>
-        ) : filteredFeedbacks.length === 0 ? (
+        )}
+        {!isLoading && filteredFeedbacks.length === 0 && (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
               피드백이 없습니다.
             </CardContent>
           </Card>
-        ) : (
+        )}
+        {!isLoading && filteredFeedbacks.length > 0 && (
           filteredFeedbacks.map((feedback) => (
             <Collapsible
               key={feedback.id}

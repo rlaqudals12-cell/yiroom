@@ -26,6 +26,7 @@ import {
   type AccessoryRecommendation,
 } from '@/lib/content/gender-adaptive';
 import type { SeasonType } from '@/lib/mock/personal-color';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface ResultCardV2Props {
   result: PersonalColorV2Result;
@@ -420,7 +421,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
                   <div className="flex flex-wrap gap-2">
                     {result.stylingRecommendations.metals.map((metal, idx) => (
                       <Badge key={idx} variant="outline">
-                        {metal === 'gold' ? '골드' : metal === 'silver' ? '실버' : '로즈골드'}
+                        {selectByKey(metal, { gold: '골드', silver: '실버' }, '로즈골드')}
                       </Badge>
                     ))}
                   </div>

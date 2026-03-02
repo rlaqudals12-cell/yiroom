@@ -9,6 +9,7 @@ import { Users, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ActiveUserStats } from '@/lib/admin/user-activity-stats';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
 
 interface ActiveUserStatsCardProps {
   stats: ActiveUserStats | null;
@@ -35,13 +36,7 @@ function MetricItem({ label, value, change, icon }: MetricItemProps) {
           <span className="text-2xl font-bold">{value.toLocaleString()}</span>
           {change !== 0 && (
             <span
-              className={`flex items-center text-sm ${
-                isPositive
-                  ? 'text-green-600'
-                  : isNegative
-                    ? 'text-red-600'
-                    : 'text-muted-foreground'
-              }`}
+              className={`flex items-center text-sm ${selectByCondition(isPositive, 'text-green-600', selectByCondition(isNegative, 'text-red-600', 'text-muted-foreground'))}`}
             >
               {isPositive ? (
                 <TrendingUp className="h-3 w-3 mr-0.5" />

@@ -11,6 +11,7 @@ import {
   BODY_TYPES_3,
   generateMockBodyAnalysis3,
 } from '@/lib/mock/body-analysis';
+import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import BodyPhotographyGuide from './_components/BodyPhotographyGuide';
 import InputForm from './_components/InputForm';
 import PhotoUpload from './_components/PhotoUpload';
@@ -162,16 +163,6 @@ export default function BodyAnalysisPage() {
     analysisStartedRef.current = false;
   }, []);
 
-  // 이미지를 Base64로 변환
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   // AI 분석 실행 (API 호출) - 다각도 또는 단일 이미지
   const runAnalysis = useCallback(async () => {
     // 다각도 이미지 또는 단일 이미지 중 하나가 있어야 함
@@ -196,7 +187,7 @@ export default function BodyAnalysisPage() {
         };
       } else if (imageFile) {
         // 단일 이미지 사용 (갤러리에서 선택)
-        const imageBase64 = await fileToBase64(imageFile);
+        const imageBase64 = await compressFileToBase64(imageFile);
         requestBody = { imageBase64, userInput };
       } else {
         return;

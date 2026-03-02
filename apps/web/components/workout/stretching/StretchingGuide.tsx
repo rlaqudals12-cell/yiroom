@@ -24,6 +24,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 import type {
   StretchingPrescription,
@@ -81,21 +82,18 @@ export function StretchingGuide({ prescription, onComplete, className }: Stretch
     }
   }, [currentStretch]);
 
-  // 타이머 로직
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (isPlaying && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (isPlaying && timeLeft === 0) {
-      // 세트 완료
-      handleSetComplete();
-    }
-
-    return () => clearInterval(interval);
-  }, [isPlaying, timeLeft]);
+  // 세션 완료 처리
+  const handleSessionComplete = useCallback(() => {
+    setIsPlaying(false);
+    const sessionData: SessionData = {
+      prescriptionId: prescription.prescriptionId,
+      completedExercises,
+      totalDuration: completedExercises.reduce((sum, ex) => sum + ex.actualDuration, 0),
+      startedAt: sessionStartedAt,
+      completedAt: new Date().toISOString(),
+    };
+    onComplete?.(sessionData);
+  }, [prescription, completedExercises, sessionStartedAt, onComplete]);
 
   // 세트 완료 처리
   const handleSetComplete = useCallback(() => {
@@ -124,20 +122,23 @@ export function StretchingGuide({ prescription, onComplete, className }: Stretch
         handleSessionComplete();
       }
     }
-  }, [currentSet, currentStretch, currentIndex, totalExercises, exercise]);
+  }, [currentSet, currentStretch, currentIndex, totalExercises, exercise, handleSessionComplete]);
 
-  // 세션 완료 처리
-  const handleSessionComplete = useCallback(() => {
-    setIsPlaying(false);
-    const sessionData: SessionData = {
-      prescriptionId: prescription.prescriptionId,
-      completedExercises,
-      totalDuration: completedExercises.reduce((sum, ex) => sum + ex.actualDuration, 0),
-      startedAt: sessionStartedAt,
-      completedAt: new Date().toISOString(),
-    };
-    onComplete?.(sessionData);
-  }, [prescription, completedExercises, sessionStartedAt, onComplete]);
+  // 타이머 로직
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isPlaying && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (isPlaying && timeLeft === 0) {
+      // 세트 완료
+      handleSetComplete();
+    }
+
+    return () => clearInterval(interval);
+  }, [isPlaying, timeLeft, handleSetComplete]);
 
   // 다음 운동으로 건너뛰기
   const handleSkip = () => {
@@ -194,14 +195,10 @@ export function StretchingGuide({ prescription, onComplete, className }: Stretch
             </div>
             <div className="flex gap-2">
               <Badge variant={exercise.type === 'static' ? 'secondary' : 'default'}>
-                {exercise.type === 'static' ? '정적' : exercise.type === 'dynamic' ? '동적' : 'PNF'}
+                {selectByKey(exercise.type, { static: '정적', dynamic: '동적' }, 'PNF')}
               </Badge>
               <Badge variant="outline">
-                {exercise.difficulty === 'beginner'
-                  ? '초급'
-                  : exercise.difficulty === 'intermediate'
-                    ? '중급'
-                    : '고급'}
+                {selectByKey(exercise.difficulty, { beginner: '초급', intermediate: '중급' }, '고급')}
               </Badge>
             </div>
           </div>

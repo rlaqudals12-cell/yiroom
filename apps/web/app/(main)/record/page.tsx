@@ -16,6 +16,7 @@ import {
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 /**
  * 기록 탭 - 운동 + 영양 통합
@@ -169,13 +170,11 @@ export default function RecordPage() {
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-lg">
-                          {meal.type === 'breakfast'
-                            ? '🍳'
-                            : meal.type === 'lunch'
-                              ? '🍱'
-                              : meal.type === 'dinner'
-                                ? '🍽️'
-                                : '🍪'}
+                          {selectByKey(meal.type, {
+                            breakfast: '🍳',
+                            lunch: '🍱',
+                            dinner: '🍽️',
+                          }, '🍪')}
                         </span>
                         <span className="font-medium">{meal.label}</span>
                       </div>

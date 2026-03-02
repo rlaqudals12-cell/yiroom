@@ -200,6 +200,7 @@ export const redactPii = {
   /**
    * 필드명에 따라 자동으로 적절한 마스킹 적용
    */
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
   auto: (fieldName: string, value: unknown): unknown => {
     if (value === null || value === undefined) return value;
 
@@ -372,9 +373,9 @@ export function sanitizeError(error: unknown): {
  * 에러 메시지에서 민감 정보 제거
  */
 function sanitizeErrorMessage(message: string): string {
-  // 이메일 패턴 마스킹
+  // 이메일 패턴 마스킹 (길이 제한으로 ReDoS 방지)
   let sanitized = message.replace(
-    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+    /[a-zA-Z0-9._%+-]{1,64}@[a-zA-Z0-9.-]{1,253}\.[a-zA-Z]{2,63}/g,
     '[EMAIL_REDACTED]'
   );
 

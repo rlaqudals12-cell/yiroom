@@ -11,6 +11,7 @@ import { Palette, Sparkles } from 'lucide-react';
 import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
 import type { MakeupStyleId } from '@/lib/analysis/makeup';
 import { Button } from '@/components/ui/button';
+import { mapToClass } from '@/lib/utils/conditional-helpers';
 
 interface MakeupAnalysisResultViewProps {
   result: MakeupAnalysisResult;
@@ -87,13 +88,7 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
                 aria-label={`${metric.label}: ${metric.value}점`}
               >
                 <div
-                  className={`h-full rounded-full transition-all ${
-                    metric.status === 'good'
-                      ? 'bg-green-500'
-                      : metric.status === 'warning'
-                        ? 'bg-red-500'
-                        : 'bg-pink-500'
-                  }`}
+                  className={`h-full rounded-full transition-all ${mapToClass(metric.status, { good: 'bg-green-500', warning: 'bg-red-500' }, 'bg-pink-500')}`}
                   style={{ width: `${metric.value}%` }}
                 />
               </div>

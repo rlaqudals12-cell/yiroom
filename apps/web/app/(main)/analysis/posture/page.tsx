@@ -11,6 +11,7 @@ import {
   type PostureType,
   POSTURE_TYPES,
 } from '@/lib/mock/posture-analysis';
+import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import PosturePhotographyGuide from './_components/PosturePhotographyGuide';
 import PhotoUpload from './_components/PhotoUpload';
 import AnalysisLoading from './_components/AnalysisLoading';
@@ -118,16 +119,6 @@ export default function PostureAnalysisPage() {
     handleSidePhotoSelect(null);
   }, [handleSidePhotoSelect]);
 
-  // 이미지를 Base64로 변환
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   // AI 분석 실행 (API 호출)
   const runAnalysis = useCallback(async () => {
     if (!frontImage || !isSignedIn || analysisStartedRef.current) {
@@ -138,8 +129,8 @@ export default function PostureAnalysisPage() {
     setIsAnalyzing(true);
 
     try {
-      const frontImageBase64 = await fileToBase64(frontImage);
-      const sideImageBase64 = sideImage ? await fileToBase64(sideImage) : undefined;
+      const frontImageBase64 = await compressFileToBase64(frontImage);
+      const sideImageBase64 = sideImage ? await compressFileToBase64(sideImage) : undefined;
 
       const response = await fetch('/api/analyze/posture', {
         method: 'POST',

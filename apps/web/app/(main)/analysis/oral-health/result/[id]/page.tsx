@@ -10,6 +10,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { AIBadge } from '@/components/common/AIBadge';
 import type { OralHealthAssessment } from '@/types/oral-health';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
 const OralHealthResultCard = dynamic(
@@ -196,11 +197,11 @@ export default function OralHealthResultPage(): React.JSX.Element {
               </div>
               <h2 className="text-xl font-bold text-foreground">구강건강 점수</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                {assessment.overallScore >= 80
-                  ? '전반적으로 건강한 상태예요'
-                  : assessment.overallScore >= 60
-                    ? '괜찮지만 관리가 필요한 부분이 있어요'
-                    : '적극적인 관리가 필요해요'}
+                {classifyByRange(assessment.overallScore, [
+                  { max: 60, result: '적극적인 관리가 필요해요' },
+                  { max: 80, result: '괜찮지만 관리가 필요한 부분이 있어요' },
+                  { min: 80, result: '전반적으로 건강한 상태예요' },
+                ])}
               </p>
               <p className="text-xs text-muted-foreground/70 mt-2">
                 100점 만점 · 밝기, 색상 톤, 잇몸 상태 종합 평가

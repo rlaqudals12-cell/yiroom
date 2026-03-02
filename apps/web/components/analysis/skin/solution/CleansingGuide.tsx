@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { Search, Droplets, BookOpen, User } from 'lucide-react';
 import { CLEANSER_TYPES, type SkinType } from '@/lib/mock/cleanser-types';
 import { CleanserTypeCard } from './CleanserTypeCard';
@@ -89,15 +90,12 @@ export function CleansingGuide({ userSkinType, className }: CleansingGuideProps)
             <div className="bg-primary/10 rounded-lg p-3 text-sm">
               <span className="font-medium">
                 내 피부 타입:{' '}
-                {userSkinType === 'dry'
-                  ? '건성'
-                  : userSkinType === 'oily'
-                    ? '지성'
-                    : userSkinType === 'combination'
-                      ? '복합성'
-                      : userSkinType === 'sensitive'
-                        ? '민감성'
-                        : '중성'}
+                {selectByKey(userSkinType, {
+                  dry: '건성',
+                  oily: '지성',
+                  combination: '복합성',
+                  sensitive: '민감성',
+                }, '중성')}
               </span>
               <span className="text-muted-foreground ml-2">추천 클렌저가 상단에 표시돼요</span>
             </div>

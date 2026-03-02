@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { selectByKey, selectByCondition, getTrendDirection, getTrendColorClass } from '@/lib/utils/conditional-helpers';
 import { BottomNav } from '@/components/BottomNav';
 import type {
   AnalysisType,
@@ -83,7 +84,8 @@ function ChangeItem({
   const change = after - before;
   const isPositive = change > 0;
   const isGood = positiveIsGood ? isPositive : !isPositive;
-  const Icon = change > 0 ? TrendingUp : change < 0 ? TrendingDown : Minus;
+  const trendDir = getTrendDirection(change);
+  const Icon = selectByKey(trendDir, { up: TrendingUp, down: TrendingDown }, Minus)!;
 
   return (
     <div className="flex items-center justify-between py-2 border-b last:border-0">
@@ -95,7 +97,7 @@ function ChangeItem({
         <span
           className={cn(
             'flex items-center gap-1 text-sm font-medium',
-            isGood ? 'text-green-600' : change === 0 ? 'text-muted-foreground' : 'text-red-600'
+            selectByCondition(change === 0 ? null : isGood, 'text-green-600', 'text-red-600', 'text-muted-foreground')
           )}
         >
           <Icon className="h-3 w-3" aria-hidden="true" />
@@ -418,11 +420,7 @@ function CompareContent() {
                 <p
                   className={cn(
                     'text-2xl font-bold',
-                    overallChange > 0
-                      ? 'text-green-600'
-                      : overallChange < 0
-                        ? 'text-red-600'
-                        : 'text-muted-foreground'
+                    getTrendColorClass(getTrendDirection(overallChange))
                   )}
                 >
                   {overallChange > 0 ? '+' : ''}
@@ -443,7 +441,7 @@ function CompareContent() {
           <TimelineChart
             title="점수 변화 추이"
             data={timelineData.reverse()}
-            variant={activeType === 'skin' ? 'skin' : activeType === 'body' ? 'body' : 'hair'}
+            variant={selectByKey(activeType, { skin: 'skin' as const, body: 'body' as const }, 'hair' as const)!}
             trend={historyData?.trend || 'stable'}
             height={180}
             unit="점"

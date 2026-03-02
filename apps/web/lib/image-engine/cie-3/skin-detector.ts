@@ -187,6 +187,7 @@ export function hasSufficientSkinCoverage(
  * @param skinMask - 원본 피부 마스크
  * @returns 정리된 피부 마스크
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- morphological image processing
 export function cleanSkinMask(skinMask: SkinMask): SkinMask {
   const { mask, width, height } = skinMask;
   const tempMask = new Uint8Array(width * height);

@@ -15,6 +15,9 @@ import type {
 import type { ColorRecommendation } from '@/lib/mock/makeup-analysis';
 import { UNDERTONES, EYE_SHAPES, LIP_SHAPES, FACE_SHAPES } from '@/lib/analysis/makeup';
 
+// 신뢰도/호환성 수준
+type ReliabilityLevel = 'high' | 'medium' | 'low';
+
 // DB 행 타입
 export interface DbMakeupAnalysis {
   id: string;
@@ -38,12 +41,12 @@ export interface DbMakeupAnalysis {
     tips?: Array<{ category: string; tips: string[] }>;
     personalColorConnection?: {
       season: string;
-      compatibility: 'high' | 'medium' | 'low';
+      compatibility: ReliabilityLevel;
       note: string;
     };
-    analysisReliability?: 'high' | 'medium' | 'low';
+    analysisReliability?: ReliabilityLevel;
   } | null;
-  analysis_reliability: 'high' | 'medium' | 'low' | null;
+  analysis_reliability: ReliabilityLevel | null;
   created_at: string;
 }
 

@@ -22,6 +22,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import type { NutritionGoal, MealType, TrafficLight } from '@/types/nutrition';
 
 // 추천 음식 타입
@@ -98,11 +99,7 @@ function SuggestedFoodItem({ food }: { food: SuggestedFood }) {
             TRAFFIC_LIGHT_COLORS[food.trafficLight]
           )}
         >
-          {food.trafficLight === 'green'
-            ? '좋음'
-            : food.trafficLight === 'yellow'
-              ? '보통'
-              : '주의'}
+          {selectByKey(food.trafficLight, { green: '좋음', yellow: '보통' }, '주의')}
         </span>
       </div>
 

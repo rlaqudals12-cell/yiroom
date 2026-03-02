@@ -32,6 +32,7 @@ const PERIOD_DAYS_MAP: Record<PeriodFilter, number | null> = {
   all: null,
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function GET(request: Request) {
   try {
     const { userId } = await auth();

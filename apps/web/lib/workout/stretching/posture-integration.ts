@@ -29,6 +29,7 @@ import type {
 } from '@/types/stretching';
 
 import { generatePostureCorrectionPrescription } from './routine-generator';
+import { selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 타입 매핑 상수
@@ -146,7 +147,7 @@ export function convertToStretchingPostureAnalysis(
 
   // 자세 각도 매핑 (W-2 스펙에 맞춤)
   // CVA: 두개척추각 - headPosition에서 추정 (정상: >50°)
-  const cva = headPosition === 'forward' ? 40 : headPosition === 'backward' ? 60 : 52;
+  const cva = selectByKey(headPosition, { forward: 40, backward: 60 }, 52)!;
 
   const angles: PostureAnalysisResult['angles'] = {
     cva,
@@ -161,14 +162,12 @@ export function convertToStretchingPostureAnalysis(
   const weakMuscles = extractWeakMuscles(issues);
 
   // 카테고리 결정
-  const category =
-    spineAlignment >= 80
-      ? 'excellent'
-      : spineAlignment >= 60
-        ? 'good'
-        : spineAlignment >= 40
-          ? 'moderate'
-          : 'poor';
+  const category = classifyByRange(spineAlignment, [
+    { min: 80, result: 'excellent' as const },
+    { min: 60, result: 'good' as const },
+    { min: 40, result: 'moderate' as const },
+    { result: 'poor' as const },
+  ])!;
 
   return {
     assessmentId,

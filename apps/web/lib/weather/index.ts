@@ -106,6 +106,7 @@ export async function getWeatherWithGeolocation(): Promise<WeatherData | null> {
 
   try {
     const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+      // eslint-disable-next-line sonarjs/no-intrusive-permissions -- 날씨 기반 코디 추천에 위치 정보 필수
       navigator.geolocation.getCurrentPosition(resolve, reject, {
         timeout: 5000,
         maximumAge: 600000, // 10분 캐시

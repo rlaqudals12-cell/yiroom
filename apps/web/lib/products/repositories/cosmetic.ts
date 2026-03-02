@@ -52,6 +52,7 @@ export function mapCosmeticRow(row: CosmeticProductRow): CosmeticProduct {
  * @param filter 필터 옵션
  * @param limit 최대 개수 (기본 50)
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function getCosmeticProducts(
   filter?: CosmeticProductFilter,
   limit = 50

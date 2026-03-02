@@ -2,6 +2,7 @@
 
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getTrendDirection } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 타입 정의
@@ -68,7 +69,7 @@ export function ScoreChangeBadge({
   const sizeStyle = SIZE_STYLES[size];
 
   // 변화 방향 결정
-  const direction = delta > 0 ? 'up' : delta < 0 ? 'down' : 'neutral';
+  const direction = getTrendDirection(delta);
 
   // 방향별 스타일
   const directionStyles = {

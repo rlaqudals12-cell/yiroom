@@ -41,8 +41,8 @@ const LOADING_THEME: Record<AnalysisTheme, {
     glowColor: 'shadow-[0_0_80px_oklch(0.50_0.12_155_/_0.15)]',
   },
   skin: {
-    borderColor: 'border-[#F8C8DC]',
-    dotColor: 'bg-[#F8C8DC]',
+    borderColor: 'border-primary',
+    dotColor: 'bg-primary',
     glowColor: 'shadow-[0_0_80px_rgba(248,200,220,0.25)]',
   },
   personalColor: {

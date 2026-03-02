@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Sparkles, Info, AlertCircle, Palette, Bookmark } from 'lucide-react';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { FullOutfit, OutfitShareModal } from '@/components/styling';
 import { useSavedOutfits } from '@/hooks/useSavedOutfits';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -188,14 +189,11 @@ export default function OutfitPage() {
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center"
                 style={{
-                  backgroundColor:
-                    seasonType === 'spring'
-                      ? '#FFD700'
-                      : seasonType === 'summer'
-                        ? '#87CEEB'
-                        : seasonType === 'autumn'
-                          ? '#D2691E'
-                          : '#4169E1',
+                  backgroundColor: selectByKey(seasonType, {
+                    spring: '#FFD700',
+                    summer: '#87CEEB',
+                    autumn: '#D2691E',
+                  }, '#4169E1'),
                 }}
               >
                 <Palette className="w-6 h-6 text-white" />

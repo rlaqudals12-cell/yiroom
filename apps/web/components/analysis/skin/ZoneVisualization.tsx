@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import type { SkinAnalysisV2Result, SkinZoneType, ZoneAnalysisV2 } from '@/lib/analysis/skin-v2';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 interface ZoneVisualizationProps {
   result: SkinAnalysisV2Result;
@@ -194,13 +195,7 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
                         >
                           <span className="text-sm">{ZONE_LABELS[zone]}</span>
                           <span
-                            className={`text-sm font-medium ${
-                              zoneData.score >= 70
-                                ? 'text-emerald-600'
-                                : zoneData.score >= 50
-                                  ? 'text-amber-600'
-                                  : 'text-red-600'
-                            }`}
+                            className={`text-sm font-medium ${classifyByRange(zoneData.score, [{ max: 50, result: 'text-red-600' }, { max: 70, result: 'text-amber-600' }, { min: 70, result: 'text-emerald-600' }], 'text-red-600')}`}
                           >
                             {zoneData.score}점
                           </span>

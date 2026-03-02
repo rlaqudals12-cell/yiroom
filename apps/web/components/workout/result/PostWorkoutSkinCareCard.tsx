@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { SkinCareTip, SkinAnalysisSummary } from '@/lib/workout';
 import { getPostWorkoutSkinCareTips, getQuickPostWorkoutMessage } from '@/lib/workout';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface PostWorkoutSkinCareCardProps {
   workoutType: string;
@@ -40,7 +41,7 @@ function TipCard({ tip }: { tip: SkinCareTip }) {
           <span
             className={`text-xs px-1.5 py-0.5 rounded-full border ${PRIORITY_STYLES[tip.priority]}`}
           >
-            {tip.priority === 'high' ? '중요' : tip.priority === 'medium' ? '권장' : '팁'}
+            {selectByKey(tip.priority, { high: '중요', medium: '권장' }, '팁')}
           </span>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">{tip.description}</p>

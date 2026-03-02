@@ -5,6 +5,7 @@ import { Sparkles, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ScoreGauge } from '@/components/common/ScoreGauge';
 import { cn } from '@/lib/utils';
+import { assessImpact, getTrendDirection, selectByKey } from '@/lib/utils/conditional-helpers';
 import type { SkinAgeResult } from '@/types/hybrid';
 
 export interface SkinAgeCalculatorProps {
@@ -86,36 +87,39 @@ export function SkinAgeCalculator({
     else grade = 'F';
 
     // 영향 요인 분석
+    // 긍정 요인: 값이 높을수록 좋음 (positiveMin 이상 = positive)
+    // 부정 요인: 값이 낮을수록 좋음 (negativeMax 이하 = positive, positiveMin 이상 = negative)
     const factors: SkinAgeResult['factors'] = [
       {
         name: '수분',
         value: skinMetrics.hydration,
-        impact: skinMetrics.hydration >= 60 ? 'positive' : skinMetrics.hydration <= 30 ? 'negative' : 'neutral',
+        impact: assessImpact(skinMetrics.hydration, { positiveMin: 60, negativeMax: 30 }),
       },
       {
         name: '탄력',
         value: skinMetrics.elasticity,
-        impact: skinMetrics.elasticity >= 60 ? 'positive' : skinMetrics.elasticity <= 30 ? 'negative' : 'neutral',
+        impact: assessImpact(skinMetrics.elasticity, { positiveMin: 60, negativeMax: 30 }),
       },
       {
         name: '주름',
         value: skinMetrics.wrinkles,
-        impact: skinMetrics.wrinkles <= 30 ? 'positive' : skinMetrics.wrinkles >= 60 ? 'negative' : 'neutral',
+        // 주름은 역산: 낮을수록 좋음. 100에서 뒤집어서 assessImpact 적용
+        impact: assessImpact(100 - skinMetrics.wrinkles, { positiveMin: 70, negativeMax: 40 }),
       },
       {
         name: '모공',
         value: skinMetrics.pores,
-        impact: skinMetrics.pores <= 30 ? 'positive' : skinMetrics.pores >= 60 ? 'negative' : 'neutral',
+        impact: assessImpact(100 - skinMetrics.pores, { positiveMin: 70, negativeMax: 40 }),
       },
       {
         name: '색소침착',
         value: skinMetrics.pigmentation,
-        impact: skinMetrics.pigmentation <= 30 ? 'positive' : skinMetrics.pigmentation >= 60 ? 'negative' : 'neutral',
+        impact: assessImpact(100 - skinMetrics.pigmentation, { positiveMin: 70, negativeMax: 40 }),
       },
       {
         name: '유분 밸런스',
         value: Math.round(oilBalance),
-        impact: oilBalance >= 70 ? 'positive' : oilBalance <= 40 ? 'negative' : 'neutral',
+        impact: assessImpact(oilBalance, { positiveMin: 70, negativeMax: 40 }),
       },
     ];
 
@@ -136,9 +140,18 @@ export function SkinAgeCalculator({
   }, [actualAge, skinMetrics, onResultChange]);
 
   // 차이 표시
-  const DifferenceIcon = result.difference > 0 ? TrendingUp : result.difference < 0 ? TrendingDown : Minus;
-  const differenceColor = result.difference > 0 ? 'text-green-600' : result.difference < 0 ? 'text-amber-600' : 'text-muted-foreground';
-  const differenceText = result.difference > 0 ? '젊어 보여요!' : result.difference < 0 ? '관리가 필요해요' : '적정 상태';
+  const trendDir = getTrendDirection(result.difference);
+  const DifferenceIcon = selectByKey(trendDir, { up: TrendingUp, down: TrendingDown, neutral: Minus }) ?? Minus;
+  const differenceColor = selectByKey(trendDir, {
+    up: 'text-green-600',
+    down: 'text-amber-600',
+    neutral: 'text-muted-foreground',
+  }) ?? 'text-muted-foreground';
+  const differenceText = selectByKey(trendDir, {
+    up: '젊어 보여요!',
+    down: '관리가 필요해요',
+    neutral: '적정 상태',
+  }) ?? '적정 상태';
 
   return (
     <Card className={cn('overflow-hidden', className)} data-testid="skin-age-calculator">
@@ -171,7 +184,7 @@ export function SkinAgeCalculator({
           <div className={cn('flex items-center justify-center gap-2', differenceColor)}>
             <DifferenceIcon className="h-5 w-5" />
             <span className="font-bold text-lg">
-              {Math.abs(result.difference)}살 {result.difference > 0 ? '어려' : result.difference < 0 ? '많아' : ''}
+              {Math.abs(result.difference)}살 {selectByKey(trendDir, { up: '어려', down: '많아', neutral: '' })}
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">{differenceText}</p>

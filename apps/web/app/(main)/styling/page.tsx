@@ -22,6 +22,7 @@ import { getColorCombinations } from '@/lib/mock/styling';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useUser } from '@clerk/nextjs';
 import type { SeasonType } from '@/lib/mock/personal-color';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 시즌 타입별 한글 라벨
 const SEASON_LABELS: Record<SeasonType, string> = {
@@ -180,14 +181,11 @@ export default function StylingPage() {
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center"
                 style={{
-                  backgroundColor:
-                    seasonType === 'spring'
-                      ? '#FFD700'
-                      : seasonType === 'summer'
-                        ? '#87CEEB'
-                        : seasonType === 'autumn'
-                          ? '#D2691E'
-                          : '#4169E1',
+                  backgroundColor: selectByKey(seasonType, {
+                    spring: '#FFD700',
+                    summer: '#87CEEB',
+                    autumn: '#D2691E',
+                  }, '#4169E1'),
                 }}
               >
                 <Palette className="w-6 h-6 text-white" />

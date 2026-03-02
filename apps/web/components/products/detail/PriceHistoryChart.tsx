@@ -13,6 +13,7 @@ import {
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ProductPriceHistory } from '@/types/product';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 interface PriceHistoryChartProps {
   priceHistory: ProductPriceHistory[];
@@ -47,8 +48,12 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
     // 최근 가격 대비 트렌드
     const recentPrice = priceHistory[0]?.priceKrw ?? currentPrice;
     const oldPrice = priceHistory[priceHistory.length - 1]?.priceKrw ?? currentPrice;
-    const trend: 'up' | 'down' | 'stable' =
-      recentPrice > oldPrice * 1.05 ? 'up' : recentPrice < oldPrice * 0.95 ? 'down' : 'stable';
+    const priceRatio = recentPrice / oldPrice;
+    const trend: 'up' | 'down' | 'stable' = classifyByRange(priceRatio, [
+      { max: 0.95, result: 'down' as const },
+      { max: 1.05, result: 'stable' as const },
+      { result: 'up' as const },
+    ])!;
 
     return { min, max, avg, trend };
   }, [priceHistory, currentPrice]);

@@ -6,6 +6,7 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { ragLogger } from '@/lib/utils/logger';
 import type { AnyProduct, ProductType, CosmeticProduct, SupplementProduct } from '@/types/product';
+import { extractJsonObject } from '@/lib/utils/json-extract';
 
 // =============================================================================
 // 상수 정의
@@ -206,10 +207,10 @@ export async function askProductQuestion(request: ProductQARequest): Promise<Pro
       const response = result.response;
       const text = response.text();
 
-      // JSON 파싱 시도
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]) as ProductQAResponse;
+      // JSON 파싱 시도 (문자열 탐색으로 ReDoS 방지)
+      const jsonStr = extractJsonObject(text);
+      if (jsonStr) {
+        const parsed = JSON.parse(jsonStr) as ProductQAResponse;
         ragLogger.info('[RAG] Q&A completed');
         return {
           answer: parsed.answer || '답변을 생성할 수 없습니다.',

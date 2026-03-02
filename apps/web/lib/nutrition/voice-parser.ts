@@ -85,14 +85,14 @@ const QUANTITY_PATTERNS: Array<{
   getValue: (m: RegExpMatchArray) => number;
   unit: string;
 }> = [
-  { pattern: /(\d+)\s*인분/, getValue: (m) => parseInt(m[1], 10), unit: '인분' },
-  { pattern: /(\d+)\s*공기/, getValue: (m) => parseInt(m[1], 10), unit: '공기' },
-  { pattern: /(\d+)\s*그릇/, getValue: (m) => parseInt(m[1], 10), unit: '그릇' },
-  { pattern: /(\d+)\s*개/, getValue: (m) => parseInt(m[1], 10), unit: '개' },
-  { pattern: /(\d+)\s*조각/, getValue: (m) => parseInt(m[1], 10), unit: '조각' },
-  { pattern: /(\d+)\s*잔/, getValue: (m) => parseInt(m[1], 10), unit: '잔' },
-  { pattern: /반\s*공기/, getValue: () => 0.5, unit: '공기' },
-  { pattern: /반\s*그릇/, getValue: () => 0.5, unit: '그릇' },
+  { pattern: /(\d{1,4})\s{0,3}인분/, getValue: (m) => parseInt(m[1], 10), unit: '인분' },
+  { pattern: /(\d{1,4})\s{0,3}공기/, getValue: (m) => parseInt(m[1], 10), unit: '공기' },
+  { pattern: /(\d{1,4})\s{0,3}그릇/, getValue: (m) => parseInt(m[1], 10), unit: '그릇' },
+  { pattern: /(\d{1,4})\s{0,3}개/, getValue: (m) => parseInt(m[1], 10), unit: '개' },
+  { pattern: /(\d{1,4})\s{0,3}조각/, getValue: (m) => parseInt(m[1], 10), unit: '조각' },
+  { pattern: /(\d{1,4})\s{0,3}잔/, getValue: (m) => parseInt(m[1], 10), unit: '잔' },
+  { pattern: /반\s{0,3}공기/, getValue: () => 0.5, unit: '공기' },
+  { pattern: /반\s{0,3}그릇/, getValue: () => 0.5, unit: '그릇' },
 ];
 
 /**

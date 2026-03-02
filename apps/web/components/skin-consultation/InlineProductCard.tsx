@@ -6,6 +6,7 @@
  * 채팅 내에서 제품을 컴팩트하게 표시하는 카드
  */
 
+import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, ExternalLink } from 'lucide-react';
@@ -36,10 +37,13 @@ export default function InlineProductCard({ product, onClick }: InlineProductCar
         <div className="flex items-start gap-3">
           {/* 제품 이미지 */}
           {product.imageUrl ? (
-            <img
+            <Image
               src={product.imageUrl}
               alt={product.name}
+              width={48}
+              height={48}
               className="w-12 h-12 rounded-md object-cover shrink-0"
+              unoptimized
             />
           ) : (
             <div className="w-12 h-12 bg-muted rounded-md flex items-center justify-center shrink-0">

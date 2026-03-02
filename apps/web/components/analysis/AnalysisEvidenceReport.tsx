@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { Eye, Droplet, Sparkles, Sun, Camera, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
 // 분석 근거 타입
@@ -105,6 +106,7 @@ const RELIABILITY_STYLES: Record<string, { bg: string; text: string; icon: typeo
  * - 피부 언더톤
  * - 이미지 품질 평가
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- component render
 export default function AnalysisEvidenceReport({
   evidence,
   imageQuality,
@@ -138,11 +140,10 @@ export default function AnalysisEvidenceReport({
             <ReliabilityIcon className={cn('w-4 h-4', reliabilityStyle.text)} />
             <span className={cn('text-sm font-medium', reliabilityStyle.text)}>
               분석 신뢰도:{' '}
-              {imageQuality.analysisReliability === 'high'
-                ? '높음'
-                : imageQuality.analysisReliability === 'medium'
-                  ? '중간'
-                  : '낮음'}
+              {selectByKey(imageQuality.analysisReliability, {
+                high: '높음',
+                medium: '중간',
+              }, '낮음')}
             </span>
           </div>
         )}
@@ -319,13 +320,11 @@ export default function AnalysisEvidenceReport({
                     피부-머리 대비가{' '}
                     <strong>{CONTRAST_LABELS[evidence.skinHairContrast]?.label}</strong>으로{' '}
                     <span className="font-semibold">
-                      {seasonType === 'summer'
-                        ? '여름'
-                        : seasonType === 'winter'
-                          ? '겨울'
-                          : seasonType === 'spring'
-                            ? '봄'
-                            : '가을'}
+                      {selectByKey(seasonType, {
+                        summer: '여름',
+                        winter: '겨울',
+                        spring: '봄',
+                      }, '가을')}
                     </span>{' '}
                     타입으로 분류됐어요.
                   </>

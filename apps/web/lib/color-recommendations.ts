@@ -9,6 +9,9 @@
 
 import type { BodyType, BodyType3 } from "./mock/body-analysis";
 
+/** 색상 밝기 우선순위 */
+type ColorBrightnessPriority = "light" | "dark" | "balanced";
+
 /**
  * 퍼스널 컬러 시즌 타입
  */
@@ -72,8 +75,8 @@ const COLOR_PALETTES: Record<PersonalColorSeason, {
  * 체형별 권장 색상 배치 전략 (8타입 - 레거시)
  */
 const BODY_TYPE_COLOR_STRATEGY: Record<BodyType, {
-  topPriority: "light" | "dark" | "balanced";
-  bottomPriority: "light" | "dark" | "balanced";
+  topPriority: ColorBrightnessPriority;
+  bottomPriority: ColorBrightnessPriority;
   tips: string[];
 }> = {
   X: {
@@ -122,8 +125,8 @@ const BODY_TYPE_COLOR_STRATEGY: Record<BodyType, {
  * 3타입 체형별 권장 색상 배치 전략
  */
 const BODY_TYPE_3_COLOR_STRATEGY: Record<BodyType3, {
-  topPriority: "light" | "dark" | "balanced";
-  bottomPriority: "light" | "dark" | "balanced";
+  topPriority: ColorBrightnessPriority;
+  bottomPriority: ColorBrightnessPriority;
   tips: string[];
 }> = {
   S: {
@@ -319,7 +322,7 @@ export const OUTFIT_EXAMPLES: Record<BodyType3, Record<PersonalColorSeason, Outf
  */
 function filterColorsByBrightness(
   colors: string[],
-  priority: "light" | "dark" | "balanced"
+  priority: ColorBrightnessPriority
 ): string[] {
   // 밝은 색상 키워드
   const lightKeywords = ["라이트", "파스텔", "화이트", "아이보리", "크림", "밝은", "소프트"];

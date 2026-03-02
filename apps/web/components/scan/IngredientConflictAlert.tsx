@@ -93,11 +93,13 @@ const ConflictItem = memo(function ConflictItem({
       <div className="flex items-start gap-2">
         {/* 심각도 아이콘 */}
         <div className={cn('mt-0.5 flex-shrink-0', style.icon)}>
-          {conflict.severity === 'high' ? (
+          {conflict.severity === 'high' && (
             <XCircle className="h-4 w-4" aria-hidden="true" />
-          ) : conflict.severity === 'medium' ? (
+          )}
+          {conflict.severity === 'medium' && (
             <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-          ) : (
+          )}
+          {conflict.severity !== 'high' && conflict.severity !== 'medium' && (
             <Info className="h-4 w-4" aria-hidden="true" />
           )}
         </div>
@@ -163,7 +165,11 @@ const IngredientConflictAlert = memo(function IngredientConflictAlert({
   const hasMore = compact && sortedConflicts.length > 2;
 
   // 가장 심각한 레벨의 스타일 사용
-  const headerSeverity = highCount > 0 ? 'high' : mediumCount > 0 ? 'medium' : 'low';
+  const headerSeverity: ConflictSeverity = (() => {
+    if (highCount > 0) return 'high';
+    if (mediumCount > 0) return 'medium';
+    return 'low';
+  })();
   const headerStyle = SEVERITY_STYLES[headerSeverity];
 
   return (

@@ -4,6 +4,7 @@
  */
 
 import type { WorkoutType, ExerciseDifficulty } from '@/types/workout';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 타입 정의
@@ -296,7 +297,7 @@ export function getEquipmentRecommendations(
 
     return {
       category,
-      priority: (index === 0 ? 'essential' : index === 1 ? 'recommended' : 'optional') as Priority,
+      priority: selectByKey(index, { 0: 'essential', 1: 'recommended' }, 'optional')! as Priority,
       items: adjustedItems,
       reason: getCategoryReason(category, goal),
     };

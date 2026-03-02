@@ -20,6 +20,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { sendPushToSubscription, isVapidConfigured } from '@/lib/push/server';
 import type { PushSubscriptionRow, PushSendResult } from '@/lib/push/types';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 만료 예정 재료 정보
 interface ExpiringItem {
@@ -287,12 +288,10 @@ function createExpiryMessage(items: ExpiringItem[]): string {
 
   // 가장 먼저 만료되는 재료
   const firstItem = items[0];
-  const daysText =
-    firstItem.days_until_expiry === 0
-      ? '오늘'
-      : firstItem.days_until_expiry === 1
-        ? '내일'
-        : `${firstItem.days_until_expiry}일 후`;
+  const daysText = selectByKey(firstItem.days_until_expiry, {
+    0: '오늘',
+    1: '내일',
+  }, `${firstItem.days_until_expiry}일 후`)!;
 
   if (items.length === 1) {
     return `${firstItem.name}이(가) ${daysText} 만료됩니다.`;

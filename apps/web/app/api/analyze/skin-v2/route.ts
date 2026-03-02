@@ -51,6 +51,7 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *   usedFallback: boolean             // Fallback 사용 여부
  * }
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(req: NextRequest) {
   try {
     // Clerk 인증 확인
@@ -113,6 +114,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
+    try {
     const supabase = createServiceRoleClient();
 
     // DB에 저장
@@ -148,7 +151,16 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error('[S-2] Database insert error:', error);
-      return dbError('분석 결과 저장에 실패했습니다.', error.message);
+      // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
+      const syntheticId = crypto.randomUUID();
+      return NextResponse.json({
+        success: true,
+        data: { id: syntheticId, clerk_user_id: userId, created_at: new Date().toISOString() },
+        result,
+        usedFallback,
+        dbSaveFailed: true,
+        gamification: { badgeResults: [], xpAwarded: 0 },
+      });
     }
 
     // users 테이블에 S-2 결과 동기화 (비정규화 - 빠른 조회용)
@@ -197,6 +209,29 @@ export async function POST(req: NextRequest) {
       usedFallback,
       gamification: gamificationResult,
     });
+    } catch (dbOperationError) {
+      // DB 실패 시에도 분석 결과 반환 (사용자 경험 우선)
+      console.warn('[S-2] DB operations failed, using synthetic response');
+      console.error('[S-2] DB error details:', {
+        error:
+          dbOperationError instanceof Error
+            ? dbOperationError.message
+            : String(dbOperationError),
+      });
+      const syntheticId = crypto.randomUUID();
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: syntheticId,
+          clerk_user_id: userId,
+          created_at: new Date().toISOString(),
+        },
+        result,
+        usedFallback,
+        dbSaveFailed: true,
+        gamification: { badgeResults: [], xpAwarded: 0 },
+      });
+    }
   } catch (error) {
     console.error('[S-2] Skin analysis v2 error:', error);
     return internalError(

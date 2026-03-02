@@ -7,6 +7,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ClothingCategory, Pattern } from '@/types/inventory';
+import { extractJsonObject } from '@/lib/utils/json-extract';
 
 // 의류 분류 Mock 결과
 const generateMockClassification = () => ({
@@ -99,14 +100,14 @@ Only return the JSON object, no other text.`;
 
       const text = result.response.text();
 
-      // JSON 파싱
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
+      // JSON 파싱 (정규식 대신 문자열 탐색으로 ReDoS 방지)
+      const jsonStr = extractJsonObject(text);
+      if (!jsonStr) {
         console.error('[Classify] Invalid response format:', text);
         return NextResponse.json(generateMockClassification());
       }
 
-      const classification = JSON.parse(jsonMatch[0]);
+      const classification = JSON.parse(jsonStr);
 
       return NextResponse.json({
         category: classification.category || 'top',

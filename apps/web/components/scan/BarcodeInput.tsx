@@ -26,7 +26,7 @@ export function BarcodeInput({ onSubmit, loading = false, className }: BarcodeIn
   const [isValid, setIsValid] = useState<boolean | null>(null);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value.replace(/[^0-9]/g, '');
+    const newValue = e.target.value.replace(/\D/g, '');
     setValue(newValue);
 
     if (newValue.length >= 8) {

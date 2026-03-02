@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 /**
  * 스타일 온보딩 - 키/몸무게 필수 입력
@@ -181,13 +182,11 @@ export default function StyleOnboardingPage() {
                   <div
                     className={cn(
                       'h-full transition-all',
-                      bmi < 18.5
-                        ? 'bg-blue-500'
-                        : bmi < 23
-                          ? 'bg-green-500'
-                          : bmi < 25
-                            ? 'bg-yellow-500'
-                            : 'bg-red-500'
+                      classifyByRange(bmi, [
+                        { max: 18.5, result: 'bg-blue-500' },
+                        { max: 23, result: 'bg-green-500' },
+                        { max: 25, result: 'bg-yellow-500' },
+                      ], 'bg-red-500')
                     )}
                     style={{ width: `${Math.min((bmi / 35) * 100, 100)}%` }}
                   />

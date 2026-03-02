@@ -92,6 +92,60 @@ function getSkinTypeLabel(skinType: string | null): string {
   return SKIN_TYPE_LABELS[key] ?? skinType;
 }
 
+// 메트릭 배열에서 ID로 메트릭 찾기
+function findMetric(metrics: MetricItem[], id: string): MetricItem | undefined {
+  return metrics.find((m) => m.id === id);
+}
+
+// 존별 관련 문제 (메트릭 기반 동적 생성)
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
+function getZoneConcerns(zoneId: FaceZoneId, metrics: MetricItem[]): string[] {
+  const concerns: string[] = [];
+
+  if (zoneId === 'forehead' || zoneId === 'tZone' || zoneId === 'chin') {
+    const oil = findMetric(metrics, 'oil');
+    const pores = findMetric(metrics, 'pores');
+    if (oil && oil.value <= 40) concerns.push('유분이 많은 편이에요');
+    if (pores && pores.value <= 40) concerns.push('모공이 눈에 띄어요');
+  }
+  if (zoneId === 'eyes') {
+    const wrinkles = findMetric(metrics, 'wrinkles');
+    const pigmentation = findMetric(metrics, 'pigmentation');
+    if (wrinkles && wrinkles.value <= 40) concerns.push('잔주름이 보여요');
+    if (pigmentation && pigmentation.value <= 40) concerns.push('다크서클이 있어요');
+  }
+  if (zoneId === 'cheeks' || zoneId === 'uZone') {
+    const hydration = findMetric(metrics, 'hydration');
+    const sensitivity = findMetric(metrics, 'sensitivity');
+    if (hydration && hydration.value <= 40) concerns.push('수분이 부족해요');
+    if (sensitivity && sensitivity.value <= 40) concerns.push('민감한 편이에요');
+  }
+  return concerns;
+}
+
+// 존별 추천 사항 (메트릭 기반 동적 생성)
+function getZoneRecommendations(zoneId: FaceZoneId, metrics: MetricItem[]): string[] {
+  const recs: string[] = [];
+
+  if (zoneId === 'forehead' || zoneId === 'tZone' || zoneId === 'chin') {
+    const oil = findMetric(metrics, 'oil');
+    const pores = findMetric(metrics, 'pores');
+    if (oil && oil.value <= 40) recs.push('BHA 성분 토너 사용');
+    if (pores && pores.value <= 40) recs.push('주 2회 클레이 마스크');
+  }
+  if (zoneId === 'eyes') {
+    const wrinkles = findMetric(metrics, 'wrinkles');
+    if (wrinkles && wrinkles.value <= 40) recs.push('아이크림 사용');
+    recs.push('자외선 차단 철저');
+  }
+  if (zoneId === 'cheeks' || zoneId === 'uZone') {
+    const hydration = findMetric(metrics, 'hydration');
+    if (hydration && hydration.value <= 40) recs.push('히알루론산 세럼 사용');
+    recs.push('수분 마스크 주 2-3회');
+  }
+  return recs;
+}
+
 // 피부 타입별 설명 (근거 탭 빈 상태용)
 const SKIN_TYPE_EXPLANATIONS: Record<
   string,
@@ -262,6 +316,7 @@ interface DbSkinAnalysis {
   created_at: string;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- result page render
 export default function SkinAnalysisResultPage() {
   const params = useParams();
   const router = useRouter();
@@ -440,62 +495,13 @@ export default function SkinAnalysisResultPage() {
     const zone = zoneStatuses[selectedZone];
     if (!zone) return null;
 
-    // 존별 관련 문제 및 추천 (메트릭 기반 동적 생성)
-    const getZoneConcerns = (zoneId: FaceZoneId): string[] => {
-      const concerns: string[] = [];
-      const getMetric = (id: string) => result.metrics.find((m) => m.id === id);
-
-      if (zoneId === 'forehead' || zoneId === 'tZone' || zoneId === 'chin') {
-        const oil = getMetric('oil');
-        const pores = getMetric('pores');
-        if (oil && oil.value <= 40) concerns.push('유분이 많은 편이에요');
-        if (pores && pores.value <= 40) concerns.push('모공이 눈에 띄어요');
-      }
-      if (zoneId === 'eyes') {
-        const wrinkles = getMetric('wrinkles');
-        const pigmentation = getMetric('pigmentation');
-        if (wrinkles && wrinkles.value <= 40) concerns.push('잔주름이 보여요');
-        if (pigmentation && pigmentation.value <= 40) concerns.push('다크서클이 있어요');
-      }
-      if (zoneId === 'cheeks' || zoneId === 'uZone') {
-        const hydration = getMetric('hydration');
-        const sensitivity = getMetric('sensitivity');
-        if (hydration && hydration.value <= 40) concerns.push('수분이 부족해요');
-        if (sensitivity && sensitivity.value <= 40) concerns.push('민감한 편이에요');
-      }
-      return concerns;
-    };
-
-    const getZoneRecommendations = (zoneId: FaceZoneId): string[] => {
-      const recs: string[] = [];
-      const getMetric = (id: string) => result.metrics.find((m) => m.id === id);
-
-      if (zoneId === 'forehead' || zoneId === 'tZone' || zoneId === 'chin') {
-        const oil = getMetric('oil');
-        const pores = getMetric('pores');
-        if (oil && oil.value <= 40) recs.push('BHA 성분 토너 사용');
-        if (pores && pores.value <= 40) recs.push('주 2회 클레이 마스크');
-      }
-      if (zoneId === 'eyes') {
-        const wrinkles = getMetric('wrinkles');
-        if (wrinkles && wrinkles.value <= 40) recs.push('아이크림 사용');
-        recs.push('자외선 차단 철저');
-      }
-      if (zoneId === 'cheeks' || zoneId === 'uZone') {
-        const hydration = getMetric('hydration');
-        if (hydration && hydration.value <= 40) recs.push('히알루론산 세럼 사용');
-        recs.push('수분 마스크 주 2-3회');
-      }
-      return recs;
-    };
-
     return {
       zoneId: selectedZone,
       zoneName: zone.label,
       score: zone.score,
       status: zone.status as MetricStatus,
-      concerns: getZoneConcerns(selectedZone),
-      recommendations: getZoneRecommendations(selectedZone),
+      concerns: getZoneConcerns(selectedZone, result.metrics),
+      recommendations: getZoneRecommendations(selectedZone, result.metrics),
     };
   }, [selectedZone, result, zoneStatuses]);
 
@@ -506,6 +512,7 @@ export default function SkinAnalysisResultPage() {
   );
 
   // DB에서 분석 결과 조회
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- result page render
   const fetchAnalysis = useCallback(async () => {
     if (!isSignedIn || !analysisId || fetchedRef.current) return;
 

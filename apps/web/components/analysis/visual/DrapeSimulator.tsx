@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { selectByCondition, classifyByRange } from '@/lib/utils/conditional-helpers';
 
 /**
  * PC-1+ 드레이프 시뮬레이터
@@ -207,7 +208,7 @@ export default function DrapeSimulator({
 
       {/* 4. 분석 버튼 */}
       <Button onClick={runFullAnalysis} disabled={isAnalyzing || !image} className="w-full">
-        {isAnalyzing ? '분석 중...' : bestResults.length > 0 ? '다시 분석' : '전체 컬러 분석 시작'}
+        {isAnalyzing ? '분석 중...' : selectByCondition(bestResults.length > 0, '다시 분석', '전체 컬러 분석 시작')}
       </Button>
     </div>
   );
@@ -391,6 +392,7 @@ function renderStars(rank: number): string {
 }
 
 // HEX → 한국어 색상명 변환 (HSL 기반)
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function getKoreanColorName(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -419,7 +421,10 @@ function getKoreanColorName(hex: string): string {
   }
 
   // 채도+명도에 따른 접두사
-  const prefix = l > 0.75 ? '라이트 ' : l < 0.35 ? '딥 ' : '';
+  const prefix = classifyByRange(l, [
+    { max: 0.35, result: '딥 ' },
+    { max: 0.75, result: '' },
+  ], '라이트 ')!;
 
   // 색상명 매핑
   if (h < 15 || h >= 345) return `${prefix}레드`;

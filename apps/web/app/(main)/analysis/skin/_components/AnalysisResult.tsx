@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { classifyByRange, mapToClass, selectByKey } from '@/lib/utils/conditional-helpers';
 import {
   RefreshCw,
   Sparkles,
@@ -291,7 +292,11 @@ export default function AnalysisResult({
             <span
               className={`px-4 py-1.5 rounded-full text-sm font-medium text-white ${getScoreBgColor(overallScore)}`}
             >
-              {overallScore >= 71 ? '건강한 피부' : overallScore >= 41 ? '보통 상태' : '관리 필요'}
+              {classifyByRange(overallScore, [
+                { max: 41, result: '관리 필요' },
+                { min: 41, max: 71, result: '보통 상태' },
+                { min: 71, result: '건강한 피부' },
+              ])}
             </span>
           </div>
 
@@ -487,13 +492,10 @@ export default function AnalysisResult({
               {ingredientWarnings.map((warning, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg border ${
-                    warning.level === 'high'
-                      ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
-                      : warning.level === 'medium'
-                        ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800'
-                        : 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'
-                  }`}
+                  className={`p-3 rounded-lg border ${mapToClass(warning.level, {
+                    high: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800',
+                    medium: 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800',
+                  }, 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800')}`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
@@ -505,19 +507,12 @@ export default function AnalysisResult({
                       )}
                     </div>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${
-                        warning.level === 'high'
-                          ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
-                          : warning.level === 'medium'
-                            ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300'
-                            : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'
-                      }`}
+                      className={`text-xs px-2 py-0.5 rounded-full ${mapToClass(warning.level, {
+                        high: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+                        medium: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300',
+                      }, 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300')}`}
                     >
-                      {warning.level === 'high'
-                        ? '높음'
-                        : warning.level === 'medium'
-                          ? '중간'
-                          : '낮음'}
+                      {selectByKey(warning.level, { high: '높음', medium: '중간' }, '낮음')}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">{warning.reason}</p>

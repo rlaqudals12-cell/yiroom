@@ -80,13 +80,9 @@ export default function VoiceRecordButton({
         className={cn('w-12 h-12 rounded-full', isListening && 'animate-pulse ring-2 ring-red-400')}
         data-testid="voice-record-button"
       >
-        {isProcessing ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : isListening ? (
-          <MicOff className="w-5 h-5" />
-        ) : (
-          <Mic className="w-5 h-5" />
-        )}
+        {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
+        {!isProcessing && isListening && <MicOff className="w-5 h-5" />}
+        {!isProcessing && !isListening && <Mic className="w-5 h-5" />}
       </Button>
 
       {/* 녹음 중 실시간 텍스트 표시 */}

@@ -377,16 +377,14 @@ export function NotificationSettings() {
                   size="sm"
                   disabled={permission === 'denied' || isLoading}
                 >
-                  {isLoading ? (
+                  {isLoading && (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       처리 중...
                     </>
-                  ) : permission === 'denied' ? (
-                    '권한 거부됨'
-                  ) : (
-                    '알림 허용하기'
                   )}
+                  {!isLoading && permission === 'denied' && '권한 거부됨'}
+                  {!isLoading && permission !== 'denied' && '알림 허용하기'}
                 </Button>
                 {permission === 'denied' && (
                   <p className="text-xs text-amber-600 mt-2">

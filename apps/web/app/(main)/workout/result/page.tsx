@@ -7,6 +7,7 @@ import { useWorkoutInputStore, type PersonalColorSeason } from '@/lib/stores/wor
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { convertSkinMetricsToSummary } from '@/lib/nutrition';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import {
   classifyWorkoutType,
   getRecommendedExercises,
@@ -283,7 +284,7 @@ export default function ResultPage() {
         <FadeInUp delay={6}>
           <RecommendedEquipmentCard
             skillLevel="beginner"
-            useLocation={location === 'gym' ? 'gym' : location === 'outdoor' ? 'outdoor' : 'home'}
+            useLocation={selectByKey(location, { gym: 'gym' as const, outdoor: 'outdoor' as const }, 'home' as const)!}
           />
         </FadeInUp>
 

@@ -18,7 +18,7 @@ export default function NutritionLayoutClient({ children }: NutritionLayoutClien
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-[#FAFAFA]" role="main">
+    <div className="min-h-[calc(100vh-80px)] bg-muted" role="main">
       {/* 상단 헤더 */}
       <header className="sticky top-0 z-10 bg-card border-b border-border/50">
         <div className="max-w-[480px] mx-auto px-4 h-14 flex items-center">

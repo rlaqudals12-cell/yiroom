@@ -6,6 +6,7 @@ import { ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 import { FoodPhotoCapture, FoodAnalysisLoading } from '@/components/nutrition';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { compressFileToBase64 } from '@/lib/utils/image-compression';
 
 // 식사 타입 옵션
 const MEAL_TYPES = [
@@ -40,32 +41,17 @@ export default function FoodCapturePage() {
   // API 요청 취소를 위한 AbortController
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // 파일을 Base64로 변환
-  const fileToBase64 = useCallback((file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        // data:image/...;base64,... 형식에서 base64 부분만 추출
-        const base64 = result.split(',')[1] || result;
-        resolve(base64);
-      };
-      reader.onerror = () => reject(new Error('파일 읽기에 실패했어요.'));
-      reader.readAsDataURL(file);
-    });
-  }, []);
-
   // 사진 선택 처리
   const handlePhotoSelect = useCallback(
     async (file: File) => {
       try {
         setErrorMessage(null);
 
-        // 파일을 Base64로 변환 (프리뷰 및 API 호출용)
-        const imageBase64 = await fileToBase64(file);
+        // 파일을 압축된 Base64로 변환 (Vercel 4.5MB body 제한 대응)
+        const imageBase64 = await compressFileToBase64(file);
 
-        // 프리뷰 이미지 설정 (data URL 형식으로)
-        setPreviewImage(`data:${file.type};base64,${imageBase64}`);
+        // 프리뷰 이미지 설정 (compressFileToBase64는 data URL 형식 반환)
+        setPreviewImage(imageBase64);
         setPageState('analyzing');
 
         // 이전 요청 취소
@@ -136,7 +122,7 @@ export default function FoodCapturePage() {
         setPageState('error');
       }
     },
-    [mealType, fileToBase64, router]
+    [mealType, router]
   );
 
   // 분석 완료 처리 (로딩 애니메이션 완료 후)

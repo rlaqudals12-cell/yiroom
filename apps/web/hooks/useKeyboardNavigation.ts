@@ -138,6 +138,7 @@ export function useKeyboardNavigation(
    * 키보드 이벤트 핸들러
    */
   const handleKeyDown = useCallback(
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- keyboard navigation handler
     (event: React.KeyboardEvent) => {
       const count = getItemCount();
       if (count === 0) return;

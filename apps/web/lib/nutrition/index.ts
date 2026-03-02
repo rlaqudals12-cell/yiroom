@@ -59,7 +59,7 @@ export {
   getInteractionInfo,
 } from './nutrient-synergy';
 
-export type { InteractionFactor, InteractionType, NutrientInteraction } from './nutrient-synergy';
+export type { InteractionType, NutrientInteraction } from './nutrient-synergy';
 
 // ============================================
 // 영양소 섭취량 평가

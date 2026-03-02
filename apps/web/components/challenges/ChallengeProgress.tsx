@@ -109,13 +109,9 @@ export function ChallengeProgress({
                   )}
                   title={`${day}일차: ${getStatusLabel(status)}`}
                 >
-                  {status === 'completed' ? (
-                    <Check className="w-4 h-4" />
-                  ) : status === 'missed' ? (
-                    <X className="w-4 h-4" />
-                  ) : (
-                    day
-                  )}
+                  {status === 'completed' && <Check className="w-4 h-4" />}
+                  {status === 'missed' && <X className="w-4 h-4" />}
+                  {status !== 'completed' && status !== 'missed' && day}
                 </div>
               );
             })}

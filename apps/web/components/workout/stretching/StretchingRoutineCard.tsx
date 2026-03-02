@@ -13,6 +13,7 @@ import { Clock, Activity, AlertCircle, Play } from 'lucide-react';
 
 import type { StretchingPrescription } from '@/types/stretching';
 import { MUSCLE_NAME_KO } from '@/lib/workout';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface StretchingRoutineCardProps {
   prescription: StretchingPrescription;
@@ -123,11 +124,7 @@ export function StretchingRoutineCard({
                 </p>
               </div>
               <Badge variant="secondary" className="text-xs">
-                {stretch.exercise.type === 'static'
-                  ? '정적'
-                  : stretch.exercise.type === 'dynamic'
-                    ? '동적'
-                    : 'PNF'}
+                {selectByKey(stretch.exercise.type, { static: '정적', dynamic: '동적' }, 'PNF')}
               </Badge>
             </div>
           ))}

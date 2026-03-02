@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { AlertTriangle, AlertCircle, Clock, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -127,17 +128,20 @@ export function ProductWarningBanner({
     (i) => i.severity === 'high' && i.interactionType !== 'synergy'
   );
 
-  const bgColor = hasOnlySynergy
-    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-    : hasHighSeverity
-    ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-    : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
+  // 시너지/위험도에 따른 스타일 키 결정
+  let severityKey = 'normal';
+  if (hasOnlySynergy) severityKey = 'synergy';
+  else if (hasHighSeverity) severityKey = 'high';
 
-  const iconColor = hasOnlySynergy
-    ? 'text-green-600 dark:text-green-400'
-    : hasHighSeverity
-    ? 'text-red-600 dark:text-red-400'
-    : 'text-yellow-600 dark:text-yellow-400';
+  const bgColor = selectByKey(severityKey, {
+    synergy: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+    high: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+  }, 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800')!;
+
+  const iconColor = selectByKey(severityKey, {
+    synergy: 'text-green-600 dark:text-green-400',
+    high: 'text-red-600 dark:text-red-400',
+  }, 'text-yellow-600 dark:text-yellow-400')!;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -150,13 +154,9 @@ export function ProductWarningBanner({
           <button className="flex w-full items-center justify-between text-left">
             <div className="flex items-center gap-3">
               <span className={iconColor}>
-                {hasOnlySynergy ? (
-                  <Sparkles className="h-5 w-5" />
-                ) : hasHighSeverity ? (
-                  <AlertTriangle className="h-5 w-5" />
-                ) : (
-                  <AlertCircle className="h-5 w-5" />
-                )}
+                {severityKey === 'synergy' && <Sparkles className="h-5 w-5" />}
+                {severityKey === 'high' && <AlertTriangle className="h-5 w-5" />}
+                {severityKey === 'normal' && <AlertCircle className="h-5 w-5" />}
               </span>
               <div>
                 <p className="font-medium text-sm">

@@ -165,6 +165,7 @@ function adjustFitForBodyType(baseFit: FitType, bodyType?: BodyType3): FitType {
 /**
  * 상의 사이즈 추천
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function recommendTopSize(
   measurements: UserMeasurements,
   gender: Gender,
@@ -243,6 +244,7 @@ function recommendTopSize(
 /**
  * BMI 기반 하의 사이즈 추정
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function getBottomSizeByBMI(bmi: number, gender: Gender): string {
   if (gender === 'male') {
     if (bmi < 20) return '28';

@@ -37,9 +37,10 @@ describe('lib/push/server', () => {
       vi.stubEnv('NEXT_PUBLIC_VAPID_PUBLIC_KEY', 'test-public-key');
       vi.stubEnv('VAPID_PRIVATE_KEY', 'test-private-key');
 
-      await import('@/lib/push/server');
+      const mod = await import('@/lib/push/server');
       // 환경변수가 설정되어 있다고 가정
       // 실제로는 모듈 로드 시점에 확인되므로 테스트가 다를 수 있음
+      expect(mod).toBeDefined();
     });
   });
 

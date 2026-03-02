@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { askProductQuestion, FAQ_TEMPLATES, type ProductQAResponse } from '@/lib/rag/product-qa';
 import { getProductById } from '@/lib/products';
 import type { AnyProduct, ProductType } from '@/types/product';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface Message {
   id: string;
@@ -53,19 +54,17 @@ function ChatMessage({ message }: { message: Message }) {
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span
                 className={`w-2 h-2 rounded-full ${
-                  message.confidence === 'high'
-                    ? 'bg-green-500'
-                    : message.confidence === 'medium'
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
+                  selectByKey(message.confidence, {
+                    high: 'bg-green-500',
+                    medium: 'bg-yellow-500',
+                  }, 'bg-red-500')
                 }`}
               />
               <span>
-                {message.confidence === 'high'
-                  ? '높은 신뢰도'
-                  : message.confidence === 'medium'
-                    ? '보통 신뢰도'
-                    : '낮은 신뢰도'}
+                {selectByKey(message.confidence, {
+                  high: '높은 신뢰도',
+                  medium: '보통 신뢰도',
+                }, '낮은 신뢰도')}
               </span>
             </div>
 

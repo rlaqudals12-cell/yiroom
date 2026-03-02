@@ -7,6 +7,9 @@
 
 import type { DetailedZoneId, DetailedStatusLevel } from './skin-zones';
 
+/** 지표 상태 수준 */
+export type MetricStatusLevel = 'good' | 'normal' | 'warning';
+
 // ============================================
 // 지표별 상세 설명 타입 (Layer 3: WHY + HOW)
 // ============================================
@@ -66,7 +69,7 @@ export interface MetricDetailedExplanation {
   /** 점수 (0-100) */
   score: number;
   /** 상태 (good, normal, warning) */
-  status: 'good' | 'normal' | 'warning';
+  status: MetricStatusLevel;
   /** 간단한 설명 (한 줄) */
   simpleDescription: string;
   /** 상세 분석 (Progressive Disclosure) */
@@ -147,28 +150,28 @@ export const SKIN_METRIC_LABELS: Record<SkinMetricId, string> = {
 // ============================================
 
 /** 점수 → 3단계 상태 변환 */
-export function getMetricStatus(score: number): 'good' | 'normal' | 'warning' {
+export function getMetricStatus(score: number): MetricStatusLevel {
   if (score >= 71) return 'good';
   if (score >= 41) return 'normal';
   return 'warning';
 }
 
 /** 상태별 한국어 라벨 */
-export const METRIC_STATUS_LABELS: Record<'good' | 'normal' | 'warning', string> = {
+export const METRIC_STATUS_LABELS: Record<MetricStatusLevel, string> = {
   good: '좋음',
   normal: '보통',
   warning: '주의',
 };
 
 /** 상태별 색상 (Tailwind) */
-export const METRIC_STATUS_COLORS: Record<'good' | 'normal' | 'warning', string> = {
+export const METRIC_STATUS_COLORS: Record<MetricStatusLevel, string> = {
   good: 'text-green-500',
   normal: 'text-yellow-500',
   warning: 'text-red-500',
 };
 
 /** 상태별 배경색 (Tailwind) */
-export const METRIC_STATUS_BG_COLORS: Record<'good' | 'normal' | 'warning', string> = {
+export const METRIC_STATUS_BG_COLORS: Record<MetricStatusLevel, string> = {
   good: 'bg-green-500/20',
   normal: 'bg-yellow-500/20',
   warning: 'bg-red-500/20',

@@ -246,7 +246,8 @@ export async function createIHerbDeeplink(productUrl: string, subId?: string): P
   if (!config) {
     // Mock: 원본 URL에 가상 tracking 파라미터 추가
     const baseUrl = productUrl.includes('?') ? productUrl : `${productUrl}?`;
-    return `${baseUrl}&rcode=MOCK123${subId ? `&pcode=${subId}` : ''}`;
+    const pcodePart = subId ? `&pcode=${subId}` : '';
+    return `${baseUrl}&rcode=MOCK123${pcodePart}`;
   }
 
   // Partnerize Click URL 생성
@@ -351,7 +352,8 @@ function getMockProducts(
  */
 function createMockDeeplink(productUrl: string, subId?: string): string {
   const separator = productUrl.includes('?') ? '&' : '?';
-  return `${productUrl}${separator}rcode=MOCK123${subId ? `&pcode=${subId}` : ''}`;
+  const pcodePart = subId ? `&pcode=${subId}` : '';
+  return `${productUrl}${separator}rcode=MOCK123${pcodePart}`;
 }
 
 /**

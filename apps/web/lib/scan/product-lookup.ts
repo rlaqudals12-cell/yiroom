@@ -10,6 +10,7 @@ import type {
   ProductIngredient,
   ProductCategory,
 } from '@/types/scan';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // Open Beauty Facts API
@@ -83,7 +84,7 @@ export function parseIngredientsText(text: string): ProductIngredient[] {
 
   // 쉼표로 구분된 성분 목록 파싱
   const ingredients = text
-    .split(/,|、/)
+    .split(/[,、]/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 
@@ -91,7 +92,11 @@ export function parseIngredientsText(text: string): ProductIngredient[] {
     order: index + 1,
     inciName: name.toUpperCase(),
     nameKo: undefined, // 추후 성분 마스터 DB에서 매칭
-    concentration: index < 5 ? 'high' : index < 15 ? 'medium' : 'low',
+    concentration: classifyByRange(index, [
+      { max: 5, result: 'high' as const },
+      { max: 15, result: 'medium' as const },
+      { result: 'low' as const },
+    ])!,
   }));
 }
 

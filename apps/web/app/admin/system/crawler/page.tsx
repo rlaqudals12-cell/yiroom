@@ -12,6 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 크롤러 상태 타입
 interface CrawlerStatus {
@@ -54,6 +55,19 @@ const INITIAL_CRAWLERS: CrawlerStatus[] = [
   },
 ];
 
+// 크롤러 완료 시 상태 업데이트 (순수 함수)
+function completeCrawlerState(
+  crawlers: CrawlerStatus[],
+  name: string,
+  itemsUpdated: number
+): CrawlerStatus[] {
+  return crawlers.map((c) =>
+    c.name === name
+      ? { ...c, status: 'success' as const, lastRun: new Date(), itemsUpdated }
+      : c
+  );
+}
+
 export default function CrawlerPage() {
   const [crawlers, setCrawlers] = useState<CrawlerStatus[]>(INITIAL_CRAWLERS);
   const [runningAll, setRunningAll] = useState(false);
@@ -68,22 +82,12 @@ export default function CrawlerPage() {
     // const response = await fetch(`/api/admin/crawler/${name}`, { method: 'POST' });
 
     // 시뮬레이션 (2-5초 후 완료)
-    setTimeout(() => {
+    const completeCrawler = (): void => {
       const itemsUpdated = Math.floor(Math.random() * 50) + 10;
-      setCrawlers((prev) =>
-        prev.map((c) =>
-          c.name === name
-            ? {
-                ...c,
-                status: 'success',
-                lastRun: new Date(),
-                itemsUpdated,
-              }
-            : c
-        )
-      );
+      setCrawlers((prev) => completeCrawlerState(prev, name, itemsUpdated));
       toast.success(`${name} 크롤러 완료: ${itemsUpdated}개 업데이트`);
-    }, 2000 + Math.random() * 3000);
+    };
+    setTimeout(completeCrawler, 2000 + Math.random() * 3000);
   };
 
   // 전체 크롤러 실행
@@ -176,13 +180,11 @@ export default function CrawlerPage() {
                   <span className="text-gray-500">상태</span>
                   <span
                     className={`font-medium ${
-                      crawler.status === 'running'
-                        ? 'text-blue-600'
-                        : crawler.status === 'success'
-                          ? 'text-green-600'
-                          : crawler.status === 'error'
-                            ? 'text-red-600'
-                            : 'text-gray-600'
+                      selectByKey(crawler.status, {
+                        running: 'text-blue-600',
+                        success: 'text-green-600',
+                        error: 'text-red-600',
+                      }, 'text-gray-600')
                     }`}
                   >
                     {getStatusText(crawler.status)}

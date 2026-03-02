@@ -120,12 +120,12 @@ export async function lookupOpenFoodFacts(
       fiber: product.nutriments?.fiber_100g
         ? Math.round(product.nutriments.fiber_100g)
         : undefined,
-      // 나트륨 mg 변환 (salt g → sodium mg: salt * 400)
-      sodium: product.nutriments?.sodium_100g
-        ? Math.round(product.nutriments.sodium_100g * 1000) // g to mg
-        : product.nutriments?.salt_100g
-          ? Math.round(product.nutriments.salt_100g * 400)
-          : undefined,
+      // 나트륨 mg 변환 (sodium g → mg 또는 salt g → sodium mg: salt * 400)
+      sodium: (() => {
+        if (product.nutriments?.sodium_100g) return Math.round(product.nutriments.sodium_100g * 1000);
+        if (product.nutriments?.salt_100g) return Math.round(product.nutriments.salt_100g * 400);
+        return undefined;
+      })(),
       imageUrl:
         product.image_front_small_url || product.image_front_url || undefined,
       category: product.categories?.split(',')[0]?.trim() || undefined,

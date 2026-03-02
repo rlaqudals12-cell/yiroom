@@ -144,7 +144,7 @@ function findBestMatch(
 
   for (const item of items) {
     const score = calculateSimilarity(
-      item.title.replace(/<[^>]*>/g, ''), // HTML 태그 제거
+      item.title.replace(/<[^>]{0,500}>/g, ''), // HTML 태그 제거 (길이 제한으로 ReDoS 방지)
       request.productName
     );
     if (score > bestScore) {

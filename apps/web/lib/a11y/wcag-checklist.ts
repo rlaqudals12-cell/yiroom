@@ -10,12 +10,18 @@
 // 체크리스트 항목 상태
 export type CheckStatus = 'pass' | 'fail' | 'warning' | 'not-applicable';
 
+// WCAG 적합성 수준
+export type WCAGLevel = 'A' | 'AA' | 'AAA';
+
+// WCAG 원칙 카테고리
+export type WCAGCategory = 'perceivable' | 'operable' | 'understandable' | 'robust';
+
 // 체크리스트 항목
 export interface WCAGCheckItem {
   id: string;
   criterion: string;
-  level: 'A' | 'AA' | 'AAA';
-  category: 'perceivable' | 'operable' | 'understandable' | 'robust';
+  level: WCAGLevel;
+  category: WCAGCategory;
   description: string;
   howToTest: string;
   status?: CheckStatus;
@@ -333,8 +339,8 @@ export function filterByCategory(
 /**
  * 레벨별 체크리스트 필터
  */
-export function filterByLevel(level: 'A' | 'AA' | 'AAA'): WCAGCheckItem[] {
-  const levels: Record<string, ('A' | 'AA' | 'AAA')[]> = {
+export function filterByLevel(level: WCAGLevel): WCAGCheckItem[] {
+  const levels: Record<string, WCAGLevel[]> = {
     A: ['A'],
     AA: ['A', 'AA'],
     AAA: ['A', 'AA', 'AAA'],
@@ -373,7 +379,7 @@ export const CATEGORY_LABELS: Record<WCAGCheckItem['category'], string> = {
 /**
  * 레벨 설명
  */
-export const LEVEL_DESCRIPTIONS: Record<'A' | 'AA' | 'AAA', string> = {
+export const LEVEL_DESCRIPTIONS: Record<WCAGLevel, string> = {
   A: '필수 (기본 접근성)',
   AA: '권장 (법적 요구사항)',
   AAA: '향상 (최고 수준)',

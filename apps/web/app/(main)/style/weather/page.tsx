@@ -101,6 +101,7 @@ export default function WeatherOutfitPage() {
 
     setUsingLocation(true);
 
+    // eslint-disable-next-line sonarjs/no-intrusive-permissions -- 날씨 기반 코디 추천에 위치 정보 필수
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;

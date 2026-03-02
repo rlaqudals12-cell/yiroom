@@ -154,21 +154,26 @@ export function WeeklyComparisonChart({
 
         {/* 주간 요약 */}
         <div className="grid grid-cols-4 gap-2 mt-3 text-center text-xs">
-          {weeklyData.map((week, index) => (
+          {weeklyData.map((week, index) => {
+            const weekNumber = index + 1;
+            const weekHighlightMap: Record<number, string> = {};
+            if (highlights.bestWeek !== null) {
+              weekHighlightMap[highlights.bestWeek] = 'bg-green-100 dark:bg-green-900/30';
+            }
+            if (highlights.worstWeek !== null) {
+              weekHighlightMap[highlights.worstWeek] = 'bg-orange-100 dark:bg-orange-900/30';
+            }
+            const weekHighlightClass = weekHighlightMap[weekNumber] ?? 'bg-muted/50';
+            return (
             <div
               key={week.weekStart}
-              className={`p-2 rounded-lg ${
-                index + 1 === highlights.bestWeek
-                  ? 'bg-green-100 dark:bg-green-900/30'
-                  : index + 1 === highlights.worstWeek
-                  ? 'bg-orange-100 dark:bg-orange-900/30'
-                  : 'bg-muted/50'
-              }`}
+              className={`p-2 rounded-lg ${weekHighlightClass}`}
             >
               <div className="font-medium">{index + 1}주</div>
               <div className="text-muted-foreground">{week.mealCount}끼</div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

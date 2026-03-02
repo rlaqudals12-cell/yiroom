@@ -9,7 +9,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-zinc-800 bg-[#0A0A0B]" data-testid="footer">
+    <footer className="border-t border-zinc-800 bg-zinc-950" data-testid="footer">
       <div className="mx-auto max-w-[960px] px-4 py-8">
         {/* 링크 섹션 */}
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-zinc-400">

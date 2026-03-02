@@ -7,6 +7,7 @@ import {
   type GeminiFoodAnalysisResult,
 } from '@/lib/gemini';
 import { generateMockFoodAnalysis } from '@/lib/mock/food-analysis';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
@@ -74,6 +75,7 @@ function validateAndNormalizeImage(imageBase64: string): {
  *   usedMock: boolean
  * }
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(req: Request) {
   try {
     // Clerk 인증 확인
@@ -168,8 +170,11 @@ export async function POST(req: Request) {
           : 0.8;
 
       // 신뢰도 레벨 결정
-      const confidenceLevel =
-        avgConfidence >= 0.85 ? 'high' : avgConfidence >= 0.7 ? 'medium' : 'low';
+      const confidenceLevel = classifyByRange(avgConfidence, [
+        { max: 0.7, result: 'low' },
+        { max: 0.85, result: 'medium' },
+        { min: 0.85, result: 'high' },
+      ], 'low')!;
 
       // foods 배열을 DB 형식으로 변환
       const foodsForDb = result.foods.map((food) => ({

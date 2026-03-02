@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface TrendDataPoint {
   date: Date;
@@ -111,11 +112,16 @@ export function TrendChart({
     return `${month}/${day}`;
   };
 
-  // 트렌드 아이콘
-  const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
-  const trendColor =
-    trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-red-500' : 'text-gray-500';
-  const trendText = trend === 'up' ? '상승 중' : trend === 'down' ? '하락 중' : '유지 중';
+  // 트렌드 아이콘/색상/텍스트
+  const TrendIcon = selectByKey(trend, { up: TrendingUp, down: TrendingDown }, Minus)!;
+  const trendColor = selectByKey(trend, {
+    up: 'text-emerald-500',
+    down: 'text-red-500',
+  }, 'text-gray-500')!;
+  const trendText = selectByKey(trend, {
+    up: '상승 중',
+    down: '하락 중',
+  }, '유지 중')!;
 
   if (recentData.length === 0) {
     return (

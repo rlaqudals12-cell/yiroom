@@ -106,13 +106,13 @@ export function ZoneDetailCard({
           </div>
           {scoreChange !== null && (
             <p className="text-xs text-gray-500 mt-0.5">
-              {scoreChange > 0 ? (
+              {scoreChange > 0 && (
                 <span className="text-emerald-600">+{scoreChange}점 상승</span>
-              ) : scoreChange < 0 ? (
-                <span className="text-red-600">{scoreChange}점 하락</span>
-              ) : (
-                '이전과 동일'
               )}
+              {scoreChange < 0 && (
+                <span className="text-red-600">{scoreChange}점 하락</span>
+              )}
+              {scoreChange === 0 && '이전과 동일'}
             </p>
           )}
         </div>

@@ -36,6 +36,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
+import { classifyByRange, selectByKey } from '@/lib/utils/conditional-helpers';
 import type { ShelfItem, ShelfStatus } from '@/lib/scan/product-shelf';
 
 const STATUS_LABELS: Record<ShelfStatus, string> = {
@@ -221,11 +222,11 @@ export default function ShelfDetailPage() {
                   {item.compatibilityScore}점
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {item.compatibilityScore >= 80
-                    ? '내 피부에 잘 맞아요!'
-                    : item.compatibilityScore >= 60
-                      ? '주의가 필요해요'
-                      : '주의 성분이 있어요'}
+                  {classifyByRange(item.compatibilityScore, [
+                    { min: 80, result: '내 피부에 잘 맞아요!' },
+                    { min: 60, result: '주의가 필요해요' },
+                    { result: '주의 성분이 있어요' },
+                  ])}
                 </div>
               </div>
             </CardContent>
@@ -304,13 +305,11 @@ export default function ShelfDetailPage() {
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">스캔 방법</dt>
                 <dd>
-                  {item.scanMethod === 'barcode'
-                    ? '바코드 스캔'
-                    : item.scanMethod === 'ocr'
-                      ? '성분 OCR'
-                      : item.scanMethod === 'search'
-                        ? '검색'
-                        : '수동 입력'}
+                  {selectByKey(item.scanMethod, {
+                    barcode: '바코드 스캔',
+                    ocr: '성분 OCR',
+                    search: '검색',
+                  }, '수동 입력')}
                 </dd>
               </div>
               {item.productBarcode && (

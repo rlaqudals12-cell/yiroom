@@ -296,13 +296,9 @@ export function DailyCheckin({ open, onOpenChange, onComplete }: DailyCheckinPro
                 }
                 className="flex-1 bg-amber-500 hover:bg-amber-600"
               >
-                {isSubmitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : step === 3 ? (
-                  '완료'
-                ) : (
-                  '다음'
-                )}
+                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                {!isSubmitting && step === 3 && '완료'}
+                {!isSubmitting && step !== 3 && '다음'}
               </Button>
             </div>
           </>

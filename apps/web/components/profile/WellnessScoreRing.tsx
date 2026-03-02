@@ -6,6 +6,7 @@
  */
 
 import { useMemo } from 'react';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 interface WellnessScoreRingProps {
   score: number; // 0-100
@@ -155,13 +156,11 @@ export function WellnessScoreMini({ score }: WellnessScoreMiniProps) {
     <div className="flex items-center gap-2" data-testid="wellness-score-mini">
       <div
         className={`flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br ${
-          score >= 80
-            ? 'from-emerald-400 to-emerald-600'
-            : score >= 60
-              ? 'from-blue-400 to-blue-600'
-              : score >= 40
-                ? 'from-amber-400 to-amber-600'
-                : 'from-red-400 to-red-600'
+          classifyByRange(score, [
+            { max: 40, result: 'from-red-400 to-red-600' },
+            { max: 60, result: 'from-amber-400 to-amber-600' },
+            { max: 80, result: 'from-blue-400 to-blue-600' },
+          ], 'from-emerald-400 to-emerald-600')
         }`}
       >
         <span className="text-xs font-bold text-white">{score}</span>

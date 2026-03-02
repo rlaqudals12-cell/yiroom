@@ -100,6 +100,7 @@ async function updateProductPrice(
 /**
  * 특정 제품 타입의 모든 가격 업데이트
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function updatePricesForType(
   productType: ProductType,
   options: {

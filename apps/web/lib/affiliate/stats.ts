@@ -5,6 +5,7 @@
 
 import { getPartnerDailyStats, getAffiliateStatsSummary, getTopClickedProducts } from './clicks';
 import type { AffiliatePartnerName } from '@/types/affiliate';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 /** 파트너별 수익 통계 */
 export interface PartnerRevenue {
@@ -88,8 +89,8 @@ function generateMockPartnerRevenue(): PartnerRevenue[] {
     const clicks = baseClicks + Math.floor(Math.random() * 200);
     const conversionRate = 2 + Math.random() * 3;
     const conversions = Math.floor(clicks * (conversionRate / 100));
-    const avgOrderValue = id === 'coupang' ? 35000 : id === 'iherb' ? 55000 : 45000;
-    const commissionRate = id === 'coupang' ? 0.03 : id === 'iherb' ? 0.05 : 0.04;
+    const avgOrderValue = selectByKey(id, { coupang: 35000, iherb: 55000 }, 45000)!;
+    const commissionRate = selectByKey(id, { coupang: 0.03, iherb: 0.05 }, 0.04)!;
     const salesKrw = conversions * avgOrderValue;
     const commissionKrw = Math.floor(salesKrw * commissionRate);
 

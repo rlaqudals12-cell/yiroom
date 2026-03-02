@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { ArrowRight, Ruler, Scale, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 import { useUserProfile, type GenderType } from '@/hooks/useUserProfile';
 
 export interface UserBodyInput {
@@ -236,13 +237,11 @@ export default function InputForm({ onSubmit }: InputFormProps) {
           <p className="text-sm text-module-body-dark font-medium">BMI 미리보기</p>
           <p className="text-2xl font-bold text-module-body">{bmi}</p>
           <p className="text-xs text-module-body mt-1">
-            {Number(bmi) < 18.5
-              ? '저체중'
-              : Number(bmi) < 23
-                ? '정상'
-                : Number(bmi) < 25
-                  ? '과체중'
-                  : '비만'}
+            {classifyByRange(Number(bmi), [
+              { max: 18.5, result: '저체중' },
+              { max: 23, result: '정상' },
+              { max: 25, result: '과체중' },
+            ], '비만')}
           </p>
         </div>
       )}

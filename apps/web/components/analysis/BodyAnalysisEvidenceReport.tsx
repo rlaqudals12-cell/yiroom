@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Ruler, Activity, Camera, CheckCircle2, AlertCircle, Info, User } from 'lucide-react';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 분석 근거 타입
 export interface BodyAnalysisEvidence {
@@ -153,11 +154,11 @@ export default function BodyAnalysisEvidenceReport({
               <ReliabilityIcon className={cn('w-4 h-4', reliabilityStyle.text)} />
               <span className={cn('text-sm font-medium', reliabilityStyle.text)}>
                 신뢰도:{' '}
-                {imageQuality.analysisReliability === 'high'
-                  ? '높음'
-                  : imageQuality.analysisReliability === 'medium'
-                    ? '중간'
-                    : '낮음'}
+                {selectByKey(imageQuality.analysisReliability, {
+                  high: '높음',
+                  medium: '중간',
+                  low: '낮음',
+                }, '중간')}
               </span>
             </div>
           )}
@@ -267,11 +268,11 @@ export default function BodyAnalysisEvidenceReport({
             <div className="flex flex-wrap gap-2">
               {/* 촬영 각도 */}
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-xs">
-                {imageQuality.angle === 'front'
-                  ? '정면'
-                  : imageQuality.angle === 'side'
-                    ? '측면'
-                    : '비스듬'}
+                {selectByKey(imageQuality.angle, {
+                  front: '정면',
+                  side: '측면',
+                  angled: '비스듬',
+                }, '비스듬')}
               </span>
               {/* 자세 */}
               <span
@@ -293,11 +294,11 @@ export default function BodyAnalysisEvidenceReport({
                     : 'bg-muted'
                 )}
               >
-                {imageQuality.clothingFit === 'fitted'
-                  ? '핏한 의류'
-                  : imageQuality.clothingFit === 'loose'
-                    ? '루즈핏'
-                    : '오버사이즈'}
+                {selectByKey(imageQuality.clothingFit, {
+                  fitted: '핏한 의류',
+                  loose: '루즈핏',
+                  oversized: '오버사이즈',
+                }, '오버사이즈')}
               </span>
             </div>
           </div>
@@ -311,7 +312,7 @@ export default function BodyAnalysisEvidenceReport({
                 <>
                   5개 핵심 특징 중 <strong>{matchedFeatures}개</strong>가 일치하여{' '}
                   <span className={cn('font-bold', theme.primary)}>
-                    {bodyType === 'S' ? '스트레이트' : bodyType === 'W' ? '웨이브' : '내추럴'}
+                    {selectByKey(bodyType, { S: '스트레이트', W: '웨이브', N: '내추럴' }, '내추럴')}
                   </span>{' '}
                   체형으로 판정되었어요. (신뢰도: {confidence}%)
                 </>
@@ -319,7 +320,7 @@ export default function BodyAnalysisEvidenceReport({
                 <>
                   체형 분석 결과{' '}
                   <span className={cn('font-bold', theme.primary)}>
-                    {bodyType === 'S' ? '스트레이트' : bodyType === 'W' ? '웨이브' : '내추럴'}
+                    {selectByKey(bodyType, { S: '스트레이트', W: '웨이브', N: '내추럴' }, '내추럴')}
                   </span>{' '}
                   타입으로 판정되었어요.
                 </>

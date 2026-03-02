@@ -278,16 +278,16 @@ export function UserManagement({ fetchUsers, pageSize = 10 }: UserManagementProp
         </div>
 
         {/* 사용자 목록 */}
-        {isLoading ? (
-          <TableSkeleton rows={pageSize} />
-        ) : filteredUsers.length === 0 ? (
+        {isLoading && <TableSkeleton rows={pageSize} />}
+        {!isLoading && filteredUsers.length === 0 && (
           <div
             className="text-center py-12 text-muted-foreground"
             data-testid="no-users-message"
           >
             {searchQuery ? '검색 결과가 없습니다.' : '등록된 사용자가 없습니다.'}
           </div>
-        ) : (
+        )}
+        {!isLoading && filteredUsers.length > 0 && (
           <div className="space-y-1">
             {/* 테이블 헤더 (데스크톱) */}
             <div className="hidden md:grid grid-cols-12 gap-4 p-3 bg-muted/50 rounded-lg text-sm font-medium text-muted-foreground">

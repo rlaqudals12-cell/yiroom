@@ -53,11 +53,12 @@ export function AnnouncementCard({
         <div className="flex items-start gap-3">
           {/* 상태 아이콘 */}
           <div className="flex-shrink-0 mt-1">
-            {announcement.isPinned ? (
+            {announcement.isPinned && (
               <Pin className="h-4 w-4 text-primary" />
-            ) : announcement.category === 'important' ? (
+            )}
+            {!announcement.isPinned && announcement.category === 'important' && (
               <Bell className="h-4 w-4 text-red-500" />
-            ) : null}
+            )}
           </div>
 
           <div className="flex-1 min-w-0 space-y-1">

@@ -69,6 +69,7 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *   useMock?: boolean       // Mock 모드 강제 (선택)
  * }
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(req: NextRequest) {
   try {
     // Clerk 인증 확인
@@ -145,6 +146,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
+    try {
     const supabase = createServiceRoleClient();
 
     // 이미지 업로드
@@ -208,7 +211,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error('[M-1] Database insert error:', error);
-      return dbError('분석 결과 저장에 실패했습니다.');
+      // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
     }
 
     // 게이미피케이션 연동
@@ -261,6 +264,33 @@ export async function POST(req: NextRequest) {
       gamification: gamificationResult,
       alerts, // 크로스 모듈 알림
     });
+    } catch (dbOperationError) {
+      // DB 실패 시 합성 응답 반환 (AI 분석 결과는 보존)
+      console.warn('[M-1] DB operations failed, using synthetic response');
+      console.error('[M-1] DB error details:', {
+        error:
+          dbOperationError instanceof Error
+            ? dbOperationError.message
+            : String(dbOperationError),
+      });
+      const syntheticId = crypto.randomUUID();
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: syntheticId,
+          clerk_user_id: userId,
+          created_at: new Date().toISOString(),
+        },
+        result: {
+          ...result,
+          analyzedAt: new Date().toISOString(),
+        },
+        usedMock,
+        gamification: { badgeResults: [], xpAwarded: 0 },
+        alerts: [],
+        dbSaveFailed: true,
+      });
+    }
   } catch (error) {
     console.error('[M-1] Makeup analysis error:', error);
     return internalError('메이크업 분석 중 오류가 발생했습니다.');

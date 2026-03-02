@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Download, Loader2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface DataExportButtonProps {
   className?: string;
@@ -70,11 +71,13 @@ export function DataExportButton({ className }: DataExportButtonProps) {
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-            {state === 'exporting' ? (
+            {state === 'exporting' && (
               <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-            ) : state === 'success' ? (
+            )}
+            {state === 'success' && (
               <Check className="w-5 h-5 text-green-500" />
-            ) : (
+            )}
+            {state !== 'exporting' && state !== 'success' && (
               <Download className="w-5 h-5 text-muted-foreground" />
             )}
           </div>
@@ -83,11 +86,10 @@ export function DataExportButton({ className }: DataExportButtonProps) {
               {state === 'success' ? '다운로드 완료' : '데이터 내보내기'}
             </p>
             <p className="text-sm text-muted-foreground">
-              {state === 'exporting'
-                ? '데이터를 수집하고 있습니다...'
-                : state === 'success'
-                  ? 'JSON 파일이 다운로드되었습니다'
-                  : '모든 데이터를 JSON 파일로 다운로드'}
+              {selectByKey(state, {
+                exporting: '데이터를 수집하고 있습니다...',
+                success: 'JSON 파일이 다운로드되었습니다',
+              }, '모든 데이터를 JSON 파일로 다운로드')}
             </p>
           </div>
         </div>

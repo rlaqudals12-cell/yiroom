@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/no-hardcoded-ip */
 /**
  * 감사 로그 시스템 테스트
  * @description lib/audit/logger.ts 테스트

@@ -370,7 +370,7 @@ export default function SearchPage() {
       </header>
 
       <div className="px-4 py-4">
-        {!isSearching ? (
+        {!isSearching && (
           // 검색 전 화면
           <div className="space-y-6">
             {/* 최근 검색어 */}
@@ -466,7 +466,8 @@ export default function SearchPage() {
               </section>
             </FadeInUp>
           </div>
-        ) : isLoading ? (
+        )}
+        {isSearching && isLoading && (
           // 로딩 중 스켈레톤
           <div className="space-y-6">
             <div>
@@ -496,7 +497,8 @@ export default function SearchPage() {
               </div>
             </div>
           </div>
-        ) : (
+        )}
+        {isSearching && !isLoading && (
           // 검색 결과 화면
           <div className="space-y-6">
             {/* 결과 없음 */}

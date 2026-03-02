@@ -6,6 +6,7 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Clock, ArrowRight, Upload, Loader2 } from 'lucide-react';
+import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import {
   type HairAnalysisResult,
   type HairTypeId,
@@ -15,6 +16,7 @@ import {
   HAIR_CONCERNS,
 } from '@/lib/mock/hair-analysis';
 import { Button } from '@/components/ui/button';
+import { mapToClass } from '@/lib/utils/conditional-helpers';
 
 type AnalysisStep = 'guide' | 'upload' | 'known-input' | 'loading' | 'result';
 
@@ -105,14 +107,8 @@ export default function HairAnalysisPage() {
     setError(null);
 
     try {
-      // 파일을 Base64로 변환
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-      });
-      reader.readAsDataURL(imageFile);
-      const imageBase64 = await base64Promise;
+      // 파일을 압축된 Base64로 변환 (Vercel 4.5MB body 제한 대응)
+      const imageBase64 = await compressFileToBase64(imageFile);
 
       // API 호출
       const response = await fetch('/api/analyze/hair', {
@@ -501,13 +497,7 @@ function AnalysisResultView({
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${
-                    metric.status === 'good'
-                      ? 'bg-green-500'
-                      : metric.status === 'warning'
-                        ? 'bg-red-500'
-                        : 'bg-amber-500'
-                  }`}
+                  className={`h-full rounded-full transition-all ${mapToClass(metric.status, { good: 'bg-green-500', warning: 'bg-red-500' }, 'bg-amber-500')}`}
                   style={{ width: `${metric.value}%` }}
                 />
               </div>

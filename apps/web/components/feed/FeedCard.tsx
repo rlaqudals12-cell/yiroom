@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -181,11 +182,12 @@ export function FeedCard({
                 post.media_urls.length === 1 ? 'aspect-video' : 'aspect-square'
               )}
             >
-              <img
+              <Image
                 src={url}
                 alt={`이미지 ${i + 1}`}
-                className="w-full h-full object-cover"
-                loading="lazy"
+                fill
+                className="object-cover"
+                unoptimized
               />
               {/* 4장 초과 시 오버레이 */}
               {i === 3 && post.media_urls.length > 4 && (

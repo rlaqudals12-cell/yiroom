@@ -158,6 +158,7 @@ export async function getInteractionsByType(
  * @param products 제품 목록
  * @returns 제품 쌍별 상호작용 경고
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function checkProductInteractions(
   products: AnyProduct[]
 ): Promise<ProductInteractionWarning[]> {

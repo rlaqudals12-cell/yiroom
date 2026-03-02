@@ -71,17 +71,19 @@ export function DataExportCard() {
           className="w-full sm:w-auto"
           data-testid="export-button"
         >
-          {isExporting ? (
+          {isExporting && (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
               내보내는 중...
             </>
-          ) : exportSuccess ? (
+          )}
+          {!isExporting && exportSuccess && (
             <>
               <CheckCircle className="w-4 h-4 mr-2 text-green-500" aria-hidden="true" />
               다운로드 완료
             </>
-          ) : (
+          )}
+          {!isExporting && !exportSuccess && (
             <>
               <Download className="w-4 h-4 mr-2" aria-hidden="true" />내 데이터 다운로드
             </>

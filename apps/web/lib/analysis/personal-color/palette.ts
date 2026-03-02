@@ -5,6 +5,7 @@
 
 import type { LabColor, TwelveTone, TonePalette, ColorCompatibility } from './types';
 import { hexToLab, calculateCIEDE2000 } from '@/lib/color';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 const TWELVE_TONE_PALETTES: Record<TwelveTone, TonePalette> = {
   'light-spring': {
@@ -218,19 +219,23 @@ export function getToneCompatibility(tone: TwelveTone, testColor: LabColor): Col
   const avgBest = bestDistances.reduce((a, b) => a + b, 0) / bestDistances.length;
   const avgWorst = worstDistances.reduce((a, b) => a + b, 0) / worstDistances.length;
   const minBest = Math.min(...bestDistances);
-  let score =
-    minBest < 5 ? 95 - minBest : avgWorst < 10 ? 20 + avgWorst : 50 + (avgWorst - avgBest) * 2;
+  // 점수 계산: 최소 거리, 평균 worst 거리 기반
+  let score: number;
+  if (minBest < 5) {
+    score = 95 - minBest;
+  } else if (avgWorst < 10) {
+    score = 20 + avgWorst;
+  } else {
+    score = 50 + (avgWorst - avgBest) * 2;
+  }
   score = Math.max(0, Math.min(100, score));
-  const grade =
-    score >= 85
-      ? 'perfect'
-      : score >= 70
-        ? 'good'
-        : score >= 50
-          ? 'neutral'
-          : score >= 30
-            ? 'poor'
-            : 'avoid';
+  const grade = classifyByRange(score, [
+    { max: 30, result: 'avoid' as const },
+    { min: 30, max: 50, result: 'poor' as const },
+    { min: 50, max: 70, result: 'neutral' as const },
+    { min: 70, max: 85, result: 'good' as const },
+    { min: 85, result: 'perfect' as const },
+  ])!;
   const desc: Record<string, string> = {
     perfect: '이 색상은 당신의 퍼스널 컬러와 완벽하게 어울립니다.',
     good: '이 색상은 당신에게 잘 어울리는 색상입니다.',

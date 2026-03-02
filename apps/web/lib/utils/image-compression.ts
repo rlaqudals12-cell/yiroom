@@ -71,6 +71,24 @@ export async function compressBase64Image(base64: string): Promise<string> {
 }
 
 /**
+ * File을 압축된 Base64로 변환 (원스텝)
+ * - FileReader로 읽기 → 1024px 리사이즈 → JPEG 80% 압축
+ * - Vercel 4.5MB body 제한 대응: 12MP 사진(~8MB) → ~200KB로 압축
+ *
+ * @param file - 이미지 File 객체
+ * @returns 압축된 data:image/jpeg;base64,... 문자열
+ */
+export async function compressFileToBase64(file: File): Promise<string> {
+  const raw = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('파일 읽기에 실패했어요.'));
+    reader.readAsDataURL(file);
+  });
+  return compressBase64Image(raw);
+}
+
+/**
  * 여러 Base64 이미지를 병렬로 압축
  *
  * @param images - Base64 이미지 배열

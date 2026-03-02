@@ -210,13 +210,12 @@ export function generateMockHairAnalysisResult(): HairAnalysisResult {
     sensitive: ['알로에베라', '카모마일', '센텔라', '병풀 추출물'],
   };
 
-  const insight = `${hairTypeLabels[randomHairType]} 타입의 ${thicknessLabels[randomThickness]}이시네요. ${scalpTypeLabels[randomScalpType]} 특성에 맞는 케어가 필요해요. ${
-    concerns.includes('damage')
-      ? '손상된 모발 회복에 집중해주세요.'
-      : concerns.includes('frizz')
-        ? '수분 공급에 신경써주세요.'
-        : '현재 상태를 유지하는 케어를 추천드려요.'
-  }`;
+  // 모발 상태별 케어 메시지
+  let careMessage = '현재 상태를 유지하는 케어를 추천드려요.';
+  if (concerns.includes('damage')) careMessage = '손상된 모발 회복에 집중해주세요.';
+  else if (concerns.includes('frizz')) careMessage = '수분 공급에 신경써주세요.';
+
+  const insight = `${hairTypeLabels[randomHairType]} 타입의 ${thicknessLabels[randomThickness]}이시네요. ${scalpTypeLabels[randomScalpType]} 특성에 맞는 케어가 필요해요. ${careMessage}`;
 
   return {
     hairType: randomHairType,

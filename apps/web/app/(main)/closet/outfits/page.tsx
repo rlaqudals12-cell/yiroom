@@ -179,7 +179,7 @@ export default function OutfitsPage() {
 
       {/* 콘텐츠 */}
       <div className="px-4 pt-4">
-        {loading ? (
+        {loading && (
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="rounded-xl overflow-hidden">
@@ -191,7 +191,8 @@ export default function OutfitsPage() {
               </div>
             ))}
           </div>
-        ) : filteredOutfits.length === 0 ? (
+        )}
+        {!loading && filteredOutfits.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
               <Plus className="w-8 h-8 text-muted-foreground" />
@@ -205,7 +206,8 @@ export default function OutfitsPage() {
               </Button>
             )}
           </div>
-        ) : (
+        )}
+        {!loading && filteredOutfits.length > 0 && (
           <div className="grid grid-cols-2 gap-3">
             {filteredOutfits.map((outfit) => (
               <OutfitCard

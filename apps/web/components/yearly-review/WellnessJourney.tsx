@@ -4,6 +4,7 @@ import { Heart, TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import type { YearlyStats } from '@/lib/reports/yearlyTypes';
+import { getTrendDirection, selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface WellnessJourneyProps {
   stats: YearlyStats;
@@ -77,20 +78,20 @@ export function WellnessJourney({ stats }: WellnessJourneyProps) {
             <div className="flex items-center justify-center gap-1">
               <ImprovementIcon
                 className={`w-5 h-5 ${
-                  wellness.scoreImprovement > 0
-                    ? 'text-green-500'
-                    : wellness.scoreImprovement < 0
-                      ? 'text-red-500'
-                      : 'text-muted-foreground'
+                  selectByKey(getTrendDirection(wellness.scoreImprovement), {
+                    up: 'text-green-500',
+                    down: 'text-red-500',
+                    neutral: 'text-muted-foreground',
+                  })
                 }`}
               />
               <span
                 className={`text-2xl font-bold ${
-                  wellness.scoreImprovement > 0
-                    ? 'text-green-600 dark:text-green-400'
-                    : wellness.scoreImprovement < 0
-                      ? 'text-red-600 dark:text-red-400'
-                      : 'text-muted-foreground'
+                  selectByKey(getTrendDirection(wellness.scoreImprovement), {
+                    up: 'text-green-600 dark:text-green-400',
+                    down: 'text-red-600 dark:text-red-400',
+                    neutral: 'text-muted-foreground',
+                  })
                 }`}
               >
                 {wellness.scoreImprovement > 0 ? '+' : ''}

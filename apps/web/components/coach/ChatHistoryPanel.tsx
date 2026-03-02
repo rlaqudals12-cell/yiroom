@@ -141,17 +141,19 @@ export function ChatHistoryPanel({
 
           {/* 세션 목록 */}
           <div className="flex-1 overflow-y-auto">
-            {loading ? (
+            {loading && (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
-            ) : sessions.length === 0 ? (
+            )}
+            {!loading && sessions.length === 0 && (
               <div className="text-center py-12 px-4">
                 <MessageCircle className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
                 <p className="text-sm text-muted-foreground">아직 대화 기록이 없어요</p>
                 <p className="text-xs text-muted-foreground mt-1">새 대화를 시작해보세요</p>
               </div>
-            ) : (
+            )}
+            {!loading && sessions.length > 0 && (
               <ul className="divide-y" role="list" data-testid="session-list">
                 {sessions.map((session) => (
                   <li key={session.id}>

@@ -10,6 +10,7 @@ vi.mock('@/lib/supabase/service-role', () => ({
   createServiceRoleClient: vi.fn(() => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({
+        // eslint-disable-next-line sonarjs/no-nested-functions
         eq: vi.fn(() => ({
           not: vi.fn(() => ({
             gte: vi.fn(() => ({
@@ -28,6 +29,7 @@ vi.mock('@/lib/supabase/service-role', () => ({
         error: null,
       })),
       update: vi.fn(() => ({
+        // eslint-disable-next-line sonarjs/no-nested-functions
         in: vi.fn(() => ({
           data: null,
           error: null,

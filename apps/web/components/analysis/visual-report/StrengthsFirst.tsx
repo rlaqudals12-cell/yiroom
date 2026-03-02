@@ -117,7 +117,7 @@ export function StrengthsFirst({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
-            {processedItems.strengthItems.length > 0 ? (
+            {processedItems.strengthItems.length > 0 && (
               processedItems.strengthItems.map((item, index) => (
                 <MetricBar
                   key={item.id || item.name}
@@ -127,7 +127,8 @@ export function StrengthsFirst({
                   delay={(index + 2) as 0 | 1 | 2 | 3 | 4 | 5}
                 />
               ))
-            ) : strengths && strengths.length > 0 ? (
+            )}
+            {processedItems.strengthItems.length === 0 && strengths && strengths.length > 0 && (
               // 텍스트 기반 강점 (체형 분석 레거시)
               <ul className="space-y-2">
                 {strengths.slice(0, maxStrengths).map((strength, index) => (
@@ -140,7 +141,8 @@ export function StrengthsFirst({
                   </li>
                 ))}
               </ul>
-            ) : (
+            )}
+            {processedItems.strengthItems.length === 0 && (!strengths || strengths.length === 0) && (
               <p className="text-sm text-muted-foreground">{POSITIVE_MESSAGES.strengthsEmpty}</p>
             )}
           </CardContent>

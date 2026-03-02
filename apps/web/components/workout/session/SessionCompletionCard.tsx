@@ -16,6 +16,7 @@ import {
 import type { WorkoutType } from '@/lib/workout';
 import { getQuickNutritionMessage, calculateProteinRecommendation } from '@/lib/workout';
 import { useShare } from '@/hooks/useShare';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 interface SessionCompletionCardProps {
   totalExercises: number;
@@ -161,11 +162,11 @@ export function SessionCompletionCard({
             <div className="h-2 bg-white/20 rounded-full overflow-hidden">
               <div
                 className={`h-full transition-all duration-500 ${
-                  completionRate === 100
-                    ? 'bg-green-400'
-                    : completionRate >= 80
-                      ? 'bg-yellow-400'
-                      : 'bg-white'
+                  classifyByRange(completionRate, [
+                    { max: 80, result: 'bg-white' },
+                    { max: 100, result: 'bg-yellow-400' },
+                    { result: 'bg-green-400' },
+                  ])
                 }`}
                 style={{ width: `${completionRate}%` }}
               />

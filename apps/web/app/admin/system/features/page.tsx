@@ -49,28 +49,31 @@ export default function FeatureFlagsPage() {
     loadFlags();
   }, []);
 
+  // Feature Flag 토글 실행 로직
+  const executeToggleFlag = async (key: string, enabled: boolean): Promise<void> => {
+    try {
+      const response = await fetch('/api/admin/features', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, enabled }),
+      });
+
+      if (!response.ok) throw new Error('Failed to toggle feature');
+
+      setFlags((prev) =>
+        prev.map((f) => (f.key === key ? { ...f, enabled } : f))
+      );
+
+      toast.success(`${enabled ? '활성화' : '비활성화'}되었습니다`);
+    } catch (error) {
+      toast.error('변경에 실패했습니다');
+      console.error(error);
+    }
+  };
+
   // Feature Flag 토글
-  const toggleFlag = async (key: string, enabled: boolean) => {
-    startTransition(async () => {
-      try {
-        const response = await fetch('/api/admin/features', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, enabled }),
-        });
-
-        if (!response.ok) throw new Error('Failed to toggle feature');
-
-        setFlags((prev) =>
-          prev.map((f) => (f.key === key ? { ...f, enabled } : f))
-        );
-
-        toast.success(`${enabled ? '활성화' : '비활성화'}되었습니다`);
-      } catch (error) {
-        toast.error('변경에 실패했습니다');
-        console.error(error);
-      }
-    });
+  const toggleFlag = (key: string, enabled: boolean): void => {
+    startTransition(() => executeToggleFlag(key, enabled));
   };
 
   // 검색 필터링

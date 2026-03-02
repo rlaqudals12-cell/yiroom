@@ -14,6 +14,7 @@ import {
 } from '@/lib/smart-matching/equipment-recommend';
 import type { ExerciseDifficulty } from '@/types/workout';
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();

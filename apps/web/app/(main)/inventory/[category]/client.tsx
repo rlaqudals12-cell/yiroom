@@ -9,6 +9,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Search, Plus, Filter, X, AlertTriangle, ChefHat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -287,6 +288,11 @@ export function InventoryCategoryClient({
     }
   };
 
+  // 서브카테고리 필터 제거
+  const handleRemoveSub = (sub: string): void => {
+    setSelectedSub((prev) => prev.filter((s) => s !== sub));
+  };
+
   // 업로더 취소
   const handleCancelUpload = () => {
     setShowUploader(false);
@@ -442,7 +448,7 @@ export function InventoryCategoryClient({
                 key={sub}
                 variant="secondary"
                 size="sm"
-                onClick={() => setSelectedSub((prev) => prev.filter((s) => s !== sub))}
+                onClick={() => handleRemoveSub(sub)}
               >
                 {option?.label}
                 <X className="w-3 h-3 ml-1" />
@@ -492,10 +498,12 @@ export function InventoryCategoryClient({
               {/* 업로드된 이미지 미리보기 */}
               {uploadResult && (
                 <div className="aspect-square max-h-[200px] mx-auto relative rounded-xl overflow-hidden bg-muted">
-                  <img
+                  <Image
                     src={uploadResult.processedUrl}
                     alt="Preview"
-                    className="w-full h-full object-contain"
+                    fill
+                    className="object-contain"
+                    unoptimized
                   />
                 </div>
               )}

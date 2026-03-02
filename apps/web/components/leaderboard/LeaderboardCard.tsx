@@ -6,6 +6,7 @@ import type { RankingEntry, LeaderboardCategory } from '@/types/leaderboard';
 import { getRankMedal, getRankColor, getRankBgColor } from '@/types/leaderboard';
 import { formatScore } from '@/lib/leaderboard/constants';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { Crown } from 'lucide-react';
 
 interface LeaderboardCardProps {
@@ -116,21 +117,19 @@ export function LeaderboardPodium({
   }
 
   // 순서: 2위, 1위, 3위 (포디움 스타일)
-  const podiumOrder = top3.length === 3
-    ? [top3[1], top3[0], top3[2]]
-    : top3.length === 2
-      ? [top3[1], top3[0]]
-      : [top3[0]];
+  const podiumOrder = selectByKey(top3.length as 1 | 2 | 3, {
+    3: [top3[1], top3[0], top3[2]],
+    2: [top3[1], top3[0]],
+  }, [top3[0]])!;
 
   return (
     <div
       className="grid gap-2"
       style={{
-        gridTemplateColumns: top3.length === 3
-          ? '1fr 1.2fr 1fr'
-          : top3.length === 2
-            ? '1fr 1.2fr'
-            : '1fr',
+        gridTemplateColumns: selectByKey(top3.length as 1 | 2 | 3, {
+          3: '1fr 1.2fr 1fr',
+          2: '1fr 1.2fr',
+        }, '1fr'),
       }}
       data-testid="leaderboard-podium"
     >

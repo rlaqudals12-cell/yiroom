@@ -12,6 +12,7 @@ import {
   WorkoutInsightInput,
 } from '@/lib/gemini';
 import { classifyWorkoutType } from '@/lib/workout/classifyWorkoutType';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 /**
  * Mock 운동 분석 결과 생성
@@ -269,7 +270,11 @@ export function generateMockExerciseRecommendation(
       ? { male: 0, female: 0, unit: 'bodyweight' as const }
       : { male: 10, female: 5, unit: 'kg' as const },
     duration: item.exercise.category === 'cardio' ? 10 : undefined,
-    priority: index < 3 ? 1 : index < 5 ? 2 : 3,
+    priority: classifyByRange(index, [
+      { max: 3, result: 1 },
+      { max: 5, result: 2 },
+      { result: 3 },
+    ])!,
   }));
 
   const warmupExercises = warmupCandidates.slice(0, 2).map((e) => e.exercise.id);
@@ -308,6 +313,7 @@ export function generateMockExerciseRecommendation(
  * Mock 인사이트 결과 생성 (Task 4.1 Fallback)
  * AI 실패 시 규칙 기반으로 인사이트 생성
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- mock data generator
 export function generateMockWorkoutInsights(
   input: WorkoutInsightInput
 ): GeminiWorkoutInsightResult {

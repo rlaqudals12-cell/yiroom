@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import type { Rating, CreateReviewInput, ProductReview } from '@/types/review';
 import { getRatingText } from '@/lib/products/services/reviews';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
 
 interface ReviewFormProps {
   /** 수정할 리뷰 (없으면 새 리뷰 작성) */
@@ -131,7 +132,7 @@ export function ReviewForm({
           </Button>
         )}
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? '등록 중...' : isEditing ? '수정' : '등록'}
+          {isLoading ? '등록 중...' : selectByCondition(isEditing, '수정', '등록')}
         </Button>
       </div>
     </form>

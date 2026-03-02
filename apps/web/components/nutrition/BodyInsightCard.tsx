@@ -12,6 +12,7 @@
 import { useMemo } from 'react';
 import { Scale, ChevronRight, AlertCircle, TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getTrendColorClass, getTrendDirection } from '@/lib/utils/conditional-helpers';
 import {
   getBodyNutritionInsight,
   type BodyAnalysisData,
@@ -145,11 +146,7 @@ export function WeightChangeSection({ insight }: { insight: WeightChangeInsight 
           <p
             className={cn(
               'text-lg font-bold',
-              insight.weightChange < 0
-                ? 'text-green-600'
-                : insight.weightChange > 0
-                  ? 'text-red-600'
-                  : 'text-muted-foreground'
+              getTrendColorClass(getTrendDirection(insight.weightChange), { inverted: true })
             )}
           >
             {formatWeight(insight.weightChange)}

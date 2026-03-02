@@ -19,6 +19,7 @@ import type {
 } from '@/types/stretching';
 
 import { STRETCH_DATABASE } from './database';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 타입 정의
@@ -635,12 +636,11 @@ export function generateSportPrescription(
   });
 
   // 난이도 조정
-  const durationMultiplier =
-    userProfile.fitnessLevel === 'beginner'
-      ? 0.8
-      : userProfile.fitnessLevel === 'advanced'
-        ? 1.2
-        : 1.0;
+  const durationMultiplier = selectByKey(
+    userProfile.fitnessLevel,
+    { beginner: 0.8, advanced: 1.2 },
+    1.0
+  )!;
 
   // PrescribedStretch 생성
   const prescribedStretches: PrescribedStretch[] = conditionFiltered.map((exercise, index) => ({

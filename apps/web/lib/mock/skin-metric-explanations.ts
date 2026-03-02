@@ -6,6 +6,7 @@
  */
 
 import type { MetricExplanationTemplate, SkinMetricId } from '@/types/skin-detailed';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 /**
  * 7개 지표별 상세 설명 데이터
@@ -657,7 +658,11 @@ export function generateUserStatus(metricId: SkinMetricId, score: number): strin
     },
   };
 
-  const statusKey = score >= 71 ? 'good' : score >= 41 ? 'normal' : 'warning';
+  const statusKey = classifyByRange(score, [
+    { max: 41, result: 'warning' as const },
+    { max: 71, result: 'normal' as const },
+    { min: 71, result: 'good' as const },
+  ], 'warning' as const)!;
   const statusText = thresholds[metricId][statusKey];
 
   return `당신의 상태: ${statusText} (${score}점)`;
@@ -674,7 +679,11 @@ export function getMetricExplanation(
   score: number
 ): MetricExplanationTemplate & { score: number; status: 'good' | 'normal' | 'warning' } {
   const template = METRIC_EXPLANATIONS[metricId];
-  const status = score >= 71 ? 'good' : score >= 41 ? 'normal' : 'warning';
+  const status = classifyByRange(score, [
+    { max: 41, result: 'warning' as const },
+    { max: 71, result: 'normal' as const },
+    { min: 71, result: 'good' as const },
+  ], 'warning' as const)!;
 
   return {
     ...template,

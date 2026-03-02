@@ -326,7 +326,7 @@ export function StyleGallery({
             className="mt-4"
             data-testid={`category-content-${category}`}
           >
-            {filteredOutfits.length === 0 ? (
+            {filteredOutfits.length === 0 && (
               <Card>
                 <CardContent className="p-8 text-center">
                   <p className="text-muted-foreground">
@@ -342,7 +342,8 @@ export function StyleGallery({
                   </p>
                 </CardContent>
               </Card>
-            ) : viewMode === 'grid' ? (
+            )}
+            {filteredOutfits.length > 0 && viewMode === 'grid' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredOutfits.map((outfit, index) => (
                   <Best10Card
@@ -354,7 +355,8 @@ export function StyleGallery({
                   />
                 ))}
               </div>
-            ) : (
+            )}
+            {filteredOutfits.length > 0 && viewMode !== 'grid' && (
               <Best10List
                 recommendations={filteredOutfits}
                 styleCategory={selectedCategory}

@@ -64,7 +64,7 @@ describe('lib/gemini.ts - Mock Fallback 검증', () => {
 
       // Then: Mock 데이터 반환
       expect(result).toBeDefined();
-      expect(result.bodyType).toMatch(/S|W|N/);
+      expect(result.bodyType).toMatch(/[SWN]/);
       expect(result.bodyTypeLabel).toBeDefined();
       expect(result.bodyTypeLabelEn).toBeDefined();
       expect(result.characteristics).toBeDefined();

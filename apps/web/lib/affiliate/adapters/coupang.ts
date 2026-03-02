@@ -3,7 +3,7 @@
  * @description PartnerAdapter 인터페이스 구현 — 쿠팡 파트너스 API
  * @see docs/adr/ADR-067-affiliate-partner-api-strategy.md
  *
- * TODO: 쿠팡 파트너스 API 키 발급 후 실제 구현
+ * [DEFERRED] 쿠팡 파트너스 API 키 발급 후 실제 구현
  * - API 신청: https://partners.coupang.com/
  * - HMAC 서명 방식 인증
  * - 일 50,000건 호출 제한
@@ -39,13 +39,13 @@ export class CoupangPartnerAdapter implements PartnerAdapter {
       return [];
     }
 
-    // TODO: 쿠팡 파트너스 API 호출
+    // [DEFERRED] 쿠팡 파트너스 API 호출
     // const url = `https://api-gateway.coupang.com/v2/providers/affiliate_open_api/apis/openapi/products/search`;
     // const headers = this.createHmacHeaders('GET', url);
     // const response = await fetch(`${url}?keyword=${query.keyword}&limit=${query.pageSize || 20}`, { headers });
     // return this.normalizeProducts(response.data);
 
-    console.info('[CoupangAdapter] searchProducts 호출 — TODO: API 연동 구현');
+    console.info('[CoupangAdapter] searchProducts 호출 — API 연동 미구현 (Phase 2)');
     return [];
   }
 
@@ -55,7 +55,7 @@ export class CoupangPartnerAdapter implements PartnerAdapter {
       return `https://www.coupang.com/vp/products/${productId}`;
     }
 
-    // TODO: 쿠팡 파트너스 딥링크 API 호출
+    // [DEFERRED] 쿠팡 파트너스 딥링크 API 호출
     // const url = `https://api-gateway.coupang.com/v2/providers/affiliate_open_api/apis/openapi/deeplink`;
     // 실제 구현 시 subId에 trackingParams 인코딩
     const subId = [
@@ -68,9 +68,9 @@ export class CoupangPartnerAdapter implements PartnerAdapter {
   }
 
   parseConversionWebhook(_payload: unknown): ConversionEvent | null {
-    // TODO: 쿠팡 파트너스 전환 웹훅 포맷 파싱
+    // [DEFERRED] 쿠팡 파트너스 전환 웹훅 포맷 파싱
     // 쿠팡은 포스트백 URL 방식 사용
-    console.info('[CoupangAdapter] parseConversionWebhook 호출 — TODO: 구현');
+    console.info('[CoupangAdapter] parseConversionWebhook 호출 — 미구현 (Phase 2)');
     return null;
   }
 

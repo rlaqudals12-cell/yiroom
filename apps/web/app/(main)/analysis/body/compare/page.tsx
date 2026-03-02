@@ -7,6 +7,7 @@ import { ArrowLeft, Share2, TrendingUp, TrendingDown, Minus, Loader2 } from 'luc
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { selectByKey, selectByCondition, getTrendDirection } from '@/lib/utils/conditional-helpers';
 import { BottomNav } from '@/components/BottomNav';
 import type { AnalysisCompareResponse, BodyAnalysisHistoryItem } from '@/types/analysis-history';
 
@@ -33,7 +34,12 @@ function ChangeItem({
   const change = after - before;
   const isPositive = change > 0;
   const isGood = positiveIsGood ? isPositive : !isPositive;
-  const Icon = change > 0 ? TrendingUp : change < 0 ? TrendingDown : Minus;
+  // 변화 방향에 따른 아이콘 선택
+  const Icon = selectByKey(getTrendDirection(change), { up: TrendingUp, down: TrendingDown }, Minus)!;
+  // 변화 방향에 따른 색상
+  const changeColor = change === 0
+    ? 'text-muted-foreground'
+    : selectByCondition(isGood, 'text-green-600', 'text-red-600');
 
   return (
     <div className="flex items-center justify-between py-2 border-b last:border-0">
@@ -45,7 +51,7 @@ function ChangeItem({
         <span
           className={cn(
             'flex items-center gap-1 text-sm font-medium',
-            isGood ? 'text-green-600' : change === 0 ? 'text-muted-foreground' : 'text-red-600'
+            changeColor
           )}
         >
           <Icon className="h-3 w-3" aria-hidden="true" />
@@ -198,11 +204,10 @@ function BodyCompareContent() {
                 <p
                   className={cn(
                     'text-2xl font-bold',
-                    overallChange > 0
-                      ? 'text-green-600'
-                      : overallChange < 0
-                        ? 'text-red-600'
-                        : 'text-muted-foreground'
+                    selectByKey(getTrendDirection(overallChange), {
+                      up: 'text-green-600',
+                      down: 'text-red-600',
+                    }, 'text-muted-foreground')
                   )}
                 >
                   {overallChange > 0 ? '+' : ''}

@@ -16,6 +16,7 @@ const mockSupabaseClient = {
     select: vi.fn(() => ({
       eq: vi.fn(() => ({
         order: vi.fn(() => ({
+          // eslint-disable-next-line sonarjs/no-nested-functions
           limit: vi.fn(() => ({
             single: vi.fn(),
           })),

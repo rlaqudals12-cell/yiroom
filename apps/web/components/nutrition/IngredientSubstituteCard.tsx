@@ -27,6 +27,7 @@ import {
   type SubstituteInfo,
   type VariationGoal,
 } from '@/lib/nutrition';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 목표별 스타일 정의
 const GOAL_STYLES: Record<
@@ -134,11 +135,10 @@ function SubstituteItem({
             <div className="flex items-start gap-2">
               <span className="text-xs text-muted-foreground w-16 shrink-0">대체 비율</span>
               <span className="text-sm text-foreground">
-                {substitute.ratio === 0
-                  ? '제거'
-                  : substitute.ratio === 1
-                    ? '동량'
-                    : `${substitute.ratio}배`}
+                {selectByKey(substitute.ratio, {
+                  0: '제거',
+                  1: '동량',
+                }, `${substitute.ratio}배`)}
               </span>
             </div>
 
@@ -187,6 +187,9 @@ export function IngredientSubstituteCard({
       return true;
     });
   }, [searchQuery, activeGoal]);
+
+  // compact 모드일 때 표시 개수 제한
+  const displayIngredients = compact ? filteredIngredients.slice(0, 4) : filteredIngredients;
 
   // 재료별 대체 옵션
   const getSubstitutes = (ingredient: string): SubstituteInfo[] => {
@@ -271,7 +274,7 @@ export function IngredientSubstituteCard({
       {/* 재료 목록 */}
       <div className="p-5 space-y-3 max-h-[500px] overflow-y-auto">
         {filteredIngredients.length > 0 ? (
-          (compact ? filteredIngredients.slice(0, 4) : filteredIngredients).map((ingredient) => {
+          displayIngredients.map((ingredient) => {
             const substitutes = getSubstitutes(ingredient);
             if (substitutes.length === 0) return null;
 

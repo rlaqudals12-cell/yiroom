@@ -38,6 +38,7 @@ interface EmptyStateProps {
  * - 데이터가 없을 때 사용자에게 행동 유도
  * - 격려 메시지로 긍정적 UX 제공
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- component render
 export function EmptyState({
   type,
   title,

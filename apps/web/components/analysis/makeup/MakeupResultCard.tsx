@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { selectByKey, mapToClass } from '@/lib/utils/conditional-helpers';
 import type { MakeupAnalysisResult, ColorRecommendation } from '@/lib/mock/makeup-analysis';
 
 interface MakeupResultCardProps {
@@ -222,11 +223,10 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
                   }
                 >
                   호환성:{' '}
-                  {result.personalColorConnection.compatibility === 'high'
-                    ? '높음'
-                    : result.personalColorConnection.compatibility === 'medium'
-                      ? '보통'
-                      : '낮음'}
+                  {selectByKey(result.personalColorConnection.compatibility, {
+                    high: '높음',
+                    medium: '보통',
+                  }, '낮음')}
                 </Badge>
               </div>
             </div>
@@ -309,15 +309,12 @@ function MetricBar({
           <span className="text-sm font-bold">{metric.value}점</span>
           <Badge
             variant="outline"
-            className={
-              metric.status === 'good'
-                ? 'text-emerald-600 border-emerald-200'
-                : metric.status === 'warning'
-                  ? 'text-red-600 border-red-200'
-                  : 'text-amber-600 border-amber-200'
-            }
+            className={mapToClass(metric.status, {
+              good: 'text-emerald-600 border-emerald-200',
+              warning: 'text-red-600 border-red-200',
+            }, 'text-amber-600 border-amber-200')}
           >
-            {metric.status === 'good' ? '양호' : metric.status === 'warning' ? '주의' : '보통'}
+            {selectByKey(metric.status, { good: '양호', warning: '주의' }, '보통')}
           </Badge>
         </div>
       </div>

@@ -290,6 +290,7 @@ export function calculateGoalProgress(
 /**
  * 월간 인사이트 생성
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function generateMonthlyInsights(
   nutritionSummary: NutritionSummaryStats,
   nutritionAchievement: NutritionAchievement,

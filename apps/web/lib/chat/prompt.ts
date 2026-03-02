@@ -89,8 +89,8 @@ export function buildContextPrompt(context: ChatContext): string {
   // 최근 관심 제품
   if (context.recentProducts && context.recentProducts.length > 0) {
     const products = context.recentProducts.slice(0, 5);
-    sections.push(`### 최근 관심 제품
-${products.map((p) => `- ${p.name} (${p.category})`).join('\n')}`);
+    const productList = products.map((p) => `- ${p.name} (${p.category})`).join('\n');
+    sections.push(`### 최근 관심 제품\n${productList}`);
   }
 
   return sections.join('\n\n');

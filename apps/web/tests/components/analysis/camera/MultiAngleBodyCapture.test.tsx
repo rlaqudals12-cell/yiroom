@@ -80,7 +80,7 @@ describe('MultiAngleBodyCapture', () => {
 
     // 카메라 시작 실패 시 validationError는 설정되지만,
     // 현재 컴포넌트 설계상 초기 화면(비캡처 모드)에서는 표시되지 않음
-    // TODO: 향후 UX 개선 시 초기 화면에도 에러 표시 추가 검토
+    // [DEFERRED] 향후 UX 개선 시 초기 화면에도 에러 표시 추가 검토
     it('카메라 접근 실패 시 getUserMedia가 호출되고 초기 화면이 유지된다', async () => {
       mockGetUserMedia.mockRejectedValue(new Error('Camera access denied'));
 

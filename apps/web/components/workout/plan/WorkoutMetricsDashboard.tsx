@@ -1,6 +1,7 @@
 'use client';
 
 import { TrendingUp, CheckCircle, AlertTriangle, ArrowUp, Flame } from 'lucide-react';
+import { mapToClass, classifyByRange } from '@/lib/utils/conditional-helpers';
 import type { WorkoutPlan } from '@/types/workout';
 
 // 지표 상태 타입
@@ -178,6 +179,10 @@ export function WorkoutMetricsDashboard({
     ? Math.round(((estimatedVolume - previousWeekVolume) / previousWeekVolume) * 100)
     : 0;
 
+  // 볼륨 변화 표시용 문자열
+  const volumeSign = volumeChange > 0 ? '+' : '';
+  const volumeSubValue = volumeChange !== 0 ? `${volumeSign}${volumeChange}%` : '기준';
+
   // 7가지 지표 데이터 구성
   const metrics: MetricItem[] = [
     {
@@ -185,7 +190,11 @@ export function WorkoutMetricsDashboard({
       label: '운동 빈도',
       value: `${completedDays}/${targetDays}회`,
       subValue: '주간',
-      status: completedDays >= targetDays ? 'achieved' : completedDays >= targetDays * 0.5 ? 'warning' : 'progress',
+      status: classifyByRange(completedDays, [
+        { max: targetDays * 0.5, result: 'progress' as MetricStatus },
+        { max: targetDays, result: 'warning' as MetricStatus },
+        { result: 'achieved' as MetricStatus },
+      ]) ?? 'progress',
       icon: completedDays >= targetDays ? 'check' : 'info',
     },
     {
@@ -208,8 +217,12 @@ export function WorkoutMetricsDashboard({
       id: 'volume',
       label: '볼륨',
       value: `${estimatedVolume.toLocaleString()}kg`,
-      subValue: volumeChange !== 0 ? `${volumeChange > 0 ? '+' : ''}${volumeChange}%` : '기준',
-      status: volumeChange > 0 ? 'achieved' : volumeChange < 0 ? 'warning' : 'info',
+      subValue: volumeSubValue,
+      status: classifyByRange(volumeChange, [
+        { max: 0, result: 'warning' as MetricStatus },
+        { max: 1, result: 'info' as MetricStatus },
+        { result: 'achieved' as MetricStatus },
+      ], 'info' as MetricStatus) ?? 'info',
       icon: volumeChange >= 0 ? 'up' : 'warning',
     },
     {
@@ -226,14 +239,26 @@ export function WorkoutMetricsDashboard({
       value: `${goalProgress}%`,
       subValue: `${completedDays}/${workoutDays}일 완료`,
       status: evaluateGoalProgress(goalProgress),
-      icon: goalProgress >= 80 ? 'check' : goalProgress >= 50 ? 'warning' : 'info',
+      icon: classifyByRange(goalProgress, [
+        { max: 50, result: 'info' as MetricItem['icon'] },
+        { max: 80, result: 'warning' as MetricItem['icon'] },
+        { result: 'check' as MetricItem['icon'] },
+      ]) ?? 'info',
     },
     {
       id: 'streak',
       label: '연속 기록',
       value: `${currentStreak}일`,
-      subValue: currentStreak >= 7 ? '대단해요!' : currentStreak >= 3 ? '좋은 시작!' : '화이팅!',
-      status: currentStreak >= 7 ? 'achieved' : currentStreak >= 3 ? 'warning' : 'progress',
+      subValue: classifyByRange(currentStreak, [
+        { max: 3, result: '화이팅!' },
+        { max: 7, result: '좋은 시작!' },
+        { result: '대단해요!' },
+      ]) ?? '화이팅!',
+      status: classifyByRange(currentStreak, [
+        { max: 3, result: 'progress' as MetricStatus },
+        { max: 7, result: 'warning' as MetricStatus },
+        { result: 'achieved' as MetricStatus },
+      ]) ?? 'progress',
       icon: 'flame',
     },
   ];
@@ -254,15 +279,12 @@ export function WorkoutMetricsDashboard({
         {metrics.slice(0, 6).map((metric) => (
           <div
             key={metric.id}
-            className={`rounded-xl p-3 ${
-              metric.status === 'achieved'
-                ? 'bg-green-50'
-                : metric.status === 'warning'
-                  ? 'bg-yellow-50'
-                  : metric.status === 'progress'
-                    ? 'bg-blue-50'
-                    : 'bg-muted'
-            }`}
+            className={`rounded-xl p-3 ${mapToClass(metric.status, {
+              achieved: 'bg-green-50',
+              warning: 'bg-yellow-50',
+              progress: 'bg-blue-50',
+              info: 'bg-muted',
+            }, 'bg-muted')}`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs text-muted-foreground">{metric.label}</span>
@@ -279,20 +301,19 @@ export function WorkoutMetricsDashboard({
       {/* 연속 기록 (Streak) - 전체 너비로 강조 */}
       {metrics[6] && (
         <div
-          className={`mt-3 rounded-xl p-4 flex items-center justify-between ${
-            metrics[6].status === 'achieved'
-              ? 'bg-gradient-to-r from-orange-50 to-yellow-50'
-              : metrics[6].status === 'warning'
-                ? 'bg-gradient-to-r from-yellow-50 to-amber-50'
-                : 'bg-gradient-to-r from-blue-50 to-indigo-50'
-          }`}
+          className={`mt-3 rounded-xl p-4 flex items-center justify-between ${mapToClass(metrics[6].status, {
+            achieved: 'bg-gradient-to-r from-orange-50 to-yellow-50',
+            warning: 'bg-gradient-to-r from-yellow-50 to-amber-50',
+            progress: 'bg-gradient-to-r from-blue-50 to-indigo-50',
+          }, 'bg-gradient-to-r from-blue-50 to-indigo-50')}`}
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-card rounded-full flex items-center justify-center shadow-sm">
-              <Flame className={`w-5 h-5 ${
-                metrics[6].status === 'achieved' ? 'text-orange-500' :
-                metrics[6].status === 'warning' ? 'text-yellow-500' : 'text-blue-500'
-              }`} />
+              <Flame className={`w-5 h-5 ${mapToClass(metrics[6].status, {
+                achieved: 'text-orange-500',
+                warning: 'text-yellow-500',
+                progress: 'text-blue-500',
+              }, 'text-blue-500')}`} />
             </div>
             <div>
               <span className="text-xs text-muted-foreground">{metrics[6].label}</span>

@@ -14,6 +14,7 @@ import SkinHeatmapCanvas, { HeatmapMetrics } from './SkinHeatmapCanvas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface VisualAnalysisTabProps {
   /** 분석 이미지 URL */
@@ -172,11 +173,7 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
             <span>상세 시각화 분석</span>
             <span className="text-xs font-normal text-muted-foreground">
               (
-              {deviceCapability.tier === 'high'
-                ? '고화질'
-                : deviceCapability.tier === 'medium'
-                  ? '표준'
-                  : '경량'}{' '}
+              {selectByKey(deviceCapability.tier, { high: '고화질', medium: '표준' }, '경량')}{' '}
               모드)
             </span>
           </CardTitle>

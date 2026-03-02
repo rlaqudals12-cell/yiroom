@@ -125,6 +125,7 @@ export function useAnalysisStatus(): AnalysisStatus {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- complex analysis status fetch
     async function fetchAnalyses() {
       if (!user?.id || fetchingRef.current) {
         if (!user?.id) setIsLoading(false);

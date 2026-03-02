@@ -8,6 +8,9 @@ import type { SkinType, SkinConcern, PersonalColorSeason } from './product';
 // 도메인 타입
 export type HybridDomain = 'beauty' | 'style';
 
+// 3타입 체형 분류
+export type BodyType3Code = 'S' | 'W' | 'N';
+
 // 연령대 타입
 export type AgeGroup = '10s' | '20s' | '30s' | '40s' | '50plus';
 
@@ -109,7 +112,7 @@ export interface BodyChangeHistory {
   waist: number; // 허리 둘레
   hip: number; // 엉덩이 둘레
   weight?: number; // 체중
-  bodyType?: 'S' | 'W' | 'N'; // 체형 타입
+  bodyType?: BodyType3Code; // 체형 타입
 }
 
 // 루틴 아이템
@@ -147,7 +150,7 @@ export interface BeforeAfterReview {
   // Style 관련
   height?: number;
   weight?: number;
-  bodyType?: 'S' | 'W' | 'N';
+  bodyType?: BodyType3Code;
   fitComment?: string;
 }
 
@@ -193,7 +196,7 @@ export interface LookbookPost {
   clerkUserId: string;
   imageUrl: string;
   caption?: string;
-  bodyType?: 'S' | 'W' | 'N';
+  bodyType?: BodyType3Code;
   personalColor?: PersonalColorSeason;
   outfitItems: Array<{
     category: string;

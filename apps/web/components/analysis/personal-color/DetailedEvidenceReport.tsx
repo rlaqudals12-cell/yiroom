@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { classifyByRange, selectByKey } from '@/lib/utils/conditional-helpers';
 import { BarChart3, Palette, Sparkles, Circle, CheckCircle2, HelpCircle } from 'lucide-react';
 import type { AnalysisEvidence, ImageQuality } from '../AnalysisEvidenceReport';
 import type { ColorInfo, SeasonType } from '@/lib/mock/personal-color';
@@ -98,15 +99,15 @@ function ToneSpectrumBar({ veinScore, tone }: { veinScore: number; tone: 'warm' 
         {isCool ? '쿨톤' : '웜톤'} 확률: <strong className="text-foreground">{position}%</strong>
       </p>
       <p className="text-xs text-muted-foreground mt-1">
-        {position > 70
-          ? isCool
+        {classifyByRange(position, [
+          { max: 41, result: isCool
+            ? '약한 쿨톤이에요. 따뜻한 색도 어느 정도 어울려요.'
+            : '약한 웜톤이에요. 시원한 색도 어느 정도 어울려요.' },
+          { max: 71, result: '중성 톤에 가까워서 다양한 색상을 소화할 수 있어요.' },
+          { result: isCool
             ? '뚜렷한 쿨톤이에요. 시원한 계열의 색상이 잘 어울려요.'
-            : '뚜렷한 웜톤이에요. 따뜻한 계열의 색상이 잘 어울려요.'
-          : position > 40
-            ? '중성 톤에 가까워서 다양한 색상을 소화할 수 있어요.'
-            : isCool
-              ? '약한 쿨톤이에요. 따뜻한 색도 어느 정도 어울려요.'
-              : '약한 웜톤이에요. 시원한 색도 어느 정도 어울려요.'}
+            : '뚜렷한 웜톤이에요. 따뜻한 계열의 색상이 잘 어울려요.' },
+        ])}
       </p>
     </div>
   );
@@ -229,35 +230,28 @@ function AnalysisFactorsVisual({ evidence }: { evidence: AnalysisEvidence }) {
     {
       name: '혈관 색상',
       description:
-        evidence.veinColor === 'blue' || evidence.veinColor === 'purple'
+        (evidence.veinColor === 'blue' || evidence.veinColor === 'purple')
           ? '파란색/보라색 → 쿨톤'
-          : evidence.veinColor === 'green' || evidence.veinColor === 'olive'
-            ? '녹색/올리브색 → 웜톤'
-            : '혼합',
+          : selectByKey(evidence.veinColor, { green: '녹색/올리브색 → 웜톤', olive: '녹색/올리브색 → 웜톤' }, '혼합') as string,
       score: evidence.veinScore,
       indicatesCool: evidence.veinColor === 'blue' || evidence.veinColor === 'purple',
     },
     {
       name: '피부 언더톤',
-      description:
-        evidence.skinUndertone === 'pink'
-          ? '핑크 기 → 쿨톤 경향'
-          : evidence.skinUndertone === 'yellow'
-            ? '노란 기 → 웜톤 경향'
-            : '중립',
-      score: evidence.skinUndertone === 'pink' ? 80 : evidence.skinUndertone === 'yellow' ? 20 : 50,
+      description: selectByKey(evidence.skinUndertone, {
+        pink: '핑크 기 → 쿨톤 경향',
+        yellow: '노란 기 → 웜톤 경향',
+      }, '중립') as string,
+      score: selectByKey(evidence.skinUndertone, { pink: 80, yellow: 20 }, 50) as number,
       indicatesCool: evidence.skinUndertone === 'pink',
     },
     {
       name: '입술 자연색',
-      description:
-        evidence.lipNaturalColor === 'pink'
-          ? '핑크빛 → 쿨톤 경향'
-          : evidence.lipNaturalColor === 'coral'
-            ? '코랄빛 → 웜톤 경향'
-            : '중립',
-      score:
-        evidence.lipNaturalColor === 'pink' ? 75 : evidence.lipNaturalColor === 'coral' ? 25 : 50,
+      description: selectByKey(evidence.lipNaturalColor, {
+        pink: '핑크빛 → 쿨톤 경향',
+        coral: '코랄빛 → 웜톤 경향',
+      }, '중립') as string,
+      score: selectByKey(evidence.lipNaturalColor, { pink: 75, coral: 25 }, 50) as number,
       indicatesCool: evidence.lipNaturalColor === 'pink',
     },
   ];
@@ -306,14 +300,12 @@ export default function DetailedEvidenceReport({
 }: DetailedEvidenceReportProps) {
   const isCool = tone === 'cool';
   const seasonExplanation = SEASON_EXPLANATIONS[seasonType];
-  const seasonLabel =
-    seasonType === 'spring'
-      ? '봄 웜톤'
-      : seasonType === 'summer'
-        ? '여름 쿨톤'
-        : seasonType === 'autumn'
-          ? '가을 웜톤'
-          : '겨울 쿨톤';
+  const seasonLabel = selectByKey(seasonType, {
+    spring: '봄 웜톤',
+    summer: '여름 쿨톤',
+    autumn: '가을 웜톤',
+    winter: '겨울 쿨톤',
+  }, '겨울 쿨톤') as string;
 
   return (
     <div className={cn('space-y-4', className)} data-testid="detailed-evidence-report">

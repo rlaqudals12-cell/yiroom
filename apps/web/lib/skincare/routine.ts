@@ -195,6 +195,19 @@ function generatePersonalizationNote(
   return note;
 }
 
+// 제품이 키워드 목록 중 하나와 매칭되는지 확인
+function productMatchesKeywords(
+  product: { name?: string; category?: string; keywords?: string[] },
+  keywords: string[]
+): boolean {
+  return keywords.some(
+    (keyword) =>
+      product.name?.toLowerCase().includes(keyword) ||
+      product.category?.toLowerCase().includes(keyword) ||
+      product.keywords?.some((k) => k.toLowerCase().includes(keyword))
+  );
+}
+
 // ================================================
 // 제품 연동 함수
 // ================================================
@@ -220,12 +233,7 @@ export async function enrichRoutineWithProducts(
         // 카테고리에 맞는 제품만 필터링 (키워드 기반)
         const categoryKeywords = getCategoryKeywords(step.category);
         const matchedProducts = products.filter((product) =>
-          categoryKeywords.some(
-            (keyword) =>
-              product.name?.toLowerCase().includes(keyword) ||
-              product.category?.toLowerCase().includes(keyword) ||
-              product.keywords?.some((k) => k.toLowerCase().includes(keyword))
-          )
+          productMatchesKeywords(product, categoryKeywords)
         );
 
         return {

@@ -73,6 +73,7 @@ async function logDeletionAudit(
 /**
  * 사용자 데이터 완전 삭제 (Hard Delete)
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- multi-table cascade delete
 async function hardDeleteUser(
   supabase: ReturnType<typeof createServiceRoleClient>,
   user: {

@@ -25,17 +25,20 @@ import {
   X,
 } from 'lucide-react';
 
+// 5점 척도 (피부 컨디션, 수면 품질, 스트레스 수준)
+type FivePointScale = 1 | 2 | 3 | 4 | 5;
+
 // 날씨 타입
 export type WeatherType = 'sunny' | 'cloudy' | 'rainy' | 'cold' | 'hot' | 'humid' | 'dry';
 
 // 다이어리 엔트리 타입
 export interface DiaryEntry {
-  skinCondition: 1 | 2 | 3 | 4 | 5;
+  skinCondition: FivePointScale;
   conditionNotes?: string;
   sleepHours?: number;
-  sleepQuality?: 1 | 2 | 3 | 4 | 5;
+  sleepQuality?: FivePointScale;
   waterIntakeMl?: number;
-  stressLevel?: 1 | 2 | 3 | 4 | 5;
+  stressLevel?: FivePointScale;
   weather?: WeatherType;
   outdoorHours?: number;
   morningRoutineCompleted: boolean;
@@ -110,16 +113,16 @@ export function SkinDiaryEntry({
   className,
 }: SkinDiaryEntryProps) {
   // 폼 상태
-  const [skinCondition, setSkinCondition] = useState<1 | 2 | 3 | 4 | 5>(
+  const [skinCondition, setSkinCondition] = useState<FivePointScale>(
     existingEntry?.skinCondition ?? 3
   );
   const [conditionNotes, setConditionNotes] = useState(existingEntry?.conditionNotes ?? '');
   const [sleepHours, setSleepHours] = useState(existingEntry?.sleepHours ?? 7);
-  const [sleepQuality, setSleepQuality] = useState<1 | 2 | 3 | 4 | 5>(
+  const [sleepQuality, setSleepQuality] = useState<FivePointScale>(
     existingEntry?.sleepQuality ?? 3
   );
   const [waterIntakeMl, setWaterIntakeMl] = useState(existingEntry?.waterIntakeMl ?? 1500);
-  const [stressLevel, setStressLevel] = useState<1 | 2 | 3 | 4 | 5>(
+  const [stressLevel, setStressLevel] = useState<FivePointScale>(
     existingEntry?.stressLevel ?? 3
   );
   const [weather, setWeather] = useState<WeatherType | undefined>(existingEntry?.weather);
@@ -305,11 +308,9 @@ export function SkinDiaryEntry({
                   onClick={() => setStressLevel(value)}
                   className={cn(
                     'w-8 h-8 rounded-md text-sm font-medium transition-all',
-                    stressLevel === value
-                      ? value >= 4
-                        ? 'bg-destructive text-destructive-foreground'
-                        : 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted/80'
+                    stressLevel !== value && 'bg-muted hover:bg-muted/80',
+                    stressLevel === value && value >= 4 && 'bg-destructive text-destructive-foreground',
+                    stressLevel === value && value < 4 && 'bg-primary text-primary-foreground'
                   )}
                 >
                   {value}

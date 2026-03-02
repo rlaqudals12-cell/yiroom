@@ -9,21 +9,26 @@
 
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
+
+// 헬스체크 상태 타입
+type StatusType = 'ok' | 'warning' | 'error';
+type SimpleStatusType = 'ok' | 'error';
 
 interface HealthCheckResult {
-  status: 'ok' | 'warning' | 'error';
+  status: StatusType;
   checks: {
     supabase: {
-      status: 'ok' | 'error';
+      status: SimpleStatusType;
       latencyMs: number;
       message: string;
     };
     dbSchema: {
-      status: 'ok' | 'warning' | 'error';
+      status: StatusType;
       message: string;
     };
     clerk: {
-      status: 'ok' | 'warning' | 'error';
+      status: StatusType;
       message: string;
     };
   };
@@ -67,9 +72,7 @@ export async function GET(request: Request): Promise<NextResponse<HealthCheckRes
   const statuses = [supabase.status, dbSchema.status, clerk.status];
   const overall = statuses.includes('error')
     ? 'error'
-    : statuses.includes('warning')
-      ? 'warning'
-      : 'ok';
+    : selectByCondition(statuses.includes('warning'), 'warning', 'ok');
 
   return NextResponse.json({
     status: overall,
@@ -84,7 +87,7 @@ export async function GET(request: Request): Promise<NextResponse<HealthCheckRes
 
 /** Supabase 연결 상태 + 지연시간 측정 */
 async function checkSupabase(): Promise<{
-  status: 'ok' | 'error';
+  status: SimpleStatusType;
   latencyMs: number;
   message: string;
 }> {
@@ -120,7 +123,6 @@ async function fetchSubCheck(
 }
 
 /** string → StatusType 변환 */
-type StatusType = 'ok' | 'warning' | 'error';
 function toStatusType(s: string): StatusType {
   if (s === 'ok' || s === 'warning' || s === 'error') return s;
   return 'error';

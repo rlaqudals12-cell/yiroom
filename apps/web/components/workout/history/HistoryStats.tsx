@@ -1,6 +1,7 @@
 'use client';
 
 import { Activity, Flame, Clock, TrendingUp, Target } from 'lucide-react';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 interface HistoryStatsProps {
   totalWorkouts: number;
@@ -86,11 +87,11 @@ export function HistoryStats({
         <div className="h-2 bg-white/20 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all duration-500 ${
-              completionRate >= 80
-                ? 'bg-green-400'
-                : completionRate >= 50
-                  ? 'bg-yellow-400'
-                  : 'bg-white'
+              classifyByRange(completionRate, [
+                { max: 50, result: 'bg-white' },
+                { max: 80, result: 'bg-yellow-400' },
+                { result: 'bg-green-400' },
+              ])
             }`}
             style={{ width: `${completionRate}%` }}
           />

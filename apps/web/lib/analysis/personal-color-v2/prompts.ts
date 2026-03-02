@@ -8,6 +8,7 @@
 
 import type { TwelveTone } from './types';
 import { TWELVE_TONE_LABELS } from './types';
+import { extractJsonFromCodeBlock } from '@/lib/utils/json-extract';
 
 // ============================================
 // 프롬프트 템플릿
@@ -238,16 +239,10 @@ ${toneLabel}(${tone}) 타입에 어울리는 패션 스타일링 컬러를 추�
  */
 export function extractJsonFromResponse<T>(response: string): T | null {
   try {
-    // 코드 블록 내 JSON 추출 시도
-    const codeBlockMatch = response.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (codeBlockMatch) {
-      return JSON.parse(codeBlockMatch[1].trim()) as T;
-    }
-
-    // 순수 JSON 파싱 시도
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]) as T;
+    // 코드 블록 내 JSON 또는 순수 JSON 추출 (정규식 대신 문자열 탐색으로 ReDoS 방지)
+    const jsonStr = extractJsonFromCodeBlock(response);
+    if (jsonStr) {
+      return JSON.parse(jsonStr) as T;
     }
 
     return null;

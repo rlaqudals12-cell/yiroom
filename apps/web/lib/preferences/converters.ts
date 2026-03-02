@@ -6,6 +6,9 @@
 import type { UserPreference } from '@/types/preferences';
 import type { AllergyType } from '@/types/nutrition';
 
+// DB 저장용 타입 (id, 타임스탬프 제외)
+type NewUserPreference = Omit<UserPreference, 'id' | 'createdAt' | 'updatedAt'>;
+
 // 알레르기 타입 → 영양 식품 카테고리 매핑
 const ALLERGY_TO_FOOD_CATEGORY: Record<AllergyType, string> = {
   dairy: '유제품',
@@ -39,7 +42,7 @@ const INJURY_TO_KOREAN: Record<string, string> = {
 export function allergiesToPreferences(
   allergies: AllergyType[],
   userId: string
-): Omit<UserPreference, 'id' | 'createdAt' | 'updatedAt'>[] {
+): NewUserPreference[] {
   return allergies.map((allergyId) => ({
     clerkUserId: userId,
     domain: 'nutrition' as const,
@@ -64,7 +67,7 @@ export function allergiesToPreferences(
 export function dislikedFoodsToPreferences(
   dislikedFoods: string[],
   userId: string
-): Omit<UserPreference, 'id' | 'createdAt' | 'updatedAt'>[] {
+): NewUserPreference[] {
   return dislikedFoods.map((food) => ({
     clerkUserId: userId,
     domain: 'nutrition' as const,
@@ -88,7 +91,7 @@ export function dislikedFoodsToPreferences(
 export function injuriesToPreferences(
   injuries: string[],
   userId: string
-): Omit<UserPreference, 'id' | 'createdAt' | 'updatedAt'>[] {
+): NewUserPreference[] {
   // 'none' 제외
   const validInjuries = injuries.filter((id) => id !== 'none');
 

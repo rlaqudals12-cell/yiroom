@@ -30,6 +30,9 @@ export interface Activity {
   createdAt: Date;
 }
 
+// 새 활동 생성용 타입 (id, 통계 필드 제외)
+type NewActivity = Omit<Activity, 'id' | 'createdAt' | 'likesCount' | 'isLiked' | 'commentsCount'>;
+
 export interface ActivityMetadata {
   // 운동 완료
   workoutType?: string;
@@ -229,14 +232,17 @@ export function createWorkoutActivity(
   workoutType: string,
   duration: number,
   caloriesBurned?: number
-): Omit<Activity, 'id' | 'createdAt' | 'likesCount' | 'isLiked' | 'commentsCount'> {
+): NewActivity {
   return {
     userId,
     userName,
     userAvatar: null,
     type: 'workout_complete',
     title: `${workoutType} 운동 완료!`,
-    description: `${duration}분간 운동을 완료했어요${caloriesBurned ? ` (${caloriesBurned}kcal 소모)` : ''}.`,
+    description: (() => {
+      const caloriesSuffix = caloriesBurned ? ` (${caloriesBurned}kcal 소모)` : '';
+      return `${duration}분간 운동을 완료했어요${caloriesSuffix}.`;
+    })(),
     metadata: {
       workoutType,
       duration,
@@ -250,7 +256,7 @@ export function createStreakActivity(
   userName: string,
   streakDays: number,
   streakType: 'workout' | 'nutrition'
-): Omit<Activity, 'id' | 'createdAt' | 'likesCount' | 'isLiked' | 'commentsCount'> {
+): NewActivity {
   const typeLabel = streakType === 'workout' ? '운동' : '식단';
   return {
     userId,
@@ -270,7 +276,7 @@ export function createLevelUpActivity(
   userId: string,
   userName: string,
   newLevel: number
-): Omit<Activity, 'id' | 'createdAt' | 'likesCount' | 'isLiked' | 'commentsCount'> {
+): NewActivity {
   return {
     userId,
     userName,
@@ -289,7 +295,7 @@ export function createChallengeCompleteActivity(
   userName: string,
   challengeName: string,
   challengeId?: string
-): Omit<Activity, 'id' | 'createdAt' | 'likesCount' | 'isLiked' | 'commentsCount'> {
+): NewActivity {
   return {
     userId,
     userName,

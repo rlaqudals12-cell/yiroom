@@ -18,6 +18,7 @@ import { isAdmin } from '@/lib/admin';
 import { supabase } from '@/lib/supabase/client';
 import type { CoupangCategory } from '@/lib/affiliate';
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(request: NextRequest) {
   try {
     // 인증 확인

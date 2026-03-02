@@ -200,6 +200,7 @@ export interface ListNavigationOptions {
 /**
  * 리스트 키보드 네비게이션 핸들러
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function handleListKeyDown(
   event: KeyboardEvent,
   container: HTMLElement,

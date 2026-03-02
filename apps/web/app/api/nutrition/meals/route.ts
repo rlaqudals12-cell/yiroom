@@ -11,6 +11,7 @@ import {
 import { getDaysDifference } from '@/lib/nutrition';
 import { updateChallengesOnNutrition, type ChallengeUpdateResult } from '@/lib/challenges';
 import { trackActivity } from '@/lib/levels';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // XP 보상 상수
 const XP_MEAL_RECORD = 2;
@@ -141,6 +142,7 @@ export async function GET(req: Request) {
  * POST /api/nutrition/meals
  * 분석 결과를 사용자가 확인/수정 후 저장하는 엔드포인트
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(req: Request) {
   try {
     // Clerk 인증 확인
@@ -221,8 +223,11 @@ export async function POST(req: Request) {
         : 0.8;
 
     // 신뢰도 레벨 결정
-    const confidenceLevel =
-      avgConfidence >= 0.85 ? 'high' : avgConfidence >= 0.7 ? 'medium' : 'low';
+    const confidenceLevel = classifyByRange(avgConfidence, [
+      { max: 0.7, result: 'low' },
+      { max: 0.85, result: 'medium' },
+      { min: 0.85, result: 'high' },
+    ], 'low')!;
 
     // foods 배열을 DB 형식으로 변환
     const foodsForDb = foods.map(

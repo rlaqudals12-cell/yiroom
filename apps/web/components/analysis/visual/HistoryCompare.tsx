@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { selectByKey, selectByCondition, getTrendDirection } from '@/lib/utils/conditional-helpers';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
 
 // ============================================
@@ -121,7 +122,7 @@ export default function HistoryCompare({ history, className, onImageClick }: His
 
       if (beforeValue !== undefined && afterValue !== undefined) {
         const diff = afterValue - beforeValue;
-        const trend = diff > 2 ? 'up' : diff < -2 ? 'down' : 'neutral';
+        const trend = getTrendDirection(diff, 2);
         const isPositive = config.positiveIsGood ? diff > 0 : diff < 0;
 
         results.push({
@@ -342,14 +343,14 @@ interface ComparisonRowProps {
 function ComparisonRow({ comparison }: ComparisonRowProps) {
   const { label, before, after, diff, trend, isPositive } = comparison;
 
-  const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
+  const TrendIcon = selectByKey(trend, { up: TrendingUp, down: TrendingDown }, Minus)!;
 
-  const trendColor =
-    trend === 'neutral'
-      ? 'text-muted-foreground'
-      : isPositive
-        ? 'text-emerald-600 dark:text-emerald-400'
-        : 'text-red-600 dark:text-red-400';
+  const trendColor = selectByCondition(
+    trend === 'neutral' ? null : isPositive,
+    'text-emerald-600 dark:text-emerald-400',
+    'text-red-600 dark:text-red-400',
+    'text-muted-foreground'
+  );
 
   return (
     <div className="flex items-center justify-between py-2 border-b border-border last:border-0">
@@ -423,13 +424,17 @@ function SummaryCard({ comparisons, daysDiff }: SummaryCardProps) {
             'bg-red-100 dark:bg-red-900': messageType === 'negative',
           })}
         >
-          {messageType === 'positive' ? (
-            <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          ) : messageType === 'negative' ? (
-            <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
-          ) : (
-            <Minus className="w-5 h-5 text-muted-foreground" />
-          )}
+          {(() => {
+            const IconComp = selectByKey(messageType, {
+              positive: TrendingUp,
+              negative: TrendingDown,
+            }, Minus)!;
+            const iconClass = selectByKey(messageType, {
+              positive: 'w-5 h-5 text-emerald-600 dark:text-emerald-400',
+              negative: 'w-5 h-5 text-red-600 dark:text-red-400',
+            }, 'w-5 h-5 text-muted-foreground')!;
+            return <IconComp className={iconClass} />;
+          })()}
         </div>
         <div>
           <p className="text-sm font-medium">{message}</p>

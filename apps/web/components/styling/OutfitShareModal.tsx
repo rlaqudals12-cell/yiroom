@@ -135,14 +135,16 @@ export default function OutfitShareModal({
               onClick={handleCopy}
               disabled={isGenerating}
             >
-              {copied ? (
+              {copied && (
                 <>
                   <Check className="w-4 h-4 mr-2 text-green-500" />
                   복사됨
                 </>
-              ) : isGenerating ? (
+              )}
+              {!copied && isGenerating && (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
+              )}
+              {!copied && !isGenerating && (
                 <>
                   <Copy className="w-4 h-4 mr-2" />
                   복사

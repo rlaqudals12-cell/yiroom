@@ -20,6 +20,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { CorrelationChart, FactorTrendChart } from '@/components/skin/diary';
 import type {
   SkinDiaryEntry,
@@ -247,24 +248,10 @@ export default function SkinDiaryReportPage() {
   }
 
   // 트렌드 아이콘/색상
-  const TrendIcon =
-    monthlyReport?.trendDirection === 'improving'
-      ? TrendingUp
-      : monthlyReport?.trendDirection === 'declining'
-        ? TrendingDown
-        : Minus;
-  const trendColor =
-    monthlyReport?.trendDirection === 'improving'
-      ? 'text-green-500'
-      : monthlyReport?.trendDirection === 'declining'
-        ? 'text-red-500'
-        : 'text-muted-foreground';
-  const trendLabel =
-    monthlyReport?.trendDirection === 'improving'
-      ? '개선 중'
-      : monthlyReport?.trendDirection === 'declining'
-        ? '주의 필요'
-        : '안정적';
+  const trendDir = monthlyReport?.trendDirection;
+  const TrendIcon = selectByKey(trendDir, { improving: TrendingUp, declining: TrendingDown }, Minus)!;
+  const trendColor = selectByKey(trendDir, { improving: 'text-green-500', declining: 'text-red-500' }, 'text-muted-foreground')!;
+  const trendLabel = selectByKey(trendDir, { improving: '개선 중', declining: '주의 필요' }, '안정적')!;
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="skin-diary-report-page">
@@ -304,14 +291,15 @@ export default function SkinDiaryReportPage() {
         )}
 
         {/* 로딩 */}
-        {loading ? (
+        {loading && (
           <Card>
             <CardContent className="py-12 text-center">
               <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
               <p className="text-muted-foreground">불러오는 중...</p>
             </CardContent>
           </Card>
-        ) : entries.length === 0 ? (
+        )}
+        {!loading && entries.length === 0 && (
           <Card>
             <CardContent className="py-12 text-center">
               <Sparkles className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
@@ -322,7 +310,8 @@ export default function SkinDiaryReportPage() {
               <Button onClick={() => router.push('/analysis/skin/diary')}>기록하러 가기</Button>
             </CardContent>
           </Card>
-        ) : (
+        )}
+        {!loading && entries.length > 0 && (
           <>
             <Tabs
               value={activeTab}
@@ -350,12 +339,12 @@ export default function SkinDiaryReportPage() {
                           <span
                             className="text-3xl"
                             style={{
-                              textShadow: `0 0 8px ${CONDITION_COLORS[Math.round(monthlyReport?.avgCondition || 3) as 1 | 2 | 3 | 4 | 5]}`,
+                              textShadow: `0 0 8px ${CONDITION_COLORS[Math.round(monthlyReport?.avgCondition || 3) as SkinConditionScore]}`,
                             }}
                           >
                             {
                               CONDITION_EMOJIS[
-                                Math.round(monthlyReport?.avgCondition || 3) as 1 | 2 | 3 | 4 | 5
+                                Math.round(monthlyReport?.avgCondition || 3) as SkinConditionScore
                               ]
                             }
                           </span>

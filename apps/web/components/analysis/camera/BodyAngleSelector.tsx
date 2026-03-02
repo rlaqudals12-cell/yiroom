@@ -83,6 +83,7 @@ export function BodyAngleSelector({
             </span>
           </div>
           <div className="relative aspect-[3/4] w-full max-w-[200px] mx-auto rounded-2xl overflow-hidden border-2 border-primary shadow-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element -- 카메라 촬영 base64 이미지 미리보기 */}
             <img src={frontImage} alt="정면 사진" className="w-full h-full object-cover" />
             <button
               onClick={() => onRemoveImage('front')}
@@ -124,6 +125,7 @@ export function BodyAngleSelector({
                 {captured && imageData ? (
                   // 촬영된 카드: 이미지 프리뷰 + X 삭제
                   <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-green-400 shadow-md">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- 카메라 촬영 base64 이미지 미리보기 */}
                     <img
                       src={imageData}
                       alt={`${ANGLE_LABELS[angle]} 사진`}

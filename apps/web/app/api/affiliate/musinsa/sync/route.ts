@@ -55,6 +55,7 @@ function createDeeplink(productUrl: string, curatorId: string): string {
   return `${productUrl}${separator}curator=${curatorId}`;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(request: NextRequest) {
   const supabase = createServiceRoleClient();
 

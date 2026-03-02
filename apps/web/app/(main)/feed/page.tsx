@@ -172,11 +172,12 @@ export default function FeedPage() {
 
       {/* 본문 */}
       <div className="px-4 py-4 pb-24">
-        {isLoading ? (
+        {isLoading && (
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
           </div>
-        ) : feedPosts.length === 0 ? (
+        )}
+        {!isLoading && feedPosts.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Users className="w-12 h-12 text-muted-foreground mb-4" />
             <p className="text-lg font-medium text-foreground">
@@ -184,7 +185,8 @@ export default function FeedPage() {
             </p>
             <p className="text-sm text-muted-foreground mt-1">첫 글을 작성해 보세요!</p>
           </div>
-        ) : (
+        )}
+        {!isLoading && feedPosts.length > 0 && (
           <div className="space-y-4">
             {feedPosts.map((post, index) => (
               <FadeInUp key={post.id} delay={Math.min(index, 5) as 0 | 1 | 2 | 3 | 4 | 5}>

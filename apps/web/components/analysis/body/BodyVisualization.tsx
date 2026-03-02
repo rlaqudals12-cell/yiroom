@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { BodyAnalysisV2Result, Landmark33, BodyShapeType } from '@/lib/analysis/body-v2';
+import { selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
 
 interface BodyVisualizationProps {
   result: BodyAnalysisV2Result;
@@ -208,6 +209,7 @@ export function BodyVisualization({
             <CardContent>
               <div className="relative bg-muted rounded-lg overflow-hidden">
                 {imageUrl && (
+                  /* eslint-disable-next-line @next/next/no-img-element -- 캔버스 오버레이 배경 이미지 (base64) */
                   <img src={imageUrl} alt="Body analysis" className="w-full h-auto opacity-50" />
                 )}
                 <canvas
@@ -300,11 +302,10 @@ export function BodyVisualization({
               <PostureItem
                 label="머리 위치"
                 value={
-                  result.postureAnalysis.headPosition === 'neutral'
-                    ? '정상'
-                    : result.postureAnalysis.headPosition === 'forward'
-                      ? '전방'
-                      : '후방'
+                  selectByKey(result.postureAnalysis.headPosition, {
+                    neutral: '정상',
+                    forward: '전방',
+                  }, '후방')!
                 }
                 isNormal={result.postureAnalysis.headPosition === 'neutral'}
               />
@@ -404,11 +405,10 @@ function RatioBar({
         {/* 현재값 바 */}
         <div
           className={`h-full transition-all ${
-            Math.abs(value - optimal) < 0.1
-              ? 'bg-emerald-500'
-              : Math.abs(value - optimal) < 0.2
-                ? 'bg-amber-500'
-                : 'bg-red-400'
+            classifyByRange(Math.abs(value - optimal), [
+              { max: 0.1, result: 'bg-emerald-500' },
+              { max: 0.2, result: 'bg-amber-500' },
+            ], 'bg-red-400')
           }`}
           style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }}
         />

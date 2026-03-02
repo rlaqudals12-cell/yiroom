@@ -38,6 +38,7 @@ ${contextSection}
 /**
  * 사용자 컨텍스트 섹션 생성
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- prompt builder
 function buildUserContextSection(context: UserContext): string {
   const sections: string[] = ['## 사용자 정보'];
 

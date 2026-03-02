@@ -60,12 +60,15 @@ export function QRCodeDisplay({
       {title && <h3 className="text-lg font-semibold text-foreground">{title}</h3>}
 
       <div className="relative">
-        {isLoading ? (
+        {/* QR 코드 상태별 렌더링 */}
+        {isLoading && (
           <div
             className="bg-muted animate-pulse rounded-lg"
             style={{ width: size, height: size }}
           />
-        ) : qrDataUrl ? (
+        )}
+        {!isLoading && qrDataUrl && (
+          /* eslint-disable-next-line @next/next/no-img-element -- QR 코드 라이브러리가 생성한 data URI */
           <img
             src={qrDataUrl}
             alt="QR Code"
@@ -73,7 +76,8 @@ export function QRCodeDisplay({
             height={size}
             className="rounded-lg shadow-sm"
           />
-        ) : (
+        )}
+        {!isLoading && !qrDataUrl && (
           <div
             className="bg-muted flex items-center justify-center rounded-lg"
             style={{ width: size, height: size }}

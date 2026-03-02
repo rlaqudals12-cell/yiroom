@@ -6,6 +6,7 @@
 
 import { PostureSimulator } from '@/components/analysis/visual';
 import type { PostureMeasurements } from '@/components/analysis/visual/PostureSimulator';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 예시 1: 기본 사용 (가이드 표시)
 export function PostureSimulatorBasicExample() {
@@ -93,21 +94,19 @@ export function PostureAnalysisResultPage() {
             <div>
               <dt className="text-muted-foreground">골반 기울기</dt>
               <dd className="font-medium">
-                {analysisResult.measurements.pelvicTilt === 'anterior'
-                  ? '전방 경사'
-                  : analysisResult.measurements.pelvicTilt === 'posterior'
-                    ? '후방 경사'
-                    : '중립'}
+                {selectByKey(analysisResult.measurements.pelvicTilt, {
+                  anterior: '전방 경사',
+                  posterior: '후방 경사',
+                }, '중립')}
               </dd>
             </div>
             <div>
               <dt className="text-muted-foreground">척추 곡률</dt>
               <dd className="font-medium">
-                {analysisResult.measurements.spineCurvature === 'lordosis'
-                  ? '과전만'
-                  : analysisResult.measurements.spineCurvature === 'flatback'
-                    ? '일자 허리'
-                    : '정상'}
+                {selectByKey(analysisResult.measurements.spineCurvature, {
+                  lordosis: '과전만',
+                  flatback: '일자 허리',
+                }, '정상')}
               </dd>
             </div>
           </dl>

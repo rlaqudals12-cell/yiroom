@@ -8,32 +8,38 @@
  */
 
 import { NextResponse } from 'next/server';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
+
+// 헬스체크 상태 타입
+type HealthStatus = 'ok' | 'warning' | 'error';
+type SimpleHealthStatus = 'ok' | 'error';
 
 interface ClerkCheckResult {
-  status: 'ok' | 'warning' | 'error';
+  status: HealthStatus;
   checks: {
     clockOffset: {
-      status: 'ok' | 'warning' | 'error';
+      status: HealthStatus;
       offsetMs: number;
       message: string;
     };
     clerkEnv: {
-      status: 'ok' | 'error';
+      status: SimpleHealthStatus;
       message: string;
     };
     supabaseEnv: {
-      status: 'ok' | 'error';
+      status: SimpleHealthStatus;
       message: string;
     };
   };
   checkedAt: string;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function GET(): Promise<NextResponse<ClerkCheckResult>> {
   try {
     // 1. 시스템 시계 오프셋 확인 (외부 시간 API 사용)
     let clockOffset = 0;
-    let clockStatus: 'ok' | 'warning' | 'error' = 'ok';
+    let clockStatus: HealthStatus = 'ok';
     let clockMessage = '';
 
     try {
@@ -78,14 +84,10 @@ export async function GET(): Promise<NextResponse<ClerkCheckResult>> {
     const supabaseEnvOk = hasSupabaseUrl && hasSupabaseAnon && hasSupabaseService;
 
     // 4. 전체 상태 결정
-    const overall =
-      !clerkEnvOk || !supabaseEnvOk
+    const overall: HealthStatus =
+      (!clerkEnvOk || !supabaseEnvOk || clockStatus === 'error')
         ? 'error'
-        : clockStatus === 'error'
-          ? 'error'
-          : clockStatus === 'warning'
-            ? 'warning'
-            : 'ok';
+        : selectByCondition(clockStatus === 'warning', 'warning' as const, 'ok' as const);
 
     return NextResponse.json({
       status: overall,

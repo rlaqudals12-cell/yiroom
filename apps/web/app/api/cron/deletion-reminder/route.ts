@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { sendPushToSubscriptions } from '@/lib/push/server';
 import { GDPR_CONFIG, type DeletionReminderResult, type DeletionAuditAction } from '@/types/gdpr';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // Vercel Cron 인증 검증
 function validateCronAuth(request: NextRequest): boolean {
@@ -156,12 +157,10 @@ async function processRemindersForDays(
 
     if (sent) {
       // 감사 로그 기록
-      const action: DeletionAuditAction =
-        daysRemaining === 7
-          ? 'REMINDER_7D_SENT'
-          : daysRemaining === 3
-            ? 'REMINDER_3D_SENT'
-            : 'REMINDER_1D_SENT';
+      const action: DeletionAuditAction = selectByKey(daysRemaining, {
+        7: 'REMINDER_7D_SENT' as const,
+        3: 'REMINDER_3D_SENT' as const,
+      }, 'REMINDER_1D_SENT' as const)!;
 
       await logDeletionAudit(supabase, user.id, action, {
         clerk_user_id: user.clerk_user_id,

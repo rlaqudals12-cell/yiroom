@@ -184,7 +184,7 @@ function getTargetModules(eventType: IntegrationEventType): string[] {
  */
 async function logIntegrationEvent<T>(_event: IntegrationEvent<T>): Promise<void> {
   // 감사 로그 기록 (실제 구현에서는 audit logger 사용)
-  // TODO: audit logger 도입 시 이벤트 기록 추가
+  // [DEFERRED] audit logger 도입 시 이벤트 기록 추가
 }
 
 /**

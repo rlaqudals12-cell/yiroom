@@ -181,6 +181,7 @@ export default function PersonalColorResultPage() {
   );
 
   // API Route를 통해 분석 결과 조회 (JWT 문제 해결)
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- result page render
   const fetchAnalysis = useCallback(async () => {
     if (!isSignedIn || !analysisId || fetchedRef.current) return;
 
@@ -539,26 +540,25 @@ export default function PersonalColorResultPage() {
               className="mt-0 data-[state=inactive]:hidden"
               data-testid="draping-tab"
             >
-              {activeTab === 'draping' ? (
-                imageUrl ? (
-                  <DrapingSimulationTab
-                    imageUrl={imageUrl}
-                    userSeason={result.seasonType}
-                    className="w-full"
-                  />
-                ) : (
-                  <div className="p-6 bg-card rounded-xl border text-center">
-                    <Shirt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-semibold text-foreground mb-2">색상 입혀보기</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      분석 이미지가 없어 색상을 입혀볼 수 없어요.
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      다시 분석하면 내 얼굴에 색상을 입혀볼 수 있어요.
-                    </p>
-                  </div>
-                )
-              ) : null}
+              {activeTab === 'draping' && imageUrl && (
+                <DrapingSimulationTab
+                  imageUrl={imageUrl}
+                  userSeason={result.seasonType}
+                  className="w-full"
+                />
+              )}
+              {activeTab === 'draping' && !imageUrl && (
+                <div className="p-6 bg-card rounded-xl border text-center">
+                  <Shirt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="font-semibold text-foreground mb-2">색상 입혀보기</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    분석 이미지가 없어 색상을 입혀볼 수 없어요.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    다시 분석하면 내 얼굴에 색상을 입혀볼 수 있어요.
+                  </p>
+                </div>
+              )}
             </TabsContent>
 
             {/* 상세 리포트 탭 */}

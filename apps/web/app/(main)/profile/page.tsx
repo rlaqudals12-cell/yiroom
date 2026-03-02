@@ -193,8 +193,9 @@ export default function ProfilePage() {
 
         // 피부 타입 포맷팅
         const skinData = skinResult.data;
+        const skinSuffix = skinData?.sensitivity_level ? '/' + skinData.sensitivity_level : '';
         const skinType = skinData
-          ? `${skinData.skin_type}${skinData.sensitivity_level ? '/' + skinData.sensitivity_level : ''}`
+          ? `${skinData.skin_type}${skinSuffix}`
           : null;
 
         // 체형 포맷팅

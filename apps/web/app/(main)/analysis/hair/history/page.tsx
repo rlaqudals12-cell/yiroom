@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { BottomNav } from '@/components/BottomNav';
 import type {
   HairAnalysisHistoryItem,
@@ -87,20 +88,9 @@ export default function HairHistoryPage() {
     });
   };
 
-  const TrendIcon =
-    trend === 'improving' ? TrendingUp : trend === 'declining' ? TrendingDown : Minus;
-  const trendColor =
-    trend === 'improving'
-      ? 'text-green-600'
-      : trend === 'declining'
-        ? 'text-red-600'
-        : 'text-muted-foreground';
-  const trendLabel =
-    trend === 'improving'
-      ? '개선되고 있어요'
-      : trend === 'declining'
-        ? '관리가 필요해요'
-        : '유지 중이에요';
+  const TrendIcon = selectByKey(trend, { improving: TrendingUp, declining: TrendingDown }, Minus)!;
+  const trendColor = selectByKey(trend, { improving: 'text-green-600', declining: 'text-red-600' }, 'text-muted-foreground')!;
+  const trendLabel = selectByKey(trend, { improving: '개선되고 있어요', declining: '관리가 필요해요' }, '유지 중이에요')!;
 
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="hair-history-page">
@@ -150,7 +140,7 @@ export default function HairHistoryPage() {
         )}
 
         {/* 분석 이력 목록 */}
-        {loading ? (
+        {loading && (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="animate-pulse">
@@ -158,7 +148,8 @@ export default function HairHistoryPage() {
               </Card>
             ))}
           </div>
-        ) : analyses.length === 0 ? (
+        )}
+        {!loading && analyses.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
               <Calendar
@@ -175,7 +166,8 @@ export default function HairHistoryPage() {
               </Button>
             </CardContent>
           </Card>
-        ) : (
+        )}
+        {!loading && analyses.length > 0 && (
           <div className="space-y-3">
             {analyses.map((item, index) => {
               const isSelected = selectedIds.includes(item.id);

@@ -297,7 +297,8 @@ export function formatFashionForPrompt(result: FashionSearchResult): string {
 
     context += '**추천 아이템:**\n';
     rec.items.forEach((item, j) => {
-      context += `${j + 1}. ${item.brand ? `${item.brand} ` : ''}${item.name}\n`;
+      const brandPrefix = item.brand ? `${item.brand} ` : '';
+      context += `${j + 1}. ${brandPrefix}${item.name}\n`;
       context += `   - 매칭률: ${item.matchScore}%\n`;
       if (item.matchReason) {
         context += `   - 이유: ${item.matchReason}\n`;

@@ -17,6 +17,7 @@ interface RouteContext {
  * PUT /api/nutrition/meals/:id
  * 식단 기록 수정
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function PUT(req: Request, context: RouteContext) {
   try {
     const { userId } = await auth();

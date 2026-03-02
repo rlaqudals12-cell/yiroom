@@ -9,6 +9,7 @@ import { Scale, TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { BodyProgress } from '@/types/report';
+import { selectByKey, getTrendDirection } from '@/lib/utils/conditional-helpers';
 
 interface BodyProgressCardProps {
   bodyProgress: BodyProgress;
@@ -24,14 +25,15 @@ export function BodyProgressCard({
 
   const hasWeightData = startWeight !== null && endWeight !== null;
 
-  const TrendIcon =
-    weightChange > 0 ? TrendingUp : weightChange < 0 ? TrendingDown : Minus;
-  const trendColor =
-    weightChange > 0.5
-      ? 'text-orange-500'
-      : weightChange < -0.5
-      ? 'text-blue-500'
-      : 'text-muted-foreground';
+  const trendDir = getTrendDirection(weightChange);
+  const TrendIcon = selectByKey(trendDir, {
+    up: TrendingUp,
+    down: TrendingDown,
+  }, Minus)!;
+  const trendColor = selectByKey(getTrendDirection(weightChange, 0.5), {
+    up: 'text-orange-500',
+    down: 'text-blue-500',
+  }, 'text-muted-foreground')!;
 
   return (
     <Card data-testid="body-progress-card">

@@ -84,17 +84,20 @@ export function ReviewList({
       )}
 
       {/* 리뷰 목록 */}
-      {isLoading && reviews.length === 0 ? (
-        // 초기 로딩
+      {/* 초기 로딩 */}
+      {isLoading && reviews.length === 0 && (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <ReviewCardSkeleton key={i} />
           ))}
         </div>
-      ) : reviews.length === 0 ? (
-        // 빈 상태
+      )}
+      {/* 빈 상태 */}
+      {!(isLoading && reviews.length === 0) && reviews.length === 0 && (
         <EmptyReviews />
-      ) : (
+      )}
+      {/* 리뷰 목록 */}
+      {reviews.length > 0 && (
         <>
           <div className="space-y-4">
             {reviews.map((review) => (

@@ -2,6 +2,7 @@
 
 import { Gem, Crown, Medal, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { Progress } from '@/components/ui/progress';
 import { CountUp } from '@/components/animations';
 import { FadeInUp } from '@/components/animations';
@@ -59,7 +60,7 @@ export function GradeDisplay({
               className={cn(
                 'flex items-center justify-center rounded-full',
                 'bg-white/50 dark:bg-white/10',
-                size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-10 h-10' : 'w-12 h-12'
+                selectByKey(size, { sm: 'w-8 h-8', md: 'w-10 h-10' }, 'w-12 h-12')
               )}
             >
               <IconComponent

@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import type { GoalProgress } from '@/types/report';
 import type { NutritionGoal } from '@/types/nutrition';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 interface GoalProgressCardProps {
   goalProgress: GoalProgress;
@@ -34,12 +35,11 @@ const goalColors: Record<NutritionGoal, string> = {
 export function GoalProgressCard({ goalProgress }: GoalProgressCardProps) {
   const { goal, achievementRate, message, isOnTrack } = goalProgress;
 
-  const progressColor =
-    achievementRate >= 80
-      ? 'bg-green-500'
-      : achievementRate >= 50
-      ? 'bg-yellow-500'
-      : 'bg-orange-500';
+  const progressColor = classifyByRange(achievementRate, [
+    { max: 50, result: 'bg-orange-500' },
+    { max: 80, result: 'bg-yellow-500' },
+    { result: 'bg-green-500' },
+  ])!;
 
   return (
     <Card data-testid="goal-progress-card">

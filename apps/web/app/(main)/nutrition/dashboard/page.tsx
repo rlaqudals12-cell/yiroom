@@ -43,6 +43,33 @@ interface DashboardData {
   };
 }
 
+// meals 데이터에서 신호등 요약 계산
+function countTrafficLights(
+  meals: Array<{ records: Array<{ foods: Array<{ traffic_light?: string }> }> }>
+): TrafficLightSummary {
+  const summary: TrafficLightSummary = { green: 0, yellow: 0, red: 0, total: 0 };
+  for (const meal of meals) {
+    for (const record of meal.records ?? []) {
+      for (const food of record.foods ?? []) {
+        if (food.traffic_light === 'green') summary.green++;
+        else if (food.traffic_light === 'yellow') summary.yellow++;
+        else if (food.traffic_light === 'red') summary.red++;
+        summary.total++;
+      }
+    }
+  }
+  return summary;
+}
+
+// 진행률 계산 함수
+function calcProgress(current: number, target: number): NutritionProgress {
+  return {
+    current,
+    target,
+    percentage: target > 0 ? Math.round((current / target) * 100) : 0,
+  };
+}
+
 // 기본 목표값
 const DEFAULT_TARGETS = {
   calories: 2000,
@@ -108,26 +135,12 @@ export default function NutritionDashboardPage() {
 
       // 신호등이 없으면 meals에서 계산
       if (trafficLight.total === 0 && mealsData.meals) {
-        mealsData.meals.forEach(
-          (meal: { records: Array<{ foods: Array<{ traffic_light?: string }> }> }) => {
-            meal.records?.forEach((record) => {
-              record.foods?.forEach((food) => {
-                if (food.traffic_light === 'green') trafficLight.green++;
-                else if (food.traffic_light === 'yellow') trafficLight.yellow++;
-                else if (food.traffic_light === 'red') trafficLight.red++;
-                trafficLight.total++;
-              });
-            });
-          }
-        );
+        const counted = countTrafficLights(mealsData.meals);
+        trafficLight.green = counted.green;
+        trafficLight.yellow = counted.yellow;
+        trafficLight.red = counted.red;
+        trafficLight.total = counted.total;
       }
-
-      // 진행률 계산 함수
-      const calcProgress = (current: number, target: number): NutritionProgress => ({
-        current,
-        target,
-        percentage: target > 0 ? Math.round((current / target) * 100) : 0,
-      });
 
       // 대시보드 데이터 구성
       setData({

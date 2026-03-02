@@ -5,6 +5,7 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { CosmeticIngredient } from '@/types/ingredient';
+import { extractJsonObject } from '@/lib/utils/json-extract';
 
 // =============================================================================
 // 상수 정의
@@ -58,6 +59,7 @@ export interface AIIngredientSummary {
 /**
  * Mock AI 성분 요약 생성
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function generateMockIngredientSummary(
   ingredients: CosmeticIngredient[]
 ): AIIngredientSummary {
@@ -143,9 +145,12 @@ export function generateMockIngredientSummary(
   if (hasSoothing) summaryParts.push('진정');
   if (hasAntiaging) summaryParts.push('안티에이징');
 
+  const cautionSuffix = cautionCount === 0
+    ? '자극이 적어 데일리 사용에 적합합니다.'
+    : '일부 주의 성분이 있어 민감성 피부는 주의가 필요합니다.';
   const summary =
     summaryParts.length > 0
-      ? `${summaryParts.join(', ')} 효과가 기대되는 제형으로, ${cautionCount === 0 ? '자극이 적어 데일리 사용에 적합합니다.' : '일부 주의 성분이 있어 민감성 피부는 주의가 필요합니다.'}`
+      ? `${summaryParts.join(', ')} 효과가 기대되는 제형으로, ${cautionSuffix}`
       : '기본적인 피부 케어에 적합한 제품입니다.';
 
   // 추천/주의 포인트
@@ -293,13 +298,13 @@ export async function analyzeIngredientsWithAI(
       const response = result.response;
       const text = response.text();
 
-      // JSON 파싱
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
+      // JSON 파싱 (정규식 대신 문자열 탐색으로 ReDoS 방지)
+      const jsonStr = extractJsonObject(text);
+      if (!jsonStr) {
         throw new Error('Invalid JSON response from Gemini');
       }
 
-      const parsed = JSON.parse(jsonMatch[0]) as AIIngredientSummary;
+      const parsed = JSON.parse(jsonStr) as AIIngredientSummary;
 
       // 유효성 검증
       if (!parsed.keywords || !parsed.summary || !parsed.skinTypeRecommendation) {

@@ -2,6 +2,7 @@
 
 import { Camera, Sun, Moon, CloudSun, Check, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 // LightingGuide Props
@@ -53,7 +54,7 @@ export function LightingGuide({
   const checkItems: CheckItem[] = [
     {
       id: 'brightness',
-      label: brightness === 'ok' ? '밝기 충분' : brightness === 'low' ? '밝기 부족' : '밝기 과다',
+      label: selectByKey(brightness, { ok: '밝기 충분', low: '밝기 부족' }, '밝기 과다')!,
       passed: brightness === 'ok',
       icon: brightness === 'low' ? Moon : Sun,
     },

@@ -22,6 +22,7 @@ import { Progress } from '@/components/ui/progress';
 import { getRecommendationSummary } from '@/lib/inventory/client';
 import type { InventoryItem, ClothingMetadata } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 착용 통계 계산
 interface WearStats {
@@ -233,7 +234,7 @@ export function ClosetInsightCard({
           {personalColor && `${personalColor} 컬러`}
           {personalColor && bodyType && ' + '}
           {bodyType &&
-            `${bodyType === 'S' ? '스트레이트' : bodyType === 'W' ? '웨이브' : '내추럴'} 체형`}
+            `${selectByKey(bodyType, { S: '스트레이트', W: '웨이브' }, '내추럴')} 체형`}
           {!personalColor && !bodyType && '기본 분석'}
           {' 기준'}
         </span>

@@ -15,6 +15,7 @@ import {
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { askProductQuestion, FAQ_TEMPLATES, type ProductQAResponse } from '@/lib/rag/product-qa';
 import type { AnyProduct, ProductType } from '@/types/product';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface ProductQASectionProps {
   product: AnyProduct;
@@ -147,19 +148,17 @@ export function ProductQASection({ product, productType }: ProductQASectionProps
                     <div className="flex items-center gap-1 mt-2">
                       <span
                         className={`w-2 h-2 rounded-full ${
-                          item.confidence === 'high'
-                            ? 'bg-green-500'
-                            : item.confidence === 'medium'
-                            ? 'bg-yellow-500'
-                            : 'bg-red-500'
+                          selectByKey(item.confidence, {
+                            high: 'bg-green-500',
+                            medium: 'bg-yellow-500',
+                          }, 'bg-red-500')
                         }`}
                       />
                       <span className="text-xs text-muted-foreground">
-                        {item.confidence === 'high'
-                          ? '높은 신뢰도'
-                          : item.confidence === 'medium'
-                          ? '보통 신뢰도'
-                          : '낮은 신뢰도'}
+                        {selectByKey(item.confidence, {
+                          high: '높은 신뢰도',
+                          medium: '보통 신뢰도',
+                        }, '낮은 신뢰도')}
                       </span>
                     </div>
                   </div>

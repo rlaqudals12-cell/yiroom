@@ -7,6 +7,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import type { DraggableClothingLayerProps } from '@/types/virtual-fitting';
 
 export function DraggableClothingLayer({
@@ -119,13 +120,7 @@ export function DraggableClothingLayer({
         opacity,
         zIndex: isSelected
           ? 1000
-          : item.id === 'outer'
-            ? 4
-            : item.id === 'top'
-              ? 3
-              : item.id === 'bottom'
-                ? 2
-                : 1,
+          : selectByKey(item.id, { outer: 4, top: 3, bottom: 2 }, 1)!,
       }}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}

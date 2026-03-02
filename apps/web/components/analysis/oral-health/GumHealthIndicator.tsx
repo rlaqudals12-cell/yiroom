@@ -11,6 +11,7 @@ import { AlertTriangle, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import type { GumHealthResult, GumHealthStatus } from '@/types/oral-health';
+import { classifyByRange, selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface GumHealthIndicatorProps {
   /** 잇몸 건강 분석 결과 */
@@ -106,11 +107,10 @@ export function GumHealthIndicator({
           indicatorClassName={getProgressColor(result.inflammationScore)}
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          {result.inflammationScore < 30
-            ? '정상 범위'
-            : result.inflammationScore < 60
-              ? '주의 필요'
-              : '관리 필요'}
+          {classifyByRange(result.inflammationScore, [
+            { max: 30, result: '정상 범위' },
+            { max: 60, result: '주의 필요' },
+          ], '관리 필요')}
         </p>
       </div>
 
@@ -140,11 +140,10 @@ export function GumHealthIndicator({
                 key={index}
                 className={cn(
                   'rounded-full px-3 py-1 text-xs font-medium',
-                  area.severity === 'severe'
-                    ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
-                    : area.severity === 'moderate'
-                      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300'
-                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
+                  selectByKey(area.severity, {
+                    severe: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                    moderate: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+                  }, 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300')
                 )}
               >
                 {getAreaLabel(area.region)}

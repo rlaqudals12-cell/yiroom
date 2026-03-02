@@ -259,6 +259,7 @@ export function IngredientCapture({ onResult, onCancel, className }: IngredientC
         <div className="flex flex-col gap-4">
           {/* 촬영된 이미지 */}
           <div className="relative">
+            {/* eslint-disable-next-line @next/next/no-img-element -- 카메라 촬영 base64 이미지 미리보기 */}
             <img
               src={capturedImage}
               alt="촬영된 성분표"

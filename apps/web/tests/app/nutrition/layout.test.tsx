@@ -42,7 +42,7 @@ describe('NutritionLayout', () => {
 
     const main = screen.getByRole('main');
     expect(main).toBeInTheDocument();
-    expect(main).toHaveClass('bg-[#FAFAFA]');
+    expect(main).toHaveClass('bg-muted');
   });
 
   it('renders header with title', () => {

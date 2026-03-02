@@ -9,6 +9,7 @@
 
 import type { CIE1Output, SharpnessResult, ExposureResult, CCTResult } from '../types';
 import { FEEDBACK_MESSAGES } from '../constants';
+import { classifyByRange, selectByKey } from '@/lib/utils/conditional-helpers';
 
 /**
  * 기본 선명도 Fallback 결과
@@ -141,20 +142,26 @@ export function generateRandomCIE1Mock(): CIE1Output {
   const meanBrightness = Math.floor(Math.random() * 256);
   const kelvin = 4000 + Math.floor(Math.random() * 4000);
 
-  const sharpnessVerdict =
-    sharpnessScore < 30 ? 'rejected' :
-    sharpnessScore < 50 ? 'warning' :
-    sharpnessScore < 80 ? 'acceptable' : 'optimal';
+  const sharpnessVerdict = classifyByRange(sharpnessScore, [
+    { max: 30, result: 'rejected' as const },
+    { max: 50, result: 'warning' as const },
+    { max: 80, result: 'acceptable' as const },
+    { result: 'optimal' as const },
+  ]) ?? 'acceptable';
 
-  const exposureVerdict =
-    meanBrightness < 80 ? 'underexposed' :
-    meanBrightness > 190 ? 'overexposed' : 'normal';
+  const exposureVerdict = classifyByRange(meanBrightness, [
+    { max: 80, result: 'underexposed' as const },
+    { max: 191, result: 'normal' as const },
+    { result: 'overexposed' as const },
+  ]) ?? 'normal';
 
-  const cctVerdict =
-    kelvin < 4000 ? 'too_warm' :
-    kelvin < 5500 ? 'warm' :
-    kelvin < 6500 ? 'neutral' :
-    kelvin < 7500 ? 'cool' : 'too_cool';
+  const cctVerdict = classifyByRange(kelvin, [
+    { max: 4000, result: 'too_warm' as const },
+    { max: 5500, result: 'warm' as const },
+    { max: 6500, result: 'neutral' as const },
+    { max: 7500, result: 'cool' as const },
+    { result: 'too_cool' as const },
+  ]) ?? 'neutral';
 
   return {
     isAcceptable: sharpnessVerdict !== 'rejected' && exposureVerdict === 'normal',
@@ -184,7 +191,7 @@ export function generateRandomCIE1Mock(): CIE1Output {
       verdict: cctVerdict,
       chromaticity: { x: 0.31 + Math.random() * 0.02, y: 0.32 + Math.random() * 0.02 },
       confidence: 0.8,
-      feedback: FEEDBACK_MESSAGES.cct[cctVerdict === 'too_warm' ? 'tooWarm' : cctVerdict === 'too_cool' ? 'tooCool' : cctVerdict],
+      feedback: FEEDBACK_MESSAGES.cct[selectByKey(cctVerdict, { too_warm: 'tooWarm', too_cool: 'tooCool' }, cctVerdict) as keyof typeof FEEDBACK_MESSAGES.cct],
     },
     primaryIssue: null,
     allIssues: [],

@@ -9,6 +9,7 @@
 import { useMemo } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
 import type { InventoryItem, ClothingCategory } from '@/types/inventory';
 
 type CollageLayout = 'stack' | 'grid' | 'mannequin';
@@ -95,8 +96,8 @@ export function CollageView({
               <Image
                 src={item.imageUrl}
                 alt={item.name}
-                width={size === 'sm' ? 60 : size === 'md' ? 80 : 100}
-                height={size === 'sm' ? 60 : size === 'md' ? 80 : 100}
+                width={selectByKey(size, { sm: 60, md: 80 }, 100)!}
+                height={selectByKey(size, { sm: 60, md: 80 }, 100)!}
                 className="object-contain drop-shadow-md"
               />
             </div>
@@ -115,7 +116,10 @@ export function CollageView({
 
   // 그리드 레이아웃
   if (layout === 'grid') {
-    const gridCols = items.length <= 2 ? 2 : items.length <= 4 ? 2 : 3;
+    const gridCols = classifyByRange(items.length, [
+      { max: 5, result: 2 },
+      { result: 3 },
+    ])!;
     return (
       <div
         data-testid="collage-view"

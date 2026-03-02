@@ -60,14 +60,14 @@ export function PriceWatchButton({
       )}
       data-testid="price-watch-button"
     >
-      {loading ? (
-        <span className="animate-pulse">...</span>
-      ) : watching ? (
+      {loading && <span className="animate-pulse">...</span>}
+      {!loading && watching && (
         <>
           <span className="mr-1">&#x1F514;</span>
           알림 설정됨
         </>
-      ) : (
+      )}
+      {!loading && !watching && (
         <>
           <span className="mr-1">&#x1F514;</span>
           가격 알림

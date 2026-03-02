@@ -82,18 +82,20 @@ export function NotificationList({
       </div>
 
       {/* 알림 목록 */}
-      {loading ? (
+      {loading && (
         <div className="flex items-center justify-center py-8">
           <span className="text-muted-foreground">불러오는 중...</span>
         </div>
-      ) : filteredNotifications.length === 0 ? (
+      )}
+      {!loading && filteredNotifications.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <span className="text-2xl mb-2">🔔</span>
           <p className="text-muted-foreground">
             {filter === 'all' ? '알림이 없어요' : '해당 알림이 없어요'}
           </p>
         </div>
-      ) : (
+      )}
+      {!loading && filteredNotifications.length > 0 && (
         <div className="space-y-2">
           {filteredNotifications.map((notification) => (
             <NotificationItem

@@ -6,6 +6,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
 import { Clock, Palette } from 'lucide-react';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
 import {
   type PersonalColorResult,
   type SeasonType,
@@ -15,6 +16,7 @@ import {
   SEASON_INFO,
 } from '@/lib/mock/personal-color';
 import type { ImageConsent } from '@/components/analysis/consent/types';
+import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import LightingGuide from './_components/LightingGuide';
 import PhotoUpload from './_components/PhotoUpload';
 import WristPhotoUpload from './_components/WristPhotoUpload';
@@ -111,6 +113,7 @@ export default function PersonalColorPage() {
     // 이미 리디렉트 중이면 스킵
     let isRedirecting = false;
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- result page render
     async function checkExistingAnalysis() {
       // forceNew 파라미터가 있으면 자동 리디렉트 건너뛰기
       if (forceNew) {
@@ -341,14 +344,10 @@ export default function PersonalColorPage() {
       // 톤과 깊이 결정
       const tone = subtypeInfo
         ? subtypeInfo.tone
-        : seasonType === 'spring' || seasonType === 'autumn'
-          ? 'warm'
-          : 'cool';
+        : selectByCondition(seasonType === 'spring' || seasonType === 'autumn', 'warm', 'cool');
       const depth = subtypeInfo
         ? subtypeInfo.depth
-        : seasonType === 'spring' || seasonType === 'summer'
-          ? 'light'
-          : 'deep';
+        : selectByCondition(seasonType === 'spring' || seasonType === 'summer', 'light', 'deep');
 
       setResult({
         ...mockResult,
@@ -392,16 +391,6 @@ export default function PersonalColorPage() {
     analysisStartedRef.current = false;
   }, []);
 
-  // 이미지를 Base64로 변환
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   // AI 분석 실행 (API 호출)
   const runAnalysis = useCallback(async () => {
     // 다각도 이미지 또는 레거시 단일 이미지 필요
@@ -419,7 +408,7 @@ export default function PersonalColorPage() {
       // 손목 이미지가 있으면 Base64로 변환
       let wristImageBase64: string | undefined;
       if (wristImageFile) {
-        wristImageBase64 = await fileToBase64(wristImageFile);
+        wristImageBase64 = await compressFileToBase64(wristImageFile);
       }
 
       // API 요청 본문 구성
@@ -440,7 +429,7 @@ export default function PersonalColorPage() {
         };
       } else if (faceImageFile) {
         // 레거시 단일 이미지 요청
-        const faceImageBase64 = await fileToBase64(faceImageFile);
+        const faceImageBase64 = await compressFileToBase64(faceImageFile);
         requestBody = {
           imageBase64: faceImageBase64,
           wristImageBase64,

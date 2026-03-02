@@ -5,10 +5,14 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { geminiLogger } from '@/lib/utils/logger';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 타입 정의
 // ============================================
+
+/** 우선순위/신뢰도 수준 */
+type PriorityLevel = 'high' | 'medium' | 'low';
 
 /** 다이어리 엔트리 (DB에서 조회) */
 export interface DiaryEntryForAnalysis {
@@ -57,13 +61,13 @@ export interface CorrelationAnalysisResult {
   insights: string[];
   /** 개인화 권장사항 */
   recommendations: {
-    priority: 'high' | 'medium' | 'low';
+    priority: PriorityLevel;
     category: string;
     action: string;
     reason: string;
   }[];
   /** 분석 신뢰도 */
-  confidence: 'high' | 'medium' | 'low';
+  confidence: PriorityLevel;
   confidenceReason: string;
 }
 
@@ -312,7 +316,7 @@ function generateInfluencerDescription(
   score: number,
   strength: string
 ): string {
-  const strengthText = strength === 'strong' ? '강한' : strength === 'moderate' ? '보통의' : '약한';
+  const strengthText = selectByKey(strength, { strong: '강한', moderate: '보통의' }, '약한')!;
   const directionText = score > 0 ? '양의' : '음의';
 
   if (score > 0) {
@@ -435,7 +439,7 @@ function generateRecommendations(
 function assessConfidence(
   entryCount: number,
   _correlations: CorrelationAnalysisResult['correlations']
-): { confidence: 'high' | 'medium' | 'low'; confidenceReason: string } {
+): { confidence: PriorityLevel; confidenceReason: string } {
   if (entryCount >= 21) {
     return {
       confidence: 'high',

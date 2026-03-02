@@ -18,6 +18,9 @@
  */
 export type StretchType = 'static' | 'dynamic' | 'pnf';
 
+/** 스트레칭 목적 */
+export type StretchPurpose = 'posture_correction' | 'warmup' | 'cooldown' | 'general';
+
 /**
  * 스트레칭 카테고리
  */
@@ -277,7 +280,7 @@ export interface StretchingPrescription {
   basedOn: {
     postureAnalysis?: string;  // 자세분석 ID
     sport?: SportType;
-    purpose: 'posture_correction' | 'warmup' | 'cooldown' | 'general';
+    purpose: StretchPurpose;
   };
 
   // 처방 내용
@@ -404,7 +407,7 @@ export interface PainReport {
  */
 export interface StretchingPrescriptionRequest {
   userId: string;
-  purpose: 'posture_correction' | 'warmup' | 'cooldown' | 'general';
+  purpose: StretchPurpose;
   postureAnalysisId?: string;
   sport?: SportType;
   availableTime?: number;  // 분
@@ -435,7 +438,7 @@ export interface RoutineGeneratorInput {
   profile: StretchingUserProfile;
   postureAnalysis?: PostureAnalysisResult;
   sport?: SportType;
-  purpose: 'posture_correction' | 'warmup' | 'cooldown' | 'general';
+  purpose: StretchPurpose;
   availableMinutes: number;
 }
 

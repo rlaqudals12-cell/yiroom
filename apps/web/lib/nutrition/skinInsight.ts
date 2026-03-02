@@ -9,6 +9,7 @@
  */
 
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 피부 지표 키 (S-1과 동일)
 export type SkinMetricKey =
@@ -200,6 +201,7 @@ const SKIN_GOAL_MESSAGES: Record<string, string> = {
 /**
  * 피부 분석 결과를 기반으로 영양 인사이트 생성
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function getSkinNutritionInsight(
   skinAnalysis: SkinAnalysisSummary | null,
   currentWaterMl?: number,
@@ -255,11 +257,11 @@ export function getSkinNutritionInsight(
   const hydrationStatus = skinAnalysis.hydration;
   const hydrationTarget = HYDRATION_TARGETS[hydrationStatus];
   const hydrationInsight: HydrationInsight = {
-    icon: hydrationStatus === 'warning' ? '🚨' : hydrationStatus === 'good' ? '✨' : '💧',
+    icon: selectByKey(hydrationStatus, { warning: '🚨', good: '✨' }, '💧')!,
     message: hydrationTarget.message,
     targetMl: hydrationTarget.targetMl,
     currentMl: currentWaterMl,
-    priority: hydrationStatus === 'warning' ? 'high' : hydrationStatus === 'good' ? 'low' : 'medium',
+    priority: selectByKey(hydrationStatus, { warning: 'high' as const, good: 'low' as const }, 'medium' as const)!,
   };
 
   // 요약 메시지 생성

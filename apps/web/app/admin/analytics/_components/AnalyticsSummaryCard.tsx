@@ -9,6 +9,7 @@ import { Eye, Users, Clock, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AnalyticsSummary } from '@/types/analytics';
+import { getTrendDirection, getTrendColorClass } from '@/lib/utils/conditional-helpers';
 
 interface AnalyticsSummaryCardProps {
   summary: AnalyticsSummary | null;
@@ -23,8 +24,7 @@ interface MetricCardProps {
 }
 
 function MetricCard({ label, value, change, icon }: MetricCardProps) {
-  const isPositive = change !== undefined && change > 0;
-  const isNegative = change !== undefined && change < 0;
+  const direction = change !== undefined ? getTrendDirection(change) : 'neutral';
 
   return (
     <Card>
@@ -33,16 +33,15 @@ function MetricCard({ label, value, change, icon }: MetricCardProps) {
           <div className="text-muted-foreground">{icon}</div>
           {change !== undefined && (
             <div
-              className={`flex items-center text-sm ${
-                isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-muted-foreground'
-              }`}
+              className={`flex items-center text-sm ${getTrendColorClass(direction)}`}
             >
-              {isPositive ? (
+              {direction === 'up' && (
                 <TrendingUp className="h-3 w-3 mr-1" />
-              ) : isNegative ? (
+              )}
+              {direction === 'down' && (
                 <TrendingDown className="h-3 w-3 mr-1" />
-              ) : null}
-              {isPositive ? '+' : ''}
+              )}
+              {direction === 'up' ? '+' : ''}
               {change.toFixed(1)}%
             </div>
           )}

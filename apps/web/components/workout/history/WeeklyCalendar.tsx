@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { Flame, Check, X, Circle } from 'lucide-react';
 
 interface WorkoutDay {
@@ -109,7 +110,12 @@ export function WeeklyCalendar({
               transition-all hover:scale-105 cursor-pointer
               ${getStatusStyle(day.status)}
             `}
-            aria-label={`${day.date} ${day.status === 'completed' ? '완료' : day.status === 'skipped' ? '미완료' : day.status === 'today' ? '오늘' : day.status === 'planned' ? '예정' : '휴식'}`}
+            aria-label={`${day.date} ${selectByKey(day.status, {
+              completed: '완료',
+              skipped: '미완료',
+              today: '오늘',
+              planned: '예정',
+            }, '휴식')}`}
           >
             {getStatusIcon(day.status)}
           </button>

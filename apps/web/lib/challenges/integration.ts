@@ -68,6 +68,7 @@ async function saveChallengeProgress(
  * - 운동 완료 시 'workout' 도메인 전달
  * - 식단 기록 시 'nutrition' 도메인 전달
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function updateChallengesByDomain(
   supabase: SupabaseClient,
   clerkUserId: string,

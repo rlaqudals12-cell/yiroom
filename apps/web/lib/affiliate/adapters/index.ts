@@ -27,8 +27,8 @@ import { coupangAdapter } from './coupang';
 /** 등록된 어댑터 목록 */
 const ADAPTER_REGISTRY: Partial<Record<AffiliatePartnerName, PartnerAdapter>> = {
   coupang: coupangAdapter,
-  // TODO: CJ Affiliate 어댑터 추가 (Phase 2)
-  // TODO: Amazon Creators 어댑터 추가 (Phase 3)
+  // [DEFERRED] CJ Affiliate 어댑터 추가 (Phase 2)
+  // [DEFERRED] Amazon Creators 어댑터 추가 (Phase 3)
 };
 
 /**

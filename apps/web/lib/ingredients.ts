@@ -188,6 +188,7 @@ async function searchIngredientInDB(ingredientName: string): Promise<DBIngredien
  * DB에 없는 성분에 대해 호출
  * - 3초 타임아웃 + 2회 재시도 적용
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 async function analyzeIngredientWithAI(
   ingredientName: string,
   skinType: SkinType
@@ -293,6 +294,7 @@ Guidelines:
  * @param skinType - 사용자 피부 타입
  * @returns 경고 성분 목록 (위험도 높은 순 정렬)
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function analyzeIngredients(
   ingredients: string[],
   skinType: SkinType = 'normal'

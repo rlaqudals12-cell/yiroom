@@ -228,6 +228,16 @@ export function ShoppingRecommend({
     [onAddToWishlist]
   );
 
+  // 쇼핑몰 필터 토글
+  const toggleShopFilter = (shopId: string, checked: boolean): void => {
+    setFilters((prev) => ({
+      ...prev,
+      shops: checked
+        ? [...prev.shops, shopId]
+        : prev.shops.filter((s) => s !== shopId),
+    }));
+  };
+
   // 외부 링크 열기
   const handleOpenLink = useCallback(
     (item: ShoppingItem) => {
@@ -304,14 +314,7 @@ export function ShoppingRecommend({
                 <DropdownMenuCheckboxItem
                   key={shop.id}
                   checked={filters.shops.includes(shop.id)}
-                  onCheckedChange={(checked) => {
-                    setFilters((prev) => ({
-                      ...prev,
-                      shops: checked
-                        ? [...prev.shops, shop.id]
-                        : prev.shops.filter((s) => s !== shop.id),
-                    }));
-                  }}
+                  onCheckedChange={(checked) => toggleShopFilter(shop.id, !!checked)}
                 >
                   {shop.name}
                 </DropdownMenuCheckboxItem>

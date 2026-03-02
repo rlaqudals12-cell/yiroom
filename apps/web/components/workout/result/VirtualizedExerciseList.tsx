@@ -109,10 +109,8 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
         ))}
       </div>
 
-      {/* 운동 리스트 */}
-      {itemsToRender.length > 0 ? (
-        enableVirtualization && itemsToRender.length > 20 ? (
-          // 가상화된 리스트 (아이템 많을 때)
+      {/* 운동 리스트 - 가상화 (아이템 많을 때) */}
+      {itemsToRender.length > 0 && enableVirtualization && itemsToRender.length > 20 && (
           <div
             ref={parentRef}
             className="h-[600px] overflow-auto"
@@ -154,8 +152,9 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
               })}
             </div>
           </div>
-        ) : (
-          // 일반 그리드 (아이템 적을 때)
+      )}
+      {/* 운동 리스트 - 일반 그리드 (아이템 적을 때) */}
+      {itemsToRender.length > 0 && !(enableVirtualization && itemsToRender.length > 20) && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {itemsToRender.map((exercise) => (
               <ExerciseCard
@@ -165,8 +164,9 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
               />
             ))}
           </div>
-        )
-      ) : (
+      )}
+      {/* 빈 상태 */}
+      {itemsToRender.length === 0 && (
         <div className="text-center py-8 text-muted-foreground">
           <p>해당 카테고리의 운동이 없어요.</p>
         </div>

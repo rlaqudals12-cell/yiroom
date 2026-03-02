@@ -297,7 +297,7 @@ export function validateImageFile(file: File): {
  */
 export function dataUrlToBlob(dataUrl: string): Blob {
   const parts = dataUrl.split(',');
-  const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
+  const mime = parts[0].match(/:([a-zA-Z0-9/+.-]{1,100});/)?.[1] || 'image/png';
   const binary = atob(parts[1]);
   const array = new Uint8Array(binary.length);
 

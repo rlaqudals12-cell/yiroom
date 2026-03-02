@@ -19,6 +19,7 @@ import {
   getScoreColor,
 } from '@/lib/mock/posture-analysis';
 import { FadeInUp, ScaleIn, CountUp } from '@/components/animations';
+import { selectByKey, mapToClass } from '@/lib/utils/conditional-helpers';
 
 interface AnalysisResultProps {
   result: PostureAnalysisResult;
@@ -55,24 +56,20 @@ function MeasurementBar({ measurement }: { measurement: PostureMeasurement }) {
         </div>
         <div className="flex items-center gap-2">
           <span
-            className={`text-xs px-1.5 py-0.5 rounded ${
-              measurement.status === 'good'
-                ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-                : measurement.status === 'warning'
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                  : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
-            }`}
+            className={`text-xs px-1.5 py-0.5 rounded ${mapToClass(measurement.status, {
+              good: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+              warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+              alert: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+            }, 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300')}`}
           >
             {getStatusLabel(measurement.status)}
           </span>
           <span
-            className={`text-sm font-semibold ${
-              measurement.status === 'good'
-                ? 'text-green-500'
-                : measurement.status === 'warning'
-                  ? 'text-amber-500'
-                  : 'text-red-500'
-            }`}
+            className={`text-sm font-semibold ${mapToClass(measurement.status, {
+              good: 'text-green-500',
+              warning: 'text-amber-500',
+              alert: 'text-red-500',
+            }, 'text-red-500')}`}
           >
             {measurement.value}
           </span>
@@ -86,13 +83,11 @@ function MeasurementBar({ measurement }: { measurement: PostureMeasurement }) {
 
         {/* 값 표시 바 */}
         <div
-          className={`absolute top-0 h-full transition-all ${
-            measurement.status === 'good'
-              ? 'bg-green-400'
-              : measurement.status === 'warning'
-                ? 'bg-amber-400'
-                : 'bg-red-400'
-          }`}
+          className={`absolute top-0 h-full transition-all ${mapToClass(measurement.status, {
+            good: 'bg-green-400',
+            warning: 'bg-amber-400',
+            alert: 'bg-red-400',
+          }, 'bg-red-400')}`}
           style={{
             left: isLeft ? `${measurement.value}%` : '50%',
             width: `${deviation}%`,
@@ -289,19 +284,17 @@ export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisRe
                     <p className="text-xs text-muted-foreground">타깃: {stretch.targetArea}</p>
                   </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      stretch.difficulty === 'easy'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-                        : stretch.difficulty === 'medium'
-                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
-                    }`}
+                    className={`text-xs px-2 py-1 rounded-full ${mapToClass(stretch.difficulty, {
+                      easy: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+                      medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                      hard: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                    }, 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300')}`}
                   >
-                    {stretch.difficulty === 'easy'
-                      ? '쉬움'
-                      : stretch.difficulty === 'medium'
-                        ? '보통'
-                        : '어려움'}
+                    {selectByKey(stretch.difficulty, {
+                      easy: '쉬움',
+                      medium: '보통',
+                      hard: '어려움',
+                    }, '어려움')}
                   </span>
                 </div>
                 <p className="text-sm text-foreground/80 mb-2">{stretch.description}</p>

@@ -52,11 +52,12 @@ export default function CreatePostPage() {
       setImages((prev) => [...prev, ...newFiles]);
 
       // 미리보기 생성
+      const onReaderLoad = (e: ProgressEvent<FileReader>): void => {
+        setImagePreviews((prev) => [...prev, e.target?.result as string]);
+      };
       newFiles.forEach((file) => {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          setImagePreviews((prev) => [...prev, e.target?.result as string]);
-        };
+        reader.onload = onReaderLoad;
         reader.readAsDataURL(file);
       });
     }
@@ -213,6 +214,7 @@ export default function CreatePostPage() {
           <div className="grid grid-cols-4 gap-2">
             {imagePreviews.map((preview, i) => (
               <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+                {/* eslint-disable-next-line @next/next/no-img-element -- FileReader base64 미리보기 */}
                 <img src={preview} alt="" className="w-full h-full object-cover" />
                 <button
                   onClick={() => handleRemoveImage(i)}

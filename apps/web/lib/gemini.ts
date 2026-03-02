@@ -10,6 +10,7 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/ge
 import { buildFoodAnalysisPrompt as buildFoodAnalysisPromptFromModule } from '@/lib/gemini/prompts/foodAnalysis';
 import { geminiLogger } from '@/lib/utils/logger';
 import { compressBase64Image } from '@/lib/utils/image-compression';
+import { classifyByRange, selectByKey } from '@/lib/utils/conditional-helpers';
 
 // Mock Fallback 함수 import
 import { generateMockAnalysisResult as generateMockSkinAnalysis } from '@/lib/mock/skin-analysis';
@@ -77,6 +78,22 @@ const modelConfig = {
   },
 };
 
+// ============================================
+// 공통 인라인 타입 별칭
+// ============================================
+
+/** 분석 신뢰도/우선순위 수준 */
+type ReliabilityLevel = 'high' | 'medium' | 'low';
+
+/** 지표 상태 */
+type MetricStatus = 'good' | 'normal' | 'warning';
+
+/** 조명 조건 */
+type LightingCondition = 'natural' | 'artificial' | 'mixed';
+
+/** 식사 유형 */
+type MealTypeOption = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
 /**
  * S-1 피부 분석 결과 타입
  */
@@ -89,7 +106,7 @@ export interface GeminiSkinAnalysisResult {
     id: string;
     name: string;
     value: number;
-    status: 'good' | 'normal' | 'warning';
+    status: MetricStatus;
     description: string;
   }>;
   concernAreas: string[];
@@ -105,9 +122,9 @@ export interface GeminiSkinAnalysisResult {
   }>;
   // 이미지 품질 정보
   imageQuality?: {
-    lightingCondition: 'natural' | 'artificial' | 'mixed';
+    lightingCondition: LightingCondition;
     makeupDetected: boolean;
-    analysisReliability: 'high' | 'medium' | 'low';
+    analysisReliability: ReliabilityLevel;
   };
   // 분석 근거 (신뢰성 리포트용)
   analysisEvidence?: {
@@ -237,7 +254,7 @@ export interface GeminiBodyAnalysisResult {
     angle: 'front' | 'side' | 'angled';
     poseNatural: boolean;
     clothingFit: 'fitted' | 'loose' | 'oversized';
-    analysisReliability: 'high' | 'medium' | 'low';
+    analysisReliability: ReliabilityLevel;
   };
   // 좌우 비대칭 분석 (자세 교정 피드백용)
   asymmetryAnalysis?: {
@@ -345,10 +362,10 @@ export interface GeminiPersonalColorResult {
   };
   // 이미지 품질 정보
   imageQuality?: {
-    lightingCondition: 'natural' | 'artificial' | 'mixed';
+    lightingCondition: LightingCondition;
     makeupDetected: boolean;
     wristImageProvided: boolean;
-    analysisReliability: 'high' | 'medium' | 'low';
+    analysisReliability: ReliabilityLevel;
   };
   bestColors: Array<{
     hex: string;
@@ -1079,6 +1096,7 @@ const PERSONAL_COLOR_ANALYSIS_PROMPT = `당신은 전문 퍼스널 컬러 분석
 /**
  * W-1 운동 타입 분석 프롬프트 빌더
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function buildWorkoutAnalysisPrompt(input: WorkoutAnalysisInput): string {
   // 목표 라벨 매핑
   const goalLabels: Record<string, string> = {
@@ -1386,20 +1404,17 @@ function generateMockDetailedSkinAnalysis(): GeminiDetailedSkinAnalysisResult {
 
   for (const zone of zones) {
     const baseScore = 50 + Math.floor(Math.random() * 40);
-    const status =
-      baseScore >= 85
-        ? 'excellent'
-        : baseScore >= 70
-          ? 'good'
-          : baseScore >= 50
-            ? 'normal'
-            : baseScore >= 30
-              ? 'warning'
-              : 'critical';
+    const status = classifyByRange(baseScore, [
+      { max: 30, result: 'critical' },
+      { min: 30, max: 50, result: 'warning' },
+      { min: 50, max: 70, result: 'normal' },
+      { min: 70, max: 85, result: 'good' },
+      { min: 85, result: 'excellent' },
+    ]) as DetailedZoneData['status'];
 
     zoneData[zone] = {
       score: baseScore,
-      status: status as DetailedZoneData['status'],
+      status: status!,
       concerns: zoneConcerns[zone] || [],
       recommendations: zoneRecommendations[zone] || [],
       evidence: `${zone} 영역 상태 양호`,
@@ -1440,6 +1455,7 @@ function generateMockDetailedSkinAnalysis(): GeminiDetailedSkinAnalysisResult {
  * @param backImageBase64 - Base64 인코딩된 후면 이미지 (선택)
  * @returns 체형 분석 결과
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function analyzeBody(
   frontImageBase64: string,
   leftSideImageBase64?: string,
@@ -1555,6 +1571,7 @@ export interface PersonalColorMultiAngleInput {
  * @param wristImageBase64 - 손목 이미지 (선택, 하위 호환용)
  * @returns 퍼스널 컬러 분석 결과
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function analyzePersonalColor(
   faceImageBase64: string | PersonalColorMultiAngleInput,
   wristImageBase64?: string
@@ -1779,7 +1796,7 @@ export interface GeminiWorkoutInsightResult {
   insights: Array<{
     type: 'balance' | 'progress' | 'streak' | 'comparison' | 'tip';
     message: string;
-    priority: 'high' | 'medium' | 'low';
+    priority: ReliabilityLevel;
     data?: {
       percentage?: number;
       trend?: 'up' | 'down' | 'stable';
@@ -1931,8 +1948,8 @@ function buildExerciseRecommendationPrompt(input: ExerciseRecommendationInput): 
 - 집중 부위: ${concernsText || '전신'}
 - 부상/통증 부위: ${injuriesText}
 - 사용 가능 장비: ${equipmentText}
-- 운동 장소: ${input.location === 'home' ? '집' : input.location === 'gym' ? '헬스장' : '야외'}
-- 운동 레벨: ${userLevel === 'beginner' ? '초급' : userLevel === 'intermediate' ? '중급' : '고급'}
+- 운동 장소: ${selectByKey(input.location, { home: '집', gym: '헬스장' }, '야외')}
+- 운동 레벨: ${selectByKey(userLevel, { beginner: '초급', intermediate: '중급' }, '고급')}
 - 목표 운동 시간: ${sessionMinutes}분
 
 ## 운동 타입별 추천 원칙
@@ -2258,7 +2275,7 @@ export interface GeminiFoodAnalysisResult {
   totalProtein?: number;
   totalCarbs?: number;
   totalFat?: number;
-  mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  mealType?: MealTypeOption;
   insight?: string;
   analyzedAt?: string;
 }
@@ -2268,7 +2285,7 @@ export interface GeminiFoodAnalysisResult {
  */
 export interface FoodAnalysisInput {
   imageBase64: string;
-  mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  mealType?: MealTypeOption;
   date?: string;
 }
 
@@ -2285,7 +2302,7 @@ export interface MealSuggestionInput {
   dislikedFoods: string[];
   cookingSkill: 'beginner' | 'intermediate' | 'advanced' | 'none';
   budget: 'economy' | 'moderate' | 'premium' | 'any';
-  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  mealType: MealTypeOption;
   preferences?: string[];
   // S-1 피부 분석 연동 (선택)
   skinContext?: {
@@ -2835,12 +2852,14 @@ export async function recommendWeatherOutfit(
     const isCold = input.weather.temp <= 10;
     const isRainy = input.weather.condition === 'rainy';
 
+    const recommendation = classifyByRange(input.weather.temp, [
+      { max: 11, result: '오늘은 따뜻하게 레이어링하세요. 아우터는 필수입니다.' },
+      { min: 11, max: 20, result: '오늘은 적당한 기온이에요. 가디건이나 얇은 자켓을 챙기세요.' },
+      { min: 20, result: '오늘은 가벼운 옷차림이 좋겠어요. 시원하고 편안한 코디를 추천드립니다.' },
+    ])!;
+
     return {
-      recommendation: isWarm
-        ? '오늘은 가벼운 옷차림이 좋겠어요. 시원하고 편안한 코디를 추천드립니다.'
-        : isCold
-          ? '오늘은 따뜻하게 레이어링하세요. 아우터는 필수입니다.'
-          : '오늘은 적당한 기온이에요. 가디건이나 얇은 자켓을 챙기세요.',
+      recommendation,
       outfit: {
         outer: isCold ? '울 코트' : undefined,
         top: isWarm ? '린넨 셔츠' : '니트 스웨터',
@@ -3039,7 +3058,7 @@ export interface GeminiPostureAnalysisResult {
     angle: 'front' | 'side' | 'both';
     fullBodyVisible: boolean;
     clothingFit: 'fitted' | 'loose';
-    analysisReliability: 'high' | 'medium' | 'low';
+    analysisReliability: ReliabilityLevel;
   };
   // C-1 연동 정보
   bodyTypeCorrelation?: {
@@ -3362,7 +3381,7 @@ export interface GeminiHairAnalysisResult {
     id: string;
     label: string;
     value: number;
-    status: 'good' | 'normal' | 'warning';
+    status: MetricStatus;
     description: string;
   }>;
 
@@ -3382,11 +3401,11 @@ export interface GeminiHairAnalysisResult {
   careTips: string[];
 
   // 메타데이터
-  analysisReliability: 'high' | 'medium' | 'low';
+  analysisReliability: ReliabilityLevel;
 
   // 이미지 품질 정보
   imageQuality?: {
-    lightingCondition: 'natural' | 'artificial' | 'mixed';
+    lightingCondition: LightingCondition;
     hairVisible: boolean;
     scalpVisible: boolean;
   };
@@ -3583,7 +3602,7 @@ export interface GeminiMakeupAnalysisResult {
     id: string;
     label: string;
     value: number;
-    status: 'good' | 'normal' | 'warning';
+    status: MetricStatus;
     description: string;
   }[];
   concerns: string[];
@@ -3604,12 +3623,12 @@ export interface GeminiMakeupAnalysisResult {
   }[];
   personalColorConnection?: {
     season: string;
-    compatibility: 'high' | 'medium' | 'low';
+    compatibility: ReliabilityLevel;
     note: string;
   };
-  analysisReliability: 'high' | 'medium' | 'low';
+  analysisReliability: ReliabilityLevel;
   imageQuality: {
-    lightingCondition: 'natural' | 'artificial' | 'mixed';
+    lightingCondition: LightingCondition;
     faceVisible: boolean;
     makeupDetected: boolean;
   };

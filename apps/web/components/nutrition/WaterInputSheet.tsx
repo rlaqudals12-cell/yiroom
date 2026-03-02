@@ -107,7 +107,7 @@ export default function WaterInputSheet({
   // 직접 입력 모드
   const handleCustomInput = (value: string) => {
     // 숫자만 허용
-    const numericValue = value.replace(/[^0-9]/g, '');
+    const numericValue = value.replace(/\D/g, '');
     setCustomAmount(numericValue);
     setIsCustom(true);
   };

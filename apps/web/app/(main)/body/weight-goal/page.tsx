@@ -11,6 +11,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Target, Scale, TrendingDown, TrendingUp, Info, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { selectByKey, getTrendDirection } from '@/lib/utils/conditional-helpers';
 import {
   calculateBMI,
   calculateTargetWeight,
@@ -258,11 +259,10 @@ export default function WeightGoalTrackingPage() {
             <div
               className={cn(
                 'text-center p-4 rounded-xl mb-4',
-                bmiResult.category === 'normal'
-                  ? 'bg-green-50 dark:bg-green-900/20'
-                  : bmiResult.category === 'underweight'
-                    ? 'bg-blue-50 dark:bg-blue-900/20'
-                    : 'bg-orange-50 dark:bg-orange-900/20'
+                selectByKey(bmiResult.category, {
+                  normal: 'bg-green-50 dark:bg-green-900/20',
+                  underweight: 'bg-blue-50 dark:bg-blue-900/20',
+                }, 'bg-orange-50 dark:bg-orange-900/20')
               )}
             >
               <p className="text-2xl font-bold" style={{ color: getBMIColor(bmiResult.category) }}>
@@ -353,11 +353,14 @@ export default function WeightGoalTrackingPage() {
               <div className="flex flex-col items-center py-4">
                 <ProgressRing progress={progress} />
                 <p className="text-sm text-muted-foreground mt-3">
-                  {parseFloat(currentWeight) > parseFloat(goalWeight)
-                    ? `${(parseFloat(currentWeight) - parseFloat(goalWeight)).toFixed(1)}kg 더 감량하면 목표 달성!`
-                    : parseFloat(currentWeight) < parseFloat(goalWeight)
-                      ? `${(parseFloat(goalWeight) - parseFloat(currentWeight)).toFixed(1)}kg 더 증량하면 목표 달성!`
-                      : '목표를 달성했어요!'}
+                  {(() => {
+                    const diff = parseFloat(currentWeight) - parseFloat(goalWeight);
+                    const direction = getTrendDirection(diff);
+                    return selectByKey(direction, {
+                      up: `${diff.toFixed(1)}kg 더 감량하면 목표 달성!`,
+                      down: `${(-diff).toFixed(1)}kg 더 증량하면 목표 달성!`,
+                    }, '목표를 달성했어요!');
+                  })()}
                 </p>
               </div>
             )}

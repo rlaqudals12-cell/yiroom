@@ -25,6 +25,7 @@ import {
   sortByPriorityScore,
   filterByMinScore,
 } from './scoring';
+import { selectText, selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 유틸리티
@@ -241,8 +242,6 @@ function generateOralHealthInsight(
   // 염증 점수가 높으면 높은 우선순위
   const inflammationScore = oralHealth.inflammationScore ?? 0;
   const isUrgent = inflammationScore >= 60;
-  const isWarning = inflammationScore >= 30;
-
   const relatedModules: AnalysisModule[] = ['oral_health'];
   const priorityScore = calculatePriorityScore({
     category: 'health_alert',
@@ -254,23 +253,36 @@ function generateOralHealthInsight(
   // 심각도에 따라 점수 조정
   const adjustedScore = isUrgent ? Math.min(100, priorityScore + 20) : priorityScore;
 
-  const title =
-    language === 'ko'
-      ? isUrgent
-        ? '구강 건강 주의 필요'
-        : '구강 건강 관리 팁'
-      : isUrgent
-        ? 'Oral Health Attention Required'
-        : 'Oral Health Care Tips';
+  // 긴급도에 따른 텍스트 키 결정
+  const urgencyKey = isUrgent ? 'urgent' : 'normal';
 
-  const description =
-    language === 'ko'
-      ? isUrgent
-        ? '잇몸 상태 확인이 필요해요. 치과 방문을 권장합니다.'
-        : '꾸준한 관리로 건강한 구강을 유지하세요'
-      : isUrgent
-        ? 'Gum condition needs attention. Dental visit recommended.'
-        : 'Maintain healthy oral care with regular routine';
+  const title = selectText(language, {
+    ko: selectByKey(urgencyKey, { urgent: '구강 건강 주의 필요', normal: '구강 건강 관리 팁' }, '구강 건강 관리 팁')!,
+    en: selectByKey(urgencyKey, { urgent: 'Oral Health Attention Required', normal: 'Oral Health Care Tips' }, 'Oral Health Care Tips')!,
+  });
+
+  const description = selectText(language, {
+    ko: selectByKey(urgencyKey, {
+      urgent: '잇몸 상태 확인이 필요해요. 치과 방문을 권장합니다.',
+      normal: '꾸준한 관리로 건강한 구강을 유지하세요',
+    }, '꾸준한 관리로 건강한 구강을 유지하세요')!,
+    en: selectByKey(urgencyKey, {
+      urgent: 'Gum condition needs attention. Dental visit recommended.',
+      normal: 'Maintain healthy oral care with regular routine',
+    }, 'Maintain healthy oral care with regular routine')!,
+  });
+
+  // 심각도 분류: 염증 점수 범위 기반 (60+ urgent, 30+ warning, 나머지 info)
+  const severity = classifyByRange(inflammationScore, [
+    { min: 60, result: 'urgent' as const },
+    { min: 30, result: 'warning' as const },
+    { result: 'info' as const },
+  ], 'info' as const)!;
+
+  const recommendedAction = selectText(language, {
+    ko: selectByKey(urgencyKey, { urgent: '치과 방문 권장', normal: '정기 검진 권장' }, '정기 검진 권장')!,
+    en: selectByKey(urgencyKey, { urgent: 'Dental visit recommended', normal: 'Regular checkup recommended' }, 'Regular checkup recommended')!,
+  });
 
   return {
     id: generateInsightId(),
@@ -281,15 +293,8 @@ function generateOralHealthInsight(
     priority: scoreToPriority(adjustedScore),
     priorityScore: adjustedScore,
     createdAt: nowISO(),
-    severity: isUrgent ? 'urgent' : isWarning ? 'warning' : 'info',
-    recommendedAction:
-      language === 'ko'
-        ? isUrgent
-          ? '치과 방문 권장'
-          : '정기 검진 권장'
-        : isUrgent
-          ? 'Dental visit recommended'
-          : 'Regular checkup recommended',
+    severity,
+    recommendedAction,
   };
 }
 

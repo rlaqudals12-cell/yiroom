@@ -63,6 +63,7 @@ function convertToReportStreakStatus(
   };
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function GET(req: Request) {
   try {
     const { userId } = await auth();

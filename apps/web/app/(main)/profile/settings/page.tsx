@@ -44,6 +44,7 @@ import {
  * - 앱 정보 (버전, 이용약관, 개인정보처리방침)
  */
 
+type ThemeOption = 'light' | 'dark' | 'system';
 type SettingsTab = 'account' | 'notifications' | 'app' | 'privacy' | 'data' | 'info';
 
 interface SettingSection {
@@ -241,7 +242,7 @@ export default function SettingsPage() {
   };
 
   // 테마 변경 핸들러
-  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
+  const handleThemeChange = (newTheme: ThemeOption) => {
     setTheme(newTheme);
   };
 
@@ -257,7 +258,7 @@ export default function SettingsPage() {
   };
 
   // 현재 테마 (next-themes)
-  const currentTheme = (theme as 'light' | 'dark' | 'system') || 'system';
+  const currentTheme = (theme as ThemeOption) || 'system';
 
   const renderContent = () => {
     switch (activeTab) {
@@ -459,7 +460,7 @@ export default function SettingsPage() {
                     <button
                       key={themeOption.id}
                       onClick={() =>
-                        handleThemeChange(themeOption.id as 'light' | 'dark' | 'system')
+                        handleThemeChange(themeOption.id as ThemeOption)
                       }
                       className={cn(
                         'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors',

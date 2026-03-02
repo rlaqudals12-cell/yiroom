@@ -380,6 +380,7 @@ function detectProblemAreas(
 /**
  * 특정 영역의 균일도 분석
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function analyzeRegionUniformity(
   pigmentMaps: PigmentMaps,
   faceMask: Uint8Array,

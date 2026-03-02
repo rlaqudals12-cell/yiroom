@@ -164,6 +164,7 @@ function normalizeIngredientName(name: string): string {
 /**
  * 레시피 변형 생성
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function generateRecipeVariations(recipe: Recipe, goal?: VariationGoal): RecipeVariation[] {
   const goals: VariationGoal[] = goal ? [goal] : ['diet', 'lean', 'bulk'];
   const variations: RecipeVariation[] = [];
@@ -200,7 +201,7 @@ export function generateRecipeVariations(recipe: Recipe, goal?: VariationGoal): 
 
       // 영양 변화 추정 (간략)
       if (substitute.benefit.includes('칼로리')) {
-        const match = substitute.benefit.match(/(\d+)%/);
+        const match = substitute.benefit.match(/(\d{1,3})%/);
         if (match) {
           const percent = parseInt(match[1]);
           caloriesReduction += percent * 0.15; // 재료별 칼로리 기여도 추정 15%

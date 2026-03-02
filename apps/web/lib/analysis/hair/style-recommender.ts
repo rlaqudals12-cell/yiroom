@@ -338,6 +338,7 @@ export function recommendHairstyles(
 /**
  * 얼굴형별 적합도 세부 조정
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function adjustSuitabilityByFaceShape(
   baseSuitability: number,
   faceShape: FaceShapeType,

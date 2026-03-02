@@ -165,6 +165,7 @@ export default function StyleCategoryPage() {
   const category = categoryInfo[slug] || { name: slug, description: '' };
 
   // 제품 데이터 가져오기
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
   const fetchProducts = useCallback(async () => {
     try {
       setIsProductsLoading(true);

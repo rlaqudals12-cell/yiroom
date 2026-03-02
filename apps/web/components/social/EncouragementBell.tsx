@@ -145,16 +145,18 @@ export function EncouragementBell({ className }: EncouragementBellProps) {
 
         {/* 응원 목록 */}
         <ScrollArea className="h-[300px]">
-          {isLoading ? (
+          {isLoading && (
             <div className="flex items-center justify-center h-[200px]">
               <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
             </div>
-          ) : encouragements.length === 0 ? (
+          )}
+          {!isLoading && encouragements.length === 0 && (
             <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
               <Heart className="h-8 w-8 mb-2 opacity-50" />
               <p className="text-sm">아직 받은 응원이 없어요</p>
             </div>
-          ) : (
+          )}
+          {!isLoading && encouragements.length > 0 && (
             <div className="divide-y">
               {encouragements.map((e) => (
                 <div

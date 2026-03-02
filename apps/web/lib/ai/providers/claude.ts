@@ -8,11 +8,13 @@
  * @see docs/adr/ADR-055-multi-ai-backup-strategy.md
  *
  * Note: @anthropic-ai/sdk는 선택적 의존성입니다.
+ * @internal extractJsonObject import는 JSON 추출 시 ReDoS 방지용
  * SDK가 설치되지 않은 경우 이 프로바이더는 비활성화됩니다.
  * 설치: npm install @anthropic-ai/sdk
  */
 
 import type { AIProvider, ImageAnalysisInput } from '../types';
+import { extractJsonObject } from '@/lib/utils/json-extract';
 
 // =============================================================================
 // 설정
@@ -125,13 +127,13 @@ export function parseClaudeJsonResponse<T>(text: string): T {
     .trim();
 
   // Claude가 추가 텍스트를 포함할 수 있으므로 첫 번째 JSON 객체만 추출
-  const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
+  const jsonStr = extractJsonObject(jsonText);
+  if (!jsonStr) {
     throw new Error('No JSON object found in Claude response');
   }
 
   try {
-    return JSON.parse(jsonMatch[0]) as T;
+    return JSON.parse(jsonStr) as T;
   } catch (error) {
     console.error('[Claude] JSON parse error:', error);
     console.error('[Claude] Raw text:', text.substring(0, 500));

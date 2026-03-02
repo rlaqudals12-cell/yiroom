@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // recharts를 동적 import (SSR 비활성화)
 const LineChart = dynamic(
@@ -165,7 +166,7 @@ export function ChangeTracker({
     target: targetValue,
   }));
 
-  const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
+  const TrendIcon = selectByKey(trend, { up: TrendingUp, down: TrendingDown }, Minus)!;
 
   return (
     <Card className={cn('overflow-hidden', className)} data-testid="change-tracker">

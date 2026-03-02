@@ -134,13 +134,9 @@ export default function HomeContent() {
 
         {/* AI 분석 섹션 (조건부) */}
         <section className="animate-fade-in-up animation-delay-100">
-          {isDataLoading ? (
-            <AnalysisSkeleton />
-          ) : isNewUser ? (
-            <HomeAnalysisPrompt />
-          ) : (
-            <HomeAnalysisSummary analyses={analyses} />
-          )}
+          {isDataLoading && <AnalysisSkeleton />}
+          {!isDataLoading && isNewUser && <HomeAnalysisPrompt />}
+          {!isDataLoading && !isNewUser && <HomeAnalysisSummary analyses={analyses} />}
         </section>
 
         {/* 오늘의 추천 - 기존 사용자만 표시 (로딩 완료 후) */}

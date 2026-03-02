@@ -6,6 +6,8 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ProductIngredient } from '@/types/scan';
+import { extractJsonObject } from '@/lib/utils/json-extract';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // OCR 결과 타입
 export interface OcrResult {
@@ -136,11 +138,11 @@ export async function analyzeIngredientImage(imageBase64: string): Promise<OcrRe
  */
 function parseOcrResponse(text: string): OcrParsedResult | null {
   try {
-    // JSON 블록 추출
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
+    // JSON 블록 추출 (문자열 탐색으로 ReDoS 방지)
+    const jsonStr = extractJsonObject(text);
+    if (!jsonStr) return null;
 
-    return JSON.parse(jsonMatch[0]);
+    return JSON.parse(jsonStr);
   } catch {
     console.error('[OCR] JSON 파싱 실패');
     return null;
@@ -190,7 +192,11 @@ export function parseIngredientsFromText(text: string): ProductIngredient[] {
       order: index + 1,
       inciName: name.toUpperCase(),
       nameKo: undefined,
-      concentration: index < 5 ? 'high' : index < 15 ? 'medium' : ('low' as const),
+      concentration: classifyByRange(index, [
+        { max: 5, result: 'high' as const },
+        { max: 15, result: 'medium' as const },
+        { result: 'low' as const },
+      ])!,
     }));
 }
 

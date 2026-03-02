@@ -24,6 +24,9 @@ export interface BarcodeScannerProps {
   className?: string;
 }
 
+// 무시용 no-op 함수
+function noop(): void {}
+
 // 스캐너 상태
 type ScannerState = 'initializing' | 'ready' | 'scanning' | 'success' | 'error';
 
@@ -85,6 +88,16 @@ export default function BarcodeScanner({
         const scanner = new Html5Qrcode('barcode-scanner-region');
         html5QrcodeRef.current = scanner;
 
+        // 스캔 성공 시 처리
+        const onScanSuccess = (decodedText: string): void => {
+          handleScanSuccess(decodedText);
+          // 스캐너 정지
+          scanner.stop().catch(noop);
+        };
+
+        // 스캔 실패 (무시 - 계속 스캔)
+        const onScanFailure = (): void => {};
+
         // 카메라 시작
         await scanner.start(
           { facingMode: 'environment' }, // 후면 카메라
@@ -93,16 +106,8 @@ export default function BarcodeScanner({
             qrbox: { width: 250, height: 150 },
             aspectRatio: 1.777778, // 16:9
           },
-          (decodedText) => {
-            // 스캔 성공
-            handleScanSuccess(decodedText);
-
-            // 스캐너 정지
-            scanner.stop().catch(() => {});
-          },
-          () => {
-            // 스캔 실패 (무시 - 계속 스캔)
-          }
+          onScanSuccess,
+          onScanFailure
         );
 
         // 플래시 지원 확인

@@ -95,6 +95,7 @@ export default function PostureAnalysisResultPage() {
   const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-자세분석-결과');
 
   // DB에서 분석 결과 조회
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- result page render
   const fetchAnalysis = useCallback(async () => {
     if (!isSignedIn || !analysisId || fetchedRef.current) return;
 

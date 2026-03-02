@@ -78,7 +78,7 @@ export default function ScanPage() {
     alert('내 제품함에 추가되었어요.');
   }, []);
 
-  // 공유 (TODO: 실제 구현)
+  // [DEFERRED] 공유 기능 — Web Share API 기본 구현, 세부 커스터마이징은 향후
   const handleShare = useCallback(() => {
     if (result?.product) {
       navigator.share?.({

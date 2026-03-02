@@ -10,6 +10,7 @@ import {
   calculateProteinRecommendation,
   estimateCaloriesBurned,
 } from '@/lib/workout';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface PostWorkoutNutritionCardProps {
   workoutType: WorkoutType;
@@ -39,7 +40,7 @@ function TipCard({ tip }: { tip: NutritionTip }) {
           <span
             className={`text-xs px-1.5 py-0.5 rounded-full border ${PRIORITY_STYLES[tip.priority]}`}
           >
-            {tip.priority === 'high' ? '필수' : tip.priority === 'medium' ? '권장' : '팁'}
+            {selectByKey(tip.priority, { high: '필수', medium: '권장' }, '팁')}
           </span>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">{tip.description}</p>

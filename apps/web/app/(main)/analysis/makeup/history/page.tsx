@@ -17,6 +17,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { selectByKey, getTrendColorClass } from '@/lib/utils/conditional-helpers';
+import type { TrendDirection } from '@/lib/utils/conditional-helpers';
 import { BottomNav } from '@/components/BottomNav';
 import type {
   MakeupAnalysisHistoryItem,
@@ -103,16 +105,22 @@ export default function MakeupHistoryPage() {
     });
   };
 
-  const TrendIcon =
-    trend === 'improving' ? TrendingUp : trend === 'declining' ? TrendingDown : Minus;
-  const trendColor =
-    trend === 'improving'
-      ? 'text-green-600'
-      : trend === 'declining'
-        ? 'text-red-600'
-        : 'text-muted-foreground';
-  const trendLabel =
-    trend === 'improving' ? '개선 중' : trend === 'declining' ? '변화 감지' : '유지 중';
+  const TrendIcon = selectByKey(trend, {
+    improving: TrendingUp,
+    declining: TrendingDown,
+    stable: Minus,
+  }, Minus)!;
+  const trendDirection: TrendDirection = selectByKey(trend, {
+    improving: 'up' as const,
+    declining: 'down' as const,
+    stable: 'neutral' as const,
+  }, 'neutral' as const)!;
+  const trendColor = getTrendColorClass(trendDirection);
+  const trendLabel = selectByKey(trend, {
+    improving: '개선 중',
+    declining: '변화 감지',
+    stable: '유지 중',
+  }, '유지 중')!;
 
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="makeup-history-page">
@@ -183,7 +191,7 @@ export default function MakeupHistoryPage() {
         )}
 
         {/* 분석 이력 목록 */}
-        {loading ? (
+        {loading && (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="animate-pulse">
@@ -191,7 +199,8 @@ export default function MakeupHistoryPage() {
               </Card>
             ))}
           </div>
-        ) : error ? null : analyses.length === 0 ? (
+        )}
+        {!loading && !error && analyses.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
               <Calendar
@@ -208,7 +217,8 @@ export default function MakeupHistoryPage() {
               </Button>
             </CardContent>
           </Card>
-        ) : (
+        )}
+        {!loading && !error && analyses.length > 0 && (
           <div className="space-y-3">
             {analyses.map((item, index) => {
               const isSelected = selectedIds.includes(item.id);

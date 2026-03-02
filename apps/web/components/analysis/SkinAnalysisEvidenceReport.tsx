@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import {
   Droplet,
   Sun,
@@ -191,11 +192,7 @@ export default function SkinAnalysisEvidenceReport({
               <ReliabilityIcon className={cn('w-4 h-4', reliabilityStyle.text)} />
               <span className={cn('text-sm font-medium', reliabilityStyle.text)}>
                 신뢰도:{' '}
-                {imageQuality.analysisReliability === 'high'
-                  ? '높음'
-                  : imageQuality.analysisReliability === 'medium'
-                    ? '중간'
-                    : '낮음'}
+                {selectByKey(imageQuality.analysisReliability, { high: '높음', medium: '중간' }, '낮음')}
               </span>
             </div>
           )}

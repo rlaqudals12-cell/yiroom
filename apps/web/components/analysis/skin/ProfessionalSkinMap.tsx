@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -349,11 +350,10 @@ export function ProfessionalSkinMap({
                   <div
                     className={cn(
                       'w-4 h-4 rounded',
-                      lightMode === 'uv'
-                        ? 'bg-violet-200'
-                        : lightMode === 'polarized'
-                          ? 'bg-cyan-200'
-                          : 'bg-green-300'
+                      selectByKey(lightMode, {
+                        uv: 'bg-violet-200',
+                        polarized: 'bg-cyan-200',
+                      }, 'bg-green-300')
                     )}
                   />
                   <span className="text-xs">좋음 (71-100)</span>
@@ -362,11 +362,10 @@ export function ProfessionalSkinMap({
                   <div
                     className={cn(
                       'w-4 h-4 rounded',
-                      lightMode === 'uv'
-                        ? 'bg-violet-400'
-                        : lightMode === 'polarized'
-                          ? 'bg-cyan-400'
-                          : 'bg-yellow-300'
+                      selectByKey(lightMode, {
+                        uv: 'bg-violet-400',
+                        polarized: 'bg-cyan-400',
+                      }, 'bg-yellow-300')
                     )}
                   />
                   <span className="text-xs">보통 (41-70)</span>
@@ -375,11 +374,10 @@ export function ProfessionalSkinMap({
                   <div
                     className={cn(
                       'w-4 h-4 rounded',
-                      lightMode === 'uv'
-                        ? 'bg-violet-600'
-                        : lightMode === 'polarized'
-                          ? 'bg-cyan-600'
-                          : 'bg-red-400'
+                      selectByKey(lightMode, {
+                        uv: 'bg-violet-600',
+                        polarized: 'bg-cyan-600',
+                      }, 'bg-red-400')
                     )}
                   />
                   <span className="text-xs">주의 (0-40)</span>

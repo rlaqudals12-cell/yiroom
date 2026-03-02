@@ -7,7 +7,7 @@ import {
   analyzeTrend,
   interpretTrend,
 } from '@/lib/skincare/correlation';
-import type { SkinDiaryEntry } from '@/types/skin-diary';
+import type { SkinDiaryEntry, SkinConditionScore } from '@/types/skin-diary';
 
 describe('calculatePearson', () => {
   it('returns 0 for empty arrays', () => {
@@ -78,7 +78,7 @@ describe('analyzeCorrelations', () => {
       id: `entry-${daysAgo}`,
       clerkUserId: 'user1',
       entryDate: date,
-      skinCondition: skinCondition as 1 | 2 | 3 | 4 | 5,
+      skinCondition: skinCondition as SkinConditionScore,
       morningRoutineCompleted: false,
       eveningRoutineCompleted: false,
       specialTreatments: [],
@@ -101,7 +101,7 @@ describe('analyzeCorrelations', () => {
         createMockEntry(i, (i % 5) + 1, {
           sleepHours: 5 + (i % 4),
           waterIntakeMl: 1000 + i * 100,
-          stressLevel: ((i % 5) + 1) as 1 | 2 | 3 | 4 | 5,
+          stressLevel: ((i % 5) + 1) as SkinConditionScore,
         })
       );
     }
@@ -176,7 +176,7 @@ describe('analyzeTrend', () => {
     id: `entry-${Math.random()}`,
     clerkUserId: 'user1',
     entryDate: new Date(),
-    skinCondition: skinCondition as 1 | 2 | 3 | 4 | 5,
+    skinCondition: skinCondition as SkinConditionScore,
     morningRoutineCompleted: false,
     eveningRoutineCompleted: false,
     specialTreatments: [],

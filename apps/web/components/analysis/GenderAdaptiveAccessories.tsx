@@ -16,6 +16,7 @@ import {
   type AccessoryRecommendation,
 } from '@/lib/content/gender-adaptive';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface GenderAdaptiveAccessoriesProps {
   seasonType: SeasonType;
@@ -55,7 +56,7 @@ export function GenderAdaptiveAccessories({
   const accessories = getAccessoryRecommendations(seasonType, {
     gender: selectedGender,
     stylePreference:
-      selectedGender === 'male' ? 'masculine' : selectedGender === 'female' ? 'feminine' : 'unisex',
+      selectByKey(selectedGender, { male: 'masculine' as const, female: 'feminine' as const }, 'unisex' as const)!,
   });
 
   // 카테고리별 그룹핑

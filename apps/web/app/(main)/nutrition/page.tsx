@@ -16,6 +16,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 import { CrossModuleAlertList } from '@/components/common/CrossModuleAlert';
 import {
   createScalpHealthNutritionAlert,
@@ -609,7 +610,10 @@ export default function NutritionPage() {
       // 탈모 예방 알림
       if (density < 70) {
         const riskLevel: 'low' | 'medium' | 'high' =
-          density < 40 ? 'high' : density < 60 ? 'medium' : 'low';
+          classifyByRange(density, [
+            { max: 40, result: 'high' as const },
+            { max: 60, result: 'medium' as const },
+          ], 'low' as const)!;
         alerts.push(createHairLossPreventionAlert(density, riskLevel));
       }
 
@@ -790,7 +794,7 @@ export default function NutritionPage() {
       />
 
       {/* 식사별 기록 섹션 */}
-      {isLoading ? (
+      {isLoading && (
         // 로딩 스켈레톤
         <div className="space-y-3" data-testid="meal-sections-loading">
           {[0, 1, 2, 3].map((i) => (
@@ -803,13 +807,14 @@ export default function NutritionPage() {
             </div>
           ))}
         </div>
-      ) : data?.meals ? (
+      )}
+      {!isLoading && data?.meals && (
         <MealSectionList
           meals={data.meals}
           onAddRecord={handleAddRecord}
           onRecordClick={handleRecordClick}
         />
-      ) : null}
+      )}
 
       {/* 수분 섭취 현황 (Task 2.9) */}
       <WaterIntakeCard

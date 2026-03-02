@@ -18,6 +18,7 @@ import type { GLCMResult, LBPResult, TextureAnalysis } from './types';
  * @param distance - 픽셀 간 거리 (기본 1)
  * @param angle - 각도 (0, 45, 90, 135도)
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- GLCM matrix computation
 export function calculateGLCM(
   grayPixels: Uint8Array,
   width: number,
@@ -150,6 +151,7 @@ export function calculateGLCM(
  * @param radius - 샘플링 반경 (기본 1)
  * @param neighbors - 이웃 픽셀 수 (기본 8)
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function calculateLBP(
   grayPixels: Uint8Array,
   width: number,

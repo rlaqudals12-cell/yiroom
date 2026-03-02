@@ -167,6 +167,7 @@ function extractFactorValues(entries: SkinDiaryEntry[], factorKey: string): (num
  * @param period 분석 기간
  * @returns 상관관계 인사이트 배열 (상관계수 절대값 순 정렬)
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function analyzeCorrelations(
   entries: SkinDiaryEntry[],
   period: '7days' | '30days' | '90days'

@@ -174,7 +174,10 @@ const DiaryCalendar = memo(function DiaryCalendar({
                 dayOfWeek === 0 && 'text-red-500',
                 dayOfWeek === 6 && 'text-blue-500'
               )}
-              aria-label={`${currentMonth + 1}월 ${date.getDate()}일${entry ? `, 피부 컨디션 ${entry.skinCondition}점` : ''}`}
+              aria-label={(() => {
+                const conditionSuffix = entry ? `, 피부 컨디션 ${entry.skinCondition}점` : '';
+                return `${currentMonth + 1}월 ${date.getDate()}일${conditionSuffix}`;
+              })()}
               aria-pressed={isSelected}
               data-testid={`calendar-day-${date.getDate()}`}
             >

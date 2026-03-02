@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, CheckCircle2, Moon, Battery, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 interface CheckinFormProps {
   onSubmit: (data: CheckinData) => Promise<void>;
@@ -85,11 +86,11 @@ export function CheckinForm({ onSubmit, initialData, isLoading }: CheckinFormPro
               className={cn(
                 'flex-1 py-2 rounded text-xs font-medium transition-colors',
                 stressLevel === level
-                  ? level <= 3
-                    ? 'bg-green-500 text-white'
-                    : level <= 6
-                      ? 'bg-yellow-500 text-white'
-                      : 'bg-red-500 text-white'
+                  ? classifyByRange(level, [
+                      { max: 4, result: 'bg-green-500 text-white' },
+                      { max: 7, result: 'bg-yellow-500 text-white' },
+                      { result: 'bg-red-500 text-white' },
+                    ])
                   : 'bg-muted hover:bg-muted/80'
               )}
             >
@@ -201,19 +202,19 @@ export function CheckinForm({ onSubmit, initialData, isLoading }: CheckinFormPro
         disabled={moodScore === null || isSubmitting || isLoading}
         size="lg"
       >
-        {isSubmitting ? (
+        {isSubmitting && (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             저장 중...
           </>
-        ) : success ? (
+        )}
+        {!isSubmitting && success && (
           <>
             <CheckCircle2 className="w-4 h-4 mr-2" />
             저장 완료!
           </>
-        ) : (
-          '체크인 완료'
         )}
+        {!isSubmitting && !success && '체크인 완료'}
       </Button>
     </form>
   );

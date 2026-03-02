@@ -131,6 +131,7 @@ function calculateFaceRatios(
 /**
  * 비율 기반 얼굴형 분류
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function classifyFaceShape(ratios: FaceShapeAnalysis['ratios']): {
   faceShape: FaceShapeType;
   confidence: number;

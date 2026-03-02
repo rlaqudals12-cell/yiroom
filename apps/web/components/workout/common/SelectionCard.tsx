@@ -2,6 +2,7 @@
 
 import { Check } from 'lucide-react';
 import { ReactNode, useCallback, KeyboardEvent } from 'react';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
 
 interface SelectionCardProps {
   mode: 'single' | 'multiple';
@@ -18,6 +19,7 @@ interface SelectionCardProps {
   errorMessage?: string;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- component render
 export default function SelectionCard({
   mode,
   selected,
@@ -44,7 +46,11 @@ export default function SelectionCard({
   );
 
   // 동적 aria-label 생성
-  const ariaLabel = `${title}${description ? `, ${description}` : ''}${selected ? ', 선택됨' : ''}${error ? `, 오류: ${errorMessage || '선택 필요'}` : ''}`;
+  const descPart = description ? `, ${description}` : '';
+  const selectedPart = selected ? ', 선택됨' : '';
+  const errorDetail = errorMessage || '선택 필요';
+  const errorPart = error ? `, 오류: ${errorDetail}` : '';
+  const ariaLabel = `${title}${descPart}${selectedPart}${errorPart}`;
 
   return (
     <button
@@ -62,9 +68,7 @@ export default function SelectionCard({
       } ${
         error
           ? 'border-status-error bg-status-error/5'
-          : selected
-            ? 'border-primary bg-primary/10'
-            : 'border-border bg-card hover:border-muted-foreground/30'
+          : selectByCondition(selected, 'border-primary bg-primary/10', 'border-border bg-card hover:border-muted-foreground/30')
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer active:scale-[0.98]'} focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
     >
       {/* 체크 아이콘 */}

@@ -10,6 +10,9 @@ import { Exercise, BodyType } from '@/types/workout';
 import { PostureType } from '@/lib/mock/posture-analysis';
 import { getExerciseById, getAllExercises } from './exercises';
 
+// 체력 수준
+export type FitnessLevel = 'beginner' | 'intermediate' | 'advanced';
+
 // 운동 목표
 export type ExerciseGoal =
   | 'posture_correction' // 자세 교정
@@ -157,7 +160,7 @@ export function generateBest5(
   userProfile?: {
     postureType?: PostureType;
     bodyType?: BodyType;
-    fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
+    fitnessLevel?: FitnessLevel;
   }
 ): Best5Result {
   let exerciseIds: string[] = [];
@@ -258,7 +261,7 @@ function getRecommendationReason(
   userProfile?: {
     postureType?: PostureType;
     bodyType?: BodyType;
-    fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
+    fitnessLevel?: FitnessLevel;
   }
 ): string {
   const reasons: string[] = [];
@@ -302,7 +305,7 @@ function findSimilarExercises(
   userProfile?: {
     postureType?: PostureType;
     bodyType?: BodyType;
-    fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
+    fitnessLevel?: FitnessLevel;
   }
 ): Exercise[] {
   // 목표에 따른 카테고리 필터링
@@ -344,13 +347,14 @@ function findSimilarExercises(
 /**
  * 운동 점수 계산
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function calculateExerciseScore(
   exercise: Exercise,
   goal: ExerciseGoal,
   userProfile?: {
     postureType?: PostureType;
     bodyType?: BodyType;
-    fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
+    fitnessLevel?: FitnessLevel;
   }
 ): number {
   let score = 0;

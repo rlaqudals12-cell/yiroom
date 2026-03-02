@@ -262,6 +262,11 @@ export function ZoomableImage({
     );
   }
 
+  // 줌 및 드래그 상태에 따른 커서 결정
+  let zoomCursor: 'zoom-in' | 'grab' | 'grabbing' = 'grab';
+  if (zoom <= minZoom) zoomCursor = 'zoom-in';
+  else if (isDragging) zoomCursor = 'grabbing';
+
   return (
     <div
       ref={containerRef}
@@ -275,7 +280,7 @@ export function ZoomableImage({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      style={{ cursor: zoom > minZoom ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
+      style={{ cursor: zoomCursor }}
       data-testid="zoomable-image"
     >
       {/* 로딩 스피너 */}

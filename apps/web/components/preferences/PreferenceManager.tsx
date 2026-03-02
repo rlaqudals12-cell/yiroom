@@ -31,6 +31,7 @@ import { AvoidLevelBadge } from './AvoidLevelBadge';
 import { QuickAddSheet } from './QuickAddSheet';
 import { getAvoidReasonLabel, type SupportedLocale } from '@/lib/preferences/labels';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 interface PreferenceManagerProps {
   /** 도메인 (optional - 모든 도메인 표시) */
@@ -190,15 +191,17 @@ export function PreferenceManager({
 
           {/* 항목 목록 */}
           <div className="space-y-2 overflow-y-auto flex-1 mb-4 max-h-80">
-            {isLoading ? (
+            {isLoading && (
               <div className="text-center text-muted-foreground py-8">로딩 중...</div>
-            ) : filteredPreferences.length === 0 ? (
+            )}
+            {!isLoading && filteredPreferences.length === 0 && (
               <div className="text-center text-muted-foreground py-8">
                 {activeTab === 'favorites'
                   ? '좋아하는 항목을 추가해주세요'
                   : '기피 항목을 추가해주세요'}
               </div>
-            ) : (
+            )}
+            {!isLoading && filteredPreferences.length > 0 && (
               <div
                 className="space-y-2"
                 role="list"
@@ -258,12 +261,10 @@ export function PreferenceManager({
                             variant="ghost"
                             className="h-8 w-8 p-0"
                             onClick={() => {
-                              const nextLevel =
-                                pref.avoidLevel === 'danger'
-                                  ? 'cannot'
-                                  : pref.avoidLevel === 'cannot'
-                                    ? 'avoid'
-                                    : 'dislike';
+                              const nextLevel = selectByKey(pref.avoidLevel, {
+                                danger: 'cannot' as AvoidLevel,
+                                cannot: 'avoid' as AvoidLevel,
+                              }, 'dislike' as AvoidLevel)!;
                               handleUpdateAvoidLevel(pref.id, nextLevel);
                             }}
                             title={`기피 수준 변경: ${pref.avoidLevel}`}

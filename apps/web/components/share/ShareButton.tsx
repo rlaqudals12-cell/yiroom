@@ -3,6 +3,7 @@
 import { Share2, Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { canShareFiles } from '@/lib/share';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
 
 interface ShareButtonProps {
   /** 공유 버튼 클릭 핸들러 */
@@ -44,14 +45,10 @@ export function ShareButton({
       aria-label="결과 공유하기"
       data-testid="share-button"
     >
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : supportsShare ? (
-        <Share2 className="h-4 w-4" />
-      ) : (
-        <Download className="h-4 w-4" />
-      )}
-      {loading ? '준비 중...' : supportsShare ? '공유하기' : '이미지 저장'}
+      {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+      {!loading && supportsShare && <Share2 className="h-4 w-4" />}
+      {!loading && !supportsShare && <Download className="h-4 w-4" />}
+      {loading ? '준비 중...' : selectByCondition(supportsShare, '공유하기', '이미지 저장')}
     </Button>
   );
 }

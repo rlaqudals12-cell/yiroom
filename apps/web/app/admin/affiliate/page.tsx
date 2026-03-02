@@ -284,11 +284,13 @@ export default function AdminAffiliatePage() {
           <CardTitle>제품별 클릭 순위</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoading && (
             <div className="text-muted-foreground py-8 text-center">불러오는 중...</div>
-          ) : !stats?.byProduct?.length ? (
+          )}
+          {!isLoading && !stats?.byProduct?.length && (
             <div className="text-muted-foreground py-8 text-center">데이터가 없습니다.</div>
-          ) : (
+          )}
+          {!isLoading && !!stats?.byProduct?.length && (
             <Table>
               <TableHeader>
                 <TableRow>

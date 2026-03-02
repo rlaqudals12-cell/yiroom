@@ -212,6 +212,7 @@ export function calculatePeriod(fromDate: string, toDate: string): string {
 /**
  * 비교 인사이트 생성
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- insight generation logic
 export function generateCompareInsights(
   type: AnalysisType,
   before: AnalysisHistoryItem,

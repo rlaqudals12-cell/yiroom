@@ -6,6 +6,7 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Clock, ArrowRight, Upload, Loader2 } from 'lucide-react';
+import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import { Button } from '@/components/ui/button';
 import { OralHealthResultCard } from '@/components/analysis/oral-health';
 import type { OralHealthAssessment } from '@/types/oral-health';
@@ -98,14 +99,8 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
     setError(null);
 
     try {
-      // 파일을 Base64로 변환
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-      });
-      reader.readAsDataURL(imageFile);
-      const imageBase64 = await base64Promise;
+      // 파일을 압축된 Base64로 변환 (Vercel 4.5MB body 제한 대응)
+      const imageBase64 = await compressFileToBase64(imageFile);
 
       // API 호출
       const response = await fetch('/api/analyze/oral-health', {

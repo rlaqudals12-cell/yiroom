@@ -16,6 +16,7 @@ import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { mapToClass } from '@/lib/utils/conditional-helpers';
 import { MAKEUP_STYLES, MAKEUP_CONCERNS } from '@/lib/analysis/makeup';
 import type { PersonalColorSeason } from '@/types/product';
 import {
@@ -304,11 +305,7 @@ export default function MakeupAnalysisResultPage() {
                         <div
                           className={cn(
                             'h-full rounded-full transition-all',
-                            metric.status === 'good'
-                              ? 'bg-green-500'
-                              : metric.status === 'warning'
-                                ? 'bg-red-500'
-                                : 'bg-amber-500'
+                            mapToClass(metric.status, { good: 'bg-green-500', warning: 'bg-red-500' }, 'bg-amber-500')
                           )}
                           style={{ width: `${metric.value}%` }}
                         />

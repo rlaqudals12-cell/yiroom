@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ImageIcon, X, Check, ChevronRight, User, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import type {
   MultiAngleImages,
   FaceAngle,
@@ -69,16 +70,6 @@ export default function GalleryMultiAngleSkinUpload({
     return { valid: true };
   };
 
-  // 파일을 Base64로 변환
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   // 파일 선택 처리
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,7 +83,7 @@ export default function GalleryMultiAngleSkinUpload({
       }
 
       try {
-        const base64 = await fileToBase64(file);
+        const base64 = await compressFileToBase64(file);
 
         // 이미지 검증 (옵션)
         if (onValidate) {

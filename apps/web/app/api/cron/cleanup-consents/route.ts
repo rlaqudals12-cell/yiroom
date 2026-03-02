@@ -62,6 +62,7 @@ function validateCronAuth(request: NextRequest): boolean {
   return false;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- cron job handler
 export async function GET(request: NextRequest) {
   // 인증 검증
   if (!validateCronAuth(request)) {

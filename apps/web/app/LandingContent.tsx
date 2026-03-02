@@ -149,7 +149,7 @@ export function LandingContent() {
   const t = TEXT[lang];
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-[#0F0F0F]" data-testid="landing-page">
+    <div className="min-h-[calc(100vh-80px)] bg-neutral-950" data-testid="landing-page">
       <div className="w-full px-4 md:px-10 lg:px-40 py-5">
         <div className="mx-auto max-w-[960px] w-full">
           {/* 언어 토글 */}
@@ -254,7 +254,7 @@ export function LandingContent() {
             {MODULE_META.map((module, i) => (
               <div
                 key={module.id}
-                className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-[#1A1A1A] border border-zinc-800 text-zinc-300 pl-4 pr-4 hover:border-pink-500/30 transition-colors"
+                className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-neutral-900 border border-zinc-800 text-zinc-300 pl-4 pr-4 hover:border-pink-500/30 transition-colors"
               >
                 <module.icon className="w-4 h-4 text-pink-400" />
                 <p className="text-sm font-medium leading-normal">{t.modules[i].title}</p>
@@ -269,7 +269,7 @@ export function LandingContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4">
             {MODULE_META.map((module, i) => (
               <Link key={module.id} href={module.href} className="group">
-                <div className="relative rounded-2xl bg-[#1A1A1A] border-glow-pink p-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-pink-500/10">
+                <div className="relative rounded-2xl bg-neutral-900 border-glow-pink p-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-pink-500/10">
                   <div
                     className={`w-14 h-14 rounded-xl bg-gradient-to-br ${module.gradient} flex items-center justify-center mb-3`}
                   >
@@ -304,7 +304,7 @@ export function LandingContent() {
               <Link href="/analysis/personal-color" className="grow">
                 <Button
                   variant="secondary"
-                  className="w-full min-w-[84px] max-w-[480px] overflow-hidden rounded-xl h-10 px-4 text-sm font-bold leading-normal tracking-[0.015em] bg-[#1A1A1A] text-zinc-200 border border-zinc-800 hover:border-pink-500/30 hover:bg-[#242424] transition-all duration-300"
+                  className="w-full min-w-[84px] max-w-[480px] overflow-hidden rounded-xl h-10 px-4 text-sm font-bold leading-normal tracking-[0.015em] bg-neutral-900 text-zinc-200 border border-zinc-800 hover:border-pink-500/30 hover:bg-neutral-800 transition-all duration-300"
                 >
                   {t.ctaPersonalColor}
                 </Button>
@@ -322,7 +322,7 @@ export function LandingContent() {
               return (
                 <div
                   key={i}
-                  className="rounded-2xl bg-[#1A1A1A]/50 backdrop-blur-sm border border-zinc-800 p-6 hover:border-pink-500/30 transition-colors"
+                  className="rounded-2xl bg-neutral-900/50 backdrop-blur-sm border border-zinc-800 p-6 hover:border-pink-500/30 transition-colors"
                 >
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500/20 to-purple-500/20 flex items-center justify-center mb-4">
                     <Icon className="w-5 h-5 text-pink-400" />
@@ -390,7 +390,7 @@ export function LandingContent() {
       </div>
 
       {/* 푸터 */}
-      <footer className="border-t border-zinc-800 bg-[#0A0A0B]" data-testid="footer">
+      <footer className="border-t border-zinc-800 bg-zinc-950" data-testid="footer">
         <div className="mx-auto max-w-[960px] px-4 py-8">
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-zinc-400">
             <Link href="/terms" className="hover:text-pink-400 transition-colors">

@@ -9,6 +9,7 @@ import { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ImageIcon, X, Check, ChevronRight, User, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import type {
   MultiAngleImages,
   FaceAngle,
@@ -68,16 +69,6 @@ export default function GalleryMultiAngleUpload({
     return { valid: true };
   };
 
-  // 파일을 Base64로 변환
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   // 파일 선택 처리
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,7 +82,7 @@ export default function GalleryMultiAngleUpload({
       }
 
       try {
-        const base64 = await fileToBase64(file);
+        const base64 = await compressFileToBase64(file);
 
         // 이미지 검증 (옵션)
         if (onValidate) {
@@ -201,6 +192,7 @@ export default function GalleryMultiAngleUpload({
 
         {images.front ? (
           <div className="relative aspect-[3/4] w-full max-w-[280px] mx-auto rounded-2xl overflow-hidden border-2 border-primary shadow-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element -- 갤러리에서 선택한 base64 이미지 미리보기 */}
             <img src={images.front} alt="정면 사진" className="w-full h-full object-cover" />
             <button
               onClick={() => handleRemoveImage('front')}
@@ -246,6 +238,7 @@ export default function GalleryMultiAngleUpload({
             <div key={angle} className="flex-1 max-w-[180px]">
               {images[angle] ? (
                 <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-green-400 shadow-md">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- 갤러리에서 선택한 base64 이미지 미리보기 */}
                   <img
                     src={images[angle]}
                     alt={`${ANGLE_LABELS[angle]} 사진`}

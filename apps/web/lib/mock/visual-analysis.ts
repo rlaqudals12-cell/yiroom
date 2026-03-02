@@ -11,6 +11,7 @@ import type {
   SynergyInsight,
   DrapeResult,
 } from '@/types/visual-analysis';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 랜드마크 Mock 인덱스 (MediaPipe Face Mesh 기준)
@@ -256,8 +257,7 @@ export function generateMockSynergyInsight(
       'normal',
     ];
     reason = reasons[Math.floor(Math.random() * reasons.length)];
-    colorAdjustment =
-      reason === 'normal' ? 'neutral' : reason === 'low_hydration' ? 'bright' : 'muted';
+    colorAdjustment = selectByKey(reason, { normal: 'neutral' as const, low_hydration: 'bright' as const }, 'muted' as const)!;
   }
 
   return {

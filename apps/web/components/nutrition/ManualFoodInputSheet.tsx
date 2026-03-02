@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type TrafficLightColor } from './TrafficLight';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 식사 타입 정보
 const MEAL_TYPES = [
@@ -104,7 +105,7 @@ export default function ManualFoodInputSheet({
 
   // 숫자만 추출하는 헬퍼
   const extractNumber = (value: string): string => {
-    return value.replace(/[^0-9]/g, '');
+    return value.replace(/\D/g, '');
   };
 
   // 예상 칼로리 계산 (단백질 4kcal/g, 탄수화물 4kcal/g, 지방 9kcal/g)
@@ -369,11 +370,10 @@ export default function ManualFoodInputSheet({
                         'w-4 h-4 rounded-full',
                         trafficLight === light.color
                           ? 'bg-white/80'
-                          : light.color === 'green'
-                            ? 'bg-green-500'
-                            : light.color === 'yellow'
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
+                          : selectByKey(light.color, {
+                              green: 'bg-green-500',
+                              yellow: 'bg-yellow-500',
+                            }, 'bg-red-500')
                       )}
                     />
                     <span className="text-xs font-medium">{light.label}</span>

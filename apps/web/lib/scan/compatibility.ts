@@ -79,6 +79,7 @@ export interface CompatibilityResult {
 /**
  * 피부 호환성 계산
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- skin compatibility scoring
 function calculateSkinCompatibility(
   ingredients: ProductIngredient[],
   skinAnalysis: UserAnalysisData['skinAnalysis']
@@ -121,17 +122,7 @@ function calculateSkinCompatibility(
 
     switch (status) {
       case 'beneficial':
-        note.reason = `${
-          skinAnalysis.skinType === 'dry'
-            ? '건성'
-            : skinAnalysis.skinType === 'oily'
-              ? '지성'
-              : skinAnalysis.skinType === 'sensitive'
-                ? '민감성'
-                : skinAnalysis.skinType === 'combination'
-                  ? '복합성'
-                  : '중성'
-        } 피부에 좋은 성분`;
+        note.reason = `${getSkinTypeLabel(skinAnalysis.skinType)} 피부에 좋은 성분`;
         beneficial.push(note);
         break;
       case 'caution':
@@ -232,6 +223,7 @@ function calculateSkinCompatibility(
 /**
  * 색조 제품 컬러 매칭 (메이크업 제품용)
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function calculateColorMatch(
   productCategory: string,
   productColor: string | undefined,
@@ -333,7 +325,13 @@ export async function analyzeCompatibility(
   // 종합 점수 계산
   const interactionPenalty = calculateInteractionPenalty(interactions);
   const baseScore = skinCompat.score;
-  const colorBonus = colorMatch?.isRecommended ? 5 : colorMatch ? -5 : 0;
+  // 컬러 매칭 보너스: 추천 색상 +5, 비추천 색상 -5, 매칭 데이터 없으면 0
+  let colorBonus = 0;
+  if (colorMatch?.isRecommended) {
+    colorBonus = 5;
+  } else if (colorMatch) {
+    colorBonus = -5;
+  }
   const overallScore = Math.max(0, Math.min(100, baseScore - interactionPenalty + colorBonus));
 
   return {

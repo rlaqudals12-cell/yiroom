@@ -143,6 +143,7 @@ function isSeasonCompatible(item: WardrobeItem, season: PersonalColorSeason): bo
 /**
  * 옷장에서 코디 조합 생성
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- outfit combination logic
 export function generateOutfitCombinations(
   wardrobe: WardrobeItem[],
   options?: {

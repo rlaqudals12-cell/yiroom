@@ -4,6 +4,7 @@
  */
 
 import type { ProblemArea } from '@/types/skin-problem-area';
+import { classifyByRange, selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 개발/테스트용 Mock 데이터
 export const MOCK_PROBLEM_AREAS: ProblemArea[] = [
@@ -67,8 +68,11 @@ export function generateMockProblemAreas(
   metrics.forEach((metric, index) => {
     if (metric.score < 60) {
       // 심각도 결정: 30점 미만=심함, 45점 미만=보통, 그 외=가벼움
-      const severity: ProblemArea['severity'] =
-        metric.score < 30 ? 'severe' : metric.score < 45 ? 'moderate' : 'mild';
+      const severity = classifyByRange<ProblemArea['severity']>(metric.score, [
+        { max: 30, result: 'severe' },
+        { max: 45, result: 'moderate' },
+        { result: 'mild' },
+      ])!;
 
       // 분석 지표명 → 문제 유형 매핑 (hydration은 역으로 dryness)
       const typeMap: Record<string, ProblemArea['type']> = {
@@ -97,7 +101,7 @@ export function generateMockProblemAreas(
         location: {
           x: baseX + Math.random() * 10,
           y: baseY + Math.random() * 10,
-          radius: severity === 'severe' ? 14 : severity === 'moderate' ? 11 : 8,
+          radius: selectByKey(severity, { severe: 14, moderate: 11 }, 8)!,
         },
         description: getDescriptionForType(type, severity),
         recommendations: getRecommendationsForType(type),
@@ -117,8 +121,10 @@ function getDescriptionForType(
   type: ProblemArea['type'],
   severity: ProblemArea['severity']
 ): string {
-  const severityText =
-    severity === 'severe' ? '심한' : severity === 'moderate' ? '보통의' : '가벼운';
+  const severityText = selectByKey(severity, {
+    severe: '심한',
+    moderate: '보통의',
+  }, '가벼운')!;
 
   const descriptions: Record<ProblemArea['type'], string> = {
     pores: `${severityText} 모공 확장이 관찰돼요. 피지 관리가 필요해 보여요.`,

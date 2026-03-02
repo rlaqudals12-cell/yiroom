@@ -47,7 +47,7 @@ describe('WorkoutLayout', () => {
       </WorkoutLayout>
     );
     const main = screen.getByRole('main');
-    expect(main).toHaveClass('bg-[#FAFAFA]');
+    expect(main).toHaveClass('bg-muted');
   });
 
   it('content area has max-width 480px', () => {

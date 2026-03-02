@@ -361,6 +361,7 @@ function determinePostureLevel(score: number): PostureLevel {
  * @param componentScores - 항목별 점수
  * @returns 권장사항 배열
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function generateRecommendations(
   metrics: PostureMetrics,
   componentScores: PostureScoreResult['componentScores']

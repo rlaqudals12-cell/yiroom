@@ -11,6 +11,18 @@ interface RestTimerProps {
   onAdjust?: (delta: number) => void;
 }
 
+// 사운드 재생 헬퍼 (실패 시 무시)
+function playSound(src: string, volume: number): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const audio = new Audio(src);
+    audio.volume = volume;
+    audio.play().catch(() => {});
+  } catch {
+    // 사운드 재생 실패 무시
+  }
+}
+
 /**
  * 휴식 타이머 컴포넌트
  * - 세트 완료 후 자동 시작
@@ -47,16 +59,10 @@ export function RestTimer({
         if (prev <= 1) {
           setIsActive(false);
           // 완료 사운드
-          if (soundEnabled && typeof window !== 'undefined') {
-            try {
-              const audio = new Audio('/sounds/timer-complete.mp3');
-              audio.volume = 0.5;
-              audio.play().catch(() => {});
-            } catch {
-              // 사운드 재생 실패 무시
-            }
+          if (soundEnabled) {
+            playSound('/sounds/timer-complete.mp3', 0.5);
             // 진동 (모바일)
-            if (navigator.vibrate) {
+            if (typeof window !== 'undefined' && navigator.vibrate) {
               navigator.vibrate([200, 100, 200]);
             }
           }
@@ -64,14 +70,8 @@ export function RestTimer({
           return 0;
         }
         // 10초 전 알림
-        if (prev === 11 && soundEnabled && typeof window !== 'undefined') {
-          try {
-            const audio = new Audio('/sounds/timer-warning.mp3');
-            audio.volume = 0.3;
-            audio.play().catch(() => {});
-          } catch {
-            // 사운드 재생 실패 무시
-          }
+        if (prev === 11 && soundEnabled) {
+          playSound('/sounds/timer-warning.mp3', 0.3);
         }
         return prev - 1;
       });

@@ -617,8 +617,9 @@ export function generateMockDetailedZoneAnalysis(): DetailedZoneMap {
     if (Math.random() < 0.2) {
       const changeTypes: Array<'improved' | 'same' | 'declined'> = ['improved', 'same', 'declined'];
       const change = changeTypes[Math.floor(Math.random() * 3)];
-      const scoreDiff =
-        change === 'same' ? 0 : change === 'improved' ? randomValue(3, 10) : -randomValue(3, 10);
+      let scoreDiff = 0;
+      if (change === 'improved') scoreDiff = randomValue(3, 10);
+      else if (change === 'declined') scoreDiff = -randomValue(3, 10);
 
       zone.comparedToPrevious = { change, scoreDiff };
     }
@@ -633,6 +634,7 @@ export function generateMockDetailedZoneAnalysis(): DetailedZoneMap {
  * 특정 피부 타입에 맞는 12존 Mock 분석 데이터 생성
  * @param skinTypeId 피부 타입
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- mock data generator
 export function generateMockDetailedZoneAnalysisBySkinType(
   skinTypeId: SkinTypeId
 ): DetailedZoneMap {

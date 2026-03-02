@@ -22,6 +22,7 @@ vi.mock('@/lib/supabase/clerk-client', () => ({
   useClerkSupabaseClient: () => ({
     from: () => ({
       select: () => ({
+        // eslint-disable-next-line sonarjs/no-nested-functions
         order: () => ({
           limit: () => ({
             single: () => Promise.resolve({ data: null, error: null }),

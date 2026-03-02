@@ -12,6 +12,7 @@ vi.mock('@/lib/supabase/server', () => ({
       if (table === 'workout_plans') {
         return {
           select: vi.fn(() => ({
+            // eslint-disable-next-line sonarjs/no-nested-functions
             eq: vi.fn(() => ({
               eq: vi.fn(() => ({
                 limit: vi.fn(() => ({
@@ -35,6 +36,7 @@ vi.mock('@/lib/supabase/server', () => ({
       if (table === 'workout_logs') {
         return {
           select: vi.fn(() => ({
+            // eslint-disable-next-line sonarjs/no-nested-functions
             eq: vi.fn(() => ({
               order: vi.fn(() => ({
                 limit: vi.fn().mockResolvedValue({
@@ -59,6 +61,7 @@ vi.mock('@/lib/supabase/server', () => ({
       }
       return {
         select: vi.fn(() => ({
+          // eslint-disable-next-line sonarjs/no-nested-functions
           eq: vi.fn(() => ({
             limit: vi.fn().mockResolvedValue({ data: [], error: null }),
           })),

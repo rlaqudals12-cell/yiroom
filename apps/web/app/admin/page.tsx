@@ -1,6 +1,7 @@
 import { getDashboardStats, getRecentActivities } from '@/lib/admin';
 import { StatCard } from './_components/StatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { mapToClass } from '@/lib/utils/conditional-helpers';
 
 export default async function AdminDashboardPage() {
   const stats = await getDashboardStats();
@@ -146,13 +147,7 @@ export default async function AdminDashboardPage() {
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-2 h-2 rounded-full ${
-                        activity.type === 'workout'
-                          ? 'bg-indigo-500'
-                          : activity.type === 'meal'
-                            ? 'bg-green-500'
-                            : 'bg-pink-500'
-                      }`}
+                      className={`w-2 h-2 rounded-full ${mapToClass(activity.type, { workout: 'bg-indigo-500', meal: 'bg-green-500' }, 'bg-pink-500')}`}
                     />
                     <span className="text-sm text-gray-700">
                       {activity.description}

@@ -11,6 +11,7 @@
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { POST_CREATION_COLUMNS, REQUIRED_TABLES } from '@/lib/db/expected-schema';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
 
 interface MissingColumn {
   table: string;
@@ -27,6 +28,7 @@ interface SchemaCheckResult {
   message: string;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function GET(): Promise<NextResponse<SchemaCheckResult>> {
   try {
     const supabase = createServiceRoleClient();
@@ -90,8 +92,9 @@ export async function GET(): Promise<NextResponse<SchemaCheckResult>> {
 
     // 3. 결과 조합
     const hasMissing = missingTables.length > 0 || missingColumns.length > 0;
-    const status =
-      missingTables.length > 0 ? 'error' : missingColumns.length > 0 ? 'warning' : 'ok';
+    const status = missingTables.length > 0
+      ? 'error'
+      : selectByCondition(missingColumns.length > 0, 'warning', 'ok');
 
     const messageParts: string[] = [];
     if (missingTables.length > 0) {

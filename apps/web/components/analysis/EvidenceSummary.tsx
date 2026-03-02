@@ -2,6 +2,7 @@
 
 import { Info, Eye, Droplet, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { mapToClass, selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 퍼스널 컬러 분석 근거 요약
 export interface PersonalColorEvidenceSummaryProps {
@@ -159,11 +160,11 @@ export function SkinEvidenceSummary({
           <div
             className={cn(
               'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium',
-              tZoneOiliness === 'oily' || tZoneOiliness === 'very_oily'
+              (tZoneOiliness === 'oily' || tZoneOiliness === 'very_oily')
                 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
-                : tZoneOiliness === 'dry'
-                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                  : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                : selectByKey(tZoneOiliness, {
+                    dry: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+                  }, 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300')
             )}
           >
             <Droplet className="w-3 h-3" />
@@ -239,12 +240,10 @@ export function BodyEvidenceSummary({
   }
 
   // 체형별 테마 색상
-  const themeColor =
-    bodyType === 'S'
-      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-      : bodyType === 'W'
-        ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300'
-        : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300';
+  const themeColor = mapToClass(bodyType, {
+    S: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+    W: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
+  }, 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300');
 
   return (
     <div className={cn('p-3 rounded-lg bg-muted/50 border border-border/50', className)}>

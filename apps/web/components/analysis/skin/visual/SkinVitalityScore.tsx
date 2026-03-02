@@ -138,15 +138,17 @@ export function SkinVitalityScore({
       {/* 점수 변화량 */}
       {scoreChange !== null && (
         <div className={cn('mt-2', sizeConfig.subtext)}>
-          {scoreChange > 0 ? (
+          {scoreChange > 0 && (
             <span className="text-emerald-600">
               +{scoreChange}점 상승
             </span>
-          ) : scoreChange < 0 ? (
+          )}
+          {scoreChange < 0 && (
             <span className="text-red-600">
               {scoreChange}점 하락
             </span>
-          ) : (
+          )}
+          {scoreChange === 0 && (
             <span className="text-gray-500">변화 없음</span>
           )}
         </div>

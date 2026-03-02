@@ -84,6 +84,7 @@ function generateAnonymizedData(userId: string): Record<string, unknown> {
 /**
  * 사용자 데이터 익명화 (Soft Delete)
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- multi-table anonymization
 async function softDeleteUser(
   supabase: ReturnType<typeof createServiceRoleClient>,
   user: {

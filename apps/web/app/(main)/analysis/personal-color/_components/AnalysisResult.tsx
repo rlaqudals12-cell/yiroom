@@ -31,6 +31,7 @@ import {
 } from '@/components/analysis/EvidenceSummary';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getGenderAdaptiveTerm } from '@/lib/content/gender-adaptive';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // 분석 근거 타입 (AnalysisEvidenceReport와 호환)
 interface AnalysisEvidence {
@@ -562,18 +563,16 @@ export default function AnalysisResult({
                         <p className="font-medium text-foreground">{foundation.shadeName}</p>
                         <span
                           className={`text-xs px-1.5 py-0.5 rounded ${
-                            foundation.undertone === 'warm'
-                              ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                              : foundation.undertone === 'cool'
-                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                            selectByKey(foundation.undertone, {
+                              warm: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+                              cool: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                            }, 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400')
                           }`}
                         >
-                          {foundation.undertone === 'warm'
-                            ? '웜'
-                            : foundation.undertone === 'cool'
-                              ? '쿨'
-                              : '뉴트럴'}
+                          {selectByKey(foundation.undertone, {
+                            warm: '웜',
+                            cool: '쿨',
+                          }, '뉴트럴')}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">

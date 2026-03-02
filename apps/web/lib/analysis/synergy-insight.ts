@@ -9,6 +9,7 @@ import type {
   PigmentAnalysisSummary,
   DrapingResultsSummary,
 } from '@/types/visual-analysis';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 임계값 설정
@@ -197,8 +198,9 @@ export function applyInsightToDraping(
   const adjustedBestColors = filterColorsByAdjustment(best_colors, colorAdjustment);
 
   // 피해야 할 컬러 (조정 방향의 반대)
-  const oppositeAdjustment: ColorAdjustment =
-    colorAdjustment === 'muted' ? 'bright' : colorAdjustment === 'bright' ? 'muted' : 'neutral';
+  const oppositeAdjustment: ColorAdjustment = selectByKey(
+    colorAdjustment, { muted: 'bright' as const, bright: 'muted' as const }, 'neutral' as const
+  )!;
 
   const avoidColors =
     colorAdjustment !== 'neutral' ? filterColorsByAdjustment(best_colors, oppositeAdjustment) : [];

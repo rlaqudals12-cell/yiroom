@@ -27,6 +27,7 @@ import type {
   BeautyNutritionCorrelation,
   NutrientBeautyImpact,
 } from '@/types/report';
+import { assessImpact } from '@/lib/utils/conditional-helpers';
 
 // =====================================================
 // 상수 정의
@@ -662,7 +663,7 @@ function analyzeNutrientImpacts(
         intake,
         recommended: rec.daily,
         percentage,
-        impact: percentage >= 80 ? 'positive' : percentage >= 50 ? 'neutral' : 'negative',
+        impact: assessImpact(percentage, { positiveMin: 80, negativeMax: 49 }),
       });
     }
   }
@@ -688,7 +689,7 @@ function analyzeNutrientImpacts(
         intake,
         recommended: rec.daily,
         percentage,
-        impact: percentage >= 80 ? 'positive' : percentage >= 50 ? 'neutral' : 'negative',
+        impact: assessImpact(percentage, { positiveMin: 80, negativeMax: 49 }),
       });
     }
   }

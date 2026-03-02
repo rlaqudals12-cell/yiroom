@@ -146,7 +146,7 @@ export function getElementRole(element: HTMLElement): string {
     h6: 'heading',
     header: 'banner',
     img: 'img',
-    input: type === 'checkbox' ? 'checkbox' : type === 'radio' ? 'radio' : 'textbox',
+    input: ({ checkbox: 'checkbox', radio: 'radio' } as Record<string, string>)[type ?? ''] ?? 'textbox',
     li: 'listitem',
     main: 'main',
     nav: 'navigation',
@@ -166,6 +166,7 @@ export function getElementRole(element: HTMLElement): string {
 /**
  * ARIA 속성 검증
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function validateAriaAttributes(element: HTMLElement): AriaValidationResult {
   const issues: AriaIssue[] = [];
   const role = getElementRole(element);

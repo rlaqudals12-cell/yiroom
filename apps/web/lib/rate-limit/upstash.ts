@@ -71,13 +71,10 @@ export async function testRedisConnection(): Promise<boolean> {
   }
 }
 
- 
-type RateLimiterType = any;
-
 // 분당 리미터 캐시
-const minuteLimiters = new Map<string, RateLimiterType>();
+const minuteLimiters = new Map<string, any>();
 // 일일 리미터 캐시
-const dailyLimiters = new Map<string, RateLimiterType>();
+const dailyLimiters = new Map<string, any>();
 
 /**
  * 분당 Rate Limiter 생성/가져오기
@@ -85,7 +82,7 @@ const dailyLimiters = new Map<string, RateLimiterType>();
  * @param prefix 키 접두사 (카테고리별 구분)
  * @param limit 분당 최대 요청 수
  */
-export function getMinuteLimiter(prefix: string, limit: number): RateLimiterType | null {
+export function getMinuteLimiter(prefix: string, limit: number): any | null {
   if (!UPSTASH_ENABLED || !RatelimitClass) {
     return null;
   }
@@ -117,7 +114,7 @@ export function getMinuteLimiter(prefix: string, limit: number): RateLimiterType
  * @param prefix 키 접두사 (카테고리별 구분)
  * @param limit 일일 최대 요청 수
  */
-export function getDailyLimiter(prefix: string, limit: number): RateLimiterType | null {
+export function getDailyLimiter(prefix: string, limit: number): any | null {
   if (!UPSTASH_ENABLED || !RatelimitClass) {
     return null;
   }

@@ -2,6 +2,7 @@
 
 import { Lightbulb, Scale, TrendingUp, Flame, Users, Sparkles, Star } from 'lucide-react';
 import { GeminiWorkoutInsightResult } from '@/lib/gemini';
+import { mapToClass } from '@/lib/utils/conditional-helpers';
 
 interface WorkoutInsightCardProps {
   insights: GeminiWorkoutInsightResult;
@@ -125,11 +126,11 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
                         {insight.data.trend && (
                           <span
                             className={`flex items-center gap-1 ${
-                              insight.data.trend === 'up'
-                                ? 'text-green-600'
-                                : insight.data.trend === 'down'
-                                  ? 'text-red-600'
-                                  : 'text-muted-foreground'
+                              mapToClass(insight.data.trend, {
+                                up: 'text-green-600',
+                                down: 'text-red-600',
+                                stable: 'text-muted-foreground',
+                              }, 'text-muted-foreground')
                             }`}
                           >
                             {insight.data.trend === 'up' && '↑'}

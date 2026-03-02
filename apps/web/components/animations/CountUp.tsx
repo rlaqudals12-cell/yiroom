@@ -95,12 +95,13 @@ export function CountUp({
     };
   }, [trigger, start, end, duration]);
 
-  // 숫자 포맷팅
+  // 숫자 포맷팅 (Intl.NumberFormat으로 ReDoS 위험 정규식 대체)
   const formattedValue = (() => {
     const fixed = value.toFixed(decimals);
     if (separator) {
       const parts = fixed.split('.');
-      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+      const integerPart = Number(parts[0]);
+      parts[0] = new Intl.NumberFormat('en-US').format(integerPart).replace(/,/g, separator);
       return parts.join('.');
     }
     return fixed;

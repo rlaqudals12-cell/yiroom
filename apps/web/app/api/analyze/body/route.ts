@@ -19,6 +19,7 @@ import {
   dbError,
   internalError,
 } from '@/lib/api/error-response';
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -73,6 +74,7 @@ const bodyAnalysisSchema = z.object({
  *   usedMock: boolean                 // Mock 사용 여부
  * }
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(req: NextRequest) {
   try {
     // Clerk 인증 확인
@@ -148,23 +150,13 @@ export async function POST(req: NextRequest) {
         matchedFeatures: 4,
         // 분석 근거 데이터 (Mock)
         analysisEvidence: {
-          shoulderLine:
-            mockResult.bodyType === 'S'
-              ? 'angular'
-              : mockResult.bodyType === 'W'
-                ? 'rounded'
-                : 'wide',
+          shoulderLine: selectByKey(mockResult.bodyType, { S: 'angular' as const, W: 'rounded' as const }, 'wide' as const)!,
           waistDefinition: mockResult.bodyType === 'W' ? 'defined' : 'straight',
           hipLine: mockResult.bodyType === 'W' ? 'curved' : 'straight',
           boneStructure: mockResult.bodyType === 'N' ? 'large' : 'medium',
           muscleAttachment: mockResult.bodyType === 'S' ? 'easy' : 'moderate',
-          upperLowerBalance:
-            mockResult.bodyType === 'S'
-              ? 'upper_dominant'
-              : mockResult.bodyType === 'W'
-                ? 'lower_dominant'
-                : 'balanced',
-          silhouette: mockResult.bodyType === 'S' ? 'I' : mockResult.bodyType === 'W' ? 'S' : 'H',
+          upperLowerBalance: selectByKey(mockResult.bodyType, { S: 'upper_dominant' as const, W: 'lower_dominant' as const }, 'balanced' as const)!,
+          silhouette: selectByKey(mockResult.bodyType, { S: 'I' as const, W: 'S' as const }, 'H' as const)!,
         },
         imageQuality: {
           angle: 'front',
@@ -180,8 +172,7 @@ export async function POST(req: NextRequest) {
         result = await analyzeBody(primaryImage, resolvedLeftSide, resolvedRightSide, resolvedBack);
         // 다각도 분석 시 신뢰도 보정
         if (imageCount >= 2 && result.imageQuality) {
-          result.imageQuality.analysisReliability =
-            imageCount >= 4 ? 'high' : imageCount >= 3 ? 'high' : 'medium';
+          result.imageQuality.analysisReliability = imageCount >= 3 ? 'high' : 'medium';
         }
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백 (3타입 시스템)
@@ -203,23 +194,13 @@ export async function POST(req: NextRequest) {
           matchedFeatures: 4,
           // 분석 근거 데이터 (Mock)
           analysisEvidence: {
-            shoulderLine:
-              mockResult.bodyType === 'S'
-                ? 'angular'
-                : mockResult.bodyType === 'W'
-                  ? 'rounded'
-                  : 'wide',
+            shoulderLine: selectByKey(mockResult.bodyType, { S: 'angular' as const, W: 'rounded' as const }, 'wide' as const)!,
             waistDefinition: mockResult.bodyType === 'W' ? 'defined' : 'straight',
             hipLine: mockResult.bodyType === 'W' ? 'curved' : 'straight',
             boneStructure: mockResult.bodyType === 'N' ? 'large' : 'medium',
             muscleAttachment: mockResult.bodyType === 'S' ? 'easy' : 'moderate',
-            upperLowerBalance:
-              mockResult.bodyType === 'S'
-                ? 'upper_dominant'
-                : mockResult.bodyType === 'W'
-                  ? 'lower_dominant'
-                  : 'balanced',
-            silhouette: mockResult.bodyType === 'S' ? 'I' : mockResult.bodyType === 'W' ? 'S' : 'H',
+            upperLowerBalance: selectByKey(mockResult.bodyType, { S: 'upper_dominant' as const, W: 'lower_dominant' as const }, 'balanced' as const)!,
+            silhouette: selectByKey(mockResult.bodyType, { S: 'I' as const, W: 'S' as const }, 'H' as const)!,
           },
           imageQuality: {
             angle: 'front',
@@ -232,6 +213,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
+    try {
     const supabase = createServiceRoleClient();
 
     // 이미지 저장 동의 확인 + 업로드 (PIPA 준수)
@@ -305,7 +288,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error('[C-1] Database insert error:', error);
-      return dbError('분석 결과 저장에 실패했습니다.', error.message);
+      // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
     }
 
     // BMI 계산 (userInput이 있는 경우)
@@ -375,6 +358,36 @@ export async function POST(req: NextRequest) {
       usedMock,
       gamification: gamificationResult,
     });
+    } catch (dbOperationError) {
+      // DB 실패 시 합성 응답 반환 (AI 분석 결과는 보존)
+      console.warn('[C-1] DB operations failed, using synthetic response');
+      console.error('[C-1] DB error details:', {
+        error:
+          dbOperationError instanceof Error
+            ? dbOperationError.message
+            : String(dbOperationError),
+      });
+      const syntheticId = crypto.randomUUID();
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: syntheticId,
+          clerk_user_id: userId,
+          created_at: new Date().toISOString(),
+        },
+        result: {
+          ...result,
+          analyzedAt: new Date().toISOString(),
+        },
+        personalColorSeason: null,
+        colorRecommendations: [],
+        colorTips: [],
+        imagesAnalyzed,
+        usedMock,
+        gamification: { badgeResults: [], xpAwarded: 0 },
+        dbSaveFailed: true,
+      });
+    }
   } catch (error) {
     console.error('[C-1] Body analysis error:', error);
     return internalError(

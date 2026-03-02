@@ -79,6 +79,7 @@ export function RecommendedProducts({
   useEffect(() => {
     let cancelled = false;
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- component render
     async function fetchProducts() {
       setIsLoading(true);
       setError(null);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@clerk/nextjs';
 import { ArrowLeft, Heart, MessageCircle, Share2, Bookmark, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -351,11 +352,12 @@ export default function PostDetailPage() {
                     post.media_urls.length === 1 ? 'aspect-video' : 'aspect-square'
                   )}
                 >
-                  <img
+                  <Image
                     src={url}
                     alt={`이미지 ${i + 1}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
+                    fill
+                    className="object-cover"
+                    unoptimized
                   />
                 </div>
               ))}

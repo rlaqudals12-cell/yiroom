@@ -17,6 +17,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { FeatureUsageStats } from '@/lib/admin/user-activity-stats';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
 
 interface FeatureUsageCardProps {
   stats: FeatureUsageStats | null;
@@ -46,7 +47,7 @@ function FeatureItem({ label, value, change, icon, color }: FeatureItemProps) {
         {change !== 0 && (
           <span
             className={`flex items-center text-xs ${
-              isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-muted-foreground'
+              selectByCondition(isPositive, 'text-green-600', selectByCondition(isNegative, 'text-red-600', 'text-muted-foreground'))
             }`}
           >
             {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}

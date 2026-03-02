@@ -3,6 +3,8 @@
  * AI 분석 실패 시 Fallback으로 사용
  */
 
+import { selectByKey } from '@/lib/utils/conditional-helpers';
+
 export type UndertoneId = 'warm' | 'cool' | 'neutral';
 export type EyeShapeId = 'monolid' | 'double' | 'hooded' | 'round' | 'almond' | 'downturned';
 export type LipShapeId = 'full' | 'thin' | 'wide' | 'small' | 'heart' | 'asymmetric';
@@ -390,13 +392,8 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
     diamond: ['chic', 'edgy', 'glam'],
   };
 
-  const insight = `${undertoneLabels[randomUndertone]}에 ${faceShapeLabels[randomFaceShape]} 얼굴형이시네요. ${eyeShapeLabels[randomEyeShape]}과 ${lipShapeLabels[randomLipShape]}의 특성을 살려 ${
-    randomUndertone === 'warm'
-      ? '따뜻한 코랄, 브라운 계열'
-      : randomUndertone === 'cool'
-        ? '로즈, 핑크 계열'
-        : '다양한 컬러'
-  }의 메이크업을 추천드려요.`;
+  const colorSuggestion = selectByKey(randomUndertone, { warm: '따뜻한 코랄, 브라운 계열', cool: '로즈, 핑크 계열' }, '다양한 컬러')!;
+  const insight = `${undertoneLabels[randomUndertone]}에 ${faceShapeLabels[randomFaceShape]} 얼굴형이시네요. ${eyeShapeLabels[randomEyeShape]}과 ${lipShapeLabels[randomLipShape]}의 특성을 살려 ${colorSuggestion}의 메이크업을 추천드려요.`;
 
   // 메이크업 팁
   const makeupTips = [
@@ -416,36 +413,24 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
     },
     {
       category: '아이 메이크업',
-      tips:
-        randomEyeShape === 'monolid'
-          ? ['눈 앞머리에서 눈꼬리 방향으로 그라데이션하세요', '펄 섀도로 중앙을 포인트 주세요']
-          : randomEyeShape === 'hooded'
-            ? [
-                '눈을 떴을 때 보이는 부분까지 섀도를 발라주세요',
-                '아이라인은 눈꼬리를 살짝 올려서 그리세요',
-              ]
-            : ['눈의 자연스러운 곡선을 따라 그리세요', '눈꼬리 쪽에 음영을 넣어 깊이감을 주세요'],
+      tips: selectByKey(randomEyeShape, {
+        monolid: ['눈 앞머리에서 눈꼬리 방향으로 그라데이션하세요', '펄 섀도로 중앙을 포인트 주세요'],
+        hooded: ['눈을 떴을 때 보이는 부분까지 섀도를 발라주세요', '아이라인은 눈꼬리를 살짝 올려서 그리세요'],
+      }, ['눈의 자연스러운 곡선을 따라 그리세요', '눈꼬리 쪽에 음영을 넣어 깊이감을 주세요'])!,
     },
     {
       category: '립 메이크업',
-      tips:
-        randomLipShape === 'thin'
-          ? ['립 라인 바깥으로 살짝 오버립을 해주세요', '글로시한 텍스처로 볼륨감을 더해주세요']
-          : randomLipShape === 'full'
-            ? ['매트 텍스처로 깔끔하게 발라주세요', '입술 라인을 정교하게 그려주세요']
-            : [
-                '입술 중앙에 밝은 컬러로 하이라이트 효과를 주세요',
-                '자연스러운 그라데이션 립을 추천해요',
-              ],
+      tips: selectByKey(randomLipShape, {
+        thin: ['립 라인 바깥으로 살짝 오버립을 해주세요', '글로시한 텍스처로 볼륨감을 더해주세요'],
+        full: ['매트 텍스처로 깔끔하게 발라주세요', '입술 라인을 정교하게 그려주세요'],
+      }, ['입술 중앙에 밝은 컬러로 하이라이트 효과를 주세요', '자연스러운 그라데이션 립을 추천해요'])!,
     },
     {
       category: '컨투어링',
-      tips:
-        randomFaceShape === 'round'
-          ? ['광대 아래와 턱 라인에 쉐딩을 넣어주세요', '코 옆라인도 슬림하게 음영을 넣어주세요']
-          : randomFaceShape === 'square'
-            ? ['턱 양 옆에 부드럽게 쉐딩하세요', '이마 양 끝도 살짝 음영을 넣어주세요']
-            : ['T존과 광대 위에 하이라이트를 주세요', '자연스럽게 음영을 넣어 입체감을 살리세요'],
+      tips: selectByKey(randomFaceShape, {
+        round: ['광대 아래와 턱 라인에 쉐딩을 넣어주세요', '코 옆라인도 슬림하게 음영을 넣어주세요'],
+        square: ['턱 양 옆에 부드럽게 쉐딩하세요', '이마 양 끝도 살짝 음영을 넣어주세요'],
+      }, ['T존과 광대 위에 하이라이트를 주세요', '자연스럽게 음영을 넣어 입체감을 살리세요'])!,
     },
   ];
 

@@ -120,6 +120,7 @@ export function determineUndertone(lab: LabColor): UndertoneResult {
  * @param undertoneResult - 언더톤 판정 결과
  * @returns 계절 타입
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function determineSeason(lab: LabColor, undertoneResult: UndertoneResult): Season {
   // 웜톤/쿨톤별 밝기 경계값 (한국인 피부톤 기준)
   const SPRING_AUTUMN_BOUNDARY_L = 60;
@@ -155,6 +156,7 @@ export function determineSeason(lab: LabColor, undertoneResult: UndertoneResult)
  * @param season - 계절 타입
  * @returns 서브타입
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function determineSubtype(lab: LabColor, season: Season): Subtype {
   const chroma = calculateChroma(lab);
   const { lightL, deepL, brightChroma, mutedChroma } = SUBTYPE_THRESHOLDS;

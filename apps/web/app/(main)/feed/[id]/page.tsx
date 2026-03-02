@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@clerk/nextjs';
 import {
   ArrowLeft,
@@ -300,10 +301,13 @@ export default function PostDetailPage() {
           {/* 사용자 정보 */}
           <div className="flex items-center gap-3 mb-3">
             {post.author.avatar_url ? (
-              <img
+              <Image
                 src={post.author.avatar_url}
                 alt={post.author.name}
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full object-cover"
+                unoptimized
               />
             ) : (
               <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-medium text-lg">
@@ -345,7 +349,7 @@ export default function PostDetailPage() {
             <div className="mb-4 grid gap-2 grid-cols-2">
               {post.media_urls.map((url, i) => (
                 <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <Image src={url} alt="" fill className="object-cover" unoptimized />
                 </div>
               ))}
             </div>
@@ -400,10 +404,13 @@ export default function PostDetailPage() {
                   {/* 댓글 */}
                   <div className="flex gap-3">
                     {comment.author.avatar_url ? (
-                      <img
+                      <Image
                         src={comment.author.avatar_url}
                         alt={comment.author.name}
+                        width={32}
+                        height={32}
                         className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                        unoptimized
                       />
                     ) : (
                       <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
@@ -441,10 +448,13 @@ export default function PostDetailPage() {
                       {comment.replies.map((reply) => (
                         <div key={reply.id} className="flex gap-3">
                           {reply.author.avatar_url ? (
-                            <img
+                            <Image
                               src={reply.author.avatar_url}
                               alt={reply.author.name}
+                              width={24}
+                              height={24}
                               className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                              unoptimized
                             />
                           ) : (
                             <div className="w-6 h-6 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">

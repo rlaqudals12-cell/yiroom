@@ -419,6 +419,7 @@ export function calculateRecoveryTime(
  * 점진적 과부하 제안
  * 원리 문서: exercise-physiology.md 3.2
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function suggestProgressiveOverload(
   history: WorkoutHistory,
   options: {

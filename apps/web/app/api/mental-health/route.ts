@@ -40,6 +40,7 @@ function isValidEnergyLevel(level: number): level is EnergyLevel {
  * - ?period=week|month: 트렌드 통계 조회
  * - 없으면: 오늘 체크인 + 요약 조회
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function GET(req: Request) {
   try {
     const { userId } = await auth();
@@ -218,6 +219,7 @@ export async function GET(req: Request) {
  * - energyLevel?: number (1-5)
  * - notes?: string
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();

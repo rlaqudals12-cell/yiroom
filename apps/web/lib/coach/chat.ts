@@ -581,6 +581,7 @@ function cleanResponse(text: string): string {
 /**
  * 추천 질문 생성
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function generateSuggestedQuestions(
   currentQuestion: string,
   userContext: UserContext | null

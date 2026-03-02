@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { mapToClass } from '@/lib/utils/conditional-helpers';
 import type { BodyType3 } from '@/lib/mock/body-analysis';
 import { BODY_TYPES_3 } from '@/lib/mock/body-analysis';
 
@@ -124,11 +125,7 @@ export default function BodyStylingTab({
                       <div
                         className={cn(
                           'h-full rounded-full transition-all duration-500',
-                          bodyType === 'S'
-                            ? 'bg-blue-500'
-                            : bodyType === 'W'
-                              ? 'bg-pink-500'
-                              : 'bg-green-500'
+                          mapToClass(bodyType, { S: 'bg-blue-500', W: 'bg-pink-500' }, 'bg-green-500')
                         )}
                         style={{ width: `${m.value}%` }}
                       />
