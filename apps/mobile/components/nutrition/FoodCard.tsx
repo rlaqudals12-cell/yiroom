@@ -6,7 +6,7 @@
 import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, nutrientColors } from '../../lib/theme';
+import { useTheme, nutrientColors, spacing, radii } from '../../lib/theme';
 
 export interface FoodCardProps {
   /** 음식 ID */
@@ -216,11 +216,11 @@ const styles = StyleSheet.create({
   },
   macroRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   pill: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.md,
   },
 });

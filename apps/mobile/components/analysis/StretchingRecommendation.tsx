@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 
@@ -103,9 +103,9 @@ export function StretchingRecommendation({
 const styles = StyleSheet.create({
   guidance: {},
   card: { borderWidth: 1, padding: 14 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
   name: { fontWeight: '600', flex: 1 },
-  diffBadge: { paddingHorizontal: 8, paddingVertical: 3 },
-  targetBadge: { paddingHorizontal: 8, paddingVertical: 3 },
-  metaRow: { flexDirection: 'row', gap: 16 },
+  diffBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
+  targetBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
+  metaRow: { flexDirection: 'row', gap: spacing.md },
 });

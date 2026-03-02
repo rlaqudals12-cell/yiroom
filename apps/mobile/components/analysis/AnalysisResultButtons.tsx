@@ -6,7 +6,7 @@
  */
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 export interface AnalysisResultButtonsProps {
   /** 주 버튼 텍스트 */
@@ -62,32 +62,32 @@ export function AnalysisResultButtons({
 const styles = StyleSheet.create({
   buttons: {
     marginTop: spacing.sm,
-    gap: 12,
+    gap: spacing.smx,
   },
   primaryButton: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },
   primaryButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   secondaryButton: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    fontSize: 16,
+    fontSize: typography.size.base,
   },
   retryLink: {
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
   retryLinkText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     textDecorationLine: 'underline',
   },
 });

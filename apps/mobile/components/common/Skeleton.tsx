@@ -236,17 +236,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardHeaderText: {
-    marginLeft: 12,
+    marginLeft: spacing.smx,
     flex: 1,
   },
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
+    padding: spacing.smx,
+    borderRadius: radii.smx,
   },
   listItemContent: {
-    marginLeft: 12,
+    marginLeft: spacing.smx,
     flex: 1,
   },
   workoutCard: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   workoutStats: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 12,
+    marginTop: spacing.smx,
   },
   nutritionCard: {
     borderRadius: radii.xl,
@@ -280,12 +280,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   productContent: {
-    padding: 12,
+    padding: spacing.smx,
   },
   productPrice: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: spacing.smx,
   },
 });

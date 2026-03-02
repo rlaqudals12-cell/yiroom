@@ -7,7 +7,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Rect, Line, Text as SvgText } from 'react-native-svg';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii, typography } from '../../lib/theme';
 
 export interface TrendDataPoint {
   date: Date;
@@ -192,14 +192,14 @@ export function TrendChart({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   emptyContainer: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    padding: 32,
+    padding: spacing.xl,
     alignItems: 'center',
   },
   emptyText: {
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   title: {
     fontWeight: '700',
@@ -219,9 +219,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   trendIcon: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '700',
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   trendLabel: {
     fontWeight: '500',
@@ -232,8 +232,8 @@ const styles = StyleSheet.create({
   legend: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 8,
-    gap: 4,
+    marginTop: spacing.sm,
+    gap: spacing.xs,
   },
   legendText: {
     fontWeight: '500',

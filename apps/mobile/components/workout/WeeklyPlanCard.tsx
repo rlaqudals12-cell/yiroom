@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface DayPlan {
   day: string;
@@ -87,5 +87,5 @@ const styles = StyleSheet.create({
   container: { borderWidth: 1, padding: 14 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   daysRow: { flexDirection: 'row', gap: 6 },
-  dayItem: { flex: 1, alignItems: 'center', paddingVertical: 8, gap: 2 },
+  dayItem: { flex: 1, alignItems: 'center', paddingVertical: spacing.sm, gap: spacing.xxs },
 });

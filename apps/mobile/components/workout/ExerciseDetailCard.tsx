@@ -10,7 +10,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Dumbbell, Timer, Flame } from 'lucide-react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface ExerciseDetailCardProps {
   name: string;
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   metBadge: {},
   statsRow: {
     flexDirection: 'row',
-    gap: 24,
+    gap: spacing.lg,
   },
   statItem: {
     flexDirection: 'row',

@@ -10,7 +10,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Info } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface InfoTooltipProps {
   text: string;
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconBtn: {
-    padding: 2,
+    padding: spacing.xxs,
   },
   tooltip: {
     position: 'relative',

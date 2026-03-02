@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export type UndertoneType = 'warm' | 'cool' | 'neutral';
 
@@ -213,19 +213,19 @@ export function MakeupResultCard({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1, overflow: 'hidden' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.smx },
   headerText: { flex: 1 },
   toneLabel: { fontWeight: '700' },
-  scoreBadge: { alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6 },
+  scoreBadge: { alignItems: 'center', paddingHorizontal: spacing.smx, paddingVertical: 6 },
   featureRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  featureBadge: { paddingHorizontal: 8, paddingVertical: 3 },
+  featureBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
   insightBox: {},
-  tabs: { flexDirection: 'row', borderBottomWidth: 1, marginTop: 8 },
-  tab: { flex: 1, alignItems: 'center', paddingVertical: 10 },
+  tabs: { flexDirection: 'row', borderBottomWidth: 1, marginTop: spacing.sm },
+  tab: { flex: 1, alignItems: 'center', paddingVertical: spacing.smd },
   colorCategory: {},
-  swatchRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  swatchRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.smd },
   swatchItem: { alignItems: 'center', width: 44 },
-  swatch: { width: 32, height: 32, borderWidth: 1, marginBottom: 4 },
-  styleItem: { paddingVertical: 10, borderBottomWidth: 1 },
+  swatch: { width: 32, height: 32, borderWidth: 1, marginBottom: spacing.xs },
+  styleItem: { paddingVertical: spacing.smd, borderBottomWidth: 1 },
   styleHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 });

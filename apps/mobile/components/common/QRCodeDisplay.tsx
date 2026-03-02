@@ -7,7 +7,7 @@
 
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, Share, Pressable, ActivityIndicator } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface QRCodeDisplayProps {
   /** QR에 인코딩할 데이터 (URL) */
@@ -122,29 +122,29 @@ export function QRCodeDisplay({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    padding: 20,
+    padding: spacing.mlg,
     alignItems: 'center',
   },
   title: {
     fontWeight: '700',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   qrArea: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   qrPlaceholder: {
-    borderRadius: 8,
+    borderRadius: radii.md,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
+    padding: spacing.smx,
   },
   qrPlaceholderText: {
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   qrUrl: {
     textAlign: 'center',
@@ -157,14 +157,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   description: {
-    marginTop: 12,
+    marginTop: spacing.smx,
     textAlign: 'center',
   },
   shareButton: {
-    marginTop: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    marginTop: spacing.md,
+    paddingVertical: spacing.smd,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.md,
   },
   shareText: {
     fontWeight: '600',

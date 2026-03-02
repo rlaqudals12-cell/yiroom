@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface WorkoutStyleCardProps {
   styleName: string;
@@ -53,7 +53,7 @@ export function WorkoutStyleCard({
 
       {recommendedExercises.length > 0 && (
         <View style={{ marginTop: spacing.sm }}>
-          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: 4 }}>추천 운동</Text>
+          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: spacing.xs }}>추천 운동</Text>
           {recommendedExercises.slice(0, 3).map((ex, i) => (
             <Text key={i} style={{ color: colors.foreground, fontSize: typography.size.xs, lineHeight: 18 }}>• {ex}</Text>
           ))}
@@ -64,9 +64,9 @@ export function WorkoutStyleCard({
 }
 
 const styles = StyleSheet.create({
-  container: { borderWidth: 1, padding: 16 },
+  container: { borderWidth: 1, padding: spacing.md },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  matchBadge: { paddingHorizontal: 10, paddingVertical: 4 },
+  matchBadge: { paddingHorizontal: spacing.smd, paddingVertical: spacing.xs },
   charRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  charBadge: { paddingHorizontal: 8, paddingVertical: 3 },
+  charBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
 });

@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   },
   breakdownRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.smx,
     width: '100%',
   },
   breakdownItem: {

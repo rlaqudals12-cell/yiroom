@@ -7,7 +7,7 @@
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
 import { ScanLineOverlay } from '@/components/ui';
-import { useTheme , spacing } from '@/lib/theme';
+import { useTheme, spacing, typography } from '@/lib/theme';
 
 export interface AnalysisLoadingStateProps {
   /** 로딩 메시지 */
@@ -42,11 +42,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: spacing.mlg,
   },
   text: {
     marginTop: spacing.md,
-    fontSize: 16,
+    fontSize: typography.size.base,
     textAlign: 'center',
   },
 });

@@ -22,7 +22,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 
-import { statusColors, gradeColors, typography} from '@/lib/theme';
+import { statusColors, gradeColors, typography, spacing } from '@/lib/theme';
 import { useTheme } from '@/lib/theme';
 
 // 등급 그라데이션 색상 (gradeColors 토큰 기반 — 등급별 시각 아이덴티티)
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.normal,
   },
   gradeLabel: {
-    marginTop: 2,
+    marginTop: spacing.xxs,
     fontWeight: typography.weight.medium,
   },
 });

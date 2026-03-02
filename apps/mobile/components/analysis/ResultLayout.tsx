@@ -323,11 +323,11 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.mlg,
     paddingTop: spacing.md,
     paddingBottom: 28,
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smx,
   },
   title: {
     fontSize: 22,
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     minHeight: 300,
   },
   tabBar: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     marginBottom: spacing.md,
   },
   ctaContainer: {
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   ctaContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smx,
   },
   ctaTextArea: {
     flex: 1,
@@ -382,13 +382,13 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 10,
+    paddingVertical: spacing.smd,
   },
   ctaButtonText: {
     fontWeight: typography.weight.semibold,
   },
   buttonsContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.mlg,
     marginTop: spacing.sm,
   },
 });

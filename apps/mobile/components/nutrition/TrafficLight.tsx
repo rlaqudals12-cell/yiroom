@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export type TrafficLightLevel = 'green' | 'amber' | 'red';
 
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   itemsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   item: {
     flex: 1,
@@ -167,8 +167,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   indicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: spacing.smx,
+    height: spacing.smx,
+    borderRadius: radii.sm,
   },
 });

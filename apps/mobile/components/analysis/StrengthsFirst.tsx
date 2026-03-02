@@ -6,7 +6,7 @@
 
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 import type { AnalysisType, MetricItem } from './VisualReportCard';
 
 export interface StrengthsFirstProps {
@@ -127,25 +127,25 @@ export function StrengthsFirst({
 
 const styles = StyleSheet.create({
   section: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
-    padding: 12,
+    padding: spacing.smx,
   },
   growthSection: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   sectionTitle: {
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   strengthIcon: {
     fontSize: 8,
-    marginRight: 8,
+    marginRight: spacing.sm,
     marginTop: 1,
   },
   itemName: {
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   colorRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: spacing.smx,
   },
   colorItem: {
     alignItems: 'center',
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   colorName: {
     textAlign: 'center',

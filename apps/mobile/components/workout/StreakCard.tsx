@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface StreakCardProps {
   currentStreak: number;
@@ -73,13 +73,13 @@ export function StreakCard({
 }
 
 const styles = StyleSheet.create({
-  container: { borderWidth: 1, padding: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  container: { borderWidth: 1, padding: spacing.md },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.smx },
   longestBadge: { marginLeft: 'auto', alignItems: 'center' },
   weeklyRow: { gap: 6 },
   progressBar: { height: 6 },
   progressFill: { height: 6 },
   dotsRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  dotItem: { alignItems: 'center', gap: 4 },
-  dot: { width: 10, height: 10, borderRadius: 5 },
+  dotItem: { alignItems: 'center', gap: spacing.xs },
+  dot: { width: spacing.smd, height: spacing.smd, borderRadius: 5 },
 });

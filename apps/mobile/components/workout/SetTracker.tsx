@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export type SetStatus = 'completed' | 'skipped' | 'pending' | 'current';
 
@@ -78,7 +78,7 @@ export function SetTracker({
                 },
               ]}
             >
-              <View style={[styles.statusIcon, { backgroundColor: statusColor, borderRadius: 10 }]}>
+              <View style={[styles.statusIcon, { backgroundColor: statusColor, borderRadius: radii.lg }]}>
                 <Text style={{ color: colors.card, fontSize: 10, fontWeight: '700' }}>
                   {STATUS_ICONS[set.status]}
                 </Text>
@@ -129,10 +129,10 @@ export function SetTracker({
 const styles = StyleSheet.create({
   container: { borderWidth: 1, padding: 14 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  progressBar: { height: 4 },
-  progressFill: { height: 4 },
-  setRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1 },
-  statusIcon: { width: 20, height: 20, alignItems: 'center', justifyContent: 'center' },
+  progressBar: { height: spacing.xs },
+  progressFill: { height: spacing.xs },
+  setRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm, borderBottomWidth: 1 },
+  statusIcon: { width: spacing.mlg, height: spacing.mlg, alignItems: 'center', justifyContent: 'center' },
   actionBtns: { flexDirection: 'row', gap: 6 },
-  smallBtn: { paddingHorizontal: 10, paddingVertical: 4 },
+  smallBtn: { paddingHorizontal: spacing.smd, paddingVertical: spacing.xs },
 });

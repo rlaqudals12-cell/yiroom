@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface ChangeTrackerItem {
   label: string;
@@ -114,19 +114,19 @@ export function ChangeTracker({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   title: {
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    paddingBottom: 8,
+    marginBottom: spacing.sm,
+    paddingBottom: spacing.sm,
   },
   labelCol: {
     flex: 2,
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   itemLabel: {
     flex: 2,

@@ -204,11 +204,11 @@ const styles = StyleSheet.create({
   },
   sortContainer: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
     gap: spacing.sm,
   },
   sortButton: {
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.smx,
     paddingVertical: 6,
     borderRadius: radii.xl,
   },
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   loadMoreButton: {
     alignItems: 'center',
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   loadMoreText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
 });

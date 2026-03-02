@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface WorkoutInsight {
   id: string;
@@ -45,7 +45,7 @@ export function WorkoutInsightCard({ insights }: WorkoutInsightCardProps): React
           <View key={insight.id} style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.md, borderColor: colors.border, marginBottom: spacing.sm }]}>
             <View style={styles.cardHeader}>
               <Text style={{ fontSize: typography.size.base }}>{CATEGORY_EMOJI[insight.category]}</Text>
-              <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', flex: 1, marginLeft: 8 }}>
+              <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', flex: 1, marginLeft: spacing.sm }}>
                 {insight.title}
               </Text>
               <View style={[styles.priorityDot, { backgroundColor: priorityColor }]} />
@@ -61,7 +61,7 @@ export function WorkoutInsightCard({ insights }: WorkoutInsightCardProps): React
 }
 
 const styles = StyleSheet.create({
-  card: { borderWidth: 1, padding: 12 },
+  card: { borderWidth: 1, padding: spacing.smx },
   cardHeader: { flexDirection: 'row', alignItems: 'center' },
-  priorityDot: { width: 8, height: 8, borderRadius: 4 },
+  priorityDot: { width: spacing.sm, height: spacing.sm, borderRadius: 4 },
 });

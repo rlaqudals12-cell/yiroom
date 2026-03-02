@@ -10,7 +10,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { useTheme, radii , spacing } from '../../lib/theme';
+import { useTheme, radii, spacing, typography } from '../../lib/theme';
 
 interface DrapingPreviewProps {
   /** 사용자 사진 URI */
@@ -123,8 +123,8 @@ export function DrapingPreview({
 
 const styles = StyleSheet.create({
   seasonInfo: {
-    marginBottom: 10,
-    gap: 2,
+    marginBottom: spacing.smd,
+    gap: spacing.xxs,
   },
   seasonName: {
     fontWeight: '700',
@@ -141,12 +141,12 @@ const styles = StyleSheet.create({
   },
   colorLabel: {
     position: 'absolute',
-    bottom: 10,
-    left: 10,
+    bottom: spacing.smd,
+    left: spacing.smd,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: 5,
     borderRadius: radii.md,
   },
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm,
   },
   colorLabelText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: '600',
   },
   hint: {
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 10,
+    gap: spacing.smd,
     paddingVertical: spacing.xs,
   },
   paletteItem: {

@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export type FaceAngle = 'front' | 'left' | 'right';
 
@@ -243,22 +243,22 @@ export function MultiAngleCapture({
 
 const styles = StyleSheet.create({
   container: {},
-  stepIndicator: { flexDirection: 'row', justifyContent: 'center', gap: 24 },
-  stepItem: { alignItems: 'center', gap: 4 },
+  stepIndicator: { flexDirection: 'row', justifyContent: 'center', gap: spacing.lg },
+  stepItem: { alignItems: 'center', gap: spacing.xs },
   stepDot: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
   captureSection: { alignItems: 'center' },
-  angleLabel: { fontWeight: '700', textAlign: 'center', marginBottom: 4 },
+  angleLabel: { fontWeight: '700', textAlign: 'center', marginBottom: spacing.xs },
   previewSection: { alignItems: 'center', width: '100%' },
   preview: { width: 200, height: 266 },
-  actionRow: { flexDirection: 'row', gap: 12 },
-  actionBtn: { paddingHorizontal: 20, paddingVertical: 10 },
-  captureBtn: { paddingHorizontal: 32, paddingVertical: 14 },
+  actionRow: { flexDirection: 'row', gap: spacing.smx },
+  actionBtn: { paddingHorizontal: spacing.mlg, paddingVertical: spacing.smd },
+  captureBtn: { paddingHorizontal: spacing.xl, paddingVertical: 14 },
   tipsBox: {},
-  angleGrid: { flexDirection: 'row', gap: 12, width: '100%' },
-  angleCard: { flex: 1, padding: 16 },
+  angleGrid: { flexDirection: 'row', gap: spacing.smx, width: '100%' },
+  angleCard: { flex: 1, padding: spacing.md },
   angleCardContent: { alignItems: 'center', gap: 6 },
   anglePreview: { width: 80, height: 106 },
   completeBtn: { width: '100%', alignItems: 'center', paddingVertical: 14 },
   completeSection: { alignItems: 'center' },
-  cancelBtn: { alignItems: 'center', paddingVertical: 10 },
+  cancelBtn: { alignItems: 'center', paddingVertical: spacing.smd },
 });

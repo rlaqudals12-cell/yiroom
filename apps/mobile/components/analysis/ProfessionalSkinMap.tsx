@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme, zoneColors } from '../../lib/theme';
+import { useTheme, spacing, zoneColors } from '../../lib/theme';
 import type { DetailedZoneId, DetailedStatusLevel, DetailedZoneStatus } from './DetailedFaceZoneMap';
 
 export type ViewMode = 'overview' | 'detailed';
@@ -160,9 +160,9 @@ export function ProfessionalSkinMap({
 
 const styles = StyleSheet.create({
   avgRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  zoneGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  zoneCard: { width: '31%', borderWidth: 1, padding: 10, alignItems: 'center', gap: 2 },
-  zoneDot: { width: 8, height: 8, borderRadius: 4, marginBottom: 2 },
+  zoneGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  zoneCard: { width: '31%', borderWidth: 1, padding: spacing.smd, alignItems: 'center', gap: spacing.xxs },
+  zoneDot: { width: 8, height: 8, borderRadius: 4, marginBottom: spacing.xxs },
   detailPanel: { borderWidth: 1 },
   detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
 });

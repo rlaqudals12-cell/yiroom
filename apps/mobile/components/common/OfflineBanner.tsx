@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingVertical: spacing.smx,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -107,25 +107,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   icon: {
-    fontSize: 20,
-    marginRight: 12,
+    fontSize: typography.size.xl,
+    marginRight: spacing.smx,
   },
   textContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   subtitle: {
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: typography.size.xs,
+    marginTop: spacing.xxs,
   },
   syncButton: {
     paddingHorizontal: 14,
     paddingVertical: spacing.sm,
     borderRadius: radii.md,
-    marginLeft: 12,
+    marginLeft: spacing.smx,
   },
   syncButtonDisabled: {
     opacity: 0.6,

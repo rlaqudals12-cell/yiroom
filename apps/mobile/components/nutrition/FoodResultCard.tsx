@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, nutrientColors } from '../../lib/theme';
+import { useTheme, nutrientColors, spacing, radii } from '../../lib/theme';
 
 export interface FoodResultCardProps {
   /** 인식된 음식 이름 */
@@ -231,8 +231,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   confidenceBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   calRow: {
     flexDirection: 'row',
@@ -244,11 +244,11 @@ const styles = StyleSheet.create({
   },
   macroItem: {
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
   macroBar: {
     width: 4,
-    height: 20,
+    height: spacing.mlg,
     borderRadius: 2,
   },
   healthRow: {
@@ -257,8 +257,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   healthDot: {
-    width: 8,
-    height: 8,
+    width: spacing.sm,
+    height: spacing.sm,
     borderRadius: 4,
   },
   addBtn: {},

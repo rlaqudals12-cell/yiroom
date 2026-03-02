@@ -8,7 +8,7 @@
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Svg, { Ellipse, Rect } from 'react-native-svg';
-import { useTheme, zoneColors } from '../../lib/theme';
+import { useTheme, spacing, typography, zoneColors } from '../../lib/theme';
 
 export type DetailedZoneId =
   | 'forehead_center' | 'forehead_left' | 'forehead_right'
@@ -177,8 +177,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'wrap',
-    marginTop: 12,
-    gap: 8,
+    marginTop: spacing.smx,
+    gap: spacing.sm,
   },
   legendItem: {
     flexDirection: 'row',
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   legendLabel: {},
 });

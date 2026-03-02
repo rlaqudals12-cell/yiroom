@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography, spacing } from '../../../lib/theme';
+import { useTheme, typography, spacing, radii } from '../../../lib/theme';
 
 import { StarRating, getRatingColor } from './StarRating';
 
@@ -141,12 +141,12 @@ export function calculateReviewSummary(reviews: { rating: number }[]): ReviewSum
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: radii.smx,
     padding: spacing.md,
   },
   averageSection: {
     alignItems: 'center',
-    paddingRight: 20,
+    paddingRight: spacing.mlg,
     borderRightWidth: 1,
   },
   averageScore: {
@@ -154,22 +154,22 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.bold,
   },
   totalCount: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     marginTop: spacing.xs,
   },
   distributionSection: {
     flex: 1,
-    paddingLeft: 20,
+    paddingLeft: spacing.mlg,
     justifyContent: 'center',
   },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 2,
+    marginVertical: spacing.xxs,
   },
   ratingLabel: {
     width: 28,
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   barContainer: {
     flex: 1,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   },
   countLabel: {
     width: 28,
-    fontSize: 12,
+    fontSize: typography.size.xs,
     textAlign: 'right',
   },
   skeleton: {

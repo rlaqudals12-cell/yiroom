@@ -5,7 +5,7 @@
  */
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography} from '@/lib/theme';
+import { useTheme, typography } from '@/lib/theme';
 
 import { MetricDelta } from './ScoreChangeBadge';
 
@@ -64,10 +64,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   metricLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   metricValue: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   metricBarBg: {

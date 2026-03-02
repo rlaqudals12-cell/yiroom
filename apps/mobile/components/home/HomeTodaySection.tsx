@@ -171,12 +171,12 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    marginRight: 12,
+    marginRight: spacing.smx,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkmark: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   completedLabel: {

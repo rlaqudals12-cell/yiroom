@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii, typography } from '../../lib/theme';
 import { GradeDisplay, getGrade } from './GradeDisplay';
 
 export type AnalysisType = 'skin' | 'body' | 'personal-color';
@@ -178,44 +178,44 @@ export function VisualReportCard({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 1,
     overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.md,
     borderBottomWidth: 1,
   },
   icon: {
-    fontSize: 20,
-    marginRight: 8,
+    fontSize: typography.size.xl,
+    marginRight: spacing.sm,
   },
   title: {
     flex: 1,
     fontWeight: '700',
   },
   typeBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+    borderRadius: radii.smx,
   },
   typeBadgeText: {
     fontWeight: '600',
   },
   scoreSection: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: spacing.mlg,
   },
   detailSection: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
   },
   metricRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   metricName: {
     width: 60,
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     height: 6,
     backgroundColor: '#E5E7EB20',
     borderRadius: 3,
-    marginHorizontal: 8,
+    marginHorizontal: spacing.sm,
     overflow: 'hidden',
   },
   metricBarInner: {
@@ -240,36 +240,36 @@ const styles = StyleSheet.create({
   bodyType: {
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   bodyLabel: {
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   strengthsList: {
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   strengthItem: {
-    marginBottom: 2,
-    paddingLeft: 8,
+    marginBottom: spacing.xxs,
+    paddingLeft: spacing.sm,
   },
   seasonLabel: {
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   colorRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   colorDot: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.xlg,
   },
   timestamp: {
     textAlign: 'center',
-    paddingBottom: 12,
+    paddingBottom: spacing.smx,
   },
 });

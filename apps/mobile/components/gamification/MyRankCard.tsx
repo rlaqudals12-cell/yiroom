@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface MyRankCardProps {
   rank: number;
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   rankRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: 4,
+    gap: spacing.xs,
   },
   footer: {
     flexDirection: 'row',

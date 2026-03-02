@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export type GumHealthStatus =
   | 'healthy'
@@ -143,15 +143,15 @@ export function GumHealthIndicator({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1 },
-  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.smx },
   statusText: { flex: 1 },
   statusLabel: { fontWeight: '700' },
-  inflammationSection: { marginBottom: 8 },
+  inflammationSection: { marginBottom: spacing.sm },
   inflammationHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   progressBg: { height: 8 },
   progressFill: { height: 8 },
   areasSection: { borderTopWidth: 1 },
   areasList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  areaBadge: { paddingHorizontal: 8, paddingVertical: 4 },
+  areaBadge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
   recsSection: { borderTopWidth: 1 },
 });

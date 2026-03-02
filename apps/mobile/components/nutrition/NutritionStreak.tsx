@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface NutritionStreakProps {
   /** 현재 연속일 */
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 24,
+    gap: spacing.lg,
   },
   streakItem: {
     alignItems: 'center',
@@ -146,8 +146,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dayDot: {
-    width: 24,
-    height: 24,
+    width: spacing.lg,
+    height: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },

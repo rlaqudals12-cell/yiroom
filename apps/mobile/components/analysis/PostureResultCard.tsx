@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export type PostureType =
   | 'ideal' | 'forward_head' | 'rounded_shoulders'
@@ -174,14 +174,14 @@ export function PostureResultCard({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1, overflow: 'hidden' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.smx },
   headerText: { flex: 1 },
   typeLabel: { fontWeight: '700' },
-  scoreBadge: { alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6 },
+  scoreBadge: { alignItems: 'center', paddingHorizontal: spacing.smx, paddingVertical: 6 },
   issueAlert: {},
   idealBanner: {},
   section: { borderTopWidth: 1 },
-  measurementGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  measurementCard: { width: '47%', padding: 10, alignItems: 'center' },
+  measurementGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  measurementCard: { width: '47%', padding: spacing.smd, alignItems: 'center' },
   footer: { borderTopWidth: 1 },
 });

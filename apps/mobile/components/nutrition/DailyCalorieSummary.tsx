@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, nutrientColors } from '../../lib/theme';
+import { useTheme, nutrientColors, spacing, radii } from '../../lib/theme';
 
 export interface DailyCalorieSummaryProps {
   /** 목표 칼로리 */
@@ -194,12 +194,12 @@ const styles = StyleSheet.create({
   },
   macroRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   macroChip: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: radii.md,
   },
 });

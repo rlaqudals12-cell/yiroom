@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { GumHealthIndicator, type GumHealthResult } from './GumHealthIndicator';
 
 export interface ToothColorInfo {
@@ -221,19 +221,19 @@ export function OralHealthResultCard({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1, overflow: 'hidden' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.smx },
   headerText: { flex: 1 },
   title: { fontWeight: '700' },
-  scoreBadge: { alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6 },
-  tabs: { flexDirection: 'row', borderBottomWidth: 1, marginTop: 8 },
-  tab: { flex: 1, alignItems: 'center', paddingVertical: 10 },
+  scoreBadge: { alignItems: 'center', paddingHorizontal: spacing.smx, paddingVertical: 6 },
+  tabs: { flexDirection: 'row', borderBottomWidth: 1, marginTop: spacing.sm },
+  tab: { flex: 1, alignItems: 'center', paddingVertical: spacing.smd },
   shadeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   shadeCircle: { width: 48, height: 48, borderRadius: 24, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  metricRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  metricRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   progressBg: { flex: 1, height: 6 },
   progressFill: { height: 6 },
   goalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   warningBox: {},
-  methodRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1 },
+  methodRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm, borderBottomWidth: 1 },
   recsSection: { borderTopWidth: 1 },
 });

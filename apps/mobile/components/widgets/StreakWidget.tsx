@@ -5,7 +5,7 @@
 
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography, spacing } from '../../lib/theme';
+import { useTheme, typography, spacing, radii } from '../../lib/theme';
 
 interface StreakWidgetProps {
   streak: number;
@@ -106,19 +106,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   title: {
     fontSize: 17,
     fontWeight: typography.weight.semibold,
   },
   levelBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: 12,
+    borderRadius: radii.smx,
   },
   levelText: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
   },
   content: {
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   streakMain: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smx,
   },
   emoji: {
     fontSize: 32,
@@ -140,11 +140,11 @@ const styles = StyleSheet.create({
     fontSize: 48,
   },
   streakNumber: {
-    fontSize: 36,
+    fontSize: typography.size['4xl'],
     fontWeight: typography.weight.bold,
   },
   streakLabel: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
   },
   streakBig: {
     fontSize: 28,

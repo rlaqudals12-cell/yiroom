@@ -10,7 +10,7 @@ import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface TourStep {
   title: string;
@@ -208,12 +208,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
   },
   closeBtn: {
     position: 'absolute',
     zIndex: 10,
-    padding: 8,
+    padding: spacing.sm,
   },
   card: {
     width: '100%',

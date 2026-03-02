@@ -17,7 +17,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { brand } from '../../lib/theme/tokens';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: spacing.xxs,
     position: 'relative',
   },
   indicator: {
@@ -181,6 +181,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 10,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
 });

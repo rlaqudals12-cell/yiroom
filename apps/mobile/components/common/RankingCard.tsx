@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii, typography } from '../../lib/theme';
 
 export interface RankingItem {
   rank: number;
@@ -117,8 +117,8 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
+    padding: spacing.smx,
+    borderRadius: radii.smx,
     borderWidth: 1,
   },
   rankSection: {
@@ -129,25 +129,25 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   changeText: {
-    marginTop: 2,
+    marginTop: spacing.xxs,
     fontWeight: '500',
   },
   userSection: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: spacing.xl,
+    height: spacing.xl,
+    borderRadius: radii.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   avatarText: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     fontWeight: '600',
   },
   name: {
@@ -155,6 +155,6 @@ const styles = StyleSheet.create({
   },
   score: {
     fontWeight: '700',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
 });

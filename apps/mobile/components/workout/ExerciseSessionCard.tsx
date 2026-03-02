@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export type ExerciseStatus = 'pending' | 'in_progress' | 'completed' | 'skipped';
 
@@ -98,10 +98,10 @@ export function ExerciseSessionCard({
 
 const styles = StyleSheet.create({
   container: { borderWidth: 1, padding: 14 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  setIndicator: { paddingHorizontal: 10, paddingVertical: 3 },
-  progressBar: { height: 4 },
-  progressFill: { height: 4 },
-  actionRow: { flexDirection: 'row', gap: 8 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.smd },
+  setIndicator: { paddingHorizontal: spacing.smd, paddingVertical: 3 },
+  progressBar: { height: spacing.xs },
+  progressFill: { height: spacing.xs },
+  actionRow: { flexDirection: 'row', gap: spacing.sm },
   actionBtn: { paddingHorizontal: 14, paddingVertical: 6 },
 });

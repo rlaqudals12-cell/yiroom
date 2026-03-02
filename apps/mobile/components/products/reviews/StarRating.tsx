@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   starButton: {
-    padding: 2,
+    padding: spacing.xxs,
   },
   starButtonPressed: {
     opacity: 0.7,

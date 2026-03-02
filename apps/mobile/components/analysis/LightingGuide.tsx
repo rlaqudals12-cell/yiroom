@@ -6,7 +6,7 @@
 
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii, typography } from '../../lib/theme';
 
 export type BrightnessLevel = 'low' | 'ok' | 'high';
 export type UniformityLevel = 'uneven' | 'ok';
@@ -107,35 +107,35 @@ export function LightingGuide({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: radii.smx,
     borderWidth: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   title: {
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   checkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   checkIcon: {
-    fontSize: 16,
-    marginRight: 8,
+    fontSize: typography.size.base,
+    marginRight: spacing.sm,
   },
   checkLabel: {
     flex: 1,
     fontWeight: '500',
   },
   statusMark: {
-    fontSize: 16,
+    fontSize: typography.size.base,
     fontWeight: '700',
   },
   resultBox: {
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
+    borderRadius: radii.md,
+    padding: spacing.smx,
+    marginTop: spacing.sm,
   },
   resultText: {
     textAlign: 'center',

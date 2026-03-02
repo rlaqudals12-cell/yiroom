@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   coachContent: {
     flex: 1,
@@ -147,10 +147,10 @@ const styles = StyleSheet.create({
   coachTitle: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   coachSubtitle: {
-    fontSize: 12,
+    fontSize: typography.size.xs,
   },
   coachArrow: {
     fontSize: 28,

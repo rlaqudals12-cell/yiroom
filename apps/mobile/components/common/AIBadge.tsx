@@ -73,21 +73,21 @@ const VARIANT_STYLES = {
       paddingHorizontal: spacing.smd,
       paddingVertical: spacing.xs,
     },
-    icon: { fontSize: 14 },
+    icon: { fontSize: typography.size.sm },
     label: { fontSize: typography.size.xs },
   },
   small: {
     container: {
       paddingHorizontal: spacing.sm,
-      paddingVertical: 2,
+      paddingVertical: spacing.xxs,
     },
-    icon: { fontSize: 12 },
+    icon: { fontSize: typography.size.xs },
     label: { fontSize: 10 },
   },
   inline: {
     container: {
       paddingHorizontal: 6,
-      paddingVertical: 2,
+      paddingVertical: spacing.xxs,
     },
     icon: { fontSize: 10 },
     label: { fontSize: 10 },

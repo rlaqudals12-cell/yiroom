@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useTheme } from '../../lib/theme';
+import { useTheme, spacing, radii, typography } from '../../lib/theme';
 
 export interface SolutionStep {
   id: string;
@@ -99,20 +99,20 @@ export function SolutionPanel({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    padding: 16,
+    padding: spacing.md,
   },
   title: {
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: spacing.smx,
   },
   stepCard: {
     flexDirection: 'row',
-    borderRadius: 10,
+    borderRadius: radii.lg,
     borderWidth: 1,
-    padding: 12,
-    marginBottom: 8,
+    padding: spacing.smx,
+    marginBottom: spacing.sm,
   },
   lastStep: {
     marginBottom: 0,
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.smx,
   },
   stepNumberText: {
     fontWeight: '700',
@@ -134,10 +134,10 @@ const styles = StyleSheet.create({
   stepHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   stepIcon: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
     marginRight: 6,
   },
   stepTitle: {
@@ -146,9 +146,9 @@ const styles = StyleSheet.create({
   },
   priorityBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    marginLeft: 8,
+    paddingVertical: spacing.xxs,
+    borderRadius: radii.md,
+    marginLeft: spacing.sm,
   },
   priorityText: {
     fontWeight: '600',
