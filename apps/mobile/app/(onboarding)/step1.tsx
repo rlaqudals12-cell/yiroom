@@ -108,12 +108,7 @@ export default function OnboardingStep1() {
                       padding: spacing.md,
                       opacity: pressed ? 0.85 : 1,
                       transform: [{ scale: pressed ? 0.98 : 1 }],
-                      // Android elevation 직접 지정 (shadows.lg의 0.08 opacity는 너무 약함)
-                      elevation: 3,
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.12,
-                      shadowRadius: 8,
+                      ...shadows.card,
                     },
                   ]}
                   onPress={() => handleToggle(goal)}
@@ -186,6 +181,40 @@ export default function OnboardingStep1() {
             );
           })}
         </View>
+
+        {/* 선택 현황 요약 (웹 동일 패턴 — indigo-50 selection status) */}
+        {data.goals.length > 0 && (
+          <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
+            <View
+              style={{
+                backgroundColor: `${brand.primary}12`,
+                borderRadius: radii.xl,
+                padding: spacing.md,
+                marginTop: spacing.md,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  marginBottom: spacing.xs,
+                }}
+              >
+                선택한 목표 ({data.goals.length}개)
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.xs + 1,
+                  color: colors.mutedForeground,
+                  lineHeight: 20,
+                }}
+              >
+                {data.goals.map((g) => GOAL_LABELS[g]).join(' · ')}
+              </Text>
+            </View>
+          </Animated.View>
+        )}
 
         {/* 진행 표시 */}
         <Animated.View entering={FadeInUp.delay(600).duration(TIMING.normal)}>

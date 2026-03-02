@@ -133,11 +133,7 @@ export default function OnboardingStep3() {
                         borderWidth: 2,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        elevation: 3,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.12,
-                        shadowRadius: 8,
+                        ...shadows.card,
                       },
                     ]}
                     onPress={() => handleFrequencySelect(freq)}
@@ -195,11 +191,7 @@ export default function OnboardingStep3() {
                         borderWidth: 2,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        elevation: 3,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.12,
-                        shadowRadius: 8,
+                        ...shadows.card,
                       },
                     ]}
                     onPress={() => handleMealSelect(pref)}

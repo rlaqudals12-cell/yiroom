@@ -172,11 +172,7 @@ export default function OnboardingStep2() {
                         borderWidth: 2,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        elevation: 3,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.12,
-                        shadowRadius: 8,
+                        ...shadows.card,
                       },
                     ]}
                     onPress={() => handleGenderSelect(gender)}
@@ -325,11 +321,7 @@ export default function OnboardingStep2() {
                         borderWidth: 2,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        elevation: 3,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.12,
-                        shadowRadius: 8,
+                        ...shadows.card,
                       },
                     ]}
                     onPress={() => handleActivitySelect(level)}
@@ -372,6 +364,48 @@ export default function OnboardingStep2() {
             </View>
           </View>
         </Animated.View>
+
+        {/* 선택 현황 (웹 동일 패턴 — blue-50 selection status) */}
+        {(data.basicInfo.gender || data.basicInfo.activityLevel) && (
+          <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
+            <View
+              style={{
+                backgroundColor: `${STEP2_ACCENT}10`,
+                borderRadius: radii.xl,
+                padding: spacing.md,
+                marginBottom: spacing.md,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  marginBottom: spacing.xs,
+                }}
+              >
+                입력 현황
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.xs + 1,
+                  color: colors.mutedForeground,
+                  lineHeight: 20,
+                }}
+              >
+                {[
+                  data.basicInfo.gender ? `성별: ${GENDER_LABELS[data.basicInfo.gender]}` : null,
+                  data.basicInfo.birthYear ? `출생: ${data.basicInfo.birthYear}년` : null,
+                  data.basicInfo.activityLevel
+                    ? `활동: ${ACTIVITY_LEVEL_LABELS[data.basicInfo.activityLevel]}`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Text>
+            </View>
+          </Animated.View>
+        )}
 
         {/* 진행 표시 */}
         <ProgressIndicator current={2} total={3} style={{ marginTop: spacing.xl }} />
