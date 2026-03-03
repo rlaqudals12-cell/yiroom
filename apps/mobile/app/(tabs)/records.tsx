@@ -38,7 +38,7 @@ import {
 import { useWorkoutData, useNutritionData, calculateCalorieProgress } from '../../hooks';
 import type { DailyNutritionSummary, WorkoutLog } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';
-import { useTheme, typography, spacing, radii, ICON_BG_OPACITY } from '../../lib/theme';
+import { useTheme, typography, spacing, radii, ICON_BG_OPACITY, borderGlow } from '../../lib/theme';
 
 // 요일 라벨 (월~일)
 const DAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'];
@@ -105,6 +105,7 @@ export default function RecordsTab(): React.JSX.Element {
     spacing,
     typography,
     module: moduleColors,
+    isDark,
   } = useTheme();
 
   const {
@@ -282,6 +283,7 @@ export default function RecordsTab(): React.JSX.Element {
             style={{
               padding: spacing.md,
               marginBottom: spacing.lg,
+              ...(isDark ? {} : borderGlow.subtle),
             }}
           >
             <View

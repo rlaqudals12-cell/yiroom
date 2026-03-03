@@ -16,6 +16,8 @@ import {
 
 import Svg, { Circle } from 'react-native-svg';
 
+import { LinearGradient } from 'expo-linear-gradient';
+
 import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { useNutritionData } from '@/hooks/useNutritionData';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -129,13 +131,13 @@ export default function NutritionDashboardScreen() {
         isLoading={isLoading}
         isEmpty={false}
       >
-        {/* 칼로리 프로그레스 */}
+        {/* 칼로리 프로그레스 — 악센트 섀도 */}
         <View style={[
           styles.calorieCard,
           { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
           !isDark
             ? Platform.select({
-                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 12 },
+                ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.15, shadowRadius: 12 },
                 android: { elevation: 3 },
               }) ?? {}
             : {},
@@ -188,7 +190,7 @@ export default function NutritionDashboardScreen() {
           { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
           !isDark
             ? Platform.select({
-                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+                ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.10, shadowRadius: 8 },
                 android: { elevation: 2 },
               }) ?? {}
             : {},
@@ -226,7 +228,7 @@ export default function NutritionDashboardScreen() {
           { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
           !isDark
             ? Platform.select({
-                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+                ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.10, shadowRadius: 8 },
                 android: { elevation: 2 },
               }) ?? {}
             : {},
@@ -284,12 +286,12 @@ export default function NutritionDashboardScreen() {
           )}
         </View>
 
-        {/* 식사 기록 버튼 */}
+        {/* 식사 기록 버튼 — 그라디언트 CTA */}
         <Pressable
           testID="record-meal-button"
           style={[
             styles.recordButton,
-            { backgroundColor: brand.primary },
+            { overflow: 'hidden' },
             !isDark
               ? Platform.select({
                   ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
@@ -299,9 +301,16 @@ export default function NutritionDashboardScreen() {
           ]}
           onPress={handleRecordMeal}
         >
-          <Text style={[styles.recordButtonText, { color: colors.background }]}>
-            식사 기록하기
-          </Text>
+          <LinearGradient
+            colors={[brand.primary, '#7C3AED']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ paddingVertical: spacing.md, paddingHorizontal: spacing.lg, alignItems: 'center' }}
+          >
+            <Text style={[styles.recordButtonText, { color: colors.background }]}>
+              식사 기록하기
+            </Text>
+          </LinearGradient>
         </Pressable>
       </DataStateWrapper>
     </ScreenContainer>
@@ -469,9 +478,6 @@ const styles = StyleSheet.create({
   },
   recordButton: {
     borderRadius: radii.full,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
     marginTop: spacing.md,
   },
   recordButtonText: {

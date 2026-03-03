@@ -32,18 +32,20 @@ export default function WorkoutOnboardingScreen() {
       contentContainerStyle={{ paddingBottom: 100 }}
       testID="workout-onboarding-screen"
     >
-        {/* 히어로 헤더 — 파스텔 배경 + 그라디언트 아이콘 */}
-        <Animated.View
-          entering={FadeIn.duration(TIMING.normal)}
-          style={[
-            styles.header,
-            {
-              backgroundColor: isDark ? WORKOUT_HERO_BG_DARK : WORKOUT_HERO_BG_LIGHT,
-              borderRadius: radii.xl,
-              padding: spacing.lg,
-            },
-          ]}
-        >
+        {/* 히어로 헤더 — 파스텔 그라디언트 배경 + 그라디언트 아이콘 */}
+        <Animated.View entering={FadeIn.duration(TIMING.normal)}>
+          <LinearGradient
+            colors={isDark ? [`${WORKOUT_ACCENT}10`, `${WORKOUT_ACCENT}18`] : [WORKOUT_HERO_BG_LIGHT, '#DCFCE7']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[
+              styles.header,
+              {
+                borderRadius: radii.xl,
+                padding: spacing.lg,
+              },
+            ]}
+          >
           <View style={[
             styles.iconContainer,
             !isDark ? Platform.select({
@@ -64,9 +66,10 @@ export default function WorkoutOnboardingScreen() {
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             체형과 목표에 맞는{'\n'}나만의 운동 루틴을 만들어보세요
           </Text>
+          </LinearGradient>
         </Animated.View>
 
-        {/* 특징 카드 — 카드 그림자 + 테두리 */}
+        {/* 특징 카드 — 악센트 그림자 + 테두리 */}
         <Animated.View
           entering={FadeInUp.delay(100).duration(TIMING.normal)}
           style={[
@@ -76,7 +79,10 @@ export default function WorkoutOnboardingScreen() {
               borderWidth: 1,
               borderColor: colors.border,
             },
-            shadows.card,
+            !isDark ? Platform.select({
+              ios: { shadowColor: WORKOUT_ACCENT, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.12, shadowRadius: 10 },
+              android: { elevation: 3 },
+            }) ?? {} : {},
           ]}
         >
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>이룸 운동의 특징</Text>
@@ -104,7 +110,7 @@ export default function WorkoutOnboardingScreen() {
           </View>
         </Animated.View>
 
-        {/* 온보딩 단계 — 카드 그림자 + 테두리 */}
+        {/* 온보딩 단계 — 악센트 그림자 + 테두리 */}
         <Animated.View
           entering={FadeInUp.delay(200).duration(TIMING.normal)}
           style={[
@@ -114,7 +120,10 @@ export default function WorkoutOnboardingScreen() {
               borderWidth: 1,
               borderColor: colors.border,
             },
-            shadows.card,
+            !isDark ? Platform.select({
+              ios: { shadowColor: WORKOUT_ACCENT, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.12, shadowRadius: 10 },
+              android: { elevation: 3 },
+            }) ?? {} : {},
           ]}
         >
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>온보딩 과정 (3단계)</Text>
@@ -125,12 +134,12 @@ export default function WorkoutOnboardingScreen() {
           </View>
         </Animated.View>
 
-      {/* 시작 버튼 — 필 CTA + 브랜드 섀도 */}
+      {/* 시작 버튼 — 그라디언트 CTA + 브랜드 섀도 */}
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <Pressable
           style={[
             styles.startButton,
-            { backgroundColor: brand.primary },
+            { overflow: 'hidden' },
             !isDark ? Platform.select({
               ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
               android: { elevation: 4 },
@@ -138,7 +147,14 @@ export default function WorkoutOnboardingScreen() {
           ]}
           onPress={handleStart}
         >
-          <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>운동 시작하기</Text>
+          <LinearGradient
+            colors={[brand.primary, '#7C3AED']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ paddingVertical: spacing.md, alignItems: 'center' }}
+          >
+            <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>운동 시작하기</Text>
+          </LinearGradient>
         </Pressable>
       </View>
     </ScreenContainer>
@@ -270,8 +286,6 @@ const styles = StyleSheet.create({
   },
   startButton: {
     borderRadius: radii.full,
-    padding: spacing.md,
-    alignItems: 'center',
   },
   startButtonText: {
     fontSize: typography.size.base,
