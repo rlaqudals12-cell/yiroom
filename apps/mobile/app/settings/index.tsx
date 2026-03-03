@@ -8,7 +8,7 @@ import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
+import { Platform, View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { useTheme, typography, spacing, radii } from '../../lib/theme';
@@ -92,6 +92,8 @@ export default function SettingsScreen() {
                     {
                       backgroundColor: isSelected ? brand.primary : 'transparent',
                       borderRadius: radii.xl,
+                      borderWidth: 1,
+                      borderColor: isSelected ? 'transparent' : colors.border,
                     },
                   ]}
                   onPress={() => {
@@ -128,14 +130,14 @@ export default function SettingsScreen() {
             icon="🔔"
             title="알림 설정"
             subtitle="물, 운동, 식사 알림"
-            colors={colors}
+
             onPress={() => handlePress('/settings/notifications')}
           />
           <SettingsItem
             icon="🎯"
             title="목표 설정"
             subtitle="일일 물, 칼로리 목표"
-            colors={colors}
+
             onPress={() => handlePress('/settings/goals')}
           />
         </Animated.View>
@@ -147,7 +149,7 @@ export default function SettingsScreen() {
             icon="📱"
             title="위젯 설정"
             subtitle="홈 화면 위젯 미리보기"
-            colors={colors}
+
             onPress={() => handlePress('/settings/widgets')}
           />
         </Animated.View>
@@ -158,25 +160,25 @@ export default function SettingsScreen() {
           <SettingsItem
             icon="📖"
             title="이용약관"
-            colors={colors}
+
             onPress={() => handlePress('/terms')}
           />
           <SettingsItem
             icon="🔒"
             title="개인정보 처리방침"
-            colors={colors}
+
             onPress={() => handlePress('/privacy-policy')}
           />
           <SettingsItem
             icon="❓"
             title="도움말/FAQ"
-            colors={colors}
+
             onPress={() => handlePress('/help')}
           />
           <SettingsItem
             icon="💬"
             title="피드백 보내기"
-            colors={colors}
+
             onPress={() => handleLink('mailto:support@yiroom.app')}
           />
         </Animated.View>
@@ -188,7 +190,7 @@ export default function SettingsScreen() {
             icon="👤"
             title="계정 관리"
             subtitle="로그아웃, 데이터 관리"
-            colors={colors}
+
             onPress={handleOpenAccountSheet}
           />
         </Animated.View>
@@ -202,7 +204,7 @@ export default function SettingsScreen() {
           testID="settings-account-sheet"
         >
           <Pressable
-            style={[styles.accountOption, { backgroundColor: colors.muted, borderRadius: radii.xl }]}
+            style={[styles.accountOption, { backgroundColor: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)', borderRadius: radii.xl }]}
             onPress={handleLogout}
             testID="settings-logout-button"
           >
@@ -232,30 +234,39 @@ export default function SettingsScreen() {
   );
 }
 
-interface SettingsItemColors {
-  card: string;
-  foreground: string;
-  mutedForeground: string;
-}
-
 function SettingsItem({
   icon,
   title,
   subtitle,
-  colors,
   onPress,
 }: {
   icon: string;
   title: string;
   subtitle?: string;
-  colors: SettingsItemColors;
   onPress: () => void;
 }) {
+  const { colors, isDark } = useTheme();
+
+  // Platform shadow (웹 shadow-card 대응)
+  const cardShadow = isDark ? {} : Platform.select({
+    ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3 },
+    android: { elevation: 1 },
+    default: {},
+  });
+
   return (
     <Pressable
-      style={[styles.settingsItem, { backgroundColor: colors.card }]}
+      style={({ pressed }) => [
+        styles.settingsItem,
+        {
+          backgroundColor: colors.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        cardShadow,
+        pressed && { backgroundColor: isDark ? colors.secondary : colors.muted },
+      ]}
       onPress={onPress}
-
     >
       <Text style={styles.settingsIcon}>{icon}</Text>
       <View style={styles.settingsContent}>

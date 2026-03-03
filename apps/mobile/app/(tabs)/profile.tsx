@@ -5,10 +5,11 @@
  */
 import { useUser, useClerk } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
+import { Platform, View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
 import { AnalysisTimeline } from '../../components/analysis';
@@ -20,7 +21,7 @@ import { useTheme, typography, spacing, radii, borderGlow } from '../../lib/them
 import { profileLogger } from '../../lib/utils/logger';
 
 export default function ProfileScreen(): React.JSX.Element {
-  const { colors, brand, spacing, typography, status } = useTheme();
+  const { colors, brand, spacing, typography, status, isDark } = useTheme();
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
 
@@ -84,19 +85,29 @@ export default function ProfileScreen(): React.JSX.Element {
             >
               {isSignedIn && user ? (
                 <>
-                  {user.imageUrl ? (
-                    <Image source={{ uri: user.imageUrl }} style={styles.avatar} accessibilityLabel="프로필 사진" accessibilityRole="image" />
-                  ) : (
-                    <View
-                      style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
-                    >
-                      <Text style={{ fontSize: typography.size['3xl'] + 2, color: colors.mutedForeground }}>
-                        {user.firstName?.[0] ||
-                          user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() ||
-                          '?'}
-                      </Text>
+                  {/* 아바타 그라디언트 보더 링 (웹 from-purple-400 to-indigo-500 대응) */}
+                  <LinearGradient
+                    colors={['#C084FC', '#818CF8']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.avatarRing}
+                  >
+                    <View style={[styles.avatarRingInner, { backgroundColor: colors.card }]}>
+                      {user.imageUrl ? (
+                        <Image source={{ uri: user.imageUrl }} style={styles.avatar} accessibilityLabel="프로필 사진" accessibilityRole="image" />
+                      ) : (
+                        <View
+                          style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
+                        >
+                          <Text style={{ fontSize: typography.size['3xl'] + 2, color: colors.mutedForeground }}>
+                            {user.firstName?.[0] ||
+                              user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() ||
+                              '?'}
+                          </Text>
+                        </View>
+                      )}
                     </View>
-                  )}
+                  </LinearGradient>
                   <Text
                     style={{
                       fontSize: typography.size.lg,
@@ -116,11 +127,12 @@ export default function ProfileScreen(): React.JSX.Element {
                   >
                     {analysisCount}/3 분석 완료
                   </Text>
+                  {/* 로그아웃 — 약한 destructive 힌트 */}
                   <Pressable
                     style={({ pressed }) => [
                       styles.actionButton,
                       {
-                        backgroundColor: colors.muted,
+                        backgroundColor: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)',
                         opacity: pressed ? 0.85 : 1,
                       },
                     ]}
@@ -130,7 +142,7 @@ export default function ProfileScreen(): React.JSX.Element {
                   >
                     <Text
                       style={{
-                        color: colors.mutedForeground,
+                        color: colors.destructive,
                         fontSize: typography.size.sm,
                         fontWeight: typography.weight.semibold,
                       }}
@@ -141,11 +153,21 @@ export default function ProfileScreen(): React.JSX.Element {
                 </>
               ) : (
                 <>
-                  <View
-                    style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
+                  {/* 비로그인 아바타 그라디언트 링 */}
+                  <LinearGradient
+                    colors={['#C084FC', '#818CF8']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.avatarRing}
                   >
-                    <Text style={{ fontSize: typography.size['3xl'] + 2, color: colors.mutedForeground }}>?</Text>
-                  </View>
+                    <View style={[styles.avatarRingInner, { backgroundColor: colors.card }]}>
+                      <View
+                        style={[styles.avatarPlaceholder, { backgroundColor: colors.secondary }]}
+                      >
+                        <Text style={{ fontSize: typography.size['3xl'] + 2, color: colors.mutedForeground }}>?</Text>
+                      </View>
+                    </View>
+                  </LinearGradient>
                   <Text
                     style={{
                       fontSize: typography.size.lg,
@@ -156,27 +178,29 @@ export default function ProfileScreen(): React.JSX.Element {
                   >
                     로그인이 필요합니다
                   </Text>
+                  {/* 로그인 CTA — 그라디언트 버튼 (Phase 21 패턴) */}
                   <Pressable
-                    style={({ pressed }) => [
-                      styles.actionButton,
-                      {
-                        backgroundColor: brand.primary,
-                        opacity: pressed ? 0.85 : 1,
-                      },
-                    ]}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
                     onPress={handleSignIn}
                     accessibilityRole="button"
                     accessibilityLabel="로그인"
                   >
-                    <Text
-                      style={{
-                        color: brand.primaryForeground,
-                        fontSize: typography.size.sm,
-                        fontWeight: typography.weight.semibold,
-                      }}
+                    <LinearGradient
+                      colors={[brand.primary, '#7C3AED']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.actionButton}
                     >
-                      로그인
-                    </Text>
+                      <Text
+                        style={{
+                          color: '#FFFFFF',
+                          fontSize: typography.size.sm,
+                          fontWeight: typography.weight.semibold,
+                        }}
+                      >
+                        로그인
+                      </Text>
+                    </LinearGradient>
                   </Pressable>
                 </>
               )}
@@ -236,14 +260,14 @@ export default function ProfileScreen(): React.JSX.Element {
               subtitle={personalColor?.season ? `${personalColor.season}` : undefined}
               onPress={() => router.push('/(analysis)/personal-color')}
             />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.md }} />
             <MenuItem
               title="피부 분석"
               completed={!!skinAnalysis}
               subtitle={skinAnalysis?.skinType || undefined}
               onPress={() => router.push('/(analysis)/skin')}
             />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.md }} />
             <MenuItem
               title="체형 분석"
               completed={!!bodyAnalysis}
@@ -267,7 +291,7 @@ export default function ProfileScreen(): React.JSX.Element {
               }
               onPress={() => router.push('/(tabs)/records')}
             />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.md }} />
             <MenuItem
               title="식단 기록"
               completed={!!nutritionStreak}
@@ -278,7 +302,7 @@ export default function ProfileScreen(): React.JSX.Element {
               }
               onPress={() => router.push('/(tabs)/records')}
             />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.md }} />
             <MenuItem
               title="주간 리포트"
               onPress={() => router.push('/reports')}
@@ -295,19 +319,19 @@ export default function ProfileScreen(): React.JSX.Element {
               subtitle="물, 운동, 식사 알림"
               onPress={() => router.push('/settings/notifications')}
             />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.md }} />
             <MenuItem
               title="목표 설정"
               subtitle="물, 칼로리, 운동 목표"
               onPress={() => router.push('/settings/goals')}
             />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.md }} />
             <MenuItem
               title="위젯 설정"
               subtitle="홈 화면 위젯"
               onPress={() => router.push('/settings/widgets')}
             />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.md }} />
             <MenuItem
               title="전체 설정"
               onPress={() => router.push('/settings')}
@@ -331,7 +355,7 @@ function MenuItem({
   subtitle?: string;
   onPress?: () => void;
 }): React.JSX.Element {
-  const { colors, spacing, typography, status } = useTheme();
+  const { colors, spacing, typography, status, isDark } = useTheme();
 
   const handlePress = (): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -343,7 +367,7 @@ function MenuItem({
       style={({ pressed }) => [
         styles.menuItem,
         { paddingHorizontal: spacing.md, paddingVertical: spacing.sm + spacing.xs + 2 },
-        pressed && { opacity: 0.7 },
+        pressed && { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' },
       ]}
       onPress={handlePress}
       accessibilityRole="button"
@@ -391,13 +415,30 @@ function MenuItem({
 
 const AVATAR_SIZE = spacing.xl * 2 + spacing.md; // 80
 const AVATAR_RADIUS = AVATAR_SIZE / 2;
+const AVATAR_RING_SIZE = AVATAR_SIZE + 8;
 
 const styles = StyleSheet.create({
+  avatarRing: {
+    width: AVATAR_RING_SIZE,
+    height: AVATAR_RING_SIZE,
+    borderRadius: AVATAR_RING_SIZE / 2,
+    padding: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm + spacing.xs,
+  },
+  avatarRingInner: {
+    width: AVATAR_SIZE + 2,
+    height: AVATAR_SIZE + 2,
+    borderRadius: (AVATAR_SIZE + 2) / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: AVATAR_RADIUS,
-    marginBottom: spacing.sm + spacing.xs,
   },
   avatarPlaceholder: {
     width: AVATAR_SIZE,
@@ -405,7 +446,6 @@ const styles = StyleSheet.create({
     borderRadius: AVATAR_RADIUS,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.sm + spacing.xs,
   },
   actionButton: {
     paddingHorizontal: spacing.lg,
