@@ -95,7 +95,7 @@ export default function StyleProfileScreen(): React.ReactElement {
                 flexDirection: 'row',
                 alignItems: 'center',
                 padding: spacing.md,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 backgroundColor: selected ? brand.primary + '15' : colors.card,
                 borderWidth: 2,
                 borderColor: selected ? brand.primary : colors.border,
@@ -158,7 +158,7 @@ export default function StyleProfileScreen(): React.ReactElement {
                 flex: 1,
                 minWidth: 140,
                 padding: spacing.md,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 backgroundColor: selected ? brand.primary + '15' : colors.card,
                 borderWidth: 2,
                 borderColor: selected ? brand.primary : colors.border,
@@ -202,7 +202,7 @@ export default function StyleProfileScreen(): React.ReactElement {
         disabled={!isValid}
         style={{
           backgroundColor: isValid ? brand.primary : colors.secondary,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingVertical: spacing.smx,
           alignItems: 'center',
         }}

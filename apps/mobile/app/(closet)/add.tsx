@@ -469,7 +469,7 @@ function useStyles() {
     previewImage: {
       width: 200,
       height: 267,
-      borderRadius: radii.smx,
+      borderRadius: radii.xl,
     },
     imageOverlay: {
       position: 'absolute',
@@ -478,8 +478,8 @@ function useStyles() {
       right: 0,
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: spacing.sm,
-      borderBottomLeftRadius: radii.smx,
-      borderBottomRightRadius: radii.smx,
+      borderBottomLeftRadius: radii.xl,
+      borderBottomRightRadius: radii.xl,
       alignItems: 'center',
     },
     imageOverlayText: {
@@ -490,7 +490,7 @@ function useStyles() {
       width: 200,
       height: 267,
       backgroundColor: colors.border,
-      borderRadius: radii.smx,
+      borderRadius: radii.xl,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -510,7 +510,7 @@ function useStyles() {
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
       backgroundColor: colors.card,
-      borderRadius: radii.md,
+      borderRadius: radii.xl,
     },
     imageButtonText: {
       color: colors.foreground,
@@ -535,7 +535,7 @@ function useStyles() {
     },
     input: {
       backgroundColor: colors.secondary,
-      borderRadius: radii.md,
+      borderRadius: radii.xl,
       paddingHorizontal: spacing.smx,
       paddingVertical: spacing.smd,
       fontSize: typography.size.sm,
@@ -556,7 +556,7 @@ function useStyles() {
       paddingHorizontal: spacing.smx,
       paddingVertical: spacing.sm,
       backgroundColor: colors.secondary,
-      borderRadius: radii.md,
+      borderRadius: radii.xl,
       gap: 6,
     },
     optionButtonSelected: {
@@ -592,7 +592,7 @@ function useStyles() {
     colorSwatch: {
       width: 16,
       height: 16,
-      borderRadius: radii.md,
+      borderRadius: radii.xl,
       borderWidth: 1,
       borderColor: colors.border,
     },
@@ -612,7 +612,7 @@ function useStyles() {
       alignItems: 'center',
       paddingVertical: spacing.smx,
       backgroundColor: colors.secondary,
-      borderRadius: radii.md,
+      borderRadius: radii.xl,
     },
     seasonButtonSelected: {
       backgroundColor: colors.foreground,
@@ -662,7 +662,7 @@ function useStyles() {
     submitButton: {
       backgroundColor: colors.foreground,
       paddingVertical: 14,
-      borderRadius: radii.smx,
+      borderRadius: radii.xl,
       alignItems: 'center',
     },
     submitButtonDisabled: {

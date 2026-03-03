@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   },
   // 코디 카드
   outfitCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
   },
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   actionBtnText: {
     fontSize: typography.size.sm,
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   emptyBtnText: {
     fontSize: typography.size.base,

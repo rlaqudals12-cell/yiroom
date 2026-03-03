@@ -106,7 +106,7 @@ export default function OutfitDetailScreen(): React.ReactElement {
       <View
         style={{
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.md,
           flexDirection: 'row',
           justifyContent: 'space-around',
@@ -153,7 +153,7 @@ export default function OutfitDetailScreen(): React.ReactElement {
               flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               borderLeftWidth: 3,
               borderLeftColor: moduleColors.body.base,
@@ -181,7 +181,7 @@ export default function OutfitDetailScreen(): React.ReactElement {
           style={{
             flex: 1,
             backgroundColor: brand.primary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             paddingVertical: spacing.smx,
             alignItems: 'center',
           }}
@@ -196,7 +196,7 @@ export default function OutfitDetailScreen(): React.ReactElement {
           style={{
             flex: 1,
             backgroundColor: colors.secondary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             paddingVertical: spacing.smx,
             alignItems: 'center',
           }}

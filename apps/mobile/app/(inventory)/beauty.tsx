@@ -114,7 +114,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             shadows.card,
             {
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               borderColor: expired ? status.error + '40' : colors.border,
               padding: spacing.md,
               marginBottom: spacing.sm,

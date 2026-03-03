@@ -131,7 +131,7 @@ export default function PantryScreen(): React.JSX.Element {
             shadows.card,
             {
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               borderColor: expired
                 ? status.error + '40'
                 : expiring
@@ -302,7 +302,7 @@ export default function PantryScreen(): React.JSX.Element {
             {
               backgroundColor:
                 activeTab === 'pantry' ? brand.primary : 'transparent',
-              borderRadius: radii.md,
+              borderRadius: radii.xl,
             },
           ]}
           onPress={() => {
@@ -338,7 +338,7 @@ export default function PantryScreen(): React.JSX.Element {
             {
               backgroundColor:
                 activeTab === 'supplement' ? brand.primary : 'transparent',
-              borderRadius: radii.md,
+              borderRadius: radii.xl,
             },
           ]}
           onPress={() => {

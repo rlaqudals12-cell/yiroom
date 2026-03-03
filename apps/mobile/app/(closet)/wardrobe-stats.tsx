@@ -93,7 +93,7 @@ export default function WardrobeStatsScreen(): React.ReactElement {
             onPress={() => router.push({ pathname: '/(closet)/category/[slug]' as never, params: { slug: cat.category } })}
             style={{
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
             }}
           >
@@ -138,7 +138,7 @@ export default function WardrobeStatsScreen(): React.ReactElement {
             key={stat.label}
             style={{
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               borderLeftWidth: 3,
               borderLeftColor: getWearColor(index),
@@ -167,7 +167,7 @@ export default function WardrobeStatsScreen(): React.ReactElement {
         onPress={() => router.push('/(closet)/gallery')}
         style={{
           backgroundColor: brand.primary,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingVertical: spacing.smx,
           alignItems: 'center',
         }}

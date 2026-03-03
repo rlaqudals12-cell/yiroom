@@ -153,7 +153,7 @@ export default function EditClosetItemScreen(): React.JSX.Element {
                 {
                   backgroundColor: colors.card,
                   borderColor: colors.border,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   color: colors.foreground,
                   fontSize: typography.size.sm,
                   paddingHorizontal: spacing.md,
@@ -236,7 +236,7 @@ export default function EditClosetItemScreen(): React.JSX.Element {
                 {
                   backgroundColor: colors.card,
                   borderColor: colors.border,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   color: colors.foreground,
                   fontSize: typography.size.sm,
                   paddingHorizontal: spacing.md,
@@ -268,7 +268,7 @@ export default function EditClosetItemScreen(): React.JSX.Element {
                 {
                   backgroundColor: colors.card,
                   borderColor: colors.border,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   color: colors.foreground,
                   fontSize: typography.size.sm,
                   paddingHorizontal: spacing.md,
@@ -396,7 +396,7 @@ export default function EditClosetItemScreen(): React.JSX.Element {
               styles.actionButton,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.md,
                 flex: 1,
               },
@@ -422,7 +422,7 @@ export default function EditClosetItemScreen(): React.JSX.Element {
               styles.actionButton,
               {
                 backgroundColor: brand.primary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.md,
                 flex: 2,
               },

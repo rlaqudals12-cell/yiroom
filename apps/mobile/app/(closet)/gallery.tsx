@@ -131,7 +131,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           shadows.card,
           {
             backgroundColor: colors.card,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             borderWidth: 1,
             borderColor: colors.border,
           },
@@ -142,7 +142,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
         {item.imageUrl ? (
           <Image
             source={{ uri: item.imageUrl }}
-            style={[styles.gridImage, { borderTopLeftRadius: radii.lg, borderTopRightRadius: radii.lg }]}
+            style={[styles.gridImage, { borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl }]}
             contentFit="cover"
             transition={200}
           />
@@ -151,7 +151,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
             style={[
               styles.gridImage,
               styles.gridPlaceholder,
-              { backgroundColor: colors.muted, borderTopLeftRadius: radii.lg, borderTopRightRadius: radii.lg },
+              { backgroundColor: colors.muted, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl },
             ]}
           >
             <Shirt size={32} color={colors.mutedForeground} />
@@ -190,7 +190,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           shadows.card,
           {
             backgroundColor: colors.card,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             borderWidth: 1,
             borderColor: colors.border,
             padding: spacing.sm,
@@ -205,12 +205,12 @@ export default function StyleGalleryScreen(): React.JSX.Element {
         {item.imageUrl ? (
           <Image
             source={{ uri: item.imageUrl }}
-            style={[styles.listImage, { borderRadius: radii.md }]}
+            style={[styles.listImage, { borderRadius: radii.xl }]}
             contentFit="cover"
             transition={200}
           />
         ) : (
-          <View style={[styles.listImage, styles.listPlaceholder, { backgroundColor: colors.muted, borderRadius: radii.md }]}>
+          <View style={[styles.listImage, styles.listPlaceholder, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
             <Shirt size={20} color={colors.mutedForeground} />
           </View>
         )}
@@ -245,7 +245,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
             styles.searchRow,
             {
               backgroundColor: colors.secondary,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               paddingHorizontal: spacing.md,
             },
           ]}

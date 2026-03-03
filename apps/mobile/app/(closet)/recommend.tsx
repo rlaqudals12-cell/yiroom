@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
   tag: {
     paddingHorizontal: spacing.smx,
     paddingVertical: 6,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   tagText: {
     fontSize: typography.size.xs,
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   },
   outfitItem: {
     width: '48%',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     overflow: 'hidden',
   },
   outfitImageContainer: {
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   tipsCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     marginTop: spacing.md,
   },
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   emptyButtonText: {
     fontSize: 15,
@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: spacing.md,
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   saveOutfitButtonDisabled: {
     opacity: 0.6,

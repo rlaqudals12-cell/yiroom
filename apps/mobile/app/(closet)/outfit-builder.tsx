@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
   },
   // 미리보기
   previewCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -446,12 +446,12 @@ const styles = StyleSheet.create({
   previewImage: {
     width: 56,
     height: 56,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   previewPlaceholder: {
     width: 56,
     height: 56,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   },
   // 입력 카드
   inputCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     marginBottom: spacing.sm,
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   textInput: {
     fontSize: typography.size.base,
     borderWidth: 1,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
   },
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     marginBottom: spacing.xs,
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   selectedBadge: {
     minWidth: 20,
     height: 20,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 6,
@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     width: '30%',
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     overflow: 'hidden',
     position: 'relative',
   },
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.md,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
   },
   saveButtonText: {
     fontSize: typography.size.base,

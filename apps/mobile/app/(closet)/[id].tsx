@@ -79,8 +79,8 @@ export default function ItemDetailScreen() {
       <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <SkeletonCard style={{ width: '100%', aspectRatio: 1 }} />
-          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 120, borderRadius: radii.smx }} />
-          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 80, borderRadius: radii.smx }} />
+          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 120, borderRadius: radii.xl }} />
+          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 80, borderRadius: radii.xl }} />
         </View>
       </ScreenContainer>
     );
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   infoCard: {
     marginHorizontal: spacing.md,
     marginTop: spacing.md,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
   },
   infoHeader: {
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   tag: {
     paddingHorizontal: spacing.smx,
     paddingVertical: 6,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   tagText: {
     fontSize: 13,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     gap: spacing.sm,
   },
   deleteButton: {},
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   backButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   backButtonText: {
     fontSize: 15,

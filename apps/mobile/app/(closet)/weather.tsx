@@ -65,7 +65,7 @@ export default function WeatherOutfitScreen(): React.ReactElement {
       <View
         style={{
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.lg,
           alignItems: 'center',
           marginBottom: spacing.lg,
@@ -113,7 +113,7 @@ export default function WeatherOutfitScreen(): React.ReactElement {
             onPress={() => router.push({ pathname: '/(closet)/outfit/[id]' as never, params: { id: outfit.id } })}
             style={{
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               borderLeftWidth: 3,
               borderLeftColor: moduleColors.body.base,
@@ -157,7 +157,7 @@ export default function WeatherOutfitScreen(): React.ReactElement {
         onPress={() => router.push('/(closet)')}
         style={{
           backgroundColor: brand.primary,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingVertical: spacing.smx,
           alignItems: 'center',
         }}

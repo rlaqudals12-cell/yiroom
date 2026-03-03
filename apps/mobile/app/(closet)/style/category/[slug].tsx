@@ -82,7 +82,7 @@ export default function StyleCategoryDetailScreen(): React.JSX.Element {
           shadows.card,
           {
             backgroundColor: colors.card,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             borderWidth: 1,
             borderColor: colors.border,
           },
@@ -93,7 +93,7 @@ export default function StyleCategoryDetailScreen(): React.JSX.Element {
         <View
           style={[
             styles.itemImage,
-            { backgroundColor: colors.muted, borderRadius: radii.md },
+            { backgroundColor: colors.muted, borderRadius: radii.xl },
           ]}
         >
           <Sparkles size={24} color={colors.mutedForeground} />

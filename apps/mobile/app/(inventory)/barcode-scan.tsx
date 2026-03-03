@@ -202,7 +202,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
               shadows.card,
               {
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 borderColor: colors.border,
                 padding: spacing.md,
                 marginBottom: spacing.lg,
@@ -226,7 +226,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                   {
                     flex: 1,
                     backgroundColor: colors.secondary,
-                    borderRadius: radii.md,
+                    borderRadius: radii.xl,
                     paddingHorizontal: spacing.md,
                     paddingVertical: spacing.sm,
                     fontSize: typography.size.base,
@@ -247,7 +247,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                   styles.searchButton,
                   {
                     backgroundColor: brand.primary,
-                    borderRadius: radii.md,
+                    borderRadius: radii.xl,
                     marginLeft: spacing.sm,
                   },
                 ]}
@@ -272,7 +272,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 shadows.card,
                 {
                   backgroundColor: colors.card,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   borderColor: status.success + '40',
                   padding: spacing.md,
                   marginBottom: spacing.md,
@@ -285,7 +285,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                     styles.productIcon,
                     {
                       backgroundColor: brand.primary + '15',
-                      borderRadius: radii.md,
+                      borderRadius: radii.xl,
                     },
                   ]}
                 >
@@ -332,7 +332,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                   styles.addButton,
                   {
                     backgroundColor: brand.primary,
-                    borderRadius: radii.lg,
+                    borderRadius: radii.xl,
                     marginTop: spacing.md,
                   },
                 ]}
@@ -362,7 +362,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                 shadows.card,
                 {
                   backgroundColor: colors.card,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   borderColor: status.success + '40',
                   padding: spacing.lg,
                   marginBottom: spacing.md,
@@ -399,7 +399,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                     styles.actionButton,
                     {
                       backgroundColor: colors.secondary,
-                      borderRadius: radii.lg,
+                      borderRadius: radii.xl,
                       flex: 1,
                       marginRight: spacing.sm,
                     },
@@ -421,7 +421,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                     styles.actionButton,
                     {
                       backgroundColor: brand.primary,
-                      borderRadius: radii.lg,
+                      borderRadius: radii.xl,
                       flex: 1,
                     },
                   ]}
@@ -478,7 +478,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                   styles.retryButton,
                   {
                     backgroundColor: brand.primary,
-                    borderRadius: radii.lg,
+                    borderRadius: radii.xl,
                     marginTop: spacing.md,
                   },
                 ]}
@@ -524,7 +524,7 @@ export default function BarcodeScanScreen(): React.JSX.Element {
                   styles.retryButton,
                   {
                     backgroundColor: brand.primary,
-                    borderRadius: radii.lg,
+                    borderRadius: radii.xl,
                     marginTop: spacing.md,
                   },
                 ]}

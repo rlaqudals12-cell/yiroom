@@ -70,7 +70,7 @@ export default function StyleInspirationGalleryScreen(): React.JSX.Element {
           shadows.card,
           {
             backgroundColor: colors.card,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             borderWidth: 1,
             borderColor: colors.border,
           },
@@ -80,7 +80,7 @@ export default function StyleInspirationGalleryScreen(): React.JSX.Element {
         <View
           style={[
             styles.imagePlaceholder,
-            { backgroundColor: colors.muted, borderTopLeftRadius: radii.lg, borderTopRightRadius: radii.lg },
+            { backgroundColor: colors.muted, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl },
           ]}
           accessibilityLabel={`${item.name} 이미지`}
         >

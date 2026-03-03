@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     width: '48%',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     overflow: 'hidden',
   },
   itemImageContainer: {
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   emptyButtonText: {
     fontSize: 15,
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
   sortOption: {
     paddingVertical: 14,
     paddingHorizontal: spacing.md,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     marginBottom: spacing.sm,
   },
   sortOptionText: {

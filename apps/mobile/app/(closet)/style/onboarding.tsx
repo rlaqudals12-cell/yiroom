@@ -126,7 +126,7 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
                   styles.styleOption,
                   {
                     backgroundColor: isSelected ? brand.primary : colors.secondary,
-                    borderRadius: radii.lg,
+                    borderRadius: radii.xl,
                     borderWidth: isSelected ? 2 : 1,
                     borderColor: isSelected ? brand.primary : colors.border,
                   },
@@ -243,7 +243,7 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
             styles.nextButton,
             {
               backgroundColor: canProceed ? brand.primary : colors.muted,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
             },
           ]}
           onPress={handleNext}

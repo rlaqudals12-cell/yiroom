@@ -111,7 +111,7 @@ export default function CategoryScreen(): React.ReactElement {
               flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
             }}
           >
@@ -119,7 +119,7 @@ export default function CategoryScreen(): React.ReactElement {
               style={{
                 width: 48,
                 height: 48,
-                borderRadius: radii.md,
+                borderRadius: radii.xl,
                 backgroundColor: moduleColors.body.base + '20',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -152,7 +152,7 @@ export default function CategoryScreen(): React.ReactElement {
         onPress={() => router.push('/(closet)/add')}
         style={{
           backgroundColor: brand.primary,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingVertical: spacing.smx,
           alignItems: 'center',
           marginTop: spacing.lg,
