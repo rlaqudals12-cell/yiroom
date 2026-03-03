@@ -81,7 +81,7 @@ export default function SettingsScreen() {
         {/* 테마 */}
         <Animated.View entering={FadeInDown.delay(0).duration(300)} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>테마</Text>
-          <View style={[styles.themeSelector, { backgroundColor: colors.card, borderRadius: radii.smx }]}>
+          <View style={[styles.themeSelector, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
             {THEME_OPTIONS.map((option) => {
               const isSelected = themeMode === option.key;
               return (
@@ -91,7 +91,7 @@ export default function SettingsScreen() {
                     styles.themeOption,
                     {
                       backgroundColor: isSelected ? brand.primary : 'transparent',
-                      borderRadius: radii.md,
+                      borderRadius: radii.xl,
                     },
                   ]}
                   onPress={() => {
@@ -202,7 +202,7 @@ export default function SettingsScreen() {
           testID="settings-account-sheet"
         >
           <Pressable
-            style={[styles.accountOption, { backgroundColor: colors.muted, borderRadius: radii.lg }]}
+            style={[styles.accountOption, { backgroundColor: colors.muted, borderRadius: radii.xl }]}
             onPress={handleLogout}
             testID="settings-logout-button"
           >
@@ -211,7 +211,7 @@ export default function SettingsScreen() {
             </Text>
           </Pressable>
           <Pressable
-            style={[styles.accountOption, { backgroundColor: colors.muted, borderRadius: radii.lg }]}
+            style={[styles.accountOption, { backgroundColor: colors.muted, borderRadius: radii.xl }]}
             onPress={handleCloseAccountSheet}
             testID="settings-account-cancel"
           >
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     marginBottom: spacing.sm,
   },
   settingsIcon: {

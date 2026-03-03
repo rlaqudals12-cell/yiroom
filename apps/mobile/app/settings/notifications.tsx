@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   permissionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     marginBottom: spacing.lg,
   },
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   settingsCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     overflow: 'hidden',
   },
   settingsRow: {
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
   intervalOption: {
     flex: 1,
     paddingVertical: spacing.smd,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     alignItems: 'center',
   },
   intervalOptionText: {
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   testButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,

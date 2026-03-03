@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   settingsCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     overflow: 'hidden',
   },
   settingsRow: {

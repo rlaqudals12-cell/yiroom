@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   card: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
   },
   presetRow: {
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   presetButton: {
     flex: 1,
     paddingVertical: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     alignItems: 'center',
   },
   presetButtonText: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   customInput: {
     flex: 1,
     height: 44,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     paddingHorizontal: spacing.smx,
     fontSize: 15,
   },
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   goalOption: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   goalOptionText: {
     fontSize: 13,

@@ -215,7 +215,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
                   shadows.card,
                   {
                     backgroundColor: colors.card,
-                    borderRadius: radii.lg,
+                    borderRadius: radii.xl,
                     borderColor: colors.border,
                     padding: spacing.md,
                     marginBottom: spacing.sm,
@@ -288,7 +288,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
               shadows.card,
               {
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 borderColor: colors.border,
                 borderWidth: 1,
                 padding: spacing.md,
@@ -332,7 +332,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
               shadows.card,
               {
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 borderColor: colors.border,
                 borderWidth: 1,
                 padding: spacing.md,

@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.smx,
     borderWidth: 1,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   skipButtonText: {
     fontSize: typography.size.sm,

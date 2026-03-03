@@ -101,7 +101,7 @@ export default function BodyProgressScreen(): React.ReactElement {
       <View
         style={{
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.md,
           marginBottom: spacing.lg,
           alignItems: 'center',
@@ -128,7 +128,7 @@ export default function BodyProgressScreen(): React.ReactElement {
       <View
         style={{
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.md,
           marginBottom: spacing.lg,
         }}
@@ -173,7 +173,7 @@ export default function BodyProgressScreen(): React.ReactElement {
             entering={staggeredEntry(index)}
             style={{
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               borderLeftWidth: 3,
               borderLeftColor: index === 0 ? moduleColors.body.base : colors.border,

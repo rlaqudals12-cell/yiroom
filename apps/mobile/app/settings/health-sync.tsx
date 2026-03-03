@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   card: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
   },
   cardTitle: {
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   },
   statItem: {
     width: '48%',
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     padding: spacing.smx,
     alignItems: 'center',
   },
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   syncButton: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     minWidth: 80,
     alignItems: 'center',
   },

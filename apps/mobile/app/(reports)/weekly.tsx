@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   barFill: { width: '100%' },
   barLabel: { marginTop: spacing.xs },
   macroRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm },
-  macroChip: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: spacing.sm, borderRadius: radii.md, gap: spacing.xs },
+  macroChip: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: spacing.sm, borderRadius: radii.xl, gap: spacing.xs },
   macroDot: { width: 8, height: 8, borderRadius: 4 },
   macroLabel: {},
   macroValue: { marginLeft: 'auto' },

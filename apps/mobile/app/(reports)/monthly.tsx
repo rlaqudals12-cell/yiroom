@@ -58,7 +58,7 @@ export default function MonthlyReportScreen(): React.JSX.Element {
             운동 요약
           </Text>
           <View style={styles.statsGrid}>
-            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.lg }]}>
+            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
               <Text style={[styles.statValue, { color: colors.foreground, fontSize: typography.size.xl, fontWeight: typography.weight.bold }]}>
                 {report.workout.totalSessions}
               </Text>
@@ -66,7 +66,7 @@ export default function MonthlyReportScreen(): React.JSX.Element {
                 총 운동 횟수
               </Text>
             </View>
-            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.lg }]}>
+            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
               <Text style={[styles.statValue, { color: colors.foreground, fontSize: typography.size.xl, fontWeight: typography.weight.bold }]}>
                 {Math.round(report.workout.totalDuration / 60)}h
               </Text>
@@ -74,7 +74,7 @@ export default function MonthlyReportScreen(): React.JSX.Element {
                 총 운동 시간
               </Text>
             </View>
-            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.lg }]}>
+            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
               <Text style={[styles.statValue, { color: colors.foreground, fontSize: typography.size.xl, fontWeight: typography.weight.bold }]}>
                 {report.workout.totalCalories}
               </Text>
@@ -82,7 +82,7 @@ export default function MonthlyReportScreen(): React.JSX.Element {
                 소모 칼로리
               </Text>
             </View>
-            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.lg }]}>
+            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
               <Text style={[styles.statValue, { color: colors.foreground, fontSize: typography.size.xl, fontWeight: typography.weight.bold }]}>
                 {report.workout.bestStreak}일
               </Text>

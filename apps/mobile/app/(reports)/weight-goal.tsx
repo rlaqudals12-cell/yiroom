@@ -270,7 +270,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
                 {
                   backgroundColor: colors.muted,
                   color: colors.foreground,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   fontSize: typography.size.xl,
                 },
               ]}
@@ -287,7 +287,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
                 styles.logButton,
                 {
                   backgroundColor: newWeight.trim() ? brand.primary : colors.muted,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                 },
               ]}
               onPress={handleLogWeight}
@@ -314,7 +314,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
                   {
                     backgroundColor: colors.muted,
                     color: colors.foreground,
-                    borderRadius: radii.lg,
+                    borderRadius: radii.xl,
                     fontSize: typography.size.xl,
                   },
                 ]}
@@ -331,7 +331,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
                   styles.logButton,
                   {
                     backgroundColor: targetWeight.trim() ? brand.primary : colors.muted,
-                    borderRadius: radii.lg,
+                    borderRadius: radii.xl,
                   },
                 ]}
                 onPress={handleSetGoal}

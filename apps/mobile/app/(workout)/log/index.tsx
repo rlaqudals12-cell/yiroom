@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   durationChip: {
     flex: 1,
     paddingVertical: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   intensityChip: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
   },
   notesInput: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: 14,
     fontSize: typography.size.sm,

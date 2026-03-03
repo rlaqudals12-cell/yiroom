@@ -124,7 +124,7 @@ export default function ReportsScreen(): React.JSX.Element {
               flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: brand.primary + '15',
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md - 2,
               marginBottom: spacing.md,
               gap: spacing.sm,
@@ -254,7 +254,7 @@ export default function ReportsScreen(): React.JSX.Element {
                     backgroundColor: moduleColors.personalColor.light + '30',
                     paddingHorizontal: spacing.sm,
                     paddingVertical: spacing.xs,
-                    borderRadius: radii.md,
+                    borderRadius: radii.xl,
                   }}
                 >
                   <Text
@@ -313,7 +313,7 @@ export default function ReportsScreen(): React.JSX.Element {
                     backgroundColor: moduleColors.skin.light + '30',
                     paddingHorizontal: spacing.sm,
                     paddingVertical: spacing.xs,
-                    borderRadius: radii.md,
+                    borderRadius: radii.xl,
                   }}
                 >
                   <Text
@@ -372,7 +372,7 @@ export default function ReportsScreen(): React.JSX.Element {
                     backgroundColor: moduleColors.body.light + '30',
                     paddingHorizontal: spacing.sm,
                     paddingVertical: spacing.xs,
-                    borderRadius: radii.md,
+                    borderRadius: radii.xl,
                   }}
                 >
                   <Text

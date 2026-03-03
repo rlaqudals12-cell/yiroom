@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   exerciseChip: {
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   exerciseChipText: {
     fontSize: typography.size.xs,

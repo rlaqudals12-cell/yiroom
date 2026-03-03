@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   card: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     overflow: 'hidden',
   },
   fieldGroup: {
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     height: 44,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     paddingHorizontal: spacing.smx,
     fontSize: 15,
     borderWidth: 1,
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   optionButton: {
     flex: 1,
     paddingVertical: spacing.smd,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     alignItems: 'center',
   },
   optionButtonText: {
@@ -400,14 +400,14 @@ const styles = StyleSheet.create({
   skinTypeButton: {
     paddingVertical: spacing.smd,
     paddingHorizontal: spacing.md,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   skinTypeButtonText: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
   saveButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     paddingVertical: 14,
     alignItems: 'center',
     marginBottom: spacing.lg,
