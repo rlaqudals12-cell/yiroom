@@ -20,6 +20,7 @@ import {
   SectionHeader,
   GlassCard,
   GradientBackground,
+  GradientText,
   CollapsibleSection,
   StatCard,
   GradientProgressBar,
@@ -175,7 +176,7 @@ export default function RecordsTab(): React.JSX.Element {
   }), [nutritionSettings, calorieGoal]);
 
   return (
-    <ScreenContainer testID="records-tab" contentContainerStyle={{ paddingBottom: spacing.xl }} refreshing={refreshing} onRefresh={handleRefresh}>
+    <ScreenContainer testID="records-tab" backgroundGradient="records" contentContainerStyle={{ paddingBottom: spacing.xl }} refreshing={refreshing} onRefresh={handleRefresh}>
         {/* 히어로 헤더 */}
         <Animated.View entering={FadeIn.duration(TIMING.normal)}>
           <GradientBackground
@@ -190,7 +191,7 @@ export default function RecordsTab(): React.JSX.Element {
               title="기록"
               gradient="brand"
               style={{ marginBottom: spacing.xs }}
-              titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold }}
+              titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold, letterSpacing: typography.letterSpacing.tight }}
             />
           </GradientBackground>
         </Animated.View>
@@ -199,6 +200,7 @@ export default function RecordsTab(): React.JSX.Element {
         <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
           <GlassCard
             intensity={30}
+            shadowSize="lg"
             style={{ padding: spacing.md + 4, marginBottom: spacing.lg }}
           >
             <View style={styles.todayHeader}>
@@ -280,6 +282,7 @@ export default function RecordsTab(): React.JSX.Element {
         <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
           <GlassCard
             intensity={20}
+            shadowSize="md"
             style={{
               padding: spacing.md,
               marginBottom: spacing.lg,
@@ -359,16 +362,14 @@ export default function RecordsTab(): React.JSX.Element {
             accessibilityRole="header"
           >
             <TrendingUp size={18} color={brand.primary} />
-            <Text
-              style={{
-                color: colors.foreground,
-                fontSize: typography.size.lg,
-                fontWeight: typography.weight.semibold,
-                marginLeft: spacing.sm,
-              }}
+            <GradientText
+              variant="brand"
+              fontSize={typography.size.lg}
+              fontWeight={typography.weight.semibold}
+              style={{ marginLeft: spacing.sm }}
             >
               주간 트렌드
-            </Text>
+            </GradientText>
           </View>
 
           {isLoading ? (
@@ -451,6 +452,7 @@ export default function RecordsTab(): React.JSX.Element {
         <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>
           <SectionHeader
             title="상세 기록"
+            gradient="brand"
             style={{ marginBottom: spacing.smx, marginTop: spacing.smx }}
           />
         </Animated.View>

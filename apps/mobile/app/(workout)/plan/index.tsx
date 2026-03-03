@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import { Platform, View, Text, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme } from '../../../lib/theme';
+import { useTheme, coloredShadow } from '../../../lib/theme';
 import { staggeredEntry } from '../../../lib/animations';
 
 interface DayPlan {
@@ -171,12 +171,7 @@ export default function WorkoutPlanScreen(): React.ReactElement {
                 borderColor: colors.border,
                 opacity: day.isRest ? 0.6 : 1,
               },
-              !isDark
-                ? Platform.select({
-                    ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-                    android: { elevation: 2 },
-                  }) ?? {}
-                : {},
+              !isDark ? coloredShadow(moduleColors.workout.base, 'sm') : {},
             ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: day.isRest ? 0 : spacing.sm }}>

@@ -5,10 +5,10 @@
  */
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme } from '../../../lib/theme';
+import { useTheme, coloredShadow } from '../../../lib/theme';
 import { staggeredEntry } from '../../../lib/animations';
 
 type RecipeCategory = 'all' | 'breakfast' | 'lunch' | 'dinner' | 'snack';
@@ -48,12 +48,7 @@ export default function RecipeListScreen(): React.ReactElement {
   const { colors, brand, spacing, radii, typography, module: moduleColors, nutrient: nutrientColors, isDark } = useTheme();
   const [activeCategory, setActiveCategory] = useState<RecipeCategory>('all');
 
-  const cardShadow = !isDark
-    ? Platform.select({
-        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-        android: { elevation: 2 },
-      }) ?? {}
-    : {};
+  const cardShadow = !isDark ? coloredShadow(moduleColors.nutrition.base, 'sm') : {};
 
   const filteredRecipes = activeCategory === 'all'
     ? MOCK_RECIPES

@@ -183,6 +183,15 @@ export const typography = {
     normal: 1.5,
     relaxed: 1.625,
   },
+  // 웹 tracking-tighter(-0.05em) ~ tracking-widest(0.1em) 대응 (16px 기준 환산)
+  letterSpacing: {
+    tighter: -0.8,
+    tight: -0.4,
+    normal: 0,
+    wide: 0.4,
+    wider: 0.8,
+    widest: 1.6,
+  },
 } as const;
 
 // 등급 색상 (분석 결과 등급 시각화 — 도메인 데이터)

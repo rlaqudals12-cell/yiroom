@@ -15,9 +15,8 @@ import {
   FlatList,
   ActivityIndicator,
   Share,
-  Platform,
 } from 'react-native';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii , spacing, coloredShadow, brand } from '@/lib/theme';
 import { ScreenContainer } from '../../../components/ui';
 
 import { feedTypeConfig, formatRelativeTime, type FeedItem, type FeedTab } from '../../../lib/feed';
@@ -325,17 +324,7 @@ const styles = StyleSheet.create({
   feedCard: {
     borderRadius: radii.xl,
     padding: spacing.md,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    ...coloredShadow(brand.primary, 'sm'),
   },
   cardHeader: {
     flexDirection: 'row',
@@ -485,17 +474,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
+    ...coloredShadow(brand.primary, 'lg'),
   },
   fabIcon: {
     fontSize: 28,

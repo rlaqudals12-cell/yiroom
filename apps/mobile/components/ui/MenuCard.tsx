@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { Check, ChevronRight } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme , spacing, radii } from '../../lib/theme';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 interface MenuCardProps {
   icon: React.ReactNode;
@@ -18,6 +18,8 @@ interface MenuCardProps {
   onPress: () => void;
   /** 완료 상태 — 체크 뱃지 표시 */
   isCompleted?: boolean;
+  /** 타이틀 옆 텍스트 뱃지 (예: '추천') */
+  badge?: string;
   testID?: string;
   style?: ViewStyle;
 }
@@ -29,10 +31,11 @@ export function MenuCard({
   description,
   onPress,
   isCompleted = false,
+  badge,
   testID,
   style,
 }: MenuCardProps): React.JSX.Element {
-  const { colors, isDark, status, spacing, radii, shadows, typography } = useTheme();
+  const { colors, isDark, status, brand, spacing, radii, shadows, typography } = useTheme();
 
   return (
     <Pressable
@@ -45,9 +48,7 @@ export function MenuCard({
         styles.card,
         !isDark && shadows.card,
         {
-          backgroundColor: pressed
-            ? (isDark ? colors.secondary : colors.muted)
-            : colors.card,
+          backgroundColor: pressed ? (isDark ? colors.secondary : colors.muted) : colors.card,
           borderColor: colors.border,
           borderRadius: radii.xl,
           padding: spacing.md + 4,
@@ -74,18 +75,38 @@ export function MenuCard({
           {icon}
         </View>
         <View style={styles.textContainer}>
-          <Text
-            style={[
-              styles.title,
-              {
-                color: colors.cardForeground,
-                fontSize: typography.size.lg - 1,
-                fontWeight: typography.weight.semibold,
-              },
-            ]}
-          >
-            {title}
-          </Text>
+          <View style={styles.titleRow}>
+            <Text
+              style={[
+                styles.title,
+                {
+                  color: colors.cardForeground,
+                  fontSize: typography.size.lg - 1,
+                  fontWeight: typography.weight.semibold,
+                },
+              ]}
+            >
+              {title}
+            </Text>
+            {badge && !isCompleted && (
+              <View
+                style={[
+                  styles.badge,
+                  { backgroundColor: brand.primary + '18', borderRadius: radii.sm },
+                ]}
+              >
+                <Text
+                  style={{
+                    color: brand.primary,
+                    fontSize: typography.size.xs - 1,
+                    fontWeight: typography.weight.semibold,
+                  }}
+                >
+                  {badge}
+                </Text>
+              </View>
+            )}
+          </View>
           <Text
             style={{
               color: colors.mutedForeground,
@@ -98,12 +119,7 @@ export function MenuCard({
           </Text>
         </View>
         {isCompleted ? (
-          <View
-            style={[
-              styles.completedBadge,
-              { backgroundColor: status.success },
-            ]}
-          >
+          <View style={[styles.completedBadge, { backgroundColor: status.success }]}>
             <Check size={14} color={colors.overlayForeground} strokeWidth={2.5} />
           </View>
         ) : (
@@ -131,8 +147,17 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: spacing.sm,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
   title: {
     lineHeight: 24,
+  },
+  badge: {
+    paddingHorizontal: spacing.xs + 2,
+    paddingVertical: 2,
   },
   completedBadge: {
     width: 24,

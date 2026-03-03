@@ -8,10 +8,10 @@ import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import React, { useState, useCallback } from 'react';
-import { Platform, View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import { useTheme, typography, spacing, radii } from '../../lib/theme';
+import { useTheme, typography, spacing, radii, coloredShadow, brand } from '../../lib/theme';
 import type { ThemeMode } from '../../lib/theme';
 import { ScreenContainer } from '../../components/ui';
 import { BottomSheet } from '../../components/ui/BottomSheet';
@@ -247,12 +247,8 @@ function SettingsItem({
 }) {
   const { colors, isDark } = useTheme();
 
-  // Platform shadow (웹 shadow-card 대응)
-  const cardShadow = isDark ? {} : Platform.select({
-    ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3 },
-    android: { elevation: 1 },
-    default: {},
-  });
+  // 모듈 컬러 쉐도우 (웹 shadow-card 대응)
+  const cardShadow = isDark ? {} : coloredShadow(brand.primary, 'sm');
 
   return (
     <Pressable
@@ -299,7 +295,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     marginLeft: spacing.xs,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.wider,
   },
   settingsItem: {
     flexDirection: 'row',

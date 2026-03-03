@@ -33,7 +33,7 @@ export { gradients, getModuleGradient } from './gradients';
 export type { GradientConfig, GradientKey } from './gradients';
 
 // 시각 효과
-export { borderGlow } from './effects';
+export { borderGlow, coloredShadow, iconGradientShadow } from './effects';
 export type { BorderGlowVariant } from './effects';
 
 // 대비율 검증

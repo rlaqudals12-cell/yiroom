@@ -3,12 +3,12 @@
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Platform, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing, coloredShadow, moduleColors } from '@/lib/theme';
 
 // 퍼스널 컬러 문진 질문
 const QUESTIONS = [
@@ -134,12 +134,7 @@ export default function PersonalColorScreen() {
                     backgroundColor: colors.card,
                     borderColor: colors.border,
                   },
-                  !isDark
-                    ? Platform.select({
-                        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6 },
-                        android: { elevation: 1 },
-                      }) ?? {}
-                    : {},
+                  !isDark ? coloredShadow(moduleColors.personalColor.base, 'sm') : {},
                   isSelected(option.value) && {
                     borderColor: moduleColors.personalColor.base,
                     backgroundColor: `${moduleColors.personalColor.base}10`,

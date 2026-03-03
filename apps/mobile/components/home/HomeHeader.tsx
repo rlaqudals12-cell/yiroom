@@ -4,7 +4,7 @@
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
-import { GradientBackground } from '../ui';
+import { GradientBackground, GradientText } from '../ui';
 import { useTheme, typography, spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 
@@ -52,12 +52,17 @@ export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.E
         <Text style={[styles.greeting, { fontSize: typography.size.sm, color: `${colors.overlayForeground}D9` }]}>
           {getGreeting()}
         </Text>
-        <Text style={[styles.userName, { fontSize: typography.size['2xl'], color: colors.overlayForeground }]}>
+        <Text style={[styles.userName, { fontSize: typography.size['2xl'], color: colors.overlayForeground, letterSpacing: typography.letterSpacing.tighter }]}>
           {isLoaded ? userName : '...'}님
         </Text>
-        <Text style={[styles.slogan, { fontSize: typography.size.xs, color: `${colors.overlayForeground}B3` }]}>
+        <GradientText
+          variant="extended"
+          fontSize={typography.size.xs}
+          fontWeight={typography.weight.medium}
+          style={styles.slogan}
+        >
           온전한 나를 찾는 여정, 이룸
-        </Text>
+        </GradientText>
       </GradientBackground>
     </Animated.View>
   );

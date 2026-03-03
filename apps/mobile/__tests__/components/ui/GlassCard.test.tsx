@@ -180,6 +180,106 @@ describe('GlassCard', () => {
     });
   });
 
+  describe('shadowSize prop', () => {
+    it('shadowSize="lg" 라이트 모드에서 그림자 스타일이 적용되어야 한다', () => {
+      Platform.OS = 'ios' as typeof Platform.OS;
+
+      const { getByTestId } = renderWithTheme(
+        <GlassCard testID="shadow-lg" shadowSize="lg">
+          <Text>큰 그림자</Text>
+        </GlassCard>,
+        false
+      );
+
+      const card = getByTestId('shadow-lg');
+      const flatStyle = Array.isArray(card.props.style)
+        ? card.props.style
+        : [card.props.style];
+      // lg 사이즈: shadows.lg 토큰 반환 (shadowRadius 16)
+      const hasShadow = flatStyle.some(
+        (s: Record<string, unknown>) => s && typeof s.shadowRadius === 'number' && s.shadowRadius >= 10
+      );
+      expect(hasShadow).toBe(true);
+    });
+
+    it('shadowSize="xl" 라이트 모드에서 그림자 스타일이 적용되어야 한다', () => {
+      Platform.OS = 'ios' as typeof Platform.OS;
+
+      const { getByTestId } = renderWithTheme(
+        <GlassCard testID="shadow-xl" shadowSize="xl">
+          <Text>매우 큰 그림자</Text>
+        </GlassCard>,
+        false
+      );
+
+      const card = getByTestId('shadow-xl');
+      const flatStyle = Array.isArray(card.props.style)
+        ? card.props.style
+        : [card.props.style];
+      const hasShadow = flatStyle.some(
+        (s: Record<string, unknown>) => s && typeof s.shadowRadius === 'number' && s.shadowRadius >= 10
+      );
+      expect(hasShadow).toBe(true);
+    });
+
+    it('다크 모드에서는 shadowSize와 무관하게 그림자가 적용되지 않아야 한다', () => {
+      Platform.OS = 'ios' as typeof Platform.OS;
+
+      const { getByTestId } = renderWithTheme(
+        <GlassCard testID="shadow-dark" shadowSize="xl">
+          <Text>다크 모드 그림자 없음</Text>
+        </GlassCard>,
+        true
+      );
+
+      const card = getByTestId('shadow-dark');
+      const flatStyle = Array.isArray(card.props.style)
+        ? card.props.style
+        : [card.props.style];
+      // 다크 모드에서 shadowRadius가 없거나 0이어야 함
+      const hasShadowRadius = flatStyle.some(
+        (s: Record<string, unknown>) => s && typeof s.shadowRadius === 'number' && (s.shadowRadius as number) > 0
+      );
+      expect(hasShadowRadius).toBe(false);
+    });
+  });
+
+  describe('glowColor prop', () => {
+    it('iOS에서 glowColor가 지정되면 컬러 쉐도우가 적용되어야 한다', () => {
+      Platform.OS = 'ios' as typeof Platform.OS;
+
+      const { getByTestId } = renderWithTheme(
+        <GlassCard testID="glow-card" shadowSize="xl" glowColor={moduleColors.skin.base}>
+          <Text>컬러 글로우</Text>
+        </GlassCard>,
+        false
+      );
+
+      const card = getByTestId('glow-card');
+      const flatStyle = Array.isArray(card.props.style)
+        ? card.props.style
+        : [card.props.style];
+      const hasGlowColor = flatStyle.some(
+        (s: Record<string, unknown>) => s && s.shadowColor === moduleColors.skin.base
+      );
+      expect(hasGlowColor).toBe(true);
+    });
+
+    it('glowColor 없이도 기본 그림자가 적용되어야 한다', () => {
+      Platform.OS = 'ios' as typeof Platform.OS;
+
+      const { getByTestId } = renderWithTheme(
+        <GlassCard testID="no-glow" shadowSize="lg">
+          <Text>기본 그림자</Text>
+        </GlassCard>,
+        false
+      );
+
+      const card = getByTestId('no-glow');
+      expect(card).toBeTruthy();
+    });
+  });
+
   describe('Android 폴백', () => {
     it('Android에서 BlurView 대신 반투명 배경 View로 렌더링되어야 한다', () => {
       Platform.OS = 'android' as typeof Platform.OS;

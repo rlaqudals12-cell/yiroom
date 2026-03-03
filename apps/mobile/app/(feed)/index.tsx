@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii , spacing, coloredShadow, brand } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -302,11 +302,7 @@ const styles = StyleSheet.create({
   feedCard: {
     borderRadius: radii.xl,
     padding: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    ...coloredShadow(brand.primary, 'sm'),
   },
   cardHeader: {
     flexDirection: 'row',

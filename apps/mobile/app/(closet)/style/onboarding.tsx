@@ -5,16 +5,18 @@
  */
 import { Check, ChevronRight } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import Animated, {
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+} from 'react-native-reanimated';
+
+import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import { ScreenContainer } from '../../../components/ui';
-import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 const STYLE_OPTIONS = [
   { id: 'casual', label: '캐주얼' },
@@ -54,15 +56,11 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
 
   const toggleStyle = useCallback((id: string) => {
-    setSelectedStyles((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+    setSelectedStyles((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   }, []);
 
   const toggleColor = useCallback((id: string) => {
-    setSelectedColors((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
-    );
+    setSelectedColors((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
   }, []);
 
   const canProceed =
@@ -113,40 +111,22 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
 
       {/* Step 1: 스타일 선택 */}
       {step === 0 && (
-        <ScrollView
-          contentContainerStyle={styles.optionsGrid}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView contentContainerStyle={styles.optionsGrid} showsVerticalScrollIndicator={false}>
           {STYLE_OPTIONS.map((option) => {
             const isSelected = selectedStyles.includes(option.id);
             return (
-              <Pressable
+              <StyleOptionCard
                 key={option.id}
-                style={[
-                  styles.styleOption,
-                  {
-                    backgroundColor: isSelected ? brand.primary : colors.secondary,
-                    borderRadius: radii.xl,
-                    borderWidth: isSelected ? 2 : 1,
-                    borderColor: isSelected ? brand.primary : colors.border,
-                  },
-                ]}
+                label={option.label}
+                isSelected={isSelected}
                 onPress={() => toggleStyle(option.id)}
-                accessibilityLabel={`${option.label} ${isSelected ? '선택됨' : '선택 안됨'}`}
-                accessibilityRole="button"
-              >
-                <Text
-                  style={[
-                    styles.styleOptionText,
-                    { color: isSelected ? brand.primaryForeground : colors.foreground },
-                  ]}
-                >
-                  {option.label}
-                </Text>
-                {isSelected && (
-                  <Check size={16} color={brand.primaryForeground} />
-                )}
-              </Pressable>
+                bgSelected={brand.primary}
+                bgDefault={colors.secondary}
+                fgSelected={brand.primaryForeground}
+                fgDefault={colors.foreground}
+                borderSelected={brand.primary}
+                borderDefault={colors.border}
+              />
             );
           })}
         </ScrollView>
@@ -154,10 +134,7 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
 
       {/* Step 2: 컬러 선택 */}
       {step === 1 && (
-        <ScrollView
-          contentContainerStyle={styles.colorGrid}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView contentContainerStyle={styles.colorGrid} showsVerticalScrollIndicator={false}>
           {COLOR_OPTIONS.map((option) => {
             const isSelected = selectedColors.includes(option.id);
             return (
@@ -197,7 +174,9 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
           contentContainerStyle={styles.summaryContainer}
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.summaryCard, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
+          <View
+            style={[styles.summaryCard, { backgroundColor: colors.card, borderRadius: radii.xl }]}
+          >
             <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>
               선호 스타일
             </Text>
@@ -205,7 +184,10 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
               {selectedStyles.map((id) => {
                 const option = STYLE_OPTIONS.find((o) => o.id === id);
                 return (
-                  <View key={id} style={[styles.summaryTag, { backgroundColor: brand.primary + '20' }]}>
+                  <View
+                    key={id}
+                    style={[styles.summaryTag, { backgroundColor: brand.primary + '20' }]}
+                  >
                     <Text style={[styles.summaryTagText, { color: brand.primary }]}>
                       {option?.label}
                     </Text>
@@ -214,7 +196,12 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
               })}
             </View>
 
-            <Text style={[styles.summaryLabel, { color: colors.mutedForeground, marginTop: spacing.md }]}>
+            <Text
+              style={[
+                styles.summaryLabel,
+                { color: colors.mutedForeground, marginTop: spacing.md },
+              ]}
+            >
               자주 입는 컬러
             </Text>
             <View style={styles.summaryColorRow}>
@@ -268,6 +255,69 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
         </Pressable>
       </View>
     </ScreenContainer>
+  );
+}
+
+// 선택 시 bounce 애니메이션이 있는 스타일 옵션 카드
+function StyleOptionCard({
+  label,
+  isSelected,
+  onPress,
+  bgSelected,
+  bgDefault,
+  fgSelected,
+  fgDefault,
+  borderSelected,
+  borderDefault,
+}: {
+  label: string;
+  isSelected: boolean;
+  onPress: () => void;
+  bgSelected: string;
+  bgDefault: string;
+  fgSelected: string;
+  fgDefault: string;
+  borderSelected: string;
+  borderDefault: string;
+}): React.JSX.Element {
+  const scale = useSharedValue(1);
+  const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  const handlePress = (): void => {
+    // 선택/해제 bounce: 1 → 1.06 → 1
+    scale.value = withSequence(
+      withSpring(1.06, { damping: 15, stiffness: 400 }),
+      withSpring(1, { damping: 20, stiffness: 400 })
+    );
+    onPress();
+  };
+
+  return (
+    <Animated.View style={animStyle}>
+      <Pressable
+        style={[
+          styles.styleOption,
+          {
+            backgroundColor: isSelected ? bgSelected : bgDefault,
+            borderRadius: radii.xl,
+            borderWidth: isSelected ? 2 : 1,
+            borderColor: isSelected ? borderSelected : borderDefault,
+          },
+        ]}
+        onPress={handlePress}
+        accessibilityLabel={`${label} ${isSelected ? '선택됨' : '선택 안됨'}`}
+        accessibilityRole="button"
+      >
+        <Text style={[styles.styleOptionText, { color: isSelected ? fgSelected : fgDefault }]}>
+          {label}
+        </Text>
+        {isSelected && (
+          <Animated.View entering={FadeIn.duration(200)}>
+            <Check size={16} color={fgSelected} />
+          </Animated.View>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 

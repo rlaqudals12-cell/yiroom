@@ -112,7 +112,7 @@ export default function BeautyTab(): React.JSX.Element {
   const hasSkinData = skinAnalysis !== null;
 
   return (
-    <ScreenContainer testID="beauty-tab" contentContainerStyle={{ paddingBottom: spacing.xl }} refreshing={refreshing} onRefresh={handleRefresh}>
+    <ScreenContainer testID="beauty-tab" backgroundGradient="beauty" contentContainerStyle={{ paddingBottom: spacing.xl }} refreshing={refreshing} onRefresh={handleRefresh}>
         {/* 히어로 헤더 */}
         <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
           <GradientBackground
@@ -127,7 +127,7 @@ export default function BeautyTab(): React.JSX.Element {
               title="뷰티"
               gradient="personalColor"
               style={{ marginBottom: spacing.xs }}
-              titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold }}
+              titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold, letterSpacing: typography.letterSpacing.tight }}
             />
           </GradientBackground>
         </Animated.View>
@@ -272,6 +272,7 @@ export default function BeautyTab(): React.JSX.Element {
               iconBg={moduleColors.skin.light + ICON_BG_OPACITY}
               title="피부 분석"
               description="AI가 피부 상태를 분석하고 맞춤 케어를 추천해요"
+              badge="추천"
               onPress={() => router.push('/(analysis)/skin')}
               testID="menu-skin"
             />

@@ -24,7 +24,7 @@ import {
 } from 'react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
+import { useTheme, brand, typography, spacing, radii, coloredShadow, moduleColors } from '../../lib/theme';
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
 import { useCloset } from '../../lib/inventory/useInventory';
 import type { SavedOutfit, InventoryItem, Season, Occasion } from '../../lib/inventory/types';
@@ -458,10 +458,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    ...coloredShadow(moduleColors.body.base, 'lg'),
   },
 });

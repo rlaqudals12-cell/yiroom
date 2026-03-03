@@ -4,10 +4,10 @@
  * 과거 식사 기록과 영양 섭취 추이를 확인한다.
  */
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme } from '../../../lib/theme';
+import { useTheme, coloredShadow } from '../../../lib/theme';
 import { staggeredEntry } from '../../../lib/animations';
 
 interface DailyRecord {
@@ -118,12 +118,7 @@ export default function NutritionHistoryScreen(): React.ReactElement {
                   borderWidth: 1,
                   borderColor: colors.border,
                 },
-                !isDark
-                  ? Platform.select({
-                      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-                      android: { elevation: 2 },
-                    }) ?? {}
-                  : {},
+                !isDark ? coloredShadow(moduleColors.nutrition.base, 'sm') : {},
               ]}
             >
               {/* 요약 */}

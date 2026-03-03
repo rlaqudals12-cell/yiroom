@@ -9,7 +9,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '../../../components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing, coloredShadow, moduleColors } from '@/lib/theme';
 
 const FEATURES = [
   { icon: '🎨', title: '얼굴형 분석', desc: '얼굴 윤곽과 비율을 정밀 분석' },
@@ -60,12 +60,7 @@ export default function MakeupAnalysisScreen() {
         <Animated.View entering={staggeredEntry(1)} style={[
           styles.card,
           { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-          !isDark
-            ? Platform.select({
-                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-                android: { elevation: 2 },
-              }) ?? {}
-            : {},
+          !isDark ? coloredShadow(moduleColors.makeup.base, 'sm') : {},
         ]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>분석 항목</Text>
           <View style={styles.features}>
@@ -89,12 +84,7 @@ export default function MakeupAnalysisScreen() {
         <Animated.View entering={staggeredEntry(2)} style={[
           styles.card,
           { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-          !isDark
-            ? Platform.select({
-                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-                android: { elevation: 2 },
-              }) ?? {}
-            : {},
+          !isDark ? coloredShadow(moduleColors.makeup.base, 'sm') : {},
         ]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>촬영 가이드</Text>
           <View style={styles.guideList}>

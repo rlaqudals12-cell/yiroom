@@ -137,6 +137,7 @@ export function StatCard({
             color: colors.foreground,
             fontSize: typography.size['2xl'],
             fontWeight: typography.weight.bold,
+            letterSpacing: typography.letterSpacing.tighter,
             marginTop: emoji ? 0 : spacing.xs,
           },
         ]}

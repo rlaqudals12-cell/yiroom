@@ -39,6 +39,7 @@ export { StatCard } from './StatCard';
 export { GradientProgressBar } from './GradientProgressBar';
 export { PressableCard } from './PressableCard';
 export { ScreenContainer } from './ScreenContainer';
+export type { BackgroundGradientVariant } from './ScreenContainer';
 export { BottomSheet } from './BottomSheet';
 export { CollapsibleHeader } from './CollapsibleHeader';
 export { CelebrationEffect } from './CelebrationEffect';

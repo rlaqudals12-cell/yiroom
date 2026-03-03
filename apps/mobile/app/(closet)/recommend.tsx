@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { ScreenContainer, SuccessCheckmark } from '../../components/ui';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii , spacing, coloredShadow, moduleColors } from '@/lib/theme';
 
 import type { Season as ClothingSeason } from '../../lib/inventory/types';
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
@@ -686,11 +686,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    ...coloredShadow(moduleColors.body.base, 'lg'),
   },
   successOverlay: {
     ...StyleSheet.absoluteFillObject,

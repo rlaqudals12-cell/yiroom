@@ -53,7 +53,7 @@ export default function StyleTab(): React.JSX.Element {
   const outfitSuggestion = getOutfitSuggestion();
 
   return (
-    <ScreenContainer testID="style-tab" refreshing={refreshing} onRefresh={handleRefresh}>
+    <ScreenContainer testID="style-tab" backgroundGradient="style" refreshing={refreshing} onRefresh={handleRefresh}>
         {/* 히어로 헤더 */}
         <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
           <GradientBackground
@@ -68,7 +68,7 @@ export default function StyleTab(): React.JSX.Element {
               title="스타일"
               gradient="body"
               style={{ marginBottom: spacing.xs }}
-              titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold }}
+              titleStyle={{ color: colors.overlayForeground, fontSize: typography.size['2xl'], fontWeight: typography.weight.bold, letterSpacing: typography.letterSpacing.tight }}
             />
           </GradientBackground>
         </Animated.View>
@@ -149,6 +149,7 @@ export default function StyleTab(): React.JSX.Element {
         <Animated.View entering={FadeInUp.delay(250).duration(TIMING.normal)}>
           <SectionHeader
             title="스타일링"
+            gradient="body"
             style={{ marginTop: spacing.lg, marginBottom: spacing.sm + 4 }}
           />
         </Animated.View>

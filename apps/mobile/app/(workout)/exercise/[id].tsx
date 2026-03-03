@@ -6,7 +6,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Platform, View, Text, ScrollView, Pressable } from 'react-native';
 
-import { useTheme } from '../../../lib/theme';
+import { useTheme, coloredShadow } from '../../../lib/theme';
 
 interface ExerciseDetail {
   name: string;
@@ -64,12 +64,7 @@ export default function ExerciseDetailScreen(): React.ReactElement {
   const diffConfig = DIFFICULTY_LABELS[exercise.difficulty];
 
   // 카드 공통 그림자 (웹 shadow-sm border 매칭)
-  const cardShadow = !isDark
-    ? Platform.select({
-        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-        android: { elevation: 2 },
-      }) ?? {}
-    : {};
+  const cardShadow = !isDark ? coloredShadow(workoutColor, 'sm') : {};
 
   return (
     <ScrollView

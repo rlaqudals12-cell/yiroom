@@ -165,5 +165,24 @@ describe('디자인 토큰', () => {
       expect(typography).toHaveProperty('lineHeight');
       expect(typography.lineHeight).toHaveProperty('normal');
     });
+
+    it('letterSpacing 토큰이 정의되어야 한다', () => {
+      expect(typography).toHaveProperty('letterSpacing');
+      expect(typography.letterSpacing).toHaveProperty('tighter');
+      expect(typography.letterSpacing).toHaveProperty('tight');
+      expect(typography.letterSpacing).toHaveProperty('normal');
+      expect(typography.letterSpacing).toHaveProperty('wide');
+      expect(typography.letterSpacing).toHaveProperty('wider');
+      expect(typography.letterSpacing).toHaveProperty('widest');
+    });
+
+    it('letterSpacing tighter가 음수여야 한다', () => {
+      expect(typography.letterSpacing.tighter).toBeLessThan(0);
+      expect(typography.letterSpacing.tighter).toBe(-0.8);
+    });
+
+    it('letterSpacing normal이 0이어야 한다', () => {
+      expect(typography.letterSpacing.normal).toBe(0);
+    });
   });
 });

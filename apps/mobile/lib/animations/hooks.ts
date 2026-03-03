@@ -99,11 +99,11 @@ export function usePressScale(pressedScale = 0.97): {
   const scale = useSharedValue(1);
 
   const onPressIn = (): void => {
-    scale.value = withTiming(pressedScale, { duration: 100 });
+    scale.value = withTiming(pressedScale, { duration: 150 });
   };
 
   const onPressOut = (): void => {
-    scale.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.ease) });
+    scale.value = withSpring(1, { damping: 20, stiffness: 400, mass: 0.8 });
   };
 
   const animatedStyle = useAnimatedStyle(() => ({

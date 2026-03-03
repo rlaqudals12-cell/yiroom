@@ -18,7 +18,7 @@ import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react-native';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
+import { useTheme, coloredShadow, moduleColors, brand, typography, spacing, radii } from '../../../lib/theme';
 import { useSkinDiary } from '../../../hooks/useSkinDiary';
 import {
   CONDITION_LABELS,
@@ -346,7 +346,7 @@ export default function SkinDiaryScreen(): React.JSX.Element {
 
       {/* FAB: 새 기록 추가 */}
       <Pressable
-        style={[styles.fab, { backgroundColor: brand.primary }]}
+        style={[styles.fab, { backgroundColor: brand.primary }, !isDark ? coloredShadow(moduleColors.skin.base, 'md') : {}]}
         onPress={handleAddEntry}
         testID="add-diary-btn"
       >
@@ -533,10 +533,5 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
   },
 });

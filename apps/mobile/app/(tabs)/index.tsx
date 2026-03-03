@@ -260,7 +260,7 @@ export default function HomeScreen(): React.JSX.Element {
   }
 
   return (
-    <ScreenContainer testID="home-screen" contentContainerStyle={{ paddingBottom: 40 }} refreshing={refreshing} onRefresh={handleRefresh}>
+    <ScreenContainer testID="home-screen" backgroundGradient="home" contentContainerStyle={{ paddingBottom: 40 }} refreshing={refreshing} onRefresh={handleRefresh}>
       <HomeHeader userName={userName} isLoaded={isLoaded} />
 
       <HomeTodaySection

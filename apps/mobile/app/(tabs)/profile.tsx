@@ -67,7 +67,7 @@ export default function ProfileScreen(): React.JSX.Element {
   };
 
   return (
-    <ScreenContainer testID="profile-screen" contentContainerStyle={{ paddingBottom: spacing.xl + spacing.sm }} refreshing={refreshing} onRefresh={handleRefresh}>
+    <ScreenContainer testID="profile-screen" backgroundGradient="profile" contentContainerStyle={{ paddingBottom: spacing.xl + spacing.sm }} refreshing={refreshing} onRefresh={handleRefresh}>
         {/* 프로필 헤더 — 브랜드 그라디언트 + GlassCard */}
         <Animated.View entering={FadeIn.duration(TIMING.normal)}>
           <GradientBackground
@@ -81,6 +81,8 @@ export default function ProfileScreen(): React.JSX.Element {
           >
             <GlassCard
               intensity={35}
+              shadowSize="xl"
+              glowColor={brand.primary}
               style={{ padding: spacing.lg, alignItems: 'center' }}
             >
               {isSignedIn && user ? (

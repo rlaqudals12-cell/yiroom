@@ -18,7 +18,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii , spacing, coloredShadow, moduleColors } from '@/lib/theme';
 
 export default function BodyAnalysisScreen() {
   const { colors, spacing, radii, typography, isDark, module: moduleColors } = useTheme();
@@ -113,12 +113,7 @@ export default function BodyAnalysisScreen() {
         <Animated.View entering={staggeredEntry(1)} style={[
           styles.card,
           { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-          !isDark
-            ? Platform.select({
-                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-                android: { elevation: 2 },
-              }) ?? {}
-            : {},
+          !isDark ? coloredShadow(moduleColors.body.base, 'sm') : {},
         ]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>신체 정보</Text>
 
@@ -169,12 +164,7 @@ export default function BodyAnalysisScreen() {
         <Animated.View entering={staggeredEntry(2)} style={[
           styles.card,
           { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-          !isDark
-            ? Platform.select({
-                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-                android: { elevation: 2 },
-              }) ?? {}
-            : {},
+          !isDark ? coloredShadow(moduleColors.body.base, 'sm') : {},
         ]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>전신 사진</Text>
           <Text style={[styles.cardDescription, { color: colors.mutedForeground }]}>

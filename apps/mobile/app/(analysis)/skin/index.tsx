@@ -8,7 +8,7 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii , spacing, coloredShadow, moduleColors } from '@/lib/theme';
 
 export default function SkinAnalysisScreen() {
   const { colors, brand, spacing, radii, typography, isDark, module: moduleColors } = useTheme();
@@ -49,12 +49,7 @@ export default function SkinAnalysisScreen() {
         <Animated.View entering={staggeredEntry(1)} style={[
           styles.card,
           { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-          !isDark
-            ? Platform.select({
-                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-                android: { elevation: 2 },
-              }) ?? {}
-            : {},
+          !isDark ? coloredShadow(moduleColors.skin.base, 'sm') : {},
         ]}>
           <Text accessibilityRole="header" style={[styles.cardTitle, { color: colors.foreground }]}>분석 항목</Text>
           <View style={styles.itemList}>
@@ -72,12 +67,7 @@ export default function SkinAnalysisScreen() {
         <Animated.View entering={staggeredEntry(2)} style={[
           styles.card,
           { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-          !isDark
-            ? Platform.select({
-                ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-                android: { elevation: 2 },
-              }) ?? {}
-            : {},
+          !isDark ? coloredShadow(moduleColors.skin.base, 'sm') : {},
         ]}>
           <Text accessibilityRole="header" style={[styles.cardTitle, { color: colors.foreground }]}>촬영 가이드</Text>
           <View style={styles.guideList}>

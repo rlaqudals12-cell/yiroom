@@ -6,7 +6,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
 
-import { useTheme } from '../../../lib/theme';
+import { useTheme, coloredShadow } from '../../../lib/theme';
 
 interface Ingredient {
   name: string;
@@ -55,12 +55,7 @@ export default function RecipeDetailScreen(): React.ReactElement {
   const { colors, brand, spacing, radii, typography, module: moduleColors, nutrient: nutrientColors, isDark } = useTheme();
 
   // 카드 공통 그림자 (웹 shadow-sm border 매칭)
-  const cardShadow = !isDark
-    ? Platform.select({
-        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
-        android: { elevation: 2 },
-      }) ?? {}
-    : {};
+  const cardShadow = !isDark ? coloredShadow(moduleColors.nutrition.base, 'sm') : {};
 
   const recipe = MOCK_RECIPE;
   const totalMacro = recipe.nutrition.carbs + recipe.nutrition.protein + recipe.nutrition.fat;

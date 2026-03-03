@@ -54,6 +54,7 @@ export function SectionHeader({
                 color: colors.foreground,
                 fontSize: typography.size.lg,
                 fontWeight: typography.weight.bold,
+                letterSpacing: typography.letterSpacing.tight,
               },
               titleStyle,
             ]}

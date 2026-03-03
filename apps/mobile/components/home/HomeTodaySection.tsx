@@ -123,6 +123,7 @@ export function HomeTodaySection({
 
       <GlassCard
         intensity={50}
+        shadowSize="lg"
         style={{ padding: 0, marginBottom: spacing.lg, borderRadius: radii.xl, overflow: 'hidden' }}
       >
         {tasks.map((task, index) => (
