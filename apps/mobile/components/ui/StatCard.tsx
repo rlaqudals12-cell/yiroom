@@ -61,7 +61,7 @@ export function StatCard({
   style,
   testID = 'stat-card',
 }: StatCardProps): React.JSX.Element {
-  const { colors, module, spacing, radii, typography, shadows, status } = useTheme();
+  const { colors, module, spacing, radii, typography, shadows, status, isDark } = useTheme();
 
   // countUp 애니메이션 — SharedValue 기반
   const animatedValue = useCountUp(value, duration);
@@ -88,12 +88,19 @@ export function StatCard({
       testID={testID}
       style={[
         styles.container,
-        shadows.card,
         {
           backgroundColor: colors.card,
           borderColor: colors.border,
           borderRadius: radii.xl,
           padding: spacing.md,
+          // 모듈별 accent shadow (웹 gradient-accent 카드 매칭)
+          ...(isDark ? {} : {
+            shadowColor: accentColor,
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.15,
+            shadowRadius: 10,
+            elevation: 3,
+          }),
         },
         style,
       ]}

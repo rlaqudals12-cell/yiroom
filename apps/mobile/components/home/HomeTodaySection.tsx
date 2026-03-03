@@ -86,20 +86,18 @@ export function HomeTodaySection({
       {/* 알림 배너 — 아이콘 + 색상 보더 + 그림자 */}
       {notifications.length > 0 && (
         <View
-          style={[
-            {
-              backgroundColor: getNotificationBg(notifications[0].type),
-              borderRadius: radii.xl,
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing.smx,
-              marginBottom: spacing.md,
-              borderWidth: 1,
-              borderColor: getNotificationBg(notifications[0].type).replace('20', '40'),
-              flexDirection: 'row',
-              alignItems: 'center',
-            },
-            shadows.sm,
-          ]}
+          style={{
+            backgroundColor: getNotificationBg(notifications[0].type),
+            borderRadius: radii.xl,
+            paddingHorizontal: spacing.md,
+            paddingVertical: spacing.smx,
+            marginBottom: spacing.md,
+            borderWidth: 1.5,
+            borderColor: getNotificationBg(notifications[0].type).replace('20', '50'),
+            flexDirection: 'row',
+            alignItems: 'center',
+            ...shadows.md,
+          }}
         >
           <Text style={{ fontSize: 16, marginRight: spacing.sm }}>
             {notifications[0].type === 'success' ? '🎉' : notifications[0].type === 'warning' ? '⚠️' : '💡'}

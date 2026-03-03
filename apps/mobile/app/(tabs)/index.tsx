@@ -424,10 +424,10 @@ function ModuleCard({
               ios: {
                 shadowColor: meta.gradientColors[1],
                 shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
+                shadowOpacity: 0.35,
+                shadowRadius: 10,
               },
-              android: { elevation: 4 },
+              android: { elevation: 5 },
             }) ?? {} : {},
           ]}>
             <LinearGradient
@@ -435,14 +435,14 @@ function ModuleCard({
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{
-                width: 44,
-                height: 44,
+                width: 48,
+                height: 48,
                 borderRadius: radii.xl,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <IconComponent size={22} color="#FFFFFF" strokeWidth={2} />
+              <IconComponent size={24} color="#FFFFFF" strokeWidth={2} />
             </LinearGradient>
           </View>
           <View style={{ flex: 1 }}>
