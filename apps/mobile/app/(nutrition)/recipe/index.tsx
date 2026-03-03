@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useTheme } from '../../../lib/theme';
@@ -45,8 +45,15 @@ const MOCK_RECIPES: Recipe[] = [
 
 export default function RecipeListScreen(): React.ReactElement {
   const router = useRouter();
-  const { colors, brand, spacing, radii, typography, module: moduleColors, nutrient: nutrientColors } = useTheme();
+  const { colors, brand, spacing, radii, typography, module: moduleColors, nutrient: nutrientColors, isDark } = useTheme();
   const [activeCategory, setActiveCategory] = useState<RecipeCategory>('all');
+
+  const cardShadow = !isDark
+    ? Platform.select({
+        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+        android: { elevation: 2 },
+      }) ?? {}
+    : {};
 
   const filteredRecipes = activeCategory === 'all'
     ? MOCK_RECIPES
@@ -117,11 +124,16 @@ export default function RecipeListScreen(): React.ReactElement {
           <Pressable
             accessibilityLabel={`${recipe.name}, ${recipe.calories}kcal`}
             onPress={() => router.push({ pathname: '/(nutrition)/recipe/[id]' as never, params: { id: recipe.id } })}
-            style={{
-              backgroundColor: colors.card,
-              borderRadius: radii.lg,
-              padding: spacing.md,
-            }}
+            style={[
+              {
+                backgroundColor: colors.card,
+                borderRadius: radii.xl,
+                padding: spacing.md,
+                borderWidth: 1,
+                borderColor: colors.border,
+              },
+              cardShadow,
+            ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
               <Text style={{ fontSize: 32, marginRight: spacing.smx }}>{recipe.emoji}</Text>

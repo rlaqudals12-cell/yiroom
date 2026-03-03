@@ -4,7 +4,7 @@
  * 과거 식사 기록과 영양 섭취 추이를 확인한다.
  */
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useTheme } from '../../../lib/theme';
@@ -62,7 +62,7 @@ const MOCK_HISTORY: DailyRecord[] = [
 ];
 
 export default function NutritionHistoryScreen(): React.ReactElement {
-  const { colors, brand, spacing, radii, typography, status, module: moduleColors, nutrient: nutrientColors } = useTheme();
+  const { colors, brand, spacing, radii, typography, status, module: moduleColors, nutrient: nutrientColors, isDark } = useTheme();
   const [expandedDate, setExpandedDate] = useState<string | null>(MOCK_HISTORY[0]?.date ?? null);
 
   const getCalorieColor = (current: number, target: number): string => {
@@ -110,11 +110,21 @@ export default function NutritionHistoryScreen(): React.ReactElement {
             <Pressable
               accessibilityLabel={`${record.dayLabel} 영양 기록, ${record.totalCalories}kcal`}
               onPress={() => setExpandedDate((prev) => (prev === record.date ? null : record.date))}
-              style={{
-                backgroundColor: colors.card,
-                borderRadius: radii.lg,
-                padding: spacing.md,
-              }}
+              style={[
+                {
+                  backgroundColor: colors.card,
+                  borderRadius: radii.xl,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                },
+                !isDark
+                  ? Platform.select({
+                      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+                      android: { elevation: 2 },
+                    }) ?? {}
+                  : {},
+              ]}
             >
               {/* 요약 */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: expanded ? spacing.sm : 0 }}>

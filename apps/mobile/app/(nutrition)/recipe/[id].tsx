@@ -4,7 +4,7 @@
  * 개별 레시피의 재료, 조리법, 영양 정보를 표시한다.
  */
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
 
 import { useTheme } from '../../../lib/theme';
 
@@ -52,7 +52,15 @@ const MOCK_RECIPE = {
 export default function RecipeDetailScreen(): React.ReactElement {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { colors, brand, spacing, radii, typography, module: moduleColors, nutrient: nutrientColors } = useTheme();
+  const { colors, brand, spacing, radii, typography, module: moduleColors, nutrient: nutrientColors, isDark } = useTheme();
+
+  // 카드 공통 그림자 (웹 shadow-sm border 매칭)
+  const cardShadow = !isDark
+    ? Platform.select({
+        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+        android: { elevation: 2 },
+      }) ?? {}
+    : {};
 
   const recipe = MOCK_RECIPE;
   const totalMacro = recipe.nutrition.carbs + recipe.nutrition.protein + recipe.nutrition.fat;
@@ -92,12 +100,17 @@ export default function RecipeDetailScreen(): React.ReactElement {
         영양 정보
       </Text>
       <View
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.lg,
-          padding: spacing.md,
-          marginBottom: spacing.lg,
-        }}
+        style={[
+          {
+            backgroundColor: colors.card,
+            borderRadius: radii.xl,
+            padding: spacing.md,
+            marginBottom: spacing.lg,
+            borderWidth: 1,
+            borderColor: colors.border,
+          },
+          cardShadow,
+        ]}
       >
         <Text
           style={{
@@ -140,12 +153,17 @@ export default function RecipeDetailScreen(): React.ReactElement {
         재료
       </Text>
       <View
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.lg,
-          padding: spacing.md,
-          marginBottom: spacing.lg,
-        }}
+        style={[
+          {
+            backgroundColor: colors.card,
+            borderRadius: radii.xl,
+            padding: spacing.md,
+            marginBottom: spacing.lg,
+            borderWidth: 1,
+            borderColor: colors.border,
+          },
+          cardShadow,
+        ]}
       >
         {recipe.ingredients.map((ingredient, index) => (
           <View
@@ -170,12 +188,12 @@ export default function RecipeDetailScreen(): React.ReactElement {
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
         {recipe.steps.map((step, index) => (
-          <View key={index} style={{ flexDirection: 'row', backgroundColor: colors.card, borderRadius: radii.lg, padding: spacing.md }}>
+          <View key={index} style={[{ flexDirection: 'row', backgroundColor: colors.card, borderRadius: radii.xl, padding: spacing.md, borderWidth: 1, borderColor: colors.border }, cardShadow]}>
             <View
               style={{
                 width: 24,
                 height: 24,
-                borderRadius: radii.smx,
+                borderRadius: 12,
                 backgroundColor: moduleColors.nutrition.base,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -197,12 +215,20 @@ export default function RecipeDetailScreen(): React.ReactElement {
       <Pressable
         accessibilityLabel="이 레시피로 식사 기록하기"
         onPress={() => router.push('/(nutrition)/record')}
-        style={{
-          backgroundColor: moduleColors.nutrition.base,
-          borderRadius: radii.lg,
-          paddingVertical: spacing.smx,
-          alignItems: 'center',
-        }}
+        style={[
+          {
+            backgroundColor: moduleColors.nutrition.base,
+            borderRadius: radii.full,
+            paddingVertical: spacing.smx,
+            alignItems: 'center',
+          },
+          !isDark
+            ? Platform.select({
+                ios: { shadowColor: moduleColors.nutrition.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                android: { elevation: 4 },
+              }) ?? {}
+            : {},
+        ]}
       >
         <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
           식사 기록하기

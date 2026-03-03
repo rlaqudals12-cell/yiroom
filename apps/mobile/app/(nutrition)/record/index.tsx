@@ -10,6 +10,7 @@ import {
   Pressable,
   TextInput,
   Alert,
+  Platform,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -38,7 +39,7 @@ const QUICK_ADD_FOODS = [
 ];
 
 export default function NutritionRecordScreen() {
-  const { colors, module: themeModuleColors, typography, spacing, radii} = useTheme();
+  const { colors, module: themeModuleColors, typography, spacing, radii, isDark } = useTheme();
   const nutritionColor = themeModuleColors.nutrition.dark;
 
   const [selectedMealType, setSelectedMealType] = useState<MealType>('lunch');
@@ -219,7 +220,16 @@ export default function NutritionRecordScreen() {
         ]}
       >
         <Pressable
-          style={[styles.saveButton, { backgroundColor: nutritionColor }]}
+          style={[
+            styles.saveButton,
+            { backgroundColor: nutritionColor },
+            !isDark
+              ? Platform.select({
+                  ios: { shadowColor: nutritionColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                  android: { elevation: 4 },
+                }) ?? {}
+              : {},
+          ]}
           onPress={handleSave}
         >
           <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>기록 저장</Text>
@@ -237,7 +247,7 @@ const styles = StyleSheet.create({
   },
   mealTypeButton: {
     flex: 1,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.smx,
     alignItems: 'center',
     borderWidth: 2,
@@ -275,7 +285,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.smx,
     marginBottom: spacing.md,
@@ -305,7 +315,7 @@ const styles = StyleSheet.create({
   },
   quickAddItem: {
     width: '30%',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.smx,
     alignItems: 'center',
   },
@@ -367,7 +377,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   saveButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
   },

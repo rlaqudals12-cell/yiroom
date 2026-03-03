@@ -43,7 +43,7 @@ interface WaterRecord {
 }
 
 export default function WaterTrackingScreen() {
-  const { colors, status, typography, spacing, radii} = useTheme();
+  const { colors, status, typography, spacing, radii, isDark } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   drinkTypeChipSelected: {
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.md,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   quickAddText: {
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xxs,
   },
   emptyCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.xl,
     alignItems: 'center',
   },
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   recordsCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     overflow: 'hidden',
   },
   recordItem: {

@@ -654,7 +654,7 @@ const styles = StyleSheet.create({
   permissionButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.full,
   },
   permissionButtonText: {
     fontSize: typography.size.base,
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
     height: 200,
   },
   insightCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     marginHorizontal: spacing.mlg,
     marginTop: spacing.md,
@@ -698,7 +698,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.smx,
   },
   emptyCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.lg,
     alignItems: 'center',
   },
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   foodCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     marginBottom: spacing.smx,
   },
@@ -750,7 +750,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     marginBottom: spacing.smx,
   },
   confidenceBadgeText: {
@@ -791,14 +791,14 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderStyle: 'dashed',
   },
   addFoodText: {
     fontSize: typography.size.sm,
   },
   totalCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.mlg,
     marginHorizontal: spacing.mlg,
     marginBottom: spacing.mlg,
@@ -820,7 +820,7 @@ const styles = StyleSheet.create({
   retakeButton: {
     flex: 1,
     padding: spacing.md,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -831,7 +831,7 @@ const styles = StyleSheet.create({
   saveButton: {
     flex: 2,
     padding: spacing.md,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     alignItems: 'center',
   },
   saveButtonDisabled: {

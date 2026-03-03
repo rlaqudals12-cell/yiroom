@@ -14,6 +14,7 @@ import {
   Text,
   StyleSheet,
   Pressable,
+  Platform,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -72,7 +73,7 @@ function formatRelativeDate(dateStr: string): string {
 }
 
 export default function FastingTrackerScreen(): React.JSX.Element {
-  const { colors, spacing, radii, typography, brand, status, shadows, module: moduleColors } = useTheme();
+  const { colors, spacing, radii, typography, brand, status, shadows, isDark, module: moduleColors } = useTheme();
   const nutritionColor = moduleColors.nutrition.base;
   const supabase = useClerkSupabaseClient();
 
@@ -239,6 +240,8 @@ export default function FastingTrackerScreen(): React.JSX.Element {
               padding: spacing.xl,
               marginBottom: spacing.lg,
               alignItems: 'center',
+              borderWidth: 1,
+              borderColor: fastingState === 'fasting' ? nutritionColor : colors.border,
             },
           ]}
         >
@@ -296,9 +299,15 @@ export default function FastingTrackerScreen(): React.JSX.Element {
               styles.actionButton,
               {
                 backgroundColor: fastingState === 'fasting' ? `${colors.overlayForeground}40` : nutritionColor,
-                borderRadius: radii.lg,
+                borderRadius: radii.full,
                 marginTop: spacing.lg,
               },
+              fastingState !== 'fasting' && !isDark
+                ? Platform.select({
+                    ios: { shadowColor: nutritionColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                    android: { elevation: 4 },
+                  }) ?? {}
+                : {},
             ]}
             onPress={fastingState === 'fasting' ? handleStopFasting : handleStartFasting}
           >

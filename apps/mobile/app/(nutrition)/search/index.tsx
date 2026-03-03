@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   searchInput: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: 14,
     fontSize: typography.size.base,
     borderWidth: 1,
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: 14,
     marginBottom: spacing.sm,
   },
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
     backgroundColor: moduleColors.nutrition.dark,
     paddingHorizontal: spacing.lg,
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
   },
   saveButtonDisabled: {
     opacity: 0.5,

@@ -568,7 +568,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   retryButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
   },
@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   searchButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
   },
   macroItem: {
     flex: 1,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.smx,
     alignItems: 'center',
   },
@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
   mealTypeChip: {
     flex: 1,
     paddingVertical: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -710,7 +710,7 @@ const styles = StyleSheet.create({
   },
   rescanButton: {
     flex: 1,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
@@ -721,7 +721,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 2,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
   },
