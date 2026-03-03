@@ -1,9 +1,10 @@
 # SDD: 캡슐 옷장 시스템 (Capsule Wardrobe)
 
-> **Version**: 1.0
+> **Version**: 2.0
 > **Status**: `draft`
-> **Created**: 2026-01-20
+> **Created**: 2026-01-20 | **Updated**: 2026-03-03
 > **원리 참조**: [fashion-matching.md](../principles/fashion-matching.md)
+> **캡슐 연동**: [ADR-069](../adr/ADR-069-capsule-ecosystem-architecture.md), [SDD-CAPSULE-ECOSYSTEM](./SDD-CAPSULE-ECOSYSTEM.md)
 
 ---
 
@@ -21,21 +22,21 @@
 
 ### 물리적 한계
 
-| 한계 | 설명 |
-|------|------|
-| 이미지 인식 | 의류 자동 분류 정확도 한계 |
-| 스타일 주관성 | 개인 취향 반영 어려움 |
+| 한계            | 설명                         |
+| --------------- | ---------------------------- |
+| 이미지 인식     | 의류 자동 분류 정확도 한계   |
+| 스타일 주관성   | 개인 취향 반영 어려움        |
 | 계절/TPO 복잡도 | 다양한 상황 조합 폭발적 증가 |
 
 ### 100점 기준
 
-| 항목 | 100점 기준 | 현재 | 달성률 |
-|------|-----------|------|--------|
-| 자동 분류 정확도 | 95% | 80% (수동 보정) | 84% |
-| 코디 조합 수 | 864+ | 계획 | 0% |
-| PC 연동 | 12톤 | 4시즌 | 33% |
-| 체형 연동 | 완전 | 기본 | 50% |
-| 누락 아이템 추천 | AI | 규칙 기반 | 40% |
+| 항목             | 100점 기준 | 현재            | 달성률 |
+| ---------------- | ---------- | --------------- | ------ |
+| 자동 분류 정확도 | 95%        | 80% (수동 보정) | 84%    |
+| 코디 조합 수     | 864+       | 계획            | 0%     |
+| PC 연동          | 12톤       | 4시즌           | 33%    |
+| 체형 연동        | 완전       | 기본            | 50%    |
+| 누락 아이템 추천 | AI         | 규칙 기반       | 40%    |
 
 ### 현재 목표
 
@@ -70,12 +71,12 @@
 
 ### 1.3 성공 기준
 
-| 지표 | 목표 | 측정 방법 |
-|------|------|----------|
-| 옷장 등록 완료율 | 60%+ | 등록 시작 → 완료 비율 |
-| 코디 추천 만족도 | 4.2+/5 | 사용자 피드백 |
-| 재방문율 | 30%+ | 주간 코디 확인 비율 |
-| 구매 전환율 | 5%+ | 추천 → 어필리에이트 클릭 |
+| 지표             | 목표   | 측정 방법                |
+| ---------------- | ------ | ------------------------ |
+| 옷장 등록 완료율 | 60%+   | 등록 시작 → 완료 비율    |
+| 코디 추천 만족도 | 4.2+/5 | 사용자 피드백            |
+| 재방문율         | 30%+   | 주간 코디 확인 비율      |
+| 구매 전환율      | 5%+    | 추천 → 어필리에이트 클릭 |
 
 ---
 
@@ -125,12 +126,12 @@
 
 ### 2.2 부가 기능
 
-| 기능 | 설명 | 우선순위 |
-|------|------|----------|
-| 옷장 공유 | 친구와 옷장/코디 공유 | P2 |
-| 가상 피팅 | AI 가상 착용 | P3 |
-| 세탁 관리 | 세탁 주기 알림 | P3 |
-| 시즌 아카이브 | 계절별 보관 | P2 |
+| 기능          | 설명                  | 우선순위 |
+| ------------- | --------------------- | -------- |
+| 옷장 공유     | 친구와 옷장/코디 공유 | P2       |
+| 가상 피팅     | AI 가상 착용          | P3       |
+| 세탁 관리     | 세탁 주기 알림        | P3       |
+| 시즌 아카이브 | 계절별 보관           | P2       |
 
 ---
 
@@ -258,27 +259,44 @@ CREATE POLICY "user_own_wear_logs" ON wear_logs
 ```typescript
 // types/wardrobe.ts
 
-export type ItemCategory =
-  | 'top'
-  | 'bottom'
-  | 'dress'
-  | 'outerwear'
-  | 'shoes'
-  | 'accessory';
+export type ItemCategory = 'top' | 'bottom' | 'dress' | 'outerwear' | 'shoes' | 'accessory';
 
 export type ItemSubcategory =
   // Tops
-  | 'tshirt' | 'blouse' | 'shirt' | 'knit' | 'sweater' | 'hoodie'
+  | 'tshirt'
+  | 'blouse'
+  | 'shirt'
+  | 'knit'
+  | 'sweater'
+  | 'hoodie'
   // Bottoms
-  | 'jeans' | 'slacks' | 'skirt' | 'shorts'
+  | 'jeans'
+  | 'slacks'
+  | 'skirt'
+  | 'shorts'
   // Dress
-  | 'mini_dress' | 'midi_dress' | 'maxi_dress' | 'jumpsuit'
+  | 'mini_dress'
+  | 'midi_dress'
+  | 'maxi_dress'
+  | 'jumpsuit'
   // Outerwear
-  | 'jacket' | 'coat' | 'blazer' | 'cardigan'
+  | 'jacket'
+  | 'coat'
+  | 'blazer'
+  | 'cardigan'
   // Shoes
-  | 'sneakers' | 'loafers' | 'heels' | 'boots' | 'sandals'
+  | 'sneakers'
+  | 'loafers'
+  | 'heels'
+  | 'boots'
+  | 'sandals'
   // Accessories
-  | 'bag' | 'belt' | 'scarf' | 'jewelry' | 'hat' | 'glasses';
+  | 'bag'
+  | 'belt'
+  | 'scarf'
+  | 'jewelry'
+  | 'hat'
+  | 'glasses';
 
 export interface WardrobeItem {
   id: string;
@@ -350,7 +368,7 @@ export interface Outfit {
 interface OutfitGeneratorOptions {
   occasion?: OccasionType;
   weather?: WeatherCondition;
-  excludeItems?: string[];  // 최근 착용한 아이템 제외
+  excludeItems?: string[]; // 최근 착용한 아이템 제외
   colorPreference?: string;
 }
 
@@ -362,19 +380,17 @@ async function generateOutfits(
   const { occasion, weather, excludeItems = [] } = options;
 
   // 사용 가능한 아이템 필터링
-  const availableItems = wardrobe.filter(item =>
-    !item.isArchived &&
-    !excludeItems.includes(item.id) &&
-    matchesWeather(item, weather)
+  const availableItems = wardrobe.filter(
+    (item) => !item.isArchived && !excludeItems.includes(item.id) && matchesWeather(item, weather)
   );
 
   // 카테고리별 분류
-  const tops = availableItems.filter(i => i.category === 'top');
-  const bottoms = availableItems.filter(i => i.category === 'bottom');
-  const dresses = availableItems.filter(i => i.category === 'dress');
-  const shoes = availableItems.filter(i => i.category === 'shoes');
-  const outerwear = availableItems.filter(i => i.category === 'outerwear');
-  const accessories = availableItems.filter(i => i.category === 'accessory');
+  const tops = availableItems.filter((i) => i.category === 'top');
+  const bottoms = availableItems.filter((i) => i.category === 'bottom');
+  const dresses = availableItems.filter((i) => i.category === 'dress');
+  const shoes = availableItems.filter((i) => i.category === 'shoes');
+  const outerwear = availableItems.filter((i) => i.category === 'outerwear');
+  const accessories = availableItems.filter((i) => i.category === 'accessory');
 
   const candidates: Outfit[] = [];
 
@@ -382,11 +398,7 @@ async function generateOutfits(
   for (const top of tops) {
     for (const bottom of bottoms) {
       for (const shoe of shoes) {
-        const outfit = evaluateOutfit(
-          [top, bottom, shoe],
-          userProfile,
-          occasion
-        );
+        const outfit = evaluateOutfit([top, bottom, shoe], userProfile, occasion);
 
         if (outfit.overallScore >= 65) {
           // 아우터 추가 (날씨에 따라)
@@ -425,9 +437,7 @@ async function generateOutfits(
   }
 
   // 점수순 정렬 후 상위 10개
-  return candidates
-    .sort((a, b) => b.overallScore - a.overallScore)
-    .slice(0, 10);
+  return candidates.sort((a, b) => b.overallScore - a.overallScore).slice(0, 10);
 }
 
 function evaluateOutfit(
@@ -446,9 +456,7 @@ function evaluateOutfit(
 
   // 종합 점수
   const overallScore = Math.round(
-    colorHarmonyScore * 0.4 +
-    bodyMatchScore * 0.35 +
-    occasionScore * 0.25
+    colorHarmonyScore * 0.4 + bodyMatchScore * 0.35 + occasionScore * 0.25
   );
 
   return {
@@ -487,11 +495,11 @@ interface CapsuleAnalysis {
   missingItems: MissingItemRecommendation[];
 
   // 정리 추천
-  underutilizedItems: WardrobeItem[];  // 착용 빈도 낮은 아이템
+  underutilizedItems: WardrobeItem[]; // 착용 빈도 낮은 아이템
 
   // 점수
-  capsuleScore: number;  // 0-100
-  versatilityScore: number;  // 코디 다양성
+  capsuleScore: number; // 0-100
+  versatilityScore: number; // 코디 다양성
 }
 
 interface MissingItemRecommendation {
@@ -500,7 +508,7 @@ interface MissingItemRecommendation {
   suggestedColor: string;
   reason: string;
   priority: 'high' | 'medium' | 'low';
-  affiliateProducts?: Product[];  // 추천 상품
+  affiliateProducts?: Product[]; // 추천 상품
 }
 
 async function analyzeCapsule(
@@ -523,9 +531,8 @@ async function analyzeCapsule(
   const missingItems = identifyMissingItems(wardrobe, idealCapsule, userProfile);
 
   // 활용도 낮은 아이템
-  const underutilizedItems = wardrobe.filter(item =>
-    item.wearCount < 3 &&
-    daysSinceCreated(item) > 30
+  const underutilizedItems = wardrobe.filter(
+    (item) => item.wearCount < 3 && daysSinceCreated(item) > 30
   );
 
   // 강점/약점 분석
@@ -561,7 +568,7 @@ function identifyMissingItems(
 
   // 카테고리별 체크
   for (const [category, idealCount] of Object.entries(idealCapsule.categories)) {
-    const currentCount = wardrobe.filter(i => i.category === category).length;
+    const currentCount = wardrobe.filter((i) => i.category === category).length;
 
     if (currentCount < idealCount) {
       missing.push({
@@ -577,7 +584,7 @@ function identifyMissingItems(
   const toneBalance = checkToneBalance(wardrobe, userProfile.personalColor.season);
   if (toneBalance.needsMore) {
     missing.push({
-      category: 'top',  // 상의로 색상 추가 권장
+      category: 'top', // 상의로 색상 추가 권장
       suggestedColor: toneBalance.suggestedColor,
       reason: `${toneBalance.suggestedColor} 계열 아이템이 부족해요`,
       priority: 'medium',
@@ -595,17 +602,23 @@ function identifyMissingItems(
 
 interface WearStatistics {
   // 아이템별 통계
-  itemStats: Map<string, {
-    wearCount: number;
-    lastWornAt: Date | null;
-    costPerWear: number | null;  // 구매가격 / 착용횟수
-  }>;
+  itemStats: Map<
+    string,
+    {
+      wearCount: number;
+      lastWornAt: Date | null;
+      costPerWear: number | null; // 구매가격 / 착용횟수
+    }
+  >;
 
   // 카테고리별 통계
-  categoryStats: Record<ItemCategory, {
-    totalWears: number;
-    mostWornItem: WardrobeItem | null;
-  }>;
+  categoryStats: Record<
+    ItemCategory,
+    {
+      totalWears: number;
+      mostWornItem: WardrobeItem | null;
+    }
+  >;
 
   // 기간별 통계
   periodStats: {
@@ -632,9 +645,10 @@ async function getWearStatistics(
   // 아이템별 집계
   const itemStats = new Map();
   for (const item of wardrobe) {
-    const wears = wearLogs.data.filter(log =>
-      log.item_ids?.includes(item.id) ||
-      log.outfit_id && getOutfitItems(log.outfit_id).includes(item.id)
+    const wears = wearLogs.data.filter(
+      (log) =>
+        log.item_ids?.includes(item.id) ||
+        (log.outfit_id && getOutfitItems(log.outfit_id).includes(item.id))
     );
 
     itemStats.set(item.id, {
@@ -657,17 +671,13 @@ async function getWearStatistics(
   };
 }
 
-function generateWearInsights(
-  wardrobe: WardrobeItem[],
-  itemStats: Map<string, any>
-): string[] {
+function generateWearInsights(wardrobe: WardrobeItem[], itemStats: Map<string, any>): string[] {
   const insights: string[] = [];
 
   // 가장 많이 입은 아이템
-  const mostWorn = [...itemStats.entries()]
-    .sort((a, b) => b[1].wearCount - a[1].wearCount)[0];
+  const mostWorn = [...itemStats.entries()].sort((a, b) => b[1].wearCount - a[1].wearCount)[0];
   if (mostWorn && mostWorn[1].wearCount > 0) {
-    const item = wardrobe.find(i => i.id === mostWorn[0]);
+    const item = wardrobe.find((i) => i.id === mostWorn[0]);
     insights.push(`가장 많이 입은 아이템: ${item?.name} (${mostWorn[1].wearCount}회)`);
   }
 
@@ -676,12 +686,14 @@ function generateWearInsights(
     .filter(([_, stats]) => stats.costPerWear !== null && stats.wearCount >= 3)
     .sort((a, b) => a[1].costPerWear - b[1].costPerWear)[0];
   if (bestValue) {
-    const item = wardrobe.find(i => i.id === bestValue[0]);
-    insights.push(`가성비 최고: ${item?.name} (착용당 ${bestValue[1].costPerWear.toLocaleString()}원)`);
+    const item = wardrobe.find((i) => i.id === bestValue[0]);
+    insights.push(
+      `가성비 최고: ${item?.name} (착용당 ${bestValue[1].costPerWear.toLocaleString()}원)`
+    );
   }
 
   // 오래 안 입은 아이템
-  const unused = wardrobe.filter(item => {
+  const unused = wardrobe.filter((item) => {
     const stats = itemStats.get(item.id);
     return stats?.wearCount === 0 && daysSinceCreated(item) > 30;
   });
@@ -739,11 +751,7 @@ export async function POST(request: Request) {
     purchase_price: body.purchasePrice,
   };
 
-  const { data, error } = await supabase
-    .from('wardrobe_items')
-    .insert(newItem)
-    .select()
-    .single();
+  const { data, error } = await supabase.from('wardrobe_items').insert(newItem).select().single();
 
   return NextResponse.json({ success: true, data });
 }
@@ -784,14 +792,14 @@ export async function POST(request: Request) {
 
 ### 6.1 주요 화면
 
-| 화면 | 설명 | 경로 |
-|------|------|------|
-| 옷장 메인 | 등록된 아이템 그리드 | `/wardrobe` |
-| 아이템 등록 | 사진 업로드 + 정보 입력 | `/wardrobe/add` |
+| 화면        | 설명                    | 경로                  |
+| ----------- | ----------------------- | --------------------- |
+| 옷장 메인   | 등록된 아이템 그리드    | `/wardrobe`           |
+| 아이템 등록 | 사진 업로드 + 정보 입력 | `/wardrobe/add`       |
 | 아이템 상세 | 개별 아이템 정보 + 통계 | `/wardrobe/item/[id]` |
-| 코디 추천 | AI 생성 코디 목록 | `/wardrobe/outfits` |
-| 캡슐 분석 | 옷장 진단 + 추천 | `/wardrobe/capsule` |
-| 착용 기록 | 캘린더 형태 기록 | `/wardrobe/history` |
+| 코디 추천   | AI 생성 코디 목록       | `/wardrobe/outfits`   |
+| 캡슐 분석   | 옷장 진단 + 추천        | `/wardrobe/capsule`   |
+| 착용 기록   | 캘린더 형태 기록        | `/wardrobe/history`   |
 
 ### 6.2 컴포넌트
 
@@ -813,17 +821,17 @@ export function WearCalendar({ logs, onDateClick }: WearCalendarProps);
 
 ## 7. 원자 분해 (P3)
 
-| ID | 원자 | 입력 | 출력 | 시간 |
-|----|------|------|------|------|
-| CW-1 | DB 스키마 | 설계 | Migration | 2h |
-| CW-2 | 아이템 CRUD API | Request | Response | 3h |
-| CW-3 | 색상 추출 연동 | 이미지 | 색상 정보 | 1h |
-| CW-4 | 코디 생성 알고리즘 | 옷장, 프로필 | 코디 배열 | 4h |
-| CW-5 | 캡슐 분석 알고리즘 | 옷장 | 분석 결과 | 3h |
-| CW-6 | 착용 추적 | 기록 | 통계 | 2h |
-| CW-7 | 옷장 UI | 데이터 | React 컴포넌트 | 4h |
-| CW-8 | 코디 추천 UI | 데이터 | React 컴포넌트 | 3h |
-| CW-9 | 테스트 | 코드 | 테스트 | 3h |
+| ID   | 원자               | 입력         | 출력           | 시간 |
+| ---- | ------------------ | ------------ | -------------- | ---- |
+| CW-1 | DB 스키마          | 설계         | Migration      | 2h   |
+| CW-2 | 아이템 CRUD API    | Request      | Response       | 3h   |
+| CW-3 | 색상 추출 연동     | 이미지       | 색상 정보      | 1h   |
+| CW-4 | 코디 생성 알고리즘 | 옷장, 프로필 | 코디 배열      | 4h   |
+| CW-5 | 캡슐 분석 알고리즘 | 옷장         | 분석 결과      | 3h   |
+| CW-6 | 착용 추적          | 기록         | 통계           | 2h   |
+| CW-7 | 옷장 UI            | 데이터       | React 컴포넌트 | 4h   |
+| CW-8 | 코디 추천 UI       | 데이터       | React 컴포넌트 | 3h   |
+| CW-9 | 테스트             | 코드         | 테스트         | 3h   |
 
 **총 예상 시간**: 25시간
 
@@ -888,11 +896,7 @@ describe('WardrobeItem CRUD', () => {
 ```typescript
 // tests/lib/wardrobe/outfit.test.ts
 import { describe, it, expect } from 'vitest';
-import {
-  generateOutfit,
-  OutfitGenerationRequest,
-  PersonalColorProfile,
-} from '@/lib/wardrobe';
+import { generateOutfit, OutfitGenerationRequest, PersonalColorProfile } from '@/lib/wardrobe';
 
 describe('generateOutfit', () => {
   const mockWardrobe: WardrobeItem[] = [
@@ -1002,11 +1006,120 @@ describe('analyzeCapsuleWardrobe', () => {
 
 ## 9. 관련 문서
 
-| 문서 | 관계 |
-|------|------|
-| [fashion-matching.md](../principles/fashion-matching.md) | 원리 |
-| [SDD-AUTO-COLOR-CLASSIFICATION](./SDD-AUTO-COLOR-CLASSIFICATION.md) | 색상 추출 |
-| [ADR-034](../adr/ADR-034-product-color-classification.md) | 색상 분류 ADR |
+| 문서                                                                | 관계          |
+| ------------------------------------------------------------------- | ------------- |
+| [fashion-matching.md](../principles/fashion-matching.md)            | 원리          |
+| [SDD-AUTO-COLOR-CLASSIFICATION](./SDD-AUTO-COLOR-CLASSIFICATION.md) | 색상 추출     |
+| [ADR-034](../adr/ADR-034-product-color-classification.md)           | 색상 분류 ADR |
+
+---
+
+## 10. 캡슐 에코시스템 연동 (v2.0 추가)
+
+> 이 섹션은 캡슐 에코시스템(ADR-069) 통합을 위해 v2.0에서 추가됨.
+
+### 10.1 CapsuleEngine\<WardrobeItem\> 구현
+
+```typescript
+// lib/capsule/domains/fashion.ts
+import { CapsuleEngine, BeautyProfile, Capsule } from '../engine';
+import { WardrobeItem } from '@/types/wardrobe';
+
+export const fashionCapsuleEngine: CapsuleEngine<WardrobeItem> = {
+  async curate(profile, options) {
+    // C1: 33-아이템 캡슐 기준 (L1 초보)
+    const n = this.getOptimalN(profile);
+    // wardrobe_items에서 사용자 아이템 조회
+    // PC 팔레트 + 체형 적합도 기준 상위 N개 선별
+    return topItems;
+  },
+
+  getOptimalN(profile) {
+    // P-1 C1: 레벨별 N값
+    const level = profile.personalizationLevel;
+    const nMap = { 1: 33, 2: 37, 3: 50, 4: Infinity };
+    return nMap[level];
+  },
+
+  checkCompatibility(items) {
+    // ADR-071 CCS: 색상 조화(Lab ΔE) + 실루엣 호환
+    return calculateFashionCCS(items);
+  },
+
+  getPairwiseScore(a, b) {
+    // 색상 조화도 (40%) + 스타일 호환 (35%) + TPO 호환 (25%)
+    return colorHarmony * 0.4 + silhouetteCompat * 0.35 + tpoCompat * 0.25;
+  },
+
+  personalize(items, profile) {
+    // C3: PC 시즌 + 체형 기반 재정렬
+    return items.sort((a, b) => profileFit(b, profile) - profileFit(a, profile));
+  },
+
+  shouldRotate(capsule) {
+    // C4: 12-16주 (계절 전환)
+    const weeks = daysSince(capsule.lastRotation) / 7;
+    return weeks >= 12;
+  },
+
+  async rotate(capsule, profile) {
+    // 계절 전환 시 20-40% 교체
+    const toReplace = capsule.items.filter(
+      (item) => !isSeasonAppropriate(item, getCurrentSeason())
+    );
+    return await this.curate(profile, { exclude: capsule.items });
+  },
+
+  minimize(items) {
+    // C5: 33-아이템 캡슐로 수렴
+    // 중복 카테고리 제거, 활용도 낮은 아이템 제거
+    return optimizeToTarget(items, 33);
+  },
+};
+```
+
+### 10.2 Daily Capsule 연동
+
+```
+Daily Capsule에서 Fashion 도메인 기여:
+  → "오늘의 코디" 1벌 추천
+  → 날씨/TPO 컨텍스트 반영
+  → wear_logs에 착용 기록 → 로테이션 판단 소스
+```
+
+### 10.3 쇼핑 컴패니언 연동 (ADR-075)
+
+```
+갭 분석:
+  1. 현재 wardrobe_items 분석
+  2. 33-아이템 캡슐 기준 부족 카테고리 식별
+  3. PC 팔레트에 맞는 색상 추천
+  4. ADR-067 어필리에이트로 구매 연결
+```
+
+### 10.4 가상 피팅 연동 (ADR-072)
+
+```
+향후 L3 연동:
+  → 선택한 추천 아이템을 체형 위에 가상 배치
+  → C-1 체형 랜드마크 기반 실루엣 합성
+  → "시착해보기" → 캡슐에 추가/제외 결정
+```
+
+---
+
+## 11. 관련 문서 (v2.0 확장)
+
+| 문서                                                                | 관계          |
+| ------------------------------------------------------------------- | ------------- |
+| [fashion-matching.md](../principles/fashion-matching.md)            | 원리          |
+| [SDD-AUTO-COLOR-CLASSIFICATION](./SDD-AUTO-COLOR-CLASSIFICATION.md) | 색상 추출     |
+| [ADR-034](../adr/ADR-034-product-color-classification.md)           | 색상 분류 ADR |
+| [ADR-069](../adr/ADR-069-capsule-ecosystem-architecture.md)         | 캡슐 아키텍처 |
+| [ADR-050](../adr/ADR-050-fashion-closet-crossmodule.md)             | 크로스모듈    |
+| [ADR-074](../adr/ADR-074-capsule-extensibility.md)                  | 확장성 전략   |
+| [ADR-075](../adr/ADR-075-shopping-companion.md)                     | 쇼핑 컴패니언 |
+| [SDD-CAPSULE-ECOSYSTEM](./SDD-CAPSULE-ECOSYSTEM.md)                 | 통합 스펙     |
 
 ---
 
