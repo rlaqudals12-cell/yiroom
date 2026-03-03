@@ -1,6 +1,7 @@
 /**
  * S-1 피부 분석 - 시작 화면
  */
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Platform, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -101,23 +102,29 @@ export default function SkinAnalysisScreen() {
         ]}
       >
         <Pressable
-          style={[
-            styles.startButton,
-            { backgroundColor: moduleColors.skin.base },
-            !isDark
-              ? Platform.select({
-                  ios: { shadowColor: moduleColors.skin.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
-                  android: { elevation: 4 },
-                }) ?? {}
-              : {},
-          ]}
           onPress={handleStartAnalysis}
           accessibilityRole="button"
           accessibilityLabel="피부 분석 시작하기"
+          style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}
         >
-          <Text style={[styles.startButtonText, { color: colors.overlayForeground }]}>
-            피부 분석 시작하기
-          </Text>
+          <LinearGradient
+            colors={[moduleColors.skin.base, moduleColors.skin.dark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[
+              styles.startButton,
+              !isDark
+                ? Platform.select({
+                    ios: { shadowColor: moduleColors.skin.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                    android: { elevation: 4 },
+                  }) ?? {}
+                : {},
+            ]}
+          >
+            <Text style={[styles.startButtonText, { color: colors.overlayForeground }]}>
+              피부 분석 시작하기
+            </Text>
+          </LinearGradient>
         </Pressable>
       </View>
     </ScreenContainer>

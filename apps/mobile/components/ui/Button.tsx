@@ -33,7 +33,7 @@ export function Button({
   testID,
   style: externalStyle,
 }: ButtonProps): React.JSX.Element {
-  const { colors, brand, radii, shadows, typography } = useTheme();
+  const { colors, brand, isDark, radii, shadows, typography } = useTheme();
   const isDisabled = disabled || isLoading;
 
   const bgColor = getBackgroundColor(variant, colors, brand);
@@ -41,8 +41,10 @@ export function Button({
   const borderColor = variant === 'outline' ? colors.border : 'transparent';
   const sizeStyle = getSizeStyle(size);
 
-  // default/destructive variant에 미세한 그림자 추가 (깊이감)
+  // default/destructive variant에 미세한 그림자 (다크모드 제외 — 웹 dark:shadow-none 대응)
   const needsShadow = variant === 'default' || variant === 'destructive';
+  // ghost/outline: pressed 시 배경색 변화로 자연스러운 피드백 (opacity 대신)
+  const isGhostLike = variant === 'ghost' || variant === 'outline';
 
   return (
     <Pressable
@@ -61,14 +63,16 @@ export function Button({
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.base,
-        needsShadow && shadows.sm,
+        needsShadow && !isDark && shadows.sm,
         {
-          backgroundColor: bgColor,
+          backgroundColor: pressed && !isDisabled && isGhostLike
+            ? (isDark ? colors.secondary : colors.muted)
+            : bgColor,
           borderColor,
           borderRadius: radii.xl,
           paddingHorizontal: sizeStyle.px,
           paddingVertical: sizeStyle.py,
-          opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
+          opacity: isDisabled ? 0.5 : (pressed && !isGhostLike ? 0.9 : 1),
         },
         variant === 'outline' && styles.outlined,
         externalStyle,

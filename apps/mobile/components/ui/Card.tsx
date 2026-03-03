@@ -17,14 +17,14 @@ interface CardProps {
 }
 
 export function Card({ children, style, testID }: CardProps): React.JSX.Element {
-  const { colors, radii, shadows } = useTheme();
+  const { colors, isDark, radii, shadows } = useTheme();
 
   return (
     <View
       testID={testID}
       style={[
         styles.card,
-        shadows.card,
+        !isDark && shadows.card,
         {
           backgroundColor: colors.card,
           borderColor: colors.border,

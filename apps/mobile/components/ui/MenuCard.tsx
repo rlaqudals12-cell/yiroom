@@ -32,7 +32,7 @@ export function MenuCard({
   testID,
   style,
 }: MenuCardProps): React.JSX.Element {
-  const { colors, status, spacing, radii, shadows, typography } = useTheme();
+  const { colors, isDark, status, spacing, radii, shadows, typography } = useTheme();
 
   return (
     <Pressable
@@ -43,13 +43,14 @@ export function MenuCard({
       }}
       style={({ pressed }) => [
         styles.card,
-        shadows.card,
+        !isDark && shadows.card,
         {
-          backgroundColor: colors.card,
+          backgroundColor: pressed
+            ? (isDark ? colors.secondary : colors.muted)
+            : colors.card,
           borderColor: colors.border,
           borderRadius: radii.xl,
           padding: spacing.md + 4,
-          opacity: pressed ? 0.85 : 1,
         },
         style,
       ]}
