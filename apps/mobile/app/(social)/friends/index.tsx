@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: 14,
     gap: spacing.sm,
   },
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
   },
   statItem: {
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   friendCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: 14,
   },
   avatarContainer: {
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
   },
   emptyButtonText: {
     fontSize: 15,

@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     marginBottom: spacing.smx,
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     alignItems: 'center',
   },
   newSessionButtonText: {
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   sessionCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
   },
   sessionRow: {

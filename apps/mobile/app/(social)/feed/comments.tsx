@@ -135,7 +135,7 @@ export default function CommentsScreen(): React.JSX.Element {
   };
 
   const renderComment = ({ item }: { item: Comment }): React.JSX.Element => (
-    <View style={[styles.commentCard, { backgroundColor: colors.card, borderRadius: radii.lg }]}>
+    <View style={[styles.commentCard, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
       <View style={styles.commentHeader}>
         <View style={[styles.commentAvatar, { backgroundColor: colors.muted }]}>
           <Text style={[styles.commentAvatarText, { color: colors.mutedForeground }]}>

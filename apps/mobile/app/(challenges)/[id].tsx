@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   backButton: {
     paddingHorizontal: spacing.mlg,
     paddingVertical: spacing.smd,
-    borderRadius: radii.md,
+    borderRadius: radii.full,
   },
   backButtonText: {
     fontWeight: typography.weight.semibold,
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     gap: spacing.xs,
   },
   badgeText: {
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
   },
   logButton: {
     paddingVertical: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.full,
     alignItems: 'center',
   },
   logButtonText: {
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   },
   joinButton: {
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     alignItems: 'center',
   },
   joinButtonText: {

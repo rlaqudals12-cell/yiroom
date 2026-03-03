@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: spacing.md,
     marginBottom: spacing.sm,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.xs,
   },
   tab: {
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   domainBadge: {
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.md,
+    borderRadius: radii.full,
   },
   domainBadgeText: {
     fontSize: typography.size.xs,
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
   difficultyBadge: {
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.md,
+    borderRadius: radii.full,
   },
   difficultyBadgeText: {
     fontSize: typography.size.xs,
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   },
   joinButton: {
     paddingVertical: spacing.smx,
-    borderRadius: radii.lg,
+    borderRadius: radii.full,
     alignItems: 'center',
   },
   joinButtonText: {
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
   },
   emptyButtonText: {
     fontSize: 15,

@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
   badgeHighlight: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.smx,
     marginBottom: spacing.smx,
     gap: spacing.sm,
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
   },
   emptyButtonText: {
     fontSize: 15,

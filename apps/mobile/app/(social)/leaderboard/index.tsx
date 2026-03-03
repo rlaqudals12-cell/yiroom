@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: spacing.md,
     marginBottom: spacing.sm,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.xs,
   },
   tab: {
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   rankingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: 14,
   },
   rankingCardMe: {

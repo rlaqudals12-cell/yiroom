@@ -168,7 +168,7 @@ export default function FeedCreateScreen(): React.JSX.Element {
                 {
                   backgroundColor: colors.card,
                   color: colors.foreground,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   fontSize: typography.size.base,
                   marginTop: spacing.sm,
                 },
@@ -196,7 +196,7 @@ export default function FeedCreateScreen(): React.JSX.Element {
                 {
                   backgroundColor: colors.card,
                   color: colors.foreground,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   fontSize: typography.size.base,
                   marginTop: spacing.sm,
                 },
@@ -224,7 +224,7 @@ export default function FeedCreateScreen(): React.JSX.Element {
               styles.submitButton,
               {
                 backgroundColor: canSubmit ? brand.primary : colors.muted,
-                borderRadius: radii.lg,
+                borderRadius: radii.full,
               },
             ]}
             onPress={handleSubmit}
@@ -266,7 +266,7 @@ export default function FeedCreateScreen(): React.JSX.Element {
                   styles.sheetOption,
                   {
                     backgroundColor: isActive ? brand.primary : colors.muted,
-                    borderRadius: radii.lg,
+                    borderRadius: radii.xl,
                   },
                 ]}
                 onPress={() => handleCategorySelect(cat.type)}
